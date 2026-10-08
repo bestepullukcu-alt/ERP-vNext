@@ -77,7 +77,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         var emptyAt = detail.IndexOf("if (w.status === 'empty') {", StringComparison.Ordinal);
         Assert.True(emptyAt > 0, "the empty branch");
         var branch = Between(detail, "if (w.status === 'empty') {", "}\n");
-        Assert.Contains("parts.push(emptyWeekHtml());", branch);
+        Assert.Contains("parts.push(emptyWeekHtml(ws));", branch);
         Assert.Contains("return;", branch);
         // the day rows, product and moved sections all come AFTER the early return
         foreach (var later in new[] { "dayRow(d, movable)", "L.ProductVisitsTitle", "pinOverflowHtml(p, ws)", "slipRow" })
@@ -85,10 +85,11 @@ public sealed class VisitPlanningMockupCultureWebTests
             var at = detail.IndexOf(later, StringComparison.Ordinal);
             Assert.True(at > emptyAt, later + " must not be drawn for an empty week");
         }
-        var empty = Between(js, "const emptyWeekHtml = () =>", "'</div>';");
+        var empty = Between(js, "const emptyWeekHtml = ws => {", "\n    };");
         Assert.Contains("border-style:dashed !important", empty);
         Assert.Contains("L.EmptyWeekHint", empty);
-        Assert.Contains("js-wk-action\" data-action=\"rebuild\">' + esc(L.GenerateWeek", empty);
+        Assert.Contains("js-wk-action\" data-action=\"generate\"", empty); // WP-VP-4J: the build with feedback
+        Assert.Contains("esc(L.GenerateWeek", empty);
         Assert.Contains("canGenerate && !page.isLegacy()", empty);
         Assert.Equal("Bu haftayı üret", Resx("tr")["GenerateWeek"]);
     }
@@ -164,13 +165,11 @@ public sealed class VisitPlanningMockupCultureWebTests
     public void The_targets_doctor_table_has_eight_columns_and_no_responsive_collapse()
     {
         var js = Script("details.js");
-        var config = Between(js, "const contactsConfig = list => ({", "\n    });");
-        Assert.Contains("responsive: false, autoWidth: false,", config);
-        Assert.DoesNotMatch(@"responsive:\s*(true|\{)", config);
-        Assert.Contains("columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }]", config);
-        Assert.Contains("targets: 3", config);
-        Assert.Contains("targets: 7", config);
-        Assert.Contains("statusCell(row)", config);
+        // WP-VP-4J — no DataTable at all now (so no responsive collapse): a plain table row of eight cells
+        var row = Between(js, "const doctorRowHtml = row =>", "</tr>';");
+        Assert.Equal(8, Regex.Matches(row, "'<td").Count);
+        Assert.Contains("statusCell(row)", row);
+        Assert.DoesNotContain("contactsDt", js);
         var view = View("Details.cshtml");
         var head = Between(view, "<table id=\"dt-vp-contacts\"", "</thead>");
         Assert.Equal(8, Regex.Matches(head, "<th>").Count);
@@ -242,7 +241,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         var back = Between(js, "const returnToWeeks = () => {", "\n    };");
         Assert.Contains("page.selectWeek(note.week, 'force')", back);
         Assert.Contains("el('vp-tab-weeks-btn')", back);
-        Assert.Contains("page.on('preview', () => { render(); returnToWeeks(); });", js);
+        Assert.Contains("page.on('preview', () => { finishGenerate(); render(); returnToWeeks(); });", js); // 4J: + the empty-week feedback
         Assert.Contains("id=\"vp-tab-weeks-btn\"", View("Details.cshtml"));
     }
 

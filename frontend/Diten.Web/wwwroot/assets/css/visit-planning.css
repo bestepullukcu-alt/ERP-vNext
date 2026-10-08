@@ -1,0 +1,82 @@
+/*
+ * WP-VP-4J — Visit Planning page CSS (mockup v3). Loaded ONLY by the Visit Planning views (Index / Create / Edit /
+ * Details @section Styles), never globally: thin scrollbars and the Targets tab's v3 look (icon tiles, the tab card,
+ * pill quick filters, the plain doctor table, the lavender summary card).
+ */
+:root {
+    --vp-indigo: #0b1a8c;
+    --vp-indigo-soft: #e0e2f3;
+    --vp-indigo-line: #c5c9e8;
+    --vp-indigo-text: #4b55a8;
+    --vp-pill-bg: #f1f2f4;
+    --vp-pill-fg: #646e78;
+}
+[data-bs-theme="dark"] {
+    --vp-indigo: #8f9bff;
+    --vp-indigo-soft: rgba(105, 108, 255, .16);
+    --vp-indigo-line: rgba(143, 155, 255, .35);
+    --vp-indigo-text: #b4bbff;
+    --vp-pill-bg: rgba(255, 255, 255, .06);
+    --vp-pill-fg: #b2b6c4;
+}
+
+/* thin scrollbars (mockup: scrollbar-width:thin; #c5c9e8) — this page only */
+html, html * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--vp-indigo-line) transparent;
+}
+html ::-webkit-scrollbar { width: 8px; height: 8px; }
+html ::-webkit-scrollbar-thumb { background: var(--vp-indigo-line); border-radius: 4px; }
+html ::-webkit-scrollbar-track { background: transparent; }
+
+/* icon tiles (Targets head "bx-target-lock", institution "bx-buildings") */
+.vp-icon-tile {
+    width: 40px; height: 40px; border-radius: 6px; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--vp-indigo-soft); color: var(--vp-indigo); font-size: 20px;
+}
+.vp-icon-tile-lg { width: 46px; height: 46px; border-radius: 8px; font-size: 24px; }
+
+/* the doctors / linked pharmacies tab card: the picked one filled indigo, the other framed */
+.vp-midtab {
+    height: 38px; padding: 0 18px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500;
+    border: 1px solid var(--bs-border-color); background: var(--bs-paper-bg, #fff); color: var(--bs-heading-color);
+}
+.vp-midtab.active { background: var(--vp-indigo); border-color: var(--vp-indigo); color: #fff; }
+.vp-midtab-count { padding: 0 6px; border-radius: 4px; font-size: 12px; background: var(--vp-pill-bg); }
+.vp-midtab.active .vp-midtab-count { background: rgba(255, 255, 255, .2); }
+
+/* the institution's pills: city · doctors · linked pharmacies */
+.vp-info-pill {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px;
+    background: var(--vp-pill-bg); color: var(--vp-pill-fg);
+}
+
+/* quick filters as counted pills; the picked one filled indigo */
+.vp-pill {
+    height: 32px; border-radius: 16px; padding: 0 14px; font-size: 13px; font-weight: 500;
+    border: 1px solid var(--bs-border-color); background: var(--bs-paper-bg, #fff); color: var(--bs-heading-color);
+}
+.vp-pill.active { background: var(--vp-indigo); border-color: var(--vp-indigo); color: #fff; }
+
+/* the plain doctor table: scrolls inside the card (both ways), header kept in view */
+.vp-doc-scroll { max-height: 560px; overflow: auto; }
+.vp-doc-table { min-width: 940px; font-size: 14px; }
+.vp-doc-table thead th {
+    position: sticky; top: 0; z-index: 1; background: var(--bs-tertiary-bg, #fafafb);
+    font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .2px; white-space: nowrap;
+}
+.vp-doc-table td { vertical-align: middle; }
+.vp-ph-table { min-width: 560px; }
+
+/* the specialty multi-select */
+.vp-spec-toggle { min-width: 190px; display: inline-flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+/* the lavender selection summary */
+.vp-summary-card { background: var(--vp-indigo-soft); color: var(--vp-indigo); box-shadow: none; }
+.vp-summary-label { color: var(--vp-indigo-text); letter-spacing: .3px; }
+.vp-summary-rule { border-top: 1px solid var(--vp-indigo-line); }
+
+/* the new-plan drawer: a locked field (country with one choice, the rep) — grey, with a lock */
+.vp-locked-field .form-control:disabled,
+.vp-locked-field .input-group-text { background: var(--bs-secondary-bg); color: var(--bs-heading-color); }

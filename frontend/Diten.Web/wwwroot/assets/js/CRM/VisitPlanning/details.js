@@ -1,6 +1,6 @@
 /**
  * MOD-0155-FU05 Visit Planning — session Details ("Road Map Details").
- * Targets are a master→detail pair of Golden-Compact DataTables (clinic/hospital accounts → their doctors); saving them
+ * Targets are a master→detail pair (WP-VP-4J: the accounts list → a PLAIN doctor table, no DataTable) (clinic/hospital accounts → their doctors); saving them
  * writes the session's selectedAccountIds + selectedContacts. The engine then previews a weekly road map: the route tab
  * shows the SELECTED week's Mon→Fri, Monday-first day tabs (weekends hidden, holidays disabled — from the planner's
  * nonWorkingDates, which the CRM planner reads from the working calendar; Sat/Sun fallback), and visit cards. The default
@@ -28,6 +28,7 @@
     const LOCKED_WEEK_STATUSES = ['approved', 'past'];
     const targetsLocked = () => readOnly || !!(page && (page.isLegacy() || LOCKED_WEEK_STATUSES.indexOf(page.weekStatus(page.state.weekStart)) > -1));
     const canEditTargets = () => canGenerate && !targetsLocked();
+    const fmt = (tpl, ...args) => args.reduce((t, a, i) => t.split('{' + i + '}').join(String(a)), String(tpl || ''));
 
     const WORK_START = 9 * 60, WORK_END = 18 * 60;
     const CLINIC_TYPES = ['clinic', 'hospital'];
@@ -916,7 +917,8 @@
     const selectedPharmacies = {}; // pharmacyId -> {id, name} — flat set; written to selectedPharmacyIds on save
     const relatedByAccount = {};   // accountId -> [{id, name, relType}] linked pharmacies (cached)
     let activeAccountId = null;
-    let contactsDt = null;
+    let docList = []; // WP-VP-4J — the open institution's doctors under the quick filter (the plain table's rows)
+    let docTerm = ''; // the doctor search term (Turkish-insensitive)
     const selKey = (a, c) => a + '|' + c;
     const accName = a => a.accountName || a.name || a.id;
     const accType = a => a.accountType || a.type || '';
@@ -1083,54 +1085,54 @@
         (row.status.segmentBadges || []).map(name => ' <span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + bidi(name) + '</span>').join('');
     // WP-VP-4H (6, F4-3) — "this week" (due) + the read-only badges form the Status column.
     const statusCell = row => (row.status && row.status.dueThisWeek ? '<span class="badge bg-label-primary">' + esc(L.DueThisWeekBadge || '') + '</span>' : '') + doctorBadges(row);
-    const contactsConfig = list => ({
-        data: list, stateSave: false, searching: true, paging: true, pageLength: 10, lengthChange: false, info: true,
-        buttons: [], // inline picker: no Action dropdown / column-visibility toolbar
-        // WP-VP-4H (F4-3) — a plain table: no responsive collapse (Products + Status always visible; a narrow screen
-        // scrolls sideways inside .table-responsive). Mockup order: select · doctor · specialty · product chips · frequency ·
-        // done / remaining · last visit · status. No link-GUID column (WP-VP-2 D4).
-        responsive: false, autoWidth: false,
-        columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }],
-        columnDefs: [
-            { targets: 0, orderable: false, className: 'cell-fit', render: (v, t, row) => '<div class="form-check mb-0"><input class="form-check-input js-contact-check" type="checkbox" data-cid="' + esc(row.contactId) + '"' + (selectedContacts[selKey(activeAccountId, row.contactId)] ? ' checked' : '') + (canEditTargets() && !row.blocked ? '' : ' disabled') + (row.blocked ? ' title="' + esc(L.ConsentBlockedHint || '') + '"' : '') + '></div>' },
-            { targets: 1, render: (v, t) => t === 'display' ? '<span class="fw-medium text-heading">' + bidi(v) + '</span>' : (v || '') },
-            { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(specLabel(v)) + '</span>' : '—') : (v || '') },
-            { targets: 3, orderable: false, searchable: false, render: (v, t, row) => '<div class="vp-doc-picks" data-cid="' + esc(row.contactId) + '" data-aid="' + esc(activeAccountId) + '" data-lid="' + esc(row.linkId || '') + '" data-name="' + esc(row.name) + '" data-spec="' + esc(specLabel(row.specialty)) + '"></div>' },
-            { targets: 4, searchable: false, render: (v, t, row) => t === 'display' ? frequencyCell(row.status) : (hasFrequency(row.status) ? row.status.requiredVisitCount : -1) },
-            { targets: 5, searchable: false, render: (v, t, row) => t === 'display' ? doneCell(row.status) : (row.status.remaining != null ? row.status.remaining : -1) },
-            { targets: 6, searchable: false, render: (v, t, row) => t === 'display' ? lastVisitCell(row.status) : (row.status.lastVisitDate ? new Date(row.status.lastVisitDate).getTime() : 0) },
-            { targets: 7, orderable: false, searchable: false, render: (v, t, row) => t === 'display' ? statusCell(row) : '' }
-        ],
-        language: { emptyTable: activeAccountId ? (L.NoDoctorsForFilter || '—') : (L.PickAccountForContacts || '—'), zeroRecords: L.NoDoctorsForFilter || '—' }
-    });
-
-    const renderContactsDt = list => {
-        const tableEl = el('dt-vp-contacts'); if (!tableEl) return;
-        if (contactsDt) { contactsDt.destroy(); contactsDt = null; tableEl.querySelector('tbody')?.remove(); }
-        contactsDt = new DataTable(tableEl, window.DtDefaults?.create ? window.DtDefaults.create(contactsConfig(list)) : contactsConfig(list));
-        // WP-VP-4C — every draw tells targets.js to fill the picks cells of the visible rows.
-        const drawn = () => {
-            // WP-VP-4H (6) — "Select all (N)": the selectable doctors the filters show.
-            const n = contactsDt ? contactsDt.rows({ search: 'applied' }).data().toArray().filter(r => !r.blocked).length : 0;
-            setText('vp-select-all-count', '(' + n + ')');
-            if (page) page.emit('targets:doctors-drawn', { accountId: activeAccountId });
-        };
-        contactsDt.on('draw', drawn); drawn();
-        if (!tableEl.dataset.bound) {
-            tableEl.dataset.bound = '1';
-            tableEl.addEventListener('change', e => {
-                const cb = e.target.closest('.js-contact-check'); if (!cb || !activeAccountId) return;
-                const cid = cb.dataset.cid; const k = selKey(activeAccountId, cid);
-                if (cb.checked) {
-                    const c = findDoctor(activeAccountId, cid);
-                    if (!canEditTargets() || (c && c.blocked)) { cb.checked = false; return; } // consent blocked: never a target
-                    selectedContacts[k] = { contactId: cid, accountId: activeAccountId, accountContactLinkId: (c && c.linkId) || null };
-                    ensureInPlan(activeAccountId);
-                } else { delete selectedContacts[k]; }
-                refreshTargetsUi();
-            });
-        }
+    // WP-VP-4J — the institution's doctors in a PLAIN table (mockup v3; no DataTable, no paging): every active doctor of
+    // the quick filter, narrowed client-side by the search term (Turkish-insensitive) and the picked specialties; the
+    // table scrolls inside its card. The cells are the 4C / 4H ones; column 3 is the picks cell targets.js fills after
+    // each draw ('targets:doctors-drawn').
+    const doctorCheck = row => '<div class="form-check mb-0"><input class="form-check-input js-contact-check" type="checkbox" data-cid="' + esc(row.contactId) + '"' + (selectedContacts[selKey(activeAccountId, row.contactId)] ? ' checked' : '') + (canEditTargets() && !row.blocked ? '' : ' disabled') + (row.blocked ? ' title="' + esc(L.ConsentBlockedHint || '') + '"' : '') + ' aria-label="' + esc(row.name) + '"></div>';
+    const doctorRowHtml = row => '<tr class="vp-doc-row' + (row.blocked || row.inactive ? ' opacity-75' : '') + '" data-cid="' + esc(row.contactId) + '">' +
+        '<td class="cell-fit">' + doctorCheck(row) + '</td>' +
+        '<td><span class="fw-medium text-heading">' + bidi(row.name) + '</span></td>' +
+        '<td>' + (row.specialty ? '<span class="badge bg-label-info">' + esc(specLabel(row.specialty)) + '</span>' : '—') + '</td>' +
+        '<td style="min-width:210px"><div class="vp-doc-picks" data-cid="' + esc(row.contactId) + '" data-aid="' + esc(activeAccountId) + '" data-lid="' + esc(row.linkId || '') + '" data-name="' + esc(row.name) + '" data-spec="' + esc(specLabel(row.specialty)) + '"></div></td>' +
+        '<td class="text-nowrap">' + frequencyCell(row.status) + '</td>' +
+        '<td class="text-nowrap">' + doneCell(row.status) + '</td>' +
+        '<td class="text-nowrap">' + lastVisitCell(row.status) + '</td>' +
+        '<td><div class="d-flex gap-1 flex-wrap">' + statusCell(row) + '</div></td></tr>';
+    const docMatches = (row, re) => !re || re.test(String(row.name || '').toLocaleLowerCase('tr')) || re.test(specLabel(row.specialty).toLocaleLowerCase('tr'));
+    const visibleDoctors = () => {
+        const re = docTerm ? new RegExp(trSearchPattern(docTerm), 'i') : null;
+        return docList.filter(row => docMatches(row, re) && (!activeSpecs.length || activeSpecs.indexOf(row.specialty) > -1));
     };
+    const drawDoctors = () => {
+        const body = el('vp-doc-tbody'); if (!body) return;
+        const rows = activeAccountId ? visibleDoctors() : [];
+        body.innerHTML = rows.map(doctorRowHtml).join('');
+        const hint = el('vp-contacts-hint');
+        if (hint) {
+            hint.textContent = rows.length ? '' : (activeAccountId ? (L.NoDoctorsForFilter || '—') : (L.PickAccountForContacts || '—'));
+            hint.classList.toggle('d-none', rows.length > 0);
+        }
+        // WP-VP-4H (6) — "Select all (N)": the selectable doctors the filters show.
+        setText('vp-select-all-count', '(' + rows.filter(r => !r.blocked).length + ')');
+        // WP-VP-4C — every draw tells targets.js to fill the picks cells of the drawn rows.
+        if (page) page.emit('targets:doctors-drawn', { accountId: activeAccountId });
+    };
+    const renderDoctorTable = list => { docList = Array.isArray(list) ? list : []; drawDoctors(); };
+    const doctorTableEl = el('dt-vp-contacts');
+    if (doctorTableEl) {
+        doctorTableEl.addEventListener('change', e => {
+            const cb = e.target.closest('.js-contact-check'); if (!cb || !activeAccountId) return;
+            const cid = cb.dataset.cid; const k = selKey(activeAccountId, cid);
+            if (cb.checked) {
+                const c = findDoctor(activeAccountId, cid);
+                if (!canEditTargets() || (c && c.blocked)) { cb.checked = false; return; } // consent blocked: never a target
+                selectedContacts[k] = { contactId: cid, accountId: activeAccountId, accountContactLinkId: (c && c.linkId) || null };
+                ensureInPlan(activeAccountId);
+            } else { delete selectedContacts[k]; }
+            refreshTargetsUi();
+        });
+    }
 
     // Fetch (and cache) one account's linked contacts as [{contactId, name, specialty, linkId}]. Shared by the Targets
     // detail table and the Route-tab block expansion (doctor-name resolution). Fail-soft → [].
@@ -1155,7 +1157,7 @@
     // (account, quick filter) — quick = all | due (due this week) | never (never visited) is the server's filter. The
     // "all" read also gives the account row its "x / y selected · N this week". A failed read is not cached.
     const QUICK_FILTERS = ['all', 'due', 'never'];
-    let activeQuick = 'all';
+    let activeQuick = 'due'; // WP-VP-4J (mockup v3) — "due this week" first
     const doctorRows = {};   // "accountId|quick" -> [{ contactId, name, specialty, linkId, status, blocked, inactive }]
     const accountStats = {}; // accountId -> { active, due }
     const doctorRow = d => {
@@ -1233,25 +1235,26 @@
         }).catch(() => { })));
     };
 
-    // Render the linked-pharmacy checkboxes for one account; ticking adds the pharmacy to the pharmacy-target set.
+    // Render the linked pharmacies of one account; ticking adds the pharmacy to the pharmacy-target set. WP-VP-4J — the
+    // mockup's plain table (select · pharmacy · relation · address); the related-accounts read carries no period status
+    // for a pharmacy, so the table shows what it has.
     const renderPharmacies = accountId => {
         const host = el('vp-pharmacies'); if (!host) return;
         host.innerHTML = '<div class="text-muted small">' + esc(L.Loading || '…') + '</div>';
         fetchRelatedPharmacies(accountId).then(list => {
-            if (!list.length) { host.innerHTML = '<div class="text-muted small">' + esc(L.NoLinkedPharmacies || 'No linked pharmacies.') + '</div>'; return; }
-            const card = p => {
+            if (!list.length) { host.innerHTML = '<div class="text-muted small py-3 text-center">' + esc(L.NoLinkedPharmacies || 'No linked pharmacies.') + '</div>'; return; }
+            const row = p => {
                 const on = !!selectedPharmacies[p.id];
                 const src = accountSource.find(a => a.id === p.id) || {};
-                const addr = src.addr || '';
-                return '<div class="col-12 col-md-6"><label class="vp-pharm-card d-flex gap-2 p-3 h-100' + (on ? ' vp-pharm-card--on' : '') + '">' +
-                    '<input class="form-check-input mt-0 flex-shrink-0 js-pharmacy-check" type="checkbox" data-pid="' + esc(p.id) + '" data-pname="' + esc(p.name) + '"' + (on ? ' checked' : '') + (canEditTargets() ? '' : ' disabled') + '>' +
-                    '<span style="min-width:0" class="flex-grow-1">' +
-                    '<span class="d-flex align-items-center gap-2 flex-wrap mb-1"><span class="fw-medium text-truncate">' + bidi(p.name) + '</span>' + (p.relType ? '<span class="badge bg-label-warning text-uppercase">' + esc(p.relType) + '</span>' : '') + '</span>' +
-                    '<span class="text-muted small d-block text-truncate vp-pharm-addr" data-pid="' + esc(p.id) + '">' + esc(addr || '—') + '</span>' +
-                    (p.code ? '<span class="text-muted small font-monospace">' + esc(p.code) + '</span>' : '') +
-                    '</span></label></div>';
+                return '<tr class="vp-pharm-row' + (on ? ' table-active' : '') + '">' +
+                    '<td class="cell-fit"><input class="form-check-input js-pharmacy-check" type="checkbox" data-pid="' + esc(p.id) + '" data-pname="' + esc(p.name) + '"' + (on ? ' checked' : '') + (canEditTargets() ? '' : ' disabled') + ' aria-label="' + esc(p.name) + '"></td>' +
+                    '<td><span class="fw-medium text-heading">' + bidi(p.name) + '</span>' + (p.code ? '<span class="d-block text-muted small font-monospace">' + esc(p.code) + '</span>' : '') + '</td>' +
+                    '<td>' + (p.relType ? '<span class="badge bg-label-warning text-uppercase">' + esc(p.relType) + '</span>' : '—') + '</td>' +
+                    '<td class="text-muted small vp-pharm-addr" data-pid="' + esc(p.id) + '">' + esc(src.addr || '—') + '</td></tr>';
             };
-            host.innerHTML = '<div class="row g-3">' + list.map(card).join('') + '</div>';
+            host.innerHTML = '<div class="vp-doc-scroll border rounded"><table class="table mb-0 vp-doc-table vp-ph-table"><thead><tr>' +
+                '<th><span class="visually-hidden">' + esc(L.ColSelected || '') + '</span></th><th>' + esc(L.StatPharmacies || '') + '</th><th>' + esc(L.ColRelation || '') + '</th><th>' + esc(L.ColAddress || '') + '</th>' +
+                '</tr></thead><tbody>' + list.map(row).join('') + '</tbody></table></div>';
             // Fill missing street addresses progressively (related-accounts projection carries no address).
             list.forEach(p => { const src = accountSource.find(a => a.id === p.id); if (!src || src.addr === undefined || src.addr === '') resolveAccount(p.id).then(a => { const n = host.querySelector('.vp-pharm-addr[data-pid="' + p.id + '"]'); if (n && a && a.addr) n.textContent = a.addr; }); });
         });
@@ -1295,12 +1298,17 @@
         if (pharm.length) { parts.push(groupHead('pharmacies', L.StatPharmacies || '', pharm.length)); parts.push(groupBody('pharmacies', pharm)); }
         host.innerHTML = parts.length ? parts.join('') : '<div class="text-muted small">—</div>';
     };
+    // WP-VP-4J — the head card's line: "41. Hafta · 12 doktor, 2 eczane seçili" (the picked institution has its own card).
+    const refreshSubtitle = () => {
+        const wk = page ? page.week(page.state.weekStart) : null;
+        setText('vp-targets-subtitle', fmt(L.TargetsSubtitle || '{0} · {1} · {2}', wk ? fmt(L.WeekNumberLabel || '{0}', wk.isoWeek) : '—',
+            Object.keys(selectedContacts).length, Object.keys(selectedPharmacies).length));
+    };
     const refreshTargetsUi = () => {
         const docN = Object.keys(selectedContacts).length, phN = Object.keys(selectedPharmacies).length, accN = targetAccounts.length;
         setText('vp-accounts-count', String(accN));
         setText('vp-sum-doctors', docN); setText('vp-sum-pharm', phN); setText('vp-sum-accounts', accN);
-        const acc = targetAccounts.find(a => a.id === activeAccountId);
-        setText('vp-targets-subtitle', (acc ? VPF.isolate(acc.name) + ' · ' : '') + docN + ' ' + (L.StatDoctors || 'doctors') + ', ' + phN + ' ' + (L.StatPharmacies || 'pharmacies') + ' ' + (L.SelectedSuffix || 'selected'));
+        refreshSubtitle();
         renderSelectionChips();
         paintAccountStats();
         // WP-VP-4C — targets.js (summary, bulk product apply) reads the local selection by name, never by id alone.
@@ -1315,42 +1323,41 @@
     // WP-VP-4C (2) — specialty: a counted multi-select ("Gastroenterology (12)") over the doctors the quick filter
     // returned; ticking several keeps any of them.
     let activeSpecs = [];
-    const reEscape = v => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const renderSpecialtyPills = list => {
         const host = el('vp-specialty-pills'); if (!host) return;
         activeSpecs = [];
         const counts = {};
         (list || []).forEach(c => { if (c.specialty) counts[c.specialty] = (counts[c.specialty] || 0) + 1; });
         const specs = Object.keys(counts).sort((a, b) => specLabel(a).localeCompare(specLabel(b)));
-        if (!specs.length) { host.innerHTML = ''; return; }
+        // WP-VP-4J (mockup v3) — "Specialty: All" with a chevron; the menu is the counted check list + "Clear selection".
         host.innerHTML = '<div class="dropdown">' +
-            '<button type="button" class="btn btn-sm btn-label-secondary dropdown-toggle" id="vp-spec-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">' + esc(L.SpecialtyAll || L.ColSpecialty || '') + '</button>' +
-            '<div class="dropdown-menu p-2 vp-spec-menu">' + specs.map(sp =>
+            '<button type="button" class="btn btn-outline-secondary text-heading vp-spec-toggle" id="vp-spec-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="listbox" aria-expanded="false"' + (specs.length ? '' : ' disabled') + '><span id="vp-spec-label">' + esc(L.SpecialtyFilterAll || L.SpecialtyAll || '') + '</span><i class="bx bx-chevron-down"></i></button>' +
+            '<div class="dropdown-menu p-2 vp-spec-menu" style="min-width:240px">' + specs.map(sp =>
                 '<label class="dropdown-item d-flex align-items-center gap-2 mb-0"><input type="checkbox" class="form-check-input mt-0 vp-spec-check" value="' + esc(sp) + '"><span>' + esc(specLabel(sp)) + ' (' + counts[sp] + ')</span></label>').join('') +
+            '<button type="button" class="dropdown-item border-top mt-1 pt-2 text-primary small js-spec-clear">' + esc(L.SpecialtyClear || '') + '</button>' +
             '</div></div>';
     };
     const applySpecialtyFilter = () => {
-        if (!contactsDt) return;
-        setText('vp-spec-toggle', activeSpecs.length ? (L.SpecialtySelected || '{0}').replace('{0}', activeSpecs.length) : (L.SpecialtyAll || ''));
-        contactsDt.column(2).search(activeSpecs.length ? '^(' + activeSpecs.map(reEscape).join('|') + ')$' : '', true, false).draw();
+        setText('vp-spec-label', activeSpecs.length ? fmt(L.SpecialtyFilterSelected || '{0}', activeSpecs.length) : (L.SpecialtyFilterAll || ''));
+        drawDoctors();
     };
     const selectAllDoctors = () => {
-        if (!contactsDt || !activeAccountId) return;
+        if (!activeAccountId) return;
         if (!canEditTargets()) return;
-        contactsDt.rows({ search: 'applied' }).data().each(row => {
+        visibleDoctors().forEach(row => { // "select all" follows the quick filter, the search and the specialties
             if (row.blocked) return; // consent blocked: never a target
             const cid = row.contactId; const k = selKey(activeAccountId, cid);
             const c = findDoctor(activeAccountId, cid);
             selectedContacts[k] = { contactId: cid, accountId: activeAccountId, accountContactLinkId: (c && c.linkId) || null };
         });
         ensureInPlan(activeAccountId);
-        contactsDt.draw(false); refreshTargetsUi();
+        drawDoctors(); refreshTargetsUi();
     };
     const clearSelection = () => {
         if (!canEditTargets()) return;
         Object.keys(selectedContacts).forEach(k => delete selectedContacts[k]);
         Object.keys(selectedPharmacies).forEach(k => delete selectedPharmacies[k]);
-        if (contactsDt) contactsDt.draw(false);
+        drawDoctors();
         if (activeAccountId) renderPharmacies(activeAccountId);
         refreshTargetsUi();
     };
@@ -1358,13 +1365,17 @@
     const showContacts = accountId => {
         activeAccountId = accountId;
         el('vp-contacts-panel')?.classList.remove('d-none');
+        el('vp-contacts-panel')?.classList.add('d-flex');
         const acc = targetAccounts.find(a => a.id === accountId) || accountSource.find(a => a.id === accountId);
         setText('vp-contacts-for', acc ? acc.name : '—');
         // meta line: city · N doctors · M linked pharmacies (filled progressively as the fetches resolve).
         const meta = { city: acc ? (acc.city || '') : '', docs: null, ph: null };
-        const paintMeta = () => setText('vp-contacts-meta', [meta.city, meta.docs != null ? meta.docs + ' ' + (L.StatDoctors || 'doctors') : null, meta.ph != null ? meta.ph + ' ' + (L.LinkedPharmacies || 'linked pharmacies') : null].filter(Boolean).join(' · ') || '—');
+        // WP-VP-4J — the institution card's grey pills: city · "16 doctors" · "2 linked pharmacies".
+        const pill = (icon, text) => '<span class="vp-info-pill"><i class="bx ' + icon + '"></i>' + text + '</span>';
+        const paintMeta = () => { const m = el('vp-contacts-meta'); if (m) m.innerHTML = [meta.city ? pill('bx-map', bidi(meta.city)) : '', meta.docs != null ? pill('bx-user', esc(fmt(L.DoctorCountPill || '{0}', meta.docs))) : '', meta.ph != null ? pill('bx-plus-medical', esc(fmt(L.LinkedPharmacyCountPill || '{0}', meta.ph))) : ''].join(''); };
         paintMeta();
         const s = el('vp-doctor-search'); if (s) s.value = '';
+        docTerm = '';
         fetchAccountDoctors(accountId, 'all').then(all => {
             setText('vp-doctors-count', String(all.length));
             meta.docs = all.length; paintMeta(); paintAccountStats();
@@ -1380,10 +1391,8 @@
     // The doctor table of one account under the active quick filter (the search term stays applied).
     const loadDoctorTable = accountId => fetchAccountDoctors(accountId, activeQuick).then(list => {
         if (accountId !== activeAccountId) return;
-        renderContactsDt(list);
         renderSpecialtyPills(list);
-        const h = el('vp-contacts-hint'); if (h) h.textContent = list.length ? '' : (L.NoDoctorsForFilter || '');
-        el('vp-doctor-search')?.dispatchEvent(new Event('input'));
+        renderDoctorTable(list);
     });
     const paintQuickCounts = all => {
         const count = { all: all.length, due: all.filter(r => r.status && r.status.dueThisWeek).length, never: all.filter(r => r.status && r.status.neverVisited).length };
@@ -1398,15 +1407,28 @@
 
     // WP-VP-4C (5) — an approved / past week (or a legacy plan) shows the targets read-only; re-rendered only on change.
     let lastTargetsLock = null;
+    // WP-VP-4J — why the targets are read-only: the plan (read-only / old plan) or the week ("41. Hafta onaylı …").
+    const lockedText = () => {
+        if (readOnly || (page && page.isLegacy())) return L.ReadOnlyNotice || '';
+        const ws = page ? page.state.weekStart : null;
+        const w = ws ? page.week(ws) : null;
+        const title = w ? fmt(L.WeekNumberLabel || '{0}', w.isoWeek) : '';
+        return fmt(page && page.weekStatus(ws) === 'past' ? (L.TargetsReadOnlyPast || '{0}') : (L.TargetsReadOnlyApproved || '{0}'), title);
+    };
     const applyTargetsLock = () => {
         const locked = targetsLocked();
+        // WP-VP-4J — the head card's green "Read-only" badge + why (an approved / past week, or a read-only plan); the
+        // line follows the selected week, as does the subtitle's week title.
+        const lockBox = el('vp-targets-locked');
+        if (lockBox) { lockBox.classList.toggle('d-none', !locked); lockBox.classList.toggle('d-flex', locked); }
+        if (locked) setText('vp-targets-locked-text', lockedText());
+        refreshSubtitle();
         if (locked === lastTargetsLock) return;
         lastTargetsLock = locked;
-        el('vp-targets-locked')?.classList.toggle('d-none', !locked || readOnly);
         ['vp-save-targets', 'vp-select-all-doctors', 'vp-clear-selection', 'vp-out-territory-open'].forEach(id => { const b = el(id); if (b) b.disabled = !canEditTargets(); });
         el('vp-add-account-wrap')?.classList.toggle('d-none', !canEditTargets());
         renderAccountList();
-        if (contactsDt) contactsDt.rows().invalidate('data').draw(false);
+        drawDoctors();
         if (activeAccountId) renderPharmacies(activeAccountId);
         renderSelectionChips();
     };
@@ -1422,7 +1444,7 @@
         if (!canEditTargets()) return;
         targetAccounts = targetAccounts.filter(a => a.id !== id);
         Object.keys(selectedContacts).forEach(k => { if (k.indexOf(id + '|') === 0) delete selectedContacts[k]; });
-        if (activeAccountId === id) { activeAccountId = null; setText('vp-contacts-for', '—'); setText('vp-contacts-meta', '—'); if (contactsDt) { contactsDt.clear().draw(); } el('vp-contacts-panel')?.classList.add('d-none'); }
+        if (activeAccountId === id) { activeAccountId = null; setText('vp-contacts-for', '—'); setText('vp-contacts-meta', '—'); docList = []; drawDoctors(); el('vp-contacts-panel')?.classList.remove('d-flex'); el('vp-contacts-panel')?.classList.add('d-none'); }
         buildAccountsDt(); fillAddAccountPicker(); refreshTargetsUi();
     };
 
@@ -1628,7 +1650,7 @@
         const pid = cb.dataset.pid;
         if (cb.checked) { selectedPharmacies[pid] = { id: pid, name: cb.dataset.pname }; resolveAccount(pid); }
         else { delete selectedPharmacies[pid]; }
-        const card = cb.closest('.vp-pharm-card'); if (card) card.classList.toggle('vp-pharm-card--on', cb.checked);
+        const tr = cb.closest('.vp-pharm-row'); if (tr) tr.classList.toggle('table-active', cb.checked);
         refreshTargetsUi();
     });
     // ── Targets: doctor search, select-all, clear, specialty pills, selection-chip removal ──
@@ -1636,9 +1658,8 @@
     // and every i / ı becomes [iıIİ]; the case-insensitive regex search folds the other letters (ş/Ş, ğ/Ğ, ü/Ü, ö/Ö, ç/Ç).
     // "şirin", "Şirin" and "ŞİRİN" all find "ŞİRİN".
     el('vp-doctor-search')?.addEventListener('input', function () {
-        if (!contactsDt) return;
-        const term = (this.value || '').trim();
-        contactsDt.search(term ? trSearchPattern(term) : '', !!term, false, true).draw();
+        docTerm = (this.value || '').trim();
+        drawDoctors();
     });
     el('vp-select-all-doctors')?.addEventListener('click', selectAllDoctors);
     // WP-VP-4H (6) — the "My accounts" list: open an account, remove a plan account, search, load 50 more on scroll.
@@ -1673,6 +1694,12 @@
         activeSpecs = Array.from(el('vp-specialty-pills').querySelectorAll('.vp-spec-check:checked')).map(x => x.value);
         applySpecialtyFilter();
     });
+    el('vp-specialty-pills')?.addEventListener('click', e => {
+        if (!e.target.closest('.js-spec-clear')) return;
+        el('vp-specialty-pills').querySelectorAll('.vp-spec-check:checked').forEach(x => { x.checked = false; });
+        activeSpecs = [];
+        applySpecialtyFilter();
+    });
     el('vp-quick-filters')?.addEventListener('click', e => {
         const b = e.target.closest('.vp-quick'); if (!b) return;
         const q = b.dataset.quick;
@@ -1684,7 +1711,7 @@
         const x = e.target.closest('.vp-selchip-x'); if (!x) return;
         const chipEl = x.closest('.vp-selchip'); if (!chipEl) return;
         if (chipEl.dataset.kind === 'pharmacy') { delete selectedPharmacies[chipEl.dataset.pid]; if (activeAccountId) renderPharmacies(activeAccountId); }
-        else { delete selectedContacts[chipEl.dataset.k]; if (contactsDt) contactsDt.draw(false); }
+        else { delete selectedContacts[chipEl.dataset.k]; drawDoctors(); }
         refreshTargetsUi();
     });
     // "Optimal rotaya dön": drop the manual order and re-preview WITHOUT manualVisitOrder → the engine's optimum.

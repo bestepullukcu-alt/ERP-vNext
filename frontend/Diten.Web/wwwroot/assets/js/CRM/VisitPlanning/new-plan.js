@@ -78,7 +78,18 @@
     // The countries a plan can be made for: those of the open, country-scoped periods (E4-4B-4).
     const periodCountries = () => Array.from(new Set(openPeriods(periods, today())
         .filter(p => p.scopeType === 'country' && p.country).map(p => p.country)));
-    const countryName = code => { const c = countries.find(x => x.code === code); return c ? c.name : code; };
+    // WP-VP-4J (6) — the country in the UI language ("Türkiye" / "Turkey" / "تركيا"): the browser's region names for the
+    // application's culture (<html lang>), else the scope options' label, else the code.
+    const regionNames = (() => {
+        try { return new Intl.DisplayNames([window.VisitPlanningFormat ? window.VisitPlanningFormat.culture() : 'tr'], { type: 'region' }); } catch (e) { return null; }
+    })();
+    const countryName = code => {
+        let local = null;
+        try { local = regionNames && /^[A-Z]{2}$/.test(code) ? regionNames.of(code) : null; } catch (e) { local = null; }
+        if (local && local !== code) return local;
+        const c = countries.find(x => x.code === code);
+        return c ? c.name : code;
+    };
     const selectedCountry = () => {
         const list = periodCountries();
         if (list.length <= 1) return list[0] || '';
@@ -126,14 +137,15 @@
     };
     const renderCountry = () => {
         const text = el('vp-np-country-text'), sel = el('vp-np-country');
+        const wrap = el('vp-np-country-wrap') || text;
         const list = periodCountries();
         if (list.length > 1) {
-            text.classList.add('d-none'); sel.classList.remove('d-none');
+            wrap.classList.add('d-none'); sel.classList.remove('d-none');
             sel.innerHTML = list.map(code => '<option value="' + esc(code) + '">' + esc(countryName(code)) + '</option>').join('');
             const def = defaultPeriod(openPeriods(periods, today()), today());
             if (def && def.scopeType === 'country' && list.indexOf(def.country) > -1) sel.value = def.country;
         } else {
-            sel.classList.add('d-none'); text.classList.remove('d-none');
+            sel.classList.add('d-none'); wrap.classList.remove('d-none');
             text.value = list.length === 1 ? countryName(list[0]) : '—';
         }
         el('vp-np-rep').value = me ? (me.displayName || me.resourceId || '—') : '—';

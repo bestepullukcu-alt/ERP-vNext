@@ -281,6 +281,11 @@
             el('vp-dp-sub').textContent = picker.doctors.map(x => x.name).filter(Boolean).slice(0, 3).join(', ') + (picker.doctors.length > 3 ? '…' : '');
         }
         el('vp-dp-search').value = '';
+        // WP-VP-4J (2) — the picker shares the doctor panel: single → its "Period view" draws the same doctor (or says why
+        // it is empty); bulk → the period tab is hidden (doctor-panel.js).
+        page.emit('picker:open', picker.mode === 'single'
+            ? { mode: 'single', contactId: picker.doctor.contactId, accountId: picker.doctor.accountId || null }
+            : { mode: 'bulk' });
         renderPicker();
         loadCapacity(page.state.session && page.state.session.cyclePeriodId).then(() => { if (picker) renderPicker(); });
         searchProducts('');

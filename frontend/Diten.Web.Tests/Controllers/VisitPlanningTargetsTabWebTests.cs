@@ -35,13 +35,14 @@ public sealed class VisitPlanningTargetsTabWebTests
 
         // the institution's doctors come from the 3D read, with the plan, the quick filter and a page of 200
         Assert.Contains("api('/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200')", js);
-        var config = Between(js, "const contactsConfig = list => ({", "\n    });");
-        // WP-VP-4H — eight columns: select · doctor · specialty · products · frequency · done / remaining · last visit · status
-        Assert.Contains("columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }]", config);
+        // WP-VP-4J — a PLAIN table row (no DataTable): select · doctor · specialty · products · frequency · done / remaining ·
+        // last visit · status — the 4C / 4H cells
+        var config = Between(js, "const doctorCheck = row =>", "const docMatches");
+        Assert.Contains("'<td class=\"cell-fit\">' + doctorCheck(row) + '</td>'", config);
         Assert.Contains("frequencyCell(row.status)", config);
         Assert.Contains("doneCell(row.status)", config);
         Assert.Contains("lastVisitCell(row.status)", config);
-        Assert.Contains("'<div class=\"vp-doc-picks\" data-cid=\"' + esc(row.contactId)", config);
+        Assert.Contains("<div class=\"vp-doc-picks\" data-cid=\"' + esc(row.contactId)", config);
         Assert.Contains("statusCell(row)", config); // 4H: the badges moved into the Status column
         Assert.Contains("+ doctorBadges(row);", Between(js, "const statusCell = row =>", "\n"));
         Assert.DoesNotContain("linkId' }", config);
@@ -60,7 +61,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         Assert.Contains("(canEditTargets() && !row.blocked ? '' : ' disabled')", config);
         Assert.Contains("if (!canEditTargets() || (c && c.blocked)) { cb.checked = false; return; }", js);
         var selectAll = Between(js, "const selectAllDoctors = () => {", "\n    };");
-        Assert.Contains("contactsDt.rows({ search: 'applied' })", selectAll); // "select all" follows the filters
+        Assert.Contains("visibleDoctors().forEach(row =>", selectAll); // "select all" follows the filters
         Assert.Contains("if (row.blocked) return;", selectAll);
 
         // the view's header has exactly the eight columns (4H: + Status), and no link column
@@ -100,7 +101,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         Assert.Contains("counts[c.specialty] = (counts[c.specialty] || 0) + 1", pills);
         Assert.Contains("esc(specLabel(sp)) + ' (' + counts[sp] + ')", pills);
         Assert.Contains("vp-spec-check", pills);
-        Assert.Contains("'^(' + activeSpecs.map(reEscape).join('|') + ')$'", js);
+        Assert.Contains("(!activeSpecs.length || activeSpecs.indexOf(row.specialty) > -1)", js); // WP-VP-4J: the plain table's filter
         Assert.Contains("querySelectorAll('.vp-spec-check:checked')", js);
         Assert.DoesNotContain("vp-spec-pill", js); // the single-choice pills are gone
     }

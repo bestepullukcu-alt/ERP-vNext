@@ -10,6 +10,11 @@
 
 <partial name="~/Views/CRM/VisitPlanning/_Form.cshtml" model="Model" />
 
+@section Styles {
+    @* WP-VP-4J — the Visit Planning page CSS (thin scrollbars), loaded on these pages only. *@
+    <link rel="stylesheet" href="~/assets/css/visit-planning.css" asp-append-version="true" />
+}
+
 @section Scripts {
     <partial name="~/Views/CRM/VisitPlanning/_IndexL10n.cshtml" />
     <script src="~/assets/js/CRM/VisitPlanning/index.l10n.js" asp-append-version="true"></script>

@@ -3,6 +3,8 @@
  *  - Entity = a planning session. Rows come from GET /CRM/VisitPlanning/api/sessions (client-side; few rows).
  * *  - Row actions: Route (POST /preview → Details), Details, Apply (CanApply). Create is its own page.
  *  - All traffic via the same-origin MVC proxy /CRM/VisitPlanning/api (never a Gateway URL / bearer token).
+ *  - WP-VP-4J — the status filter offers EVERY status (fixed); the rep filter is a read-all holder's only; "Action" =
+ *    archive the SELECTED empty drafts (a row box per empty draft, a confirm, the existing one-by-one archive update).
  */
 (function (window, document) {
     'use strict';
@@ -16,11 +18,13 @@
     let L = window.L10n || {};
     let canGenerate = false;
     let canApply = false;
+    let canReadAll = false;
     try {
         const flags = JSON.parse(document.getElementById('visitplanning-page-flags')?.textContent || '{}');
         canGenerate = !!flags.canGenerate;
         canApply = !!flags.canApply;
-    } catch (e) { canGenerate = false; canApply = false; }
+        canReadAll = !!flags.canReadAll;
+    } catch (e) { canGenerate = false; canApply = false; canReadAll = false; }
 
     let dt = null;
     let addNewBound = false;
@@ -68,7 +72,7 @@
     // WP-VP-4B — an empty draft has no target at all (3A isEmpty; the counts when the flag is absent). WP-VP-4D
     // (E4-4B-5) — a plan with an approved week is never one (the server refuses to archive it), so it neither counts in
     // the notice nor shows "Delete empty drafts".
-    const isEmptyDraft = s => sStatus(s) !== 'committed' && !(Number(s.approvedWeekCount) > 0) && (s.isEmpty === true
+    const isEmptyDraft = s => sStatus(s) !== 'committed' && sStatus(s) !== 'archived' && !(Number(s.approvedWeekCount) > 0) && (s.isEmpty === true
         || (s.isEmpty == null && !(Number(s.doctorCount ?? s.selectedContactCount) || 0) && !(Number(s.pharmacyCount ?? s.selectedPharmacyCount) || 0)));
     // A legacy plan was approved for the whole period at once (before the week model): read-only.
     const isLegacy = s => sStatus(s) === 'committed';
@@ -110,8 +114,12 @@
     };
 
     const distinct = key => Array.from(new Set(allRows.map(key).filter(Boolean)));
+    // WP-VP-4J (4) — the status options are FIXED: every status of a plan (the status vocabulary, local labels), never
+    // only those the loaded rows happen to carry. "committed" is the old whole-period approval (its row badge).
+    const STATUS_OPTIONS = ['draft', 'committed', 'archived'];
+    const statusOptionLabel = v => (v === 'committed' ? (L.LegacyPlanBadge || statusLabel(v)) : statusLabel(v));
     const loadFilterOptions = () => {
-        fillSelect('filterSessionStatus', distinct(sStatus).map(v => ({ value: v, text: statusLabel(v) })), false);
+        fillSelect('filterSessionStatus', STATUS_OPTIONS.map(v => ({ value: v, text: statusOptionLabel(v) })), false);
         fillSelect('filterCyclePeriod', distinct(sPeriodId).map(v => ({ value: v, text: periodMap[v] || v })), true);
         initSelect2();
     };
@@ -136,8 +144,10 @@
             if (settings.nTable !== tableEl) return true;
             const r = row || dt?.row(dataIndex)?.data?.();
             if (!r) return true;
-            const rep = norm(appliedFilters.rep);
+            const rep = canReadAll ? norm(appliedFilters.rep) : '';
             if (rep && norm(sRep(r)).toLowerCase().indexOf(rep.toLowerCase()) === -1) return false;
+            // An archived plan (e.g. a cleared-away empty draft) shows only when the status filter asks for it.
+            if (sStatus(r) === 'archived' && !normArr(appliedFilters.sessionStatus).includes('archived')) return false;
             return matchesMulti(appliedFilters.sessionStatus, sStatus(r))
                 && matchesSingle(appliedFilters.cyclePeriodId, sPeriodId(r));
         });
@@ -152,7 +162,7 @@
     const readControls = () => ({
         sessionStatus: window.jQuery('#filterSessionStatus').val() || [],
         cyclePeriodId: document.getElementById('filterCyclePeriod')?.value || '',
-        rep: document.getElementById('filterRep')?.value || ''
+        rep: canReadAll ? (document.getElementById('filterRep')?.value || '') : ''
     });
 
     // Row action menu: Route (preview → Details), Details, Apply (CanApply + draft).
@@ -180,30 +190,35 @@
 
     const buildConfig = () => ({
         data: allRows, stateSave: false, processing: true,
-        order: [[8, 'desc']],
+        order: [[9, 'desc']],
         columns: [
             { data: null, defaultContent: '' },
-            { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }
+            { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }
         ],
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
-            { targets: 1, render: (v, t, row) => t === 'display' ? `<span class="fw-medium text-heading">${bidi(sName(row))}</span>` : sName(row) },
-            { targets: 2, render: (v, t, row) => t === 'display' ? bidi(periodMap[sPeriodId(row)] || sPeriodId(row) || '—') : (periodMap[sPeriodId(row)] || '') },
-            { targets: 3, render: (v, t, row) => esc(sWeek(row)) },
-            { targets: 4, visible: viewMode !== 'mine', render: (v, t, row) => t === 'display' ? bidi(sRep(row) || '—') : (sRep(row) || '') },
-            { targets: 5, render: (v, t, row) => t === 'display' ? statusCell(row) : sStatus(row) },
-            { targets: 6, render: (v, t, row) => esc(sTargets(row)) },
-            { targets: 7, orderable: false, render: (v, t, row) => esc(sWeeks(row)) },
-            { targets: 8, render: (v, t, row) => t === 'display' ? date(sUpdated(row)) : (sUpdated(row) || '') },
-            { targets: 9, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
+            // WP-VP-4J (5) — the row box: an empty draft only (0 targets); any other row's box is disabled with the reason.
+            { targets: 1, visible: canGenerate, orderable: false, searchable: false, className: 'cell-fit', render: (v, t, row) => t === 'display' ? rowCheck(row) : '' },
+            { targets: 2, render: (v, t, row) => t === 'display' ? `<span class="fw-medium text-heading">${bidi(sName(row))}</span>` : sName(row) },
+            { targets: 3, render: (v, t, row) => t === 'display' ? bidi(periodMap[sPeriodId(row)] || sPeriodId(row) || '—') : (periodMap[sPeriodId(row)] || '') },
+            { targets: 4, render: (v, t, row) => esc(sWeek(row)) },
+            { targets: 5, visible: viewMode !== 'mine', render: (v, t, row) => t === 'display' ? bidi(sRep(row) || '—') : (sRep(row) || '') },
+            { targets: 6, render: (v, t, row) => t === 'display' ? statusCell(row) : sStatus(row) },
+            { targets: 7, render: (v, t, row) => esc(sTargets(row)) },
+            { targets: 8, orderable: false, render: (v, t, row) => esc(sWeeks(row)) },
+            { targets: 9, render: (v, t, row) => t === 'display' ? date(sUpdated(row)) : (sUpdated(row) || '') },
+            { targets: 10, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
         ],
         language: { emptyTable: emptyListHtml(), processing: L.Loading },
         buttons: window.DtDefaults.exportButtons(canGenerate ? (L.NewSession || '') : '', {}, {
-            filterBtn: { text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>', className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative', attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' }, action: () => toggleInlineFilter() }
-        }, { exportColumns: [1, 2, 3, 4, 5, 6, 7], colvisColumns: [1, 2, 3, 4, 5, 6, 7] }),
+            filterBtn: { text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>', className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative', attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' }, action: () => toggleInlineFilter() },
+            // WP-VP-4J (5) — "Action" → "Archive selected empty drafts (N)" (a writer's only; off without a selection).
+            collectionBtns: canGenerate ? [{ text: archiveSelectedLabel(), icon: 'bx-archive', className: 'js-vp-archive-selected', action: () => archiveSelected() }] : []
+        }, { exportColumns: [2, 3, 4, 5, 6, 7, 8], colvisColumns: [2, 3, 4, 5, 6, 7, 8] }),
         initComplete: function () {
             mountInlineFilter();
             void setupFilters(this.api());
+            paintArchiveAction();
             // WP-VP-4B (MK-1) — "New plan" opens the right-hand drawer (new-plan.js); the Create page stays as a fallback.
             // Without an active / future period it is switched off (the band says why).
             const addNew = document.querySelector('.add-new');
@@ -233,7 +248,7 @@
         document.getElementById('btnFilterReset')?.addEventListener('click', e => {
             e.preventDefault();
             appliedFilters = emptyFilters();
-            document.getElementById('filterRep').value = '';
+            const repInput = document.getElementById('filterRep'); if (repInput) repInput.value = '';
             window.jQuery('#filterSessionStatus').val(null).trigger('change');
             window.jQuery('#filterCyclePeriod').val('').trigger('change');
             api.draw();
@@ -272,36 +287,64 @@
         if (box) {
             box.classList.toggle('d-none', empty.length === 0);
             const t = document.getElementById('vp-empty-drafts-text');
-            if (t) t.textContent = (L.EmptyDraftsNotice || '{0}').replace('{0}', empty.length);
+            if (t) t.textContent = (L.EmptyDraftsBand || '{0}').replace('{0}', empty.length);
         }
     };
-    // "Delete empty drafts" = archive them (3A: only a plan without targets and without an approved week may be
-    // archived; CRM refuses anything else with 409 planning_session_not_empty). Confirmed first, then one update each.
-    const deleteEmptyDrafts = () => {
-        const empty = allRows.filter(isEmptyDraft);
-        if (!empty.length) return;
+    // ── WP-VP-4J (5) — archive empty drafts: the band ("Archive empty drafts" = all of them) and the Action menu ("Archive
+    // selected empty drafts (N)"). The existing one-by-one archive update (requestedStatus = archived) per draft — no new
+    // write endpoint; CRM refuses a plan that is not empty with 409 planning_session_not_empty, and the result says so.
+    const selectedIds = new Set();
+    const rowCheck = row => {
+        const id = sid(row);
+        const ok = canGenerate && isEmptyDraft(row);
+        return '<input type="checkbox" class="form-check-input js-vp-row-check" data-id="' + esc(id) + '" aria-label="' + esc(L.ColSelected || '') + '"'
+            + (ok ? (selectedIds.has(id) ? ' checked' : '') : ' disabled title="' + esc(L.OnlyEmptyDraftsArchivable || '') + '"') + '>';
+    };
+    const fmt = (tpl, ...args) => args.reduce((t, a, i) => t.split('{' + i + '}').join(String(a)), String(tpl || ''));
+    const archiveSelectedLabel = () => '<span class="d-flex align-items-center"><i class="icon-base bx bx-archive me-2"></i>' + esc(fmt(L.ArchiveSelectedDrafts || '{0}', selectedIds.size)) + '</span>';
+    const paintArchiveAction = () => {
+        if (!dt || !dt.button) return;
+        try {
+            const b = dt.button('.js-vp-archive-selected');
+            b.text(archiveSelectedLabel());
+            b.enable(selectedIds.size > 0);
+        } catch (e) { /* the Action menu is not drawn (no entry) */ }
+    };
+    const ARCHIVE_REFUSAL = { planning_session_not_empty: 'ArchiveRefusedNotEmpty' };
+    const archiveDrafts = rows => {
+        if (!rows.length) { window.showToast?.(L.OnlyEmptyDraftsArchivable || '', 'info'); return; }
         const go = async () => {
             let done = 0;
-            for (const row of empty) {
+            const failed = [];
+            for (const row of rows) {
                 const r = await fetch(`${endpoint}/sessions/${encodeURIComponent(sid(row))}`, {
                     method: 'PUT', credentials: 'same-origin', headers: getAuthHeaders(),
                     body: JSON.stringify({ requestedStatus: 'archived', expectedVersion: row.version })
                 }).catch(() => null);
-                if (r && r.ok) done++;
+                if (r && r.ok) { done++; continue; }
+                const body = r ? await r.json().catch(() => ({})) : {};
+                const code = ((body && body.errors) || [])[0] || (r ? 'HTTP ' + r.status : '');
+                failed.push(sName(row) + ' (' + (L[ARCHIVE_REFUSAL[code]] || code || L.ErrorOccurred || '') + ')');
             }
-            window.showToast?.((L.EmptyDraftsDeleted || '{0}').replace('{0}', done), done === empty.length ? 'success' : 'warning');
+            const text = fmt(L.DraftsArchived || '{0}', done) + (failed.length ? ' ' + fmt(L.DraftsNotArchived || '{0} {1}', failed.length, failed.join(', ')) : '');
+            window.showToast?.(text, failed.length ? 'warning' : 'success');
+            selectedIds.clear();
             await reload();
             renderBands(false);
+            paintArchiveAction();
         };
-        const text = (L.DeleteEmptyDraftsConfirm || '{0}').replace('{0}', empty.length);
-        if (window.showConfirm) window.showConfirm(text, () => { void go(); }, { type: 'danger', confirmButtonText: L.DeleteEmptyDrafts, subtext: '' });
+        const text = fmt(L.ArchiveDraftsConfirm || '{0}', rows.length);
+        if (window.showConfirm) window.showConfirm(text, () => { void go(); }, { type: 'warning', confirmButtonText: L.ArchiveEmptyDrafts, subtext: '' });
         else if (window.confirm(text)) void go();
     };
+    const archiveEmptyDrafts = () => archiveDrafts(allRows.filter(isEmptyDraft));
+    const archiveSelected = () => archiveDrafts(allRows.filter(r => selectedIds.has(sid(r)) && isEmptyDraft(r)));
 
     const fetchRows = async () => {
         const data = await envelope(await fetch(`${endpoint}/sessions`, { credentials: 'same-origin', headers: getAuthHeaders() }));
-        // WP-VP-3A — an archived plan (e.g. an empty draft that was cleared away) leaves the list.
-        return (data?.items || (Array.isArray(data) ? data : [])).filter(r => sStatus(r) !== 'archived');
+        // WP-VP-3A — an archived plan (e.g. an empty draft that was cleared away) is out of the list by default; WP-VP-4J —
+        // the status filter's "Archived" shows it (the table filter above).
+        return data?.items || (Array.isArray(data) ? data : []);
     };
 
     const reload = async () => { allRows = await fetchRows(); if (dt) { dt.clear(); dt.rows.add(allRows).draw(false); } };
@@ -323,7 +366,14 @@
             renderBands(loadError);
         }
     };
-    document.getElementById('vp-delete-empty-drafts')?.addEventListener('click', deleteEmptyDrafts);
+    document.getElementById('vp-archive-empty-drafts')?.addEventListener('click', archiveEmptyDrafts);
+    tableEl.addEventListener('change', e => {
+        const cb = e.target.closest('.js-vp-row-check'); if (!cb) return;
+        const row = allRows.find(r => sid(r) === cb.dataset.id);
+        if (cb.checked && row && isEmptyDraft(row)) selectedIds.add(cb.dataset.id);
+        else { selectedIds.delete(cb.dataset.id); cb.checked = false; }
+        paintArchiveAction();
+    });
 
     document.addEventListener('click', event => {
         const quickView = event.target.closest('.js-quick-view');

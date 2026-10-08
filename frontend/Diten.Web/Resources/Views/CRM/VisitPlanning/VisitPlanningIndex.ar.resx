@@ -683,7 +683,7 @@
     <value>تعديل أهداف هذا الأسبوع</value>
   </data>
   <data name="EmptyWeekHint" xml:space="preserve">
-    <value>يُنشأ تلقائيًا عند اعتماد الأسبوع السابق. يمكنك إنشاؤه الآن وفق قواعد التكرار.</value>
+    <value>لم تُوضع أي زيارة في هذا الأسبوع بعد. يمكنك إنشاؤه الآن وفق قواعد تكرار الأهداف المحددة.</value>
   </data>
   <data name="FrequencyDefaultOne" xml:space="preserve">
     <value>1 في الفترة (افتراضي)</value>
@@ -726,5 +726,83 @@
   </data>
   <data name="WeekSubEmpty" xml:space="preserve">
     <value>لم يُنشأ بعد</value>
+  </data>
+  <data name="ReadOnlyBadge" xml:space="preserve">
+    <value>للقراءة فقط</value>
+  </data>
+  <data name="TargetsReadOnlyApproved" xml:space="preserve">
+    <value>{0} معتمد: الأهداف للقراءة فقط. لتغييرها استخدم "إعادة فتح الأسبوع".</value>
+  </data>
+  <data name="TargetsReadOnlyPast" xml:space="preserve">
+    <value>{0} انتهى: الأهداف للقراءة فقط.</value>
+  </data>
+  <data name="TargetsSubtitle" xml:space="preserve">
+    <value>{0} · {1} أطباء، {2} صيدليات محددة</value>
+  </data>
+  <data name="DoctorCountPill" xml:space="preserve">
+    <value>{0} أطباء</value>
+  </data>
+  <data name="LinkedPharmacyCountPill" xml:space="preserve">
+    <value>{0} صيدليات مرتبطة</value>
+  </data>
+  <data name="SpecialtyFilterAll" xml:space="preserve">
+    <value>التخصص: الكل</value>
+  </data>
+  <data name="SpecialtyFilterSelected" xml:space="preserve">
+    <value>التخصص: {0} محدد</value>
+  </data>
+  <data name="SpecialtyClear" xml:space="preserve">
+    <value>مسح التحديد</value>
+  </data>
+  <data name="ColRelation" xml:space="preserve">
+    <value>العلاقة</value>
+  </data>
+  <data name="ColAddress" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="PeriodViewNotInPlan" xml:space="preserve">
+    <value>لم يُحفظ هذا الطبيب في الخطة بعد. تمتلئ عرض الفترة بعد حفظ الأهداف.</value>
+  </data>
+  <data name="GeneratingWeek" xml:space="preserve">
+    <value>جارٍ الإنشاء…</value>
+  </data>
+  <data name="GenerateWeekStillEmpty" xml:space="preserve">
+    <value>هذا الأسبوع لا يزال فارغًا: قواعد التكرار لا تضع فيه أي زيارة.</value>
+  </data>
+  <data name="EmptyWeekNoFrequencyVisits" xml:space="preserve">
+    <value>وفق قواعد التكرار لا تقع أي زيارة في هذا الأسبوع: وُضعت زيارات الفترة للأهداف المحددة في أسابيع سابقة. يمكنك إضافة أهداف أو تحديد تكرار زيارة للأطباء.</value>
+  </data>
+  <data name="EditTargetsLink" xml:space="preserve">
+    <value>تعديل الأهداف</value>
+  </data>
+  <data name="EmptyDraftsBand" xml:space="preserve">
+    <value>{0} مسودات فارغة (0 أهداف). تُحفظ مسودة واحدة لكل فترة وأسبوع.</value>
+  </data>
+  <data name="ArchiveEmptyDrafts" xml:space="preserve">
+    <value>أرشفة المسودات الفارغة</value>
+  </data>
+  <data name="ArchiveSelectedDrafts" xml:space="preserve">
+    <value>أرشفة المسودات الفارغة المحددة ({0})</value>
+  </data>
+  <data name="ArchiveDraftsConfirm" xml:space="preserve">
+    <value>ستتم أرشفة {0} مسودات فارغة. هل تريد المتابعة؟</value>
+  </data>
+  <data name="DraftsArchived" xml:space="preserve">
+    <value>تمت أرشفة {0}.</value>
+  </data>
+  <data name="DraftsNotArchived" xml:space="preserve">
+    <value>تعذرت أرشفة {0}: {1}</value>
+  </data>
+  <data name="ArchiveRefusedNotEmpty" xml:space="preserve">
+    <value>المسودة ليست فارغة</value>
+  </data>
+  <data name="OnlyEmptyDraftsArchivable" xml:space="preserve">
+    <value>يمكن أرشفة المسودات التي لا أهداف لها فقط.</value>
+  </data>
+  <data name="CountrySelfHint" xml:space="preserve">
+    <value>البلد المعيّن لك.</value>
+  </data>
+  <data name="NewPlanAfterSaveHint" xml:space="preserve">
+    <value>بعد الحفظ، يقترح تبويب الأهداف الأطباء الواجب زيارتهم هذا الأسبوع.</value>
   </data>
 </root>

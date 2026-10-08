@@ -222,7 +222,7 @@ public sealed class VisitPlanningWeeksTabWebTests
         Assert.DoesNotContain("vp-hdr-week", header);
         Assert.Contains("const STATUS_TEXT = { draft: 'StatusTextDraft', approved: 'StatusTextApproved', past: 'StatusTextPast', empty: 'StatusTextEmpty' };", header);
         Assert.Contains("setText('vp-hdr-status-text'", header);
-        Assert.Contains("else if (key === 'generateWeek') page.request('reload-plan');", header);
+        Assert.Contains("else if (key === 'generateWeek') page.request('generate-week');", header); // 4J: weeks.js builds it with feedback
     }
 
     [Fact]

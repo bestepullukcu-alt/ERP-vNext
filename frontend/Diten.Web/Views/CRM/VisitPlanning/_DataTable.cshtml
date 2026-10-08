@@ -3,8 +3,8 @@
 @inject IHtmlLocalizer<VisitPlanningIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-@* No select-all checkbox and no bulk action bar: a draft plan is deleted one at a time from its row menu; there is no
-   bulk-delete surface for planning sessions. *@
+@* WP-VP-4J (5) — a row check box selects an EMPTY draft (0 targets) for the Action menu's "Archive selected empty drafts";
+   every other row's box is disabled with the reason. No select-all. *@
 <div class="card">
     <div id="skeleton-loader" class="backbone-skeleton p-4">
         <div class="shimmer skeleton-row skeleton-row-lg"></div>
@@ -19,6 +19,7 @@
             <thead>
                 <tr>
                     <th></th>
+                    <th class="cell-fit"><span class="visually-hidden">@Localizer["ColSelected"]</span></th>
                     <th class="all">@Localizer["Plan"]</th>
                     <th>@Localizer["CyclePeriod"]</th>
                     <th>@Localizer["WeekLabel"]</th>

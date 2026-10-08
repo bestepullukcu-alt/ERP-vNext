@@ -22,10 +22,16 @@
             </div>
         </div>
 
+        @* WP-VP-4J (6) — the country in the UI language ("Türkiye", not "Turkey"); one country = locked (grey + lock), several
+           open countries = a choice (new-plan.js). *@
         <div>
-            <label class="form-label fw-medium" for="vp-np-country">@Localizer["Country"]</label>
-            <input type="text" id="vp-np-country-text" class="form-control" readonly value="—" />
+            <label class="form-label fw-medium" for="vp-np-country-text">@Localizer["Country"]</label>
+            <div class="input-group vp-locked-field" id="vp-np-country-wrap">
+                <input type="text" id="vp-np-country-text" class="form-control" disabled aria-readonly="true" value="—" />
+                <span class="input-group-text" aria-hidden="true"><i class="bx bx-lock-alt text-muted"></i></span>
+            </div>
             <select id="vp-np-country" class="form-select d-none" aria-label="@Localizer["Country"]"></select>
+            <div class="form-text">@Localizer["CountrySelfHint"]</div>
         </div>
 
         <div>
@@ -41,11 +47,18 @@
             <div class="form-text">@Localizer["NewPlanWeekHint"]</div>
         </div>
 
+        @* WP-VP-4J (6) — the rep is the signed-in user: read-only AND looks it (grey, lock, never focused). *@
         <div>
             <label class="form-label fw-medium" for="vp-np-rep">@Localizer["Rep"]</label>
-            <input type="text" id="vp-np-rep" class="form-control" readonly value="—" />
+            <div class="input-group vp-locked-field">
+                <input type="text" id="vp-np-rep" class="form-control" disabled aria-readonly="true" tabindex="-1" value="—" />
+                <span class="input-group-text" aria-hidden="true"><i class="bx bx-lock-alt text-muted"></i></span>
+            </div>
             <div class="form-text">@Localizer["RepSelfHint"]</div>
         </div>
+
+        @* The mockup's closing hint line. *@
+        <div class="border-top pt-3 small d-flex gap-2 align-items-start" id="vp-np-hint"><i class="bx bx-bulb text-primary fs-5" aria-hidden="true"></i><span>@Localizer["NewPlanAfterSaveHint"]</span></div>
     </div>
     <div class="offcanvas-footer border-top p-3 d-flex justify-content-end gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>

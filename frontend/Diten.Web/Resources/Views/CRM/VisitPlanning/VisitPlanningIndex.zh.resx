@@ -683,7 +683,7 @@
     <value>编辑本周目标</value>
   </data>
   <data name="EmptyWeekHint" xml:space="preserve">
-    <value>上一周批准后会自动生成。现在可以按频率规则生成。</value>
+    <value>本周尚未安排拜访。您可以现在按所选目标的频率规则生成。</value>
   </data>
   <data name="FrequencyDefaultOne" xml:space="preserve">
     <value>本期 1 次（默认）</value>
@@ -726,5 +726,83 @@
   </data>
   <data name="WeekSubEmpty" xml:space="preserve">
     <value>尚未生成</value>
+  </data>
+  <data name="ReadOnlyBadge" xml:space="preserve">
+    <value>只读</value>
+  </data>
+  <data name="TargetsReadOnlyApproved" xml:space="preserve">
+    <value>{0} 已批准：目标为只读。如需修改，请使用“重新打开周”。</value>
+  </data>
+  <data name="TargetsReadOnlyPast" xml:space="preserve">
+    <value>{0} 已过去：目标为只读。</value>
+  </data>
+  <data name="TargetsSubtitle" xml:space="preserve">
+    <value>{0} · 已选 {1} 名医生、{2} 家药房</value>
+  </data>
+  <data name="DoctorCountPill" xml:space="preserve">
+    <value>{0} 名医生</value>
+  </data>
+  <data name="LinkedPharmacyCountPill" xml:space="preserve">
+    <value>{0} 家关联药房</value>
+  </data>
+  <data name="SpecialtyFilterAll" xml:space="preserve">
+    <value>专科：全部</value>
+  </data>
+  <data name="SpecialtyFilterSelected" xml:space="preserve">
+    <value>专科：已选 {0} 个</value>
+  </data>
+  <data name="SpecialtyClear" xml:space="preserve">
+    <value>清除选择</value>
+  </data>
+  <data name="ColRelation" xml:space="preserve">
+    <value>关系</value>
+  </data>
+  <data name="ColAddress" xml:space="preserve">
+    <value>地址</value>
+  </data>
+  <data name="PeriodViewNotInPlan" xml:space="preserve">
+    <value>该医生尚未保存到计划中。保存目标后，周期视图将显示内容。</value>
+  </data>
+  <data name="GeneratingWeek" xml:space="preserve">
+    <value>正在生成…</value>
+  </data>
+  <data name="GenerateWeekStillEmpty" xml:space="preserve">
+    <value>本周仍为空：按频率规则本周没有拜访。</value>
+  </data>
+  <data name="EmptyWeekNoFrequencyVisits" xml:space="preserve">
+    <value>按频率规则，本周没有拜访：所选目标的周期拜访已安排在之前的周。您可以添加目标，或为医生设置拜访频率。</value>
+  </data>
+  <data name="EditTargetsLink" xml:space="preserve">
+    <value>编辑目标</value>
+  </data>
+  <data name="EmptyDraftsBand" xml:space="preserve">
+    <value>有 {0} 个空草稿（0 个目标）。每个周期和周只保留一个草稿。</value>
+  </data>
+  <data name="ArchiveEmptyDrafts" xml:space="preserve">
+    <value>归档空草稿</value>
+  </data>
+  <data name="ArchiveSelectedDrafts" xml:space="preserve">
+    <value>归档所选空草稿（{0}）</value>
+  </data>
+  <data name="ArchiveDraftsConfirm" xml:space="preserve">
+    <value>将归档 {0} 个空草稿。是否继续？</value>
+  </data>
+  <data name="DraftsArchived" xml:space="preserve">
+    <value>已归档 {0} 个。</value>
+  </data>
+  <data name="DraftsNotArchived" xml:space="preserve">
+    <value>{0} 个无法归档：{1}</value>
+  </data>
+  <data name="ArchiveRefusedNotEmpty" xml:space="preserve">
+    <value>草稿不为空</value>
+  </data>
+  <data name="OnlyEmptyDraftsArchivable" xml:space="preserve">
+    <value>只有没有目标的草稿才能归档。</value>
+  </data>
+  <data name="CountrySelfHint" xml:space="preserve">
+    <value>您被分配的国家。</value>
+  </data>
+  <data name="NewPlanAfterSaveHint" xml:space="preserve">
+    <value>保存后，“目标”选项卡会推荐本周需拜访的医生。</value>
   </data>
 </root>

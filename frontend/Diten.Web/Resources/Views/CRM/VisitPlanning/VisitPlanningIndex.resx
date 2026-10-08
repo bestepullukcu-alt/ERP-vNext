@@ -683,7 +683,7 @@
     <value>Edit this week's targets</value>
   </data>
   <data name="EmptyWeekHint" xml:space="preserve">
-    <value>It is created automatically when the previous week is approved. You can build it now by the frequency rules.</value>
+    <value>No visit is placed in this week yet. You can build it now by the frequency rules of the selected targets.</value>
   </data>
   <data name="FrequencyDefaultOne" xml:space="preserve">
     <value>1 in the period (default)</value>
@@ -726,5 +726,83 @@
   </data>
   <data name="WeekSubEmpty" xml:space="preserve">
     <value>Not built yet</value>
+  </data>
+  <data name="ReadOnlyBadge" xml:space="preserve">
+    <value>Read-only</value>
+  </data>
+  <data name="TargetsReadOnlyApproved" xml:space="preserve">
+    <value>{0} is approved: the targets are read-only. To change them, use "Reopen week".</value>
+  </data>
+  <data name="TargetsReadOnlyPast" xml:space="preserve">
+    <value>{0} is over: the targets are read-only.</value>
+  </data>
+  <data name="TargetsSubtitle" xml:space="preserve">
+    <value>{0} · {1} doctors, {2} pharmacies selected</value>
+  </data>
+  <data name="DoctorCountPill" xml:space="preserve">
+    <value>{0} doctors</value>
+  </data>
+  <data name="LinkedPharmacyCountPill" xml:space="preserve">
+    <value>{0} linked pharmacies</value>
+  </data>
+  <data name="SpecialtyFilterAll" xml:space="preserve">
+    <value>Specialty: All</value>
+  </data>
+  <data name="SpecialtyFilterSelected" xml:space="preserve">
+    <value>Specialty: {0} selected</value>
+  </data>
+  <data name="SpecialtyClear" xml:space="preserve">
+    <value>Clear selection</value>
+  </data>
+  <data name="ColRelation" xml:space="preserve">
+    <value>Relation</value>
+  </data>
+  <data name="ColAddress" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="PeriodViewNotInPlan" xml:space="preserve">
+    <value>This doctor is not saved in the plan yet. The period view fills once the targets are saved.</value>
+  </data>
+  <data name="GeneratingWeek" xml:space="preserve">
+    <value>Generating…</value>
+  </data>
+  <data name="GenerateWeekStillEmpty" xml:space="preserve">
+    <value>This week is still empty: the frequency rules put no visit into it.</value>
+  </data>
+  <data name="EmptyWeekNoFrequencyVisits" xml:space="preserve">
+    <value>By the frequency rules no visit falls into this week: the period visits of the selected targets went into earlier weeks. You can add targets or define a visit frequency for the doctors.</value>
+  </data>
+  <data name="EditTargetsLink" xml:space="preserve">
+    <value>Edit targets</value>
+  </data>
+  <data name="EmptyDraftsBand" xml:space="preserve">
+    <value>{0} empty drafts (0 targets). One draft is kept per period and week.</value>
+  </data>
+  <data name="ArchiveEmptyDrafts" xml:space="preserve">
+    <value>Archive empty drafts</value>
+  </data>
+  <data name="ArchiveSelectedDrafts" xml:space="preserve">
+    <value>Archive selected empty drafts ({0})</value>
+  </data>
+  <data name="ArchiveDraftsConfirm" xml:space="preserve">
+    <value>{0} empty drafts will be archived. Continue?</value>
+  </data>
+  <data name="DraftsArchived" xml:space="preserve">
+    <value>{0} archived.</value>
+  </data>
+  <data name="DraftsNotArchived" xml:space="preserve">
+    <value>{0} could not be archived: {1}</value>
+  </data>
+  <data name="ArchiveRefusedNotEmpty" xml:space="preserve">
+    <value>the draft is not empty</value>
+  </data>
+  <data name="OnlyEmptyDraftsArchivable" xml:space="preserve">
+    <value>Only drafts without targets can be archived.</value>
+  </data>
+  <data name="CountrySelfHint" xml:space="preserve">
+    <value>Your assigned country.</value>
+  </data>
+  <data name="NewPlanAfterSaveHint" xml:space="preserve">
+    <value>After saving, the Targets tab suggests the doctors to see this week.</value>
   </data>
 </root>

@@ -683,7 +683,7 @@
     <value>Bu haftanın hedeflerini düzenle</value>
   </data>
   <data name="EmptyWeekHint" xml:space="preserve">
-    <value>Önceki hafta onaylandığında otomatik oluşur. Şimdi sıklık kurallarıyla üretebilirsiniz.</value>
+    <value>Bu haftaya henüz ziyaret yerleşmedi. Seçili hedeflerin sıklık kurallarına göre şimdi üretebilirsiniz.</value>
   </data>
   <data name="FrequencyDefaultOne" xml:space="preserve">
     <value>dönemde 1 (varsayılan)</value>
@@ -726,5 +726,83 @@
   </data>
   <data name="WeekSubEmpty" xml:space="preserve">
     <value>Henüz üretilmedi</value>
+  </data>
+  <data name="ReadOnlyBadge" xml:space="preserve">
+    <value>Salt okunur</value>
+  </data>
+  <data name="TargetsReadOnlyApproved" xml:space="preserve">
+    <value>{0} onaylı: hedefler salt okunur. Değiştirmek için "Haftayı yeniden aç".</value>
+  </data>
+  <data name="TargetsReadOnlyPast" xml:space="preserve">
+    <value>{0} geçmişte kaldı: hedefler salt okunur.</value>
+  </data>
+  <data name="TargetsSubtitle" xml:space="preserve">
+    <value>{0} · {1} doktor, {2} eczane seçili</value>
+  </data>
+  <data name="DoctorCountPill" xml:space="preserve">
+    <value>{0} doktor</value>
+  </data>
+  <data name="LinkedPharmacyCountPill" xml:space="preserve">
+    <value>{0} bağlı eczane</value>
+  </data>
+  <data name="SpecialtyFilterAll" xml:space="preserve">
+    <value>Uzmanlık: Tümü</value>
+  </data>
+  <data name="SpecialtyFilterSelected" xml:space="preserve">
+    <value>Uzmanlık: {0} seçili</value>
+  </data>
+  <data name="SpecialtyClear" xml:space="preserve">
+    <value>Seçimi temizle</value>
+  </data>
+  <data name="ColRelation" xml:space="preserve">
+    <value>İlişki</value>
+  </data>
+  <data name="ColAddress" xml:space="preserve">
+    <value>Adres</value>
+  </data>
+  <data name="PeriodViewNotInPlan" xml:space="preserve">
+    <value>Bu doktor henüz plana kaydedilmedi. Hedefleri kaydedince dönem görünümü dolar.</value>
+  </data>
+  <data name="GeneratingWeek" xml:space="preserve">
+    <value>Üretiliyor…</value>
+  </data>
+  <data name="GenerateWeekStillEmpty" xml:space="preserve">
+    <value>Bu hafta hâlâ boş: sıklık kurallarına göre bu haftaya ziyaret düşmüyor.</value>
+  </data>
+  <data name="EmptyWeekNoFrequencyVisits" xml:space="preserve">
+    <value>Bu haftaya sıklık kurallarına göre ziyaret düşmüyor: seçili hedeflerin dönem ziyaretleri önceki haftalara yerleşti. Hedef ekleyebilir ya da doktorlara ziyaret sıklığı tanımlayabilirsiniz.</value>
+  </data>
+  <data name="EditTargetsLink" xml:space="preserve">
+    <value>Hedefleri düzenle</value>
+  </data>
+  <data name="EmptyDraftsBand" xml:space="preserve">
+    <value>{0} boş taslak (0 hedef) var. Aynı dönem ve hafta için tek taslak tutulur.</value>
+  </data>
+  <data name="ArchiveEmptyDrafts" xml:space="preserve">
+    <value>Boş taslakları arşivle</value>
+  </data>
+  <data name="ArchiveSelectedDrafts" xml:space="preserve">
+    <value>Seçili boş taslakları arşivle ({0})</value>
+  </data>
+  <data name="ArchiveDraftsConfirm" xml:space="preserve">
+    <value>{0} boş taslak arşivlenecek. Devam edilsin mi?</value>
+  </data>
+  <data name="DraftsArchived" xml:space="preserve">
+    <value>{0} arşivlendi.</value>
+  </data>
+  <data name="DraftsNotArchived" xml:space="preserve">
+    <value>{0} arşivlenemedi: {1}</value>
+  </data>
+  <data name="ArchiveRefusedNotEmpty" xml:space="preserve">
+    <value>taslak boş değil</value>
+  </data>
+  <data name="OnlyEmptyDraftsArchivable" xml:space="preserve">
+    <value>Yalnız hedefi olmayan taslaklar arşivlenebilir.</value>
+  </data>
+  <data name="CountrySelfHint" xml:space="preserve">
+    <value>Size atanmış ülke.</value>
+  </data>
+  <data name="NewPlanAfterSaveHint" xml:space="preserve">
+    <value>Kaydettikten sonra Hedefler sekmesinde bu hafta görülmesi gereken doktorlar önerilir.</value>
   </data>
 </root>

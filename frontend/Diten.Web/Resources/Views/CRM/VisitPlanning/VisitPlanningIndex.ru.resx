@@ -683,7 +683,7 @@
     <value>Изменить цели недели</value>
   </data>
   <data name="EmptyWeekHint" xml:space="preserve">
-    <value>Создаётся автоматически после утверждения предыдущей недели. Можно сформировать сейчас по правилам частоты.</value>
+    <value>На эту неделю ещё не размещено ни одного визита. Можно сформировать её сейчас по правилам частоты выбранных целей.</value>
   </data>
   <data name="FrequencyDefaultOne" xml:space="preserve">
     <value>1 за период (по умолчанию)</value>
@@ -726,5 +726,83 @@
   </data>
   <data name="WeekSubEmpty" xml:space="preserve">
     <value>Ещё не сформирована</value>
+  </data>
+  <data name="ReadOnlyBadge" xml:space="preserve">
+    <value>Только чтение</value>
+  </data>
+  <data name="TargetsReadOnlyApproved" xml:space="preserve">
+    <value>{0} утверждена: цели только для чтения. Чтобы изменить их, используйте «Открыть неделю заново».</value>
+  </data>
+  <data name="TargetsReadOnlyPast" xml:space="preserve">
+    <value>{0} прошла: цели только для чтения.</value>
+  </data>
+  <data name="TargetsSubtitle" xml:space="preserve">
+    <value>{0} · выбрано: {1} врачей, {2} аптек</value>
+  </data>
+  <data name="DoctorCountPill" xml:space="preserve">
+    <value>{0} врачей</value>
+  </data>
+  <data name="LinkedPharmacyCountPill" xml:space="preserve">
+    <value>{0} связанных аптек</value>
+  </data>
+  <data name="SpecialtyFilterAll" xml:space="preserve">
+    <value>Специальность: все</value>
+  </data>
+  <data name="SpecialtyFilterSelected" xml:space="preserve">
+    <value>Специальность: выбрано {0}</value>
+  </data>
+  <data name="SpecialtyClear" xml:space="preserve">
+    <value>Сбросить выбор</value>
+  </data>
+  <data name="ColRelation" xml:space="preserve">
+    <value>Связь</value>
+  </data>
+  <data name="ColAddress" xml:space="preserve">
+    <value>Адрес</value>
+  </data>
+  <data name="PeriodViewNotInPlan" xml:space="preserve">
+    <value>Этот врач ещё не сохранён в плане. Обзор периода заполнится после сохранения целей.</value>
+  </data>
+  <data name="GeneratingWeek" xml:space="preserve">
+    <value>Формирование…</value>
+  </data>
+  <data name="GenerateWeekStillEmpty" xml:space="preserve">
+    <value>Неделя всё ещё пуста: по правилам частоты визиты на неё не приходятся.</value>
+  </data>
+  <data name="EmptyWeekNoFrequencyVisits" xml:space="preserve">
+    <value>По правилам частоты на эту неделю не приходится ни одного визита: визиты периода по выбранным целям размещены в предыдущих неделях. Можно добавить цели или задать врачам частоту визитов.</value>
+  </data>
+  <data name="EditTargetsLink" xml:space="preserve">
+    <value>Изменить цели</value>
+  </data>
+  <data name="EmptyDraftsBand" xml:space="preserve">
+    <value>Пустых черновиков: {0} (0 целей). На период и неделю хранится один черновик.</value>
+  </data>
+  <data name="ArchiveEmptyDrafts" xml:space="preserve">
+    <value>Архивировать пустые черновики</value>
+  </data>
+  <data name="ArchiveSelectedDrafts" xml:space="preserve">
+    <value>Архивировать выбранные пустые черновики ({0})</value>
+  </data>
+  <data name="ArchiveDraftsConfirm" xml:space="preserve">
+    <value>Будет архивировано пустых черновиков: {0}. Продолжить?</value>
+  </data>
+  <data name="DraftsArchived" xml:space="preserve">
+    <value>Архивировано: {0}.</value>
+  </data>
+  <data name="DraftsNotArchived" xml:space="preserve">
+    <value>Не удалось архивировать {0}: {1}</value>
+  </data>
+  <data name="ArchiveRefusedNotEmpty" xml:space="preserve">
+    <value>черновик не пуст</value>
+  </data>
+  <data name="OnlyEmptyDraftsArchivable" xml:space="preserve">
+    <value>Архивировать можно только черновики без целей.</value>
+  </data>
+  <data name="CountrySelfHint" xml:space="preserve">
+    <value>Назначенная вам страна.</value>
+  </data>
+  <data name="NewPlanAfterSaveHint" xml:space="preserve">
+    <value>После сохранения на вкладке «Цели» будут предложены врачи, которых нужно посетить на этой неделе.</value>
   </data>
 </root>

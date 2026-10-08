@@ -683,7 +683,7 @@
     <value>Editar los objetivos de esta semana</value>
   </data>
   <data name="EmptyWeekHint" xml:space="preserve">
-    <value>Se crea automáticamente al aprobar la semana anterior. Puede generarla ahora con las reglas de frecuencia.</value>
+    <value>Aún no hay visitas en esta semana. Puede generarla ahora según las reglas de frecuencia de los objetivos seleccionados.</value>
   </data>
   <data name="FrequencyDefaultOne" xml:space="preserve">
     <value>1 en el período (predeterminado)</value>
@@ -726,5 +726,83 @@
   </data>
   <data name="WeekSubEmpty" xml:space="preserve">
     <value>Aún no generada</value>
+  </data>
+  <data name="ReadOnlyBadge" xml:space="preserve">
+    <value>Solo lectura</value>
+  </data>
+  <data name="TargetsReadOnlyApproved" xml:space="preserve">
+    <value>{0} está aprobada: los objetivos son de solo lectura. Para cambiarlos, use «Reabrir semana».</value>
+  </data>
+  <data name="TargetsReadOnlyPast" xml:space="preserve">
+    <value>{0} ya pasó: los objetivos son de solo lectura.</value>
+  </data>
+  <data name="TargetsSubtitle" xml:space="preserve">
+    <value>{0} · {1} médicos, {2} farmacias seleccionados</value>
+  </data>
+  <data name="DoctorCountPill" xml:space="preserve">
+    <value>{0} médicos</value>
+  </data>
+  <data name="LinkedPharmacyCountPill" xml:space="preserve">
+    <value>{0} farmacias vinculadas</value>
+  </data>
+  <data name="SpecialtyFilterAll" xml:space="preserve">
+    <value>Especialidad: todas</value>
+  </data>
+  <data name="SpecialtyFilterSelected" xml:space="preserve">
+    <value>Especialidad: {0} seleccionadas</value>
+  </data>
+  <data name="SpecialtyClear" xml:space="preserve">
+    <value>Borrar selección</value>
+  </data>
+  <data name="ColRelation" xml:space="preserve">
+    <value>Relación</value>
+  </data>
+  <data name="ColAddress" xml:space="preserve">
+    <value>Dirección</value>
+  </data>
+  <data name="PeriodViewNotInPlan" xml:space="preserve">
+    <value>Este médico aún no está guardado en el plan. La vista del período se completa al guardar los objetivos.</value>
+  </data>
+  <data name="GeneratingWeek" xml:space="preserve">
+    <value>Generando…</value>
+  </data>
+  <data name="GenerateWeekStillEmpty" xml:space="preserve">
+    <value>Esta semana sigue vacía: las reglas de frecuencia no le asignan ninguna visita.</value>
+  </data>
+  <data name="EmptyWeekNoFrequencyVisits" xml:space="preserve">
+    <value>Según las reglas de frecuencia no cae ninguna visita en esta semana: las visitas del período de los objetivos seleccionados se colocaron en semanas anteriores. Puede añadir objetivos o definir una frecuencia de visita para los médicos.</value>
+  </data>
+  <data name="EditTargetsLink" xml:space="preserve">
+    <value>Editar objetivos</value>
+  </data>
+  <data name="EmptyDraftsBand" xml:space="preserve">
+    <value>{0} borradores vacíos (0 objetivos). Se mantiene un borrador por período y semana.</value>
+  </data>
+  <data name="ArchiveEmptyDrafts" xml:space="preserve">
+    <value>Archivar borradores vacíos</value>
+  </data>
+  <data name="ArchiveSelectedDrafts" xml:space="preserve">
+    <value>Archivar los borradores vacíos seleccionados ({0})</value>
+  </data>
+  <data name="ArchiveDraftsConfirm" xml:space="preserve">
+    <value>Se archivarán {0} borradores vacíos. ¿Continuar?</value>
+  </data>
+  <data name="DraftsArchived" xml:space="preserve">
+    <value>{0} archivados.</value>
+  </data>
+  <data name="DraftsNotArchived" xml:space="preserve">
+    <value>{0} no se pudieron archivar: {1}</value>
+  </data>
+  <data name="ArchiveRefusedNotEmpty" xml:space="preserve">
+    <value>el borrador no está vacío</value>
+  </data>
+  <data name="OnlyEmptyDraftsArchivable" xml:space="preserve">
+    <value>Solo se pueden archivar los borradores sin objetivos.</value>
+  </data>
+  <data name="CountrySelfHint" xml:space="preserve">
+    <value>Su país asignado.</value>
+  </data>
+  <data name="NewPlanAfterSaveHint" xml:space="preserve">
+    <value>Tras guardar, la pestaña Objetivos sugiere los médicos a visitar esta semana.</value>
   </data>
 </root>

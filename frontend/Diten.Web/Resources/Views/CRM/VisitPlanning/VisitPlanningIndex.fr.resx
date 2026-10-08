@@ -683,7 +683,7 @@
     <value>Modifier les cibles de la semaine</value>
   </data>
   <data name="EmptyWeekHint" xml:space="preserve">
-    <value>Elle se crée automatiquement à l'approbation de la semaine précédente. Vous pouvez la générer maintenant selon les règles de fréquence.</value>
+    <value>Aucune visite n'est encore placée cette semaine. Vous pouvez la générer maintenant selon les règles de fréquence des cibles sélectionnées.</value>
   </data>
   <data name="FrequencyDefaultOne" xml:space="preserve">
     <value>1 sur la période (par défaut)</value>
@@ -726,5 +726,83 @@
   </data>
   <data name="WeekSubEmpty" xml:space="preserve">
     <value>Pas encore générée</value>
+  </data>
+  <data name="ReadOnlyBadge" xml:space="preserve">
+    <value>Lecture seule</value>
+  </data>
+  <data name="TargetsReadOnlyApproved" xml:space="preserve">
+    <value>{0} est approuvée : les cibles sont en lecture seule. Pour les modifier, utilisez « Rouvrir la semaine ».</value>
+  </data>
+  <data name="TargetsReadOnlyPast" xml:space="preserve">
+    <value>{0} est passée : les cibles sont en lecture seule.</value>
+  </data>
+  <data name="TargetsSubtitle" xml:space="preserve">
+    <value>{0} · {1} médecins, {2} pharmacies sélectionnés</value>
+  </data>
+  <data name="DoctorCountPill" xml:space="preserve">
+    <value>{0} médecins</value>
+  </data>
+  <data name="LinkedPharmacyCountPill" xml:space="preserve">
+    <value>{0} pharmacies liées</value>
+  </data>
+  <data name="SpecialtyFilterAll" xml:space="preserve">
+    <value>Spécialité : toutes</value>
+  </data>
+  <data name="SpecialtyFilterSelected" xml:space="preserve">
+    <value>Spécialité : {0} sélectionnée(s)</value>
+  </data>
+  <data name="SpecialtyClear" xml:space="preserve">
+    <value>Effacer la sélection</value>
+  </data>
+  <data name="ColRelation" xml:space="preserve">
+    <value>Relation</value>
+  </data>
+  <data name="ColAddress" xml:space="preserve">
+    <value>Adresse</value>
+  </data>
+  <data name="PeriodViewNotInPlan" xml:space="preserve">
+    <value>Ce médecin n'est pas encore enregistré dans le plan. La vue de la période se remplit une fois les cibles enregistrées.</value>
+  </data>
+  <data name="GeneratingWeek" xml:space="preserve">
+    <value>Génération…</value>
+  </data>
+  <data name="GenerateWeekStillEmpty" xml:space="preserve">
+    <value>Cette semaine reste vide : les règles de fréquence n'y placent aucune visite.</value>
+  </data>
+  <data name="EmptyWeekNoFrequencyVisits" xml:space="preserve">
+    <value>Selon les règles de fréquence, aucune visite ne tombe cette semaine : les visites de la période des cibles sélectionnées ont été placées dans les semaines précédentes. Vous pouvez ajouter des cibles ou définir une fréquence de visite pour les médecins.</value>
+  </data>
+  <data name="EditTargetsLink" xml:space="preserve">
+    <value>Modifier les cibles</value>
+  </data>
+  <data name="EmptyDraftsBand" xml:space="preserve">
+    <value>{0} brouillons vides (0 cible). Un seul brouillon est conservé par période et semaine.</value>
+  </data>
+  <data name="ArchiveEmptyDrafts" xml:space="preserve">
+    <value>Archiver les brouillons vides</value>
+  </data>
+  <data name="ArchiveSelectedDrafts" xml:space="preserve">
+    <value>Archiver les brouillons vides sélectionnés ({0})</value>
+  </data>
+  <data name="ArchiveDraftsConfirm" xml:space="preserve">
+    <value>{0} brouillons vides seront archivés. Continuer ?</value>
+  </data>
+  <data name="DraftsArchived" xml:space="preserve">
+    <value>{0} archivé(s).</value>
+  </data>
+  <data name="DraftsNotArchived" xml:space="preserve">
+    <value>{0} n'ont pas pu être archivés : {1}</value>
+  </data>
+  <data name="ArchiveRefusedNotEmpty" xml:space="preserve">
+    <value>le brouillon n'est pas vide</value>
+  </data>
+  <data name="OnlyEmptyDraftsArchivable" xml:space="preserve">
+    <value>Seuls les brouillons sans cible peuvent être archivés.</value>
+  </data>
+  <data name="CountrySelfHint" xml:space="preserve">
+    <value>Votre pays attribué.</value>
+  </data>
+  <data name="NewPlanAfterSaveHint" xml:space="preserve">
+    <value>Après l'enregistrement, l'onglet Cibles propose les médecins à voir cette semaine.</value>
   </data>
 </root>
