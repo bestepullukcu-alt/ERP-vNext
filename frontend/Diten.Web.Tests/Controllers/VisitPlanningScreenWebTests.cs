@@ -224,8 +224,9 @@ public sealed class VisitPlanningScreenWebTests
         var route = view.IndexOf("VisitPlanning/details.js", StringComparison.Ordinal);
         var header = view.IndexOf("VisitPlanning/header.js", StringComparison.Ordinal);
         Assert.True(skeleton > 0 && skeleton < route && route < header);
-        // The Weeks tab waits for WP-VP-4D (hidden, not "coming soon").
-        Assert.Contains("id=\"vp-tab-weeks-item\" data-pending-package=\"WP-VP-4D\"", view);
+        // WP-VP-4D opened the Weeks tab (it no longer waits for a package).
+        Assert.Contains("role=\"presentation\" id=\"vp-tab-weeks-item\">", view);
+        Assert.DoesNotContain("data-pending-package", view);
     }
 
     // ── unauthorised: no skeleton, no redirect ─────────────────────────────────────────────────────────────────

@@ -743,7 +743,8 @@
         const btn = el('vp-apply');
         if (btn) btn.disabled = readOnly || locked;
         let band = el('vp-week-locked');
-        if (locked && !band) {
+        // WP-VP-4D (E4-4B-3) — with the page skeleton the header's band already says it once; no second band here.
+        if (locked && !band && !page) {
             const tabs = el('vp-day-tabs');
             if (tabs && tabs.parentNode) {
                 band = document.createElement('div');
@@ -761,12 +762,14 @@
         activeWeek = week;
         if (page && !followingPage) page.selectWeek(weekStartOf(week), 'route');
         applyWeekLock(week);
-        setWeekLabel(week);
+        // WP-VP-4D — the summary (week + date range) belongs to header.js and follows the PAGE's week; the route only
+        // writes it when there is no page skeleton (it used to leave the summary on another week).
+        if (!page) setWeekLabel(week);
         const weekRows = scheduled.filter(s => s.weekNumber === week);
         const mon = weekMonday(week);
 
         // header range = Mon → Fri actual dates
-        const range = el('vp-route-range');
+        const range = page ? null : el('vp-route-range');
         if (range) {
             if (mon) {
                 const fri = new Date(mon.getTime() + 4 * 86400000);

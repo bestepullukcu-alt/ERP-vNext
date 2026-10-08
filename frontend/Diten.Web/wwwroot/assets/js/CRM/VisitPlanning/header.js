@@ -1,17 +1,20 @@
 /**
- * WP-VP-4B — the Visit Planning DETAIL header (brief §3): summary, the week picker (every week of the period with its
- * status badge), the status-based actions, the reopen dialog, the week / period capacity cards and the page bands.
+ * WP-VP-4B / 4D — the Visit Planning DETAIL header (brief §3, mockup "03 Plan detayı"): the summary (period, rep name,
+ * the selected week, its status badge and date range), the status-based actions with their status sentence, the reopen
+ * dialog, the two capacity cards (this week / the period, bar + note) and the page bands.
  * Reads window.VisitPlanningPage (page.js) only; the Targets + Route code (details.js) owns its own views.
  *
- *   week status → actions: VisitPlanningPage.actionsFor (draft: save targets / build route / approve · empty: save
- *   targets / build route · approved: reopen / next open week · past: none · legacy committed plan: none + band).
- *   Every action button carries data-vp-action="<key>" and is shown only when that key is offered AND the server
- *   rendered it (permission flags).
+ *   ONE source of the selected week: VisitPlanningPage.state.weekStart. Every 'week-change' (the Weeks strip, "Open next
+ *   week", the Route's own week selector, ?week=) refreshes the summary, the actions and the capacity TOGETHER (4D — the
+ *   summary used to keep an old week). There is no week dropdown here any more.
  *
- * Fields that arrive with WP-VP-4A are optional here (graceful fallback):
- *   currentWeekStart     → default week; without it the first draft week, else the first week not yet over;
- *   nextDraftWeekStart   → "Open next week"; without it the next draft / empty week after the selected one;
- *   reopen proxy         → a 404 without a body says "reopen is not available yet" instead of a raw HTTP code.
+ *   week status → actions: VisitPlanningPage.actionsFor (draft: save targets / build route / approve · empty: save
+ *   targets / build route + "build this week" · approved: reopen / next open week · past: none · legacy committed plan:
+ *   none + band). Every action button carries data-vp-action="<key>" and is shown only when that key is offered AND the
+ *   server rendered it (permission flags).
+ *
+ *   currentWeekStart / nextDraftWeekStart (WP-VP-4A) with fallbacks; a reopen proxy 404 without a body says "reopen is
+ *   not available yet". Other parts ask for the reopen dialog with page.request('reopen-week').
  */
 (function (window, document) {
     'use strict';
@@ -33,16 +36,19 @@
     const el = id => document.getElementById(id);
     const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
     const setText = (id, v) => { const n = el(id); if (n) n.textContent = v; };
+    const fmt = (tpl, ...args) => args.reduce((t, a, i) => t.split('{' + i + '}').join(String(a)), String(tpl || ''));
     const requestedWeek = (() => { const w = new URLSearchParams(window.location.search).get('week'); return /^\d{4}-\d{2}-\d{2}$/.test(w || '') ? w : null; })();
 
     // ── labels ──
     const STATUS_LABEL = { past: 'WeekStatusPast', approved: 'WeekStatusApproved', draft: 'WeekStatusDraft', empty: 'WeekStatusEmpty' };
-    const STATUS_TONE = { past: 'secondary', approved: 'success', draft: 'primary', empty: 'secondary' };
+    const STATUS_TONE = { past: 'secondary', approved: 'success', draft: 'primary', empty: 'warning' };
+    const STATUS_TEXT = { draft: 'StatusTextDraft', approved: 'StatusTextApproved', past: 'StatusTextPast', empty: 'StatusTextEmpty' };
     const statusLabel = s => L[STATUS_LABEL[s]] || s || '—';
     const localDate = ws => new Date(ws + 'T00:00:00'); // yyyy-MM-dd as a LOCAL day (never shifted a day by UTC parsing)
     const dm = d => d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
     const weekTitle = w => (L.WeekNumberLabel || '{0}. Hafta').replace('{0}', w.isoWeek);
     const weekRange = w => { const f = localDate(w.from || w.weekStart), t = localDate(w.to || w.weekStart); return isNaN(f) || isNaN(t) ? '' : dm(f) + ' – ' + dm(t); };
+    const weekYear = w => { const t = localDate(w.to || w.weekStart); return isNaN(t) ? '' : String(t.getFullYear()); };
     const hours = minutes => {
         if (minutes == null || isNaN(minutes)) return '—';
         const h = Math.round((Number(minutes) / 60) * 10) / 10;
@@ -70,15 +76,37 @@
         return next ? next.weekStart : null;
     };
 
-    // ── week picker ──
-    const renderPicker = () => {
-        const sel = el('vp-hdr-week'); if (!sel) return;
-        const list = page.weeks();
-        if (!list.length) { sel.innerHTML = '<option value="">' + esc(L.Loading || '…') + '</option>'; sel.disabled = true; return; }
-        sel.disabled = false;
-        sel.innerHTML = list.map(w => '<option value="' + esc(w.weekStart) + '">' + esc(weekTitle(w) + ' · ' + weekRange(w) + ' · ' + statusLabel(w.status)) + '</option>').join('');
-        if (page.state.weekStart && list.some(w => w.weekStart === page.state.weekStart)) sel.value = page.state.weekStart;
+    // ── summary: the selected week, its status badge and its date range (4D — always the page's week) ──
+    const renderSummary = () => {
+        const w = page.week(page.state.weekStart);
+        const legacy = page.isLegacy();
+        const status = w ? w.status : null;
+        const badge = el('vp-d-status-strip');
+        if (badge) {
+            badge.textContent = legacy ? (L.LegacyPlanBadge || '') : statusLabel(status);
+            badge.className = 'badge bg-label-' + (legacy ? 'success' : (STATUS_TONE[status] || 'secondary'));
+        }
+        setText('vp-d-week', w ? weekTitle(w) : '—');
+        setText('vp-route-range', w ? weekRange(w) + ' · ' + weekYear(w) : '—');
     };
+
+    // E4-4B-2 — the rep by name: the plan's resourceDisplayName; when that is missing or an e-mail address, the signed-in
+    // person's directory name (resources/me) when the plan is theirs.
+    let me = null;
+    const looksLikeMail = v => /@/.test(String(v || ''));
+    const renderRep = () => {
+        const s = page.state.session || {};
+        let name = s.resourceDisplayName;
+        if ((!name || looksLikeMail(name)) && me && me.displayName && !looksLikeMail(me.displayName)
+            && String(me.resourceId || '').toLowerCase() === String(s.resourceId || '').toLowerCase()) {
+            name = me.displayName;
+        }
+        setText('vp-d-rep', name || s.resourceId || '—');
+    };
+    const loadMe = () => fetch(base + '/me', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+        .then(r => (r.ok ? r.json() : null))
+        .then(b => { me = (b && b.data && Array.isArray(b.data.items) && b.data.items[0]) || null; renderRep(); })
+        .catch(() => { me = null; });
 
     // ── status actions + bands ──
     const renderActions = () => {
@@ -91,13 +119,13 @@
             const key = btn.getAttribute('data-vp-action');
             let show = offered.indexOf(key) > -1;
             if (key === 'nextWeek') show = show && !!nextOpenWeek(ws);
+            // 4D — an empty week offers "Build this week" (a fresh preview; nothing is written).
+            if (key === 'generateWeek') show = !legacy && status === 'empty';
             const item = btn.closest('[data-vp-action-item]') || btn;
             item.classList.toggle('d-none', !show);
         });
-        const badge = el('vp-hdr-week-status');
-        if (badge) { badge.textContent = statusLabel(status); badge.className = 'badge bg-label-' + (STATUS_TONE[status] || 'secondary'); }
-        setText('vp-d-status-strip', legacy ? (L.LegacyPlanBadge || '') : statusLabel(status));
-        if (w) setText('vp-d-week', weekTitle(w) + ' · ' + weekRange(w));
+        // 4D — the status sentence of the actions card (mockup).
+        setText('vp-hdr-status-text', legacy ? (L.LegacyPlanBand || '') : (L[STATUS_TEXT[status]] || ''));
 
         const band = el('vp-week-band'); if (!band) return;
         let text = '';
@@ -109,29 +137,50 @@
         el('vp-readonly-notice')?.classList.toggle('d-none', legacy);
     };
 
-    // ── capacity cards (C5): this week and the period, minutes shown as hours ──
+    // ── capacity cards (C5 / 4D): this week and the period, minutes shown as hours, a bar and a note each ──
+    const bar = (id, pct) => {
+        const b = el(id); if (!b) return;
+        b.style.width = pct + '%'; b.setAttribute('aria-valuenow', String(pct)); b.classList.toggle('bg-warning', pct >= 100);
+    };
     const renderCapacity = () => {
         const p = page.state.preview;
         const ws = page.state.weekStart;
         const wc = p && Array.isArray(p.weekCapacity) ? p.weekCapacity.find(c => c.weekStart === ws) : null;
         const pc = p ? p.periodCapacity : null;
+        // Without a capacity the period runs on the default hours: both cards say there is no capacity (mockup).
+        const noCapacity = !!(pc && pc.budgetSource === 'default_hours');
         setText('vp-cap-week', wc ? hours(wc.capacityMinutes) : '—');
         setText('vp-cap-week-planned', wc ? hours(wc.plannedMinutes) : '—');
         setText('vp-cap-period', pc ? hours(pc.capacityMinutes) : '—');
         setText('vp-cap-period-planned', pc ? hours(pc.plannedMinutes) : '—');
+
+        const weekPct = wc && wc.capacityMinutes > 0 ? Math.min(100, Math.round(wc.plannedMinutes / wc.capacityMinutes * 100)) : 0;
+        bar('vp-cap-week-bar', weekPct);
+        let weekNote = '';
+        if (noCapacity) weekNote = L.CapacityMissingWeek || '';
+        else if (wc && wc.capacityMinutes > 0) {
+            weekNote = fmt(L.WeekCapacityNote || '{0}', weekPct)
+                + (wc.holidays > 0 || wc.halfDays > 0 ? ' ' + (L.WeekCapacityHolidaysNote || '') : '');
+        }
+        setText('vp-cap-week-note', weekNote);
+
         const pct = pc && pc.capacityMinutes > 0 ? Math.min(100, Math.round(pc.plannedMinutes / pc.capacityMinutes * 100)) : 0;
-        const bar = el('vp-cap-period-bar');
-        if (bar) { bar.style.width = pct + '%'; bar.setAttribute('aria-valuenow', String(pct)); bar.classList.toggle('bg-warning', pct >= 100); }
+        bar('vp-cap-period-bar', pct);
         setText('vp-cap-period-pct', pc && pc.capacityMinutes > 0 ? pct + '%' : '');
+        const weeks = page.weeks();
+        const plannedWeeks = weeks.filter(w => (w.visitCount || 0) > 0).length;
+        setText('vp-cap-period-note', noCapacity ? (L.CapacityMissingPeriod || '')
+            : (pc && pc.capacityMinutes > 0 ? fmt(L.PeriodCapacityNote || '{0} {1} {2}', pct, weeks.length, plannedWeeks) : ''));
+
         const note = el('vp-cap-note');
         if (note) {
-            const fallback = pc && pc.budgetSource === 'default_hours';
-            note.textContent = fallback ? (L.CapacityDefaultHours || '') : '';
-            note.classList.toggle('d-none', !fallback);
+            note.textContent = noCapacity ? (L.CapacityDefaultHours || '') : '';
+            note.classList.toggle('d-none', !noCapacity);
         }
     };
 
-    const refresh = () => { renderPicker(); renderActions(); renderCapacity(); };
+    // 4D — the selected week drives the summary, the actions and the capacity TOGETHER.
+    const refresh = () => { renderSummary(); renderActions(); renderCapacity(); };
 
     // ── reopen (gerekçe ≥ 10 → the reopen proxy; MK-4: the reason goes into the week's history) ──
     const reasonOk = v => String(v || '').trim().length >= REOPEN_MIN;
@@ -179,6 +228,7 @@
         if (key === 'approveWeek') page.request('approve-week');
         else if (key === 'saveTargets') page.request('save-targets');
         else if (key === 'generateRoute') page.request('generate-route');
+        else if (key === 'generateWeek') page.request('reload-plan');
         else if (key === 'reopenWeek') openReopen();
         else if (key === 'nextWeek') { const nx = nextOpenWeek(page.state.weekStart); if (nx) page.selectWeek(nx, 'header'); }
     };
@@ -187,19 +237,20 @@
         e.preventDefault();
         onAction(btn.getAttribute('data-vp-action'));
     });
-    el('vp-hdr-week')?.addEventListener('change', function () { if (this.value) page.selectWeek(this.value, 'header'); });
     el('vp-reopen-reason')?.addEventListener('input', syncReopen);
     el('vp-reopen-confirm')?.addEventListener('click', confirmReopen);
+    // 4D — the Weeks tab asks for the same reopen dialog (one component).
+    page.on('request:reopen-week', () => openReopen());
 
     page.on('session', s => {
         setText('vp-d-rep', (s && (s.resourceDisplayName || s.resourceId)) || '—');
+        renderRep();
         if (!page.state.weekStart) { const d = defaultWeek(); if (d) page.selectWeek(d, 'default'); }
         refresh();
     });
     page.on('session-error', message => {
         const band = el('vp-week-band');
         if (band) band.innerHTML = '<div class="alert alert-danger py-2 small mb-3" role="alert"><i class="bx bx-error-circle me-1" aria-hidden="true"></i>' + esc(message || L.DetailLoadError || '') + '</div>';
-        const sel = el('vp-hdr-week'); if (sel) { sel.innerHTML = ''; sel.disabled = true; }
         document.querySelectorAll('[data-vp-action]').forEach(b => (b.closest('[data-vp-action-item]') || b).classList.add('d-none'));
     });
     page.on('preview', () => {
@@ -209,5 +260,5 @@
     });
     page.on('week-change', () => refresh());
 
-    renderPicker();
+    loadMe();
 })(window, document);

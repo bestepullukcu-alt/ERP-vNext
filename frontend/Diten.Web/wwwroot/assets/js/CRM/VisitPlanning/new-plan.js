@@ -1,12 +1,15 @@
 /**
  * WP-VP-4B (MK-1, brief §2) — the "New plan" right-hand drawer, shared by the list and the detail.
- *   - Country: automatic and read-only when there is one; a choice only when there are several.
+ *   - Country (WP-VP-4D, E4-4B-4): the rep's country, read-only. There is no rep-country field yet, so it is the
+ *     country of the open periods (country-scoped); a choice only when those periods span several countries — never the
+ *     tenant's whole country list.
  *   - Period: automatic — the period active today, else the next one; only active / future periods are offered.
  *   - Opening week: every week of the period that is NOT over yet (a past week is never listed — E7-B5); default = the
  *     current week, else the period's first open week.
  *   - Rep: the signed-in person (resources/me), read-only. No audience or play picker at all (K-3, K-4).
  *   - One plan per rep + period: an existing plan is announced up front and on the server's 409
- *     planning_session_exists, with "Go to plan" (the id from the answer).
+ *     planning_session_exists, with "Go to plan" (the id from the answer). Up front it is the SAME plan the server would
+ *     name (E4-4B-1): the OLDEST not-archived plan of the rep + period.
  * Opens from any [data-vp-new-plan] element or window.VisitPlanningNewPlan.open().
  */
 (function (window, document) {
@@ -72,16 +75,24 @@
         api('/sessions').then(r => { plans = items(r.body); }).catch(() => { plans = []; })
     ]));
 
+    // The countries a plan can be made for: those of the open, country-scoped periods (E4-4B-4).
+    const periodCountries = () => Array.from(new Set(openPeriods(periods, today())
+        .filter(p => p.scopeType === 'country' && p.country).map(p => p.country)));
+    const countryName = code => { const c = countries.find(x => x.code === code); return c ? c.name : code; };
     const selectedCountry = () => {
-        if (countries.length === 1) return countries[0].code;
+        const list = periodCountries();
+        if (list.length <= 1) return list[0] || '';
         const sel = el('vp-np-country');
         return sel ? sel.value : '';
     };
     const periodsFor = country => openPeriods(periods.filter(p => p.scopeType !== 'country' || !country || p.country === country), today());
 
-    const existingPlanFor = periodId => plans.find(s => (s.cyclePeriodId === periodId)
-        && String(s.status || '').toLowerCase() !== 'archived'
-        && (!me || !me.resourceId || String(s.resourceId || '').toLowerCase() === String(me.resourceId).toLowerCase()));
+    // The server's rule (3A, CreatePlanningSession 409): the OLDEST not-archived plan of the rep + period.
+    const existingPlanFor = periodId => plans
+        .filter(s => (s.cyclePeriodId === periodId)
+            && String(s.status || '').toLowerCase() !== 'archived'
+            && (!me || !me.resourceId || String(s.resourceId || '').toLowerCase() === String(me.resourceId).toLowerCase()))
+        .sort((a, b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')))[0];
 
     const showExists = id => {
         const box = el('vp-np-exists'); if (!box) return;
@@ -115,14 +126,15 @@
     };
     const renderCountry = () => {
         const text = el('vp-np-country-text'), sel = el('vp-np-country');
-        if (countries.length > 1) {
+        const list = periodCountries();
+        if (list.length > 1) {
             text.classList.add('d-none'); sel.classList.remove('d-none');
-            sel.innerHTML = countries.map(c => '<option value="' + esc(c.code) + '">' + esc(c.name) + '</option>').join('');
+            sel.innerHTML = list.map(code => '<option value="' + esc(code) + '">' + esc(countryName(code)) + '</option>').join('');
             const def = defaultPeriod(openPeriods(periods, today()), today());
-            if (def && def.scopeType === 'country' && countries.some(c => c.code === def.country)) sel.value = def.country;
+            if (def && def.scopeType === 'country' && list.indexOf(def.country) > -1) sel.value = def.country;
         } else {
             sel.classList.add('d-none'); text.classList.remove('d-none');
-            text.value = countries.length === 1 ? countries[0].name : '—';
+            text.value = list.length === 1 ? countryName(list[0]) : '—';
         }
         el('vp-np-rep').value = me ? (me.displayName || me.resourceId || '—') : '—';
     };

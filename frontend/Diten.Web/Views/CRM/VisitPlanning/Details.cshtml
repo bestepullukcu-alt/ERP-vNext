@@ -71,7 +71,7 @@
                 <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["CyclePeriod"]</div><div class="backbone-preview-value mt-1" id="vp-d-period">—</div></div></div></div>
                 <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-user" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["Rep"]</div><div class="backbone-preview-value mt-1" id="vp-d-rep">—</div></div></div></div>
                 <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar-week" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["WeekLabel"]</div><div class="backbone-preview-value mt-1" id="vp-d-week">—</div></div></div></div>
-                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-flag" aria-hidden="true"></i><div><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="backbone-preview-value mt-1" id="vp-d-status-strip">—</div></div></div></div>
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-flag" aria-hidden="true"></i><div><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="backbone-preview-value mt-1"><span class="badge bg-label-secondary" id="vp-d-status-strip">—</span></div></div></div></div>
                 <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-map-alt" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["DateRangeLabel"]</div><div class="backbone-preview-value mt-1" id="vp-route-range">—</div></div></div></div>
                 <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-time-five" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["WorkingHours"]</div><div class="backbone-preview-value mt-1">09:00–18:00</div></div></div></div>
             </div>
@@ -80,19 +80,16 @@
     </div>
     </div>
 
-    @* ── WP-VP-4B — the week + its actions (brief §3). The picker lists every week of the period with its status; only
-       the actions the selected week offers are shown (header.js → VisitPlanningPage.actionsFor). Every write button
-       stays behind its permission flag; the items start hidden until the week is known. ── *@
+    @* ── WP-VP-4B / 4D — the selected week's actions (brief §3, mockup "03 Plan detayı"): a status sentence, then only the
+       actions the selected week offers (header.js → VisitPlanningPage.actionsFor). The week is chosen on the Weeks strip,
+       with "Open next week" or on the Route's own week selector — there is no week dropdown here. Every write button stays
+       behind its permission flag; the items start hidden until the week is known. ── *@
     <div class="col-12 col-lg-4">
     <div class="card wcn-detail-card p-4 h-100">
     <div class="wcn-detail-section wcn-acts">
         <div class="wcn-acts-main">
             <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bolt-circle dt-card-icon" aria-hidden="true"></i>@Localizer["ActionsAvailable"]</h6>
-            <label class="form-label small mb-1" for="vp-hdr-week">@Localizer["WeekLabel"]</label>
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <select id="vp-hdr-week" class="form-select form-select-sm" aria-label="@Localizer["WeekLabel"]" disabled><option value="">@SharedLocalizer["Loading"]</option></select>
-                <span class="badge bg-label-secondary" id="vp-hdr-week-status">—</span>
-            </div>
+            <p class="small mb-3" id="vp-hdr-status-text" role="status">—</p>
             <ul class="wcn-actrail">
                 @if (Model.CanApply)
                 {
@@ -105,6 +102,13 @@
                 {
                     <li class="wcn-act d-none" data-vp-action-item>
                         <button type="button" class="wcn-act-btn wcn-act-bare" id="vp-reopen" data-vp-action="reopenWeek"><i class="bx bx-lock-open-alt" aria-hidden="true"></i><span>@Localizer["ReopenWeek"]</span></button>
+                    </li>
+                }
+                @* WP-VP-4D — an empty week: rebuild the preview for it (a read; nothing is written). *@
+                @if (Model.CanGenerate)
+                {
+                    <li class="wcn-act wcn-act-primary d-none" data-vp-action-item>
+                        <button type="button" class="wcn-act-btn wcn-act-fill wcn-act-fill-primary" id="vp-generate-week" data-vp-action="generateWeek"><i class="bx bx-refresh" aria-hidden="true"></i><span>@Localizer["GenerateWeek"]</span></button>
                     </li>
                 }
                 <li class="wcn-act d-none" data-vp-action-item>
@@ -134,34 +138,28 @@
     </div>
     </div>
 
-    @* ── WP-VP-4B (C5) — capacity in ONE unit (hours): this week's share of the period capacity vs what this week plans,
-       and the period capacity vs what the period plans (progress). The old supply / demand tiles are gone. ── *@
+    @* ── WP-VP-4B (C5) / 4D (mockup "03 Plan detayı") — capacity in ONE unit (hours), two cards: this week (its share of the
+       period capacity vs what it plans) and the period (capacity vs what it plans), each with a bar and a note. Without a
+       capacity both cards say so (mockup). ── *@
     <div class="row g-3 mb-2">
-        <div class="col-6 col-md-3">
-            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
-                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-calendar-week"></i></span></div>
-                <div><small class="text-muted d-block">@Localizer["WeekCapacity"]</small><h5 class="mb-0" id="vp-cap-week">—</h5></div>
-            </div></div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
-                <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-calendar-check"></i></span></div>
-                <div><small class="text-muted d-block">@Localizer["WeekPlanned"]</small><h5 class="mb-0" id="vp-cap-week-planned">—</h5></div>
-            </div></div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
-                <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-layer"></i></span></div>
-                <div><small class="text-muted d-block">@Localizer["PeriodCapacity"]</small><h5 class="mb-0" id="vp-cap-period">—</h5></div>
-            </div></div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card h-100"><div class="card-body p-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-trending-up"></i></span></div>
-                    <div class="flex-grow-1"><small class="text-muted d-block">@Localizer["PeriodPlanned"]</small><h5 class="mb-0"><span id="vp-cap-period-planned">—</span> <small class="text-muted" id="vp-cap-period-pct"></small></h5></div>
+        <div class="col-12 col-md-6">
+            <div class="card h-100"><div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-6"><small class="text-muted d-block">@Localizer["WeekCapacity"]</small><h5 class="mb-0" id="vp-cap-week">—</h5></div>
+                    <div class="col-6"><small class="text-muted d-block">@Localizer["WeekPlanned"]</small><h5 class="mb-0" id="vp-cap-week-planned">—</h5></div>
                 </div>
-                <div class="progress mt-2" style="height:6px;"><div class="progress-bar" id="vp-cap-period-bar" role="progressbar" style="width:0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="@Localizer["PeriodPlanned"]"></div></div>
+                <div class="progress mt-3" style="height:6px;"><div class="progress-bar" id="vp-cap-week-bar" role="progressbar" style="width:0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="@Localizer["WeekPlanned"]"></div></div>
+                <div class="small text-muted mt-2" id="vp-cap-week-note"></div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card h-100"><div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-6"><small class="text-muted d-block">@Localizer["PeriodCapacity"]</small><h5 class="mb-0" id="vp-cap-period">—</h5></div>
+                    <div class="col-6"><small class="text-muted d-block">@Localizer["PeriodPlanned"]</small><h5 class="mb-0"><span id="vp-cap-period-planned">—</span> <small class="text-muted" id="vp-cap-period-pct"></small></h5></div>
+                </div>
+                <div class="progress mt-3" style="height:6px;"><div class="progress-bar" id="vp-cap-period-bar" role="progressbar" style="width:0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="@Localizer["PeriodPlanned"]"></div></div>
+                <div class="small text-muted mt-2" id="vp-cap-period-note"></div>
             </div></div>
         </div>
     </div>
@@ -178,9 +176,9 @@
                             <i class="bx bx-user-pin d-sm-none wc-tab-icon"></i>
                         </button>
                     </li>
-                    @* WP-VP-4B — the Weeks tab is held in place for WP-VP-4D (weeks.js + doctor-panel.js): hidden until its content
-                       exists, so no empty tab is offered. 4D removes d-none here and on the pane. *@
-                    <li class="nav-item mb-1 mb-sm-0 d-none" role="presentation" id="vp-tab-weeks-item" data-pending-package="WP-VP-4D">
+                    @* WP-VP-4D — the Weeks tab (weeks.js): the period strip, the selected week day by day, moving visits between
+                       days (day pins), the doctors of the week. *@
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation" id="vp-tab-weeks-item">
                         <button type="button" class="nav-link small border shadow-none wc-tab-compact" id="vp-tab-weeks-btn" data-bs-toggle="tab" data-bs-target="#vp-tab-weeks" role="tab" aria-controls="vp-tab-weeks" aria-selected="false" tabindex="-1">
                             <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-calendar-week me-1 wc-tab-icon"></i>@Localizer["WeeksSection"]</span>
                             <i class="bx bx-calendar-week d-sm-none wc-tab-icon"></i>
@@ -366,8 +364,30 @@
             </div>
         </div>
 
-        @* WP-VP-4B — the Weeks pane (WP-VP-4D fills it; hidden until then). *@
-        <div class="tab-pane fade d-none" id="vp-tab-weeks" role="tabpanel" aria-labelledby="vp-tab-weeks-btn" data-pending-package="WP-VP-4D"></div>
+        @* WP-VP-4D — the Weeks pane, filled by weeks.js from the preview (+ the plan's targets for the names). *@
+        <div class="tab-pane fade" id="vp-tab-weeks" role="tabpanel" aria-labelledby="vp-tab-weeks-btn">
+            <div class="card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                    <div>
+                        <div class="text-uppercase text-heading fw-semibold">@Localizer["PeriodWeeksTitle"]</div>
+                        <div class="text-muted small" id="vp-wk-summary">—</div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-text-secondary" data-bs-toggle="collapse" data-bs-target="#vp-wk-rules" aria-expanded="false" aria-controls="vp-wk-rules"><i class="bx bx-info-circle me-1"></i>@Localizer["AutoDraftRulesTitle"]</button>
+                </div>
+                <div class="collapse mb-3" id="vp-wk-rules">
+                    <ul class="small text-muted mb-0 ps-3">
+                        <li>@Localizer["AutoDraftRuleApprove"]</li>
+                        <li>@Localizer["AutoDraftRuleEven"]</li>
+                        <li>@Localizer["AutoDraftRuleDays"]</li>
+                        <li>@Localizer["RuleSourceOrder"]</li>
+                        <li>@Localizer["RuleMixedOrder"]</li>
+                        <li>@Localizer["RuleUnknownFrequency"]</li>
+                    </ul>
+                </div>
+                <div class="d-flex gap-2 overflow-auto pb-2" id="vp-wk-strip" role="listbox" aria-label="@Localizer["PeriodWeeksTitle"]"></div>
+            </div>
+            <div class="card p-4 mb-4" id="vp-wk-detail" aria-live="polite"><div class="text-muted small">@SharedLocalizer["Loading"]</div></div>
+        </div>
 
         @* Tab 2 — Route: the road-map view (RouteSection heading kept for section-map parity). *@
         <div class="tab-pane fade" id="vp-tab-route" role="tabpanel" aria-labelledby="vp-tab-route-btn">
@@ -494,7 +514,38 @@
 @if (Model.CanGenerate)
 {
     <partial name="~/Views/CRM/VisitPlanning/_NewPlanDrawer.cshtml" />
-    <partial name="~/Views/CRM/VisitPlanning/_DoctorPanel.cshtml" />
+}
+@* WP-VP-4D — the doctor panel serves every reader (its "Period view" tab); its "Products" tab is offered only to a
+   plan writer (doctor-panel.js / targets.js check the generate flag). *@
+<partial name="~/Views/CRM/VisitPlanning/_DoctorPanel.cshtml" />
+@* WP-VP-4D (Ek — move between days) — "Move to day…": the keyboard way of the drag on a day row, and the question a
+   dragged doctor asks ("all of this institution's visits, or only this doctor?"). Writes the week's day pins through the
+   existing session update. *@
+@if (Model.CanGenerate)
+{
+    <div class="modal fade" id="vp-move-modal" tabindex="-1" aria-labelledby="vp-move-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vp-move-title">@Localizer["MoveToDay"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="fw-medium mb-2" id="vp-move-who">—</p>
+                    <div class="mb-3" id="vp-move-day-wrap">
+                        <label class="form-label small" for="vp-move-day">@Localizer["MoveDayLabel"]</label>
+                        <select class="form-select form-select-sm" id="vp-move-day"></select>
+                    </div>
+                    <p class="small mb-0 d-none" id="vp-move-question"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-label-primary d-none" id="vp-move-one">@Localizer["MoveOnlyThis"]</button>
+                    <button type="button" class="btn btn-primary" id="vp-move-all">@Localizer["MoveConfirm"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 
 @section Styles {
@@ -514,4 +565,6 @@
     <script src="~/assets/js/CRM/VisitPlanning/header.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/new-plan.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/targets.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/weeks.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/doctor-panel.js" asp-append-version="true"></script>
 }

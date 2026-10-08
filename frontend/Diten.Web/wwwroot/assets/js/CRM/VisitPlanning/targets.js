@@ -102,9 +102,20 @@
     };
     const playItems = cid => (nextVisit[cid] || []).filter(x => x.source === SOURCE_PLAY);
 
-    // The period capacity's per-visit figures (max products per role, minutes per product, report minutes). Read through
-    // the Cycle Capacities proxies; when they refuse (no capacity read key) the limit shows "—" and no time is invented.
+    // The period capacity's per-visit figures (max products per role, minutes per product, report minutes).
+    // WP-VP-4D — first the plan's own visitModel (4E: preview / detail, no capacity read key needed); source "none" = the
+    // period has no capacity ("—", nothing invented). Only without a visitModel (an older server) the Cycle Capacities
+    // proxies are read; when they refuse the limit shows "—" and no time is invented.
+    const visitModelOf = () => (page.state.preview && page.state.preview.visitModel) || (page.state.session && page.state.session.visitModel) || null;
     const loadCapacity = periodId => {
+        const vm = visitModelOf();
+        if (vm) {
+            capacity = vm.source === 'none' ? null : {
+                maxPromo: vm.maxPromo, maxNonPromo: vm.maxNonPromo, promoMinutes: vm.promoMinutes,
+                nonPromoMinutes: vm.nonPromoMinutes, reportMinutes: vm.reportMinutes || 0
+            };
+            return Promise.resolve(capacity);
+        }
         if (!periodId || periodId === capacityPeriod) return Promise.resolve(capacity);
         capacityPeriod = periodId;
         return request(capacityBase + '/capacities?cyclePeriodId=' + encodeURIComponent(periodId)).then(r => {
@@ -271,6 +282,9 @@
         renderPicker();
         loadCapacity(page.state.session && page.state.session.cyclePeriodId).then(() => { if (picker) renderPicker(); });
         searchProducts('');
+        // WP-VP-4D — the panel has two tabs now: the picker lives on "Products".
+        const productsTab = el('vp-dp-tab-products-btn');
+        if (productsTab) window.bootstrap.Tab.getOrCreateInstance(productsTab).show();
         window.bootstrap.Offcanvas.getOrCreateInstance(panel()).show();
     };
     const openSingle = cell => {
@@ -337,6 +351,11 @@
     page.on('week-change', () => { paintCells(); renderSummary(); paintBulkButton(); });
     page.on('targets:doctors-drawn', () => paintCells());
     page.on('targets:selection', s => { selection = s || selection; paintBulkButton(); });
+    // WP-VP-4D — "Change products" from the doctor panel's period view opens this picker for that doctor.
+    page.on('request:pick-products', d => {
+        if (!d || !d.contactId) return;
+        openSingle({ dataset: { cid: d.contactId, aid: d.accountId || '', lid: d.accountContactLinkId || '', name: d.name || '', spec: d.specialty || '' } });
+    });
 
     document.addEventListener('click', e => {
         const pick = e.target.closest('#dt-vp-contacts .js-vp-pick');

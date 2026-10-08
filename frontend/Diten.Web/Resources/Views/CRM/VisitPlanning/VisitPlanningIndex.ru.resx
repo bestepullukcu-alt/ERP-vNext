@@ -382,4 +382,286 @@
   <data name="RuleUnknownFrequency" xml:space="preserve">
     <value>Цель с неизвестной частотой считается «1 за период» и показывается со значком «нет частоты».</value>
   </data>
+  <data name="StatusTextDraft" xml:space="preserve">
+    <value>Черновая неделя — её можно менять до утверждения.</value>
+  </data>
+  <data name="StatusTextApproved" xml:space="preserve">
+    <value>Неделя утверждена и доступна только для чтения.</value>
+  </data>
+  <data name="StatusTextPast" xml:space="preserve">
+    <value>Прошедшая неделя. Изменения невозможны.</value>
+  </data>
+  <data name="StatusTextEmpty" xml:space="preserve">
+    <value>Для этой недели ещё нет черновика.</value>
+  </data>
+  <data name="GenerateWeek" xml:space="preserve">
+    <value>Сформировать неделю</value>
+  </data>
+  <data name="WeekCapacityNote" xml:space="preserve">
+    <value>Заполнено {0}% · доля недели в ёмкости периода.</value>
+  </data>
+  <data name="WeekCapacityHolidaysNote" xml:space="preserve">
+    <value>Праздники и сокращённые дни вычтены.</value>
+  </data>
+  <data name="PeriodCapacityNote" xml:space="preserve">
+    <value>{0}% · запланировано {2} из {1} недель</value>
+  </data>
+  <data name="CapacityMissingWeek" xml:space="preserve">
+    <value>Ёмкость периода не задана; заполненность не рассчитать.</value>
+  </data>
+  <data name="CapacityMissingPeriod" xml:space="preserve">
+    <value>Обратитесь к руководителю, чтобы задать ёмкость.</value>
+  </data>
+  <data name="PeriodWeeksTitle" xml:space="preserve">
+    <value>Недели периода</value>
+  </data>
+  <data name="PeriodWeeksSummary" xml:space="preserve">
+    <value>{0} нед. · {1} утв. · {2} черн. · {3} пуст. · {4} прош.</value>
+  </data>
+  <data name="AutoDraftRulesTitle" xml:space="preserve">
+    <value>Как формируется автоматический черновик?</value>
+  </data>
+  <data name="AutoDraftRuleApprove" xml:space="preserve">
+    <value>После утверждения недели следующие заполняются по частоте визитов каждой цели.</value>
+  </data>
+  <data name="AutoDraftRuleEven" xml:space="preserve">
+    <value>Визиты равномерно распределяются по периоду.</value>
+  </data>
+  <data name="AutoDraftRuleDays" xml:space="preserve">
+    <value>Дни балансируются в пределах дневного лимита по районам; на выходные и праздники визиты не ставятся.</value>
+  </data>
+  <data name="TodayLabel" xml:space="preserve">
+    <value>СЕГОДНЯ</value>
+  </data>
+  <data name="VisitCountShort" xml:space="preserve">
+    <value>{0} визитов</value>
+  </data>
+  <data name="LegacyWeekLabel" xml:space="preserve">
+    <value>утверждена (старый план)</value>
+  </data>
+  <data name="HalfDayLabel" xml:space="preserve">
+    <value>сокращённый день</value>
+  </data>
+  <data name="SlipTitle" xml:space="preserve">
+    <value>Перенесённые / не размещённые</value>
+  </data>
+  <data name="SlipTitleCount" xml:space="preserve">
+    <value>Перенесённые / не размещённые цели и продукты ({0})</value>
+  </data>
+  <data name="NoSlips" xml:space="preserve">
+    <value>На этой неделе нет перенесённых целей.</value>
+  </data>
+  <data name="MovedToWeek" xml:space="preserve">
+    <value>перенесено → {0}</value>
+  </data>
+  <data name="MovedToDay" xml:space="preserve">
+    <value>перенесено → {0}</value>
+  </data>
+  <data name="NotPlanned" xml:space="preserve">
+    <value>не запланировано</value>
+  </data>
+  <data name="ToNextVisit" xml:space="preserve">
+    <value>→ на следующий визит</value>
+  </data>
+  <data name="ReasonCapacityFull" xml:space="preserve">
+    <value>неделя заполнена</value>
+  </data>
+  <data name="ReasonHoliday" xml:space="preserve">
+    <value>праздник</value>
+  </data>
+  <data name="ReasonHalfDay" xml:space="preserve">
+    <value>сокращённый день</value>
+  </data>
+  <data name="ReasonPinOverflow" xml:space="preserve">
+    <value>закреплённый день заполнен, места на неделе нет</value>
+  </data>
+  <data name="ReasonConsentBlocked" xml:space="preserve">
+    <value>согласие заблокировано</value>
+  </data>
+  <data name="ReasonPeriodExhausted" xml:space="preserve">
+    <value>конец периода</value>
+  </data>
+  <data name="ReasonMissingLocation" xml:space="preserve">
+    <value>нет координат</value>
+  </data>
+  <data name="ReasonNoAvailability" xml:space="preserve">
+    <value>вне доступности врача</value>
+  </data>
+  <data name="ReasonTooLong" xml:space="preserve">
+    <value>дольше рабочего дня</value>
+  </data>
+  <data name="ReasonPinDayFull" xml:space="preserve">
+    <value>закреплённый день был заполнен</value>
+  </data>
+  <data name="ReasonPinAvailability" xml:space="preserve">
+    <value>вне доступности в закреплённый день</value>
+  </data>
+  <data name="ReasonMaxPromo" xml:space="preserve">
+    <value>лимит промо исчерпан</value>
+  </data>
+  <data name="ReasonMaxNonPromo" xml:space="preserve">
+    <value>лимит напоминаний исчерпан</value>
+  </data>
+  <data name="ReasonOther" xml:space="preserve">
+    <value>другая причина</value>
+  </data>
+  <data name="DayByDay" xml:space="preserve">
+    <value>По дням</value>
+  </data>
+  <data name="DayCapacityFormat" xml:space="preserve">
+    <value>{0} / {1} визитов</value>
+  </data>
+  <data name="IdleTime" xml:space="preserve">
+    <value>простой {0}</value>
+  </data>
+  <data name="OverCapacity" xml:space="preserve">
+    <value>сверх ёмкости</value>
+  </data>
+  <data name="NoVisitThisDay" xml:space="preserve">
+    <value>На этот день визитов нет.</value>
+  </data>
+  <data name="HolidayNoVisit" xml:space="preserve">
+    <value>Праздник — визитов нет.</value>
+  </data>
+  <data name="NoVisitThisWeek" xml:space="preserve">
+    <value>На эту неделю плана нет.</value>
+  </data>
+  <data name="MoreDoctors" xml:space="preserve">
+    <value>ещё {0}</value>
+  </data>
+  <data name="ApproxMinutes" xml:space="preserve">
+    <value>≈ {0} мин</value>
+  </data>
+  <data name="PinnedHint" xml:space="preserve">
+    <value>Вы закрепили на этот день</value>
+  </data>
+  <data name="AutoPinnedHint" xml:space="preserve">
+    <value>Перенесено автоматически: закреплённый день был заполнен</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>Снять закрепление</value>
+  </data>
+  <data name="MoveToDay" xml:space="preserve">
+    <value>Перенести на день…</value>
+  </data>
+  <data name="MoveInstitution" xml:space="preserve">
+    <value>Перенести учреждение на другой день…</value>
+  </data>
+  <data name="MoveHint" xml:space="preserve">
+    <value>Перетащите визит или учреждение на другой день или используйте «Перенести на день…».</value>
+  </data>
+  <data name="MoveLockedHint" xml:space="preserve">
+    <value>Чтобы изменить, откройте неделю заново.</value>
+  </data>
+  <data name="MoveDayLabel" xml:space="preserve">
+    <value>День</value>
+  </data>
+  <data name="MoveAllQuestion" xml:space="preserve">
+    <value>Перенести и другие визиты этого учреждения ({0} врачей, {1} аптек)?</value>
+  </data>
+  <data name="MoveAll" xml:space="preserve">
+    <value>Перенести все</value>
+  </data>
+  <data name="MoveOnlyThis" xml:space="preserve">
+    <value>Только этого врача</value>
+  </data>
+  <data name="MoveConfirm" xml:space="preserve">
+    <value>Перенести</value>
+  </data>
+  <data name="DayPinSaved" xml:space="preserve">
+    <value>День изменён.</value>
+  </data>
+  <data name="PinOverflowMessage" xml:space="preserve">
+    <value>{0} визитов не поместились в этот день → перенесены на {1}</value>
+  </data>
+  <data name="PinOverflowNextWeek" xml:space="preserve">
+    <value>{0} визитов не поместились на неделе → перенесены на следующую</value>
+  </data>
+  <data name="ProductVisitsTitle" xml:space="preserve">
+    <value>Визиты в неделю по продуктам</value>
+  </data>
+  <data name="ProductVisitsSplit" xml:space="preserve">
+    <value>промо {0} · напоминание {1}</value>
+  </data>
+  <data name="NoProductVisits" xml:space="preserve">
+    <value>На этой неделе нет визитов с продуктами.</value>
+  </data>
+  <data name="MixedOrderNote" xml:space="preserve">
+    <value>Смешанный порядок: набор тот же, порядок сдвигается на одну позицию в каждом визите. Если показали A, B, C, в следующем — B, C, A.</value>
+  </data>
+  <data name="OpenRoute" xml:space="preserve">
+    <value>Открыть маршрут</value>
+  </data>
+  <data name="RebuildWeek" xml:space="preserve">
+    <value>Пересобрать неделю</value>
+  </data>
+  <data name="WeekDoctorsTitle" xml:space="preserve">
+    <value>Врачи этой недели ({0})</value>
+  </data>
+  <data name="WeekDoctorsHint" xml:space="preserve">
+    <value>Нажмите на строку: откроются недели врача за период.</value>
+  </data>
+  <data name="NoDoctorsThisWeek" xml:space="preserve">
+    <value>На этой неделе врачи не запланированы.</value>
+  </data>
+  <data name="StatePresented" xml:space="preserve">
+    <value>показано</value>
+  </data>
+  <data name="StateApproved" xml:space="preserve">
+    <value>утверждено</value>
+  </data>
+  <data name="StateDraft" xml:space="preserve">
+    <value>черновик</value>
+  </data>
+  <data name="StateProjected" xml:space="preserve">
+    <value>прогноз</value>
+  </data>
+  <data name="WeekHistoryTitle" xml:space="preserve">
+    <value>История недели</value>
+  </data>
+  <data name="HistoryApproved" xml:space="preserve">
+    <value>Утверждена</value>
+  </data>
+  <data name="HistoryReopened" xml:space="preserve">
+    <value>Открыта заново</value>
+  </data>
+  <data name="HistoryYou" xml:space="preserve">
+    <value>вы</value>
+  </data>
+  <data name="HistoryOtherUser" xml:space="preserve">
+    <value>другой пользователь</value>
+  </data>
+  <data name="FrequencyTarget" xml:space="preserve">
+    <value>Целевая частота</value>
+  </data>
+  <data name="DoneLabel" xml:space="preserve">
+    <value>Сделано</value>
+  </data>
+  <data name="RemainingLabel" xml:space="preserve">
+    <value>Осталось</value>
+  </data>
+  <data name="NextVisitProducts" xml:space="preserve">
+    <value>Продукты следующего визита</value>
+  </data>
+  <data name="SourceLine" xml:space="preserve">
+    <value>Источник: {0}</value>
+  </data>
+  <data name="NoProductsNoTime" xml:space="preserve">
+    <value>Длительность визита не рассчитать. Выберите продукты.</value>
+  </data>
+  <data name="ProductHistoryTitle" xml:space="preserve">
+    <value>За период · история продуктов</value>
+  </data>
+  <data name="HistoryPresented" xml:space="preserve">
+    <value>Показано</value>
+  </data>
+  <data name="HistoryPlanned" xml:space="preserve">
+    <value>Запланировано</value>
+  </data>
+  <data name="HistoryProjected" xml:space="preserve">
+    <value>Прогноз</value>
+  </data>
+  <data name="NoVisitsInPeriod" xml:space="preserve">
+    <value>Для этого врача визиты в периоде не запланированы.</value>
+  </data>
 </root>

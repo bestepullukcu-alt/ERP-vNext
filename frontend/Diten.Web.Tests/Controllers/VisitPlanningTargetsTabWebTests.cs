@@ -187,7 +187,9 @@ public sealed class VisitPlanningTargetsTabWebTests
         // S-1 text + the panel skeleton (period view waits for 4D)
         var panel = View("_DoctorPanel.cshtml");
         Assert.Contains("Localizer[\"ProductsS1Note\"]", panel);
-        Assert.Contains("id=\"vp-dp-tab-period-item\" data-pending-package=\"WP-VP-4D\"", panel);
+        // WP-VP-4D filled the period view (no pending-package marker any more).
+        Assert.Contains("id=\"vp-dp-tab-period-item\"", panel);
+        Assert.DoesNotContain("data-pending-package", panel);
         Assert.Equal("Değişiklikler bu doktorun onaylanmamış sonraki ziyaretlerine uygulanır.", Resx("tr")["ProductsS1Note"]);
     }
 

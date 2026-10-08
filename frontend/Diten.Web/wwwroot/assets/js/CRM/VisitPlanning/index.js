@@ -64,8 +64,10 @@
         if (approved != null) return (L.ApprovedWeekCountFormat || '{0}').replace('{0}', Number(approved) || 0);
         return '—';
     };
-    // WP-VP-4B — an empty draft has no target at all (3A isEmpty; the counts when the flag is absent).
-    const isEmptyDraft = s => sStatus(s) !== 'committed' && (s.isEmpty === true
+    // WP-VP-4B — an empty draft has no target at all (3A isEmpty; the counts when the flag is absent). WP-VP-4D
+    // (E4-4B-5) — a plan with an approved week is never one (the server refuses to archive it), so it neither counts in
+    // the notice nor shows "Delete empty drafts".
+    const isEmptyDraft = s => sStatus(s) !== 'committed' && !(Number(s.approvedWeekCount) > 0) && (s.isEmpty === true
         || (s.isEmpty == null && !(Number(s.doctorCount ?? s.selectedContactCount) || 0) && !(Number(s.pharmacyCount ?? s.selectedPharmacyCount) || 0)));
     // A legacy plan was approved for the whole period at once (before the week model): read-only.
     const isLegacy = s => sStatus(s) === 'committed';
