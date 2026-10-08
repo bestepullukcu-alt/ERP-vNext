@@ -94,7 +94,9 @@ public sealed class TraceArchitectureTests
         // validator (lot / serial checks), the posting handler (context + refusal) and getAvailability (CT-D1). No other
         // ledger feature file references Traceability.
         // WP-0174-P4 adds exactly one: getTransactions resolves migrated rows to their registered lot (CT-D6) — named, not loosened.
-        string[] hooks = ["/Services/MovementMasterDataValidator.cs", "/CommandHandlers/PostMovementHandler.cs", "/QueryHandlers/GetAvailabilityHandler.cs",
+        // WP-0175-Q1: the posting path moved, unchanged, from PostMovementHandler into InternalMovementPostingService (MOD-0175
+        // pack §5 Q1 seam) — the same hook under its new file name, still exactly four.
+        string[] hooks = ["/Services/MovementMasterDataValidator.cs", "/Services/InternalMovementPostingService.cs", "/QueryHandlers/GetAvailabilityHandler.cs",
             "/QueryHandlers/GetTransactionsHandler.cs"];
         var ledger = SourceScan.Production().Where(f => f.RelativePath.Contains("/Features/Inventory/", StringComparison.Ordinal)).ToList();
         Assert.NotEmpty(ledger);

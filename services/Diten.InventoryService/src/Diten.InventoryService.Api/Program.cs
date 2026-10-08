@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.InventoryService.Api.ModuleRegistration;
+using Diten.InventoryService.Api.Quarantine;
 using Diten.InventoryService.Api.Traceability;
 using Diten.InventoryService.Application;
 using Diten.InventoryService.Application.Common;
@@ -40,6 +41,10 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, InventoryLedgerManifestProvider>();
 builder.Services.AddSingleton<IModuleManifestProvider, LotSerialTrackingManifestProvider>(); // MOD-0174 (pack §14)
 builder.Services.AddTraceability(builder.Configuration); // MOD-0174 slice P1
+// MOD-0173 posting path shared by postMovement and the MOD-0175 apply engine (MOD-0175 pack §5 Q1 seam).
+builder.Services.AddScoped<Diten.InventoryService.Application.Features.Inventory.Services.InternalMovementPostingService>();
+builder.Services.AddSingleton<IModuleManifestProvider, QuarantineBlockedStockManifestProvider>(); // MOD-0175 (pack §14)
+builder.Services.AddQuarantine(builder.Configuration); // MOD-0175 slice Q1
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 // ── JWT (issuer / audience / keys from configuration; shared clock skew — BL-296) ─────────────────────────

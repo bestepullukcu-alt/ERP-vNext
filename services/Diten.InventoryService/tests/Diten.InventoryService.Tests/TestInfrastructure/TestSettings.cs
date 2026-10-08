@@ -50,6 +50,9 @@ public static class TestSettings
             Environment.SetEnvironmentVariable("Inventory__Reservations__SweeperEnabled", "false");
             // MOD-0174: the periodic lot expiry sweeper is off in API tests; it is driven directly through ILotExpirySweeper.
             Environment.SetEnvironmentVariable("Inventory__Trace__SweeperEnabled", "false");
+            // MOD-0175: the periodic intake sweep is off in API tests (it scans every tenant of the shared database); it is
+            // driven directly through QuarantineIntakeSweeper, limited to the test's own tenant.
+            Environment.SetEnvironmentVariable("Inventory__Quarantine__IntakeSweeperEnabled", "false");
             _applied = true;
         }
     }

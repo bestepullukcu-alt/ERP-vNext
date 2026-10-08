@@ -24,7 +24,11 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
     private static readonly string[] OwnedCollections =
     [
         "inventory_transactions", "inventory_balances", "inventory_audit", "inventory_outbox", "inventory_sequences",
-        "inventory_reservations", "inventory_sku_positions", "inventory_locations", "inventory_location_history"
+        "inventory_reservations", "inventory_sku_positions", "inventory_locations", "inventory_location_history",
+        // MOD-0175: the post-commit intake observer writes quarantine records for any tenant that posts into QUARANTINE /
+        // QUALITY_INSPECTION / BLOCKED — removed with the tenant like the ledger documents (DB-010).
+        "quarantine_holds", "quarantine_decisions", "quarantine_decision_events", "quarantine_blocked_stock", "quarantine_history",
+        "quarantine_settings", "quarantine_block_reasons", "quarantine_sequences"
     ];
 
     private readonly ConcurrentBag<Guid> _tenants = [];

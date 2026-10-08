@@ -50,9 +50,10 @@ public sealed class InventoryScopeResolutionMiddleware
 
     private static readonly string[] ForbiddenQueryKeys = ["tenantId", "legalEntityId", "tenant_id", "legal_entity_id"];
 
-    /// <summary>Every base path this middleware scopes (MOD-0173 ledger + MOD-0173-FU02 locations + MOD-0174 trace).</summary>
+    /// <summary>Every base path this middleware scopes (MOD-0173 ledger + MOD-0173-FU02 locations + MOD-0174 trace + MOD-0175 quarantine).</summary>
     public static readonly IReadOnlyList<string> ScopedBasePaths =
-        [InventoryContract.BasePath, InventoryContract.LocationsBasePath, Application.Features.Traceability.TraceContract.BasePath];
+        [InventoryContract.BasePath, InventoryContract.LocationsBasePath, Application.Features.Traceability.TraceContract.BasePath,
+         Application.Features.Quarantine.QuarantineContract.BasePath];
 
     private readonly RequestDelegate _next;
     private readonly IMemoryCache _cache;

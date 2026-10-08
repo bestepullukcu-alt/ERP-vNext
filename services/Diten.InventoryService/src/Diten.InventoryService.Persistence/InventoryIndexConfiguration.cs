@@ -187,5 +187,7 @@ public static class InventoryIndexConfiguration
         await database.GetCollection<LocationChangeEntry>(InventoryCollections.LocationHistory).Indexes.CreateManyAsync(BuildLocationHistory(), ct);
         // MOD-0174 (lot / serial SoR, same database and startup gate).
         await Traceability.TraceIndexConfiguration.ApplyAsync(database, ct);
+        // MOD-0175 (quarantine records, same database and startup gate).
+        await Quarantine.QuarantineIndexConfiguration.ApplyAsync(database, ct);
     }
 }

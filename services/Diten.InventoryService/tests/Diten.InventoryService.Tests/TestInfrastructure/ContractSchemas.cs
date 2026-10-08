@@ -91,6 +91,32 @@ public static class ContractSchemas
     /// <summary>Returns the validation errors of <paramref name="body"/> against the named TRACE schema (empty = valid).</summary>
     public static IReadOnlyList<string> ValidateTrace(string schemaName, string body) => Trace.Validate(schemaName, body);
 
+    // QUARANTINE-BUNDLE (MOD-0175, frozen 1.0.0 by WP-0175-Q1). The arrays some operations return are lifted by name.
+    public const string HoldRef = "HoldRef";
+    public const string HoldDetail = "HoldDetail";
+    public const string HoldList = "HoldList";
+    public const string HoldRefArray = "HoldRefArray";
+    public const string Decision = "Decision";
+    public const string BlockedStockRef = "BlockedStockRef";
+    public const string BlockedStockDetail = "BlockedStockDetail";
+    public const string BlockedList = "BlockedList";
+    public const string BlockedRefArray = "BlockedRefArray";
+    public const string Settings = "Settings";
+    public const string BlockReason = "BlockReason";
+    public const string BlockReasonArray = "BlockReasonArray";
+
+    private static readonly Contract Quarantine = new("quarantine.openapi.yaml", "quarantine", doc => new Dictionary<string, JsonNode>
+    {
+        [HoldRefArray] = doc["paths"]!["/holds"]!["post"]!["responses"]!["201"]!["content"]!["application/json"]!["schema"]!.DeepClone(),
+        [BlockedRefArray] = doc["paths"]!["/blocked"]!["post"]!["responses"]!["201"]!["content"]!["application/json"]!["schema"]!.DeepClone(),
+        [BlockReasonArray] = doc["paths"]!["/block-reasons"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone()
+    });
+
+    public static string QuarantineContractPath => RepoPaths.Contract("quarantine.openapi.yaml");
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named QUARANTINE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateQuarantine(string schemaName, string body) => Quarantine.Validate(schemaName, body);
+
     private sealed class Contract
     {
         private readonly string _file;

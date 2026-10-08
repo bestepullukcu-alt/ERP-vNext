@@ -33,6 +33,13 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // WP-0174-P2 (MOD-0174 pack §8 K-A): the per-lot stock projection, written only by the ledger posting code in the
         // posting transaction — a ledger projection like inventory_sku_positions, never a second stock truth.
         Assert.Equal(["inventory_lot_positions"], Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections);
+
+        // MOD-0175 (WP-0175-Q1) — quarantine records in the same database, prefix quarantine_ (pack §3). None is stock: a hold /
+        // blocked-stock Quantity is the quantity the record is about (Only_the_ledger_and_its_projection_carry_quantities).
+        Assert.Equal(
+            ["quarantine_block_reasons", "quarantine_blocked_stock", "quarantine_decision_events", "quarantine_decisions", "quarantine_history",
+             "quarantine_holds", "quarantine_sequences", "quarantine_settings"],
+            Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All.OrderBy(x => x).ToList());
     }
 
     [Fact]
@@ -40,10 +47,12 @@ public sealed class SingleSystemOfRecordArchitectureTests
     {
         var persistence = SourceScan.Production("Diten.InventoryService.Persistence");
         var declared = InventoryCollections.All.Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.All)
-            .Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections).ToList();
+            .Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections)
+            .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All).ToList();
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
-            .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal) || n.Contains("stock"))
+            .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)
+                        || n.StartsWith("quarantine_", StringComparison.Ordinal) || n.Contains("stock"))
             .Distinct()
             .ToList();
 
@@ -54,7 +63,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Distinct()
             .ToList();
         Assert.All(getCollectionCalls, arg => Assert.True(
-            arg.StartsWith("InventoryCollections.", StringComparison.Ordinal) || arg.StartsWith("TraceCollections.", StringComparison.Ordinal),
+            arg.StartsWith("InventoryCollections.", StringComparison.Ordinal) || arg.StartsWith("TraceCollections.", StringComparison.Ordinal)
+            || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal),
             $"GetCollection({arg}) does not name a declared collection constant."));
     }
 

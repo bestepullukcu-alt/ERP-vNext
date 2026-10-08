@@ -211,6 +211,8 @@ public sealed class InventoryLedgerManifestCompletenessTests
         var enforced = typeof(InventoryLedgerManifestProvider).Assembly.GetTypes()
             .Where(t => typeof(Microsoft.AspNetCore.Mvc.ControllerBase).IsAssignableFrom(t) && !t.IsAbstract)
             .Where(t => t.Namespace?.EndsWith(".Controllers.Traceability", StringComparison.Ordinal) != true)
+            // MOD-0175: the quarantine controllers belong to QUARANTINE-BLOCKED-STOCK (own completeness test, QuarantineManifestTests).
+            .Where(t => t.Namespace?.EndsWith(".Controllers.Quarantine", StringComparison.Ordinal) != true)
             .SelectMany(t => t.GetCustomAttributes<HasPermissionAttribute>(inherit: true)
                 .Concat(t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                     .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>(inherit: true))))
