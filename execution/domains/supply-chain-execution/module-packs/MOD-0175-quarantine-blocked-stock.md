@@ -1244,6 +1244,27 @@ gateways on 15290 / 15291): requests reach `localhost:5066/api/quarantine/…` a
 1 MiB PNG as base64 (1 398 223 B) and 2× forwarded byte-identical with all pass-through headers; 31 MB → 413 (Kestrel default
 30 000 000, sufficient). Evidence `docs/records/audits/2026-10/mvp1-int-qe-evidence-2026-10-08.md`.
 
+### WP-0175-Q3 (agent result 2026-10-08, pending CT) — e-signature integration
+
+Branch `feature/sce/mod-0175-q3` from `6454d3204` (isolated worktree), commit `f81451a80`; contracts unchanged. Provider
+`getSignableSubject` (`qd-v1` = the contract's closed field list, **35 keys incl. `subjectVersion`**; 404 without
+`quarantine.holds.read` / other company; a claim-less token with no company header takes the record's company — MOD-0022 sends
+none, ASSUMPTION-0175-Q3-02). Submit: effective MOD-0022 policy of the decision's action (strictest line); required + none →
+400 `QUARANTINE_SIGNATURE_REQUIRED`; a signature (read with the caller's token) must bind signer, decision, policy meaning, not
+invalidated, current `qd-v1` hash (ASSUMPTION-0175-Q3-01) → else 409 `QUARANTINE_SIGNATURE_MISMATCH`; ids only on the
+`Submitted` / `Approved` events. Approver signature id read from the MOD-0023 history. **O-Q2-3:** the decider is never sent
+as a candidate; none left → 409 `QUARANTINE_APPROVERS_NOT_CONFIGURED`. The 7 actions registered at start-up (S2S, best
+effort). Platform: `ESign:SubjectProviders:quarantine:BaseUrl` (Development) only. Template measurement: E4 reads the step
+flags at every start from the pinned version — no new version needed; pre-E4 tasks stay unsigned (O-Q3-3). Tests 617 →
+**637/637**, Platform filtered 580/580, architecture 18/18, 0 warnings. K3 (a) signer, (b) subject (hash layer behind it),
+(c) provider field, (d) O-Q2-3 → red, restored clean. Runtime probe (own Auth / Platform E4 / Gateway temp ocelot / Inventory /
+Prism / LE stub, own mongod, real login + re-auth) **20/20**: unsigned submit 400 → A signs → 202 → B unsigned WorkCenter
+approve 409 → B signs the same decision subject with the task context → 200 (**CT-D17 proven live**) → refresh Applied, 1
+movement, both signatures `valid`, Platform hash = 0175 hash; only candidate = A → 409; no signature data in `quarantine_*`.
+Open: O-Q3-1 the decider needs `esign.signatures.read` (not in the default signer set / §14), O-Q3-2 manual quarantine / block
+signatures, O-Q3-3 pre-E4 tasks, O-Q3-4 event path keeps no approver signature id. Evidence
+`docs/records/audits/2026-10/mod-0175-q3-evidence-2026-10-08.md`.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
