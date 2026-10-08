@@ -38,5 +38,9 @@ public enum SchemaProfile
     Meetings = 10,
 
     /// <summary>MOD-0031 Evidence Linking (slice 1): evidence_links.</summary>
-    EvidenceLinking = 11
+    EvidenceLinking = 11,
+
+    /// <summary>MOD-0022 e-Signature Service (E2): records, invalidations, requests, policies, policy history, meanings,
+    /// signable actions, exports, number counters.</summary>
+    ESignature = 12
 }

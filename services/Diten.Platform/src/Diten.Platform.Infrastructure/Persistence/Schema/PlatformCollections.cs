@@ -109,6 +109,17 @@ public static class PlatformCollections
     public const string DocumentManagementVariantReviewEvidence = "document_management_variant_review_evidence";
     public const string DocumentReferenceEntries = "document_reference_entries";
     public const string DocumentReferenceListVersions = "document_reference_list_versions";
+    // MOD-0022 e-Signature Service (E2) — insert-only records / invalidations / exports / policy history, guarded
+    // requests, policies, meanings, the signable-action catalog and the per-tenant per-year number counters.
+    public const string ESignatureCounters = "esign_counters";
+    public const string ESignatureExports = "esign_exports";
+    public const string ESignatureInvalidations = "esign_signature_invalidations";
+    public const string ESignatureMeanings = "esign_meanings";
+    public const string ESignaturePolicies = "esign_policies";
+    public const string ESignaturePolicyChanges = "esign_policy_changes";
+    public const string ESignatureRecords = "esign_signature_records";
+    public const string ESignatureRequests = "esign_signature_requests";
+    public const string ESignatureSignableActions = "esign_signable_actions";
     /// <summary>MOD-0031 Evidence Linking (slice 1) — object ↔ document/version evidence links.</summary>
     public const string EvidenceLinks = "evidence_links";
     public const string FeatureCategories = "platform_feature_categories";

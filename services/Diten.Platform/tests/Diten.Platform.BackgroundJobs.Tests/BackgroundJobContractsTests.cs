@@ -47,6 +47,7 @@ public sealed class BackgroundJobContractsTests
                 "Diten.Platform.MOD-0009.ProvisioningRetryJob",
                 "Diten.Platform.MOD-0018.EntitlementCacheRefreshJob",
                 "Diten.Platform.MOD-0021.AuditLogArchiveJob",
+                "Diten.Platform.MOD-0022.ESignatureRequestExpirySweepJob",
                 "Diten.Platform.MOD-0023.WorkflowEscalationSweepJob",
                 "Diten.Platform.MOD-0024.TaskDueSoonSweepJob",
                 "Diten.Platform.MOD-0024.TaskRecurrenceSweepJob",

@@ -4,6 +4,7 @@ using System.Text.Json;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Infrastructure.Settings;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Diten.AuthService.Infrastructure.Services;
@@ -32,19 +33,31 @@ public sealed class ESignReauthTicketService : IESignReauthTicketService
         IESignReauthWindowRepository windows,
         IAuthAuditService audit,
         IOptions<ESignOptions> options,
-        IOptions<JwtSettings> jwtSettings)
+        IOptions<JwtSettings> jwtSettings,
+        IHostEnvironment environment)
     {
         _tickets = tickets;
         _windows = windows;
         _audit = audit;
 
-        var configured = options.Value.HashSecret;
-        var secret = !string.IsNullOrWhiteSpace(configured) ? configured : jwtSettings.Value.Secret;
-        _key = string.IsNullOrWhiteSpace(secret) ? null : Encoding.UTF8.GetBytes(HashPurpose + secret);
+        _key = ResolveHashKey(options.Value.HashSecret, jwtSettings.Value.Secret, environment.IsDevelopment());
         _lifetime = TimeSpan.FromSeconds(Math.Clamp(options.Value.TicketLifetimeSeconds, MinLifetimeSeconds, MaxLifetimeSeconds));
     }
 
     public bool IsConfigured => _key is not null;
+
+    /// <summary>
+    /// FU-0022-12 (CT decision 2026-10-08): outside Development <c>ESign:HashSecret</c> is REQUIRED — there is no fallback
+    /// to <c>JwtSettings:Secret</c>. A missing secret yields no key, so <see cref="IsConfigured"/> is false and every
+    /// re-authentication answers 503 <c>ESIGN_REAUTH_UNAVAILABLE</c> (fail closed). Development keeps the fallback.
+    /// </summary>
+    public static byte[]? ResolveHashKey(string? hashSecret, string? jwtSecret, bool isDevelopment)
+    {
+        var secret = !string.IsNullOrWhiteSpace(hashSecret)
+            ? hashSecret
+            : isDevelopment ? jwtSecret : null;
+        return string.IsNullOrWhiteSpace(secret) ? null : Encoding.UTF8.GetBytes(HashPurpose + secret);
+    }
 
     public async Task<IssuedESignTicket> IssueAsync(
         Guid tenantId,
