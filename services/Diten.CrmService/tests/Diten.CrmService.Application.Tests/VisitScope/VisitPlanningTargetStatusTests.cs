@@ -189,6 +189,106 @@ public sealed class VisitPlanningTargetStatusTests
         Assert.Contains(TargetStatusQuickFilters.InvalidQuickCode, bad.Errors!);
     }
 
+    // ── WP-VP-4M (4M-BE) — "this week" = the selected week, quick filter counts, planned this week ─────────────────
+
+    private static readonly DateOnly Week42 = new(2026, 10, 12), Week43 = new(2026, 10, 19), Week44 = new(2026, 10, 26);
+
+    [Fact]
+    public async Task Due_this_week_is_read_for_the_selected_week_and_for_today_without_one()
+    {
+        // 4-week October period, twice in the period ⇒ stride 2 weeks; seen on Tue 13 Oct (week 42); today = Wed 14 Oct.
+        var w = new World();
+        var doctor = w.Doctor("Ayşe Kaya", required: 2);
+        w.Report(w.Plan(doctor, new DateOnly(2026, 10, 13)), VisitExecutionOutcome.Completed, new DateTimeOffset(2026, 10, 13, 10, 0, 0, TimeSpan.Zero));
+
+        var today = (await w.Reader().ReadAsync(w.Request(doctor), default))[doctor];
+        var week44 = (await w.Reader().ReadAsync(w.Request(doctor) with { WeekStart = Week44 }, default))[doctor];
+        var week43 = (await w.Reader().ReadAsync(w.Request(doctor) with { WeekStart = Week43 }, default))[doctor];
+
+        Assert.False(today.DueThisWeek);  // today's week: seen this very week
+        Assert.True(week44.DueThisWeek);  // the selected week 44: two weeks since — due
+        Assert.False(week43.DueThisWeek); // week 43: only one week since
+        Assert.Equal((1, 1), (today.Remaining, week44.Remaining)); // the period counts do not move with the week
+        // the reference day: the selected Monday — or the period's first day when the period starts mid-week; else today
+        var midWeek = new ContactStatusPeriod(null, "C", new DateOnly(2026, 10, 7), new DateOnly(2026, 11, 1));
+        Assert.Equal(new DateOnly(2026, 10, 7), ContactPeriodStatusReader.ReferenceDay(new DateOnly(2026, 10, 5), Today, midWeek));
+        Assert.Equal(Week43, ContactPeriodStatusReader.ReferenceDay(Week43, Today, midWeek));
+        Assert.Equal(Today, ContactPeriodStatusReader.ReferenceDay(null, Today, midWeek));
+    }
+
+    [Fact]
+    public async Task A_weekly_default_doctor_without_a_visit_is_due_in_the_selected_week()
+    {
+        var w = new World();
+        var unknown = w.Doctor("Bilinmeyen", required: 1);
+        w.Policies.Items.RemoveAll(p => p.TargetId == unknown); // no policy ⇒ the 4L weekly default (4 working weeks)
+
+        var status = (await w.Reader().ReadAsync(w.Request(unknown) with { WeekStart = Week43 }, default))[unknown];
+
+        Assert.Equal((4, 4, "weekly"), (status.RequiredVisitCount, status.Remaining, status.FrequencyDefault));
+        Assert.True(status.DueThisWeek);
+        Assert.True(ContactPeriodStatusReader.IsDueThisWeek(4, 4, October, null, Week43));
+        Assert.False(ContactPeriodStatusReader.IsDueThisWeek(4, null, October, null, Week43)); // only "no requirement at all" is never due
+    }
+
+    [Fact]
+    public async Task Planned_this_week_says_a_written_visit_of_the_selected_week_and_is_null_without_one()
+    {
+        var w = new World();
+        var planned = w.Doctor("Planlı", required: 2);
+        var other = w.Doctor("Diğer", required: 2);
+        var cancelled = w.Doctor("İptal", required: 2);
+        w.Plan(planned, new DateOnly(2026, 10, 21));
+        w.Plan(other, new DateOnly(2026, 10, 28));
+        w.Plan(cancelled, new DateOnly(2026, 10, 20), status: PlannedVisitStatus.Cancelled);
+
+        var asked = await w.Reader().ReadAsync(w.Request(planned, other, cancelled) with { WeekStart = Week43 }, default);
+        var none = await w.Reader().ReadAsync(w.Request(planned, other, cancelled), default);
+
+        Assert.Equal((true, false, false), (asked[planned].PlannedThisWeek, asked[other].PlannedThisWeek, asked[cancelled].PlannedThisWeek));
+        Assert.All(none.Values, s => Assert.Null(s.PlannedThisWeek));
+    }
+
+    [Fact]
+    public async Task The_doctors_read_takes_the_selected_week_counts_its_quick_filters_and_refuses_a_bad_week()
+    {
+        var w = new World();
+        var account = w.Account("Memorial Şişli");
+        var seen = w.Doctor("Ahmet Demir", required: 2, account: account);
+        var never = w.Doctor("Burak Çelik", required: 2, account: account);
+        var weekly = w.Doctor("Cem Yılmaz", required: 1, account: account);
+        w.Policies.Items.RemoveAll(p => p.TargetId == weekly);
+        w.Report(w.Plan(seen, new DateOnly(2026, 10, 13)), VisitExecutionOutcome.Completed, new DateTimeOffset(2026, 10, 13, 10, 0, 0, TimeSpan.Zero));
+        w.Plan(never, new DateOnly(2026, 10, 27));
+        var session = w.Session(Rep, new[] { account }, Array.Empty<Guid>(), (seen, account), (never, account), (weekly, account));
+
+        var all = (await w.Doctors(new GetAccountDoctorsQuery(account, session, WeekStart: "2026-10-26"), default)).Data!;
+        var due = (await w.Doctors(new GetAccountDoctorsQuery(account, session, Quick: "due", WeekStart: "2026-10-26"), default)).Data!;
+        var neverList = (await w.Doctors(new GetAccountDoctorsQuery(account, session, Quick: "never", WeekStart: "2026-10-26"), default)).Data!;
+
+        // week 44: every one is due (seen two weeks before; never seen; the weekly default) — counted like the filter
+        Assert.Equal(new TargetQuickCountsDto(3, 2, 3), all.QuickCounts);
+        Assert.Equal(all.QuickCounts!.Due, due.Items.Count);
+        Assert.Equal(all.QuickCounts!.Due, due.QuickCounts!.Due); // the counts do not depend on the asked filter
+        Assert.Equal(all.QuickCounts!.Never, neverList.Items.Count);
+        Assert.True(all.Items.Single(i => i.ContactId == never).Status.PlannedThisWeek);  // written on Tue 27 Oct
+        Assert.False(all.Items.Single(i => i.ContactId == seen).Status.PlannedThisWeek);
+
+        // the plan's targets read takes the same week
+        var targets = (await w.Targets(new GetSessionTargetsQuery(session, "2026-10-26"), default)).Data!;
+        Assert.True(targets.Doctors.Single(d => d.ContactId == seen).Status.DueThisWeek);
+        Assert.True(targets.Doctors.Single(d => d.ContactId == never).Status.PlannedThisWeek);
+
+        // a bad week: not a Monday, outside the period, not a date — 400 invalid_week on both reads
+        foreach (var bad in new[] { "2026-10-27", "2026-11-09", "next" })
+        {
+            var doctors = await w.Doctors(new GetAccountDoctorsQuery(account, session, WeekStart: bad), default);
+            Assert.Equal((400, "invalid_week"), (doctors.StatusCode, doctors.Errors![0]));
+            var plan = await w.Targets(new GetSessionTargetsQuery(session, bad), default);
+            Assert.Equal((400, "invalid_week"), (plan.StatusCode, plan.Errors![0]));
+        }
+    }
+
     // ── 5. the read count does not grow with the doctor count ──────────────────────────────────────────────────────
 
     [Fact]

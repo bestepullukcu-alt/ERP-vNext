@@ -66,6 +66,15 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
         var now = DateTimeOffset.UtcNow;
         var period = TargetStatusPeriods.From(await _periods.GetByIdAsync(session.CyclePeriodId, cancellationToken));
         var selection = session.Selection;
+        // WP-VP-4M (1) — "this week" is the selected week when one is asked (a Monday of the plan's period).
+        if (!TargetStatusPeriods.TryParseSelectedWeek(request.WeekStart, period, out var selectedWeek))
+        {
+            return Response<SessionTargetsDto>.Fail(new[]
+            {
+                Handlers.CommandHandlers.PlanningSessionErrorCodes.InvalidWeek,
+                "weekStart must be a Monday (yyyy-MM-dd) of a week of the plan's period."
+            }, 400);
+        }
 
         var accountIds = selection.SelectedAccountIds
             .Concat(selection.SelectedPharmacyIds)
@@ -96,7 +105,7 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
         var statuses = await _status.ReadAsync(
             new ContactPeriodStatusRequest(
                 tenantId, session.ResourceId, period, contactIds,
-                DateOnly.FromDateTime(now.UtcDateTime), now, contacts),
+                DateOnly.FromDateTime(now.UtcDateTime), now, contacts, selectedWeek),
             cancellationToken);
 
         SessionTargetAccountDto ToTarget(Guid id) => accounts.TryGetValue(id, out var a)

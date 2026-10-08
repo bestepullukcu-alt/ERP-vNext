@@ -45,6 +45,37 @@ public static class TargetStatusPeriods
         };
     }
 
+    /// <summary>WP-VP-4M (1) — the selected week of a status read: absent = none (true, null); a Monday (yyyy-MM-dd) of the
+    /// period's weeks (any Monday when no period is known) = that week; anything else = refused (400 invalid_week).</summary>
+    public static bool TryParseSelectedWeek(string? weekStart, ContactStatusPeriod? period, out DateOnly? monday)
+    {
+        monday = null;
+        if (string.IsNullOrWhiteSpace(weekStart))
+        {
+            return true;
+        }
+
+        if (period is not null)
+        {
+            if (!PlanningWeekCalendar.TryParseWeek(weekStart, period.Start, period.End, out var span))
+            {
+                return false;
+            }
+
+            monday = span.Monday;
+            return true;
+        }
+
+        if (!DateOnly.TryParseExact(weekStart.Trim(), PlanningWeekCalendar.DateFormat, CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var day) || day.DayOfWeek != DayOfWeek.Monday)
+        {
+            return false;
+        }
+
+        monday = day;
+        return true;
+    }
+
     public static TargetStatusPeriodDto ToDto(ContactStatusPeriod? period)
         => period is null
             ? new TargetStatusPeriodDto(null, null, null, null, null)
