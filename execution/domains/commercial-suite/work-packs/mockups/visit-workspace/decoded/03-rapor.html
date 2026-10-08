@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+<link rel="stylesheet" href="theme.css">
+</helmet>
+<sc-if value="{{ standalone }}"><div style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#f5f5f9;font-family:'Public Sans',sans-serif;padding:24px"><div style="background:#fff;border-radius:8px;box-shadow:0 3px 8px rgba(34,48,62,.08);padding:28px 32px;max-width:440px;display:grid;gap:10px;text-align:center"><div style="font-size:17px;font-weight:500;color:#384551">Bu dosya prototipin bir parçası</div><div style="font-size:14px;color:#646e78">Tek başına açıldığında boş görünür. Tüm ekranlar için ana dosyayı açın.</div><a href="Ziyaret Çalışma Alanı.dc.html" style="justify-self:center;margin-top:6px;padding:10px 18px;border-radius:6px;background:#0b1a8c;color:#fff;font-size:14px;font-weight:500;text-decoration:none">Ziyaret Çalışma Alanı'nı aç</a></div></div></sc-if>
+<div data-screen-label="{{ screenLabel }}" style="position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);color:var(--tx)">
+  <div ref="{{ scrollRef }}" style="flex:1;min-height:0;overflow-y:auto">
+    <div style="max-width:980px;margin:0 auto;padding:{{ pagePad }};display:grid;gap:14px">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button onClick="{{ back }}" aria-label="Geri" style="width:{{ backS }}px;height:{{ backS }}px;flex:0 0 auto;border:1px solid var(--bd2);background:var(--card);color:var(--h);border-radius:8px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="bx bx-arrow-back"></i></button>
+        <div style="flex:1;min-width:0"><h4 style="margin:0;font-size:{{ titleS }}px;font-weight:500;color:var(--h)">{{ title }}</h4><div style="font-size:13px">{{ sub }}</div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="white-space:nowrap;display:inline-flex;gap:5px;align-items:center;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ dlBg }};color:{{ dlFg }}"><i class="bx bx-time-five" style="font-size:16px"></i>{{ dlL }}</span>
+        <span style="white-space:nowrap;display:inline-flex;gap:5px;align-items:center;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ valBg }};color:{{ valFg }}"><i class="bx {{ valIc }}" style="font-size:16px"></i>{{ valL }}</span>
+        <span style="font-size:12px;color:var(--mu);display:flex;gap:4px;align-items:center"><i class="bx bx-cloud-upload" style="font-size:15px"></i>{{ saveL }}</span>
+      </div>
+
+      <sc-if value="{{ ro }}"><div style="background:var(--okb);color:var(--ok);border-radius:8px;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px"><span style="display:flex;gap:8px;align-items:center"><i class="bx bx-check-circle" style="font-size:20px"></i><span><strong>Rapor gönderildi.</strong> {{ roL }}</span></span><button onClick="{{ unlock }}" style="height:36px;background:{{ unlockBg }};color:#fff;border:0;border-radius:6px;padding:0 14px;font-size:14px;font-weight:500;cursor:pointer">{{ unlockL }}</button></div></sc-if>
+      <sc-if value="{{ fix }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px;display:grid;gap:10px;border-top:3px solid var(--wac)">
+          <div style="font-size:15px;font-weight:600;color:var(--h)">Gerekçeli düzeltme</div>
+          <div style="font-size:13px">Gönderimden 60 dakika geçti. Gerekçe zorunlu; değişen alanlar rapor geçmişinde görünür.</div>
+          <textarea value="{{ fixWhy }}" onChange="{{ onFixWhy }}" rows="2" placeholder="Gerekçe (zorunlu)" style="border:1px solid var(--bd2);border-radius:6px;padding:8px 12px;font-size:14px;color:var(--h);background:var(--card)"></textarea>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSent }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:16px">
+          <div style="display:flex;gap:12px;align-items:center"><span style="width:48px;height:48px;border-radius:10px;background:var(--okb);color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:26px;flex:0 0 auto"><i class="bx bx-check-circle"></i></span><div><div style="font-size:19px;font-weight:600;color:var(--h)">Rapor gönderildi</div><div style="font-size:13px">8 Eki 11:58 · 60 dakika içinde değiştirebilirsiniz.</div></div></div>
+          <div style="display:grid;gap:4px"><span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Gönderilen e-postalar</span><span style="font-size:12px;color:var(--mu)">Rapordaki yanıtlara göre otomatik oluşturuldu.</span></div>
+          <sc-for list="{{ sentMails }}" as="m">
+            <div style="border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <span style="width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;background:{{ m.bg }};color:{{ m.fg }};flex:0 0 auto"><i class="bx {{ m.ic }}"></i></span>
+              <div style="flex:1 1 220px;display:grid;gap:2px"><span style="font-size:14px;font-weight:600;color:var(--h)">{{ m.t }}</span><span style="font-size:12px">→ {{ m.to }}</span><span style="font-size:12px;color:var(--mu)">{{ m.why }}</span></div>
+              <button onClick="{{ m.go }}" style="min-height:38px;border:1px solid var(--pt);background:transparent;color:var(--pt);border-radius:6px;padding:0 14px;font-size:13px;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-show"></i>Önizle</button>
+            </div>
+          </sc-for>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ toCal }}" style="min-height:44px;border:0;background:var(--p);color:#fff;border-radius:8px;padding:0 18px;font-size:14px;font-weight:500;cursor:pointer">Takvime dön</button><button onClick="{{ viewRep }}" style="min-height:44px;border:1px solid var(--bd2);background:var(--card);color:var(--h);border-radius:8px;padding:0 18px;font-size:14px;cursor:pointer">Raporu gör</button></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}">
+      <div role="tablist" aria-label="Rapor adımları" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+          <button role="tab" onClick="{{ s.go }}" style="flex:0 0 auto;min-height:44px;border-radius:8px;padding:6px 12px 6px 6px;display:flex;gap:8px;align-items:center;cursor:pointer;border:1px solid {{ s.bd }};background:{{ s.bg }};color:{{ s.fg }}">
+            <span style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:{{ s.nBg }};color:{{ s.nFg }}">{{ s.mark }}</span>
+            <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.2"><span style="font-size:14px;font-weight:500">{{ s.l }}</span><span style="font-size:11px;color:{{ s.sFg }}">{{ s.sl }}</span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <fieldset disabled="{{ ro }}" style="border:0;padding:0;margin:0;min-width:0;display:grid;gap:14px">
+
+      <sc-if value="{{ isGenel }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:18px">
+          <div style="font-size:17px;font-weight:500;color:var(--h)">Genel</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+            <div style="display:grid;gap:6px;align-content:start"><span style="font-size:13px;font-weight:500;color:var(--h)">Sonuç</span><span style="justify-self:start;padding:8px 12px;border-radius:6px;background:var(--okb);color:var(--ok);font-size:14px;font-weight:500;display:flex;gap:6px;align-items:center"><i class="bx bx-check"></i>Yapıldı</span><span style="font-size:12px;color:var(--mu)">Yapılamadı / Ertele takvimden girilir.</span></div>
+            <div style="display:grid;gap:6px;align-content:start"><span style="font-size:13px;font-weight:500;color:var(--h)">Gerçek başlangıç / bitiş</span><span style="height:44px;border:1px solid var(--bd);border-radius:6px;padding:0 12px;display:flex;align-items:center;gap:6px;font-size:14px;background:var(--soft2)"><i class="bx bx-lock-alt" style="color:var(--mu)"></i>11:31 – 11:52 · 21 dk</span><span style="font-size:12px;color:var(--mu)">Sunucu saati; değiştirilemez.</span></div>
+            <sc-if value="{{ notPh }}">
+              <div style="display:grid;gap:6px;align-content:start"><span style="font-size:13px;font-weight:500;color:var(--h)">Ziyaret türü</span><div style="justify-self:start;display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ kinds }}" as="k"><button type="button" onClick="{{ k.go }}" style="border:0;min-height:44px;padding:0 16px;font-size:14px;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div></div>
+              <div style="display:grid;gap:6px;align-content:start"><span style="font-size:13px;font-weight:500;color:var(--h)">Ortak ziyaret</span><label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--h);min-height:44px"><input type="checkbox" checked="{{ joint }}" onChange="{{ toggleJoint }}" style="accent-color:var(--p);width:18px;height:18px">Selin Karaca · Bölge müdürü</label></div>
+            </sc-if>
+            <sc-if value="{{ isPh }}">
+              <div style="display:grid;gap:6px;align-content:start"><span style="font-size:13px;font-weight:500;color:var(--h)">Görüşülen kişi</span><div style="justify-self:start;display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ who }}" as="k"><button type="button" onClick="{{ k.go }}" style="border:0;min-height:44px;padding:0 14px;font-size:14px;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div></div>
+            </sc-if>
+          </div>
+          <label style="display:grid;gap:6px"><span style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:500;color:var(--h)">Genel değerlendirme<span style="display:inline-flex;gap:3px;align-items:center;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;background:var(--okb);color:var(--ok)"><i class="bx bx-check"></i>sunumdan</span></span><textarea value="{{ general }}" onChange="{{ onGeneral }}" rows="3" style="border:1px solid var(--bd2);border-radius:6px;padding:10px 12px;font-size:14px;color:var(--h);background:var(--card)"></textarea></label>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isProd }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:14px {{ cardPadX }};display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:18px;font-weight:600;color:var(--h)">{{ c.n }}</span>
+          <span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;background:{{ c.rBg }};color:{{ c.rFg }};border:1px solid {{ c.rBd }}">{{ c.role }}</span>
+          <sc-if value="{{ c.extra }}"><span style="padding:2px 8px;border-radius:4px;font-size:12px;background:var(--wab);color:var(--wa)">plan dışı ürün</span></sc-if>
+          <div style="flex:1"></div>
+          <sc-for list="{{ c.groupsMini }}" as="g"><span style="display:inline-flex;gap:4px;align-items:center;font-size:12px;color:{{ g.fg }}"><i class="bx {{ g.ic }}"></i>{{ g.l }}</span></sc-for>
+        </div>
+        <sc-if value="{{ isPhone }}"><div style="font-size:12px;color:var(--mu);display:flex;gap:6px;align-items:center;justify-content:center"><i class="bx bx-chevrons-left"></i>3 bölüm · yana kaydırın<i class="bx bx-chevrons-right"></i></div></sc-if>
+        <div style="display:flex;flex-direction:{{ gDir }};gap:14px;overflow-x:{{ gOv }};scroll-snap-type:{{ gSnap }};margin:0 {{ gBleed }};padding:0 {{ gBleedP }} 4px">
+
+          <div style="flex:{{ gFlex }};min-width:0;scroll-snap-align:center;background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:18px;align-content:start">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:500;color:var(--h);display:flex;gap:8px;align-items:center"><span style="width:26px;height:26px;border-radius:6px;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">A</span>Sunum ve ilgi</span><span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:{{ c.gA.bg }};color:{{ c.gA.fg }}">{{ c.gA.l }}</span></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+              <label style="display:grid;gap:6px;align-content:start"><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;font-weight:500;color:var(--h)">Sunulan içerik / aşama<span style="color:var(--da)">*</span><sc-if value="{{ c.onPlan }}"><span style="padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;background:var(--okb);color:var(--ok)">plana uydu</span></sc-if></span><select value="{{ c.stage }}" onChange="{{ c.onStage }}" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"><sc-for list="{{ stages }}" as="o"><option>{{ o }}</option></sc-for></select></label>
+              <label style="display:grid;gap:6px;align-content:start"><span style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:500;color:var(--h)">Ürüne harcanan süre (dk)<span style="color:var(--da)">*</span><span style="display:inline-flex;gap:3px;align-items:center;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;background:var(--okb);color:var(--ok)"><i class="bx bx-check"></i>sunumdan</span></span><input type="number" value="{{ c.min }}" onChange="{{ c.onMin }}" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:14px;color:var(--h);background:var(--card)"><span style="font-size:12px;color:var(--mu)">Sayaç: {{ c.minAuto }} · düzeltebilirsiniz</span></label>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+              <div style="display:grid;gap:6px;align-content:start"><span style="font-size:13px;font-weight:500;color:var(--h)">Etkinlik <span style="color:var(--da)">*</span> <span style="font-weight:400;color:var(--mu)">· mesaj karşılık buldu mu</span></span><div style="display:flex;gap:4px"><sc-for list="{{ c.stars }}" as="x"><button type="button" onClick="{{ x.go }}" aria-label="{{ x.l }}" style="width:40px;height:44px;border:0;background:transparent;font-size:30px;color:{{ x.c }};cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center"><i class="bx {{ x.ic }}"></i></button></sc-for></div></div>
+              <div style="display:grid;gap:6px;align-content:start"><span style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:500;color:var(--h)">Doktorun ilgisi<span style="color:var(--da)">*</span><sc-if value="{{ c.ilgiE4 }}"><span style="display:inline-flex;gap:3px;align-items:center;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;background:var(--okb);color:var(--ok)"><i class="bx bx-check"></i>sunumdan</span></sc-if></span><div style="justify-self:start;display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ c.ilgi }}" as="k"><button type="button" onClick="{{ k.go }}" style="border:0;min-height:44px;padding:0 14px;font-size:14px;cursor:pointer;display:flex;gap:5px;align-items:center;background:{{ k.bg }};color:{{ k.fg }}"><i class="bx {{ k.ic }}"></i>{{ k.l }}</button></sc-for></div></div>
+            </div>
+            <div style="display:grid;gap:8px">
+              <span style="font-size:13px;font-weight:500;color:var(--h)">Bağlılık (benimseme) aşaması <span style="color:var(--da)">*</span></span>
+              <div style="display:grid;grid-template-columns:repeat({{ adoptCols }},minmax(0,1fr));gap:4px"><sc-for list="{{ c.adopt }}" as="a"><button type="button" onClick="{{ a.go }}" style="min-height:44px;border-radius:6px;font-size:12px;cursor:pointer;padding:4px;line-height:1.2;border:1px solid {{ a.bd }};background:{{ a.bg }};color:{{ a.fg }}">{{ a.l }}</button></sc-for></div>
+              <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--mu)"><span>Önceki ziyaret: {{ c.adoptPrev }}</span><button type="button" onClick="{{ c.sameAdopt }}" style="min-height:28px;border:1px solid var(--bd2);background:var(--card);color:var(--pt);border-radius:4px;padding:0 10px;font-size:12px;cursor:pointer">Aynısı</button></div>
+            </div>
+          </div>
+
+          <div style="flex:{{ gFlex }};min-width:0;scroll-snap-align:center;background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:18px;align-content:start">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:500;color:var(--h);display:flex;gap:8px;align-items:center"><span style="width:26px;height:26px;border-radius:6px;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">B</span>Pazar ve rakip</span><span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:{{ c.gB.bg }};color:{{ c.gB.fg }}">{{ c.gB.l }}</span></div>
+            <div style="display:grid;gap:8px">
+              <div style="display:grid;gap:2px"><span style="font-size:13px;font-weight:500;color:var(--h)">Endikasyondaki hasta (aylık) <span style="color:var(--da)">*</span></span><span style="font-size:12px;color:var(--mu)">Onaylı endikasyon × hasta profili listesi. Yalnız doktorun gördüğü satırları işaretleyin.</span></div>
+              <sc-for list="{{ c.indRows }}" as="r">
+                <div style="border:1px solid {{ r.bd }};border-radius:8px;padding:10px 12px;display:grid;gap:10px;background:{{ r.bg }}">
+                  <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;min-height:28px"><input type="checkbox" checked="{{ r.on }}" onChange="{{ r.toggle }}" style="accent-color:var(--p);width:18px;height:18px;margin-top:1px;flex:0 0 auto"><span style="display:grid;gap:1px"><span style="font-size:14px;font-weight:500;color:var(--h)">{{ r.prof }}</span><span style="font-size:12px;color:var(--mu)">{{ r.ind }}</span></span></label>
+                  <sc-if value="{{ r.on }}">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-left:28px">
+                      <div style="display:flex;gap:6px;align-items:center"><input type="number" value="{{ r.n }}" placeholder="{{ r.ph }}" onChange="{{ r.onN }}" style="width:96px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"><span style="font-size:12px">hasta / ay</span></div>
+                      <div role="radiogroup" aria-label="Doğruluk" style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ r.tags }}" as="t"><button type="button" onClick="{{ t.go }}" style="border:0;min-height:36px;padding:0 10px;font-size:12px;cursor:pointer;background:{{ t.bg }};color:{{ t.fg }}">{{ t.l }}</button></sc-for></div>
+                      <span style="display:flex;gap:6px;align-items:center;font-size:12px;color:var(--mu)">{{ r.prev }}<button type="button" onClick="{{ r.same }}" style="min-height:26px;border:1px solid var(--bd2);background:var(--card);color:var(--pt);border-radius:4px;padding:0 8px;font-size:12px;cursor:pointer">Aynısı</button></span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <button type="button" onClick="{{ c.toggleNoInd }}" style="justify-self:start;min-height:36px;padding:0 12px;border-radius:18px;font-size:13px;cursor:pointer;border:1px dashed {{ c.noIndBd }};background:{{ c.noIndBg }};color:{{ c.noIndFg }}">Bu endikasyonlarda hasta görmüyor</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+              <sc-for list="{{ c.nums }}" as="f"><label style="display:grid;gap:6px;align-content:start"><span style="font-size:13px;font-weight:500;color:var(--h)">{{ f.l }}<sc-if value="{{ f.req }}"> <span style="color:var(--da)">*</span></sc-if></span><input type="number" value="{{ f.v }}" placeholder="{{ f.ph }}" onChange="{{ f.on }}" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:14px;color:var(--h);background:var(--card)"><span style="display:flex;gap:6px;align-items:center;font-size:12px;color:var(--mu)">{{ f.prev }}<button type="button" onClick="{{ f.same }}" style="min-height:26px;border:1px solid var(--bd2);background:var(--card);color:var(--pt);border-radius:4px;padding:0 8px;font-size:12px;cursor:pointer">Aynısı</button></span></label></sc-for>
+            </div>
+            <div style="border-radius:8px;background:var(--pl);color:var(--pt);padding:12px 14px;display:grid;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;text-transform:uppercase;letter-spacing:.3px;color:var(--pt2)">Hesaplanan</span><div style="display:flex;gap:4px;align-items:center;font-size:11px;flex-wrap:wrap"><span style="color:var(--pt2)">Bağlılık modeli · ürün sahibi:</span><sc-for list="{{ bModels }}" as="b"><button type="button" onClick="{{ b.go }}" style="border:1px solid var(--pbd);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;background:{{ b.bg }};color:{{ b.fg }}">{{ b.l }}</button></sc-for></div></div>
+              <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:14px"><span>Potansiyel: <strong>{{ c.pot }}</strong></span><span>Bağlılık: <strong>{{ c.bag }}</strong></span></div>
+              <sc-if value="{{ c.hasQ }}"><span style="justify-self:start;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;background:{{ c.qBg }};color:{{ c.qFg }}">{{ c.q }}</span></sc-if>
+            </div>
+            <div style="display:grid;gap:10px">
+              <span style="font-size:13px;font-weight:500;color:var(--h)">Rakip · doktorun kullandığı <span style="color:var(--da)">*</span></span>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ c.comps }}" as="k"><button type="button" onClick="{{ k.go }}" style="min-height:40px;padding:0 12px;border-radius:20px;font-size:13px;cursor:pointer;display:flex;gap:5px;align-items:center;border:1px solid {{ k.bd }};background:{{ k.bg }};color:{{ k.fg }}"><sc-if value="{{ k.on }}"><i class="bx bx-check"></i></sc-if>{{ k.l }}</button></sc-for><button type="button" onClick="{{ c.toggleNoComp }}" style="min-height:40px;padding:0 12px;border-radius:20px;font-size:13px;cursor:pointer;border:1px dashed {{ c.noCompBd }};background:{{ c.noCompBg }};color:{{ c.noCompFg }}">Rakip kullanmıyor</button></div>
+              <sc-for list="{{ c.compCards }}" as="k">
+                <div style="border:1px solid var(--bd);border-radius:8px;padding:12px;display:grid;gap:8px">
+                  <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><span style="font-size:15px;font-weight:600;color:var(--h)">{{ k.n }}</span><span style="font-size:13px;color:var(--mu)">{{ k.f }}</span></div>
+                  <sc-if value="{{ k.known }}">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px 14px;font-size:12px">
+                      <span><span style="color:var(--mu)">Etken madde</span><br><span style="color:var(--h)">{{ k.api }}</span></span>
+                      <span><span style="color:var(--mu)">Form / doz</span><br><span style="color:var(--h)">{{ k.form }}</span></span>
+                      <span><span style="color:var(--mu)">Fiyat (kutu)</span><br><span style="color:var(--h)">{{ k.fiyat }}</span></span>
+                      <span><span style="color:var(--mu)">Geri ödeme</span><br><span style="color:var(--h)">{{ k.go }}</span></span>
+                      <span><span style="color:var(--mu)">Pazar payı</span><br><span style="color:var(--h)">kurum {{ k.pk }} · bölge {{ k.pb }}</span></span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ k.custom }}"><span style="justify-self:start;padding:1px 7px;border-radius:4px;font-size:11px;background:var(--wab);color:var(--wa)">temsilci ekledi · referans listesine onay bekliyor</span></sc-if>
+                  <label style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--h);flex-wrap:wrap">Bu doktorda bu rakibi kullanan hasta<input type="number" value="{{ k.pat }}" onChange="{{ k.onPat }}" placeholder="%" style="width:80px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)">%</label>
+                </div>
+              </sc-for>
+              <sc-if value="{{ c.addOpen }}">
+                <div style="border:1px dashed var(--pbd);border-radius:8px;padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;align-items:end">
+                  <label style="display:grid;gap:4px;font-size:12px;color:var(--h)">Rakip ürün adı<input value="{{ newC }}" onChange="{{ onNewC }}" style="height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"></label>
+                  <label style="display:grid;gap:4px;font-size:12px;color:var(--h)">Firma<input value="{{ newF }}" onChange="{{ onNewF }}" style="height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"></label>
+                  <button type="button" onClick="{{ c.addComp }}" style="height:40px;border:0;border-radius:6px;background:var(--p);color:#fff;font-size:14px;cursor:pointer">Ekle</button>
+                </div>
+              </sc-if>
+              <button type="button" onClick="{{ c.toggleAdd }}" style="justify-self:start;min-height:36px;border:0;background:transparent;color:var(--pt);font-size:13px;cursor:pointer;display:flex;gap:4px;align-items:center;padding:0"><i class="bx bx-plus"></i>Listede yok, rakip ekle</button>
+              <span style="font-size:12px;color:var(--mu)">Rakibe göre: bir dokunuş avantajımız (+), iki dokunuş dezavantajımız (−)</span>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ c.adv }}" as="k"><button type="button" onClick="{{ k.go }}" style="min-height:34px;padding:0 10px;border-radius:4px;font-size:12px;cursor:pointer;border:1px solid {{ k.bd }};background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div>
+            </div>
+          </div>
+
+          <div style="flex:{{ gFlex }};min-width:0;scroll-snap-align:center;background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:18px;align-content:start">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:500;color:var(--h);display:flex;gap:8px;align-items:center"><span style="width:26px;height:26px;border-radius:6px;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">C</span>Talepler ve sonraki adım</span><span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:{{ c.gC.bg }};color:{{ c.gC.fg }}">{{ c.gC.l }}</span></div>
+            <sc-for list="{{ c.lists }}" as="L">
+              <div style="display:grid;gap:8px">
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="font-size:13px;font-weight:500;color:var(--h)">{{ L.t }} <span style="color:var(--da)">*</span></span><sc-if value="{{ L.e4 }}"><span style="display:inline-flex;gap:3px;align-items:center;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;background:var(--okb);color:var(--ok)"><i class="bx bx-check"></i>sunumdan</span></sc-if></div>
+                <sc-for list="{{ L.items }}" as="o">
+                  <div style="border:1px solid var(--bd);border-radius:8px;padding:10px;display:grid;gap:8px">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap"><select value="{{ o.cat }}" onChange="{{ o.onCat }}" style="flex:1 1 160px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"><sc-for list="{{ L.cats }}" as="x"><option>{{ x }}</option></sc-for></select><sc-if value="{{ L.isReq }}"><input type="date" value="{{ o.date }}" onChange="{{ o.onDate }}" style="height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"></sc-if><button type="button" onClick="{{ o.rm }}" aria-label="Kaldır" style="width:40px;height:40px;border:0;background:var(--soft);color:var(--mu);border-radius:6px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center"><i class="bx bx-trash"></i></button></div>
+                    <sc-if value="{{ L.isObj }}"><input value="{{ o.note }}" onChange="{{ o.onNote }}" placeholder="Not" style="height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"><div style="display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap">Giderildi mi?<div style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ o.res }}" as="r"><button type="button" onClick="{{ r.go }}" style="border:0;min-height:36px;padding:0 12px;font-size:13px;cursor:pointer;background:{{ r.bg }};color:{{ r.fg }}">{{ r.l }}</button></sc-for></div></div></sc-if>
+                  </div>
+                </sc-for>
+                <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" onClick="{{ L.add }}" style="min-height:40px;border:1px dashed var(--bd2);background:transparent;color:var(--h);border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer;display:flex;gap:4px;align-items:center"><i class="bx bx-plus"></i>{{ L.addL }}</button><sc-if value="{{ L.empty }}"><button type="button" onClick="{{ L.toggleNone }}" style="min-height:40px;border-radius:20px;padding:0 14px;font-size:13px;cursor:pointer;border:1px dashed {{ L.noneBd }};background:{{ L.noneBg }};color:{{ L.noneFg }}">{{ L.noneL }}</button></sc-if></div>
+              </div>
+            </sc-for>
+            <div style="display:grid;gap:8px">
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="font-size:13px;font-weight:500;color:var(--h)">Numune <span style="color:var(--da)">*</span></span><sc-if value="{{ c.skuE4 }}"><span style="display:inline-flex;gap:3px;align-items:center;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;background:var(--okb);color:var(--ok)"><i class="bx bx-check"></i>sunumdan</span></sc-if></div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
+                <select value="{{ c.sku }}" onChange="{{ c.onSku }}" style="grid-column:1/-1;height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"><option value="">Seçin…</option><option value="yok">Numune verilmedi</option><sc-for list="{{ c.skus }}" as="o"><option>{{ o }}</option></sc-for></select>
+                <sc-if value="{{ c.hasSku }}"><label style="display:grid;gap:4px;font-size:12px;color:var(--h)">Adet<input type="number" value="{{ c.qty }}" onChange="{{ c.onQty }}" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:14px;color:var(--h);background:var(--card)"></label><label style="display:grid;gap:4px;font-size:12px;color:var(--h)">Lot no · opsiyonel<input value="{{ c.lot }}" onChange="{{ c.onLot }}" placeholder="L2609A" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:14px;color:var(--h);background:var(--card)"></label><span style="grid-column:1/-1;font-size:12px;display:flex;gap:6px;align-items:center;color:var(--ok)"><i class="bx bx-pen"></i>Teslim imzası alındı · bitiş özeti 11:52</span></sc-if>
+              </div>
+            </div>
+            <label style="display:grid;gap:6px"><span style="font-size:13px;font-weight:500;color:var(--h)">Sonraki ziyaret mesajı <span style="color:var(--da)">*</span></span><input value="{{ c.next }}" onChange="{{ c.onNext }}" placeholder="Bir dahaki ziyarette verilecek mesaj / hedef aşama" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:14px;color:var(--h);background:var(--card)"><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mu)">Öneri: {{ c.nextSug }}<button type="button" onClick="{{ c.useSug }}" style="min-height:26px;border:1px solid var(--bd2);background:var(--card);color:var(--pt);border-radius:4px;padding:0 8px;font-size:12px;cursor:pointer">Öneriyi kullan</button></span></label>
+          </div>
+        </div>
+        <sc-if value="{{ c.isLast }}">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select value="{{ addP }}" onChange="{{ onAddP }}" style="height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:13px;color:var(--h);background:var(--card)"><sc-for list="{{ addOpts }}" as="o"><option value="{{ o.k }}">{{ o.l }}</option></sc-for></select>
+            <button type="button" onClick="{{ addProd }}" style="min-height:40px;border:1px dashed var(--pt);background:transparent;color:var(--pt);border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer;display:flex;gap:4px;align-items:center"><i class="bx bx-plus"></i>Plan dışı ürün sunuldu</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isPhStok }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:16px">
+          <div style="font-size:17px;font-weight:500;color:var(--h)">Ürün başına stok</div>
+          <sc-for list="{{ phRows }}" as="r"><div style="border:1px solid var(--bd);border-radius:8px;padding:10px 12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span style="width:100px;font-weight:600;color:var(--h);font-size:14px">{{ r.n }}</span><div style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ r.stock }}" as="k"><button type="button" onClick="{{ k.go }}" style="border:0;min-height:40px;padding:0 14px;font-size:13px;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div><input type="number" placeholder="adet" value="{{ r.qty }}" style="width:90px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:13px;color:var(--h);background:var(--card)"><label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" style="accent-color:var(--p)">Miadı yakın</label><label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" style="accent-color:var(--p)">İade sorunu</label></div></sc-for>
+          <div style="font-size:17px;font-weight:500;color:var(--h);margin-top:4px">Raf / görünürlük</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:start">
+            <div style="display:grid;gap:8px"><div style="justify-self:start;display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ raf }}" as="k"><button type="button" onClick="{{ k.go }}" style="border:0;min-height:40px;padding:0 12px;font-size:13px;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div><label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" checked="{{ true }}" style="accent-color:var(--p)">Materyal / stand var</label></div>
+            <div style="height:110px;border-radius:8px;border:1px dashed var(--pbd);background:repeating-linear-gradient(135deg,var(--soft) 0 8px,var(--card) 8px 16px);display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;font:11px ui-monospace,monospace;color:var(--mu)"><i class="bx bx-camera" style="font-size:24px"></i>raf fotoğrafı</div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isPhSip }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:14px">
+          <div style="font-size:17px;font-weight:500;color:var(--h)">Sipariş</div>
+          <sc-if value="{{ hasOrder }}"><div style="border:1px solid var(--bd);border-radius:8px;padding:12px 14px;display:grid;gap:8px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong style="color:var(--h)">{{ ord.id }}</strong><span style="padding:2px 8px;border-radius:4px;font-size:12px;background:{{ ord.bg }};color:{{ ord.fg }}">{{ ord.st }}</span><span style="flex:1"></span><strong style="color:var(--h)">{{ ord.tot }}</strong></div><span style="font-size:13px">{{ ord.sum }}</span><button type="button" onClick="{{ openOrder }}" style="justify-self:start;min-height:36px;border:1px solid var(--pt);background:transparent;color:var(--pt);border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer">Siparişi aç</button></div></sc-if>
+          <sc-if value="{{ noOrder }}"><div style="border:1px dashed var(--bd2);border-radius:8px;padding:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1 1 200px;font-size:14px">Bu ziyarette ön sipariş oluşturulmadı.</span><button type="button" onClick="{{ openOrder }}" style="min-height:40px;border:0;background:var(--p);color:#fff;border-radius:6px;padding:0 14px;font-size:13px;font-weight:500;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-cart-add"></i>Ön sipariş oluştur</button></div></sc-if>
+          <div style="font-size:17px;font-weight:500;color:var(--h);margin-top:4px">Satış</div>
+          <sc-for list="{{ phRows }}" as="r"><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span style="width:100px;font-weight:600;color:var(--h);font-size:14px">{{ r.n }}</span><input type="number" value="{{ r.sales }}" style="width:110px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:13px;color:var(--h);background:var(--card)"><span style="font-size:12px;color:var(--mu)">kutu / ay</span><div style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ r.trend }}" as="k"><button type="button" onClick="{{ k.go }}" style="border:0;min-height:36px;padding:0 10px;font-size:12px;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }};display:flex;gap:3px;align-items:center"><i class="bx {{ k.ic }}"></i>{{ k.l }}</button></sc-for></div></div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isPhPazar }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:14px">
+          <div style="font-size:17px;font-weight:500;color:var(--h)">Rakip</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ phComps }}" as="k"><button type="button" onClick="{{ k.go }}" style="min-height:40px;padding:0 12px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid {{ k.bd }};background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div>
+          <sc-for list="{{ phCompCards }}" as="k"><div style="border:1px solid var(--bd);border-radius:8px;padding:10px 12px;font-size:12px;display:grid;gap:4px"><div style="display:flex;justify-content:space-between"><strong style="font-size:14px;color:var(--h)">{{ k.n }}</strong><span style="color:var(--mu)">{{ k.f }}</span></div><span>{{ k.api }} · {{ k.form }} · {{ k.fiyat }} · {{ k.go }}</span></div></sc-for>
+          <textarea rows="2" placeholder="Fiyat / kampanya gözlemi (izin verilen ölçüde)" style="border:1px solid var(--bd2);border-radius:6px;padding:8px 12px;font-size:14px;color:var(--h);background:var(--card)"></textarea>
+          <div style="font-size:17px;font-weight:500;color:var(--h);margin-top:4px">Tavsiye ve reçete akışı</div>
+          <div style="justify-self:start;display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ tav }}" as="k"><button type="button" onClick="{{ k.go }}" style="border:0;min-height:40px;padding:0 12px;font-size:13px;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ linked }}" as="k"><button type="button" onClick="{{ k.go }}" style="min-height:40px;padding:0 12px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid {{ k.bd }};background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div>
+          <div style="font-size:17px;font-weight:500;color:var(--h);margin-top:4px">Eğitim / materyal ve talepler</div>
+          <label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--h)"><input type="checkbox" style="accent-color:var(--p);width:18px;height:18px">Personele ürün eğitimi verildi</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ mats }}" as="k"><button type="button" onClick="{{ k.go }}" style="min-height:40px;padding:0 12px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid {{ k.bd }};background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><select style="flex:1 1 180px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:13px;color:var(--h);background:var(--card)"><option>Talep: materyal</option><option>İade</option><option>Fiyat bilgisi</option><option>Eğitim</option></select><input type="date" value="2026-10-14" style="height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:13px;color:var(--h);background:var(--card)"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isGuv }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:16px">
+          <div style="font-size:17px;font-weight:500;color:var(--h)">{{ guvTitle }}</div>
+          <sc-if value="{{ notPh }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:start">
+              <label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--h);min-height:44px"><input type="checkbox" checked="{{ follow }}" onChange="{{ toggleFollow }}" style="accent-color:var(--p);width:18px;height:18px">Takip gerekli</label>
+              <sc-if value="{{ follow }}"><label style="display:grid;gap:6px"><span style="font-size:13px;font-weight:500;color:var(--h)">Önerilen sonraki ziyaret</span><input type="date" value="2026-10-15" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:14px;color:var(--h);background:var(--card)"></label><label style="display:grid;gap:6px;grid-column:1/-1"><span style="font-size:13px;font-weight:500;color:var(--h)">Takip notu</span><input value="Literatürü ilet, ÜROFLEKS deneme hastalarını sor." style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:14px;color:var(--h);background:var(--card)"></label></sc-if>
+            </div>
+          </sc-if>
+          <sc-for list="{{ safety }}" as="q">
+            <div style="border:1px solid {{ q.bd }};border-radius:8px;padding:14px;display:grid;gap:10px">
+              <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:15px;font-weight:500;color:var(--h)">{{ q.l }} <span style="color:var(--da)">*</span></span><div style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ q.opts }}" as="o"><button type="button" onClick="{{ o.go }}" style="border:0;min-height:44px;padding:0 20px;font-size:14px;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }}">{{ o.l }}</button></sc-for></div></div>
+              <sc-if value="{{ q.yes }}"><div style="background:{{ q.yBg }};color:{{ q.yFg }};border-radius:6px;padding:10px 12px;font-size:13px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span style="display:flex;gap:8px;align-items:center"><i class="bx {{ q.yIc }}" style="font-size:18px"></i>{{ q.yX }}</span><button type="button" style="min-height:36px;border:0;border-radius:6px;padding:0 12px;font-size:13px;font-weight:500;background:{{ q.yBtnBg }};color:#fff;cursor:pointer">{{ q.yBtn }}</button></div></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isOzet }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:12px">
+          <div style="font-size:17px;font-weight:500;color:var(--h)">Özet</div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px"><span>{{ oz.gen }}</span></div>
+          <sc-for list="{{ oz.rows }}" as="r">
+            <div style="border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <div style="flex:1 1 200px;display:grid;gap:6px"><span style="font-size:15px;font-weight:600;color:var(--h)">{{ r.n }}</span><div style="display:flex;gap:5px;flex-wrap:wrap"><sc-for list="{{ r.tags }}" as="t"><span style="padding:2px 8px;border-radius:4px;font-size:12px;background:{{ t.bg }};color:{{ t.fg }}">{{ t.l }}</span></sc-for></div></div>
+              <span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:{{ r.mBg }};color:{{ r.mFg }}">{{ r.mL }}</span>
+              <button type="button" onClick="{{ r.go }}" style="min-height:36px;border:1px solid var(--pt);background:transparent;color:var(--pt);border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer">Düzenle</button>
+            </div>
+          </sc-for>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px"><sc-for list="{{ oz.safe }}" as="s"><span style="padding:3px 10px;border-radius:4px;background:{{ s.bg }};color:{{ s.fg }}">{{ s.l }}</span></sc-for></div>
+        </div>
+        <sc-if value="{{ notPh }}">
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:{{ cardPad }};display:grid;gap:14px">
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <span style="width:44px;height:44px;border-radius:50%;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-weight:600;flex:0 0 auto">{{ profIni }}</span>
+              <div style="flex:1 1 200px"><div style="font-size:16px;font-weight:500;color:var(--h)">Doktor profili</div><div style="font-size:12px;color:var(--mu)">Doktor kaydı · değişiklikler kayda işlenir, önceki değer saklanır</div></div>
+              <span style="padding:3px 10px;border-radius:4px;font-size:12px;font-weight:500;background:{{ profChBg }};color:{{ profChFg }}">{{ profChL }}</span>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;border:1px dashed var(--wac);border-radius:6px;padding:6px 10px;background:var(--soft2)"><span style="color:var(--wa);font-weight:600">Ürün sahibi kararı · tipoloji modeli</span><div style="display:flex;border:1px solid var(--bd2);border-radius:4px;overflow:hidden"><sc-for list="{{ tModels }}" as="m"><button type="button" onClick="{{ m.go }}" style="border:0;padding:4px 10px;font-size:12px;cursor:pointer;background:{{ m.bg }};color:{{ m.fg }}">{{ m.l }}</button></sc-for></div></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px">
+              <sc-for list="{{ prof }}" as="p">
+                <div style="border:1px solid {{ p.bd }};border-radius:8px;padding:12px;display:grid;gap:8px;align-content:start">
+                  <div style="display:flex;gap:8px;align-items:center"><i class="bx {{ p.ic }}" style="font-size:18px;color:var(--pt)"></i><span style="flex:1;font-size:13px;font-weight:600;color:var(--h)">{{ p.l }}</span><sc-if value="{{ p.changed }}"><span style="padding:1px 7px;border-radius:4px;font-size:11px;background:var(--wab);color:var(--wa)">değişti</span></sc-if></div>
+                  <div style="display:flex;gap:5px;flex-wrap:wrap"><sc-for list="{{ p.opts }}" as="o"><button type="button" onClick="{{ o.go }}" style="min-height:36px;padding:0 10px;border-radius:18px;font-size:13px;cursor:pointer;display:flex;gap:4px;align-items:center;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.l }}<sc-if value="{{ o.isPrev }}"><span style="font-size:10px;opacity:.75">· kayıtta</span></sc-if></button></sc-for></div>
+                  <sc-if value="{{ p.hasTags }}"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mu)">Kaynak<div style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden"><sc-for list="{{ p.tags }}" as="t"><button type="button" onClick="{{ t.go }}" style="border:0;min-height:30px;padding:0 9px;font-size:12px;cursor:pointer;background:{{ t.bg }};color:{{ t.fg }}">{{ t.l }}</button></sc-for></div></div></sc-if>
+                  <sc-if value="{{ p.hasHint }}"><span style="font-size:12px;color:var(--mu)">{{ p.hint }}</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+      </fieldset>
+      </sc-if>
+    </div>
+  </div>
+  <sc-if value="{{ showBar }}">
+    <div style="flex:0 0 auto;background:var(--card);border-top:1px solid var(--bd);padding:{{ barPad }};display:flex;gap:8px;align-items:center">
+      <sc-if value="{{ hasPrev }}"><button onClick="{{ prev }}" style="height:{{ btnH }}px;background:var(--card);color:var(--h);border:1px solid var(--bd2);border-radius:8px;padding:0 14px;font-size:14px;cursor:pointer;display:flex;gap:4px;align-items:center"><i class="bx bx-chevron-left" style="font-size:20px"></i>Geri</button></sc-if>
+      <span style="flex:1;font-size:12px;color:var(--mu);text-align:center">{{ stepL }}</span>
+      <button onClick="{{ saveDraft }}" style="height:{{ btnH }}px;background:var(--seb);color:var(--se);border:0;border-radius:8px;padding:0 14px;font-size:14px;cursor:pointer">{{ draftL }}</button>
+      <sc-if value="{{ hasNext }}"><button onClick="{{ next }}" style="height:{{ btnH }}px;background:var(--p);color:#fff;border:0;border-radius:8px;padding:0 16px;font-size:14px;font-weight:600;cursor:pointer;display:flex;gap:4px;align-items:center">{{ nextL }}<i class="bx bx-chevron-right" style="font-size:20px"></i></button></sc-if>
+      <sc-if value="{{ isLastStep }}"><button onClick="{{ submit }}" style="height:{{ btnH }}px;background:var(--p);color:#fff;border:0;border-radius:8px;padding:0 18px;font-size:14px;font-weight:600;cursor:pointer;opacity:{{ subOp }};display:flex;gap:6px;align-items:center;box-shadow:0 2px 4px rgba(11,26,140,.35)"><i class="bx bx-send"></i>{{ submitL }}</button></sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const STAGES=['Farkındalık mesajı','Klinik kanıt · 1. mesaj','Klinik kanıt · 2. mesaj','Hasta profili','Güvenlilik','Hatırlatma'];
+const SEG=(opts,cur,fn,cols)=>opts.map(o=>{const l=Array.isArray(o)?o[0]:o;const on=cur===l;const c=cols&&cols[l];return{l,ic:Array.isArray(o)?o[1]:'',bg:on?(c?c[0]:'var(--p)'):'var(--card)',fg:on?(c?c[1]:'#fff'):'var(--h)',go:()=>fn(on?'':l)}});
+const CHIPS=(opts,sel,fn)=>opts.map(l=>{const on=sel.includes(l);return{l,on,bd:on?'var(--p)':'var(--bd2)',bg:on?'var(--pl)':'var(--card)',fg:on?'var(--pt)':'var(--h)',go:()=>fn(on?sel.filter(x=>x!==l):[...sel,l])}});
+const ILC={'İlgili':['var(--okb)','var(--ok)'],'Nötr':['var(--seb)','var(--h)'],'İlgisiz':['var(--dab)','var(--da)']};
+const ST=(n)=>n?{l:n+' eksik',bg:'var(--dab)',fg:'var(--da)',ic:'bx-error-circle'}:{l:'tamam',bg:'var(--okb)',fg:'var(--ok)',ic:'bx-check-circle'};
+const blank=()=>({stage:'Hatırlatma',min:2,minAuto:'—',stars:0,ilgi:'',ilgiE4:false,adopt:'',ind:'',indR:{},noInd:false,pay:'',comps:[],noComp:false,cpat:{},adv:{},objs:[],objE4:false,noObj:false,reqs:[],reqE4:false,noReq:false,sku:'',skuE4:false,qty:'',lot:'',next:''});
+class Component extends DCLogic {
+  scrollRef=React.createRef();
+  constructor(p){super(p);this.state=this.initState()}
+  get A(){return this.props.app||{nav:{},visits:[],set(){},go(){},upd(){},toast(){},device:'desktop'}}
+  visit(){const A=this.A;return A.visits.find(v=>v.id===A.nav.vid)||A.visits.find(v=>v.id==='v26')}
+  initState(){const v=this.visit();const Z=window.ZD;const cap=v&&v.cap||{};
+    const T=cap.t||{UROFLEKS:492,TUTUKON:236};const M=cap.marks||{UROFLEKS:{ilgi:'İlgili',f:{soru:true,numune:true,lit:true}},TUTUKON:{ilgi:'Nötr',f:{itiraz:true},obj:'Geri ödeme'}};
+    const P={};(v?v.prods:[]).forEach(p=>{const m=M[p.p]||{f:{}};const f=m.f||{};const mn=Math.max(1,Math.round((T[p.p]||0)/60));
+      P[p.p]={...blank(),stage:Z.ROLE[p.r].st,min:mn,minAuto:mn+' dk',ilgi:m.ilgi||'',ilgiE4:!!m.ilgi,objs:f.itiraz?[{cat:m.obj||'Fiyat',note:'',res:'Kısmen'}]:[],objE4:!!f.itiraz,reqs:f.lit?[{cat:'Literatür / çalışma',date:'2026-10-12'}]:[],reqE4:!!f.lit,sku:f.numune?Z.P[p.p].n+' '+Z.P[p.p].f+' · 7\'li':'',skuE4:!!f.numune,qty:f.numune?2:''}});
+    return{P,step:this.A.nav.ro?99:0,extra:[],tot:'',general:cap.note||'Gece idrara çıkma şikayeti olan 50+ hastalarda denemeye açık. Literatürü 12 Eki\'ye kadar mail ile ilet.',kind:'Yüz yüze',joint:!!cap.joint,bModel:'C',tModel:'ikisi',prof:{},adv:'',off:'',follow:true,fixWhy:'',unlocked:false,saved:'11:54',custom:{},addOpen:false,newC:'',newF:'',
+      who:'Eczacı',stock:{},raf:'Göz hizası',order:true,trend:{},tav:'Orta',linked:['Dr. Ayşe Kaya'],mats:['Hasta broşürü'],phComps:['Tensilox'],addP:'GLUKOFIT'}}
+  componentDidUpdate(pp){const a=pp.app&&pp.app.nav||{},b=this.A.nav||{};if(a.vid!==b.vid||a.screen!==b.screen)this.setState({...this.initState(),sent:false})}
+  sp(p,k,val){this.setState(s=>({P:{...s.P,[p]:{...s.P[p],[k]:val}}}))}
+  miss(p){const x=this.state.P[p]||blank();if(!x)return{a:0,b:0,c:0,l:[]};const n=window.ZD.P[p].n;const L=[];
+    const A=[[!x.stars,'etkinlik'],[!x.ilgi,'ilgi'],[!x.adopt,'bağlılık aşaması'],[!(Number(x.min)>0),'süre']];
+    const B=[[!Object.values(x.indR||{}).some(z=>z.on&&z.n!==''&&z.tag)&&!x.noInd,'endikasyon hastası'],[x.pay==='','reçete payı'],[!x.comps.length&&!x.noComp,'rakip']];
+    const C=[[!x.objs.length&&!x.noObj,'itirazlar'],[!x.reqs.length&&!x.noReq,'talepler'],[!x.sku,'numune'],[!x.next.trim(),'sonraki mesaj']];
+    [...A,...B,...C].forEach(([m,l])=>m&&L.push(n+' · '+l));return{a:A.filter(z=>z[0]).length,b:B.filter(z=>z[0]).length,c:C.filter(z=>z[0]).length,l:L}}
+  goStep(i){this.setState({step:i});const el=this.scrollRef.current;if(el)el.scrollTop=0}
+  renderVals(){if(!this.props.app)return{standalone:true};
+    const Z=window.ZD,A=this.A,S=this.state,nav=A.nav||{},dev=A.device||'desktop',phone=dev==='phone';const v=this.visit();if(!v)return{steps:[]};
+    const d=Z.D[v.doc],acc=Z.ACC[d.acc],isPh=!!d.ph;const ro=!!nav.ro&&!S.unlocked,fix=!!nav.fix;
+    const repAt=v.repAt&&v.repAt.length>10?Z.minsSince(v.repAt):null;const canEdit=repAt!==null&&repAt<60;
+    const hl=v.doneAt?Math.max(0,Math.round((new Date(v.doneAt).getTime()+48*3600e3-Z.NOW.getTime())/3600e3)):48;
+    const prods=[...v.prods,...S.extra.map(p=>({p,r:'h',extra:true}))];
+    const guvMiss=(S.adv?0:1)+(!isPh&&!S.off?1:0);
+    const defs=isPh?[['genel','Genel',0],['stok','Stok ve raf',0],['sip','Sipariş ve satış',0],['pazar','Rakip ve tavsiye',0],['guv','Güvenlik',guvMiss],['ozet','Özet',0]]
+      :[['genel','Genel',0],...prods.map(p=>['p:'+p.p,Z.P[p.p].n,this.miss(p.p).l.length]),['guv','Takip ve güvenlik',guvMiss],['ozet','Özet ve gönder',0]];
+    const allMiss=[...(isPh?[]:prods.flatMap(p=>this.miss(p.p).l)),...(S.adv?[]:['Advers olay sorusu']),...(!isPh&&!S.off?['Endikasyon dışı bilgi sorusu']:[]),...(fix&&!S.fixWhy.trim()?['Düzeltme gerekçesi']:[])];
+    const step=Math.min(S.step,defs.length-1);const cur=defs[step][0];
+    const steps=defs.map(([k,l,m],i)=>{const on=i===step,done=i<step&&!m;return{l,sl:k==='ozet'?(allMiss.length?allMiss.length+' eksik':'gönderime hazır'):m?m+' eksik':i<step?'tamam':k.startsWith('p:')?'ürün':'',sFg:m?'var(--da)':on?'var(--pt)':'var(--mu)',mark:done?'✓':String(i+1),
+      bd:on?'var(--p)':'var(--bd)',bg:on?'var(--pl)':'var(--card)',fg:on?'var(--pt)':'var(--h)',nBg:on?'var(--p)':done?'var(--okb)':m&&i<step?'var(--dab)':'var(--soft)',nFg:on?'#fff':done?'var(--ok)':m&&i<step?'var(--da)':'var(--h)',go:()=>this.goStep(i)}});
+    // product step
+    let c={stars:[],ilgi:[],adopt:[],nums:[],comps:[],compCards:[],adv:[],lists:[],skus:[],groupsMini:[],gA:{},gB:{},gC:{}};
+    if(cur.startsWith('p:')){const p=cur.slice(2),pp=prods.find(x=>x.p===p),x=S.P[p]||blank();const k=d.k[p]||{ind:40,pay:20,st:2,ilgi:'Nötr'};const R=Z.ROLE[pp.r];const ch=pp.r==='t'?['var(--pl)','var(--pt)','var(--pbd)']:['var(--card)','var(--h)','var(--bd2)'];
+      const ms=this.miss(p);const IR=(Z.INDP[p]||[]).map((z,i)=>({ind:z[0],prof:z[1],i,on:false,n:'',tag:'',...((x.indR||{})[i]||{}),prev:Math.round(k.ind*([.6,.3,.1][i]||.1))}));const indSum=IR.filter(z=>z.on).reduce((a,z)=>a+Number(z.n||0),0);const ind=indSum,pay=Number(x.pay||0),sti=x.adopt?Z.ADOPT.indexOf(x.adopt):-1;
+      const bag=S.bModel==='A'?(x.pay!==''?'%'+pay+' reçete payı':'—'):S.bModel==='B'?(sti>=0?x.adopt+' ('+(sti+1)+'/6)':'—'):(x.pay!==''&&sti>=0?Math.round(pay/100*50+sti/5*50)+' / 100 (pay + aşama)':'—');
+      const hi=ind>=60,lo=pay<25;const q=!IR.some(z=>z.on&&z.n!=='')||x.pay===''?null:hi&&lo?['Yüksek potansiyel · düşük pay → fırsat','var(--wab)','var(--wa)']:hi?['Yüksek potansiyel · yüksek pay → koru','var(--okb)','var(--ok)']:lo?['Düşük potansiyel · düşük pay → düşük öncelik','var(--seb)','var(--se)']:['Düşük potansiyel · yüksek pay → büyüt','var(--inb)','var(--in)'];
+      const upd=key=>e=>this.sp(p,key,e.target.value);const custom=S.custom[p]||[];const compList=[...(Z.COMP[p]||[]),...custom.map(z=>z.n)];
+      const mkList=(key,noneKey,e4,t,cats,addL,noneL,isObj)=>{const items=x[key];return{t,cats,addL,noneL,isObj,isReq:!isObj,e4:x[e4]&&items.length>0,empty:items.length===0,
+        noneBd:x[noneKey]?'var(--p)':'var(--bd2)',noneBg:x[noneKey]?'var(--pl)':'var(--card)',noneFg:x[noneKey]?'var(--pt)':'var(--h)',toggleNone:()=>this.sp(p,noneKey,!x[noneKey]),
+        add:()=>{this.sp(p,key,[...items,isObj?{cat:cats[0],note:'',res:''}:{cat:cats[0],date:'2026-10-15'}]);this.sp(p,noneKey,false)},
+        items:items.map((o,i)=>{const set=(kk,val)=>this.sp(p,key,items.map((y,j)=>j===i?{...y,[kk]:val}:y));return{cat:o.cat,note:o.note||'',date:o.date||'',onCat:e=>set('cat',e.target.value),onNote:e=>set('note',e.target.value),onDate:e=>set('date',e.target.value),rm:()=>this.sp(p,key,items.filter((y,j)=>j!==i)),res:SEG(['Evet','Kısmen','Hayır'],o.res,val=>set('res',val))}})}};
+      const sug=pp.r==='t'?'Hasta profili mesajı · hedef: Deniyor':'Hatırlatma · hedef: Düzenli kullanıyor';
+      c={n:Z.P[p].n+' '+Z.P[p].f,role:R.l,rBg:ch[0],rFg:ch[1],rBd:ch[2],extra:!!pp.extra,onPlan:x.stage===R.st&&!pp.extra,isLast:prods[prods.length-1].p===p,
+        gA:ST(ms.a),gB:ST(ms.b),gC:ST(ms.c),groupsMini:[['A',ms.a],['B',ms.b],['C',ms.c]].map(([l,n])=>({l:l+(n?' · '+n:''),ic:n?'bx-error-circle':'bx-check-circle',fg:n?'var(--da)':'var(--ok)'})),
+        stage:x.stage,onStage:upd('stage'),min:x.min,onMin:upd('min'),minAuto:x.minAuto,
+        stars:[1,2,3,4,5].map(n=>({l:n+' yıldız',ic:n<=x.stars?'bxs-star':'bx-star',c:n<=x.stars?'var(--wac)':'var(--bd2)',go:()=>this.sp(p,'stars',n)})),
+        ilgi:SEG([['İlgili','bx-like'],['Nötr','bx-minus-circle'],['İlgisiz','bx-dislike']],x.ilgi,val=>{this.sp(p,'ilgi',val);this.sp(p,'ilgiE4',false)},ILC),ilgiE4:x.ilgiE4&&!!x.ilgi,
+        adopt:Z.ADOPT.map((l,i)=>{const on=x.adopt===l,prev=i===k.st;return{l,bd:on?'var(--p)':prev?'var(--pbd)':'var(--bd2)',bg:on?'var(--p)':'var(--card)',fg:on?'#fff':prev?'var(--pt)':'var(--h)',go:()=>this.sp(p,'adopt',l)}}),adoptPrev:Z.ADOPT[k.st],sameAdopt:()=>this.sp(p,'adopt',Z.ADOPT[k.st]),
+        nums:[{l:'Reçete payımız (%)',req:true,v:x.pay,ph:String(k.pay),prev:'Önceki: %'+k.pay,on:upd('pay'),same:()=>this.sp(p,'pay',k.pay)}],
+        indRows:IR.map(z=>{const setR=(kk,val)=>this.sp(p,'indR',{...x.indR,[z.i]:{on:z.on,n:z.n,tag:z.tag,[kk]:val}});return{ind:z.ind,prof:z.prof,on:z.on,n:z.n,ph:String(z.prev),prev:'Önceki: '+z.prev,bd:z.on?'var(--pbd)':'var(--bd)',bg:z.on?'var(--soft2)':'transparent',toggle:()=>{setR('on',!z.on);this.sp(p,'noInd',false)},onN:e=>setR('n',e.target.value),same:()=>setR('n',String(z.prev)),tags:['Tahmin','Hasta kaydından','Doktor beyanı'].map(l=>({l,bg:z.tag===l?'var(--p)':'var(--card)',fg:z.tag===l?'#fff':'var(--h)',go:()=>setR('tag',l)}))}}),
+        noIndBd:x.noInd?'var(--p)':'var(--bd2)',noIndBg:x.noInd?'var(--pl)':'var(--card)',noIndFg:x.noInd?'var(--pt)':'var(--h)',toggleNoInd:()=>{this.sp(p,'noInd',!x.noInd);if(!x.noInd)this.sp(p,'indR',{})},
+        pot:indSum?indSum+' hasta / ay':'—',bag,hasQ:!!q,q:q&&q[0],qBg:q&&q[1],qFg:q&&q[2],
+        comps:CHIPS(compList,x.comps,val=>{this.sp(p,'comps',val);this.sp(p,'noComp',false)}),
+        noCompBd:x.noComp?'var(--p)':'var(--bd2)',noCompBg:x.noComp?'var(--pl)':'var(--card)',noCompFg:x.noComp?'var(--pt)':'var(--h)',toggleNoComp:()=>{this.sp(p,'noComp',!x.noComp);if(!x.noComp)this.sp(p,'comps',[])},
+        compCards:x.comps.map(n=>{const k2=Z.COMPD[n];const cu=custom.find(z=>z.n===n);return{n,f:k2?k2.f:(cu&&cu.f)||'—',known:!!k2,custom:!k2,...(k2||{}),pat:x.cpat[n]||'',onPat:e=>this.sp(p,'cpat',{...x.cpat,[n]:e.target.value})}}),
+        addOpen:S.addOpen,toggleAdd:()=>this.setState(s=>({addOpen:!s.addOpen})),addComp:()=>{const n=S.newC.trim();if(!n)return;this.setState(s=>({custom:{...s.custom,[p]:[...(s.custom[p]||[]),{n,f:s.newF.trim()}]},addOpen:false,newC:'',newF:''}));this.sp(p,'comps',[...x.comps,n]);this.sp(p,'noComp',false)},
+        adv:Z.ADV.map(l=>{const s=(x.adv||{})[l];return{l:(s==='+'?'+ ':s==='-'?'− ':'')+l,bd:s==='+'?'var(--okc)':s==='-'?'var(--dac)':'var(--bd2)',bg:s==='+'?'var(--okb)':s==='-'?'var(--dab)':'var(--card)',fg:s==='+'?'var(--ok)':s==='-'?'var(--da)':'var(--h)',go:()=>this.sp(p,'adv',{...x.adv,[l]:s==='+'?'-':s==='-'?undefined:'+'})}}),
+        lists:[mkList('objs','noObj','objE4','İtirazlar',Z.OBJ,'İtiraz ekle','İtiraz yok',true),mkList('reqs','noReq','reqE4','Doktorun talepleri',Z.REQ,'Talep ekle','Talep yok',false)],
+        skus:[Z.P[p].n+' '+Z.P[p].f+' · 7\'li',Z.P[p].n+' '+Z.P[p].f+' · 28\'li'],sku:x.sku,skuE4:x.skuE4&&!!x.sku&&x.sku!=='yok',onSku:e=>{this.sp(p,'sku',e.target.value);this.sp(p,'skuE4',false)},hasSku:!!x.sku&&x.sku!=='yok',qty:x.qty,onQty:upd('qty'),lot:x.lot,onLot:upd('lot'),
+        next:x.next,onNext:upd('next'),nextSug:sug,useSug:()=>this.sp(p,'next',sug)}}
+    const safety=[{k:'adv',l:'Ziyarette bir yan etki / advers olay bildirildi mi?',yX:'24 saat içinde farmakovijilans bildirimi zorunludur.',yIc:'bx-error',yBg:'var(--dab)',yFg:'var(--da)',yBtn:'PV bildirimine git',yBtnBg:'var(--dac)'}];
+    if(!isPh)safety.push({k:'off',l:'Doktor endikasyon dışı bilgi istedi mi?',yX:'Talep MSL\'ye yönlendirilir; temsilci yanıt vermez.',yIc:'bx-info-circle',yBg:'var(--inb)',yFg:'var(--in)',yBtn:'MSL\'ye yönlendir',yBtnBg:'var(--in)'});
+    safety.forEach(q=>{const cv=S[q.k];q.yes=cv==='Evet';q.bd=cv?'var(--bd)':'var(--dac)';q.opts=['Evet','Hayır'].map(l=>({l,bg:cv===l?(l==='Evet'?'var(--dac)':'var(--p)'):'var(--card)',fg:cv===l?'#fff':'var(--h)',go:()=>this.setState({[q.k]:l})}))});
+    const oz={gen:(S.kind)+' · 11:31–11:52 (21 dk)'+(S.joint?' · ortak ziyaret: Selin Karaca':''),
+      rows:isPh?[]:prods.map((pp,i)=>{const x=S.P[pp.p]||blank(),m=this.miss(pp.p).l.length;const tags=[];if(x.stars)tags.push({l:'★ '+x.stars+'/5',bg:'var(--wab)',fg:'var(--wa)'});if(x.ilgi)tags.push({l:x.ilgi,bg:ILC[x.ilgi][0],fg:ILC[x.ilgi][1]});if(x.adopt)tags.push({l:x.adopt,bg:'var(--pl)',fg:'var(--pt)'});if(x.comps.length)tags.push({l:'Rakip: '+x.comps.join(', '),bg:'var(--seb)',fg:'var(--se)'});if(x.sku&&x.sku!=='yok')tags.push({l:'Numune '+(x.qty||1)+' kutu',bg:'var(--inb)',fg:'var(--in)'});
+        return{n:Z.P[pp.p].n,tags,mL:m?m+' eksik':'tamam',mBg:m?'var(--dab)':'var(--okb)',mFg:m?'var(--da)':'var(--ok)',go:()=>this.goStep(1+i)}}),
+      safe:[['Advers olay',S.adv],...(isPh?[]:[['Endikasyon dışı',S.off]])].map(([l,vv])=>({l:l+': '+(vv||'yanıt yok'),bg:vv?'var(--seb)':'var(--dab)',fg:vv?'var(--se)':'var(--da)'}))};
+    const pv=(k,prev)=>S.prof[k]===undefined?prev:S.prof[k];const setP=(k,val)=>this.setState(s=>({prof:{...s.prof,[k]:val}}));
+    const tile=(k,l,ic,prev,opts,extra)=>{const cur=pv(k,prev);return{l,ic,changed:cur!==prev,bd:cur!==prev?'var(--wac)':'var(--bd)',opts:opts.map(o=>({l:o,isPrev:o===prev,bd:o===cur?'var(--p)':'var(--bd2)',bg:o===cur?'var(--p)':'var(--card)',fg:o===cur?'#fff':'var(--h)',go:()=>setP(k,o===cur?'':o)})),hasTags:false,tags:[],hasHint:false,hint:'',...(extra||{})}};
+    const PF=[];if(S.tModel!=='b')PF.push(tile('typA','(a) Benimseme tipi','bx-trending-up',d.typ,['Yenilikçi','Erken benimseyen','Pragmatik','Muhafazakar']));
+    if(S.tModel!=='a')PF.push(tile('typB','(b) İletişim stili','bx-conversation',d.sty,['Analitik','Sonuç odaklı','İlişki odaklı','Dışavurumcu']));
+    PF.push(tile('kol','Etki düzeyi (KOL)','bx-network-chart',d.kol,['Yerel','Bölgesel','Ulusal']));
+    PF.push(tile('chan','Tercih edilen kanal','bx-message-rounded-dots','Yüz yüze',['Yüz yüze','Uzaktan görüşme','E-posta','Telefon']));
+    const bd=(d.best||'').split(' · ');PF.push(tile('day','En uygun gün','bx-calendar',bd[0],['Pazartesi','Salı','Çarşamba','Perşembe','Cuma'],{hasHint:true,hint:'Saat: '+(bd[1]||'—')+' · planlamaya geri besler'}));
+    const totPrev='200–400';const tt=S.prof.totTag||'';PF.push(tile('tot','Toplam hasta (aylık) · isteğe bağlı','bx-group',totPrev,['<100','100–200','200–400','400–600','600+'],{hasTags:true,tags:['Tahmin','Hasta kaydından','Doktor beyanı'].map(l=>({l,bg:tt===l?'var(--p)':'var(--card)',fg:tt===l?'#fff':'var(--h)',go:()=>setP('totTag',l)})),hasHint:true,hint:'Doktor düzeyinde aralık; ürün başına sorulmaz.'}));
+    const profCh=PF.filter(z=>z.changed).length;
+    const phRows=isPh?v.prods.map(pp=>{const p=pp.p;const st=S.stock[p]||'Var';const tr=S.trend[p]||'Sabit';return{n:Z.P[p].n,qty:p==='TUTUKON'?24:12,ord:p==='TUTUKON'?20:10,sales:p==='TUTUKON'?140:60,stock:SEG(['Var','Az','Yok'],st,val=>this.setState(s=>({stock:{...s.stock,[p]:val||st}})),{Az:['var(--wab)','var(--wa)'],Yok:['var(--dab)','var(--da)']}),trend:SEG([['Artıyor','bx-trending-up'],['Sabit','bx-minus'],['Düşüyor','bx-trending-down']],tr,val=>this.setState(s=>({trend:{...s.trend,[p]:val||tr}})))}}):[];
+    const dl=hl<=6?['var(--dab)','var(--da)']:['var(--wab)','var(--wa)'];const last=defs.length-1;
+    return{
+      screenLabel:isPh?'E6 Eczane ziyaret raporu':'E5 Hekim ziyaret raporu',title:isPh?'Eczane ziyaret raporu':'Hekim ziyaret raporu',sub:d.n+' · '+(isPh?d.who:d.sp)+' · '+acc.n+' · '+Z.fmtD(v.date),
+      scrollRef:this.scrollRef,isPhone:phone,isPh,notPh:!isPh,pagePad:phone?'12px 14px 20px':'20px 24px 28px',backS:phone?44:36,titleS:phone?18:22,cardPad:phone?'16px':'20px 24px',cardPadX:phone?'16px':'24px',barPad:phone?'10px 12px 16px':'12px 24px',btnH:phone?46:40,adoptCols:phone?3:6,
+      gDir:phone?'row':'column',gOv:phone?'auto':'visible',gSnap:phone?'x mandatory':'none',gFlex:phone?'0 0 86%':'1 1 auto',gBleed:phone?'-14px':'0',gBleedP:phone?'14px':'0',
+      back:()=>A.go('takvim',{drawer:v.id}),saveL:'Otomatik taslak · '+S.saved,
+      dlL:'Rapor için '+hl+' sa kaldı',dlBg:dl[0],dlFg:dl[1],valL:allMiss.length?allMiss.length+' alan eksik':'Gönderime hazır',valBg:allMiss.length?'var(--dab)':'var(--okb)',valFg:allMiss.length?'var(--da)':'var(--ok)',valIc:allMiss.length?'bx-error-circle':'bx-check-circle',
+      ro,notRo:!ro,roL:canEdit?(60-repAt)+' dakika içinde değiştirilebilir.':'60 dakika geçti; değişiklik için gerekçeli düzeltme gerekir.',unlockL:canEdit?'Değiştir ('+(60-repAt)+' dk)':'Düzelt',unlockBg:canEdit?'var(--p)':'var(--wac)',
+      unlock:()=>{if(canEdit)this.setState({unlocked:true});else A.set({ro:false,fix:true})},fix,fixWhy:S.fixWhy,onFixWhy:e=>this.setState({fixWhy:e.target.value}),
+      steps,isGenel:cur==='genel',isProd:cur.startsWith('p:'),isGuv:cur==='guv',isOzet:cur==='ozet',isPhStok:cur==='stok',isPhSip:cur==='sip',isPhPazar:cur==='pazar',guvTitle:isPh?'Güvenlik':'Takip ve güvenlik',
+      c,stages:STAGES,bModels:[['A','Pay %'],['B','Aşama'],['C','Birleşik']].map(([k,l])=>({l,bg:S.bModel===k?'var(--p)':'var(--card)',fg:S.bModel===k?'#fff':'var(--pt)',go:()=>this.setState({bModel:k})})),
+      newC:S.newC,newF:S.newF,onNewC:e=>this.setState({newC:e.target.value}),onNewF:e=>this.setState({newF:e.target.value}),
+      addOpts:Object.keys(Z.P).filter(k=>!prods.some(p=>p.p===k)).map(k=>({k,l:Z.P[k].n})),addP:S.addP,onAddP:e=>this.setState({addP:e.target.value}),
+      addProd:()=>{const k=S.addP;if(prods.some(p=>p.p===k))return;this.setState(s=>({extra:[...s.extra,k],P:{...s.P,[k]:blank()}}));A.toast(Z.P[k].n+' plan dışı ürün olarak eklendi; yeni adım açıldı.')},
+      kinds:SEG(['Yüz yüze','Uzaktan'],S.kind,val=>this.setState({kind:val||S.kind})),joint:S.joint,toggleJoint:()=>this.setState(s=>({joint:!s.joint})),who:SEG(['Eczacı','Kalfa','Teknisyen'],S.who,val=>this.setState({who:val||S.who})),
+      general:S.general,onGeneral:e=>this.setState({general:e.target.value}),
+      follow:S.follow,toggleFollow:()=>this.setState(s=>({follow:!s.follow})),safety,oz,prof:PF,profIni:d.n.replace(/^(Prof\. |Doç\. |Uzm\. )?Dr\. /,'').split(' ').map(z=>z[0]).join('').slice(0,2),profChL:profCh?profCh+' değişiklik':'değişiklik yok',profChBg:profCh?'var(--wab)':'var(--seb)',profChFg:profCh?'var(--wa)':'var(--se)',
+      tModels:[['a','(a)'],['b','(b)'],['ikisi','İkisi']].map(([k,l])=>({l,bg:S.tModel===k?'var(--p)':'var(--card)',fg:S.tModel===k?'#fff':'var(--h)',go:()=>this.setState({tModel:k})})),
+      phRows,raf:SEG(['Göz hizası','Alt raf','Depo'],S.raf,val=>this.setState({raf:val||S.raf})),order:S.order,toggleOrder:()=>this.setState(s=>({order:!s.order})),
+      phComps:CHIPS(['Tensilox','Amlopres','Diaform','Koronex 100'],S.phComps,val=>this.setState({phComps:val})),phCompCards:S.phComps.map(n=>({n,...(Z.COMPD[n]||{})})),
+      tav:SEG(['Yüksek','Orta','Düşük'],S.tav,val=>this.setState({tav:val||S.tav})),linked:CHIPS(['Dr. Ayşe Kaya','Doç. Dr. Mehmet Yılmaz','Uzm. Dr. Zeynep Arslan','Dr. Emre Aksoy'],S.linked,val=>this.setState({linked:val})),
+      mats:CHIPS(['Hasta broşürü','Raf etiketi','Stand','Doz kartı'],S.mats,val=>this.setState({mats:val})),
+      isSent:!!S.sent,notSent:!S.sent,showBar:!ro&&!S.sent,toCal:()=>A.go('takvim',{drawer:v.id}),viewRep:()=>{this.setState({sent:false});A.set({ro:true})},
+      sentMails:[{k:'rapor',t:'Rapor özeti',to:Z.PEOPLE.mgr.n+' · '+Z.PEOPLE.mgr.r,why:'Her raporda',ic:'bx-file',bg:'var(--pl)',fg:'var(--pt)'},...(S.adv==='Evet'?[{k:'advers',t:'Advers olay bildirimi · 24 sa',to:Z.PEOPLE.pv.n+' · bilgi: '+Z.PEOPLE.mgr.n,why:'Advers olay: Evet',ic:'bx-error',bg:'var(--dab)',fg:'var(--da)'}]:[]),...(S.off==='Evet'?[{k:'msl',t:'Endikasyon dışı bilgi talebi',to:Z.PEOPLE.msl.n+' · MSL',why:'Endikasyon dışı: Evet',ic:'bx-help-circle',bg:'var(--inb)',fg:'var(--in)'}]:[])].map(m=>({...m,go:()=>A.go('eposta',{mail:m.k,vid:v.id})})),
+      ...(()=>{const o=(A.orders||[]).find(z=>z.vid===v.id);if(!o)return{hasOrder:false,noOrder:true,ord:{}};const t=o.lines.reduce((a,l)=>a+Number(l.q)*l.price*(1-Number(l.isk||0)/100),0)*1.1;const SL={iletildi:['Depoya iletildi','var(--okb)','var(--ok)'],onay:['Onay bekliyor','var(--wab)','var(--wa)'],red:['Reddedildi','var(--dab)','var(--da)']}[o.status]||['Onay bekliyor','var(--wab)','var(--wa)'];return{hasOrder:true,noOrder:false,ord:{id:o.id,st:SL[0],bg:SL[1],fg:SL[2],tot:'₺'+t.toLocaleString('tr-TR',{maximumFractionDigits:0}),sum:o.lines.map(l=>(l.p?Z.P[l.p].n:l.sku)+' '+l.q+(l.mf?' ('+l.mf+')':'')).join(' · ')+' · '+o.depo}}})(),
+      openOrder:()=>A.go('siparis',{vid:v.id,from:'rapor'}),
+      hasPrev:step>0,hasNext:step<last,isLastStep:step===last,prev:()=>this.goStep(step-1),next:()=>this.goStep(step+1),nextL:step<last?(phone?'İleri':'İleri: '+defs[step+1][1]):'',stepL:'Adım '+(step+1)+' / '+defs.length,draftL:phone?'Taslak':'Taslak kaydet',
+      saveDraft:()=>{this.setState({saved:'11:58'});A.toast('Taslak kaydedildi.')},subOp:allMiss.length?.6:1,submitL:fix?'Düzeltmeyi gönder':'Raporu gönder',
+      submit:()=>{if(allMiss.length){A.toast(allMiss.length+' alan eksik: '+allMiss.slice(0,3).join(', ')+(allMiss.length>3?'…':''));return}const rows=isPh?[]:prods.map(pp=>{const x=S.P[pp.p]||blank();return{n:Z.P[pp.p].n,e:'★'.repeat(x.stars)+'☆'.repeat(5-x.stars),i:x.ilgi,s:x.adopt,q:'—'}});const reqs=isPh?[]:prods.flatMap(pp=>(S.P[pp.p]||blank()).reqs.map(q=>q.cat+' · '+Z.P[pp.p].n+' · teslim '+q.date)).concat(prods.filter(pp=>(S.P[pp.p]||{}).sku&&S.P[pp.p].sku!=='yok').map(pp=>'Numune: '+(S.P[pp.p].qty||1)+' kutu '+S.P[pp.p].sku));A.upd(v.id,{status:'raporlandi',repAt:'2026-10-08T10:40',report:{rows,reqs,adv:S.adv,off:S.off,kind:S.kind,joint:S.joint}});this.setState({sent:true});const el=this.scrollRef.current;if(el)el.scrollTop=0}
+    };
+  }
+}
+</script>
+</body>
+</html>

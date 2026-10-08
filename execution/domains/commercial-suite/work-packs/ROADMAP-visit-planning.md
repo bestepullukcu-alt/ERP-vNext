@@ -156,7 +156,8 @@ Kurallar:
 
 ### ★ Yön değişikliği (kullanıcı, 2026-10-08) — Ziyaret Çalışma Alanı (tek takvim)
 - Ziyaret Planlama + Ziyaret Yürütme **tek takvim ekranında**: Planla / Yürüt modu, ziyarete başla (fotoğraf + kanıt), iptal / yapılamadı / ertele (neden kategorisi), sunum ekranı (tablette doktor, telefonda temsilci), zengin hekim / eczane raporu (süre, etkinlik, bağlılık, hasta sayıları, rakip, itiraz, talep, numune, önceki değer önerisi), doktor satış payı ekranı.
-- ☐ **Mockup brief:** [BRIEF-visit-workspace-calendar](mockups/visit-workspace/BRIEF-visit-workspace-calendar.md) → kullanıcı tasarım yaptıracak. Mockup gelince Faz 6 (Planlanan Ziyaretler) ve SB-3c (başlat / tamamla) bu yöne göre yeniden kurgulanır.
+- ☑ **Mockup brief:** [BRIEF-visit-workspace-calendar](mockups/visit-workspace/BRIEF-visit-workspace-calendar.md) → mockup geldi (2026-10-09, `mockups/visit-workspace/`).
+- ▶ **Yeni yol haritası:** [ROADMAP-visit-workspace](ROADMAP-visit-workspace.md) — W0–W9, ≈25–26 prompt (gerçekçi 30–33). Faz 6 → W2 / W9, SB-3c → W3, 4K → W1, Faz 8 → W3'ten önce önerildi.
 
 ### Faz 6 — Planlanan Ziyaretler sayfası
 - ☐ Canlı analiz → (mockup?) → paketler: GUID (D1), tamamen İngilizce sayfa, sahiplik, T1–T3, `target_inactive`

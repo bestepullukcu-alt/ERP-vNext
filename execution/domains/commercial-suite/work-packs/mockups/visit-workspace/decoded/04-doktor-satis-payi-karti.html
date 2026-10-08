@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+<link rel="stylesheet" href="theme.css">
+</helmet>
+<sc-if value="{{ standalone }}"><div style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#f5f5f9;font-family:'Public Sans',sans-serif;padding:24px"><div style="background:#fff;border-radius:8px;box-shadow:0 3px 8px rgba(34,48,62,.08);padding:28px 32px;max-width:440px;display:grid;gap:10px;text-align:center"><div style="font-size:17px;font-weight:500;color:#384551">Bu dosya prototipin bir parçası</div><div style="font-size:14px;color:#646e78">Tek başına açıldığında boş görünür. Tüm ekranlar için ana dosyayı açın.</div><a href="Ziyaret Çalışma Alanı.dc.html" style="justify-self:center;margin-top:6px;padding:10px 18px;border-radius:6px;background:#0b1a8c;color:#fff;font-size:14px;font-weight:500;text-decoration:none">Ziyaret Çalışma Alanı'nı aç</a></div></div></sc-if>
+<div style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);color:var(--tx)">
+<div style="max-width:1320px;margin:0 auto;padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px">
+
+<sc-if value="{{ isPay }}">
+  <div data-screen-label="E7 Doktor satış payı" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:4px"><h4 style="margin:0;font-size:{{ titleS }}px;font-weight:500;color:var(--h)">Doktor satış payı</h4><div style="font-size:14px;text-wrap:pretty">Kurumun ürün satışını doktorlara yüzde ile dağıtın; potansiyel ve payımız planlamaya öneri olarak döner.</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select value="{{ acc }}" onChange="{{ onAcc }}" style="height:38px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"><sc-for list="{{ accOpts }}" as="o"><option value="{{ o.k }}">{{ o.l }}</option></sc-for></select>
+        <span style="padding:6px 10px;border-radius:6px;background:var(--seb);color:var(--se);font-size:13px">2026 Q4 · aylık</span>
+      </div>
+    </div>
+    <sc-if value="{{ isPhone }}"><div style="background:var(--inb);color:var(--in);border-radius:8px;padding:10px 12px;font-size:13px;display:flex;gap:8px"><i class="bx bx-show" style="font-size:18px"></i>Telefonda salt okunur özet. Düzenleme masaüstü ve tablette.</div></sc-if>
+    <div style="border:1px dashed var(--wac);border-radius:8px;padding:10px 14px;background:var(--card);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:600;color:var(--wa);text-transform:uppercase;letter-spacing:.3px">Açık soru · satış verisi kaynağı</span>
+      <div style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden;flex-wrap:wrap"><sc-for list="{{ srcs }}" as="s"><button onClick="{{ s.go }}" style="border:0;padding:6px 12px;font-size:13px;cursor:pointer;background:{{ s.bg }};color:{{ s.fg }}">{{ s.l }}</button></sc-for></div>
+      <span style="font-size:12px;color:var(--mu)">{{ srcNote }}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px">
+      <sc-for list="{{ prodCards }}" as="p" hint-placeholder-count="4"><button onClick="{{ p.go }}" style="text-align:left;background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;border:1px solid {{ p.bd }}"><span style="font-size:12px;color:var(--mu);text-transform:uppercase;letter-spacing:.3px">{{ p.n }}</span><span style="font-size:22px;font-weight:600;color:var(--h)">{{ p.box }}</span><span style="font-size:13px">{{ p.tl }}</span><span style="font-size:12px;font-weight:500;color:{{ p.totC }}">{{ p.totL }}</span></button></sc-for>
+    </div>
+
+    <sc-if value="{{ notPhone }}">
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-size:16px;font-weight:500;color:var(--h)">Doktor × ürün payı</span><span style="font-size:13px;color:var(--mu)">Hücre: doktorun kurum içi payı % (temsilci tahmini) → tahmini doktor satışı</span></div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;min-width:820px">
+            <thead><tr style="background:var(--soft2)"><th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.2px;color:var(--h);border-bottom:1px solid var(--bd)">Doktor</th><sc-for list="{{ cols }}" as="c"><th style="padding:12px 10px;text-align:left;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.2px;color:{{ c.fg }};border-bottom:1px solid var(--bd);background:{{ c.bg }}">{{ c.n }}</th></sc-for></tr></thead>
+            <tbody>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+                <tr><td style="padding:10px 16px;border-bottom:1px solid var(--bd)"><div style="display:flex;flex-direction:column;gap:2px"><a href="#" onClick="{{ r.open }}" style="font-weight:500;color:var(--h)">{{ r.n }}</a><span style="font-size:12px">{{ r.sp }}</span></div></td>
+                  <sc-for list="{{ r.cells }}" as="c"><td style="padding:8px 10px;border-bottom:1px solid var(--bd);background:{{ c.bg }}"><div style="display:flex;flex-direction:column;gap:3px"><div style="display:flex;align-items:center;gap:3px"><input type="number" value="{{ c.v }}" onChange="{{ c.on }}" style="width:64px;height:32px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:13px;color:var(--h);background:var(--card)"><span style="font-size:13px">%</span></div><span style="font-size:11px;color:var(--mu)">{{ c.est }}</span></div></td></sc-for>
+                </tr>
+              </sc-for>
+              <tr style="background:var(--soft2)"><td style="padding:10px 16px;font-weight:600;color:var(--h)">Toplam</td><sc-for list="{{ totals }}" as="t"><td style="padding:10px;font-size:13px;font-weight:600;color:{{ t.c }}">{{ t.l }}<div style="font-size:11px;font-weight:400">{{ t.x }}</div></td></sc-for></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px;align-items:start">
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:16px;font-weight:500;color:var(--h)">Potansiyel × payımız · {{ curName }}</span><span style="font-size:12px;color:var(--mu)">Potansiyel: endikasyon hastası (rapor) · Pay: reçete payı</span></div>
+        <div style="position:relative;height:300px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;margin-left:22px;margin-bottom:20px">
+          <sc-for list="{{ quads }}" as="q"><div style="border-radius:6px;background:{{ q.bg }};padding:8px 10px;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:{{ q.fg }}">{{ q.l }}</span><span style="font-size:11px;color:{{ q.fg }}">{{ q.x }}</span></div></sc-for>
+          <sc-for list="{{ dots }}" as="d"><a href="#" onClick="{{ d.open }}" title="{{ d.n }}" style="position:absolute;left:{{ d.x }};bottom:{{ d.y }};transform:translate(-50%,50%);width:30px;height:30px;border-radius:50%;background:var(--p);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;border:2px solid var(--card);box-shadow:var(--sh);text-decoration:none">{{ d.i }}</a></sc-for>
+          <span style="position:absolute;left:-22px;top:50%;transform:translateY(-50%) rotate(-90deg);font-size:11px;color:var(--mu);white-space:nowrap">potansiyel ↑</span>
+          <span style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--mu)">payımız →</span>
+        </div>
+        <div style="background:var(--wab);color:var(--wa);border-radius:6px;padding:10px 12px;font-size:13px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span style="display:flex;gap:8px;align-items:center"><i class="bx bx-bulb" style="font-size:18px"></i><span><strong>Planlama önerisi:</strong> {{ suggest }}</span></span><button onClick="{{ toPlan }}" style="height:30px;border:0;border-radius:6px;background:var(--wac);color:#fff;padding:0 12px;font-size:13px;font-weight:500;cursor:pointer">Planla'da aç</button></div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:16px;font-weight:500;color:var(--h)">Geçmiş · {{ curName }}</span>
+        <sc-for list="{{ hist }}" as="h"><div style="display:grid;grid-template-columns:150px 1fr 70px;gap:10px;align-items:center;font-size:13px"><span style="color:var(--h);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.n }}</span><div style="display:flex;gap:4px;align-items:flex-end;height:36px"><sc-for list="{{ h.bars }}" as="b"><div title="{{ b.t }}" style="flex:1;height:{{ b.h }};background:{{ b.c }};border-radius:3px 3px 0 0"></div></sc-for></div><span style="text-align:right;color:{{ h.tc }};font-weight:500">{{ h.tr }}</span></div></sc-for>
+        <div style="display:grid;grid-template-columns:150px 1fr 70px;gap:10px;font-size:11px;color:var(--mu)"><span></span><div style="display:flex;justify-content:space-between"><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span></div><span></span></div>
+        <span style="font-size:12px;color:var(--mu);display:flex;gap:6px"><i class="bx bx-lock-alt"></i>Yalnız kendi doktorlarınızı görürsünüz. Yönetici görünümü ileride.</span>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isDoc }}">
+  <div data-screen-label="E8 Doktor kartı" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;gap:10px;align-items:center"><button onClick="{{ back }}" aria-label="Geri" style="width:{{ backS }}px;height:{{ backS }}px;border:1px solid var(--bd2);background:var(--card);color:var(--h);border-radius:8px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="bx bx-arrow-back"></i></button><span style="font-size:14px">Doktor kartı</span><div style="flex:1"></div><select value="{{ docId }}" onChange="{{ onDoc }}" aria-label="Doktor" style="height:36px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:13px;color:var(--h);background:var(--card);max-width:220px"><sc-for list="{{ docOpts }}" as="o"><option value="{{ o.k }}">{{ o.l }}</option></sc-for></select></div>
+    <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;flex:0 0 auto">{{ doc.ini }}</div>
+      <div style="flex:1 1 260px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:22px;font-weight:600;color:var(--h)">{{ doc.n }}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:12px"><span style="padding:2px 8px;border-radius:4px;font-weight:500;background:var(--inb);color:var(--in)">{{ doc.sp }}</span><span style="padding:2px 8px;border-radius:4px;font-weight:500;border:1px solid var(--pbd);color:var(--pt)">{{ doc.seg }}</span><span style="padding:2px 8px;border-radius:4px;background:var(--seb);color:var(--se)">KOL · {{ doc.kol }}</span></div>
+        <div style="font-size:13px"><i class="bx bx-buildings" style="vertical-align:-2px;margin-right:4px"></i>{{ doc.acc }} · {{ doc.ad }}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,auto);gap:4px 24px;text-align:center">
+        <span style="font-size:22px;font-weight:600;color:var(--h)">{{ doc.done }}</span><span style="font-size:22px;font-weight:600;color:var(--h)">{{ doc.freq }}</span><span style="font-size:22px;font-weight:600;color:var(--h)">{{ doc.samples }}</span>
+        <span style="font-size:12px">ziyaret (dönem)</span><span style="font-size:12px">sıklık</span><span style="font-size:12px">numune (kutu)</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--bd);font-size:16px;font-weight:500;color:var(--h)">Ziyaret geçmişi</div>
+          <sc-for list="{{ hist }}" as="h" hint-placeholder-count="3"><div style="padding:12px 18px;border-bottom:1px solid var(--bd);display:flex;gap:12px;align-items:flex-start"><span style="width:58px;flex:0 0 auto;font-size:13px;color:var(--h);font-weight:500">{{ h.d }}</span><div style="flex:1;display:flex;flex-direction:column;gap:4px"><div style="display:flex;gap:4px;flex-wrap:wrap"><sc-for list="{{ h.chips }}" as="c"><span style="padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }}">{{ c.l }}</span></sc-for><span style="padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;background:{{ h.bg }};color:{{ h.fg }}">{{ h.st }}</span></div><span style="font-size:13px">{{ h.sum }}</span></div></div></sc-for>
+        </div>
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:14px 18px;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:16px;font-weight:500;color:var(--h)">Gelecek ziyaretler</span>
+          <sc-for list="{{ future }}" as="f"><div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:6px 0;border-top:1px solid var(--bd)"><span style="color:var(--h)">{{ f.d }}</span><span style="padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;background:{{ f.bg }};color:{{ f.fg }}">{{ f.st }}</span></div></sc-for>
+          <sc-if value="{{ noFuture }}"><span style="font-size:13px;color:var(--mu)">Planlı ziyaret yok.</span></sc-if>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:14px 18px;display:flex;flex-direction:column;gap:12px">
+          <span style="font-size:16px;font-weight:500;color:var(--h)">Bağlılık ve ilgi eğilimi</span>
+          <sc-for list="{{ trends }}" as="t"><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:13px"><strong style="color:var(--h)">{{ t.n }}</strong><span>{{ t.now }}</span></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;align-items:end;height:54px"><sc-for list="{{ t.pts }}" as="p"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end"><i class="bx {{ p.ic }}" style="font-size:13px;color:{{ p.c }}"></i><div title="{{ p.t }}" style="width:100%;height:{{ p.h }};background:var(--p);opacity:{{ p.op }};border-radius:3px 3px 0 0"></div></div></sc-for></div><div style="display:grid;grid-template-columns:repeat(4,1fr);font-size:11px;color:var(--mu);text-align:center"><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span></div></div></sc-for>
+        </div>
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:14px 18px;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:16px;font-weight:500;color:var(--h)">Açık talepler ve itirazlar</span>
+          <sc-for list="{{ opens }}" as="o"><div style="display:flex;gap:8px;font-size:13px;align-items:flex-start"><i class="bx {{ o.ic }}" style="font-size:16px;color:{{ o.c }};margin-top:1px"></i><span style="flex:1">{{ o.t }}</span><span style="font-size:12px;color:var(--mu)">{{ o.p }}</span></div></sc-for>
+        </div>
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;font-size:13px">
+          <span style="grid-column:1/-1;font-size:16px;font-weight:500;color:var(--h)">Doktor profili</span>
+          <span>Benimseme tipi<br><strong style="color:var(--h)">{{ doc.typ }}</strong></span><span>İletişim stili<br><strong style="color:var(--h)">{{ doc.sty }}</strong></span>
+          <span>En uygun zaman<br><strong style="color:var(--h)">{{ doc.best }}</strong></span><span>Toplam hasta<br><strong style="color:var(--h)">{{ doc.tot }} / ay</strong></span>
+        </div>
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:14px 18px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:500;color:var(--h)">Satış payı özeti</span><a href="#" onClick="{{ toPay }}" style="font-size:13px">Satış payına git</a></div>
+          <sc-for list="{{ shares }}" as="s"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;padding:6px 0;border-top:1px solid var(--bd)"><span style="color:var(--h);font-weight:500">{{ s.n }}</span><span>{{ s.l }}</span><span style="padding:1px 8px;border-radius:4px;font-size:11px;font-weight:600;background:{{ s.bg }};color:{{ s.fg }}">{{ s.q }}</span></div></sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PRICE={TUTUKON:360,ALMIBA:210,GLUKOFIT:95,KARDIVA:420,NOROMAX:330,PULMOSET:510,UROFLEKS:290};
+const QD={'Fırsat':['var(--wab)','var(--wa)'],'Koru':['var(--okb)','var(--ok)'],'Büyüt':['var(--inb)','var(--in)'],'Düşük öncelik':['var(--seb)','var(--se)']};
+const quad=(ind,pay)=>ind>=60?(pay<25?'Fırsat':'Koru'):(pay<25?'Düşük öncelik':'Büyüt');
+const tl=n=>'₺'+Math.round(n).toLocaleString('tr-TR');
+class Component extends DCLogic {
+  state={acc:'a3',prod:null,src:'Eczane satış verisi',sh:{},docId:null};
+  get A(){return this.props.app||{nav:{},visits:[],set(){},go(){},toast(){},device:'desktop'}}
+  docs(acc){return Object.values(window.ZD.D).filter(d=>d.acc===acc&&!d.ph)}
+  prods(acc){return[...new Set(this.docs(acc).flatMap(d=>d.prods))]}
+  sales(acc,p){let h=0;for(const c of acc+p)h=(h*31+c.charCodeAt(0))%997;return 180+h%520}
+  share(acc,did,p){const k=acc+'|'+did+'|'+p;if(k in this.state.sh)return this.state.sh[k];const ds=this.docs(acc).filter(d=>d.prods.includes(p));const d=window.ZD.D[did];
+    if(did==='other'){const s=ds.reduce((a,x)=>a+Math.round((x.k[p].ind)/(ds.reduce((b,y)=>b+y.k[p].ind,0))*70),0);return p==='TUTUKON'?Math.max(0,92-s):100-s}
+    if(!d||!d.prods.includes(p))return 0;return Math.round(d.k[p].ind/ds.reduce((b,y)=>b+y.k[p].ind,0)*70)}
+  renderVals(){if(!this.props.app)return{standalone:true};
+    const Z=window.ZD,A=this.A,S=this.state,nav=A.nav||{},dev=A.device||'desktop',phone=dev==='phone';
+    const acc=S.acc,docs=this.docs(acc),prods=this.prods(acc);const cur=S.prod&&prods.includes(S.prod)?S.prod:prods.includes('TUTUKON')?'TUTUKON':prods[0];
+    const tot=p=>[...docs.map(d=>d.id),'other'].reduce((a,id)=>a+Number(this.share(acc,id,p)||0),0);
+    const open=id=>e=>{e&&e.preventDefault&&e.preventDefault();A.go('doktor',{docId:id})};
+    const rowsD=[...docs.map(d=>({id:d.id,n:d.n,sp:d.sp})),{id:'other',n:'Diğer hekimler',sp:'hedef dışı · kurum kalanı'}];
+    const rows=rowsD.map(r=>({n:r.n,sp:r.sp,open:r.id==='other'?e=>e.preventDefault():open(r.id),cells:prods.map(p=>{const v=this.share(acc,r.id,p);const box=this.sales(acc,p)*v/100;return{v,bg:p===cur?'color-mix(in oklab,var(--pl) 40%,transparent)':'transparent',est:v?'≈ '+Math.round(box)+' kutu · '+tl(box*PRICE[p]):'—',on:e=>{const val=e.target.value===''?0:Math.max(0,Math.min(100,Number(e.target.value)));this.setState(s=>({sh:{...s.sh,[acc+'|'+r.id+'|'+p]:val}}))}}})}));
+    const totals=prods.map(p=>{const t=tot(p);return{l:'%'+t,x:t===100?'tamam':t<100?'%'+(100-t)+' eksik':'%'+(t-100)+' fazla',c:t===100?'var(--ok)':'var(--da)'}});
+    const pts=docs.filter(d=>d.prods.includes(cur)).map(d=>{const k=d.k[cur];return{d,ind:k.ind,pay:k.pay,q:quad(k.ind,k.pay)}});
+    const ini=n=>n.replace(/^(Prof\. |Doç\. |Uzm\. )?Dr\. /,'').split(' ').map(x=>x[0]).join('').slice(0,2);
+    const firs=Object.values(Z.D).filter(d=>!d.ph).filter(d=>d.prods.some(p=>quad(d.k[p].ind,d.k[p].pay)==='Fırsat'));
+    // E8
+    const did=nav.docId||'d15',d=Z.D[did]||Z.D.d15,dacc=Z.ACC[d.acc];
+    const vs=A.visits.filter(v=>v.doc===d.id).sort((a,b)=>(b.date+b.start).localeCompare(a.date+a.start));
+    const chip=(p,r)=>r==='t'?{l:Z.P[p].n,bg:'var(--pl)',fg:'var(--pt)',bd:'var(--pbd)'}:{l:Z.P[p].n,bg:'var(--card)',fg:'var(--h)',bd:'var(--bd2)'};
+    const past=vs.filter(v=>v.date<=Z.TODAY&&v.status!=='hazir'&&v.status!=='devam');const fut=vs.filter(v=>!past.includes(v)).reverse();
+    const SUM={raporlandi:'İlgili; literatür istedi. Sonraki: hasta profili mesajı.',raporEksik:'Rapor bekleniyor.',iptal:'İptal edildi.',yapilamadi:'Yapılamadı.',ertelendi:'Ertelendi.',kacirildi:'Başlatılmadı.',suredoldu:'Rapor süresi doldu.'};
+    const hist=[...past.map(v=>({d:Z.fmtD(v.date).split(' ').slice(0,2).join(' '),chips:v.prods.map(p=>chip(p.p,p.r)),st:Z.ST[v.status].l,bg:Z.ST[v.status].bg==='transparent'?'var(--soft)':Z.ST[v.status].bg,fg:Z.ST[v.status].fg,sum:v.reason?v.reason:SUM[v.status]||''})),
+      {d:'21 Eyl',chips:d.prods.map((p,j)=>chip(p,j?'h':'t')),st:'Raporlandı',bg:'var(--okb)',fg:'var(--ok)',sum:'Değerlendiriyor; 2 kutu numune verildi.'},{d:'2 Eyl',chips:d.prods.slice(0,1).map(p=>chip(p,'t')),st:'Raporlandı',bg:'var(--okb)',fg:'var(--ok)',sum:'Farkında; geri ödeme sorusu.'}].slice(0,6);
+    const trends=d.ph?[]:d.prods.map(p=>{const k=d.k[p];const seq=[Math.max(0,k.st-2),Math.max(0,k.st-1),Math.max(0,k.st-1),k.st];const ilg=['Nötr','Nötr','İlgili',k.ilgi];return{n:Z.P[p].n,now:Z.ADOPT[k.st]+' · '+k.ilgi,pts:seq.map((s,i)=>({h:Math.round((s+1)/6*100)+'%',op:i===3?1:.45,t:Z.ADOPT[s],ic:ilg[i]==='İlgili'?'bx-like':ilg[i]==='İlgisiz'?'bx-dislike':'bx-minus',c:ilg[i]==='İlgili'?'var(--ok)':ilg[i]==='İlgisiz'?'var(--da)':'var(--mu)'}))}});
+    return{
+      isPay:nav.screen==='pay',isDoc:nav.screen==='doktor',isPhone:phone,notPhone:!phone,pagePad:phone?'14px':'20px 24px 28px',titleS:phone?19:22,backS:phone?44:36,
+      acc,onAcc:e=>this.setState({acc:e.target.value,prod:null}),accOpts:['a1','a2','a3','a4'].map(k=>({k,l:Z.ACC[k].n})),
+      srcs:['Distribütör','Eczane satış verisi','IQVIA','Hastane alım'].map(l=>({l,bg:S.src===l?'var(--p)':'var(--card)',fg:S.src===l?'#fff':'var(--h)',go:()=>this.setState({src:l})})),srcNote:'Örnek: '+S.src+' · Eyl 2026 · kurum + bağlı eczaneler',
+      prodCards:prods.map(p=>{const t=tot(p),s=this.sales(acc,p);return{n:Z.P[p].n,box:s+' kutu',tl:tl(s*PRICE[p])+' / ay',totL:'Pay toplamı %'+t,totC:t===100?'var(--ok)':'var(--da)',bd:p===cur?'var(--p)':'transparent',go:()=>this.setState({prod:p})}}),
+      cols:prods.map(p=>({n:Z.P[p].n,bg:p===cur?'var(--pl)':'transparent',fg:p===cur?'var(--pt)':'var(--h)'})),rows,totals,curName:Z.P[cur].n,
+      quads:[['Fırsat','yüksek potansiyel · düşük pay'],['Koru','yüksek potansiyel · yüksek pay'],['Düşük öncelik','düşük potansiyel · düşük pay'],['Büyüt','düşük potansiyel · yüksek pay']].map(([l,x])=>({l,x,bg:QD[l][0],fg:QD[l][1]})),
+      dots:pts.map(p=>({n:p.d.n+' · '+p.ind+' hasta · %'+p.pay,i:ini(p.d.n),x:Math.min(96,Math.max(4,p.pay/50*100))+'%',y:Math.min(94,Math.max(6,p.ind/120*100))+'%',open:open(p.d.id)})),
+      suggest:'Fırsat doktorları bu hafta görülmeli: '+firs.slice(0,3).map(x=>x.n).join(', ')+'.',toPlan:()=>A.go('takvim',{mode:'planla',date:'2026-10-12'}),
+      hist:docs.filter(x=>x.prods.includes(cur)).map(x=>{const k=x.k[cur];const vals=[Math.max(2,k.pay-9),Math.max(2,k.pay-6),Math.max(2,k.pay-2),k.pay];const up=vals[3]>=vals[2];return{n:x.n,bars:vals.map((v,i)=>({h:Math.round(v/50*100)+'%',c:i===3?'var(--p)':'var(--pbd)',t:'%'+v})),tr:(up?'↑ ':'↓ ')+'%'+k.pay,tc:up?'var(--ok)':'var(--da)'}}),
+      back:()=>A.go('takvim',{}),docId:d.id,onDoc:e=>A.set({docId:e.target.value}),docOpts:Object.values(Z.D).filter(x=>!x.ph).map(x=>({k:x.id,l:x.n})),
+      doc:{n:d.n,ini:ini(d.n),sp:d.sp,seg:d.seg||'—',kol:d.kol||'—',acc:dacc.n,ad:dacc.ad,done:past.filter(v=>v.status==='raporlandi').length+2,freq:'dönemde '+d.freq,samples:d.id==='d15'?6:2,typ:d.typ||'—',sty:d.sty||'—',best:d.best||'—',tot:d.tot||'—'},
+      hist,future:fut.map(v=>({d:Z.fmtD(v.date)+' · '+v.start,st:Z.ST[v.status].l,bg:Z.ST[v.status].bg==='transparent'?'var(--soft)':Z.ST[v.status].bg==='var(--p)'?'var(--pl)':Z.ST[v.status].bg,fg:Z.ST[v.status].fg==='#fff'?'var(--pt)':Z.ST[v.status].fg})),noFuture:fut.length===0,trends,
+      opens:[{t:'Literatür istedi — 12 Eki\'ye kadar',p:Z.P[d.prods[0]].n,ic:'bx-book-open',c:'var(--wa)'},{t:'İtiraz: geri ödeme · kısmen giderildi',p:Z.P[d.prods[d.prods.length-1]].n,ic:'bx-message-error',c:'var(--da)'},{t:'Hasta materyali talebi — 20 Eki',p:Z.P[d.prods[0]].n,ic:'bx-file',c:'var(--wa)'}],
+      shares:d.prods.map(p=>{const k=d.k[p];const q=quad(k.ind,k.pay);return{n:Z.P[p].n,l:'kurum içi %'+this.share(d.acc,d.id,p)+' · '+k.ind+' hasta · pay %'+k.pay,q,bg:QD[q][0],fg:QD[q][1]}}),
+      toPay:e=>{e.preventDefault();this.setState({acc:d.acc});A.go('pay',{})}
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+<link rel="stylesheet" href="theme.css">
+</helmet>
+<sc-if value="{{ standalone }}"><div style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#f5f5f9;font-family:'Public Sans',sans-serif;padding:24px"><div style="background:#fff;border-radius:8px;box-shadow:0 3px 8px rgba(34,48,62,.08);padding:28px 32px;max-width:440px;display:grid;gap:10px;text-align:center"><div style="font-size:17px;font-weight:500;color:#384551">Bu dosya prototipin bir parçası</div><div style="font-size:14px;color:#646e78">Tek başına açıldığında boş görünür. Tüm ekranlar için ana dosyayı açın.</div><a href="Ziyaret Çalışma Alanı.dc.html" style="justify-self:center;margin-top:6px;padding:10px 18px;border-radius:6px;background:#0b1a8c;color:#fff;font-size:14px;font-weight:500;text-decoration:none">Ziyaret Çalışma Alanı'nı aç</a></div></div></sc-if>
+<div data-screen-label="E-postalar" style="position:absolute;inset:0;display:flex;background:var(--bg);color:var(--tx)">
+  <sc-if value="{{ notPhone }}">
+    <aside style="width:300px;flex:0 0 auto;background:var(--card);border-right:1px solid var(--bd);display:flex;flex-direction:column">
+      <div style="padding:16px 18px;border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:center"><button onClick="{{ back }}" aria-label="Geri" style="width:34px;height:34px;border:1px solid var(--bd2);background:var(--card);color:var(--h);border-radius:6px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="bx bx-arrow-back"></i></button><div><div style="font-size:16px;font-weight:500;color:var(--h)">E-postalar</div><div style="font-size:12px">Otomatik bildirim şablonları</div></div></div>
+      <div style="flex:1;overflow-y:auto;padding:8px 0">
+        <sc-for list="{{ groups }}" as="g">
+          <div style="padding:12px 18px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--mu)">{{ g.l }}</div>
+          <sc-for list="{{ g.items }}" as="m"><button onClick="{{ m.go }}" style="width:100%;border:0;text-align:left;padding:10px 18px;display:flex;gap:10px;align-items:flex-start;cursor:pointer;background:{{ m.bg }};box-shadow:inset 3px 0 0 {{ m.bar }}"><i class="bx {{ m.ic }}" style="font-size:19px;color:{{ m.c }};margin-top:1px"></i><span style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-size:14px;color:var(--h);font-weight:500">{{ m.l }}</span><span style="font-size:12px;color:var(--mu)">→ {{ m.to }}</span></span></button></sc-for>
+        </sc-for>
+      </div>
+    </aside>
+  </sc-if>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <sc-if value="{{ isPhone }}">
+      <div style="background:var(--card);padding:8px 12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--bd)"><button onClick="{{ back }}" aria-label="Geri" style="width:44px;height:44px;border:0;background:transparent;color:var(--h);font-size:24px;display:flex;align-items:center;justify-content:center"><i class="bx bx-chevron-left"></i></button><select value="{{ key }}" onChange="{{ onKey }}" style="flex:1;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"><sc-for list="{{ flat }}" as="m"><option value="{{ m.k }}">{{ m.l }}</option></sc-for></select></div>
+    </sc-if>
+    <div style="background:var(--card);border-bottom:1px solid var(--bd);padding:{{ hPad }};display:grid;gap:6px">
+      <div style="font-size:{{ subjS }}px;font-weight:600;color:var(--h)">{{ m.subj }}</div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px">
+        <span style="color:var(--mu)">Kimden</span><span style="color:var(--h)">Grand Medical CRM &lt;bildirim@grandmedical.eu&gt;</span>
+        <span style="color:var(--mu)">Kime</span><span style="color:var(--h)">{{ m.to }}</span>
+        <sc-if value="{{ m.hasCc }}"><span style="color:var(--mu)">Bilgi</span><span style="color:var(--h)">{{ m.cc }}</span></sc-if>
+        <span style="color:var(--mu)">Tarih</span><span>{{ m.date }}</span>
+      </div>
+      <sc-if value="{{ m.hasAtt }}"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><sc-for list="{{ m.att }}" as="a"><span style="display:inline-flex;gap:5px;align-items:center;border:1px solid var(--bd);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--h)"><i class="bx bxs-file-pdf" style="color:#ff3e1d;font-size:16px"></i>{{ a }}</span></sc-for></div></sc-if>
+    </div>
+    <div style="flex:1;min-height:0;overflow-y:auto;background:#eef0f4;padding:{{ bPad }}">
+      <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(34,48,62,.08);font-family:'Public Sans',Arial,sans-serif;color:#384551">
+        <div style="padding:18px 28px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eceef1"><span style="width:30px;height:30px;border-radius:7px;background:#0b1a8c;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">GM</span><span style="font-size:17px;font-weight:700;color:#384551">Grand Medical</span><span style="margin-left:auto;font-size:12px;color:#8592a3">{{ m.kind }}</span></div>
+        <div style="padding:12px 28px;display:flex;gap:8px;align-items:center;font-size:14px;font-weight:500;background:{{ m.bandBg }};color:{{ m.bandFg }}"><i class="bx {{ m.bandIc }}" style="font-size:19px"></i>{{ m.band }}</div>
+        <div style="padding:24px 28px;display:grid;gap:18px">
+          <div style="display:grid;gap:6px"><div style="font-size:20px;font-weight:600;color:#22303e;line-height:1.3">{{ m.title }}</div><div style="font-size:14px;line-height:1.6;color:#646e78">{{ m.intro }}</div></div>
+          <table style="width:100%;border-collapse:collapse;font-size:14px">
+            <tbody><sc-for list="{{ m.kv }}" as="r"><tr><td style="padding:8px 0;border-bottom:1px solid #eceef1;color:#8592a3;width:40%;vertical-align:top">{{ r.k }}</td><td style="padding:8px 0;border-bottom:1px solid #eceef1;color:#384551;font-weight:500">{{ r.v }}</td></tr></sc-for></tbody>
+          </table>
+          <sc-if value="{{ m.hasTable }}">
+            <div style="display:grid;gap:8px"><div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#384551">{{ m.tableT }}</div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <thead><tr style="background:#f5f5f9"><sc-for list="{{ m.th }}" as="h"><th style="padding:8px 10px;text-align:{{ h.a }};font-weight:600;color:#384551;border-bottom:1px solid #e4e6e8">{{ h.l }}</th></sc-for></tr></thead>
+              <tbody><sc-for list="{{ m.rows }}" as="r"><tr><sc-for list="{{ r.c }}" as="c"><td style="padding:8px 10px;border-bottom:1px solid #eceef1;text-align:{{ c.a }};color:#384551">{{ c.v }}</td></sc-for></tr></sc-for></tbody>
+            </table>
+            <sc-if value="{{ m.hasTot }}"><div style="display:grid;gap:4px;justify-self:end;min-width:240px;font-size:13px"><sc-for list="{{ m.tot }}" as="t"><div style="display:flex;justify-content:space-between;gap:20px;font-weight:{{ t.w }};color:{{ t.c }}"><span>{{ t.l }}</span><span>{{ t.v }}</span></div></sc-for></div></sc-if>
+            </div>
+          </sc-if>
+          <sc-for list="{{ m.secs }}" as="s"><div style="display:grid;gap:6px"><div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#384551">{{ s.t }}</div><sc-for list="{{ s.items }}" as="x"><div style="font-size:14px;line-height:1.5;color:#646e78;display:flex;gap:8px"><span style="color:#0b1a8c">•</span><span>{{ x }}</span></div></sc-for></div></sc-for>
+          <sc-if value="{{ m.hasCta }}"><div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px"><sc-for list="{{ m.ctas }}" as="c"><a href="#" onClick="{{ c.go }}" style="display:inline-block;padding:11px 22px;border-radius:6px;font-size:14px;font-weight:600;text-decoration:none;background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }}">{{ c.l }}</a></sc-for></div></sc-if>
+          <sc-if value="{{ m.hasNote }}"><div style="background:#f5f5f9;border-radius:6px;padding:10px 14px;font-size:12px;line-height:1.5;color:#646e78">{{ m.note }}</div></sc-if>
+        </div>
+        <div style="padding:16px 28px;background:#fafafb;border-top:1px solid #eceef1;font-size:11px;line-height:1.5;color:#a1acb8">Bu e-posta Grand Medical CRM tarafından otomatik gönderildi. Hasta kimlik bilgisi içermez (KVKK). Yanıtlar {{ m.replyTo }} adresine iletilir.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const B={ok:['#e8fadf','#4a9a22','bx-check-circle'],wa:['#fff2d6','#b27800','bx-time-five'],da:['#ffe0db','#d1301a','bx-error'],in:['#d7f5fc','#028aa6','bx-info-circle'],p:['#e0e2f3','#0b1a8c','bx-envelope']};
+const BTN={p:{bg:'#0b1a8c',fg:'#fff',bd:'#0b1a8c'},ok:{bg:'#71dd37',fg:'#fff',bd:'#71dd37'},da:{bg:'#fff',fg:'#d1301a',bd:'#ff3e1d'},o:{bg:'#fff',fg:'#0b1a8c',bd:'#c5c9e8'}};
+class Component extends DCLogic {
+  state={key:null};
+  get A(){return this.props.app||{nav:{},visits:[],orders:[],go(){},set(){},toast(){},device:'desktop'}}
+  renderVals(){if(!this.props.app)return{standalone:true};
+    const Z=window.ZD,A=this.A,S=this.state,nav=A.nav||{},phone=A.device==='phone';const key=S.key||nav.mail||'rapor';
+    const v=A.visits.find(x=>x.id===(nav.vid||'v26'))||A.visits.find(x=>x.id==='v26');const d=Z.D[v.doc].ph?Z.D.d15:Z.D[v.doc];const acc=Z.ACC[d.acc];const rep=v.report||{};
+    const o=A.orders.find(x=>x.id===nav.order)||[...A.orders].reverse().find(x=>x.status!=='iletildi')||{id:'S-2026-0413',ph:'ph2',date:'9 Eki 11:05',depo:'Selçuk Ecza Deposu · Şişli',cur:'TRY',due:'2026-10-12',note:'Kampanya dönemi için raf standı istendi.',lines:[{sku:'TUTUKON 100 mg · 28 tb',p:'TUTUKON',q:20,mf:'20+2',isk:5,price:360},{sku:'GLUKOFİT 850 mg · 60 tb',p:'GLUKOFIT',q:10,mf:'',isk:0,price:95}],status:'onay'};
+    const ph=Z.D[o.ph],pacc=Z.ACC[ph.acc],C=Z.CUR[o.cur||'TRY'];const fm=n=>C.s+(n/C.r).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    let g=0,ds=0;const orows=o.lines.map(l=>{const q=Number(l.q),pr=l.price,isk=Number(l.isk||0);g+=q*pr;ds+=q*pr*isk/100;return{c:[{v:l.sku,a:'left'},{v:String(q),a:'right'},{v:l.mf||'—',a:'right'},{v:isk?'%'+isk:'—',a:'right'},{v:fm(q*pr*(1-isk/100)),a:'right'}]}});
+    const net=g-ds;const otot=[{l:'Ara toplam',v:fm(g),w:400,c:'#646e78'},{l:'İskonto',v:'−'+fm(ds),w:400,c:'#646e78'},{l:'KDV %10',v:fm(net*.1),w:400,c:'#646e78'},{l:'Toplam',v:fm(net*1.1),w:700,c:'#22303e'}];
+    const oth=[['Ürün / ambalaj','left'],['Adet','right'],['MF','right'],['İsk.','right'],['Tutar','right']].map(([l,a])=>({l,a}));
+    const P=Z.PEOPLE,toast=t=>e=>{e.preventDefault();A.toast(t)};
+    const prows=(rep.rows||[{n:'ÜROFLEKS',e:'★★★★☆',i:'İlgili',s:'Deniyor',q:'Fırsat'},{n:'TUTUKON',e:'★★★☆☆',i:'Nötr',s:'Değerlendiriyor',q:'Koru'}]).map(r=>({c:[{v:r.n,a:'left'},{v:r.e,a:'left'},{v:r.i,a:'left'},{v:r.s,a:'left'},{v:r.q,a:'left'}]}));
+    const M={
+      rapor:{grp:'Ziyaret raporu',l:'Rapor özeti',ic:'bx-file',c:'var(--pt)',to:P.mgr.n+' <'+P.mgr.m+'>',kind:'Ziyaret raporu',subj:'Ziyaret raporu · '+d.n+' · 8 Eki',band:['ok','Rapor gönderildi · 8 Eki 11:58'],title:d.n+' ziyaret raporu',intro:P.rep.n+' ziyaret raporunu gönderdi. Özet aşağıda; ayrıntılar CRM\'de.',
+        kv:[['Temsilci',P.rep.n],['Hekim',d.n+' · '+d.sp],['Kurum',acc.n],['Ziyaret','8 Eki 2026 · 11:31–11:52 (21 dk) · '+(rep.kind||'Yüz yüze')],['Ortak ziyaret',rep.joint?'Selin Karaca':'Yok']],
+        tableT:'Ürünler',th:['Ürün','Etkinlik','İlgi','Bağlılık','Matris'].map(l=>({l,a:'left'})),rows:prows,
+        secs:[{t:'Talepler ve numune',items:rep.reqs||['Literatür / çalışma · ÜROFLEKS · teslim 12 Eki','Numune: 2 kutu ÜROFLEKS 0,4 mg · imzalı']},{t:'Güvenlik',items:['Advers olay: '+(rep.adv||'Hayır'),'Endikasyon dışı bilgi talebi: '+(rep.off||'Hayır')]},{t:'Takip',items:['Önerilen sonraki ziyaret: 15 Eki · literatürü ilet, deneme hastalarını sor']}],
+        ctas:[['Raporu görüntüle','p',()=>A.go('rapor',{vid:v.id,ro:true})]],att:[],replyTo:P.rep.m},
+      advers:{grp:'Ziyaret raporu',l:'Advers olay bildirimi',ic:'bx-error',c:'var(--da)',to:P.pv.n+' <'+P.pv.m+'>',cc:P.mgr.n,kind:'Farmakovijilans',subj:'ACİL · Advers olay bildirimi · ÜROFLEKS · 24 saat',band:['da','24 saat kuralı · son bildirim 9 Eki 11:40'],title:'Ziyarette advers olay bildirildi',intro:'Saha ziyaretinde hekim tarafından bir yan etki / advers olay aktarıldı. Bildirimin 24 saat içinde değerlendirilmesi gerekir.',
+        kv:[['Bildiren',P.rep.n+' · '+P.rep.r],['Kaynak hekim',d.n+' · '+d.sp+' · '+acc.n],['Şüpheli ürün','ÜROFLEKS 0,4 mg kapsül'],['Öğrenilme zamanı','8 Eki 2026 · 11:40'],['Hasta','Kimlik bilgisi alınmadı (KVKK) · 60+ yaş, erkek'],['Ciddiyet','Bilinmiyor · hekim takipte']],
+        secs:[{t:'Temsilcinin notu',items:['Hekim, tedavinin ilk haftasında bir hastada baş dönmesi ve ayağa kalkınca tansiyon düşmesi gözlediğini aktardı. Hasta hastaneye yatırılmadı.']}],
+        ctas:[['PV formunu aç','p',toast('PV formu kapsam dışı.')],['Hekimle iletişime geç','o',toast('Kapsam dışı.')]],note:'Temsilci tıbbi değerlendirme yapmaz; yalnız bilgiyi iletir.',att:[],replyTo:P.pv.m},
+      msl:{grp:'Ziyaret raporu',l:'Endikasyon dışı talep',ic:'bx-help-circle',c:'var(--in)',to:P.msl.n+' <'+P.msl.m+'>',cc:P.mgr.n,kind:'Tıbbi bilgi talebi',subj:'Endikasyon dışı bilgi talebi · '+d.n,band:['in','MSL yönlendirmesi · temsilci yanıt vermedi'],title:'Hekim endikasyon dışı bilgi istedi',intro:'Ziyaret sırasında hekim, onaylı endikasyon dışında bilgi talep etti. Temsilci yanıt vermedi ve talebi size yönlendirdi.',
+        kv:[['Hekim',d.n+' · '+d.sp],['Kurum',acc.n],['Ürün','ÜROFLEKS 0,4 mg'],['Soru','Kadın hastalarda distal üreter taşı dışında kullanım verisi var mı?'],['Tercih edilen iletişim','E-posta · '+(d.best||'')],['Talep zamanı','8 Eki 2026 · 11:45']],secs:[],
+        ctas:[['Talebi üstlen','p',toast('MSL ekranı kapsam dışı.')]],att:[],replyTo:P.msl.m},
+      sure:{grp:'Ziyaret raporu',l:'Rapor süresi doldu',ic:'bx-lock-alt',c:'var(--da)',to:P.mgr.n+' <'+P.mgr.m+'>',kind:'Uyum bildirimi',subj:'Rapor süresi doldu · Doç. Dr. Mehmet Yılmaz · 5 Eki',band:['da','48 saat doldu · kayıt kilitlendi'],title:'Yapılan bir ziyaretin raporu girilmedi',intro:P.rep.n+', 5 Ekim\'de yapılan ziyaretin raporunu 48 saat içinde girmedi. Kayıt kilitlendi.',
+        kv:[['Temsilci',P.rep.n],['Hekim','Doç. Dr. Mehmet Yılmaz · Dahiliye'],['Kurum','Şişli Hamidiye Etfal EAH'],['Ziyaret','5 Eki 2026 · 09:40–10:02'],['Son tarih','7 Eki 2026 · 10:02'],['Durum','Kilitli · rapor yok']],secs:[],
+        ctas:[['Kaydı incele','p',toast('Yönetici ekranı kapsam dışı.')],['Kilidi aç (gerekçeli)','o',toast('Yönetici ekranı kapsam dışı.')]],att:[],replyTo:P.rep.m},
+      sip_onay:{grp:'Eczane siparişi',l:'Onay talebi',ic:'bx-user-check',c:'var(--wa)',to:P.mgr.n+' <'+P.mgr.m+'>',kind:'Sipariş onayı',subj:'Onayınız bekleniyor · Ön sipariş '+o.id+' · '+ph.n,band:['wa','Onay bekliyor · onaydan sonra depoya iletilir'],title:'Ön sipariş onayınızı bekliyor',intro:P.rep.n+', '+ph.n+' için ön sipariş oluşturdu. Eczacı imzası alındı.',
+        kv:[['Eczane',ph.n+' · '+pacc.ad],['Eczacı',ph.who],['Depo',o.depo],['Teslim',Z.fmtD(o.due)],['Para birimi',o.cur||'TRY'],['Not',o.note||'—']],tableT:'Sipariş satırları',th:oth,rows:orows,tot:otot,
+        secs:[{t:'Kontrol',items:['TUTUKON iskontosu %5 · bölge limiti %3 (aşıyor)','MF 20+2 · kampanya kapsamında']}],
+        ctas:[['Onayla','ok',e=>{e.preventDefault();if(A.updOrder&&o.id)A.updOrder(o.id,{status:'iletildi'});A.toast('Sipariş onaylandı; depoya iletildi.')}],['Reddet','da',e=>{e.preventDefault();if(A.updOrder&&o.id)A.updOrder(o.id,{status:'red'});A.toast('Sipariş reddedildi.')}],['CRM\'de aç','o',()=>A.go('siparis',{vid:o.vid})]],note:'Onayla / Reddet tek tıkla çalışır; reddederken gerekçe istenir.',att:[],replyTo:P.rep.m},
+      sip_depo:{grp:'Eczane siparişi',l:'Sipariş → depo',ic:'bx-package',c:'var(--ok)',to:o.depo+' <siparis@depo.example>',cc:P.rep.n,kind:'Sipariş',subj:'Sipariş '+o.id+' · '+ph.n+' · teslim '+Z.fmtD(o.due).split(' ').slice(0,2).join(' '),band:['p','Onaylı sipariş · '+P.mgr.n+' · 9 Eki 11:12'],title:'Sipariş '+o.id,intro:'Aşağıdaki eczane siparişinin belirtilen tarihte teslimini rica ederiz.',
+        kv:[['Eczane',ph.n],['Adres',pacc.ad+', İstanbul'],['GLN (demo)','8680001234567'],['Eczacı',ph.who],['Teslim tarihi',Z.fmtD(o.due)],['Onaylayan',P.mgr.n+' · '+P.mgr.r]],tableT:'Kalemler',th:oth,rows:orows,tot:otot,secs:[],
+        ctas:[['Siparişi teyit et','p',toast('Depo tarafı kapsam dışı.')]],att:[o.id+'.pdf'],replyTo:P.rep.m},
+      sip_eczane:{grp:'Eczane siparişi',l:'Eczaneye onay kopyası',ic:'bx-store',c:'var(--ok)',to:ph.n+' · '+ph.who,kind:'Sipariş onayı',subj:'Siparişiniz alındı · '+o.id,band:['ok','Siparişiniz onaylandı ve depoya iletildi'],title:'Sayın '+ph.who+',',intro:'Temsilcimiz '+P.rep.n+' ile oluşturduğunuz sipariş onaylandı ve '+o.depo+' deposuna iletildi.',
+        kv:[['Sipariş no',o.id],['Depo',o.depo],['Tahmini teslim',Z.fmtD(o.due)]],tableT:'Siparişiniz',th:oth,rows:orows,tot:otot,secs:[],ctas:[],note:'Sorularınız için temsilciniz: '+P.rep.n+' · '+P.rep.m,att:[o.id+'.pdf'],replyTo:P.rep.m},
+      sip_bilgi:{grp:'Eczane siparişi',l:'Bilgi: sipariş iletildi',ic:'bx-info-circle',c:'var(--in)',to:P.mgr.n+' <'+P.mgr.m+'>',kind:'Bilgi',subj:'Bilgi · '+o.id+' depoya iletildi',band:['in','Bilgi amaçlı'],title:'Onayladığınız sipariş iletildi',intro:o.id+' numaralı '+ph.n+' siparişi '+o.depo+' deposuna ve eczaneye gönderildi.',
+        kv:[['Toplam',fm(net*1.1)],['Kalem',o.lines.length+' ürün'],['Teslim',Z.fmtD(o.due)]],secs:[],ctas:[['CRM\'de aç','o',()=>A.go('siparis',{vid:o.vid})]],att:[],replyTo:P.rep.m}
+    };
+    const m=M[key]||M.rapor;const b=B[m.band[0]];
+    const keys=Object.keys(M);const grps=[...new Set(keys.map(k=>M[k].grp))];
+    return{
+      isPhone:phone,notPhone:!phone,key,onKey:e=>this.setState({key:e.target.value}),hPad:phone?'12px 16px':'16px 24px',subjS:phone?16:18,bPad:phone?'12px':'24px',
+      back:()=>A.go(nav.order||key.startsWith('sip')?'siparis':'takvim',nav.order||key.startsWith('sip')?{vid:o.vid}:{}),
+      groups:grps.map(gl=>({l:gl,items:keys.filter(k=>M[k].grp===gl).map(k=>({l:M[k].l,ic:M[k].ic,c:M[k].c,to:M[k].to.split(' <')[0],bg:k===key?'var(--pl)':'transparent',bar:k===key?'var(--p)':'transparent',go:()=>this.setState({key:k})}))})),
+      flat:keys.map(k=>({k,l:M[k].grp+' · '+M[k].l})),
+      m:{...m,hasCc:!!m.cc,cc:m.cc||'',date:'Prş, 8 Eki 2026 11:58',hasAtt:m.att.length>0,band:m.band[1],bandBg:b[0],bandFg:b[1],bandIc:b[2],kv:m.kv.map(([k,v])=>({k,v})),
+        hasTable:!!m.rows,tableT:m.tableT||'',th:m.th||[],rows:m.rows||[],hasTot:!!m.tot,tot:m.tot||[],hasCta:m.ctas.length>0,ctas:m.ctas.map(([l,k,go])=>({l,...BTN[k],go:e=>{if(e&&e.preventDefault)e.preventDefault();go(e)}})),hasNote:!!m.note,note:m.note||''}
+    };
+  }
+}
+</script>
+</body>
+</html>
