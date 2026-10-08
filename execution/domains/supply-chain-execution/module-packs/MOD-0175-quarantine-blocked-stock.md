@@ -1199,7 +1199,9 @@ not acceptable); **O-2 → Q4** (with the lot gate); **O-5 → Q5** (labels via 
 Q5 with the queue page; **O-1** contracts README row = CT records step at MVP-1 closure; CT-Q9 = idempotent continue + retry
 (measured: `PostAsync` opens its own transaction) — accepted.
 
-### WP-0175-Q2 (agent result 2026-10-08, pending CT) — Workflow integration + FU-0175-Q1-SER
+### WP-0175-Q2 (CT-ACCEPTED 2026-10-08) — Workflow integration + FU-0175-Q1-SER
+
+**CT acceptance (K13):** v1 re-measured at `7bf32be2e` (613/613) but REWORK requested: the two concurrent-apply guards of `417dc7b24` had no failing test (CT sabotages S1 `if (false)` and S2 `InFlightGrace = Zero` both left 83/83 green). v1.1 (`de6b92ca1`, `162c604da`) adds deterministic tests (`QuarantineApplyRaceTests.cs`, injectable `TimeProvider`); CT re-ran both sabotages → each 1 red, restored; Inventory 617/617. **FU-0175-Q1-SER CLOSED.** CT decisions on the opens: **O-Q2-3 → Q3 scope** — submit is refused when no approver candidate other than the decider exists (otherwise an un-approvable task is created); O-Q2-2 (withdraw 400/404/503 not in the contract) → next additive contract version; O-Q2-4 lot number labels → Q5; **O-Q2-5** Q1 test approval port is removed in Q5; O-Q2-1 RabbitMQ event path runtime proof → environment follow-up (machine has no broker); O-Q2-6 serial split for manual quarantine/block → Q4 (with the lot gate). MassTransit.RabbitMQ 8.3.6 added to InventoryService Infrastructure, bus registered only with `Eventing:Transport=RabbitMQ` (default InMemory) — accepted.
 
 Branch `feature/sce/mod-0175-q2` from `9d93a7dbc` (isolated worktree): `e2d2eb7d4` code + tests, `467dc08da` K3 (a) measure,
 `417dc7b24` concurrent-apply fix. `GatewayWorkflowClient` (Gateway → MOD-0023 with the **caller's** bearer via
