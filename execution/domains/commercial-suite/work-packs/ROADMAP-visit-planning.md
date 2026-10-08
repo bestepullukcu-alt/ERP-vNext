@@ -149,6 +149,11 @@ Kurallar:
 
 - ☐ **Manuel test bulgusu (2026-10-08):** sıklığı tanımsız 54 doktorun hepsi 41. haftada bitti, 42–53 boş. **Kararlar:** tanımsız sıklık = **haftada 1**; **haftaya ek ziyaret** evet → [WP-VP-4L](WP-VP-4L-weekly-default-week-extras.md) (4L-BE ∥ 4L-WEB; `C:	mpp-4l-be`, `C:	mpp-4l-web`). Mobil M10 metni "haftada 1 (varsayılan)" olacak.
 
+- ☐ **4L-BE sonrası paket (kullanıcı onayı 2026-10-09; "4L-BE dönünce paketle"):** Hedefler sayıları (canlı, plan `f2c6014d`, 42. hafta, Acıbadem Taksim):
+  1. "Yapılan / kalan" planlı ziyareti göstermiyor → seçili doktorda "0 / 0"; doğrusu "0 yapıldı · 1 planlı".
+  2. Varsayılan "Bu hafta görülmesi gerekenler" süzgeci planda olan doktorları gizliyor ("4 / 29 seçili" ama tabloda seçili yok) → planda olanlar süzgeçten bağımsız, durumlarıyla listenin başında.
+  3. `dueThisWeek` / hızlı süzgeç sayıları **bugünkü haftaya** göre, başlık **seçili haftaya** göre → doktor durumu okumasına (my-accounts/{id}/doctors, sessions/{id}/targets) seçili hafta parametresi (`weekStart`, ek) ve Web bunu gönderir.
+
 ### ★ Yön değişikliği (kullanıcı, 2026-10-08) — Ziyaret Çalışma Alanı (tek takvim)
 - Ziyaret Planlama + Ziyaret Yürütme **tek takvim ekranında**: Planla / Yürüt modu, ziyarete başla (fotoğraf + kanıt), iptal / yapılamadı / ertele (neden kategorisi), sunum ekranı (tablette doktor, telefonda temsilci), zengin hekim / eczane raporu (süre, etkinlik, bağlılık, hasta sayıları, rakip, itiraz, talep, numune, önceki değer önerisi), doktor satış payı ekranı.
 - ☐ **Mockup brief:** [BRIEF-visit-workspace-calendar](mockups/visit-workspace/BRIEF-visit-workspace-calendar.md) → kullanıcı tasarım yaptıracak. Mockup gelince Faz 6 (Planlanan Ziyaretler) ve SB-3c (başlat / tamamla) bu yöne göre yeniden kurgulanır.
