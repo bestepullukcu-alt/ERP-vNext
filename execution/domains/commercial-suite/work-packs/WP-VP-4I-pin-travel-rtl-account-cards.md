@@ -196,3 +196,27 @@ Commit: "fix(web): WP-VP-4I-WEB — strip/day-row polish, en month, account card
   - il etiketi yoksa Türkçe baş harf yedeği kullanılıyor.
 - **Veride kalan iş:** Türkçe ve diğer dillerdeki adlar, referans verisinin sahiplerince Referans Veri'de girilecek.
 - **Platform notu:** MOD-0048 değerinde dil başına alan yok (tek etiket). Kalıcı çözüm Platform'da çok dilli etiket alanı olabilir; bu ayrı bir tasarım kararı.
+
+### E4 — CT (2026-10-08, fleet sonrası, ayrı sekme, plan `23b1706a`)
+- ☑ **Şerit kartı:** başa hizalı (`text-align:start`), "41. Hafta BUGÜN" tek satır (21px).
+- ☑ **Gün satırı:** "6 / 57 boş 6,7 sa" tek satır.
+- ☑ **İngilizce ay:** "28 Sep–2 Oct".
+- ☑ **Hesap kartı:**
+  - rozet sağda;
+  - vurgu yalnız açık hesapta (açık zemin + 3px çizgi; RTL'de sağda);
+  - "×" yok;
+  - Seçilenler'de 4 "Kaldır";
+  - "Bölge dışı ekle" beyaz, kesik çizgili;
+  - "bu hafta" amber `#b27800`.
+- ☑ **RTL bidi** (CT sekmesinde `dir=rtl` ile): "06 NOLU TOKİ…", "75.YIL MECİDİYEKÖY…" doğru. İl yedeği "İstanbul" / "Konya"; "Sanliurfa" ş'siz, bilinen sınır (il etiketi veri sahiplerinde).
+- **CT düzeltmeleri** (E4'te bulundu, CT yaptı, Web 801 → **802/0**, her biri kasıtlı bozmada kırmızı):
+  1. `fd0dfd292` — ziyaret satırında doktor adı ortaya kayıyordu: temanın `.btn`'i flex sütununda öğeleri ortalıyordu → `align-items-start`.
+  2. `fd0dfd292` — **RTL'de sayı oranları ters dönüyordu** ("0 / 5" → "5 / 0"; boşluklu eğik çizgi nötr). `format.js` `ratio()` / `isolateRatios()` (LRI…PDI) eklendi. Kullanıldığı yerler:
+     - gün satırı;
+     - doktor listesi;
+     - Hedefler yapılan / kalan;
+     - hesap "x / y seçili";
+     - yeniden açma sayacı;
+     - ürün sınırı satırı.
+  3. `8eb5f41b4` — Hedefler alt başlığında kurum adı düz metin olarak ters dönüyordu → `isolate()` (FSI…PDI).
+- ☐ **Sabit + yol (4I-BE) canlı:** SERHAT → Cuma, TOKİ `no_near_day` bekleniyor. Yazma adımı, kullanıcı onayı bekliyor.
