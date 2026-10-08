@@ -235,3 +235,26 @@ Commit: "feat(web): WP-VP-4H — mockup v2 alignment, app-culture dates, product
 - `weekLoad` 4E `days[]` toplamını öncelikli okuyor.
 
 **E4:** mockup ile yan yana; tarayıcı İngilizceyken TR; **Arapça RTL**; boş hafta; onay ve yeniden açma sonrası yer; Hedefler listesi ve özet süresi; 4D / 4F taşıma yolları.
+
+### E4 — ACCEPTED (2026-10-08, CT, plan `23b1706a`)
+- ☑ **Biçim:** TR her yerde ("5–9 Eki · 2026", "Pzt 5 Eki", "1,1 sa"). Biçimleyici `<html lang>` okuyor (tr / en / ar denendi).
+- ☑ **Haftalar ve boş hafta:** dikey şerit kartları, kesik çizgili boş hafta, 44. haftada tatil işareti. Boş hafta (43) mockup ile birebir.
+- ☑ **Doktorlar ve panel:**
+  - doktor listesi "dönemde 1 (varsayılan) · 0 / 1" + ince şerit + lejant;
+  - panel: 3 kutu, sıradaki ziyaret kartı ürün adlarıyla, dönemin tüm haftaları.
+- ☑ **Hedefler:**
+  - sol liste (1535 hesap, plandakiler üstte);
+  - 8 sütun, alt satır yok;
+  - özet "≈ 1,1 sa" detay üstüyle aynı;
+  - dağılım adla.
+- ☑ **Rota:** "Pzt 19 Eki"; 43. haftada hafta listesi dolu.
+- ☑ **Onay ve yeniden aç:** Haftalar'dan onay (2 ziyaret) ve yeniden aç (gerekçe geçmişte, 2 ziyaret `cancelled`) → ikisinde de Haftalar + 42. hafta.
+- ☑ **Arapça:** `dir=rtl`, yerleşim aynalı, gün çubukları sağdan doluyor.
+- **Bulgular → [WP-VP-4I](WP-VP-4I-pin-travel-rtl-account-cards.md):**
+  - RTL bidi ("018 KLİNİK" → "KLİNİK 018");
+  - şerit kartı ortalı ve başlık kırılıyor;
+  - gün satırı "6 / 57 ziyaret" kırılıyor;
+  - "Sept";
+  - Hedefler hesap kartları mockup'tan sapmış;
+  - il kodun son parçası ("ISTANBUL");
+  - "Clinic" / "Family Medicine" etiketleri.

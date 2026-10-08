@@ -145,3 +145,10 @@ Commit: "feat(crm): WP-VP-4G — light-day far clusters, stable day pins, produc
 - **Ad okuma izni:** selector `mdm.global-products.read` izni istiyor. Bu izin olmayan saha temsilcisinde adlar boş gelir ve kod görünür (fail-open). Canlıda temsilci rolüyle kontrol edilecek; gerekirse grant ya da ayrı bir okuma yolu.
 - **MDM toplu id süzgeci:** ayrı iş (selector'ı sayfa sayfa okumanın yerine).
 - **`countryCode`:** tüzel kişi basamağı yok (token'da tüzel kişi claim'i yok).
+
+### E4 — ACCEPTED, bir bulguyla (2026-10-08, CT, plan `23b1706a`)
+- ☑ **Ürün adı:** oturum, önizleme kalemleri, dağılım ve haftalık sayılar dolu (AKKORA / ALFORITA / ALMIBA). `me.countryCode = "tr"`. `reportStatus` alanı geliyor.
+- ☑ **F4-1:** 018 KLİNİK İstanbul'da, diğerleri Konya ve Şanlıurfa'da (koordinatlar DB'den salt okuma). Hiçbir güne sığmadığı için kayması doğru; neden artık `no_near_day` ("yakın gün yok").
+- ☑ **F4-5:** SERHAT "Yalnız bu doktor" ile Cuma'ya → HÜSEYİN ve SEDAD Perşembe'de kaldı. Sabit kaldırıldı, düzen eski haline döndü.
+- ⚠ **Bulgu → [WP-VP-4I](WP-VP-4I-pin-travel-rtl-account-cards.md) 4I-BE:** aynı adımda Cuma'daki TOKİ (Şanlıurfa) 42. haftaya `capacity_full` ile kaydı. `AssignAroundPins` kümeler arası yolu saymıyor; rota katmanı yol taşmasını "hafta dolu" diye yazıyor.
+- **Not:** ad okuma `mdm.global-products.read` istiyor. Saha temsilcisi rolü tanımlanırken bu izin de eklenmeli (97c5'te rol yok; grant script kararı kullanıcıda).
