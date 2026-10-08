@@ -294,6 +294,7 @@
         renderDaySummary(rows, blocks);
         renderMapPanel(rows, blocks);
         renderBlocks(blocks);
+        if (page && dayDate) page.emit('route:day-rendered', { date: ymd(dayDate) });
     };
 
     // Collect the rep's desired target-id sequence for the WHOLE active week from the current render: the active day's
@@ -402,30 +403,31 @@
         });
     };
 
-    // ── Cross-day move (Seçenek 2): drag an account card onto ANOTHER day's tab to move it to that day. ──
-    // Re-order the WHOLE week so the dragged block's targets sit at the FRONT of the drop day's group, then re-plan on
-    // the backend. The engine fills days in order, so this lands them on that day WHEN IT HAS ROOM (a hard day-pin would
-    // need engine day-assignment — backlog). draggingBlockIdx is set by the block Sortable's onStart below.
+    // ── WP-VP-4F — cross-day move: drop a stop (an institution block) or one doctor card onto ANOTHER day's tab. ──
+    // The move is a 4E DAY PIN through the existing session update, made by the Weeks component (weeks.js —
+    // 'request:move-visit': the same "all of the institution / only this doctor" question, the same rules: a draft week of a
+    // writable plan, never onto a holiday / weekend / past day). It replaces the old manual-order approximation; the order
+    // INSIDE a day stays the manual order (onManualReorder). After the re-plan the route opens on the target day.
     let draggingBlockIdx = null;   // the .vp-block being dragged (its dayBlocks index), read by a day-tab drop
-    let crossDayMove = false;      // set true by a tab drop so the block Sortable's onEnd skips its within-day reorder
-    const moveBlockToDay = (blockIdx, targetDay) => {
-        const b = dayBlocks[blockIdx];
-        if (!b || !b.visits || targetDay === activeDayOrderVal) return;
-        const moved = b.visits.map(v => v.contactId).filter(Boolean);
-        if (!moved.length) return;
-        const movedSet = new Set(moved);
-        const order = collectManualOrder().filter(t => !movedSet.has(t));
-        // Insert the moved targets right before the first remaining target already on/after the drop day, so they head
-        // that day's group. dayOfTarget maps a target id to the day it is CURRENTLY on (before the move).
-        const dayOfTarget = {};
-        scheduled.filter(s => s.weekNumber === activeWeek).forEach(s => { const t = s.contactId || s.targetId; if (t && dayOfTarget[t] == null) dayOfTarget[t] = dayOrder(s.plannedDate); });
-        let insertAt = order.length;
-        for (let i = 0; i < order.length; i++) { const d = dayOfTarget[order[i]]; if (d != null && d >= targetDay) { insertAt = i; break; } }
-        order.splice(insertAt, 0, ...moved);
-        manualOrder = order;
-        manualIsUser = true;
-        preview();
+    let draggingVisitCid = null;   // the doctor card being dragged inside an open stop
+    let crossDayMove = false;      // set true by a tab drop so the Sortable's onEnd skips its within-day reorder
+    let pendingDayOrder = null;    // the day tab to open after a cross-day move re-planned
+    const ROUTE_MOVABLE_WEEK_STATUSES = ['draft', 'empty'];
+    const routeCanMove = () => !!page && canGenerate && !readOnly && !page.isLegacy()
+        && ROUTE_MOVABLE_WEEK_STATUSES.indexOf(page.weekStatus(page.state.weekStart)) > -1;
+    const routeDayDate = order => { const mon = weekMonday(activeWeek); return mon ? ymd(new Date(mon.getTime() + order * 86400000)) : null; };
+    // The preview rows a stop / a doctor card stands for (the day's rows of that account, or of that doctor).
+    const routeDayRows = () => scheduled.filter(s => s.weekNumber === activeWeek && dayOrder(s.plannedDate) === activeDayOrderVal);
+    const blockSlot = blockIdx => { const b = dayBlocks[blockIdx]; return b ? routeDayRows().find(r => (r.accountId || r.targetId) === b.acc) || null : null; };
+    const visitSlot = cid => routeDayRows().find(r => String(r.contactId || r.targetId) === String(cid)) || null;
+    const requestDayMove = (slot, scope, order) => {
+        if (!slot || !routeCanMove()) return;
+        const date = order == null ? null : routeDayDate(order);
+        if (order != null && (order === activeDayOrderVal || !date)) return;
+        page.emit('request:move-visit', { slot: slot, scope: scope, date: date });
     };
+    // After a saved move (weeks.js) the re-plan opens the route on the moved-to day.
+    if (page) page.on('day-pin:moved', e => { if (e && e.date) pendingDayOrder = dayOrder(e.date); });
 
     // "Xh YYm" (en) / "Xs YYdk" (tr) from a minute count; under an hour drops the hour part.
     const fmtDur = m => { m = Math.max(0, Math.round(m)); const h = Math.floor(m / 60), mm = m % 60; const H = L.HourAbbrev || 'h', M = L.MinuteAbbrev || 'm'; return h ? (h + H + ' ' + String(mm).padStart(2, '0') + M) : (mm + M); };
@@ -713,6 +715,7 @@
             const infoMap = (contactsByAccount[block.acc] || []).reduce((m, c) => { m[c.contactId] = { name: c.name, specialty: c.specialty, photo: c.photo }; return m; }, {});
             detail.innerHTML = block.visits.map(v => visitCardHtml(v, infoMap)).join('');
             wireBlockSortable(idx, detail);
+            if (page && activeDayOrderVal != null) page.emit('route:day-rendered', { date: routeDayDate(activeDayOrderVal) });
         });
     };
 
@@ -720,7 +723,10 @@
         if (!window.Sortable || readOnly) return; // SortableJS included per-page on Details; if absent, cards just don't drag.
         window.Sortable.create(detail, {
             handle: '.vp-visit-handle', animation: 150, ghostClass: 'vp-visit-ghost',
+            onStart: evt => { draggingVisitCid = evt.item.dataset.cid || null; crossDayMove = false; },
             onEnd: () => {
+                const wasCrossDay = crossDayMove; crossDayMove = false; draggingVisitCid = null;
+                if (wasCrossDay) return; // dropped on a day tab: a day pin was asked for (WP-VP-4F)
                 // Reorder the block's visits to the new DOM order, then re-issue a BACKEND preview with the manual order —
                 // the ENGINE re-schedules (availability/hours/lunch/travel/multi-day), not the client.
                 const block = dayBlocks[idx]; if (!block) return;
@@ -800,7 +806,10 @@
         // active day = the day we were on (kept across a re-preview), else today, else the first enabled day.
         const todayOrder = (new Date().getDay() + 6) % 7;
         const enabled = rendered.filter(d => !d.disabled);
-        let active = enabled.some(d => d.order === activeDayOrderVal) ? activeDayOrderVal
+        // WP-VP-4F — a cross-day move opens its target day once.
+        const wanted = pendingDayOrder != null && enabled.some(d => d.order === pendingDayOrder) ? pendingDayOrder : activeDayOrderVal;
+        pendingDayOrder = null;
+        let active = enabled.some(d => d.order === wanted) ? wanted
             : (enabled.some(d => d.order === todayOrder) ? todayOrder : (enabled.length ? enabled[0].order : null));
         if (tabs && active != null) tabs.querySelectorAll('.nav-link').forEach(b => b.classList.toggle('active', parseInt(b.dataset.day, 10) === active));
 
@@ -1450,31 +1459,37 @@
         el('vp-day-tabs').querySelectorAll('.nav-link').forEach(b => b.classList.toggle('active', b === btn));
         renderDay(parseInt(btn.dataset.day, 10));
     });
-    // Seçenek 2 — drop an account card (SortableJS native drag) onto ANOTHER day's tab to move it there. Uses native
-    // HTML5 dragover/drop, which fire on external elements during a SortableJS drag; degrades silently if Sortable is in
-    // fallback mode. draggingBlockIdx is set while a block is being dragged.
+    // WP-VP-4F — drop a stop or a doctor card (SortableJS native drag) onto ANOTHER day's tab: a day pin. Uses native HTML5
+    // dragover/drop, which fire on external elements during a SortableJS drag; degrades silently if Sortable is in
+    // fallback mode. Only a movable week and an enabled, not-yet-gone day accept the drop.
     (() => {
         const tabs = el('vp-day-tabs'); if (!tabs) return;
         const dropAt = e => e.target.closest('[data-day]');
         const hi = t => { t.style.outline = '2px dashed var(--bs-primary, #696cff)'; t.style.outlineOffset = '2px'; };
         const unhi = t => { t.style.outline = ''; t.style.outlineOffset = ''; };
+        const accepts = t => !!t && (draggingBlockIdx != null || draggingVisitCid != null) && !t.classList.contains('disabled')
+            && routeCanMove() && parseInt(t.dataset.day, 10) !== activeDayOrderVal && (routeDayDate(parseInt(t.dataset.day, 10)) || '') >= ymd(new Date());
         tabs.addEventListener('dragover', e => {
             const t = dropAt(e);
-            if (t && draggingBlockIdx != null && !t.classList.contains('disabled')) { e.preventDefault(); hi(t); }
+            if (accepts(t)) { e.preventDefault(); hi(t); }
         });
         tabs.addEventListener('dragleave', e => { const t = dropAt(e); if (t) unhi(t); });
         tabs.addEventListener('drop', e => {
             const t = dropAt(e);
-            if (!t || draggingBlockIdx == null || t.classList.contains('disabled')) return;
+            if (!accepts(t)) return;
             e.preventDefault(); unhi(t);
-            crossDayMove = true;                 // the block Sortable's onEnd will skip its within-day reorder
-            moveBlockToDay(draggingBlockIdx, parseInt(t.dataset.day, 10));
+            crossDayMove = true;                 // the Sortable's onEnd will skip its within-day reorder
+            const order = parseInt(t.dataset.day, 10);
+            if (draggingVisitCid != null) requestDayMove(visitSlot(draggingVisitCid), 'visit', order);
+            else requestDayMove(blockSlot(draggingBlockIdx), 'institution', order);
         });
     })();
     // Expand / collapse a route account block → reveal its doctor visits (built lazily on first expand). Bound once;
     // the host innerHTML is replaced per day, but this delegated listener survives.
     el('vp-visit-cards')?.addEventListener('click', e => {
         if (e.target.closest('.vp-block-handle')) return; // the grip starts a drag, never a toggle
+        // WP-VP-4F — the route's pin controls belong to the Weeks component (it listens on this host too).
+        if (e.target.closest('.js-route-pin')) return;
         const blockEl = e.target.closest('.vp-block'); if (!blockEl) return;
         const idx = blockEl.dataset.idx;
         if (dayBlocks[parseInt(idx, 10)] && dayBlocks[parseInt(idx, 10)].count === 1) return; // single-visit stops aren't collapsible
@@ -1492,7 +1507,7 @@
         window.Sortable.create(el('vp-visit-cards'), {
             draggable: '.vp-tl-row--account', filter: '.vp-tl-row--pharmacy', handle: '.vp-block-handle', animation: 150, ghostClass: 'vp-block-ghost',
             onStart: evt => { draggingBlockIdx = parseInt(evt.item.dataset.idx, 10); crossDayMove = false; },
-            // A drop onto a day tab (cross-day move) already re-planned via moveBlockToDay — skip the within-day reorder.
+            // A drop onto a day tab (cross-day move) asked for a day pin — skip the within-day reorder.
             onEnd: () => { const wasCrossDay = crossDayMove; crossDayMove = false; draggingBlockIdx = null; if (!wasCrossDay) onManualReorder(); }
         });
     }

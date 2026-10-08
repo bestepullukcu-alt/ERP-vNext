@@ -299,6 +299,16 @@
         return (stored && stored.history) || (fromPreview && fromPreview.history) || [];
     };
 
+    // The pinned visits that did not fit their day, in one line: "N visits did not fit this day → {day}" (Weeks + Route).
+    const pinOverflowHtml = (p, ws) => {
+        const moved = (p.pinOverflow || []).filter(o => mondayYmd(o.fromDate) === ws);
+        if (!moved.length) return '';
+        const byTarget = {};
+        moved.forEach(o => { const k = o.toDate || ''; byTarget[k] = (byTarget[k] || 0) + 1; });
+        return '<div class="alert alert-info py-2 small" role="status"><i class="bx bx-transfer-alt me-1"></i>' + Object.keys(byTarget).map(k =>
+            esc(k ? fmt(L.PinOverflowMessage || '{0} {1}', byTarget[k], dayLabel(k)) : fmt(L.PinOverflowNextWeek || '{0}', byTarget[k]))).join(' · ') + '</div>';
+    };
+
     const renderDetail = () => {
         const host = el('vp-wk-detail'); if (!host) return;
         const ws = page.state.weekStart;
@@ -319,13 +329,7 @@
             '<div class="d-flex flex-wrap gap-2">' + weekActions(w).map(a => '<button type="button" class="btn btn-sm btn-' + a.tone + ' js-wk-action" data-action="' + a.key + '"><i class="bx ' + a.icon + ' me-1"></i>' + esc(a.label || '') + '</button>').join('') + '</div></div>');
 
         // pinned visits that did not fit their day
-        const moved = (p.pinOverflow || []).filter(o => mondayYmd(o.fromDate) === ws);
-        if (moved.length) {
-            const byTarget = {};
-            moved.forEach(o => { const k = o.toDate || ''; byTarget[k] = (byTarget[k] || 0) + 1; });
-            parts.push('<div class="alert alert-info py-2 small" role="status"><i class="bx bx-transfer-alt me-1"></i>' + Object.keys(byTarget).map(k =>
-                esc(k ? fmt(L.PinOverflowMessage || '{0} {1}', byTarget[k], dayLabel(k)) : fmt(L.PinOverflowNextWeek || '{0}', byTarget[k]))).join(' · ') + '</div>');
-        }
+        parts.push(pinOverflowHtml(p, ws));
         (p.pinWarnings || []).filter(x => x.weekStart === ws).forEach(x => parts.push('<div class="alert alert-warning py-2 small" role="status">' + esc(reasonText(x.code) + ' · ' + x.date) + '</div>'));
 
         // day by day
@@ -403,9 +407,10 @@
         method: 'PUT',
         body: JSON.stringify({ dayPins: { weekStart: ws, pins: pins }, expectedVersion: session().version })
     }).then(r => {
-        if (!r.ok) { window.showToast?.(errorText(r), 'error'); return; }
+        if (!r.ok) { window.showToast?.(errorText(r), 'error'); return false; }
         window.showToast?.(L.DayPinSaved || '', 'success');
         page.request('reload-plan');
+        return true;
     });
     const dropDays = w => daysOf(w, preview(), []).filter(d => DROPPABLE_DAY_KINDS.indexOf(d.kind) > -1 && d.date >= todayYmd());
 
@@ -438,7 +443,7 @@
         const { ws, slot, members } = pendingMove;
         pendingMove = null;
         window.bootstrap?.Modal.getInstance(moveModal())?.hide();
-        savePins(ws, pinsAfterMove(weekPins(ws), slot, scope, date, members));
+        savePins(ws, pinsAfterMove(weekPins(ws), slot, scope, date, members)).then(ok => { if (ok) page.emit('day-pin:moved', { date: date }); });
     };
     const dropOn = (slot, scope, date) => {
         const ws = page.state.weekStart, w = page.week(ws);
@@ -448,7 +453,8 @@
         const weekSlots = slotsAll().filter(s => (s.weekStart || mondayYmd(s.plannedDate)) === ws);
         const members = membersOf(slot, weekSlots);
         if (scope === 'visit' && members.length > 1) { askMove(slot, 'visit', date); return; }
-        savePins(ws, pinsAfterMove(weekPins(ws), slot, scope === 'institution' ? 'institution' : 'visit', date, members));
+        savePins(ws, pinsAfterMove(weekPins(ws), slot, scope === 'institution' ? 'institution' : 'visit', date, members))
+            .then(ok => { if (ok) page.emit('day-pin:moved', { date: date }); });
     };
 
     // ── events ──
@@ -504,6 +510,59 @@
     });
     el('vp-move-all')?.addEventListener('click', () => commitMove(pendingMove && pendingMove.scope === 'visit' && !el('vp-move-one').classList.contains('d-none') ? 'institution' : (pendingMove ? pendingMove.scope : 'visit')));
     el('vp-move-one')?.addEventListener('click', () => commitMove('visit'));
+
+    // ── WP-VP-4F — the Route moves stops with this same component ──
+    // details.js asks: 'request:move-visit' { slot, scope, date } — a tab drop (date) or "Move to day…" (no date: the
+    // dialog asks for the day). The same rules, the same question, the same day pins.
+    page.on('request:move-visit', e => {
+        if (!e || !e.slot) return;
+        if (e.date) dropOn(e.slot, e.scope, e.date);
+        else askMove(e.slot, e.scope === 'institution' ? 'institution' : 'visit');
+    });
+    // Every drawn route day (and every opened stop): its pin / auto-pin marks, "Remove the pin", "Move to day…" and the
+    // overflow line — the Weeks controls, on the Route's cards. The cards themselves stay the Route's.
+    const routeHost = () => el('vp-visit-cards');
+    const routeControls = (slots, scope, lockedStop) => {
+        const lead = slots.find(s => s.isPinned) || slots[0];
+        // a pharmacy stop rides with its clinic on the route (its own lock): marks only, it moves with the clinic
+        const movable = !lockedStop && canMove(page.week(page.state.weekStart));
+        const pinned = slots.find(s => s.isPinned);
+        const idx = slotsAll().indexOf(lead);
+        return '<span class="js-route-pin d-inline-flex align-items-center gap-1">' + (pinned ? pinMark(pinned) : '') +
+            (movable && pinned ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-route-unpin" data-slot="' + slotsAll().indexOf(pinned) + '" title="' + esc(L.Unpin || '') + '" aria-label="' + esc(L.Unpin || '') + '"><i class="bx bx-pin"></i><i class="bx bx-x small"></i></button>' : '') +
+            (movable ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-route-move" data-slot="' + idx + '" data-scope="' + scope + '" title="' + esc(scope === 'institution' ? (L.MoveInstitution || '') : (L.MoveToDay || '')) + '" aria-label="' + esc(scope === 'institution' ? (L.MoveInstitution || '') : (L.MoveToDay || '')) + '"><i class="bx bx-calendar-edit"></i></button>' : '') +
+            '</span>';
+    };
+    const decorateRoute = date => {
+        const host = routeHost(); if (!host || !date) return;
+        const day = slotsAll().filter(s => s.plannedDate === date);
+        host.querySelectorAll('.js-route-pin').forEach(n => n.remove());
+        host.querySelectorAll('.vp-block[data-acc]').forEach(block => {
+            const slots = day.filter(s => String(s.accountId || s.targetId) === block.dataset.acc);
+            const actions = block.querySelector('.inbox-row__actions');
+            if (slots.length && actions) actions.insertAdjacentHTML('afterbegin', routeControls(slots, 'institution', !!block.closest('.vp-tl-row--pharmacy')));
+        });
+        host.querySelectorAll('.vp-visit[data-cid]').forEach(card => {
+            const slots = day.filter(s => String(s.contactId || s.targetId) === card.dataset.cid);
+            const line = card.querySelector('.inbox-row__line--primary');
+            if (slots.length && line) line.insertAdjacentHTML('beforeend', routeControls(slots, 'visit'));
+        });
+        const note = el('vp-route-pin-overflow');
+        if (note) note.innerHTML = pinOverflowHtml(preview(), page.state.weekStart);
+    };
+    page.on('route:day-rendered', e => decorateRoute(e && e.date));
+    routeHost()?.addEventListener('click', e => {
+        const move = e.target.closest('.js-route-move');
+        const unpin = e.target.closest('.js-route-unpin');
+        if (!move && !unpin) return;
+        e.preventDefault(); e.stopPropagation();
+        const s = slotsAll()[Number((move || unpin).dataset.slot)]; if (!s) return;
+        if (move) { askMove(s, move.dataset.scope === 'institution' ? 'institution' : 'visit'); return; }
+        const ws = page.state.weekStart;
+        if (!canMove(page.week(ws))) return;
+        const weekSlots = slotsAll().filter(x => (x.weekStart || mondayYmd(x.plannedDate)) === ws);
+        savePins(ws, pinsAfterUnpin(weekPins(ws), s, membersOf(s, weekSlots)));
+    });
 
     page.on('session', () => { render(); loadTargets(); });
     page.on('preview', () => render());
