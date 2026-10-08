@@ -32,9 +32,9 @@
 WP: WP-VP-4F · Rota: ziyareti başka güne taşıma
 Repository: C:\tmp\vp-4f (worktree) · Branch: wp/vp-4f · commit bu dala, push YOK
 
-Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VP-4F-route-cross-day-move.md — önce oku. 4E ve 4D §37'lerini oku (dayPins, taşıma/sabit bileşenleri). Ayrıca: frontend/Diten.Web/wwwroot/assets/js/CRM/VisitPlanning/** · Views/CRM/VisitPlanning/Details.cshtml.
-NE: (1) Rota'da durak gün sekmesine sürüklenince o güne taşınır + klavye alternatifi "Güne taşı…"; (2) taşıma = 4E dayPins (mevcut oturum güncellemesi), önizleme tazelenir, hedef gün açılır; (3) gün içi sürükle-bırak (ManualVisitOrder) aynen; (4) isPinned simgesi + Sabiti kaldır (4D bileşeni); (5) yalnız taslak hafta, tatil/hafta sonu sekmesine bırakma yok, overCapacity uyarısı.
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VP-4F-route-cross-day-move.md — önce oku. 4E ve 4D §37'lerini oku (dayPins, scope, autoPinned, pinOverflow; weeks.js taşıma/sabit bileşenleri ve DROPPABLE_DAY_KINDS). Ayrıca: frontend/Diten.Web/wwwroot/assets/js/CRM/VisitPlanning/** · Views/CRM/VisitPlanning/Details.cshtml.
+NE: (1) Rota'da durak gün sekmesine sürüklenince o güne taşınır + klavye alternatifi "Güne taşı…"; kurum (çok ziyaretli) durağı = scope institution, tek doktor = 4D'deki "Hepsini taşı / Yalnız bu doktor" sorusu (groupKey); (2) taşıma = 4E dayPins (mevcut oturum güncellemesi), önizleme tazelenir, hedef gün sekmesi açılır; (3) gün içi sürükle-bırak (ManualVisitOrder) aynen; (4) isPinned simgesi + Sabiti kaldır + autoPinned işareti (4D bileşenleri, yeniden yazma); (5) yalnız taslak hafta, tatil/hafta sonu/geçmiş gün sekmesine bırakma yok; sığmayanlar 4E pinOverflow ile ertesi güne gider → 4D ile aynı bilgi mesajı ("N ziyaret sığmadı → {gün}"); mesai aşımı yok.
 KORU/YAPMA: Rota görünümü ve gün içi davranış değişmez; backend'e dokunma; yeni yazma ucu yok; 7 dil.
-DOĞRULA (E2): Web tabanı · CRM dokunulmaz · mimari 27; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Testler belge Acceptance; sabotaj 1 (kırmızı kanıtla, geri al).
+DOĞRULA (E2): Web (774/0) · CRM (2437/0/5, dokunulmaz) · mimari 27; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Testler belge Acceptance; sabotaj 1 (kırmızı kanıtla, geri al).
 Commit: "feat(web): WP-VP-4F — move a route stop to another day (day pin)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, elle denenecekler. §22 TÜRKÇE. K13.
 ```
