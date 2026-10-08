@@ -1,0 +1,64 @@
+@using System.Text.Json
+@using Diten.Web.Views.SupplyChain.DemandPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DemandPlanningIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    Layout = "_LayoutTenantShell";
+    var pageTitle = Localizer["Title"].Value;
+    ViewData["Title"] = pageTitle;
+    var canRead = ViewData["CanRead"] as bool? == true;
+    var preview = ViewData["FixturePreview"] as bool? == true;
+    var strings = new[] {
+        "Title", "PreviewBanner", "PreviewNotice", "Company", "Cycle", "Revision",
+        "Series", "Week", "Quantity", "Origin", "Reason", "SavePreview",
+        "SubmitReview", "Approve", "Reject", "NextWeeks", "PreviousWeeks",
+        "ShowAllWeeks", "FirstThirteen", "KnownZero", "Missing",
+        "Manual", "InvalidatedWarning", "ReasonRequired", "InvalidQuantity",
+        "NoScope", "NoEditPermission", "NoReviewPermission", "Draft", "InReview",
+        "ApprovedState", "Published", "Superseded", "Invalidated", "Changes",
+        "NoChanges", "SavedLocally", "RevisionHistory", "SelectSeries",
+        "EditWeek", "IncompleteWeeks", "NoAuditPermission", "WeekWindow",
+        "ReviewReason", "NoActionPermission", "NoCompanyData", "SupersededReadOnly"
+    };
+    var translations = strings.ToDictionary(key => key, key => Localizer[key].Value);
+    translations["State"] = SharedLocalizer["Status"].Value;
+    translations["Unknown"] = SharedLocalizer["Unknown"].Value;
+}
+@if (!canRead)
+{
+    <partial name="_AccessDenied" model="pageTitle" />
+}
+else if (!preview)
+{
+    @* The Gateway route and complete Platform company scope do not yet exist.
+       No company name, plan skeleton or service-port request is rendered here. *@
+    <div class="card" role="status">
+        <div class="card-body">
+            <h1 class="h4 mb-2">@Localizer["UnavailableTitle"]</h1>
+            <p class="mb-2">@Localizer["UnavailableBody"]</p>
+            <p class="text-muted mb-0">@Localizer["UnavailableNext"]</p>
+        </div>
+    </div>
+}
+else
+{
+    <link rel="stylesheet" href="~/assets/css/SupplyChain/demand-planning.css" asp-append-version="true" />
+    <div class="dp-preview" id="demandPlanningPreview"
+         data-can-edit="@(ViewData["CanEdit"] as bool? == true ? "true" : "false")"
+         data-can-review="@(ViewData["CanReview"] as bool? == true ? "true" : "false")"
+         data-can-consume="@(ViewData["CanConsume"] as bool? == true ? "true" : "false")"
+         data-can-audit="@(ViewData["CanAudit"] as bool? == true ? "true" : "false")">
+        <div class="alert alert-warning" role="status">
+            <strong>@Localizer["PreviewBanner"]</strong> @Localizer["PreviewNotice"]
+        </div>
+        <div id="demandPlanningFixtureApp"></div>
+    </div>
+    <script id="demandPlanningTranslations" type="application/json">@Html.Raw(JsonSerializer.Serialize(translations))</script>
+}
+@section Scripts {
+    @if (canRead && preview)
+    {
+        <script src="~/assets/js/SupplyChain/demand-planning-preview.js" asp-append-version="true"></script>
+    }
+}

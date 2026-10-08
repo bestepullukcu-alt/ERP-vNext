@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title" xml:space="preserve"><value>Demand Planning</value></data>
+  <data name="UnavailableTitle" xml:space="preserve"><value>Workspace unavailable</value></data>
+  <data name="UnavailableBody" xml:space="preserve"><value>The approved Gateway route and authoritative company list are not available yet. No plan data can be opened safely.</value></data>
+  <data name="UnavailableNext" xml:space="preserve"><value>The integration owners must verify both sources before live use.</value></data>
+  <data name="PreviewBanner" xml:space="preserve"><value>Fixture preview</value></data>
+  <data name="PreviewNotice" xml:space="preserve"><value>This is a local, unsaved interface demonstration. It is not a live plan or an authorized company list.</value></data>
+  <data name="Company" xml:space="preserve"><value>Company</value></data>
+  <data name="Cycle" xml:space="preserve"><value>Planning cycle</value></data>
+  <data name="Revision" xml:space="preserve"><value>Revision</value></data>
+  <data name="Series" xml:space="preserve"><value>SKU × Warehouse series</value></data>
+  <data name="Week" xml:space="preserve"><value>Week</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="Origin" xml:space="preserve"><value>Source</value></data>
+  <data name="Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="SavePreview" xml:space="preserve"><value>Apply in preview</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>Send for review</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="NextWeeks" xml:space="preserve"><value>Next 13 weeks</value></data>
+  <data name="PreviousWeeks" xml:space="preserve"><value>Previous 13 weeks</value></data>
+  <data name="ShowAllWeeks" xml:space="preserve"><value>Show all 52 weeks</value></data>
+  <data name="FirstThirteen" xml:space="preserve"><value>Show first 13 weeks</value></data>
+  <data name="KnownZero" xml:space="preserve"><value>explicit zero</value></data>
+  <data name="Missing" xml:space="preserve"><value>Missing</value></data>
+  <data name="Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="InvalidatedWarning" xml:space="preserve"><value>Invalidated: historical audit only. Do not use this plan for planning or MRP.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Enter a reason before continuing.</value></data>
+  <data name="InvalidQuantity" xml:space="preserve"><value>Enter a non-negative quantity for a known week.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Select one fixture company to inspect the example. This selection grants no live access.</value></data>
+  <data name="NoEditPermission" xml:space="preserve"><value>Draft editing permission is required.</value></data>
+  <data name="NoReviewPermission" xml:space="preserve"><value>Independent review permission is required.</value></data>
+  <data name="Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="InReview" xml:space="preserve"><value>In review</value></data>
+  <data name="ApprovedState" xml:space="preserve"><value>Approved</value></data>
+  <data name="Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Superseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="Invalidated" xml:space="preserve"><value>Invalidated</value></data>
+  <data name="Changes" xml:space="preserve"><value>Change trail in this preview</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>No preview changes.</value></data>
+  <data name="SavedLocally" xml:space="preserve"><value>Updated only in this preview; nothing was saved.</value></data>
+  <data name="RevisionHistory" xml:space="preserve"><value>Revision and status preview</value></data>
+  <data name="SelectSeries" xml:space="preserve"><value>Select a series</value></data>
+  <data name="EditWeek" xml:space="preserve"><value>Edit week</value></data>
+  <data name="IncompleteWeeks" xml:space="preserve"><value>Every selected series needs explicit quantities for all 52 weeks before review. Missing and Unknown remain unchanged.</value></data>
+  <data name="NoAuditPermission" xml:space="preserve"><value>Historical content requires a separate audit permission.</value></data>
+  <data name="WeekWindow" xml:space="preserve"><value>Weeks</value></data>
+  <data name="ReviewReason" xml:space="preserve"><value>Decision reason</value></data>
+  <data name="NoActionPermission" xml:space="preserve"><value>Action unavailable in this permission scope.</value></data>
+  <data name="NoCompanyData" xml:space="preserve"><value>No verified company scope is available.</value></data>
+  <data name="SupersededReadOnly" xml:space="preserve"><value>Superseded status only. Content stays closed until an approved bound MRP proof is available.</value></data>
+</root>

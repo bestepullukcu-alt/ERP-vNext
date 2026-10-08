@@ -1,0 +1,973 @@
+openapi: 3.1.0
+info:
+  title: MOD-0188 Demand v2 producer contract (DRAFT)
+  version: 2.0.0-draft.1
+  description: >-
+    MOD-0188-owned review draft for immutable gross-demand revisions. It is not
+    frozen, published, routed, or evidence of a working producer. Demand v1
+    remains unchanged. MRP period choice, order consumption, MRP run stops and
+    reconciliation belong to MOD-0189, not this producer API.
+  x-status: DRAFT
+  x-owner: MOD-0188
+  x-service: Diten.PlanningService
+  x-central-freeze-required: true
+  x-event-schema: ./demand-v2.events.schema.json
+servers:
+  - url: /api/v2/demand
+    description: Candidate service path; Gateway publication requires central approval.
+security:
+  - bearerAuth: []
+x-scope-rules:
+  - Tenant derives from verified JWT and X-Tenant-Id, never from business payload.
+  - Selected LegalEntity is an untrusted hint until current Platform-derived assignment, exclusions and Demand permission are verified by the server.
+  - Draft routes currently use X-Legal-Entity-Id as an untrusted hint; central transport and live Platform/MDM authority contract remain open.
+  - Every API response, cursor and event is bound to resolved Tenant, LegalEntity and data scope.
+x-retention-policy: Published, Superseded and Invalidated revisions are not auto-deleted until enterprise retention policy is set.
+x-implementation-gaps:
+  - Current-Published-by-period lookup is implemented only with fixture authority; live Platform/data-scope authority is unconfigured and fails closed.
+  - Cycle and history-import HTTP operations are implemented in PlanningService but are not yet modeled in this revision-focused DRAFT contract.
+  - Superseded content reading awaits approved evidence of a bound MRP run; status reading alone does not grant content access.
+x-open-design-decisions:
+  - Checksum algorithm, canonical byte representation and definition identifier.
+  - Stable row ordering definition and opaque cursor encoding and expiry.
+  - Atomic persistence, outbox and monotonic status fencing mechanism.
+  - Idempotency retention and exact replay transport semantics.
+  - Live LegalEntity selection, Platform assignment/exclusion and MDM company-reference contracts.
+  - Evidence that an MRP run is already bound to a Superseded revision.
+  - Superseded notification by a separate event or an equivalent verifiable state change.
+  - Event transport, topic and retry timing; no duration target is fixed here.
+paths:
+  /revisions:
+    post:
+      operationId: createManualDemandDraft
+      summary: Create a multi-series manual Draft from a locked planning cycle
+      description: >-
+        This candidate route is a Draft-only development slice. Tenant and actor
+        are server derived. X-Legal-Entity-Id is an untrusted selection hint and
+        must be checked against current Platform-derived scope. SKU, Warehouse
+        and base UoM require independent authoritative verification. The live
+        adapter is unconfigured and fails closed; a fixture is not production
+        evidence. The server copies all 52 boundaries from the stored cycle.
+      x-required-permission: demand.drafts.create
+      parameters:
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ManualDraftCreate' }
+      responses:
+        '201': { description: Created Draft envelope, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '200': { description: Idempotent replay, no second Draft or audit, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/{revisionId}:
+    get:
+      operationId: getScopedManualDemandDraft
+      summary: Read a Draft or review candidate in the actor's current scope
+      description: >-
+        Authorization is checked again on every read. Out-of-scope records
+        return 404 without content; unavailable authority or corrupt
+        manifest/part/audit returns a closed 503, never a partial Draft.
+      x-required-permission: demand.plans.read
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+      responses:
+        '200': { description: Scoped Draft envelope, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/{revisionId}/manual-weeks/{skuId}/{warehouseId}/{weekNumber}:
+    patch:
+      operationId: editManualDemandDraftWeek
+      summary: Change one explicitly manual week with audit and expected content version
+      x-required-permission: demand.drafts.update
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: warehouseId, in: path, required: true, schema: { type: string } }
+        - { name: weekNumber, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 52 } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftWeekEdit' } } }
+      responses:
+        '200': { description: Changed or idempotently replayed Draft, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/{revisionId}/submit-review:
+    post:
+      operationId: submitManualDemandDraftReview
+      summary: Submit a complete 52-week manual Draft into the single candidate slot
+      description: Missing or Unknown is preserved in Draft and blocks submission; explicit zero is valid.
+      x-required-permission: demand.drafts.update
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftTransition' } } }
+      responses:
+        '200': { description: InReview Draft, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/{revisionId}/approve:
+    post:
+      operationId: approveManualDemandDraft
+      summary: Independently approve an InReview Draft without changing its content
+      description: >-
+        A preparer or any significant manual editor cannot approve. A reason
+        is required. Incomplete legacy InReview content also cannot be approved.
+      x-required-permission: demand.plans.review
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftTransition' } } }
+      responses:
+        '200': { description: Approved Draft, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/{revisionId}/reject:
+    post:
+      operationId: rejectManualDemandDraft
+      summary: Independently reject InReview and release its candidate slot
+      description: Reason, current versions and mandatory audit are required.
+      x-required-permission: demand.plans.review
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftTransition' } } }
+      responses:
+        '200': { description: Rejected back to Draft, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/{revisionId}/reopen:
+    post:
+      operationId: reopenManualDemandDraft
+      summary: Return an InReview or Approved revision to Draft with durable review invalidation
+      x-required-permission: demand.drafts.update
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftTransition' } } }
+      responses:
+        '200': { description: Audited Draft or idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/{revisionId}/excluded-series/{skuId}/{warehouseId}:
+    post:
+      operationId: excludeManualDemandDraftSeries
+      summary: Exclude one selected series with reason, preserving all 52 historical weeks
+      description: >-
+        Exclusion is allowed in Draft or, before review completes, InReview.
+        An InReview exclusion atomically reopens Draft, releases the candidate
+        slot and records both review invalidation and content audit. Direct
+        exclusion from Approved is rejected; explicit audited reopen is required.
+      x-required-permission: demand.drafts.update
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: warehouseId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftSeriesExclusionRequest' } } }
+      responses:
+        '200': { description: Scoped Draft with explicit exclusion or idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/current:
+    get:
+      operationId: getCurrentPublishedDemandRevision
+      summary: Find the sole current Published baseline for a selected business period
+      description: >-
+        planningPeriodKey is only a lookup selector. It cannot create a cycle or
+        period and does not choose MOD-0189's period. Independent server-side
+        Tenant, LegalEntity, Demand permission and complete selected-series scope
+        are verified before reading the baseline slot. A missing or Invalidated
+        current slot gives 404 with no fallback to Superseded. Unverifiable
+        state, integrity or authority gives a closed 503, never a guessed plan.
+      x-required-permission: demand.plans.consume
+      parameters:
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - name: planningPeriodKey
+          in: query
+          required: true
+          schema: { type: string, format: date }
+          description: Exact server-derived first local week start, yyyy-MM-dd.
+      responses:
+        '200': { description: Verified current Published identity and integrity proof, content: { application/json: { schema: { $ref: '#/components/schemas/CurrentPublishedEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ReadFailure' }
+        '401': { description: Unauthenticated; JWT middleware may return no body. }
+        '403': { description: Missing Demand consume permission; policy may return no body. }
+        '404': { $ref: '#/components/responses/ReadFailure' }
+        '503': { $ref: '#/components/responses/ReadFailure' }
+  /revisions/{revisionId}/status:
+    get:
+      operationId: getDemandRevisionStatus
+      summary: Authoritative state and monotonic stateVersion
+      description: >-
+        An authorized consumer can observe Invalidated status without gaining
+        content access. Unknown or unavailable state is never reported as
+        successful Published state.
+      x-required-permission: demand.plans.consume
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+      responses:
+        '200': { description: Authoritative state in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionStatusEnvelope' } } } }
+        '401': { description: Unauthenticated; JWT middleware may return no body. }
+        '403': { description: Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '404': { $ref: '#/components/responses/ReadFailure' }
+        '503': { $ref: '#/components/responses/ReadFailure' }
+  /revisions/{revisionId}/manifest:
+    get:
+      operationId: getDemandRevisionManifest
+      summary: Read the complete immutable revision manifest
+      description: >-
+        This development slice permits only Published. Superseded remains
+        closed until a verified MRP run binding contract is approved.
+        Invalidated content is refused. Missing, duplicate or corrupt parts, wrong row count or
+        failed checksum fail the entire read; no partial 200 is returned.
+      x-required-permission: demand.plans.consume
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+      responses:
+        '200': { description: Verified whole-revision manifest in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionManifestEnvelope' } } } }
+        '401': { description: Unauthenticated; JWT middleware may return no body. }
+        '403': { description: Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '404': { $ref: '#/components/responses/ReadFailure' }
+        '409': { $ref: '#/components/responses/ReadFailure' }
+        '503': { $ref: '#/components/responses/ReadFailure' }
+  /revisions/{revisionId}/rows:
+    get:
+      operationId: pageDemandRevisionRows
+      summary: Page through one pinned and verified 52-week revision
+      description: >-
+        Stable ordering and an opaque cursor bind every page to revisionId,
+        Tenant, LegalEntity and authorized data scope. Cursor reuse under
+        another scope is refused. Every successful page belongs to the same
+        complete verified snapshot. Missing or duplicate parts, invalidation,
+        integrity failure or unavailable verification return an error instead
+        of a partial or unverified 200 page. Superseded content remains closed
+        until the MRP binding evidence contract is approved.
+      x-required-permission: demand.plans.consume
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500, default: 200 } }
+        - { name: cursor, in: query, required: false, schema: { type: string }, description: Opaque format remains open. }
+      responses:
+        '200': { description: Verified page in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionRowPageEnvelope' } } } }
+        '401': { description: Unauthenticated; JWT middleware may return no body. }
+        '403': { description: Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '404': { $ref: '#/components/responses/ReadFailure' }
+        '409': { $ref: '#/components/responses/ReadFailure' }
+        '503': { $ref: '#/components/responses/ReadFailure' }
+  /revisions/{revisionId}/audit-snapshot:
+    get:
+      operationId: getHistoricalDemandRevisionAuditSnapshot
+      summary: Separate Invalidated historical audit read with prominent warning
+      description: >-
+        Audit-only access cannot be used for planning or a new MRP run.
+        Integrity failure still fails closed. Historical rows use the separate
+        audit-rows route with a mandatory warning.
+      x-required-permission: demand.audit.read
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+      responses:
+        '200': { description: Invalidated historical manifest and warning in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/AuditSnapshotEnvelope' } } } }
+        '401': { description: Unauthenticated; JWT middleware may return no body. }
+        '403': { description: Missing audit permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '404': { $ref: '#/components/responses/ReadFailure' }
+        '409': { $ref: '#/components/responses/ReadFailure' }
+        '503': { $ref: '#/components/responses/ReadFailure' }
+  /revisions/{revisionId}/audit-rows:
+    get:
+      operationId: pageHistoricalDemandRevisionAuditRows
+      summary: Invalidated historical-only page with a mandatory warning
+      description: >-
+        Never a planning or MRP consumption path. An intact historical
+        snapshot can be reviewed with audit permission and a visible warning.
+        Corrupt, missing or unverified content still fails closed rather than
+        returning partial rows as a successful page.
+      x-required-permission: demand.audit.read
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 100 } }
+        - { name: cursor, in: query, required: false, schema: { type: string }, description: Opaque revision- and scope-bound audit cursor. }
+      responses:
+        '200': { description: Verified historical page and warning in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/AuditRowPageEnvelope' } } } }
+        '401': { description: Unauthenticated; JWT middleware may return no body. }
+        '403': { description: Missing audit permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '404': { $ref: '#/components/responses/ReadFailure' }
+        '409': { $ref: '#/components/responses/ReadFailure' }
+        '503': { $ref: '#/components/responses/ReadFailure' }
+  /revisions/{revisionId}/rollback-drafts:
+    post:
+      operationId: createRollbackDemandDraft
+      summary: Copy a Published or Superseded manual snapshot into a new Draft
+      description: >-
+        Creates a distinct revision in the same locked planning cycle. Only
+        selected snapshot weeks and recorded exclusions are copied; original
+        manual-week and exclusion actor, reason and time remain lineage. The
+        requesting actor becomes the new preparer. Invalidated or unverifiable
+        source and method-origin weeks without sufficient provenance are not
+        copied. The source revision, checksum, status and audit are unchanged.
+        This does not approve or publish the new Draft. Live scope authority
+        remains unconfigured and fails closed outside explicit test fixtures.
+      x-required-permission: demand.drafts.create
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/RollbackDraftCommand' } } }
+      responses:
+        '201': { description: New Draft in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '200': { description: Idempotent replay of the original Draft, without a second effect, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '401': { description: Unauthenticated; JWT middleware may return no body. }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /revisions/{revisionId}/publish:
+    post:
+      operationId: publishDemandRevision
+      summary: Publish a valid Approved revision
+      description: >-
+        Separation of duties, all-series and part/row/checksum validation,
+        and one current Published baseline per Tenant x LegalEntity x
+        planningPeriodKey are mandatory. A successful new publication
+        atomically supersedes the previous current baseline and emits one
+        outbox publication event. Whether the prior revision also emits a
+        Superseded event or exposes an equivalent verifiable status change is
+        reserved for central review; its authoritative state and stateVersion
+        must change either way. Failure creates no Published state or event.
+      x-required-permission: demand.plans.publish
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishCommand' }
+      responses:
+        '200': { description: Publication receipt, not an authoritative current-status read; replay has no second effect., content: { application/json: { schema: { $ref: '#/components/schemas/RevisionCommandEnvelope' } } } }
+        '400': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '404': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '409': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '422': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '503': { $ref: '#/components/responses/RevisionCommandFailure' }
+  /revisions/{revisionId}/invalidate:
+    post:
+      operationId: invalidateDemandRevision
+      summary: Protectively invalidate a materially erroneous revision
+      description: >-
+        Only Published or Superseded can become Invalidated. A qualified
+        planning/quality manager provides reason and evidence of material MRP
+        effect. Natural forecast deviation alone is insufficient. This does
+        not cancel formal downstream transactions or restore an older revision.
+      x-required-permission: demand.plans.invalidate
+      parameters:
+        - { $ref: '#/components/parameters/RevisionId' }
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InvalidateCommand' }
+      responses:
+        '200': { description: Invalidation receipt, not an authoritative current-status read; replay has no second effect., content: { application/json: { schema: { $ref: '#/components/schemas/RevisionCommandEnvelope' } } } }
+        '400': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '404': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '409': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '422': { $ref: '#/components/responses/RevisionCommandFailure' }
+        '503': { $ref: '#/components/responses/RevisionCommandFailure' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    SelectedLegalEntityHint:
+      name: X-Legal-Entity-Id
+      in: header
+      required: true
+      schema: { type: string, format: uuid }
+      description: Untrusted single-company selection hint; current server-side assignment and exclusions must still be verified.
+    RevisionId: { name: revisionId, in: path, required: true, schema: { type: string, format: uuid } }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 1 }
+      description: Same key and content repeat one effect; same key with different content conflicts.
+  responses:
+    RevisionCommandFailure:
+      description: No command effect. Policy denial may have no body; handler failures use Response envelope.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ReadEnvelope' }
+    ReadFailure:
+      description: >-
+        Candidate read failure in Response envelope with no successful data.
+        Out-of-scope records return 404; missing permission returns 403;
+        stale state or invalid cursor returns 409; unverifiable authority,
+        storage or integrity returns 503.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ReadEnvelope' }
+    DraftFailure:
+      description: >-
+        Response envelope with no successful data. 403 means missing Demand
+        permission; 404 hides an out-of-scope existing record; 409 means
+        stale version, candidate slot or idempotency conflict; 422 is invalid
+        manual content; 503 means scope, reference, storage or audit cannot
+        be verified. The current nullable assignment seam cannot safely
+        distinguish same-tenant denial from cross-tenant selection.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ManualDraftEnvelope' }
+    Problem:
+      description: >-
+        Error, never partial success. 400 means malformed request; 401 means
+        unauthenticated, 403 missing
+        permission, 404 hides other-Tenant/out-of-scope records, 409 means stale
+        state or invalidated consumption, 422 invalid business input, and 503
+        unavailable authoritative scope/status/integrity or durable audit.
+        Exact machine-readable error codes require central review.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    CurrentPublishedEnvelope:
+      allOf:
+        - { $ref: '#/components/schemas/ReadEnvelope' }
+        - type: object
+          required: [data]
+          properties: { data: { $ref: '#/components/schemas/CurrentPublishedRevision' } }
+    CurrentPublishedRevision:
+      type: object
+      required: [contractVersion, revisionId, planningCycleId, planningPeriodKey, tenantId, legalEntityId, state, stateVersion, integrityState, integrity, expectedPartCount, expectedRowCount]
+      properties:
+        contractVersion: { type: string, const: v2 }
+        revisionId: { type: string, format: uuid }
+        planningCycleId: { type: string, format: uuid }
+        planningPeriodKey: { type: string, format: date }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        state: { type: string, const: Published }
+        stateVersion: { type: integer, minimum: 0 }
+        integrityState: { type: string, const: Verified }
+        integrity: { $ref: '#/components/schemas/IntegrityProof' }
+        expectedPartCount: { type: integer, minimum: 0 }
+        expectedRowCount: { type: integer, minimum: 0 }
+    RevisionCommandEnvelope:
+      allOf:
+        - { $ref: '#/components/schemas/ReadEnvelope' }
+        - type: object
+          required: [data]
+          properties: { data: { $ref: '#/components/schemas/RevisionCommandReceipt' } }
+    RevisionCommandReceipt:
+      type: object
+      required: [revisionId, outcome]
+      properties:
+        revisionId: { type: string, format: uuid }
+        outcome: { type: string, enum: [Published, Invalidated, Replayed] }
+        stateVersion: { type: [integer, 'null'], description: Returned when available; replay never implies that this is still the current state. }
+        checksum: { type: [string, 'null'], description: Returned for a new publication when available. }
+    RevisionStatusEnvelope:
+      allOf:
+        - { $ref: '#/components/schemas/ReadEnvelope' }
+        - type: object
+          required: [data]
+          properties: { data: { $ref: '#/components/schemas/RevisionStatus' } }
+    RevisionManifestEnvelope:
+      allOf:
+        - { $ref: '#/components/schemas/ReadEnvelope' }
+        - type: object
+          required: [data]
+          properties: { data: { $ref: '#/components/schemas/RevisionManifest' } }
+    RevisionRowPageEnvelope:
+      allOf:
+        - { $ref: '#/components/schemas/ReadEnvelope' }
+        - type: object
+          required: [data]
+          properties: { data: { $ref: '#/components/schemas/RevisionRowPage' } }
+    AuditSnapshotEnvelope:
+      allOf:
+        - { $ref: '#/components/schemas/ReadEnvelope' }
+        - type: object
+          required: [data]
+          properties: { data: { $ref: '#/components/schemas/AuditSnapshot' } }
+    AuditRowPageEnvelope:
+      allOf:
+        - { $ref: '#/components/schemas/ReadEnvelope' }
+        - type: object
+          required: [data]
+          properties: { data: { $ref: '#/components/schemas/AuditRowPage' } }
+    ReadEnvelope:
+      type: object
+      required: [statusCode, isSuccessful, errors]
+      properties:
+        statusCode: { type: integer }
+        isSuccessful: { type: boolean }
+        errors: { type: array, items: { type: string } }
+        data: { type: [object, 'null'], description: Null on a failed read; success envelopes require a typed object. }
+    ManualDraftCreate:
+      type: object
+      additionalProperties: false
+      required: [planningCycleId, reason, series]
+      properties:
+        planningCycleId: { type: string, format: uuid }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        series:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [skuId, warehouseId, weeks]
+            properties:
+              skuId: { type: string, format: uuid }
+              warehouseId: { type: string }
+              weeks:
+                type: array
+                minItems: 52
+                maxItems: 52
+                items: { $ref: '#/components/schemas/ManualWeekInput' }
+      description: >-
+        Tenant, LegalEntity, actor, audit time, base UoM, calendar boundaries
+        and eligibility are not business payload fields. Base UoM and series
+        references require independent server authority.
+    ManualWeekInput:
+      type: object
+      additionalProperties: false
+      required: [number, valueKind]
+      properties:
+        number: { type: integer, minimum: 1, maximum: 52 }
+        valueKind: { type: integer, enum: [0, 1, 2], description: 'Current candidate wire values: 0 Known, 1 Missing, 2 Unknown; central v2 review may standardize representation.' }
+        quantity: { type: [number, 'null'], minimum: 0, description: Required for Known including zero; null for Missing or Unknown. }
+      allOf:
+        - if: { properties: { valueKind: { const: 0 } }, required: [valueKind] }
+          then: { required: [quantity], properties: { quantity: { type: number, minimum: 0 } } }
+          else: { properties: { quantity: { type: 'null' } } }
+    ManualDraftWeekEdit:
+      type: object
+      additionalProperties: false
+      required: [valueKind, reason, expectedContentVersion]
+      properties:
+        valueKind: { $ref: '#/components/schemas/ManualWeekInput/properties/valueKind' }
+        quantity: { type: [number, 'null'], minimum: 0 }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        expectedContentVersion: { type: integer, minimum: 0 }
+    ManualDraftTransition:
+      type: object
+      additionalProperties: false
+      required: [expectedContentVersion, expectedStateVersion]
+      properties:
+        expectedContentVersion: { type: integer, minimum: 0 }
+        expectedStateVersion: { type: integer, minimum: 0 }
+        reason: { type: [string, 'null'], description: Required and nonblank for approve/reject/reopen; optional for submit. }
+    ManualDraftSeriesExclusionRequest:
+      type: object
+      additionalProperties: false
+      required: [reason, expectedContentVersion, expectedStateVersion]
+      properties:
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        expectedContentVersion: { type: integer, minimum: 0 }
+        expectedStateVersion: { type: integer, minimum: 0 }
+    ManualDraftEnvelope:
+      type: object
+      required: [statusCode, isSuccessful, errors]
+      properties:
+        statusCode: { type: integer }
+        isSuccessful: { type: boolean }
+        errors: { type: array, items: { type: string } }
+        data: { $ref: '#/components/schemas/ManualDraftView' }
+    ManualDraftView:
+      type: object
+      description: >-
+        Draft-only mutable candidate, not a Published immutable manifest.
+        Each selected series contains all 52 locked cycle weeks, source and
+        per-week manual provenance; changes retain old/new values and actor/time.
+        The current API sends enum values as numeric JSON pending central
+        wire-format review. No method output is relabeled manual.
+      required: [revisionId, planningCycleId, tenantId, legalEntityId, planningPeriodKey, asOfDate, calendarId, calendarVersion, timeZoneId, horizonStart, horizonEnd, state, contentVersion, stateVersion, createdBy, createdAt, creationReason, series, changes, exclusions, replayed]
+      properties:
+        revisionId: { type: string, format: uuid }
+        planningCycleId: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        planningPeriodKey: { type: string, format: date }
+        asOfDate: { type: string, format: date }
+        calendarId: { type: string }
+        calendarVersion: { type: string }
+        timeZoneId: { type: string }
+        horizonStart: { type: string, format: date }
+        horizonEnd: { type: string, format: date }
+        state: { type: integer, enum: [0, 1, 2], description: 'Current Draft/InReview/Approved candidate values; not the consumer RevisionState representation.' }
+        contentVersion: { type: integer, minimum: 0 }
+        stateVersion: { type: integer, minimum: 0 }
+        createdBy: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        creationReason: { type: string }
+        reviewedBy: { type: [string, 'null'], format: uuid }
+        reviewedAt: { type: [string, 'null'], format: date-time }
+        reviewReason: { type: [string, 'null'] }
+        series: { type: array, minItems: 1, items: { $ref: '#/components/schemas/ManualDraftSeriesView' } }
+        changes: { type: array, items: { $ref: '#/components/schemas/ManualDraftChange' } }
+        exclusions: { type: array, items: { $ref: '#/components/schemas/ManualDraftSeriesExclusion' } }
+        replayed: { type: boolean }
+    ManualDraftSeriesView:
+      type: object
+      required: [skuId, warehouseId, baseUomId, weeks, exclusion]
+      properties:
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        baseUomId: { type: string, description: Server-verified SKU base unit; never taken from create payload. }
+        exclusion: { oneOf: [{ type: 'null' }, { $ref: '#/components/schemas/ManualDraftSeriesExclusion' }] }
+        weeks:
+          type: array
+          minItems: 52
+          maxItems: 52
+          items: { $ref: '#/components/schemas/ManualDraftWeekView' }
+    ManualDraftWeekView:
+      type: object
+      required: [number, weekStart, weekEnd, valueKind, source, manualReason, manualActorId, manualAt]
+      properties:
+        number: { type: integer, minimum: 1, maximum: 52 }
+        weekStart: { type: string, format: date }
+        weekEnd: { type: string, format: date }
+        valueKind: { $ref: '#/components/schemas/ManualWeekInput/properties/valueKind' }
+        quantity: { type: [number, 'null'] }
+        source: { type: integer, enum: [0, 1], description: '0 Manual, 1 Method; this manual Draft slice produces 0 only.' }
+        manualReason: { type: string }
+        manualActorId: { type: string, format: uuid }
+        manualAt: { type: string, format: date-time }
+    ManualDraftChange:
+      type: object
+      required: [skuId, warehouseId, weekNumber, oldKind, newKind, actorId, occurredAt, reason, requestKey]
+      properties:
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        weekNumber: { type: integer, minimum: 1, maximum: 52 }
+        oldKind: { $ref: '#/components/schemas/ManualWeekInput/properties/valueKind' }
+        oldQuantity: { type: [number, 'null'] }
+        newKind: { $ref: '#/components/schemas/ManualWeekInput/properties/valueKind' }
+        newQuantity: { type: [number, 'null'] }
+        actorId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        reason: { type: string }
+        requestKey: { type: string }
+    ManualDraftSeriesExclusion:
+      type: object
+      required: [skuId, warehouseId, actorId, occurredAt, reason, requestKey, previousState, newState]
+      properties:
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        actorId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        reason: { type: string, minLength: 1 }
+        requestKey: { type: string }
+        previousState: { type: integer, enum: [0, 1], description: '0 Draft, 1 InReview; numeric candidate wire format remains under central review.' }
+        newState: { type: integer, const: 0, description: 'Draft after the significant scope change.' }
+    Problem:
+      type: object
+      required: [title, status]
+      properties:
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        traceId: { type: string }
+    RevisionStatus:
+      type: object
+      required: [contractVersion, revisionId, planningCycleId, planningPeriodKey, tenantId, legalEntityId, scopeSummary, actorTrace, state, stateVersion, integrityState, observedAt]
+      properties:
+        contractVersion: { type: string, const: v2 }
+        revisionId: { type: string, format: uuid }
+        planningCycleId: { type: string, format: uuid }
+        planningPeriodKey: { type: string, format: date }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        state: { type: string, enum: [Published, Superseded, Invalidated] }
+        stateVersion: { type: integer, minimum: 0, description: Monotonic status fencing value, not eventVersion or entity Version. }
+        integrityState: { type: string, enum: [Verified, Failed, Unknown], description: Status-only read reports Unknown; content endpoints independently verify every part and checksum. }
+        observedAt: { type: string, format: date-time }
+        scopeSummary: { $ref: '#/components/schemas/ScopeSummary' }
+        actorTrace: { $ref: '#/components/schemas/RevisionActorTrace' }
+        invalidation: { $ref: '#/components/schemas/InvalidationDetails' }
+      allOf:
+        - if: { properties: { state: { enum: [Approved, Published, Superseded, Invalidated] } }, required: [state] }
+          then: { properties: { actorTrace: { required: [reviewedBy, reviewedAt] } } }
+        - if: { properties: { state: { enum: [Published, Superseded, Invalidated] } }, required: [state] }
+          then: { properties: { actorTrace: { required: [publishedBy, publishedAt] } } }
+        - if: { properties: { state: { const: Invalidated } }, required: [state] }
+          then: { required: [invalidation] }
+        - if: { properties: { state: { enum: [Draft, InReview, Approved, Published, Superseded] } }, required: [state] }
+          then: { not: { required: [invalidation] } }
+    RevisionState: { type: string, enum: [Draft, InReview, Approved, Published, Superseded, Invalidated] }
+    CalendarWeek:
+      type: object
+      required: [number, weekStart, weekEnd]
+      properties:
+        number: { type: integer, minimum: 1, maximum: 52 }
+        weekStart: { type: string, format: date }
+        weekEnd: { type: string, format: date }
+    CalendarSnapshot:
+      type: object
+      required: [calendarId, calendarVersion, timeZoneId, asOfDate, horizonStart, horizonEnd, weeks]
+      properties:
+        calendarId: { type: string }
+        calendarVersion: { type: string }
+        timeZoneId: { type: string }
+        asOfDate: { type: string, format: date }
+        horizonStart: { type: string, format: date }
+        horizonEnd: { type: string, format: date }
+        weeks: { type: array, minItems: 52, maxItems: 52, items: { $ref: '#/components/schemas/CalendarWeek' } }
+    SeriesScope:
+      type: object
+      required: [skuId, warehouseId, baseUomId]
+      properties:
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        baseUomId: { type: string }
+    ScopeSeriesIdentity:
+      type: object
+      required: [skuId, warehouseId]
+      properties:
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        baseUomId: { type: string, description: Available on verified content manifest; status alone does not certify unit data. }
+    ExcludedSeries:
+      type: object
+      required: [skuId, warehouseId, reason, excludedBy, excludedAt]
+      properties:
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        reason: { type: string }
+        excludedBy: { type: string, format: uuid }
+        excludedAt: { type: string, format: date-time }
+    ScopeSummary:
+      type: object
+      required: [selectedSeriesCount, excludedSeriesCount, selectedSeries]
+      description: >-
+        Immutable selected/excluded SKU x Warehouse revision scope, matching
+        the manifest lists and event. It is not proof of the caller's current
+        data-scope authorization; that is checked independently on every read.
+        Scope digest definition is an open technical contract; the current
+        candidate response carries the explicit selected series instead.
+      properties:
+        selectedSeriesCount: { type: integer, minimum: 0 }
+        excludedSeriesCount: { type: integer, minimum: 0 }
+        selectedSeries: { type: array, items: { $ref: '#/components/schemas/ScopeSeriesIdentity' } }
+    RevisionActorTrace:
+      type: object
+      required: [preparedBy, preparedAt, significantEditorIds]
+      description: >-
+        Server-recorded separation-of-duties summary. reviewedBy is the
+        current valid approving reviewer; every significant editor remains
+        in the array. A scope/content change clears the current approval,
+        while past decisions and edits remain in durable audit records.
+      properties:
+        preparedBy: { type: string, format: uuid }
+        preparedAt: { type: string, format: date-time }
+        significantEditorIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
+        reviewedBy: { type: string, format: uuid }
+        reviewedAt: { type: string, format: date-time }
+        publishedBy: { type: string, format: uuid }
+        publishedAt: { type: string, format: date-time }
+      allOf:
+        - if: { required: [reviewedBy] }
+          then: { required: [reviewedAt] }
+        - if: { required: [reviewedAt] }
+          then: { required: [reviewedBy] }
+        - if: { required: [publishedBy] }
+          then: { required: [publishedAt] }
+        - if: { required: [publishedAt] }
+          then: { required: [publishedBy] }
+    InvalidationDetails:
+      type: object
+      required: [impactCode, reason, evidenceReference, actorId, occurredAt, stateVersion]
+      description: >-
+        Server-recorded protective invalidation and its audit evidence.
+        stateVersion is the new authoritative revision status version; it
+        equals the enclosing status or manifest stateVersion.
+      properties:
+        impactCode: { type: string, enum: [IdentityOrScope, CalendarTimeUnitOrQuantity, SourceMethodOrPolicy, ContentIntegrity] }
+        reason: { type: string, minLength: 1 }
+        evidenceReference: { type: string, minLength: 1 }
+        actorId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        stateVersion: { type: integer, minimum: 0 }
+    IntegrityProof:
+      type: object
+      required: [definitionId, digest]
+      description: >-
+        The definition must let both parties compute the same whole-snapshot
+        checksum. Concrete algorithm and canonicalization are open.
+      properties:
+        definitionId: { type: string }
+        digest: { type: string }
+    RevisionManifest:
+      type: object
+      required: [contractVersion, revisionId, planningCycleId, tenantId, legalEntityId, planningPeriodKey, baselineKind, state, stateVersion, scopeSummary, actorTrace, calendar, selectedSeries, excludedSeries, demandSetState, expectedPartCount, expectedRowCount, orderingDefinitionId, integrity]
+      properties:
+        contractVersion: { type: string, const: v2 }
+        revisionId: { type: string, format: uuid }
+        planningCycleId: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        planningPeriodKey: { type: string, format: date, description: Server-derived first local week start. }
+        baselineKind: { type: string, const: Official }
+        state: { $ref: '#/components/schemas/RevisionState' }
+        stateVersion: { type: integer, minimum: 0 }
+        calendar: { $ref: '#/components/schemas/CalendarSnapshot' }
+        selectedSeries: { type: array, items: { $ref: '#/components/schemas/SeriesScope' } }
+        excludedSeries: { type: array, items: { $ref: '#/components/schemas/ExcludedSeries' } }
+        scopeSummary: { $ref: '#/components/schemas/ScopeSummary' }
+        actorTrace: { $ref: '#/components/schemas/RevisionActorTrace' }
+        invalidation: { $ref: '#/components/schemas/InvalidationDetails' }
+        demandSetState: { type: string, enum: [Empty, Populated], description: Empty set differs from known zero or missing/unknown week. }
+        expectedPartCount: { type: integer, minimum: 0 }
+        expectedRowCount: { type: integer, minimum: 0 }
+        orderingDefinitionId: { type: string, description: Stable row ordering; exact order is an open technical design. }
+        integrity: { $ref: '#/components/schemas/IntegrityProof' }
+      allOf:
+        - if: { properties: { state: { enum: [Approved, Published, Superseded, Invalidated] } }, required: [state] }
+          then: { properties: { actorTrace: { required: [reviewedBy, reviewedAt] } } }
+        - if: { properties: { state: { enum: [Published, Superseded, Invalidated] } }, required: [state] }
+          then: { properties: { actorTrace: { required: [publishedBy, publishedAt] } } }
+        - if: { properties: { state: { const: Invalidated } }, required: [state] }
+          then: { required: [invalidation] }
+        - if: { properties: { state: { enum: [Draft, InReview, Approved, Published, Superseded] } }, required: [state] }
+          then: { not: { required: [invalidation] } }
+    RevisionRow:
+      type: object
+      required: [skuId, warehouseId, weekNumber, valueKind, origin]
+      description: Unique key is revisionId plus skuId plus warehouseId plus weekNumber.
+      properties:
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        weekNumber: { type: integer, minimum: 1, maximum: 52 }
+        valueKind: { type: string, enum: [Known, Missing, Unknown] }
+        grossQuantityBaseUom:
+          type: string
+          pattern: '^\d+(\.\d+)?$'
+          description: Required only when Known; string zero is a real zero. Absent for Missing/Unknown.
+        origin: { type: string, enum: [Method, Manual] }
+        manualReason: { type: string, description: Required for manually entered/edited weeks. }
+      allOf:
+        - if: { properties: { valueKind: { const: Known } }, required: [valueKind] }
+          then: { required: [grossQuantityBaseUom] }
+        - if: { properties: { valueKind: { enum: [Missing, Unknown] } }, required: [valueKind] }
+          then: { not: { required: [grossQuantityBaseUom] } }
+        - if: { properties: { origin: { const: Manual } }, required: [origin] }
+          then: { required: [manualReason] }
+    RevisionRowPage:
+      type: object
+      required: [contractVersion, revisionId, planningCycleId, tenantId, legalEntityId, stateVersion, orderingDefinitionId, returnedRowCount, expectedRowCount, integrity, items]
+      properties:
+        contractVersion: { type: string, const: v2 }
+        revisionId: { type: string, format: uuid }
+        planningCycleId: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        stateVersion: { type: integer, minimum: 0 }
+        orderingDefinitionId: { type: string }
+        returnedRowCount: { type: integer, minimum: 0 }
+        expectedRowCount: { type: integer, minimum: 0 }
+        integrity: { $ref: '#/components/schemas/IntegrityProof' }
+        items: { type: array, items: { $ref: '#/components/schemas/RevisionRow' } }
+        nextCursor: { type: string, description: Omitted at end; opaque format remains open. }
+    AuditSnapshot:
+      type: object
+      required: [warning, manifest]
+      properties:
+        warning: { type: string, minLength: 1, pattern: '\S', description: Historical use only; for Invalidated this must visibly state Invalidated and unusable for planning or MRP. }
+        manifest: { $ref: '#/components/schemas/RevisionManifest' }
+    AuditRowPage:
+      type: object
+      required: [warning, historicalState, page]
+      properties:
+        warning: { type: string, minLength: 1, pattern: '\S', description: Historical use only; for Invalidated this must visibly state Invalidated and unusable for planning or MRP. }
+        historicalState: { type: string, const: Invalidated, description: Only Invalidated revisions are exposed on this separate historical audit route. }
+        page: { $ref: '#/components/schemas/RevisionRowPage' }
+    PublishCommand:
+      type: object
+      additionalProperties: false
+      required: [expectedContentVersion, expectedStateVersion]
+      properties:
+        expectedContentVersion: { type: integer, minimum: 0 }
+        expectedStateVersion: { type: integer, minimum: 0 }
+    RollbackDraftCommand:
+      type: object
+      additionalProperties: false
+      required: [reason, expectedSourceStateVersion]
+      properties:
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        expectedSourceStateVersion: { type: integer, minimum: 1 }
+    InvalidateCommand:
+      type: object
+      additionalProperties: false
+      required: [expectedContentVersion, expectedStateVersion, impactCode, reason, evidenceReference]
+      properties:
+        expectedContentVersion: { type: integer, minimum: 0 }
+        expectedStateVersion: { type: integer, minimum: 0 }
+        impactCode: { type: string, enum: [IdentityOrScope, CalendarTimeUnitOrQuantity, SourceMethodOrPolicy, ContentIntegrity] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        evidenceReference: { type: string, minLength: 1, maxLength: 2000 }
+      description: Business impact must be independently verified behind the evidence reference. Actor and time are resolved by the server, not trusted from the body.

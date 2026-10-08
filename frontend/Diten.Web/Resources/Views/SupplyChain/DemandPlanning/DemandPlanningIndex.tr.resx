@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title" xml:space="preserve"><value>Talep Planlama</value></data>
+  <data name="UnavailableTitle" xml:space="preserve"><value>Çalışma alanı kullanılamıyor</value></data>
+  <data name="UnavailableBody" xml:space="preserve"><value>Onaylı Gateway yolu ve yetkili şirket listesi henüz yok. Plan verisi güvenle açılamaz.</value></data>
+  <data name="UnavailableNext" xml:space="preserve"><value>Canlı kullanım öncesinde entegrasyon sahipleri iki kaynağı da doğrulamalıdır.</value></data>
+  <data name="PreviewBanner" xml:space="preserve"><value>Örnek veri önizlemesi</value></data>
+  <data name="PreviewNotice" xml:space="preserve"><value>Bu, kaydedilmeyen yerel arayüz gösterimidir; canlı plan veya yetkili şirket listesi değildir.</value></data>
+  <data name="Company" xml:space="preserve"><value>Şirket</value></data>
+  <data name="Cycle" xml:space="preserve"><value>Planlama çevrimi</value></data>
+  <data name="Revision" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="Series" xml:space="preserve"><value>SKU × Depo serisi</value></data>
+  <data name="Week" xml:space="preserve"><value>Hafta</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Origin" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="Reason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="SavePreview" xml:space="preserve"><value>Önizlemede uygula</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>İncelemeye gönder</value></data>
+  <data name="Approve" xml:space="preserve"><value>Onayla</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="NextWeeks" xml:space="preserve"><value>Sonraki 13 hafta</value></data>
+  <data name="PreviousWeeks" xml:space="preserve"><value>Önceki 13 hafta</value></data>
+  <data name="ShowAllWeeks" xml:space="preserve"><value>52 haftanın tamamını göster</value></data>
+  <data name="FirstThirteen" xml:space="preserve"><value>İlk 13 haftayı göster</value></data>
+  <data name="KnownZero" xml:space="preserve"><value>açık sıfır</value></data>
+  <data name="Missing" xml:space="preserve"><value>Eksik</value></data>
+  <data name="Manual" xml:space="preserve"><value>Manuel</value></data>
+  <data name="InvalidatedWarning" xml:space="preserve"><value>Geçersiz: yalnız tarihsel denetim içindir. Bu planı planlama veya MRP için kullanmayın.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Devam etmeden önce gerekçe girin.</value></data>
+  <data name="InvalidQuantity" xml:space="preserve"><value>Bilinen hafta için negatif olmayan miktar girin.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Örneği görmek için bir örnek şirket seçin. Bu seçim canlı erişim vermez.</value></data>
+  <data name="NoEditPermission" xml:space="preserve"><value>Taslak düzenleme izni gerekir.</value></data>
+  <data name="NoReviewPermission" xml:space="preserve"><value>Bağımsız inceleme izni gerekir.</value></data>
+  <data name="Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="InReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="ApprovedState" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="Published" xml:space="preserve"><value>Yayımlandı</value></data>
+  <data name="Superseded" xml:space="preserve"><value>Yerine yenisi geçti</value></data>
+  <data name="Invalidated" xml:space="preserve"><value>Geçersiz kılındı</value></data>
+  <data name="Changes" xml:space="preserve"><value>Bu önizlemedeki değişiklik izi</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Önizlemede değişiklik yok.</value></data>
+  <data name="SavedLocally" xml:space="preserve"><value>Yalnız bu önizlemede güncellendi; kaydedilmedi.</value></data>
+  <data name="RevisionHistory" xml:space="preserve"><value>Sürüm ve durum önizlemesi</value></data>
+  <data name="SelectSeries" xml:space="preserve"><value>Seri seçin</value></data>
+  <data name="EditWeek" xml:space="preserve"><value>Haftayı düzenle</value></data>
+  <data name="IncompleteWeeks" xml:space="preserve"><value>İnceleme öncesinde her seçili seride 52 haftanın tamamı açık miktarlı olmalıdır. Eksik ve Bilinmiyor değişmeden kalır.</value></data>
+  <data name="NoAuditPermission" xml:space="preserve"><value>Tarihsel içerik için ayrı denetim izni gerekir.</value></data>
+  <data name="WeekWindow" xml:space="preserve"><value>Haftalar</value></data>
+  <data name="ReviewReason" xml:space="preserve"><value>Karar gerekçesi</value></data>
+  <data name="NoActionPermission" xml:space="preserve"><value>Bu izin kapsamında işlem kullanılamaz.</value></data>
+  <data name="NoCompanyData" xml:space="preserve"><value>Doğrulanmış şirket kapsamı yok.</value></data>
+  <data name="SupersededReadOnly" xml:space="preserve"><value>Yerine yenisi geçen sürümün yalnız durumu gösterilir. Onaylı bağlı MRP kanıtı olmadan içerik açılmaz.</value></data>
+</root>

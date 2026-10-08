@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MOD-0188 isolated fixture preview</title>
+  <link rel="stylesheet" href="../../wwwroot/assets/vendor/css/core.css">
+  <link rel="stylesheet" href="../../wwwroot/assets/vendor/css/theme-default.css">
+  <link rel="stylesheet" href="../../wwwroot/assets/css/SupplyChain/demand-planning.css">
+  <style>body{padding:1.5rem;background:#f5f5f9}.fixture-shell{max-width:1200px;margin:auto}</style>
+</head>
+<body>
+  <main class="fixture-shell">
+    <div class="alert alert-warning" role="status"><strong>Isolated fixture preview.</strong> No live service, Gateway, company authority, or save operation.</div>
+    <div id="demandPlanningPreview" data-can-edit="true" data-can-review="true" data-can-consume="true" data-can-audit="true">
+      <div id="demandPlanningFixtureApp"></div>
+    </div>
+  </main>
+  <script id="demandPlanningTranslations" type="application/json">{"Title":"Demand Planning","UnavailableTitle":"Workspace unavailable","UnavailableBody":"The approved Gateway route and authoritative company list are not available yet. No plan data can be opened safely.","UnavailableNext":"The integration owners must verify both sources before live use.","PreviewBanner":"Fixture preview","PreviewNotice":"This is a local, unsaved interface demonstration. It is not a live plan or an authorized company list.","Company":"Company","Cycle":"Planning cycle","Revision":"Revision","Series":"SKU × Warehouse series","Week":"Week","Quantity":"Quantity","Origin":"Source","Reason":"Reason","SavePreview":"Apply in preview","SubmitReview":"Send for review","Approve":"Approve","Reject":"Reject","NextWeeks":"Next 13 weeks","PreviousWeeks":"Previous 13 weeks","ShowAllWeeks":"Show all 52 weeks","FirstThirteen":"Show first 13 weeks","KnownZero":"explicit zero","Missing":"Missing","Manual":"Manual","InvalidatedWarning":"Invalidated: historical audit only. Do not use this plan for planning or MRP.","ReasonRequired":"Enter a reason before continuing.","InvalidQuantity":"Enter a non-negative quantity for a known week.","NoScope":"Select one fixture company to inspect the example. This selection grants no live access.","NoEditPermission":"Draft editing permission is required.","NoReviewPermission":"Independent review permission is required.","Draft":"Draft","InReview":"In review","ApprovedState":"Approved","Published":"Published","Superseded":"Superseded","Invalidated":"Invalidated","Changes":"Change trail in this preview","NoChanges":"No preview changes.","SavedLocally":"Updated only in this preview; nothing was saved.","RevisionHistory":"Revision and status preview","SelectSeries":"Select a series","EditWeek":"Edit week","IncompleteWeeks":"Every selected series needs explicit quantities for all 52 weeks before review. Missing and Unknown remain unchanged.","NoAuditPermission":"Historical content requires a separate audit permission.","WeekWindow":"Weeks","ReviewReason":"Decision reason","NoActionPermission":"Action unavailable in this permission scope.","NoCompanyData":"No verified company scope is available.","State":"Status","Unknown":"Unknown","SupersededReadOnly":"Superseded status only. Content stays closed until an approved bound MRP proof is available."}</script>
+  <script src="../../wwwroot/assets/js/SupplyChain/demand-planning-preview.js"></script>
+</body>
+</html>

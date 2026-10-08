@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title" xml:space="preserve"><value>تخطيط الطلب</value></data>
+  <data name="UnavailableTitle" xml:space="preserve"><value>مساحة العمل غير متاحة</value></data>
+  <data name="UnavailableBody" xml:space="preserve"><value>مسار البوابة المعتمد وقائمة الشركات المخولة غير متاحين بعد. لا يمكن فتح بيانات الخطة بأمان.</value></data>
+  <data name="UnavailableNext" xml:space="preserve"><value>يجب على مالكي التكامل التحقق من المصدرين قبل الاستخدام الفعلي.</value></data>
+  <data name="PreviewBanner" xml:space="preserve"><value>معاينة بيانات الاختبار</value></data>
+  <data name="PreviewNotice" xml:space="preserve"><value>هذا عرض واجهة محلي غير محفوظ، وليس خطة فعلية أو قائمة شركات مخولة.</value></data>
+  <data name="Company" xml:space="preserve"><value>الشركة</value></data>
+  <data name="Cycle" xml:space="preserve"><value>دورة التخطيط</value></data>
+  <data name="Revision" xml:space="preserve"><value>المراجعة</value></data>
+  <data name="Series" xml:space="preserve"><value>سلسلة SKU × المستودع</value></data>
+  <data name="Week" xml:space="preserve"><value>الأسبوع</value></data>
+  <data name="Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Origin" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="SavePreview" xml:space="preserve"><value>تطبيق في المعاينة</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>إرسال للمراجعة</value></data>
+  <data name="Approve" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="NextWeeks" xml:space="preserve"><value>الأسابيع 13 التالية</value></data>
+  <data name="PreviousWeeks" xml:space="preserve"><value>الأسابيع 13 السابقة</value></data>
+  <data name="ShowAllWeeks" xml:space="preserve"><value>عرض الأسابيع 52 كلها</value></data>
+  <data name="FirstThirteen" xml:space="preserve"><value>عرض أول 13 أسبوعًا</value></data>
+  <data name="KnownZero" xml:space="preserve"><value>صفر صريح</value></data>
+  <data name="Missing" xml:space="preserve"><value>مفقود</value></data>
+  <data name="Manual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="InvalidatedWarning" xml:space="preserve"><value>ملغاة الصلاحية: للتدقيق التاريخي فقط. لا تستخدم هذه الخطة للتخطيط أو MRP.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>أدخل سببًا قبل المتابعة.</value></data>
+  <data name="InvalidQuantity" xml:space="preserve"><value>أدخل كمية غير سالبة لأسبوع معروف.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>اختر شركة اختبار واحدة لعرض المثال. لا يمنح هذا الاختيار وصولًا فعليًا.</value></data>
+  <data name="NoEditPermission" xml:space="preserve"><value>يلزم إذن تعديل المسودة.</value></data>
+  <data name="NoReviewPermission" xml:space="preserve"><value>يلزم إذن المراجعة المستقلة.</value></data>
+  <data name="Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="ApprovedState" xml:space="preserve"><value>معتمد</value></data>
+  <data name="Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Superseded" xml:space="preserve"><value>تم استبداله</value></data>
+  <data name="Invalidated" xml:space="preserve"><value>ملغى الصلاحية</value></data>
+  <data name="Changes" xml:space="preserve"><value>سجل التغييرات في هذه المعاينة</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>لا تغييرات في المعاينة.</value></data>
+  <data name="SavedLocally" xml:space="preserve"><value>تم التحديث في هذه المعاينة فقط؛ لم يُحفظ شيء.</value></data>
+  <data name="RevisionHistory" xml:space="preserve"><value>معاينة المراجعة والحالة</value></data>
+  <data name="SelectSeries" xml:space="preserve"><value>اختر سلسلة</value></data>
+  <data name="EditWeek" xml:space="preserve"><value>تعديل الأسبوع</value></data>
+  <data name="IncompleteWeeks" xml:space="preserve"><value>تحتاج كل سلسلة محددة إلى كميات صريحة لكل الأسابيع 52 قبل المراجعة. تبقى القيم المفقودة والمجهولة كما هي.</value></data>
+  <data name="NoAuditPermission" xml:space="preserve"><value>يتطلب المحتوى التاريخي إذن تدقيق منفصلًا.</value></data>
+  <data name="WeekWindow" xml:space="preserve"><value>الأسابيع</value></data>
+  <data name="ReviewReason" xml:space="preserve"><value>سبب القرار</value></data>
+  <data name="NoActionPermission" xml:space="preserve"><value>الإجراء غير متاح ضمن هذه الصلاحيات.</value></data>
+  <data name="NoCompanyData" xml:space="preserve"><value>لا يتوفر نطاق شركة موثق.</value></data>
+  <data name="SupersededReadOnly" xml:space="preserve"><value>تُعرض حالة النسخة المستبدلة فقط. يبقى المحتوى مغلقًا دون دليل MRP مرتبط ومعتمد.</value></data>
+</root>
