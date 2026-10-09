@@ -1,0 +1,38 @@
+using System.Globalization;
+using Diten.CrmService.Application.Features.CyclePeriod.Read;
+
+namespace Diten.CrmService.Application.Features.VisitPlanning.TargetStatus;
+
+/// <summary>WP-VP-3D — the period of a status read: the plan's own CyclePeriod (the engine's ① read, same calendar-day
+/// window), or — without a plan — the tenant-level period in force today (resolved / none, never a guess).</summary>
+public static class TargetStatusPeriods
+{
+    public static ContactStatusPeriod? From(CyclePeriodSnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return null;
+        }
+
+        var start = DateOnly.FromDateTime(snapshot.StartDate.UtcDateTime);
+        var end = DateOnly.FromDateTime(snapshot.EndDate.UtcDateTime);
+        return end < start ? null : new ContactStatusPeriod(snapshot.CyclePeriodId, snapshot.CycleCode, start, end);
+    }
+
+    public static async Task<ContactStatusPeriod?> ActiveAsync(
+        ICyclePeriodReader periods, DateTimeOffset at, CancellationToken cancellationToken)
+    {
+        var resolution = await periods.ResolveActiveAsync(at, null, null, null, cancellationToken);
+        return string.Equals(resolution.Outcome, Domain.Entities.CyclePeriodResolutionOutcomes.Resolved, StringComparison.Ordinal)
+            ? From(resolution.Period)
+            : null;
+    }
+
+    public static TargetStatusPeriodDto ToDto(ContactStatusPeriod? period)
+        => period is null
+            ? new TargetStatusPeriodDto(null, null, null, null, null)
+            : new TargetStatusPeriodDto(
+                period.CyclePeriodId, period.CycleCode,
+                period.Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                period.End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), period.WeekCount);
+}

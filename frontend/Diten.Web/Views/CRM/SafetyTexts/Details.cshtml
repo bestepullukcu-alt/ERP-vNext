@@ -1,0 +1,120 @@
+@using Diten.Web.Views.CRM.SafetyTexts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SafetyTextsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["SafetyTextsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    // UAS-001 — reached only with crm.safety-text.read (the controller answers 403 otherwise). The action flags say what
+    // this user may TRY; CRM's per-record flags (canEdit / canSubmit / canDecide) and its refusals decide.
+    var id = ViewData["Id"]?.ToString();
+}
+
+@* WP-KP-5a-UI — /CRM/SafetyTexts/{id}: the MOD-0023 Regulatory task's deep link. details.js fills every value with
+   textContent (a safety text is plain text, never HTML). The three section cards mirror _Form.cshtml one to one; the
+   lifecycle cards (status line, decision panel, versions, decision record) are plain cards around them. *@
+<div class="safety-texts-details regulatory-details" id="regulatoryDetailsRoot"
+     data-kind="safety-text" data-endpoint="/CRM/SafetyTexts/api" data-resource="safety-texts"
+     data-details-url="/CRM/SafetyTexts/" data-edit-url="/CRM/SafetyTexts/Edit/" data-list-url="/CRM/SafetyTexts"
+     data-id="@id" data-has-product="true"
+     data-can-manage="@(ViewData["CanManage"] is true ? "true" : "false")"
+     data-can-submit="@(ViewData["CanSubmit"] is true ? "true" : "false")">
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <h5 class="mb-0" id="rtTitle">@Localizer["SafetyTextsTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/SafetyTexts">@Localizer["SafetyTextsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary" id="rtCrumb"></li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center flex-wrap gap-2" id="rtActions"></div>
+    </div>
+
+    <div id="rtAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="card mb-4">
+        <div class="card-body p-3">
+            <div class="d-flex flex-wrap align-items-center gap-2" id="rtStatusLine" aria-label="@SharedLocalizer["Status"]"></div>
+            <div class="small text-muted mt-2" id="rtSubmitted"></div>
+        </div>
+    </div>
+
+    @* The decision panel: drawn only while CRM says this user holds the open Regulatory task (canDecide). *@
+    <div class="card border-warning mb-4 d-none" id="rtDecisionPanel">
+        <div class="card-body p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["DecisionPanelTitle"]</h6>
+            <label for="rtDecisionComment" class="form-label fw-medium">@Localizer["DecisionComment"]</label>
+            <textarea id="rtDecisionComment" class="form-control mb-1" rows="3" dir="auto"></textarea>
+            <div class="form-text mb-3">@Localizer["DecisionCommentHint"]</div>
+            <div class="invalid-feedback d-block mb-2" id="rtDecisionError"></div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-success" data-decision="approve"><i class="bx bx-check me-1"></i>@Localizer["Approve"]</button>
+                <button type="button" class="btn btn-label-danger" data-decision="reject"><i class="bx bx-x me-1"></i>@Localizer["Reject"]</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionIdentity"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4"><div class="backbone-preview-label">@Localizer["Product"]</div><div class="backbone-preview-value" data-value="product">-</div></div>
+                        <div class="col-12 col-md-4"><div class="backbone-preview-label">@Localizer["Country"]</div><div class="backbone-preview-value" data-value="countryCode">-</div></div>
+                        <div class="col-12 col-md-4"><div class="backbone-preview-label">@Localizer["Language"]</div><div class="backbone-preview-value" data-value="languageCode">-</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionContent"]</h6>
+                    <div class="backbone-preview-label">@Localizer["Body"]</div>
+                    <div class="regulatory-preview mb-4" dir="auto" data-preview="body"></div>
+                    <div class="backbone-preview-label">@Localizer["ShortBody"]</div>
+                    <div class="regulatory-preview" dir="auto" data-preview="shortBody"></div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionSource"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["SourceDocumentRef"]</div><div class="backbone-preview-value" data-value="sourceDocumentRef">-</div></div>
+                        <div class="col-12 col-md-3"><div class="backbone-preview-label">@Localizer["SourceDate"]</div><div class="backbone-preview-value" data-value="sourceDate" data-format="date">-</div></div>
+                        <div class="col-12 col-md-3"><div class="backbone-preview-label">@Localizer["ApprovalReference"]</div><div class="backbone-preview-value" data-value="approvalReference">-</div></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["VersionHistory"]</h6>
+                    <ul class="list-unstyled mb-0" id="rtVersions"></ul>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["DecisionRecord"]</h6>
+                    <ul class="list-unstyled mb-0" id="rtDecisions"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/regulatory-texts.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/CRM/SafetyTexts/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/SafetyTexts/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/RegulatoryTexts/details.js" asp-append-version="true"></script>
+}

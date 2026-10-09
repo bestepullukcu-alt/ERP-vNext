@@ -29,7 +29,7 @@ public sealed class StrategyTemplateNoWriteGuardTests
     private readonly FakeContentEngagementJourneyRepository _journeys = new();
     private readonly FakeStrategyReferenceValidator _references = new();
 
-    private StrategyTemplateBindingValidator Bindings() => new(_segments, _policies, _paths, _journeys);
+    private StrategyTemplateBindingValidator Bindings() => new(_segments, _policies, _paths, _journeys, _journeys.Subjects);
 
     private static readonly Assembly ApplicationAssembly = typeof(StrategyTemplatePermissions).Assembly;
 
@@ -45,7 +45,6 @@ public sealed class StrategyTemplateNoWriteGuardTests
         var tenant = StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA);
         var actor = new NullActorContext();
         var segment = _segments.Add(StrategyTemplateTestDoubles.TenantA);
-        var path = _paths.Add(StrategyTemplateTestDoubles.TenantA);
         var policy = _policies.Add(StrategyTemplateTestDoubles.TenantA);
 
         var create = new CreateStrategyTemplateHandler(tenant, actor, _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
@@ -60,9 +59,10 @@ public sealed class StrategyTemplateNoWriteGuardTests
                 frequency: StrategyTemplateTestBuilders.PolicyReference(policy.Id),
                 productLines: new[]
                 {
+                    // WP-SB-3a — the line is told with its journey (read, never written); a template-level content
+                    // binding is no longer accepted on a new write.
                     StrategyTemplateTestBuilders.SkuAllocated(Guid.NewGuid(), new[] { (Guid.NewGuid(), 100m) })
-                },
-                contentBindings: new[] { StrategyTemplateTestBuilders.KnowledgePath(path.Id) }),
+                }),
             default);
         Assert.True(created.IsSuccessful);
         var id = created.Data;

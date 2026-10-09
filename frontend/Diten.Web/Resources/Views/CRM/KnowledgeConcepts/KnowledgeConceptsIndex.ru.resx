@@ -234,7 +234,6 @@
   <data name="KnowledgePaths" xml:space="preserve"><value>Пути знаний</value></data>
   <data name="Journeys" xml:space="preserve"><value>Маршруты</value></data>
   <data name="Visits" xml:space="preserve"><value>Визиты</value></data>
-  <data name="OutputsNoSource" xml:space="preserve"><value>Пока нет источника, связывающего эти записи с шаблоном цепочки.</value></data>
   <data name="DataFlow" xml:space="preserve"><value>Поток данных</value></data>
   <data name="FlowSubject" xml:space="preserve"><value>Тема</value></data>
   <data name="FlowConceptGraph" xml:space="preserve"><value>Граф понятий</value></data>
@@ -273,4 +272,24 @@
   <data name="ChainStatusDraft" xml:space="preserve"><value>Черновик</value></data>
   <data name="ChainStatusPublished" xml:space="preserve"><value>Опубликован</value></data>
   <data name="ChainStatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="OutputsAfterSave" xml:space="preserve"><value>Результаты появятся после сохранения шаблона.</value></data>
+  <data name="OutputsRestricted" xml:space="preserve"><value>Подробности скрыты — у вас нет права на их просмотр.</value></data>
+  <data name="OutputsChainVersion" xml:space="preserve"><value>цепочка {0}</value></data>
+  <data name="OutputsCurrentRelease" xml:space="preserve"><value>текущий выпуск</value></data>
+  <data name="OutputsStageCount" xml:space="preserve"><value>этапов: {0}</value></data>
+  <data name="OutputsPathCount" xml:space="preserve"><value>{0} · опубликовано {1}</value></data>
+  <data name="OutputsPlannedVisits" xml:space="preserve"><value>Запланированных визитов: {0}</value></data>
+  <data name="OutputsAllVersions" xml:space="preserve"><value>Показать и другие версии</value></data>
+  <data name="PathStatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="PathStatusReview" xml:space="preserve"><value>На проверке</value></data>
+  <data name="PathStatusApproved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="PathStatusPublished" xml:space="preserve"><value>Опубликован</value></data>
+  <data name="PathStatusInactive" xml:space="preserve"><value>Неактивен</value></data>
+  <data name="PathStatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>На проверке</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>Опубликован</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>Неактивен</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>В архиве</value></data>
 </root>

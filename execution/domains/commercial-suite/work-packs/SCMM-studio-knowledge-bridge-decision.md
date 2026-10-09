@@ -84,7 +84,7 @@
 | 6 | Sayfa tasarımcısı (sürükle-bırak), marka kiti (ürün), ülke yasal blokları, onaylı görsel kütüphanesi, kilitli iddia blokları, uyum kontrolü | Stüdyo v2 (mockup sonrası fazlara bölünecek) |
 | 7 | Sahadan sayfa gösterim takibi | Stüdyo v2 son faz + mobil |
 | 8 | Zincir editörü "Çıktılar" paneli boş | **SB-2b** (SB-2'nin geri izini okur) |
-| 9 | İçerik Kapsamı serbest metin | **SB-1R: kapsam KALDIRILIYOR, bağlam setten türetilir (§7)** |
+| 9 | İçerik Kapsamı serbest metin | **SB-1R: kapsam KALDIRILIYOR, bağlam setten türetilir (§7)** · **CLN-1 ile kaldırıldı** (2026-10-01): kapsam / set / revizyon kodu CRM'den silindi; 97c5'te 1 kapsam belgesi kaldı (okuyucusu yok, CLN-2) |
 | 10 | Uygunluk kontrolü fiilen hep "Belirsiz": iddialarda `Applicability.EligibilityPolicyId` İddialar v2 arayüzünde girilemiyor; kapsam değerleri serbest metin | SB-1R ile birlikte; Uygunluk Politikaları ayrıca gözden geçirilecek |
 | 11 | Karar bekleyen: play'deki doğrudan Bilgi Yolu bağı ziyarette tek aşamalı yolculuk sayılsın mı? | SB-3 öncesi kullanıcıdan |
 | 11b | **SB-2 yeniden yayın riski:** set yeniden yayınlanınca eski yol `inactive` olur. Sürüme sabitlenmiş (`PathVersionPinPolicy`) bir yolculuk aşaması pasif yola bakar; yanıtta `previous_path_in_use` uyarısı var. **Öneri: aşamalar varsayılan olarak "yolun en son yayındaki sürümünü izle" çalışsın.** | **SB-3'te ele alınacak.** Kullanıcı (2026-09-30): ziyaret tarafına gelince yeniden değerlendirilecek. |
@@ -118,3 +118,67 @@
 - canlıdaki "test" kapsamı arşivlenir.
 
 **Açık:** Uygunluk Politikaları sayfası ayrıca gözden geçirilecek (iddialara politika girilemediği için kontrol fiilen hep "Belirsiz").
+
+> **Durum (2026-09-30):** SB-1R yapıldı (`9df79043`). §8 kararıyla setin kendisi de emekliye ayrılıyor; SB-1R'nin bağlam mantığı yola taşınır.
+
+---
+
+## 8. KARAR — İçerik Seti kaldırılıyor; kurgu + iddia + MLR onayı Bilgi Yolu'na taşınıyor (kullanıcı, 2026-09-30)
+**Bağlam:**
+- Kullanıcı "set ile yol arasındaki fark"ı sordu. İkisinde de sıralama var; setten üretilen yol, setin sırasının kopyası. İki yerde düzenlenebilir sıra → kopma riski.
+- CT üç seçenek sundu: (1) setten gelen yol kilitli, (2) birleştir, (3) olduğu gibi. CT (1)'i önerdi. **Kullanıcı (2)'yi seçti.**
+
+**Kararlar:**
+1. **İçerik Seti kavramı kalkar.** Bilgi Yolu tek kayıt olur: zincir şablonu + adımlara yerleşen içerikler + **iddialar** + bağlam (ülke, dil; ürün ve kitle zincirden) + revizyon + çıktı (PDF; sonra HTML) + yayın / geri çekme.
+2. **Tüm yollar MLR'li (yol türü AYRIMI YOK).** Her yol bir zincir şablonuna bağlanır ve Medikal → Hukuk → Ruhsat onayından geçer (MOD-0023 + Görev Merkezi, iddialardaki desen). Eğitim yolları dahil.
+3. **SB-2 emekliye ayrılır; mantığı yolun yayınına taşınır:**
+   - dal-öncelikli sıra;
+   - tek dil (`component_language_mixed` / `component_language_mismatch`);
+   - bileşenler yayında;
+   - iddia kullanılabilir (BE-6 kodları);
+   - ülke sürümü seçimi;
+   - "birleştirilmiş sunum" içeriği → yolun çıktısı.
+   - Setten üretim kodu kaldırılır.
+4. **SB-1R'nin bağlam mantığı** (ülke / dil sette, ürün / kitle zincirden, `ContentSetContextResolver`, `context_locked`) yola taşınır.
+5. **SCMM-15/16/17 (set revizyonu, render, yayın)** yol revizyonuna bağlanır. Tek kişilik inceleme MLR iş akışıyla değişir (açık işler #4 kapanır).
+6. **İçerik Setleri sayfası, menüsü ve yazma uçları kalkar** (kapsamdaki gibi: önce salt okunur, sonra silinir). Canlıda 0 set, göç yok.
+7. **Mockup brief'i** (`mockups/content-studio-v2/BRIEF-content-studio-v2.md`) "Bilgi Yolu" sayfası için güncellenir.
+
+**Sonuçlar:**
+- **Ziyaret sadeleşir (SB-3):** aşama → onaylı yol → adımlar. Ara üretim adımı yok.
+- **Mevcut yollar** (KP-114, KP-201, KP-2026-2138F2 yayında; KP-888 taslak) zincirsiz ve MLR'siz. Göç kuralı paketlemede kullanıcıya sorulacak. Öneri: okunur kalsın, "onaysız eski yol" işareti taşısın, ziyarette kullanılmadan önce MLR'den geçsin.
+- **Journey stage** yayındaki (= MLR onaylı) yolu gösterir. 11b (sürüm sabitleme riski) SB-3'te aynen değerlendirilecek.
+
+**Sıradaki adım:** Tasarım brief'i `DESIGN-KP-STUDIO` (DESIGN-SCMM-14 formatında):
+- model;
+- revizyon ve onay;
+- yayın kuralları;
+- göç;
+- emeklilik sırası;
+- paket bölünmesi.
+
+Kullanıcı onayıyla paketlere dönüşecek.
+
+---
+
+## 9. KARAR — Ziyaret içeriği (SB-3 ön kararları; kullanıcı, 2026-10-01)
+1. **Q2 / 11b — sürüm politikası:** yolculuk aşamaları varsayılan olarak **"yolun en son yayındaki sürümünü izle"**. Yeni sürüm yayınlanınca saha otomatik güncellenir. Belirli sürüme sabitleme istisnai seçenek olarak kalır.
+2. **Q1 — doğrudan yol bağı: HAYIR.** Akış şöyle:
+   - zincir şablonu konuları sıralar ("önce ihtiyaç, sonra etki / fayda…");
+   - Bilgi Yolu bu zincire içerik + iddia + sayfa tasarımı ile kurgulanır (ürün × kitle × ülke / dil);
+   - bu yollar **İçerik Etkileşim Yolculukları**'nda (her ürün ve kitle için) ziyaret sırasına dizilir;
+   - ziyarete **yolculuk sırasıyla** gelir.
+   - **Strateji şablonu içeriği yolculuk üzerinden bağlar.** Şablonda doğrudan Bilgi Yolu bağı ziyarette kullanılmaz; yeni bağ olarak önerilmemeli / kaldırılmalı.
+3. **YENİ — çok ürünlü ziyaret:** bir ziyaret tek ürün üzerinden gitmez.
+   - **En fazla 3 promo + en fazla 3 non-promo ürün** planlanır ve anlatılır.
+   - Her ürün için o ürünün (ve doktorun kitlesinin) yolculuğundaki **sıradaki aşama** → yolu → içerikler.
+   - **Aşama ilerlemesi doktor × ürün (yolculuk) bazında tutulmalı.** Bugün doktor başına tek `StageIndex` var.
+
+**Sonuç:**
+- SB-3 bugünkü tek yolculuk / tek aşama çözücüsünden büyük.
+- Paketlemeden önce **DESIGN-SB-3** analizi gerekiyor:
+  - ziyaretin promo / non-promo ürünleri nereden geliyor (strateji şablonu ürün hatları / SKU %, CycleCapacity, kampanya, mikro hedef);
+  - ürün → yolculuk eşlemesi (konu ↔ ürün + kitle);
+  - doktor × yolculuk aşama takibi (PlannedVisit / VisitReport);
+  - 3 + 3 sınırının yeri;
+  - eski sistemdeki (DitenCRM) karşılığı.

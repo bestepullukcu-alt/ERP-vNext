@@ -693,8 +693,17 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>الادعاءات</value>
   </data>
-  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
-    <value>نطاقات المحتوى</value>
+  <data name="Nav.Page.SAFETYTEXTS" xml:space="preserve">
+    <value>نصوص السلامة</value>
+  </data>
+  <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
+    <value>الملفات القانونية</value>
+  </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>تخطيط الزيارات</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>تنفيذ الزيارات</value>
   </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>مجموعات المحتوى</value>
@@ -1035,6 +1044,9 @@
   </data>
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>القبول على أي حال</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>جارٍ التحميل...</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>

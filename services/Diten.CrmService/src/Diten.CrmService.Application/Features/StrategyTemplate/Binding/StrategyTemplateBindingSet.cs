@@ -1,3 +1,5 @@
+using Diten.CrmService.Domain.Entities;
+
 namespace Diten.CrmService.Application.Features.StrategyTemplate.Binding;
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -39,7 +41,13 @@ public sealed record StrategyTemplateProductMixLine(
     string SkuAllocationMode,
     IReadOnlyList<StrategyTemplateSkuShare> SkuAllocations,
     decimal TotalPercentage,
-    bool ContainmentVerified);
+    bool ContainmentVerified,
+    // WP-SB-3b — the line as the visit content resolver needs it (additive): its EffectiveRole (a pre-SB-3a line reads
+    // promo), its journey (null on a pre-SB-3a line), its author order and the product's display code.
+    string Role = StrategyProductLineRoles.Promo,
+    Guid? JourneyId = null,
+    int SortOrder = 0,
+    string? GlobalProductCodeDisplay = null);
 
 public sealed record StrategyTemplateSkuShare(Guid GskuId, decimal Percentage, int SortOrder);
 

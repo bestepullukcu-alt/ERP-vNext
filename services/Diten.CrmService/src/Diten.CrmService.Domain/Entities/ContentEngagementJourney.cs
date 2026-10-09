@@ -249,6 +249,12 @@ public static class ContentEngagementJourneyPathPin
 
     public static string Normalize(string? value)
         => string.IsNullOrWhiteSpace(value) ? Pinned : value.Trim().ToLowerInvariant();
+
+    /// <summary>WP-SB-3b (DESIGN-SB-3 S3-1) — a NEW stage follows the path's latest published version unless the author
+    /// pins it. Only the add-stage write uses this; an existing stage (update, new-version clone, stored rows) keeps
+    /// what it has — nothing is migrated.</summary>
+    public static string NormalizeForNewStage(string? value)
+        => string.IsNullOrWhiteSpace(value) ? LatestPublished : value.Trim().ToLowerInvariant();
 }
 
 /// <summary>Advancement rule the stage DECLARES (never an engine — FU01B §6; MOD-0309 / F-DETAIL measure). Values come
@@ -339,12 +345,15 @@ public static class ContentEngagementJourneyReasonCodes
     public const string ReferenceArchived = "content_engagement_journey_reference_archived";
     public const string RuntimeStateNotSupported = "content_engagement_journey_runtime_state_not_supported";
 
+    /// <summary>WP-E2E-FIX-2 — a publish lost the optimistic race (or carried a stale ExpectedVersion): 409.</summary>
+    public const string ConcurrencyConflict = "content_engagement_journey_concurrency_conflict";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         Created, Updated, Published, Archived, VersionCreated, DuplicateCode, OverlappingPublishedVersion,
         StageAdded, StageUpdated, StageArchived, StageOrderConflict, StageSetFrozen, NoRequiredStage, FallbackInvalid,
         BranchTargetInvalid, PathNotConsumable, PathUnresolved, VisitRangeInvalid, StageLimitExceeded,
-        ArchivedNoMutation, ReferenceArchived, RuntimeStateNotSupported
+        ArchivedNoMutation, ReferenceArchived, RuntimeStateNotSupported, ConcurrencyConflict
     };
 }
 

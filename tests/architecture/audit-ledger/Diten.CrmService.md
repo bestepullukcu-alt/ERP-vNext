@@ -42,13 +42,10 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - ActivateStrategyTemplateCommand
 - ActivateTerritoryModelCommand
 - AddContentEngagementJourneyStageCommand
-- AddContentSetClaimCommand
-- AddContentSetComponentCommand
 - AddKnowledgePathStepCommand
 - AddTargetCustomerCommand
 - AmendVisitReportCommand
 - ApplyAccountTerritoryAssignmentsCommand
-- ApplyContentSetEligibilityCommand
 - ApplyPlanningSessionCommand
 - ArchiveAudienceProfileCommand
 - ArchiveCampaignCommand
@@ -64,8 +61,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - ArchiveContactAvailabilityExceptionCommand
 - ArchiveContentEngagementJourneyCommand
 - ArchiveContentEngagementJourneyStageCommand
-- ArchiveContentScopeCommand
-- ArchiveContentSetCommand
 - ArchiveCycleCapacityCommand
 - ArchiveEligibilityPolicyCommand
 - ArchiveKnowledgeContentCommand
@@ -81,11 +76,8 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - ArchiveTerritoryModelCommand
 - ArchiveTopicCommand
 - ArchiveVisitFrequencyPolicyCommand
-- ArrangeContentSetClaimCommand
-- ArrangeContentSetComponentCommand
 - BulkDeleteAccountCommand
 - CancelPlannedVisitCommand
-- CloneContentSetToDraftCommand
 - CloseClaimCountryCommand
 - CloseCyclePeriodCommand
 - ConfirmPlannedVisitCommand
@@ -110,8 +102,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - CreateContactCommand
 - CreateContentEngagementJourneyCommand
 - CreateContentEngagementJourneyVersionCommand
-- CreateContentScopeCommand
-- CreateContentSetDraftCommand
 - CreateContentVariantCommand
 - CreateCycleCapacityCommand
 - CreateCyclePeriodCommand
@@ -156,13 +146,8 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - PreviewTerritoryAssignmentsCommand
 - PublishContentEngagementJourneyCommand
 - PublishKnowledgePathCommand
-- RecordReviewDecisionCommand
 - RecordVisitOutcomeCommand
-- ReleaseContentSetRevisionCommand
 - RemoveClaimEvidenceCommand
-- RemoveContentSetClaimCommand
-- RemoveContentSetComponentCommand
-- RenderContentSetRevisionCommand
 - ReopenClaimCountryCommand
 - ReplaceTerritoryResourceAssignmentCommand
 - ReplanPlanningSessionCommand
@@ -173,7 +158,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - SoftDeleteTerritoryResourceAssignmentCommand
 - SubmitClaimCountryVersionReviewCommand
 - SubmitClaimReviewCommand
-- SubmitContentSetForReviewCommand
 - SubmitVisitReportCommand
 - TerritoryImportFileCommand
 - TransferTerritoryResourceAssignmentCommand
@@ -199,8 +183,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - UpdateContactCommand
 - UpdateContentEngagementJourneyCommand
 - UpdateContentEngagementJourneyStageCommand
-- UpdateContentScopeCommand
-- UpdateContentSetCommand
 - UpdateCycleCapacityCommand
 - UpdateCyclePeriodCommand
 - UpdateEligibilityPolicyCommand
@@ -224,4 +206,3 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - ValidateTerritoryResourceConflictsCommand
 - WithdrawClaimCountryVersionReviewCommand
 - WithdrawClaimReviewCommand
-- WithdrawContentSetRevisionCommand

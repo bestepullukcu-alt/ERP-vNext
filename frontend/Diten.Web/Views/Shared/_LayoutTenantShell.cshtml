@@ -656,10 +656,21 @@
     <partial name="/Views/Shared/_GlobalConfirmation.cshtml" />
     <partial name="/Views/Shared/_GlobalNotification.cshtml" />
 
+    @{
+        // WP-E2E-FIX-3 (E5-B1) — the shell now also shows TempData["WarningMessage"]. A bare resource KEY (an identifier
+        // such as "ArchivedTemplateReadOnly", which some pages store for their own resx and never rendered) is NOT a
+        // message and stays silent exactly as before; only real text is shown.
+        var shellWarning = TempData["WarningMessage"]?.ToString();
+        if (shellWarning is not null && System.Text.RegularExpressions.Regex.IsMatch(shellWarning, "^[A-Za-z][A-Za-z0-9_]*$"))
+        {
+            shellWarning = null;
+        }
+    }
     <script>
         window.BackboneShellTempData = {
             successMessage: @Json.Serialize(TempData["SuccessMessage"]?.ToString()),
-            errorMessage: @Json.Serialize(TempData["ErrorMessage"]?.ToString())
+            errorMessage: @Json.Serialize(TempData["ErrorMessage"]?.ToString()),
+            warningMessage: @Json.Serialize(shellWarning)
         };
     </script>
     <script src="~/assets/js/backbone-shell.js" asp-append-version="true"></script>

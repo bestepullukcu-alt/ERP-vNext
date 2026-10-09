@@ -693,8 +693,17 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>声明</value>
   </data>
-  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
-    <value>内容范围</value>
+  <data name="Nav.Page.SAFETYTEXTS" xml:space="preserve">
+    <value>安全性文本</value>
+  </data>
+  <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
+    <value>法律概况</value>
+  </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>拜访计划</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>拜访执行</value>
   </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>内容集</value>
@@ -1035,6 +1044,9 @@
   </data>
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>仍然接受</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>加载中...</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>

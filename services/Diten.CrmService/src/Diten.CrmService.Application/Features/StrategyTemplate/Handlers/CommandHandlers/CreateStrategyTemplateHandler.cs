@@ -73,6 +73,15 @@ public sealed class CreateStrategyTemplateHandler : IRequestHandler<CreateStrate
             return Response<Guid>.Fail(StrategyTemplateWriteGuards.ToErrors(shapeFailure), shapeFailure.StatusCode);
         }
 
+        // WP-SB-3a — every line says how it is told and with which journey; no new template-level content binding.
+        var sb3Failure = StrategyTemplateValidation.ValidateProductLineRolesAndJourneys(productLines)
+                         ?? StrategyTemplateValidation.ValidateNoNewRetiredContentBindings(
+                             contentBindings, Array.Empty<StrategyTemplateContentBinding>());
+        if (sb3Failure is not null)
+        {
+            return Response<Guid>.Fail(StrategyTemplateWriteGuards.ToErrors(sb3Failure), sb3Failure.StatusCode);
+        }
+
         var code = request.TemplateCode.Trim().ToLowerInvariant();
         var existing = await _templates.ListByCodeAsync(tenantId, code, cancellationToken);
         if (existing.Any(t => !t.IsArchived()))

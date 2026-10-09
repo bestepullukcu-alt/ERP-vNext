@@ -65,10 +65,16 @@
         return body.data;
     };
 
-    // Only published + effective FU04 paths may be bound (the server enforces the same rule).
+    // Only published + effective FU04 paths may be bound (the server enforces the same rule). WP-E2E-FIX-2 (E4-B3): the
+    // list is narrowed to the journey's own subject (and language when it has one); a journey without a subject keeps
+    // every published path and says so under the picker.
+    const journeySubjectId = editor.dataset.subjectId || '';
+    const journeyLanguage = editor.dataset.languageCode || '';
     const loadRefData = async () => {
         try {
-            const query = 'status=published&effectiveAt=' + encodeURIComponent(new Date().toISOString()) + '&includeArchived=false';
+            let query = 'status=published&effectiveAt=' + encodeURIComponent(new Date().toISOString()) + '&includeArchived=false';
+            if (journeySubjectId) query += '&subjectId=' + encodeURIComponent(journeySubjectId);
+            if (journeySubjectId && journeyLanguage) query += '&language=' + encodeURIComponent(journeyLanguage);
             paths = (await envelope(await fetch(`${endpoint}/knowledge-paths?${query}`, { credentials: 'same-origin', headers: { Accept: 'application/json' } })))?.items || [];
         } catch (e) { paths = []; }
     };
@@ -93,7 +99,7 @@
                     <span class="text-muted ms-2">→ ${esc(pathLabel)}${s.resolvedPathVersion ? ' @ ' + esc(s.resolvedPathVersion) : ''}</span>
                     ${s.isRequired ? `<span class="badge bg-label-primary ms-2">${esc(L.IsRequired || 'required')}</span>` : ''}
                     ${s.repeatable ? `<span class="badge bg-label-info ms-2">${esc(L.Repeatable || 'repeatable')}</span>` : ''}
-                    ${s.pathUsageCountInJourney > 1 ? `<span class="badge bg-label-secondary ms-2">${esc(L.Repeated || 'repeated')}</span>` : ''}
+                    ${s.pathUsageCountInJourney > 1 ? `<span class="badge bg-label-secondary ms-2" title="${esc(L.RepeatedHint || '')}">${esc(L.Repeated || 'path repeat')}</span>` : ''}
                     <span class="badge ${resCls} ms-2">${esc(s.pathResolutionStatus)}</span>
                     ${s.advancementRule ? `<span class="badge bg-label-secondary ms-2">${esc(s.advancementRule)}</span>` : ''}
                     ${s.branchConditions && s.branchConditions.length ? `<span class="badge bg-label-secondary ms-2">${esc(L.BranchConditions || 'branch')}: ${s.branchConditions.length}</span>` : ''}
@@ -167,13 +173,15 @@
             document.getElementById('stageKnowledgePathId').appendChild(opt);
         }
         document.getElementById('stagePathMeta').textContent = stage ? pathMeta(stage.recommendedKnowledgePathId) : '';
+        document.getElementById('stagePathScopeNote')?.classList.toggle('d-none', !!journeySubjectId);
         document.getElementById('stageFallback').innerHTML = `<option value="">${esc(L.SelectOption || '')}</option>` +
             stages.filter(s => !stage || s.stageId !== stage.stageId)
                 .map(s => `<option value="${esc(s.stageId)}"${stage && stage.fallbackStageId === s.stageId ? ' selected' : ''}>#${esc(s.stageOrder)} ${esc(s.stageCode)}</option>`).join('');
         document.getElementById('stageMinVisit').value = stage && stage.minVisitNumber ? stage.minVisitNumber : '';
         document.getElementById('stageMaxVisit').value = stage && stage.maxVisitNumber ? stage.maxVisitNumber : '';
         document.getElementById('stageNotes').value = stage && stage.notes ? stage.notes : '';
-        document.getElementById('stageRequired').checked = stage ? !!stage.isRequired : false;
+        // WP-E2E-FIX-2 (E4-B2) — a new stage starts required (publishing needs one); an edit shows the stored value.
+        document.getElementById('stageRequired').checked = stage ? !!stage.isRequired : true;
         document.getElementById('stageRepeatable').checked = stage ? !!stage.repeatable : false;
         branchList.innerHTML = '';
         (stage && stage.branchConditions ? stage.branchConditions : []).forEach(addBranchRow);
@@ -232,7 +240,7 @@
                 toast(L.RecordArchived || 'Archived', 'success');
                 await loadStages();
             } catch (err) { toast(err.message || L.ErrorState, 'error'); }
-        }, { type: 'warning' });
+        }, { type: 'warning', subtext: '' });
     });
 
     function readJson(id) {

@@ -13,13 +13,22 @@ public sealed class GetAccountListHandler : IRequestHandler<GetAccountListQuery,
     private readonly IAccountRepository _accounts;
     private readonly IAccountTerritoryAssignmentRepository _territoryAssignments;
     private readonly ITerritoryModelRepository _territoryModels;
+    private readonly ITerritoryNodeRepository _territoryNodes;
+    private readonly IAccountContactLinkRepository _links;
+    private readonly IContactRepository _contacts;
 
     public GetAccountListHandler(
         ITenantContext tenant,
         IAccountRepository accounts,
         IAccountTerritoryAssignmentRepository territoryAssignments,
-        ITerritoryModelRepository territoryModels)
+        ITerritoryModelRepository territoryModels,
+        ITerritoryNodeRepository territoryNodes,
+        IAccountContactLinkRepository links,
+        IContactRepository contacts)
     {
+        _links = links;
+        _contacts = contacts;
+        _territoryNodes = territoryNodes;
         _tenant = tenant;
         _accounts = accounts;
         _territoryAssignments = territoryAssignments;
@@ -31,6 +40,13 @@ public sealed class GetAccountListHandler : IRequestHandler<GetAccountListQuery,
         if (_tenant.TenantId is not { } tenantId)
         {
             return Response<PagedResult<AccountListItemDto>>.Fail("Tenant context is required.", 400);
+        }
+
+        var (validFilter, hasActiveContacts) = AccountActiveContacts.ParseFilter(request.HasActiveContacts);
+        if (!validFilter)
+        {
+            return Response<PagedResult<AccountListItemDto>>.Fail(
+                new[] { AccountActiveContacts.InvalidFilterCode, "hasActiveContacts must be 'true' or 'false'." }, 400);
         }
 
         var page = request.Page < 1 ? 1 : request.Page;
@@ -46,12 +62,30 @@ public sealed class GetAccountListHandler : IRequestHandler<GetAccountListQuery,
         var accountIdScope = await ResolveTerritoryCoverageScopeAsync(
             tenantId, request.TerritoryNodeId, request.CountryScope, cancellationToken);
 
+        // WP-VP-2B (R2) — "with / without active contacts", ANDed onto the coverage scope (or as an exclusion when there is
+        // none). Absent ⇒ untouched: the query is exactly today's.
+        IReadOnlyCollection<Guid>? excluded = null;
+        if (hasActiveContacts is not null)
+        {
+            var withActive = await AccountActiveContacts.AccountIdsWithActiveContactsAsync(
+                _links, _contacts, tenantId, cancellationToken);
+            (accountIdScope, excluded) = AccountActiveContacts.Apply(hasActiveContacts, accountIdScope, withActive);
+        }
+
         var (items, total, unfilteredTotal) = await _accounts.ListAsync(
             tenantId, request.Search, page, pageSize, request.SortBy, request.SortDir, statuses, accountTypes,
-            accountIdScope, cancellationToken);
+            accountIdScope, excluded, cancellationToken);
         var dtos = items.Select(AccountMapper.ToListItem).ToList();
 
         await EnrichCurrentTerritoryAsync(tenantId, dtos, cancellationToken);
+
+        // WP-VP-2B (R1) — the page's active-contact counts, two bounded reads whatever the page size.
+        var counts = await AccountActiveContacts.CountForPageAsync(
+            _links, _contacts, tenantId, dtos.Select(d => d.Id).ToList(), cancellationToken);
+        for (var i = 0; i < dtos.Count; i++)
+        {
+            dtos[i] = dtos[i] with { ActiveContactCount = counts.GetValueOrDefault(dtos[i].Id) };
+        }
 
         return Response<PagedResult<AccountListItemDto>>.Success(
             new PagedResult<AccountListItemDto>(dtos, total, page, pageSize, unfilteredTotal));
@@ -101,8 +135,9 @@ public sealed class GetAccountListHandler : IRequestHandler<GetAccountListQuery,
 
         if (nodeIds is not null)
         {
-            byNode = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsByNodesAsync(
-                _territoryAssignments, _territoryModels, tenantId, nodeIds, now, cancellationToken);
+            // WP-VP-2 (B-2) — a node chip covers its SUBTREE (a province finds the accounts moved to its districts).
+            byNode = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsBySubtreesAsync(
+                _territoryAssignments, _territoryModels, _territoryNodes, tenantId, nodeIds, now, cancellationToken);
         }
 
         if (countryScopes is not null)

@@ -57,6 +57,25 @@ public sealed class PlannedVisitRepository : IPlannedVisitRepository
         return Ordered(rows);
     }
 
+    /// <summary>WP-KP-CH-1 — tenant + PlannedDate ≥ fromDate (the "yyyy-MM-dd" string sorts like the date; served by
+    /// ix_planned_visits_tenant_date_status) + any content item on one of the paths. No new index.</summary>
+    public async Task<IReadOnlyList<PlannedVisit>> ListFromDateByContentPathsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> pathIds, DateOnly fromDate, CancellationToken cancellationToken)
+    {
+        if (pathIds.Count == 0)
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var rows = await _collection
+            .Find(Tenant(tenantId)
+                  & Builders<PlannedVisit>.Filter.Gte(x => x.PlannedDate, fromDate)
+                  & Builders<PlannedVisit>.Filter.ElemMatch(
+                      x => x.ContentItems, Builders<PlannedVisitContentItem>.Filter.In(i => i.PathId, pathIds)))
+            .ToListAsync(cancellationToken);
+        return rows;
+    }
+
     public async Task<IReadOnlyList<PlannedVisit>> ListByTargetAndDateAsync(
         Guid tenantId, Guid targetId, DateOnly plannedDate, CancellationToken cancellationToken)
     {
@@ -64,6 +83,37 @@ public sealed class PlannedVisitRepository : IPlannedVisitRepository
             .Find(Tenant(tenantId)
                   & Builders<PlannedVisit>.Filter.Eq(x => x.TargetId, targetId)
                   & Builders<PlannedVisit>.Filter.Eq(x => x.PlannedDate, plannedDate))
+            .ToListAsync(cancellationToken);
+        return Ordered(rows);
+    }
+
+    public async Task<IReadOnlyList<PlannedVisit>> ListByResourceAndContactsAsync(
+        Guid tenantId, string resourceId, IReadOnlyCollection<Guid> contactIds, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(resourceId) || contactIds.Count == 0)
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var ids = contactIds.Distinct().Select(id => (Guid?)id).ToList();
+        var rows = await _collection
+            .Find(Tenant(tenantId)
+                  & Builders<PlannedVisit>.Filter.Eq(x => x.Resource.ResourceId, resourceId)
+                  & Builders<PlannedVisit>.Filter.In(x => x.ContactId, ids))
+            .ToListAsync(cancellationToken);
+        return Ordered(rows);
+    }
+
+    public async Task<IReadOnlyList<PlannedVisit>> ListByIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids.Count == 0)
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var rows = await _collection
+            .Find(Tenant(tenantId) & Builders<PlannedVisit>.Filter.In(x => x.Id, ids.Distinct()))
             .ToListAsync(cancellationToken);
         return Ordered(rows);
     }

@@ -87,6 +87,10 @@ public sealed class KnowledgeContentEditViewModel : IValidatableObject
     public IReadOnlyList<string> LanguageOptions { get; set; } = new[] { "en", "tr", "ar", "es", "fr", "ru", "zh" };
 
     public string? ContractError { get; set; }
+
+    /// <summary>WP-E2E-FIX-2 — a KnowledgeIndex key for a coded write failure shown as one localized sentence
+    /// (ContentConcurrencyConflict); null otherwise.</summary>
+    public string? WriteErrorKey { get; set; }
     public bool IsArchived { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

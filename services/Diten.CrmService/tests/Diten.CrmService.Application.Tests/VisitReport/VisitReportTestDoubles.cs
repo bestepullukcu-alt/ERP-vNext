@@ -89,6 +89,13 @@ internal sealed class FakePlannedVisitReadRepository : IPlannedVisitRepository
         => Task.FromResult<IReadOnlyList<PlanAtom>>(
             Scope(tenantId).Where(x => x.TargetId == targetId && x.PlannedDate == plannedDate).ToList());
 
+    public Task<IReadOnlyList<PlanAtom>> ListFromDateByContentPathsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> pathIds, DateOnly fromDate, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<PlanAtom>>(Items
+            .Where(x => x.TenantId == tenantId && x.PlannedDate >= fromDate
+                        && x.ContentItems.Any(item => pathIds.Contains(item.PathId)))
+            .ToList());
+
     public Task InsertAsync(PlanAtom entity, CancellationToken ct)
     {
         InsertCount++;

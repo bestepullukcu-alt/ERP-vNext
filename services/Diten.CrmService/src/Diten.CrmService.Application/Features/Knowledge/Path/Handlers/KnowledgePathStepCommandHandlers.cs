@@ -1,5 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Application.Features.Knowledge.Path.Commands;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -17,16 +18,19 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
     private readonly IKnowledgePathRepository _paths;
     private readonly IKnowledgeContentRepository _contents;
     private readonly IConceptNodeRepository _nodes;
+    private readonly IConceptChainTemplateRepository? _templates;
 
     public AddKnowledgePathStepHandler(
         ITenantContext tenant, IActorContext actor, IKnowledgePathRepository paths,
-        IKnowledgeContentRepository contents, IConceptNodeRepository nodes)
+        IKnowledgeContentRepository contents, IConceptNodeRepository nodes,
+        IConceptChainTemplateRepository? templates = null)
     {
         _tenant = tenant;
         _actor = actor;
         _paths = paths;
         _contents = contents;
         _nodes = nodes;
+        _templates = templates;
     }
 
     public async Task<Response<Guid>> Handle(AddKnowledgePathStepCommand request, CancellationToken cancellationToken)
@@ -77,8 +81,40 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
             return Response<Guid>.Fail(scalarError, 400);
         }
 
+        // WP-KP-1 — a chain-bound path: the step sits on a slot of the pinned chain (never outside it, never beyond the
+        // slot's MaxSelection) and StepOrder is computed branch-first (the client value is ignored). A legacy path keeps
+        // the FU04 behaviour and takes no arrangement.
+        ConceptChainTemplate? template = null;
+        KnowledgePathArrangement? arrangement = null;
+        if (path.ChainTemplate is not null)
+        {
+            var (pinned, chainFailure) = await KnowledgePathStudio.PinnedChainAsync(_templates, tenantId, path, cancellationToken);
+            if (chainFailure is not null)
+            {
+                return chainFailure.To<Guid>();
+            }
+
+            template = pinned!;
+            var (placed, slotFailure) = KnowledgePathStudio.Arrangement(template, request.Arrangement);
+            if (slotFailure is not null)
+            {
+                return slotFailure.To<Guid>();
+            }
+
+            arrangement = placed!;
+            if (KnowledgePathStudio.SlotFull(template, path, arrangement, null) is { } full)
+            {
+                return full.To<Guid>();
+            }
+        }
+        else if (request.Arrangement is not null)
+        {
+            return KnowledgePathStudio.ChainRequired("An arrangement").To<Guid>();
+        }
+
         // V-S03/S04 — unique among active steps (handler is the only defence).
-        if (KnowledgePathValidation.ValidateStepUniqueness(path, request.StepOrder, request.StepCode, null) is { } dup)
+        if (KnowledgePathValidation.ValidateStepUniqueness(
+                path, request.StepOrder, request.StepCode, null, checkOrder: template is null) is { } dup)
         {
             return Response<Guid>.Fail(dup, 409);
         }
@@ -90,17 +126,41 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
             return Response<Guid>.Fail(contentError, contentCode);
         }
 
+        if (template is not null && !ChainContextValidation.SameLanguage(content!.LanguageCode, path.LanguageCode))
+        {
+            return KnowledgePathStudio.LanguageMismatch(content.LanguageCode, path.LanguageCode).To<Guid>();
+        }
+
         if (await KnowledgePathWrite.ValidateConceptNodeAsync(
                 _nodes, tenantId, request.ConceptNodeId, cancellationToken) is { } nodeError)
         {
             return Response<Guid>.Fail(nodeError, 400);
         }
 
+        if (arrangement is not null
+            && await KnowledgePathStudio.NodeOutsideSlotAsync(_nodes, tenantId, request.ConceptNodeId, arrangement, cancellationToken)
+                is { } nodeSlot)
+        {
+            return nodeSlot.To<Guid>();
+        }
+
         var newStepId = Guid.NewGuid();
+        IReadOnlyDictionary<Guid, int>? orders = null;
+        var selfOrder = request.StepOrder;
+        if (template is not null)
+        {
+            orders = KnowledgePathStudio.ComputeOrders(template, path, new KnowledgePathStep
+            {
+                StepId = newStepId, StepOrder = int.MaxValue, StepCode = request.StepCode.Trim(),
+                PrerequisiteStepId = request.PrerequisiteStepId, Arrangement = arrangement
+            });
+            selfOrder = orders[newStepId];
+        }
 
         // V-S09/S10 — prerequisite direction/cycle/required-optional (self excluded via newStepId).
         if (KnowledgePathValidation.ValidatePrerequisite(
-                path, request.PrerequisiteStepId, newStepId, request.StepOrder, request.IsRequired) is { } prereq)
+                path, request.PrerequisiteStepId, newStepId, selfOrder, request.IsRequired,
+                orders is null ? null : s => orders.TryGetValue(s.StepId, out var o) ? o : s.StepOrder) is { } prereq)
         {
             return Response<Guid>.Fail(prereq, 400);
         }
@@ -116,7 +176,7 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
         var step = new KnowledgePathStep
         {
             StepId = newStepId,
-            StepOrder = request.StepOrder,
+            StepOrder = selfOrder,
             StepCode = request.StepCode.Trim(),
             StepTitle = request.StepTitle.Trim(),
             StepType = KnowledgePathStepTypes.Normalize(request.StepType),
@@ -130,12 +190,17 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
             EstimatedDurationMinutes = request.EstimatedDurationMinutes,
             Notes = KnowledgePathValidation.Trim(request.Notes),
             BranchConditions = KnowledgePathWrite.MapBranchConditions(request.BranchConditions),
+            Arrangement = arrangement,
             StepStatus = KnowledgePathStepStatuses.Active,
             CreatedAt = now,
             CreatedBy = _actor.ActorName
         };
 
         path.Steps.Add(step);
+        if (orders is not null)
+        {
+            KnowledgePathStudio.ApplyOrders(path, orders);
+        }
         path.UpdatedAt = now;
         path.UpdatedBy = _actor.ActorName;
 
@@ -153,16 +218,19 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
     private readonly IKnowledgePathRepository _paths;
     private readonly IKnowledgeContentRepository _contents;
     private readonly IConceptNodeRepository _nodes;
+    private readonly IConceptChainTemplateRepository? _templates;
 
     public UpdateKnowledgePathStepHandler(
         ITenantContext tenant, IActorContext actor, IKnowledgePathRepository paths,
-        IKnowledgeContentRepository contents, IConceptNodeRepository nodes)
+        IKnowledgeContentRepository contents, IConceptNodeRepository nodes,
+        IConceptChainTemplateRepository? templates = null)
     {
         _tenant = tenant;
         _actor = actor;
         _paths = paths;
         _contents = contents;
         _nodes = nodes;
+        _templates = templates;
     }
 
     public async Task<Response<bool>> Handle(
@@ -218,8 +286,45 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
             return Response<bool>.Fail(scalarError, 400);
         }
 
+        // WP-KP-1 — a chain-bound path: the arrangement is required; a placed step keeps its branch + chain step
+        // (D-KP-7: only Position changes — 409 chain_slot_move_forbidden); a step that predates the bind is placed once.
+        ConceptChainTemplate? template = null;
+        KnowledgePathArrangement? arrangement = null;
+        if (path.ChainTemplate is not null)
+        {
+            var (pinned, chainFailure) = await KnowledgePathStudio.PinnedChainAsync(_templates, tenantId, path, cancellationToken);
+            if (chainFailure is not null)
+            {
+                return chainFailure.To<bool>();
+            }
+
+            template = pinned!;
+            var (placed, slotFailure) = KnowledgePathStudio.Arrangement(template, request.Arrangement);
+            if (slotFailure is not null)
+            {
+                return slotFailure.To<bool>();
+            }
+
+            arrangement = placed!;
+            if (step.Arrangement is not null && !ChainSlots.SameSlot(step.Arrangement, arrangement))
+            {
+                return Response<bool>.Fail(new[] { KnowledgePathStudioErrors.ChainSlotMoveForbidden,
+                    "A placed step cannot move to another branch or chain step; only its position changes (D-KP-7)." }, 409);
+            }
+
+            if (step.Arrangement is null
+                && KnowledgePathStudio.SlotFull(template, path, arrangement, step.StepId) is { } full)
+            {
+                return full.To<bool>();
+            }
+        }
+        else if (request.Arrangement is not null)
+        {
+            return KnowledgePathStudio.ChainRequired("An arrangement").To<bool>();
+        }
+
         if (KnowledgePathValidation.ValidateStepUniqueness(
-                path, request.StepOrder, request.StepCode, request.StepId) is { } dup)
+                path, request.StepOrder, request.StepCode, request.StepId, checkOrder: template is null) is { } dup)
         {
             return Response<bool>.Fail(dup, 409);
         }
@@ -240,6 +345,12 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
                 return Response<bool>.Fail(contentError, code);
             }
 
+            if (contentChanged && template is not null
+                && !ChainContextValidation.SameLanguage(content!.LanguageCode, path.LanguageCode))
+            {
+                return KnowledgePathStudio.LanguageMismatch(content.LanguageCode, path.LanguageCode).To<bool>();
+            }
+
             contentCode = content!.ContentCode;
         }
 
@@ -251,8 +362,33 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
             return Response<bool>.Fail(nodeError, 400);
         }
 
+        if (arrangement is not null
+            && await KnowledgePathStudio.NodeOutsideSlotAsync(_nodes, tenantId, request.ConceptNodeId, arrangement, cancellationToken)
+                is { } nodeSlot)
+        {
+            return nodeSlot.To<bool>();
+        }
+
+        IReadOnlyDictionary<Guid, int>? orders = null;
+        var selfOrder = request.StepOrder;
+        if (template is not null)
+        {
+            var candidate = new KnowledgePathStep
+            {
+                StepId = step.StepId, StepOrder = step.StepOrder, StepCode = request.StepCode.Trim(),
+                PrerequisiteStepId = request.PrerequisiteStepId, Arrangement = arrangement
+            };
+            orders = KnowledgePathStudio.ComputeOrders(template, path, candidate);
+            selfOrder = orders[step.StepId];
+            if (KnowledgePathStudio.PrerequisitesStayBackward(path, candidate, orders) is { } backward)
+            {
+                return Response<bool>.Fail(backward, 400);
+            }
+        }
+
         if (KnowledgePathValidation.ValidatePrerequisite(
-                path, request.PrerequisiteStepId, request.StepId, request.StepOrder, request.IsRequired) is { } prereq)
+                path, request.PrerequisiteStepId, request.StepId, selfOrder, request.IsRequired,
+                orders is null ? null : s => orders.TryGetValue(s.StepId, out var o) ? o : s.StepOrder) is { } prereq)
         {
             return Response<bool>.Fail(prereq, 400);
         }
@@ -264,7 +400,7 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
         }
 
         var now = DateTimeOffset.UtcNow;
-        step.StepOrder = request.StepOrder;
+        step.StepOrder = selfOrder;
         step.StepCode = request.StepCode.Trim();
         step.StepTitle = request.StepTitle.Trim();
         step.StepType = KnowledgePathStepTypes.Normalize(request.StepType);
@@ -278,6 +414,12 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
         step.EstimatedDurationMinutes = request.EstimatedDurationMinutes;
         step.Notes = KnowledgePathValidation.Trim(request.Notes);
         step.BranchConditions = KnowledgePathWrite.MapBranchConditions(request.BranchConditions);
+        if (arrangement is not null)
+        {
+            step.Arrangement = arrangement;
+            KnowledgePathStudio.ApplyOrders(path, orders!);
+        }
+
         step.UpdatedAt = now;
         step.UpdatedBy = _actor.ActorName;
         path.UpdatedAt = now;

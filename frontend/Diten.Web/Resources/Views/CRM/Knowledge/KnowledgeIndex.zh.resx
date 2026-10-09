@@ -190,4 +190,35 @@
   <data name="LinkedClaims" xml:space="preserve"><value>关联声明</value></data>
   <data name="NoLinkedClaims" xml:space="preserve"><value>本内容没有关联声明。</value></data>
   <data name="ClaimNeedsReview" xml:space="preserve"><value>需复核——此关联获批后声明已变更。</value></data>
+  <data name="ContentType_presentation" xml:space="preserve"><value>演示文稿</value></data>
+  <data name="ContentType_brochure" xml:space="preserve"><value>宣传册</value></data>
+  <data name="ContentType_lesson" xml:space="preserve"><value>课程</value></data>
+  <data name="ContentType_faq" xml:space="preserve"><value>常见问题</value></data>
+  <data name="ContentType_clinical-summary" xml:space="preserve"><value>临床摘要</value></data>
+  <data name="ContentType_objection-handling" xml:space="preserve"><value>异议处理</value></data>
+  <data name="ContentType_quiz" xml:space="preserve"><value>测验</value></data>
+  <data name="ContentType_video" xml:space="preserve"><value>视频</value></data>
+  <data name="ContentType_pdf" xml:space="preserve"><value>PDF 文档</value></data>
+  <data name="ContentType_html-detail" xml:space="preserve"><value>HTML 详情</value></data>
+  <data name="ContentType_sop" xml:space="preserve"><value>标准操作规程</value></data>
+  <data name="ContentType_training-material" xml:space="preserve"><value>培训材料</value></data>
+  <data name="ContentType_message-script" xml:space="preserve"><value>话术脚本</value></data>
+  <data name="ContentType_knowledge-article" xml:space="preserve"><value>知识文章</value></data>
+  <data name="ContentType_assembled-presentation" xml:space="preserve"><value>组合演示文稿</value></data>
+  <data name="ContentStatus_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="ContentStatus_review" xml:space="preserve"><value>审核中</value></data>
+  <data name="ContentStatus_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ContentStatus_published" xml:space="preserve"><value>已发布</value></data>
+  <data name="ContentStatus_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="ContentStatus_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ContentSource_manual" xml:space="preserve"><value>手动</value></data>
+  <data name="ContentSource_campaign" xml:space="preserve"><value>活动</value></data>
+  <data name="ContentSource_legacy-import" xml:space="preserve"><value>旧系统导入</value></data>
+  <data name="ContentSource_training" xml:space="preserve"><value>培训</value></data>
+  <data name="ContentSource_external" xml:space="preserve"><value>外部</value></data>
+  <data name="ContentSource_other" xml:space="preserve"><value>其他</value></data>
+  <data name="ContentSource_content-studio" xml:space="preserve"><value>内容工作室</value></data>
+  <data name="ContentConcurrencyConflict" xml:space="preserve"><value>您编辑期间此内容已被他人修改。请重新加载页面并重新应用您的更改。</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>产品列表暂不可用。</value></data>
+  <data name="ProductSearchPlaceholder" xml:space="preserve"><value>输入产品名称或代码…</value></data>
 </root>

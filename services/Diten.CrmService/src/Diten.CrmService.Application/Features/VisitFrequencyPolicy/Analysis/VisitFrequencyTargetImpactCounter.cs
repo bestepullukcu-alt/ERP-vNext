@@ -27,14 +27,17 @@ public sealed class VisitFrequencyTargetImpactCounter : IVisitFrequencyTargetImp
     private readonly ICampaignTargetRepository _campaignTargets;
     private readonly IAccountTerritoryAssignmentRepository _accountAssignments;
     private readonly ITerritoryModelRepository _territoryModels;
+    private readonly ITerritoryNodeRepository _territoryNodes;
 
     public VisitFrequencyTargetImpactCounter(
         ISegmentRepository segments,
         SegmentMembershipResolver segmentMembership,
         ICampaignTargetRepository campaignTargets,
         IAccountTerritoryAssignmentRepository accountAssignments,
-        ITerritoryModelRepository territoryModels)
+        ITerritoryModelRepository territoryModels,
+        ITerritoryNodeRepository territoryNodes)
     {
+        _territoryNodes = territoryNodes;
         _segments = segments;
         _segmentMembership = segmentMembership;
         _campaignTargets = campaignTargets;
@@ -149,8 +152,9 @@ public sealed class VisitFrequencyTargetImpactCounter : IVisitFrequencyTargetImp
     private async Task<VisitFrequencyTargetImpact> CountTerritoryNodeAsync(
         Guid tenantId, Guid nodeId, DateTimeOffset at, CancellationToken cancellationToken)
     {
-        var covered = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsByNodesAsync(
-            _accountAssignments, _territoryModels, tenantId, new[] { nodeId }, at, cancellationToken);
+        // WP-VP-2 (B-2) — a territory-node policy reaches the node's whole subtree.
+        var covered = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsBySubtreesAsync(
+            _accountAssignments, _territoryModels, _territoryNodes, tenantId, new[] { nodeId }, at, cancellationToken);
         return VisitFrequencyTargetImpact.Countable(covered.Count);
     }
 }

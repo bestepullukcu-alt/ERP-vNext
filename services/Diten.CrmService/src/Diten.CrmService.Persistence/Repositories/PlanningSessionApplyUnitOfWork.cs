@@ -177,6 +177,141 @@ public sealed class PlanningSessionApplyUnitOfWork : IPlanningSessionApplyUnitOf
         }
     }
 
+    /// <summary>
+    /// WP-VP-3A — reopen a week atomically: the session replace (version-checked) and the cancelled atoms (each replaced
+    /// version-checked) commit together. On a standalone server: the session first (a mismatch writes nothing), then the
+    /// atoms; if any atom write fails or loses its version, every atom already written and the session are restored.
+    /// </summary>
+    public async Task<bool> ReopenWeekAsync(
+        PlanningSession session, int expectedVersion, IReadOnlyList<PlannedVisit> cancelledAtoms,
+        CancellationToken cancellationToken)
+    {
+        session.Version = expectedVersion + 1;
+        var sessionFilter = Builders<PlanningSession>.Filter.Where(
+            x => x.Id == session.Id && x.TenantId == session.TenantId && x.Version == expectedVersion);
+        foreach (var atom in cancelledAtoms)
+        {
+            atom.Version += 1;
+        }
+
+        if (!await SupportsTransactionsAsync(cancellationToken))
+        {
+            return await ReopenWithCompensationAsync(session, sessionFilter, cancelledAtoms, cancellationToken);
+        }
+
+        using var mongoSession = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        mongoSession.StartTransaction();
+        try
+        {
+            var replace = await _sessions.ReplaceOneAsync(mongoSession, sessionFilter, session, cancellationToken: cancellationToken);
+            if (!replace.IsAcknowledged || replace.MatchedCount != 1)
+            {
+                await mongoSession.AbortTransactionAsync(cancellationToken);
+                return false;
+            }
+
+            foreach (var atom in cancelledAtoms)
+            {
+                var written = await _plannedVisits.ReplaceOneAsync(
+                    mongoSession, AtomFilter(atom), atom, cancellationToken: cancellationToken);
+                if (!written.IsAcknowledged || written.MatchedCount != 1)
+                {
+                    await mongoSession.AbortTransactionAsync(cancellationToken);
+                    return false;
+                }
+            }
+
+            await mongoSession.CommitTransactionAsync(cancellationToken);
+            return true;
+        }
+        catch (Exception ex) when (TransactionUnavailable(ex))
+        {
+            if (mongoSession.IsInTransaction)
+            {
+                await mongoSession.AbortTransactionAsync(cancellationToken);
+            }
+
+            return await ReopenWithCompensationAsync(session, sessionFilter, cancelledAtoms, cancellationToken);
+        }
+        catch
+        {
+            if (mongoSession.IsInTransaction)
+            {
+                await mongoSession.AbortTransactionAsync(cancellationToken);
+            }
+
+            throw;
+        }
+    }
+
+    private static FilterDefinition<PlannedVisit> AtomFilter(PlannedVisit atom)
+        => Builders<PlannedVisit>.Filter.Where(x => x.Id == atom.Id && x.TenantId == atom.TenantId && x.Version == atom.Version - 1);
+
+    private async Task<bool> ReopenWithCompensationAsync(
+        PlanningSession session, FilterDefinition<PlanningSession> sessionFilter,
+        IReadOnlyList<PlannedVisit> cancelledAtoms, CancellationToken cancellationToken)
+    {
+        var original = await _sessions
+            .Find(Builders<PlanningSession>.Filter.Where(x => x.Id == session.Id && x.TenantId == session.TenantId))
+            .FirstOrDefaultAsync(cancellationToken);
+        var ids = cancelledAtoms.Select(a => a.Id).ToList();
+        var originalAtoms = ids.Count == 0
+            ? new List<PlannedVisit>()
+            : await _plannedVisits.Find(Builders<PlannedVisit>.Filter.In(x => x.Id, ids)).ToListAsync(cancellationToken);
+
+        var replace = await _sessions.ReplaceOneAsync(sessionFilter, session, cancellationToken: cancellationToken);
+        if (!replace.IsAcknowledged || replace.MatchedCount != 1)
+        {
+            return false; // concurrency mismatch — nothing written
+        }
+
+        var written = new List<Guid>();
+        try
+        {
+            foreach (var atom in cancelledAtoms)
+            {
+                var result = await _plannedVisits.ReplaceOneAsync(AtomFilter(atom), atom, cancellationToken: cancellationToken);
+                if (!result.IsAcknowledged || result.MatchedCount != 1)
+                {
+                    throw new InvalidOperationException("A planned visit changed concurrently during the week reopen.");
+                }
+
+                written.Add(atom.Id);
+            }
+
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            await RestoreAsync(original, originalAtoms, written, cancellationToken);
+            return false;
+        }
+        catch
+        {
+            await RestoreAsync(original, originalAtoms, written, cancellationToken);
+            throw;
+        }
+    }
+
+    private async Task RestoreAsync(
+        PlanningSession? original, IReadOnlyList<PlannedVisit> originalAtoms, IReadOnlyCollection<Guid> written,
+        CancellationToken cancellationToken)
+    {
+        foreach (var atom in originalAtoms.Where(a => written.Contains(a.Id)))
+        {
+            await _plannedVisits.ReplaceOneAsync(
+                Builders<PlannedVisit>.Filter.Where(x => x.Id == atom.Id && x.TenantId == atom.TenantId),
+                atom, cancellationToken: cancellationToken);
+        }
+
+        if (original is not null)
+        {
+            await _sessions.ReplaceOneAsync(
+                Builders<PlanningSession>.Filter.Where(x => x.Id == original.Id && x.TenantId == original.TenantId),
+                original, cancellationToken: cancellationToken);
+        }
+    }
+
     private static bool TransactionUnavailable(Exception exception)
     {
         for (var current = exception; current is not null; current = current.InnerException)

@@ -61,8 +61,13 @@ public sealed record WorkingDayHours(string Start, string End, string LunchStart
 /// <summary>A latitude/longitude pair.</summary>
 public sealed record GeoPoint(double Lat, double Long);
 
-/// <summary>The inclusive window of days available for assignment.</summary>
-public sealed record OptimizationPeriod(DateOnly DateFrom, DateOnly DateTo);
+/// <summary>The inclusive window of days available for assignment. <see cref="NonWorkingDates"/> (WP-VP-FIX-1, additive)
+/// are never candidate days — the FU05 planner fills them from the working calendar (weekends + holidays, or the Sat/Sun
+/// fallback); null keeps every day of the window, the FU03 preview endpoint's unchanged contract.</summary>
+public sealed record OptimizationPeriod(
+    DateOnly DateFrom,
+    DateOnly DateTo,
+    IReadOnlyCollection<DateOnly>? NonWorkingDates = null);
 
 /// <summary>
 /// The travel-cost model to use. v1 is <c>{ kind: "haversine", roadFactor: 1.3 }</c> — in-house ONLY, no external

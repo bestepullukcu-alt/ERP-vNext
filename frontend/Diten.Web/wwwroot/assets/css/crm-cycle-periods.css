@@ -1,0 +1,152 @@
+/*
+ * WP-CYC-UI-1 — Cycle Periods page styles (timeline, panel, lifecycle line).
+ * Theme variables only (no fixed hex): the chart follows light / dark skins.
+ * Logical properties only (inset-inline-start, inline-size, margin-inline…): a right-to-left page mirrors the
+ * timeline without a second code path.
+ */
+
+/* ── Timeline ─────────────────────────────────────────────────────────────────────────────────────────────── */
+.cp-timeline-scroll { overflow-x: auto; }
+
+.cp-timeline {
+    display: grid;
+    grid-template-columns: 13.75rem 1fr;
+    min-inline-size: 60rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+}
+
+.cp-tl-label {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 2;
+    background: var(--bs-paper-bg, var(--bs-body-bg));
+    border-inline-end: 1px solid var(--bs-border-color);
+    border-block-end: 1px solid var(--bs-border-color);
+    padding: 0.5rem 0.75rem;
+}
+.cp-tl-label small { display: block; color: var(--bs-secondary-color); }
+
+.cp-tl-track {
+    position: relative;
+    border-block-end: 1px solid var(--bs-border-color);
+    min-block-size: 3rem;
+}
+
+.cp-tl-head { min-block-size: 3rem; }
+.cp-tl-year {
+    position: absolute;
+    inset-block-start: 0.25rem;
+    text-align: center;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    border-inline-start: 1px solid var(--bs-border-color);
+}
+.cp-tl-gridline {
+    position: absolute;
+    inset-block: 0;
+    inline-size: 0;
+    border-inline-start: 1px dashed var(--bs-border-color);
+    pointer-events: none;
+}
+.cp-tl-gridline--year { border-inline-start-style: solid; }
+
+.cp-bar {
+    position: absolute;
+    block-size: 1.75rem;
+    min-inline-size: 0.25rem;
+    border-radius: var(--bs-border-radius-sm);
+    border: 1px solid transparent;
+    padding: 0 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1.625rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    text-align: start;
+}
+.cp-bar:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
+
+.cp-bar--active, .cp-swatch.cp-bar--active {
+    background: rgba(var(--bs-success-rgb), 0.16);
+    border-color: var(--bs-success);
+    color: var(--bs-success);
+}
+.cp-bar--draft, .cp-swatch.cp-bar--draft {
+    background: rgba(var(--bs-warning-rgb), 0.16);
+    border: 1px dashed var(--bs-warning);
+    color: var(--bs-warning);
+}
+.cp-bar--closed, .cp-swatch.cp-bar--closed {
+    background: rgba(var(--bs-secondary-rgb), 0.14);
+    border-color: var(--bs-secondary);
+    color: var(--bs-secondary-color);
+}
+
+.cp-mark {
+    position: absolute;
+    inset-block: 0.25rem;
+    pointer-events: auto;
+    border-radius: var(--bs-border-radius-sm);
+}
+.cp-mark--conflict, .cp-swatch.cp-mark--conflict {
+    background: repeating-linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.45) 0 4px, transparent 4px 8px);
+    z-index: 1;
+}
+.cp-mark--overlap, .cp-swatch.cp-mark--overlap {
+    background: repeating-linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.45) 0 4px, transparent 4px 8px);
+    z-index: 1;
+}
+.cp-mark--gap, .cp-swatch.cp-mark--gap {
+    border: 1px dashed var(--bs-secondary);
+    font-size: 0.6875rem;
+    color: var(--bs-secondary-color);
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.cp-today {
+    position: absolute;
+    inset-block: 0;
+    inline-size: 0;
+    border-inline-start: 2px solid var(--bs-danger);
+    z-index: 3;
+    pointer-events: none;
+}
+
+.cp-legend { display: inline-flex; align-items: center; gap: 0.375rem; }
+.cp-swatch { display: inline-block; inline-size: 1.25rem; block-size: 0.75rem; border-radius: 0.125rem; }
+.cp-swatch.cp-today-swatch { inline-size: 0; block-size: 0.875rem; border-inline-start: 2px solid var(--bs-danger); border-radius: 0; }
+
+/* ── Panel ────────────────────────────────────────────────────────────────────────────────────────────────── */
+.cp-panel { --bs-offcanvas-width: min(35rem, 100vw); }
+
+.cp-scope-card {
+    display: block;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    cursor: pointer;
+}
+.cp-scope-card:has(input:checked) {
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.06);
+}
+.cp-scope-card:has(input:disabled) { cursor: not-allowed; opacity: 0.7; }
+
+/* ── Lifecycle line (details) ─────────────────────────────────────────────────────────────────────────────── */
+.cp-step { display: flex; align-items: flex-start; gap: 0.5rem; }
+.cp-step-dot {
+    inline-size: 0.875rem;
+    block-size: 0.875rem;
+    margin-block-start: 0.25rem;
+    border-radius: 50%;
+    border: 2px solid var(--bs-border-color);
+    flex-shrink: 0;
+}
+.cp-step--done .cp-step-dot { background: var(--bs-primary); border-color: var(--bs-primary); }
+
+.cp-visit-bar { display: flex; block-size: 0.5rem; border-radius: 0.25rem; overflow: hidden; background: var(--bs-border-color); }
+.cp-visit-bar > span { display: block; block-size: 100%; }

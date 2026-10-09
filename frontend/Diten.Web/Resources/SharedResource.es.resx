@@ -694,8 +694,17 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>Alegaciones</value>
   </data>
-  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
-    <value>Alcances de contenido</value>
+  <data name="Nav.Page.SAFETYTEXTS" xml:space="preserve">
+    <value>Textos de seguridad</value>
+  </data>
+  <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
+    <value>Perfiles legales</value>
+  </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>Planificación de visitas</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>Ejecución de visitas</value>
   </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Conjuntos de contenido</value>
@@ -1036,6 +1045,9 @@
   </data>
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Aceptar De Todos Modos</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Cargando...</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Ejecución de la cadena de suministro</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestión de transportistas</value></data>

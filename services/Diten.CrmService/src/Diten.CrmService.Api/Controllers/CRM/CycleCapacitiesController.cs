@@ -99,7 +99,10 @@ public sealed class CycleCapacitiesController : CustomBaseController
                 request.TravelingTime,
                 request.ReportDuration,
                 request.QuizDuration,
-                ToMonths(request.Months)),
+                ToMonths(request.Months),
+                request.TypicalPromoCount,
+                request.TypicalNonPromoCount,
+                request.ReportMinutesPerVisit),
             cancellationToken));
 
     [HttpPost("api/crm/cycle-capacities")]
@@ -118,7 +121,12 @@ public sealed class CycleCapacitiesController : CustomBaseController
                 request.QuizDuration,
                 request.Description,
                 ToMonths(request.Months),
-                request.BetweenVisitTimeMinutes),
+                request.BetweenVisitTimeMinutes,
+                request.MaxPromoProducts,
+                request.MaxNonPromoProducts,
+                request.TypicalPromoCount,
+                request.TypicalNonPromoCount,
+                request.ReportMinutesPerVisit),
             cancellationToken));
 
     /// <summary>An edit. The route carries the capacity's own id and the body carries no cycle period at all: the pin
@@ -140,7 +148,12 @@ public sealed class CycleCapacitiesController : CustomBaseController
                 request.Description,
                 ToMonths(request.Months),
                 request.ExpectedVersion,
-                request.BetweenVisitTimeMinutes),
+                request.BetweenVisitTimeMinutes,
+                request.MaxPromoProducts,
+                request.MaxNonPromoProducts,
+                request.TypicalPromoCount,
+                request.TypicalNonPromoCount,
+                request.ReportMinutesPerVisit),
             cancellationToken));
 
     /// <summary>Retires a capacity — a SOFT archive that also frees its period for a fresh one. There is no delete
@@ -155,7 +168,7 @@ public sealed class CycleCapacitiesController : CustomBaseController
     private static IReadOnlyList<CycleCapacityMonthInput> ToMonths(IEnumerable<CycleCapacityMonthRequest>? months)
         => months?.Select(m => new CycleCapacityMonthInput(
                    m.Year, m.MonthNumber, m.MeetingDays, m.TrainingDays, m.VacationDays,
-                   m.MicroTargetingDayCount, m.MicroTargetingDuration))
+                   m.MicroTargetingDayCount, m.MicroTargetingDuration, m.Fte))
                .ToList()
            ?? new List<CycleCapacityMonthInput>();
 }

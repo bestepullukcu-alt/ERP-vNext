@@ -79,7 +79,7 @@
   <data name="RecordCreated" xml:space="preserve"><value>Enregistrement créé.</value></data>
   <data name="RecordUpdated" xml:space="preserve"><value>Enregistrement mis à jour.</value></data>
   <data name="Repeatable" xml:space="preserve"><value>Répétable</value></data>
-  <data name="Repeated" xml:space="preserve"><value>Répété</value></data>
+  <data name="Repeated" xml:space="preserve"><value>Parcours de connaissance répété</value></data>
   <data name="RequiredStageCount" xml:space="preserve"><value>Étapes obligatoires</value></data>
   <data name="Reset" xml:space="preserve"><value>Réinitialiser</value></data>
   <data name="Resolved" xml:space="preserve"><value>Résolu</value></data>
@@ -108,4 +108,10 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Voir les détails</value></data>
   <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="RepeatedHint" xml:space="preserve"><value>Ce parcours de connaissance est aussi utilisé dans une autre étape</value></data>
+  <data name="PathListAllSubjectsNote" xml:space="preserve"><value>Ce parcours n’a pas de sujet : tous les parcours de connaissance publiés sont listés.</value></data>
+  <data name="Err_content_engagement_journey_no_required_stage" xml:space="preserve"><value>Le parcours ne peut pas être publié : il faut au moins une étape active obligatoire. Activez « Obligatoire » sur une étape.</value></data>
+  <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Une autre version publiée de ce code de parcours (même langue) couvre déjà ces dates. Modifiez les dates d’effet ou archivez l’autre version.</value></data>
+  <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>Un parcours archivé ne peut pas être publié.</value></data>
+  <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>Le parcours a été modifié par quelqu’un d’autre entre-temps. Rechargez la page et réessayez.</value></data>
 </root>

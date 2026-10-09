@@ -73,11 +73,15 @@ public static class ContentEngagementJourneyMapper
     }
 
     /// <summary>FU01B §7 repeat report: how many ACTIVE stages of this journey use the same path code. A repeat is
-    /// never forbidden — it is made VISIBLE.</summary>
+    /// never forbidden — it is made VISIBLE. WP-E2E-FIX-2 (E4-B1): a stage without a path code (null / blank) shares a
+    /// path with nobody — two path-less stages are not a "path repeat".</summary>
     private static int PathUsageCount(JourneyEntity journey, ContentEngagementJourneyStage stage)
-        => journey.Stages.Count(s =>
-            !s.IsArchived() &&
-            string.Equals(s.PathCode ?? string.Empty, stage.PathCode ?? string.Empty, StringComparison.OrdinalIgnoreCase));
+        => string.IsNullOrWhiteSpace(stage.PathCode)
+            ? 0
+            : journey.Stages.Count(s =>
+                !s.IsArchived() &&
+                !string.IsNullOrWhiteSpace(s.PathCode) &&
+                string.Equals(s.PathCode.Trim(), stage.PathCode.Trim(), StringComparison.OrdinalIgnoreCase));
 
     public static ContentEngagementJourneyStageDto ToStageDto(
         JourneyEntity journey, ContentEngagementJourneyStage stage, ResolutionContext ctx, DateTimeOffset effectiveAt)

@@ -23,4 +23,15 @@ public static class RelationshipLifecycle
     public static bool IsClosed(string? status)
         => !string.IsNullOrWhiteSpace(status)
            && ClosedStatuses.Contains(status.Trim().ToLowerInvariant());
+
+    /// <summary>WP-VP-2B (R1/R2) — the store-side twin of <see cref="IsClosed"/>: a closed status, trimmed and
+    /// case-insensitive (use with the <c>i</c> option). Built from <see cref="ClosedStatuses"/> so the two never drift.</summary>
+    public static string ClosedStatusPattern
+        => $"^\\s*({string.Join("|", ClosedStatuses.Select(System.Text.RegularExpressions.Regex.Escape))})\\s*$";
+
+    /// <summary>WP-VP-2B (R1) — an account–contact link that counts as an ACTIVE contact of its account: not deleted and
+    /// not closed. The contact itself must also still exist (not soft-deleted) — the same rule the account's
+    /// <c>/contacts</c> projection applies when it skips links to a removed contact.</summary>
+    public static bool IsActiveLink(AccountContactLink link, bool contactExists)
+        => !link.IsDeleted && !IsClosed(link.Status) && contactExists;
 }

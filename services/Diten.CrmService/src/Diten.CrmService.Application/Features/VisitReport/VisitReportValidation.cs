@@ -95,6 +95,18 @@ public static class VisitReportValidation
                 VisitReportErrorCodes.ResourceRequired);
     }
 
+    /// <summary>WP-E2E-FIX-1 (E9-B5) — a visit cannot be closed (completed / missed / report submitted) before its planned
+    /// day. "Today" is the UTC calendar day: the CRM holds no tenant time zone, so the caller passes the UTC date.</summary>
+    public static Failure? ValidateDue(DateOnly plannedDate, DateOnly today)
+        => plannedDate > today
+            ? new Failure(
+                $"The visit is planned for {plannedDate:yyyy-MM-dd}; it cannot be closed before that day.",
+                VisitReportErrorCodes.NotYetDue, 409)
+            : null;
+
+    /// <summary>The UTC calendar day of the clock (the CRM has no tenant time-zone source).</summary>
+    public static DateOnly Today(TimeProvider clock) => DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime);
+
     /// <summary>The outcome (in-domain fail-closed) plus its reason-code rule: a <c>missed</c>/<c>rescheduled</c> outcome
     /// requires an in-domain reason code (§4.1 ③); <c>completed</c> forbids one.</summary>
     public static Failure? ValidateOutcome(string? outcome, string? reasonCode)

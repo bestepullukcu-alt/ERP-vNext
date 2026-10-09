@@ -37,8 +37,12 @@ namespace Diten.CrmService.Infrastructure.CycleCapacity;
 /// plausible-looking guess nobody could tell apart from a real answer. A 403 is reported as its OWN resolution and is
 /// never flattened into "no calendar": the calendar may well exist and the caller simply lacks the platform
 /// permission (F-RBAC-WC).</para>
+///
+/// <para><b>WP-VP-FIX-1 — also <see cref="IWorkingDayChecker"/>.</b> The visit planner asks the same door, with the same
+/// transport, the per-day question (<c>is-working-day</c>), so weekends and holidays are never candidate days. Only the
+/// operation and the field read differ; every failure meaning above applies unchanged.</para>
 /// </summary>
-public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter
+public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter, IWorkingDayChecker
 {
     private static readonly TimeSpan TotalTimeout = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(75);
@@ -46,6 +50,9 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter
     /// <summary>The platform operation. It counts working days over an inclusive range, having already excluded
     /// weekends, public holidays and company closures day by day.</summary>
     private const string Operation = "working-days-between";
+
+    /// <summary>WP-VP-FIX-1 — the per-day platform operation (weekend + holiday + closure aware).</summary>
+    private const string IsWorkingDayOperation = "is-working-day";
 
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -189,12 +196,117 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter
             "The working calendar could not be reached.");
     }
 
-    private string BuildPath(string countryCode, Guid? legalEntityId, DateOnly from, DateOnly to)
+    public async Task<WorkingDayCheckResult> IsWorkingDayAsync(
+        string countryCode,
+        Guid? legalEntityId,
+        DateOnly date,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(countryCode))
+        {
+            return Unchecked(
+                CycleCapacityResolutions.CalendarUnresolved,
+                CycleCapacityReasonCodes.CountryUnderivable,
+                "No calendar country was supplied.");
+        }
+
+        var path = BuildPath(countryCode, legalEntityId, date, null, IsWorkingDayOperation);
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TotalTimeout);
+
+        try
+        {
+            for (var attempt = 0; attempt < 2; attempt++)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, path);
+                ForwardContextHeaders(request);
+
+                using var response = await _httpClient.SendAsync(request, timeout.Token);
+
+                if (IsTransient(response.StatusCode) && attempt == 0)
+                {
+                    await Task.Delay(RetryDelay, timeout.Token);
+                    continue;
+                }
+
+                if (response.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized)
+                {
+                    return Unchecked(
+                        CycleCapacityResolutions.CalendarForbidden,
+                        CycleCapacityReasonCodes.CalendarForbidden,
+                        "The working calendar refused the request. The signed-in user needs "
+                        + $"'{Application.Features.CycleCapacity.CycleCapacityPermissions.WorkingCalendarOverrideRead}'.");
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Unchecked(
+                        CycleCapacityResolutions.CalendarUnresolved,
+                        CycleCapacityReasonCodes.CalendarUnresolved,
+                        $"The working calendar answered {(int)response.StatusCode}.");
+                }
+
+                var envelope = await response.Content.ReadFromJsonAsync<GatewayEnvelope<WorkingDayResolvePayload>>(
+                    cancellationToken: timeout.Token);
+
+                if (envelope?.IsSuccessful != true || envelope.Data is null)
+                {
+                    return Unchecked(
+                        CycleCapacityResolutions.CalendarUnresolved,
+                        CycleCapacityReasonCodes.CalendarUnresolved,
+                        "The working calendar's response could not be read.");
+                }
+
+                var payload = envelope.Data;
+                if (!string.Equals(payload.Resolution, "resolved", StringComparison.OrdinalIgnoreCase)
+                    || payload.IsWorkingDay is not { } isWorkingDay)
+                {
+                    return new WorkingDayCheckResult(
+                        CycleCapacityResolutions.CalendarUnresolved,
+                        null,
+                        Reasons(payload.ReasonCodes, CycleCapacityReasonCodes.CalendarUnresolved),
+                        string.IsNullOrWhiteSpace(payload.SelectionReason)
+                            ? $"The working calendar reported '{payload.Resolution}'."
+                            : payload.SelectionReason);
+                }
+
+                return new WorkingDayCheckResult(
+                    CycleCapacityResolutions.Resolved,
+                    isWorkingDay,
+                    Reasons(payload.ReasonCodes, CycleCapacityReasonCodes.CapacityOk),
+                    string.IsNullOrWhiteSpace(payload.SelectionReason)
+                        ? $"{date:yyyy-MM-dd}: working day = {isWorkingDay}."
+                        : payload.SelectionReason,
+                    IsHalfDay: isWorkingDay && IsHalfDay(payload));
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException
+                                       or NotSupportedException)
+        {
+            return Unchecked(
+                CycleCapacityResolutions.CalendarUnresolved,
+                CycleCapacityReasonCodes.CalendarUnresolved,
+                "The working calendar could not be reached.");
+        }
+
+        return Unchecked(
+            CycleCapacityResolutions.CalendarUnresolved,
+            CycleCapacityReasonCodes.CalendarUnresolved,
+            "The working calendar could not be reached.");
+    }
+
+    private string BuildPath(
+        string countryCode, Guid? legalEntityId, DateOnly from, DateOnly? to, string operation = Operation)
     {
         var query =
-            $"?op={Operation}"
+            $"?op={operation}"
             + $"&date={from:yyyy-MM-dd}"
-            + $"&toDate={to:yyyy-MM-dd}"
+            + (to is { } toDate ? $"&toDate={toDate:yyyy-MM-dd}" : string.Empty)
             + $"&countryCode={Uri.EscapeDataString(countryCode)}";
 
         // The optional narrowing, and the ONLY one passed. A business unit is never sent as organizationUnitId: it is
@@ -241,10 +353,23 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter
         }
     }
 
+    /// <summary>The platform's reason code for a half day it treats as a working day (CAND-CAP-0008 contract).</summary>
+    private const string HalfDayTreatedAsWorking = "half_day_treated_as_working";
+
+    /// <summary>WP-VP-3B (MK-9) — the platform's half-day signal, read from what its resolve payload already carries (no
+    /// platform change): the governing holiday's <c>isHalfDay</c>, or the reason code it emits for a half day it counts
+    /// as working.</summary>
+    private static bool IsHalfDay(WorkingDayResolvePayload payload)
+        => payload.Holiday?.IsHalfDay == true
+           || (payload.ReasonCodes?.Contains(HalfDayTreatedAsWorking, StringComparer.OrdinalIgnoreCase) ?? false);
+
     private static IReadOnlyList<string> Reasons(IReadOnlyList<string>? platformCodes, string fallback)
         => platformCodes is { Count: > 0 } ? platformCodes : new[] { fallback };
 
     private static WorkingDayCountResult Unresolved(string resolution, string reasonCode, string reason)
+        => new(resolution, null, new[] { reasonCode }, reason);
+
+    private static WorkingDayCheckResult Unchecked(string resolution, string reasonCode, string reason)
         => new(resolution, null, new[] { reasonCode }, reason);
 
     private static bool IsTransient(HttpStatusCode status)
@@ -257,6 +382,11 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter
     private sealed record WorkingDayResolvePayload(
         string Resolution,
         int? WorkingDayCount,
+        bool? IsWorkingDay,
         string? SelectionReason,
-        IReadOnlyList<string>? ReasonCodes);
+        IReadOnlyList<string>? ReasonCodes,
+        // WP-VP-3B — only the half-day flag of the governing holiday is read.
+        HolidayPayload? Holiday = null);
+
+    private sealed record HolidayPayload(bool IsHalfDay);
 }

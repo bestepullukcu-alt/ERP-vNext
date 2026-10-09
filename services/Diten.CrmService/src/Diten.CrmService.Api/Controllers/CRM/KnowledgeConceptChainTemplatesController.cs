@@ -5,6 +5,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Perms = Diten.CrmService.Application.Features.Knowledge.Concept.ConceptPermissions;
+using PathPerms = Diten.CrmService.Application.Features.Knowledge.Path.KnowledgePathPermissions;
+using JourneyPerms = Diten.CrmService.Application.Features.Knowledge.ContentEngagementJourney.ContentEngagementJourneyPermissions;
 
 namespace Diten.CrmService.Api.Controllers.CRM;
 
@@ -35,6 +37,22 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
     public async Task<IActionResult> Get(Guid templateId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new GetConceptChainTemplateQuery(templateId), cancellationToken));
+
+    /// <summary>WP-KP-CH-1 — the "Outputs" read: the knowledge paths built from this chain version (KP-1 ChainRef), the
+    /// journeys using them (KP-3 usage rule) and the COUNT of upcoming planned visits telling them. Read only. Without
+    /// the path / journey read permission that section is its count only (<c>…Restricted</c>).</summary>
+    [HttpGet("api/crm/knowledge/concept-chain-templates/{templateId:guid}/outputs")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> Outputs(
+        Guid templateId, [FromQuery] bool includeOtherVersions = false, CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetConceptChainTemplateOutputsQuery(
+                templateId,
+                includeOtherVersions,
+                CanReadPaths: PermissionClaims.HasPermission(User, PathPerms.Read),
+                CanReadJourneys: PermissionClaims.HasPermission(User, JourneyPerms.Read)
+                                 || PermissionClaims.HasPermission(User, JourneyPerms.ReadFallback)),
+            cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-chain-templates")]
     [HasPermission(Perms.TemplateManage)]

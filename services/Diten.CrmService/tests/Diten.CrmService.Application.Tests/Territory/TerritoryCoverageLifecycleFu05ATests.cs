@@ -5,6 +5,7 @@ using Diten.CrmService.Application.Features.Territory.AccountAssignments;
 using Diten.CrmService.Application.Features.Territory.AccountAssignments.Handlers;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
+using Diten.CrmService.Application.Tests.VisitScope;
 using Xunit;
 
 namespace Diten.CrmService.Application.Tests.Territory;
@@ -272,7 +273,7 @@ public sealed class TerritoryCoverageLifecycleFu05ATests
         var accounts = new FakeAccountRepo();
         accounts.Items.Add(NewAccount(fx.AccountId));
         var handler = new GetAccountListHandler(
-            TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models);
+            TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models, new FakeTerritoryNodeRepo(), new InMemoryAccountContactLinks(), new InMemoryContacts());
 
         var withActiveModel = await handler.Handle(new GetAccountListQuery(null, 1, 25), default);
         Assert.Equal("ZONE-1", withActiveModel.Data!.Items[0].TerritoryNodeCode);
@@ -292,7 +293,7 @@ public sealed class TerritoryCoverageLifecycleFu05ATests
         var accounts = new FakeAccountRepo();
         accounts.Items.Add(NewAccount(fx.AccountId));
         accounts.Items.Add(NewAccount(other));
-        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models);
+        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models, new FakeTerritoryNodeRepo(), new InMemoryAccountContactLinks(), new InMemoryContacts());
 
         // Match on the seeded account's node id → only that account (recordsFiltered 1, recordsTotal 2).
         var match = await handler.Handle(
@@ -315,7 +316,7 @@ public sealed class TerritoryCoverageLifecycleFu05ATests
         fx.Model.CountryScope = "TR";
         var accounts = new FakeAccountRepo();
         accounts.Items.Add(NewAccount(fx.AccountId));
-        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models);
+        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models, new FakeTerritoryNodeRepo(), new InMemoryAccountContactLinks(), new InMemoryContacts());
 
         var match = await handler.Handle(new GetAccountListQuery(null, 1, 25, CountryScope: "tr"), default);
         Assert.Single(match.Data!.Items);
@@ -336,7 +337,7 @@ public sealed class TerritoryCoverageLifecycleFu05ATests
         fx.Model.CountryScope = "TR";
         var accounts = new FakeAccountRepo();
         accounts.Items.Add(NewAccount(fx.AccountId));
-        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models);
+        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models, new FakeTerritoryNodeRepo(), new InMemoryAccountContactLinks(), new InMemoryContacts());
 
         // Both chips point at the same coverage → still the one account.
         var both = await handler.Handle(new GetAccountListQuery(

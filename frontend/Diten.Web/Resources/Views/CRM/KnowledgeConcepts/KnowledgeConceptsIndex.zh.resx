@@ -234,7 +234,6 @@
   <data name="KnowledgePaths" xml:space="preserve"><value>知识路径</value></data>
   <data name="Journeys" xml:space="preserve"><value>旅程</value></data>
   <data name="Visits" xml:space="preserve"><value>拜访</value></data>
-  <data name="OutputsNoSource" xml:space="preserve"><value>目前尚无将这些记录关联到链模板的数据源。</value></data>
   <data name="DataFlow" xml:space="preserve"><value>数据流</value></data>
   <data name="FlowSubject" xml:space="preserve"><value>主题</value></data>
   <data name="FlowConceptGraph" xml:space="preserve"><value>概念图</value></data>
@@ -273,4 +272,24 @@
   <data name="ChainStatusDraft" xml:space="preserve"><value>草稿</value></data>
   <data name="ChainStatusPublished" xml:space="preserve"><value>已发布</value></data>
   <data name="ChainStatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="OutputsAfterSave" xml:space="preserve"><value>保存模板后将显示产出。</value></data>
+  <data name="OutputsRestricted" xml:space="preserve"><value>详细信息已隐藏 — 您无权读取。</value></data>
+  <data name="OutputsChainVersion" xml:space="preserve"><value>链 {0}</value></data>
+  <data name="OutputsCurrentRelease" xml:space="preserve"><value>当前发布</value></data>
+  <data name="OutputsStageCount" xml:space="preserve"><value>{0} 个阶段</value></data>
+  <data name="OutputsPathCount" xml:space="preserve"><value>{0} · {1} 已发布</value></data>
+  <data name="OutputsPlannedVisits" xml:space="preserve"><value>{0} 次计划拜访</value></data>
+  <data name="OutputsAllVersions" xml:space="preserve"><value>同时显示其他版本</value></data>
+  <data name="PathStatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="PathStatusReview" xml:space="preserve"><value>审核中</value></data>
+  <data name="PathStatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="PathStatusPublished" xml:space="preserve"><value>已发布</value></data>
+  <data name="PathStatusInactive" xml:space="preserve"><value>停用</value></data>
+  <data name="PathStatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>审核中</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>已发布</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>已归档</value></data>
 </root>
