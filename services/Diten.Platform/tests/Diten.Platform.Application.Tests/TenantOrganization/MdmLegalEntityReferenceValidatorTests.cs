@@ -100,6 +100,48 @@ public sealed class MdmLegalEntityReferenceValidatorTests
         Assert.Equal(404, response.StatusCode);
     }
 
+    /*
+     * Q480 — A REFUSED CALLER IS NOT A MISSING ENTITY.
+     *
+     * This validator forwards the CALLER's own token, so MDM answers 401/403 when the human lacks
+     * mdm.legal-entities.read. Until now every non-2xx collapsed into the same 404 "not referenceable", which
+     * reports a permission gap as a record that does not exist. R-2 drew exactly this line on the SupplyChain
+     * side (403 → 503 DEPENDENCY_UNAVAILABLE); this is the same line here.
+     *
+     * Measured live on 2026-10-10 against a real MDM: a token carrying platform.organization-units.create but
+     * not mdm.legal-entities.read got 403 from MDM directly, while Platform answered 404 for a legal entity
+     * that existed and was Active.
+     *
+     * SABOTAGE: delete the Unauthorized/Forbidden branch in MdmLegalEntityReferenceValidator and these two
+     * cases go red with 404, which is the old behaviour.
+     */
+    [Theory]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    public async Task A_caller_MDM_refuses_is_unavailable_and_never_reported_as_not_referenceable(HttpStatusCode refusal)
+    {
+        var validator = CreateValidator(new HttpResponseMessage(refusal));
+
+        var response = await validator.ValidateAsync(LegalEntityId);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(503, response.StatusCode);
+        Assert.Equal("Legal entity validation is unavailable.", Assert.Single(response.Errors));
+    }
+
+    // The other side of the same line: MDM answering 404 IS a statement about the entity, and keeps saying so.
+    [Fact]
+    public async Task MDMs_own_404_stays_not_referenceable()
+    {
+        var validator = CreateValidator(new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        var response = await validator.ValidateAsync(LegalEntityId);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(404, response.StatusCode);
+        Assert.Equal("Legal Entity is not referenceable.", Assert.Single(response.Errors));
+    }
+
     [Fact]
     public async Task Validate_preserves_caller_cancellation()
     {

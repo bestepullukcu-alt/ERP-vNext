@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -112,6 +113,26 @@ public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceVali
             budget.CancelAfter(TotalTimeout);
 
             using var response = await _httpClient.SendAsync(request, budget.Token);
+
+            // Q480: MDM REFUSING THE CALLER IS NOT A STATEMENT ABOUT THE LEGAL ENTITY. This validator forwards the
+            // caller's own token (AttachCallerAuthorization), so 401/403 mean the human lacks
+            // mdm.legal-entities.read — not that the entity is missing, archived or another tenant's. Collapsing
+            // that into "not referenceable" is Q420's distinction lost, and R-2 already drew it on the SupplyChain
+            // side by answering 503 DEPENDENCY_UNAVAILABLE instead.
+            // Measured live 2026-10-10: a token carrying platform.organization-units.create but NOT
+            // mdm.legal-entities.read got 403 from MDM directly, while Platform reported 404 "not referenceable"
+            // for a legal entity that exists and is Active.
+            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            {
+                _logger.LogWarning(
+                    "Legal Entity reference check was refused by MDM for this caller, so the reference is unknown "
+                    + "rather than absent. Status={StatusCode} LegalEntityId={LegalEntityId}",
+                    (int)response.StatusCode,
+                    legalEntityId);
+
+                return Unavailable();
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 return FailClosed();
@@ -153,6 +174,16 @@ public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceVali
 
     private static Response<LegalEntityReferenceDto> FailClosed() =>
         Response<LegalEntityReferenceDto>.Fail("Legal Entity is not referenceable.", 404);
+
+    // MDM could not answer ABOUT the entity, because it refused the caller. Kept separate from FailClosed so a
+    // permission gap is never reported as a missing record.
+    //
+    // ⚠ SCOPE, STATED. The other fail-closed paths — transport, timeout, malformed payload, id mismatch, and "no
+    // tenant to name" — deliberately keep their single 404 shape, and this project's tests pin each of them
+    // (MdmLegalEntityReferenceValidatorTests). Several of those are arguably "could not answer" too; widening the
+    // taxonomy that far is a separate decision and is NOT taken here. Only the caller-refusal case moves.
+    private static Response<LegalEntityReferenceDto> Unavailable() =>
+        Response<LegalEntityReferenceDto>.Fail("Legal entity validation is unavailable.", 503);
 
     private sealed record MdmResponse<T>(T? Data, int StatusCode, bool IsSuccessful, IReadOnlyList<string> Errors);
 }
