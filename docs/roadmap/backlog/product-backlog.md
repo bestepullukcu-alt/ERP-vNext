@@ -8248,6 +8248,36 @@ Gelecek regresyon riski: 🟢 bugün kapalı başarısız. Bağlanmazsa canlıda
 
 ---
 
+### BL-586
+
+**Yan panel (offcanvas) formlarında Enter kaydetmiyor; kullanıcı Kaydet / Tamam düğmesine tıklamak zorunda**
+
+DURUM: AÇIK · SAHİP: CT (ortak ön yüz) · BULAN: sahip (YH1, 2026-10-09, Kullanıcılar → Yeni) · KAYIT: 2026-10-09
+
+Ölçüm:
+- Kaydet düğmeleri formun gönder düğmesi değil, `type="button"`: ör. `Views/Governance/Users/_CreateEditOffcanvas.cshtml:109` `btnSaveUser`.
+- Bu yüzden tarayıcının Enter ile gönderme davranışı çalışmıyor.
+- Ortak bir yan panel davranışı yok; her sayfa kendi düğmesini bağlıyor.
+
+CT önerisi (ortak bileşende TEK yerde, bütün yan panel formları için):
+- Tek satırlık alanda Enter = birincil işlem (Kaydet / Tamam).
+- İstisnalar:
+  - çok satırlı alanda (textarea) Enter yeni satırdır; Ctrl / Cmd + Enter kaydeder;
+  - açık açılır liste / select2 / tarih seçicide Enter seçimi yapar;
+  - IME (Çince vb.) yazım sırasında Enter yok sayılır.
+- Kaydetme sürerken düğme pasif (çift gönderim yok).
+- Esc paneli kapatır, değişiklik varsa sorar (var olan davranış ölçülür).
+- Kısayol katmanına (`diten-shortcuts.js`, BL-495 yardım paneli) yazılır.
+- Kural dosyasına eklenir: yeni sayfa bu davranışı ortak bileşenden alır.
+
+Karşılaştırma:
+- HTML'in kendi kuralı: bir gönder düğmesi olan formda Enter formu gönderir. Kullanıcı bunu bekler.
+- SAP Fiori ve Oracle Redwood iletişim kutularında birincil işlem vurgulanır; Enter davranışı alan türüne göre değişir (doğrulanmadı).
+
+Gelecek regresyon riski: 🟡 (bütün formlara dokunur). Sayfa başına değil ortak bileşende yapılmalı; yanlışlıkla erken kaydetmeye karşı yukarıdaki istisnalar şart.
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
