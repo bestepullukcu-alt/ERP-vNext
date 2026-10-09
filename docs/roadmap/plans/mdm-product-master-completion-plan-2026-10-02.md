@@ -139,6 +139,23 @@ ekibine "hazır" denir: Prism köprüsünü kaldırıp gerçek MDM'ye karşı G1
 | S6 | Birim çevrimi doğrulamaları | zincir, yönlü çevrim, ondalık hassasiyet (P2'nin stoğa dönük kısmı) |
 | S7 | Dev verisi + "hazır" | R-07 adımları (sahip girer) + stok ekibine bildirim |
 
+## 4b. Durum (2026-10-09)
+
+| Paket | Durum | Kanıt |
+|---|---|---|
+| P0 | Yedisi kodda kabul edildi (takeover dalı) | GP + Marka + LSKU / FG + Kapsam: `314d8db2d` … `650cd0637`, `0a147c8fc`, `28c939d21`. Hatta birleştirme sürüyor (`chore/ct-round-2-tko-merge`); dev ve canlı tek PR'la |
+| S0 | Bitti | sözleşme v1.1 taslağı + FU04 paketi (hat) |
+| S1 | Bitti | `e30eee4bc` |
+| S3 | Bitti | `88ff37f07` |
+| Kalem listeleri (MOD-0048-FU01) | Bitti | `bef99c3ef` |
+| Stok izinleri (BL-573) | Kabul edildi; takeover'a birleştiriliyor | `8c0465aad` |
+| S4 | Sohbette sürüyor | worktree `product-master-reads` |
+| S2, S5, S6, S7 | Sırada | — |
+| P3–P11 | Başlamadı | §5 |
+| Elektronik imza (§8) | Sahip kararıyla beklemede (2026-10-03) | — |
+
+Açık: §9 karar 2 (ruhsat bileşiminin kaynağı); §10 onay tablosunda yalnız stok imzası var. Sahibe 2026-10-09'da sorulan MOD-0290 soru 1 (iki ürün kaydı) P8'i belirler (`docs/reference/modules/tenant/MOD-0290-urun-kalem-sku-haritasi.md` §4).
+
 ## 5. Sıra
 
 | Faz | Paketler | Neden bu sırada |
