@@ -384,6 +384,8 @@ public sealed class VisitWorkspaceW2Tests
         var drafts = res.Data.Visits.Where(v => v.WorkStatus == VisitWorkspaceLimits.DraftWorkStatus).ToList();
         Assert.Equal((true, "11:15"), (drafts.Single(d => d.PlannedDate == "2026-10-20").IsPinned, drafts.Single(d => d.PlannedDate == "2026-10-20").PinnedTime));
         Assert.Null(drafts.Single(d => d.PlannedDate == "2026-10-21").PinnedTime);
+        // CT (live E4) — the ISO week number, not the index inside the window
+        Assert.Equal(new[] { 42, 43 }, res.Data.Weeks.OrderBy(x => x.WeekStart).Select(x => x.WeekNumber));
     }
 
     [Fact]
@@ -504,6 +506,31 @@ public sealed class VisitWorkspaceW2Tests
         var foreign = Seed(Today, resource: "rep-2");
         Assert.Equal(404, (await new GetRescheduleOptionsHandler(TenantCtx(), _plans, RepCaller(), Days(), Clock())
             .Handle(new GetRescheduleOptionsQuery(foreign.Id), default)).StatusCode);
+    }
+
+    [Fact]
+    public async Task A7b_a_draft_week_day_carries_the_draft_plan_load()
+    {
+        // CT (live E4) — a draft week's day must not look empty: the preview day minutes and the preview visits count.
+        var plan = Seed(Today);
+        Seed(new DateOnly(2026, 10, 20), status: PlannedVisitStatus.Cancelled); // cancelled = no load
+        var preview = PreviewWith(
+            weeks: new[] { ("2026-10-19", PlanningWeekDisplayStatus.Draft) },
+            scheduled: new[] { Slot("2026-10-20", 1, isFixed: false), Slot("2026-10-20", 1, isFixed: false), Slot("2026-10-20", 1, isFixed: true) },
+            unscheduledInWeek: 0) with
+        {
+            Days = new[] { new PlanningDayPreview("2026-10-20", "2026-10-19", PlanningDayKinds.Working, 480, 300, 180, false) }
+        };
+
+        var res = await new GetRescheduleOptionsHandler(
+                TenantCtx(), _plans, RepCaller(), Days(), Clock(), _sessions, new FixedPreview(preview))
+            .Handle(new GetRescheduleOptionsQuery(plan.Id), default);
+
+        Assert.True(res.IsSuccessful);
+        var tuesday = res.Data!.Days.Single(d => d.Date == "2026-10-20");
+        Assert.Equal((2, 300, 480), (tuesday.PlannedCount, tuesday.PlannedMinutes, tuesday.CapacityMinutes));
+        var friday = res.Data.Days.Single(d => d.Date == "2026-10-16"); // not a draft-week day: the written load only
+        Assert.Equal(0, friday.PlannedCount);
     }
 
     // ═══ reasons read + contract + keys ═════════════════════════════════════════════════════════════════════

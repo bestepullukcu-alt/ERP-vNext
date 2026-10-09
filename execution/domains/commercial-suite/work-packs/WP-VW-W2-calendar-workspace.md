@@ -391,3 +391,21 @@ Geri alındı, touch yapıldı; tam tur yeşil.
 5. **Durum hataları:**
    - 48 sa son tarih geçtiyse iki adım da `409 visit_report_deadline_passed` (read-all muaf);
    - taslak yoksa ya da sonucu farklıysa 2. adım `409 visit_report_invalid_transition` döner.
+
+### §37 ek — W2-BE-a canlı E4 (2026-10-09, CT ayrı sekme, yalnız okuma) + CT düzeltmeleri
+- **Referans seti:** `visit-outcome-reason` 97c5'te yayımlanmış, 10 değer (8 aktif + 2 pasif), 7 dil etiketi dolu (Mongo okuması).
+- **`contract`:** 10 workStatus (draft dahil), 13 hata kodu, `maxNoteLength` 500, `rescheduleOptionDays` 8.
+- **`reasons`:**
+  - `appliesTo=reschedule&lang=tr` → 7 neden (`target_inactive` yok, `other*`);
+  - `cancel&lang=ar` → Arapça etiketler;
+  - `xyz` → `400 visit_reason_applies_to_invalid`.
+- **`calendar`** (5–25 Eki):
+  - 165 ziyaret: 41. hafta 33 `missed` + 21 `today`, 12 Eki 3 `cancelled`, 42 ve 43. hafta 54'er `draft` (ürün adları dolu);
+  - 26 Eki – 1 Kas: 29 Eki `isHoliday`, hafta kapasitesi 1840 (4 gün);
+  - 60 günlük pencere → 400.
+- **Canlı bulgu → CT düzeltmesi (commit aşağıda):**
+  1. `weeks[].weekNumber` penceredeki sıra numarasıydı (1, 2, 3…). Artık ISO hafta numarası (44). Test: `A6b` (42, 43).
+  2. `reschedule-options` taslak haftaların yükünü saymıyordu (12–21 Eki günleri 0 / 460 görünüyordu, oysa taslak plan dolu). Artık taslak hafta gününde önizlemenin dakikası ve ziyaret sayısı geliyor (takvim okumasıyla aynı kaynak). Test: `A7b`.
+- **CT sabotajları:** taslak yükü kapatıldı + hafta numarası 1 yapıldı → 2 kırmızı (`A7b`, `A6b`). Geri alındı, touch yapıldı.
+- CRM **2543/0/5** (iki tam tur).
+- **Bilinen sınır:** `holidayName` boş (çalışma takvimi okuması adı taşımıyor). Web "Tatil" yazar.

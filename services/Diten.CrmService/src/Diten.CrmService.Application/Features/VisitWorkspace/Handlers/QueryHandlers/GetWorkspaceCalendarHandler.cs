@@ -251,9 +251,10 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
         var mayApply = _caller.HasPermission(VisitPlanningPermissions.Apply)
                        && _caller.HasPermission(VisitPlanningPermissions.PlannedVisitManage);
         var weeksOut = new List<WorkspaceWeekDto>();
-        var number = 1;
-        for (var monday = PlanningWeekCalendar.MondayOf(from); monday <= to; monday = monday.AddDays(7), number++)
+        for (var monday = PlanningWeekCalendar.MondayOf(from); monday <= to; monday = monday.AddDays(7))
         {
+            // CT (live E4) — the ISO week number ("44. Hafta"), not the week's index inside the window
+            var number = System.Globalization.ISOWeek.GetWeekOfYear(monday.ToDateTime(TimeOnly.MinValue));
             var inWeek = days.Where(d => PlanningWeekCalendar.MondayOf(DateOnly.Parse(d.Date)) == monday).ToList();
             var weekVisits = visits.Count(v => v.WeekStart == monday.ToString("yyyy-MM-dd")
                                                && v.WorkStatus != VisitWorkStatus.Cancelled);
