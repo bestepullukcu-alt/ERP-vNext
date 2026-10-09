@@ -43,7 +43,14 @@ public sealed class CreateOrganizationUnitCommandHandler : IRequestHandler<Creat
         }
 
         var legalEntity = await _legalEntityValidator.ValidateAsync(request.Request.LegalEntityId, ct);
-        if (!legalEntity.IsSuccessful || legalEntity.Data?.Referenceable != true)
+        // Q480: carry the validator's OWN answer. Flattening every failure to 404 here is what made MDM refusing
+        // the caller (403, no mdm.legal-entities.read) look like a legal entity that does not exist.
+        if (!legalEntity.IsSuccessful)
+        {
+            return Response<Guid>.Fail(legalEntity.Errors, legalEntity.StatusCode);
+        }
+
+        if (legalEntity.Data?.Referenceable != true)
         {
             return Response<Guid>.Fail("Legal Entity is not referenceable.", 404);
         }

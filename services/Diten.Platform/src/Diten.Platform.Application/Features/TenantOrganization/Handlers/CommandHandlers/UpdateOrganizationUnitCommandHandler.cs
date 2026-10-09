@@ -58,7 +58,14 @@ public sealed class UpdateOrganizationUnitCommandHandler : IRequestHandler<Updat
         }
 
         var legalEntity = await _legalEntityValidator.ValidateAsync(request.Request.LegalEntityId, ct);
-        if (!legalEntity.IsSuccessful || legalEntity.Data?.Referenceable != true)
+        // Q480: see CreateOrganizationUnitCommandHandler — the validator's status travels, so a caller refused by
+        // MDM gets 503, not a 404 that claims the entity is absent.
+        if (!legalEntity.IsSuccessful)
+        {
+            return Response<NoContent>.Fail(legalEntity.Errors, legalEntity.StatusCode);
+        }
+
+        if (legalEntity.Data?.Referenceable != true)
         {
             return Response<NoContent>.Fail("Legal Entity is not referenceable.", 404);
         }
