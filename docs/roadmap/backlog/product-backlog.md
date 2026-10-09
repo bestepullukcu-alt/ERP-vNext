@@ -8235,6 +8235,15 @@ Yapılacak (stok sözleşmesi dondurulunca):
 - Açılış uyarısı.
 - Testler: sözleşme fikstürüyle istek / cevap bağlama; sabotaj.
 
+**2026-10-09 stok ekibinin cevabı:** iki güvenlik şartı bağlayıcı olarak kabul edildi.
+- Yalnız bu uca açık ayrı anahtar (`ditenmdmservice`).
+- Sabit süreli karşılaştırma, sır günlüğe yazılmaz, canlıda https, tek tip 401, geçersiz `X-Tenant-Id` 400.
+- Döndürme için aynı kimliğe iki geçerli sır.
+- `skuLevel` zorunlu: Item / Gsku / Lsku / FinishedGood.
+- Dev anahtar betiği stok ekibinde; sır iki tarafa ekibin parola yöneticisiyle gider; canlı sırrı ortam yöneticisi girer.
+
+Zamanlama: uç, stok ekibinin karantina ekranları işi kabul edildikten sonra ilk iş. Sonra INVENTORY-BUNDLE 1.1.0 dondurulur ve "hazır" bildirilir; bu iş o zaman başlar.
+
 Gelecek regresyon riski: 🟢 bugün kapalı başarısız. Bağlanmazsa canlıda hiçbir kalem emekliye ayrılamaz (işlevsel eksik).
 
 ---
