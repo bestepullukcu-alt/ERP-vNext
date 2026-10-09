@@ -8331,11 +8331,13 @@ Gelecek regresyon riski: 🔴 (yetkisiz erişim penceresi canlıda var).
 
 ### BL-588
 
-**Canlı: oluşturma ekranında tarih seçici ilk tıklamada açılmıyor, ikinci tıklamada açılıyor**
+**Canlı: Görev Merkezi'nde bitiş tarihi ilk seçimde alana gelmiyor; aynı tarih ikinci kez seçilince geliyor**
 
 DURUM: AÇIK · SAHİP: CT (ortak ön yüz) · BULAN: canlı kullanıcılar (sahip iletti, 2026-10-09) · KAYIT: 2026-10-09
 
 Hangi ekran: **Görev Merkezi** (sahip teyit etti, 2026-10-09; muhtemelen "+ Yeni ▸ Görev" hızlı oluşturma paneli). Görev Merkezi düzeltme turunda BL-589 ile birlikte ele alınır (sahip: "oraya gelince başka buglar da var").
+
+**Sahibin kesin tarifi (2026-10-09):** Görev Merkezi'nde bitiş tarihi seçiliyor; ilk seçimde seçilen tarih alana GELMİYOR, seçici yeniden açılıp tarih ikinci kez seçilince geliyor. Kusur "açılmama" değil, ilk seçimin alana yazılmaması. **Görev Merkezi düzeltme turunda yapılacak** (sahip kararı).
 
 Ortak tarih alanı `assets/js/shared/diten-datefield.js` + flatpickr (`_LayoutTenantShell`). Olası sebep: seçicinin ilk tıklamada kurulup açılmaması (tembel bağlama) ya da yan panel / iletişim kutusu içinde ilk odakta konum hesaplaması. Ölç, canlı sürümüyle aynı dalda yeniden üret, düzelt. Bütün tarih alanlarına ortak bileşende tek düzeltme.
 
