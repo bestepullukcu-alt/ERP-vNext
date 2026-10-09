@@ -16,7 +16,7 @@ info:
     satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
     tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
     kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
-  version: 1.1.0-draft.14
+  version: 1.1.0-draft.15
   x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
@@ -92,6 +92,9 @@ info:
     - date: "2026-10-10"
       version: 1.1.0-draft.14
       note: "S4 FIX2 incelemesi (CT kararları): `q` kontrol karakteri aralığına U+007F–U+009F eklendi; `totalCount` eşleşen kayıt sayısıdır, okunamayan kayıt sayılır ama gösterilmez; yalnız okunamayan kayıt içeren sayfa 503. Şema türleri değişmedi."
+    - date: "2026-10-10"
+      version: 1.1.0-draft.15
+      note: "IU kabul edildi (WP-PLT-ITEM-LISTS-02): birim notu `CodeStandard` (`IU` LOCAL, diğerleri UNECE_REC20), `IU`'nun kendi boyutu (`BIOLOGICAL_ACTIVITY`, kütleden türetilmez) ve liste sürümü `ITEM-UNIVERSAL-V2` ile güncellendi. Şema değişmedi."
 servers:
   - url: /api/product-master
 security:
