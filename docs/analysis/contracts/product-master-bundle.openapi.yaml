@@ -16,7 +16,7 @@ info:
     satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
     tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
     kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
-  version: 1.1.0-draft.9
+  version: 1.1.0-draft.10
   x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
@@ -30,7 +30,7 @@ info:
     - "Stok tarafının seviye kuralları (stok ekibi, 2026-10-09 — bilgi; MDM uygulamaz): GSKU seviyesinde stok hareketi yalnız ürünün seri bayrağı açıkça false ise yapılır; true ya da null ise hareket LSKU / Bitmiş Ürün seviyesindedir. GSKU'da `serialControlled: null` 'bu seviyede uygulanmaz' demektir, 'bilinmiyor' değil. Lot bayrağı bilinmiyorsa giriş reddedilir. Hammadde ve ambalaj kalemleri `Item` seviyesinde stoklanır (`skuId == itemId`, `skuLevel: Item`)."
     - "Çevrim kuralı (draft.8, stok ekibi L-03): etkin (Active) kayıtta birim çevrimi yalnız EKLENİR; var olan çevrim değiştirilmez ve silinmez. Bu yüzden çevrimin sürümü yoktur ve v1.1'de `effectiveFrom` / `effectiveTo` null'dur. v1.2'de her çevrime kararlı bir `conversionId` ve `getSkuUom`'a `asOf` parametresi eklenecek (BL-584); planlama sürüm yerine bunları kullanır. Taslak kayıtta çevrimler serbestçe düzenlenebilir."
     - "Sözleşme kapsamı: `/stockable-items`, `/items/{itemId}` ve `/skus/bulk-read` bu sözleşmenin (v1.1) parçasıdır, MDM'in iç uçları değildir; stoğun hareket formundaki ürün seçicisi `/stockable-items`'ı kullanır (W-UI-01 feragati kalkar)."
-    - "`itemKind` (draft.9): MDM v1.1 sunucusu `ProductRef`, `SkuRef`, `SkuProductLink`, arama ve toplu okuma satırlarında `itemKind`'ı HER ZAMAN yazar; alan v1.0 uyumu için şemada zorunlu değildir. Tüketici `itemKind` yoksa GlobalProduct sayar."
+    - "`itemKind` (draft.9 / draft.10): MDM v1.1 sunucusu `ProductRef`, `SkuRef`, `SkuProductLink`, arama ve toplu okuma satırlarında `itemKind`'ı HER ZAMAN yazar (toplu okuma satırına `itemId` + `itemKind` draft.10'da eklendi); toplu okumada tekrarlanan kimlik ilk geçtiği yerde bir kez cevaplanır; alan v1.0 uyumu için şemada zorunlu değildir. Tüketici `itemKind` yoksa GlobalProduct sayar."
     - "v1.0 türü ve boş ürün (draft.9): v1.0 `ProductRef.lotControlled` / `serialControlled` boolean'dır. Emekli olmayan SKU'su olmayan Global Üründe v1.1 sunucusu bu iki alanı null döndürür (şüphede evet kuralının 'SKU yok' durumu). SKU'su olmayan üründe stok hareketi yapılamaz (stok ekibi, 2026-10-09). Bu, v1.0 türüne karşı bilinçli bir istisnadır."
     - "Hata kodları (draft.9, açık liste): `UNKNOWN_ITEM` / `UNKNOWN_SKU` (404); `INVALID_UUID` / `INVALID_PARAMETER` / `BATCH_LIMIT_EXCEEDED` / `TENANT_CONTEXT_REQUIRED` (400); `PRODUCT_MASTER_UNAVAILABLE`, `LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE`, `PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID` (503). Liste büyüyebilir. Tüketici bilinmeyen 4xx'i ret, bilinmeyen 5xx'i 'cevap yok' sayar (kapalı başarısız)."
     - "Kalemsiz birim denetimi (X-04): malzeme kaleminin birimi ve çevrimleri `getSkuUom(skuId = itemId)` ile okunur (kalem kendi SKU'sudur). Global Ürünün kendi birimi yoktur; birim ve çevrim GSKU düzeyindedir. Satır yalnız `itemId` + birim taşıyorsa (RFx, BOM bileşeni) ve kayıt bir kalemse aynı çağrı kullanılır. `validateRefs`'e birim denetimi v1.2'de değerlendirilecek."
@@ -77,6 +77,9 @@ info:
     - date: "2026-10-09"
       version: 1.1.0-draft.9
       note: "S4 uygulamasının notları: getProduct işlem açıklaması OD-1'e göre güncellendi; `itemKind` her yanıtta yazılır (not); boş üründe lot / seri null istisnası; path / query işlemlerine 400 yanıtı; açık hata kodu listesi; arama satırında Gsku seri null. Şema türleri değişmedi (yalnız yanıt kodu ve açıklama eklemeleri)."
+    - date: "2026-10-09"
+      version: 1.1.0-draft.10
+      note: "Bağımsız inceleme (S4): BulkSkuReadItem'a `itemId` + `itemKind` eklendi (yalnız ekleme); toplu okumada tekrarlanan kimliğin bir kez cevaplanması notu."
 servers:
   - url: /api/product-master
 security:
@@ -593,6 +596,8 @@ components:
         canonicalCode: { type: string, description: "Opak; ayrıştırılmaz" }
         name: { type: string, description: "Yalnız gösterim içindir; ayrıştırılmaz, anahtar değildir. Item: kalemin adı. Ürün SKU'su: okuma anında türetilen görünen ad: Global Ürün adı · paket miktarı + birimi, LSKU'da + pazar kodu (MOD-0290-FU04 O-5)" }
         lifecycleStatus: { $ref: '#/components/schemas/LifecycleStatus' }
+        itemId: { type: string, format: uuid, description: "v1.1 (draft.10) — SKU'nun çözüldüğü Global Ürün ya da kalem (D-SKU-LINK); kalemde skuId ile aynı" }
+        itemKind: { $ref: '#/components/schemas/ItemKind' }
     BulkSkuReadResponse:
       type: object
       description: v1.1
