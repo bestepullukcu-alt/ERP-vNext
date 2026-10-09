@@ -8160,6 +8160,31 @@ Gelecek regresyon riski: 🟡 (GxP görev ayrımı canlıda rol ile kurulamıyor
 
 ---
 
+### BL-583
+
+**Ürün ana verisi okuma sözleşmesi servis kimliğiyle okunamıyor: Auth yalnız MDM'ye ve yalnız Platform hedef kitlelerine servis belirteci veriyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth + MDM) · BULAN: FU04 S4 ölçümü (2026-10-09) · KAYIT: 2026-10-09
+
+`/api/product-master` (S4) bugün yalnız kullanıcı belirteciyle (`mdm.product-master.read`) okunuyor. Stok servisi çağıranın belirtecini iletiyor (istek belgesi R-01), bu yüzden MVP-1 için yeterli. Ancak:
+- arka plan işleri (gece uzlaştırması, Satın Alma'nın otomatik GRN denetimi, BOM doğrulaması) kullanıcısız okur;
+- Auth'un servis belirteci yolu yalnız `Diten.MDM` istemcisine ve yalnız Platform hedef kitlelerine açık.
+
+Yapılacak:
+- tüketici servis istemcisi kaydı;
+- `mdm` hedef kitlesi;
+- salt okuma kapsamı;
+- kiracı izni (servis istemcisi kayıt deseni).
+Yeni güven yolu olduğu için güvenlik incelemesiyle.
+
+Karşılaştırma:
+- SAP: sistemler arası okuma teknik kullanıcı + yetki rolüyle yapılır.
+- Oracle: entegrasyon kullanıcısı + veri erişim kümesiyle yapılır.
+
+Gelecek regresyon riski: 🟡 (ilk kullanıcısız tüketici geldiğinde gerekecek).
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**

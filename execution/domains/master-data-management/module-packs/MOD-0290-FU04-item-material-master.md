@@ -946,6 +946,25 @@ bağlayıcı olan "CT kararı" sütunudur.
 6. **O-23** — İstek listeleriniz (R-01 … R-09, `mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md`)
    bizim git'te yok; dalınıza itebilir misiniz?
 
+#### Stok ekibinin yazılı cevabı (2026-10-09) ve CT kararları
+
+Kaynak: stok ekibinin istek belgesi §8 (R-01 … R-12, OD-1 … OD-7; sahip iletti). Sözleşme 1.1.0-draft.5 (hat `338171b3a`) bunlarla güncellendi.
+
+| # | Stok / kalite cevabı | CT kararı | Uygulayan |
+|---|---|---|---|
+| OD-1 | O-1'e koşullu evet: `lotControlled` / `serialControlled` `getProduct`'ta kalsın (deprecated), `getSku`'ya eklensin; v2.0'da kalkar | **Kabul.** Değer kuralı: emekli olmayan bütün GSKU'larda (seri: LSKU + FG) aynıysa o değer, değilse null; SKU geçerli | S4 |
+| R-04 | Bayraklar `[boolean, null]`, etkinleştirmeden önce zorunlu | **Kabul.** Active kayıtta seviyesinde uygulanan bayrak null olmaz. GSKU'da seri yok (null = uygulanmaz). Bayrağı boş eski etkin kayıt `stockable: false` | S2 (kalem), S3b (ürün) |
+| R-06 | `retestDays` / `minRemainingShelfLifeDays` GSKU'da, LSKU / FG devralır, isteğe bağlı | **Kabul** | S3b, S4 eşleme |
+| R-09 | `materialType` / `itemKind` enum; GTIN satış kutusunda (LSKU / FG) | **Kabul**; LSKU GTIN P6'ya kadar null; "bitmiş ürün" malzeme tipi değil (`itemKind: GlobalProduct`) | sözleşme |
+| R-10 | Tek durum listesi | **Kabul:** Draft / Active / Deactivated / Retired; Deactivated yalnız kalemde, onayla geri alınır | sözleşme; MOD-0290 ana paketindeki "tam dört durum" cümlesi takeover → hat birleştirmesinden SONRA düzeltilir |
+| R-11 | Alan bazında boş olabilirlik, LSKU mirası, FG kuralı, `level` | **Kabul**; `getSkuUom` `level` isteğe bağlı | sözleşme, S4 |
+| OD-2 | Önce push; MDM kodunu kendi dallarına alacaklar | **Push evet, birleştirme hayır** — sözleşme + Prism; MDM kodu tek PR ana dala girince ya da dev MDM üzerinden | sahip (push) |
+| OD-3 / OD-4 / OD-5 / OD-6 | Kullanım dışı / emekli hareketleri, lot bilinmiyor → ret, kalem = SKU | Kabul (stok uygular) | stok |
+| OD-7 | IU yerel kod (b); onaycı QA Müdürü; GxP ana veri | **Kabul**; QA Müdürü için vekil / en az iki kişi önerildi | IU: WP-PLT-ITEM-LISTS-02; S2 |
+| R-12 | Tüm tüzel kişilerde stok varlığı ucu stokta | Kabul; MDM beklentisi gönderildi (SKU + seviye; `hasNonZeroStock`, `coverage`, `asOf`; 2 sn bütçe; PARTIAL = cevap yok) | stok yazar |
+| D-3 | Stoklanabilir SKU seviyesi | Öneri: seri takipli ürünün stoğu GSKU'da tutulmaz (LSKU / FG); stok ekibine soruldu | açık |
+| — | Servisten servise okuma | Bu turda yok (Auth yalnız `Diten.MDM` → Platform hedef kitleleri); stok çağıranın belirtecini iletiyor | BL-583 |
+
 ### 25.2 Follow-up
 
 | # | Konu | Sahip | Regresyon riski |
