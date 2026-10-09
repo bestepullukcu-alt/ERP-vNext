@@ -8,6 +8,11 @@
 <script id="loads-l10n" type="application/json">
     @Json.Serialize(new Dictionary<string, string>
     {
+        @* R-2: the company selector label and its three messages. *@
+        ["LegalEntity"] = SharedLocalizer["LegalEntity"].Value,
+        ["LegalEntityUnavailable"] = SharedLocalizer["LegalEntityUnavailable"].Value,
+        ["LegalEntityNone"] = SharedLocalizer["LegalEntityNone"].Value,
+        ["LegalEntityRequired"] = SharedLocalizer["LegalEntityRequired"].Value,
         ["Status"] = SharedLocalizer["Status"].Value,
         ["ShowAll"] = SharedLocalizer["ShowAll"].Value,
         ["Apply"] = SharedLocalizer["Apply"].Value,

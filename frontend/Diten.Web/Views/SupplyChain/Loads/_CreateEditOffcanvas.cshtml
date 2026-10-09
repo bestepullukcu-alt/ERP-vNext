@@ -15,6 +15,14 @@
         <form id="formLoad" class="pt-0" novalidate>
             @Html.AntiForgeryToken()
             <div class="row g-4">
+                @* R-2: the company travels on the query, never in the body — the service rejects
+                   tenantId/legalEntityId body fields — so this select is not model-bound. *@
+                <div class="col-12">
+                    <label for="formLegalEntity" class="form-label fw-medium">
+                        @SharedLocalizer["LegalEntity"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="formLegalEntity" class="form-select" required></select>
+                </div>
                 <div class="col-12">
                     <label for="carrierId" class="form-label fw-medium">@Localizer["CarrierId"] <span class="text-danger">*</span></label>
                     <input id="carrierId" type="text" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" aria-describedby="carrierIdHelp" />

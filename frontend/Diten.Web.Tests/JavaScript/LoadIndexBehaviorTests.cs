@@ -23,6 +23,12 @@ public sealed class LoadIndexBehaviorTests
     [Fact]
     public void ReloadIsSafeAndListStatesAreDistinct()
     {
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): the company is a required scope on every call. Pinned here so the
+        // wiring cannot be removed silently — an unpinned scope is how the adapter and the page drift apart.
+        Assert.Contains("query.set('legalEntityId', legalEntityScope)", _script);
+        Assert.Contains("fetch(withScope(endpoint, createdScope)", _script);
+        Assert.Contains("'/SupplyChain/api/legal-entities'", _script);
+        Assert.Contains("if (!await loadLegalEntities()) return;", _script);
         Assert.Contains("ajax: (data, callback) => { void loadRows(data, callback); },", _script);
         Assert.Contains("document.getElementById('loadsSkeleton')", _script);
         Assert.Contains("if (response.status === 403) { showDenied(); callback({ data: [] }); return; }", _script);

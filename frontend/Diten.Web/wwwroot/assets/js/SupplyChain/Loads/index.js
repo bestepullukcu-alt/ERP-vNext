@@ -19,6 +19,10 @@ const LoadList = (function () {
     let L = window.L10n || {};
     let permissions = { canCreate: false };
     let appliedFilters = { status: '', carrierId: '' };
+    // R-2 (SHIPMENT-BUNDLE 3.2.0): a REQUIRED scope on every call, not an optional filter — the service takes
+    // exactly one X-Legal-Entity-Id, so there is no 'all companies' answer to ask for.
+    let legalEntities = [];
+    let legalEntityScope = '';
     let defaultViewRecord = null;
     let defaultViewState = null;
     let saveFilterArmed = false;
@@ -191,6 +195,7 @@ const LoadList = (function () {
             document.getElementById('filterCarrierId')?.classList.toggle('is-invalid', invalid);
             if (invalid) return;
             appliedFilters = { status: String($('#filterStatus').val() || ''), carrierId };
+            legalEntityScope = String($('#filterLegalEntity').val() || legalEntityScope);
             dt.ajax.reload(() => setSaveFilterVisible(isDirtyComparedToDefault(dt)), true);
             bootstrap.Collapse.getOrCreateInstance(document.getElementById(filterCollapseId), { toggle: false }).hide();
         });
@@ -203,10 +208,54 @@ const LoadList = (function () {
     };
     const buildListUrl = () => {
         const query = new URLSearchParams();
+        if (legalEntityScope) query.set('legalEntityId', legalEntityScope);
         if (appliedFilters.status) query.set('status', appliedFilters.status);
         if (appliedFilters.carrierId) query.set('carrierId', appliedFilters.carrierId);
         const text = query.toString();
         return text ? `${endpoint}?${text}` : endpoint;
+    };
+    const withScope = (url, scope) => {
+        const value = scope || legalEntityScope;
+        if (!value) return url;
+        return `${url}${url.includes('?') ? '&' : '?'}legalEntityId=${encodeURIComponent(value)}`;
+    };
+    // The create panel's own select scopes a create, not the list scope, or the panel's required changeable
+    // field would be decorative.
+    const formScope = () => String(document.getElementById('formLegalEntity')?.value || legalEntityScope || '');
+    const fillLegalEntitySelect = (element, selected) => {
+        if (!element) return;
+        element.innerHTML = '';
+        legalEntities.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            if (item.id === selected) option.selected = true;
+            element.appendChild(option);
+        });
+    };
+    const loadLegalEntities = async () => {
+        try {
+            const response = await fetch('/SupplyChain/api/legal-entities',
+                { credentials: 'same-origin', headers: getAuthHeaders() });
+            if (response.status === 401) { handleUnauthorized(); return false; }
+            if (!response.ok) { window.DtDefaults?.showError?.(L.LegalEntityUnavailable); return false; }
+            const payload = await readJson(response);
+            const rows = Array.isArray(payload) ? payload : (payload?.data ?? payload?.items ?? []);
+            legalEntities = rows.map((row) => ({
+                id: String(row.legalEntityId ?? row.LegalEntityId ?? ''),
+                name: String(row.displayName ?? row.DisplayName ?? row.legalName ?? row.LegalName ?? row.code ?? '')
+            })).filter((row) => row.id);
+            // An empty answer is not an outage: the tenant genuinely has none, and the page says so rather
+            // than offering an empty required field.
+            if (legalEntities.length === 0) { window.DtDefaults?.showError?.(L.LegalEntityNone); return false; }
+            legalEntityScope = legalEntities[0].id;
+            fillLegalEntitySelect(document.getElementById('filterLegalEntity'), legalEntityScope);
+            fillLegalEntitySelect(document.getElementById('formLegalEntity'), legalEntityScope);
+            return true;
+        } catch (error) {
+            window.DtDefaults?.showError?.(L.LegalEntityUnavailable);
+            return false;
+        }
     };
 
     // ─── Failures ─────────────────────────────────────────────────────────────
@@ -388,7 +437,9 @@ const LoadList = (function () {
         const intent = createIntent;
         setBusy(button, true);
         try {
-            const response = await fetch(endpoint, {
+            const createdScope = formScope();
+            if (!createdScope) { showFormError(L.LegalEntityRequired); return; }
+            const response = await fetch(withScope(endpoint, createdScope), {
                 method: 'POST', credentials: 'same-origin', headers: mutationHeaders(form, intent), body: JSON.stringify(payload.body)
             });
             if (!response.ok) {
@@ -457,6 +508,9 @@ const LoadList = (function () {
         if (!tableElement) return;
         syncL10n();
         readPermissions();
+        // Resolved BEFORE the table asks for rows: every list call needs it, so a table drawn first would
+        // fire one guaranteed 400.
+        if (!await loadLegalEntities()) return;
         await loadDefaultView();
         dt = new DataTable(tableElement, window.DtDefaults.create({
             // DataTables calls .abort() on whatever ajax returns; an async function returns a Promise, so every ajax.reload()
