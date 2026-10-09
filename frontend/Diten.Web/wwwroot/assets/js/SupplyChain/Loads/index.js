@@ -19,8 +19,9 @@ const LoadList = (function () {
     let L = window.L10n || {};
     let permissions = { canCreate: false };
     let appliedFilters = { status: '', carrierId: '' };
-    // R-2 (SHIPMENT-BUNDLE 3.2.0): a REQUIRED scope on every call, not an optional filter — the service takes
-    // exactly one X-Legal-Entity-Id, so there is no 'all companies' answer to ask for.
+    // R-2 (SHIPMENT-BUNDLE 3.2.0): a REQUIRED scope on every call, not an optional filter — the service accepts
+    // exactly one company per call, so there is no 'all companies' answer to ask for. The page sends it as a
+    // query value; turning it into the downstream scope header is the adapter's job, never the browser's.
     let legalEntities = [];
     let legalEntityScope = '';
     let defaultViewRecord = null;

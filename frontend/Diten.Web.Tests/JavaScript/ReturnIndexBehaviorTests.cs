@@ -25,7 +25,10 @@ public sealed class ReturnIndexBehaviorTests
     {
         Assert.Contains("const endpoint = '/SupplyChain/Returns/api';", _script);
         foreach (var forbidden in new[] { ":5000", ":5061", "/api/shipment-bundle", "Authorization", "X-Tenant-Id", "X-Legal-Entity-Id",
-                     "tenantId", "legalEntityId", "lifecycleCorrelationId", "localStorage", "sessionStorage", "indexedDB", "document.cookie",
+                     // R-2 (SHIPMENT-BUNDLE 3.2.0): legalEntityId is no longer forbidden here — it is the query
+                     // key the page must send, since the company now arrives with the request. tenantId stays
+                     // forbidden: the tenant is still read from the token alone and never from the page.
+                     "tenantId", "lifecycleCorrelationId", "localStorage", "sessionStorage", "indexedDB", "document.cookie",
                      "setTimeout", "setInterval" })
         {
             Assert.DoesNotContain(forbidden, _script);
@@ -36,7 +39,7 @@ public sealed class ReturnIndexBehaviorTests
     public void List_query_is_limited_to_shipmentId_and_single_status()
     {
         var sets = Regex.Matches(_script, @"params\.set\('(?<name>\w+)'").Select(m => m.Groups["name"].Value).ToHashSet();
-        Assert.Equal(new HashSet<string> { "shipmentId", "status" }, sets);
+        Assert.Equal(new HashSet<string> { "shipmentId", "status", "legalEntityId" }, sets);
         Assert.DoesNotContain("pageSize", _script);
         Assert.DoesNotContain("multiple", Read("frontend/Diten.Web/Views/SupplyChain/Returns/_Filter.cshtml"));
     }

@@ -14,6 +14,12 @@
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
 
                     @* Filter Chip: Status (single select; ShowAll omits the parameter — RU-SCR-05 keeps multi-select out) *@
+                    @* R-2 (SHIPMENT-BUNDLE 3.2.0): a REQUIRED scope, not an optional filter. The service takes
+                       exactly one X-Legal-Entity-Id per call, so there is no "show all" to offer. *@
+                    <div class="filter-chip filter-legal-entity">
+                        <select id="filterLegalEntity" class="form-select form-select-sm select2"
+                                data-placeholder="@SharedLocalizer["LegalEntity"]" required></select>
+                    </div>
                     <div class="filter-chip filter-status">
                         <label for="filterStatus" class="visually-hidden">@SharedLocalizer["Status"]</label>
                         <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@SharedLocalizer["Status"]">
