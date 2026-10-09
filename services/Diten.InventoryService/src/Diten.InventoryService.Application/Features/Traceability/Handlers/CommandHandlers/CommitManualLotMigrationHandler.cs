@@ -174,7 +174,7 @@ public sealed class CommitManualLotMigrationHandler : IRequestHandler<CommitManu
                 CountryOfOrigin = attributes.Country,
                 CoaReference = attributes.Coa,
                 Status = LotStatus.Draft,
-                TrackingMode = snapshot.Products[group.ItemId].SerialControlled ? LotTrackingMode.LotAndSerial : LotTrackingMode.Lot,
+                TrackingMode = snapshot.NeedsSerials[(group.SkuId, group.SkuLevel)] ? LotTrackingMode.LotAndSerial : LotTrackingMode.Lot,
                 CreationSource = "Migration",
                 CreatedBy = _support.UserId,
                 Version = 1

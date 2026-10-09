@@ -122,6 +122,16 @@ public static class ContractSchemas
 
     public static string QuarantineContractPath => RepoPaths.Contract("quarantine.openapi.yaml");
 
+    // PRODUCT-MASTER-BUNDLE (MOD-0290, consumed): v1.1 draft (open response enums, CT-PM1-3) and the frozen v1.0 copy (WP-0173-PM1).
+    private static readonly Contract ProductMasterV11 = new("product-master-bundle.openapi.yaml", "product-master", _ => new Dictionary<string, JsonNode>(), openEnums: true);
+    private static readonly Contract ProductMasterV10 = new("product-master-bundle.v1.0.openapi.yaml", "product-master-v10", _ => new Dictionary<string, JsonNode>());
+
+    /// <summary>Errors of a PRODUCT-MASTER answer against the v1.1 schema (enums open; empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateProductMaster(string schemaName, string body) => ProductMasterV11.Validate(schemaName, body);
+
+    /// <summary>Errors of a PRODUCT-MASTER answer against the frozen v1.0 schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateProductMasterV10(string schemaName, string body) => ProductMasterV10.Validate(schemaName, body);
+
     /// <summary>Returns the validation errors of <paramref name="body"/> against the named QUARANTINE schema (empty = valid).</summary>
     public static IReadOnlyList<string> ValidateQuarantine(string schemaName, string body) => Quarantine.Validate(schemaName, body);
 
@@ -132,12 +142,14 @@ public static class ContractSchemas
         private readonly Func<JsonObject, IDictionary<string, JsonNode>> _lifted;
         private readonly Lazy<JsonObject> _defs;
         private readonly Dictionary<string, JsonSchema> _compiled = new(StringComparer.Ordinal);
+        private readonly bool _openEnums;
 
-        public Contract(string file, string name, Func<JsonObject, IDictionary<string, JsonNode>> lifted)
+        public Contract(string file, string name, Func<JsonObject, IDictionary<string, JsonNode>> lifted, bool openEnums = false)
         {
             _file = file;
             _name = name;
             _lifted = lifted;
+            _openEnums = openEnums;
             _defs = new Lazy<JsonObject>(BuildDefs);
         }
 
@@ -218,6 +230,7 @@ public static class ContractSchemas
             foreach (var (_, schema) in defs)
             {
                 Normalise(schema!);
+                if (_openEnums) RemoveEnums(schema!);
             }
 
             return defs;
@@ -273,6 +286,24 @@ public static class ContractSchemas
         }
 
         return a;
+    }
+
+    /// <summary>
+    /// PRODUCT-MASTER v1.1 x-notes: "Yanıt enum'ları AÇIKTIR — tüketici bilinmeyen değeri hata saymaz" (CT-PM1-3). An open-enum
+    /// contract is validated with every <c>enum</c> removed: the TYPE of the value is still checked, its value set is not.
+    /// </summary>
+    private static void RemoveEnums(JsonNode node)
+    {
+        switch (node)
+        {
+            case JsonObject obj:
+                obj.Remove("enum");
+                foreach (var child in obj.Select(p => p.Value).Where(v => v is not null).ToList()) RemoveEnums(child!);
+                break;
+            case JsonArray array:
+                foreach (var child in array.Where(v => v is not null).ToList()) RemoveEnums(child!);
+                break;
+        }
     }
 
     private static void Normalise(JsonNode node)

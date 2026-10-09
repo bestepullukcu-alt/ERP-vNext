@@ -3,6 +3,7 @@ using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Application.Features.Traceability;
 using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Application.Features.Traceability.Services;
+using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Rules;
 using Diten.InventoryService.Domain.Traceability.Entities;
 using Diten.InventoryService.Domain.Traceability.Rules;
@@ -99,12 +100,6 @@ public sealed class MovementMasterDataValidator
                 !itemKnown ? "itemId is not known to PRODUCT-MASTER." : "skuId/skuLevel is not known to PRODUCT-MASTER.");
         }
 
-        var product = await _productMaster.GetProductAsync(movement.ItemId, ct);
-        if (product is null)
-        {
-            return MasterDataCheck.Refused(InventoryErrorCodes.UnknownItem, "itemId is not known to PRODUCT-MASTER.");
-        }
-
         var sku = await _productMaster.GetSkuAsync(movement.SkuId, movement.SkuLevel, ct);
         if (sku is null)
         {
@@ -118,6 +113,44 @@ public sealed class MovementMasterDataValidator
                 new Dictionary<string, object?> { ["skuItemId"] = sku.ItemId, ["itemId"] = movement.ItemId.ToString() });
         }
 
+        // ── WP-0173-PM1: lifecycle (OD-3 / OD-4 / CT-PM1-2) — the most restrictive of the item row, the SKU row and the SKU ──
+        var itemRow = validation.First(r => r.Exists && SameId(r.ItemId, movement.ItemId) && r.SkuId is null);
+        var skuRow = validation.First(r => r.Exists && SameId(r.SkuId, movement.SkuId));
+        var lifecycle = ProductMasterStockRules.MostRestrictive([itemRow.LifecycleStatus, skuRow.LifecycleStatus, sku.LifecycleStatus]);
+        if (!ProductMasterStockRules.Allows(lifecycle, movement.MovementType))
+        {
+            return MasterDataCheck.Refused(InventoryErrorCodes.ItemNotActive,
+                $"The item / SKU lifecycle status does not allow a {WireNames.ToWire(movement.MovementType)} movement.",
+                new Dictionary<string, object?>
+                {
+                    ["itemLifecycleStatus"] = itemRow.LifecycleStatus, ["skuLifecycleStatus"] = sku.LifecycleStatus ?? skuRow.LifecycleStatus,
+                    ["movementType"] = WireNames.ToWire(movement.MovementType)
+                });
+        }
+
+        // ── WP-0173-PM1: lot / serial flags from getSku (OD-1); unknown → refused (OD-5); GSKU serial = product's (OD-10) ──
+        var productSerial = movement.SkuLevel == SkuLevel.Gsku
+            ? (await _productMaster.GetProductAsync(movement.ItemId, ct) ?? throw new ProductMasterUnavailableException(
+                "PRODUCT-MASTER confirmed the item in validateRefs but getProduct answered 404.")).SerialControlled
+            : null;
+        var behaviour = ProductMasterStockRules.Behaviour(movement.SkuLevel, sku.LotControlled, sku.SerialControlled, productSerial);
+        if (behaviour.Refusal is { } behaviourRefusal)
+        {
+            return behaviourRefusal == StockBehaviourRefusal.LevelNotStockable
+                ? MasterDataCheck.Refused(InventoryErrorCodes.SkuLevelNotStockable,
+                    "A GSKU-level movement needs a product whose serial flag is explicitly false; serial-tracked stock is held at Lsku / FinishedGood.",
+                    new Dictionary<string, object?> { ["skuLevel"] = WireNames.ToWire(movement.SkuLevel), ["productSerialControlled"] = productSerial })
+                : MasterDataCheck.Refused(InventoryErrorCodes.ProductMasterDataIncomplete,
+                    "PRODUCT-MASTER does not state the lot / serial flag this SKU level needs; the movement cannot be checked.",
+                    new Dictionary<string, object?>
+                    {
+                        ["skuLevel"] = WireNames.ToWire(movement.SkuLevel), ["lotControlled"] = sku.LotControlled, ["serialControlled"] = sku.SerialControlled
+                    });
+        }
+
+        var lotControlled = behaviour.LotControlled;
+        var serialControlled = behaviour.SerialControlled;
+
         var uom = await _productMaster.GetSkuUomAsync(movement.SkuId, ct);
         if (uom is null || string.IsNullOrWhiteSpace(uom.BaseUomId)
             || !UomConverter.TryConvertToBase(movement.Quantity, movement.UomId, uom.BaseUomId, uom.Conversions,
@@ -128,7 +161,7 @@ public sealed class MovementMasterDataValidator
                 new Dictionary<string, object?> { ["uomId"] = movement.UomId, ["baseUomId"] = uom?.BaseUomId });
         }
 
-        if (product.LotControlled && movement.LotId is null)
+        if (lotControlled && movement.LotId is null)
         {
             return MasterDataCheck.Refused(InventoryErrorCodes.LotRequired, "lotId is required: the item is lot-controlled.");
         }
@@ -139,7 +172,7 @@ public sealed class MovementMasterDataValidator
         if (movement.LotId is { } lotId)
         {
             var registeredForm = LotPostingRules.IsRegisteredLotForm(lotId, out _);
-            if (!product.LotControlled && (registeredForm || enforce))
+            if (!lotControlled && (registeredForm || enforce))
             {
                 return MasterDataCheck.Refused(InventoryErrorCodes.LotNotAllowed,
                     "lotId is not allowed: the item is not lot-controlled.", new Dictionary<string, object?> { ["lotId"] = lotId });
@@ -162,7 +195,7 @@ public sealed class MovementMasterDataValidator
                     return MasterDataCheck.Refused(code, message, details);
                 }
             }
-            else if (product.LotControlled && direction.FromLocationId is null)
+            else if (lotControlled && direction.FromLocationId is null)
             {
                 // ASSUMPTION-0174-10 (revised, CT K4-4): an inbound movement of a lot-controlled item names a registered lot
                 // once the switch is on or the tenant's migration closed typing; the posting transaction re-checks it.
@@ -178,7 +211,7 @@ public sealed class MovementMasterDataValidator
             }
         }
 
-        if (product.SerialControlled)
+        if (serialControlled)
         {
             var distinct = movement.SerialIds?.Distinct(StringComparer.Ordinal).Count() ?? 0;
             if (baseQuantity != decimal.Truncate(baseQuantity) || distinct != baseQuantity)
@@ -204,7 +237,7 @@ public sealed class MovementMasterDataValidator
         }
 
         decided.Context = new LotPostingContext(
-            SerialLifecycle: product.SerialControlled && movement.SerialIds is { Count: > 0 },
+            SerialLifecycle: serialControlled && movement.SerialIds is { Count: > 0 },
             AcceptUnregisteredSerials: !enforce && lot is null,
             RegisterNewSerials: true);
 

@@ -212,30 +212,42 @@ public sealed class InventoryProxyControllerTests
         Assert.Empty(gateway.Requests);
     }
 
+    /// <summary>
+    /// WP-0173-PM1 (W-UI-01 closed): both pickers call ONLY the PRODUCT-MASTER v1.1 contract search <c>/stockable-items</c>, always
+    /// with <c>status=Active</c>; every level is offered, Item included; a row that is not Active, or of a level the ledger does
+    /// not know (open enum), is not offered.
+    /// </summary>
     [Fact]
-    public async Task Product_and_sku_pickers_call_only_the_Model_A_selector_routes()
+    public async Task Product_and_sku_pickers_call_only_the_contract_search_for_Active_records()
     {
+        const string material = "d4e5f6a7-0000-0000-0000-000000000003";
         var gateway = new FakeGateway();
-        gateway.On("/api/global-products/selector", 200, $$"""{"data":{"items":[{"id":"{{Item}}","canonicalCode":"GP-1","globalProductName":"Amoxicillin"}]},"isSuccessful":true}""");
-        gateway.On("/api/gskus", 200, $$$"""{"data":{"items":[{"id":"{{{Sku}}}","canonicalCode":"GSKU-1","globalProductName":"Amoxicillin"}]}}""");
-        gateway.On("/api/lskus", 200, """{"data":{"items":[]}}""");
+        gateway.On("/api/product-master/stockable-items", 200, $$"""
+            {"items":[
+              {"skuId":"{{Sku}}","skuLevel":"Gsku","itemId":"{{Item}}","itemKind":"GlobalProduct","canonicalCode":"GS-1","name":"Amoxicillin 16","lifecycleStatus":"Active"},
+              {"skuId":"{{material}}","skuLevel":"Item","itemId":"{{material}}","itemKind":"Item","canonicalCode":"IT-3","name":"Amoxicillin trihydrate","lifecycleStatus":"Active"},
+              {"skuId":"{{Guid.NewGuid()}}","skuLevel":"Lsku","itemId":"{{Item}}","canonicalCode":"LS-9","name":"Retired one","lifecycleStatus":"Retired"},
+              {"skuId":"{{Guid.NewGuid()}}","skuLevel":"Pallet","itemId":"{{Item}}","canonicalCode":"PL-1","name":"Unknown level","lifecycleStatus":"Active"}
+            ],"page":1,"pageSize":20,"totalCount":4,"contractVersion":"v1.1"}
+            """);
 
         var products = Body(await Movements(gateway, ReadAndCreate).Lookups("products", "amo", null, CancellationToken.None));
         var skus = Body(await Movements(gateway, ReadAndCreate).Lookups("skus", "amo", null, CancellationToken.None));
 
-        Assert.Equal(Item, products.GetProperty("items")[0].GetProperty("value").GetString());
-        Assert.Equal("GP-1 · Amoxicillin", products.GetProperty("items")[0].GetProperty("text").GetString());
-        Assert.Equal("Gsku:" + Sku, skus.GetProperty("items")[0].GetProperty("value").GetString());
+        Assert.Equal([Item, material], products.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("value").GetString()));
+        Assert.Equal("IT-3 · Amoxicillin trihydrate", products.GetProperty("items")[1].GetProperty("text").GetString());
+        Assert.Equal(["Gsku:" + Sku, "Item:" + material], skus.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("value").GetString()));
         Assert.All(gateway.Requests, r => Assert.Contains(ProductPickerSource.AllowedPaths, p => r.PathAndQuery.StartsWith(p + "?", StringComparison.Ordinal)));
-        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.Contains("/api/mdm/products", StringComparison.Ordinal));
-        Assert.Contains(gateway.Requests, r => r.PathAndQuery == "/api/global-products/selector?pageNumber=1&pageSize=20&search=amo");
+        Assert.All(gateway.Requests, r => Assert.Contains("status=Active", r.PathAndQuery, StringComparison.Ordinal));
+        Assert.Contains(gateway.Requests, r => r.PathAndQuery == "/api/product-master/stockable-items?status=Active&page=1&pageSize=20&q=amo");
+        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.Contains("/api/global-products", StringComparison.Ordinal) || r.PathAndQuery.Contains("/api/gskus", StringComparison.Ordinal));
     }
 
     [Fact]
     public async Task A_picker_whose_source_is_down_is_empty_and_says_why_with_no_invented_options()
     {
         var gateway = new FakeGateway();
-        gateway.On("/api/global-products/selector", 503, string.Empty);
+        gateway.On("/api/product-master/stockable-items", 503, string.Empty);
         gateway.On("/api/locations", 404, string.Empty);
 
         var products = Body(await Movements(gateway, ReadAndCreate).Lookups("products", null, null, CancellationToken.None));

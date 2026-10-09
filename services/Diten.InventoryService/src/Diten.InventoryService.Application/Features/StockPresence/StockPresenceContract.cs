@@ -23,23 +23,11 @@ public static class StockPresenceContract
     public const string CoverageComplete = "COMPLETE";
 
     /// <summary>
-    /// The 1.1.0 <c>SkuLevel</c> spellings this operation accepts: the 1.0.2 three (from <see cref="WireNames"/>) plus
-    /// <c>Item</c>, which only this operation knows until WP-0173-PM1.
+    /// The 1.1.0 <c>SkuLevel</c> spellings this operation accepts — since WP-0173-PM1 exactly those of <see cref="WireNames"/>
+    /// (Gsku, Lsku, FinishedGood, Item), the same set every other INVENTORY-BUNDLE operation accepts.
     /// </summary>
     public static bool TryParseLevel(string? wire, out SkuLevel level)
     {
-        if (WireNames.TryParseSkuLevel(wire, out level))
-        {
-            return true;
-        }
-
-        if (string.Equals(wire, "Item", StringComparison.Ordinal))
-        {
-            level = SkuLevel.Item;
-            return true;
-        }
-
-        level = default;
-        return false;
+        return WireNames.TryParseSkuLevel(wire, out level);
     }
 }

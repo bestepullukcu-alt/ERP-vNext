@@ -74,7 +74,7 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
                 "A lot belongs to one SKU: skuId and skuLevel are required.", 422);
         if (!TraceWriteSupport.TryParseId(request.SkuId, out var skuId))
             return TraceWriteSupport.Invalid<LotRefDto>("skuId must be a UUID.");
-        if (!WireNames.TryParseSkuLevel(request.SkuLevel, out var skuLevel))
+        if (!WireNames.TryParseLegacySkuLevel(request.SkuLevel, out var skuLevel))
             return TraceWriteSupport.Invalid<LotRefDto>("skuLevel must be Gsku, Lsku or FinishedGood.");
         if (!LotIdentityPolicy.MayBindTo(skuLevel))
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.LotSkuMismatch, $"A lot cannot be bound to a {request.SkuLevel} SKU.", 422);
@@ -108,7 +108,13 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.LotSkuMismatch, "The SKU does not belong to itemId (D-SKU-LINK).", 422);
         if (product is null)
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.UnknownItem, "The item does not exist in PRODUCT-MASTER.", 422);
-        if (!product.LotControlled)
+        // WP-0173-PM1 (OD-1, OD-5): the lot flag is the SKU's (getSku v1.1). Unknown → refused, never "not lot-controlled";
+        // TRACE 1.2.0 declares no "data incomplete" code, so the refusal is the contract's 503 PRODUCT_MASTER_UNAVAILABLE
+        // (ASSUMPTION-0173-PM1-03, open point O-PM1-1).
+        if (sku.LotControlled is not { } skuLotControlled)
+            return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.ProductMasterUnavailable,
+                "PRODUCT-MASTER does not state whether the SKU is lot-controlled; nothing was saved.", 503);
+        if (!skuLotControlled)
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.ProductNotLotControlled, "The product is not lot-controlled.", 422);
 
         Response<LotRefDto> outcome;
@@ -136,7 +142,9 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
                     CountryOfOrigin = attributes.Country,
                     CoaReference = attributes.Coa,
                     Status = LotStatus.Draft,
-                    TrackingMode = product.SerialControlled ? LotTrackingMode.LotAndSerial : LotTrackingMode.Lot,
+                    // WP-0173-PM1: the SKU's serial flag (GSKU: the product's, OD-10); unknown → Lot + Serial, never Lot only.
+                    TrackingMode = ProductMasterStockRules.LotNeedsSerials(skuLevel, sku.SerialControlled, product.SerialControlled)
+                        ? LotTrackingMode.LotAndSerial : LotTrackingMode.Lot,
                     CreationSource = "Api",
                     CreatedBy = _support.UserId,
                     Version = 1,

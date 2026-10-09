@@ -45,7 +45,7 @@ public sealed class ListLotsHandler : IRequestHandler<ListLotsQuery, Response<Lo
 
         if (request.SkuLevel is not null)
         {
-            if (!WireNames.TryParseSkuLevel(request.SkuLevel, out var level)) return Invalid("skuLevel must be Gsku, Lsku or FinishedGood.");
+            if (!WireNames.TryParseLegacySkuLevel(request.SkuLevel, out var level)) return Invalid("skuLevel must be Gsku, Lsku or FinishedGood.");
             skuLevel = level;
         }
 

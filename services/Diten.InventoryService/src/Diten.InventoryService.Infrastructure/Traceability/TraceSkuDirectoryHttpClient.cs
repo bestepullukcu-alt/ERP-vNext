@@ -31,7 +31,9 @@ public sealed class TraceSkuDirectoryHttpClient : ITraceSkuDirectory
                     throw new FormatException("getSku answered an itemId that is not a UUID.");
                 }
 
-                return new TraceSku(skuId, level, item, UpstreamHttp.OptionalString(root, "gtin"));
+                // WP-0173-PM1: the SKU-level flags (v1.1, OD-1) — unknown stays null.
+                return new TraceSku(skuId, level, item, UpstreamHttp.OptionalString(root, "gtin"),
+                    UpstreamHttp.NullableBool(root, "lotControlled"), UpstreamHttp.NullableBool(root, "serialControlled"));
             },
             (message, inner) => new ProductMasterUnavailableException(message, inner),
             cancellationToken);

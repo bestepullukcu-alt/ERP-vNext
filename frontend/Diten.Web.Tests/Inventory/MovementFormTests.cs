@@ -388,21 +388,26 @@ public sealed class MovementFormTests
 
     // ── lookups ───────────────────────────────────────────────────────────────────────────────────────
 
+    /// <summary>WP-0173-PM1: the SKUs of one product are the Active stockable rows of that itemId, from the contract search only.</summary>
     [Fact]
-    public async Task The_SKU_list_of_a_product_is_its_GSKUs_and_the_LSKUs_under_them_from_Model_A_only()
+    public async Task The_SKU_list_of_a_product_is_its_active_stockable_rows_from_the_contract_search_only()
     {
         const string gsku = "aaaaaaaa-0000-0000-0000-000000000001";
-        const string otherGsku = "aaaaaaaa-0000-0000-0000-000000000002";
         var gateway = new FakeGateway();
-        gateway.On("/api/gskus", 200, $$$"""{"data":{"items":[{"id":"{{{gsku}}}","canonicalCode":"GSKU-1","globalProductId":"{{{Item}}}","globalProductName":"Amox"},{"id":"{{{otherGsku}}}","canonicalCode":"GSKU-2","globalProductId":"{{{Guid.NewGuid()}}}"}],"totalCount":2}}""");
-        gateway.On("/api/lskus", 200, $$$"""{"data":{"items":[{"id":"{{{SkuId}}}","canonicalCode":"LSKU-TR-1","gskuId":"{{{gsku}}}","marketCode":"TR"},{"id":"{{{Guid.NewGuid()}}}","canonicalCode":"LSKU-X","gskuId":"{{{otherGsku}}}"}],"totalCount":2}}""");
+        gateway.On("/api/product-master/stockable-items", 200, $$$"""
+            {"items":[
+              {"skuId":"{{{gsku}}}","skuLevel":"Gsku","itemId":"{{{Item}}}","canonicalCode":"GS-1","name":"Amox","lifecycleStatus":"Active"},
+              {"skuId":"{{{SkuId}}}","skuLevel":"Lsku","itemId":"{{{Item}}}","canonicalCode":"LS-TR-1","name":"Amox TR","lifecycleStatus":"Active"},
+              {"skuId":"{{{Guid.NewGuid()}}}","skuLevel":"Lsku","itemId":"{{{Guid.NewGuid()}}}","canonicalCode":"LS-X","name":"Other","lifecycleStatus":"Active"}
+            ],"page":1,"pageSize":100,"totalCount":3,"contractVersion":"v1.1"}
+            """);
 
         var json = Body(await Movements(gateway, ReadAndCreate, ("itemId", Item)).Lookups("skus", null, null, CancellationToken.None));
 
         Assert.Equal(["Gsku:" + gsku, "Lsku:" + SkuId], json.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("value").GetString()));
         Assert.True(json.GetProperty("available").GetBoolean());
         Assert.All(gateway.Requests, r => Assert.Contains(ProductPickerSource.AllowedPaths, p => r.PathAndQuery.StartsWith(p + "?", StringComparison.Ordinal)));
-        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.Contains("/api/mdm/products", StringComparison.Ordinal));
+        Assert.Single(gateway.Requests);
     }
 
     [Fact]
@@ -472,6 +477,89 @@ public sealed class MovementFormTests
         Assert.Equal("30.5", side.GetProperty("before").GetString());
         Assert.Equal("6.5", side.GetProperty("after").GetString());
         Assert.False(side.GetProperty("negative").GetBoolean());
+    }
+
+    // ── WP-0173-PM1: PRODUCT-MASTER v1.1 flags on the form ─────────────────────────────────────────────────
+
+    private static FakeGateway V11(string skuBody, string? productBody = null)
+    {
+        var gateway = new FakeGateway();
+        gateway.On($"/api/product-master/skus/{SkuId}/uom", 200, """{"baseUomId":"ADET","conversions":[]}""");
+        gateway.On($"/api/product-master/skus/{SkuId}", 200, skuBody);
+        if (productBody is not null) gateway.On("/api/product-master/products", 200, productBody);
+        return gateway;
+    }
+
+    [Theory]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":null,"serialControlled":false}""")]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","serialControlled":false}""")]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":"yes","serialControlled":false}""")]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":false,"serialControlled":null}""")]
+    public async Task An_unknown_flag_on_the_sku_blocks_the_form(string skuBody)
+    {
+        var gateway = V11(skuBody);
+        var json = Body(await Movements(gateway, ReadAndCreate, ("itemId", Item), ("sku", Sku)).Lookups("product", null, null, CancellationToken.None));
+
+        Assert.True(json.GetProperty("available").GetBoolean());
+        Assert.True(json.GetProperty("blocked").GetBoolean());
+        Assert.Equal("ProductFlagsUnknown", json.GetProperty("blockedMessage").GetString());
+        Assert.Contains(gateway.Requests, r => r.PathAndQuery == $"/api/product-master/skus/{SkuId}?level=Lsku");
+        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.StartsWith("/api/product-master/products", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task The_sku_flags_drive_the_form_and_the_product_flags_are_not_read()
+    {
+        var gateway = V11("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":true,"serialControlled":false}""",
+            $$"""{"itemId":"{{Item}}","lotControlled":false,"serialControlled":true}""");
+        var json = Body(await Movements(gateway, ReadAndCreate, ("itemId", Item), ("sku", Sku)).Lookups("product", null, null, CancellationToken.None));
+
+        Assert.False(json.GetProperty("blocked").GetBoolean());
+        Assert.True(json.GetProperty("lotControlled").GetBoolean());
+        Assert.False(json.GetProperty("serialControlled").GetBoolean());
+        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.StartsWith("/api/product-master/products", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("null", true)]
+    [InlineData("false", false)]
+    public async Task A_Gsku_needs_a_product_that_is_explicitly_serial_free(string productSerial, bool blocked)
+    {
+        var gateway = new FakeGateway();
+        gateway.On($"/api/product-master/skus/{SkuId}/uom", 200, """{"baseUomId":"ADET","conversions":[]}""");
+        gateway.On($"/api/product-master/skus/{SkuId}", 200, """{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Gsku","lotControlled":false,"serialControlled":null}""");
+        gateway.On("/api/product-master/products", 200, $$"""{"itemId":"{{Item}}","serialControlled":{{productSerial}}}""");
+
+        var json = Body(await Movements(gateway, ReadAndCreate, ("itemId", Item), ("sku", "Gsku:" + SkuId)).Lookups("product", null, null, CancellationToken.None));
+
+        Assert.Equal(blocked, json.GetProperty("blocked").GetBoolean());
+        if (blocked) Assert.Equal("ProductLevelNotStockable", json.GetProperty("blockedMessage").GetString());
+    }
+
+    [Fact]
+    public async Task An_Item_level_sku_is_a_valid_form_choice()
+    {
+        var gateway = V11("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Item","lotControlled":true,"serialControlled":false}""");
+        var json = Body(await Movements(gateway, ReadAndCreate, ("itemId", Item), ("sku", "Item:" + SkuId)).Lookups("product", null, null, CancellationToken.None));
+
+        Assert.False(json.GetProperty("blocked").GetBoolean());
+        Assert.Contains(gateway.Requests, r => r.PathAndQuery == $"/api/product-master/skus/{SkuId}?level=Item");
+    }
+
+    [Fact]
+    public void The_form_script_does_not_send_a_blocked_movement()
+    {
+        var script = File.ReadAllText(Path.Combine(WebRoot(), "wwwroot", "assets", "js", "Inventory", "StockMovements", "form.js"));
+        Assert.Contains("} else if (facts.blocked) {", script, StringComparison.Ordinal);
+        Assert.Contains("if (state.facts?.blocked) errors.sku = state.facts.blockedMessage", script, StringComparison.Ordinal);
+    }
+
+    private static string WebRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "AGENTS.md"))) dir = dir.Parent;
+        return Path.Combine(dir!.FullName, "frontend", "Diten.Web");
     }
 
     // ── harness ──────────────────────────────────────────────────────────────────────────────────────

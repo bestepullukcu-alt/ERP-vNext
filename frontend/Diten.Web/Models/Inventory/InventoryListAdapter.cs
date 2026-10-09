@@ -30,7 +30,8 @@ public static class InventoryListAdapter
     public static readonly IReadOnlyList<string> StockStatuses =
         ["AVAILABLE", "QUALITY_INSPECTION", "QUARANTINE", "BLOCKED", "IN_TRANSIT", "DAMAGED", "EXPIRED"];
 
-    public static readonly IReadOnlyList<string> SkuLevels = ["Gsku", "Lsku", "FinishedGood"];
+    /// <summary>INVENTORY-BUNDLE 1.1.0 levels; <c>Item</c> = a material item stocked as its own SKU (WP-0173-PM1, Q-1).</summary>
+    public static readonly IReadOnlyList<string> SkuLevels = ["Gsku", "Lsku", "FinishedGood", "Item"];
 
     // Direction class of every canonical movement type (parent §12) — decides the sign shown, never a quantity.
     private static readonly HashSet<string> Inbound = new(StringComparer.Ordinal)

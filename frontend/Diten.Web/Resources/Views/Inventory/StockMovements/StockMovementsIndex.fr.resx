@@ -193,4 +193,10 @@
   <data name="ErrPeriodClosed" xml:space="preserve"><value>La date de comptabilisation tombe dans une période close. Rien n’a été modifié ; choisissez une date d’une période ouverte.</value></data>
   <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Disponible à la source : {0} ; demandé : {1} (unité de base).</value></data>
   <data name="HintChooseTypeFirst" xml:space="preserve"><value>Choisissez d’abord le type de mouvement : il détermine les champs de source et de destination nécessaires.</value></data>
+  <data name="ProductFlagsUnknown" xml:space="preserve"><value>Les données de base article n'indiquent pas le suivi par lot ou par numéro de série pour ce SKU ; le mouvement ne peut donc pas être enregistré. Réessayez une fois la fiche article complétée.</value></data>
+  <data name="ProductLevelNotStockable" xml:space="preserve"><value>Ce produit peut être suivi par numéro de série : le stock ne peut pas être mouvementé au niveau SKU global. Choisissez le niveau SKU local ou produit fini.</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Article matière</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Les données de base article n'indiquent pas le suivi par lot ou par numéro de série pour ce SKU ; le mouvement ne peut donc pas être enregistré. Réessayez une fois la fiche article complétée.</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>Le statut de l'article n'autorise pas ce type de mouvement (brouillon, désactivé ou retiré). Rien n'a été modifié.</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>Ce produit peut être suivi par numéro de série : le stock ne peut pas être mouvementé au niveau SKU global. Choisissez le niveau SKU local ou produit fini.</value></data>
 </root>

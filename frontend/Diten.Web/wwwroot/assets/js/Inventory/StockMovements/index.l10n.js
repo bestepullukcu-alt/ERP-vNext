@@ -12,7 +12,7 @@
         'Actions', 'Reversal', 'ReversalConfirmTitle', 'ReversalConfirmText', 'ReversalConfirmButton', 'ReversedBadge',
         'ReversedInSource', 'Automatic', 'Unknown', 'Cancel', 'Filter', 'Apply', 'Reset', 'ShowAll', 'SaveView',
         'ColumnVisibility', 'RecordSaved', 'ErrorOccurred', 'Searching', 'NoResults', 'PickerUnavailable',
-        'ErrServiceUnavailable', 'SkuLevelGsku', 'SkuLevelLsku', 'SkuLevelFinishedGood',
+        'ErrServiceUnavailable', 'SkuLevelGsku', 'SkuLevelLsku', 'SkuLevelFinishedGood', 'SkuLevelItem',
         'NewMovement', 'Correct', 'LotUnregisteredBadge', 'LotUnregisteredHint'
     ].concat(movementTypes.map((t) => 'Movement' + t), statuses.map((s) => 'Status' + s));
 

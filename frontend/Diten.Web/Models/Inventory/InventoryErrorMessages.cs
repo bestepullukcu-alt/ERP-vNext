@@ -26,6 +26,10 @@ public static class InventoryErrorMessages
         ["SERIAL_COUNT_MISMATCH"] = "ErrSerialMismatch",
         ["RESERVATION_CONFLICT"] = "ErrConflict",
         ["POSTING_PERIOD_CLOSED"] = "ErrPeriodClosed",
+        // INVENTORY-BUNDLE 1.2.0 (WP-0173-PM1): PRODUCT-MASTER v1.1 consumer refusals
+        ["PRODUCT_MASTER_DATA_INCOMPLETE"] = "ErrProductDataIncomplete",
+        ["ITEM_NOT_ACTIVE"] = "ErrItemNotActive",
+        ["SKU_LEVEL_NOT_STOCKABLE"] = "ErrSkuLevelNotStockable",
         // W-0173-02 company selector
         ["LEGAL_ENTITY_MASTER_UNAVAILABLE"] = "ErrCompanyCheckUnavailable",
         [InventoryGatewayClient.CompanyNotSelected] = "ErrSelectCompany",

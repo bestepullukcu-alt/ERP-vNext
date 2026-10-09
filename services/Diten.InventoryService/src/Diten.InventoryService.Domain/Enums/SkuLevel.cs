@@ -8,10 +8,10 @@ public enum SkuLevel
     FinishedGood,
 
     /// <summary>
-    /// INVENTORY-BUNDLE 1.1.0 (WP-0173-PM2): a material item that is its own SKU (<c>skuId == itemId</c>, PRODUCT-MASTER 1.1).
-    /// Known to the domain so <c>getStockPresence</c> can ask for it; <see cref="Rules.WireNames"/> deliberately does NOT map
-    /// it yet, so every other operation (postMovement, reservations, reads, lots) keeps refusing <c>Item</c> exactly as in
-    /// 1.0.2 until WP-0173-PM1 brings the PRODUCT-MASTER 1.1 consumer change.
+    /// INVENTORY-BUNDLE 1.1.0: a material item that is its own SKU (<c>skuId == itemId</c>, PRODUCT-MASTER 1.1) — WP-0173-PM2 for
+    /// <c>getStockPresence</c>, WP-0173-PM1 for every ledger operation (postMovement, availability, balance, transactions,
+    /// reservations). TRACE-BUNDLE 1.2.0 and QUARANTINE-BUNDLE 1.0.0 have no <c>Item</c> level yet and keep refusing it
+    /// (<see cref="Rules.WireNames.TryParseLegacySkuLevel"/>).
     /// </summary>
     Item
 }

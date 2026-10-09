@@ -170,7 +170,7 @@ public static class QuarantineRequestReader
             var unknown = element.EnumerateObject().Select(p => p.Name).FirstOrDefault(n => !BucketMembers.Contains(n));
             if (unknown is not null) throw new FormatException($"Unknown member 'buckets[{i}].{unknown}'.");
             var b = new Body(element);
-            if (!WireNames.TryParseSkuLevel(b.String("skuLevel"), out var level)) throw new FormatException($"buckets[{i}].skuLevel must be Gsku, Lsku or FinishedGood.");
+            if (!WireNames.TryParseLegacySkuLevel(b.String("skuLevel"), out var level)) throw new FormatException($"buckets[{i}].skuLevel must be Gsku, Lsku or FinishedGood.");
             if (!b.Root.TryGetProperty("quantity", out var q)) throw new FormatException($"buckets[{i}].quantity is required.");
             return new BucketInput(b.Uuid("itemId"), b.Uuid("skuId"), level, b.String("warehouseId") ?? "", b.String("locationId") ?? "",
                 Body.Decimal(q, $"buckets[{i}].quantity"), b.String("lotId"));

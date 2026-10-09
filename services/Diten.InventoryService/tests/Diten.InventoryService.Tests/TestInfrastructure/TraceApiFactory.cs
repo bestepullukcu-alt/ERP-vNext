@@ -41,6 +41,7 @@ public class TraceApiFactory : InventoryApiFactory
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
+        Skus.Products = Products; // WP-0173-PM1: the SKU flags default to the item's
         builder.ConfigureTestServices(services => services.AddSingleton<ITraceSkuDirectory>(Skus));
         if (EnforceRegisteredLots)
         {

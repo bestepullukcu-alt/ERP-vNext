@@ -193,4 +193,10 @@
   <data name="ErrPeriodClosed" xml:space="preserve"><value>La fecha de contabilización está en un período cerrado. No se cambió nada; elija una fecha de un período abierto.</value></data>
   <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Disponible en el origen: {0}; solicitado: {1} (unidad base).</value></data>
   <data name="HintChooseTypeFirst" xml:space="preserve"><value>Elija primero el tipo de movimiento: determina qué campos de origen y destino se necesitan.</value></data>
+  <data name="ProductFlagsUnknown" xml:space="preserve"><value>Los datos maestros del producto no indican el control por lote o por número de serie de este SKU, por lo que el movimiento no se puede guardar. Inténtelo de nuevo cuando el registro maestro esté completo.</value></data>
+  <data name="ProductLevelNotStockable" xml:space="preserve"><value>Este producto puede tener control por número de serie: el stock no puede moverse a nivel de SKU global. Elija el nivel de SKU local o de producto terminado.</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Artículo de material</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Los datos maestros del producto no indican el control por lote o por número de serie de este SKU, por lo que el movimiento no se puede guardar. Inténtelo de nuevo cuando el registro maestro esté completo.</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>El estado del producto no permite este tipo de movimiento (borrador, desactivado o retirado). No se ha modificado nada.</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>Este producto puede tener control por número de serie: el stock no puede moverse a nivel de SKU global. Elija el nivel de SKU local o de producto terminado.</value></data>
 </root>

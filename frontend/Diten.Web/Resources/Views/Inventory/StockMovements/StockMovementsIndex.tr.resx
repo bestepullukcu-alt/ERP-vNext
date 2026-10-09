@@ -192,4 +192,10 @@
   <data name="ErrPeriodClosed" xml:space="preserve"><value>Kayıt tarihi kapalı bir döneme düşüyor. Hiçbir şey değiştirilmedi; açık bir dönemden tarih seçin.</value></data>
   <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Kaynakta mevcut: {0}; istenen: {1} (temel birim).</value></data>
   <data name="HintChooseTypeFirst" xml:space="preserve"><value>Önce hareket türünü seçin: hangi kaynak ve hedef alanlarının gerektiğini tür belirler.</value></data>
+  <data name="ProductFlagsUnknown" xml:space="preserve"><value>Ürün ana verisi bu SKU için lot ya da seri takibini belirtmiyor; bu yüzden hareket kaydedilemez. Ürün ana verisi tamamlanınca tekrar deneyin.</value></data>
+  <data name="ProductLevelNotStockable" xml:space="preserve"><value>Bu ürün seri takipli olabilir: stok küresel SKU seviyesinde hareket ettirilemez. Yerel SKU ya da bitmiş ürün seviyesini seçin.</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Malzeme kalemi</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Ürün ana verisi bu SKU için lot ya da seri takibini belirtmiyor; bu yüzden hareket kaydedilemez. Ürün ana verisi tamamlanınca tekrar deneyin.</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>Ürünün durumu bu hareket türüne izin vermiyor (taslak, kullanım dışı ya da emekli). Hiçbir şey değiştirilmedi.</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>Bu ürün seri takipli olabilir: stok küresel SKU seviyesinde hareket ettirilemez. Yerel SKU ya da bitmiş ürün seviyesini seçin.</value></data>
 </root>

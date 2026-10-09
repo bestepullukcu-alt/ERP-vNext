@@ -42,7 +42,9 @@ public static class WireNames
     {
         [SkuLevel.Gsku] = "Gsku",
         [SkuLevel.Lsku] = "Lsku",
-        [SkuLevel.FinishedGood] = "FinishedGood"
+        [SkuLevel.FinishedGood] = "FinishedGood",
+        // INVENTORY-BUNDLE 1.1.0 (WP-0173-PM2 contract, WP-0173-PM1 behaviour): a material item stocked as its own SKU.
+        [SkuLevel.Item] = "Item"
     };
 
     private static readonly IReadOnlyDictionary<string, MovementType> MovementTypesByWire =
@@ -78,6 +80,14 @@ public static class WireNames
 
     public static bool TryParseSkuLevel(string? wire, out SkuLevel value)
         => TryParse(SkuLevelsByWire, wire, out value);
+
+    /// <summary>
+    /// The three 1.0 levels only (Gsku / Lsku / FinishedGood) — for the contracts whose <c>SkuLevel</c> has no <c>Item</c> yet:
+    /// TRACE-BUNDLE 1.2.0 (lots, serials, GS1) and QUARANTINE-BUNDLE 1.0.0 (manual block). WP-0173-PM1 keeps them as they are
+    /// (no contract change outside INVENTORY 1.2.0); <c>Item</c> there is the same 400 as before (open point O-PM1-1).
+    /// </summary>
+    public static bool TryParseLegacySkuLevel(string? wire, out SkuLevel value)
+        => TryParseSkuLevel(wire, out value) && value != SkuLevel.Item;
 
     private static bool TryParse<T>(IReadOnlyDictionary<string, T> map, string? wire, out T value)
         where T : struct

@@ -75,4 +75,7 @@
   <data name="LotUnregisteredHint" xml:space="preserve"><value>未登记批次（MOD-0174 之前）</value></data>
   <data name="ErrPeriodClosed" xml:space="preserve"><value>过账日期位于已关闭期间。未做任何更改；请选择未结期间内的日期。</value></data>
   <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>来源可用：{0}；请求：{1}（基本单位）。</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>产品主数据未说明此 SKU 是否按批次或序列号管理，因此无法保存该移动。请在产品主数据完整后重试。</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>该产品的状态不允许此移动类型（草稿、已停用或已退役）。未做任何更改。</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>该产品可能按序列号管理：库存不能在全局 SKU 级别移动。请选择本地 SKU 或成品级别。</value></data>
 </root>

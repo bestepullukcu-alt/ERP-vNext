@@ -3,16 +3,22 @@ using System.Text.Json;
 
 namespace Diten.Web.Models.Inventory;
 
-/// <summary>What the form needs to know about the chosen product / SKU (PRODUCT-MASTER-BUNDLE v1, contract routes).</summary>
+/// <summary>
+/// What the form needs to know about the chosen product / SKU (PRODUCT-MASTER-BUNDLE, contract routes). WP-0173-PM1 (v1.1,
+/// OD-1): the lot / serial flags are the SKU's (<c>getSku</c>), nullable — unknown is never false. <see cref="BlockedKey"/> names
+/// why the form must not send this movement (resx key): <c>ProductFlagsUnknown</c> (OD-5) or <c>ProductLevelNotStockable</c>
+/// (OD-10, a Gsku of a product that is not explicitly serial-free). The service applies the same rules and decides.
+/// </summary>
 public sealed record ProductFacts(
     bool Available,
-    bool LotControlled,
-    bool SerialControlled,
+    bool? LotControlled,
+    bool? SerialControlled,
     string? BaseUomId,
     IReadOnlyList<string> Units,
-    IReadOnlyList<UomEdge> Conversions)
+    IReadOnlyList<UomEdge> Conversions,
+    string? BlockedKey = null)
 {
-    public static readonly ProductFacts Unavailable = new(false, false, false, null, [], []);
+    public static readonly ProductFacts Unavailable = new(false, null, null, null, [], []);
 }
 
 /// <summary>One declared conversion <c>fromUom → toUom = quantity × numerator / denominator</c>.</summary>
@@ -35,18 +41,22 @@ public static class MovementFormSources
 {
     public const int BalancePageSize = 200;
 
-    public static async Task<ProductFacts> ProductFactsAsync(InventoryGatewayClient gateway, string itemId, string skuId, CancellationToken cancellationToken)
+    public static async Task<ProductFacts> ProductFactsAsync(InventoryGatewayClient gateway, string itemId, string skuId, string skuLevel, CancellationToken cancellationToken)
     {
-        var productTask = gateway.GetAsync($"/api/product-master/products/{Uri.EscapeDataString(itemId)}", cancellationToken);
+        // WP-0173-PM1: getSku (authoritative, v1.1) + getSkuUom; getProduct only at Gsku, for the product's serial flag (OD-10).
+        var gsku = string.Equals(skuLevel, "Gsku", StringComparison.Ordinal);
+        var skuTask = gateway.GetAsync($"/api/product-master/skus/{Uri.EscapeDataString(skuId)}?level={Uri.EscapeDataString(skuLevel)}", cancellationToken);
         var uomTask = gateway.GetAsync($"/api/product-master/skus/{Uri.EscapeDataString(skuId)}/uom", cancellationToken);
-        var replies = await Task.WhenAll(productTask, uomTask);
-        if (!replies[0].IsSuccess || !replies[1].IsSuccess) return ProductFacts.Unavailable;
+        var productTask = gsku ? gateway.GetAsync($"/api/product-master/products/{Uri.EscapeDataString(itemId)}", cancellationToken) : null;
+        var replies = await Task.WhenAll(productTask is null ? new[] { skuTask, uomTask } : new[] { skuTask, uomTask, productTask });
+        if (replies.Any(r => !r.IsSuccess)) return ProductFacts.Unavailable;
 
         try
         {
-            using var product = JsonDocument.Parse(replies[0].Body);
+            using var sku = JsonDocument.Parse(replies[0].Body);
             using var uom = JsonDocument.Parse(replies[1].Body);
-            var baseUom = Text(uom.RootElement, "baseUomId") ?? Text(product.RootElement, "baseUomId");
+            using var product = gsku ? JsonDocument.Parse(replies[2].Body) : null;
+            var baseUom = Text(uom.RootElement, "baseUomId") ?? Text(sku.RootElement, "baseUomId");
             var edges = new List<UomEdge>();
             if (uom.RootElement.TryGetProperty("conversions", out var conversions) && conversions.ValueKind == JsonValueKind.Array)
             {
@@ -65,7 +75,13 @@ public static class MovementFormSources
             if (baseUom is not null) units.Add(baseUom);
             units.AddRange(edges.Select(e => e.FromUom).Where(u => !units.Contains(u, StringComparer.Ordinal)).Distinct(StringComparer.Ordinal));
 
-            return new ProductFacts(true, Bool(product.RootElement, "lotControlled"), Bool(product.RootElement, "serialControlled"), baseUom, units, edges);
+            var lot = Flag(sku.RootElement, "lotControlled");
+            var serial = gsku ? (Flag(product!.RootElement, "serialControlled") == false ? false : null) : Flag(sku.RootElement, "serialControlled");
+            var blocked = lot is null ? "ProductFlagsUnknown"
+                : gsku && serial is null ? "ProductLevelNotStockable"
+                : serial is null ? "ProductFlagsUnknown"
+                : null;
+            return new ProductFacts(true, lot, serial, baseUom, units, edges, blocked);
         }
         catch (JsonException)
         {
@@ -230,6 +246,9 @@ public static class MovementFormSources
             }
             : null;
 
-    private static bool Bool(JsonElement item, string name) =>
-        item.ValueKind == JsonValueKind.Object && item.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.True;
+    /// <summary>A boolean flag, or null when it is absent, null or not a boolean (unknown — never false).</summary>
+    private static bool? Flag(JsonElement item, string name) =>
+        item.ValueKind == JsonValueKind.Object && item.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? value.GetBoolean()
+            : null;
 }

@@ -229,6 +229,10 @@ const StockMovementForm = (function () {
         state.facts = facts;
         if (!facts || facts.available === false) {
             productUnavailable(facts?.message || t('PickerUnavailable'));
+        } else if (facts.blocked) {
+            // WP-0173-PM1: PRODUCT-MASTER does not state a lot / serial flag (or a Gsku of a serial-tracked product) — the
+            // form does not send; the service refuses the same way (422).
+            productUnavailable(facts.blockedMessage || t('PickerUnavailable'));
         } else {
             const prefill = form.dataset.prefillUom || el.uom.value || facts.baseUomId || '';
             fill(el.uom, (facts.units || []).map((u) => ({ value: u, text: u })), prefill);
@@ -627,6 +631,7 @@ const StockMovementForm = (function () {
         if (!body.transactionDate) errors.transactionDate = t('ValDate');
         if (!body.postingDate) errors.postingDate = t('ValDate');
         const source = state.sources.get(body.source || '');
+        if (state.facts?.blocked) errors.sku = state.facts.blockedMessage || t('PickerUnavailable');
         if (dir && dir !== 'in') required('source', body.source);
         if (dir === 'in' || dir === 'wh' || dir === 'loc') {
             required('toWarehouseId', body.toWarehouseId);

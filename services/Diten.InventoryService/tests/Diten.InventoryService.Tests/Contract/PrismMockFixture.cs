@@ -8,7 +8,8 @@ using Xunit;
 namespace Diten.InventoryService.Tests.Contract;
 
 /// <summary>
-/// Starts two Prism 4.10.5 mocks of the FROZEN consumed contracts (PRODUCT-MASTER-BUNDLE, LOCATION) on free local
+/// Starts Prism 4.10.5 mocks of the consumed contracts — PRODUCT-MASTER-BUNDLE v1.1 draft (WP-0173-PM1), LOCATION, and the
+/// frozen PRODUCT-MASTER v1.0 copy (backward compatibility only) — on free local
 /// ports and stops them afterwards. Requires Node (WP E5). If Prism cannot start the fixture throws — the smoke tests
 /// then FAIL; they are never skipped.
 ///
@@ -27,11 +28,15 @@ public sealed class PrismMockFixture : IAsyncLifetime
 
     public Uri LocationMasterBaseUrl { get; private set; } = null!;
 
+    /// <summary>WP-0173-PM1: the frozen PRODUCT-MASTER v1.0 copy — for the backward-compatibility smoke only.</summary>
+    public Uri ProductMasterV10BaseUrl { get; private set; } = null!;
+
     public async Task InitializeAsync()
     {
         var entryPoint = await PrismEntryPointAsync();
         ProductMasterBaseUrl = await StartAsync(entryPoint, RepoPaths.Contract("product-master-bundle.openapi.yaml"));
         LocationMasterBaseUrl = await StartAsync(entryPoint, RepoPaths.Contract("location.openapi.yaml"));
+        ProductMasterV10BaseUrl = await StartAsync(entryPoint, RepoPaths.Contract("product-master-bundle.v1.0.openapi.yaml"));
     }
 
     public Task DisposeAsync()

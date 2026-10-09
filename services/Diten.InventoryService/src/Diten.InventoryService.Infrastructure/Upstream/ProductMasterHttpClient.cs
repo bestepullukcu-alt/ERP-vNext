@@ -51,8 +51,9 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
                 UpstreamHttp.RequiredString(root, "itemId"),
                 UpstreamHttp.OptionalString(root, "lifecycleStatus"),
                 UpstreamHttp.OptionalString(root, "baseUomId"),
-                UpstreamHttp.OptionalBool(root, "lotControlled"),
-                UpstreamHttp.OptionalBool(root, "serialControlled"),
+                // WP-0173-PM1: deprecated (OD-1) and nullable — absent / null / not a boolean stays UNKNOWN, never false.
+                UpstreamHttp.NullableBool(root, "lotControlled"),
+                UpstreamHttp.NullableBool(root, "serialControlled"),
                 UpstreamHttp.OptionalString(root, "canonicalCode"),
                 UpstreamHttp.OptionalString(root, "name")),
             Unavailable,
@@ -66,7 +67,11 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
             root => new SkuReference(
                 UpstreamHttp.RequiredString(root, "skuId"),
                 UpstreamHttp.OptionalString(root, "skuLevel"),
-                UpstreamHttp.OptionalString(root, "itemId")),
+                UpstreamHttp.OptionalString(root, "itemId"),
+                // WP-0173-PM1 (v1.1): the authoritative stock behaviour; open enums carried as text, unknown flags stay null.
+                UpstreamHttp.OptionalString(root, "lifecycleStatus"),
+                UpstreamHttp.NullableBool(root, "lotControlled"),
+                UpstreamHttp.NullableBool(root, "serialControlled")),
             Unavailable,
             cancellationToken);
 
@@ -100,7 +105,8 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
             throw new FormatException("A validateRefs result names neither itemId nor skuId.");
         }
 
-        return new ProductRefValidation(itemId, skuId, UpstreamHttp.OptionalString(r, "skuLevel"), UpstreamHttp.RequiredBool(r, "exists"));
+        return new ProductRefValidation(itemId, skuId, UpstreamHttp.OptionalString(r, "skuLevel"), UpstreamHttp.RequiredBool(r, "exists"),
+            UpstreamHttp.OptionalString(r, "lifecycleStatus"), UpstreamHttp.OptionalString(r, "itemKind"));
     }
 
     /// <summary>A conversion with an unreadable factor is dropped (never guessed); a missing path then yields 422.</summary>

@@ -392,7 +392,7 @@ public sealed partial class StockMovementsController : Controller
             {
                 if (!Guid.TryParse(query["itemId"], out var item))
                     return Json(new { available = false });
-                var facts = await MovementFormSources.ProductFactsAsync(gateway, item.ToString("D"), skuId, cancellationToken);
+                var facts = await MovementFormSources.ProductFactsAsync(gateway, item.ToString("D"), skuId, skuLevel, cancellationToken);
                 var quantity = query["quantity"].ToString();
                 var uom = query["uomId"].ToString();
                 string? baseQuantity = null;
@@ -404,6 +404,9 @@ public sealed partial class StockMovementsController : Controller
                     message = facts.Available ? null : _localizer["ProductFactsUnavailable"].Value,
                     lotControlled = facts.LotControlled,
                     serialControlled = facts.SerialControlled,
+                    // WP-0173-PM1: unknown flag / Gsku not stockable → the form does not send (the service refuses too).
+                    blocked = facts.BlockedKey is not null,
+                    blockedMessage = facts.BlockedKey is null ? null : _localizer[facts.BlockedKey].Value,
                     baseUomId = facts.BaseUomId,
                     units = facts.Units,
                     baseQuantity,
@@ -421,7 +424,7 @@ public sealed partial class StockMovementsController : Controller
                 if (direction is null || !MovementRules.IsQuantity(quantity) || uom.Length == 0)
                     return Json(new { sides = Array.Empty<object>() });
 
-                var facts = await MovementFormSources.ProductFactsAsync(gateway, item.ToString("D"), skuId, cancellationToken);
+                var facts = await MovementFormSources.ProductFactsAsync(gateway, item.ToString("D"), skuId, skuLevel, cancellationToken);
                 var baseQuantity = facts.Available ? MovementFormSources.ToBase(quantity, uom, facts) : null;
                 if (baseQuantity is null)
                     return Json(new { sides = Array.Empty<object>(), baseUomId = facts.BaseUomId });

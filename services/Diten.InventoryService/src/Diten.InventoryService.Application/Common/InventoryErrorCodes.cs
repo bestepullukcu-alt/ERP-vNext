@@ -6,7 +6,8 @@ namespace Diten.InventoryService.Application.Common;
 /// plus <see cref="InvalidRequest"/> which pack §12 names for structural field errors, plus
 /// <see cref="LegalEntityMasterUnavailable"/> which pack §19 W-0173-02 names (503, company selector), plus the eight lot /
 /// serial codes of the MOD-0174 pack §12 "Ledger posting rules" (WP-0174-P2, all 422; INVENTORY-BUNDLE v1 unchanged), plus
-/// <see cref="InventoryUnavailable"/> which INVENTORY-BUNDLE 1.1.0 declares for <c>getStockPresence</c> (503, WP-0173-PM2).
+/// <see cref="InventoryUnavailable"/> which INVENTORY-BUNDLE 1.1.0 declares for <c>getStockPresence</c> (503, WP-0173-PM2), plus
+/// the three PRODUCT-MASTER v1.1 refusals INVENTORY-BUNDLE 1.2.0 declares on <c>postMovement</c> (422, WP-0173-PM1, CT-PM1-1).
 /// No other code may be added without a new pack version.
 /// </summary>
 public static class InventoryErrorCodes
@@ -54,13 +55,23 @@ public static class InventoryErrorCodes
     /// <summary>INVENTORY-BUNDLE 1.1.0 <c>getStockPresence</c>: the store could not be read (503, never a partial answer).</summary>
     public const string InventoryUnavailable = "INVENTORY_UNAVAILABLE";
 
+    /// <summary>1.2.0 (OD-5, OD-10): a flag the SKU level needs is unknown in PRODUCT-MASTER — the lot flag, or the serial flag of an Lsku / FinishedGood / Item.</summary>
+    public const string ProductMasterDataIncomplete = "PRODUCT_MASTER_DATA_INCOMPLETE";
+
+    /// <summary>1.2.0 (OD-3, OD-4, CT-PM1-2, CT-PM1-3): the item / SKU lifecycle status does not allow this movement type.</summary>
+    public const string ItemNotActive = "ITEM_NOT_ACTIVE";
+
+    /// <summary>1.2.0 (OD-10): a GSKU-level movement of a product whose serial flag is not explicitly false.</summary>
+    public const string SkuLevelNotStockable = "SKU_LEVEL_NOT_STOCKABLE";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         InvalidMovementType, CrossLeForbidden, InsufficientStock, SerialCountMismatch, UnknownLocation,
         ProductMasterUnavailable, UnknownItem, InvalidRequest, IdempotencyKeyReused, SkuItemMismatch,
         UomConversionMissing, LotRequired, AlreadyReversed, LocationMasterUnavailable, InsufficientAvailable,
         ReservationConflict, LegalEntityMasterUnavailable, LotNotAllowed, UnknownLot, LotSkuMismatch, LotBlocked, LotExpired,
-        SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch, LotRetestDue, InventoryUnavailable
+        SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch, LotRetestDue, InventoryUnavailable,
+        ProductMasterDataIncomplete, ItemNotActive, SkuLevelNotStockable
     };
 
     /// <summary>MOD-0175 Q4: the <c>LOT_RETEST_DUE</c> refusal (pre-check and in-transaction re-check give the same answer).</summary>

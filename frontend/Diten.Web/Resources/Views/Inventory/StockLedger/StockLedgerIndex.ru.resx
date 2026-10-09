@@ -75,4 +75,7 @@
   <data name="LotUnregisteredHint" xml:space="preserve"><value>Незарегистрированная партия (до MOD-0174)</value></data>
   <data name="ErrPeriodClosed" xml:space="preserve"><value>Дата проводки попадает в закрытый период. Ничего не изменено; выберите дату открытого периода.</value></data>
   <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Доступно в источнике: {0}; запрошено: {1} (базовая единица).</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Основные данные товара не указывают учёт по партиям или серийным номерам для этой SKU, поэтому движение нельзя сохранить. Повторите попытку, когда запись основных данных будет заполнена.</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>Статус товара не допускает этот тип движения (черновик, деактивирован или выведен из оборота). Ничего не изменено.</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>Этот товар может учитываться по серийным номерам: запас нельзя перемещать на уровне глобальной SKU. Выберите уровень локальной SKU или готовой продукции.</value></data>
 </root>

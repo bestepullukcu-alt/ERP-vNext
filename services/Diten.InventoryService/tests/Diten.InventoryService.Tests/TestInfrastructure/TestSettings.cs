@@ -19,8 +19,12 @@ public static class TestSettings
     /// <summary>Signing secret minted per test process; never a checked-in value.</summary>
     public static readonly string JwtSecret = "inventory-tests-" + Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
 
-    public static string MongoConnectionString =>
-        Environment.GetEnvironmentVariable("INVENTORY_TEST_MONGO") ?? "mongodb://127.0.0.1:27017";
+    /// <summary>
+    /// FU-0173-TEST-01 (WP-0173-PM1): <c>INVENTORY_TEST_MONGO</c> when set (refused if it names port 27017 — the developer's
+    /// live mongod); otherwise the suite starts its OWN single-node replica set (<see cref="TestMongo"/>). There is no default
+    /// address any more.
+    /// </summary>
+    public static string MongoConnectionString => TestMongo.ConnectionString;
 
     private static readonly object Gate = new();
     private static bool _applied;

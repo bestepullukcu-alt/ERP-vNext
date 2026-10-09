@@ -14,4 +14,5 @@ public interface ITraceSkuDirectory
     Task<TraceSku?> GetSkuAsync(Guid skuId, SkuLevel level, CancellationToken cancellationToken = default);
 }
 
-public sealed record TraceSku(Guid SkuId, SkuLevel Level, Guid ItemId, string? Gtin);
+/// <remarks>WP-0173-PM1: <c>LotControlled</c> / <c>SerialControlled</c> are the SKU-level flags of PRODUCT-MASTER v1.1 (null = unknown).</remarks>
+public sealed record TraceSku(Guid SkuId, SkuLevel Level, Guid ItemId, string? Gtin, bool? LotControlled = null, bool? SerialControlled = null);

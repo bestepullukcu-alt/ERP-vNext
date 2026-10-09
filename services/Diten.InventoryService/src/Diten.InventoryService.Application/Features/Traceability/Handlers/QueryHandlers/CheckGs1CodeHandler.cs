@@ -43,7 +43,7 @@ public sealed class CheckGs1CodeHandler : IRequestHandler<CheckGs1CodeQuery, Res
             return TraceWriteSupport.Invalid<Gs1CheckResultDto>($"code is required: 1-{TraceContract.MaxGs1CodeLength} characters.");
         if (!TraceWriteSupport.TryParseId(request.SkuId, out var skuId))
             return TraceWriteSupport.Invalid<Gs1CheckResultDto>("skuId is required and must be a UUID.");
-        if (!WireNames.TryParseSkuLevel(request.SkuLevel, out var skuLevel))
+        if (!WireNames.TryParseLegacySkuLevel(request.SkuLevel, out var skuLevel))
             return TraceWriteSupport.Invalid<Gs1CheckResultDto>("skuLevel is required: Gsku, Lsku or FinishedGood.");
         if (!TraceWriteSupport.TryParseId(request.LotId, out var lotId)) return TraceWriteSupport.UnknownLot<Gs1CheckResultDto>();
 

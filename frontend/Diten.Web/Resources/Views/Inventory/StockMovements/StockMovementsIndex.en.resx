@@ -192,4 +192,10 @@
   <data name="ErrPeriodClosed" xml:space="preserve"><value>The posting date falls in a closed period. Nothing was changed; choose a date in an open period.</value></data>
   <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Available at the source: {0}; requested: {1} (base unit).</value></data>
   <data name="HintChooseTypeFirst" xml:space="preserve"><value>Choose the movement type first: it decides which source and target fields are needed.</value></data>
+  <data name="ProductFlagsUnknown" xml:space="preserve"><value>Product master data does not state lot or serial tracking for this SKU, so the movement cannot be saved. Try again once the product master record is complete.</value></data>
+  <data name="ProductLevelNotStockable" xml:space="preserve"><value>This product may be serial-tracked: stock cannot move at global SKU level. Choose the local SKU or finished good level.</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Material item</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Product master data does not state lot or serial tracking for this SKU, so the movement cannot be saved. Try again once the product master record is complete.</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>The product's status does not allow this movement type (draft, deactivated or retired). Nothing was changed.</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>This product may be serial-tracked: stock cannot move at global SKU level. Choose the local SKU or finished good level.</value></data>
 </root>

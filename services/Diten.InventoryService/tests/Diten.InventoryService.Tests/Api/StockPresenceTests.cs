@@ -254,19 +254,25 @@ public sealed class StockPresenceTests : IClassFixture<StockPresenceApiFactory>
     }
 
     /// <summary>
-    /// Measurement for the evidence (WP-0173-PM2 NE-1): an Item-level MOVEMENT is refused today — at request validation, 400
-    /// INVALID_REQUEST, before PRODUCT-MASTER is asked — and PM2 does not change that (Item handling is WP-0173-PM1).
+    /// WP-0173-PM2 measured an Item-level MOVEMENT refused at request validation (400). WP-0173-PM1 (O-PM2-4 closed) accepts it:
+    /// the level is now checked against PRODUCT-MASTER like any other — a SKU unknown at Item level is 422 UNKNOWN_ITEM, a material
+    /// item (<c>skuId == itemId</c>) posts, and getStockPresence finds that stock at Item level.
     /// </summary>
     [Fact]
-    public async Task An_Item_level_movement_is_still_refused_with_400_before_product_master()
+    public async Task An_Item_level_movement_is_checked_against_product_master_and_found_by_stock_presence()
     {
         var s = new InventoryScenario(_factory);
         var body = s.Receipt("1");
         body["skuLevel"] = "Item";
-        var refused = await s.PostExpectingAsync(body, 400);
-        Assert.Equal("INVALID_REQUEST", refused.GetProperty("error").GetProperty("code").GetString());
-        Assert.Contains("skuLevel", refused.GetProperty("error").GetProperty("message").GetString());
-        Assert.Empty(s.Persisted("inventory_transactions"));
+        Assert.Equal("UNKNOWN_ITEM", (await s.PostExpectingAsync(body, 422)).GetProperty("error").GetProperty("code").GetString());
+
+        var item = Guid.NewGuid();
+        _factory.Products.AddMaterialItem(item);
+        body["itemId"] = item.ToString();
+        body["skuId"] = item.ToString();
+        await s.PostExpectingAsync(body, 201);
+        Assert.True(await HasStockAsync(s.Tenant, item, "Item"));
+        Assert.False(await HasStockAsync(s.Tenant, item, "Lsku"));
     }
 
     // ── rotation ─────────────────────────────────────────────────────────────────────────────────────────

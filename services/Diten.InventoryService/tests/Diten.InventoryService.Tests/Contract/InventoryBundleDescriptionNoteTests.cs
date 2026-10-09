@@ -21,6 +21,9 @@ namespace Diten.InventoryService.Tests.Contract;
 /// value (<c>Item</c>, appended — the three 1.0.0 values keep their positions) with the proposal's description, the new path
 /// <c>/stock-presence</c> (<c>getStockPresence</c>), the <c>internalApiKey</c> security scheme and the <c>StockPresence</c> schema.
 /// Still: no 1.0.0 key removed and none changed except the version and the <c>SkuLevel</c> description.</para>
+/// <para>WP-0173-PM1 — the step 1.1.0 → 1.2.0 is ADDITIVE too (CT-PM1-1): three examples under the existing
+/// <c>UnprocessableMovement</c> response (codes PRODUCT_MASTER_DATA_INCOMPLETE, ITEM_NOT_ACTIVE, SKU_LEVEL_NOT_STOCKABLE), a
+/// <c>description</c> on <c>postMovement</c> and one changelog line — nothing else.</para>
 /// </summary>
 public sealed class InventoryBundleDescriptionNoteTests
 {
@@ -32,8 +35,13 @@ public sealed class InventoryBundleDescriptionNoteTests
     /// <summary>The 1.1.0 additions (WP-0173-PM2): exactly these subtrees, nothing else.</summary>
     private static readonly string[] AdditivePrefixes =
     [
-        "paths./stock-presence.", "components.schemas.StockPresence.", "components.securitySchemes.internalApiKey."
+        "paths./stock-presence.", "components.schemas.StockPresence.", "components.securitySchemes.internalApiKey.",
+        // 1.2.0 (WP-0173-PM1)
+        UnprocessableExamples + "productMasterDataIncomplete.", UnprocessableExamples + "itemNotActive.", UnprocessableExamples + "skuLevelNotStockable."
     ];
+
+    private const string UnprocessableExamples = "components.responses.UnprocessableMovement.content.application/json.examples.";
+    private const string PostMovementDescription = "paths./movements.post.description";
 
     private static string FixturePath => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.0.0.openapi.yaml");
 
@@ -55,14 +63,31 @@ public sealed class InventoryBundleDescriptionNoteTests
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
         Assert.Equal(["info.version", SkuLevelDescription], changed);
-        Assert.Equal("1.1.0", current["info.version"]);
+        Assert.Equal("1.2.0", current["info.version"]);
         Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
                                            || k.StartsWith(RetestDueExample, StringComparison.Ordinal)
-                                           || k == "components.schemas.SkuLevel.enum[3]"
+                                           || k == "components.schemas.SkuLevel.enum[3]" || k == PostMovementDescription
                                            || AdditivePrefixes.Any(p => k.StartsWith(p, StringComparison.Ordinal)), "unexpected addition: " + k));
         Assert.Equal("LOT_RETEST_DUE", current[RetestDueExample + "value.error.code"]);
         Assert.Contains(AvailableDescription, added);
         Assert.Equal("FROZEN", current["info.x-status"]);
+    }
+
+    [Fact]
+    public void The_1_2_0_additions_are_the_three_422_codes_and_the_postMovement_note()
+    {
+        var current = Flatten(Load(ContractSchemas.ContractPath));
+        Assert.Equal("PRODUCT_MASTER_DATA_INCOMPLETE", current[UnprocessableExamples + "productMasterDataIncomplete.value.error.code"]);
+        Assert.Equal("ITEM_NOT_ACTIVE", current[UnprocessableExamples + "itemNotActive.value.error.code"]);
+        Assert.Equal("SKU_LEVEL_NOT_STOCKABLE", current[UnprocessableExamples + "skuLevelNotStockable.value.error.code"]);
+        Assert.Equal("#/components/responses/UnprocessableMovement", current["paths./movements.post.responses.422.$ref"]);
+        Assert.StartsWith("1.2.0 — PRODUCT-MASTER 1.1 rules", current[PostMovementDescription]);
+        var changelog = string.Join("\n", current.Where(kv => kv.Key.StartsWith("info.x-changelog[", StringComparison.Ordinal)).Select(kv => kv.Value));
+        Assert.Contains("1.2.0 — additive (WP-0173-PM1, CT-PM1-1", changelog);
+        // The code list of the service names exactly these three new codes.
+        Assert.Contains("PRODUCT_MASTER_DATA_INCOMPLETE", Diten.InventoryService.Application.Common.InventoryErrorCodes.All);
+        Assert.Contains("ITEM_NOT_ACTIVE", Diten.InventoryService.Application.Common.InventoryErrorCodes.All);
+        Assert.Contains("SKU_LEVEL_NOT_STOCKABLE", Diten.InventoryService.Application.Common.InventoryErrorCodes.All);
     }
 
     [Fact]
