@@ -269,7 +269,11 @@ public sealed record WorkItemActionDto(
     bool? SignatureRequired = null,
     [property: System.Text.Json.Serialization.JsonIgnore(
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-    string? SignatureMeaning = null);
+    string? SignatureMeaning = null,
+    // MOD-0022 E5W2 (CT-D19) — the signable action the dialog asks the policy for (workflow.task.approve); omitted otherwise.
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? SignatureActionCode = null);
 
 /// <summary>
 /// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.
