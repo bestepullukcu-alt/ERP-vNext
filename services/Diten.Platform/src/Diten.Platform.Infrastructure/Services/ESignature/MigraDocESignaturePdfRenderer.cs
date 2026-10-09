@@ -109,6 +109,7 @@ public sealed class MigraDocESignaturePdfRenderer : IESignaturePdfRenderer
         Line(details, "İmza anlamı", $"{r.MeaningCode} — {r.MeaningTextAtSign}");
         Line(details, "Tarih-saat", Utc(r.SignedAtUtc));
         Line(details, "Kayıt", $"{r.Module} · {r.SubjectType} · {r.SubjectId}");
+        Line(details, "Şirket", ESignatureExportText.Company(r)); // VIS1: a tenant-level record says so
         Line(details, "Doğrulama", row.VerificationStatus);
         Line(details, "Doğrulama özeti", r.SignatureDigest, last: true);
 

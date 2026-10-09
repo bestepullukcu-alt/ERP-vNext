@@ -131,6 +131,8 @@ public sealed class WorkflowESignatureTestHost : IAsyncLifetime
                 services.Configure<ContentStorageOptions>(o => o.RootPath = StorageRoot);
                 services.AddScoped<IContentStorageGateway, LocalFileSystemContentStorageGateway>();
                 services.AddScoped<IESignRequestLanguage, HttpESignRequestLanguage>();
+                // VIS1 — the audit export (createExport) runs on this host too (the E2 host registers the same renderer).
+                services.AddSingleton<Diten.Platform.Application.Features.ESignature.Handlers.IESignaturePdfRenderer, MigraDocESignaturePdfRenderer>();
                 // MOD-0023
                 services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();
                 services.AddScoped<IWorkflowTemplateVersionRepository, WorkflowTemplateVersionRepository>();

@@ -147,8 +147,34 @@ public sealed record ESignatureSearch(
     string? SignerUserId,
     string? MeaningCode,
     Guid? LegalEntityId,
-    IReadOnlyCollection<Guid> VisibleLegalEntityIds,
-    string ViewerUserId);
+    ESignatureVisibilityScope Visibility);
+
+/// <summary>
+/// MOD-0022 — who may see a signature record (pack §8 KS-2, VIS1 / FU-0022-VIS-01). ONE rule for search, get, verify and the
+/// audit export; the record repository turns the same three facts into its query filter:
+/// <list type="bullet">
+/// <item>the signer always sees their own record;</item>
+/// <item>a record WITH a company (<c>LegalEntityId</c>) is visible when that company is in the caller's SEC-002 data scope
+/// (<see cref="LegalEntityIds"/>) — the E2 rule, unchanged (no scope ⇒ none, fail closed);</item>
+/// <item>a record WITHOUT a company (a pure <c>workflow-task</c> subject) is a tenant-level record: visible when
+/// <see cref="TenantLevelRecords"/> — the caller holds <c>esign.signatures.read</c> (search / get / verify) or
+/// <c>esign.signatures.export</c> (export) in this tenant.</item>
+/// </list>
+/// The tenant boundary is not part of the scope: every repository read is bound to the caller's tenant before it.
+/// </summary>
+public sealed record ESignatureVisibilityScope(string ViewerUserId, IReadOnlyCollection<Guid> LegalEntityIds, bool TenantLevelRecords)
+{
+    public bool CanSee(Entities.ESignature.ESignatureRecord record) =>
+        string.Equals(record.SignerUserId, ViewerUserId, StringComparison.Ordinal)
+        || (record.LegalEntityId is { } legalEntity ? LegalEntityIds.Contains(legalEntity) : TenantLevelRecords);
+
+    /// <summary>
+    /// get / verify by id: true when the rule hides a tenant-level record from the caller. A record with a company keeps the
+    /// gate those operations had before VIS1 (the subject provider), so this never hides one — its company rule stays where
+    /// it was (list / export).
+    /// </summary>
+    public bool HidesTenantLevel(Entities.ESignature.ESignatureRecord record) => record.LegalEntityId is null && !CanSee(record);
+}
 
 public sealed record ESignatureRequestQuery(
     string? Module,

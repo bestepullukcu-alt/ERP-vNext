@@ -1593,6 +1593,66 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
 - **O-E5W2-3:** company lists need MDM — accepted (fleet has MDM).
 - W-0022-01 (no Python) open to MVP-1 closure.
 
+### VIS1 — implementation note (WP-0022-VIS1, 2026-10-09, pending CT) — FU-0022-VIS-01 closed
+
+- **Branch and commit:** branch `feature/sce/mod-0022-vis1` from `907c226ff`, local only, no push. Code commit
+  `a9837883e`. Evidence: `docs/records/audits/2026-10/mod-0022-vis1-evidence-2026-10-09.md` (+ `-scripts`).
+- **Rule** (one place, `ESignatureVisibilityScope`, next to `ESignatureSearch`):
+  - The signer always sees their own record.
+  - A record WITH a LegalEntity keeps the E2 rule: visible when the company is in the caller's SEC-002 scope.
+  - A record WITHOUT one (a pure `workflow-task` subject) is tenant-level:
+    - search / get / verify for `esign.signatures.read` holders;
+    - the export for `esign.signatures.export` holders.
+  - The tenant bound comes first and is unchanged.
+- **How it is applied:**
+  - `ESignatureVisibility.ScopeAsync(actor, purpose)` builds the scope from the data scope and the token keys.
+  - The record repository applies it as the search / export query.
+  - get / verify apply `HidesTenantLevel`: a company record keeps its pre-VIS1 gate.
+  - The export file writes the company as "Kiracı düzeyi"; file hash and log are unchanged.
+  - No new key; no contract, schema or sign-handler change.
+- **Contract (measured):** ESIGN-BUNDLE 1.0.0 says nothing about records without a company — a gap, not a conflict.
+  §4.24 "rows outside the caller's LegalEntity data scope" is about company records. Clarification for the next additive
+  version: "A record without a LegalEntity is a tenant-level record: visible to esign.signatures.read holders (search, get,
+  verify) and included in exports for esign.signatures.export holders; company cell 'Kiracı düzeyi'." This supersedes, for
+  company-less records only, §8's "without a scope the caller sees only their own signatures".
+- **Tests:**
+
+  | suite | before | after |
+  |---|---|---|
+  | Platform filtered | 607 | **613 / 613** (+6, written first) |
+  | Web | 675 | **675** |
+  | architecture | 18 | **18** |
+
+  Build: 0 errors, no warning in the changed files.
+- **Red before VIS1:**
+  - search + export did not show the record to a read / export holder;
+  - a user without read could still verify it (200).
+  - Measured: get was already 200 through the tenant-scoped `workflow-task` provider.
+- **Sabotages:**
+  - (a) tenant filter removed
+  - (b) the company filter dropped
+  - (c) the read check removed
+
+  Each turned exactly its test red and was restored; diff empty.
+- **Runtime probe** (own stack, 10/10):
+  - B signs (real password ticket) and approves; the record has no company (DB read: `LegalEntityId: null`).
+  - A (read + export, no company scope) searches / gets / verifies / lists by subject and exports CSV + PDF: the record is
+    in the file with "Kiracı düzeyi", and SHA-256 = log `FileHash`.
+  - C (verify only) gets 403 / 403 / 404 / 403.
+  - The owner fleet was unchanged.
+
+### VIS1 — CT acceptance (2026-10-09)
+
+- **CT-ACCEPTED.** CT re-ran Platform filtered **613/613**, Web **675/675**, architecture **18/18** in the agent worktree; read
+  `ESignatureVisibilityScope` (search / export filters from one object; get / verify use `HidesTenantLevel`) and the verify handler.
+  CT sabotage (own): the export purpose mapped to `esign.signatures.read` instead of `esign.signatures.export` →
+  `An_export_holder_gets_the_tenant_level_signature_in_the_file_labelled_tenant_level` red, restored, porcelain clean.
+  **FU-0022-VIS-01 CLOSED.** Fast-forwarded into the MVP-1 branch. Decisions on the opens:
+- Contract gap (no rule for company-less records in 1.0.0): description note in the next additive ESIGN version → **FU-0022-CT-01**.
+- Verify of a COMPANY-scoped record has no data-scope check since E2 (any verify holder of the tenant, by UUID). The result carries
+  status, hashes and integrity flags only — no signer, meaning or subject data — so the exposure is existence + validity of a known
+  UUID → **FU-0022-VIS-02** (apply the same data scope to verify for company records), before G1, low risk.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /

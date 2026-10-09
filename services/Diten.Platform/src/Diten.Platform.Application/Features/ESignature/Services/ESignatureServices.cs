@@ -265,28 +265,49 @@ public sealed class ESignatureCatalog : IESignatureCatalog
 
 // ── list / export visibility (pack §8 "Visibility and company", KS-2) ───────────────────────────────────────────────
 
+/// <summary>Which operation asks — it decides the key that opens the tenant-level records (VIS1).</summary>
+public enum ESignatureVisibilityPurpose
+{
+    /// <summary>search, get, verify: <c>esign.signatures.read</c>.</summary>
+    Read = 0,
+
+    /// <summary>the audit export: <c>esign.signatures.export</c>.</summary>
+    Export = 1
+}
+
 /// <summary>
-/// The legal entities whose signatures the caller may list or export: the SEC-002 data scope's LegalEntity includes
-/// (<see cref="IDataScopeResolver"/>, module <c>esign</c>). An empty answer means "own signatures only" — fail closed.
+/// The caller's <see cref="ESignatureVisibilityScope"/> (the one visibility rule — see there): the SEC-002 data scope's
+/// LegalEntity includes (<see cref="IDataScopeResolver"/>, module <c>esign</c>; empty ⇒ no company record, fail closed) and
+/// whether the caller's token carries the key that opens tenant-level records for <paramref name="purpose"/>. No new key:
+/// both are the existing tenant-scoped <c>esign.*</c> keys the endpoints already require.
 /// </summary>
 public interface IESignatureVisibility
 {
-    Task<IReadOnlyCollection<Guid>> VisibleLegalEntitiesAsync(ESignActor actor, CancellationToken ct);
+    Task<ESignatureVisibilityScope> ScopeAsync(ESignActor actor, ESignatureVisibilityPurpose purpose, CancellationToken ct);
 }
 
 public sealed class ESignatureVisibility : IESignatureVisibility
 {
     private readonly IDataScopeResolver _scopes;
+    private readonly ITenantAuthorizationContext _authorization;
 
-    public ESignatureVisibility(IDataScopeResolver scopes) => _scopes = scopes;
+    public ESignatureVisibility(IDataScopeResolver scopes, ITenantAuthorizationContext authorization)
+    {
+        _scopes = scopes;
+        _authorization = authorization;
+    }
 
-    public async Task<IReadOnlyCollection<Guid>> VisibleLegalEntitiesAsync(ESignActor actor, CancellationToken ct)
+    public async Task<ESignatureVisibilityScope> ScopeAsync(ESignActor actor, ESignatureVisibilityPurpose purpose, CancellationToken ct)
     {
         var scopes = await _scopes.ResolveAsync(actor.TenantId, actor.UserId, "esign", "signatures", ct);
-        return scopes
+        var legalEntities = scopes
             .Where(s => s.Kind == EntitlementDataScopeKind.LegalEntity && s.IsInclude && s.ScopeId is { } id && id != Guid.Empty)
             .Select(s => s.ScopeId!.Value)
             .Distinct()
             .ToList();
+        var key = purpose == ESignatureVisibilityPurpose.Export ? ESignPermissions.SignaturesExport : ESignPermissions.SignaturesRead;
+        var tenantLevel = _authorization.TenantId == actor.TenantId
+            && _authorization.PermissionKeys.Contains(key, StringComparer.OrdinalIgnoreCase);
+        return new ESignatureVisibilityScope(actor.UserIdText, legalEntities, tenantLevel);
     }
 }
