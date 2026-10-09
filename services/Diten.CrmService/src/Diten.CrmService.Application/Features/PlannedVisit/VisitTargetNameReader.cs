@@ -40,6 +40,12 @@ public sealed class VisitTargetNameReader
         return new VisitTargetNames(accounts, contacts);
     }
 
+    /// <summary>Is the target named by an institution (its TargetId is an account id)? Not for a contact nor for an
+    /// account-contact-link, whose TargetId is the link id (WP-VW-W1 T-1).</summary>
+    public static bool NamedByInstitution(string targetType)
+        => !string.Equals(targetType, PlannedVisitTargetType.Contact, StringComparison.Ordinal)
+           && !string.Equals(targetType, PlannedVisitTargetType.AccountContactLink, StringComparison.Ordinal);
+
     private static bool IsInactive(string? status) => IsInactiveStatus(status);
 
     /// <summary>The one "inactive target" rule (WP-VP-2; shared since WP-VP-3D): a master whose status is set and is not
@@ -68,10 +74,18 @@ public sealed class VisitTargetNames
 
     public string? Contact(Guid? id) => id is { } c && _contacts.TryGetValue(c, out var n) ? Blank(n.Name) : null;
 
-    /// <summary>A contact target is named by the doctor, an account / pharmacy target by the institution.</summary>
+    /// <summary>A contact target — and an <c>account-contact-link</c> ("the doctor at this institution", WP-VW-W1 T-1) —
+    /// is named by the doctor; an account / pharmacy target by the institution.</summary>
     public (string? Target, string? Account, string? Contact, bool TargetInactive) For(
         string targetType, Guid targetId, Guid? accountId, Guid? contactId)
     {
+        if (string.Equals(targetType, PlannedVisitTargetType.AccountContactLink, StringComparison.Ordinal))
+        {
+            // TargetId is the LINK id, which names nothing: the doctor is ContactId, the institution AccountId.
+            var doctor = contactId is { } linkContact && _contacts.TryGetValue(linkContact, out var d) ? d : null;
+            return (Blank(doctor?.Name), Account(accountId), Contact(contactId), doctor?.Inactive ?? false);
+        }
+
         var isContact = string.Equals(targetType, PlannedVisitTargetType.Contact, StringComparison.Ordinal);
         var target = isContact
             ? (_contacts.TryGetValue(contactId ?? targetId, out var c) ? c : null)

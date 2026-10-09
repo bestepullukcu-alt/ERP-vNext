@@ -104,6 +104,23 @@ public static class VisitReportValidation
                 VisitReportErrorCodes.NotYetDue, 409)
             : null;
 
+    /// <summary>WP-VW-W1 — a cancelled plan takes no outcome and no report (user decision 2026-10-08).</summary>
+    public static Failure? ValidatePlanNotCancelled(Domain.Entities.PlannedVisit plan)
+        => plan.IsCancelled()
+            ? new Failure(
+                "The planned visit is cancelled; no outcome or report can be recorded on it.",
+                VisitReportErrorCodes.PlanCancelled, 409)
+            : null;
+
+    /// <summary>WP-VW-W1 — past the report deadline (<see cref="VisitReportDeadline"/>, the same rule the work status
+    /// reads) an outcome / first submit is refused, unless the caller is the read-all holder (the manager).</summary>
+    public static Failure? ValidateDeadline(DateOnly plannedDate, DateTimeOffset now, bool exempt)
+        => !exempt && VisitReportDeadline.IsPassed(plannedDate, now)
+            ? new Failure(
+                $"The report deadline for this visit passed at {VisitReportDeadline.For(plannedDate):yyyy-MM-dd'T'HH:mm:ss'Z'}.",
+                VisitReportErrorCodes.DeadlinePassed, 409)
+            : null;
+
     /// <summary>The UTC calendar day of the clock (the CRM has no tenant time-zone source).</summary>
     public static DateOnly Today(TimeProvider clock) => DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime);
 

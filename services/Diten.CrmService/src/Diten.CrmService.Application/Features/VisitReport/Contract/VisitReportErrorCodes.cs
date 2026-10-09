@@ -31,6 +31,21 @@ public static class VisitReportErrorCodes
     /// in the future (409). Rescheduling stays free.</summary>
     public const string NotYetDue = "visit_not_yet_due";
 
+    /// <summary>WP-VW-W1 — an outcome or a report submit on a visit whose plan is CANCELLED (409). An amendment of a
+    /// report submitted before the cancellation stays allowed.</summary>
+    public const string PlanCancelled = "visit_report_plan_cancelled";
+
+    /// <summary>WP-VW-W1 — an outcome or a first submit after the report deadline (end of the planned day UTC +
+    /// <c>ReportDeadlineHours</c>), 409. The read-all holder is exempt; an amendment is unlimited.</summary>
+    public const string DeadlinePassed = "visit_report_deadline_passed";
+
+    /// <summary>WP-VW-W1 — the calendar's from / to window is missing or not a date (400). Replaces the misleading
+    /// <c>visit_report_reschedule_date_invalid</c> on that endpoint.</summary>
+    public const string CalendarRangeInvalid = "visit_report_calendar_range_invalid";
+
+    /// <summary>WP-VW-W1 — the calendar's optional <c>workStatus</c> filter carries an unknown code (400).</summary>
+    public const string WorkStatusInvalid = "visit_report_work_status_invalid";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         UnsupportedVocabularyValue,
@@ -38,6 +53,7 @@ public static class VisitReportErrorCodes
         OutcomeRequired, ReasonCodeRequired, RescheduleDateInvalid,
         ResourceRequired, OutcomeCodeRequired, SampleInvalid, ContentActualsInvalid, FreeTextTooLong,
         ReportNotFound, ReportAlreadyExists, NotCompleted, EditWindowClosed, NotFinalised,
-        AmendmentReasonRequired, InvalidTransition, ConcurrencyConflict, NotYetDue
+        AmendmentReasonRequired, InvalidTransition, ConcurrencyConflict, NotYetDue,
+        PlanCancelled, DeadlinePassed, CalendarRangeInvalid, WorkStatusInvalid
     };
 }

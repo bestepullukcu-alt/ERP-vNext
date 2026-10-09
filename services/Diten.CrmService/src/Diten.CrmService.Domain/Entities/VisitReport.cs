@@ -218,4 +218,9 @@ public static class VisitReportLimits
     /// <summary>The correction window (D-EDIT-WINDOW): a submitted report may be edited in place for this many minutes;
     /// after it, corrections are append-only amendments.</summary>
     public const int EditWindowMinutes = 60;
+
+    /// <summary>WP-VW-W1 — the report deadline: a visit's outcome / report is recorded until the END of its planned day
+    /// (UTC) plus this many hours. After it the visit is locked for the rep (the read-all holder is exempt); an amendment
+    /// of an already-submitted report stays unlimited.</summary>
+    public const int ReportDeadlineHours = 48;
 }

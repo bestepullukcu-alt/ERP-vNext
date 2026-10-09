@@ -602,6 +602,29 @@ public sealed class PlannedVisitRuntimeTests
         Assert.Contains(PlannedVisitErrorCodes.Archived, r.Errors!);
     }
 
+    /// <summary>WP-VW-W1 (4K Acceptance 4) — a cancelled visit is closed: an update is 409 invalid_transition and the
+    /// stored plan is not rewritten.</summary>
+    [Fact]
+    public async Task Cancel_then_update_is_409_invalid_transition()
+    {
+        var f = new Fixture();
+        var acc = f.SeedAccount();
+        var id = await SeedPlanAsync(f, acc, "P1", "planned");
+        await f.Cancel().Handle(new CancelPlannedVisitCommand(id, "week_reopened", null), default);
+        var row = f.Repo.Items.Single(x => x.Id == id);
+        Assert.Equal(PlannedVisitStatus.Cancelled, row.PlanStatus);
+        var versionBefore = row.Version;
+
+        var r = await f.Update().Handle(UpdateOf(row) with { Notes = "revived" }, default);
+
+        Assert.Equal(409, r.StatusCode);
+        Assert.Contains(PlannedVisitErrorCodes.InvalidTransition, r.Errors!);
+        Assert.Contains("Cancelled visit cannot be modified.", r.Errors!);
+        var after = f.Repo.Items.Single(x => x.Id == id);
+        Assert.Equal(versionBefore, after.Version);
+        Assert.NotEqual("revived", after.Notes);
+    }
+
     [Fact]
     public async Task Archive_twice_is_409()
     {

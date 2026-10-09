@@ -12,7 +12,8 @@ namespace Diten.CrmService.Application.Features.VisitReport.Handlers.CommandHand
 /// <summary>
 /// Records the execution outcome (completed / missed / rescheduled) against a plan atom (D-EXECUTION-STATUS = A). It
 /// UPSERTS the draft <see cref="VisitReportEntity"/> for the plan (1:1). It <b>reads</b> the FU01 plan atom read-only to
-/// reject an orphan outcome and to default the reporting resource; it <b>never mutates</b> the atom (FU01 §2.3 + the
+/// reject an orphan outcome, a cancelled plan (WP-VW-W1) and a late outcome past the report deadline; the reporting
+/// resource is the CALLER (read-all may record for another). It <b>never mutates</b> the atom (FU01 §2.3 + the
 /// F-EXECUTED-MARKER gap: FU01 has no "executed" transition, so the report-side outcome is the sole source of truth).
 /// <para>The write touches only the <see cref="VisitReportEntity"/> aggregate, so it is a single-document, version-guarded
 /// write — no multi-document transaction is needed, because there is no second aggregate to keep consistent (§8.4).</para>
@@ -62,6 +63,27 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
                 "The planned visit does not exist.", VisitReportErrorCodes.PlannedVisitNotFound, 404));
         }
 
+        // WP-VW-W1 — the reporter is the caller; only the read-all holder records for someone else.
+        var readAll = _caller.HasPermission(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll);
+        var (reporterAllowed, reporter) = _caller.ResolveWriteResource(
+            Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, request.ReportedByResourceId);
+        if (!reporterAllowed)
+        {
+            return Fail(new VisitReportValidation.Failure(
+                "A visit outcome can only be recorded by the signed-in resource.", VisitOwnership.ResourceNotCaller, 403));
+        }
+
+        // WP-VW-W1 — a cancelled plan takes no outcome; past the deadline the rep is locked out (every outcome).
+        if (VisitReportValidation.ValidatePlanNotCancelled(plan) is { } cancelledFailure)
+        {
+            return Fail(cancelledFailure);
+        }
+
+        if (VisitReportValidation.ValidateDeadline(plan.PlannedDate, _clock.GetUtcNow(), readAll) is { } deadlineFailure)
+        {
+            return Fail(deadlineFailure);
+        }
+
         if (VisitReportValidation.ValidateOutcome(request.ExecutionOutcome, request.ReasonCode) is { } outcomeFailure)
         {
             return Fail(outcomeFailure);
@@ -88,7 +110,7 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
             }
         }
 
-        var resourceId = VisitReportValidation.Trim(request.ReportedByResourceId) ?? plan.Resource.ResourceId;
+        var resourceId = reporter ?? plan.Resource.ResourceId;
         if (VisitReportValidation.ValidateResourceId(resourceId) is { } resourceFailure)
         {
             return Fail(resourceFailure);

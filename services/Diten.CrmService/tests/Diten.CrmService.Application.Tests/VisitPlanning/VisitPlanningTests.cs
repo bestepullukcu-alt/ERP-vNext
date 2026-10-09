@@ -321,10 +321,12 @@ public sealed partial class VisitPlanningTests
         }, Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitContentRefDto)));
 
         var detail = Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitDetailDto));
-        // WP-SB-3b added ContentItems; WP-VP-2 (B-8) appended the four read-time name fields after it.
-        Assert.Equal(50, detail.Length);
+        // WP-SB-3b added ContentItems; WP-VP-2 (B-8) appended the four read-time name fields after it; WP-VW-W1 appended
+        // the derived work status, the report deadline and the manager-attention flag.
+        Assert.Equal(53, detail.Length);
         Assert.Equal(new[] { "ContentItems", "TargetDisplayName", "AccountDisplayName", "ContactDisplayName", "TargetInactive" },
-            detail[^5..]);
+            detail[^8..^3]);
+        Assert.Equal(new[] { "WorkStatus", "ReportDeadline", "ManagerAttention" }, detail[^3..]);
         Assert.Equal(new[] { "Content", "Selection", "Availability", "Version", "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy" },
             detail[37..45]);
 

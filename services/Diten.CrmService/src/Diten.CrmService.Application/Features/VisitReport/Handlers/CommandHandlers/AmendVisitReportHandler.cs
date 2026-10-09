@@ -76,7 +76,17 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
             return Fail(contentFailure);
         }
 
-        var resourceId = VisitReportValidation.Trim(request.ReportedByResourceId) ?? report.ReportedByResourceId;
+        // WP-VW-W1 — the amendment's author is the caller; only the read-all holder amends for someone else. No deadline
+        // and no cancelled-plan lock here: correcting a submitted report stays allowed (audit rule).
+        var (reporterAllowed, reporter) = _caller.ResolveWriteResource(
+            Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, request.ReportedByResourceId);
+        if (!reporterAllowed)
+        {
+            return Fail(new VisitReportValidation.Failure(
+                "A visit report can only be amended by the signed-in resource.", VisitOwnership.ResourceNotCaller, 403));
+        }
+
+        var resourceId = reporter ?? report.ReportedByResourceId;
         if (VisitReportValidation.ValidateResourceId(resourceId) is { } resourceFailure)
         {
             return Fail(resourceFailure);

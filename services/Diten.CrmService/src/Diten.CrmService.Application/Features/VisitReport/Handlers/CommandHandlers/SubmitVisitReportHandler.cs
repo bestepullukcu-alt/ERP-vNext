@@ -62,6 +62,22 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
                 "The planned visit does not exist.", VisitReportErrorCodes.PlannedVisitNotFound, 404));
         }
 
+        // WP-VW-W1 — the reporter is the caller; only the read-all holder submits for someone else.
+        var readAll = _caller.HasPermission(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll);
+        var (reporterAllowed, reporter) = _caller.ResolveWriteResource(
+            Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, request.ReportedByResourceId);
+        if (!reporterAllowed)
+        {
+            return Fail(new VisitReportValidation.Failure(
+                "A visit report can only be submitted by the signed-in resource.", VisitOwnership.ResourceNotCaller, 403));
+        }
+
+        // WP-VW-W1 — a cancelled plan takes no report.
+        if (VisitReportValidation.ValidatePlanNotCancelled(plan) is { } cancelledFailure)
+        {
+            return Fail(cancelledFailure);
+        }
+
         // WP-E2E-FIX-1 (E9-B5) — a report is submitted only on or after the visit's planned day.
         if (VisitReportValidation.ValidateDue(plan.PlannedDate, VisitReportValidation.Today(_clock)) is { } dueFailure)
         {
@@ -75,7 +91,16 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
         }
 
         var existing = await _reports.GetByPlannedVisitIdAsync(tenantId, request.PlannedVisitId, cancellationToken);
-        var resourceId = VisitReportValidation.Trim(request.ReportedByResourceId)
+
+        // WP-VW-W1 — past the deadline a FIRST submit (none yet, or a draft) is refused for the rep. A report already
+        // submitted keeps its 60-minute in-place correction window, and amendments stay unlimited.
+        if (existing?.IsFinalised() != true
+            && VisitReportValidation.ValidateDeadline(plan.PlannedDate, _clock.GetUtcNow(), readAll) is { } deadlineFailure)
+        {
+            return Fail(deadlineFailure);
+        }
+
+        var resourceId = reporter
                          ?? existing?.ReportedByResourceId
                          ?? plan.Resource.ResourceId;
         if (VisitReportValidation.ValidateResourceId(resourceId) is { } resourceFailure)

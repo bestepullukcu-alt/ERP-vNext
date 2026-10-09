@@ -16,13 +16,20 @@ public sealed class GetPlannedVisitByIdHandler
     private readonly ICallerScope _caller;
     private readonly VisitTargetNameReader _names;
     private readonly IProductNameReader? _productNames;
+    private readonly IVisitReportRepository? _reports;
+    private readonly TimeProvider _clock;
 
     public GetPlannedVisitByIdHandler(
         ITenantContext tenant, IPlannedVisitRepository repository, ICallerScope caller, VisitTargetNameReader names,
         // WP-VP-4G (F4-4) — names for items an older plan stored without (one bulk MDM read, fail-open).
-        IProductNameReader? productNames = null)
+        IProductNameReader? productNames = null,
+        // WP-VW-W1 — the visit's report (one read) + the clock, for the derived work status.
+        IVisitReportRepository? reports = null,
+        TimeProvider? clock = null)
     {
         _productNames = productNames;
+        _reports = reports;
+        _clock = clock ?? TimeProvider.System;
         _tenant = tenant;
         _repository = repository;
         _caller = caller;
@@ -46,7 +53,7 @@ public sealed class GetPlannedVisitByIdHandler
 
         var names = await _names.ReadAsync(
             tenantId,
-            new[] { plan.AccountId, plan.TargetType != PlannedVisitTargetType.Contact ? plan.TargetId : (Guid?)null },
+            new[] { plan.AccountId, VisitTargetNameReader.NamedByInstitution(plan.TargetType) ? plan.TargetId : (Guid?)null },
             new[] { plan.ContactId },
             cancellationToken);
         var dto = PlannedVisitMapper.ToDetail(plan, names);
@@ -59,6 +66,18 @@ public sealed class GetPlannedVisitByIdHandler
                     dto.ContentItems, await _productNames.ReadNamesAsync(unnamed, cancellationToken))
             };
         }
+
+        // WP-VW-W1 — the same derived work status the execution calendar shows (read time, never stored).
+        var report = _reports is null
+            ? null
+            : await _reports.GetByPlannedVisitIdAsync(tenantId, plan.Id, cancellationToken);
+        var workStatus = Diten.CrmService.Application.Features.VisitReport.VisitWorkStatus.Derive(plan, report, _clock.GetUtcNow());
+        dto = dto with
+        {
+            WorkStatus = workStatus,
+            ReportDeadline = Diten.CrmService.Application.Features.VisitReport.VisitReportDeadline.For(plan.PlannedDate),
+            ManagerAttention = Diten.CrmService.Application.Features.VisitReport.VisitWorkStatus.NeedsManagerAttention(workStatus)
+        };
 
         return Response<PlannedVisitDetailDto>.Success(dto);
     }

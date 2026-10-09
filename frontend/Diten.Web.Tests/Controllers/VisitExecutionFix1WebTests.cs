@@ -59,7 +59,9 @@ public sealed class VisitExecutionFix1WebTests
         var source = File.ReadAllText(Path.Combine(WebRoot(), "Controllers", "CRM", "CrmVisitExecutionController.cs"));
         var proxy = Between(source, "public Task<IActionResult> JourneyStages(", ";");
         Assert.Contains("/api/crm/knowledge/content-engagement-journeys/{journeyId}/stages", proxy);
-        Assert.Contains("ReadPermission, ReadFallback", proxy);
+        // WP-VW-W1 (F-RBAC) — the calendar read key only; the territory fallback is gone.
+        Assert.Contains("ReadPermission)", proxy);
+        Assert.DoesNotContain("Fallback", proxy);
     }
 
     // ── 1 (Web) · planned content on the card and in the report ──────────────────────────────────────────────────

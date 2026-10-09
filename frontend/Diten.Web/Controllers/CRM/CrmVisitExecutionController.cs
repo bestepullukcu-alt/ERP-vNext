@@ -17,9 +17,8 @@ namespace Diten.Web.Controllers.CRM;
 /// stays the authoritative permission + validation layer. This is NOT a Golden DataTable surface (verify_datatable_page
 /// N/A).
 /// <para>read = crm.visit-report.read; record (outcome + submit) = crm.visit-report.record + FU01 crm.planned-visit.manage;
-/// amend = crm.visit-report.amend. None is seeded (F-RBAC), so each check accepts the documented DEV-ONLY territory
-/// fallback, mirroring the CrmService controller — the fallback widens no guard (tenant isolation, the lifecycle,
-/// immutability and the fail-closed vocabulary all still run behind it).</para>
+/// amend = crm.visit-report.amend — the same keys the CrmService controller enforces (WP-VW-W1 F-RBAC: the DEV-ONLY
+/// territory fallback is removed here and there). A role receives them from the role-permission screen.</para>
 /// </summary>
 [Authorize]
 [Route("CRM/VisitExecution")]
@@ -29,10 +28,6 @@ public sealed class CrmVisitExecutionController : Controller
     private const string RecordPermission = "crm.visit-report.record";
     private const string AmendPermission = "crm.visit-report.amend";
     private const string PlannedVisitManage = "crm.planned-visit.manage";
-
-    // Documented DEV-ONLY fallback until F-RBAC lands (already granted to CRM roles). Not for production.
-    private const string ReadFallback = "crm.territory.read";
-    private const string ManageFallback = "crm.territory.model.manage";
     private const string ViewRoot = "~/Views/CRM/VisitExecution";
 
     private readonly HttpClient _httpClient;
@@ -53,16 +48,15 @@ public sealed class CrmVisitExecutionController : Controller
     [HttpGet("")]
     public IActionResult Index()
     {
-        if (!HasAnyPermission(ReadPermission, ReadFallback))
+        if (!HasAnyPermission(ReadPermission))
         {
             return StatusCode(StatusCodes.Status403Forbidden);
         }
 
         return View($"{ViewRoot}/Index.cshtml", new VisitExecutionIndexViewModel
         {
-            CanRecord = HasAnyPermission(RecordPermission, ManageFallback)
-                        && HasAnyPermission(PlannedVisitManage, ManageFallback),
-            CanAmend = HasAnyPermission(AmendPermission, ManageFallback)
+            CanRecord = HasAnyPermission(RecordPermission) && HasAnyPermission(PlannedVisitManage),
+            CanAmend = HasAnyPermission(AmendPermission)
         });
     }
 
@@ -70,22 +64,22 @@ public sealed class CrmVisitExecutionController : Controller
 
     [HttpGet("api/contract")]
     public Task<IActionResult> Contract(CancellationToken ct)
-        => ProxyAsync(HttpMethod.Get, "/api/crm/visit-report/contract", null, ct, ReadPermission, ReadFallback);
+        => ProxyAsync(HttpMethod.Get, "/api/crm/visit-report/contract", null, ct, ReadPermission);
 
     [HttpGet("api/calendar")]
     public Task<IActionResult> Calendar(CancellationToken ct)
         => ProxyAsync(
-            HttpMethod.Get, $"/api/crm/visit-report/calendar{Request.QueryString}", null, ct, ReadPermission, ReadFallback);
+            HttpMethod.Get, $"/api/crm/visit-report/calendar{Request.QueryString}", null, ct, ReadPermission);
 
     [HttpGet("api/reports")]
     public Task<IActionResult> ListReports(CancellationToken ct)
         => ProxyAsync(
-            HttpMethod.Get, $"/api/crm/visit-report{Request.QueryString}", null, ct, ReadPermission, ReadFallback);
+            HttpMethod.Get, $"/api/crm/visit-report{Request.QueryString}", null, ct, ReadPermission);
 
     [HttpGet("api/reports/{visitReportId:guid}")]
     public Task<IActionResult> GetReport(Guid visitReportId, CancellationToken ct)
         => ProxyAsync(
-            HttpMethod.Get, $"/api/crm/visit-report/{visitReportId}", null, ct, ReadPermission, ReadFallback);
+            HttpMethod.Get, $"/api/crm/visit-report/{visitReportId}", null, ct, ReadPermission);
 
     /// <summary>WP-E2E-FIX-1 (E9-B3) — the planned journey's stages, so the rep PICKS the presented stage (default: the
     /// planned one) instead of typing a code. Same read permission as the calendar (the PlannedVisits proxy pattern).</summary>
@@ -93,22 +87,22 @@ public sealed class CrmVisitExecutionController : Controller
     public Task<IActionResult> JourneyStages(Guid journeyId, CancellationToken ct)
         => ProxyAsync(
             HttpMethod.Get, $"/api/crm/knowledge/content-engagement-journeys/{journeyId}/stages", null, ct,
-            ReadPermission, ReadFallback);
+            ReadPermission);
 
     // ---------------- write proxies ----------------
 
     [HttpPost("api/outcome")]
     public Task<IActionResult> RecordOutcome(CancellationToken ct)
-        => ProxyBodyAsync(HttpMethod.Post, "/api/crm/visit-report/outcome", ct, RecordPermission, ManageFallback);
+        => ProxyBodyAsync(HttpMethod.Post, "/api/crm/visit-report/outcome", ct, RecordPermission);
 
     [HttpPost("api/reports")]
     public Task<IActionResult> Submit(CancellationToken ct)
-        => ProxyBodyAsync(HttpMethod.Post, "/api/crm/visit-report", ct, RecordPermission, ManageFallback);
+        => ProxyBodyAsync(HttpMethod.Post, "/api/crm/visit-report", ct, RecordPermission);
 
     [HttpPost("api/reports/{visitReportId:guid}/amend")]
     public Task<IActionResult> Amend(Guid visitReportId, CancellationToken ct)
         => ProxyBodyAsync(
-            HttpMethod.Post, $"/api/crm/visit-report/{visitReportId}/amend", ct, AmendPermission, ManageFallback);
+            HttpMethod.Post, $"/api/crm/visit-report/{visitReportId}/amend", ct, AmendPermission);
 
     // ---------------- proxy helpers ----------------
 

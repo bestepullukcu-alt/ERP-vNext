@@ -99,7 +99,13 @@ public sealed record VisitCalendarItemDto(
     bool TargetInactive = false,
     // WP-E2E-FIX-1 (E9-B2, additive) — "what do I present": a summary of the plan atom's ContentItems (product, role,
     // journey, stage, step titles). Read from the atom itself, no extra query. Empty when the atom carries no items.
-    IReadOnlyList<VisitCalendarPlannedContentDto>? PlannedContent = null);
+    IReadOnlyList<VisitCalendarPlannedContentDto>? PlannedContent = null,
+    // WP-VW-W1 (additive) — the plan's cancellation reason (incl. week_reopened); the derived work status (never stored,
+    // see VisitWorkStatus), the report deadline (UTC, last reportable second) and the "lock + notify manager" flag.
+    string? CancellationReason = null,
+    string? WorkStatus = null,
+    DateTimeOffset? ReportDeadline = null,
+    bool ManagerAttention = false);
 
 /// <summary>WP-E2E-FIX-1 — one planned content item of a calendar cell (one product line of the plan atom).</summary>
 public sealed record VisitCalendarPlannedContentDto(
@@ -112,7 +118,9 @@ public sealed record VisitCalendarPlannedContentDto(
     int StageIndex,
     string? StageCode,
     string? StageName,
-    IReadOnlyList<VisitCalendarPlannedStepDto> Steps);
+    IReadOnlyList<VisitCalendarPlannedStepDto> Steps,
+    // WP-VW-W1 (additive) — the product's name: the snapshot frozen at approval (4G), else one bulk MDM read (fail-open).
+    string? ProductName = null);
 
 public sealed record VisitCalendarPlannedStepDto(string? Title, string? Type);
 

@@ -2,6 +2,7 @@ using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.VisitReport.Contract;
 using Diten.CrmService.Application.Features.VisitReport.Queries;
+using Diten.CrmService.Domain.Entities;
 using MediatR;
 
 namespace Diten.CrmService.Application.Features.VisitReport.Handlers.QueryHandlers;
@@ -41,7 +42,11 @@ public sealed class GetVisitReportContractHandler
         "outcome codes and sample/material types are REFERENCE-DATA-driven (MOD-0048, F-RD): they are bounded-string validated but NOT enum-checked against a hardcoded fallback list. ExecutionOutcome and ReportStatus ARE in-domain fail-closed vocabularies (out-of-set → 400)",
         "the execution calendar is a bespoke tenant-shell Day/Week surface (D-CALENDAR-UI = A), NOT a Golden DataTable CRUD page - verify_datatable_page is N/A",
         "FU02 computes no schedule, route, capacity or next stage (D8); it holds no /generate, /optimize, /pack, /advance and no write path into another module's aggregate",
-        "RBAC keys crm.visit-report.{read,record,amend} are DEFINED but NOT seeded; record ALSO requires FU01 crm.planned-visit.manage; the endpoints run on the documented DEV-ONLY territory fallback (F-RBAC), under which the read/record/amend split cannot be enforced in dev",
+        "RBAC: read endpoints require crm.visit-report.read, outcome + submit require crm.visit-report.record AND FU01 crm.planned-visit.manage, amend requires crm.visit-report.amend (WP-VW-W1 F-RBAC; the territory fallback is gone). The keys are NOT seeded here: a role receives them from the role-permission screen",
+        "the reporter is the caller: ReportedByResourceId may only name the signed-in resource (another → 403 resource_not_caller); the crm.planned-visit.read-all holder may record for another resource",
+        "a CANCELLED planned visit takes no outcome and no report (409 visit_report_plan_cancelled); a report submitted before the cancellation can still be amended",
+        "report deadline: an outcome (completed / missed / rescheduled) or a first submit is accepted until the END of the planned day (UTC) + reportDeadlineHours (48); after it → 409 visit_report_deadline_passed. The crm.planned-visit.read-all holder is exempt; the 60-minute correction window of a submitted report and amendments are not limited by it",
+        "workStatus is DERIVED at read time (never stored) from the plan, its report and the clock, in priority order cancelled > not_done > rescheduled > reported > expired > report_missing > missed > today > planned; managerAttention = (workStatus == expired). The calendar accepts an optional workStatus=a,b filter (unknown → 400 visit_report_work_status_invalid)",
         "the FU02 supply of a real LastVisitDate/DueStatus to the MOD-0151 readiness projection (FU01 §8.5) is a downstream read (F-READINESS) - FU02 records the executed-visit fact; it does not write the projection",
         "GPS/geo check-in, e-signature, expense/time entry are out of scope (deferred / MOD-0280 SoR); TenantId is server-resolved and never accepted from a payload; there is no DELETE and no bulk-delete anywhere"
     };
@@ -71,7 +76,9 @@ public sealed class GetVisitReportContractHandler
             VisitReportContractLimits.Current,
             VisitReportErrorCodes.All,
             VisitReportPermissions.All,
-            CurrentLimitations);
+            CurrentLimitations,
+            VisitReportLimits.ReportDeadlineHours,
+            VisitWorkStatus.All);
 
         return Task.FromResult(Response<VisitReportContractDto>.Success(dto));
     }
