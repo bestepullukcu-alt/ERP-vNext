@@ -8,8 +8,8 @@ name: service-tests
 # push does NOT run these; phase1-gates.yml keeps its own triggers.
 #
 # The architecture guard CiServiceTestsGuardTests reads this file: the matrix must name every service test project
-# (or the guard's named list of projects outside this job), and every job keeps its timeout, its hang timeout, the
-# pinned mongod and DITEN_TEST_MONGOD.
+# (or the guard's named list of projects outside this job — empty since BL-590), and every job keeps its timeout, its
+# hang timeout, the pinned mongod and DITEN_TEST_MONGOD, the replica set, and the pinned RabbitMQ.
 
 on:
   pull_request:
@@ -29,6 +29,9 @@ env:
   MONGODB_VERSION: "7.0.28"
   MONGODB_TARBALL: mongodb-linux-x86_64-ubuntu2204-7.0.28.tgz
   MONGODB_SHA256: 7fc16f46fb10753b982ab03bd9d7dd5920d18d181259f825c2462ca903c55d4d
+  # BL-590: RabbitMQ for Platform.Eventing, pinned by the multi-arch index digest of the exact tag (Docker Hub,
+  # measured 2026-10-09). 4.3.2 is the version dev runs (Homebrew rabbitmq 4.3.2).
+  RABBITMQ_IMAGE: rabbitmq:4.3.2@sha256:345dd3c11d67892c7b452fb2237d94f577acb2aa0569c3fd5c9841eb0c1b57fb
 
 jobs:
   service-tests:
@@ -43,8 +46,12 @@ jobs:
             project: services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj
           - suite: platform-bgjobs
             project: services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj
+          - suite: platform-eventing
+            project: services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj
           - suite: auth-app
             project: services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj
+          - suite: auth-acceptance-host
+            project: services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj
           - suite: mdm-app
             project: services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj
     env:
@@ -71,17 +78,56 @@ jobs:
           echo "DITEN_TEST_MONGOD=$bin/mongod" >> "$GITHUB_ENV"
           echo "DITEN_ITEST_MONGOD_BIN_DIR=$bin" >> "$GITHUB_ENV"
 
-      # MDM's Mongo tests connect to MONGO_TEST_URI / MDM_TEST_MONGO (default localhost:27017) instead of starting
-      # their own mongod: a job-local standalone one, with the same pinned binary, data in the runner's temp.
-      - name: Start a job-local mongod (MDM)
-        if: startsWith(matrix.suite, 'mdm-')
+      # MDM's Mongo tests (and Eventing's) connect to a URI instead of starting their own mongod: a job-local one,
+      # same pinned binary, data in the runner's temp. A ONE-NODE REPLICA SET (BL-590): MDM writes in transactions, and
+      # a transaction needs a replica set. The tarball has no shell, so scripts/mongo_rs_initiate.py (python3 standard
+      # library) initiates it and waits — at most 60 s, then a named error. directConnection=true: the one member.
+      - name: Start a job-local mongod replica set (MDM, Eventing)
+        if: startsWith(matrix.suite, 'mdm-') || matrix.suite == 'platform-eventing'
+        env:
+          MONGO_PORT: "27017"
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/mongo-data"
-          "$DITEN_TEST_MONGOD" --dbpath "$RUNNER_TEMP/mongo-data" --port 27017 --bind_ip 127.0.0.1 \
-            --fork --logpath "$RUNNER_TEMP/mongod.log"
-          echo "MONGO_TEST_URI=mongodb://127.0.0.1:27017" >> "$GITHUB_ENV"
-          echo "MDM_TEST_MONGO=mongodb://127.0.0.1:27017" >> "$GITHUB_ENV"
+          "$DITEN_TEST_MONGOD" --dbpath "$RUNNER_TEMP/mongo-data" --port "$MONGO_PORT" --bind_ip 127.0.0.1 \
+            --replSet rs0 --fork --logpath "$RUNNER_TEMP/mongod.log"
+          python3 scripts/mongo_rs_initiate.py --port "$MONGO_PORT" --set rs0 --timeout 60
+          uri="mongodb://127.0.0.1:$MONGO_PORT/?directConnection=true"
+          echo "MONGO_TEST_URI=$uri" >> "$GITHUB_ENV"
+          echo "MDM_TEST_MONGO=$uri" >> "$GITHUB_ENV"
+          echo "Eventing__MongoDb__ConnectionString=$uri" >> "$GITHUB_ENV"
+
+      # BL-590: Platform.Eventing's integration tests need a real broker. A step, not a `services:` container: a service
+      # cannot be started for one matrix row only. --network host: the default guest user may only log in over
+      # loopback, so no user or password is written anywhere (guest lives and dies with this job's container).
+      - name: Start RabbitMQ (Eventing)
+        if: matrix.suite == 'platform-eventing'
+        env:
+          RABBITMQ_PORT: "5672"
+        run: |
+          set -euo pipefail
+          docker run -d --name rabbitmq --network host "$RABBITMQ_IMAGE"
+          for attempt in $(seq 1 60); do
+            if docker exec rabbitmq rabbitmq-diagnostics -q check_port_connectivity >/dev/null 2>&1; then
+              echo "[rabbitmq] ok — accepting connections after $attempt attempt(s)"
+              break
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              docker logs rabbitmq | tail -50
+              echo "[rabbitmq] *** FAILED *** RABBITMQ_NOT_READY — not accepting connections within 120 s"
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "Eventing__RabbitMq__IntegrationTestsEnabled=true" >> "$GITHUB_ENV"
+          echo "Eventing__RabbitMq__Host=127.0.0.1" >> "$GITHUB_ENV"
+          echo "Eventing__RabbitMq__Port=$RABBITMQ_PORT" >> "$GITHUB_ENV"
+
+      # BL-570 FIX3 makes Auth's owned-Mongo tests RED (not skipped) when no owned mongod is found, when this flag is
+      # set. Until that code lands the flag has no effect and does no harm — "takes effect with BL-570 FIX3".
+      - name: Owned Mongo is required (Auth)
+        if: startsWith(matrix.suite, 'auth-')
+        run: echo "DITEN_REQUIRE_OWNED_MONGO=1" >> "$GITHUB_ENV"
 
       # A hung test must not hold the job until its timeout: --blame-hang-timeout aborts and names it (lesson 8).
       - name: Test
