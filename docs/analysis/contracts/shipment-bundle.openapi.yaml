@@ -4,13 +4,15 @@ info:
   description: >
     MOD-0183 Shipment Tracking & POD, MOD-0184 Carrier Management, MOD-0185 Routing &
     Load Planning, MOD-0186 Reverse Logistics ve MOD-0187 Claims Management icin MVP-6
-    owned, mock-ready frozen contract (v1). TenantId ve LegalEntityId sunucuda JWT
-    baglamindan resolve edilir; request body icinde kabul edilmez. INVENTORY yalniz
+    owned, mock-ready frozen contract (v1). TenantId sunucuda JWT baglamindan
+    resolve edilir. LegalEntityId ISTEKLE gelir (query veya body) ve servis onu
+    MDM'den tenant'a aitligi ve Active oldugu icin dogrular; dogrulanamayan veya
+    ulasilamayan durumda istek reddedilir (R-2, PR #134). INVENTORY yalniz
     frozen INVENTORY contract'indan reference/availability olarak okunur; bu bundle
     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
-  version: 3.1.0
+  version: 3.2.0
   x-status: FROZEN
   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
@@ -35,6 +37,7 @@ paths:
       operationId: queryShipments
       summary: Shipment listesi sorgula
       parameters:
+        - { $ref: '#/components/parameters/LegalEntityId' }
         - { $ref: '#/components/parameters/CorrelationId' }
         - { name: status, in: query, schema: { $ref: '#/components/schemas/ShipmentStatus' } }
         - { name: sourceDocumentId, in: query, schema: { type: string } }
@@ -62,11 +65,13 @@ paths:
                 total: 1
                 contractVersion: v1
         '400': { $ref: '#/components/responses/BadRequest' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
     post:
       tags: [Shipments]
       operationId: createShipment
       summary: Shipment olustur
       parameters:
+        - { $ref: '#/components/parameters/LegalEntityId' }
         - { $ref: '#/components/parameters/CorrelationId' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
       requestBody:
@@ -117,6 +122,7 @@ paths:
       operationId: getShipment
       summary: Shipment ve POD gorunumunu getir
       parameters:
+        - { $ref: '#/components/parameters/LegalEntityId' }
         - { $ref: '#/components/parameters/ShipmentId' }
         - { $ref: '#/components/parameters/CorrelationId' }
       responses:
@@ -145,6 +151,7 @@ paths:
                 pod: { recipientName: Ada Yilmaz, receivedAt: '2026-09-21T15:42:00Z', evidenceReferenceIds: [doc-pod-9001], note: Eksiksiz teslim }
                 contractVersion: v1
         '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
   /shipments/{shipmentId}/transition:
     post:
       tags: [Shipments]
@@ -156,6 +163,7 @@ paths:
         Exception->InTransit|Cancelled; Delivered->Closed. Diger gecisler
         INVALID_SHIPMENT_TRANSITION ile deterministik reddedilir.
       parameters:
+        - { $ref: '#/components/parameters/LegalEntityId' }
         - { $ref: '#/components/parameters/ShipmentId' }
         - { $ref: '#/components/parameters/CorrelationId' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
@@ -175,6 +183,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/Unprocessable' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
   /shipments/{shipmentId}/pod:
     post:
       tags: [Shipments]
@@ -182,6 +191,7 @@ paths:
       summary: Teslim kanitini kaydet ve shipment'i Delivered yap
       description: Yalniz Dispatched veya InTransit durumundan kabul edilir.
       parameters:
+        - { $ref: '#/components/parameters/LegalEntityId' }
         - { $ref: '#/components/parameters/ShipmentId' }
         - { $ref: '#/components/parameters/CorrelationId' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
@@ -201,6 +211,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/Unprocessable' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
   /carriers:
     get:
       tags:
@@ -208,6 +219,7 @@ paths:
       operationId: queryCarriers
       summary: Carrier listesi sorgula
       parameters:
+      - { $ref: '#/components/parameters/LegalEntityId' }
       - $ref: '#/components/parameters/CorrelationId'
       - name: status
         in: query
@@ -257,6 +269,7 @@ paths:
       operationId: createCarrier
       summary: Carrier olustur
       parameters:
+      - { $ref: '#/components/parameters/LegalEntityId' }
       - $ref: '#/components/parameters/CorrelationId'
       - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -345,6 +358,7 @@ paths:
         under a committed key returns 409 IDEMPOTENCY_KEY_REUSED. No receipt for failed requests, no TTL, no new mutation/audit
         on replay. Unknown commit uses 503 and same-key recovery.'
       parameters:
+      - { $ref: '#/components/parameters/LegalEntityId' }
       - name: carrierId
         in: path
         required: true
@@ -1384,16 +1398,16 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
-          annex.
+        description: Tenant is validated against trusted JWT scope; LegalEntityId arrives with the request and is
+          validated against MDM (R-2, PR #134). Exact lexical/duplicate rules and precedence in normative annex.
       - name: X-Legal-Entity-Id
         in: header
         required: true
         schema:
           type: string
           format: uuid
-        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
-          annex.
+        description: Tenant is validated against trusted JWT scope; LegalEntityId arrives with the request and is
+          validated against MDM (R-2, PR #134). Exact lexical/duplicate rules and precedence in normative annex.
       responses:
         '200':
           description: Return listesi
@@ -1565,16 +1579,16 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
-          annex.
+        description: Tenant is validated against trusted JWT scope; LegalEntityId arrives with the request and is
+          validated against MDM (R-2, PR #134). Exact lexical/duplicate rules and precedence in normative annex.
       - name: X-Legal-Entity-Id
         in: header
         required: true
         schema:
           type: string
           format: uuid
-        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
-          annex.
+        description: Tenant is validated against trusted JWT scope; LegalEntityId arrives with the request and is
+          validated against MDM (R-2, PR #134). Exact lexical/duplicate rules and precedence in normative annex.
       requestBody:
         required: true
         content:
@@ -1953,16 +1967,16 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
-          annex.
+        description: Tenant is validated against trusted JWT scope; LegalEntityId arrives with the request and is
+          validated against MDM (R-2, PR #134). Exact lexical/duplicate rules and precedence in normative annex.
       - name: X-Legal-Entity-Id
         in: header
         required: true
         schema:
           type: string
           format: uuid
-        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
-          annex.
+        description: Tenant is validated against trusted JWT scope; LegalEntityId arrives with the request and is
+          validated against MDM (R-2, PR #134). Exact lexical/duplicate rules and precedence in normative annex.
       requestBody:
         required: true
         content:
@@ -2219,6 +2233,7 @@ paths:
       operationId: queryClaims
       summary: Claim listesi sorgula
       parameters:
+      - { $ref: '#/components/parameters/LegalEntityId' }
       - $ref: '#/components/parameters/CorrelationId'
       - name: shipmentId
         in: query
@@ -2380,6 +2395,7 @@ paths:
       operationId: createClaim
       summary: Shipment claim'i olustur
       parameters:
+      - { $ref: '#/components/parameters/LegalEntityId' }
       - $ref: '#/components/parameters/CorrelationId'
       - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -2700,6 +2716,7 @@ paths:
         All application responses echo request trace; rejection-only trace generated when invalid. Saved business
         root is never GET trace.'
       parameters:
+      - { $ref: '#/components/parameters/LegalEntityId' }
       - name: claimId
         in: path
         required: true
@@ -3001,6 +3018,13 @@ components:
       name: shipmentId
       in: path
       required: true
+      schema: { type: string, format: uuid }
+    LegalEntityId:
+      name: X-Legal-Entity-Id
+      in: header
+      required: true
+      description: Istekle gelen sirket (legal entity) kimligi. Servis bunu MDM'den tenant'a aitligi ve
+        Active oldugu icin dogrular; yabanci, pasif veya dogrulanamayan deger reddedilir.
       schema: { type: string, format: uuid }
   schemas:
     Decimal:
@@ -3430,6 +3454,7 @@ components:
           examples:
             inventory: { value: { error: { code: INVENTORY_UNAVAILABLE, message: Frozen INVENTORY mock erisilemez, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
             warehouseGap: { value: { error: { code: WAREHOUSE_SHIPMENT_TRIGGER_UNAVAILABLE, message: 'GAP: merkez CT WAREHOUSE-SHIPMENT-TRIGGER uretmeli', correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            dependencyUnavailable: { summary: DEPENDENCY_UNAVAILABLE, value: { error: { code: DEPENDENCY_UNAVAILABLE, message: Request rejected., correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
     CarrierQError400:
       description: Carrier-only 400; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
         MUST be present.
