@@ -325,3 +325,58 @@ Commit: "feat(web): WP-VW-W2-WEB-a — visit workspace calendar (execute mode), 
 - CRM **2514/0/5**, mimari 27.
 - **W2-WEB-b için:** bu kodun kullanıcı metni 7 dilde eklenecek ("Ziyaret mesai bitişini aşıyor, erkene alındı").
 - **Mobil notu:** yeni taşıma nedeni `pin_time_past_day_end`.
+
+---
+
+## Sözleşme eki (W2-BE-a sonrası, 2026-10-09) — WEB-a / WEB-b / mobil için BAĞLAYICI
+- **Yapılamadı / ertele iki adım:**
+  1. `POST api/crm/visit-report/outcome` (`executionOutcome` missed | rescheduled, `reasonCode`, `reasonNote`, ertelemede `rescheduleToDate`) → taslak.
+  2. `POST api/crm/visit-report` + **`executionOutcome: "missed" | "rescheduled"`** → kesinleşir. Ertelemede yeni ziyaret bu adımda oluşur.
+
+  Web penceresi tek "Kaydet" düğmesiyle iki çağrıyı sırayla yapar. İlki başarısızsa ikincisi çağrılmaz.
+- **Ek hata kodları:**
+  - `visit_reason_note_too_long`;
+  - `visit_reason_applies_to_invalid`;
+  - `reference_data_unavailable` (503, "neden listesi okunamadı, tekrar deneyin");
+  - eski biçim hatası `visit_report_reschedule_date_invalid` (tarih biçimi bozuk).
+- **Ağ geçidi:** `/api/crm/visit-workspace/{everything}` (GET, OPTIONS) rotası CT tarafından eklendi.
+- **`pinnedTime`:** W2-BE-b birleştikten sonra CT takvim okumasına bağladı (yazılmış ziyarette o günün saatli sabiti, taslakta önizleme alanı).
+
+## §37 CT kabul — W2-BE-a E2 ACCEPTED (2026-10-09)
+**Commit:** `9869f6933` (ajan `8cdbdfafe`, test dalına cherry-pick, BE-b ile çakışma yok) + CT bağlama / rota commit'i. Push: test dalı.
+
+**CT K13:**
+- CRM 2514 → **2542/0/5**: ajandan +27, CT'den +1 (`A6b_…pinned_time…`).
+- Platform katalog / tüketilebilir set testleri 24/0. Ajan, kendi değişikliğinden önce de aynı 14 Platform testinin (GSKU / Market, Mongo) kırmızı olduğunu ayrı çalışma ağacında gösterdi.
+- Web 826/0.
+- Mimari: listesiz **27** (yeni yazma komutu yok; mevcut komutlar genişledi).
+- Ağ geçidi 86/1. Kırmızı `EveryRoute_DownstreamPortIsInKnownServiceSet`: Satın Alma portu 5065 bilinen port listesinde yok. Önceden de vardı; eklenen rota 5061 (CRM).
+
+**Kod okuması:**
+- Neden seti (`visit-outcome-reason`, tenant, 8 + 2 pasif, 7 dil) referans verisinden doğrulanıyor; sabit liste kullanılmıyor.
+- İptal: geçmiş gün 409, kod + not.
+- Erteleme: gönderimde yeni ziyaret; `IVisitRescheduleUnitOfWork` (işlem ya da telafi); idempotent; düzeltmede tarih kilidi.
+- Plan dışı ziyaret yalnız bugün.
+- Birleşik takvim (W1 okuması + önizleme kaynağı `IWorkspacePlanPreviewSource`).
+
+**Ajanın paket dışı kararı (CT kabul):**
+- missed / rescheduled bugün yalnız taslak olarak kaydediliyordu, kesinleştirme yolu yoktu.
+- Yeni komut açmak yerine mevcut gönderim `executionOutcome` ile genişletildi; iki adımlı akış oldu.
+- Sözleşme eki yukarıda; WEB-a ajanına iletildi.
+
+**CT işleri:**
+1. `pinnedTime` bağlandı: yazılmış ziyarette günün saatli sabiti, taslakta önizleme alanı. Test `A6b`.
+2. Ağ geçidi rotası `/api/crm/visit-workspace/{everything}` (GET, OPTIONS) eklendi; ajan korumalı yol olduğu için dokunmamıştı.
+
+**CT sabotajları** (ikisi birlikte, 2 kırmızı):
+- iptalde geçmiş gün kontrolü kapatıldı → `A3_a_past_day_is_409…`;
+- `pinnedTime` bağlantısı kaldırıldı → `A6b`.
+
+Geri alındı, touch yapıldı; tam tur yeşil.
+
+**Bilinen sınırlar (ajan bildirdi):**
+- `holidayName` null;
+- taslak kaynak `route-plan` olarak dönüyor;
+- tenant seti yalnız `CatalogLoad:TenantId` (97c5) için yükleniyor; başka kiracıda 503.
+
+**Sıradaki:** fleet yeniden başlatılınca canlı kontrol: set oluştu mu, `reasons`, `calendar`, `reschedule-options`.

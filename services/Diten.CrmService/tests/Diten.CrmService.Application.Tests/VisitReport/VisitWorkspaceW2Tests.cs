@@ -361,6 +361,32 @@ public sealed class VisitWorkspaceW2Tests
     // ═══ A6 · the unified calendar ════════════════════════════════════════════════════════════════════════
 
     [Fact]
+    public async Task A6b_the_calendar_carries_the_pinned_time_of_a_written_and_a_draft_visit()
+    {
+        // CT wiring after W2-BE-b: a written visit's day pin with a start time, and a draft preview slot's pinned time.
+        var written = Seed(new DateOnly(2026, 10, 14));
+        _sessions.Items[0].DayPins.Add(new PlanningDayPin
+        {
+            WeekStart = "2026-10-12", TargetType = written.TargetType, TargetId = written.TargetId,
+            Date = "2026-10-14", Scope = PlanningDayPinScopes.Visit, StartTime = "10:30"
+        });
+        var pinnedDraft = Slot("2026-10-20", 1, isFixed: false) with { IsPinned = true, PinnedTime = "11:15" };
+        var preview = new FixedPreview(PreviewWith(
+            weeks: new[] { ("2026-10-12", PlanningWeekDisplayStatus.Approved), ("2026-10-19", PlanningWeekDisplayStatus.Draft) },
+            scheduled: new[] { pinnedDraft, Slot("2026-10-21", 1, isFixed: false) },
+            unscheduledInWeek: 0));
+
+        var res = await Calendar(RepCaller(), preview).Handle(new GetWorkspaceCalendarQuery("2026-10-12", "2026-10-25"), default);
+        Assert.True(res.IsSuccessful, string.Join(",", res.Errors ?? []));
+
+        var w = Assert.Single(res.Data!.Visits, v => v.PlannedVisitId == written.Id);
+        Assert.Equal((true, "10:30"), (w.IsPinned, w.PinnedTime));
+        var drafts = res.Data.Visits.Where(v => v.WorkStatus == VisitWorkspaceLimits.DraftWorkStatus).ToList();
+        Assert.Equal((true, "11:15"), (drafts.Single(d => d.PlannedDate == "2026-10-20").IsPinned, drafts.Single(d => d.PlannedDate == "2026-10-20").PinnedTime));
+        Assert.Null(drafts.Single(d => d.PlannedDate == "2026-10-21").PinnedTime);
+    }
+
+    [Fact]
     public async Task A6_written_visits_and_the_draft_week_preview_together_with_week_states_unplaced_and_holiday()
     {
         // week 1 (12 Oct) approved — a written visit with a submitted report; week 2 (19 Oct) draft — two preview visits.

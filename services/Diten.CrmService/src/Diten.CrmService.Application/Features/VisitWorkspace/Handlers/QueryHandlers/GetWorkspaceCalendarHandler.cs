@@ -137,7 +137,10 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                 item.CancellationReason, atom?.CancellationReasonCode, atom?.CancellationNote,
                 IsPinned: pins.Any(p => p.TargetId == item.TargetId
                                         && string.Equals(p.Date, item.PlannedDate, StringComparison.Ordinal)),
-                PinnedTime: null,
+                // W2-BE-b (CT wiring) — the rep's pinned start time of a time pin on that day
+                PinnedTime: pins.FirstOrDefault(p => p.TargetId == item.TargetId
+                                                     && string.Equals(p.Date, item.PlannedDate, StringComparison.Ordinal)
+                                                     && !string.IsNullOrWhiteSpace(p.StartTime))?.StartTime,
                 IsExtra: atom?.Selection?.Extra ?? false));
         }
 
@@ -230,7 +233,7 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                             c.ProductName))
                         .ToList(),
                     PlannedVisitSource.RoutePlan, null, null, null, null, null,
-                    slot.IsPinned, PinnedTime: null, slot.IsExtra));
+                    slot.IsPinned, PinnedTime: slot.PinnedTime, slot.IsExtra)); // W2-BE-b (CT wiring)
             }
         }
 
