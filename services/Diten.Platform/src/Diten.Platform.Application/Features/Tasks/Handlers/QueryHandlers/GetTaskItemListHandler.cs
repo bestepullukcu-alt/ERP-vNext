@@ -52,10 +52,11 @@ public sealed class GetTaskItemListHandler
         // ONE approval-state read for the whole list — the same rule the Task Center projection follows. Reading
         // per task would be an N+1, and inferring from ApprovalRequired would report an approved task as Waiting.
         // Review rides the same read (Faz 3b): the state lookup is keyed by instance id and decision-agnostic.
+        // D2-FIX3 item 3 — every HELD link, requirement on or off: the gates ask a held link, so the list reads its state.
         var approvalStates = await _approvals.GetStatesAsync(
-            visible.Where(t => t.ApprovalRequired && t.WorkflowInstanceId is not null)
+            visible.Where(t => t.WorkflowInstanceId is not null)
                 .Select(t => t.WorkflowInstanceId!.Value)
-                .Concat(visible.Where(t => t.ReviewRequired && t.ReviewWorkflowInstanceId is not null)
+                .Concat(visible.Where(t => t.ReviewWorkflowInstanceId is not null)
                     .Select(t => t.ReviewWorkflowInstanceId!.Value))
                 .Distinct().ToList(), ct);
 

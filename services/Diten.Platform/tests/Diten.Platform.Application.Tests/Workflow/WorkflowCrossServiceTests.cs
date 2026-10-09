@@ -259,7 +259,8 @@ public sealed class WorkflowCrossServiceTests
         Assert.True(r.IsSuccessful, string.Join(",", r.Errors));
         Assert.Equal("Active", r.Data!.NewInstanceStatus);
         Assert.Empty(f.Events.Events);
-        Assert.Equal(0, f.Transactions.Calls);
+        // D1 — an intermediate approval is ONE transaction now (two candidates can decide at once); still no event.
+        Assert.Equal(1, f.Transactions.Calls);
     }
 
     [Fact]
@@ -400,8 +401,35 @@ public sealed class WorkflowCrossServiceTests
         var template = f.SeedTemplate("T-FROZEN");
         var r = await f.Start().Handle(new StartWorkflowInstanceCommand(
             StartRequest(template.Id, ["position:" + frozen.Id]), Correlation), default);
-        Assert.Equal(400, r.StatusCode);
+        // D2-FIX4 item 7 — a seat that resolves to nobody is a wait, not an invalid request: the same 503 and the same
+        // contract code the trusted start answers (D2-FIX3 item 7). Nothing was written, so the retry is a fresh start.
+        Assert.Equal(503, r.StatusCode);
         Assert.Equal(WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, r.ReasonCode);
+        Assert.Empty(f.Store.Instances);
+        Assert.Empty(f.Store.Tasks);
+    }
+
+    [Fact]
+    public async Task A_start_that_declares_a_seat_nobody_holds_answers_503_and_one_that_declares_nobody_answers_400()
+    {
+        // The seat is empty: transient. Declaring no candidate at all stays a malformed request (400, unchanged).
+        var f = new Fx(TenantA);
+        var vacant = new Position
+        {
+            TenantId = TenantA, Code = "VAC", Name = "VAC", OrganizationUnitId = Guid.NewGuid(), Status = PositionStatus.Active
+        };
+        f.Store.Positions.Add(vacant);
+        var template = f.SeedTemplate("T-VACANT");
+
+        var emptySeat = await f.Start().Handle(new StartWorkflowInstanceCommand(
+            StartRequest(template.Id, ["position:" + vacant.Id]), Correlation), default);
+        var declaredNobody = await f.Start().Handle(new StartWorkflowInstanceCommand(
+            StartRequest(template.Id, []), Correlation), default);
+
+        Assert.Equal(503, emptySeat.StatusCode);
+        Assert.Equal(400, declaredNobody.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, emptySeat.ReasonCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, declaredNobody.ReasonCode);
     }
 
     // ============================================================ batch read
@@ -687,7 +715,7 @@ public sealed class WorkflowCrossServiceTests
         private AssignmentRepo? _assignments;
 
         public StartWorkflowInstanceHandler Start() => new(TemplateRepo, VersionRepo, InstanceRepo, TaskRepo, SnapshotRepo,
-            LogRepo, Tenant, new User(), AssignmentRepo, null, PositionRepo);
+            LogRepo, Tenant, new User(), AssignmentRepo, null, PositionRepo, Transactions);
 
         public ApproveWorkflowTaskHandler Approve() => new(TaskRepo, InstanceRepo, SnapshotRepo, LogRepo, VersionRepo,
             AssignmentRepo, PositionRepo, Transactions, Events, TemplateRepo);

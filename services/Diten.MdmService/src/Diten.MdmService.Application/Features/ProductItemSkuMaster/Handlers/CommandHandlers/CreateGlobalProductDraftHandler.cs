@@ -211,6 +211,8 @@ public sealed class CreateGlobalProductDraftHandler
             CommandId = commandId,
             Sequence = 1,
             TimestampUtc = timestamp,
+            TimestampUtcTicksV1 = timestamp.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
             EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(evidence))),
             SnapshotReference = $"GlobalProduct/{identityId:N}/0",
             DeliveryState = AuditIntentDeliveryState.Pending,

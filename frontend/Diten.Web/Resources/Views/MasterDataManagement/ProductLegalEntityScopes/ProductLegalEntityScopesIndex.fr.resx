@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ProductLegalEntityScopesTitle"><value>Périmètres d’entités juridiques des produits</value></data><data name="PageDescription"><value>Définissez quelles entités juridiques peuvent utiliser chaque produit global</value></data><data name="AddNewProductLegalEntityScope"><value>Configurer le périmètre du produit</value></data>
+  <data name="Actions"><value>Actions</value></data><data name="CanonicalCode"><value>Code canonique</value></data><data name="GlobalProduct"><value>Produit global</value></data><data name="LifecycleStatus"><value>État du cycle de vie</value></data>
+  <data name="ConfigureTitle"><value>Configurer le périmètre du produit</value></data><data name="ReplaceTitle"><value>Remplacer le périmètre du produit</value></data><data name="ScopeMode"><value>Mode de périmètre</value></data><data name="GroupWide"><value>À l’échelle du groupe</value></data><data name="Scoped"><value>Entités juridiques sélectionnées</value></data><data name="LegalEntities"><value>Entités juridiques</value></data><data name="LegalEntityLimitHint"><value>Sélectionnez au maximum 200 entités juridiques.</value></data>
+  <data name="QuickView"><value>Aperçu rapide</value></data><data name="Unknown"><value>Inconnu</value></data><data name="PolicyStatus"><value>État de la politique</value></data><data name="EffectiveFrom"><value>Effectif à partir du</value></data><data name="EffectiveTo"><value>Effectif jusqu’au</value></data><data name="Version"><value>Version</value></data>
+  <data name="Configure"><value>Configurer</value></data><data name="Replace"><value>Remplacer</value></data><data name="End"><value>Terminer</value></data><data name="EndConfirmation"><value>Terminer la période actuelle du périmètre produit ?</value></data><data name="ViewDetails"><value>Voir les détails</value></data><data name="LegacyUnclassified"><value>Non configuré</value></data><data name="Configured"><value>Configuré</value></data>
+  <data name="ErrorGateway"><value>La demande n’a pas pu être traitée.</value></data><data name="ErrorValidation"><value>Vérifiez les champs obligatoires.</value></data><data name="ErrorConflict"><value>Le périmètre a changé ou est en conflit avec les données actuelles.</value></data><data name="ErrorNotFound"><value>Le produit ou la politique est introuvable.</value></data><data name="ErrorForbidden"><value>Vous n’avez pas l’autorisation.</value></data><data name="ErrorProviderUnavailable"><value>Le fournisseur de périmètre est indisponible.</value></data><data name="ErrorProviderTimeout"><value>Le fournisseur de périmètre a dépassé le délai.</value></data><data name="ErrorInvalidFormAttempt"><value>La tentative de formulaire est invalide ou expirée.</value></data><data name="Saved"><value>Périmètre produit enregistré.</value></data><data name="ReconciliationPending"><value>La modification attend une réconciliation.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Brouillon</value>
+  </data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve">
+    <value>Approbation d’identité en attente</value>
+  </data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve">
+    <value>Identité approuvée</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Retiré</value>
+  </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>L'application du périmètre est en cours d'activation ou de désactivation ; les modifications sont suspendues. Réessayez dans quelques minutes.</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>Une autre modification de ce produit est en cours. Réessayez dans un instant.</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>L'application du périmètre produit est suspendue ; aucune modification n'est acceptée jusqu'à sa reprise.</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>Les paramètres de périmètre produit de ce locataire sont illisibles. Contactez votre administrateur.</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>autres sociétés : {0}</value></data>
+  <data name="ErrorWriterCapacity" xml:space="preserve"><value>Trop de modifications sont en cours dans ce groupe de sociétés. Réessayez dans quelques minutes.</value></data>
+  <data name="ErrorStoreUnavailable" xml:space="preserve"><value>Les paramètres de périmètre produit sont momentanément inaccessibles. Réessayez dans un instant.</value></data>
+</root>

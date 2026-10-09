@@ -1,6 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
 using Diten.Platform.Application.Common;
-using Diten.Platform.Application.Contracts;
 using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Models.Workflow;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.TenantOrganization.Queries;
@@ -23,13 +24,11 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
 {
     private readonly IMediator _mediator;
     private readonly ICorrelationContext _correlationContext;
-    private readonly ICurrentUserContext _currentUser;
 
-    public WorkflowDefinitionsController(IMediator mediator, ICorrelationContext correlationContext, ICurrentUserContext currentUser)
+    public WorkflowDefinitionsController(IMediator mediator, ICorrelationContext correlationContext)
     {
         _mediator = mediator;
         _correlationContext = correlationContext;
-        _currentUser = currentUser;
     }
 
     [HttpPost("definitions")]
@@ -198,7 +197,7 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
     [HasPermission(WorkflowPermissions.TasksApprove)]
     public async Task<IActionResult> ApproveTask(
         Guid taskId,
-        [FromBody] ApproveWorkflowTaskRequest request,
+        [FromBody] ApproveWorkflowTaskTransportRequest request,
         CancellationToken ct)
     {
         if (!TryBindActor(request.ActorId, out var actor, out var refusal))
@@ -206,7 +205,15 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
             return refusal!;
         }
 
-        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
+        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(
+            taskId,
+            new ApproveWorkflowTaskRequest(
+                actor,
+                request.ReasonCode,
+                request.IdempotencyKey,
+                request.Comment,
+                request.EvidenceRef),
+            CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -214,7 +221,7 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
     [HasPermission(WorkflowPermissions.TasksReject)]
     public async Task<IActionResult> RejectTask(
         Guid taskId,
-        [FromBody] RejectWorkflowTaskRequest request,
+        [FromBody] RejectWorkflowTaskTransportRequest request,
         CancellationToken ct)
     {
         if (!TryBindActor(request.ActorId, out var actor, out var refusal))
@@ -222,7 +229,15 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
             return refusal!;
         }
 
-        var response = await _mediator.Send(new RejectWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
+        var response = await _mediator.Send(new RejectWorkflowTaskCommand(
+            taskId,
+            new RejectWorkflowTaskRequest(
+                actor,
+                request.ReasonCode,
+                request.IdempotencyKey,
+                request.Comment,
+                request.EvidenceRef),
+            CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -275,17 +290,27 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
     }
 
     /// <summary>
-    /// B4 — the actor of a task action is ALWAYS the signed-in user. A body may omit <c>actorId</c> (the server fills it
-    /// in) or repeat the caller's own id; naming anybody else is refused with 403 <c>WORKFLOW_ACTOR_MISMATCH</c> —
-    /// before, a person holding the approve permission could type someone else's id and decide that person's approval.
+    /// B4 — the actor of a task action is ALWAYS the signed-in user: the token's single <c>sub</c>, never the body. A
+    /// token with no subject, a malformed one, or more than one is 401 <c>WORKFLOW_ACTOR_UNAUTHENTICATED</c>. A body may
+    /// omit <c>actorId</c> (the server fills it in) or repeat the caller's own id; naming anybody else is refused with
+    /// 403 <c>WORKFLOW_ACTOR_MISMATCH</c> — before, a person holding the approve permission could type someone else's
+    /// id and decide that person's approval. One rule for all five task actions.
     /// </summary>
     private bool TryBindActor(string? claimed, out string actor, out IActionResult? refusal)
     {
-        actor = _currentUser.UserId.ToString();
         refusal = null;
-        if (_currentUser.UserId == Guid.Empty
-            || (!string.IsNullOrWhiteSpace(claimed)
-                && !(Guid.TryParse(claimed.Trim(), out var named) && named == _currentUser.UserId)))
+        if (!TryResolveAuthenticatedActor(out actor))
+        {
+            refusal = CreateActionResultInstance(Response<WorkflowTaskTransitionResponse>.Fail(
+                "WORKFLOW_ACTOR_UNAUTHENTICATED",
+                StatusCodes.Status401Unauthorized,
+                "WORKFLOW_ACTOR_UNAUTHENTICATED",
+                CorrelationId));
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(claimed)
+            && !(Guid.TryParse(claimed.Trim(), out var named) && named.ToString("D") == actor))
         {
             refusal = CreateActionResultInstance(Response<WorkflowTaskTransitionResponse>.Fail(
                 "A task action is always taken as the signed-in user.",
@@ -302,4 +327,27 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId)
             ? HttpContext.TraceIdentifier
             : _correlationContext.CorrelationId!;
+
+    private bool TryResolveAuthenticatedActor(out string actorId)
+    {
+        actorId = string.Empty;
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return false;
+        }
+
+        var subjects = User.Claims
+            .Where(claim => string.Equals(claim.Type, JwtRegisteredClaimNames.Sub, StringComparison.Ordinal))
+            .Select(claim => claim.Value)
+            .ToArray();
+        if (subjects.Length != 1
+            || !Guid.TryParseExact(subjects[0], "D", out var userId)
+            || userId == Guid.Empty)
+        {
+            return false;
+        }
+
+        actorId = userId.ToString("D");
+        return true;
+    }
 }

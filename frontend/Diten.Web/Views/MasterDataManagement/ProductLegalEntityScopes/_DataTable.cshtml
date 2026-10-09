@@ -1,0 +1,30 @@
+@using Diten.Web.Views.MasterDataManagement.ProductLegalEntityScopes
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductLegalEntityScopesIndex> Localizer
+@{
+    // WP-MDM-SCOPE-ACCEPT-01 FIX1 (BL-440 golden reference): the table card is the shared component — the page describes
+    // it, _ListShell renders it with the shared shaped skeleton. Every header is localized HERE.
+    //
+    // SERVER data: MDM pages, searches, filters and sorts the Global Products (orderBy whitelist: canonicalCode,
+    // globalProductName, lifecycleStatus); index.js declares the same mode.
+    //
+    // NO SELECTION COLUMN, deliberately: a product's legal-entity scope is never changed in bulk (GxP — every scope change
+    // is its own audited command), so a checkbox would select into nothing.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-product-legal-entity-scopes",
+        DataMode = "server",
+        Slug = "product-legal-entity-scopes",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["CanonicalCode"].Value },
+            new DataTableColumnViewModel { Header = Localizer["GlobalProduct"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["LifecycleStatus"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

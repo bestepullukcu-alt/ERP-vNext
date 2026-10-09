@@ -462,7 +462,13 @@ public static class AccountKindAcceptance
                         // Development base URL is the LIVE dev Platform on 5057 and its shared database: a test must never
                         // reach it. A refused loopback port instead — a derived host that wants a Platform replaces the
                         // primary handler (ConfigureTestServices); every other host sees "Platform down", the best-effort path.
-                        ["PlatformService__BaseUrl"] = UnreachablePlatformBaseUrl
+                        ["PlatformService__BaseUrl"] = UnreachablePlatformBaseUrl,
+                        // MOD-0033-FU02 §F.3 — this host runs the real Program under "Development" with the API project
+                        // directory as content root. After a developer runs scripts/dev/setup-service-trust.*, a
+                        // git-ignored appsettings.Development.local.json sits there (issuer key, client registry): the
+                        // host would load it and apply the developer's registry to the test database. Off, through the
+                        // one channel CreateBuilder reads before Program.cs adds that file.
+                        ["DevelopmentLocalSettings__Enabled"] = "false"
                     };
 
                     if (isNonDevelopmentHost)

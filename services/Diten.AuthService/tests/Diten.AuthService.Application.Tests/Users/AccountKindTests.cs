@@ -63,7 +63,8 @@ public sealed class AccountKindTests
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.work-report.read-tenant-wide"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("time-entry.team-totals.read"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("time-entry.person-reports.read"));
-        Assert.Equal(6, ExplicitGrantOnlyPermissions.Keys.Count);
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.requests.create"));
+        Assert.Equal(7, ExplicitGrantOnlyPermissions.Keys.Count);
         Assert.False(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.lookup")); // lookup is an ORDINARY tenant key
     }
 

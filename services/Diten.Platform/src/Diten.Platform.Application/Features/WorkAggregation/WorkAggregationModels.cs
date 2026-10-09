@@ -775,7 +775,29 @@ public sealed record WorkItemProjectionDto(
     /// can, the field is omitted and the surface keeps today's wording. Never an id.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<WorkItemLabelDto>? CandidatePositions = null);
+    IReadOnlyList<WorkItemLabelDto>? CandidatePositions = null,
+    /// <summary>
+    /// BL-509 — the item is a REQUEST nobody has taken on yet: who it is addressed to and where it stands. Trailing,
+    /// optional and omitted when null, like every field after the core — a provider with no requests says nothing.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemOfferDto? Offer = null);
+
+/// <summary>
+/// BL-509 — where an unaccepted request stands. Present only while nobody holds the work; once it is accepted the
+/// item is an ordinary task and this is gone.
+/// </summary>
+/// <param name="State"><c>pending</c> (waiting for the addressee's answer), <c>declined</c> (they said no — see
+/// <paramref name="DeclineReason"/>), <c>withdrawn</c> (the sender took it back), or — for anybody but the sender —
+/// <c>unaddressed</c> (nobody is being asked right now; which of the two happened is the sender's to know).</param>
+/// <param name="OfferedTo">Who it is addressed to, while pending — sent ONLY to the sender and the person asked.</param>
+/// <param name="DeclineReason">Their own words — a DISPLAY label, never a resource key. Sent only to the sender.</param>
+public sealed record WorkItemOfferDto(
+    string State,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? OfferedTo = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? DeclineReason = null);
 
 /// <summary>The effort card's two figures, in hours: what was estimated and what was APPROVED (D7). Two durations side by
 /// side; no ratio is computed here (pack §8.7).</summary>

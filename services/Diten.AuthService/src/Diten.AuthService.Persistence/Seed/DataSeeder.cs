@@ -98,6 +98,8 @@ public static class DataSeeder
         "mdm.brands.create",
         "mdm.brands.update",
         "mdm.brands.archive",
+        // WP-MDM-BRAND-ACCEPT-01 (M-4) — the Brands list's copy/print/file entries are their own right now.
+        "mdm.brands.export",
         "mdm.products.read",
         "mdm.products.create",
         "mdm.products.update",
@@ -239,6 +241,16 @@ public static class DataSeeder
         await ReconcilePermissionScopesAsync(col, permissions);
         // BL-411 — allowlisted PlatformAdmin → Tenant correction for synced-only keys the seed-list reconcile cannot reach.
         await ApplyTenantRouteScopeCorrectionsAsync(col);
+        // Read-only: a listed key on a NON-system row can never keep Tenant against the catalog sync — say so at startup
+        // instead of letting its scope flap silently (SeedOwnedTenantScopeKeys, "the precondition on an existing database").
+        var seedOwnedRows = await col.Find(Builders<Permission>.Filter.In(x => x.Key, SeedOwnedTenantScopeKeys.Keys)).ToListAsync();
+        foreach (var key in SeedOwnedTenantScopeKeys.RowsTheExceptionCannotHold(seedOwnedRows))
+        {
+            Console.WriteLine(
+                $"WARNING: permission '{key}' is decided tenant-scoped (SeedOwnedTenantScopeKeys) but its row is not a system row; "
+                + "the catalog sync will promote it back to PlatformAdmin. Needs an operator decision — nothing was changed.");
+        }
+
         await ReconcilePermissionModuleCasingAsync(col);
         await ReconcileServiceNamespaceModuleAttributionAsync(col);
         await ReconcilePermissionSegmentSpellingAsync(col);
@@ -468,6 +480,9 @@ public static class DataSeeder
             new("mdm", "brands", "create", "Create Brand", "Permission to create brand master records", moduleOverride: "brand-product-master"),
             new("mdm", "brands", "update", "Update Brand", "Permission to edit brand master records", moduleOverride: "brand-product-master"),
             new("mdm", "brands", "archive", "Archive Brand", "Permission to archive brand master records (soft lifecycle)", moduleOverride: "brand-product-master"),
+            // WP-MDM-BRAND-ACCEPT-01 (M-4) — exporting the Brands list (copy / print / file) is its own right (was
+            // mdm.brands.read). Existing reading roles of old tenants get it once (ExportGrantBackfillRunner, ExportGrantBackfill.Brands).
+            new("mdm", "brands", "export", "Export Brands", "Permission to export the brand list (copy, print, CSV/Excel/PDF) as the screen shows it", moduleOverride: "brand-product-master"),
             new("mdm", "products", "read", "Read Product", "Permission to view product master lists and details", moduleOverride: "brand-product-master"),
             new("mdm", "products", "create", "Create Product", "Permission to create product master records", moduleOverride: "brand-product-master"),
             new("mdm", "products", "update", "Update Product", "Permission to edit product master records", moduleOverride: "brand-product-master"),
@@ -852,15 +867,16 @@ public static class DataSeeder
             new("platform", "document-management.signature-policies", "manage", "Manage Signature Policies", "Permission to manage electronic signature policies"),
 
             // MOD-0023 — Workflow Config / Approval Templates permissions (13). Keys must match the
-            // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Platform-scoped, so
-            // the DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.
+            // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Workflow control-plane
+            // permissions stay PlatformAdmin. FU24/FU25 explicitly make start/approve/reject tenant-scoped so bounded
+            // tenant responsibility roles can start and decide assigned records; default Admin/Viewer still receive none.
             new("platform", "workflow.definitions", "view", "View Workflow Definitions", "Permission to view workflow approval templates and versions", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "manage", "Manage Workflow Definitions", "Permission to create and edit workflow approval templates", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "publish", "Publish Workflow Definition", "Permission to publish an immutable workflow template version", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.Tenant),
             new("platform", "workflow.instances", "view", "View Workflow Instances", "Permission to view workflow instances and approval tasks", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
             new("platform", "workflow.tasks", "delegate", "Delegate Workflow Task", "Permission to delegate a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.tasks", "request-info", "Request Info on Workflow Task", "Permission to request additional information on a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.tasks", "cancel", "Cancel Workflow Task", "Permission to cancel a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
@@ -933,7 +949,8 @@ public static class DataSeeder
     // authoritative Scope by Key. This is REQUIRED now that Module is the manifest ModuleCode: a Module-derived
     // ClassifyScope reconcile would wrongly force workflow (Module="workflow") to Tenant and leak a platform-admin
     // module into tenant roles. The seed literals carry the correct Scope explicitly where it diverges from the
-    // Module classification (workflow → PlatformAdmin), so reconciling by Key keeps the boundary exact.
+    // Module classification: Workflow control-plane stays PlatformAdmin, while FU24/FU25's exact instance-start and
+    // task approve/reject execution keys are Tenant. Reconciling by Key keeps both boundaries exact.
     // Synced-only permissions (not in the seed list) are intentionally NOT touched — their Scope is route-derived and
     // carried by the catalog sync (authoritative), so this reconcile must never overwrite it. Idempotent + Scope-only:
     // the server-side $ne skips rows already correct (and matches rows where the field is absent → legacy backfill).

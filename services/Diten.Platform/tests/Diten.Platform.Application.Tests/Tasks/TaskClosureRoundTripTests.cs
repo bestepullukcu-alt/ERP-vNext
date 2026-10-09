@@ -92,7 +92,7 @@ public sealed class TaskClosureRoundTripTests
                 new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 new FakeTaskAttachmentRepository(),
-                NullLogger<TransitionTaskItemHandler>.Instance)
+                NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new TransitionTaskItemCommand(
                     task.Id, target, new TaskTransitionRequest(task.Version, reasonCode, note), "corr"),

@@ -36,14 +36,12 @@ public interface ITimesheetWeekRepository
     /// transaction (the weekly save's claim).</summary>
     Task<bool> UpdateAsync(IPlatformTransactionSession session, TimesheetWeek week, int expectedVersion, CancellationToken ct = default);
 
-    /// <summary>Submitted revisions MOD-0023 assigned to <paramref name="approverUserId"/>, oldest submission first.</summary>
-    Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverAsync(Guid approverUserId, CancellationToken ct = default);
-
-    /// <summary>BL-484 — the same rule as <see cref="ListSubmittedForApproverAsync"/>, narrowed to <paramref name="weekIds"/>:
-    /// an id that is not a submitted revision assigned to <paramref name="approverUserId"/> is simply absent. One read,
-    /// however long the approver's queue is.</summary>
-    Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverByIdsAsync(
-        Guid approverUserId, IReadOnlyCollection<Guid> weekIds, CancellationToken ct = default);
+    /// <summary>D1-FIX1 — the submitted revisions that carry a MOD-0023 instance, oldest submission first;
+    /// <paramref name="weekIds"/> (BL-484) narrows them to the listed weeks — an id that is not such a revision is simply
+    /// absent. WHO may read a week is NOT decided here and no approver is stored to filter by: the caller asks MOD-0023
+    /// (<c>ITimesheetApprovalService.DecidableInstanceIdsAsync</c>) which of these instances the reader may decide.</summary>
+    Task<IReadOnlyList<TimesheetWeek>> ListSubmittedInApprovalAsync(
+        IReadOnlyCollection<Guid>? weekIds = null, CancellationToken ct = default);
 
     /// <summary>The sweep's work list (BL-479): FIRST the approved revisions whose task totals were never applied (F12),
     /// then — with whatever is left of <paramref name="limit"/> — the submitted revisions that carry a MOD-0023 instance,

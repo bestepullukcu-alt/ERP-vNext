@@ -350,7 +350,7 @@ public sealed class TaskFieldHistoryTests
                     Microsoft.Extensions.Logging.Abstractions.NullLogger<
                         Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers
                             .UpdateTaskItemHandler>.Instance,
-                    TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                    TaskDocumentFreezerDoubles.OverAnEmptyRegister(), writeGate: TaskWriteGateDoubles.Open);
 
             var response = await handler.Handle(
                 new Diten.Platform.Application.Features.Tasks.Commands.UpdateTaskItemCommand(

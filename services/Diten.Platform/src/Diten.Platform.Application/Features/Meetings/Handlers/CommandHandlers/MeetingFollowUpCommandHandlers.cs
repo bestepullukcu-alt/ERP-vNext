@@ -3,6 +3,8 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Meetings.Commands;
 using Diten.Platform.Application.Features.Meetings.RecordLinks;
 using Diten.Platform.Application.Features.Meetings.Services;
+using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -169,7 +171,8 @@ public sealed class ScheduleFollowUpMeetingHandler
     /// (Done/Cancelled) task is dropped; a dangling link (task deleted/cross-tenant) is silently dropped too,
     /// the same rule <c>GetLinkedTasksHandler</c> already applies for a far end that cannot be read.
     /// </summary>
-    private async Task<int> CarryForwardOpenAgendaTasksAsync(Meeting source, Guid newMeetingId, CancellationToken ct)
+    private async Task<int> CarryForwardOpenAgendaTasksAsync(
+        Meeting source, Guid newMeetingId, CancellationToken ct)
     {
         var sourceAgenda = (await _agendaItems.ListByMeetingIdAsync(source.Id, ct))
             .Where(a => a.RecordLinkId is not null)
@@ -217,10 +220,16 @@ public sealed class ScheduleFollowUpMeetingHandler
             .Select(c => c.TaskId)
             .ToList();
 
+        /*
+         * FIX4 (item 1) — THE CARRIED LINE NEVER HOLDS THE TITLE. An agenda line is stored ONCE and read by every reader
+         * of the new meeting, so any title written here would reach people the task's read rule refuses (FIX3 copied it
+         * when the SCHEDULER could read the task — and then showed it to everybody else). The line holds a neutral code
+         * (MeetingAgendaCodes.CarriedOpenAction) and its RecordLink; the screen names the task from the linked-task list,
+         * which the server answers per READER through the read rule (a placeholder where the rule says no).
+         */
         var sortOrder = 0;
         foreach (var taskId in openTaskIds)
         {
-            var task = tasksById[taskId];
             var newLink = await _links.AddLinkAsync(
                 new RecordLinkEndpoint(RecordLinkModuleCodes.Meetings, newMeetingId),
                 new RecordLinkEndpoint(RecordLinkModuleCodes.Tasks, taskId),
@@ -231,7 +240,7 @@ public sealed class ScheduleFollowUpMeetingHandler
             {
                 TenantId = _tenantContext.TenantId,
                 MeetingId = newMeetingId,
-                Text = task.Title,
+                Text = MeetingAgendaCodes.CarriedOpenAction,
                 SortOrder = sortOrder++,
                 RecordLinkId = newLink.Id,
                 CarriedFromMeetingId = source.Id,

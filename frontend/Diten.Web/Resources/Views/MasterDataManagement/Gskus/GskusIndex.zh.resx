@@ -8,4 +8,51 @@
   <data name="GeneralInformation" xml:space="preserve"><value>常规信息</value></data><data name="Id" xml:space="preserve"><value>标识符</value></data><data name="Version" xml:space="preserve"><value>版本</value></data><data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data><data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data><data name="GskuSearch" xml:space="preserve"><value>GSKU 搜索</value></data><data name="GskuSearchPlaceholder" xml:space="preserve"><value>GSKU、修订或全局产品</value></data>
   <data name="CreateConfirmation" xml:space="preserve"><value>为此全局产品创建首个 GSKU？</value></data><data name="CreateSuccessWithIdentifiers" xml:space="preserve"><value>已使用修订 {1} 创建 GSKU {0}。</value></data><data name="CreateReconciliationPending" xml:space="preserve"><value>协调仍在等待中。本次尝试保持开放，且未报告为成功。</value></data><data name="OptionsEmpty" xml:space="preserve"><value>没有可用的合格全局产品或已验证单位。</value></data>
   <data name="ErrorUnauthorized" xml:space="preserve"><value>会话已过期，请重新登录。</value></data><data name="ErrorForbidden" xml:space="preserve"><value>您无权执行此 GSKU 操作。</value></data><data name="ErrorNotFound" xml:space="preserve"><value>找不到 GSKU 或全局产品。</value></data><data name="ErrorConflict" xml:space="preserve"><value>请求与现有 GSKU 数据冲突。</value></data><data name="ErrorValidation" xml:space="preserve"><value>请检查全局产品、数量和单位。</value></data><data name="ErrorGateway" xml:space="preserve"><value>GSKU 服务当前不可用。</value></data><data name="ErrorProviderUnavailable" xml:space="preserve"><value>已验证的参考数据当前不可用，请稍后重试。</value></data><data name="ErrorProviderTimeout" xml:space="preserve"><value>已验证的参考数据未及时响应，请重试。</value></data><data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>此创建尝试缺失、已过期或无效。请刷新页面后重试。</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>提交审批</value></data><data name="SubmitConfirmation" xml:space="preserve"><value>是否提交此 GSKU 标识对以供审批？</value></data><data name="SubmitPendingSuccess" xml:space="preserve"><value>GSKU 标识对已提交，正在等待审批。</value></data><data name="LifecycleStateChanged" xml:space="preserve"><value>生命周期状态已更改，已加载最新记录。</value></data><data name="ErrorServiceUnavailable" xml:space="preserve"><value>生命周期服务不可用，请稍后重试。</value></data><data name="ErrorTimeout" xml:space="preserve"><value>生命周期请求超时，请重试。</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑 GSKU 草稿</value></data><data name="EditDraft" xml:space="preserve"><value>编辑草稿</value></data><data name="UpdateDraft" xml:space="preserve"><value>更新草稿</value></data><data name="UpdateConfirmation" xml:space="preserve"><value>是否更新此 GSKU 草稿？</value></data><data name="UpdateSuccess" xml:space="preserve"><value>GSKU 草稿已更新。</value></data><data name="WithdrawApproval" xml:space="preserve"><value>撤回审批申请</value></data><data name="WithdrawConfirmation" xml:space="preserve"><value>是否撤回此 GSKU 标识审批申请？</value></data><data name="WithdrawSuccess" xml:space="preserve"><value>审批申请已撤回，GSKU 已恢复为草稿。</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>撤回仍在处理中，请刷新后再试。</value></data>
+  <data name="FormTitleCorrection" xml:space="preserve"><value>申请 GSKU 更正</value></data>
+  <data name="RequestCorrection" xml:space="preserve"><value>申请更正</value></data>
+  <data name="CorrectionConfirmation" xml:space="preserve"><value>是否提交此 GSKU 包装更正以供审批？</value></data>
+  <data name="CorrectionPending" xml:space="preserve"><value>GSKU 更正正在等待审批。</value></data>
+  <data name="CorrectionCompleted" xml:space="preserve"><value>GSKU 更正已应用。</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>申请停用</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>是否申请停用此已批准的 GSKU 标识对？</value></data>
+  <data name="RetirementRequestReasonLabel" xml:space="preserve"><value>停用申请原因</value></data>
+  <data name="RetirementRequestReasonRequired" xml:space="preserve"><value>必须填写不超过 128 个字符的停用原因。</value></data>
+  <data name="RetirementRequestReasonInvalid" xml:space="preserve"><value>停用原因包含不支持的控制字符。</value></data>
+  <data name="RetirementRequestedSuccess" xml:space="preserve"><value>停用申请已提交审批。</value></data>
+  <data name="ErrorParentNotApproved" xml:space="preserve"><value>此 GSKU 的全球产品尚未获批。请先让全球产品获批，然后再提交 GSKU。</value></data>
+  <data name="ErrorApprovalTemplateMissing" xml:space="preserve"><value>GSKU 审批模板尚未设置，因此未提交任何内容。请让管理员创建并发布该模板，然后重新提交。</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>此 GSKU 正在提交审批。在提交到达审批引擎之前无法编辑。</value></data>
+  <data name="ErrorDependentIdentitiesExist" xml:space="preserve"><value>此 GSKU 仍有未退役的本地 SKU 或成品。请先将其退役。</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>审批正在变更中。请稍后重试。</value></data>
+  <data name="IdentityNotAppliedParent" xml:space="preserve"><value>审批已通过但无法应用：全球产品已不再处于批准状态。GSKU 已恢复为草稿——请修正后重新提交。</value></data>
+  <data name="IdentityNotAppliedReference" xml:space="preserve"><value>审批已通过但无法应用：包装单位或其适用性已不可选。GSKU 已恢复为草稿——请选择有效值后重新提交。</value></data>
+  <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>审批已通过但无法应用。GSKU 已恢复为草稿——请检查后重新提交。</value></data>
+  <data name="ErrorWithdrawalPending" xml:space="preserve"><value>此审批之前的一次撤回（原因或备注不同）仍在处理中。请使用与之前相同的原因和备注重新撤回，或等待其完成。</value></data>
+  <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>该审批由提交人本人作出决定，这不被接受。GSKU 已恢复为草稿——请重新提交，由其他人作出决定。</value></data>
+  <data name="IdentityStateInFlight" xml:space="preserve"><value>此 GSKU 已提交审批，提交正在送达审批引擎。在此之前无法编辑；无需任何操作。</value></data>
+  <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>提交未送达审批引擎。请重新提交，或先编辑草稿。</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>此提交正在等待核对。提交人再次提交时，将重新读取审批服务，提交从当前位置继续；如果仍无法解决，则需由管理员处理。</value></data>
+  <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>上一次提交在审批引擎启动任何流程之前就已结束。请编辑草稿，然后重新提交。</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>此提交正在等待核对。提交人再次提交时，将重新读取审批服务，提交从当前位置继续；如果仍无法解决，则需由管理员处理。</value></data>
+  <data name="ErrorSubmissionEnded" xml:space="preserve"><value>此次提交在送达审批引擎之前已结束，无法原样重复。请编辑草稿，然后重新提交。</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>草稿在提交过程中发生了变化。请重新打开并提交当前版本。</value></data>
+  <data name="ProductPickerLoadFailed" xml:space="preserve"><value>无法加载全球产品列表。请检查网络连接后重试。</value></data>
+  <data name="ProductPickerNoResults" xml:space="preserve"><value>没有与此搜索匹配的可引用全球产品。</value></data>
+  <data name="ProductPickerSearching" xml:space="preserve"><value>正在搜索全球产品…</value></data>
+  <data name="ProductPickerLoadingMore" xml:space="preserve"><value>正在加载更多全球产品…</value></data>
+  <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>该审批未作决定即已关闭（已取消或已过期）。草稿可以编辑并重新提交。</value></data>
+  <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>此 GSKU 使用的某个单位在审批之后被停用。审批依然有效：它按提交时验证的值应用；被停用的单位不能用于新记录。</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>重新发送请求</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>要再次发送相同的请求吗？将重新读取审批服务，请求从当前位置继续。</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>审批在任务中心中仍处于打开状态；请求正在等待其决定。</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>请求已重新读取并处理完毕。</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>您对此 GSKU 的请求正在等待核对，并使其保持锁定。请重新发送：将重新读取审批服务；如果仍无法解决，请联系您的管理员。</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>此 GSKU 上的一个请求正在等待核对，并使其保持锁定。只有提出该请求的人可以重新发送；否则需由管理员进行核对。</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>此提交正在等待核对。只有提交人可以再次提交；否则需由管理员进行核对。</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve">
+    <value>仅当前页</value>
+  </data>
 </root>

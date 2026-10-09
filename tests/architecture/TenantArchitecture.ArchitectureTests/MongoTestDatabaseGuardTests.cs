@@ -74,16 +74,11 @@ public class MongoTestDatabaseGuardTests
      */
     private static readonly string[] KnownPerRunDatabase =
     {
-        "services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationPermissionOnboardingMongoTests.cs",
         "services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/EmployeeDraftSessionRepositoryMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductApiMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuRegisterMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityMongoRoundTripTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuDraftFoundationMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuRegisterMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductItemSkuMasterMongoTests.cs",
 
         // BL-482 (BRD half, 2026-10-01): the BRD harness NO LONGER names a database per run — it opens fixed-name
@@ -101,12 +96,27 @@ public class MongoTestDatabaseGuardTests
         // the shared replica set cannot stand in for. Both entered main on 2026-08-31 and left this guard red in
         // CI; recorded as BL-393 (CONTROL TOWER, 2026-09-13).
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs"
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs",
+        // Same category, product-five takeover (2026-10-01): both name a database per run ONLY inside a mongod the
+        // fixture itself starts on a free loopback port and stops on dispose (AuditIntentTemporalMongoFixture /
+        // AuditOutboxTemporalReplicaSetFixture: OwnedMongoProcess, own --dbpath under the temp directory).
+        // The Platform file needs a private server because its subject is the server's own shape — a standalone
+        // that must refuse transactions, a replica set that must accept them — which the shared instance cannot be
+        // both of. The MDM file's subject is NOT the server (it starts the API host without startup maintenance); it
+        // borrows the same owned standalone, so its per-run names live and die inside that process and never reach
+        // the shared mongod. CONTROL TOWER accepted both entries on those terms (2026-10-01): the rule this list
+        // guards is "no database per run on the SHARED instance", and neither file puts one there.
+        // ⚠ One caveat, recorded rather than hidden: the Platform fixture uses DITEN_FU02_REPLICA_MONGO instead of
+        // its own replica set when that variable is set. Pointing it at the shared mongod would put the per-run
+        // databases there; nothing in this repository sets it.
+        // In the same round three MDM files LEFT this list (fixed names now): AuditIntentDeliveryMongoTests,
+        // LegalEntityMongoRoundTripTests, ProductAbbreviationRegisterMongoTests.
+        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ApiStartupExecutionModeTests.cs",
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/AuditOutboxTemporalStorageMigrationMongoTests.cs"
     };
 
     private static readonly string[] KnownTestSideIndexBuild =
     {
-        "services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationPermissionOnboardingMongoTests.cs",
 
         /*
          * ⚠ NOT A DEBT — THIS ONE IS THE TEST OF THE PRODUCTION PATH ITSELF. PlatformSchemaContractMongoTests

@@ -1358,6 +1358,7 @@
   <data name="RelatedTypeChild" xml:space="preserve"><value>Enfant</value></data>
   <data name="RelatedTypeTransaction" xml:space="preserve"><value>Transaction</value></data>
   <data name="RelatedTypeDocument" xml:space="preserve"><value>Document</value></data>
+  <data name="RelatedTaskNotAccessible" xml:space="preserve"><value>Une tâche à laquelle vous n'avez pas accès</value></data>
   <data name="ComplianceTitle" xml:space="preserve"><value>Conformité et contrôles</value></data>
   <data name="CompliancePolicy" xml:space="preserve"><value>Politique</value></data>
   <data name="ComplianceLimit" xml:space="preserve"><value>Limite d’approbation</value></data>

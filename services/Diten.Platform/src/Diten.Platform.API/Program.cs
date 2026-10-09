@@ -1,4 +1,5 @@
 using Diten.Platform.Application;
+using Diten.Platform.Application.Authorization;
 using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.Infrastructure;
 using Diten.Platform.Infrastructure.BackgroundJobs;
@@ -13,7 +14,28 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
+// BL-540 (1) · WP-WF-ENGINE-RECOVERY-01 FIX1 — the operator's one-shot orphan recovery: decided before anything else, and
+// the whole run (configuration, services, work) inside its own failure net. See WorkflowOrphanRecoveryOperationalMode.
+if (WorkflowOrphanRecoveryOperationalMode.IsRequested(args))
+{
+    Environment.ExitCode = await WorkflowOrphanRecoveryOperationalMode.RunAsync(args);
+    return;
+}
+
+var apiStartupExecutionMode = ApiStartupExecutionMode.Resolve(args);
+
+if (await VerifiedMarketOperationalMode.TryRunAsync(args))
+{
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
+
+// MOD-0033-FU02 §F.3 — Development-only, git-ignored local settings (disposable keys, service-client secret); it
+// outranks appsettings.Development.json (and what that file outranks) and nothing the host adds after it — user
+// secrets, environment variables and the command line still win. See Configuration/DevelopmentLocalSettings.cs.
+Diten.Platform.API.Configuration.DevelopmentLocalSettings.AddDevelopmentLocalSettings(builder.Configuration, builder.Environment);
+apiStartupExecutionMode.ValidateResolvedEnvironment(builder.Environment.EnvironmentName);
 
 /*
  * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04). The access token carries
@@ -86,7 +108,18 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 });
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+if (apiStartupExecutionMode.RunStartupMaintenance)
+{
+    builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+}
+else
+{
+    builder.Services.AddInfrastructure(
+        builder.Configuration,
+        builder.Environment,
+        runStartupMaintenance: false);
+}
+builder.Services.AddTrustedServiceTokenValidation(builder.Configuration);
 
 /*
  * BL-024 Phase 2 — "does the caller hold permission P", answered from the request's claims.
@@ -140,40 +173,49 @@ builder.Services.Configure<ModuleRegistrationCredentialOptions>(
     builder.Configuration.GetSection(ModuleRegistrationCredentialOptions.SectionName));
 builder.Services.Configure<VerifiedGskuResolverCredentialOptions>(
     builder.Configuration.GetSection(VerifiedGskuResolverCredentialOptions.SectionName));
+builder.Services.Configure<TrustedLegalEntityScopeCredentialOptions>(
+    builder.Configuration.GetSection(TrustedLegalEntityScopeCredentialOptions.SectionName));
 builder.Services.Configure<VerifiedGskuOperationalProvisioningOptions>(
     builder.Configuration.GetSection(VerifiedGskuOperationalProvisioningOptions.SectionName));
 builder.Services.Configure<VerifiedMarketOperationalProvisioningOptions>(
     builder.Configuration.GetSection(VerifiedMarketOperationalProvisioningOptions.SectionName));
+builder.Services.Configure<AuditOutboxTemporalStorageMigrationOptions>(
+    builder.Configuration.GetSection(AuditOutboxTemporalStorageMigrationOptions.SectionName));
+builder.Services.AddOptions<TrustedWorkflowStartAuthorizationOptions>()
+    .Bind(builder.Configuration.GetSection(TrustedWorkflowStartAuthorizationOptions.SectionName))
+    .ValidateOnStart();
 builder.Services.AddScoped<
     Diten.Platform.Application.Features.BusinessReferenceData.Services.IBusinessReferenceDataVerifiedGskuOperationalEligibility,
     DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility>();
 builder.Services.AddScoped<Diten.Platform.Application.Features.BusinessReferenceData.Services.IBusinessReferenceDataVerifiedMarketOperationalEligibility,
     DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility>();
-builder.Services.AddScoped<VerifiedMarketOperationalProvisioningRunner>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IModuleRegistrationCredentialAuthenticator, ModuleRegistrationCredentialAuthenticator>();
 builder.Services.AddSingleton<IVerifiedGskuResolverCredentialAuthenticator, VerifiedGskuResolverCredentialAuthenticator>();
 builder.Services.AddScoped<IVerifiedGskuResolverJwtTenantContext, VerifiedGskuResolverJwtTenantContext>();
+builder.Services.AddScoped<IVerifiedReferenceDataServiceTenantContext, VerifiedReferenceDataServiceTenantContext>();
+builder.Services.AddSingleton<ITrustedLegalEntityScopeCredentialAuthenticator, TrustedLegalEntityScopeCredentialAuthenticator>();
+builder.Services.AddScoped<ITrustedLegalEntityScopeJwtContext, TrustedLegalEntityScopeJwtContext>();
+builder.Services.AddScoped<ITrustedLegalEntityScopeRequestExecutor, TrustedLegalEntityScopeRequestExecutor>();
+builder.Services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, MongoOrgDataScopeCandidateAvailabilityClassifier>();
+builder.Services.AddScoped<ITrustedSourceAuditIntentServiceIdentity, TrustedSourceAuditIntentServiceIdentity>();
+builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAuditIntentRequestParser>();
+builder.Services.AddScoped<ITrustedSourceAuditIntentRequestExecutor, TrustedSourceAuditIntentRequestExecutor>();
+builder.Services.AddSingleton<Diten.Platform.API.Models.Workflow.TrustedWorkflowConsumerRequestParser>();
+builder.Services.AddScoped<ITrustedWorkflowConsumerRequestExecutor, TrustedWorkflowConsumerRequestExecutor>();
+builder.Services.AddSingleton<ConfiguredTrustedWorkflowStartAuthorizationPolicy>();
+builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<TrustedWorkflowStartAuthorizationOptions>,
+    TrustedWorkflowStartAuthorizationOptionsValidator>();
+builder.Services.AddSingleton<
+    Diten.Platform.Application.Features.Workflow.Services.ITrustedWorkflowStartAuthorizationPolicy>(
+    services => services.GetRequiredService<ConfiguredTrustedWorkflowStartAuthorizationPolicy>());
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();
 builder.Services.AddScoped<Diten.Platform.API.Authorization.Explain.ISelfAccessExplainService, Diten.Platform.API.Authorization.Explain.SelfAccessExplainService>();
-builder.Services.AddHostedService<BusinessReferenceDataCatalogLoadWorker>();
-builder.Services.AddHostedService<VerifiedGskuOperationalProvisioningRunner>();
-// Startup ordering gate: the A1 permission worker must not sync until module self-registration has FINISHED,
-// otherwise A1 (which syncs moduleCode/scope = null) can create a key first and permanently stamp it
-// Module="platform" + Scope=PlatformAdmin — a scope AuthService cannot downgrade. Registration order alone is
-// NOT sufficient (the manifest walk is slower than the flat key sweep), so a real completion signal is used.
-//
-// ⚠ MERGE 2026-08-26: main registered the A1 worker HERE, immediately after the catalog worker. That line is
-// not dropped — it MOVED, to just below the self-registration worker, which is the whole point of the gate
-// above. Leaving both would register A1 twice and race the very ordering this exists to guarantee.
-builder.Services.AddSingleton<Diten.Platform.API.Services.ModuleRegistration.ModuleSelfRegistrationGate>();
-// MC-3b — self-register Platform-internal module manifests (workflow, …) into the catalog in-process at startup.
-builder.Services.AddHostedService<Diten.Platform.API.Services.ModuleRegistration.PlatformModuleSelfRegistrationWorker>();
-// A1 — auto-register every controller [HasPermission] key into AuthService at startup (best-effort, idempotent).
-// Gated on the signal above; falls back after a bounded timeout so a manifest failure cannot block it forever.
-builder.Services.AddHostedService<Diten.Platform.API.Services.Security.PlatformPermissionAutoRegistrationWorker>();
+// The Development API-serving profile omits only startup maintenance/provisioning workers. Request-time
+// authentication, tenant isolation, authorization, BRD readiness, audit/outbox and eventing remain registered.
+apiStartupExecutionMode.AddApiStartupMaintenanceServices(builder.Services);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
 
@@ -234,13 +276,28 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-if (VerifiedMarketOperationalCommandLine.IsRequested(args))
+if (args.Any(argument => string.Equals(
+        argument,
+        "--run-audit-outbox-temporal-storage-migration",
+        StringComparison.Ordinal)))
 {
-    VerifiedMarketOperationalCommandLine.EnsureDevelopment(builder.Environment);
-    await using var operationalScope = app.Services.CreateAsyncScope();
-    await operationalScope.ServiceProvider
-        .GetRequiredService<VerifiedMarketOperationalProvisioningRunner>()
-        .RunAsync();
+    var options = builder.Configuration
+        .GetSection(AuditOutboxTemporalStorageMigrationOptions.SectionName)
+        .Get<AuditOutboxTemporalStorageMigrationOptions>()
+        ?? new AuditOutboxTemporalStorageMigrationOptions();
+    options.Validate(builder.Environment.EnvironmentName);
+
+    await using var migrationScope = app.Services.CreateAsyncScope();
+    await migrationScope.ServiceProvider
+        .GetRequiredService<Diten.Platform.Infrastructure.Persistence.Migrations.AuditOutboxTemporalStorageMigrationRunner>()
+        .RunAsync(
+            options.MigrationId,
+            options.TargetVersion,
+            options.BatchSize,
+            TimeSpan.FromSeconds(options.LeaseDurationSeconds),
+            options.LeaseOwner,
+            options.ActivateScalarClaims,
+            options.SelectedIndexName);
     return;
 }
 

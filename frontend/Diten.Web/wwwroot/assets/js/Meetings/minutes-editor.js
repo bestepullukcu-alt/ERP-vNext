@@ -12,6 +12,11 @@
  */
 (function () {
     const t = (key) => window.MinutesEditorL10n?.t?.(key) ?? key;
+    // WP-WCN-TASK-REQUEST-01 FIX4 — a linked task this reader may not read arrives with TASK_NOT_ACCESSIBLE in place
+    // of its title; shown as the general Meetings sentence (loaded alongside this screen's own payload), never as the code.
+    const linkedTaskTitle = (title) => (title === 'TASK_NOT_ACCESSIBLE'
+        ? (window.MeetingsL10n?.t?.('linkedTaskNotAccessible') ?? title)
+        : title);
     const tShared = (key) => window.MeetingsL10n?.t?.(key) ?? key;
 
     const esc = (value) => String(value ?? '')
@@ -112,7 +117,7 @@
         const linked = decision.recordLinkId ? linkedTasksByRecordLinkId[decision.recordLinkId] : null;
         if (linked) {
             const rowHtml = window.DitenRelatedRecords.relatedRecordRow(
-                { id: linked.taskId, title: linked.title, link: linked.link }, { esc });
+                { id: linked.taskId, title: linkedTaskTitle(linked.title), link: linked.link }, { esc });
             const addedLater = linked.createdAfterMinutesPublished
                 ? `<span class="badge bg-label-warning ms-2">${esc(t('addedLaterBadge'))}</span>` : '';
             return `<div class="mt-2">${rowHtml}${addedLater}</div>`;
@@ -182,7 +187,7 @@
 
         section.classList.toggle('d-none', addedLater.length === 0);
         list.innerHTML = addedLater
-            .map((task) => window.DitenRelatedRecords.relatedRecordRow({ id: task.taskId, title: task.title, link: task.link }, { esc }))
+            .map((task) => window.DitenRelatedRecords.relatedRecordRow({ id: task.taskId, title: linkedTaskTitle(task.title), link: task.link }, { esc }))
             .join('');
     };
 

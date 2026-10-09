@@ -2,9 +2,22 @@
 @using Diten.Web.Views.MasterData.Brands
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<BrandsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["BrandsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* WP-MDM-BRAND-ACCEPT-01 FIX1 (item 5, UAS-001) — nothing of the form is drawn without mdm.brands.update; the controller answers
+   403 with this surface. Snapshot OR the controller's own reader, so the page never refuses whom it admitted. *@
+@if (!Perms.Has("mdm.brands.update") && !Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.brands.update"))
+{
+    <partial name="_AccessDenied" model="@Localizer["BrandsTitle"].Value" />
+    return;
+}
+
 @{
     ViewData["Title"] = Localizer["EditBrand"].Value;
-    Layout = "_LayoutTenantShell";
 }
 <div class="d-flex align-items-center justify-content-between mb-3">
     <h5 class="mb-0">@Localizer["EditBrand"]</h5>
@@ -13,6 +26,8 @@
 <form asp-action="Edit" asp-route-brandId="@Model.BrandId" method="post" id="brandForm">
     @Html.AntiForgeryToken()
     <input asp-for="BrandId" type="hidden" />
+    @* FIX1 (item 2) — the version this edit was made on; an edit made on an older read is refused, not merged. *@
+    <input asp-for="ExpectedVersion" type="hidden" />
     <partial name="~/Views/MasterData/Brands/_Form.cshtml" model="Model" />
     <div class="d-flex justify-content-end gap-2 mt-3">
         <a href="/MasterData/Brands/@Model.BrandId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>

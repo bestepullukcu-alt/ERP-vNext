@@ -54,7 +54,10 @@ public sealed class AddAgendaItemHandler : IRequestHandler<AddAgendaItemCommand,
         }, ct);
 
         return Response<AgendaItemDto>.Success(
-            new AgendaItemDto(item.Id, item.Text, item.SortOrder, item.Version, item.RecordLinkId), 201, command.CorrelationId);
+            // FIX6 (item 3) — every AgendaItemDto goes through TextFor, this one too (a new line is never carried today,
+            // but the one rule must not depend on that).
+            new AgendaItemDto(item.Id, MeetingAgendaCodes.TextFor(item), item.SortOrder, item.Version, item.RecordLinkId,
+                item.CarriedFromMeetingId), 201, command.CorrelationId);
     }
 }
 

@@ -10,11 +10,23 @@
     let contract = null;
 
     const getAuthHeaders = () => ({ Accept: 'application/json' });
+    // FIX2 (M9) — the archive proxy requires the page's anti-forgery token.
+    const antiForgeryToken = () =>
+        document.querySelector('#productListToken input[name="__RequestVerificationToken"]')?.value || '';
     const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[ch]));
     const badge = (value, cls = 'primary') => `<span class="badge bg-label-${cls}">${esc(value || '—')}</span>`;
     const statusLabel = value => L[`Status_${value}`] || value || '—';
     const typeLabel = value => (value && L[`ProductType_${value}`]) || value || '—';
-    const date = value => value ? new Date(value).toLocaleDateString() : '—';
+    // P-2026-10-07-BRAND-FIX4 (F5) — validity dates are calendar days (midnight +00:00): the YYYY-MM-DD part is read from
+    // the string and formatted in UTC, never shifted to the browser's zone. updatedAt (dateTime) is a real timestamp.
+    const calendarDay = value => {
+        const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? ''));
+        return parts ? new Date(Date.UTC(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]))) : null;
+    };
+    const date = value => {
+        const day = value ? calendarDay(value) : null;
+        return day ? day.toLocaleDateString(undefined, { timeZone: 'UTC' }) : '—';
+    };
     const dateTime = value => value ? new Date(value).toLocaleString() : '—';
 
     const envelope = async response => {
@@ -150,7 +162,11 @@
         if (!archive) return;
         window.showConfirm?.(L.ArchiveProductConfirm, async () => {
             try {
-                await envelope(await fetch(`${endpoint}/${archive.dataset.id}/archive`, { method: 'POST', credentials: 'same-origin', headers: getAuthHeaders() }));
+                await envelope(await fetch(`${endpoint}/${archive.dataset.id}/archive`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: Object.assign(getAuthHeaders(), { RequestVerificationToken: antiForgeryToken() })
+                }));
                 window.showToast?.(L.RecordArchived, 'success');
                 await loadRows();
             } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }

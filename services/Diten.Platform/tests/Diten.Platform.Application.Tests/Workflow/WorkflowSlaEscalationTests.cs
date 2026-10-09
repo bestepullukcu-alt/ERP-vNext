@@ -274,7 +274,8 @@ public sealed partial class WorkflowSlaEscalationTests
                 logs,
                 tenantContext,
                 new FakeCurrentUserContext(),
-                slaRules: rules),
+                slaRules: rules,
+                transactions: new SequentialTestTransactionExecutor()),
             clock);
     }
 

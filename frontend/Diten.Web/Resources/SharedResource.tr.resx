@@ -685,6 +685,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Görevi düzenle</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Marka ve Ürün Ana Verisi</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Ürün / Kalem / SKU Ana Verisi</value>
   </data>

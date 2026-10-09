@@ -3,10 +3,13 @@ using System.Text;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Authorization;
 using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.EntitlementAttestations;
 using Diten.Platform.Application.Features.Notifications.Services;
+using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.WorkingCalendar.Services;
 using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
@@ -20,6 +23,7 @@ using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using Diten.Platform.Infrastructure.Persistence.Migrations;
 using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceData;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
@@ -56,7 +60,11 @@ namespace Diten.Platform.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment,
+        bool runStartupMaintenance = true)
     {
         services.AddSecretsProvider(configuration, environment, options => options.ServiceName = "Platform");
         services.ValidateRequiredSecrets(configuration, environment, "Platform", BuildSecretRequirements(configuration));
@@ -143,6 +151,10 @@ public static class DependencyInjection
         // own section so a tenant can point review and approval at different flows.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions.SectionName));
+        // WP-WF-ENGINE-CANDIDATES-01 D2-FIX3 item 4 — how long the SLA sweep rests a task nothing will change (Workflow:Escalation).
+        services.AddWorkflowEscalationOptions(configuration);
+        services.Configure<Diten.Platform.Application.Features.Workflow.WorkflowStartRecoveryOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Workflow.WorkflowStartRecoveryOptions.SectionName));
         // BL-023 Part B — the upward work-request template code, on the same terms as the two above.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions.SectionName));
@@ -283,8 +295,9 @@ public static class DependencyInjection
         // wrote. Conventions bind when a class map is first built, so this stays the first BSON registration.
         PlatformBsonConventions.Register();
 
-        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
-        BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
+        // Guid = Standard, decimal = Decimal128. Repeatable in one process, and refused when the serializer already
+        // in place is a different one — see PlatformBsonSerializers.
+        PlatformBsonSerializers.EnsureRegistered();
 
         var connectionString = configuration["MongoDbSettings:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'MongoDbSettings:ConnectionString' is missing in appsettings.json.");
@@ -354,6 +367,7 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationFieldValueRepository, OrganizationFieldValueRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
+        services.AddScoped<IOrgDataScopeCandidateFactReader, OrgDataScopeCandidateFactReader>();
         services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();
 
         // Working Calendar & Public Holidays — first production consumer of HybridRepository (country rows with
@@ -368,6 +382,8 @@ public static class DependencyInjection
         services.AddScoped<IApprovalTaskRepository, ApprovalTaskRepository>();
         services.AddScoped<IRuntimeAssignmentSnapshotRepository, RuntimeAssignmentSnapshotRepository>();
         services.AddScoped<IWorkflowTransitionLogRepository, WorkflowTransitionLogRepository>();
+        // BL-549 + BL-539 + BL-540 (1) — the engine recovery's server-side reads (abandoned starts, incomplete trusted starts, orphans).
+        services.AddScoped<IWorkflowStartRecoveryStore, WorkflowStartRecoveryStore>();
         services.AddScoped<ISlaEscalationRuleRepository, SlaEscalationRuleRepository>();
 
         // MOD-0024 Task Engine Repositories (Phase 1 uses the first five; the rest exist so Phases 2–5 are additive)
@@ -556,78 +572,78 @@ public static class DependencyInjection
         services.AddSingleton<ISmtpClientFactory, MailKitSmtpClientFactory>();
         services.AddScoped<SecretReferenceResolver>();
         services.AddScoped<IMessagingProviderResolver, MessagingProviderResolver>();
-        services.AddScoped<AuditOutboxRepository>();
-        services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
-        // WP-PLATFORM-AUDIT-INTX-01 — the repository is only the STORE under the in-transaction door. Handlers get
-        // ITransactionalAuditOutboxWriter = CanonicalTransactionalAuditOutboxWriter (registered in AddApplication), which
-        // builds the canonical payload and names the actor before anything is stored.
-        services.AddScoped<ITransactionalAuditOutboxStore>(provider => provider.GetRequiredService<AuditOutboxRepository>());
-        services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        AddAuditOutboxRepositories(services);
+        services.AddScoped<AuditOutboxTemporalStorageMigrationRunner>();
+        services.AddScoped<ITrustedSourceAuditIntentAcceptanceService, TrustedSourceAuditIntentAcceptanceService>();
         services.AddSingleton<AuditOutboxWorkerOptions>();
         services.AddScoped<AuditOutboxPayloadMapper>();
         services.AddScoped<AuditOutboxProcessor>();
         services.AddHostedService<AuditOutboxWorker>();
 
-        LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
-        ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        if (runStartupMaintenance)
+        {
+            LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
+            ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
 
-        // FIX-DOMAIN-DEDUP — collapse cross-format duplicate domain rows + backfill CodeKey BEFORE the unique
-        // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
-        ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-DEDUP — collapse cross-format duplicate domain rows + backfill CodeKey BEFORE the unique
+            // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
+            ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
 
-        // NOTE (2026-08-28 main-sync): the pre-refactor MongoDbIndexConfigurations.ReconcileDevelopmentIndexesAsync
-        // dev-only drop was removed here — main's refactor folded drop-before-rebuild into PlatformSchemaMigrations
-        // (run first by EnsureIndexesAsync). The one index it dropped, "ux_dm_collection_instances_corporate_owner_
-        // baseline_node_active", is not a name main's manifest recreates, so it can never raise IndexOptionsConflict;
-        // any lingering copy in an old dev DB is a harmless orphan.
-        MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-        var auditRetentionSeedOptions = configuration
-            .GetSection(AuditRetentionSeedOptions.SectionName)
-            .Get<AuditRetentionSeedOptions>()
-            ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
-        AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
-        PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
-        // FIRST line and no producer's notification ever reaches a template, a locale or a provider. Derived from the
-        // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
-        // row an operator created.
-        NotificationMessagingSettingsSeed.EnsureSeededAsync(
-                database,
-                configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions())
-            .GetAwaiter().GetResult();
-        // BL-042 — stamp AcceptedByUserId on tasks accepted under the OLD inferred rule. Without this every
-        // already-accepted task reverts to pendingAcceptance on deploy and the tenant's My Work empties into the
-        // Inbox. Idempotent: only unstamped rows are touched.
-        TaskAcceptanceBackfillMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
-        // until FU04A adds seed content.
-        NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        // FIX-DOMAIN-SERVICE-CANONICAL — must run AFTER the domain/service lookups are seeded: pins catalog
-        // Domain/Service to canonical Codes and fixes the 'Servicec' DisplayName typo. Marker-gated + idempotent.
-        ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
-        // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
-        // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
-        ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // FIX-TASKS-MODULE-NAME — the tasks module was renamed "Görevler" → "Görev Tanımları"; catalog
-        // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
-        // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
-        TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // WP-DM-1b — tenant-AGNOSTIC Document Master Register auto-seed. Config-driven (DocumentRegisterSeed:*):
-        // EnsureSeededAsync self-gates on Development + Enabled + a configured target tenant + a real CSV path +
-        // a one-time marker; absent/blank/prod ⇒ skip (no hardcoded tenant). Reuses the DM-1a mapping + parser.
+            // NOTE (2026-08-28 main-sync): the pre-refactor MongoDbIndexConfigurations.ReconcileDevelopmentIndexesAsync
+            // dev-only drop was removed here — main's refactor folded drop-before-rebuild into PlatformSchemaMigrations
+            // (run first by EnsureIndexesAsync). The one index it dropped, "ux_dm_collection_instances_corporate_owner_
+            // baseline_node_active", is not a name main's manifest recreates, so it can never raise IndexOptionsConflict;
+            // any lingering copy in an old dev DB is a harmless orphan.
+            MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
+            var auditRetentionSeedOptions = configuration
+                .GetSection(AuditRetentionSeedOptions.SectionName)
+                .Get<AuditRetentionSeedOptions>()
+                ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
+            AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
+            PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
+            // FIRST line and no producer's notification ever reaches a template, a locale or a provider. Derived from the
+            // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
+            // row an operator created.
+            NotificationMessagingSettingsSeed.EnsureSeededAsync(
+                    database,
+                    configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions())
+                .GetAwaiter().GetResult();
+            // BL-042 — stamp AcceptedByUserId on tasks accepted under the OLD inferred rule. Without this every
+            // already-accepted task reverts to pendingAcceptance on deploy and the tenant's My Work empties into the
+            // Inbox. Idempotent: only unstamped rows are touched.
+            TaskAcceptanceBackfillMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
+            // until FU04A adds seed content.
+            NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-SERVICE-CANONICAL — must run AFTER the domain/service lookups are seeded: pins catalog
+            // Domain/Service to canonical Codes and fixes the 'Servicec' DisplayName typo. Marker-gated + idempotent.
+            ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
+            // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
+            // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
+            ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-TASKS-MODULE-NAME — the tasks module was renamed "Görevler" → "Görev Tanımları"; catalog
+            // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
+            // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
+            TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // WP-DM-1b — tenant-AGNOSTIC Document Master Register auto-seed. Config-driven (DocumentRegisterSeed:*):
+            // EnsureSeededAsync self-gates on Development + Enabled + a configured target tenant + a real CSV path +
+            // a one-time marker; absent/blank/prod ⇒ skip (no hardcoded tenant). Reuses the DM-1a mapping + parser.
+            var documentRegisterSeedOptions = configuration
+                .GetSection(DocumentRegisterSeedOptions.SectionName)
+                .Get<DocumentRegisterSeedOptions>() ?? new DocumentRegisterSeedOptions();
+            DocumentRegisterSeed.EnsureSeededAsync(database, documentRegisterSeedOptions, environment).GetAwaiter().GetResult();
+        }
+
         services.Configure<DocumentRegisterSeedOptions>(
             configuration.GetSection(DocumentRegisterSeedOptions.SectionName));
-        var documentRegisterSeedOptions = configuration
-            .GetSection(DocumentRegisterSeedOptions.SectionName)
-            .Get<DocumentRegisterSeedOptions>() ?? new DocumentRegisterSeedOptions();
-        DocumentRegisterSeed.EnsureSeededAsync(database, documentRegisterSeedOptions, environment).GetAwaiter().GetResult();
         // DEV-ONLY SEEDS — these two write MOCK organization data: five invented positions
         // (CEO/CTO/HR_MGR/DEV_LEAD/DEV_ENG) and an assignment binding a named developer's personal
         // mailbox to the CEO position of one hardcoded tenant. PositionAssignmentSeed already
@@ -643,7 +659,7 @@ public static class DependencyInjection
         // Nothing in the test suites reads this data; the two tests that name these seeds do so in comments.
         var seedDevOrganizationPositions =
             environment.IsDevelopment() && configuration.GetValue<bool>(PositionSeed.OptInConfigurationKey);
-        if (seedDevOrganizationPositions)
+        if (runStartupMaintenance && seedDevOrganizationPositions)
         {
             PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -662,24 +678,56 @@ public static class DependencyInjection
         services.AddScoped<OutboxPublisherProcessor>();
         services.AddScoped<HangfireBackgroundJobExecutor>();
 
-        ConfigureHangfire(services, configuration, mongoSettings);
+        ConfigureHangfire(services, configuration, mongoSettings, runStartupMaintenance);
 
         var eventingOptions = configuration.GetSection(RabbitMqEventingOptions.SectionName).Get<RabbitMqEventingOptions>()
                               ?? new RabbitMqEventingOptions();
         AddPlatformEventTransport(services, eventingOptions);
 
         services.AddHostedService<OutboxPublisherWorker>();
-        services.AddHostedService<SubscriptionPlanStartupInitializer>();
+        if (runStartupMaintenance)
+        {
+            services.AddHostedService<SubscriptionPlanStartupInitializer>();
 
-        RunMongoStartupInitialization(
-            database,
-            mongoSettings,
-            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
-            environment.IsDevelopment(),
-            seedDevOrganizationPositions);
+            RunMongoStartupInitialization(
+                database,
+                mongoSettings,
+                configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
+                environment.IsDevelopment(),
+                seedDevOrganizationPositions);
+        }
 
         return services;
     }
+
+    /// <summary>
+    /// The audit outbox repository and the doors it serves (merge WP-CT-LANE-TKO-MERGE-01: the takeover's shape — temporal
+    /// migration, the trusted-source intent outbox — under the lane's rule, WP-PLATFORM-AUDIT-INTX-01): the repository is only
+    /// the in-transaction STORE (<see cref="ITransactionalAuditOutboxStore"/>). The door handlers get,
+    /// <c>ITransactionalAuditOutboxWriter</c>, is <c>CanonicalTransactionalAuditOutboxWriter</c>, registered in AddApplication
+    /// and never here — so it is the one door whichever of the two registrations runs first.
+    /// </summary>
+    internal static void AddAuditOutboxRepositories(IServiceCollection services)
+    {
+        services.AddScoped<AuditOutboxTemporalMigrationRepository>();
+        services.AddScoped<AuditOutboxRepository>(provider =>
+            new AuditOutboxRepository(
+                provider.GetRequiredService<IPlatformDbContext>(),
+                provider.GetRequiredService<AuditOutboxTemporalMigrationRepository>()));
+        services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<ITransactionalAuditOutboxStore>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<ITrustedSourceAuditIntentOutbox>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+    }
+
+    /// <summary>
+    /// D2-FIX4 item 7 — binds <c>Workflow:Escalation</c> to <see cref="Diten.Platform.Application.Features.Workflow.WorkflowEscalationOptions"/>.
+    /// A method of its own so a test can bind a configuration through the registration production runs (and read what the
+    /// sweep's handler would be given), instead of trusting that the line inside <see cref="AddInfrastructure"/> is there.
+    /// </summary>
+    internal static IServiceCollection AddWorkflowEscalationOptions(this IServiceCollection services, IConfiguration configuration) =>
+        services.Configure<Diten.Platform.Application.Features.Workflow.WorkflowEscalationOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Workflow.WorkflowEscalationOptions.SectionName));
 
     public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
     {
@@ -810,7 +858,11 @@ public static class DependencyInjection
         }
     }
 
-    private static void ConfigureHangfire(IServiceCollection services, IConfiguration configuration, MongoDbSettings mongoSettings)
+    private static void ConfigureHangfire(
+        IServiceCollection services,
+        IConfiguration configuration,
+        MongoDbSettings mongoSettings,
+        bool runStartupMaintenance)
     {
         var schedulerOptions = configuration.GetSection(BackgroundJobSchedulerOptions.SectionName)
             .Get<BackgroundJobSchedulerOptions>() ?? new BackgroundJobSchedulerOptions();
@@ -845,8 +897,9 @@ public static class DependencyInjection
                     });
         });
         services.AddSingleton<IBackgroundJobScheduler, HangfireBackgroundJobScheduler>();
+        services.AddSchedulerBoundBackgroundJobHandlers();
 
-        if (schedulerOptions.Enabled)
+        if (schedulerOptions.Enabled && runStartupMaintenance)
         {
             services.AddHangfireServer(options =>
             {

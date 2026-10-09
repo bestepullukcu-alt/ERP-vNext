@@ -85,13 +85,17 @@ public sealed class TimesheetReadBatchHttpMongoTests : TimerScenario
         _output.WriteLine($"page of 6: {Describe(six.Reads)}; working hours asked {six.WorkingHoursCalls.Count}x");
         Assert.Equal(2, two.Items.Count);
         Assert.Equal(6, six.Items.Count);
-        foreach (var collection in new[]
+        // D1-FIX1 — "whose approval may this reader decide" is asked of MOD-0023 (one read of the queue's tasks, one of
+        // their assignment snapshots), then the page's marks read the approval tasks once more: 2 and 1, whatever the
+        // page holds and however many weeks are in the queue.
+        foreach (var (collection, reads) in new[]
                  {
-                     PlatformCollections.TimeEntryEntries, PlatformCollections.ApprovalTasks, PlatformCollections.TimeEntryTimerSegments
+                     (PlatformCollections.TimeEntryEntries, 1), (PlatformCollections.ApprovalTasks, 2),
+                     (PlatformCollections.TimeEntryTimerSegments, 1), (PlatformCollections.WorkflowRuntimeAssignmentSnapshots, 1)
                  })
         {
-            Assert.True(two.Reads.GetValueOrDefault(collection) == 1, $"{collection}: {two.Reads.GetValueOrDefault(collection)} reads for a page of 2");
-            Assert.True(six.Reads.GetValueOrDefault(collection) == 1, $"{collection}: {six.Reads.GetValueOrDefault(collection)} reads for a page of 6");
+            Assert.True(two.Reads.GetValueOrDefault(collection) == reads, $"{collection}: {two.Reads.GetValueOrDefault(collection)} reads for a page of 2");
+            Assert.True(six.Reads.GetValueOrDefault(collection) == reads, $"{collection}: {six.Reads.GetValueOrDefault(collection)} reads for a page of 6");
         }
 
         // The working calendar is asked once per distinct (person, week) on the page — never twice for the same one.
@@ -171,7 +175,8 @@ public sealed class TimesheetReadBatchHttpMongoTests : TimerScenario
     [Fact]
     public async Task WeekIds_reads_back_a_week_beyond_the_first_500_of_the_queue_and_it_can_be_approved()
     {
-        // 501 older submissions in the manager's queue (cheaply: stored rows, no MOD-0023 instance), then the real ones.
+        // 501 older submissions in the manager's queue (cheaply: stored rows, each with the open approval task and the
+        // assignment snapshot MOD-0023 would hold for it — the queue is what the reader may DECIDE), then the real ones.
         await SeedQueueFillerAsync(501);
         var clean = await SubmitWeekAsync(Person, CurrentWeek, Row(Monday, 120, TaskA));
         Host.Clock.UtcNow = Wednesday.AddMinutes(1);
@@ -390,11 +395,15 @@ public sealed class TimesheetReadBatchHttpMongoTests : TimerScenario
 
     /// <summary>Submitted weeks of people nobody sees, routed to the manager, submitted before anything the test submits.
     /// No MOD-0023 instance: the decision puller has nothing to ask about them.</summary>
-    private Task SeedQueueFillerAsync(int count)
-        => Collection<TimesheetWeek>(PlatformCollections.TimeEntryTimesheetWeeks).InsertManyAsync(
-            Enumerable.Range(0, count).Select(i =>
+    private async Task SeedQueueFillerAsync(int count)
+    {
+        var fillers = Enumerable.Range(0, count)
+            .Select(i => (Index: i, Instance: Guid.NewGuid(), Task: Guid.NewGuid(), Snapshot: Guid.NewGuid()))
+            .ToList();
+        await Collection<TimesheetWeek>(PlatformCollections.TimeEntryTimesheetWeeks).InsertManyAsync(
+            fillers.Select(f =>
             {
-                var submittedAt = Wednesday.AddDays(-1).AddSeconds(i);
+                var submittedAt = Wednesday.AddDays(-1).AddSeconds(f.Index);
                 return new TimesheetWeek
                 {
                     TenantId = Tenant,
@@ -404,6 +413,7 @@ public sealed class TimesheetReadBatchHttpMongoTests : TimerScenario
                     TimeZoneId = Zone,
                     RevisionNumber = 1,
                     Status = TimesheetWeekStatus.Submitted,
+                    WorkflowInstanceId = f.Instance,
                     AssignedApproverUserId = Manager,
                     ApproverCandidateUserIds = [Manager],
                     SubmissionCount = 1,
@@ -412,6 +422,27 @@ public sealed class TimesheetReadBatchHttpMongoTests : TimerScenario
                     TotalMinutes = 60
                 };
             }));
+        await Collection<WorkflowInstance>(PlatformCollections.WorkflowInstances).InsertManyAsync(
+            fillers.Select(f => new WorkflowInstance
+            {
+                Id = f.Instance, TenantId = Tenant, TemplateId = Guid.Empty, WorkflowTemplateId = Guid.Empty,
+                ObjectType = "TimesheetWeek", ObjectId = "filler-" + f.Index, ObjectRef = "filler-" + f.Index,
+                Status = WorkflowInstanceStatus.Active, StartedBy = "filler"
+            }));
+        await Collection<ApprovalTask>(PlatformCollections.ApprovalTasks).InsertManyAsync(
+            fillers.Select(f => new ApprovalTask
+            {
+                Id = f.Task, TenantId = Tenant, WorkflowInstanceId = f.Instance, AssigneeRef = Manager.ToString(),
+                AssignmentSnapshotId = f.Snapshot, Status = ApprovalTaskStatus.WaitingApproval
+            }));
+        await Collection<RuntimeAssignmentSnapshot>(PlatformCollections.WorkflowRuntimeAssignmentSnapshots).InsertManyAsync(
+            fillers.Select(f => new RuntimeAssignmentSnapshot
+            {
+                Id = f.Snapshot, TenantId = Tenant, WorkflowInstanceId = f.Instance, ApprovalTaskId = f.Task,
+                ResolverSource = "runtime_candidates", ResolvedPrincipalId = Manager.ToString(),
+                CandidatePrincipalIds = [Manager.ToString()], ResolvedAt = DateTime.UtcNow, TieBreakExplanation = "single_candidate"
+            }));
+    }
 
     private async Task<ApprovalTask> OpenApprovalTaskAsync(Guid weekId)
     {

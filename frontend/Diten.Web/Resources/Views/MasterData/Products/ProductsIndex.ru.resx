@@ -88,6 +88,7 @@
   <data name="NoBrand" xml:space="preserve"><value>Без бренда</value></data>
   <data name="NoBrandLinked" xml:space="preserve"><value>Этот продукт не связан с брендом.</value></data>
   <data name="BrandIdOptionalHelp" xml:space="preserve"><value>Необязательно. Генерические и непрофильные продукты могут не иметь бренда. Архивные бренды не предлагаются.</value></data>
+  <data name="BrandNotLinkableSuffix" xml:space="preserve"><value>(нельзя связать)</value></data>
   <data name="BrandNotResolvedHelp" xml:space="preserve"><value>Бренд не удалось прочитать, поэтому показан только его идентификатор.</value></data>
   <data name="BrandReferenceSection" xml:space="preserve"><value>Ссылка на бренд</value></data>
   <data name="PharmaMetadataSection" xml:space="preserve"><value>Фарм. метаданные</value></data>
@@ -106,4 +107,39 @@
   <data name="ProductType_service" xml:space="preserve"><value>Услуга</value></data>
   <data name="ProductType_training-material" xml:space="preserve"><value>Учебный материал</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>Другое</value></data>
+  <data name="BrandArchivedNotice" xml:space="preserve"><value>Этот бренд в архиве. Продукт сохраняет его, но привязать к нему новый продукт нельзя.</value></data>
+  <!-- P-2026-10-07-BRAND-FIX4 (K3) — every reason code a product write can return, as a sentence; the status sentences the gateway falls back to. -->
+  <data name="Reason_product_not_found" xml:space="preserve"><value>Этот продукт не существует или недоступен вам.</value></data>
+  <data name="Reason_product_code_duplicate" xml:space="preserve"><value>Продукт с этим кодом уже существует. Коды остаются зарезервированными даже после архивирования.</value></data>
+  <data name="Reason_brand_not_found" xml:space="preserve"><value>Этот бренд не существует или недоступен вам.</value></data>
+  <data name="Reason_brand_archived" xml:space="preserve"><value>Этот бренд в архиве; к нему нельзя привязать новый продукт.</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Новые продукты можно связать только с активным брендом в пределах срока его действия.</value></data>
+  <data name="Reason_record_archived" xml:space="preserve"><value>Эта запись в архиве и больше не может быть изменена.</value></data>
+  <data name="Reason_code_immutable" xml:space="preserve"><value>Код нельзя изменить после создания записи.</value></data>
+  <data name="Reason_invalid_product_status" xml:space="preserve"><value>Выберите допустимый статус продукта.</value></data>
+  <data name="Reason_invalid_product_type" xml:space="preserve"><value>Выберите допустимый тип продукта.</value></data>
+  <data name="Reason_invalid_dosage_form" xml:space="preserve"><value>Выберите допустимую лекарственную форму.</value></data>
+  <data name="Reason_invalid_unit_of_measure" xml:space="preserve"><value>Выберите допустимую единицу измерения.</value></data>
+  <data name="Reason_invalid_atc_code" xml:space="preserve"><value>Введите допустимый код ATC.</value></data>
+  <data name="Reason_archived_status_not_assignable" xml:space="preserve"><value>Статус «в архиве» устанавливается только архивированием.</value></data>
+  <data name="Reason_invalid_effective_window" xml:space="preserve"><value>Дата окончания не может быть раньше даты начала.</value></data>
+  <data name="Reason_external_reference_primary_conflict" xml:space="preserve"><value>Только одна внешняя ссылка на систему-источник может быть основной.</value></data>
+  <data name="Reason_external_reference_duplicate" xml:space="preserve"><value>Одна и та же внешняя ссылка введена дважды.</value></data>
+  <data name="Reason_external_reference_in_use" xml:space="preserve"><value>Эта внешняя ссылка уже используется другой записью.</value></data>
+  <data name="Reason_indication_ref_duplicate" xml:space="preserve"><value>Одно и то же показание введено дважды.</value></data>
+  <data name="Reason_version_conflict" xml:space="preserve"><value>Кто-то изменил эту запись после того, как вы её открыли. Перезагрузите её и внесите изменение снова.</value></data>
+  <data name="Reason_expected_version_required" xml:space="preserve"><value>Не удалось сопоставить правку с открытой вами версией. Перезагрузите страницу и повторите попытку.</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>Сейчас изменение невозможно сохранить надёжно. Ничего не сохранено; повторите попытку позже.</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>Изменение отправлено, но его результат не удалось подтвердить. Перезагрузите продукт: если изменения нет, внесите его снова.</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0}: значение отсутствует, слишком длинное или имеет неверный формат.</value></data>
+  <data name="RefusedStatus_400" xml:space="preserve"><value>Запрос не принят. Проверьте введённые данные и повторите попытку.</value></data>
+  <data name="RefusedStatus_403" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="RefusedStatus_404" xml:space="preserve"><value>Запись не найдена или недоступна вам.</value></data>
+  <data name="RefusedStatus_409" xml:space="preserve"><value>Запись изменилась или находится в состоянии, которое этого не допускает. Перезагрузите и повторите попытку.</value></data>
+  <data name="RefusedStatus_502" xml:space="preserve"><value>Не удалось связаться со службой. Повторите попытку чуть позже.</value></data>
+  <data name="RefusedStatus_503" xml:space="preserve"><value>Служба временно недоступна. Повторите попытку чуть позже.</value></data>
+  <data name="RefusedStatus_504" xml:space="preserve"><value>Служба не ответила вовремя. Повторите попытку чуть позже.</value></data>
+  <data name="RefusedStatus_Other" xml:space="preserve"><value>Не удалось выполнить запрос. Повторите попытку чуть позже.</value></data>
+  <!-- FIX4 (F3) — a brand kept on a re-rendered form whose name could not be read: its id plus this mark. -->
+  <data name="BrandNotReadableSuffix" xml:space="preserve"><value>(не удалось прочитать)</value></data>
 </root>

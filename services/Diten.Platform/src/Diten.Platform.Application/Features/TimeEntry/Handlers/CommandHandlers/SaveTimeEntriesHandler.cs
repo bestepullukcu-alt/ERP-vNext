@@ -153,6 +153,20 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
             {
                 return Fail("Unknown task.", 400, TimeEntryReasonCodes.TargetInvalid, request);
             }
+
+            // FIX2 — NEW time on a task is a write on it: the person a request waits on answers it first, and the sender
+            // of an accepted request does not log its holder's work. A row already in the draft stays (it was written
+            // when it was allowed; refusing the whole week for it would lock the person out of their own timesheet).
+            var newTaskIds = typed
+                .Where(r => r.TaskItemId is { } id && !existing.Any(e => e.TaskItemId == id && e.LocalDate == r.LocalDate))
+                .Select(r => r.TaskItemId!.Value)
+                .Distinct()
+                .ToList();
+            var writable = await _tasks.TimeWritableTaskIdsAsync(userId, newTaskIds, ct);
+            if (newTaskIds.Any(id => !writable.Contains(id)))
+            {
+                return Fail("Time cannot be recorded on this task.", 400, TimeEntryReasonCodes.TargetInvalid, request);
+            }
         }
 
         // ── v2 F5 / v3 G4 — the timer drafts, recomputed from the segments AFTER the week and the rows passed their

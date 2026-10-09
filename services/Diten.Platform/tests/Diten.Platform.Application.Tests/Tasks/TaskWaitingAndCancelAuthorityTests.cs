@@ -207,7 +207,7 @@ public sealed class TaskWaitingAndCancelAuthorityTests
                         // the honest arrangement.
                         new FakePositionAssignmentRepository(), new FakePositionRepository(),
                         new FakeOrganizationUnitRepository(),
-                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance)
+                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new InquireTaskItemCommand(task.Id, new InquireTaskItemRequest(task.Version, reason), "corr-inquire"),
                 CancellationToken.None);
@@ -236,7 +236,7 @@ public sealed class TaskWaitingAndCancelAuthorityTests
             new FakeTaskNotificationService(),
             new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
             new FakeTaskAttachmentRepository(),
-            NullLogger<TransitionTaskItemHandler>.Instance);
+            NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
     private static TaskWorkItemProvider Provider(FakeTaskItemRepository tasks)
         => new(tasks,

@@ -23,6 +23,10 @@ public sealed class CreateFinishedGoodDraftValidator : AbstractValidator<CreateF
         {
             RuleFor(x => x.Request.GskuId).NotEmpty().WithMessage("GSKU_ID_REQUIRED");
             RuleFor(x => x.Request.IdempotencyKey).NotEmpty().MaximumLength(128);
+            // FG FIX1 item 7: key hygiene — a control character is never part of a creation key.
+            RuleFor(x => x.Request.IdempotencyKey)
+                .Must(key => key is null || !key.Any(char.IsControl))
+                .WithMessage("IDEMPOTENCY_KEY_INVALID");
             RuleFor(x => x.Request.UnmappedFields)
                 .Must(fields => fields is null || !fields.Keys.Any(IsForbidden))
                 .WithMessage("FINISHED_GOOD_FIELD_FORBIDDEN");

@@ -481,8 +481,11 @@ describe("A — the person window follows the server's flag, never the action co
     await settle();
 
     expect(dispatched).toHaveLength(1);
+    // The projection carried a version, so the attempt's stable identity travels with it (the takeover's
+    // idempotency rule); the person field is what this case is about, and it is absent.
     expect(Object.keys(dispatched[0].payload).sort())
-      .toEqual(["closureFieldValues", "expectedVersion", "note", "reasonCode"]);
+      .toEqual(["closureFieldValues", "expectedVersion", "idempotencyKey", "note", "reasonCode"]);
+    expect(dispatched[0].payload).not.toHaveProperty("targetPrincipalId");
   });
 });
 

@@ -79,7 +79,7 @@ public sealed class TaskInquiryCtTests
                 new FakePositionAssignmentRepository([.. seats]),
                 new FakePositionRepository([position]),
                 new FakeOrganizationUnitRepository([unit]),
-                notifications, NullLogger<InquireTaskItemHandler>.Instance)
+                notifications, NullLogger<InquireTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new InquireTaskItemCommand(task.Id, new InquireTaskItemRequest(task.Version, "Hangi lot?", Asked), "corr"),
                 CancellationToken.None);
@@ -88,7 +88,7 @@ public sealed class TaskInquiryCtTests
         var answered = await new AnswerInquiryHandler(
                 tasks, tasks.Transitions, new TaskLifecycleService(), new FakeCurrentUserContext(Asked),
                 new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), notifications,
-                NullLogger<AnswerInquiryHandler>.Instance)
+                NullLogger<AnswerInquiryHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new AnswerInquiryCommand(task.Id, new AnswerInquiryRequest(task.Version, "Lot 42."), "corr"),
                 CancellationToken.None);

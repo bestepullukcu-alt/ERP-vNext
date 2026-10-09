@@ -794,3 +794,218 @@ Protected/out-of-scope even after named-step code-start:
 Material, FPF, FPP and artwork controlled-code namespace scopes remain governed outside this follow-up. No follow-up may
 use this approved design/scope pack to authorize their issuance or to place those codes in `CanonicalCode` or
 `RevisionIdentifier`.
+
+### 2026-09-09 integration: ABB embedded audit delivery prerequisite
+
+Owner-approved Phase 1.5 audit storage is reconciled from protected source `ffdd280a`.
+Exact runtime/test paths for this bounded prerequisite:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/AuditAggregateType.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductAbbreviationRegisterEntry.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs`
+
+Only aggregate ordinal 9 and ABB operation ordinals 51-61 are appended; unrelated final-branch enums are not imported.
+The existing register collection is reused. Claim/retry/dead-letter/atomic acknowledgement and receipt replay use
+the current generic delivery implementation; business version and soft-delete state remain unchanged.
+Test-owned Mongo replica-set verification: `ProductAbbreviationAuditDeliveryFoundationMongoTests` 2 passed,
+0 failed, 0 skipped, covering tenant denial, competing claim, immutable receipt replay/drift and soft-deleted entries.
+This is storage groundwork, not producer/worker or live acceptance. Tenant-discovery, producer and WorkCenter/UI
+integration require their separately verified slices; no worker, configuration or operational cutover was activated.
+
+### 2026-09-09 approved ABB tenant-discovery amendment
+
+The owner explicitly adds only `mdm_product_abbreviation_register`, verified against
+`ProductAbbreviationRegisterRepository`, to the existing eight-collection bounded tenant-discovery set.
+Exact implementation/test paths:
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentTenantPartitionDiscoveryRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentDeliveryWorkerMongoTests.cs`
+
+No wildcard discovery, grant/configuration change, worker activation, schema migration or operational cutover.
+Existing temporal-state validation, exact intent tenant/source/type checks and paging limits are unchanged.
+Test-owned replica-set run `AuditIntentDeliveryWorkerMongoTests`: 11 passed, 0 failed, 0 skipped.
+Evidence covers ABB-only tenant discovery followed by real delivery discovery/claim/payload read, cross-tenant denial,
+duplicate/cursor paging across ABB plus all original eight collections, and rejection of foreign intent tenant,
+wrong aggregate/source, legacy temporal storage, future retry, active lease, delivered and dead-letter records.
+The independent audit storage prerequisite run has 2 passed tests; these are distinct from the 11 discovery tests.
+Producer, WorkCenter and UI integration are separate gates; neither run proves live worker acceptance.
+
+### 2026-09-09 ABB WorkCenter and audit producer integration
+
+This bounded extraction reconciles the approved Phase 1.5 implementation from `ffdd280a` with current main.
+Exact runtime/test allow-list for this extraction:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Contracts/ProductAbbreviationWorkItems/ProductAbbreviationWorkItemRequests.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductAbbreviationWorkItemsController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/Services/ProductAbbreviationAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/Services/ProductAbbreviationWorkflow.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Commands/DispatchProductAbbreviationWorkItemActionCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Handlers/DispatchProductAbbreviationWorkItemActionHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Handlers/GetProductAbbreviationWorkItemsHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/ProductAbbreviationWorkItemModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Queries/GetProductAbbreviationWorkItemsQuery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Validators/DispatchProductAbbreviationWorkItemActionValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Validators/GetProductAbbreviationWorkItemsValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductAbbreviationRegisterRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductAbbreviationRegisterRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemActionTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemProjectionTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemScopeIntegrationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterMongoTests.cs`
+
+The existing generic Platform remote bridge remains the only bridge; no native Workflow template/service-token
+profile, new responsibility grant, FU21 permission pair, navigation or runtime configuration is introduced.
+All eight ABB permission pairs and FU20's Admin/Viewer/Requester/Steward/Approver/Auditor matrix remain unchanged.
+
+Semantic reconciliation:
+- Projection covers initial, correction and retirement requests, uses bounded 100+1 discovery and scalar-ID order.
+  Actions are filtered by exact permission as well as maker/state; corrected active entries may request retirement.
+- Terminal replay now demands current actor permission and scope before considering success. It verifies canonical
+  decision actor, full operation hash, immutable history and persisted audit intent/receipt; correction additionally
+  reads back the retired predecessor and its evidence. Prefix/length alone is no longer accepted.
+- Audit generation reads the persisted immutable history after append, so a retry does not invent another timestamp.
+  The exact v1 transport version is supplied. Non-GUID diagnostic correlation strings are deterministically mapped
+  to GUID transport correlation identifiers, not used as tenant/actor authority.
+- Append replay compares immutable intent facts; compact-receipt replay cannot reinsert an intent or accept evidence
+  drift. Existing business versions and the generic transaction/temporal delivery implementation are preserved.
+- ABB Mongo tests use the existing disposable fixture, fixed database suffixes and tenant-owned cleanup, not a new
+  database for each test. Application MongoDB and its configuration are not modified.
+
+Verification:
+- Final combined MDM focused/regression run: 288 passed / 0 failed / 0 skipped, including 36 real-Mongo cases.
+  This overlaps earlier 95-case runs, the 11-case terminal run and the 11-case discovery run; counts are not additive.
+- Four serialized MDM projection cases run through the actual built Platform remote HTTP bridge/provider using
+  an intercepted HttpMessageHandler, including foreign-provider rejection. Platform Release build is a prerequisite.
+  This proves serialization/transport/parser compatibility, not live JWT authentication or network acceptance.
+  First cross-service test attempt failed four times due to test NullLogger reflection setup; the corrected run passed.
+- Platform mapping contract run: 89/0/0. Auth ABB grant-profile focused run: 5/0/0. MDM Release build passed.
+- Initial/correction approve/reject/cancel and retirement approve/reject terminal state/history replay are covered.
+  Missing permission and cross-tenant replay are denied. Live WorkCenter, grants and provider provisioning remain open.
+
+### 2026-09-09 ABB frontend reconciliation exact scope
+
+The owner-approved selector decision requires both ABB request and `mdm.global-products.read` for the request
+surface; selector authorization itself is not broadened. Register/evidence reads remain independent of selector calls.
+Exact frontend/test paths for the already approved exposure slice:
+- `frontend/Diten.Web/Controllers/ProductAbbreviationRegisterController.cs`
+- `frontend/Diten.Web/Views/MDM/ProductAbbreviationRegister/Index.cshtml`
+- `frontend/Diten.Web/Views/MDM/ProductAbbreviationRegister/_Filter.cshtml`
+- `frontend/Diten.Web/Views/MDM/ProductAbbreviationRegister/_CreateEditOffcanvas.cshtml`
+- `frontend/Diten.Web/Views/MDM/ProductAbbreviationRegister/_IndexL10n.cshtml`
+- `frontend/Diten.Web/wwwroot/assets/js/MDM/ProductAbbreviationRegister/index.js`
+- `frontend/Diten.Web/tests/product-abbreviation-register.test.js`
+- `frontend/Diten.Web.Tests/Controllers/ProductAbbreviationRegisterControllerTests.cs`
+- `frontend/Diten.Web/Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.en.resx`
+- `frontend/Diten.Web/Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.tr.resx`
+- `frontend/Diten.Web/Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.fr.resx`
+- `frontend/Diten.Web/Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.es.resx`
+- `frontend/Diten.Web/Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.ar.resx`
+- `frontend/Diten.Web/Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.zh.resx`
+- `frontend/Diten.Web/Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.ru.resx`
+- `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs` (route verification only)
+
+No shared WorkCenter/layout/theme/selector implementation, permission catalog, role or runtime configuration is changed.
+
+#### Frontend integration and verifier evidence
+
+Frontend/API decisions:
+- Exact permission claims (not role names, wildcard or case-folded permission aliases) gate MVC/UI.
+  Requester-only cannot open/submit the request form or call the selector. Requester plus Global Product read can.
+  Auditor with ABB read/audit can read an existing product link or saved exact-product view and lazy-load evidence
+  without selector calls; the UI explains why product selection/request needs the additional read permission.
+- Global Product selector and its backend scope contract are unchanged. No ABB-only OR permission, new endpoint or grant.
+- Initial request stays a two-field Slim form. Correction uses the existing Premium confirmation input seam for replacement
+  ABB then required reason; retirement uses required reason. Checker decisions and own cancel stay in WorkCenter.
+- Same-origin MVC retains server-owned bearer/tenant context and CSRF. Tenant claim duplication/conflict is refused.
+  Mutation identity is deterministic over server tenant, canonical subject, method, exact target and serialized payload,
+  retaining identity for an unknown-outcome retry while binding expected version and reason. No client identity is accepted.
+- HTTP 202 reconciliation and failed envelopes cannot emit a success toast or optimistic reload; successful mutations
+  use shared reload/selection-clear behavior. WorkCenter product deeplinks override saved product selection.
+- Gateway configuration is unchanged: existing ABB base/nested routes already allow GET/POST/PATCH/OPTIONS at MDM 5059,
+  without PUT/DELETE or security-header replacement. Two additional route assertions verify this shipped configuration.
+
+Verification (overlapping runs are not additive):
+- MDM combined run: 288/0/0, 36 real-Mongo cases. Subsequent exact Enforced ABB action-scope run: 11/0/0,
+  including 9 new approve/reject/cancel allow/empty-candidate/foreign-policy cases and the 2 structural cases already
+  counted in 288. Provider-interface facts and real guard/evaluator are exercised; this is not live Platform authorization.
+- Web controller tests: 12 passed / 0 failed / 0 skipped. Initially restore was blocked by missing assets and sandbox
+  access to NuGet configuration; normal authorized restore resolved it. Configuration was not edited.
+  Test discovery uses command-line IsTestProject=true; no project-file change.
+- Frontend ABB/Global Product/GSKU/LSKU: 119/0/0, including ABB 23/0/0. Repeated ABB-only runs overlap this result.
+- Gateway route suite: 39/0/0. Frontend and Gateway Release builds pass (frontend has 14 existing unrelated warnings).
+- All seven ABB locales have 47 identical keys; used JS keys exist in the JSON bridge. JS syntax checks pass.
+- Synthetic HTTP/cookie/CSRF fixtures are test data only, not usable credentials or issued JWTs.
+- Existing FU20 Auth profile unit suite: 5/0/0; no Auth runtime/grant changes were needed. The legacy FU20 Mongo test
+  hardcodes application localhost:27017 and per-test database creation, so it was not run against that service.
+  Its test-owned-fixture adaptation/revalidation remains a separate test-infrastructure follow-up, not a grant operation.
+
+Golden verifier was actually run with bundled Python. Initial default-profile result: **71 pass / 20 fail**.
+Final correct invocation adds the pack-required `--api-profile proxy`: **77 pass / 15 fail** (92 checks).
+The verifier and shared client are unchanged. This is NOT a green verifier or newly granted blanket variance.
+
+| Exact remaining finding | Content-level assessment / existing authority |
+|---|---|
+| personalizationClient tenant header | Verifier checks browser headers; actual same-origin client calls PersonalizationProxyController, which adds tenant header server-side only for tenant_user. Pack transport subsection and NET-001 proxy profile prohibit browser authority. |
+| Reset restores full factory state | Regex expects direct applySavedTableState; existing reloadAppliedTableState calls it, then reloads. Executed full-state restore test proves delegation. No UX variance requested. |
+| L10n Active | ABB uses LifecycleActive with five immutable lifecycle states, not generic active/passive flag. Section 3 lifecycle contract. |
+| L10n Passive | No Passive state or disable action exists. Section 3 state enumeration prohibits inventing it. |
+| L10n Edit | Request-only exposure explicitly excludes update/edit. Named-step verified user surface. |
+| L10n QuickView | Actual detail action uses localized ViewDetails; details partial uses DetailsTitle. Name expectation, not missing user text. |
+| L10n BulkDelete | No delete command/permission; named-step protected scope explicitly forbids bulk delete. |
+| L10n BulkDeleteConfirm | Same explicit bulk-delete prohibition; no confirmation for a nonexistent operation. |
+| L10n Import | No approved ABB import endpoint/operation; original ABB owner request prohibits inventing import. |
+| L10n Status | Actual column uses LifecycleStatus and values use LifecycleRequested/Active/Rejected/Cancelled/Retired. Generic key unused. |
+| .js-quick-view selector | Action carries js-quick-view class but current shared renderer/dispatcher uses data-row-action=details. Not missing detail action. |
+| closest('.js-quick-view') | Event delegation is in shared bindActionDispatcher using closest('[data-row-action]'); duplicating another listener would double-dispatch. |
+| bulk selection wiring | Shared bindBulkSelection supplies count/clear. Pack allows count/clear only, no bulk mutation. Regex only recognizes getSelectedIds/onBulkAction. |
+| bulk endpoint | Explicitly prohibited by named-step surface and protected scope; no fake endpoint added. |
+| bulk delete trigger | Explicitly prohibited by named-step surface and protected scope; no fake button added. |
+
+For the pattern/name findings, the assessment above is evidence of a verifier mismatch, not a new approved design variance.
+The explicit CRUD prohibitions are pre-existing owner/pack decisions, not inferred approval from a failing check.
+Live browser rendering/WorkCenter dispatch, intended-user grants, provider configuration and actual worker durable delivery
+remain unperformed. No activation, provisioning, application-data mutation, operational migration or service restart occurred.
+Existing GSKU concurrency flakiness evidence is not closed by any ABB run.
+
+#### Bounded proxy-profile verifier contract alignment — 2026-09-16
+
+**Control identity:** `personalization-proxy-server-propagation`, applicable only to the ABB tenant page's shared Save
+View call. Its pack basis is the same-origin, server-owned bearer/tenant/CSRF transport contract in this subsection
+(especially the decision at lines 923–925), together with the required proxy profile in the recorded verifier command.
+
+**Code and test proof gate:** the browser source
+`frontend/Diten.Web/wwwroot/assets/js/personalization-client.js` must retain a relative same-origin personalization
+call with cookie credentials and must not construct tenant or bearer headers. Independently,
+`frontend/Diten.Web/Controllers/PersonalizationProxyController.cs` must be authenticated and apply bearer and
+tenant propagation only on the server before its Gateway request. The focused proof path is
+`frontend/Diten.Web/tests/personalization-client.test.js`; `.antigravity/scripts/verify_datatable_page.py` must check
+both sides only for `--api-profile proxy`.
+
+**Scope limit:** this replaces only the obsolete browser-header verifier expectation with the actual proxy contract.
+It is not a blanket verifier waiver, does not allow browser authority, direct-service calls, or weaker default/direct
+profiles, and does not accept any reset, quick-view, selection, lifecycle, bulk or L10n finding. The finding table
+above remains individually reviewable; this addendum changes none of its other dispositions or the WorkCenter
+checker/own-cancel contract.
+
+#### Final named Golden disposition — 2026-09-16 (`PRODUCT-FIVE-GOLDEN-DISPOSITION-FINAL`)
+
+The ABB proxy-profile raw result remains `85 pass / 14 fail`, exit `1`: it is neither green nor live acceptance.
+Each line below satisfies the already-approved three conditions: **(1)** this pack expressly defines the behavior or
+prohibition, **(2)** current source and recorded focused frontend/controller proof implement it, and **(3)** the
+static verifier difference hides neither a tenant/security defect nor a required user operation. The preceding
+`personalization-proxy-server-propagation` alignment is not counted again.
+
+| Exact remaining verifier controls | Intended function or expressly prohibited surface | Pack/code/test proof and conclusion |
+|---|---|---|
+| `full-reset` | Reset restores applied saved-table state; delegation is valid implementation. | **(1)** the existing ABB finding disposition requires full-state restoration. **(2)** `reloadAppliedTableState` delegates to `applySavedTableState`, proved by the recorded full-state restore frontend test. **(3)** the required user function is present without a security change. **Mevcut onayla kabul** (1/1); no next action. |
+| `L10n Active`, `L10n Passive`, `L10n Edit`, `L10n QuickView`, `L10n BulkDelete`, `L10n BulkDeleteConfirm`, `L10n Import`, `L10n Status` | ABB uses explicit immutable lifecycle and `ViewDetails`/`DetailsTitle`; generic edit/import/bulk-delete actions are not authorized. | **(1)** the ABB lifecycle and request-only protected-surface decisions explicitly set this vocabulary/prohibition. **(2)** recorded ABB focused frontend proof covers localized lifecycle/detail behavior and source uses `Lifecycle*`/`ViewDetails`. **(3)** no required action is absent; adding generic destructive/import UI would violate the contract. **Mevcut onayla kabul** (8/8); no next action. |
+| `.js-quick-view selector`, `closest('.js-quick-view')` | Detail action/delegation are supplied by the shared `data-row-action=details` dispatcher, not a duplicate legacy listener. | **(1)** the pack requires the detail action, not a CSS selector. **(2)** the existing evidence identifies `bindActionDispatcher` and `closest('[data-row-action]')`; focused detail tests cover it. **(3)** equivalent behavior is present; an added listener risks double-dispatch. **Mevcut onayla kabul** (2/2); no next action. |
+| `bulk selection wiring`, `bulk endpoint`, `bulk delete trigger` | Non-mutating count/clear support may be shared, but bulk mutation/endpoint/delete trigger are prohibited. | **(1)** the request-only protected surface prohibits bulk delete and fake endpoints. **(2)** `bindBulkSelection` supplies the permitted count/clear behavior; ABB tests cover the non-mutating/WorkCenter contract. **(3)** no required bulk mutation is hidden; adding it would alter the checker/own-cancel boundary. **Mevcut onayla kabul** (3/3); no next action. |
+
+**Reconciliation:** ABB `14 = 1 + 8 + 2 + 3`; named accepted `14`, real defect `0`, evidence gap `0`, next
+action `none`. This is a disposition of exact static differences only: raw exit-`1` remains, and neither the
+WorkCenter checker/own-cancel contract nor any browser-authority/bulk/delete surface changes.

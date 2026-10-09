@@ -65,6 +65,23 @@ public interface ITaskNotificationService
     Task<IReadOnlyList<Guid>> ResolvePoolHoldersAsync(TaskItem task, CancellationToken ct);
 
     /// <summary>
+    /// WP-WCN-TASK-REQUEST-01 FIX4 (item 3) — the pool holders of MANY tasks, keyed by task id (a task that is not a pool
+    /// task maps to an empty list). The production service reads the seats ONCE for the whole batch; this default asks
+    /// task by task, so a double that knows only the single form keeps answering the same.
+    /// </summary>
+    async Task<IReadOnlyDictionary<Guid, IReadOnlyList<Guid>>> ResolvePoolHoldersAsync(
+        IReadOnlyCollection<TaskItem> tasks, CancellationToken ct)
+    {
+        var holders = new Dictionary<Guid, IReadOnlyList<Guid>>();
+        foreach (var task in tasks.DistinctBy(t => t.Id))
+        {
+            holders[task.Id] = await ResolvePoolHoldersAsync(task, ct);
+        }
+
+        return holders;
+    }
+
+    /// <summary>
     /// Would this task send this event at all, on its own settings? Asked by callers that must do something
     /// IRREVERSIBLE before sending — the due-soon sweep stamps a per-deadline claim, and a claim spent on a
     /// notification that was then filtered out silences that deadline forever.
@@ -334,6 +351,33 @@ public sealed class TaskNotificationService : ITaskNotificationService
         }
 
         return await _seats.HoldersOfAsync(new HashSet<Guid> { positionId }, ct);
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<Guid>>> ResolvePoolHoldersAsync(
+        IReadOnlyCollection<TaskItem> tasks, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(tasks);
+
+        var distinct = tasks.DistinctBy(t => t.Id).ToList();
+        var pooled = distinct
+            .Where(t => t.AssignmentTarget == TaskAssignmentTarget.PositionPool && t.PoolPositionId is not null)
+            .ToList();
+
+        // FIX4 (item 3) — ONE read of the seats for the whole batch (it was one per pool task), with the same answer
+        // HoldersOfAsync gives for one position: the active holders, each once.
+        var byPosition = pooled.Count == 0
+            ? new Dictionary<Guid, List<Guid>>()
+            : (await _seats.ActiveAsync(ct))
+                .GroupBy(assignment => assignment.PositionId)
+                .ToDictionary(g => g.Key, g => g.Select(assignment => assignment.UserId).Distinct().ToList());
+
+        return distinct.ToDictionary(
+            t => t.Id,
+            t => t.AssignmentTarget == TaskAssignmentTarget.PositionPool
+                 && t.PoolPositionId is { } position
+                 && byPosition.TryGetValue(position, out var holders)
+                ? (IReadOnlyList<Guid>)holders
+                : []);
     }
 
     /// <summary>

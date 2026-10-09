@@ -22,7 +22,11 @@ public interface IWorkItemProjectionService
         ApprovalSourceContext? sourceContext = null,
         // REQ-WCN-01 — what the pinned template version says about the task's step. Optional: without it the item
         // carries no step name and no candidate positions — exactly today's shape.
-        ApprovalStepContext? stepContext = null);
+        ApprovalStepContext? stepContext = null,
+        // D1 — the principals who may DECIDE this task (the assignment snapshot's candidates). Optional: without it the
+        // item is projected exactly as before (assignee and "is it you" from AssigneeRef, actions by permission alone).
+        // With it, "is it you" and every action's enabled state follow this list.
+        IReadOnlyList<string>? decidingPrincipalIds = null);
 }
 
 /// <summary>
