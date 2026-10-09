@@ -48,3 +48,10 @@
 - **Ürün sahibine sorular:**
   - T8: durum süzgeci tek seçim mi, çoklu mu?
   - D4: süre tahmini kuralı (içerik adımı başına kaç dakika)?
+
+## Kullanıcı kararları
+- **D4 süre tahmini (2026-10-09):** "hangisi varsa o".
+  - Ürün başına: içerik adımlarının süre hedefi tanımlıysa (adım × dakika; adım süre hedefi W3-BE-b ile gelir) toplamı gösterilir.
+  - Toplamda ve adım süresi yoksa: planlanan ziyaret süresi (`durationMinutes`).
+  - İkisi de yoksa süre gösterilmez.
+- **Açık:** T8 (durum süzgeci tek / çoklu), paket zamanlaması (WEB-b sonrası ayrı paket önerisi).
