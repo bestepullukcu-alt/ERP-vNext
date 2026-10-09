@@ -147,7 +147,7 @@ Durum anahtarı: `[x]` sahip "Tamam" dedi · `[ ]` bekliyor · ⏳ kod henüz de
 - [ ] `kr-4` Ayşe yeniden giriş yapınca yeni rolünün izinleri geçerli mi?
 - [ ] `kr-5` "Parolayı Sıfırla" → Mailpit'e "parola sıfırlama" e-postası geliyor (davet değil) ve bağlantıyla yeni parola konabiliyor mu?
 - [ ] `kr-6` Sıfırlanan kişinin başka tarayıcıdaki açık oturumu, sayfa yenilenince düşüyor mu?
-- [ ] `kr-7` Pasife alınan kişinin eski bağlantısı hesabı AÇMIYOR ("yönetici tarafından pasifleştirildi"); etkinleştirince aynı bağlantı çalışıyor mu?
+- [x] `kr-7` Pasife alınan kişinin eski sıfırlama bağlantısı hesabı AÇMIYOR; etkinleştirince de eski bağlantı çalışmıyor (tasarım: pasife alma bekleyen bağlantıyı siler, yönetici yeni bağlantı gönderir). Bekleyen davette bağlantı korunur. — ✅ sahip 2026-10-09 (iki yarı da ölçüldü; ileti İngilizce ve genel → BL-496 / KR4 düzeltme turunda)
 - [ ] `kr-8` "Daveti yeniden gönder" → "parola sıfırlama" e-postası geliyor ve eski parola artık giriş yapmıyor mu?
 
 ### Bildirim Şablonları — İstediğiniz zaman (5 dk)
