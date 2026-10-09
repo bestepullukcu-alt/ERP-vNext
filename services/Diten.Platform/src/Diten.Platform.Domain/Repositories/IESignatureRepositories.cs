@@ -169,9 +169,9 @@ public sealed record ESignatureVisibilityScope(string ViewerUserId, IReadOnlyCol
         || (record.LegalEntityId is { } legalEntity ? LegalEntityIds.Contains(legalEntity) : TenantLevelRecords);
 
     /// <summary>
-    /// get / verify by id: true when the rule hides a tenant-level record from the caller. A record with a company keeps the
-    /// gate those operations had before VIS1 (the subject provider), so this never hides one — its company rule stays where
-    /// it was (list / export).
+    /// get by id: true when the rule hides a tenant-level record from the caller. A record with a company keeps the gate get had
+    /// before VIS1 (the subject provider), so this never hides one. Search, export and — since FUB1 (FU-0022-VIS-02) — verify
+    /// apply the whole rule (<see cref="CanSee"/>).
     /// </summary>
     public bool HidesTenantLevel(Entities.ESignature.ESignatureRecord record) => record.LegalEntityId is null && !CanSee(record);
 }

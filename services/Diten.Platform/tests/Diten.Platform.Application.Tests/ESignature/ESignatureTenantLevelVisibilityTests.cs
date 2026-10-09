@@ -238,6 +238,34 @@ public sealed class ESignatureTenantLevelVisibilityTests : IClassFixture<Workflo
         Assert.Equal(200, await VerifyStatusAsync(signer, s.SignatureId));
     }
 
+    // ── FUB1 (FU-0022-VIS-02): verify applies the company rule too ───────────────────────────────────────────────
+
+    /// <summary>K3 sabotage (a) of FUB1: drop the new scope check in verify → red.</summary>
+    [Fact]
+    public async Task Verify_of_a_company_record_outside_the_callers_scope_is_not_found()
+    {
+        var w = NewWorld();
+        var s = await SignedTaskAsync(w);
+        var inScope = Guid.NewGuid();
+        var (outsideId, _) = await CopyAsync(s.SignatureId, w.Tenant, Guid.NewGuid(), w.A);
+        var (inScopeId, _) = await CopyAsync(s.SignatureId, w.Tenant, inScope, w.A);
+        _host.Scopes.LegalEntitiesByUser[w.Admin] = [inScope];
+        var admin = Token(w.Tenant, w.Admin, AdminKeys); // read + verify, company scope = inScope only
+
+        Assert.Equal(404, await VerifyStatusAsync(admin, outsideId)); // as if the record did not exist
+        Assert.Equal(200, await VerifyStatusAsync(admin, inScopeId));
+        Assert.Equal(200, await VerifyStatusAsync(admin, s.SignatureId)); // tenant-level: VIS1 unchanged
+    }
+
+    [Fact]
+    public async Task The_signer_verifies_their_own_company_record_even_outside_their_scope()
+    {
+        var w = NewWorld();
+        var s = await SignedTaskAsync(w);
+        var (ownId, _) = await CopyAsync(s.SignatureId, w.Tenant, Guid.NewGuid(), w.C); // C signed it; C has no company scope
+        Assert.Equal(200, await VerifyStatusAsync(Token(w.Tenant, w.C, ESignPermissions.SignaturesVerify), ownId));
+    }
+
     private static JsonElement Data(string body)
     {
         using var document = JsonDocument.Parse(body);
