@@ -7321,7 +7321,7 @@ yetki kapsamına dokunur).
 
 **Bağlamsal yardım: "bu sayfa nasıl kullanılır" + klavye kısayolları her sayfada tek girişten**
 
-DURUM: KARAR VERİLDİ (sahip, 2026-10-02: "ok, yapalım; .antigravity kuralına da eklensin ki yeni modüllerde de olsun") — prompt denetim standardı (borç defteri yöntemi) hatta girince yazılacak · SAHİP: CT (ortak ön yüz) · BULAN: sahip (canlı kullanıcılar "sayfayı nasıl kullanacağız" bilgisi istiyor) · KAYIT: 2026-10-02
+DURUM: KARAR VERİLDİ (sahip, 2026-10-02: "ok, yapalım; .antigravity kuralına da eklensin ki yeni modüllerde de olsun") — prompt denetim standardı (borç defteri yöntemi) hatta girince yazılacak · **2026-10-09:** sahip canlıdan aynı talebi yineledi ("kullanıcılar sayfaları kullanmayı bilmiyor; başlıkta öğretici bir modül") → CT sıraya aldı, boşalan ilk sohbete; ilk paket ortak "?" paneli + Kullanıcılar + Roller; adım adım tur sonraki aşama; örnek veri ve rol önerisi BL-580 · SAHİP: CT (ortak ön yüz) · BULAN: sahip (canlı kullanıcılar "sayfayı nasıl kullanacağız" bilgisi istiyor) · KAYIT: 2026-10-02
 
 **Karar:** (1) üst çubukta tek "?" düğmesi, her sayfada aynı yerde; (2) içerik: bu sayfa ne işe yarar (2 cümle) + nasıl kullanılır (3–5 adım) + varsa sayfanın klavye kısayolları; (3) metni sayfayı yapan ekip yazar — modül paketinin zorunlu bölümü, kiracı ekranında 7 dil; yeni sayfa yardım metni olmadan teslim edilemez (kural dosyası + ajan kapıları + borç defteri: eski sayfalar listeye yazılır, liste yalnız küçülür). İlk paket: ortak panel + Kullanıcılar ve Roller metinleri. İlk kullanım turu sonraya.
 
@@ -8078,6 +8078,32 @@ Yapılacak: iki istemciye aynı işleyici ayarı + maskeleme; kaynak-grep kural 
 Karşılaştırma: SAP RFC / HTTP hedeflerinde yönlendirme izleme hedef bazında açıkça yapılandırılır, varsayılan kapalıdır; Oracle Integration bağlantıları da kimlik bilgisini yalnız tanımlı uç noktaya gönderir.
 
 Gelecek regresyon riski: 🟡 (ağ yapılandırması hatasında servis sırrı başka sunucuya gidebilir).
+
+---
+
+### BL-580
+
+**Canlı kullanıcılar ekranları kullanmayı bilmiyor: üç iş koluna göre canlı rol önerisi + gerçekçi örnek veri seti (eğitim / tanıtım)**
+
+DURUM: AÇIK · SAHİP: CT (ürün) · BULAN: sahip (canlıdan talep, 2026-10-09) · KAYIT: 2026-10-09
+
+Sahibin iki fikri var (2026-10-09). Şirket üç iş kolunu birlikte yürütüyor: kendi üretimi, başkası için fason üretim, satış / dağıtım.
+
+1. **Canlı rol önerisi.** Modüller koddan taranır: hangi rol gerekir, hangi izni alır, kim hangi iki izni birlikte tutamaz (GxP görev ayrımı, hazırlayan ≠ onaylayan).
+   - CT analizi başlattı (2026-10-09, alt ajan); çıktı sahibe tablo olarak gider.
+   - Canlıya rol girişi sahibin kayıt başına "evet"iyle olur (canlı yazma kuralı).
+   - Eksik izin anahtarı ya da adı olmayan izin bulunursa ayrı BL.
+2. **Örnek veri seti.** Diten Pharma senaryosu (`docs/records/tests/diten-pharma-scenario.md`) gerçekçi veriyle her modüle girilir: kişiler, pozisyonlar, roller, görevler, haftalar, ürünler; her rol için bir örnek kişi ve yaptığı iş.
+   - Yeri: ayrı bir tanıtım / eğitim kiracısı. Canlı kiracının gerçek verisine ve DefaultTenant'a yazılmaz.
+   - Tohumlayıcı tanıtım kiracısı dışında çalışmayı REDDEDER (test edilir).
+   - Kullanım: yeni kullanıcı eğitimi, ekran tanıtımı, BL-495 yardım panelindeki örnekler.
+
+Karşılaştırma:
+- SAP: Best Practices paketleri hazır örnek veri ve iş rolü şablonlarıyla (SAP_BR_*) gelir.
+- Oracle: Fusion hazır iş / görev rolleri ve tanıtım ortamı sunar.
+- (Şablon adları hafızadan, doğrulanmadı.)
+
+Gelecek regresyon riski: 🟢 ayrı kiracıda. 🔴 tohumlayıcı yanlış kiracıya yazarsa; koruması bu işin kabul ölçütüdür.
 
 ---
 
