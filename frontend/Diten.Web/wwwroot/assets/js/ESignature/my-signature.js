@@ -97,41 +97,70 @@
 
     const statusClass = { active: 'bg-label-success', inactive: 'bg-label-secondary', pending: 'bg-label-warning', rejected: 'bg-label-danger', withdrawn: 'bg-label-secondary' };
 
-    function renderHistory() {
+    /*
+     * E5W2 (O-E5W1-2) — the history is the golden slim CLIENT list (DitenDataTable.createList): status / kind filters and the
+     * Save View (moduleKey ESignature, pageKey MySignature). The first render builds it on samples/mine; every later load()
+     * hands it the rows load() already read. The sample flow above (draw / upload → password → save) is unchanged.
+     */
+    const historyFilters = [
+        { id: 'filterSampleStatus', key: 'status', kind: 'multi' },
+        { id: 'filterSampleKind', key: 'kind', kind: 'multi' }
+    ];
+    const historyRows = (list) => (list || []).slice()
+        .sort((a, b) => String(b.createdAtUtc).localeCompare(String(a.createdAtUtc)))
+        .map((s) => ({ ...s, _at: at(s.createdAtUtc) }));
+
+    let tableBuilding = false;
+    async function renderHistory() {
         const el = $('dt-esign-samples');
-        const rows = samples.map((s) => ({ ...s, _at: at(s.createdAtUtc) }));
         if (table) {
-            table.clear().rows.add(rows).draw();
+            table.dt.clear().rows.add(historyRows(samples)).draw();
             return;
         }
+        if (tableBuilding || !el) return;
+        tableBuilding = true;
         const esc = E.escapeHtml;
-        table = new global.DataTable(el, global.DtDefaults.create({
-            data: rows,
-            stateSave: false,
-            order: [],
-            columns: [
-                { data: 'id', orderable: false, searchable: false, render: (d, type, row) => type === 'display'
-                    ? `<button type="button" class="border rounded bg-white p-1" data-esign-zoom-sample="${esc(row.id)}" title="${esc(t('ESign.Zoom.Enlarge'))}"><img alt="" src="${esc(imageUrl(row))}" style="max-height:32px;max-width:110px"></button>` : '' },
-                { data: 'sampleNumber', render: (d) => `<span class="font-monospace small">${esc(d || '')}</span>` },
-                { data: '_at' },
-                { data: 'kind', render: (d) => esc(kindL(d)) },
-                { data: 'format', render: (d) => esc(fmtL(d)) },
-                { data: 'usedCount', render: (d) => (d ? esc(t('ESign.Mine.UsedCount', d)) : '—') },
-                { data: 'status', render: (d, type, row) => type === 'display'
-                    ? `<span class="badge ${statusClass[d] || 'bg-label-secondary'}">${esc(t(`ESign.Mine.Status.${d}`))}</span>`
-                      + (d === 'rejected' && row.decision && row.decision.reason ? `<div class="small text-muted mt-1">${esc(t('ESign.Mine.RejectReason', row.decision.reason))}</div>` : '')
-                    : d },
-                { data: null, orderable: false, searchable: false, className: 'text-end pe-3', render: (d, type, row) => type === 'display' ? actions(row) : '' }
-            ]
-        }));
+        table = await global.DitenDataTable.createList({
+            tableEl: el,
+            dataMode: 'client',
+            ajax: { url: `${API}/samples/mine`, type: 'GET', dataSrc: (json) => historyRows(E.dataOf({ json })) },
+            toolbar: { addNewText: '', colvisColumns: [2, 3, 4, 5, 6, 7] },
+            filters: { hostId: 'inlineFilterHost', collapseId: 'inlineFilterCollapse', fields: historyFilters },
+            savedView: {
+                moduleKey: 'ESignature',
+                pageKey: 'MySignature',
+                saveViewColumnIndexes: [1, 2, 3, 4, 5, 6, 7],
+                defaultVisibleColumnIndexes: [1, 2, 3, 4, 5, 6, 7],
+                baseOrder: [[3, 'desc']]
+            },
+            config: {
+                order: [[3, 'desc']],
+                initComplete: function () {
+                    try { this.api().buttons('.dt-export-collection-btn').remove(); } catch (error) { /* no export group */ }
+                },
+                columns: [
+                    { data: 'id', name: 'control', className: 'control', orderable: false, searchable: false, render: () => '' },
+                    { data: 'id', name: 'sample', orderable: false, searchable: false, render: (d, type, row) => type === 'display'
+                        ? `<button type="button" class="border rounded bg-white p-1" data-esign-zoom-sample="${esc(row.id)}" title="${esc(t('ESign.Zoom.Enlarge'))}"><img alt="" src="${esc(imageUrl(row))}" style="max-height:32px;max-width:110px"></button>` : '' },
+                    { data: 'sampleNumber', name: 'id', render: (d) => `<span class="font-monospace small">${esc(d || '')}</span>` },
+                    { data: 'createdAtUtc', name: 'addedAt', render: (d, type, row) => (type === 'display' ? esc(row._at) : d) },
+                    { data: 'kind', name: 'kind', render: (d) => esc(kindL(d)) },
+                    { data: 'format', name: 'format', render: (d) => esc(fmtL(d)) },
+                    { data: 'usedCount', name: 'usage', render: (d) => (d ? esc(t('ESign.Mine.UsedCount', d)) : '—') },
+                    { data: 'status', name: 'status', render: (d, type, row) => type === 'display'
+                        ? `<span class="badge ${statusClass[d] || 'bg-label-secondary'}">${esc(t(`ESign.Mine.Status.${d}`))}</span>`
+                          + (d === 'rejected' && row.decision && row.decision.reason ? `<div class="small text-muted mt-1">${esc(t('ESign.Mine.RejectReason', row.decision.reason))}</div>` : '')
+                        : d },
+                    { data: null, name: 'action', orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (d, type, row) => type === 'display' ? actions(row) : '' }
+                ]
+            }
+        });
         el.addEventListener('click', (e) => {
             const zoomBtn = e.target.closest('[data-esign-zoom-sample]');
             if (zoomBtn) { const s = samples.find((x) => x.id === zoomBtn.getAttribute('data-esign-zoom-sample')); if (s) zoomSample(s); return; }
             const act = e.target.closest('[data-esign-sample-action]');
             if (act) act.getAttribute('data-esign-sample-action') === 'deactivate' ? deactivate(act.getAttribute('data-id')) : withdraw(act.getAttribute('data-id'));
         });
-        const skeleton = $('skeleton-loader');
-        if (skeleton) skeleton.remove();
     }
 
     /** Pasif yap (active) · Sil (unused, not active → withdraw) · "Silinemez" (used) — mockup v2.app.js:544, V22. */

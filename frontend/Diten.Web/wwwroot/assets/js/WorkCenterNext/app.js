@@ -7597,6 +7597,8 @@
             subjectType: 'workflow-task',
             subjectId: item.id,
             meaningCode: action.signatureMeaning || undefined,
+            // E5W2 (CT-D19, O-E5W1-3) — the step's signable action: the dialog asks the tenant policy for it (visual mode)
+            actionCode: action.signatureActionCode || undefined,
             context: (subject) => ({
                 workflowInstanceId: (subject.fields && subject.fields.workflowInstanceId) || null,
                 workflowTaskId: item.id,

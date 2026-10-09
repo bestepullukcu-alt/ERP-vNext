@@ -1,5 +1,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Models.DataTable
 @inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["ESign.Mine.Title"].Value;
@@ -146,34 +148,68 @@
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header d-flex flex-column align-items-start pb-0">
-        <h6 class="text-uppercase text-heading fw-semibold mb-1"><i class="bx bx-history me-1"></i>@Localizer["ESign.Mine.History.Title"]</h6>
-        <p class="text-muted small mb-0">@Localizer["ESign.Mine.History.Sub"]</p>
-    </div>
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
-    <div class="card-datatable table-responsive">
-        <table id="dt-esign-samples" data-dt-standard="v2" data-dt-data-mode="client" class="datatables-esign-samples table border-top">
-            <thead>
-                <tr>
-                    <th>@Localizer["ESign.Mine.Col.Sample"]</th>
-                    <th>@Localizer["ESign.Mine.Id"]</th>
-                    <th>@Localizer["ESign.Mine.AddedAt"]</th>
-                    <th>@Localizer["ESign.Mine.Col.Kind"]</th>
-                    <th>@Localizer["ESign.Mine.Storage"]</th>
-                    <th>@Localizer["ESign.Mine.Usage"]</th>
-                    <th>@Localizer["ESign.Mine.Col.Status"]</th>
-                    <th class="cell-fit text-end pe-3">@Localizer["ESign.Mine.Col.Actions"]</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+@*
+    E5W2 (O-E5W1-2) — the history as the golden slim CLIENT list: the shared _ListShell (emsal Views/DevEnablement/
+    GoldenReferenceSlim), the inline filter (status, kind) and the Save View. Only the table changed; the sample flow did not.
+*@
+@{
+    var historyShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-esign-samples",
+        DataMode = "client",
+        Slug = "esign-samples",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ESign.Mine.Col.Sample"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Mine.Id"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Mine.AddedAt"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Mine.Col.Kind"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Mine.Storage"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Mine.Usage"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Mine.Col.Status"].Value }
+        ],
+        ActionsHeader = Localizer["ESign.Mine.Col.Actions"].Value
+    };
+}
+<div class="mb-2">
+    <h6 class="text-uppercase text-heading fw-semibold mb-1"><i class="bx bx-history me-1"></i>@Localizer["ESign.Mine.History.Title"]</h6>
+    <p class="text-muted small mb-0">@Localizer["ESign.Mine.History.Sub"]</p>
+</div>
+
+@* Contract marker: <partial name="_Filter" /> *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip">
+                        <select id="filterSampleStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ESign.Mine.Col.Status"]">
+                            <option value="active">@Localizer["ESign.Mine.Status.active"]</option>
+                            <option value="pending">@Localizer["ESign.Mine.Status.pending"]</option>
+                            <option value="inactive">@Localizer["ESign.Mine.Status.inactive"]</option>
+                            <option value="rejected">@Localizer["ESign.Mine.Status.rejected"]</option>
+                            <option value="withdrawn">@Localizer["ESign.Mine.Status.withdrawn"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterSampleKind" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ESign.Mine.Col.Kind"]">
+                            <option value="drawn">@Localizer["ESign.Mine.Kind.drawn"]</option>
+                            <option value="uploaded">@Localizer["ESign.Mine.Kind.uploaded"]</option>
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" />, <table id="dt-esign-samples" data-dt-standard="v2"> *@
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="historyShell" />
 
 @* Full-screen landscape drawing (mockup "TAM EKRAN ÇİZİM") — 375 px phones: the pad fills the screen, rotation is requested *@
 <div class="esign-pad-fullscreen d-none" id="esignFull" role="dialog" aria-modal="true" aria-labelledby="esignFullTitle">
@@ -222,8 +258,10 @@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/ESignature/_ESignatureL10n.cshtml" />
+    <partial name="~/Views/ESignature/_ESignatureListL10n.cshtml" />
     <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
     <script src="~/assets/js/ESignature/esign-pad.js" asp-append-version="true"></script>
     <script src="~/assets/js/ESignature/esign-dialog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-pages.js" asp-append-version="true"></script>
     <script src="~/assets/js/ESignature/my-signature.js" asp-append-version="true"></script>
 }

@@ -998,4 +998,10 @@
   <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Quarantine settings</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>e-Signature</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>My Signature</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>Signature Requests</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>Signature Verification</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>Audit Export</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-Signature Policy</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Signature Meanings</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Sample Approvals</value></data>
 </root>

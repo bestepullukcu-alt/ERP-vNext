@@ -19,7 +19,8 @@ namespace Diten.Platform.Application.Features.ESignature.SelfRegistration;
 /// <para>⚠ E2 SHIPPED NO SCREENS. The pages are declared so their keys reach the catalog; a page becomes nav-visible
 /// (<c>IsNavigationVisible</c>, 6th argument) only together with its Web route — a nav entry to a route that does not exist
 /// would be a dead link in every tenant shell. <b>E5W1:</b> ESIGN_MYSIGNATURE (<c>/ESignature/MySignature</c>) is built and
-/// visible; the other six stay hidden until E5W2 builds them. The pages are written as explicit
+/// visible. <b>E5W2:</b> the other six are built (<c>ESignatureController</c>) and visible too, all seven in the module's own
+/// "e-İmza" group (CT-D8 b; CT-D18 keeps the domain heading as it is). The pages are written as explicit
 /// <c>ModuleManifestPage</c> constructor calls so the Web nav-label guard (<c>NavManifestL10nGuardTests</c>) reads them.</para>
 /// </summary>
 public sealed class ESignManifestProvider : IModuleManifestProvider
@@ -45,18 +46,18 @@ public sealed class ESignManifestProvider : IModuleManifestProvider
             ],
             Pages:
             [
-                new ModuleManifestPage("ESIGN_REQUESTS", "Signature Requests", "/ESignature/Requests", ESignPermissions.RequestsRead, null, false, "List", 10,
+                new ModuleManifestPage("ESIGN_REQUESTS", "Signature Requests", "/ESignature/Requests", ESignPermissions.RequestsRead, null, true, "List", 10,
                 [
                     Row("SIGNREQUEST", "Sign", ESignPermissions.SignaturesSign, 10),
                     Row("REJECTREQUEST", "Reject", ESignPermissions.RequestsReject, 20),
                     Row("OPENRECORD", "Open record", ESignPermissions.RequestsRead, 30)
                 ]),
-                new ModuleManifestPage("ESIGN_VERIFICATION", "Signature Verification", "/ESignature/Verification", ESignPermissions.SignaturesRead, null, false, "List", 20,
+                new ModuleManifestPage("ESIGN_VERIFICATION", "Signature Verification", "/ESignature/Verification", ESignPermissions.SignaturesRead, null, true, "List", 20,
                 [
                     Toolbar("REVERIFY", "Re-verify", ESignPermissions.SignaturesVerify, 10),
                     Row("INVALIDATE", "Invalidate signature", ESignPermissions.SignaturesInvalidate, 20, dangerous: true)
                 ]),
-                new ModuleManifestPage("ESIGN_AUDITEXPORT", "Signature Audit Export", "/ESignature/AuditExport", ESignPermissions.SignaturesExport, null, false, "List", 30,
+                new ModuleManifestPage("ESIGN_AUDITEXPORT", "Signature Audit Export", "/ESignature/AuditExport", ESignPermissions.SignaturesExport, null, true, "List", 30,
                 [
                     Toolbar("EXPORTPDF", "Export as PDF", ESignPermissions.SignaturesExport, 10),
                     Toolbar("EXPORTCSV", "Export as CSV", ESignPermissions.SignaturesExport, 20)
@@ -67,19 +68,19 @@ public sealed class ESignManifestProvider : IModuleManifestProvider
                     Row("DEACTIVATESAMPLE", "Deactivate", ESignPermissions.MySamplesManage, 20),
                     Row("WITHDRAWSAMPLE", "Withdraw", ESignPermissions.MySamplesManage, 30, dangerous: true)
                 ]),
-                new ModuleManifestPage("ESIGN_POLICY", "e-Signature Policy", "/ESignature/Settings/Policy", ESignPermissions.PolicyRead, null, false, "List", 50,
+                new ModuleManifestPage("ESIGN_POLICY", "e-Signature Policy", "/ESignature/Settings/Policy", ESignPermissions.PolicyRead, null, true, "List", 50,
                 [
                     Toolbar("SAVEPOLICY", "Save with reason", ESignPermissions.PolicyManage, 10),
                     Toolbar("CREATEOVERRIDE", "Copy and edit for company", ESignPermissions.PolicyManage, 20),
                     Toolbar("REVERTOVERRIDE", "Revert to tenant default", ESignPermissions.PolicyManage, 30, dangerous: true)
                 ]),
-                new ModuleManifestPage("ESIGN_MEANINGS", "Signature Meanings", "/ESignature/Settings/Meanings", ESignPermissions.MeaningsRead, null, false, "List", 60,
+                new ModuleManifestPage("ESIGN_MEANINGS", "Signature Meanings", "/ESignature/Settings/Meanings", ESignPermissions.MeaningsRead, null, true, "List", 60,
                 [
                     Toolbar("NEWMEANING", "New meaning", ESignPermissions.MeaningsManage, 10),
                     Row("EDITMEANING", "Edit", ESignPermissions.MeaningsManage, 20),
                     Row("TOGGLEMEANING", "Activate / deactivate", ESignPermissions.MeaningsManage, 30)
                 ]),
-                new ModuleManifestPage("ESIGN_SAMPLEAPPROVALS", "Signature Sample Approvals", "/ESignature/Settings/SampleApprovals", ESignPermissions.SamplesApprove, null, false, "List", 70,
+                new ModuleManifestPage("ESIGN_SAMPLEAPPROVALS", "Signature Sample Approvals", "/ESignature/Settings/SampleApprovals", ESignPermissions.SamplesApprove, null, true, "List", 70,
                 [
                     Row("APPROVESAMPLE", "Approve", ESignPermissions.SamplesApprove, 10),
                     Row("REJECTSAMPLE", "Reject", ESignPermissions.SamplesReject, 20)

@@ -197,4 +197,225 @@
   <data name="ESign.Errors.ESIGN_SUBJECT_NOT_FOUND" xml:space="preserve"><value>未找到要签署的记录，或您无权查看。</value></data>
   <data name="ESign.Errors.ESIGN_TICKET_INVALID" xml:space="preserve"><value>密码验证无效或已过期，请重试。</value></data>
   <data name="ESign.Errors.ESIGN_TICKET_REQUIRED" xml:space="preserve"><value>签名需要先验证密码。</value></data>
+  <data name="ESign.Common.Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="ESign.Common.AllModules" xml:space="preserve"><value>所有模块</value></data>
+  <data name="ESign.Common.AllStatuses" xml:space="preserve"><value>所有状态</value></data>
+  <data name="ESign.Common.Company" xml:space="preserve"><value>公司</value></data>
+  <data name="ESign.Common.Continue" xml:space="preserve"><value>继续</value></data>
+  <data name="ESign.Common.From" xml:space="preserve"><value>开始</value></data>
+  <data name="ESign.Common.To" xml:space="preserve"><value>结束</value></data>
+  <data name="ESign.Common.Module" xml:space="preserve"><value>模块</value></data>
+  <data name="ESign.Common.Reason" xml:space="preserve"><value>理由</value></data>
+  <data name="ESign.Common.ReasonMin" xml:space="preserve"><value>理由至少需要 {0} 个字符。</value></data>
+  <data name="ESign.Common.ReasonPlaceholder" xml:space="preserve"><value>请填写此决定的理由</value></data>
+  <data name="ESign.Common.ReasonQuoted" xml:space="preserve"><value>理由：“{0}”</value></data>
+  <data name="ESign.Common.Record" xml:space="preserve"><value>记录</value></data>
+  <data name="ESign.Common.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="ESign.Common.Status" xml:space="preserve"><value>状态</value></data>
+  <data name="ESign.Dialog.Err.PasswordRequired" xml:space="preserve"><value>请输入密码。</value></data>
+  <data name="ESign.Module.inventory" xml:space="preserve"><value>库存</value></data>
+  <data name="ESign.Requests.Title" xml:space="preserve"><value>签名请求</value></data>
+  <data name="ESign.Requests.Sub" xml:space="preserve"><value>分配给您的签名任务</value></data>
+  <data name="ESign.Requests.Info" xml:space="preserve"><value>工作流审批也会显示在 WorkCenter 中；此页面仅列出分配给您的签名任务。</value></data>
+  <data name="ESign.Requests.Count" xml:space="preserve"><value>{0} 个请求 · {1} 个待处理</value></data>
+  <data name="ESign.Requests.Col.Meaning" xml:space="preserve"><value>要求的含义</value></data>
+  <data name="ESign.Requests.Col.RequestedBy" xml:space="preserve"><value>请求人</value></data>
+  <data name="ESign.Requests.Col.RequestedAt" xml:space="preserve"><value>请求日期</value></data>
+  <data name="ESign.Requests.Col.Due" xml:space="preserve"><value>截止日期</value></data>
+  <data name="ESign.Requests.Today" xml:space="preserve"><value>今天</value></data>
+  <data name="ESign.Requests.Status.waiting" xml:space="preserve"><value>待处理</value></data>
+  <data name="ESign.Requests.Status.signed" xml:space="preserve"><value>已签名</value></data>
+  <data name="ESign.Requests.Status.rejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="ESign.Requests.Status.expired" xml:space="preserve"><value>已过期</value></data>
+  <data name="ESign.Requests.Status.cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="ESign.Requests.Sign" xml:space="preserve"><value>签名</value></data>
+  <data name="ESign.Requests.Reject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="ESign.Requests.OpenRecord" xml:space="preserve"><value>记录的签名</value></data>
+  <data name="ESign.Requests.Reject.Title" xml:space="preserve"><value>拒绝此签名请求？</value></data>
+  <data name="ESign.Requests.Reject.Sub" xml:space="preserve"><value>{0} · {1} — 将通知请求人。</value></data>
+  <data name="ESign.Requests.Rejected" xml:space="preserve"><value>{0} 已拒绝。</value></data>
+  <data name="ESign.Requests.RejectReason" xml:space="preserve"><value>拒绝理由：{0}</value></data>
+  <data name="ESign.Verify.Title" xml:space="preserve"><value>签名验证</value></data>
+  <data name="ESign.Verify.Sub" xml:space="preserve"><value>查看记录的签名及其当前有效性</value></data>
+  <data name="ESign.Verify.SubjectType" xml:space="preserve"><value>记录类型</value></data>
+  <data name="ESign.Verify.SubjectId" xml:space="preserve"><value>记录标识</value></data>
+  <data name="ESign.Verify.Show" xml:space="preserve"><value>显示</value></data>
+  <data name="ESign.Verify.Recent" xml:space="preserve"><value>最近签名的记录</value></data>
+  <data name="ESign.Verify.RecentPick" xml:space="preserve"><value>选择一条记录</value></data>
+  <data name="ESign.Verify.Pick" xml:space="preserve"><value>选择要验证的记录，或通过签名链接打开。</value></data>
+  <data name="ESign.Verify.Reverify" xml:space="preserve"><value>重新验证</value></data>
+  <data name="ESign.Verify.LastVerified" xml:space="preserve"><value>最近验证：{0}</value></data>
+  <data name="ESign.Verify.NoVerifyPermission" xml:space="preserve"><value>查看验证状态需要电子签名验证权限</value></data>
+  <data name="ESign.Verify.CurrentHash" xml:space="preserve"><value>记录当前摘要 (SHA-256)：</value></data>
+  <data name="ESign.Verify.Count.Total" xml:space="preserve"><value>{0} 个签名</value></data>
+  <data name="ESign.Verify.Count.Valid" xml:space="preserve"><value>{0} 个有效</value></data>
+  <data name="ESign.Verify.Count.Changed" xml:space="preserve"><value>{0} 个记录已变更</value></data>
+  <data name="ESign.Verify.Count.Invalidated" xml:space="preserve"><value>{0} 个已作废</value></data>
+  <data name="ESign.Verify.Count.Tampered" xml:space="preserve"><value>{0} 个被篡改</value></data>
+  <data name="ESign.Verify.Status.valid" xml:space="preserve"><value>有效</value></data>
+  <data name="ESign.Verify.Status.changed" xml:space="preserve"><value>记录已变更</value></data>
+  <data name="ESign.Verify.Status.invalidated" xml:space="preserve"><value>已作废</value></data>
+  <data name="ESign.Verify.Status.tampered" xml:space="preserve"><value>被篡改</value></data>
+  <data name="ESign.Verify.Status.subjectUnresolvable" xml:space="preserve"><value>记录不可读</value></data>
+  <data name="ESign.Verify.ChangedNote" xml:space="preserve"><value>签名后记录已变更：签名时摘要 {0}…，当前摘要 {1}…</value></data>
+  <data name="ESign.Verify.InvalidatedReason" xml:space="preserve"><value>理由：“{0}”</value></data>
+  <data name="ESign.Verify.Note" xml:space="preserve"><value>备注：“{0}”</value></data>
+  <data name="ESign.Verify.AppearanceType" xml:space="preserve"><value>外观类型</value></data>
+  <data name="ESign.Verify.SignatureId" xml:space="preserve"><value>签名标识</value></data>
+  <data name="ESign.Verify.HashAtSign" xml:space="preserve"><value>签名时摘要</value></data>
+  <data name="ESign.Verify.ImageHash" xml:space="preserve"><value>图像摘要</value></data>
+  <data name="ESign.Verify.DrawnNoImage" xml:space="preserve"><value>手绘 · 图像摘要已记录</value></data>
+  <data name="ESign.Verify.NameOnly" xml:space="preserve"><value>仅姓名</value></data>
+  <data name="ESign.Verify.NoSignatures" xml:space="preserve"><value>此记录尚无签名。</value></data>
+  <data name="ESign.Verify.Invalidate" xml:space="preserve"><value>作废签名</value></data>
+  <data name="ESign.Verify.InvalidateNoPermission" xml:space="preserve"><value>作废需要电子签名管理员权限</value></data>
+  <data name="ESign.Verify.Invalidate.Title" xml:space="preserve"><value>作废此签名？</value></data>
+  <data name="ESign.Verify.Invalidate.Sub" xml:space="preserve"><value>{0} · {1} — 签名记录不会更改；作废将单独永久记录。</value></data>
+  <data name="ESign.Verify.Invalidate.PwdTitle" xml:space="preserve"><value>请用密码确认作废</value></data>
+  <data name="ESign.Verify.Invalidate.Warn" xml:space="preserve"><value>此操作不可撤销。签名在所有使用处均显示为无效。</value></data>
+  <data name="ESign.Verify.Invalidated" xml:space="preserve"><value>{0} 已作废。</value></data>
+  <data name="ESign.Export.Title" xml:space="preserve"><value>审计导出</value></data>
+  <data name="ESign.Export.Sub" xml:space="preserve"><value>筛选签名记录并以 PDF 或 CSV 下载</value></data>
+  <data name="ESign.Export.Preview" xml:space="preserve"><value>预览</value></data>
+  <data name="ESign.Export.View.Table" xml:space="preserve"><value>表格</value></data>
+  <data name="ESign.Export.View.Pdf" xml:space="preserve"><value>PDF 预览</value></data>
+  <data name="ESign.Export.AsPdf" xml:space="preserve"><value>导出为 PDF</value></data>
+  <data name="ESign.Export.AsCsv" xml:space="preserve"><value>导出为 CSV</value></data>
+  <data name="ESign.Export.Count" xml:space="preserve"><value>{0} 条签名记录</value></data>
+  <data name="ESign.Export.Done" xml:space="preserve"><value>{0} 已下载（{1}）。</value></data>
+  <data name="ESign.Export.Empty" xml:space="preserve"><value>没有符合筛选条件的签名记录。</value></data>
+  <data name="ESign.Export.NoVisual" xml:space="preserve"><value>无可视签名 · 仅姓名</value></data>
+  <data name="ESign.Export.AllSigners" xml:space="preserve"><value>所有签名人</value></data>
+  <data name="ESign.Export.AllMeanings" xml:space="preserve"><value>所有含义</value></data>
+  <data name="ESign.Export.AllCompanies" xml:space="preserve"><value>所有公司</value></data>
+  <data name="ESign.Export.Col.At" xml:space="preserve"><value>日期时间</value></data>
+  <data name="ESign.Export.Col.Signer" xml:space="preserve"><value>签名人</value></data>
+  <data name="ESign.Export.Col.Meaning" xml:space="preserve"><value>签名含义</value></data>
+  <data name="ESign.Export.Col.Record" xml:space="preserve"><value>模块 · 记录</value></data>
+  <data name="ESign.Export.Col.Verification" xml:space="preserve"><value>验证</value></data>
+  <data name="ESign.Export.Report.Title" xml:space="preserve"><value>签名审计报告</value></data>
+  <data name="ESign.Export.Report.Sub" xml:space="preserve"><value>电子签名服务 (MOD-0022)</value></data>
+  <data name="ESign.Export.Report.Foot" xml:space="preserve"><value>每个签名块包含图像、姓名、含义、日期时间和签名标识。文件由服务器生成。</value></data>
+  <data name="ESign.Export.Log.Title" xml:space="preserve"><value>导出审计日志</value></data>
+  <data name="ESign.Export.Log.Sub" xml:space="preserve"><value>每次导出均被不可更改地记录</value></data>
+  <data name="ESign.Export.Log.Number" xml:space="preserve"><value>导出编号</value></data>
+  <data name="ESign.Export.Log.By" xml:space="preserve"><value>执行人</value></data>
+  <data name="ESign.Export.Log.Format" xml:space="preserve"><value>格式</value></data>
+  <data name="ESign.Export.Log.Count" xml:space="preserve"><value>记录数</value></data>
+  <data name="ESign.Export.Log.Records" xml:space="preserve"><value>{0} 条记录</value></data>
+  <data name="ESign.Export.Log.Filter" xml:space="preserve"><value>筛选条件</value></data>
+  <data name="ESign.Export.Log.FileHash" xml:space="preserve"><value>文件摘要</value></data>
+  <data name="ESign.Export.Log.Empty" xml:space="preserve"><value>尚无导出。</value></data>
+  <data name="ESign.Policy.Title" xml:space="preserve"><value>电子签名策略</value></data>
+  <data name="ESign.Policy.Sub" xml:space="preserve"><value>设置哪些操作需要签名、其含义及可视签名规则</value></data>
+  <data name="ESign.Policy.Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="ESign.Policy.Scope.Tenant" xml:space="preserve"><value>租户默认</value></data>
+  <data name="ESign.Policy.Scope.Company" xml:space="preserve"><value>按公司</value></data>
+  <data name="ESign.Policy.ScopeHint.Tenant" xml:space="preserve"><value>没有单独策略的公司都使用此策略</value></data>
+  <data name="ESign.Policy.ScopeHint.Company" xml:space="preserve"><value>该公司的记录使用此策略</value></data>
+  <data name="ESign.Policy.UsesTenant.Title" xml:space="preserve"><value>{0} 使用租户默认策略</value></data>
+  <data name="ESign.Policy.UsesTenant.Text" xml:space="preserve"><value>租户策略的每次更改也适用于此公司。如需不同规则，可复制租户默认策略后编辑。</value></data>
+  <data name="ESign.Policy.CopyForCompany" xml:space="preserve"><value>为此公司设置单独策略</value></data>
+  <data name="ESign.Policy.Override.Text" xml:space="preserve"><value>{0} 使用单独的策略。与租户默认不同的行标记为“不同”。</value></data>
+  <data name="ESign.Policy.Override.New" xml:space="preserve"><value>{0} 的租户默认策略副本：保存后即创建公司策略。</value></data>
+  <data name="ESign.Policy.Revert" xml:space="preserve"><value>恢复为租户默认</value></data>
+  <data name="ESign.Policy.Revert.Title" xml:space="preserve"><value>将 {0} 恢复为租户默认？</value></data>
+  <data name="ESign.Policy.Revert.Sub" xml:space="preserve"><value>将删除公司的单独策略；其内容保留在变更历史中。</value></data>
+  <data name="ESign.Policy.Reverted" xml:space="preserve"><value>{0} 现已使用租户默认。</value></data>
+  <data name="ESign.Policy.Rules" xml:space="preserve"><value>按操作的签名规则</value></data>
+  <data name="ESign.Policy.Col.Action" xml:space="preserve"><value>操作</value></data>
+  <data name="ESign.Policy.Col.Meaning" xml:space="preserve"><value>签名含义</value></data>
+  <data name="ESign.Policy.Col.Visual" xml:space="preserve"><value>可视签名</value></data>
+  <data name="ESign.Policy.Col.SecondFactor" xml:space="preserve"><value>第二因素</value></data>
+  <data name="ESign.Policy.Required" xml:space="preserve"><value>必需</value></data>
+  <data name="ESign.Policy.Off" xml:space="preserve"><value>关闭</value></data>
+  <data name="ESign.Policy.Soon" xml:space="preserve"><value>即将推出</value></data>
+  <data name="ESign.Policy.Differs" xml:space="preserve"><value>不同</value></data>
+  <data name="ESign.Policy.Unsaved" xml:space="preserve"><value>未保存的更改</value></data>
+  <data name="ESign.Policy.MeaningSignerChooses" xml:space="preserve"><value>— 由签名人选择 —</value></data>
+  <data name="ESign.Policy.NoActions" xml:space="preserve"><value>尚未注册可签名的操作。</value></data>
+  <data name="ESign.Policy.NoCompanies" xml:space="preserve"><value>无法读取公司列表。</value></data>
+  <data name="ESign.Policy.General" xml:space="preserve"><value>常规设置</value></data>
+  <data name="ESign.Policy.Reauth" xml:space="preserve"><value>连续签名时的密码</value></data>
+  <data name="ESign.Policy.Reauth.Every" xml:space="preserve"><value>每次签名都要求密码</value></data>
+  <data name="ESign.Policy.Reauth.EverySub" xml:space="preserve"><value>用户每次签名都需重新输入密码。</value></data>
+  <data name="ESign.Policy.Reauth.Window" xml:space="preserve"><value>时限内一次</value></data>
+  <data name="ESign.Policy.Reauth.WindowSub" xml:space="preserve"><value>在验证有效期内，后续签名不再要求密码。</value></data>
+  <data name="ESign.Policy.Minutes" xml:space="preserve"><value>密码重新验证的有效期</value></data>
+  <data name="ESign.Policy.MinutesUnit" xml:space="preserve"><value>分钟</value></data>
+  <data name="ESign.Policy.MinutesHint" xml:space="preserve"><value>1–60 分钟</value></data>
+  <data name="ESign.Policy.MinutesHintEvery" xml:space="preserve"><value>选中“每次签名”时不使用</value></data>
+  <data name="ESign.Policy.SampleApproval" xml:space="preserve"><value>签名样本使用前需管理员批准</value></data>
+  <data name="ESign.Policy.SampleApproval.Sub" xml:space="preserve"><value>开启后，新的签名样本需经电子签名管理员批准后方可使用。</value></data>
+  <data name="ESign.Policy.SampleApproval.TenantOnly" xml:space="preserve"><value>此为租户级设置；公司策略中仅显示。</value></data>
+  <data name="ESign.Policy.DirtyText" xml:space="preserve"><value>{0} 项更改未保存</value></data>
+  <data name="ESign.Policy.SaveWithReason" xml:space="preserve"><value>填写理由并保存</value></data>
+  <data name="ESign.Policy.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="ESign.Policy.Save.Title" xml:space="preserve"><value>保存策略更改？</value></data>
+  <data name="ESign.Policy.Save.Sub" xml:space="preserve"><value>更改将连同理由写入历史并适用于新签名。</value></data>
+  <data name="ESign.Policy.Saved" xml:space="preserve"><value>策略已保存。</value></data>
+  <data name="ESign.Policy.Change.Required" xml:space="preserve"><value>{0}：状态 → {1}</value></data>
+  <data name="ESign.Policy.Change.Meaning" xml:space="preserve"><value>{0}：含义 → {1}</value></data>
+  <data name="ESign.Policy.Change.Visual" xml:space="preserve"><value>{0}：可视签名 → {1}</value></data>
+  <data name="ESign.Policy.Change.Minutes" xml:space="preserve"><value>有效期 → {0} 分钟</value></data>
+  <data name="ESign.Policy.History" xml:space="preserve"><value>变更历史</value></data>
+  <data name="ESign.Policy.HistoryEmpty" xml:space="preserve"><value>尚无更改。</value></data>
+  <data name="ESign.Meanings.Title" xml:space="preserve"><value>签名含义</value></data>
+  <data name="ESign.Meanings.Sub" xml:space="preserve"><value>显示名称共 7 种语言；签名窗口按用户语言显示</value></data>
+  <data name="ESign.Meanings.Col.Code" xml:space="preserve"><value>代码</value></data>
+  <data name="ESign.Meanings.Col.Name" xml:space="preserve"><value>显示名称</value></data>
+  <data name="ESign.Meanings.Col.Description" xml:space="preserve"><value>说明</value></data>
+  <data name="ESign.Meanings.Col.Usage" xml:space="preserve"><value>使用情况</value></data>
+  <data name="ESign.Meanings.Active" xml:space="preserve"><value>启用</value></data>
+  <data name="ESign.Meanings.Inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="ESign.Meanings.Used" xml:space="preserve"><value>已使用</value></data>
+  <data name="ESign.Meanings.Unused" xml:space="preserve"><value>未使用</value></data>
+  <data name="ESign.Meanings.UsedIn" xml:space="preserve"><value>用于 {0} 个签名</value></data>
+  <data name="ESign.Meanings.LangCount" xml:space="preserve"><value>{0}/7 种语言</value></data>
+  <data name="ESign.Meanings.New" xml:space="preserve"><value>新建含义</value></data>
+  <data name="ESign.Meanings.Edit" xml:space="preserve"><value>编辑含义 · {0}</value></data>
+  <data name="ESign.Meanings.View" xml:space="preserve"><value>含义 · {0}</value></data>
+  <data name="ESign.Meanings.EditAction" xml:space="preserve"><value>编辑</value></data>
+  <data name="ESign.Meanings.ViewAction" xml:space="preserve"><value>查看</value></data>
+  <data name="ESign.Meanings.Modal.Sub" xml:space="preserve"><value>显示名称须填写 7 种语言</value></data>
+  <data name="ESign.Meanings.CodeLocked" xml:space="preserve"><value>该代码已被现有签名使用，不可更改。</value></data>
+  <data name="ESign.Meanings.CodeFormat" xml:space="preserve"><value>以大写字母开头的 2–32 个字符：A–Z、0–9、_</value></data>
+  <data name="ESign.Meanings.NameRequired" xml:space="preserve"><value>此语言的名称为必填项。</value></data>
+  <data name="ESign.Meanings.FixFields" xml:space="preserve"><value>请更正标记的字段。</value></data>
+  <data name="ESign.Meanings.UsageWarn" xml:space="preserve"><value>此含义已用于 {0} 个签名。名称更改仅影响新签名；旧签名保留签名时的文本。</value></data>
+  <data name="ESign.Meanings.Created" xml:space="preserve"><value>{0} 已创建。</value></data>
+  <data name="ESign.Meanings.Updated" xml:space="preserve"><value>{0} 已更新。</value></data>
+  <data name="ESign.Meanings.Activate" xml:space="preserve"><value>启用</value></data>
+  <data name="ESign.Meanings.Activate.Title" xml:space="preserve"><value>启用 {0}？</value></data>
+  <data name="ESign.Meanings.Activate.Sub" xml:space="preserve"><value>该含义将可在签名窗口中选择。</value></data>
+  <data name="ESign.Meanings.Deactivate" xml:space="preserve"><value>停用</value></data>
+  <data name="ESign.Meanings.Deactivate.Title" xml:space="preserve"><value>停用 {0}？</value></data>
+  <data name="ESign.Meanings.Deactivate.Sub" xml:space="preserve"><value>新签名将无法选择；现有签名不变。若有策略行使用则拒绝。</value></data>
+  <data name="ESign.Meanings.Lang.tr" xml:space="preserve"><value>土耳其语</value></data>
+  <data name="ESign.Meanings.Lang.en" xml:space="preserve"><value>英语</value></data>
+  <data name="ESign.Meanings.Lang.fr" xml:space="preserve"><value>法语</value></data>
+  <data name="ESign.Meanings.Lang.es" xml:space="preserve"><value>西班牙语</value></data>
+  <data name="ESign.Meanings.Lang.zh" xml:space="preserve"><value>中文</value></data>
+  <data name="ESign.Meanings.Lang.ar" xml:space="preserve"><value>阿拉伯语</value></data>
+  <data name="ESign.Meanings.Lang.ru" xml:space="preserve"><value>俄语</value></data>
+  <data name="ESign.Approvals.Title" xml:space="preserve"><value>签名样本审批</value></data>
+  <data name="ESign.Approvals.Sub" xml:space="preserve"><value>待审批的签名样本</value></data>
+  <data name="ESign.Approvals.Note" xml:space="preserve"><value>您不能批准自己的签名样本。每个批准和拒绝决定都会写入审计日志。</value></data>
+  <data name="ESign.Approvals.Col.User" xml:space="preserve"><value>用户</value></data>
+  <data name="ESign.Approvals.Col.AddedAt" xml:space="preserve"><value>添加时间</value></data>
+  <data name="ESign.Approvals.Col.Image" xml:space="preserve"><value>图像</value></data>
+  <data name="ESign.Approvals.Col.How" xml:space="preserve"><value>添加方式</value></data>
+  <data name="ESign.Approvals.OtherAdmin" xml:space="preserve"><value>由其他管理员审批</value></data>
+  <data name="ESign.Approvals.Approve" xml:space="preserve"><value>批准</value></data>
+  <data name="ESign.Approvals.Approve.Title" xml:space="preserve"><value>批准 {0} 的签名样本？</value></data>
+  <data name="ESign.Approvals.Approve.Sub" xml:space="preserve"><value>{0} — 批准后，用户之前的有效样本将停用。</value></data>
+  <data name="ESign.Approvals.Approved" xml:space="preserve"><value>{0} 已批准。</value></data>
+  <data name="ESign.Approvals.Reject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="ESign.Approvals.Reject.Title" xml:space="preserve"><value>拒绝 {0} 的签名样本？</value></data>
+  <data name="ESign.Approvals.Reject.Sub" xml:space="preserve"><value>{0} — 用户将在“我的签名”页面看到理由。</value></data>
+  <data name="ESign.Approvals.Rejected" xml:space="preserve"><value>{0} 已拒绝。</value></data>
+  <data name="ESign.Approvals.Log" xml:space="preserve"><value>决定历史</value></data>
+  <data name="ESign.Approvals.LogEmpty" xml:space="preserve"><value>尚无决定。</value></data>
+  <data name="ESign.Approvals.Decision.approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ESign.Approvals.Decision.rejected" xml:space="preserve"><value>已拒绝</value></data>
 </root>

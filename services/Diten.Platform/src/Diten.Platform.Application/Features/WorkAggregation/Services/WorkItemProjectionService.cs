@@ -219,9 +219,17 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         => WithSignature(task, BuildApproveCore(task, actor, evidencePending));
 
     // MOD-0022 E4 — the approve action of a signature-required step says so (ESIGN-BUNDLE x-workflow-addendum); omitted
-    // otherwise, so every other projection serializes as before.
+    // otherwise, so every other projection serializes as before. E5W2 (CT-D19): plus the signable action code, so the
+    // signing dialog applies the tenant policy's visual mode for workflow approvals.
     private static WorkItemActionDto WithSignature(ApprovalTask task, WorkItemActionDto action)
-        => task.SignatureRequired ? action with { SignatureRequired = true, SignatureMeaning = task.SignatureMeaning } : action;
+        => task.SignatureRequired
+            ? action with
+            {
+                SignatureRequired = true,
+                SignatureMeaning = task.SignatureMeaning,
+                SignatureActionCode = WorkflowSignableActions.TaskApprove
+            }
+            : action;
 
     private static WorkItemActionDto BuildApproveCore(ApprovalTask task, WorkItemActor actor, bool evidencePending)
     {

@@ -288,6 +288,8 @@
          */
         signatureRequired: action.signatureRequired === true,
         signatureMeaning: action.signatureMeaning || null,
+        // E5W2 (CT-D19) — the signable action the policy row belongs to (workflow.task.approve), so the visual mode follows it.
+        signatureActionCode: action.signatureActionCode || null,
         /*
          * `plan` ALWAYS wants a date picker, on every provenance — derived from the CODE rather than trusted from
          * the wire, the same way `kind` and `role` above are. The engine's WorkItemActionDto carries no `input`
