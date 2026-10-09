@@ -30,10 +30,16 @@ public static class UnixPipeHandleInspector
     private const short PollHangUp = 0x10;
     private const short PollInvalid = 0x20;
 
-    public readonly record struct Identity(long Device, ulong Inode, int Type);
+    /// <summary>
+    /// What fstat tells about a descriptor. <c>Permissions</c> = the mode's low 12 bits; <c>Links</c> = st_nlink
+    /// (FIX2 item 8: macOS anonymous pipes have 0, a named FIFO ≥ 1 — measured).
+    /// </summary>
+    public readonly record struct Identity(long Device, ulong Inode, int Type, int Permissions = 0, uint Uid = 0, ulong Links = 0);
 
     // Internal (tests via InternalsVisibleTo, BL570 FIX1 R2): a wrong layout must be refused by the proof.
-    internal sealed record Layout(int DeviceOffset, int DeviceSize, int ModeOffset, int ModeSize, int InodeOffset, bool MacOs);
+    // Defaults are macOS' struct stat (uid @16, nlink u16 @6 — measured); Linux rows pass theirs.
+    internal sealed record Layout(int DeviceOffset, int DeviceSize, int ModeOffset, int ModeSize, int InodeOffset, bool MacOs,
+        int UidOffset = 16, int LinksOffset = 6, int LinksSize = 2);
 
     private static readonly Lazy<Layout?> Proven = new(() => Candidate() is { } candidate ? Prove(candidate) : null,
         LazyThreadSafetyMode.ExecutionAndPublication);
@@ -42,6 +48,24 @@ public static class UnixPipeHandleInspector
 
     /// <summary>The descriptor's identity, or null when it is not an open descriptor (or the platform is unsupported).</summary>
     public static Identity? Stat(int descriptor) => Proven.Value is { } layout ? Stat(descriptor, layout) : null;
+
+    /// <summary>
+    /// An ANONYMOUS pipe (FIX2 item 8)? macOS: no directory entry links it (st_nlink 0 — measured; a named FIFO has ≥ 1).
+    /// Linux: <c>/proc/self/fd/&lt;fd&gt;</c> reads as <c>pipe:[…]</c> (a link is read, nothing opened; unmeasured here).
+    /// </summary>
+    public static bool IsAnonymousPipe(int descriptor, Identity identity) =>
+        Proven.Value is { } layout && IsAnonymous(descriptor, identity, layout.MacOs);
+
+    /// <summary>A named FIFO only its owner can reach: no group / other bits, and owned by this process' euid.</summary>
+    public static bool IsPrivateToThisUser(Identity identity) =>
+        (identity.Permissions & 0x3F) == 0 && identity.Uid == GetEffectiveUid();
+
+    private static bool IsAnonymous(int descriptor, Identity identity, bool macOs)
+    {
+        if (macOs) return identity.Links == 0;
+        try { return new FileInfo($"/proc/self/fd/{descriptor}").LinkTarget?.StartsWith("pipe:", StringComparison.Ordinal) == true; }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException) { return false; }
+    }
 
     /// <summary>
     /// Opened WRITE-ONLY — exactly O_WRONLY (BL570 FIX1 R1). A read-write end (<c>exec 3&lt;&gt;fifo</c>) makes the
@@ -81,7 +105,14 @@ public static class UnixPipeHandleInspector
         if (Fstat(descriptor, buffer, layout.MacOs) != 0) return null;
         long device = layout.DeviceSize == 4 ? BitConverter.ToInt32(buffer, layout.DeviceOffset) : BitConverter.ToInt64(buffer, layout.DeviceOffset);
         int mode = layout.ModeSize == 2 ? BitConverter.ToUInt16(buffer, layout.ModeOffset) : (int)BitConverter.ToUInt32(buffer, layout.ModeOffset);
-        return new Identity(device, BitConverter.ToUInt64(buffer, layout.InodeOffset), mode & TypeMask);
+        ulong links = layout.LinksSize switch
+        {
+            2 => BitConverter.ToUInt16(buffer, layout.LinksOffset),
+            4 => BitConverter.ToUInt32(buffer, layout.LinksOffset),
+            _ => BitConverter.ToUInt64(buffer, layout.LinksOffset)
+        };
+        return new Identity(device, BitConverter.ToUInt64(buffer, layout.InodeOffset), mode & TypeMask, mode & 0xFFF,
+            BitConverter.ToUInt32(buffer, layout.UidOffset), links);
     }
 
     internal static Layout? Candidate()
@@ -90,9 +121,9 @@ public static class UnixPipeHandleInspector
         if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture is Architecture.Arm64 or Architecture.X64)
             return new Layout(0, 4, 4, 2, 8, MacOs: true); // struct stat with 64-bit inodes
         if (OperatingSystem.IsLinux() && RuntimeInformation.ProcessArchitecture == Architecture.X64)
-            return new Layout(0, 8, 24, 4, 8, MacOs: false);
+            return new Layout(0, 8, 24, 4, 8, MacOs: false, UidOffset: 28, LinksOffset: 16, LinksSize: 8);
         if (OperatingSystem.IsLinux() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-            return new Layout(0, 8, 16, 4, 8, MacOs: false); // asm-generic
+            return new Layout(0, 8, 16, 4, 8, MacOs: false, UidOffset: 24, LinksOffset: 20, LinksSize: 4); // asm-generic
         return null;
     }
 
@@ -125,6 +156,8 @@ public static class UnixPipeHandleInspector
             if (other is null || (other.Value.Device == writer.Value.Device && other.Value.Inode == writer.Value.Inode)) return null;
             if ((Fcntl(first[1], GetStatusFlags) & AccessModeMask) != WriteOnly || (Fcntl(first[0], GetStatusFlags) & AccessModeMask) != 0)
                 return null;
+            // FIX2 item 8: the uid and link fields are read right too — our own pipe is ours, and seen as anonymous.
+            if (writer.Value.Uid != GetEffectiveUid() || !IsAnonymous(first[1], writer.Value, layout.MacOs)) return null;
 
             var live = PollWrite(first[1], layout.MacOs);
             if (live is not { } before || (before & PollOut) == 0 || (before & (PollError | PollHangUp | PollInvalid)) != 0) return null;
@@ -181,6 +214,8 @@ public static class UnixPipeHandleInspector
     private static extern int SocketPair(int domain, int type, int protocol, int[] descriptors);
     [DllImport("libc", EntryPoint = "dup", SetLastError = true)]
     private static extern int Dup(int descriptor);
+    [DllImport("libc", EntryPoint = "geteuid")]
+    private static extern uint GetEffectiveUid();
     [DllImport("libc", EntryPoint = "close", SetLastError = true)]
     private static extern int Close(int descriptor);
 }

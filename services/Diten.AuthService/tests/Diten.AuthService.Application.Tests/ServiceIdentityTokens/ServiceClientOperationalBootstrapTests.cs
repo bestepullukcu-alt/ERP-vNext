@@ -12,12 +12,14 @@ using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
 
+using Diten.AuthService.Application.Tests.Persistence;
+
 namespace Diten.AuthService.Application.Tests.ServiceIdentityTokens;
 
 [Collection(OperationalMongoCollection.Name)]
 public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixture fixture, ITestOutputHelper output)
 {
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("Production", "Production")]
     [InlineData("Development", "Production")]
     [InlineData("development", "Development")]
@@ -33,7 +35,7 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         Assert.DoesNotContain("Now listening", result.Stdout);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("--SERVICE-CLIENT-OPERATIONAL-RUN")]
     [InlineData("--service-client-operational-unknown")]
     public async Task Release_child_captures_malformed_family_before_normal_startup(string command)
@@ -59,7 +61,7 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         }) yield return [pair];
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [MemberData(nameof(MixedSelectors))]
     public async Task Release_child_mixed_operational_selectors_reject_before_host_without_secret_or_database_mutation(string[] selectors)
     {
@@ -93,7 +95,7 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         await actorRows.AssertUnchangedAsync();
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Real_Release_child_rotates_through_actual_pipe_without_normal_startup_or_unrelated_writes()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -148,7 +150,7 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         Assert.Equal(1, (await scope.Identities.Find(x => x.Id == scope.Identity.Id).SingleAsync()).OperationalVersion);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Release_child_current_revoked_grant_denies_before_credential_or_journal_mutation()
     {
         await using var scope = await fixture.ScopeAsync(output);

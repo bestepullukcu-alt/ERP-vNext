@@ -20,8 +20,9 @@ namespace Diten.AuthService.Api.Operational;
 /// it lists every process's command line, root's included, 627 / 627 with no empty row, where .NET's Process API
 /// could name none of 199 other-user processes). Linux: <c>/proc/&lt;pid&gt;/cmdline</c> for every process, refused when
 /// <c>/proc</c> is mounted with <c>hidepid</c> (other users' processes would be invisible) or a command line cannot be
-/// read. A row is an Auth writer when its command line (which carries the executable path) contains
-/// <c>Diten.AuthService</c>; this process and the observer child are excluded. The listing must contain pid 1 and this
+/// read. A row is an Auth writer when its command line or its image path contains <c>Diten.AuthService</c>, compared
+/// case-insensitively (FIX2); only this process is excluded (the observer's own ps arguments never carry the marker —
+/// FIX2 removed the observer-pid exclusion, a pid-reuse hole). The listing must contain pid 1 and this
 /// process, or it is not trusted. Listeners: .NET's own TCP listener table (measured on macOS: sees a fresh listener).
 /// Any other OS → <see cref="UnsupportedPlatform"/>; the command does not run. Nothing here is relaxed relative to
 /// Windows; the Linux path is unmeasured on this machine (no Linux) and fails closed.</para>
@@ -37,40 +38,67 @@ public static class UnixProcessObservation
 
     // uid may be negative on macOS (nobody = -2, measured).
     private static readonly Regex PsRow = new(@"^\s*(\d+)\s+(-?\d+)\s+(.*)$", RegexOptions.CultureInvariant);
+    private static readonly Regex PsImageRow = new(@"^\s*(\d+)\s+(.*)$", RegexOptions.CultureInvariant);
+
+    /// <summary>A listed process: its command line and, when readable, its image (executable) path.</summary>
+    public readonly record struct ProcessRow(int Pid, string CommandLine, string? Image);
 
     public static async Task<string> ObserveAsync(CancellationToken ct)
     {
-        IReadOnlyList<(int Pid, string CommandLine)> rows;
-        int? observer = null;
-        if (OperatingSystem.IsMacOS()) (rows, observer) = await ListWithPsAsync(ct);
-        else if (OperatingSystem.IsLinux()) rows = ListWithProc();
-        else throw new InvalidOperationException(UnsupportedPlatform);
+        var rows = await ListAsync(ct);
         int[] ports;
         try { ports = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Select(x => x.Port).ToArray(); }
         catch (Exception exception) when (exception is PlatformNotSupportedException or NetworkInformationException)
         { throw new InvalidOperationException(ObservationFailed); }
-        return Classify(rows, ports, Environment.ProcessId, observer);
+        return Classify(rows, ports, Environment.ProcessId);
     }
 
-    /// <summary>The decision, apart from how the rows were read (tested on synthetic listings).</summary>
-    public static string Classify(IReadOnlyList<(int Pid, string CommandLine)> rows, IReadOnlyCollection<int> listenerPorts,
-        int selfPid, int? observerPid)
+    /// <summary>The listing step alone (BL570 FIX2 item 3: tests prove a live process appears in it).</summary>
+    internal static async Task<IReadOnlyList<ProcessRow>> ListAsync(CancellationToken ct)
+    {
+        if (OperatingSystem.IsMacOS())
+            return ParsePs(await RunPsAsync("pid=,uid=,args=", ct), await RunPsAsync("pid=,comm=", ct));
+        if (OperatingSystem.IsLinux())
+        {
+            if (ProcHidesProcesses("/proc/self/mountinfo")) throw new InvalidOperationException(UnsupportedPlatform);
+            return ListWithProc("/proc");
+        }
+        throw new InvalidOperationException(UnsupportedPlatform);
+    }
+
+    /// <summary>
+    /// The decision, apart from how the rows were read (tested on synthetic listings). Matching is case-INSENSITIVE and
+    /// covers the image path as well as the command line (FIX2 item 4: the Windows observation is case-insensitive and
+    /// also matches the image name; macOS' default APFS is case-insensitive, and `exec -a` can rename argv[0]).
+    /// A row that cannot be classified — an empty command line, or a bare <c>dotnet</c> with no arguments (another
+    /// user's arguments unread) — refuses the whole observation (FIX2 item 5, the twin of Windows' "owner unreadable").
+    /// </summary>
+    public static string Classify(IReadOnlyList<ProcessRow> rows, IReadOnlyCollection<int> listenerPorts, int selfPid)
     {
         if (!rows.Any(row => row.Pid == 1) || !rows.Any(row => row.Pid == selfPid))
             throw new InvalidOperationException(ObservationFailed);
-        var writers = rows.Count(row => row.Pid != selfPid && row.Pid != observerPid
-                                        && row.CommandLine.Contains(Marker, StringComparison.Ordinal));
+        if (rows.Any(Unclassifiable)) throw new InvalidOperationException(ObservationFailed);
+        var writers = rows.Count(row => row.Pid != selfPid
+                                        && (row.CommandLine.Contains(Marker, StringComparison.OrdinalIgnoreCase)
+                                            || (row.Image?.Contains(Marker, StringComparison.OrdinalIgnoreCase) ?? false)));
         if (writers != 0 || listenerPorts.Contains(AuthPort)) throw new InvalidOperationException(NotQuiescent);
         return EntitlementReconciliationPlan.Hash(Quiescent);
     }
 
-    private static async Task<(IReadOnlyList<(int, string)> Rows, int Observer)> ListWithPsAsync(CancellationToken ct)
+    private static bool Unclassifiable(ProcessRow row)
+    {
+        var tokens = row.CommandLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return tokens.Length == 0
+               || (tokens.Length == 1 && Path.GetFileName(tokens[0]).Equals("dotnet", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static async Task<string> RunPsAsync(string columns, CancellationToken ct)
     {
         using var process = new Process { StartInfo = new ProcessStartInfo("/bin/ps")
         {
             UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true
         }};
-        foreach (var argument in new[] { "-A", "-ww", "-o", "pid=,uid=,args=" }) process.StartInfo.ArgumentList.Add(argument);
+        foreach (var argument in new[] { "-A", "-ww", "-o", columns }) process.StartInfo.ArgumentList.Add(argument);
         if (!process.Start()) throw new InvalidOperationException(ObservationFailed);
         var output = process.StandardOutput.ReadToEndAsync(ct);
         var error = process.StandardError.ReadToEndAsync(ct);
@@ -78,21 +106,44 @@ public static class UnixProcessObservation
         var text = await output;
         _ = await error;
         if (process.ExitCode != 0) throw new InvalidOperationException(ObservationFailed);
-        var rows = new List<(int, string)>();
-        foreach (var line in text.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        return text;
+    }
+
+    /// <summary>
+    /// macOS: <c>ps -o pid=,uid=,args=</c> and <c>ps -o pid=,comm=</c> (comm = the image's full path; two calls because
+    /// both columns may hold spaces). Any line that does not parse refuses the observation. A pid only in one listing
+    /// (started / ended between the two calls) keeps what was read.
+    /// </summary>
+    internal static IReadOnlyList<ProcessRow> ParsePs(string argsListing, string imageListing)
+    {
+        var images = new Dictionary<int, string>();
+        foreach (var line in imageListing.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var imageMatch = PsImageRow.Match(line);
+            if (!imageMatch.Success) throw new InvalidOperationException(ObservationFailed);
+            images[int.Parse(imageMatch.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)] = imageMatch.Groups[2].Value;
+        }
+        var rows = new List<ProcessRow>();
+        foreach (var line in argsListing.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
             var match = PsRow.Match(line);
             if (!match.Success) throw new InvalidOperationException(ObservationFailed);
-            rows.Add((int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), match.Groups[3].Value));
+            var pid = int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+            rows.Add(new ProcessRow(pid, match.Groups[3].Value, images.GetValueOrDefault(pid)));
         }
-        return (rows, process.Id);
+        return rows;
     }
 
-    private static IReadOnlyList<(int, string)> ListWithProc()
+    /// <summary>
+    /// Linux: every <c>&lt;root&gt;/&lt;pid&gt;/cmdline</c> (kernel threads: <c>comm</c>), and the image from <c>exe</c> when readable
+    /// (another user's is not — the command line still is). A process that ends mid-read (ESRCH / gone) is skipped; an
+    /// unreadable command line refuses the observation. ⚠ PID namespaces: only this namespace's processes are listed — an
+    /// Auth in another container is caught by its 5056 listener alone. Unmeasured on this machine (no Linux).
+    /// </summary>
+    internal static IReadOnlyList<ProcessRow> ListWithProc(string root)
     {
-        if (ProcHidesProcesses()) throw new InvalidOperationException(UnsupportedPlatform);
-        var rows = new List<(int, string)>();
-        foreach (var directory in Directory.EnumerateDirectories("/proc"))
+        var rows = new List<ProcessRow>();
+        foreach (var directory in Directory.EnumerateDirectories(root))
         {
             if (!int.TryParse(Path.GetFileName(directory), System.Globalization.NumberStyles.None,
                     System.Globalization.CultureInfo.InvariantCulture, out var pid)) continue;
@@ -100,26 +151,29 @@ public static class UnixProcessObservation
             {
                 var bytes = File.ReadAllBytes(Path.Combine(directory, "cmdline"));
                 var commandLine = bytes.Length > 0
-                    ? Encoding.UTF8.GetString(bytes).Replace('\0', ' ')
+                    ? Encoding.UTF8.GetString(bytes).Replace('\0', ' ').Trim()
                     : File.ReadAllText(Path.Combine(directory, "comm")).Trim(); // kernel thread: no command line
-                rows.Add((pid, commandLine));
-            }
-            catch (Exception exception) when (exception is FileNotFoundException or DirectoryNotFoundException)
-            {
-                // ended between the listing and the read: not running
+                string? image = null;
+                try { image = new FileInfo(Path.Combine(directory, "exe")).LinkTarget; }
+                catch (Exception exception) when (exception is UnauthorizedAccessException or IOException) { }
+                rows.Add(new ProcessRow(pid, commandLine, image));
             }
             catch (UnauthorizedAccessException)
             {
                 throw new InvalidOperationException(ObservationFailed); // cannot classify → fail closed
+            }
+            catch (IOException)
+            {
+                // ended between the listing and the read (ESRCH, gone): not running
             }
         }
         return rows;
     }
 
     // /proc mounted with hidepid=1|2|invisible|noaccess hides other users' processes: the listing would be incomplete.
-    private static bool ProcHidesProcesses()
+    internal static bool ProcHidesProcesses(string mountInfo)
     {
-        foreach (var line in File.ReadLines("/proc/self/mountinfo"))
+        foreach (var line in File.ReadLines(mountInfo))
         {
             var fields = line.Split(' ');
             if (fields.Length < 5 || fields[4] != "/proc") continue;

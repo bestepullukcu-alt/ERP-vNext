@@ -132,8 +132,12 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
     [Fact]
     public async Task Closed_pipe_handle_is_rejected_without_opening_a_file()
     {
+        // BL570 FIX2: on Unix a just-closed fd NUMBER can be reused at once by a parallel test, so the closed handle is one
+        // no process can have open (far above any descriptor limit). Windows keeps its closed pipe handle.
         string handle;
-        using (var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable)) handle = pipe.GetClientHandleAsString();
+        if (OperatingSystem.IsWindows())
+            using (var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable)) handle = pipe.GetClientHandleAsString();
+        else handle = (int.MaxValue - 7).ToString(System.Globalization.CultureInfo.InvariantCulture);
         await using var sink = new ServiceClientSecretOutputSink();
         await Assert.ThrowsAnyAsync<Exception>(() => sink.PreflightAsync(handle, CancellationToken.None));
     }
@@ -205,6 +209,25 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
         Assert.Equal(5, await harness.Run());
         Assert.Equal(0, harness.Calls);
         Assert.Contains("\"secret-output-unsupported-platform\"", harness.Output.ToString());
+    }
+
+    // BL570 FIX2 item 2: a refused secret channel reaches the operator by its fixed reason — exit code unchanged (5).
+    [Fact]
+    public async Task A_refused_secret_channel_names_its_reason_for_the_operator()
+    {
+        var harness = new RunnerHarness("rotate-credential", new RejectingSink(ServiceClientSecretOutputSink.Reasons.NotWriteOnly), "7");
+
+        Assert.Equal(5, await harness.Run());
+        Assert.Equal(0, harness.Calls);
+        Assert.Contains("\"reason\":\"NOT_WRITE_ONLY\"", harness.Output.ToString());
+        Assert.Contains("\"configuration-or-storage-unavailable\"", harness.Output.ToString());
+    }
+
+    private sealed class RejectingSink(string reason) : IServiceClientSecretOutputSink
+    {
+        public Task PreflightAsync(string handle, CancellationToken ct) => throw new SecretChannelRejectedException(reason);
+        public Task DeliverOnceAsync(Guid id, string code, string secret, CancellationToken ct) =>
+            throw new InvalidOperationException("must never be reached");
     }
 
     private sealed class UnsupportedPlatformSink : IServiceClientSecretOutputSink

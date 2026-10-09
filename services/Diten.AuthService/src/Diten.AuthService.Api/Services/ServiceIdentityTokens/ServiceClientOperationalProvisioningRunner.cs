@@ -3,6 +3,7 @@ using System.Text.Json;
 using Diten.AuthService.Api.Configuration;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.ServiceIdentityTokens.Operational;
+using Diten.AuthService.Api.Operational;
 using Microsoft.Extensions.Options;
 
 namespace Diten.AuthService.Api.Services.ServiceIdentityTokens;
@@ -73,8 +74,8 @@ public sealed class ServiceClientOperationalProvisioningRunner
         { return await FailAsync(output, "credential-mutated-secret-delivery-uncertain", 6); }
         catch (ServiceClientOperationalRecoveryRequiredException)
         { return await FailAsync(output, "manual-reconciliation-required", 6); }
-        catch (InvalidOperationException)
-        { return await FailAsync(output, "configuration-or-storage-unavailable", 5); }
+        catch (InvalidOperationException exception)
+        { return await FailAsync(output, "configuration-or-storage-unavailable", 5, OperationalReason.From(exception)); }
         // WP-AUTH-BL570-01: this OS cannot verify the inherited pipe — refused by name, before any credential exists.
         catch (PlatformNotSupportedException exception)
             when (exception.Message == ServiceClientSecretOutputSink.UnsupportedPlatform)
@@ -163,9 +164,12 @@ public sealed class ServiceClientOperationalProvisioningRunner
     }
 
     private static ServiceClientOperationalContractException Malformed() => new("Operational input is malformed.");
-    private static async Task<int> FailAsync(TextWriter output, string code, int exit)
+    // BL570 FIX2 item 2: a named refusal also carries its fixed reason (e.g. NOT_WRITE_ONLY) — never a message.
+    private static async Task<int> FailAsync(TextWriter output, string code, int exit, string? reason = null)
     {
-        await output.WriteLineAsync(JsonSerializer.Serialize(new { status = "failed", code }));
+        await output.WriteLineAsync(reason is null
+            ? JsonSerializer.Serialize(new { status = "failed", code })
+            : JsonSerializer.Serialize(new { status = "failed", code, reason }));
         return exit;
     }
     private sealed record OperationalEnvelope(string AccessToken, string OperationalMarker,

@@ -16,7 +16,7 @@ namespace Diten.AuthService.Application.Tests.Operational;
 [Collection(AuthReconciliationMongoCollection.Name)]
 public sealed class ProductIdentityEntitlementReconciliationMongoTests(DisposableAuthMongoReplicaSet mongo)
 {
-    [Fact]
+    [OwnedMongoFact]
     public async Task OperationalPersistence_WhenRegistered_ContainsOnlyDatabaseAndStoreAndPerformsNoInitializationWrites()
     {
         await mongo.ResetAsync(); var before = await AllRowsAsync();
@@ -34,7 +34,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         await AssertSameRowsAsync(before);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("inactive")]
     [InlineData("deleted")]
     [InlineData("unconfirmed")]
@@ -60,7 +60,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Store.CommitAsync(fixture.Plan, CancellationToken.None));
         Assert.Empty(fixture.Probe.Writes); await AssertSameRowsAsync(before);
     }
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("versionless-protected-row")]
     [InlineData("new-holder")]
     [InlineData("new-token")]
@@ -131,7 +131,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal(drift == "operator-revoked" ? "OPERATOR_AUTHORITY_DRIFT_AFTER_COMMIT" : "LOCAL_CONCURRENCY_DRIFT_AFTER_COMMIT", outcome.Reason);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Commit_WhenVersionedWriterWinsAfterSnapshot_AbortsWithoutPartialCommandWrites()
     {
         var fixture = await SeedPlanAsync(); var before = await AllRowsAsync(); var fired = false;
@@ -148,7 +148,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal(8L, after["auth_role_assignment_versions"].Single()["Version"].AsInt64);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task InsertExisting_WhenVerifiedCollectionIsDroppedOrRecreated_RejectsUuidWithoutImplicitCreation(bool recreate)
@@ -173,7 +173,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         await mongo.ResetAsync();
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task Read_WhenUnknownActiveWriterTargetsAuthDatabase_RejectsObservedWriter(bool transactional)
@@ -212,7 +212,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         }
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("collection")]
     [InlineData("index")]
     public async Task VerifyStorage_WhenRequiredExistingStorageIsMissing_RefusesAndCreatesNothing(string missing)
@@ -227,7 +227,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Empty(probe.Writes); await mongo.ResetAsync();
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Read_WhenUnattributedIdleClientExists_RecordsResidualFingerprintWithoutInventingAuthAttribution()
     {
         var fixture = await SeedPlanAsync();
@@ -238,7 +238,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal(fixture.Plan.LocalFingerprint, snapshot.Fingerprint);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task Commit_WhenAcknowledgementIsLostAfterRealCommit_ClassifiesByReadbackWithoutRetry(bool readbackUnavailable)
@@ -262,7 +262,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal("LOCAL_COMMITTED_AUTHORITY_REVALIDATION_PENDING", (await fixture.Store.ReadReceiptAsync(fixture.Plan.OperationId, CancellationToken.None))!.State);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Commit_WhenOwnedSessionIsKilledBeforeCommit_ReturnsNotAppliedWithUnchangedMajorityStateAndNoRetry()
     {
         var fixture = await SeedPlanAsync(); var before = await AllRowsAsync();
@@ -283,7 +283,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         await AssertSameRowsAsync(before);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Finalize_WhenTerminalAppendFails_PreservesPendingReceiptAndNoSuccess()
     {
         var fixture = await SeedPlanAsync(); var committed = await fixture.Store.CommitAsync(fixture.Plan, CancellationToken.None);
@@ -297,7 +297,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal(committed.Receipt, await fixture.Store.ReadReceiptAsync(fixture.Plan.OperationId, CancellationToken.None));
         Assert.Equal(8, await mongo.Database.GetCollection<BsonDocument>("authAuditLogs").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
     }
-    [Fact]
+    [OwnedMongoFact]
     public async Task Commit_WhenExactPlanMatches_AtomicallyAppliesSixAddsOneRemovalRevocationAndEightAudits()
     {
         var fixture = await SeedPlanAsync();
@@ -340,7 +340,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal(9, await mongo.Database.GetCollection<BsonDocument>("authAuditLogs").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("roles")]
     [InlineData("permissions")]
     [InlineData("rolePermissions")]
@@ -362,7 +362,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         await AssertSameRowsAsync(before);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Finalize_WhenSuccessLaterDrifts_AppendsImmutableManualHoldAndCannotClearIt()
     {
         var fixture = await SeedPlanAsync();
@@ -380,7 +380,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal(10, await mongo.Database.GetCollection<BsonDocument>("authAuditLogs").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("tombstone")]
     [InlineData("duplicate")]
     [InlineData("malformed")]
@@ -398,7 +398,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Store.ReadReceiptAsync(fixture.Plan.OperationId, CancellationToken.None));
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Commit_WhenAuditInsertFails_RollsBackEveryLocalChange()
     {
         var fixture = await SeedPlanAsync(); var before = await AllRowsAsync();
@@ -483,7 +483,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         var after = await AllRowsAsync();
         foreach (var collection in before.Keys) Assert.Equal(before[collection], after[collection]);
     }
-    [Fact]
+    [OwnedMongoFact]
     public async Task Read_WhenVersionIsExistingInt64_ReturnsExactVersionWithoutWrites()
     {
         await SeedVersionAsync(new BsonInt64(7));
@@ -497,7 +497,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Empty(probe.Writes);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData(7.5)]
     [InlineData(7.0)]
     public async Task Read_WhenVersionIsDoubleInsteadOfExistingInt64_RejectsMalformedVersion(double version)
@@ -516,7 +516,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal(new BsonDouble(version), persisted["Version"]);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("int32")]
     [InlineData("decimal")]
     [InlineData("null")]

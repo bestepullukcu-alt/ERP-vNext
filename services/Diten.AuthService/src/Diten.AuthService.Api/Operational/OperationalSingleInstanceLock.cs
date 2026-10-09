@@ -7,13 +7,19 @@ namespace Diten.AuthService.Api.Operational;
 /// scoped to the Unix SESSION on .NET (measured 2026-10-07 on macOS: a second process in a new session, <c>setsid</c>,
 /// acquired the name while the first session held it). So the name is <see cref="MachineWide"/>: <c>Global\</c> —
 /// machine-local, ACROSS SESSIONS (measured on macOS: a new session is refused); across USERS not measured (no second
-/// account on the measuring machine). Windows: <c>Global\</c> is the machine namespace; creating a global object from
-/// a non-zero session needs <c>SeCreateGlobalPrivilege</c> — without it the constructor throws and this lock answers
-/// <c>OPERATION_LOCK_UNAVAILABLE</c> (fail closed; not measured on Windows).</para>
+/// account on the measuring machine). Windows: <c>Global\</c> is the machine namespace, shared by every session. Any
+/// user may CREATE a <c>Global\</c> mutex — <c>SeCreateGlobalPrivilege</c> is required only for file-mapping and
+/// symbolic-link objects (Microsoft Learn, "Kernel object namespaces"; an earlier version of this comment was wrong).
+/// The Windows risk is the DACL: the mutex gets its CREATOR's default DACL, so a different account — or a non-elevated
+/// token after an elevated owner — cannot OPEN it: <see cref="UnauthorizedAccessException"/> → this lock answers
+/// <c>OPERATION_LOCK_HELD_BY_ANOTHER_ACCOUNT</c> (fail closed: "another account holds or created the lock"). Any other
+/// failure to create it → <c>OPERATION_LOCK_UNAVAILABLE</c>. An explicit <c>MutexSecurity</c> is not set (proposal in
+/// BL570 FIX2 report). Not measured on Windows — the live deploy step measures it.</para>
 ///
-/// <para><b>Security note.</b> The lock state lives under <c>/tmp/.dotnet</c>, whose directories are world-writable
-/// without the sticky bit (files 0666; measured). (1) A local user who HOLDS the lock only stops the command
-/// (<c>OPERATION_ALREADY_RUNNING</c>): fail closed, availability only. (2) A local user who DELETES the lock file could
+/// <para><b>Security note.</b> On Unix the lock state lives under <c>/tmp/.dotnet</c>, whose directories are world-writable
+/// without the sticky bit (files 0666; measured). (1) A local user who HOLDS the lock — or, on Windows, CREATES the
+/// <c>Global\</c> name first under their own account — only stops the command (<c>OPERATION_ALREADY_RUNNING</c> /
+/// <c>OPERATION_LOCK_HELD_BY_ANOTHER_ACCOUNT</c>): fail closed, availability only. (2) A local user who DELETES the lock file could
 /// break the exclusion — not tried (deleting is out of bounds for the measurement), so not measured; the unprefixed name
 /// had the same exposure, so the integrity exposure does not change. A store-level lease (across servers) is backlog.</para>
 ///
@@ -59,7 +65,14 @@ public sealed class OperationalSingleInstanceLock : IDisposable
     /// <summary>The machine-wide (cross-session) name: <c>Global\</c> + <paramref name="name"/> (FIX1 R4).</summary>
     public static string MachineWide(string name) => @"Global\" + name;
 
-    public static OperationalSingleInstanceLock TryAcquire(string name)
+    public const string HeldByAnotherAccount = "OPERATION_LOCK_HELD_BY_ANOTHER_ACCOUNT";
+    public const string Unavailable = "OPERATION_LOCK_UNAVAILABLE";
+
+    public static OperationalSingleInstanceLock TryAcquire(string name) => TryAcquire(name, n => new Mutex(false, n));
+
+    // The seam (tests only, via InternalsVisibleTo): how the named mutex is opened — so the mapping of an open the OS
+    // refuses (another account's DACL) is measured without a second account.
+    internal static OperationalSingleInstanceLock TryAcquire(string name, Func<string, Mutex> open)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         var decided = new ManualResetEventSlim(false);
@@ -72,7 +85,7 @@ public sealed class OperationalSingleInstanceLock : IDisposable
             Mutex? mutex = null;
             try
             {
-                mutex = new Mutex(false, name);
+                mutex = open(name);
                 try
                 {
                     acquired = mutex.WaitOne(0);
@@ -113,7 +126,9 @@ public sealed class OperationalSingleInstanceLock : IDisposable
         if (failure is not null)
         {
             release.Dispose();
-            throw new InvalidOperationException("OPERATION_LOCK_UNAVAILABLE", failure);
+            // The name exists but this account may not open it: another account holds or created it (Windows DACL).
+            throw new InvalidOperationException(
+                failure is UnauthorizedAccessException ? HeldByAnotherAccount : Unavailable, failure);
         }
 
         return new OperationalSingleInstanceLock(acquired, recovered, acquired ? owner : null, release);

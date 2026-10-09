@@ -173,6 +173,46 @@ public sealed class ServiceClientSecretOutputSinkUnixTests
         }
     }
 
+    // FIX2 item 8: a NAMED FIFO is reachable by path, so only a private one of this user is a channel: 0600 is accepted,
+    // a FIFO others can open (0666 → 0644 after umask) is refused as FIFO_TOO_PERMISSIVE. Anonymous pipes need no check
+    // (macOS: st_nlink 0 — measured; the anonymous-pipe tests above pass with mode 0660).
+    [UnixFact]
+    public async Task Only_a_private_named_fifo_of_this_user_is_a_channel()
+    {
+        foreach (var (mode, accepted) in new[] { ("600", true), ("666", false) })
+        {
+            var path = Path.Combine(Path.GetTempPath(), "diten-unix-sink-named-" + Guid.NewGuid().ToString("N"));
+            Assert.Equal(0, MkFifo(path, Convert.ToInt32(mode, 8)));
+            var reader = Open(path, OperatingSystem.IsMacOS() ? 0x4 : 0x800); // O_RDONLY | O_NONBLOCK: a reader exists
+            var writer = Open(path, 1);                                          // O_WRONLY (does not block: reader open)
+            try
+            {
+                Assert.True(reader > 2 && writer > 2);
+                var identity = UnixPipeHandleInspector.Stat(writer)!.Value;
+                Assert.False(UnixPipeHandleInspector.IsAnonymousPipe(writer, identity));
+                var handle = Dup(writer);
+                await using var sink = new ServiceClientSecretOutputSink();
+                if (accepted)
+                {
+                    await sink.PreflightAsync(handle.ToString(System.Globalization.CultureInfo.InvariantCulture), CancellationToken.None);
+                }
+                else
+                {
+                    var refused = await Assert.ThrowsAsync<SecretChannelRejectedException>(
+                        () => sink.PreflightAsync(handle.ToString(System.Globalization.CultureInfo.InvariantCulture), CancellationToken.None));
+                    Assert.Equal(Reasons.FifoTooPermissive, refused.Reason);
+                    Close(handle); // refused before the sink opened it: still ours
+                }
+            }
+            finally
+            {
+                Close(writer);
+                Close(reader);
+                Unlink(path);
+            }
+        }
+    }
+
     // FIX1 M1: a descriptor that would not survive exec (FD_CLOEXEC set — the runtime's own pipes are such) is not one a
     // launcher handed over: refused.
     [UnixFact]

@@ -101,6 +101,7 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
         public const string NotInherited = "NOT_INHERITED";
         public const string SameAsStandardStream = "SAME_AS_STANDARD_STREAM";
         public const string PeerNotConnected = "PEER_NOT_CONNECTED";
+        public const string FifoTooPermissive = "FIFO_TOO_PERMISSIVE";
     }
 
     /// <summary>The named refusal when this OS cannot verify the inherited pipe as Windows does: no secret is produced.</summary>
@@ -118,6 +119,10 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
         var descriptor = (int)number;
         if (UnixPipeHandleInspector.Stat(descriptor) is not { } target) throw Invalid(); // not an open descriptor
         if (target.Type != UnixPipeHandleInspector.TypeFifo) throw Rejected(Reasons.NotAFifo);
+        // FIX2 item 8: a NAMED FIFO (an mkfifo node) is reachable by path — anyone its mode lets in could read the secret.
+        // It must be this user's own and private (no group / other bits). An anonymous pipe has no path: no check.
+        if (!UnixPipeHandleInspector.IsAnonymousPipe(descriptor, target) && !UnixPipeHandleInspector.IsPrivateToThisUser(target))
+            throw Rejected(Reasons.FifoTooPermissive);
         if (!UnixPipeHandleInspector.IsWriteOnly(descriptor)) throw Rejected(Reasons.NotWriteOnly);
         if (!UnixPipeHandleInspector.IsInherited(descriptor)) throw Rejected(Reasons.NotInherited);
         for (var standard = 0; standard <= 2; standard++)

@@ -21,7 +21,7 @@ public sealed class AuthPermissionOnboardingMongoCollectionDefinition
 public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Real_mongo_reconciles_exact_composite_lifecycle_profile_with_replay_revoke_and_isolation()
     {
         await ownedMongo.ResetAsync();

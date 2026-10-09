@@ -70,34 +70,53 @@ public sealed class OperationalSingleInstanceLockTests
         Assert.True(next.RecoveredFromAbandonedRun);
     }
 
-    // FIX1 R4 (CT decision A): the lock is MACHINE-WIDE across sessions. A child in ANOTHER Unix session (setsid) holds
-    // the name; this process is refused. Without the Global\ prefix the child's lock would be session-scoped and this
-    // process would acquire it (measured).
+    // FIX1 R4 (CT decision A): the lock is MACHINE-WIDE across sessions. A child that starts its OWN Unix session
+    // (setsid, FIX2 item 7 — no python3) holds the name until its stdin closes; this process is refused. Without the
+    // Global\ prefix the child's lock would be session-scoped and this process would acquire it (measured). Every wait
+    // is bounded: a regression is a red test, never a hang.
     [UnixFact]
     public async Task A_run_in_another_session_holds_the_lock_and_this_run_is_refused()
     {
+        var bound = TimeSpan.FromSeconds(60);
         var name = OperationalSingleInstanceLock.MachineWide(UniqueName());
         var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
         if (string.IsNullOrEmpty(host) && Path.GetFileNameWithoutExtension(Environment.ProcessPath) == "dotnet") host = Environment.ProcessPath;
         Assert.True(host is not null && File.Exists(host), "The dotnet host running these tests is required.");
-        var start = new ProcessStartInfo("/usr/bin/python3") { UseShellExecute = false, RedirectStandardOutput = true };
-        foreach (var argument in new[]
-                 {
-                     "-c", "import os, sys; os.setsid(); os.execv(sys.argv[1], sys.argv[1:])",
-                     host!, "exec", typeof(OperationalLockHolder).Assembly.Location, OperationalLockHolder.Flag, name, "4000"
-                 }) start.ArgumentList.Add(argument);
+        var start = new ProcessStartInfo(host!) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardInput = true };
+        foreach (var argument in new[] { "exec", typeof(OperationalLockHolder).Assembly.Location, OperationalLockHolder.Flag, name })
+            start.ArgumentList.Add(argument);
         using var child = Process.Start(start)!;
-        var line = await child.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(60));
-        Assert.NotNull(line);
-        Assert.StartsWith("HELD ", line);
-        Assert.NotEqual(OperationalLockHolder.GetSid(0), int.Parse(line![5..], System.Globalization.CultureInfo.InvariantCulture));
+        try
+        {
+            var line = await child.StandardOutput.ReadLineAsync().WaitAsync(bound);
+            Assert.NotNull(line);
+            Assert.StartsWith("HELD ", line);
+            Assert.NotEqual(OperationalLockHolder.GetSid(0), int.Parse(line![5..], System.Globalization.CultureInfo.InvariantCulture));
 
-        using (var mine = OperationalSingleInstanceLock.TryAcquire(name)) Assert.False(mine.Acquired);
-
-        await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(60));
+            using (var mine = OperationalSingleInstanceLock.TryAcquire(name)) Assert.False(mine.Acquired);
+        }
+        finally
+        {
+            child.StandardInput.Close(); // the holder releases and exits
+            await child.WaitForExitAsync().WaitAsync(bound);
+        }
         Assert.Equal(0, child.ExitCode);
         using var after = OperationalSingleInstanceLock.TryAcquire(name);
         Assert.True(after.Acquired);
+    }
+
+    // FIX2 item 1: a name that exists but this account may not open (Windows: another account's DACL) is refused by
+    // name — OPERATION_LOCK_HELD_BY_ANOTHER_ACCOUNT; any other failure to create it stays OPERATION_LOCK_UNAVAILABLE.
+    [Fact]
+    public void A_lock_another_account_holds_is_refused_by_name_and_other_failures_stay_unavailable()
+    {
+        var name = UniqueName();
+        var denied = Assert.Throws<InvalidOperationException>(() =>
+            OperationalSingleInstanceLock.TryAcquire(name, _ => throw new UnauthorizedAccessException("Access to the path is denied.")));
+        Assert.Equal(OperationalSingleInstanceLock.HeldByAnotherAccount, denied.Message);
+        var broken = Assert.Throws<InvalidOperationException>(() =>
+            OperationalSingleInstanceLock.TryAcquire(name, _ => throw new IOException("The system cannot create the object.")));
+        Assert.Equal(OperationalSingleInstanceLock.Unavailable, broken.Message);
     }
 
     [Fact]

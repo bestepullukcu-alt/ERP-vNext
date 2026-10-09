@@ -33,15 +33,26 @@ public sealed class DisposableAuthMongoReplicaSet : IAsyncLifetime
         "refreshTokens", "tenant_user_memberships", "auth_role_assignment_versions", "authAuditLogs"];
 
     /// <summary>The installed mongod this fixture starts (BL570 FIX1 M6: OwnedMongoFact skips on the same answer).</summary>
-    public static string ResolveExecutable() =>
-        Environment.GetEnvironmentVariable("DITEN_TEST_MONGOD") ?? "C:/Program Files/MongoDB/Server/7.0/bin/mongod.exe";
+    // BL570 FIX2 item 6: the ONE resolver for every owned-mongod fixture and for [OwnedMongoFact]/[OwnedMongoTheory].
+    // DITEN_TEST_MONGOD; the Windows install path only on Windows (never a relative Windows path on Linux); else none.
+    public static string? ResolveExecutable() =>
+        Resolve(Environment.GetEnvironmentVariable("DITEN_TEST_MONGOD"), OperatingSystem.IsWindows(), File.Exists);
+
+    public const string WindowsDefaultMongod = "C:/Program Files/MongoDB/Server/7.0/bin/mongod.exe";
+
+    // The rule alone (tested): the variable first; the Windows default ONLY on Windows; a relative or missing path → none.
+    internal static string? Resolve(string? variable, bool windows, Func<string, bool> exists)
+    {
+        if (variable is null) return windows && exists(WindowsDefaultMongod) ? WindowsDefaultMongod : null;
+        return Path.IsPathFullyQualified(variable) && exists(variable) ? variable : null;
+    }
 
     public async Task InitializeAsync()
     {
         BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         ConventionRegistry.Register("OwnedAuthReconciliation", new ConventionPack { new IgnoreExtraElementsConvention(true) }, _ => true);
-        var executable = ResolveExecutable();
-        Assert.True(Path.IsPathFullyQualified(executable) && File.Exists(executable), "An installed mongod binary is required.");
+        // No installed mongod: every test of this fixture is skipped by name (OwnedMongoFact) — start nothing.
+        if (ResolveExecutable() is not { } executable) return;
         using (var listener = new TcpListener(IPAddress.Loopback, 0))
         { listener.Start(); Port = ((IPEndPoint)listener.LocalEndpoint).Port; }
         Assert.InRange(Port, 27022, 65535); Assert.NotEqual(27017, Port);
