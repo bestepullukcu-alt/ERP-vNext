@@ -1641,6 +1641,18 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   - C (verify only) gets 403 / 403 / 404 / 403.
   - The owner fleet was unchanged.
 
+### VIS1 — CT acceptance (2026-10-09)
+
+- **CT-ACCEPTED.** CT re-ran Platform filtered **613/613**, Web **675/675**, architecture **18/18** in the agent worktree; read
+  `ESignatureVisibilityScope` (search / export filters from one object; get / verify use `HidesTenantLevel`) and the verify handler.
+  CT sabotage (own): the export purpose mapped to `esign.signatures.read` instead of `esign.signatures.export` →
+  `An_export_holder_gets_the_tenant_level_signature_in_the_file_labelled_tenant_level` red, restored, porcelain clean.
+  **FU-0022-VIS-01 CLOSED.** Fast-forwarded into the MVP-1 branch. Decisions on the opens:
+- Contract gap (no rule for company-less records in 1.0.0): description note in the next additive ESIGN version → **FU-0022-CT-01**.
+- Verify of a COMPANY-scoped record has no data-scope check since E2 (any verify holder of the tenant, by UUID). The result carries
+  status, hashes and integrity flags only — no signer, meaning or subject data — so the exposure is existence + validity of a known
+  UUID → **FU-0022-VIS-02** (apply the same data scope to verify for company records), before G1, low risk.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
