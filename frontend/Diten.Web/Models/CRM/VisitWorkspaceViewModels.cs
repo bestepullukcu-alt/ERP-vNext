@@ -9,6 +9,10 @@ public sealed class VisitWorkspaceIndexViewModel
 {
     public bool CanRead { get; set; }
 
+    /// <summary>WP-VW-W2 (WEB-b) — Plan mode (Targets panel, drag to day / time): crm.visit-plan.read AND
+    /// crm.visit-plan.generate (the Visit Planning session update).</summary>
+    public bool CanPlan { get; set; }
+
     /// <summary>Cancel a visit / create an unplanned one: crm.planned-visit.manage.</summary>
     public bool CanManageVisits { get; set; }
 

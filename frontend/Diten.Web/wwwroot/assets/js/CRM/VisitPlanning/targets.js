@@ -29,7 +29,8 @@
     const canGenerate = root.dataset.canGenerate === 'true';
     const readOnly = root.dataset.readOnly === 'true';
 
-    const ROLE_PROMO = 'promo', ROLE_NON_PROMO = 'non-promo';
+    const TC = window.VisitPlanningTargetsCore; // WP-VW-W2 (WEB-b) — the Targets rules shared with the Visit Workspace
+    const ROLE_PROMO = TC.ROLE_PROMO, ROLE_NON_PROMO = TC.ROLE_NON_PROMO;
     const SOURCE_PLAY = 'play', SOURCE_REP_PICK = 'rep-pick';
     const SOURCE_ICON = { play: 'bx-bulb', 'rep-pick': 'bx-user-check', 'last-visit': 'bx-history', portfolio: 'bx-briefcase' };
     const NO_CONTENT_WARNINGS = ['no_approved_content', 'ambiguous_journey'];
@@ -56,22 +57,18 @@
     const canEdit = () => canGenerate && !targetsLocked();
 
     // ── pure product-list rules (the picker, the bulk apply and the chips use only these) ──
-    const roleOf = item => (item && item.role === ROLE_NON_PROMO ? ROLE_NON_PROMO : ROLE_PROMO); // null role reads as promo (K-7d)
-    const countRoles = items => items.reduce((c, it) => { if (roleOf(it) === ROLE_PROMO) c.promo++; else c.nonPromo++; return c; }, { promo: 0, nonPromo: 0 });
+    const roleOf = TC.roleOf; // null role reads as promo (K-7d)
+    const countRoles = TC.countRoles;
     // CycleCapacity.VisitMinutes(p, n) = p × PromoProductTime + n × NonPromoProductTime + the per-visit report minutes.
     const visitMinutes = (cap, p, n) => (cap && cap.promoMinutes != null) ? p * cap.promoMinutes + n * cap.nonPromoMinutes + cap.reportMinutes : null;
     const overLimit = (cap, counts) => !!(cap && cap.maxPromo != null && (counts.promo > cap.maxPromo || counts.nonPromo > cap.maxNonPromo));
     // S-2 — bulk apply ADDS: every product the doctor already has stays (with its own role); a picked product the doctor
-    // does not have yet is appended. Never a replacement.
-    const unionPicks = (existing, chosen) => {
-        const merged = (existing || []).map(p => ({ productId: p.productId, productCode: p.productCode, productName: p.productName, role: roleOf(p) }));
-        (chosen || []).forEach(p => { if (!merged.some(m => m.productId === p.productId)) merged.push({ productId: p.productId, productCode: p.productCode, productName: p.productName, role: roleOf(p) }); });
-        return merged;
-    };
+    // does not have yet is appended. Never a replacement. (WP-VW-W2 WEB-b — the shared rule.)
+    const unionPicks = TC.unionPicks;
     // S-3 — a suggested product (from the play) can neither be removed nor have its role changed here.
     const isLocked = item => !!(item && item.locked);
-    const pickInput = p => ({ productId: p.productId, productCode: p.productCode || null, role: roleOf(p) });
-    const contactInput = c => ({ contactId: c.contactId, accountId: c.accountId || null, accountContactLinkId: c.accountContactLinkId || null });
+    const pickInput = TC.pickInput;
+    const contactInput = TC.contactInput;
 
     // ── data: the stored picks (session), the next visit's list (preview), the period capacity, the local selection ──
     const savedContacts = () => (page.state.session && Array.isArray(page.state.session.selectedContacts)) ? page.state.session.selectedContacts : [];
@@ -311,20 +308,7 @@
     // ── write: the existing session update; only the touched doctors carry `products` (null = keep for the rest) ──
     // The saved selection is the base (the tab's unsaved ticks are not written here); a touched doctor that is not in it
     // yet joins it, with its institution.
-    const buildUpdate = changes => {
-        const session = page.state.session;
-        const contacts = savedContacts().map(contactInput);
-        const accounts = (session.selectedAccountIds || []).slice();
-        let accountsChanged = false;
-        changes.forEach(ch => {
-            let entry = contacts.find(c => c.contactId === ch.doctor.contactId && (c.accountId || null) === (ch.doctor.accountId || null))
-                || contacts.find(c => c.contactId === ch.doctor.contactId);
-            if (!entry) { entry = contactInput(ch.doctor); contacts.push(entry); }
-            if (ch.doctor.accountId && accounts.indexOf(ch.doctor.accountId) === -1) { accounts.push(ch.doctor.accountId); accountsChanged = true; }
-            entry.products = ch.products.map(pickInput);
-        });
-        return { selectedAccountIds: accountsChanged ? accounts : null, selectedPharmacyIds: null, selectedContacts: contacts, expectedVersion: session.version };
-    };
+    const buildUpdate = changes => TC.selectionUpdate(page.state.session, savedContacts(), changes); // the shared rule
     const save = (payload, message, extraWarning) => {
         const btn = el('vp-dp-done'); if (btn) btn.disabled = true;
         return request(base + '/sessions/' + encodeURIComponent(sessionId), { method: 'PUT', body: JSON.stringify(payload) }).then(r => {

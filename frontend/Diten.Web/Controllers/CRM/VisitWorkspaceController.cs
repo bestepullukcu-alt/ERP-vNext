@@ -29,9 +29,13 @@ public sealed class VisitWorkspaceController : Controller
     public const string PlannedVisitManage = "crm.planned-visit.manage";
     public const string ContactRead = "crm.contact.read";
 
+    /// <summary>WP-VW-W2 (WEB-b) — Plan mode writes through the Visit Planning session update (its generate key).</summary>
+    public const string VisitPlanGenerate = "crm.visit-plan.generate";
+
     private static readonly string[] WorkspaceRead = [VisitReportRead, VisitPlanRead];
     private static readonly string[] RecordKeys = [VisitReportRecord, PlannedVisitManage];
     private static readonly string[] ApplyKeys = [VisitPlanApply, PlannedVisitManage];
+    private static readonly string[] PlanKeys = [VisitPlanRead, VisitPlanGenerate];
 
     private const string ViewRoot = "~/Views/CRM/VisitWorkspace";
 
@@ -59,7 +63,8 @@ public sealed class VisitWorkspaceController : Controller
             CanManageVisits = HasAll(PlannedVisitManage),
             CanRecord = HasAll(RecordKeys),
             CanApplyWeek = HasAll(ApplyKeys),
-            CanSearchContacts = HasAll(ContactRead)
+            CanSearchContacts = HasAll(ContactRead),
+            CanPlan = HasAll(PlanKeys)
         });
 
     // ---------------- workspace reads ----------------

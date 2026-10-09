@@ -117,4 +117,52 @@
   <data name="Err_visit_not_yet_due" xml:space="preserve"><value>The visit's day has not come yet.</value></data>
   <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>This visit can no longer be changed.</value></data>
   <data name="Err_planned_visit_overlap" xml:space="preserve"><value>Another visit is planned at this time.</value></data>
+  <data name="TargetsTitle" xml:space="preserve"><value>Targets · {0} — drag onto a day</value></data>
+  <data name="TargetsNoPlan" xml:space="preserve"><value>This week has no plan yet.</value></data>
+  <data name="PlanReadOnlyWeek" xml:space="preserve"><value>{0} is approved — reopen the week to change it.</value></data>
+  <data name="PlanReadOnlyPast" xml:space="preserve"><value>{0} is over — read only.</value></data>
+  <data name="QuickDue" xml:space="preserve"><value>Due this week</value></data>
+  <data name="QuickNever" xml:space="preserve"><value>Never visited</value></data>
+  <data name="QuickAll" xml:space="preserve"><value>All</value></data>
+  <data name="FrequencyPerPeriod" xml:space="preserve"><value>{0} in the period</value></data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve"><value>1 a week (default)</value></data>
+  <data name="DueThisWeek" xml:space="preserve"><value>Due this week</value></data>
+  <data name="PlanDoctorsHeading" xml:space="preserve"><value>In the plan ({0})</value></data>
+  <data name="OtherDoctorsHeading" xml:space="preserve"><value>Other doctors</value></data>
+  <data name="NoDoctors" xml:space="preserve"><value>No doctor for this filter.</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Select all ({0})</value></data>
+  <data name="ApplyProducts" xml:space="preserve"><value>Apply products ({0})</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>{0} doctors · {1} pharmacies · {2} accounts</value></data>
+  <data name="TargetsSaved" xml:space="preserve"><value>The plan was updated.</value></data>
+  <data name="PinSaved" xml:space="preserve"><value>The visit was pinned.</value></data>
+  <data name="ProductsApplied" xml:space="preserve"><value>Products applied.</value></data>
+  <data name="NoProductPicked" xml:space="preserve"><value>No product picked yet.</value></data>
+  <data name="RemoveProduct" xml:space="preserve"><value>Remove product</value></data>
+  <data name="UnplacedReasonOther" xml:space="preserve"><value>Could not be placed this week.</value></data>
+  <data name="Pin_pin_time_invalid" xml:space="preserve"><value>The time must be on a 15-minute step, and only a single visit can be pinned to a time.</value></data>
+  <data name="Pin_pin_time_outside_hours" xml:space="preserve"><value>The time is outside the working hours (or in the lunch break).</value></data>
+  <data name="Pin_pin_time_conflict" xml:space="preserve"><value>That time was taken; the visit moved to the nearest free time.</value></data>
+  <data name="Pin_pin_time_past_day_end" xml:space="preserve"><value>The visit would end after the working day, so it was moved earlier.</value></data>
+  <data name="Pin_pin_overflow" xml:space="preserve"><value>No room left in the week; the pinned visit moved to a later week.</value></data>
+  <data name="Pin_pin_day_full" xml:space="preserve"><value>The pinned day is full; the visit moved to the next working day.</value></data>
+  <data name="Pin_week_already_approved" xml:space="preserve"><value>The week is approved — reopen it to change it.</value></data>
+  <data name="Reason_capacity_full" xml:space="preserve"><value>The week is full.</value></data>
+  <data name="Reason_no_near_day" xml:space="preserve"><value>No day near enough had room.</value></data>
+  <data name="Reason_period_exhausted" xml:space="preserve"><value>The period has no room left.</value></data>
+  <data name="Reason_missing_location" xml:space="preserve"><value>The institution has no location.</value></data>
+  <data name="Reason_consent_blocked" xml:space="preserve"><value>Consent blocks the visit.</value></data>
+  <data name="Reason_week_full_skipped" xml:space="preserve"><value>Weekly default visit skipped: the week is full.</value></data>
+  <data name="Reason_extra_no_room" xml:space="preserve"><value>No room for the extra visit this week.</value></data>
+  <data name="Reason_no_feasible_availability_window" xml:space="preserve"><value>The doctor's availability does not fit.</value></data>
+  <data name="ModeLabel" xml:space="preserve"><value>Mode</value></data>
+  <data name="ModeExecute" xml:space="preserve"><value>Execute</value></data>
+  <data name="ModePlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="DragHint" xml:space="preserve"><value>Drag a doctor onto a day or an hour.</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>Institution</value></data>
+  <data name="QuickFiltersLabel" xml:space="preserve"><value>Quick filters</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>Apply products</value></data>
+  <data name="ProductsHint" xml:space="preserve"><value>Added to this institution's plan doctors: the first product is the promo, the others reminders.</value></data>
+  <data name="PickedProducts" xml:space="preserve"><value>Picked products</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>Search a product…</value></data>
+  <data name="ApplyButton" xml:space="preserve"><value>Apply</value></data>
 </root>

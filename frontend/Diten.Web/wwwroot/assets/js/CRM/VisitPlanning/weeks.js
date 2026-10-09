@@ -24,6 +24,7 @@
 
     const L = window.L10n || {};
     const VPF = window.VisitPlanningFormat; // WP-VP-4H — dates / numbers in the application's language
+    const TC = window.VisitPlanningTargetsCore; // WP-VW-W2 (WEB-b) — the Targets rules shared with the Visit Workspace
     const base = '/CRM/VisitPlanning/api';
     const sessionId = root.dataset.sessionId;
     const canGenerate = root.dataset.canGenerate === 'true';
@@ -541,8 +542,9 @@
     const canMove = w => !!w && canGenerate && !readOnly && !page.isLegacy() && MOVABLE_WEEK_STATUSES.indexOf(w.status) > -1;
     const sameTarget = (pin, s) => pin.targetType === s.targetType && String(pin.targetId).toLowerCase() === String(s.targetId).toLowerCase();
     const membersOf = (slot, weekSlots) => weekSlots.filter(s => groupOf(s) === groupOf(slot));
-    const weekPins = ws => (((session().weeks || []).find(w => w.weekStart === ws) || {}).dayPins || [])
-        .map(p => ({ targetType: p.targetType, targetId: p.targetId, contactId: p.contactId || null, date: p.date, scope: p.scope || 'visit' }));
+    // WP-VW-W2 (WEB-b) — the shared mapping keeps a pin's start time: a re-save here never drops a time pin set in the
+    // Visit Workspace.
+    const weekPins = ws => (((session().weeks || []).find(w => w.weekStart === ws) || {}).dayPins || []).map(TC.pinInput);
     // A move REPLACES the pins of what it moves: institution → every member's pin goes, one institution pin comes;
     // visit → that visit's own pin goes, one visit pin comes (it wins over an institution pin of its group).
     const pinsAfterMove = (current, slot, scope, date, members) => {

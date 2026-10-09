@@ -117,4 +117,52 @@
   <data name="Err_visit_not_yet_due" xml:space="preserve"><value>拜访日期尚未到来。</value></data>
   <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>此拜访已无法更改。</value></data>
   <data name="Err_planned_visit_overlap" xml:space="preserve"><value>该时间已计划了另一个拜访。</value></data>
+  <data name="TargetsTitle" xml:space="preserve"><value>目标 · {0} — 拖到某一天</value></data>
+  <data name="TargetsNoPlan" xml:space="preserve"><value>本周还没有计划。</value></data>
+  <data name="PlanReadOnlyWeek" xml:space="preserve"><value>{0}已批准 — 如需修改请重新打开该周。</value></data>
+  <data name="PlanReadOnlyPast" xml:space="preserve"><value>{0}已结束 — 只读。</value></data>
+  <data name="QuickDue" xml:space="preserve"><value>本周应拜访</value></data>
+  <data name="QuickNever" xml:space="preserve"><value>从未拜访</value></data>
+  <data name="QuickAll" xml:space="preserve"><value>全部</value></data>
+  <data name="FrequencyPerPeriod" xml:space="preserve"><value>周期内 {0} 次</value></data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve"><value>每周 1 次（默认）</value></data>
+  <data name="DueThisWeek" xml:space="preserve"><value>本周应拜访</value></data>
+  <data name="PlanDoctorsHeading" xml:space="preserve"><value>计划中（{0}）</value></data>
+  <data name="OtherDoctorsHeading" xml:space="preserve"><value>其他医生</value></data>
+  <data name="NoDoctors" xml:space="preserve"><value>没有符合此筛选的医生。</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>全选（{0}）</value></data>
+  <data name="ApplyProducts" xml:space="preserve"><value>应用产品（{0}）</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>{0} 位医生 · {1} 家药房 · {2} 个客户</value></data>
+  <data name="TargetsSaved" xml:space="preserve"><value>计划已更新。</value></data>
+  <data name="PinSaved" xml:space="preserve"><value>拜访已固定。</value></data>
+  <data name="ProductsApplied" xml:space="preserve"><value>产品已应用。</value></data>
+  <data name="NoProductPicked" xml:space="preserve"><value>尚未选择产品。</value></data>
+  <data name="RemoveProduct" xml:space="preserve"><value>移除产品</value></data>
+  <data name="UnplacedReasonOther" xml:space="preserve"><value>本周无法安排。</value></data>
+  <data name="Pin_pin_time_invalid" xml:space="preserve"><value>时间必须为 15 分钟的整数倍，且只能为单个拜访固定时间。</value></data>
+  <data name="Pin_pin_time_outside_hours" xml:space="preserve"><value>时间在工作时间之外（或在午休时间内）。</value></data>
+  <data name="Pin_pin_time_conflict" xml:space="preserve"><value>该时间已被占用；拜访已移至最近的空闲时间。</value></data>
+  <data name="Pin_pin_time_past_day_end" xml:space="preserve"><value>拜访将超过下班时间，已提前。</value></data>
+  <data name="Pin_pin_overflow" xml:space="preserve"><value>本周已无空间；固定的拜访已移至之后的周。</value></data>
+  <data name="Pin_pin_day_full" xml:space="preserve"><value>固定的日期已满；拜访已移至下一个工作日。</value></data>
+  <data name="Pin_week_already_approved" xml:space="preserve"><value>该周已批准 — 如需修改请重新打开。</value></data>
+  <data name="Reason_capacity_full" xml:space="preserve"><value>本周已满。</value></data>
+  <data name="Reason_no_near_day" xml:space="preserve"><value>附近的日期没有空位。</value></data>
+  <data name="Reason_period_exhausted" xml:space="preserve"><value>本周期已无空间。</value></data>
+  <data name="Reason_missing_location" xml:space="preserve"><value>机构没有位置信息。</value></data>
+  <data name="Reason_consent_blocked" xml:space="preserve"><value>同意设置禁止该拜访。</value></data>
+  <data name="Reason_week_full_skipped" xml:space="preserve"><value>已跳过默认每周拜访：本周已满。</value></data>
+  <data name="Reason_extra_no_room" xml:space="preserve"><value>本周没有空间安排额外拜访。</value></data>
+  <data name="Reason_no_feasible_availability_window" xml:space="preserve"><value>医生的可用时间不匹配。</value></data>
+  <data name="ModeLabel" xml:space="preserve"><value>模式</value></data>
+  <data name="ModeExecute" xml:space="preserve"><value>执行</value></data>
+  <data name="ModePlan" xml:space="preserve"><value>计划</value></data>
+  <data name="DragHint" xml:space="preserve"><value>将医生拖到某一天或某个时间。</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>机构</value></data>
+  <data name="QuickFiltersLabel" xml:space="preserve"><value>快速筛选</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>应用产品</value></data>
+  <data name="ProductsHint" xml:space="preserve"><value>添加到该机构计划中的医生：第一个产品为推广，其余为提醒。</value></data>
+  <data name="PickedProducts" xml:space="preserve"><value>已选产品</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>搜索产品…</value></data>
+  <data name="ApplyButton" xml:space="preserve"><value>应用</value></data>
 </root>

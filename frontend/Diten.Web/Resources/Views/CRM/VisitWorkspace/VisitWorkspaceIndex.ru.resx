@@ -117,4 +117,52 @@
   <data name="Err_visit_not_yet_due" xml:space="preserve"><value>День визита ещё не наступил.</value></data>
   <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>Этот визит больше нельзя изменить.</value></data>
   <data name="Err_planned_visit_overlap" xml:space="preserve"><value>На это время запланирован другой визит.</value></data>
+  <data name="TargetsTitle" xml:space="preserve"><value>Цели · {0} — перетащите на день</value></data>
+  <data name="TargetsNoPlan" xml:space="preserve"><value>На эту неделю ещё нет плана.</value></data>
+  <data name="PlanReadOnlyWeek" xml:space="preserve"><value>{0} утверждена — откройте неделю заново, чтобы изменить.</value></data>
+  <data name="PlanReadOnlyPast" xml:space="preserve"><value>{0} прошла — только чтение.</value></data>
+  <data name="QuickDue" xml:space="preserve"><value>Визит на этой неделе</value></data>
+  <data name="QuickNever" xml:space="preserve"><value>Ни разу не посещены</value></data>
+  <data name="QuickAll" xml:space="preserve"><value>Все</value></data>
+  <data name="FrequencyPerPeriod" xml:space="preserve"><value>{0} за период</value></data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve"><value>1 в неделю (по умолчанию)</value></data>
+  <data name="DueThisWeek" xml:space="preserve"><value>Визит на этой неделе</value></data>
+  <data name="PlanDoctorsHeading" xml:space="preserve"><value>В плане ({0})</value></data>
+  <data name="OtherDoctorsHeading" xml:space="preserve"><value>Другие врачи</value></data>
+  <data name="NoDoctors" xml:space="preserve"><value>Нет врачей для этого фильтра.</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Выбрать всех ({0})</value></data>
+  <data name="ApplyProducts" xml:space="preserve"><value>Применить продукты ({0})</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>врачей: {0} · аптек: {1} · учреждений: {2}</value></data>
+  <data name="TargetsSaved" xml:space="preserve"><value>План обновлён.</value></data>
+  <data name="PinSaved" xml:space="preserve"><value>Визит закреплён.</value></data>
+  <data name="ProductsApplied" xml:space="preserve"><value>Продукты применены.</value></data>
+  <data name="NoProductPicked" xml:space="preserve"><value>Продукт ещё не выбран.</value></data>
+  <data name="RemoveProduct" xml:space="preserve"><value>Убрать продукт</value></data>
+  <data name="UnplacedReasonOther" xml:space="preserve"><value>Не удалось разместить на этой неделе.</value></data>
+  <data name="Pin_pin_time_invalid" xml:space="preserve"><value>Время должно быть кратно 15 минутам; ко времени можно закрепить только отдельный визит.</value></data>
+  <data name="Pin_pin_time_outside_hours" xml:space="preserve"><value>Время вне рабочих часов (или в обеденный перерыв).</value></data>
+  <data name="Pin_pin_time_conflict" xml:space="preserve"><value>Это время занято; визит перенесён на ближайшее свободное время.</value></data>
+  <data name="Pin_pin_time_past_day_end" xml:space="preserve"><value>Визит выходит за конец рабочего дня, поэтому перенесён раньше.</value></data>
+  <data name="Pin_pin_overflow" xml:space="preserve"><value>В неделе нет места; закреплённый визит перенесён на следующую неделю.</value></data>
+  <data name="Pin_pin_day_full" xml:space="preserve"><value>Закреплённый день заполнен; визит перенесён на следующий рабочий день.</value></data>
+  <data name="Pin_week_already_approved" xml:space="preserve"><value>Неделя утверждена — откройте её заново, чтобы изменить.</value></data>
+  <data name="Reason_capacity_full" xml:space="preserve"><value>Неделя заполнена.</value></data>
+  <data name="Reason_no_near_day" xml:space="preserve"><value>Нет близкого дня со свободным временем.</value></data>
+  <data name="Reason_period_exhausted" xml:space="preserve"><value>В периоде не осталось места.</value></data>
+  <data name="Reason_missing_location" xml:space="preserve"><value>У учреждения нет координат.</value></data>
+  <data name="Reason_consent_blocked" xml:space="preserve"><value>Согласие запрещает визит.</value></data>
+  <data name="Reason_week_full_skipped" xml:space="preserve"><value>Еженедельный визит по умолчанию пропущен: неделя заполнена.</value></data>
+  <data name="Reason_extra_no_room" xml:space="preserve"><value>Нет места для дополнительного визита на этой неделе.</value></data>
+  <data name="Reason_no_feasible_availability_window" xml:space="preserve"><value>Доступность врача не подходит.</value></data>
+  <data name="ModeLabel" xml:space="preserve"><value>Режим</value></data>
+  <data name="ModeExecute" xml:space="preserve"><value>Выполнение</value></data>
+  <data name="ModePlan" xml:space="preserve"><value>Планирование</value></data>
+  <data name="DragHint" xml:space="preserve"><value>Перетащите врача на день или час.</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>Учреждение</value></data>
+  <data name="QuickFiltersLabel" xml:space="preserve"><value>Быстрые фильтры</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>Применить продукты</value></data>
+  <data name="ProductsHint" xml:space="preserve"><value>Добавляются врачам плана этого учреждения: первый продукт — промо, остальные — напоминание.</value></data>
+  <data name="PickedProducts" xml:space="preserve"><value>Выбранные продукты</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>Найти продукт…</value></data>
+  <data name="ApplyButton" xml:space="preserve"><value>Применить</value></data>
 </root>

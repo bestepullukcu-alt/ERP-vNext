@@ -56,7 +56,9 @@ public sealed class VisitPlanningTargetsTabWebTests
         Assert.Contains("st.lastVisitDate ? esc(dayShort(st.lastVisitDate))", js);
         Assert.Contains("(row.status.segmentBadges || []).map(name =>", js);
         Assert.Contains("row.inactive ? ' <span class=\"badge bg-label-secondary\">' + esc(L.BadgeInactive", js);
-        Assert.Contains("String(status.consentStatus || '').toLowerCase() === 'blocked'", js);
+        // WP-VW-W2 (WEB-b) — the row mapping is the shared Targets rule (targets-core.js), also used by the Visit Workspace
+        Assert.Contains("const doctorRow = TC.doctorRow;", js);
+        Assert.Contains("String(status.consentStatus || '').toLowerCase() === 'blocked'", Script("targets-core.js"));
 
         // consent blocked: the box is disabled, a tick is refused, "select all" skips the doctor
         Assert.Contains("(canEditTargets() && !row.blocked ? '' : ' disabled')", config);
@@ -177,12 +179,15 @@ public sealed class VisitPlanningTargetsTabWebTests
         // the field (null = keep), and the account / pharmacy lists are not sent (null = keep)
         var done = Between(js, "const done = () => {", "\n    };");
         Assert.Contains("save(buildUpdate([{ doctor: picker.doctor, products: picker.picks }]), L.ProductsSaved || '');", done);
-        var update = Between(js, "const buildUpdate = changes => {", "\n    };");
-        Assert.Contains("const contacts = savedContacts().map(contactInput);", update);
-        Assert.Contains("entry.products = ch.products.map(pickInput);", update);
+        // WP-VW-W2 (WEB-b) — the update is the shared Targets rule (targets-core.js), used by the Visit Workspace too
+        Assert.Contains("const buildUpdate = changes => TC.selectionUpdate(page.state.session, savedContacts(), changes);", js);
+        var core = Script("targets-core.js");
+        var update = Between(core, "const selectionUpdate = (session, saved, changes) => {", "\n    };");
+        Assert.Contains("let contacts = (saved || []).map(contactInput);", update);
+        Assert.Contains("if (ch.products) { entry.products = ch.products.map(pickInput); }", update);
         Assert.Contains("selectedPharmacyIds: null", update);
-        Assert.Contains("expectedVersion: session.version", update);
-        Assert.DoesNotContain("products", Between(js, "const contactInput = c =>", ";\n"));
+        Assert.Contains("expectedVersion: s.version", update);
+        Assert.DoesNotContain("products", Between(core, "const contactInput = c =>", ";\n"));
         Assert.Contains("base + '/sessions/' + encodeURIComponent(sessionId), { method: 'PUT'", js);
         Assert.Contains("page.request('reload-plan')", js);
         Assert.Contains("page.on('request:reload-plan', () => loadSession().then(preview));", Script("details.js"));
@@ -202,7 +207,8 @@ public sealed class VisitPlanningTargetsTabWebTests
     public void Bulk_apply_adds_to_each_doctors_products_and_counts_the_doctors_over_the_limit()
     {
         var js = Script("targets.js");
-        var union = Between(js, "const unionPicks = (existing, chosen) => {", "\n    };");
+        Assert.Contains("const unionPicks = TC.unionPicks;", js); // WP-VW-W2 (WEB-b) — the shared rule
+        var union = Between(Script("targets-core.js"), "const unionPicks = (existing, chosen) => {", "\n    };");
         // every existing product stays (with its own role) and comes first; a picked one is added only when new
         Assert.StartsWith("const unionPicks = (existing, chosen) => {\n        const merged = (existing || []).map(p =>", union.Replace("\r\n", "\n"));
         Assert.Contains("if (!merged.some(m => m.productId === p.productId)) merged.push(", union);

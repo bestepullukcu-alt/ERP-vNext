@@ -61,8 +61,12 @@ public sealed class VisitPlanningTargetsNumbersWebTests
         var js = Script("details.js");
         var plan = Between(js, "    const planDoctors = () => {", "\n    };");
         Assert.Contains("const all = doctorRows[doctorKey(activeAccountId, 'all')] || docList;", plan); // NOT the filtered list
-        Assert.Contains("return all.filter(row => inPlanHere(row.contactId) && docMatches(row, re));", plan);
-        Assert.Contains("const otherDoctors = () => visibleDoctors().filter(row => !inPlanHere(row.contactId));", js);
+        // WP-VW-W2 (WEB-b) — the split is the shared Targets rule (targets-core.js), used by the Visit Workspace too
+        Assert.Contains("return TC.splitPlanFirst(all, [], inPlanHere, row => docMatches(row, re)).plan;", plan);
+        Assert.Contains("const otherDoctors = () => TC.splitPlanFirst([], visibleDoctors(), inPlanHere).others;", js);
+        var split = Between(Script("targets-core.js"), "const splitPlanFirst = (all, visible, inPlan, matches) => {", "\n    };");
+        Assert.Contains("plan: (all || []).filter(r => inPlan(r.contactId) && ok(r)),", split);
+        Assert.Contains("others: (visible || []).filter(r => !inPlan(r.contactId))", split);
         Assert.Contains("const inPlanHere = cid => !!(activeAccountId && selectedContacts[selKey(activeAccountId, cid)]);", js);
         var draw = Between(js, "    const drawDoctors = () => {", "\n    };");
         Assert.Contains("groupRow('plan', fmt(L.PlanDoctorsHeading || '{0}', plan.length))", draw);
@@ -73,9 +77,10 @@ public sealed class VisitPlanningTargetsNumbersWebTests
         // RUN it: plan doctors p1 (not due — the "due" filter hides it) + p2; others o1 (due), o2 (never)
         var block = Between(js, "    const docMatches = ", "    const renderDoctorTable = ");
         block = block[..block.LastIndexOf("    const renderDoctorTable = ", StringComparison.Ordinal)];
-        var counts = Between(js, "    const isDue = ", "    const repaintQuickCounts = ");
+        var counts = Between(js, "    const paintQuickCounts = ", "    const repaintQuickCounts = ");
         counts = counts[..counts.LastIndexOf("    const repaintQuickCounts = ", StringComparison.Ordinal)];
         var node = RunNode(
+            "const TC = require('" + Path.Combine(ScriptDir(), "targets-core.js").Replace("\\", "/") + "');\n" +
             "const L = { PlanDoctorsHeading: 'Planda ({0})', OtherDoctorsHeading: 'Diğer doktorlar' };\n" +
             "const esc = s => String(s); const fmt = (t, ...a) => a.reduce((x, v, i) => x.split('{' + i + '}').join(String(v)), String(t || ''));\n" +
             "const trSearchPattern = t => t; const specLabel = s => s || ''; const selKey = (a, c) => a + '|' + c;\n" +
@@ -153,9 +158,10 @@ public sealed class VisitPlanningTargetsNumbersWebTests
     {
         var js = Script("details.js");
         Assert.Contains("quickCountsBy[key] = d.quickCounts && typeof d.quickCounts === 'object' ? d.quickCounts : null;", js);
-        var paint = Between(js, "const paintQuickCounts = (all, server) => {", "\n    };");
+        Assert.Contains("const count = TC.quickCounts(all, server, inPlanHere);", Between(js, "const paintQuickCounts = (all, server) => {", "\n    };"));
+        var paint = Between(Script("targets-core.js"), "const quickCounts = (all, server, inPlan) => {", "\n    };"); // the shared rule
         Assert.Contains("const base = server && server.all != null", paint);
-        Assert.Contains(": { all: all.length, due: all.filter(isDue).length, never: all.filter(isNever).length };", paint); // without them: as before
+        Assert.Contains(": { all: list.length, due: list.filter(isDue).length, never: list.filter(isNever).length };", paint); // without them: as before
         Assert.Contains("if (doctorRows[key]) paintQuickCounts(doctorRows[key], quickCountsBy[key]);", js);
         Assert.Contains("row.status && row.status.dueThisWeek ? '<span class=\"badge bg-label-primary\">' + esc(L.DueThisWeekBadge || '')", js);
         Assert.Equal("Bu hafta görülmeli", Resx("tr")["DueThisWeekBadge"]);

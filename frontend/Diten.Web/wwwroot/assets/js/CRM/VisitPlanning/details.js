@@ -13,6 +13,7 @@
 
     const L = window.L10n || {};
     const VPF = window.VisitPlanningFormat; // WP-VP-4H — dates / numbers in the application's language
+    const TC = window.VisitPlanningTargetsCore; // WP-VW-W2 (WEB-b) — the Targets rules shared with the Visit Workspace
     const base = '/CRM/VisitPlanning/api';
     const sessionId = root.dataset.sessionId;
     // WP-VP-4B — the page skeleton (page.js): this file publishes the session + preview to it, follows its selected
@@ -1164,9 +1165,9 @@
         if (!activeAccountId) return [];
         const re = docTerm ? new RegExp(trSearchPattern(docTerm), 'i') : null;
         const all = doctorRows[doctorKey(activeAccountId, 'all')] || docList;
-        return all.filter(row => inPlanHere(row.contactId) && docMatches(row, re));
+        return TC.splitPlanFirst(all, [], inPlanHere, row => docMatches(row, re)).plan;
     };
-    const otherDoctors = () => visibleDoctors().filter(row => !inPlanHere(row.contactId));
+    const otherDoctors = () => TC.splitPlanFirst([], visibleDoctors(), inPlanHere).others;
     const groupRow = (key, text) => '<tr class="vp-doc-group" data-group="' + key + '"><td colspan="8" class="small text-muted text-uppercase fw-semibold py-1">' + esc(text) + '</td></tr>';
     const drawDoctors = () => {
         const body = el('vp-doc-tbody'); if (!body) return;
@@ -1238,13 +1239,7 @@
     const statusWeek = () => { const ws = page ? page.state.weekStart : null; return /^\d{4}-\d{2}-\d{2}$/.test(ws || '') ? ws : ''; };
     const weekQuery = sep => (statusWeek() ? sep + 'weekStart=' + encodeURIComponent(statusWeek()) : '');
     const doctorKey = (accountId, quick) => accountId + '|' + quick + '|' + statusWeek();
-    const doctorRow = d => {
-        const status = d.status || {};
-        return {
-            contactId: d.contactId, name: d.displayName || '—', specialty: d.specialty || '', linkId: d.accountContactLinkId || null,
-            status, blocked: String(status.consentStatus || '').toLowerCase() === 'blocked', inactive: !!status.inactive
-        };
-    };
+    const doctorRow = TC.doctorRow; // WP-VW-W2 (WEB-b) — the shared rule
     const fetchAccountDoctors = (accountId, quick) => {
         const key = doctorKey(accountId, quick);
         if (doctorRows[key]) return Promise.resolve(doctorRows[key]);
@@ -1482,15 +1477,9 @@
     });
     // WP-VP-4M (4, 5) — the counts: the server's quickCounts of the selected week when it sends them (4M-BE), else counted
     // from the "all" read as before; either way WITHOUT the plan doctors (they are always shown, above the filter).
-    const isDue = r => !!(r.status && r.status.dueThisWeek);
-    const isNever = r => !!(r.status && r.status.neverVisited);
     const paintQuickCounts = (all, server) => {
-        const plan = all.filter(r => inPlanHere(r.contactId));
-        const base = server && server.all != null
-            ? { all: Number(server.all) || 0, due: Number(server.due) || 0, never: Number(server.never) || 0 }
-            : { all: all.length, due: all.filter(isDue).length, never: all.filter(isNever).length };
-        const count = { all: base.all - plan.length, due: base.due - plan.filter(isDue).length, never: base.never - plan.filter(isNever).length };
-        document.querySelectorAll('#vp-quick-filters .vp-quick-count').forEach(n => { n.textContent = '(' + Math.max(0, count[n.dataset.quick] || 0) + ')'; });
+        const count = TC.quickCounts(all, server, inPlanHere); // WP-VW-W2 (WEB-b) — the shared rule
+        document.querySelectorAll('#vp-quick-filters .vp-quick-count').forEach(n => { n.textContent = '(' + (count[n.dataset.quick] || 0) + ')'; });
     };
     const repaintQuickCounts = () => {
         if (!activeAccountId) return;

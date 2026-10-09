@@ -117,4 +117,52 @@
   <data name="Err_visit_not_yet_due" xml:space="preserve"><value>Le jour de la visite n'est pas encore arrivé.</value></data>
   <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>Cette visite ne peut plus être modifiée.</value></data>
   <data name="Err_planned_visit_overlap" xml:space="preserve"><value>Une autre visite est planifiée à cette heure.</value></data>
+  <data name="TargetsTitle" xml:space="preserve"><value>Cibles · {0} — glissez sur un jour</value></data>
+  <data name="TargetsNoPlan" xml:space="preserve"><value>Cette semaine n'a pas encore de plan.</value></data>
+  <data name="PlanReadOnlyWeek" xml:space="preserve"><value>{0} est approuvée — rouvrez la semaine pour la modifier.</value></data>
+  <data name="PlanReadOnlyPast" xml:space="preserve"><value>{0} est passée — lecture seule.</value></data>
+  <data name="QuickDue" xml:space="preserve"><value>À voir cette semaine</value></data>
+  <data name="QuickNever" xml:space="preserve"><value>Jamais visités</value></data>
+  <data name="QuickAll" xml:space="preserve"><value>Tous</value></data>
+  <data name="FrequencyPerPeriod" xml:space="preserve"><value>{0} sur la période</value></data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve"><value>1 par semaine (par défaut)</value></data>
+  <data name="DueThisWeek" xml:space="preserve"><value>À voir cette semaine</value></data>
+  <data name="PlanDoctorsHeading" xml:space="preserve"><value>Dans le plan ({0})</value></data>
+  <data name="OtherDoctorsHeading" xml:space="preserve"><value>Autres médecins</value></data>
+  <data name="NoDoctors" xml:space="preserve"><value>Aucun médecin pour ce filtre.</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tout sélectionner ({0})</value></data>
+  <data name="ApplyProducts" xml:space="preserve"><value>Appliquer des produits ({0})</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>{0} médecins · {1} pharmacies · {2} comptes</value></data>
+  <data name="TargetsSaved" xml:space="preserve"><value>Le plan a été mis à jour.</value></data>
+  <data name="PinSaved" xml:space="preserve"><value>La visite a été fixée.</value></data>
+  <data name="ProductsApplied" xml:space="preserve"><value>Produits appliqués.</value></data>
+  <data name="NoProductPicked" xml:space="preserve"><value>Aucun produit choisi.</value></data>
+  <data name="RemoveProduct" xml:space="preserve"><value>Retirer le produit</value></data>
+  <data name="UnplacedReasonOther" xml:space="preserve"><value>N'a pas pu être placée cette semaine.</value></data>
+  <data name="Pin_pin_time_invalid" xml:space="preserve"><value>L'heure doit tomber sur un pas de 15 minutes ; seule une visite peut être fixée à une heure.</value></data>
+  <data name="Pin_pin_time_outside_hours" xml:space="preserve"><value>L'heure est hors des heures de travail (ou pendant la pause déjeuner).</value></data>
+  <data name="Pin_pin_time_conflict" xml:space="preserve"><value>Ce créneau était pris ; la visite a été déplacée au créneau libre le plus proche.</value></data>
+  <data name="Pin_pin_time_past_day_end" xml:space="preserve"><value>La visite dépasserait la fin de la journée ; elle a été avancée.</value></data>
+  <data name="Pin_pin_overflow" xml:space="preserve"><value>Plus de place dans la semaine ; la visite fixée passe à une semaine suivante.</value></data>
+  <data name="Pin_pin_day_full" xml:space="preserve"><value>Le jour fixé est complet ; la visite passe au jour ouvré suivant.</value></data>
+  <data name="Pin_week_already_approved" xml:space="preserve"><value>La semaine est approuvée — rouvrez-la pour la modifier.</value></data>
+  <data name="Reason_capacity_full" xml:space="preserve"><value>La semaine est complète.</value></data>
+  <data name="Reason_no_near_day" xml:space="preserve"><value>Aucun jour assez proche n'avait de place.</value></data>
+  <data name="Reason_period_exhausted" xml:space="preserve"><value>La période n'a plus de place.</value></data>
+  <data name="Reason_missing_location" xml:space="preserve"><value>L'établissement n'a pas de localisation.</value></data>
+  <data name="Reason_consent_blocked" xml:space="preserve"><value>Le consentement bloque la visite.</value></data>
+  <data name="Reason_week_full_skipped" xml:space="preserve"><value>Visite hebdomadaire par défaut sautée : semaine complète.</value></data>
+  <data name="Reason_extra_no_room" xml:space="preserve"><value>Pas de place pour la visite supplémentaire cette semaine.</value></data>
+  <data name="Reason_no_feasible_availability_window" xml:space="preserve"><value>La disponibilité du médecin ne convient pas.</value></data>
+  <data name="ModeLabel" xml:space="preserve"><value>Mode d'affichage</value></data>
+  <data name="ModeExecute" xml:space="preserve"><value>Exécuter</value></data>
+  <data name="ModePlan" xml:space="preserve"><value>Planifier</value></data>
+  <data name="DragHint" xml:space="preserve"><value>Glissez un médecin sur un jour ou une heure.</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>Établissement</value></data>
+  <data name="QuickFiltersLabel" xml:space="preserve"><value>Filtres rapides</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>Appliquer des produits</value></data>
+  <data name="ProductsHint" xml:space="preserve"><value>Ajoutés aux médecins du plan de cet établissement : le premier produit en promotion, les autres en rappel.</value></data>
+  <data name="PickedProducts" xml:space="preserve"><value>Produits choisis</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>Rechercher un produit…</value></data>
+  <data name="ApplyButton" xml:space="preserve"><value>Appliquer</value></data>
 </root>

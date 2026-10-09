@@ -39,3 +39,8 @@
 @media (max-width: 767.98px) {
     .vw-detail.offcanvas-end { width: 100% !important; }
 }
+
+/* WP-VW-W2 (WEB-b) — Plan mode: the Targets panel (desktop only), its rows are dragged onto the calendar */
+.vw-tg-list { max-height: 640px; overflow-y: auto; }
+.vw-tg-row.vw-draggable { cursor: grab; }
+@media (max-width: 767.98px) { .vw-plan-panel { display: none !important; } }

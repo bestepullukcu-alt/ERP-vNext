@@ -13,7 +13,16 @@
  *   errorKey(codes) / errorText(...)  CRM refusal codes → the user's language
  *   contentRoles(items)               "what do I present": the first product promo, the others reminders
  *   filterVisits / loadFilters / saveFilters   the filters (remembered in the browser, never required)
- *   capacity(planned, cap), weekWindow(monday), lastReportOf(visits, visit), eventOf(visit), unplannedBody(...)
+ *   capacity(planned, cap), weekWindow(monday), lastReportOf(visits, visit), eventOf(visit, editable), unplannedBody(...)
+ * WP-VW-W2 (WEB-b) — Plan mode:
+ *   canPlanWeek(week, mode)           only a DRAFT week in Plan mode is edited; approved / past / Execute = read-only
+ *   pinFromDrop(drop) / roundToStep   a calendar drop → the day pin: the day + the start on the 15-minute grid; all day = no time
+ *   pinsWith(current, target, pin)    the week's pins after one visit pin (the update REPLACES that week's pins)
+ *   pinKey / pinText / pinMoveCode    the pin codes (7) → the user's language; a moved time pin's likely reason
+ *   dragItem / parseDragItem          a Targets row on the drag
+ *   accountOptions(visits)            the institution filter: accountDisplayName ONLY (never a doctor's name)
+ *   unplacedRows(week, L)             the "N visits did not fit" list (weeks[].unplaced[])
+ *   sessionVersionOf(week)            the version approve / reopen expects (weeks[].sessionVersion), null = read it
  * Reason codes / labels are NOT here: they come from the reference set (GET reasons), never a local list.
  */
 (function (root, factory) {
@@ -238,10 +247,11 @@
 
     const visitKey = v => v.plannedVisitId || v.previewKey;
 
-    /** A visit → a DitenCalendar event (zone UTC: the CRM times are wall clock). No time ⇒ an all-day card. */
-    const eventOf = v => {
+    /** A visit → a DitenCalendar event (zone UTC: the CRM times are wall clock). No time ⇒ an all-day card. WP-VW-W2
+     *  (WEB-b) — editable (dragged to another day / time) only when the host says so: a draft visit in Plan mode. */
+    const eventOf = (v, editable) => {
         const time = v.startTime || (v.isPinned ? v.pinnedTime : null);
-        const base = { id: visitKey(v), title: v.targetDisplayName || '', kind: 'visit', classNames: ['vw-event', statusStyle(v.workStatus).cssClass] };
+        const base = { id: visitKey(v), title: v.targetDisplayName || '', kind: 'visit', editable: !!editable, classNames: ['vw-event', statusStyle(v.workStatus).cssClass] };
         if (!time) { return Object.assign(base, { allDay: true, date: v.plannedDate }); }
         const start = v.plannedDate + 'T' + time + ':00Z';
         const minutes = v.durationMinutes || 30;
@@ -262,10 +272,86 @@
         unplanned: true
     });
 
+    // ── Plan mode (WP-VW-W2 WEB-b) ───────────────────────────────────────────────────────────────────────────
+    /** Plan mode edits ONLY a draft week; an approved or past week — or Execute mode — is read-only (no drag, no drop). */
+    const canPlanWeek = (week, mode) => mode === 'plan' && !!week && week.state === 'draft';
+
+    const PIN_STEP = 15;
+    const LAST_START = 23 * 60 + 45;
+    /** Minutes → the nearest 15-minute mark (a half rounds up). */
+    const roundToStep = minutes => Math.round(minutes / PIN_STEP) * PIN_STEP;
+    const hhmm = m => pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+
+    /**
+     * A calendar drop → the day pin. drop = { allDay, date } (the all-day row: a DAY pin, no time) or { startUtc } /
+     * { date, time } (a time slot: the start rounded to the 15-minute grid — the CRM refuses anything off it). The
+     * workspace calendar runs in 'UTC' wall clock, so the UTC parts ARE the tenant's day and time.
+     */
+    const pinFromDrop = drop => {
+        if (!drop) { return null; }
+        if (drop.allDay) { return drop.date ? { date: drop.date, startTime: null } : null; }
+        const iso = drop.startUtc || (drop.date && drop.time ? drop.date + 'T' + drop.time + ':00Z' : null);
+        const d = iso ? new Date(iso) : null;
+        if (!d || isNaN(d)) { return null; }
+        const minutes = roundToStep(d.getUTCHours() * 60 + d.getUTCMinutes());
+        return { date: ymd(d), startTime: hhmm(Math.min(minutes, LAST_START)) };
+    };
+
+    /** The week's pins after a VISIT pin of `target` on `pin`: its earlier visit pin is replaced, every other pin kept. */
+    const pinsWith = (current, target, pin) => (current || [])
+        .filter(p => !((p.scope || 'visit') === 'visit' && p.targetType === target.targetType && p.targetId === target.targetId))
+        .concat([{ targetType: target.targetType, targetId: target.targetId, contactId: target.contactId || null, date: pin.date, scope: 'visit', startTime: pin.startTime || null }]);
+
+    const PIN_CODES = ['pin_time_invalid', 'pin_time_outside_hours', 'pin_time_conflict', 'pin_time_past_day_end', 'pin_overflow', 'pin_day_full', 'week_already_approved'];
+    const pinKey = code => (PIN_CODES.indexOf(code) > -1 ? 'Pin_' + code : null);
+
+    /** A refused pin / selection update → the user's text: the first pin code, else the workspace's refusal text. */
+    const pinText = (response, L) => {
+        const labels = L || {};
+        const errors = response && response.body && Array.isArray(response.body.errors) ? response.body.errors : [];
+        const hit = errors.map(pinKey).find(k => k && labels[k]);
+        return hit ? labels[hit] : errorText(response, labels);
+    };
+
+    /** The calendar read carries no move reason: a time pin that sits EARLIER than asked was pulled back from the day's
+     *  end (pin_time_past_day_end), a LATER one lost its time to another pin (pin_time_conflict); null = kept its time. */
+    const pinMoveCode = v => (!v || !v.pinnedTime || !v.startTime || v.startTime === v.pinnedTime
+        ? null : (v.startTime < v.pinnedTime ? 'pin_time_past_day_end' : 'pin_time_conflict'));
+
+    const DRAG_PREFIX = 'doctor:';
+    const dragItem = (contactId, accountId) => DRAG_PREFIX + contactId + '|' + (accountId || '');
+    const parseDragItem = s => {
+        const m = /^doctor:([^|]+)\|(.*)$/.exec(String(s || ''));
+        return m ? { contactId: m[1], accountId: m[2] || null } : null;
+    };
+
+    /** The institution filter: { accountId: accountDisplayName } — a visit without accountDisplayName adds nothing (a
+     *  doctor's name is never an institution); empty ⇒ the page hides the filter. */
+    const accountOptions = visits => {
+        const map = {};
+        (visits || []).forEach(v => { if (v && v.accountId && v.accountDisplayName) { map[v.accountId] = v.accountDisplayName; } });
+        return map;
+    };
+
+    /** "N visits did not fit": name, institution and the reason in the user's language (a pin code, a planning reason,
+     *  else the generic text). */
+    const unplacedRows = (week, L) => {
+        const labels = L || {};
+        return (week && Array.isArray(week.unplaced) ? week.unplaced : []).map(u => ({
+            name: u.displayName || '—',
+            account: u.accountDisplayName || '',
+            reason: labels[pinKey(u.reason)] || labels['Reason_' + u.reason] || labels.UnplacedReasonOther || ''
+        }));
+    };
+
+    const sessionVersionOf = week => (week && typeof week.sessionVersion === 'number' ? week.sessionVersion : null);
+
     return {
         STATUSES, statusStyle, countdown, showsCountdown, layoutFor, PHONE_MAX, actionsFor, noteState, canSave,
         saveNotDone, ERROR_CODES, errorKey, errorText, productLabel, contentRoles, filterVisits, loadFilters,
         saveFilters, FILTER_KEY, addDays, mondayOf, weekWindow, capacity, reopenOk, REOPEN_MIN, lastReportOf, visitKey,
-        eventOf, unplannedBody
+        eventOf, unplannedBody,
+        canPlanWeek, PIN_STEP, roundToStep, pinFromDrop, pinsWith, PIN_CODES, pinKey, pinText, pinMoveCode,
+        dragItem, parseDragItem, accountOptions, unplacedRows, sessionVersionOf
     };
 }));

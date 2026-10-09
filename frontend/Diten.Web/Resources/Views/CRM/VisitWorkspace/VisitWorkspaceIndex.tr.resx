@@ -117,4 +117,52 @@
   <data name="Err_visit_not_yet_due" xml:space="preserve"><value>Ziyaretin günü henüz gelmedi.</value></data>
   <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>Bu ziyaret artık değiştirilemez.</value></data>
   <data name="Err_planned_visit_overlap" xml:space="preserve"><value>Bu saatte başka bir ziyaret planlı.</value></data>
+  <data name="TargetsTitle" xml:space="preserve"><value>Hedefler · {0} — sürükleyip güne bırakın</value></data>
+  <data name="TargetsNoPlan" xml:space="preserve"><value>Bu hafta için plan yok.</value></data>
+  <data name="PlanReadOnlyWeek" xml:space="preserve"><value>{0} onaylı — değiştirmek için Haftayı yeniden aç.</value></data>
+  <data name="PlanReadOnlyPast" xml:space="preserve"><value>{0} geçti — salt okunur.</value></data>
+  <data name="QuickDue" xml:space="preserve"><value>Bu hafta görülmeli</value></data>
+  <data name="QuickNever" xml:space="preserve"><value>Hiç görülmemiş</value></data>
+  <data name="QuickAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="FrequencyPerPeriod" xml:space="preserve"><value>dönemde {0}</value></data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve"><value>haftada 1 (varsayılan)</value></data>
+  <data name="DueThisWeek" xml:space="preserve"><value>Bu hafta görülmeli</value></data>
+  <data name="PlanDoctorsHeading" xml:space="preserve"><value>Planda ({0})</value></data>
+  <data name="OtherDoctorsHeading" xml:space="preserve"><value>Diğer doktorlar</value></data>
+  <data name="NoDoctors" xml:space="preserve"><value>Bu süzgece uyan doktor yok.</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tümünü seç ({0})</value></data>
+  <data name="ApplyProducts" xml:space="preserve"><value>Ürün uygula ({0})</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>{0} doktor · {1} eczane · {2} hesap</value></data>
+  <data name="TargetsSaved" xml:space="preserve"><value>Plan güncellendi.</value></data>
+  <data name="PinSaved" xml:space="preserve"><value>Ziyaret sabitlendi.</value></data>
+  <data name="ProductsApplied" xml:space="preserve"><value>Ürünler uygulandı.</value></data>
+  <data name="NoProductPicked" xml:space="preserve"><value>Henüz ürün seçilmedi.</value></data>
+  <data name="RemoveProduct" xml:space="preserve"><value>Ürünü çıkar</value></data>
+  <data name="UnplacedReasonOther" xml:space="preserve"><value>Bu haftaya yerleştirilemedi.</value></data>
+  <data name="Pin_pin_time_invalid" xml:space="preserve"><value>Saat 15 dakikalık adımda olmalı; saate yalnız tek bir ziyaret sabitlenebilir.</value></data>
+  <data name="Pin_pin_time_outside_hours" xml:space="preserve"><value>Saat mesai dışında (ya da öğle arasında).</value></data>
+  <data name="Pin_pin_time_conflict" xml:space="preserve"><value>Bu saat dolu; ziyaret en yakın boş saate alındı.</value></data>
+  <data name="Pin_pin_time_past_day_end" xml:space="preserve"><value>Ziyaret mesai bitişini aşıyor, erkene alındı</value></data>
+  <data name="Pin_pin_overflow" xml:space="preserve"><value>Haftada yer kalmadı; sabitlenen ziyaret sonraki haftaya kaydı.</value></data>
+  <data name="Pin_pin_day_full" xml:space="preserve"><value>Sabitlenen gün dolu; ziyaret sonraki iş gününe alındı.</value></data>
+  <data name="Pin_week_already_approved" xml:space="preserve"><value>Hafta onaylı — değiştirmek için yeniden açın.</value></data>
+  <data name="Reason_capacity_full" xml:space="preserve"><value>Hafta dolu.</value></data>
+  <data name="Reason_no_near_day" xml:space="preserve"><value>Yakın bir günde yer yok.</value></data>
+  <data name="Reason_period_exhausted" xml:space="preserve"><value>Dönemde yer kalmadı.</value></data>
+  <data name="Reason_missing_location" xml:space="preserve"><value>Kurumun konumu yok.</value></data>
+  <data name="Reason_consent_blocked" xml:space="preserve"><value>Onam ziyareti engelliyor.</value></data>
+  <data name="Reason_week_full_skipped" xml:space="preserve"><value>Haftalık varsayılan ziyaret atlandı: hafta dolu.</value></data>
+  <data name="Reason_extra_no_room" xml:space="preserve"><value>Ek ziyarete bu hafta yer yok.</value></data>
+  <data name="Reason_no_feasible_availability_window" xml:space="preserve"><value>Doktorun müsaitliği uymuyor.</value></data>
+  <data name="ModeLabel" xml:space="preserve"><value>Mod</value></data>
+  <data name="ModeExecute" xml:space="preserve"><value>Yürüt</value></data>
+  <data name="ModePlan" xml:space="preserve"><value>Planla</value></data>
+  <data name="DragHint" xml:space="preserve"><value>Doktoru güne ya da saate sürükleyip bırakın.</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>Kurum</value></data>
+  <data name="QuickFiltersLabel" xml:space="preserve"><value>Hızlı süzgeçler</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>Ürün uygula</value></data>
+  <data name="ProductsHint" xml:space="preserve"><value>Bu kurumun plandaki doktorlarına eklenir: ilk ürün tanıtım, diğerleri hatırlatma.</value></data>
+  <data name="PickedProducts" xml:space="preserve"><value>Seçilen ürünler</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>Ürün ara…</value></data>
+  <data name="ApplyButton" xml:space="preserve"><value>Uygula</value></data>
 </root>

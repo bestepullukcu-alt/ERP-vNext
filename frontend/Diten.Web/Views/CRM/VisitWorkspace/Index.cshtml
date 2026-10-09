@@ -25,7 +25,9 @@
      data-can-manage="@Model.CanManageVisits.ToString().ToLowerInvariant()"
      data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"
      data-can-apply="@Model.CanApplyWeek.ToString().ToLowerInvariant()"
-     data-can-search-contacts="@Model.CanSearchContacts.ToString().ToLowerInvariant()">
+     data-can-search-contacts="@Model.CanSearchContacts.ToString().ToLowerInvariant()"
+     data-can-plan="@Model.CanPlan.ToString().ToLowerInvariant()"
+     data-planning-api-base="/CRM/VisitPlanning/api">
 
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
         <div>
@@ -33,6 +35,14 @@
             <p class="mb-0 text-muted">@Localizer["PageSubtitle"]</p>
         </div>
         <div class="d-flex gap-2 flex-wrap">
+            @* WP-VW-W2 (WEB-b) — Execute / Plan; Plan needs the Visit Planning read + generate keys. *@
+            @if (Model.CanPlan)
+            {
+                <div class="btn-group" role="group" aria-label="@Localizer["ModeLabel"]">
+                    <button type="button" class="btn btn-outline-primary active" id="vw-mode-execute" aria-pressed="true"><i class="bx bx-play-circle"></i> @Localizer["ModeExecute"]</button>
+                    <button type="button" class="btn btn-outline-primary" id="vw-mode-plan" aria-pressed="false"><i class="bx bx-edit"></i> @Localizer["ModePlan"]</button>
+                </div>
+            }
             <button type="button" class="btn btn-outline-primary d-none" id="vw-unplanned-open"><i class="bx bx-walk"></i> @Localizer["UnplannedVisit"]</button>
         </div>
     </div>
@@ -79,11 +89,34 @@
 
     <div class="alert alert-warning d-none" id="vw-notice" role="alert"></div>
 
-    <div class="card">
-        <div class="card-body p-2">
-            <div id="vw-calendar"></div>
-            <div id="vw-day-list" class="d-none"></div>
-            <div id="vw-empty" class="text-muted small p-3 d-none">@Localizer["NoPlanWeek"]</div>
+    <div class="row g-3">
+        <div class="col-12" id="vw-main-col">
+            <div class="card">
+                <div class="card-body p-2">
+                    <div id="vw-calendar"></div>
+                    <div id="vw-day-list" class="d-none"></div>
+                    <div id="vw-empty" class="text-muted small p-3 d-none">@Localizer["NoPlanWeek"]</div>
+                </div>
+            </div>
+        </div>
+        @* ── WP-VW-W2 (WEB-b) — Plan mode: the Targets panel (desktop only; the Visit Planning Targets rules) ── *@
+        <div class="col-md-4 d-none vw-plan-panel" id="vw-plan-panel">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="fw-semibold" id="vw-tg-title"></div>
+                    <div class="small text-muted">@Localizer["DragHint"]</div>
+                    <div class="alert alert-success py-2 small mb-0 d-none" id="vw-tg-locked" role="note"></div>
+                    <label class="form-label small mb-0" for="vw-tg-account">@Localizer["AccountLabel"]</label>
+                    <select class="form-select form-select-sm" id="vw-tg-account"></select>
+                    <div class="d-flex gap-1 flex-wrap" id="vw-tg-quick" role="group" aria-label="@Localizer["QuickFiltersLabel"]"></div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="vw-tg-select-all" disabled></button>
+                        <button type="button" class="btn btn-sm btn-primary" id="vw-tg-apply" disabled></button>
+                    </div>
+                    <div class="vw-tg-list flex-grow-1" id="vw-tg-list"></div>
+                    <div class="small text-muted border-top pt-2" id="vw-tg-summary"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -150,6 +183,29 @@
     </div>
 </div>
 
+@* ── WP-VW-W2 (WEB-b) — apply products to the institution's plan doctors: the first promo, the others reminders ── *@
+<div class="modal fade" id="vw-products-modal" tabindex="-1" aria-labelledby="vw-products-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vw-products-title">@Localizer["ProductsTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body d-flex flex-column gap-2">
+                <p class="small text-muted mb-0">@Localizer["ProductsHint"]</p>
+                <label class="form-label small mb-0">@Localizer["PickedProducts"]</label>
+                <ul class="list-unstyled mb-0" id="vw-prod-picked"></ul>
+                <input type="search" class="form-control form-control-sm" id="vw-prod-search" placeholder="@Localizer["ProductSearch"]" aria-label="@Localizer["ProductSearch"]">
+                <div class="list-group" id="vw-prod-results"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                <button type="button" class="btn btn-primary" id="vw-prod-apply" disabled>@Localizer["ApplyButton"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @* ── reopen the week (4D: a reason of at least 10 characters) ── *@
 <div class="modal fade" id="vw-reopen-modal" tabindex="-1" aria-labelledby="vw-reopen-title" aria-hidden="true">
     <div class="modal-dialog">
@@ -181,6 +237,7 @@
             </div>
             <div class="modal-body">
                 <p id="vw-unplaced-body" class="mb-2"></p>
+                <ul class="list-group list-group-flush mb-2" id="vw-unplaced-list"></ul>
                 <p class="small text-muted mb-0">@Localizer["UnplacedHint"]</p>
             </div>
         </div>
@@ -230,5 +287,7 @@
     </script>
     <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitWorkspace/workspace-core.js" asp-append-version="true"></script>
+    @* WP-VW-W2 (WEB-b) — the Targets rules shared with the Visit Planning page (one module, no copy). *@
+    <script src="~/assets/js/CRM/VisitPlanning/targets-core.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitWorkspace/visit-workspace.js" asp-append-version="true"></script>
 }
