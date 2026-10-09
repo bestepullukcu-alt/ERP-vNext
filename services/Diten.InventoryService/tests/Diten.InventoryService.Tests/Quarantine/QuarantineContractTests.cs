@@ -43,15 +43,55 @@ public sealed class QuarantineContractTests
         => Yaml.Value["components"]!["schemas"]![schema]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
 
     [Fact]
-    public void The_contract_is_frozen_1_0_0_owned_by_MOD_0175()
+    public void The_contract_is_frozen_1_1_0_owned_by_MOD_0175()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.0.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.1.0", info["version"]!.GetValue<string>());
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0175", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/quarantine", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
         var changelog = string.Join(" ", info["x-changelog"]!.AsArray().Select(v => v!.GetValue<string>()));
-        Assert.All(new[] { "R-1", "R-2", "R-3", "R-4" }, r => Assert.Contains(r, changelog, StringComparison.Ordinal));
+        Assert.All(new[] { "R-1", "R-2", "R-3", "R-4", "1.1.0", "WP-0174-ITEM", "Item" }, r => Assert.Contains(r, changelog, StringComparison.Ordinal));
+    }
+
+    private const string FrozenV10Sha256 = "c8f31720cd7f8b5d379160465c8c60d9f1dbc08c9f2548ad0775e1ebf60946a9";
+
+    private static string FixtureV10Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "quarantine-v1.0.0.openapi.yaml");
+
+    private static JsonObject LoadJson(string path)
+        => (JsonObject)JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(new DeserializerBuilder().Build().Deserialize<object>(File.ReadAllText(path))))!;
+
+    [Fact]
+    public void The_v1_0_fixture_is_the_1_0_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV10Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV10Sha256, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// WP-0174-ITEM: 1.1.0 = 1.0.0 + <c>Item</c> appended to <c>SkuLevel</c> + one changelog line + the version. Everything else of the
+    /// file (paths, parameters, schemas, every other enum, required lists, status codes, the qd-v1 field list) is byte-equal as data.
+    /// </summary>
+    [Fact]
+    public void The_1_1_0_change_is_Item_on_SkuLevel_and_nothing_else()
+    {
+        var before = LoadJson(FixtureV10Path);
+        var after = LoadJson(ContractSchemas.QuarantineContractPath);
+        Assert.Equal(["Gsku", "Lsku", "FinishedGood"], before["components"]!["schemas"]!["SkuLevel"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()));
+        Assert.Equal(["Gsku", "Lsku", "FinishedGood", "Item"], after["components"]!["schemas"]!["SkuLevel"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()));
+        var oldLog = before["info"]!["x-changelog"]!.AsArray().Select(v => v!.GetValue<string>()).ToList();
+        var newLog = after["info"]!["x-changelog"]!.AsArray().Select(v => v!.GetValue<string>()).ToList();
+        Assert.Equal(oldLog, newLog.Take(oldLog.Count));
+        Assert.Single(newLog.Skip(oldLog.Count));
+
+        foreach (var file in new[] { before, after })
+        {
+            file["info"]!.AsObject().Remove("version");
+            file["info"]!.AsObject().Remove("x-changelog");
+            file["components"]!["schemas"]!["SkuLevel"]!.AsObject().Remove("enum");
+        }
+
+        Assert.Equal(before.ToJsonString(), after.ToJsonString());
     }
 
     [Fact]
@@ -138,7 +178,9 @@ public sealed class QuarantineContractTests
         var served = typeof(QuarantineController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>())
             .SelectMany(a => a.HttpMethods.Select(v => $"{v} /{Regex.Replace(a.Template ?? "", @"\{[^}]+\}", "{}")}")).ToList();
-        Assert.Equal(22, served.Count); // Q1 17 + Q2 refresh, withdraw, workflow-template + Q4 listRetest + Q5 getLotQualityStatus
+        // Q1 17 + Q2 refresh, withdraw, workflow-template + Q4 listRetest + Q5 getLotQualityStatus + WP-0174-ITEM updateHold (FU-0175-Q5-01)
+        Assert.Equal(23, served.Count);
+        Assert.Contains("PATCH /holds/{}", served);
         Assert.All(served, s => Assert.Contains(s, contract));
     }
 }

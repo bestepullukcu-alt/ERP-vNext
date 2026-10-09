@@ -21,7 +21,9 @@ namespace Diten.InventoryService.Application.Features.Traceability.Handlers.Comm
 /// <item>SKU present (B-2 = CT-D2): no <c>skuId</c> + <c>skuLevel</c> → 422 <c>LOT_SKU_REQUIRED</c>.</item>
 /// <item>Idempotency: a committed key answers from the stored lot — same fingerprint → 200, else 400.</item>
 /// <item>PRODUCT-MASTER, before any write (fail-closed 503): the SKU exists (422 <c>UNKNOWN_ITEM</c>), it links to
-/// <c>itemId</c> (422 <c>LOT_SKU_MISMATCH</c>), the product is lot-controlled (422 <c>PRODUCT_NOT_LOT_CONTROLLED</c>).</item>
+/// <c>itemId</c> (422 <c>LOT_SKU_MISMATCH</c>), it is stockable (422 <c>SKU_LEVEL_NOT_STOCKABLE</c>, TRACE 1.3.0), its lot flag
+/// is stated (422 <c>PRODUCT_MASTER_DATA_INCOMPLETE</c>, TRACE 1.3.0) and true (422 <c>PRODUCT_NOT_LOT_CONTROLLED</c>). Every level
+/// of the four, <c>Item</c> included (TRACE 1.3.0: a material item is its own SKU, <c>skuId == itemId</c>, no serials).</item>
 /// <item>One transaction: the K-G key (built by <see cref="LotIdentityPolicy"/>) is free (409 <c>LOT_ALREADY_EXISTS</c>,
 /// also enforced by the unique index), insert as <c>Draft</c> + one <c>Created</c> history row.</item>
 /// </list>
@@ -74,8 +76,8 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
                 "A lot belongs to one SKU: skuId and skuLevel are required.", 422);
         if (!TraceWriteSupport.TryParseId(request.SkuId, out var skuId))
             return TraceWriteSupport.Invalid<LotRefDto>("skuId must be a UUID.");
-        if (!WireNames.TryParseLegacySkuLevel(request.SkuLevel, out var skuLevel))
-            return TraceWriteSupport.Invalid<LotRefDto>("skuLevel must be Gsku, Lsku or FinishedGood.");
+        if (!WireNames.TryParseSkuLevel(request.SkuLevel, out var skuLevel))
+            return TraceWriteSupport.Invalid<LotRefDto>("skuLevel must be Gsku, Lsku, FinishedGood or Item.");
         if (!LotIdentityPolicy.MayBindTo(skuLevel))
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.LotSkuMismatch, $"A lot cannot be bound to a {request.SkuLevel} SKU.", 422);
 
@@ -90,11 +92,12 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
         if (committed is not null) return Replay(committed, fingerprint, today);
 
         TraceSku? sku;
-        ProductReference? product;
+        ProductReference? product = null;
         try
         {
             sku = await _skus.GetSkuAsync(skuId, skuLevel, cancellationToken);
-            product = sku is null ? null : await _products.GetProductAsync(itemId, cancellationToken);
+            // WP-0174-ITEM: the product is read only where its serial flag decides (GSKU, OD-10) — as the ledger does since PM1.
+            if (sku is not null && skuLevel == SkuLevel.Gsku) product = await _products.GetProductAsync(itemId, cancellationToken);
         }
         catch (ProductMasterUnavailableException)
         {
@@ -106,14 +109,17 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.UnknownItem, "The SKU does not exist in PRODUCT-MASTER.", 422);
         if (sku.ItemId != itemId)
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.LotSkuMismatch, "The SKU does not belong to itemId (D-SKU-LINK).", 422);
-        if (product is null)
+        if (skuLevel == SkuLevel.Gsku && product is null)
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.UnknownItem, "The item does not exist in PRODUCT-MASTER.", 422);
+        // WP-0174-ITEM (O-PM1-3): an explicit stockable: false takes no lot either.
+        if (!ProductMasterStockRules.IsStockable(sku.Stockable))
+            return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.SkuLevelNotStockable,
+                "PRODUCT-MASTER publishes this SKU as not stockable (stockable: false); no lot was created.", 422);
         // WP-0173-PM1 (OD-1, OD-5): the lot flag is the SKU's (getSku v1.1). Unknown → refused, never "not lot-controlled";
-        // TRACE 1.2.0 declares no "data incomplete" code, so the refusal is the contract's 503 PRODUCT_MASTER_UNAVAILABLE
-        // (ASSUMPTION-0173-PM1-03, open point O-PM1-1).
+        // TRACE 1.3.0 (WP-0174-ITEM) gives the refusal its own code — ASSUMPTION-0173-PM1-03 (503) is closed.
         if (sku.LotControlled is not { } skuLotControlled)
-            return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.ProductMasterUnavailable,
-                "PRODUCT-MASTER does not state whether the SKU is lot-controlled; nothing was saved.", 503);
+            return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.ProductMasterDataIncomplete,
+                "PRODUCT-MASTER does not state whether the SKU is lot-controlled; nothing was saved.", 422);
         if (!skuLotControlled)
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.ProductNotLotControlled, "The product is not lot-controlled.", 422);
 
@@ -143,7 +149,7 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
                     CoaReference = attributes.Coa,
                     Status = LotStatus.Draft,
                     // WP-0173-PM1: the SKU's serial flag (GSKU: the product's, OD-10); unknown → Lot + Serial, never Lot only.
-                    TrackingMode = ProductMasterStockRules.LotNeedsSerials(skuLevel, sku.SerialControlled, product.SerialControlled)
+                    TrackingMode = ProductMasterStockRules.LotNeedsSerials(skuLevel, sku.SerialControlled, product?.SerialControlled)
                         ? LotTrackingMode.LotAndSerial : LotTrackingMode.Lot,
                     CreationSource = "Api",
                     CreatedBy = _support.UserId,

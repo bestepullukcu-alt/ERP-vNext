@@ -96,12 +96,12 @@ public static partial class LotFormRules
             ? d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "T00:00:00Z"
             : null;
 
-    /// <summary><c>Level:skuId</c> — the FU01 SKU picker value (Gsku · Lsku · FinishedGood).</summary>
+    /// <summary><c>Level:skuId</c> — the FU01 SKU picker value (Gsku · Lsku · FinishedGood · Item — TRACE 1.3.0, WP-0174-ITEM).</summary>
     public static bool TryParseSku(string? value, out string level, out string skuId)
     {
         level = skuId = string.Empty;
         var parts = (value ?? string.Empty).Split(':');
-        if (parts.Length != 2 || parts[0] is not ("Gsku" or "Lsku" or "FinishedGood") || !Guid.TryParse(parts[1], out var id)) return false;
+        if (parts.Length != 2 || parts[0] is not ("Gsku" or "Lsku" or "FinishedGood" or "Item") || !Guid.TryParse(parts[1], out var id)) return false;
         level = parts[0];
         skuId = id.ToString("D");
         return true;

@@ -17,6 +17,10 @@ public sealed class StubTraceSkuDirectory : ITraceSkuDirectory
     private readonly ConcurrentDictionary<(Guid, SkuLevel), TraceSku> _skus = new();
     private readonly ConcurrentDictionary<Guid, (bool? Lot, bool? Serial)> _flags = new();
     private readonly ConcurrentDictionary<Guid, bool> _down = new();
+    private readonly ConcurrentDictionary<Guid, bool?> _stockable = new();
+
+    /// <summary>WP-0174-ITEM: the SKU's published <c>stockable</c> (default: not stated = null).</summary>
+    public void SetStockable(Guid skuId, bool? stockable) => _stockable[skuId] = stockable;
 
     /// <summary>The item flags the default SKU flags come from (the factory's <see cref="StubProductMaster"/>).</summary>
     public IProductMasterClient? Products { get; set; }
@@ -32,6 +36,7 @@ public sealed class StubTraceSkuDirectory : ITraceSkuDirectory
     {
         if (_down.ContainsKey(skuId)) throw new ProductMasterUnavailableException("stub: PRODUCT-MASTER unreachable");
         if (!_skus.TryGetValue((skuId, level), out var sku)) return null;
+        sku = sku with { Stockable = _stockable.TryGetValue(skuId, out var stockable) ? stockable : null };
         if (_flags.TryGetValue(skuId, out var own)) return sku with { LotControlled = own.Lot, SerialControlled = own.Serial };
 
         var item = Products is null ? null : await Products.GetProductAsync(sku.ItemId, cancellationToken);

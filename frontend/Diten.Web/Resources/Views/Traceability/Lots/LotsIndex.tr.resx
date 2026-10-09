@@ -666,4 +666,8 @@
   <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>Karar Gönder sayfasını aç</value></data>
   <data name="Quality.PendingApproval" xml:space="preserve"><value>Onay bekliyor</value></data>
   <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>Serbest bırakma kararı onay bekliyor · {0}</value></data>
+  <data name="Level.Gsku" xml:space="preserve"><value>Küresel SKU</value></data>
+  <data name="Level.Lsku" xml:space="preserve"><value>Yerel SKU</value></data>
+  <data name="Level.FinishedGood" xml:space="preserve"><value>Mamul</value></data>
+  <data name="Level.Item" xml:space="preserve"><value>Malzeme kalemi</value></data>
 </root>

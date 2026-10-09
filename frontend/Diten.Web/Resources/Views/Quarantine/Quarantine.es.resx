@@ -424,4 +424,11 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>El lote superó su fecha de reanálisis; no puede usarse hasta una decisión de calidad.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>El periodo contable está cerrado.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>La ubicación es desconocida o no se puede usar.</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>usuario desconocido</value></data>
+  <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>SKU global</value></data>
+  <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>SKU local</value></data>
+  <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Producto terminado</value></data>
+  <data name="Quarantine.Level.Item" xml:space="preserve"><value>Artículo de material</value></data>
+  <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>Editar la nota</value></data>
+  <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>Se guardó la nota del resultado de análisis.</value></data>
 </root>

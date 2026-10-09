@@ -27,7 +27,8 @@ public sealed class TraceDomainRulesTests
         Assert.NotEqual(LotIdentityPolicy.LotKey(tenant, skuA, SkuLevel.Lsku, "PRS-26A014"), LotIdentityPolicy.LotKey(tenant, skuB, SkuLevel.Lsku, "PRS-26A014"));
         Assert.NotEqual(LotIdentityPolicy.LotKey(tenant, skuA, SkuLevel.Lsku, "PRS-26A014"), LotIdentityPolicy.LotKey(tenant, skuA, SkuLevel.Gsku, "PRS-26A014"));
         Assert.NotEqual(LotIdentityPolicy.LotKey(tenant, skuA, SkuLevel.Lsku, "X"), LotIdentityPolicy.LotKey(Guid.NewGuid(), skuA, SkuLevel.Lsku, "X"));
-        Assert.Equal([SkuLevel.Gsku, SkuLevel.Lsku, SkuLevel.FinishedGood], LotIdentityPolicy.AllowedSkuLevels);
+        // WP-0174-ITEM (TRACE 1.3.0): a lot may also bind to an Item-level SKU (skuId == itemId)
+        Assert.Equal([SkuLevel.Gsku, SkuLevel.Lsku, SkuLevel.FinishedGood, SkuLevel.Item], LotIdentityPolicy.AllowedSkuLevels);
     }
 
     [Theory]

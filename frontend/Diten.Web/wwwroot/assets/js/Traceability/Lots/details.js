@@ -33,7 +33,8 @@ const LotDetail = (function () {
         const fields = [
             ['Form.LotNumber', `<span class="font-monospace">${esc(lot.lotNumber)}</span>`],
             ['Form.Product', esc(lot.product || lot.itemId || '')],
-            ['Form.Sku', esc(lot.sku || `${lot.skuLevel || ''} ${lot.skuId || ''}`.trim())],
+            // WP-0174-ITEM: the SKU with its level in the reader's language (Item = a material item that is its own SKU)
+            ['Form.Sku', esc([lot.sku || lot.skuId || '', lot.skuLevel ? (t('Level.' + lot.skuLevel) || lot.skuLevel) : ''].filter(Boolean).join(' · '))],
             ['Form.ManufacturerLot', esc(lot.manufacturerLot || t('Info.None'))],
             ['Form.SupplierLot', esc(lot.supplierLot || t('Info.None'))],
             ['Form.ManufacturingDate', esc(ui.date(lot.manufacturingDate) || t('Info.None'))],

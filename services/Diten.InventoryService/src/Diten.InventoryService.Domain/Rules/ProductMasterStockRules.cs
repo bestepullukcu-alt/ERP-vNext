@@ -69,6 +69,14 @@ public static class ProductMasterStockRules
     };
 
     /// <summary>
+    /// WP-0174-ITEM (O-PM1-3; PRODUCT-MASTER v1.1 "stockable: false kayıtta stok yeni hareket kabul etmez"): an explicit
+    /// <c>stockable: false</c> refuses every movement (REVERSAL never reaches this rule) and every new lot. A MISSING value keeps
+    /// the PM1 rules (ASSUMPTION-0174-ITEM-01): v1.0 answers have no such member, and the lifecycle / flag rules already refuse
+    /// a record whose stock fields are incomplete.
+    /// </summary>
+    public static bool IsStockable(bool? published) => published != false;
+
+    /// <summary>
     /// The lot / serial flags of the movement's SKU (OD-1: from <c>getSku</c>; the deprecated product flags are not used — except
     /// the product's serial flag at GSKU, where the SKU has none, OD-10):
     /// <list type="bullet">

@@ -5,6 +5,8 @@
  *   STARTREVIEW (İncelemeye al — open hold, Waiting) · DECIDE (open hold, no decision in flight) · REFRESHWORKFLOW (a decision
  *   waiting for / just past approval) · WITHDRAWDECISION (own decision, PendingApproval) · REAPPLYDECISION (ApplyFailed) ·
  *   SUBMITDECISION link to Karar Gönder (own Draft / StartFailed decision).
+ * WP-0174-ITEM: "Notu düzenle" (updateHold, PATCH with the page ETag — FU-0175-Q5-01) for a holder of quarantine.holds.review
+ * (the STARTREVIEW code carries that key) while the hold is open; people are shown by name (FU-0175-Q5-02, QuarantineUi.person).
  * Every answer of the service is shown in the reader's language (Quarantine.Errors.{CODE}).
  */
 'use strict';
@@ -43,7 +45,7 @@
                 <span class="timeline-point timeline-point-${HISTORY_DOT[h.action] || 'secondary'}"></span>
                 <div class="timeline-event pb-3">
                     <div class="timeline-header mb-1"><h6 class="mb-0">${esc(t('Quarantine.History.' + h.action) || h.action)}</h6><small class="text-muted">${esc(dateTime(h.atUtc))}</small></div>
-                    <div class="small text-muted">${esc(h.by?.name || h.by?.userId || '')}</div>
+                    <div class="small text-muted">${esc(ui.person(h.by))}</div>
                     ${h.reason ? `<div class="small mt-1">“${esc(h.reason)}”</div>` : ''}
                     <div class="d-flex flex-wrap gap-1">${signatureChip('Quarantine.Details.History.Signature', h.signatureId)}${signatureChip('Quarantine.Details.History.ApproverSignature', h.approverSignatureId)}</div>
                 </div>
@@ -85,8 +87,8 @@
         const wf = decision.workflow || {};
         const rows = [
             [t('Quarantine.Workflow.Decision'), `<span class="font-monospace">${esc(decision.decisionNumber)}</span> · ${esc(t('Quarantine.DecisionKind.' + decision.kind))}`],
-            [t('Quarantine.Workflow.Decider'), esc(decision.decider?.name || decision.decider?.userId || '')],
-            [t('Quarantine.Workflow.Approver'), esc(wf.approver?.name || wf.approver?.userId || '—')],
+            [t('Quarantine.Workflow.Decider'), esc(ui.person(decision.decider))],
+            [t('Quarantine.Workflow.Approver'), esc(ui.person(wf.approver) || '—')],
             [t('Quarantine.Workflow.Instance'), wf.instanceId ? `<span class="font-monospace small">${esc(String(wf.instanceId).slice(0, 8))}</span>` : '—']
         ];
         if (decision.deciderSignatureId) rows.push([t('Quarantine.Workflow.DeciderSignature'), signatureChip('Quarantine.Details.History.Signature', decision.deciderSignatureId)]);
@@ -110,7 +112,7 @@
         ui.byId('qr-d-name').textContent = h.itemLabel || h.item?.itemId || '';
         ui.byId('qr-d-stock').innerHTML = ui.stockBadge(h.stockStatus);
         ui.byId('qr-d-state').innerHTML = ui.holdBadge(h);
-        ui.byId('qr-d-sub').textContent = [h.skuLabel, h.holdNumber].filter(Boolean).join(' · ');
+        ui.byId('qr-d-sub').textContent = [h.skuLabel, ui.levelLabel(h.item?.skuLevel), h.holdNumber].filter(Boolean).join(' · ');
         const crumb = ui.byId('qr-crumb');
         if (crumb) crumb.textContent = `${t('Quarantine.Tabs.Queue')} / ${h.holdNumber}`;
         const lotButton = ui.byId('qr-d-lot');
@@ -121,6 +123,8 @@
         const open = h.status !== 'Decided';
         show(ui.byId('qr-d-decide'), ui.can('DECIDE') && open && !h.activeDecision);
         show(ui.byId('qr-d-review'), ui.can('STARTREVIEW') && open && h.reviewState === 'Waiting' && !h.activeDecision);
+        show(ui.byId('qr-d-note-edit'), ui.can('STARTREVIEW') && open);
+        closeNoteEditor();
         const late = ui.byId('qr-d-late');
         show(late, !!h.late && open);
         if (h.late) late.querySelector('span').textContent = t('Quarantine.Details.LateAlert', h.waitDays, h.targetDays);
@@ -132,7 +136,7 @@
         set('where', `${esc(h.warehouseLabel || '')}<small class="d-block text-muted">${esc(h.locationLabel || '')}</small>`);
         set('wait', `<span class="${h.late ? 'text-warning' : ''}">${esc(t('Quarantine.Common.Days', h.waitDays))}</span><small class="d-block text-muted">${esc(t('Quarantine.Common.Target', h.targetDays))}</small>`);
         set('source', `${esc(t('Quarantine.Source.' + h.source) || h.source)}<small class="d-block text-muted font-monospace">${esc(h.sourceDocument?.number || h.sourceDocument?.text || '')}</small>`);
-        set('createdBy', `${esc(h.createdBy?.name || h.createdBy?.userId || '')}<small class="d-block text-muted">${esc(dateTime(h.enteredAtUtc))}</small>`);
+        set('createdBy', `${esc(ui.person(h.createdBy))}<small class="d-block text-muted">${esc(dateTime(h.enteredAtUtc))}</small>`);
         set('coa', esc(h.lot?.coaReference || '—'));
         set('lotStatus', h.lot?.lotStatus ? `<span class="badge bg-label-secondary">${esc(t('Quarantine.LotStatus.' + h.lot.lotStatus) || h.lot.lotStatus)}</span>` : '—');
         set('note', h.analysisNote ? esc(h.analysisNote) : `<span class="text-muted">${esc(t('Quarantine.Details.Quality.NoNote'))}</span>`);
@@ -155,6 +159,32 @@
     };
 
     const failed = (title, reply) => window.DitenModal?.error({ title, message: ui.errorText(reply) });
+
+    // ── analysis note (updateHold) ──
+    const noteEditor = () => ui.byId('qr-d-note-editor');
+    function closeNoteEditor() {
+        show(noteEditor(), false);
+        show(root.querySelector('[data-f="note"]'), true);
+    }
+
+    ui.byId('qr-d-note-edit')?.addEventListener('click', () => {
+        const input = ui.byId('qr-d-note-input');
+        input.value = state?.hold?.analysisNote || '';
+        show(root.querySelector('[data-f="note"]'), false);
+        show(noteEditor(), true);
+        input.focus();
+    });
+    ui.byId('qr-d-note-cancel')?.addEventListener('click', closeNoteEditor);
+    ui.byId('qr-d-note-save')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        const note = ui.byId('qr-d-note-input').value.trim();
+        const reply = await ui.write('PATCH', `holds/${encodeURIComponent(holdId)}`, { analysisNote: note }, state.etag);
+        button.disabled = false;
+        if (!reply.ok) return failed(t('Quarantine.Details.Quality.EditNote'), reply);
+        ui.toast(t('Quarantine.Details.Quality.NoteSaved'), 'success');
+        await load();
+    });
 
     ui.byId('qr-wf-refresh')?.addEventListener('click', async (event) => {
         event.currentTarget.disabled = true;

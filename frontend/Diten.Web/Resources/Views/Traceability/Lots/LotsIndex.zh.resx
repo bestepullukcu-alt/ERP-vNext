@@ -666,4 +666,8 @@
   <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>打开“提交决定”页面</value></data>
   <data name="Quality.PendingApproval" xml:space="preserve"><value>待批准</value></data>
   <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>放行决定待批准 · {0}</value></data>
+  <data name="Level.Gsku" xml:space="preserve"><value>全球 SKU</value></data>
+  <data name="Level.Lsku" xml:space="preserve"><value>本地 SKU</value></data>
+  <data name="Level.FinishedGood" xml:space="preserve"><value>成品</value></data>
+  <data name="Level.Item" xml:space="preserve"><value>物料项</value></data>
 </root>

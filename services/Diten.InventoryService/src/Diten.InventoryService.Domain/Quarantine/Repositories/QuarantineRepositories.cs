@@ -47,6 +47,9 @@ public interface IQuarantineRepository
 
     Task<QuarantineHold?> FindHoldBySourceMovementAsync(string transactionId, CancellationToken cancellationToken = default);
 
+    /// <summary>FU-0175-Q5-01: the caller's earlier <c>updateHold</c> with this idempotency key (its audit row), if any.</summary>
+    Task<QuarantineHoldUpdateAuditRecord?> FindHoldUpdateAsync(Guid userId, string idempotencyKey, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<QuarantineHold>> FindHoldsByCreateKeysAsync(Guid createdBy, IReadOnlyCollection<string> createKeys, CancellationToken cancellationToken = default);
 
     Task<HoldPage> ListHoldsAsync(HoldQuery query, CancellationToken cancellationToken = default);
@@ -87,6 +90,9 @@ public interface IQuarantineWriteSession
     Task InsertHoldAsync(QuarantineHold hold, CancellationToken cancellationToken = default);
 
     Task<bool> ReplaceHoldAsync(QuarantineHold hold, int expectedVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>FU-0175-Q5-01: the <c>updateHold</c> audit row (<c>inventory_audit</c>, insert only).</summary>
+    Task InsertHoldUpdateAuditAsync(QuarantineHoldUpdateAuditRecord record, CancellationToken cancellationToken = default);
 
     Task InsertBlockedAsync(BlockedStock blocked, CancellationToken cancellationToken = default);
 

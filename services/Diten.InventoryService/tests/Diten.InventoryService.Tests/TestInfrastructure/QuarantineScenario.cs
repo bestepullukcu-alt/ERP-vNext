@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Persistence.Quarantine;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -64,10 +65,10 @@ public sealed class QuarantineScenario
     /// <summary>MOD-0022 keys a quarantine user needs since Q3 (pack §14 outside keys): policy (sign) + reading the signature (read).</summary>
     public static readonly string[] ESignPermissions = ["esign.signatures.sign", "esign.signatures.read"];
 
-    public QuarantineScenario(QuarantineApiFactory factory, bool lotControlled = true, bool serialControlled = false)
+    public QuarantineScenario(QuarantineApiFactory factory, bool lotControlled = true, bool serialControlled = false, SkuLevel level = SkuLevel.Lsku)
     {
         Factory = factory;
-        Lots = new LotLedgerScenario(factory, lotControlled, serialControlled);
+        Lots = new LotLedgerScenario(factory, lotControlled, serialControlled, level);
         Token = TestTokens.Mint(Tenant, Ledger.LegalEntity, Ledger.User, TestTokens.AllPermissions.Concat(TestTokens.TracePermissions).Concat(QuarantinePermissions).Concat(ESignPermissions));
         ApproverToken = TestTokens.Mint(Tenant, Ledger.LegalEntity, Approver, TestTokens.AllPermissions.Concat(QuarantinePermissions).Concat(ESignPermissions));
         Client = factory.CreateContractClient();

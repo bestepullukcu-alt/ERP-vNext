@@ -28,7 +28,23 @@ public sealed class InventoryScenario
         bool lotControlled = false,
         bool serialControlled = false,
         params UomConversionRule[] conversions)
+        : this(factory, SkuLevel.Lsku, lotControlled, serialControlled, conversions)
     {
+    }
+
+    /// <summary>
+    /// WP-0174-ITEM: the scenario's SKU at <paramref name="level"/>. <see cref="SkuLevel.Item"/> is a material item stocked as its
+    /// own SKU (<c>skuId == itemId</c>, PRODUCT-MASTER 1.1 §8.5 Q-1, never serial-tracked).
+    /// </summary>
+    public InventoryScenario(
+        InventoryApiFactory factory,
+        SkuLevel level,
+        bool lotControlled,
+        bool serialControlled = false,
+        params UomConversionRule[] conversions)
+    {
+        Level = level;
+        Sku = level == SkuLevel.Item ? Item : Guid.NewGuid();
         _factory = factory;
         _client = factory.CreateContractClient();
         factory.TrackTenant(Tenant);
@@ -51,8 +67,8 @@ public sealed class InventoryScenario
         LocationC = binC.Id.ToString("D");
         LotControlled = lotControlled;
 
-        factory.Products.AddItem(Item, lotControlled, serialControlled);
-        factory.Products.AddSku(Sku, SkuLevel.Lsku, Item, "EA", conversions);
+        factory.Products.AddItem(Item, lotControlled, level != SkuLevel.Item && serialControlled);
+        factory.Products.AddSku(Sku, level, Item, "EA", conversions);
         factory.Locations.AddBin(LocationA, Warehouse, LegalEntity.ToString());
         factory.Locations.AddBin(LocationB, Warehouse, LegalEntity.ToString());
         factory.Locations.AddBin(LocationC, Warehouse2, LegalEntity.ToString());
@@ -63,7 +79,10 @@ public sealed class InventoryScenario
     public Guid LegalEntity { get; } = Guid.NewGuid();
     public Guid User { get; } = Guid.NewGuid();
     public Guid Item { get; } = Guid.NewGuid();
-    public Guid Sku { get; } = Guid.NewGuid();
+    /// <summary>The scenario SKU — equal to <see cref="Item"/> at level Item.</summary>
+    public Guid Sku { get; }
+
+    public SkuLevel Level { get; }
     public string Warehouse { get; }
     public string Warehouse2 { get; }
     public string LocationA { get; }
@@ -115,7 +134,7 @@ public sealed class InventoryScenario
             ["movementType"] = movementType,
             ["itemId"] = Item.ToString(),
             ["skuId"] = Sku.ToString(),
-            ["skuLevel"] = "Lsku",
+            ["skuLevel"] = WireNames.ToWire(Level),
             ["quantity"] = quantity,
             ["uomId"] = uomId,
             ["sourceModule"] = "MOD-TEST",
@@ -164,7 +183,7 @@ public sealed class InventoryScenario
             ["idempotencyKey"] = "rsv-" + Guid.NewGuid().ToString("N"),
             ["itemId"] = Item.ToString(),
             ["skuId"] = Sku.ToString(),
-            ["skuLevel"] = "Lsku",
+            ["skuLevel"] = WireNames.ToWire(Level),
             ["quantity"] = quantity,
             ["reservationType"] = "SALES_ORDER",
             ["sourceModule"] = sourceModule,

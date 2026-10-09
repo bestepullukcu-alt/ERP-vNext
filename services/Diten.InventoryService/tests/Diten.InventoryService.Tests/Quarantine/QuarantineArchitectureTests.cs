@@ -73,8 +73,17 @@ public sealed class QuarantineArchitectureTests
     public void MOD_0175_never_writes_a_ledger_collection_and_posts_only_through_the_internal_posting_service()
     {
         var sources = QuarantineSources();
-        var readers = sources.Where(f => Regex.IsMatch(f.Body, @"InventoryCollections\.\w+")).Select(f => f.RelativePath).ToList();
+        // WP-0174-ITEM (FU-0175-Q5-01): pack §8 "every 0175 command writes an InventoryService audit row" — the repository may
+        // name inventory_audit (InventoryCollections.Audit, insert + key lookup) and NOTHING else of the ledger.
+        var readers = sources.Where(f => Regex.Matches(f.Body, @"InventoryCollections\.(\w+)").Any(m => m.Groups[1].Value != "Audit"))
+            .Select(f => f.RelativePath).ToList();
         Assert.Equal(["Diten.InventoryService.Persistence/Quarantine/QuarantineLedgerReads.cs"], readers);
+        var auditUsers = sources.Where(f => f.Body.Contains("InventoryCollections.Audit", StringComparison.Ordinal)).Select(f => f.RelativePath).ToList();
+        Assert.Equal(["Diten.InventoryService.Persistence/Quarantine/QuarantineRepository.cs"], auditUsers);
+        var repository = Assert.Single(sources, f => f.RelativePath.EndsWith("Persistence/Quarantine/QuarantineRepository.cs", StringComparison.Ordinal));
+        var auditCalls = Regex.Matches(repository.Body, @"_audit\s*\.\s*(\w+)").Select(m => m.Groups[1].Value).Distinct().ToList();
+        Assert.NotEmpty(auditCalls);
+        Assert.All(auditCalls, c => Assert.Contains(c, new[] { "Find", "InsertOneAsync" }));
 
         var reads = Assert.Single(sources, f => f.RelativePath.EndsWith("QuarantineLedgerReads.cs", StringComparison.Ordinal));
         var ledgerCalls = Regex.Matches(reads.Body, @"_(transactions|positions|reservations)\s*\.\s*(\w+)").Select(m => m.Groups[2].Value).Distinct().ToList();

@@ -18,14 +18,15 @@
     let etag = 'W/"0"';
     let candidates = [];
     let samples = {};
-    const labels = { positions: {}, warehouses: {}, locations: {} };
+    const labels = { positions: {}, warehouses: {}, locations: {}, users: {} };
     let reasonsList = null;
     let editing = null;
 
     // ── settings ────────────────────────────────────────────────────────────────────────────────────────────────
     const candidateLabel = (value) => {
         const [kind, id] = value.split(':');
-        const text = kind === 'position' ? (labels.positions[id] || id) : id;
+        // FU-0175-Q5-02: a user candidate by name (lookups/users), else the short id + "unknown user"
+        const text = kind === 'position' ? (labels.positions[id] || id) : (labels.users[id] || ui.unknownPerson(id));
         return `${t(kind === 'position' ? 'Quarantine.Settings.Approvers.Position' : 'Quarantine.Settings.Approvers.User')}: ${text}`;
     };
     const renderCandidates = () => {
@@ -57,9 +58,19 @@
         candidates = [...(s.approverCandidates || [])];
         samples = Object.assign({}, s.sampleLocations || {});
         renderCandidates();
+        loadUserNames();
         renderSamples();
         renderTemplate(s.workflowTemplate);
     };
+    /** Names of the user candidates not resolved yet (one Web call; unknown ones stay "unknown user"). */
+    async function loadUserNames() {
+        const ids = candidates.filter((c) => c.startsWith('user:')).map((c) => c.slice(5)).filter((id) => !(id in labels.users));
+        if (!ids.length) return;
+        const reply = await ui.get(`/Quarantine/lookups/users?ids=${encodeURIComponent(ids.join(','))}`);
+        (reply.ok ? reply.json?.items || [] : []).forEach((u) => { if (u.name) labels.users[u.id] = u.name; });
+        renderCandidates();
+    }
+
     const load = async () => {
         const reply = await ui.get(ui.api('settings'));
         if (!reply.ok) return ui.showError(ui.byId('qr-page-error'), reply);
@@ -125,6 +136,7 @@
         if (!candidates.includes(value)) candidates.push(value);
         ui.byId('qr-s-cand-user').value = '';
         renderCandidates();
+        loadUserNames();
     });
     ui.byId('qr-s-candidates').addEventListener('click', (event) => {
         const index = event.target.closest('[data-cand]')?.getAttribute('data-cand');

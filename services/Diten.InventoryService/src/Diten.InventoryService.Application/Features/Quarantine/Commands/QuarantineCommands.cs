@@ -22,6 +22,14 @@ public sealed record BlockStockCommand(
     IReadOnlyList<BucketInput> Buckets, string? BlockReasonCode, string? Note, string? Reason, string? SignatureId, string IdempotencyKey)
     : IRequest<Response<IReadOnlyList<BlockedStockRefDto>>>;
 
+/// <summary>
+/// §4.3 updateHold (FU-0175-Q5-01) — analysis note / attachment references while the hold is open. <see cref="NoteGiven"/>
+/// tells "analysisNote absent" (keep) from "analysisNote: empty" (clear); <see cref="Attachments"/> null = keep.
+/// </summary>
+public sealed record UpdateHoldCommand(
+    Guid HoldId, bool NoteGiven, string? AnalysisNote, IReadOnlyList<AttachmentDto>? Attachments, string IdempotencyKey, int ExpectedVersion)
+    : IRequest<Response<HoldDetailDto>>;
+
 /// <summary>§4.5 startReview — "İncelemeye al".</summary>
 public sealed record StartReviewCommand(Guid HoldId, string? Note, string IdempotencyKey, int ExpectedVersion) : IRequest<Response<HoldRefDto>>;
 

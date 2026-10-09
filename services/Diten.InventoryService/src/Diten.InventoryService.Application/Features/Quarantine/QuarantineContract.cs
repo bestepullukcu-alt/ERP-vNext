@@ -36,6 +36,12 @@ public static class QuarantineContract
     public const int MaxPageSize = 100;
     public const int DefaultPageSize = 50;
     public const int MaxNoteLength = 2000;
+
+    /// <summary>The <c>inventory_audit</c> action of an <c>updateHold</c> row (FU-0175-Q5-01) — not a stock status, not a movement type.</summary>
+    public const string HoldUpdatedAuditAction = "QUARANTINE_HOLD_UPDATED";
+
+    /// <summary><c>UpdateHoldRequest.attachments</c> maxItems.</summary>
+    public const int MaxAttachments = 20;
     public const int MaxTextLength = 200;
     public const int MinIdempotencyKeyLength = 8;
     public const int MaxIdempotencyKeyLength = 100;

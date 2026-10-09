@@ -424,4 +424,11 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>批次已过复检日期；在作出质量决定前不能使用。</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>过账期间已关闭。</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>库位未知或不可用。</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>未知用户</value></data>
+  <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>全球 SKU</value></data>
+  <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>本地 SKU</value></data>
+  <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>成品</value></data>
+  <data name="Quarantine.Level.Item" xml:space="preserve"><value>物料项</value></data>
+  <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>编辑备注</value></data>
+  <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>分析结果备注已保存。</value></data>
 </root>

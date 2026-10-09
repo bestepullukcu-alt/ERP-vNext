@@ -71,7 +71,9 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
                 // WP-0173-PM1 (v1.1): the authoritative stock behaviour; open enums carried as text, unknown flags stay null.
                 UpstreamHttp.OptionalString(root, "lifecycleStatus"),
                 UpstreamHttp.NullableBool(root, "lotControlled"),
-                UpstreamHttp.NullableBool(root, "serialControlled")),
+                UpstreamHttp.NullableBool(root, "serialControlled"),
+                // WP-0174-ITEM (O-PM1-3): an explicit false refuses; missing stays null.
+                UpstreamHttp.NullableBool(root, "stockable")),
             Unavailable,
             cancellationToken);
 

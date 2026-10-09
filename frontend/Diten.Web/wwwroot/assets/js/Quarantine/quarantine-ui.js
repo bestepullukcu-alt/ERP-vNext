@@ -235,8 +235,18 @@ window.QuarantineUi = (function () {
         if (then) window.location.href = then;
     };
 
+    /** FU-0175-Q5-02: a UserRef → its display name (filled by the Web), else the short id + "unknown user" — never a guessed name. */
+    const person = (ref) => {
+        if (ref?.name) return ref.name;
+        return ref?.userId ? unknownPerson(ref.userId) : '';
+    };
+    const unknownPerson = (id) => `${String(id).slice(0, 8)} · ${t('Quarantine.Common.UnknownUser')}`;
+
+    /** WP-0174-ITEM: the SKU level in the reader's language (Item = a material item that is its own SKU). */
+    const levelLabel = (level) => (level ? t('Quarantine.Level.' + level) || level : '');
+
     return {
-        t, has, esc, qty, date, dateTime, daysUntil, newKey, byId,
+        t, has, esc, qty, date, dateTime, daysUntil, newKey, byId, person, unknownPerson, levelLabel,
         can: (code) => actions[code] === true,
         get, api, write, send, codeOf, errorText, showError, hideError, toast,
         stockBadge, holdState, holdBadge, decisionBadge, lotUrl, lotLink, productCell, whereCell, uom,

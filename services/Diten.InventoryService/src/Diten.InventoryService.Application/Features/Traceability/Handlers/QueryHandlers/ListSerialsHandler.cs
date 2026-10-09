@@ -38,7 +38,7 @@ public sealed class ListSerialsHandler : IRequestHandler<ListSerialsQuery, Respo
 
         if (request.SkuLevel is not null)
         {
-            if (!WireNames.TryParseLegacySkuLevel(request.SkuLevel, out var level)) return Invalid("skuLevel must be Gsku, Lsku or FinishedGood.");
+            if (!WireNames.TryParseSkuLevel(request.SkuLevel, out var level)) return Invalid("skuLevel must be Gsku, Lsku, FinishedGood or Item.");
             skuLevel = level;
         }
 

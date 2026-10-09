@@ -13,8 +13,8 @@
     MOD-0175 Q5 — Karantina Kaydı Detayı (QUARANTINEDETAILS, pack §11.3). One same-origin call (/Quarantine/data/hold/{id}: the
     hold + ETag + active decision + names + settings); details.js fills the sections. Sections are the mockup's: header, facts,
     "Kalite bilgileri", "Karar geçmişi" (signature chips = MOD-0022 signature ids), "Stok hareketleri", plus the new "İş akışı" box
-    (§21.3 #10: Durumu yenile / Kararı geri çek / Yeniden uygula) and "İncelemeye al". The analysis note is shown read-only:
-    updateHold (PATCH) is in the contract but not served by InventoryService (evidence O-Q5-1).
+    (§21.3 #10: Durumu yenile / Kararı geri çek / Yeniden uygula) and "İncelemeye al". WP-0174-ITEM: the analysis note is edited
+    in place ("Notu düzenle" → updateHold PATCH with the page ETag, FU-0175-Q5-01) — drawn only for quarantine.holds.review.
     UAS-001 — nothing without quarantine.holds.read; every button only for a holder of its key.
 *@
 @if (!Perms.Has("quarantine.holds.read"))
@@ -87,8 +87,24 @@
                             <div class="col-12 col-md-6"><small class="text-muted d-block">@Localizer["Quarantine.Details.Quality.Coa"]</small><span class="font-monospace" data-f="coa">—</span></div>
                             <div class="col-12 col-md-6"><small class="text-muted d-block">@Localizer["Quarantine.Details.Quality.LotStatus"]</small><span data-f="lotStatus">—</span></div>
                             <div class="col-12">
-                                <small class="text-muted d-block">@Localizer["Quarantine.Details.Quality.Note"]</small>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted d-block">@Localizer["Quarantine.Details.Quality.Note"]</small>
+                                    @if (Perms.Has("quarantine.holds.review"))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-text-primary d-none" id="qr-d-note-edit"><i class="bx bx-edit-alt me-1"></i>@Localizer["Quarantine.Details.Quality.EditNote"]</button>
+                                    }
+                                </div>
                                 <div class="border rounded p-2 bg-lighter" data-f="note">—</div>
+                                @if (Perms.Has("quarantine.holds.review"))
+                                {
+                                    <div class="d-none" id="qr-d-note-editor">
+                                        <textarea class="form-control" id="qr-d-note-input" rows="4" maxlength="2000" aria-label="@Localizer["Quarantine.Details.Quality.Note"]"></textarea>
+                                        <div class="d-flex justify-content-end gap-2 mt-2">
+                                            <button type="button" class="btn btn-sm btn-label-secondary" id="qr-d-note-cancel">@Localizer["Quarantine.Common.Cancel"]</button>
+                                            <button type="button" class="btn btn-sm btn-primary" id="qr-d-note-save">@Localizer["Quarantine.Common.Save"]</button>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div class="col-12">
                                 <small class="text-muted d-block">@Localizer["Quarantine.Details.Quality.Attachments"]</small>

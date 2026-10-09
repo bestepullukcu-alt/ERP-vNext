@@ -24,6 +24,8 @@ namespace Diten.InventoryService.Tests.Contract;
 /// <para>WP-0173-PM1 — the step 1.1.0 → 1.2.0 is ADDITIVE too (CT-PM1-1): three examples under the existing
 /// <c>UnprocessableMovement</c> response (codes PRODUCT_MASTER_DATA_INCOMPLETE, ITEM_NOT_ACTIVE, SKU_LEVEL_NOT_STOCKABLE), a
 /// <c>description</c> on <c>postMovement</c> and one changelog line — nothing else.</para>
+/// <para>WP-0174-ITEM — 1.2.0 → 1.2.1 is DESCRIPTION ONLY (O-PM1-3): the postMovement description names the stockable: false refusal
+/// and one changelog line is added; measured against the pinned 1.2.0 file (<c>Fixtures/inventory-bundle-v1.2.0.openapi.yaml</c>).</para>
 /// </summary>
 public sealed class InventoryBundleDescriptionNoteTests
 {
@@ -63,7 +65,7 @@ public sealed class InventoryBundleDescriptionNoteTests
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
         Assert.Equal(["info.version", SkuLevelDescription], changed);
-        Assert.Equal("1.2.0", current["info.version"]);
+        Assert.Equal("1.2.1", current["info.version"]);
         Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
                                            || k.StartsWith(RetestDueExample, StringComparison.Ordinal)
                                            || k == "components.schemas.SkuLevel.enum[3]" || k == PostMovementDescription
@@ -71,6 +73,34 @@ public sealed class InventoryBundleDescriptionNoteTests
         Assert.Equal("LOT_RETEST_DUE", current[RetestDueExample + "value.error.code"]);
         Assert.Contains(AvailableDescription, added);
         Assert.Equal("FROZEN", current["info.x-status"]);
+    }
+
+    private const string FrozenV120Sha256 = "e2d87c0bb2f303be905b5a0e34e71537d8ba053e3ce2fde7acb0d30f0eb8965e";
+
+    private static string FixtureV120Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.2.0.openapi.yaml");
+
+    [Fact]
+    public void The_1_2_0_fixture_is_the_frozen_1_2_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV120Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV120Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+    }
+
+    [Fact]
+    public void The_1_2_1_change_is_the_postMovement_description_and_one_changelog_line()
+    {
+        var frozen = Flatten(Load(FixtureV120Path));
+        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
+        var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
+        Assert.Equal(["info.version", PostMovementDescription], changed);
+        Assert.Equal("1.2.0", frozen["info.version"]);
+        Assert.Equal("1.2.1", current["info.version"]);
+        var line = Assert.Single(added);
+        Assert.StartsWith("info.x-changelog[", line);
+        Assert.StartsWith("1.2.1 — description only (WP-0174-ITEM, O-PM1-3)", current[line]);
+        Assert.Contains("stockable: false", current[PostMovementDescription]);
+        Assert.Contains("SKU_LEVEL_NOT_STOCKABLE", current[PostMovementDescription]);
     }
 
     [Fact]

@@ -666,4 +666,8 @@
   <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>فتح صفحة إرسال القرار</value></data>
   <data name="Quality.PendingApproval" xml:space="preserve"><value>بانتظار الموافقة</value></data>
   <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>قرار الإفراج بانتظار الموافقة · {0}</value></data>
+  <data name="Level.Gsku" xml:space="preserve"><value>SKU عالمي</value></data>
+  <data name="Level.Lsku" xml:space="preserve"><value>SKU محلي</value></data>
+  <data name="Level.FinishedGood" xml:space="preserve"><value>منتج نهائي</value></data>
+  <data name="Level.Item" xml:space="preserve"><value>صنف مادة</value></data>
 </root>

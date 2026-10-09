@@ -17,8 +17,9 @@ namespace Diten.InventoryService.Api.Controllers.Quarantine;
 /// QUARANTINE-BUNDLE — MOD-0175 (base <c>/api/quarantine</c>, contract <c>quarantine.openapi.yaml</c> 1.0.0). Slice Q1
 /// implements: holds (list, get, "Karantinaya Al", "İncelemeye al"), decisions (draft, submit, get, re-apply), blocked stock
 /// (list, get, "İncelemeyi tamamla", "Stoğu bloke et"), settings (get / put) and block reasons (list / create / put). Slice
-/// Q2 adds the workflow operations (refresh, withdraw, template), Q4 the retest queue, Q5 the lot quality status. The by-source
-/// list and the hold PATCH are frozen in the contract and not served yet (Q5 evidence O-Q5-1). No DELETE anywhere;
+/// Q2 adds the workflow operations (refresh, withdraw, template), Q4 the retest queue, Q5 the lot quality status, WP-0174-ITEM
+/// the hold PATCH (updateHold, FU-0175-Q5-01). The by-source list is frozen in the contract and not served yet (FU-0175-Q5-03,
+/// with MOD-0177). No DELETE anywhere;
 /// the only PUTs are the two master-data replacements the contract names (settings, block reasons). No business rule here.
 /// </summary>
 [Route("api/quarantine")]
@@ -62,6 +63,25 @@ public sealed class QuarantineController : CustomBaseController
         if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
         return CreateActionResultInstance(await _mediator.Send(
             new QuarantineStockCommand(body.Mode ?? "", body.LotId, body.Buckets, body.Reason, body.SignatureId, key), ct));
+    }
+
+    [HttpPatch("holds/{holdId}")]
+    [HasPermission(QuarantinePermissions.HoldsReview)]
+    public async Task<IActionResult> UpdateHold(string holdId, CancellationToken ct)
+    {
+        if (!QuarantineSupport.TryParseId(holdId, out var id)) return NotFoundContract("QUARANTINE_HOLD_NOT_FOUND", "Hold not found.");
+        var read = await QuarantineRequestReader.ReadAsync(Request.Body, QuarantineRequestReader.UpdateHoldMembers, b => new
+        {
+            NoteGiven = b.Root.TryGetProperty("analysisNote", out _),
+            Note = b.String("analysisNote"),
+            Attachments = QuarantineRequestReader.Attachments(b),
+            Key = b.String("idempotencyKey")
+        }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        if (IfMatch() is not { } version) return Invalid("If-Match is required.");
+        return await CompanyChecked(holdId, WithETag(await _mediator.Send(
+            new UpdateHoldCommand(id, body.NoteGiven, body.Note, body.Attachments, key, version), ct), h => h.Version), ct);
     }
 
     [HttpPost("holds/{holdId}/review")]

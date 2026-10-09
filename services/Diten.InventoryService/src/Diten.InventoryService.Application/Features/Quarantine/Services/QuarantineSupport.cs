@@ -34,6 +34,8 @@ public sealed class QuarantineSupport
 
     public Guid UserId => _tenant.UserId;
 
+    public Guid CorrelationId => _correlation.CorrelationId;
+
     public static DateTimeOffset Now() => DateTimeOffset.UtcNow;
 
     private static long _sequence = DateTime.UtcNow.Ticks;

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Diten.InventoryService.Application.Features.Quarantine;
 using Diten.InventoryService.Application.Features.Quarantine.Commands;
 using Diten.InventoryService.Application.Features.Quarantine.Services;
 using Diten.InventoryService.Domain.Quarantine.Enums;
@@ -143,6 +144,21 @@ public static class QuarantineRequestReader
 
     public static readonly HashSet<string> ReviewMembers = new(StringComparer.Ordinal) { "note", "idempotencyKey" };
 
+    public static readonly HashSet<string> UpdateHoldMembers = new(StringComparer.Ordinal) { "analysisNote", "attachments", "idempotencyKey" };
+
+    private static readonly HashSet<string> AttachmentMembers = new(StringComparer.Ordinal) { "name", "dmsRef" };
+
+    /// <summary><c>UpdateHoldRequest.attachments</c>: null when absent (keep); each item <c>{ name, dmsRef }</c>, both strings.</summary>
+    public static IReadOnlyList<AttachmentDto>? Attachments(Body body)
+        => body.Array("attachments")?.Select((element, i) =>
+        {
+            if (element.ValueKind != JsonValueKind.Object) throw new FormatException($"attachments[{i}] must be an object.");
+            var unknown = element.EnumerateObject().Select(p => p.Name).FirstOrDefault(n => !AttachmentMembers.Contains(n));
+            if (unknown is not null) throw new FormatException($"Unknown member 'attachments[{i}].{unknown}'.");
+            var a = new Body(element);
+            return new AttachmentDto(a.String("name") ?? "", a.String("dmsRef") ?? "");
+        }).ToList();
+
     public static readonly HashSet<string> ReviewCompleteMembers = new(StringComparer.Ordinal) { "reason", "idempotencyKey" };
 
     public static readonly HashSet<string> DecisionMembers = new(StringComparer.Ordinal)
@@ -170,7 +186,7 @@ public static class QuarantineRequestReader
             var unknown = element.EnumerateObject().Select(p => p.Name).FirstOrDefault(n => !BucketMembers.Contains(n));
             if (unknown is not null) throw new FormatException($"Unknown member 'buckets[{i}].{unknown}'.");
             var b = new Body(element);
-            if (!WireNames.TryParseLegacySkuLevel(b.String("skuLevel"), out var level)) throw new FormatException($"buckets[{i}].skuLevel must be Gsku, Lsku or FinishedGood.");
+            if (!WireNames.TryParseSkuLevel(b.String("skuLevel"), out var level)) throw new FormatException($"buckets[{i}].skuLevel must be Gsku, Lsku, FinishedGood or Item.");
             if (!b.Root.TryGetProperty("quantity", out var q)) throw new FormatException($"buckets[{i}].quantity is required.");
             return new BucketInput(b.Uuid("itemId"), b.Uuid("skuId"), level, b.String("warehouseId") ?? "", b.String("locationId") ?? "",
                 Body.Decimal(q, $"buckets[{i}].quantity"), b.String("lotId"));

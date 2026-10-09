@@ -666,4 +666,8 @@
   <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>Abrir la página Enviar decisión</value></data>
   <data name="Quality.PendingApproval" xml:space="preserve"><value>Pendiente de aprobación</value></data>
   <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>Decisión de liberación pendiente de aprobación · {0}</value></data>
+  <data name="Level.Gsku" xml:space="preserve"><value>SKU global</value></data>
+  <data name="Level.Lsku" xml:space="preserve"><value>SKU local</value></data>
+  <data name="Level.FinishedGood" xml:space="preserve"><value>Producto terminado</value></data>
+  <data name="Level.Item" xml:space="preserve"><value>Artículo de material</value></data>
 </root>

@@ -22,12 +22,13 @@ public sealed class LotLedgerScenario
 {
     public const string Reason = "QA karari - sapma DEV-2026-021";
 
-    public LotLedgerScenario(TraceApiFactory factory, bool lotControlled = true, bool serialControlled = false)
+    public LotLedgerScenario(TraceApiFactory factory, bool lotControlled = true, bool serialControlled = false, SkuLevel level = SkuLevel.Lsku)
     {
         Factory = factory;
-        Ledger = new InventoryScenario(factory, lotControlled, serialControlled);
+        Ledger = new InventoryScenario(factory, level, lotControlled, serialControlled);
         factory.TrackTraceTenant(Ledger.Tenant);
-        factory.Skus.Add(Ledger.Sku, SkuLevel.Lsku, Ledger.Item, TraceScenario.Gtin);
+        // WP-0174-ITEM: an Item-level material has no GTIN (PRODUCT-MASTER 1.1: the GTIN is the packaged product's)
+        factory.Skus.Add(Ledger.Sku, level, Ledger.Item, level == SkuLevel.Item ? null : TraceScenario.Gtin);
         Token = TestTokens.Mint(Ledger.Tenant, Ledger.LegalEntity, Ledger.User, TestTokens.AllPermissions.Concat(TestTokens.TracePermissions));
         Client = factory.CreateContractClient();
         LotGate.Off(factory.Database, Ledger.Tenant, Ledger.LegalEntity); // MOD-0175 Q4: not a gate world (gate tests switch it on)
@@ -50,7 +51,7 @@ public sealed class LotLedgerScenario
     }
 
     public async Task<string> CreateLotAsync(
-        string? expiryDate = null, Guid? sku = null, SkuLevel level = SkuLevel.Lsku, string? manufacturingDate = null, string? retestDate = null)
+        string? expiryDate = null, Guid? sku = null, SkuLevel? level = null, string? manufacturingDate = null, string? retestDate = null)
     {
         var body = new Dictionary<string, object?>
         {
@@ -58,7 +59,7 @@ public sealed class LotLedgerScenario
             ["itemId"] = Ledger.Item.ToString("D"),
             ["lotNumber"] = TraceScenario.LotNo("P2"),
             ["skuId"] = (sku ?? Ledger.Sku).ToString("D"),
-            ["skuLevel"] = WireNames.ToWire(level)
+            ["skuLevel"] = WireNames.ToWire(level ?? Ledger.Level)
         };
         if (expiryDate is not null) body["expiryDate"] = expiryDate;
         if (manufacturingDate is not null) body["manufacturingDate"] = manufacturingDate;
@@ -120,7 +121,7 @@ public sealed class LotLedgerScenario
         var rebuilder = scope.ServiceProvider.GetRequiredService<ISkuPositionRebuilder>();
         var one = rebuilder.GetType().GetMethod("RebuildOneAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                   ?? throw new InvalidOperationException("SkuPositionRebuilder.RebuildOneAsync not found");
-        var key = (Ledger.Tenant.ToString(), Ledger.LegalEntity.ToString(), Ledger.Item.ToString(), Ledger.Sku.ToString(), nameof(SkuLevel.Lsku));
+        var key = (Ledger.Tenant.ToString(), Ledger.LegalEntity.ToString(), Ledger.Item.ToString(), Ledger.Sku.ToString(), WireNames.ToWire(Ledger.Level));
         using var session = await scope.ServiceProvider.GetRequiredService<IMongoClient>().StartSessionAsync();
         await session.WithTransactionAsync((s, ct) => (Task<bool>)one.Invoke(rebuilder, [s, key, ct])!,
             new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority));
@@ -256,7 +257,7 @@ public sealed class LotLedgerScenario
         return body;
     }
 
-    private Task<HttpResponseMessage> Send(HttpMethod method, string path, object? body, Action<HttpRequestMessage>? configure = null)
+    public Task<HttpResponseMessage> Send(HttpMethod method, string path, object? body, Action<HttpRequestMessage>? configure = null)
     {
         var request = new HttpRequestMessage(method, path);
         if (body is not null) request.Content = JsonContent.Create(body);

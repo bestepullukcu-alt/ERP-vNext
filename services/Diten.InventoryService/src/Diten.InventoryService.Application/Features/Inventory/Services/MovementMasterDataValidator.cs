@@ -128,6 +128,14 @@ public sealed class MovementMasterDataValidator
                 });
         }
 
+        // ── WP-0174-ITEM (O-PM1-3): an explicit stockable: false takes no stock at any level ──
+        if (!ProductMasterStockRules.IsStockable(sku.Stockable))
+        {
+            return MasterDataCheck.Refused(InventoryErrorCodes.SkuLevelNotStockable,
+                "PRODUCT-MASTER publishes this SKU as not stockable (stockable: false); it takes no stock movement.",
+                new Dictionary<string, object?> { ["skuLevel"] = WireNames.ToWire(movement.SkuLevel), ["stockable"] = false });
+        }
+
         // ── WP-0173-PM1: lot / serial flags from getSku (OD-1); unknown → refused (OD-5); GSKU serial = product's (OD-10) ──
         var productSerial = movement.SkuLevel == SkuLevel.Gsku
             ? (await _productMaster.GetProductAsync(movement.ItemId, ct) ?? throw new ProductMasterUnavailableException(

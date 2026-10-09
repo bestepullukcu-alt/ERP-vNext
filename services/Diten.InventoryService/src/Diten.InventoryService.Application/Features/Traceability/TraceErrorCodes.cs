@@ -40,4 +40,8 @@ public static class TraceErrorCodes
     public const string IdempotencyKeyReused = InventoryErrorCodes.IdempotencyKeyReused;
     public const string UnknownItem = InventoryErrorCodes.UnknownItem;
     public const string ProductMasterUnavailable = InventoryErrorCodes.ProductMasterUnavailable;
+
+    // TRACE-BUNDLE 1.3.0 (WP-0174-ITEM) — createLot, the same spelling as INVENTORY-BUNDLE 1.2.0
+    public const string ProductMasterDataIncomplete = InventoryErrorCodes.ProductMasterDataIncomplete;
+    public const string SkuLevelNotStockable = InventoryErrorCodes.SkuLevelNotStockable;
 }

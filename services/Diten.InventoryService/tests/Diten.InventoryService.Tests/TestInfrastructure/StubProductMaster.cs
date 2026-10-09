@@ -22,6 +22,10 @@ public sealed class StubProductMaster : IProductMasterClient
     private readonly ConcurrentDictionary<Guid, SkuReference> _skus = new();
     private readonly ConcurrentDictionary<Guid, (bool? Lot, bool? Serial)> _skuFlags = new();
     private readonly ConcurrentDictionary<Guid, string?> _lifecycle = new();
+    private readonly ConcurrentDictionary<Guid, bool?> _stockable = new();
+
+    /// <summary>WP-0174-ITEM: the SKU's published <c>stockable</c> (default: not stated = null).</summary>
+    public void SetStockable(Guid skuId, bool? stockable) => _stockable[skuId] = stockable;
     private readonly ConcurrentDictionary<Guid, SkuUomInfo> _uoms = new();
     private readonly ConcurrentDictionary<Guid, bool> _down = new();
 
@@ -86,7 +90,11 @@ public sealed class StubProductMaster : IProductMasterClient
         }
 
         var (lot, serial) = Flags(skuId, level, s);
-        return Task.FromResult<SkuReference?>(s with { LifecycleStatus = Lifecycle(skuId), LotControlled = lot, SerialControlled = serial });
+        return Task.FromResult<SkuReference?>(s with
+        {
+            LifecycleStatus = Lifecycle(skuId), LotControlled = lot, SerialControlled = serial,
+            Stockable = _stockable.TryGetValue(skuId, out var stockable) ? stockable : null
+        });
     }
 
     public Task<SkuUomInfo?> GetSkuUomAsync(Guid skuId, CancellationToken cancellationToken = default)

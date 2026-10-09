@@ -17,12 +17,23 @@ namespace Diten.InventoryService.Tests.Trace;
 /// <para>WP-0174-P4 (CT K4-1): the 1.2.0 step is additive as well — <c>getManualLotMigrationStatus</c>. The 1.1.0 file is
 /// pinned in <c>Contract/Fixtures/trace-v1.1.0.openapi.yaml</c> (SHA-256 of the git blob at 366d16ee3, LF-normalised) and
 /// every 1.1.0 element must be present and equal in 1.2.0; only <c>info.version</c> may differ.</para>
+/// <para>WP-0174-ITEM: 1.3.0 is additive too — <c>SkuLevel</c> gains <c>Item</c> (appended) and <c>createLot</c> gains two error
+/// codes. The 1.2.0 file is pinned in <c>Contract/Fixtures/trace-v1.2.0.openapi.yaml</c> (the blob at 9697fda76, LF-normalised).</para>
 /// </summary>
 public sealed class TraceContractYamlTests
 {
     private const string FrozenV1Sha256 = "2fa5e20b8de84deba16533c24bc9e1a090847c9494d73a1752522e1f69ea2297";
 
     private const string FrozenV11Sha256 = "9ab20cc7bff48205de10e5586a88975641b27b253203c5c57f20427197fb8e79";
+
+    private const string FrozenV12Sha256 = "2bcc0b44656eefa63df7ee142d56df4eabc794a461281029dd48df4a9c32a0b9";
+
+    /// <summary>The 1.2.0 createLot codes; 1.3.0 appends exactly <see cref="AddedCreateLotCodes"/>.</summary>
+    private static readonly string[] V12CreateLotCodes =
+        ["INVALID_REQUEST", "LOT_NUMBER_INVALID", "LOT_DATES_INVALID", "LOT_SKU_REQUIRED", "LOT_SKU_MISMATCH", "UNKNOWN_ITEM", "PRODUCT_NOT_LOT_CONTROLLED",
+         "LOT_ALREADY_EXISTS", "IDEMPOTENCY_KEY_REUSED", "PRODUCT_MASTER_UNAVAILABLE"];
+
+    private static readonly string[] AddedCreateLotCodes = ["PRODUCT_MASTER_DATA_INCOMPLETE", "SKU_LEVEL_NOT_STOCKABLE"];
 
     /// <summary>The v1 texts B-1 rewrites (accepted proposal §8) — nothing else of v1 may differ.</summary>
     private static readonly HashSet<string> AllowedChangedDescriptions = new(StringComparer.Ordinal)
@@ -33,8 +44,13 @@ public sealed class TraceContractYamlTests
         "components.responses.LotConflict.description"
     };
 
-    /// <summary>1.1.0 → 1.2.0: nothing of 1.1.0 may change except its version number.</summary>
-    private static readonly HashSet<string> AllowedChangedSinceV11 = new(StringComparer.Ordinal) { "info.version" };
+    /// <summary>
+    /// 1.1.0 → 1.2.0: nothing of 1.1.0 may change except its version number; 1.3.0 (WP-0174-ITEM) also appends <c>Item</c> to the
+    /// <c>SkuLevel</c> enum — measured exactly by <see cref="The_1_3_0_additions_are_Item_and_the_two_createLot_codes"/>.
+    /// </summary>
+    private static readonly HashSet<string> AllowedChangedSinceV11 = new(StringComparer.Ordinal) { "info.version", "components.schemas.SkuLevel.enum" };
+
+    private static string FixtureV12Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "trace-v1.2.0.openapi.yaml");
 
     private static string FixturePath => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "trace-v1.0.0.openapi.yaml");
 
@@ -53,6 +69,46 @@ public sealed class TraceContractYamlTests
         var text = File.ReadAllText(FixtureV11Path).Replace("\r\n", "\n");
         Assert.Equal(FrozenV11Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
         Assert.Equal("1.1.0", Map(Load(FixtureV11Path)["info"])["version"]);
+    }
+
+    [Fact]
+    public void The_v1_2_fixture_is_the_1_2_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV12Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV12Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+        Assert.Equal("1.2.0", Map(Load(FixtureV12Path)["info"])["version"]);
+    }
+
+    [Fact]
+    public void Every_1_2_0_element_is_present_and_unchanged_in_1_3_0()
+    {
+        var differences = new List<string>();
+        Contained(Load(FixtureV12Path), Load(ContractSchemas.TraceContractPath), "", differences, AllowedChangedSinceV11);
+        Assert.True(differences.Count == 0, "1.2.0 elements removed or changed:\n" + string.Join("\n", differences));
+    }
+
+    [Fact]
+    public void The_1_3_0_additions_are_Item_and_the_two_createLot_codes()
+    {
+        var v12 = Load(FixtureV12Path);
+        var current = Load(ContractSchemas.TraceContractPath);
+        Assert.Equal(["Gsku", "Lsku", "FinishedGood"], List(Map(Map(Map(v12["components"])["schemas"])["SkuLevel"])["enum"]).Cast<string>());
+        Assert.Equal(["Gsku", "Lsku", "FinishedGood", "Item"], List(Map(Map(Map(current["components"])["schemas"])["SkuLevel"])["enum"]).Cast<string>());
+
+        static IEnumerable<string> CreateLotCodes(Dictionary<object, object> file)
+            => List(Map(Map(Map(file["paths"])["/lots"])["post"])["x-error-codes"]).Cast<string>();
+        Assert.Equal(V12CreateLotCodes, CreateLotCodes(v12));
+        Assert.Equal([.. V12CreateLotCodes, .. AddedCreateLotCodes], CreateLotCodes(current));
+
+        // no other operation's codes changed: every x-error-codes list except createLot's is the 1.2.0 list
+        foreach (DictionaryEntry path in Map(current["paths"]))
+        foreach (DictionaryEntry op in Map(path.Value))
+        {
+            if ((string)path.Key == "/lots" && (string)op.Key == "post") continue;
+            var now = Map(op.Value).Contains("x-error-codes") ? List(Map(op.Value)["x-error-codes"]).Cast<string>().ToList() : [];
+            var before = Map(Map(v12["paths"])[path.Key])[op.Key] is IDictionary b && b.Contains("x-error-codes") ? List(b["x-error-codes"]).Cast<string>().ToList() : [];
+            Assert.True(before.SequenceEqual(now), $"{path.Key} {op.Key}: x-error-codes changed");
+        }
     }
 
     [Fact]
@@ -78,18 +134,20 @@ public sealed class TraceContractYamlTests
     }
 
     [Fact]
-    public void Version_and_changelog_name_1_2_0_and_the_three_behaviour_changes()
+    public void Version_and_changelog_name_1_3_0_and_the_three_behaviour_changes()
     {
         var current = Load(ContractSchemas.TraceContractPath);
         var info = Map(current["info"]);
-        Assert.Equal("1.2.0", info["version"]);
+        Assert.Equal("1.3.0", info["version"]);
         Assert.Equal("FROZEN", info["x-status"]);
         Assert.Equal("MOD-0174", info["x-owner"]);
         var changelog = string.Join("\n", List(info["x-changelog"]).Cast<string>());
         Assert.Contains("1.0.0", changelog);
         Assert.Contains("1.1.0", changelog);
         Assert.Contains("1.2.0", changelog);
-        foreach (var marker in new[] { "B-1", "B-2", "B-3", "LOT_SKU_REQUIRED", "K4-1", "getManualLotMigrationStatus" }) Assert.Contains(marker, changelog);
+        Assert.Contains("1.3.0", changelog);
+        foreach (var marker in new[] { "B-1", "B-2", "B-3", "LOT_SKU_REQUIRED", "K4-1", "getManualLotMigrationStatus", "WP-0174-ITEM", "Item",
+                     "PRODUCT_MASTER_DATA_INCOMPLETE", "SKU_LEVEL_NOT_STOCKABLE" }) Assert.Contains(marker, changelog);
     }
 
     [Fact]

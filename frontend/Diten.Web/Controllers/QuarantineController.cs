@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Diten.Web.Models.Inventory;
+using Diten.Web.Models.Quarantine;
 using Diten.Web.Models.Traceability;
 using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -175,6 +176,7 @@ public sealed class QuarantineController : Controller
         Decorate(hold, labels);
         var decision = await ActiveDecisionAsync(hold, ct);
         var settings = await SettingsAsync(ct);
+        await PeopleAsync(ct, hold, decision);
         return Json(new JsonObject
         {
             ["hold"] = hold,
@@ -199,11 +201,13 @@ public sealed class QuarantineController : Controller
         var sampleLocation = settings?["sampleLocations"]?[(string?)blocked["warehouse"]?["id"] ?? string.Empty]?.GetValue<string>();
         var labels = await LabelsAsync(new JsonArray(blocked.DeepClone()), ct, sampleLocation);
         Decorate(blocked, labels);
+        var decision = await ActiveDecisionAsync(blocked, ct);
+        await PeopleAsync(ct, blocked, decision);
         return Json(new JsonObject
         {
             ["blocked"] = blocked,
             ["etag"] = reply.ETag,
-            ["decision"] = await ActiveDecisionAsync(blocked, ct),
+            ["decision"] = decision,
             ["settings"] = settings,
             ["sampleLocation"] = sampleLocation is null ? null : new JsonObject { ["id"] = sampleLocation, ["label"] = labels.Location(sampleLocation) ?? sampleLocation },
             ["labelsAvailable"] = labels.Available,
@@ -242,13 +246,15 @@ public sealed class QuarantineController : Controller
 
         var labels = await LabelsAsync(record is null ? new JsonArray() : new JsonArray(record.DeepClone()), ct);
         if (record is not null) Decorate(record, labels);
+        await PeopleAsync(ct, decision, record);
         return Json(new JsonObject { ["decision"] = decision, ["record"] = record, ["lot"] = lot, ["labelsAvailable"] = labels.Available, ["me"] = CurrentUserId() });
     }
 
     // ── pickers ──────────────────────────────────────────────────────────────────────────────────────────────────
 
     [HttpGet("lookups/{kind}")]
-    public async Task<IActionResult> Lookups(string kind, [FromQuery] string? q, [FromQuery] string? warehouseId, [FromQuery] string? lotId, CancellationToken ct)
+    public async Task<IActionResult> Lookups(string kind, [FromQuery] string? q, [FromQuery] string? warehouseId, [FromQuery] string? lotId,
+        [FromQuery] string? ids, CancellationToken ct)
     {
         if (!_permissions.Has(QuarantineKeys.HoldsRead)) return Refuse(403, null);
         switch (kind)
@@ -301,6 +307,14 @@ public sealed class QuarantineController : Controller
             {
                 var reply = await SendAsync(HttpMethod.Get, "/api/suppliers", null, null, null, ct, company: false);
                 return reply.IsSuccess ? Json(new { items = Options(reply.Body, "supplierId", "name", null) }) : Failed("lookups.suppliers", reply);
+            }
+            case "users":
+            {
+                // FU-0175-Q5-02: the approver candidates of Ayarlar ("user:<id>") — the same label read as the page calls.
+                var wanted = (ids ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(id => Guid.TryParse(id, out _)).Select(id => Guid.Parse(id).ToString("D")).Distinct().Take(QuarantinePeople.MaxIds).ToList();
+                var names = await NamesAsync(wanted, ct);
+                return Json(new { items = wanted.Select(id => new { id, name = names.TryGetValue(id, out var name) ? name : null }) });
             }
             case "positions":
             {
@@ -376,6 +390,19 @@ public sealed class QuarantineController : Controller
             return Reply.Error(503, "SERVICE_UNAVAILABLE");
         }
     }
+
+    /// <summary>FU-0175-Q5-02: fills <c>name</c> on every <c>{ userId }</c> of the page (QuarantinePeople) — best effort, never fails the page.</summary>
+    private async Task PeopleAsync(CancellationToken ct, params JsonNode?[] roots)
+        => QuarantinePeople.Fill(await NamesAsync(QuarantinePeople.UserIds(roots), ct), roots);
+
+    private Task<IReadOnlyDictionary<string, string>> NamesAsync(IReadOnlyList<string> ids, CancellationToken ct)
+        => ids.Count == 0
+            ? Task.FromResult<IReadOnlyDictionary<string, string>>(new Dictionary<string, string>())
+            : QuarantinePeople.ResolveAsync(ids, async (path, c) =>
+            {
+                var reply = await SendAsync(HttpMethod.Get, path, null, null, null, c, company: false);
+                return (reply.StatusCode, reply.Body);
+            }, ct);
 
     private async Task<JsonObject?> ActiveDecisionAsync(JsonObject record, CancellationToken ct)
     {

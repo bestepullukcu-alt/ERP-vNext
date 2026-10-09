@@ -33,7 +33,8 @@ public sealed class TraceSkuDirectoryHttpClient : ITraceSkuDirectory
 
                 // WP-0173-PM1: the SKU-level flags (v1.1, OD-1) — unknown stays null.
                 return new TraceSku(skuId, level, item, UpstreamHttp.OptionalString(root, "gtin"),
-                    UpstreamHttp.NullableBool(root, "lotControlled"), UpstreamHttp.NullableBool(root, "serialControlled"));
+                    UpstreamHttp.NullableBool(root, "lotControlled"), UpstreamHttp.NullableBool(root, "serialControlled"),
+                    UpstreamHttp.NullableBool(root, "stockable"));
             },
             (message, inner) => new ProductMasterUnavailableException(message, inner),
             cancellationToken);

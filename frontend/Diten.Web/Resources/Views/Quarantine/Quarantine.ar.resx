@@ -424,4 +424,11 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>تجاوزت التشغيلة تاريخ إعادة الاختبار؛ لا يمكن استخدامها حتى يُتخذ قرار جودة.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>فترة الترحيل مغلقة.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>الموقع غير معروف أو لا يمكن استخدامه.</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
+  <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>SKU عالمي</value></data>
+  <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>SKU محلي</value></data>
+  <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>منتج نهائي</value></data>
+  <data name="Quarantine.Level.Item" xml:space="preserve"><value>صنف مادة</value></data>
+  <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>تعديل الملاحظة</value></data>
+  <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>تم حفظ ملاحظة نتيجة التحليل.</value></data>
 </root>

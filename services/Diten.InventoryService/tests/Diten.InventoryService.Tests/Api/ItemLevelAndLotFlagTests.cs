@@ -54,7 +54,8 @@ public sealed class ItemLevelLedgerTests : IClassFixture<InventoryApiFactory>
 /// <summary>
 /// WP-0173-PM1 — MOD-0174 lot creation and the typed-lot migration read the lot flag from the SKU (OD-1); an unknown flag
 /// refuses (OD-5) and never reads as "not lot-controlled"; a new lot's tracking mode over-requires under doubt.
-/// TRACE-BUNDLE 1.2.0 is unchanged: it has no <c>Item</c> level and no "data incomplete" code (open point O-PM1-1).
+/// WP-0174-ITEM: TRACE-BUNDLE 1.3.0 adds the <c>Item</c> level and the 422 "data incomplete" code (O-PM1-1 closed) — the Item
+/// lot itself is measured in <c>ItemLevelLotTests</c>.
 /// </summary>
 public sealed class LotFlagFromSkuTests : IClassFixture<TraceApiFactory>
 {
@@ -67,8 +68,8 @@ public sealed class LotFlagFromSkuTests : IClassFixture<TraceApiFactory>
     {
         var t = new TraceScenario(_factory, lotControlled: true);
         _factory.Skus.SetFlags(t.Sku, lotControlled: null, serialControlled: false);
-        var refused = await t.Expect(t.CreateAsync(t.LotBody(TraceScenario.LotNo())), 503);
-        Assert.Equal("PRODUCT_MASTER_UNAVAILABLE", refused.GetProperty("error").GetProperty("code").GetString());
+        var refused = await t.Expect(t.CreateAsync(t.LotBody(TraceScenario.LotNo())), 422);
+        Assert.Equal("PRODUCT_MASTER_DATA_INCOMPLETE", refused.GetProperty("error").GetProperty("code").GetString());
         Assert.Equal(0, await _factory.Collection("trace_lots").CountDocumentsAsync(new BsonDocument("TenantId", t.Tenant.ToString())));
     }
 
@@ -91,15 +92,6 @@ public sealed class LotFlagFromSkuTests : IClassFixture<TraceApiFactory>
         _factory.Skus.SetFlags(t.Sku, lotControlled: true, serialControlled: skuSerial);
         var (_, _, json) = await t.CreateLotAsync();
         Assert.Equal(expected, json.GetProperty("trackingMode").GetString());
-    }
-
-    [Fact]
-    public async Task An_Item_level_lot_is_still_the_TRACE_400()
-    {
-        var t = new TraceScenario(_factory, lotControlled: true);
-        var body = t.LotBody(TraceScenario.LotNo());
-        body["skuLevel"] = "Item";
-        await t.Expect(t.CreateAsync(body), 400);
     }
 
     [Fact]

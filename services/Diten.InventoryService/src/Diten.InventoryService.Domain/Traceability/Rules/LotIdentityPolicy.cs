@@ -7,7 +7,7 @@ namespace Diten.InventoryService.Domain.Traceability.Rules;
 /// <summary>
 /// K-G — THE single policy point for lot and serial identity (pack §3, §8 "K-G single policy point"). It alone decides
 /// <list type="number">
-/// <item>which SKU levels a lot may bind to (today all three: Gsku, Lsku, FinishedGood);</item>
+/// <item>which SKU levels a lot may bind to (all four: Gsku, Lsku, FinishedGood and — WP-0174-ITEM, TRACE 1.3.0 — Item);</item>
 /// <item>how a lot number / serial number is normalised (trim + upper-case) and what shape it must have;</item>
 /// <item>the business key: lot = Tenant + SKU (skuId + skuLevel) + LotNumber (owner change of DEC-INV-14,
 /// 2026-10-05); serial = Tenant + SKU + serial number (CT-D7).</item>
@@ -26,7 +26,7 @@ public static partial class LotIdentityPolicy
     /// <summary>Policy version of the key below (pack §8 step ①: a V2 key is added beside it, never swapped in place).</summary>
     public const int KeyVersion = 1;
 
-    public static IReadOnlyCollection<SkuLevel> AllowedSkuLevels { get; } = [SkuLevel.Gsku, SkuLevel.Lsku, SkuLevel.FinishedGood];
+    public static IReadOnlyCollection<SkuLevel> AllowedSkuLevels { get; } = [SkuLevel.Gsku, SkuLevel.Lsku, SkuLevel.FinishedGood, SkuLevel.Item];
 
     public static bool MayBindTo(SkuLevel level) => AllowedSkuLevels.Contains(level);
 

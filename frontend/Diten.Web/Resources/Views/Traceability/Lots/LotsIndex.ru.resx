@@ -666,4 +666,8 @@
   <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>Открыть страницу «Отправить решение»</value></data>
   <data name="Quality.PendingApproval" xml:space="preserve"><value>Ожидает утверждения</value></data>
   <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>Решение о выпуске ожидает утверждения · {0}</value></data>
+  <data name="Level.Gsku" xml:space="preserve"><value>Глобальный SKU</value></data>
+  <data name="Level.Lsku" xml:space="preserve"><value>Локальный SKU</value></data>
+  <data name="Level.FinishedGood" xml:space="preserve"><value>Готовая продукция</value></data>
+  <data name="Level.Item" xml:space="preserve"><value>Материальная позиция</value></data>
 </root>

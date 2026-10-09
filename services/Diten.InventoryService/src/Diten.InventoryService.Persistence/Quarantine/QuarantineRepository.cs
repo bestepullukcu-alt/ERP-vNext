@@ -34,6 +34,7 @@ public sealed class QuarantineRepository : IQuarantineRepository
     private readonly IMongoCollection<BlockReason> _reasons;
     private readonly IMongoCollection<LotReleaseClaim> _claims;
     private readonly IMongoCollection<BsonDocument> _sequences;
+    private readonly IMongoCollection<QuarantineHoldUpdateAuditRecord> _audit;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<QuarantineRepository> _logger;
     private readonly Guid _tenantId;
@@ -52,6 +53,7 @@ public sealed class QuarantineRepository : IQuarantineRepository
         _reasons = database.GetCollection<BlockReason>(QuarantineCollections.BlockReasons);
         _claims = database.GetCollection<LotReleaseClaim>(QuarantineCollections.LotReleaseClaims);
         _sequences = database.GetCollection<BsonDocument>(QuarantineCollections.Sequences);
+        _audit = database.GetCollection<QuarantineHoldUpdateAuditRecord>(InventoryCollections.Audit);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -80,6 +82,13 @@ public sealed class QuarantineRepository : IQuarantineRepository
 
     public async Task<QuarantineHold?> FindHoldBySourceMovementAsync(string transactionId, CancellationToken cancellationToken = default)
         => await _holds.Find(Scope<QuarantineHold>() & Builders<QuarantineHold>.Filter.Eq(x => x.SourceMovementId, transactionId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<QuarantineHoldUpdateAuditRecord?> FindHoldUpdateAsync(Guid userId, string idempotencyKey, CancellationToken cancellationToken = default)
+        => await _audit.Find(Scope<QuarantineHoldUpdateAuditRecord>()
+                             & Builders<QuarantineHoldUpdateAuditRecord>.Filter.Eq(x => x.Action, Application.Features.Quarantine.QuarantineContract.HoldUpdatedAuditAction)
+                             & Builders<QuarantineHoldUpdateAuditRecord>.Filter.Eq(x => x.UserId, userId)
+                             & Builders<QuarantineHoldUpdateAuditRecord>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey))
+            .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IReadOnlyList<QuarantineHold>> FindHoldsByCreateKeysAsync(Guid createdBy, IReadOnlyCollection<string> createKeys, CancellationToken cancellationToken = default)
         => await _holds.Find(Scope<QuarantineHold>() & Builders<QuarantineHold>.Filter.Eq(x => x.CreatedBy, createdBy)
@@ -272,6 +281,12 @@ public sealed class QuarantineRepository : IQuarantineRepository
                 _owner.Scope<QuarantineHold>() & Builders<QuarantineHold>.Filter.Eq(x => x.Id, hold.Id) & Builders<QuarantineHold>.Filter.Eq(x => x.Version, expectedVersion),
                 hold, cancellationToken: cancellationToken);
             return result.MatchedCount == 1;
+        }
+
+        public Task InsertHoldUpdateAuditAsync(QuarantineHoldUpdateAuditRecord record, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(record);
+            return _owner._audit.InsertOneAsync(_session, record, cancellationToken: cancellationToken);
         }
 
         public Task InsertBlockedAsync(BlockedStock blocked, CancellationToken cancellationToken = default)

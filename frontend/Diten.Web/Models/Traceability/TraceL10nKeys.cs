@@ -27,7 +27,7 @@ public static class TraceL10nKeys
         "Info.Tracking", "Info.Source", "Info.Source.GoodsReceipt", "Info.Source.Production", "Info.Source.Opening",
         "Info.Source.Manual", "Info.Source.Migration", "Info.None", "Info.CreatedBy",
         "Tracking.Lot", "Tracking.LotAndSerial", "Tracking.None",
-        "Form.Product", "Form.Sku", "Form.LotNumber", "Form.ManufacturerLot", "Form.SupplierLot", "Form.ManufacturingDate",
+        "Form.Product", "Form.Sku", "Level.Gsku", "Level.Lsku", "Level.FinishedGood", "Level.Item", "Form.LotNumber", "Form.ManufacturerLot", "Form.SupplierLot", "Form.ManufacturingDate",
         "Form.ExpiryDate", "Form.RetestDate", "Form.Country", "Form.Coa", "Form.ReasonCounter", "Form.NoChanges",
         "Form.Duplicate", "Col.Status",
         "History.Action.Created", "History.Action.Updated", "History.Action.StatusChanged", "History.Action.Linked",
