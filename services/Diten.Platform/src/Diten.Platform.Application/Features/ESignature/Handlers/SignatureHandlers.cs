@@ -353,10 +353,6 @@ public sealed class SignSubjectCommandHandler : IRequestHandler<SignSubjectComma
         {
             return ESignResponses.Fail<SignatureRecordDto>(rejected.Code, rejected.Status, rejected.Message);
         }
-        catch (ESignatureTaskBindingException)
-        {
-            return ESignResponses.Fail<SignatureRecordDto>(ESignCodes.SignatureMismatch, 409, "A signature is already bound to this workflow task.");
-        }
         catch (PlatformTransactionUnavailableException)
         {
             return ESignResponses.Fail<SignatureRecordDto>(ESignCodes.ReauthUnavailable, 503, "The signature could not be recorded now.");

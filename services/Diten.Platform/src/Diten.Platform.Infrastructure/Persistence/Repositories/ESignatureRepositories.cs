@@ -17,9 +17,6 @@ internal static class ESignatureMongo
 {
     public static bool IsDuplicateKey(MongoWriteException ex) => ex.WriteError?.Category == ServerErrorCategory.DuplicateKey;
 
-    public static bool IsDuplicateKeyOn(MongoWriteException ex, string indexName) =>
-        IsDuplicateKey(ex) && (ex.WriteError?.Message?.Contains(indexName, StringComparison.Ordinal) ?? false);
-
     public static IClientSessionHandle Handle(IPlatformTransactionSession session, IPlatformDbContext db) =>
         PlatformMongoTransactionSession.Require(session, db);
 
@@ -39,8 +36,6 @@ internal static class ESignatureMongo
 
 public sealed class ESignatureRecordRepository : IESignatureRecordRepository
 {
-    private const string WorkflowTaskIndex = "ux_esign_records_tenant_workflow_task";
-
     private readonly IPlatformDbContext _db;
     private readonly IMongoCollection<ESignatureRecord> _collection;
 
@@ -52,21 +47,10 @@ public sealed class ESignatureRecordRepository : IESignatureRecordRepository
 
     private static FilterDefinitionBuilder<ESignatureRecord> F => Builders<ESignatureRecord>.Filter;
 
-    public async Task InsertAsync(IPlatformTransactionSession session, ESignatureRecord record, CancellationToken ct = default)
-    {
-        try
-        {
-            await _collection.InsertOneAsync(ESignatureMongo.Handle(session, _db), record, cancellationToken: ct);
-        }
-        catch (MongoWriteException ex) when (ESignatureMongo.IsDuplicateKeyOn(ex, WorkflowTaskIndex))
-        {
-            throw new ESignatureTaskBindingException(ex);
-        }
-        catch (MongoWriteException ex) when (ESignatureMongo.IsDuplicateKey(ex))
-        {
-            throw new ESignatureDuplicateException(ex);
-        }
-    }
+    // E5B — no per-task unique index any more (a task may be re-signed); the only unique hits left are the number and the
+    // (signer, idempotency key) pair.
+    public Task InsertAsync(IPlatformTransactionSession session, ESignatureRecord record, CancellationToken ct = default) =>
+        ESignatureMongo.InsertOrThrowDuplicateAsync(_collection, ESignatureMongo.Handle(session, _db), record, ct);
 
     public async Task<ESignatureRecord?> GetAsync(Guid tenantId, Guid id, CancellationToken ct = default) =>
         await _collection.Find(F.Eq(x => x.TenantId, tenantId) & F.Eq(x => x.Id, id)).FirstOrDefaultAsync(ct);

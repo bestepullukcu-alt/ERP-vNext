@@ -20,8 +20,8 @@ namespace Diten.Platform.Domain.Repositories;
 
 public interface IESignatureRecordRepository
 {
-    /// <summary>Inserts the record. Duplicate (TenantId, SignerUserId, IdempotencyKey) ⇒ <see cref="ESignatureDuplicateException"/>;
-    /// a second signature for one workflow task ⇒ <see cref="ESignatureTaskBindingException"/>.</summary>
+    /// <summary>Inserts the record. Duplicate (TenantId, SignerUserId, IdempotencyKey) ⇒ <see cref="ESignatureDuplicateException"/>.
+    /// A workflow task may carry several signatures (E5B re-sign); which one binds the approval is the E4 gate's decision.</summary>
     Task InsertAsync(IPlatformTransactionSession session, ESignatureRecord record, CancellationToken ct = default);
 
     Task<ESignatureRecord?> GetAsync(Guid tenantId, Guid id, CancellationToken ct = default);
@@ -159,13 +159,6 @@ public sealed record ESignatureRequestQuery(
 /// <summary>A unique index refused an insert inside a transaction (the transaction is aborted; decide outside it).</summary>
 public sealed class ESignatureDuplicateException(Exception? inner = null)
     : Exception("An e-signature unique index refused the insert.", inner);
-
-/// <summary>
-/// A record insert hit the one-signature-per-workflow-task unique index (pack §4; E4 binds a signature to one task). Raised
-/// by the record repository, answered 409 ESIGN_SIGNATURE_MISMATCH by the sign handler.
-/// </summary>
-public sealed class ESignatureTaskBindingException(Exception? inner = null)
-    : Exception("A signature is already bound to this workflow task.", inner);
 
 // ── E3 — signature samples ("İmzam"). The two sample stores are INSERT-ONLY (IESignature*Repository naming: the
 // architecture test covers them); the owner pointer is a guarded mutable document. ──────────────────────────────

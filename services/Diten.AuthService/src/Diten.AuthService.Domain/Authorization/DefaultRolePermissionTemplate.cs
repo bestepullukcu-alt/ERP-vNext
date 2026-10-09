@@ -38,16 +38,20 @@ public static class DefaultRolePermissionTemplate
     public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "esign" };
 
     /// <summary>
-    /// MOD-0022 CT-D10 — the two e-signature keys EVERY default tenant role holds: signing and keeping one's own signature
-    /// sample. Signing authorises nothing by itself — each consumer action keeps its own key and the consumer decides who
-    /// may sign a business decision — so these are safe defaults. Keep this list EXACT: no management key (policy,
-    /// meanings, sample approval, invalidation, export) ever enters a non-Admin default role through it.
+    /// MOD-0022 CT-D10 — the e-signature keys EVERY default tenant role holds: signing, keeping one's own signature sample
+    /// and (CT-Q15, MOD-0175 O-Q3-1) reading a signature — a consumer that is handed a signature id reads the record back
+    /// with the signer's token, so a signer without the read key could sign but not submit. Signing authorises nothing by
+    /// itself — each consumer action keeps its own key and the consumer decides who may sign a business decision — so these
+    /// are safe defaults. Keep this list EXACT: no management key (policy, meanings, sample approval, invalidation, export)
+    /// ever enters a non-Admin default role through it. It feeds the role template only; no reconciler grants it to tenants
+    /// provisioned earlier (CT-D10 (b)).
     /// </summary>
     public static readonly IReadOnlySet<string> DefaultSignerPermissions =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "esign.signatures.sign",
-            "esign.my-samples.manage"
+            "esign.my-samples.manage",
+            "esign.signatures.read"
         };
 
     /// <summary>
