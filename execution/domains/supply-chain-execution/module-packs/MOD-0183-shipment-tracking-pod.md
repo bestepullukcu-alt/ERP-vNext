@@ -86,7 +86,7 @@ implementation. Central consumer contracts are present. Unresolved compatibility
 |---|---|
 | `Id` | Server-minted stable UUID |
 | `TenantId` | Required; server context only, never request body |
-| `LegalEntityId` | Required; server context/header policy only, never request body |
+| `LegalEntityId` | Required; arrives WITH THE REQUEST (query) and the service validates it against MDM for tenant ownership and Active state, fail-closed (R-2, SHIPMENT-BUNDLE 3.2.0); header policy on the service seam, never request body |
 | `ShipmentNumber` | Server-minted, tenant/legal-entity unique |
 | `WarehouseReferenceId` | Required opaque Location warehouse reference; map `OutboundShipment.warehouseId`, never `outboundId` |
 | `SourceModule` / `SourceType` / `SourceDocumentId` | Required frozen create fields; Warehouse mapping is `MOD-0178` / `WAREHOUSE_OUTBOUND` / `outboundId` |

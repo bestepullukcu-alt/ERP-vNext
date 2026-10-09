@@ -47,7 +47,7 @@ frozen INVENTORY transactions but never stores or adjusts a shadow stock balance
 
 ## 4. Entity Fields
 
-The aggregate has server UUID, server-resolved TenantId/LegalEntityId, unique `RmaNumber`, required `ShipmentId`,
+The aggregate has server UUID, server-resolved TenantId and request-borne, MDM-validated LegalEntityId, unique `RmaNumber`, required `ShipmentId`,
 reason, non-empty return lines, evidence references, status/version and audit fields. Received/dispositioned states may
 carry an opaque `InventoryTransactionReferenceId`; it is a reconciliation reference, never a local balance.
 
@@ -254,7 +254,7 @@ No permission inferred from a valid token alone; test scoped actors independentl
 | Case | Frozen fact / bounded requirement | Exact unresolved decision / acceptance oracle |
 |---|---|---|
 | Headers | GET and both POST require UUID X-Correlation-Id; POST key is string length1..128 | Nil UUID, duplicate header, parser/whitespace behavior, validation/auth ordering and fallback trace must be owner-bound for this family; no Carrier-default import |
-| JWT + scope | Bearer; server-resolved tenant/LE; global JWT/header matching; no payload-selected scope | Security owner binds trusted claim names, missing/duplicate claim handling, scope-header validation and precedence. Test two tenants×two LEs and missing permission; all lookups fail closed |
+| JWT + scope | Bearer; server-resolved tenant; LegalEntityId request-borne and MDM-validated fail-closed (R-2, SHIPMENT-BUNDLE 3.2.0); global JWT/header matching; no payload-selected scope | Security owner binds trusted claim names, missing/duplicate claim handling, scope-header validation and precedence. Test two tenants×two LEs and missing permission; all lookups fail closed |
 | Missing/cross-scope target | POST create/transition declare404 NotFound; list declares200 only | Target code `RETURN_NOT_FOUND` exists in shared examples; reference-specific404 mapping/disclosure must be chosen; list no-leak filtering required |
 | Schema / auth / persistence failure | Shared Error requires code/message/correlationId plus contractVersion:v1, details optional | GET lacks declared errors; POST lacks400/401/403/5xx (and415). Owner supplies exact status/code/header matrix and decides clarification vs versioned amendment before DEV |
 | Duplicate / changed payload | Create declares409 Conflict; shared IDEMPOTENCY_KEY_REUSED example | Transition **does not declare409**; cannot substitute422 to conceal it or silently add409. Business duplicate code/error is separately unresolved |

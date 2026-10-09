@@ -49,7 +49,7 @@ references. Phase A freezes its external API in `SHIPMENT-BUNDLE` v1; it does no
 
 ## 4. Entity Fields
 
-`Carrier` has server-minted UUID `Id`, server-resolved `TenantId`/`LegalEntityId`, tenant+LE unique `CarrierCode`,
+`Carrier` has server-minted UUID `Id`, server-resolved `TenantId` and request-borne, MDM-validated `LegalEntityId`, tenant+LE unique `CarrierCode`,
 required `DisplayName`, one or more `SupportedModes`, optional `ExternalReference`, `Status`, version, soft-delete and
 audit fields. Tenant/legal-entity identifiers are never accepted from command payloads.
 
