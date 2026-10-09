@@ -1346,6 +1346,74 @@ clean. **400** `LOT_KEY_IMMUTABLE` accepted (existing TRACE mapping; CT-Q17 text
 edit moves the retest date earlier, new reservations may still count the lot until the next sweep (≤ 900 s); postings are refused
 at once. Fast-forwarded into the MVP-1 branch.
 
+### WP-0175-Q5 (agent result 2026-10-09, pending CT) — screens, Lots 202 + badge, getLotQualityStatus, test port out
+
+Branch `feature/sce/mod-0175-q5` from `562afeaa5` (isolated worktree). Commits:
+
+1. `5c453f347` — §17.3 UI pattern table, committed BEFORE any code.
+2. `d55a4397c` — code + tests.
+3. Evidence + this note.
+
+Contracts unchanged (QUARANTINE 1.0.0, TRACE, ESIGN).
+
+**Web (§11.1).** `QuarantineController` under `/Quarantine` serves 8 pages:
+
+- **Pages:** queue, details, decide, blocked, disposition, retest, submit (`/Quarantine/Decisions/{id}/Submit`), settings.
+- **Proxy:** `api/{**}` → gateway `/api/quarantine/**`. Writes carry antiforgery; `Idempotency-Key` and `If-Match` are passed through; bodies are not logged.
+- **Lists:** DataTable v2 in **server** mode (pack `data_mode: server` wins over the prompt's "golden slim").
+- **Decide / Disposition:** two steps — draft first, then `ESign.open` + submit.
+  - 0175 draws no password field and keeps only the `signatureId`.
+  - A draft carries no `signatureRequired`, so the client reads the MOD-0022 effective policy through the E5W1 proxy. An unreadable policy counts as required.
+- **Details:** workflow box with refresh / withdraw / reapply.
+- **Blocked stock:** "Stoğu bloke et", "İncelemeyi tamamla", and Unblock as a decision.
+- **UAS-001** on every page.
+- **Resx:** 7 languages × 420 keys; 5 nav keys (the 2 baseline-red nav guard tests are now green).
+
+**Lots (MOD-0174 Web files only).** A 202 shows "Onaya gönderildi" with a link to the Submit page. The "Onay bekliyor" badge comes from `quality-status`.
+
+**Inventory (NE-4 only).**
+
+- `getLotQualityStatus` is served; the contract-test route count is now 22.
+- **O-Q2-5 closed:** the test approval port is removed from production. Tests plug in their own port; a source-scan + single-DI guard protects this.
+- DisplayContext labels: lot number, product `code · name`, warehouse / location codes, blocked number link, readable disposition kind.
+
+**Runtime findings, fixed with tests:**
+
+- (1) The disposition title read "Disposition · Destroy".
+- (2) `quality-status` did not reconcile, so after approval the lot page stayed "Taslak" until someone opened the decision. It now reconciles the decisions it touches, like every other quarantine read (§8).
+
+**Tests.**
+
+| suite | result |
+|---|---|
+| Web | 630/632 → **649/649** |
+| Inventory | 687/691 → **688/692** (the same 4 Prism smoke tests; Prism did not listen within 90 s — environment) |
+| Quarantine subset | 141/141 |
+| Architecture | 18/18 |
+| Warnings | Web 17 = baseline; Inventory 0 |
+
+**Sabotages** — each red, then restored with md5 equal: (a) `/Platform/Quarantine` route; (b) Decide UAS check off; (c) zh key deleted; (d) `InternalTestApprovalPort` re-added; plus (e) the disposition label and (f) the `quality-status` reconcile.
+
+**Runtime probe** (own stack, browser):
+
+- Partial decision signed → B approves in WorkCenter (readable chips) → Applied with ledger movements.
+- Disposition İmha (DrawRequired) → applied: 60 → 20.
+- Retest Karantinaya Al.
+- Lots Draft → 202 → Submit signed → B approves → lot Released.
+- Review complete → Unblock decision signed.
+- User C (no role) sees only the access explanation.
+- 375 px views have no horizontal overflow.
+- The owner fleet PIDs are identical before and after; the password appears 0 times in the logs.
+
+**Opens:**
+
+- **O-Q5-1** — `updateHold` (PATCH) is not served, so the analysis note is read-only.
+- **O-Q5-2** — people are shown as user ids (no names in the contract).
+- **O-Q5-3** — `listBySource` is not served.
+- **W-0175-01** — no Python, so the DataTable verifier was not run.
+
+Evidence: `docs/records/audits/2026-10/mod-0175-q5-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`, `mod-0175-q5-shots/`.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
