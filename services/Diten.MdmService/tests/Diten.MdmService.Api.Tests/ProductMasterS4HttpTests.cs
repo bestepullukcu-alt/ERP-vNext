@@ -29,7 +29,7 @@ namespace Diten.MdmService.Api.Tests;
 /// Product), the product scope on product rows only, tenant isolation, §13 refusals and the 64 KB header.
 /// </summary>
 [Collection(MdmHttpCollection.Name)]
-public sealed class ProductMasterS4HttpTests(MdmHttpHost host)
+public sealed partial class ProductMasterS4HttpTests(MdmHttpHost host)
 {
     private const string Base = "/api/product-master";
     private readonly Guid _tenant = Guid.NewGuid();
@@ -780,21 +780,125 @@ public sealed class ProductMasterS4HttpTests(MdmHttpHost host)
         Assert.Contains(outScope.Item.Id.ToString("D"), search);
     }
 
-    // Fail closed: when the product scope cannot be read, a product row is a coded 503 — never an answer; an item read
-    // does not depend on it.
-    [Fact]
-    public async Task S4_Scope_that_cannot_be_read_is_503_for_product_rows_and_item_reads_still_answer()
+    // S4 FIX1 (B1), the sabotage target "the scope is resolved lazily again": when the product scope cannot be read, an
+    // id that exists and an id that does not get the SAME answer on every path — the refusal says nothing about existence.
+    [Theory]
+    [InlineData("getProduct")]
+    [InlineData("getSku")]
+    [InlineData("getSku-no-level")]
+    [InlineData("resolveSkuProduct")]
+    [InlineData("getSkuUom")]
+    [InlineData("bulkReadSkus")]
+    [InlineData("validateRefs")]
+    public async Task S4_FIX1_B1_A_scope_that_cannot_be_read_answers_an_existing_and_a_random_id_alike(string path)
     {
         var world = await SeedWorldAsync();
         await EnforceScopeAsync(world.Product.Id, answerCandidates: false);
         var client = Reader();
+        var existing = path == "getProduct" ? world.Product.Id : world.Gsku.Id;
 
-        var product = await client.GetAsync($"{Base}/skus/{world.Gsku.Id:D}?level=Gsku");
-        Assert.Equal(503, (int)product.StatusCode);
-        Assert.Equal("LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE", await ErrorCodeAsync(product));
+        var known = await CallAsync(client, path, existing, world.Item.Id);
+        var random = await CallAsync(client, path, Guid.NewGuid(), world.Item.Id);
+
+        Assert.Equal(503, (int)known.StatusCode);
+        Assert.Equal((int)known.StatusCode, (int)random.StatusCode);
+        Assert.Equal("LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE", await ErrorCodeAsync(known));
+        Assert.Equal(await ErrorCodeAsync(known), await ErrorCodeAsync(random));
+    }
+
+    private static Task<HttpResponseMessage> CallAsync(HttpClient client, string path, Guid id, Guid item) => path switch
+    {
+        "getProduct" => client.GetAsync($"{Base}/products/{id:D}"),
+        "getSku" => client.GetAsync($"{Base}/skus/{id:D}?level=Gsku"),
+        "getSku-no-level" => client.GetAsync($"{Base}/skus/{id:D}"),
+        "resolveSkuProduct" => client.GetAsync($"{Base}/skus/{id:D}/product?level=Gsku"),
+        "getSkuUom" => client.GetAsync($"{Base}/skus/{id:D}/uom"),
+        // An item next to it does not change the answer either.
+        "bulkReadSkus" => client.PostAsync($"{Base}/skus/bulk-read",
+            Json(new { skuIds = new[] { item.ToString("D"), id.ToString("D") } })),
+        _ => client.PostAsync($"{Base}/validate", Json(new
+        {
+            refs = new object[] { new { itemId = item.ToString("D") }, new { skuId = id.ToString("D"), skuLevel = "Gsku" } }
+        }))
+    };
+
+    // The item stays independent of the product scope: looked up first, and the scope is never asked for it.
+    [Fact]
+    public async Task S4_FIX1_B1_Item_reads_do_not_ask_the_product_scope()
+    {
+        var world = await SeedWorldAsync();
+        await EnforceScopeAsync(world.Product.Id, answerCandidates: false);
+        var client = Reader();
+        var item = world.Item.Id.ToString("D");
+
+        await OkAsync(await client.GetAsync($"{Base}/items/{item}"), "getMaterialItem");
+        await OkAsync(await client.GetAsync($"{Base}/products/{item}"), "getProduct");
+        await OkAsync(await client.GetAsync($"{Base}/skus/{item}"), "getSku");
+        await OkAsync(await client.GetAsync($"{Base}/skus/{item}?level=Item"), "getSku");
+        await OkAsync(await client.GetAsync($"{Base}/skus/{item}/uom"), "getSkuUom");
+        await OkAsync(await client.GetAsync($"{Base}/stockable-items?skuLevel=Item"), "searchStockableItems");
+        await OkAsync(await client.PostAsync($"{Base}/skus/bulk-read", Json(new { skuIds = new[] { item } })), "bulkReadSkus");
         Assert.Equal(503, (int)(await client.GetAsync($"{Base}/stockable-items")).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"{Base}/items/{world.Item.Id:D}")).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"{Base}/stockable-items?skuLevel=Item")).StatusCode);
+    }
+
+    // The provider's own refusals: 403 stays a named 403; its 401 and 504 are an outage to the consumer (a 401 here is not
+    // "your token expired"), 503 PRODUCT_MASTER_UNAVAILABLE.
+    [Theory]
+    [InlineData(403, "LEGAL_ENTITY_SCOPE_FORBIDDEN", 403, "LEGAL_ENTITY_SCOPE_FORBIDDEN")]
+    [InlineData(401, "TRUSTED_SUBJECT_REQUIRED", 503, "PRODUCT_MASTER_UNAVAILABLE")]
+    [InlineData(504, "LEGAL_ENTITY_SCOPE_PROVIDER_TIMEOUT", 503, "PRODUCT_MASTER_UNAVAILABLE")]
+    [InlineData(503, "LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE", 503, "LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE")]
+    public async Task S4_FIX1_The_scope_providers_refusals_answer_by_name(int providerStatus, string providerCode,
+        int status, string code)
+    {
+        var world = await SeedWorldAsync();
+        await EnforceScopeAsync(world.Product.Id);
+        host.Scopes.Refuse(_tenant, providerStatus, providerCode);
+
+        await ErrorAsync(await Reader().GetAsync($"{Base}/skus/{world.Gsku.Id:D}?level=Gsku"), status, code, null);
+        await ErrorAsync(await Reader().GetAsync($"{Base}/skus/{Guid.NewGuid():D}?level=Gsku"), status, code, null);
+    }
+
+    // An Enforced policy that names other legal entities: the product is out of the caller's scope, "none" everywhere.
+    [Fact]
+    public async Task S4_FIX1_A_policy_naming_other_legal_entities_keeps_the_product_out_of_scope()
+    {
+        var world = await SeedWorldAsync();
+        await EnforceScopeAsync(world.Product.Id, policyLegalEntities: [Guid.NewGuid()]);
+        var client = Reader();
+
+        await ErrorAsync(await client.GetAsync($"{Base}/products/{world.Product.Id:D}"), 404, "UNKNOWN_ITEM", "getProduct");
+        await ErrorAsync(await client.GetAsync($"{Base}/skus/{world.Lsku.Id:D}"), 404, "UNKNOWN_SKU", "getSku");
+        Assert.DoesNotContain(world.Gsku.Id.ToString("D"),
+            Ids(await OkAsync(await client.GetAsync($"{Base}/stockable-items?pageSize=100"), "searchStockableItems")));
+        var bulk = await OkAsync(await client.PostAsync($"{Base}/skus/bulk-read",
+            Json(new { skuIds = new[] { world.Gsku.Id.ToString("D") } })), "bulkReadSkus");
+        Assert.Equal([world.Gsku.Id.ToString("D")], Strings(bulk.GetProperty("notFound")));
+    }
+
+    // Inherited, measured and documented (not changed here): a platform_admin token passes [HasPermission] without the
+    // contract permission (PermissionAuthorizationHandler) and reads the tenant its token names, scope rules as for anyone.
+    [Fact]
+    public async Task S4_FIX1_A_platform_admin_reads_the_tenant_its_token_names()
+    {
+        var world = await SeedWorldAsync();
+        var admin = host.Client(host.TokenOf("platform_admin", _tenant, Guid.NewGuid()));
+        await OkAsync(await admin.GetAsync($"{Base}/items/{world.Item.Id:D}"), "getMaterialItem");
+        await OkAsync(await admin.GetAsync($"{Base}/skus/{world.Gsku.Id:D}"), "getSku");
+    }
+
+    // B2 (BL-592) made visible: the test scope provider answers any permission key — a real Enforced tenant refuses
+    // mdm.product-master.read until Platform's trusted scope list holds it. This test pins the fake's behaviour by name so
+    // nobody reads the enforced-scope tests above as proof of the live path.
+    [Fact]
+    public async Task S4_FIX1_B2_Note_the_test_scope_provider_accepts_every_permission_key()
+    {
+        var legalEntity = Guid.NewGuid();
+        host.Scopes.Answer(_tenant, legalEntity);
+        var answer = await host.Scopes.ResolveAsync(_tenant, _user, "product-item-sku-master", "mdm.product-master.read");
+        var invented = await host.Scopes.ResolveAsync(_tenant, _user, "product-item-sku-master", "no.such.permission");
+        Assert.True(answer.IsSuccessful);
+        Assert.True(invented.IsSuccessful);
     }
 
     // A store that cannot be reached is a coded 503 (fail closed), never an empty answer.
@@ -929,17 +1033,20 @@ public sealed class ProductMasterS4HttpTests(MdmHttpHost host)
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         await using var app = builder.Build();
         app.MapGet("/", () => Results.Ok());
-        await app.StartAsync();
+        // S4 FIX1: every step of the real listener is bounded — it never hangs the run.
+        using var bound = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await app.StartAsync(bound.Token);
         try
         {
             var address = app.Urls.Single();
-            using var client = new HttpClient { BaseAddress = new Uri(address) };
+            using var client = new HttpClient { BaseAddress = new Uri(address), Timeout = TimeSpan.FromSeconds(15) };
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            return (await client.GetAsync("/")).StatusCode;
+            return (await client.GetAsync("/", bound.Token)).StatusCode;
         }
         finally
         {
-            await app.StopAsync();
+            using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await app.StopAsync(stop.Token);
         }
     }
 
@@ -1043,7 +1150,7 @@ public sealed class ProductMasterS4HttpTests(MdmHttpHost host)
         return item;
     }
 
-    private async Task EnforceScopeAsync(Guid onlyProduct, bool answerCandidates = true)
+    private async Task EnforceScopeAsync(Guid onlyProduct, bool answerCandidates = true, Guid[]? policyLegalEntities = null)
     {
         var legalEntity = Guid.NewGuid();
         await host.Database.GetCollection<LegalEntity>("mdm_legal_entities").InsertOneAsync(new LegalEntity
@@ -1059,7 +1166,8 @@ public sealed class ProductMasterS4HttpTests(MdmHttpHost host)
             .InsertOneAsync(rollout);
         await host.Database.GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies")
             .InsertOneAsync(ProductLegalEntityScopePolicy.Create(_tenant, onlyProduct, Guid.NewGuid(),
-                ProductLegalEntityScopeMode.GroupWide, [], Guid.NewGuid(), DateTimeOffset.UtcNow.AddMinutes(-1)));
+                policyLegalEntities is null ? ProductLegalEntityScopeMode.GroupWide : ProductLegalEntityScopeMode.Scoped,
+                policyLegalEntities ?? [], Guid.NewGuid(), DateTimeOffset.UtcNow.AddMinutes(-1)));
     }
 
     private static string Code(string prefix) =>
@@ -1171,9 +1279,9 @@ public sealed class ProductMasterS4HttpTests(MdmHttpHost host)
             throw new TimeoutException();
         public Task<IReadOnlyList<FinishedGood>> GetFinishedGoodsByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default) =>
             throw new TimeoutException();
-        public Task<ProductMasterStockableCandidates> GetStockableCandidatesAsync(CancellationToken cancellationToken = default) =>
+        public Task<ProductMasterStockablePage> SearchStockableAsync(ProductMasterStockableSearch search, CancellationToken cancellationToken = default) =>
             throw new TimeoutException();
-        public Task<ProductMasterProductSkus> GetLiveSkusOfGlobalProductAsync(Guid globalProductId, CancellationToken cancellationToken = default) =>
+        public Task<ProductMasterProductFlags> GetLiveSkuFlagsOfGlobalProductAsync(Guid globalProductId, CancellationToken cancellationToken = default) =>
             throw new TimeoutException();
     }
 }

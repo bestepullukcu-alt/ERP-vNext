@@ -7,6 +7,7 @@ using Diten.MdmService.Infrastructure.Authorization;
 using Diten.Shared.Core;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.MdmService.Api.Controllers;
@@ -68,18 +69,36 @@ public sealed class ProductMasterController : ControllerBase
 
     [HttpPost("skus/bulk-read")]
     public async Task<IActionResult> BulkReadSkus(CancellationToken cancellationToken) =>
-        Answer(await _mediator.Send(new BulkReadProductMasterSkusQuery(await BodyAsync(cancellationToken)), cancellationToken));
+        await BodyAsync(cancellationToken) is { } body
+            ? Answer(await _mediator.Send(new BulkReadProductMasterSkusQuery(body), cancellationToken))
+            : TooLarge();
 
     [HttpPost("validate")]
     public async Task<IActionResult> ValidateRefs(CancellationToken cancellationToken) =>
-        Answer(await _mediator.Send(new ValidateProductMasterRefsQuery(await BodyAsync(cancellationToken)), cancellationToken));
+        await BodyAsync(cancellationToken) is { } body
+            ? Answer(await _mediator.Send(new ValidateProductMasterRefsQuery(body), cancellationToken))
+            : TooLarge();
 
-    // The body is read as text so a malformed one answers the contract's 400, not a framework binding error.
-    private async Task<string> BodyAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// The body as text (a malformed one answers the contract's 400, not a framework binding error), read up to
+    /// <see cref="ProductMasterContract.MaximumBodyBytes"/> — S4 FIX1 (R5): a declared or a streamed body past it is null
+    /// (413), never read to the end into memory. Kestrel's own default (30 MB) is not the limit here.
+    /// </summary>
+    private async Task<string?> BodyAsync(CancellationToken cancellationToken)
     {
-        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
-        return await reader.ReadToEndAsync(cancellationToken);
+        if (Request.ContentLength > ProductMasterContract.MaximumBodyBytes) return null;
+        var buffer = new byte[ProductMasterContract.MaximumBodyBytes + 1];
+        var length = 0;
+        int read;
+        while (length < buffer.Length
+               && (read = await Request.Body.ReadAsync(buffer.AsMemory(length, buffer.Length - length), cancellationToken)) > 0)
+            length += read;
+        return length > ProductMasterContract.MaximumBodyBytes ? null : Encoding.UTF8.GetString(buffer, 0, length);
     }
+
+    private IActionResult TooLarge() => Json(StatusCodes.Status413PayloadTooLarge, ProductMasterContract.Error(
+        ProductMasterContract.RequestTooLarge, ProductMasterContract.Message(ProductMasterContract.RequestTooLarge),
+        _correlation.CorrelationId));
 
     private IActionResult Answer(Response<JsonObject> response)
     {

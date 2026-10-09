@@ -23,6 +23,10 @@ public static class ProductMasterContract
     public const int DefaultPageSize = 25;
     public const int MaximumPage = 1_000_000;
     public const int MaximumQueryLength = 200;
+    // S4 FIX1 (R4): how deep the stockable search pages — page × pageSize; past it 400 INVALID_PARAMETER (proposed).
+    public const int MaximumSearchWindow = 1000;
+    // S4 FIX1 (R5): the POST bodies (bulk read, validate) — 200 UUIDs are ~8 KB; past it 413 REQUEST_TOO_LARGE.
+    public const int MaximumBodyBytes = 64 * 1024;
 
     public const string UnknownItem = "UNKNOWN_ITEM";
     public const string UnknownSku = "UNKNOWN_SKU";
@@ -32,12 +36,15 @@ public static class ProductMasterContract
     public const string InvalidRef = "INVALID_REF";
     public const string TenantContextRequired = "TENANT_CONTEXT_REQUIRED";
     public const string Unavailable = "PRODUCT_MASTER_UNAVAILABLE";
+    public const string RequestTooLarge = "REQUEST_TOO_LARGE";
 
     public const string LevelGsku = "Gsku";
     public const string LevelLsku = "Lsku";
     public const string LevelFinishedGood = "FinishedGood";
     public const string LevelItem = "Item";
     public static readonly IReadOnlyList<string> SkuLevels = [LevelGsku, LevelLsku, LevelFinishedGood, LevelItem];
+    // S4 FIX1: a level-less id is looked up as an item first (no product scope, one read).
+    public static readonly IReadOnlyList<string> LevelResolutionOrder = [LevelItem, LevelGsku, LevelLsku, LevelFinishedGood];
 
     public const string KindGlobalProduct = "GlobalProduct";
     public const string KindItem = "Item";
@@ -353,6 +360,7 @@ public static class ProductMasterContract
         InvalidUuid => "An id is not a UUID.",
         InvalidParameter => "A request parameter is missing or not valid.",
         InvalidRef => "A reference is not in a valid shape.",
+        RequestTooLarge => "The request body is larger than 64 KB.",
         _ => "The product master could not answer."
     };
 

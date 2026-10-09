@@ -84,6 +84,21 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    // S4 FIX1 (R4): one $in read for a batch; the same tenant / live filter as the single read.
+    public async Task<IReadOnlyDictionary<Guid, ProductLegalEntityScopePolicy>> GetByGlobalProductIdsAsync(
+        IReadOnlyCollection<Guid> globalProductIds,
+        CancellationToken cancellationToken = default)
+    {
+        var ids = globalProductIds.Distinct().ToArray();
+        foreach (var id in ids) EnsureIdentity(id, nameof(globalProductIds));
+        if (ids.Length == 0) return new Dictionary<Guid, ProductLegalEntityScopePolicy>();
+        var policies = await _policies.Find(
+                ActiveTenantFilter
+                & Builders<ProductLegalEntityScopePolicy>.Filter.In(policy => policy.GlobalProductId, ids))
+            .ToListAsync(cancellationToken);
+        return policies.GroupBy(policy => policy.GlobalProductId).ToDictionary(group => group.Key, group => group.First());
+    }
+
     public async Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(
         Guid creationCommandId,
         CancellationToken cancellationToken = default)

@@ -9,6 +9,21 @@ public interface IProductLegalEntityScopePolicyRepository
         Guid globalProductId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// MOD-0290-FU04 S4 FIX1 (R4): the policies of many Global Products in one read (a batch reader evaluates the scope of
+    /// every product it touches without a read per product). Missing = no policy.
+    /// </summary>
+    async Task<IReadOnlyDictionary<Guid, ProductLegalEntityScopePolicy>> GetByGlobalProductIdsAsync(
+        IReadOnlyCollection<Guid> globalProductIds,
+        CancellationToken cancellationToken = default)
+    {
+        var policies = new Dictionary<Guid, ProductLegalEntityScopePolicy>();
+        foreach (var id in globalProductIds.Distinct())
+            if (await GetByGlobalProductIdAsync(id, cancellationToken) is { } policy)
+                policies[id] = policy;
+        return policies;
+    }
+
     Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(
         Guid creationCommandId,
         CancellationToken cancellationToken = default);

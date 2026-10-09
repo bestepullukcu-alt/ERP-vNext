@@ -11,6 +11,8 @@ using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using static Diten.MdmService.Application.Features.ProductMaster.ProductMasterContract;
 
 namespace Diten.MdmService.Application.Features.ProductMaster.Handlers;
@@ -41,6 +43,7 @@ public sealed class ProductMasterQueryHandler :
     private readonly IProductLegalEntityScopePolicyRepository _policies;
     private readonly ProductLegalEntityScopeCandidateFacade _candidates;
     private readonly ITenantContext _tenantContext;
+    private readonly ILogger<ProductMasterQueryHandler> _logger;
 
     public ProductMasterQueryHandler(
         IItemRepository items,
@@ -53,7 +56,8 @@ public sealed class ProductMasterQueryHandler :
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILogger<ProductMasterQueryHandler>? logger = null)
     {
         _items = items;
         _globalProducts = globalProducts;
@@ -66,6 +70,7 @@ public sealed class ProductMasterQueryHandler :
         _policies = policies;
         _candidates = candidates;
         _tenantContext = tenantContext;
+        _logger = logger ?? NullLogger<ProductMasterQueryHandler>.Instance;
     }
 
     // ------------------------------------------------------------------------------------------- getProduct / getMaterialItem
@@ -77,10 +82,8 @@ public sealed class ProductMasterQueryHandler :
             if (!TryParseId(query.ItemId, out var id)) return Fail(InvalidUuid, 400);
             if (await reader.ItemAsync(id, cancellationToken) is { } item) return Ok(ItemProductRef(item));
             if (await reader.GlobalProductAsync(id, cancellationToken) is not { } product) return Fail(UnknownItem, 404);
-            var skus = await _store.GetLiveSkusOfGlobalProductAsync(product.Id, cancellationToken);
-            return Ok(GlobalProductRef(product,
-                TrueInDoubt(skus.Gskus.Select(x => x.LotControlled)),
-                TrueInDoubt(skus.Lskus.Select(x => x.SerialControlled).Concat(skus.FinishedGoods.Select(x => x.SerialControlled)))));
+            var flags = await _store.GetLiveSkuFlagsOfGlobalProductAsync(product.Id, cancellationToken);
+            return Ok(GlobalProductRef(product, TrueInDoubt(flags.GskuLots), TrueInDoubt(flags.ChildSerials)));
         }, cancellationToken);
 
     // The item shortcut: a Global Product id is 404 here.
@@ -147,6 +150,9 @@ public sealed class ProductMasterQueryHandler :
 
     // ------------------------------------------------------------------------------------------- searchStockableItems
 
+    // S4 FIX1 (R4): the filters, the product scope, the order and the page window run in the store (projected rows, the
+    // policies read in the aggregation, no per-row query); here only the sources' windows are merged and cut. The window
+    // is bounded: page × pageSize ≤ MaximumSearchWindow, past it 400 INVALID_PARAMETER (proposed to the contract).
     public Task<Response<JsonObject>> Handle(SearchProductMasterStockableItemsQuery query, CancellationToken cancellationToken) =>
         RunAsync(async reader =>
         {
@@ -154,79 +160,106 @@ public sealed class ProductMasterQueryHandler :
             ItemMaterialType? materialType = null;
             if (!TryParseInt(query.Page, 1, out var page) || page is < 1 or > MaximumPage
                 || !TryParseInt(query.PageSize, DefaultPageSize, out var pageSize) || pageSize is < 1 or > MaximumPageSize
+                || (long)page * pageSize > MaximumSearchWindow
                 || query.Q?.Length > MaximumQueryLength
                 || query.SkuLevel is not null && !TryParseLevel(query.SkuLevel, out level)
                 || query.MaterialType is not null && !TryParseMaterialType(query.MaterialType, out materialType)
                 || query.Status is not null && !LifecycleStatuses.Contains(query.Status))
                 return Fail(InvalidParameter, 400);
 
+            // q is trimmed; only spaces = no text filter.
             var q = string.IsNullOrWhiteSpace(query.Q) ? null : query.Q.Trim();
             var itemsOnly = materialType is not null || level == LevelItem;
-            var candidates = await _store.GetStockableCandidatesAsync(cancellationToken);
-            var rows = new List<(string Code, Guid Id, JsonObject Row)>();
-
-            foreach (var item in candidates.Items)
-            {
-                if (!item.Stockable || level is not null && level != LevelItem
-                    || materialType is not null && item.MaterialType != materialType) continue;
-                Add(item.Id, item.CanonicalCode, item.Name, Status(item), StockableRow(
-                    item.Id, LevelItem, item.Id, KindItem, item.CanonicalCode, item.Name, ItemRules.Code(item.MaterialType),
-                    Status(item), item.BaseUomCode, item.LotControlled, false));
-            }
-
+            ProductMasterProductScope? productScope = null;
             if (!itemsOnly)
             {
-                reader.Know(candidates);
-                await reader.PrefetchChainsAsync(candidates.FinishedGoods.Select(x => x.GskuId), cancellationToken);
-                if (level is null or LevelGsku)
-                    foreach (var gsku in candidates.Gskus.Where(ProductMasterContract.GskuStockable))
-                        if (await reader.GskuAsync(gsku.Id, cancellationToken) is { } row)
-                            AddProduct(row.Gsku.Id, LevelGsku, row.Product, row.Gsku.CanonicalCode,
-                                GskuName(row.Product, row.Gsku), Status(row.Gsku.LifecycleStatus), row.Gsku.BaseUomCode,
-                                row.Gsku.LotControlled, null);
-                if (level is null or LevelLsku)
-                    foreach (var lsku in candidates.Lskus)
-                        if (await reader.LskuAsync(lsku.Id, cancellationToken) is { } row
-                            && LskuStockable(row.Gsku, row.Record))
-                            AddProduct(row.Record.Id, LevelLsku, row.Product, row.Record.CanonicalCode,
-                                LskuName(row.Product, row.Gsku, row.Record), Status(row.Record.LifecycleStatus),
-                                row.Gsku.BaseUomCode, row.Gsku.LotControlled, row.Record.SerialControlled);
-                if (level is null or LevelFinishedGood)
-                    foreach (var finishedGood in candidates.FinishedGoods)
-                        if (await reader.FinishedGoodAsync(finishedGood.Id, cancellationToken) is { } row
-                            && FinishedGoodStockable(row.Gsku, row.Record))
-                            AddProduct(row.Record.Id, LevelFinishedGood, row.Product, row.Record.CanonicalCode,
-                                FinishedGoodName(row.Product, row.Gsku), Status(row.Record.LifecycleStatus),
-                                row.Gsku.BaseUomCode, row.Record.LotControlled, row.Record.SerialControlled);
+                // B1: the scope before any product table; Preparation shows every product row, Enforced its candidates,
+                // any other rollout none.
+                var scope = await reader.ScopeAsync(cancellationToken);
+                productScope = scope.RolloutMode switch
+                {
+                    ProductLegalEntityScopeRolloutMode.Preparation => new(true, [], scope.ServerNowUtc),
+                    ProductLegalEntityScopeRolloutMode.Enforced =>
+                        new(false, scope.EffectiveCandidateLegalEntityIds, scope.ServerNowUtc.ToUniversalTime()),
+                    _ => null
+                };
             }
+            var statuses = SearchStatuses.For(query.Status);
+            var found = await _store.SearchStockableAsync(new ProductMasterStockableSearch(
+                q,
+                Items: level is null or LevelItem,
+                Gskus: !itemsOnly && level is null or LevelGsku,
+                Lskus: !itemsOnly && level is null or LevelLsku,
+                FinishedGoods: !itemsOnly && level is null or LevelFinishedGood,
+                materialType,
+                statuses.Items,
+                statuses.PendingFirstActivation,
+                statuses.PendingReactivation,
+                statuses.Products,
+                productScope,
+                page * pageSize), cancellationToken);
+            if (found.Unreadable > 0)
+                _logger.LogWarning(
+                    "PRODUCT_MASTER_SEARCH_ROW_UNREADABLE: {Count} stockable-search row(s) could not be read and were skipped.",
+                    found.Unreadable);
 
-            // Stable order: the canonical code (ordinal), then the id.
-            var ordered = rows.OrderBy(x => x.Code, StringComparer.Ordinal).ThenBy(x => x.Id).ToList();
-            var pageRows = ordered.Skip((page - 1) * pageSize).Take(pageSize).Select(x => (JsonNode?)x.Row).ToArray();
+            // Stable order: the canonical code (ordinal; codes are unique per kind), then the kind.
+            var pageRows = found.Rows
+                .OrderBy(x => x.CanonicalCode, StringComparer.Ordinal).ThenBy(x => x.Kind)
+                .Skip((page - 1) * pageSize).Take(pageSize)
+                .Select(row => (JsonNode?)StockableRow(row))
+                .ToArray();
             return Ok(new JsonObject
             {
                 ["items"] = new JsonArray(pageRows),
                 ["page"] = page,
                 ["pageSize"] = pageSize,
-                ["totalCount"] = ordered.Count,
+                ["totalCount"] = found.Total,
                 ["contractVersion"] = ContractVersion
             });
-
-            void AddProduct(Guid skuId, string skuLevel, GlobalProduct product, string code, string name, string status,
-                string? baseUom, bool? lot, bool? serial) =>
-                Add(skuId, code, name, status, StockableRow(skuId, skuLevel, product.Id, KindGlobalProduct, code, name,
-                    null, status, baseUom, lot, serial));
-
-            // q: a code prefix OR a part of the name; ordinal, case-insensitive, no accent folding. No status: all but
-            // Retired.
-            void Add(Guid id, string code, string name, string status, JsonObject row)
-            {
-                if (query.Status is null ? status == "Retired" : status != query.Status) return;
-                if (q is not null && !code.StartsWith(q, StringComparison.OrdinalIgnoreCase)
-                    && !name.Contains(q, StringComparison.OrdinalIgnoreCase)) return;
-                rows.Add((code, id, row));
-            }
         }, cancellationToken);
+
+    private static JsonObject StockableRow(ProductMasterStockableRow row)
+    {
+        if (row.Kind == ProductMasterRowKind.Item)
+        {
+            var status = Status(row.ItemStatus!.Value, row.ActivationKind);
+            return StockableRow(row.SkuId, LevelItem, row.SkuId, KindItem, row.CanonicalCode, row.ItemName!,
+                ItemRules.Code(row.MaterialType!.Value), status, row.BaseUomCode, row.LotControlled, false);
+        }
+        var level = row.Kind switch
+        {
+            ProductMasterRowKind.Gsku => LevelGsku,
+            ProductMasterRowKind.Lsku => LevelLsku,
+            _ => LevelFinishedGood
+        };
+        // O-5, the same composition getSku answers.
+        var name = $"{row.ProductName} · {DecimalText(row.PackQuantity!.Value)} {row.PackUomCode}"
+                   + (row.Kind == ProductMasterRowKind.Lsku ? $" · {row.MarketCode}" : string.Empty);
+        return StockableRow(row.SkuId, level, row.ItemId, KindGlobalProduct, row.CanonicalCode, name, null,
+            Status(row.ProductStatus!.Value), row.BaseUomCode, row.LotControlled,
+            row.Kind == ProductMasterRowKind.Gsku ? null : row.SerialControlled);
+    }
+
+    /// <summary>§16.3 inverse: the stored statuses a published status filter means (none given: all but Retired).</summary>
+    private sealed record SearchStatuses(
+        IReadOnlyCollection<ItemLifecycleStatus> Items, bool PendingFirstActivation, bool PendingReactivation,
+        IReadOnlyCollection<ProductIdentityLifecycleStatus> Products)
+    {
+        public static SearchStatuses For(string? published) => published switch
+        {
+            null => new([ItemLifecycleStatus.Draft, ItemLifecycleStatus.Active, ItemLifecycleStatus.Deactivated], true, true,
+                [ProductIdentityLifecycleStatus.Draft, ProductIdentityLifecycleStatus.PendingIdentityApproval,
+                    ProductIdentityLifecycleStatus.IdentityApproved]),
+            "Draft" => new([ItemLifecycleStatus.Draft], true, false,
+                [ProductIdentityLifecycleStatus.Draft, ProductIdentityLifecycleStatus.PendingIdentityApproval]),
+            "Active" => new([ItemLifecycleStatus.Active], false, false, [ProductIdentityLifecycleStatus.IdentityApproved]),
+            "Deactivated" => new([ItemLifecycleStatus.Deactivated], false, true, []),
+            "Retired" => new([ItemLifecycleStatus.Retired], false, false, [ProductIdentityLifecycleStatus.Retired]),
+            // Archived is never published (O-4): nothing has it.
+            _ => new([], false, false, [])
+        };
+    }
 
     private static JsonObject StockableRow(Guid skuId, string level, Guid itemId, string kind, string code, string name,
         string? materialType, string status, string? baseUom, bool? lot, bool? serial) => new()
@@ -247,13 +280,14 @@ public sealed class ProductMasterQueryHandler :
     // ------------------------------------------------------------------------------------------- bulkReadSkus
 
     // Up to 200 ids, answered in request order; Draft / Deactivated / Retired are found too; a Global Product id and
-    // anything not found (another tenant's, out of scope) is in notFound.
+    // anything not found (another tenant's, out of scope) is in notFound. S4 FIX1 (R3, draft.10): an id sent twice is
+    // answered once, where it first appears; each row carries its itemId and itemKind.
     public Task<Response<JsonObject>> Handle(BulkReadProductMasterSkusQuery query, CancellationToken cancellationToken) =>
         RunAsync(async reader =>
         {
             if (!TryParseObject(query.Body, out var body)) return Fail(InvalidParameter, 400);
             if (!body.TryGetProperty("skuIds", out var list) || list.ValueKind != JsonValueKind.Array)
-                return Fail(BatchLimitExceeded, 400);
+                return Fail(InvalidParameter, 400);
             var count = list.GetArrayLength();
             if (count is 0 or > MaximumBatch) return Fail(BatchLimitExceeded, 400);
             var ids = new List<Guid>(count);
@@ -264,6 +298,7 @@ public sealed class ProductMasterQueryHandler :
                 ids.Add(id);
             }
 
+            ids = ids.Distinct().ToList();
             await reader.PrefetchAsync(ids, cancellationToken);
             var items = new JsonArray();
             var notFound = new JsonArray();
@@ -279,6 +314,8 @@ public sealed class ProductMasterQueryHandler :
                 {
                     ["skuId"] = id.ToString("D"),
                     ["skuLevel"] = hit.Level,
+                    ["itemId"] = hit.ItemId.ToString("D"),
+                    ["itemKind"] = hit.ItemKind,
                     ["canonicalCode"] = hit.Code,
                     ["name"] = hit.Name,
                     ["lifecycleStatus"] = hit.Status
@@ -299,7 +336,8 @@ public sealed class ProductMasterQueryHandler :
             if (!TryParseObject(query.Body, out var body)
                 || !body.TryGetProperty("refs", out var list) || list.ValueKind != JsonValueKind.Array)
                 return Fail(InvalidRef, 400);
-            if (list.GetArrayLength() > MaximumBatch) return Fail(BatchLimitExceeded, 400);
+            // No ref, or more than 200: 400 (S4 FIX1 — an empty list is a request that asks nothing).
+            if (list.GetArrayLength() is 0 or > MaximumBatch) return Fail(BatchLimitExceeded, 400);
             var refs = new List<(Guid? ItemId, Guid? SkuId, string? Level)>();
             foreach (var entry in list.EnumerateArray())
             {
@@ -383,7 +421,8 @@ public sealed class ProductMasterQueryHandler :
     /// </summary>
     private static async Task<string?> ResolveLevelAsync(ProductMasterReader reader, Guid id, string? level, CancellationToken ct)
     {
-        IEnumerable<string> candidates = level is null ? SkuLevels : new[] { level };
+        // The item first: a level-less item call is one item read, and never asks the product scope.
+        IEnumerable<string> candidates = level is null ? LevelResolutionOrder : new[] { level };
         foreach (var candidate in candidates)
             if (await HitAsync(reader, id, candidate, ct) is not null)
                 return candidate;
@@ -436,7 +475,7 @@ public sealed class ProductMasterQueryHandler :
     // A bare id of any SKU kind (bulk read): an item, then the product SKU levels. A Global Product is not a SKU.
     private static async Task<Hit?> AnySkuAsync(ProductMasterReader reader, Guid id, CancellationToken ct)
     {
-        foreach (var level in new[] { LevelItem, LevelGsku, LevelLsku, LevelFinishedGood })
+        foreach (var level in LevelResolutionOrder)
             if (await HitAsync(reader, id, level, ct) is { } hit)
                 return hit;
         return null;
@@ -469,12 +508,14 @@ public sealed class ProductMasterQueryHandler :
         {
             return Fail(refusal.Code, refusal.StatusCode);
         }
-        // The store could not be reached (timeout, driver failure): a coded 503, never an empty answer. A read cancelled
-        // by its own caller propagates.
+        // The store could not be reached (timeout, driver failure) or a record could not be read (S4 FIX1: a document the
+        // serializer cannot map, a repository's refusal): a coded 503, never an empty answer and never a 500. A read
+        // cancelled by its own caller propagates.
         catch (Exception exception) when (!cancellationToken.IsCancellationRequested
                                           && ProductLegalEntityScopeWriteFenceCoordinator.ClassifyRolloutReadFailure(exception)
-                                          == ProductLegalEntityScopeWriteFenceCoordinator.RolloutReadFailure.Unavailable)
+                                          != ProductLegalEntityScopeWriteFenceCoordinator.RolloutReadFailure.None)
         {
+            _logger.LogWarning("PRODUCT_MASTER_READ_FAILED: {Failure} — answered 503.", exception.GetType().Name);
             return Fail(Unavailable, 503);
         }
     }

@@ -1,28 +1,67 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Diten.MdmService.Api.Tests;
 
 /// <summary>
 /// MOD-0290-FU04 S4 — the contract file the schema tests read. v1.1 is not on this branch: the YAML is copied byte for
-/// byte from the contract line (1.1.0-draft.7, kanban-preview bcae90317 — CT's OD-1 / X-08 changes of 2026-10-09) and
-/// pinned by SHA-256; the JSON next to it is
-/// its rendering (YAML → JSON, no edit) and is tied back to the YAML by every name it carries. When CT changes the
-/// contract, these pins go red first and the fixture is copied again.
+/// byte from the contract line (1.1.0-draft.11, chore/ct-round-2 00a4d4268; provenance in Fixtures/.../SOURCE.txt) and
+/// pinned by SHA-256; the JSON next to it is its rendering (YAML → JSON, no edit) and is tied back to the YAML by every
+/// name it carries.
+/// <para>
+/// What the pins catch: a fixture byte changed HERE. They cannot see the line move on — a contract changed by CT keeps
+/// these pins green until the fixture is copied again. That drift is the job of
+/// <see cref="S4_Fixture_v11_is_the_contract_lines_current_file"/>: where the line's worktree is on the machine it
+/// compares the two; where it is not, the test says so by name (it is not proof then).
+/// </para>
 /// </summary>
-public sealed class ProductMasterContractFixtureTests
+public sealed class ProductMasterContractFixtureTests(ITestOutputHelper output)
 {
-    public const string V11YamlSha256 = "bb6b7ac0ae1cf456a0e61203507dcee197559ef01c746fcff6acf5b4070a21cf";
-    public const string V11JsonSha256 = "a0143747889d0570ebad0956d83ad4bddc07329c19e579f25d83bf8c2deb5250";
+    public const string V11YamlSha256 = "57d1ec313b377f4ec56024078064caafcf9d40c50b9912f9f68b3efad19a9942";
+    public const string V11JsonSha256 = "bf47cc59af47b81c9f3f621708cbebd0a3bb85321accbacbba316a59d2883010";
     public const string V10JsonSha256 = "9dec887b5b124acfa8d022df155789113fded5abc06e976b41366a1950182e8d";
     // The frozen v1.0 (the contract line's product-master-bundle.v1.0.openapi.yaml; measured byte-identical to the v1.0
     // file this branch carries). Copied too, so the test never reads outside its fixtures.
     public const string V10YamlSha256 = "8c5ed4679319be39f73ad6b03fa89beb734ea16d8607cdb1c5b53844a383ca3a";
 
     [Fact]
-    public void S4_Fixture_v11_yaml_is_the_contract_draft7_byte_for_byte() =>
+    public void S4_Fixture_v11_yaml_is_the_contract_draft11_byte_for_byte() =>
         Assert.Equal(V11YamlSha256, Sha256(ProductMasterContractSchema.FixturePath(ProductMasterContractSchema.V11Yaml)));
+
+    // S4 FIX1 (R6): the fixture against the contract line's own file, found through SOURCE.txt (the line's worktree next
+    // to this one under .claude/worktrees). Not found (CI, another machine): the test says so by name and proves nothing.
+    [Fact]
+    public void S4_Fixture_v11_is_the_contract_lines_current_file()
+    {
+        var source = File.ReadAllLines(ProductMasterContractSchema.FixturePath("SOURCE.txt"));
+        var worktree = Value(source, "worktree:");
+        var v11 = Value(source, "v1.1:");
+        var v10 = Value(source, "v1.0:");
+        var worktrees = WorktreesDirectory();
+        var line = worktrees is null ? null : Path.Combine(worktrees, worktree);
+        if (line is null || !File.Exists(Path.Combine(line, v11)))
+        {
+            output.WriteLine($"SKIPPED (named): the contract line '{worktree}' is not on this machine — the fixture was not "
+                             + "compared with the line's current file; only its own pins ran.");
+            return;
+        }
+        Assert.True(V11YamlSha256 == Sha256(Path.Combine(line, v11)),
+            "The contract line moved on: copy its product-master-bundle.openapi.yaml into the fixture again (and its JSON).");
+        Assert.Equal(V10YamlSha256, Sha256(Path.Combine(line, v10)));
+    }
+
+    private static string Value(IEnumerable<string> lines, string key) =>
+        lines.Single(line => line.StartsWith(key, StringComparison.Ordinal))[key.Length..].Trim();
+
+    private static string? WorktreesDirectory()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+            if (directory.Name == "worktrees" && directory.Parent?.Name == ".claude")
+                return directory.FullName;
+        return null;
+    }
 
     [Fact]
     public void S4_Fixture_json_renderings_are_pinned()
@@ -41,7 +80,7 @@ public sealed class ProductMasterContractFixtureTests
     {
         var yaml = File.ReadAllText(ProductMasterContractSchema.FixturePath(ProductMasterContractSchema.V11Yaml));
         var root = ProductMasterContractSchema.V11.Root;
-        Assert.Equal("1.1.0-draft.7", root.GetProperty("info").GetProperty("version").GetString());
+        Assert.Equal("1.1.0-draft.11", root.GetProperty("info").GetProperty("version").GetString());
         var names = new List<string>();
         foreach (var path in root.GetProperty("paths").EnumerateObject())
         {

@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -11,22 +12,67 @@ public interface IProductMasterReadStore
     Task<IReadOnlyList<FinishedGood>> GetFinishedGoodsByIdsAsync(
         IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default);
 
-    // The rows that may be stockable: items and GSKUs / Finished Goods that store Stockable = true, and the LSKUs of
-    // those GSKUs (an LSKU never stores it, O-3). Whether a row IS stockable (completeness) is the reader's rule.
-    Task<ProductMasterStockableCandidates> GetStockableCandidatesAsync(CancellationToken cancellationToken = default);
+    // S4 FIX1 (R4): the stockable search runs in the store — filters, the product scope, order and the page window are
+    // the database's; only the window's rows come back, projected. Every source answers its own first Window rows in
+    // canonical-code order and its total; the caller merges the sources and cuts the page.
+    Task<ProductMasterStockablePage> SearchStockableAsync(
+        ProductMasterStockableSearch search, CancellationToken cancellationToken = default);
 
-    // OD-1: the Global Product's non-retired SKUs (every GSKU under its revisions, their LSKUs and Finished Goods), for
-    // the deprecated v1.0 lot / serial fields of getProduct.
-    Task<ProductMasterProductSkus> GetLiveSkusOfGlobalProductAsync(Guid globalProductId, CancellationToken cancellationToken = default);
+    // OD-1: the lot / serial flags of a Global Product's non-retired SKUs (GSKUs; LSKUs and Finished Goods of every live
+    // GSKU of the product), projected.
+    Task<ProductMasterProductFlags> GetLiveSkuFlagsOfGlobalProductAsync(
+        Guid globalProductId, CancellationToken cancellationToken = default);
 }
 
-public sealed record ProductMasterProductSkus(
-    IReadOnlyList<Gsku> Gskus,
-    IReadOnlyList<Lsku> Lskus,
-    IReadOnlyList<FinishedGood> FinishedGoods);
+public sealed record ProductMasterProductFlags(IReadOnlyList<bool?> GskuLots, IReadOnlyList<bool?> ChildSerials);
 
-public sealed record ProductMasterStockableCandidates(
-    IReadOnlyList<Item> Items,
-    IReadOnlyList<Gsku> Gskus,
-    IReadOnlyList<Lsku> Lskus,
-    IReadOnlyList<FinishedGood> FinishedGoods);
+/// <param name="Query">Code prefix OR a part of the name, both case-insensitive; null = no text filter.</param>
+/// <param name="ItemStatuses">The item statuses wanted; a PendingActivation item is wanted when its activation kind is
+/// (<paramref name="PendingFirstActivation"/> / <paramref name="PendingReactivation"/>) — §16.3.</param>
+/// <param name="ProductScope">Null: no product rows (the caller's scope shows none). Unrestricted: every product row
+/// of the tenant (preparation). Otherwise the candidates the enforced scope reads.</param>
+/// <param name="Window">How many rows each source answers (page × pageSize).</param>
+public sealed record ProductMasterStockableSearch(
+    string? Query,
+    bool Items,
+    bool Gskus,
+    bool Lskus,
+    bool FinishedGoods,
+    ItemMaterialType? MaterialType,
+    IReadOnlyCollection<ItemLifecycleStatus> ItemStatuses,
+    bool PendingFirstActivation,
+    bool PendingReactivation,
+    IReadOnlyCollection<ProductIdentityLifecycleStatus> ProductStatuses,
+    ProductMasterProductScope? ProductScope,
+    int Window);
+
+public sealed record ProductMasterProductScope(
+    bool Unrestricted,
+    IReadOnlyCollection<Guid> CandidateLegalEntityIds,
+    DateTimeOffset ServerNowUtc);
+
+public enum ProductMasterRowKind { Item, Gsku, Lsku, FinishedGood }
+
+/// <summary>One projected row: an item (its own fields) or a product SKU (its pack / market and its product's name).</summary>
+public sealed record ProductMasterStockableRow(
+    ProductMasterRowKind Kind,
+    Guid SkuId,
+    Guid ItemId,
+    string CanonicalCode,
+    string? ItemName,
+    ItemMaterialType? MaterialType,
+    ItemLifecycleStatus? ItemStatus,
+    ItemActivationKind? ActivationKind,
+    ProductIdentityLifecycleStatus? ProductStatus,
+    string? ProductName,
+    decimal? PackQuantity,
+    string? PackUomCode,
+    string? MarketCode,
+    string? BaseUomCode,
+    bool? LotControlled,
+    bool? SerialControlled);
+
+/// <param name="Rows">Each source's first Window rows, in canonical-code order within the source.</param>
+/// <param name="Total">Every matching row of every source.</param>
+/// <param name="Unreadable">Rows the store matched but could not read (skipped, never answered half-read).</param>
+public sealed record ProductMasterStockablePage(IReadOnlyList<ProductMasterStockableRow> Rows, long Total, int Unreadable);
