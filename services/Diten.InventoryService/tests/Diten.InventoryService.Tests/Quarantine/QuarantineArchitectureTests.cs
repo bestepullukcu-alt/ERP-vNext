@@ -130,28 +130,47 @@ public sealed class QuarantineArchitectureTests
 }
 
 /// <summary>
-/// The Q1 test approval port is a TEST device: enabled on a database that is not a DB-010 test database, the host refuses to
-/// start (the controller itself is removed from the application model when the port is off — measured by
-/// QuarantineValidationTests.Submit_without_an_approval_path_fails_closed_and_moves_nothing).
+/// Q5 O-Q2-5 (CT): the slice Q1 test approval port is gone from PRODUCTION code — only the Workflow path stays (DEC-INV-08, KQ-F:
+/// no release without workflow). Measured three ways, so a re-added port is red whichever shape it comes back in:
+/// <list type="number">
+/// <item>the production source (comments stripped) names no test approval port, no outcome endpoint, no switch for one;</item>
+/// <item>the only production type implementing <c>IQuarantineApprovalPort</c> is <c>WorkflowApprovalPort</c>;</item>
+/// <item><c>AddQuarantine</c> registers exactly one approval port, <c>WorkflowApprovalPort</c>, unconditionally.</item>
+/// </list>
+/// The suite's own port (<c>TestInfrastructure/TestApprovalPort.cs</c>) is a test-assembly device. K3 sabotage (d): put
+/// <c>InternalTestApprovalPort</c> back into <c>QuarantinePorts.cs</c> → red.
 /// </summary>
-public sealed class QuarantineTestApprovalGateTests
+public sealed class QuarantineApprovalPortTests
 {
-    private static Diten.InventoryService.Api.Quarantine.QuarantineTestApprovalGate Gate(bool enabled, string database)
-        => new(Microsoft.Extensions.Options.Options.Create(new Diten.InventoryService.Application.Features.Quarantine.Ports.QuarantineTestApprovalOptions { Enabled = enabled }),
-            new Microsoft.Extensions.Configuration.ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?> { ["Mongo:DatabaseName"] = database }).Build());
+    private static readonly Regex TestPortTrace = new(@"TestApproval|RecordTestOutcome|TestOutcome|test-approval|InternalTestApprovalPort|UnavailableApprovalPort",
+        RegexOptions.Compiled);
 
-    [Theory]
-    [InlineData("diten_inventory")]
-    [InlineData("diten_inventory_prod")]
-    [InlineData("testing_inventory")]
-    public async Task The_test_port_on_a_non_test_database_stops_the_host(string database)
-        => await Assert.ThrowsAsync<InvalidOperationException>(() => Gate(true, database).StartAsync(CancellationToken.None));
+    [Fact]
+    public void Production_source_carries_no_test_approval_port()
+    {
+        var offenders = SourceScan.Production().Where(f => TestPortTrace.IsMatch(f.Body)).Select(f => f.RelativePath).ToList();
+        Assert.True(offenders.Count == 0, "test approval port traces in production code: " + string.Join(", ", offenders));
+    }
 
-    [Theory]
-    [InlineData(true, "diten_inventory_s1_tests")]
-    [InlineData(true, "diten_inventory_q1_itest")]
-    [InlineData(false, "diten_inventory")]
-    public async Task The_test_port_is_allowed_only_on_a_test_database_and_off_is_always_fine(bool enabled, string database)
-        => await Gate(enabled, database).StartAsync(CancellationToken.None);
+    [Fact]
+    public void The_Workflow_port_is_the_only_production_approval_port_and_it_is_registered_unconditionally()
+    {
+        var port = typeof(Diten.InventoryService.Application.Features.Quarantine.Ports.IQuarantineApprovalPort);
+        var assemblies = new[]
+        {
+            typeof(Diten.InventoryService.Application.Features.Quarantine.Services.WorkflowApprovalPort).Assembly,
+            typeof(Diten.InventoryService.Api.Quarantine.QuarantineServiceCollectionExtensions).Assembly,
+            typeof(Diten.InventoryService.Infrastructure.Workflow.GatewayWorkflowClient).Assembly,
+            typeof(QuarantineRepository).Assembly
+        };
+        var implementations = assemblies.Distinct().SelectMany(a => a.GetTypes())
+            .Where(t => port.IsAssignableFrom(t) && t is { IsInterface: false, IsAbstract: false }).ToList();
+        Assert.Equal([typeof(Diten.InventoryService.Application.Features.Quarantine.Services.WorkflowApprovalPort)], implementations);
+
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Gateway:BaseUrl"] = "http://localhost:5000" }).Build();
+        Diten.InventoryService.Api.Quarantine.QuarantineServiceCollectionExtensions.AddQuarantine(services, configuration);
+        var registration = Assert.Single(services, d => d.ServiceType == port);
+        Assert.Equal(typeof(Diten.InventoryService.Application.Features.Quarantine.Services.WorkflowApprovalPort), registration.ImplementationType);
+    }
 }

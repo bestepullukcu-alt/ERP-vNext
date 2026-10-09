@@ -931,6 +931,11 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>مستكشف الأرقام التسلسلية</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>التتبع</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>ترحيل التشغيلات المُدخلة يدويًا</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>الجودة</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>قائمة انتظار الحجر</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>المخزون المحظور</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>قائمة إعادة الاختبار</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>إعدادات الحجر</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>التوقيع الإلكتروني</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>توقيعي</value></data>
 </root>

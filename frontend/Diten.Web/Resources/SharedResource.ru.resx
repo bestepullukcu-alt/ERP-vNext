@@ -931,6 +931,11 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Обзор серийных номеров</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Прослеживаемость</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Перенос вручную введённых партий</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Качество</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>Очередь карантина</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Заблокированный запас</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>Очередь повторного контроля</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Настройки карантина</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Электронная подпись</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Моя подпись</value></data>
 </root>

@@ -17,8 +17,8 @@ namespace Diten.InventoryService.Api.Controllers.Quarantine;
 /// QUARANTINE-BUNDLE — MOD-0175 (base <c>/api/quarantine</c>, contract <c>quarantine.openapi.yaml</c> 1.0.0). Slice Q1
 /// implements: holds (list, get, "Karantinaya Al", "İncelemeye al"), decisions (draft, submit, get, re-apply), blocked stock
 /// (list, get, "İncelemeyi tamamla", "Stoğu bloke et"), settings (get / put) and block reasons (list / create / put). Slice
-/// Q2 adds the workflow operations (refresh, withdraw, template). The retest queue, the lot quality status, the by-source
-/// list, the hold PATCH and the e-signature subject provider are frozen in the contract and arrive with Q3–Q4. No DELETE anywhere;
+/// Q2 adds the workflow operations (refresh, withdraw, template), Q4 the retest queue, Q5 the lot quality status. The by-source
+/// list and the hold PATCH are frozen in the contract and not served yet (Q5 evidence O-Q5-1). No DELETE anywhere;
 /// the only PUTs are the two master-data replacements the contract names (settings, block reasons). No business rule here.
 /// </summary>
 [Route("api/quarantine")]
@@ -211,6 +211,13 @@ public sealed class QuarantineController : CustomBaseController
     public async Task<IActionResult> ListRetest([FromQuery] string? horizonDays, [FromQuery] string? state, [FromQuery] string? warehouseId, CancellationToken ct)
         => CreateActionResultInstance(await _mediator.Send(new ListRetestQuery(horizonDays, state, warehouseId), ct));
 
+    // ── lot quality status (Q5, O-Q4-2 — the consumers' read and the MOD-0174 Lot page badge) ─────────────────────
+
+    [HttpGet("lots/{lotId}/quality-status")]
+    [HasPermission(QuarantinePermissions.HoldsRead)]
+    public async Task<IActionResult> GetLotQualityStatus(string lotId, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetLotQualityStatusQuery(lotId, Language()), ct));
+
     // ── settings + block reasons ──────────────────────────────────────────────────────────────────────
 
     [HttpGet("settings")]
@@ -320,36 +327,4 @@ public sealed class QuarantineController : CustomBaseController
     private IActionResult Forbidden() => ContractFailure(StatusCodes.Status403Forbidden, null, "The caller lacks the permission required for this operation.");
 
     private IActionResult NotFoundContract(string code, string message) => ContractFailure(StatusCodes.Status404NotFound, code, message);
-}
-
-/// <summary>
-/// NOT part of QUARANTINE-BUNDLE — the slice Q1 test approval port's outcome endpoint (pack §1 Q1 "internal approval port").
-/// It exists only when <c>Quarantine:TestApprovalPort:Enabled</c> is true on a DB-010 test database; otherwise the
-/// controller is removed from the application model at startup (<c>QuarantineTestApprovalConvention</c>) and the route does
-/// not exist. Q2 replaces the port by the Workflow integration and deletes this controller.
-/// </summary>
-[Route("api/quarantine/test-approval")]
-[Authorize]
-public sealed class QuarantineTestApprovalController : CustomBaseController
-{
-    private readonly IMediator _mediator;
-
-    public QuarantineTestApprovalController(IMediator mediator) => _mediator = mediator;
-
-    [HttpPost("decisions/{decisionId}")]
-    [HasPermission(QuarantinePermissions.DecisionsApply)]
-    public async Task<IActionResult> RecordOutcome(string decisionId, CancellationToken ct)
-    {
-        if (!QuarantineSupport.TryParseId(decisionId, out var id))
-        {
-            return ContractFailure(StatusCodes.Status404NotFound, "QUARANTINE_DECISION_NOT_FOUND", "Decision not found.");
-        }
-
-        var tenant = HttpContext.RequestServices.GetRequiredService<ITenantContext>();
-        var read = await QuarantineRequestReader.ReadAsync(Request.Body, QuarantineRequestReader.TestOutcomeMembers,
-            b => new RecordTestOutcomeCommand(id, b.Enum<ApprovalOutcome>("outcome"), b.OptionalUuid("approverUserId") ?? tenant.UserId), ct);
-        return read.Value is { } command
-            ? CreateActionResultInstance(await _mediator.Send(command, ct))
-            : ContractFailure(StatusCodes.Status400BadRequest, InventoryErrorCodes.InvalidRequest, read.Error ?? "The request is malformed.");
-    }
 }

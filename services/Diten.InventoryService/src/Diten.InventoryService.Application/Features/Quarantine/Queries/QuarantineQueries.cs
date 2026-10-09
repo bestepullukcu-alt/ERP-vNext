@@ -24,3 +24,6 @@ public sealed record ListBlockReasonsQuery(string? ActiveOnly) : IRequest<Respon
 
 /// <summary>listRetest — the retest queue (KQ-H, Q4); raw query strings, parsed by the handler.</summary>
 public sealed record ListRetestQuery(string? HorizonDays, string? State, string? WarehouseId) : IRequest<Response<IReadOnlyList<RetestItemDto>>>;
+
+/// <summary>getLotQualityStatus — the quality picture of one lot in the caller's company (Q5, O-Q4-2).</summary>
+public sealed record GetLotQualityStatusQuery(string LotId, string Language) : IRequest<Response<LotQualityStatusDto>>;

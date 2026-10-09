@@ -218,3 +218,17 @@ public sealed record RetestItemDto(
     IReadOnlyList<string> HoldIds);
 
 public sealed record RetestBucketDto(string WarehouseId, string LocationId, decimal Quantity);
+
+/// <summary>getLotQualityStatus (QUARANTINE-BUNDLE LotQualityStatus) — consumers 0142 / 0176 / 0177 and the MOD-0174 Lot pages.</summary>
+public sealed record LotQualityStatusDto(
+    string LotId,
+    bool RetestDue,
+    decimal QuarantinedQuantity,
+    decimal QualityInspectionQuantity,
+    decimal BlockedQuantity,
+    IReadOnlyList<HoldRefDto> OpenHolds,
+    IReadOnlyList<BlockedStockRefDto> OpenBlocked,
+    PendingLotReleaseDto? PendingLotRelease);
+
+/// <summary>The lot release (KQ-I) of the lot that has not reached a terminal state — what the Lot page shows as "Onay bekliyor".</summary>
+public sealed record PendingLotReleaseDto(string DecisionId, string DecisionNumber);

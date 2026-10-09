@@ -661,4 +661,9 @@
   <data name="Validation.Required" xml:space="preserve">
     <value>Обязательное поле.</value>
   </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>Отправлено на утверждение</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>Выпуск партии ожидает утверждения качества; статус изменится после утверждения. Откройте страницу «Отправить решение», чтобы подписать и отправить его.</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>Открыть страницу «Отправить решение»</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>Ожидает утверждения</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>Решение о выпуске ожидает утверждения · {0}</value></data>
 </root>

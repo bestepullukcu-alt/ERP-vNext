@@ -931,6 +931,11 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>序列号浏览</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>可追溯性</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>手工录入批次迁移</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>质量</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>隔离队列</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>冻结库存</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>复检队列</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>隔离设置</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>电子签名</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>我的签名</value></data>
 </root>

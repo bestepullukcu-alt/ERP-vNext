@@ -52,7 +52,9 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
                 UpstreamHttp.OptionalString(root, "lifecycleStatus"),
                 UpstreamHttp.OptionalString(root, "baseUomId"),
                 UpstreamHttp.OptionalBool(root, "lotControlled"),
-                UpstreamHttp.OptionalBool(root, "serialControlled")),
+                UpstreamHttp.OptionalBool(root, "serialControlled"),
+                UpstreamHttp.OptionalString(root, "canonicalCode"),
+                UpstreamHttp.OptionalString(root, "name")),
             Unavailable,
             cancellationToken);
 

@@ -521,34 +521,3 @@ public sealed class ReapplyDecisionHandler : IRequestHandler<ReapplyDecisionComm
         return Response<DecisionDto>.Success(QuarantineMapping.Decision(decision, await _decisions.EventsAsync([decision.Id], ct)));
     }
 }
-
-/// <summary>The Q1 test approval port's outcome (not QUARANTINE-BUNDLE; see <see cref="RecordTestOutcomeCommand"/>).</summary>
-public sealed class RecordTestOutcomeHandler : IRequestHandler<RecordTestOutcomeCommand, Response<DecisionDto>>
-{
-    private readonly IQuarantineDecisionRepository _decisions;
-    private readonly QuarantineOutcomeApplier _applier;
-
-    public RecordTestOutcomeHandler(IQuarantineDecisionRepository decisions, QuarantineOutcomeApplier applier)
-    {
-        _decisions = decisions;
-        _applier = applier;
-    }
-
-    public async Task<Response<DecisionDto>> Handle(RecordTestOutcomeCommand request, CancellationToken ct)
-    {
-        var decision = await _decisions.FindAsync(request.DecisionId, ct);
-        if (decision is null)
-        {
-            return QuarantineSupport.Fail<DecisionDto>(QuarantineErrorCodes.DecisionNotFound, "Decision not found.", 404);
-        }
-
-        var instance = (await _decisions.EventsAsync([decision.Id], ct)).LastOrDefault(e => e.Kind == DecisionEventKind.WorkflowStarted)?.WorkflowInstanceId;
-        var outcome = await _applier.ApplyOutcomeAsync(decision.Id, request.Outcome, request.ApproverUserId, instance, ct);
-        if (!outcome.IsSuccessful)
-        {
-            return Response<DecisionDto>.Fail(outcome.ErrorCode!, outcome.Errors[0], outcome.StatusCode);
-        }
-
-        return Response<DecisionDto>.Success(QuarantineMapping.Decision(decision, await _decisions.EventsAsync([decision.Id], ct)));
-    }
-}

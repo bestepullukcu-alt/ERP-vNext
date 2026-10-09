@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Quarantine.Common.Crumb.Root" xml:space="preserve"><value>Qualité</value></data>
+  <data name="Quarantine.Common.Company.Label" xml:space="preserve"><value>Société</value></data>
+  <data name="Quarantine.Common.Company.Placeholder" xml:space="preserve"><value>Choisissez une société</value></data>
+  <data name="Quarantine.Common.Company.Required" xml:space="preserve"><value>Choisissez la société dans laquelle vous travaillez pour voir ses enregistrements de quarantaine.</value></data>
+  <data name="Quarantine.Common.Company.Unavailable" xml:space="preserve"><value>La liste des sociétés n’a pas pu être chargée. Réessayez dans un instant.</value></data>
+  <data name="Quarantine.Common.NamesUnavailable" xml:space="preserve"><value>Les noms des produits et des emplacements sont indisponibles ; les identifiants sont affichés. Les quantités sont exactes.</value></data>
+  <data name="Quarantine.Common.Back" xml:space="preserve"><value>Retour</value></data>
+  <data name="Quarantine.Common.Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Quarantine.Common.Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="Quarantine.Common.Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Quarantine.Common.Select" xml:space="preserve"><value>Sélectionnez</value></data>
+  <data name="Quarantine.Common.Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="Quarantine.Common.No" xml:space="preserve"><value>Non</value></data>
+  <data name="Quarantine.Common.Days" xml:space="preserve"><value>{0} jours</value></data>
+  <data name="Quarantine.Common.DaysLeft" xml:space="preserve"><value>Encore {0} jours</value></data>
+  <data name="Quarantine.Common.DaysPast" xml:space="preserve"><value>Dépassé de {0} jours</value></data>
+  <data name="Quarantine.Common.Target" xml:space="preserve"><value>Objectif {0} jours · société</value></data>
+  <data name="Quarantine.Common.ReasonCounter" xml:space="preserve"><value>{0} / au moins 10</value></data>
+  <data name="Quarantine.Common.ReasonMin" xml:space="preserve"><value>La justification doit comporter au moins 10 caractères.</value></data>
+  <data name="Quarantine.Tabs.Queue" xml:space="preserve"><value>File de quarantaine</value></data>
+  <data name="Quarantine.Tabs.Blocked" xml:space="preserve"><value>Stock bloqué</value></data>
+  <data name="Quarantine.Tabs.Retest" xml:space="preserve"><value>File de recontrôle</value></data>
+  <data name="Quarantine.Tabs.Settings" xml:space="preserve"><value>Paramètres de quarantaine</value></data>
+  <data name="Quarantine.Col.Product" xml:space="preserve"><value>Produit</value></data>
+  <data name="Quarantine.Col.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Quarantine.Col.LotNo" xml:space="preserve"><value>N° de lot</value></data>
+  <data name="Quarantine.Col.Expiry" xml:space="preserve"><value>Péremption</value></data>
+  <data name="Quarantine.Col.WarehouseLocation" xml:space="preserve"><value>Entrepôt / Emplacement</value></data>
+  <data name="Quarantine.Col.StockStatus" xml:space="preserve"><value>Statut du stock</value></data>
+  <data name="Quarantine.Col.Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Quarantine.Col.EnteredAt" xml:space="preserve"><value>Date d’entrée</value></data>
+  <data name="Quarantine.Col.Wait" xml:space="preserve"><value>Attente</value></data>
+  <data name="Quarantine.Col.Source" xml:space="preserve"><value>Origine / Document</value></data>
+  <data name="Quarantine.Col.Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="Quarantine.Col.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Quarantine.Col.BlockReason" xml:space="preserve"><value>Motif de blocage</value></data>
+  <data name="Quarantine.Col.BlockedAt" xml:space="preserve"><value>Bloqué le</value></data>
+  <data name="Quarantine.Col.Pending" xml:space="preserve"><value>Décision en attente</value></data>
+  <data name="Quarantine.Col.RetestDate" xml:space="preserve"><value>Date de recontrôle</value></data>
+  <data name="Quarantine.Col.OnHand" xml:space="preserve"><value>Stock disponible</value></data>
+  <data name="Quarantine.Col.MoveNo" xml:space="preserve"><value>N° de mouvement</value></data>
+  <data name="Quarantine.Col.Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Quarantine.Col.MoveType" xml:space="preserve"><value>Type de mouvement</value></data>
+  <data name="Quarantine.Col.StatusChange" xml:space="preserve"><value>Changement de statut</value></data>
+  <data name="Quarantine.Col.User" xml:space="preserve"><value>Utilisateur</value></data>
+  <data name="Quarantine.Field.Reason" xml:space="preserve"><value>Justification</value></data>
+  <data name="Quarantine.Field.BlockReason" xml:space="preserve"><value>Motif de blocage</value></data>
+  <data name="Quarantine.Filter.AllWarehouses" xml:space="preserve"><value>Tous les entrepôts</value></data>
+  <data name="Quarantine.Filter.AllStockStatuses" xml:space="preserve"><value>Tous les statuts de stock</value></data>
+  <data name="Quarantine.Filter.AllSources" xml:space="preserve"><value>Toutes les origines</value></data>
+  <data name="Quarantine.Filter.LateOnly" xml:space="preserve"><value>En retard uniquement</value></data>
+  <data name="Quarantine.Filter.Clear" xml:space="preserve"><value>Effacer</value></data>
+  <data name="Quarantine.Action.Decide" xml:space="preserve"><value>Décider</value></data>
+  <data name="Quarantine.Action.Detail" xml:space="preserve"><value>Détail</value></data>
+  <data name="Quarantine.Action.Dispose" xml:space="preserve"><value>Décision de disposition</value></data>
+  <data name="Quarantine.Action.Unblock" xml:space="preserve"><value>Débloquer</value></data>
+  <data name="Quarantine.Action.CompleteReview" xml:space="preserve"><value>Terminer l’examen</value></data>
+  <data name="Quarantine.Action.BlockStock" xml:space="preserve"><value>Bloquer le stock</value></data>
+  <data name="Quarantine.Action.Quarantine" xml:space="preserve"><value>Mettre en quarantaine</value></data>
+  <data name="Quarantine.Status.AVAILABLE" xml:space="preserve"><value>Disponible</value></data>
+  <data name="Quarantine.Status.QUALITY_INSPECTION" xml:space="preserve"><value>Contrôle qualité</value></data>
+  <data name="Quarantine.Status.QUARANTINE" xml:space="preserve"><value>Quarantaine</value></data>
+  <data name="Quarantine.Status.BLOCKED" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="Quarantine.Status.IN_TRANSIT" xml:space="preserve"><value>En transit</value></data>
+  <data name="Quarantine.Status.DAMAGED" xml:space="preserve"><value>Endommagé</value></data>
+  <data name="Quarantine.Status.EXPIRED" xml:space="preserve"><value>Périmé</value></data>
+  <data name="Quarantine.HoldState.Waiting" xml:space="preserve"><value>En attente</value></data>
+  <data name="Quarantine.HoldState.InReview" xml:space="preserve"><value>En examen</value></data>
+  <data name="Quarantine.HoldState.Pending" xml:space="preserve"><value>En attente d’approbation</value></data>
+  <data name="Quarantine.HoldState.Decided" xml:space="preserve"><value>Décidé</value></data>
+  <data name="Quarantine.Workflow.Draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Quarantine.Workflow.Submitted" xml:space="preserve"><value>Envoyée</value></data>
+  <data name="Quarantine.Workflow.PendingApproval" xml:space="preserve"><value>En attente d’approbation</value></data>
+  <data name="Quarantine.Workflow.Approved" xml:space="preserve"><value>Approuvée · en attente d’application</value></data>
+  <data name="Quarantine.Workflow.Applied" xml:space="preserve"><value>Appliquée</value></data>
+  <data name="Quarantine.Workflow.Rejected" xml:space="preserve"><value>Rejetée</value></data>
+  <data name="Quarantine.Workflow.Cancelled" xml:space="preserve"><value>Annulée</value></data>
+  <data name="Quarantine.Workflow.TimedOut" xml:space="preserve"><value>Délai dépassé</value></data>
+  <data name="Quarantine.Workflow.Withdrawn" xml:space="preserve"><value>Retirée</value></data>
+  <data name="Quarantine.Workflow.StartFailed" xml:space="preserve"><value>Envoi pour approbation impossible</value></data>
+  <data name="Quarantine.Workflow.ApplyFailed" xml:space="preserve"><value>Application impossible</value></data>
+  <data name="Quarantine.Workflow.FourEyesViolation" xml:space="preserve"><value>Violation du principe des quatre yeux</value></data>
+  <data name="Quarantine.DecisionKind.HoldDecision" xml:space="preserve"><value>Décision de quarantaine</value></data>
+  <data name="Quarantine.DecisionKind.Disposition" xml:space="preserve"><value>Disposition</value></data>
+  <data name="Quarantine.DecisionKind.Unblock" xml:space="preserve"><value>Déblocage</value></data>
+  <data name="Quarantine.DecisionKind.LotRelease" xml:space="preserve"><value>Libération du lot</value></data>
+  <data name="Quarantine.LineDecision.Release" xml:space="preserve"><value>Libérer</value></data>
+  <data name="Quarantine.LineDecision.Reject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="Quarantine.LineDecision.Block" xml:space="preserve"><value>Bloquer</value></data>
+  <data name="Quarantine.Source.GoodsReceipt" xml:space="preserve"><value>Réception</value></data>
+  <data name="Quarantine.Source.Production" xml:space="preserve"><value>Production</value></data>
+  <data name="Quarantine.Source.CustomerReturn" xml:space="preserve"><value>Retour client</value></data>
+  <data name="Quarantine.Source.Manual" xml:space="preserve"><value>Manuel</value></data>
+  <data name="Quarantine.Source.Retest" xml:space="preserve"><value>Recontrôle</value></data>
+  <data name="Quarantine.Source.Rework" xml:space="preserve"><value>Retraitement</value></data>
+  <data name="Quarantine.Source.OtherInbound" xml:space="preserve"><value>Autre entrée</value></data>
+  <data name="Quarantine.Origin.QuarantineDecision" xml:space="preserve"><value>Décision de quarantaine</value></data>
+  <data name="Quarantine.Origin.ManualBlock" xml:space="preserve"><value>Blocage manuel</value></data>
+  <data name="Quarantine.Origin.Rework" xml:space="preserve"><value>Retraitement</value></data>
+  <data name="Quarantine.Origin.OtherInbound" xml:space="preserve"><value>Autre entrée</value></data>
+  <data name="Quarantine.Origin.LotBlocked" xml:space="preserve"><value>Lot bloqué</value></data>
+  <data name="Quarantine.LotStatus.Draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Quarantine.LotStatus.Released" xml:space="preserve"><value>Libéré</value></data>
+  <data name="Quarantine.LotStatus.Blocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="Quarantine.LotStatus.Expired" xml:space="preserve"><value>Périmé</value></data>
+  <data name="Quarantine.MovementType.OPENING_BALANCE" xml:space="preserve"><value>Solde d’ouverture</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PO" xml:space="preserve"><value>Réception d’achat</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PROD" xml:space="preserve"><value>Entrée de production</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_SALES" xml:space="preserve"><value>Sortie vente</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_PROD" xml:space="preserve"><value>Sortie production</value></data>
+  <data name="Quarantine.MovementType.WAREHOUSE_TRANSFER" xml:space="preserve"><value>Transfert entre entrepôts</value></data>
+  <data name="Quarantine.MovementType.LOCATION_TRANSFER" xml:space="preserve"><value>Transfert d’emplacement</value></data>
+  <data name="Quarantine.MovementType.STATUS_TRANSFER" xml:space="preserve"><value>Changement de statut</value></data>
+  <data name="Quarantine.MovementType.CUSTOMER_RETURN" xml:space="preserve"><value>Retour client</value></data>
+  <data name="Quarantine.MovementType.SUPPLIER_RETURN" xml:space="preserve"><value>Retour fournisseur</value></data>
+  <data name="Quarantine.MovementType.COUNT_GAIN" xml:space="preserve"><value>Excédent d’inventaire</value></data>
+  <data name="Quarantine.MovementType.COUNT_LOSS" xml:space="preserve"><value>Manquant d’inventaire</value></data>
+  <data name="Quarantine.MovementType.SCRAP" xml:space="preserve"><value>Mise au rebut</value></data>
+  <data name="Quarantine.MovementType.WRITE_OFF" xml:space="preserve"><value>Radiation</value></data>
+  <data name="Quarantine.MovementType.REVERSAL" xml:space="preserve"><value>Contre-passation</value></data>
+  <data name="Quarantine.History.Quarantined" xml:space="preserve"><value>Mis en quarantaine</value></data>
+  <data name="Quarantine.History.ReviewStarted" xml:space="preserve"><value>Examen commencé</value></data>
+  <data name="Quarantine.History.DecisionSubmitted" xml:space="preserve"><value>Décision envoyée pour approbation</value></data>
+  <data name="Quarantine.History.Approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="Quarantine.History.Rejected" xml:space="preserve"><value>Approbation rejetée</value></data>
+  <data name="Quarantine.History.Cancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="Quarantine.History.TimedOut" xml:space="preserve"><value>Délai dépassé</value></data>
+  <data name="Quarantine.History.Withdrawn" xml:space="preserve"><value>Décision retirée</value></data>
+  <data name="Quarantine.History.Applied" xml:space="preserve"><value>Mouvement de stock appliqué</value></data>
+  <data name="Quarantine.History.ApplyFailed" xml:space="preserve"><value>Application impossible</value></data>
+  <data name="Quarantine.History.FourEyesViolation" xml:space="preserve"><value>Violation des quatre yeux · aucun mouvement</value></data>
+  <data name="Quarantine.History.Blocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="Quarantine.History.ReviewCompleted" xml:space="preserve"><value>Examen terminé</value></data>
+  <data name="Quarantine.History.Disposed" xml:space="preserve"><value>Disposition appliquée</value></data>
+  <data name="Quarantine.History.Unblocked" xml:space="preserve"><value>Débloqué</value></data>
+  <data name="Quarantine.History.SampleRetained" xml:space="preserve"><value>Conservé comme échantillon</value></data>
+  <data name="Quarantine.Queue.Title" xml:space="preserve"><value>File de quarantaine</value></data>
+  <data name="Quarantine.Queue.Kpi.Pending" xml:space="preserve"><value>Lignes en attente de décision</value></data>
+  <data name="Quarantine.Queue.Kpi.InReview" xml:space="preserve"><value>{0} lignes en examen</value></data>
+  <data name="Quarantine.Queue.Kpi.Quantity" xml:space="preserve"><value>Quantité totale · par unité</value></data>
+  <data name="Quarantine.Queue.Kpi.Late" xml:space="preserve"><value>Au-delà de l’objectif d’attente</value></data>
+  <data name="Quarantine.Queue.Kpi.ExpirySoon" xml:space="preserve"><value>Péremption sous 90 jours : {0}</value></data>
+  <data name="Quarantine.Queue.Empty" xml:space="preserve"><value>Aucun enregistrement de quarantaine ne correspond au filtre.</value></data>
+  <data name="Quarantine.Queue.Footer" xml:space="preserve"><value>{0} enregistrements</value></data>
+  <data name="Quarantine.Queue.Legend.Late" xml:space="preserve"><value>Objectif d’attente dépassé</value></data>
+  <data name="Quarantine.Queue.Legend.Expiry" xml:space="preserve"><value>Péremption ≤ 90 jours</value></data>
+  <data name="Quarantine.Details.Title" xml:space="preserve"><value>Enregistrement de quarantaine</value></data>
+  <data name="Quarantine.Details.BackToQueue" xml:space="preserve"><value>Retour à la file</value></data>
+  <data name="Quarantine.Details.GoToLot" xml:space="preserve"><value>Aller au lot</value></data>
+  <data name="Quarantine.Details.LateAlert" xml:space="preserve"><value>Le temps d’attente dépasse l’objectif : {0} jours (objectif {1} jours · société).</value></data>
+  <data name="Quarantine.Details.Fact.Lot" xml:space="preserve"><value>N° de lot</value></data>
+  <data name="Quarantine.Details.Fact.Expiry" xml:space="preserve"><value>Péremption</value></data>
+  <data name="Quarantine.Details.Fact.Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Quarantine.Details.Fact.Where" xml:space="preserve"><value>Entrepôt / Emplacement</value></data>
+  <data name="Quarantine.Details.Fact.Wait" xml:space="preserve"><value>Temps d’attente</value></data>
+  <data name="Quarantine.Details.Fact.Source" xml:space="preserve"><value>Origine</value></data>
+  <data name="Quarantine.Details.Fact.CreatedBy" xml:space="preserve"><value>Créé par</value></data>
+  <data name="Quarantine.Details.Quality.Title" xml:space="preserve"><value>Informations qualité</value></data>
+  <data name="Quarantine.Details.Quality.Coa" xml:space="preserve"><value>Référence CoA (du lot)</value></data>
+  <data name="Quarantine.Details.Quality.LotStatus" xml:space="preserve"><value>Statut du lot</value></data>
+  <data name="Quarantine.Details.Quality.Note" xml:space="preserve"><value>Note de résultat d’analyse</value></data>
+  <data name="Quarantine.Details.Quality.NoNote" xml:space="preserve"><value>Aucune note d’analyse.</value></data>
+  <data name="Quarantine.Details.Quality.Attachments" xml:space="preserve"><value>Pièces jointes · références uniquement</value></data>
+  <data name="Quarantine.Details.History.Title" xml:space="preserve"><value>Historique des décisions</value></data>
+  <data name="Quarantine.Details.History.Empty" xml:space="preserve"><value>Aucune entrée pour l’instant.</value></data>
+  <data name="Quarantine.Details.History.Signature" xml:space="preserve"><value>signature électronique · {0}</value></data>
+  <data name="Quarantine.Details.History.ApproverSignature" xml:space="preserve"><value>signature de l’approbateur · {0}</value></data>
+  <data name="Quarantine.Details.Moves.Title" xml:space="preserve"><value>Mouvements de stock</value></data>
+  <data name="Quarantine.Details.Moves.Subtitle" xml:space="preserve"><value>Les changements de statut que cet enregistrement a créés dans le registre des stocks</value></data>
+  <data name="Quarantine.Details.Moves.Empty" xml:space="preserve"><value>Aucun mouvement de stock pour cet enregistrement.</value></data>
+  <data name="Quarantine.Details.StartReview" xml:space="preserve"><value>Commencer l’examen</value></data>
+  <data name="Quarantine.Details.StartReviewText" xml:space="preserve"><value>L’enregistrement passe « En examen » ; aucun stock ne bouge.</value></data>
+  <data name="Quarantine.Details.ReviewNote" xml:space="preserve"><value>Note d’examen (facultatif)</value></data>
+  <data name="Quarantine.Details.ReviewStarted" xml:space="preserve"><value>L’enregistrement est en examen.</value></data>
+  <data name="Quarantine.Workflow.Box" xml:space="preserve"><value>Workflow</value></data>
+  <data name="Quarantine.Workflow.NoDecision" xml:space="preserve"><value>Aucune décision n’attend d’approbation.</value></data>
+  <data name="Quarantine.Workflow.LastDecision" xml:space="preserve"><value>Dernière décision</value></data>
+  <data name="Quarantine.Workflow.Decision" xml:space="preserve"><value>Décision</value></data>
+  <data name="Quarantine.Workflow.Decider" xml:space="preserve"><value>Décideur</value></data>
+  <data name="Quarantine.Workflow.Approver" xml:space="preserve"><value>Approbateur</value></data>
+  <data name="Quarantine.Workflow.Instance" xml:space="preserve"><value>Instance</value></data>
+  <data name="Quarantine.Workflow.DeciderSignature" xml:space="preserve"><value>Signature du décideur</value></data>
+  <data name="Quarantine.Workflow.ApproverSignature" xml:space="preserve"><value>Signature de l’approbateur</value></data>
+  <data name="Quarantine.Workflow.Refresh" xml:space="preserve"><value>Actualiser le statut</value></data>
+  <data name="Quarantine.Workflow.Refreshed" xml:space="preserve"><value>Statut mis à jour : {0}</value></data>
+  <data name="Quarantine.Workflow.Withdraw" xml:space="preserve"><value>Retirer la décision</value></data>
+  <data name="Quarantine.Workflow.WithdrawTitle" xml:space="preserve"><value>Retirer la décision ?</value></data>
+  <data name="Quarantine.Workflow.WithdrawText" xml:space="preserve"><value>La tâche d’approbation est annulée et l’enregistrement est rouvert. Aucun stock ne bouge.</value></data>
+  <data name="Quarantine.Workflow.WithdrawDone" xml:space="preserve"><value>La décision a été retirée.</value></data>
+  <data name="Quarantine.Workflow.Reapply" xml:space="preserve"><value>Réappliquer</value></data>
+  <data name="Quarantine.Workflow.ReapplyText" xml:space="preserve"><value>La décision approuvée est réappliquée avec les mêmes clés ; une ligne comptabilisée ne l’est jamais deux fois.</value></data>
+  <data name="Quarantine.Workflow.Reapplied" xml:space="preserve"><value>La décision a été réappliquée.</value></data>
+  <data name="Quarantine.Workflow.SubmitLink" xml:space="preserve"><value>Signer et envoyer</value></data>
+  <data name="Quarantine.Decide.PageTitle" xml:space="preserve"><value>Décider</value></data>
+  <data name="Quarantine.Decide.Title" xml:space="preserve"><value>Décider · {0}</value></data>
+  <data name="Quarantine.Decide.Step.Decision" xml:space="preserve"><value>Décision</value></data>
+  <data name="Quarantine.Decide.Step.Sign" xml:space="preserve"><value>Signature électronique</value></data>
+  <data name="Quarantine.Decide.Step.Skipped" xml:space="preserve"><value>politique désactivée · étape ignorée</value></data>
+  <data name="Quarantine.Decide.FourEyes.On" xml:space="preserve"><value>Règle des quatre yeux activée : un autre utilisateur QA approuve cette décision ; le décideur ne peut pas approuver sa propre décision.</value></data>
+  <data name="Quarantine.Decide.FourEyes.Off" xml:space="preserve"><value>La règle des quatre yeux est désactivée dans la politique de la société ; l’approbation reste faite par une autre personne que le décideur.</value></data>
+  <data name="Quarantine.Decide.Partial.Label" xml:space="preserve"><value>Décision partielle</value></data>
+  <data name="Quarantine.Decide.Partial.Hint" xml:space="preserve"><value>Libérer une partie de la quantité et décider autrement pour le reste</value></data>
+  <data name="Quarantine.Decide.Field.Decision" xml:space="preserve"><value>Décision</value></data>
+  <data name="Quarantine.Decide.Option.Release" xml:space="preserve"><value>Le stock est ouvert à la vente et aux réservations.</value></data>
+  <data name="Quarantine.Decide.Option.Reject" xml:space="preserve"><value>Passe dans la liste du stock bloqué ; une décision de disposition est ensuite requise.</value></data>
+  <data name="Quarantine.Decide.Option.Block" xml:space="preserve"><value>Le stock est bloqué ; l’examen continue.</value></data>
+  <data name="Quarantine.Decide.Field.Lines" xml:space="preserve"><value>Répartition des quantités</value></data>
+  <data name="Quarantine.Decide.Lines.Pick" xml:space="preserve"><value>Choisissez une décision</value></data>
+  <data name="Quarantine.Decide.Lines.Release" xml:space="preserve"><value>Libérer → Disponible</value></data>
+  <data name="Quarantine.Decide.Lines.Reject" xml:space="preserve"><value>Rejeter → Bloqué</value></data>
+  <data name="Quarantine.Decide.Lines.Block" xml:space="preserve"><value>Bloquer → Bloqué</value></data>
+  <data name="Quarantine.Decide.Lines.Sum" xml:space="preserve"><value>Total / quantité disponible</value></data>
+  <data name="Quarantine.Decide.Field.Coa" xml:space="preserve"><value>CoA / résultat d’analyse vérifié</value></data>
+  <data name="Quarantine.Decide.Field.NewRetest" xml:space="preserve"><value>Nouvelle date de recontrôle</value></data>
+  <data name="Quarantine.Decide.NewRetest.Hint" xml:space="preserve"><value>Libérer un lot dont la date de recontrôle est dépassée exige une nouvelle date (après aujourd’hui, avant la péremption).</value></data>
+  <data name="Quarantine.Decide.Err.Decision" xml:space="preserve"><value>Choisissez une décision.</value></data>
+  <data name="Quarantine.Decide.Err.Lines" xml:space="preserve"><value>Les deux lignes doivent avoir des décisions différentes, chaque quantité supérieure à zéro et le total égal à la quantité disponible.</value></data>
+  <data name="Quarantine.Decide.Err.BlockReason" xml:space="preserve"><value>Choisissez un motif de blocage.</value></data>
+  <data name="Quarantine.Decide.Err.Coa" xml:space="preserve"><value>Confirmez que le CoA / résultat d’analyse a été vérifié avant une libération.</value></data>
+  <data name="Quarantine.Decide.Err.Retest" xml:space="preserve"><value>Saisissez la nouvelle date de recontrôle.</value></data>
+  <data name="Quarantine.Decide.Closed" xml:space="preserve"><value>Aucune décision ne peut être prise pour cet enregistrement pour l’instant ({0}).</value></data>
+  <data name="Quarantine.Decide.Button.Next" xml:space="preserve"><value>Suivant : signature électronique</value></data>
+  <data name="Quarantine.Decide.Button.SignSend" xml:space="preserve"><value>Signer et envoyer</value></data>
+  <data name="Quarantine.Decide.Button.Send" xml:space="preserve"><value>Envoyer pour approbation</value></data>
+  <data name="Quarantine.Sign.Summary" xml:space="preserve"><value>Décision à signer</value></data>
+  <data name="Quarantine.Sign.Info" xml:space="preserve"><value>La signature est ajoutée à la décision avec l’utilisateur, la date-heure et la signification. La décision part en approbation ; le stock ne bouge qu’après approbation.</value></data>
+  <data name="Quarantine.Sign.NotRequired" xml:space="preserve"><value>La politique n’exige pas de signature pour cette décision ; elle part en approbation sans signature. Le stock ne bouge qu’après approbation.</value></data>
+  <data name="Quarantine.Sign.Movement" xml:space="preserve"><value>Mouvement de stock à l’approbation</value></data>
+  <data name="Quarantine.Sign.ReasonLine" xml:space="preserve"><value>Justification : « {0} »</value></data>
+  <data name="Quarantine.Sign.Cancelled" xml:space="preserve"><value>La signature a été annulée ; la décision n’a pas été envoyée.</value></data>
+  <data name="Quarantine.Sent.Toast" xml:space="preserve"><value>Envoyé pour approbation</value></data>
+  <data name="Quarantine.Sent.Title" xml:space="preserve"><value>Envoyé pour approbation</value></data>
+  <data name="Quarantine.Sent.Text" xml:space="preserve"><value>{0} attend l’approbation. Le stock bouge après l’approbation.</value></data>
+  <data name="Quarantine.Disposition.PageTitle" xml:space="preserve"><value>Décision de disposition</value></data>
+  <data name="Quarantine.Disposition.Title" xml:space="preserve"><value>Décision de disposition · {0}</value></data>
+  <data name="Quarantine.Disposition.Step" xml:space="preserve"><value>Disposition</value></data>
+  <data name="Quarantine.Disposition.BlockedQty" xml:space="preserve"><value>Bloqué {0}</value></data>
+  <data name="Quarantine.Disposition.Field.Kind" xml:space="preserve"><value>Disposition</value></data>
+  <data name="Quarantine.Disposition.Destroy" xml:space="preserve"><value>Destruction</value></data>
+  <data name="Quarantine.Disposition.ReturnToSupplier" xml:space="preserve"><value>Retour au fournisseur</value></data>
+  <data name="Quarantine.Disposition.Rework" xml:space="preserve"><value>Retraitement</value></data>
+  <data name="Quarantine.Disposition.Sample" xml:space="preserve"><value>Conserver comme échantillon / référence</value></data>
+  <data name="Quarantine.Disposition.Move.Destroy" xml:space="preserve"><value>Sortie au rebut</value></data>
+  <data name="Quarantine.Disposition.Move.ReturnToSupplier" xml:space="preserve"><value>Sortie retour fournisseur</value></data>
+  <data name="Quarantine.Disposition.Move.Rework" xml:space="preserve"><value>Transfert de retraitement (Bloqué → Quarantaine)</value></data>
+  <data name="Quarantine.Disposition.Move.Sample" xml:space="preserve"><value>Transfert vers l’emplacement d’échantillons (le statut reste Bloqué)</value></data>
+  <data name="Quarantine.Disposition.Move.Title" xml:space="preserve"><value>Mouvement créé dans le registre des stocks à l’approbation</value></data>
+  <data name="Quarantine.Disposition.Move.Line" xml:space="preserve"><value>{0} · {1} · {2}</value></data>
+  <data name="Quarantine.Disposition.Field.Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Quarantine.Disposition.Qty.Hint" xml:space="preserve"><value>Au plus {0} · le reste reste Bloqué</value></data>
+  <data name="Quarantine.Disposition.Field.Supplier" xml:space="preserve"><value>Fournisseur</value></data>
+  <data name="Quarantine.Disposition.SuppliersUnavailable" xml:space="preserve"><value>La liste des fournisseurs n’a pas pu être chargée.</value></data>
+  <data name="Quarantine.Disposition.Field.ReturnDoc" xml:space="preserve"><value>N° de document de retour</value></data>
+  <data name="Quarantine.Disposition.Field.Method" xml:space="preserve"><value>Méthode de destruction</value></data>
+  <data name="Quarantine.Disposition.Method.INCINERATION" xml:space="preserve"><value>Incinération · installation agréée</value></data>
+  <data name="Quarantine.Disposition.Method.CHEMICAL_NEUTRALIZATION" xml:space="preserve"><value>Neutralisation chimique</value></data>
+  <data name="Quarantine.Disposition.Method.LICENSED_MEDICAL_WASTE" xml:space="preserve"><value>Remise à une société agréée de déchets médicaux</value></data>
+  <data name="Quarantine.Disposition.Field.Date" xml:space="preserve"><value>Date de destruction</value></data>
+  <data name="Quarantine.Disposition.SampleMissing" xml:space="preserve"><value>Aucun emplacement d’échantillons n’est défini pour cet entrepôt. Choisissez-en un dans les paramètres de quarantaine.</value></data>
+  <data name="Quarantine.Disposition.Closed" xml:space="preserve"><value>Aucune décision de disposition n’est possible pour cet enregistrement pour l’instant.</value></data>
+  <data name="Quarantine.Disposition.Err.Kind" xml:space="preserve"><value>Choisissez une disposition.</value></data>
+  <data name="Quarantine.Disposition.Err.Qty" xml:space="preserve"><value>Saisissez une quantité supérieure à zéro et au plus {0}.</value></data>
+  <data name="Quarantine.Disposition.Err.Supplier" xml:space="preserve"><value>Choisissez un fournisseur.</value></data>
+  <data name="Quarantine.Disposition.Err.ReturnDoc" xml:space="preserve"><value>Saisissez le numéro du document de retour.</value></data>
+  <data name="Quarantine.Disposition.Err.Method" xml:space="preserve"><value>Choisissez la méthode de destruction.</value></data>
+  <data name="Quarantine.Disposition.Err.Date" xml:space="preserve"><value>Saisissez la date de destruction.</value></data>
+  <data name="Quarantine.Blocked.Title" xml:space="preserve"><value>Stock bloqué</value></data>
+  <data name="Quarantine.Blocked.Filter.AllReasons" xml:space="preserve"><value>Tous les motifs de blocage</value></data>
+  <data name="Quarantine.Blocked.Filter.PendingOnly" xml:space="preserve"><value>En attente de disposition uniquement</value></data>
+  <data name="Quarantine.Blocked.Pending.Yes" xml:space="preserve"><value>Oui · en attente de disposition</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewed" xml:space="preserve"><value>Non · examen terminé</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewing" xml:space="preserve"><value>Non · examen en cours</value></data>
+  <data name="Quarantine.Blocked.ActivePending" xml:space="preserve"><value>Décision en attente d’approbation · {0}</value></data>
+  <data name="Quarantine.Blocked.UnblockDisabled" xml:space="preserve"><value>Déblocage impossible avant la fin de l’examen</value></data>
+  <data name="Quarantine.Blocked.Info" xml:space="preserve"><value>Débloquer n’est possible que sur les enregistrements dont l’examen est terminé. Le déblocage est une décision : signée, envoyée en approbation, le stock devient Disponible après approbation.</value></data>
+  <data name="Quarantine.Blocked.Empty" xml:space="preserve"><value>Aucun stock bloqué ne correspond au filtre.</value></data>
+  <data name="Quarantine.Unblock.Title" xml:space="preserve"><value>Débloquer ce stock ?</value></data>
+  <data name="Quarantine.Unblock.Text" xml:space="preserve"><value>Après approbation, le stock passe de Bloqué à Disponible et s’ouvre à la vente/réservation. La décision est signée et envoyée en approbation ; c’est inscrit dans l’historique.</value></data>
+  <data name="Quarantine.Unblock.Confirm" xml:space="preserve"><value>Débloquer</value></data>
+  <data name="Quarantine.CompleteReview.Title" xml:space="preserve"><value>Terminer l’examen ?</value></data>
+  <data name="Quarantine.CompleteReview.Done" xml:space="preserve"><value>Examen terminé ; le déblocage est désormais possible.</value></data>
+  <data name="Quarantine.BlockStock.Title" xml:space="preserve"><value>Bloquer le stock</value></data>
+  <data name="Quarantine.BlockStock.Warn" xml:space="preserve"><value>Le stock disponible choisi passe immédiatement en Bloqué (sens sûr ; pas de workflow d’approbation).</value></data>
+  <data name="Quarantine.BlockStock.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Quarantine.BlockStock.LotSearch" xml:space="preserve"><value>Rechercher un numéro de lot</value></data>
+  <data name="Quarantine.BlockStock.Row" xml:space="preserve"><value>Ligne de stock (Disponible)</value></data>
+  <data name="Quarantine.BlockStock.NoRows" xml:space="preserve"><value>Ce lot n’a pas de stock disponible.</value></data>
+  <data name="Quarantine.BlockStock.Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Quarantine.BlockStock.QtyInvalid" xml:space="preserve"><value>Saisissez une quantité supérieure à zéro sans dépasser la ligne choisie.</value></data>
+  <data name="Quarantine.BlockStock.Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Quarantine.BlockStock.Confirm" xml:space="preserve"><value>Bloquer</value></data>
+  <data name="Quarantine.BlockStock.Done" xml:space="preserve"><value>Stock bloqué · {0}</value></data>
+  <data name="Quarantine.Retest.Title" xml:space="preserve"><value>File de recontrôle</value></data>
+  <data name="Quarantine.Retest.Info" xml:space="preserve"><value>Un lot dont la date de recontrôle est dépassée ne peut pas servir à la vente, aux réservations ni aux sorties jusqu’à une décision qualité.</value></data>
+  <data name="Quarantine.Retest.Horizon" xml:space="preserve"><value>Lots dépassés ou échéant sous {0} jours</value></data>
+  <data name="Quarantine.Retest.State.Upcoming" xml:space="preserve"><value>Prochainement</value></data>
+  <data name="Quarantine.Retest.State.DueClosed" xml:space="preserve"><value>Échu · fermé à l’usage</value></data>
+  <data name="Quarantine.Retest.State.Quarantined" xml:space="preserve"><value>En quarantaine</value></data>
+  <data name="Quarantine.Retest.Open" xml:space="preserve"><value>Ouvrir l’enregistrement de quarantaine</value></data>
+  <data name="Quarantine.Retest.Confirm.Title" xml:space="preserve"><value>Mettre ce lot en quarantaine ?</value></data>
+  <data name="Quarantine.Retest.Confirm.Text" xml:space="preserve"><value>Le stock disponible du lot {0} ({1}) passe immédiatement en Quarantaine et rejoint la file de quarantaine.</value></data>
+  <data name="Quarantine.Retest.Confirm.DefaultReason" xml:space="preserve"><value>Date de recontrôle {0} · échantillon au laboratoire CQ</value></data>
+  <data name="Quarantine.Retest.Done" xml:space="preserve"><value>{0} mis en quarantaine · {1} ajouté à la file.</value></data>
+  <data name="Quarantine.Retest.Empty" xml:space="preserve"><value>Aucun lot dans la file de recontrôle.</value></data>
+  <data name="Quarantine.Submit.PageTitle" xml:space="preserve"><value>Envoyer la décision</value></data>
+  <data name="Quarantine.Submit.Title" xml:space="preserve"><value>Envoyer la décision · {0}</value></data>
+  <data name="Quarantine.Submit.Step" xml:space="preserve"><value>Décision</value></data>
+  <data name="Quarantine.Submit.Intro" xml:space="preserve"><value>Cette décision est un brouillon : signez-la et envoyez-la pour approbation. Le stock bouge après approbation.</value></data>
+  <data name="Quarantine.Submit.NotDraft" xml:space="preserve"><value>Cette décision ne peut plus être envoyée ({0}).</value></data>
+  <data name="Quarantine.Submit.LotRelease" xml:space="preserve"><value>Lot {0} → Libéré</value></data>
+  <data name="Quarantine.Settings.Title" xml:space="preserve"><value>Paramètres de quarantaine</value></data>
+  <data name="Quarantine.Settings.Description" xml:space="preserve"><value>Les règles de quarantaine, approbateurs, emplacements d’échantillons et motifs de blocage de la société.</value></data>
+  <data name="Quarantine.Settings.Section.General" xml:space="preserve"><value>Général</value></data>
+  <data name="Quarantine.Settings.WaitTarget" xml:space="preserve"><value>Objectif d’attente (jours)</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Hint" xml:space="preserve"><value>1 à 60 jours ; les lignes qui le dépassent sont signalées.</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Invalid" xml:space="preserve"><value>Saisissez un nombre de jours entre 1 et 60.</value></data>
+  <data name="Quarantine.Settings.Reconcile" xml:space="preserve"><value>Intervalle de relecture (secondes)</value></data>
+  <data name="Quarantine.Settings.Reconcile.Hint" xml:space="preserve"><value>Fréquence maximale à laquelle l’état d’approbation d’une décision en attente est interrogé lors de la lecture des écrans.</value></data>
+  <data name="Quarantine.Settings.FourEyes" xml:space="preserve"><value>Quatre yeux</value></data>
+  <data name="Quarantine.Settings.FourEyes.Hint" xml:space="preserve"><value>Le décideur ne peut pas approuver la même décision ; c’est revérifié à l’application.</value></data>
+  <data name="Quarantine.Settings.LotRelease" xml:space="preserve"><value>Approbation de libération de lot</value></data>
+  <data name="Quarantine.Settings.LotRelease.Hint" xml:space="preserve"><value>Une approbation qualité est demandée quand un lot brouillon ou bloqué est libéré.</value></data>
+  <data name="Quarantine.Settings.Approvers" xml:space="preserve"><value>Approbateurs candidats</value></data>
+  <data name="Quarantine.Settings.Approvers.Hint" xml:space="preserve"><value>Poste ou utilisateur ; 10 au maximum. Le décideur n’est jamais envoyé comme candidat.</value></data>
+  <data name="Quarantine.Settings.Approvers.Kind" xml:space="preserve"><value>Type</value></data>
+  <data name="Quarantine.Settings.Approvers.Value" xml:space="preserve"><value>Candidat</value></data>
+  <data name="Quarantine.Settings.Approvers.Position" xml:space="preserve"><value>Poste</value></data>
+  <data name="Quarantine.Settings.Approvers.User" xml:space="preserve"><value>Utilisateur</value></data>
+  <data name="Quarantine.Settings.Approvers.Empty" xml:space="preserve"><value>Aucun candidat — une décision ne peut pas être envoyée pour approbation.</value></data>
+  <data name="Quarantine.Settings.Approvers.Invalid" xml:space="preserve"><value>Choisissez un poste ou saisissez un identifiant utilisateur valide.</value></data>
+  <data name="Quarantine.Settings.Approvers.Max" xml:space="preserve"><value>10 candidats au maximum.</value></data>
+  <data name="Quarantine.Settings.SampleLocations" xml:space="preserve"><value>Emplacements d’échantillons</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Hint" xml:space="preserve"><value>Un emplacement stockable par entrepôt ; le stock conservé comme échantillon y reste Bloqué.</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Empty" xml:space="preserve"><value>Aucun emplacement d’échantillons défini.</value></data>
+  <data name="Quarantine.Settings.Sample.Warehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="Quarantine.Settings.Sample.Location" xml:space="preserve"><value>Emplacement d’échantillons</value></data>
+  <data name="Quarantine.Settings.Add" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="Quarantine.Settings.Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="Quarantine.Settings.Saved" xml:space="preserve"><value>Paramètres enregistrés.</value></data>
+  <data name="Quarantine.Settings.Template.Section" xml:space="preserve"><value>Modèle d’approbation</value></data>
+  <data name="Quarantine.Settings.Template.Code" xml:space="preserve"><value>Code du modèle</value></data>
+  <data name="Quarantine.Settings.Template.Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="Quarantine.Settings.Template.Version" xml:space="preserve"><value>Version publiée</value></data>
+  <data name="Quarantine.Settings.Template.Published" xml:space="preserve"><value>Publié</value></data>
+  <data name="Quarantine.Settings.Template.Missing" xml:space="preserve"><value>Absent</value></data>
+  <data name="Quarantine.Settings.Template.Prepare" xml:space="preserve"><value>Préparer le modèle d’approbation</value></data>
+  <data name="Quarantine.Settings.Template.Text" xml:space="preserve"><value>Le modèle INV-QUARANTINE-RELEASE est créé et publié avec vos droits ; s’il existe, sa version est indiquée.</value></data>
+  <data name="Quarantine.Settings.Template.Created" xml:space="preserve"><value>Modèle publié · version {0}</value></data>
+  <data name="Quarantine.Settings.Template.Existing" xml:space="preserve"><value>Modèle déjà publié · version {0}</value></data>
+  <data name="Quarantine.Settings.Section.BlockReasons" xml:space="preserve"><value>Motifs de blocage</value></data>
+  <data name="Quarantine.Settings.BR.Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Quarantine.Settings.BR.CodeHint" xml:space="preserve"><value>Majuscules, chiffres et tiret bas ; commence par une lettre (ex. QC_REJECT). Il ne change jamais.</value></data>
+  <data name="Quarantine.Settings.BR.CodeInvalid" xml:space="preserve"><value>Le format du code est invalide (ex. QC_REJECT).</value></data>
+  <data name="Quarantine.Settings.BR.Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Quarantine.Settings.BR.Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Quarantine.Settings.BR.Locked" xml:space="preserve"><value>Utilisé</value></data>
+  <data name="Quarantine.Settings.BR.Add" xml:space="preserve"><value>Ajouter un motif de blocage</value></data>
+  <data name="Quarantine.Settings.BR.Edit" xml:space="preserve"><value>Modifier le motif de blocage</value></data>
+  <data name="Quarantine.Settings.BR.Saved" xml:space="preserve"><value>Motif de blocage enregistré.</value></data>
+  <data name="Quarantine.Settings.Lang.tr" xml:space="preserve"><value>Turc</value></data>
+  <data name="Quarantine.Settings.Lang.en" xml:space="preserve"><value>Anglais</value></data>
+  <data name="Quarantine.Settings.Lang.fr" xml:space="preserve"><value>Français</value></data>
+  <data name="Quarantine.Settings.Lang.es" xml:space="preserve"><value>Espagnol</value></data>
+  <data name="Quarantine.Settings.Lang.zh" xml:space="preserve"><value>Chinois</value></data>
+  <data name="Quarantine.Settings.Lang.ar" xml:space="preserve"><value>Arabe</value></data>
+  <data name="Quarantine.Settings.Lang.ru" xml:space="preserve"><value>Russe</value></data>
+  <data name="Quarantine.Errors.GENERIC" xml:space="preserve"><value>L’action n’a pas pu être effectuée. Veuillez réessayer.</value></data>
+  <data name="Quarantine.Errors.FORBIDDEN" xml:space="preserve"><value>Vous n’avez pas l’autorisation pour cette action.</value></data>
+  <data name="Quarantine.Errors.UNAUTHORIZED" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous.</value></data>
+  <data name="Quarantine.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>Le service de quarantaine est injoignable pour l’instant. Réessayez dans un instant.</value></data>
+  <data name="Quarantine.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>La fenêtre de signature n’a pas pu être chargée ; la décision n’a pas été envoyée.</value></data>
+  <data name="Quarantine.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Choisissez d’abord la société dans laquelle vous travaillez.</value></data>
+  <data name="Quarantine.Errors.INVALID_REQUEST" xml:space="preserve"><value>La requête est incomplète ou erronée. Vérifiez les champs.</value></data>
+  <data name="Quarantine.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>La même action a été répétée avec un contenu différent. Rechargez la page et réessayez.</value></data>
+  <data name="Quarantine.Errors.REASON_REQUIRED" xml:space="preserve"><value>La justification doit comporter 10 à 1000 caractères.</value></data>
+  <data name="Quarantine.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Cet enregistrement appartient à une autre société.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_NOT_FOUND" xml:space="preserve"><value>Enregistrement de quarantaine introuvable.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_NOT_FOUND" xml:space="preserve"><value>Enregistrement de stock bloqué introuvable.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_FOUND" xml:space="preserve"><value>Décision introuvable.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_CONFLICT" xml:space="preserve"><value>L’enregistrement a changé pendant votre consultation. Rechargez et réessayez.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_INVALID" xml:space="preserve"><value>Décision invalide : une décision simple a une ligne avec toute la quantité.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_PARTIAL_SUM_MISMATCH" xml:space="preserve"><value>Le total de la décision partielle doit égaler la quantité de l’enregistrement.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_COA_NOT_CONFIRMED" xml:space="preserve"><value>Une libération exige la confirmation du contrôle CoA.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_REQUIRED" xml:space="preserve"><value>Rejeter / Bloquer exige un motif de blocage actif.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_RETEST_DATE_REQUIRED" xml:space="preserve"><value>Cette libération exige une nouvelle date de recontrôle (après aujourd’hui, avant la péremption).</value></data>
+  <data name="Quarantine.Errors.LOT_DATES_INVALID" xml:space="preserve"><value>Les dates du lot sont incohérentes (le recontrôle ne peut pas suivre la péremption).</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_QUANTITY_INVALID" xml:space="preserve"><value>La quantité doit être supérieure à zéro et ne pas dépasser la quantité bloquée.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SUPPLIER_REQUIRED" xml:space="preserve"><value>Un retour fournisseur exige le fournisseur et le numéro du document de retour.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DESTRUCTION_METHOD_REQUIRED" xml:space="preserve"><value>La destruction exige une méthode et une date de moins de 30 jours.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_REQUIRED" xml:space="preserve"><value>La politique exige une signature électronique pour cette décision.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_MISMATCH" xml:space="preserve"><value>La signature ne correspond pas à cette décision, à vous ou à la signification de la politique. Signez à nouveau.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_ALREADY_PENDING" xml:space="preserve"><value>Une autre décision de cet enregistrement attend déjà l’approbation.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_DRAFT" xml:space="preserve"><value>Cette décision n’est pas un brouillon ; elle ne peut pas être renvoyée.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_PENDING" xml:space="preserve"><value>La décision n’attend plus d’approbation.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_APPLICABLE" xml:space="preserve"><value>Seule une décision non appliquée peut être réappliquée.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOT_DECIDER" xml:space="preserve"><value>Seul le décideur peut effectuer cette action.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_CLOSED" xml:space="preserve"><value>L’enregistrement de quarantaine est clos.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_CLOSED" xml:space="preserve"><value>L’enregistrement de stock bloqué est clos.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_LOT_HELD" xml:space="preserve"><value>Le lot est bloqué ou périmé ; seule la destruction est possible.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_NOT_SET" xml:space="preserve"><value>Aucun emplacement d’échantillons pour cet entrepôt (paramètres de quarantaine).</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_INVALID" xml:space="preserve"><value>L’emplacement d’échantillons doit être dans le même entrepôt, actif et stockable.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_REVIEW_NOT_COMPLETED" xml:space="preserve"><value>Déblocage impossible avant la fin de l’examen.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_CHANGED" xml:space="preserve"><value>Le stock a changé pendant la décision. Rouvrez l’enregistrement.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_RESERVED" xml:space="preserve"><value>Une partie du stock est réservée ; les réservations ne seraient plus couvertes, rien n’a été fait.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOTHING_AVAILABLE" xml:space="preserve"><value>Ce lot n’a pas de stock disponible.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_APPROVERS_NOT_CONFIGURED" xml:space="preserve"><value>Aucun approbateur autre que vous n’est défini (paramètres de quarantaine). La décision n’a pas été envoyée.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_TEMPLATE_MISSING" xml:space="preserve"><value>Le modèle d’approbation n’est pas publié. Utilisez « Préparer le modèle d’approbation » dans les paramètres.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_FORBIDDEN" xml:space="preserve"><value>Vous ne pouvez pas lancer un workflow d’approbation.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_REJECTED" xml:space="preserve"><value>Le service de workflow a refusé la demande.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_UNAVAILABLE" xml:space="preserve"><value>Le service de workflow est indisponible ; rien n’a été envoyé.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_LANGUAGE_MISSING" xml:space="preserve"><value>Le motif de blocage doit avoir un nom dans les sept langues.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_EXISTS" xml:space="preserve"><value>Un motif de blocage avec ce code existe déjà.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_IN_USE" xml:space="preserve"><value>Un motif de blocage utilisé ne peut pas être désactivé.</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Lot introuvable.</value></data>
+  <data name="Quarantine.Errors.INSUFFICIENT_STOCK" xml:space="preserve"><value>Le stock est insuffisant.</value></data>
+  <data name="Quarantine.Errors.LOT_BLOCKED" xml:space="preserve"><value>Le lot est bloqué ; ce mouvement est impossible.</value></data>
+  <data name="Quarantine.Errors.LOT_EXPIRED" xml:space="preserve"><value>Le lot est périmé ; ce mouvement est impossible.</value></data>
+  <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>Le lot a dépassé sa date de recontrôle ; inutilisable jusqu’à une décision qualité.</value></data>
+  <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>La période comptable est close.</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>L’emplacement est inconnu ou inutilisable.</value></data>
+</root>

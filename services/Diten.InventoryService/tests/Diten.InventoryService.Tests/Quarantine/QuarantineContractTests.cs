@@ -131,14 +131,14 @@ public sealed class QuarantineContractTests
     }
 
     [Fact]
-    public void Every_route_slices_Q1_to_Q4_serve_is_an_operation_of_the_contract()
+    public void Every_route_slices_Q1_to_Q5_serve_is_an_operation_of_the_contract()
     {
         var contract = Yaml.Value["paths"]!.AsObject()
             .SelectMany(p => p.Value!.AsObject().Select(m => $"{m.Key.ToUpperInvariant()} {Regex.Replace(p.Key, @"\{[^}]+\}", "{}")}")).ToHashSet(StringComparer.Ordinal);
         var served = typeof(QuarantineController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>())
             .SelectMany(a => a.HttpMethods.Select(v => $"{v} /{Regex.Replace(a.Template ?? "", @"\{[^}]+\}", "{}")}")).ToList();
-        Assert.Equal(21, served.Count); // Q1 17 + Q2 refresh, withdraw, workflow-template + Q4 listRetest
+        Assert.Equal(22, served.Count); // Q1 17 + Q2 refresh, withdraw, workflow-template + Q4 listRetest + Q5 getLotQualityStatus
         Assert.All(served, s => Assert.Contains(s, contract));
     }
 }

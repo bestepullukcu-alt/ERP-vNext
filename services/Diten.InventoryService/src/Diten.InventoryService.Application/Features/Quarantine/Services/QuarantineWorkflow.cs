@@ -1,8 +1,10 @@
 using System.Globalization;
+using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Application.Features.Quarantine.Ports;
 using Diten.InventoryService.Domain.Quarantine.Entities;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
+using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Rules;
 using Microsoft.Extensions.Logging;
 
@@ -21,12 +23,17 @@ public sealed class WorkflowApprovalPort : IQuarantineApprovalPort
     private readonly IQuarantineWorkflowClient _workflow;
     private readonly IQuarantineRepository _repository;
     private readonly QuarantineFacts _facts;
+    private readonly ILocationRepository _locations;
+    private readonly IProductMasterClient _products;
 
-    public WorkflowApprovalPort(IQuarantineWorkflowClient workflow, IQuarantineRepository repository, QuarantineFacts facts)
+    public WorkflowApprovalPort(IQuarantineWorkflowClient workflow, IQuarantineRepository repository, QuarantineFacts facts,
+        ILocationRepository locations, IProductMasterClient products)
     {
         _workflow = workflow;
         _repository = repository;
         _facts = facts;
+        _locations = locations;
+        _products = products;
     }
 
     public async Task<ApprovalStart> StartAsync(QuarantineDecision decision, CancellationToken cancellationToken = default)
@@ -56,7 +63,7 @@ public sealed class WorkflowApprovalPort : IQuarantineApprovalPort
             ReasonCode(decision.Kind),
             QuarantineWorkflowTemplate.IdempotencyKey(decision.Id),
             entered.AddDays(settings.WaitTargetDays),
-            Display(decision, hold));
+            Display(decision, hold, await LabelsAsync(decision, cancellationToken)));
 
         var result = await _workflow.StartAsync(request, cancellationToken);
         return result.Outcome switch
@@ -77,10 +84,51 @@ public sealed class WorkflowApprovalPort : IQuarantineApprovalPort
         => "QUARANTINE_" + string.Concat(kind.ToString().Select((c, i) => i > 0 && char.IsUpper(c) ? "_" + c : c.ToString())).ToUpperInvariant();
 
     /// <summary>
-    /// MOD-0023 DisplayContext (title ≤ 200, subtitle ≤ 300, chips ≤ 5 × 32, app-relative deep link): "Karantina kararı {KRN} ·
-    /// {kind}", "{SKU} · Lot {lot} · {qty} {uom}", chips [kind, lot, warehouse], link to the quarantine record.
+    /// Q5 (O-5 / O-Q2-4): the readable labels of the WorkCenter task, from the existing resolvers — the lot (MOD-0174 lot record), the
+    /// warehouse / location codes (the location master, as the qd-v1 subject reads them) and the product's canonical code + name
+    /// (PRODUCT-MASTER getProduct). Best effort: a master that cannot answer leaves that label to the id fallback, the start never fails.
     /// </summary>
-    public static WorkflowDisplay Display(QuarantineDecision decision, QuarantineHold? hold)
+    private async Task<DisplayLabels> LabelsAsync(QuarantineDecision decision, CancellationToken ct)
+    {
+        var lot = await _facts.LotAsync(decision.LotId, ct);
+        var blocked = decision.BlockedStockId is { } blockedId ? await _repository.FindBlockedAsync(blockedId, ct) : null;
+        string? item = null;
+        try
+        {
+            if (await _products.GetProductAsync(decision.ItemId, ct) is { } product)
+            {
+                item = string.Join(" · ", new[] { product.CanonicalCode, product.Name }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+        }
+        catch (ProductMasterUnavailableException)
+        {
+            // a label only: the id fallback stays
+        }
+
+        return new DisplayLabels(
+            decision.LotId is null ? null : lot?.LotNumber ?? decision.LotId,
+            string.IsNullOrWhiteSpace(item) ? null : item,
+            await CodeAsync(decision.WarehouseId, ct),
+            await CodeAsync(decision.LocationId, ct),
+            blocked?.BlockedNumber);
+    }
+
+    private async Task<string?> CodeAsync(string? locationId, CancellationToken ct)
+        => Guid.TryParse(locationId, out var id) && await _locations.FindAsync(id, ct) is { } location ? location.Code : null;
+
+    /// <summary>The labels of one DisplayContext; any of them may be absent (then the id is shown, as before Q5).</summary>
+    public sealed record DisplayLabels(string? LotNumber, string? ItemLabel, string? WarehouseCode, string? LocationCode, string? BlockedNumber)
+    {
+        public static readonly DisplayLabels None = new(null, null, null, null, null);
+    }
+
+    /// <summary>
+    /// MOD-0023 DisplayContext (title ≤ 200, subtitle ≤ 300, chips ≤ 5 × 32, app-relative deep link): "Karantina kararı {KRN} ·
+    /// {kind}", "{product} · Lot {lot number} · {qty} {uom} · {status}", chips [kind, lot number, warehouse code, location code],
+    /// link to the quarantine record (a blocked-stock decision: the Bloke Stok list filtered to its BLK number — pack §11.1 has no
+    /// blocked-detail page).
+    /// </summary>
+    public static WorkflowDisplay Display(QuarantineDecision decision, QuarantineHold? hold, DisplayLabels labels)
     {
         var subject = hold?.HoldNumber ?? decision.DecisionNumber;
         var kind = decision.Kind switch
@@ -91,23 +139,38 @@ public sealed class WorkflowApprovalPort : IQuarantineApprovalPort
                 LineDecision.Reject => "Reddet",
                 _ => "Bloke et"
             },
-            DecisionKind.Disposition => "Disposition · " + decision.Disposition!.Kind,
+            DecisionKind.Disposition => decision.Disposition!.Kind switch
+            {
+                DispositionKind.Destroy => "İmha",
+                DispositionKind.ReturnToSupplier => "Tedarikçiye iade",
+                DispositionKind.Rework => "Yeniden işleme",
+                _ => "Numune"
+            },
             DecisionKind.Unblock => "Blokeyi kaldır",
             _ => "Lot serbest bırakma"
         };
         var quantity = decision.Kind == DecisionKind.Disposition ? decision.Disposition!.Quantity : decision.AvailableQuantityAtDecision;
+        var product = labels.ItemLabel ?? $"SKU {decision.SkuId.ToString("D")[..8]}";
+        var lot = labels.LotNumber ?? decision.LotId ?? "—";
         var subtitle = decision.Kind == DecisionKind.LotRelease
-            ? $"SKU {decision.SkuId.ToString("D")[..8]} · Lot {decision.LotId ?? "—"} → {decision.LotStatusTarget}"
-            : $"SKU {decision.SkuId.ToString("D")[..8]} · Lot {decision.LotId ?? "—"} · {quantity.ToString(CultureInfo.InvariantCulture)} {decision.BaseUomId} · {WireNames.ToWire(decision.FromStockStatus)}";
+            ? $"{product} · Lot {lot} → {decision.LotStatusTarget}"
+            : $"{product} · Lot {lot} · {quantity.ToString(CultureInfo.InvariantCulture)} {decision.BaseUomId} · {WireNames.ToWire(decision.FromStockStatus)}";
         var link = decision.HoldId is { } holdId ? $"/Quarantine/Details/{holdId:D}"
-            : decision.BlockedStockId is { } blockedId ? $"/Quarantine/Blocked/Details/{blockedId:D}"
+            : decision.BlockedStockId is not null
+                ? (labels.BlockedNumber is { } number ? $"/Quarantine/Blocked?q={Uri.EscapeDataString(number)}" : "/Quarantine/Blocked")
             : $"/Lots/Details?lotId={decision.LotId}"; // Q4 KQ-I: a LotRelease has no 0175 record — the MOD-0174 lot page
         return new WorkflowDisplay(
             Cut($"Karantina kararı {subject} · {kind}", 200),
             Cut(subtitle, 300),
             QuarantineContract.ModuleId,
             link,
-            new[] { kind, decision.LotId is null ? null : "Lot " + decision.LotId, decision.WarehouseId.Length >= 8 ? "Depo " + decision.WarehouseId[..8] : null }
+            new[]
+                {
+                    kind,
+                    decision.LotId is null ? null : "Lot " + lot,
+                    labels.WarehouseCode is { } warehouse ? "Depo " + warehouse : decision.WarehouseId.Length >= 8 ? "Depo " + decision.WarehouseId[..8] : null,
+                    labels.LocationCode is { } location ? "Lokasyon " + location : null
+                }
                 .OfType<string>().Select(c => Cut(c, 32)).Take(5).ToList());
     }
 

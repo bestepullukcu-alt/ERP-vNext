@@ -63,6 +63,22 @@ const LotDetail = (function () {
             a.classList.toggle('d-none', a.dataset.traceAction !== data.editAction);
         });
         if (lot.status === 'Expired') document.querySelector('[data-trace-action="CHANGELOTSTATUS"]')?.classList.add('d-none');
+        void renderQuality();
+    };
+
+    // MOD-0175 (pack §11.4): "Onay bekliyor" — a lot release waiting for its quality approval, read from QUARANTINE-BUNDLE
+    // getLotQualityStatus through the quarantine page's same-origin door. A reader without quarantine.holds.read gets a 403
+    // there and sees no badge (the lot page stays the lot page).
+    const renderQuality = async () => {
+        const reply = await ui.getJson(`/Quarantine/api/lots/${encodeURIComponent(lotId)}/quality-status`);
+        const pending = reply.ok ? reply.json?.pendingLotRelease : null;
+        if (!pending?.decisionId) return;
+        const badge = document.createElement('a');
+        badge.className = 'badge bg-label-warning d-inline-flex align-items-center gap-1';
+        badge.href = `/Quarantine/Decisions/${encodeURIComponent(pending.decisionId)}/Submit`;
+        badge.title = t('Quality.PendingApproval.Title', pending.decisionNumber || '');
+        badge.innerHTML = `<i class="bx bx-time-five"></i>${esc(t('Quality.PendingApproval'))}`;
+        document.getElementById('lot-status-badge')?.append(' ', badge);
     };
 
     const renderStock = (data) => {

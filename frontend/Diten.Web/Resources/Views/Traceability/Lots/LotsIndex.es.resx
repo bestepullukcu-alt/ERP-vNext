@@ -661,4 +661,9 @@
   <data name="Validation.Required" xml:space="preserve">
     <value>Este campo es obligatorio.</value>
   </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>Enviado a aprobación</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>La liberación del lote espera una aprobación de calidad; el estado cambia tras aprobarse. Abra la página Enviar decisión para firmarla y enviarla.</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>Abrir la página Enviar decisión</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>Pendiente de aprobación</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>Decisión de liberación pendiente de aprobación · {0}</value></data>
 </root>

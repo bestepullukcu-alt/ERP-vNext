@@ -932,6 +932,11 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Explorateur de numéros de série</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Traçabilité</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Migration des lots saisis manuellement</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Qualité</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>File de quarantaine</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Stock bloqué</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>File de recontrôle</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Paramètres de quarantaine</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Signature électronique</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Ma signature</value></data>
 </root>

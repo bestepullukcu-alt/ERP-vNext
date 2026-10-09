@@ -162,7 +162,6 @@ public static class QuarantineRequestReader
 
     public static readonly HashSet<string> BlockReasonMembers = new(StringComparer.Ordinal) { "code", "names", "isActive" };
 
-    public static readonly HashSet<string> TestOutcomeMembers = new(StringComparer.Ordinal) { "outcome", "approverUserId" };
 
     public static IReadOnlyList<BucketInput>? Buckets(Body body)
         => body.Array("buckets")?.Select((element, i) =>

@@ -10,10 +10,7 @@ using Diten.InventoryService.Infrastructure.ESign;
 using Diten.InventoryService.Infrastructure.Eventing;
 using Diten.InventoryService.Infrastructure.Upstream;
 using Diten.InventoryService.Infrastructure.Workflow;
-using Diten.InventoryService.Persistence;
 using Diten.InventoryService.Persistence.Quarantine;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -24,9 +21,8 @@ namespace Diten.InventoryService.Api.Quarantine;
 /// registrations stay untouched. MediatR handlers are picked up by the Application assembly scan.
 /// <para><b>Approval port.</b> Production default since Q2: <see cref="WorkflowApprovalPort"/> — MOD-0023 over the Gateway with the
 /// caller's token (<see cref="GatewayWorkflowClient"/>, <c>Gateway:BaseUrl</c>); outcomes come back by read-time reconciliation
-/// (<see cref="QuarantineWorkflowReconciler"/>). <see cref="InternalTestApprovalPort"/> + its outcome endpoint exist only when
-/// <c>Quarantine:TestApprovalPort:Enabled = true</c> AND <c>Mongo:DatabaseName</c> is a DB-010 test database; enabled on any
-/// other database the service refuses to start.</para>
+/// (<see cref="QuarantineWorkflowReconciler"/>). It is the ONLY approval port (Q5, O-Q2-5: the Q1 test approval port and its outcome
+/// endpoint are gone from production code; the test suite brings its own).</para>
 /// </summary>
 public static class QuarantineServiceCollectionExtensions
 {
@@ -92,55 +88,8 @@ public static class QuarantineServiceCollectionExtensions
             })
             .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
 
-        // Approval port, chosen at runtime from options (test hosts override configuration after registration).
-        services.Configure<QuarantineTestApprovalOptions>(configuration.GetSection(QuarantineTestApprovalOptions.SectionName));
-        services.AddScoped<IQuarantineApprovalPort>(sp =>
-            sp.GetRequiredService<IOptions<QuarantineTestApprovalOptions>>().Value.Enabled
-                ? new InternalTestApprovalPort()
-                : ActivatorUtilities.CreateInstance<WorkflowApprovalPort>(sp));
-        services.AddHostedService<QuarantineTestApprovalGate>();
-        services.AddSingleton<IConfigureOptions<MvcOptions>, QuarantineTestApprovalMvcSetup>();
+        // The approval port: MOD-0023 Workflow, nothing else (DEC-INV-08, KQ-F; Q5 O-Q2-5).
+        services.AddScoped<IQuarantineApprovalPort, WorkflowApprovalPort>();
         return services;
-    }
-}
-
-/// <summary>Startup gate: the test approval port on a database that is not a DB-010 test database stops the host.</summary>
-public sealed class QuarantineTestApprovalGate(IOptions<QuarantineTestApprovalOptions> options, IConfiguration configuration) : IHostedService
-{
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        var database = configuration["Mongo:DatabaseName"] ?? string.Empty;
-        if (options.Value.Enabled && !InventoryTestDatabases.IsTestDatabase(database))
-        {
-            throw new InvalidOperationException(
-                $"Configuration error: '{QuarantineTestApprovalOptions.SectionName}:Enabled' is allowed on a DB-010 test database only (database '{database}').");
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-}
-
-/// <summary>Adds <see cref="QuarantineTestApprovalConvention"/> with the runtime option.</summary>
-public sealed class QuarantineTestApprovalMvcSetup(IOptions<QuarantineTestApprovalOptions> options) : IConfigureOptions<MvcOptions>
-{
-    public void Configure(MvcOptions mvc) => mvc.Conventions.Add(new QuarantineTestApprovalConvention(options.Value.Enabled));
-}
-
-/// <summary>Removes <see cref="QuarantineTestApprovalController"/> from the application model unless the test port is enabled.</summary>
-public sealed class QuarantineTestApprovalConvention(bool enabled) : IApplicationModelConvention
-{
-    public void Apply(ApplicationModel application)
-    {
-        if (enabled)
-        {
-            return;
-        }
-
-        foreach (var controller in application.Controllers.Where(c => c.ControllerType.AsType() == typeof(QuarantineTestApprovalController)).ToList())
-        {
-            application.Controllers.Remove(controller);
-        }
     }
 }
