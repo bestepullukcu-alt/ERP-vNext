@@ -37,6 +37,10 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string FinishedGoodsCreate = "mdm.finished-goods.create";
     public const string FinishedGoodsSubmit = "mdm.finished-goods.submit";
     public const string FinishedGoodsRetire = "mdm.finished-goods.retire";
+    // WP-AUTH-BL573-01 (O-12) — stock behaviour has its own edit keys, apart from the identity edit keys.
+    public const string GskusEditStockBehaviour = "mdm.gskus.edit-stock-behaviour";
+    public const string LskusEditStockBehaviour = "mdm.lskus.edit-stock-behaviour";
+    public const string FinishedGoodsEditStockBehaviour = "mdm.finished-goods.edit-stock-behaviour";
     public const string ProductIdentityLifecycleOperationRecover =
         DefaultRolePermissionTemplate.ProductIdentityLifecycleRecoveryPermission;
 
@@ -83,6 +87,22 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             LskusRequestRetirement,
             FinishedGoodsSubmit,
             FinishedGoodsRetire
+        };
+
+    /// <summary>
+    /// WP-AUTH-BL573-01 (CT decision A) — the stock-behaviour keys are an ALL-OR-NOTHING optional set: the module may
+    /// declare none of them (today's MDM manifest) or exactly these three (once S5 ships the manifest); one or two of
+    /// them is refused like any partial set. Auth can therefore merge before the manifest, and the manifest can follow
+    /// without another Auth change. Making the three mandatory is the second half of BL-573 (after S5 is live everywhere).
+    /// Granted to <see cref="StewardRole"/> only when declared; never to Viewer (not a read action) and — like the owned
+    /// lifecycle write keys — not in the Admin role's generic set; no backfill to roles holding the provisional keys.
+    /// </summary>
+    public static readonly IReadOnlySet<string> StockBehaviourPermissionKeys =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            GskusEditStockBehaviour,
+            LskusEditStockBehaviour,
+            FinishedGoodsEditStockBehaviour
         };
 
     public static readonly IReadOnlySet<string> SharedDependencyKeys =
@@ -172,6 +192,23 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public static bool IsOwnedPermissionKey(string? permissionKey)
         => !string.IsNullOrWhiteSpace(permissionKey) && PermissionKeys.Contains(permissionKey);
 
+    public static bool IsStockBehaviourPermissionKey(string? permissionKey)
+        => !string.IsNullOrWhiteSpace(permissionKey) && StockBehaviourPermissionKeys.Contains(permissionKey);
+
+    /// <summary>A key only the dedicated lifecycle roles receive: the owned lifecycle keys and the stock-behaviour keys.</summary>
+    public static bool IsDedicatedOnlyPermissionKey(string? permissionKey)
+        => IsOwnedPermissionKey(permissionKey) || IsStockBehaviourPermissionKey(permissionKey);
+
+    /// <summary>
+    /// The Steward's stock-behaviour grants for a declared key set: all three when the module declares them, none
+    /// otherwise (the exact-set check has already refused a partial set).
+    /// </summary>
+    public static IReadOnlyList<string> DeclaredStockBehaviourKeys(IEnumerable<string> declaredKeys)
+    {
+        var declared = declaredKeys.ToHashSet(StringComparer.Ordinal);
+        return StockBehaviourPermissionKeys.All(declared.Contains) ? StockBehaviourPermissionKeys.ToList() : [];
+    }
+
     public static bool IsBasePermissionKey(string? permissionKey)
         => !string.IsNullOrWhiteSpace(permissionKey) && BasePermissionKeys.Contains(permissionKey);
 
@@ -190,7 +227,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public static void ValidateExactDeclaredPermissionSet(IEnumerable<string> permissionKeys)
     {
         var supplied = permissionKeys.ToList();
-        var lifecycle = supplied.Where(IsLifecycleCandidateKey).ToHashSet(StringComparer.Ordinal);
+        var lifecycle = supplied.Where(key => IsLifecycleCandidateKey(key) && !IsStockBehaviourPermissionKey(key))
+            .ToHashSet(StringComparer.Ordinal);
+        var stockBehaviour = supplied.Where(IsStockBehaviourPermissionKey).ToHashSet(StringComparer.Ordinal);
         var basePermissions = supplied.Where(IsBasePermissionKey).ToHashSet(StringComparer.Ordinal);
         var nonHumanPermissions = supplied.Where(IsNonHumanPermissionKey).ToHashSet(StringComparer.Ordinal);
         var crossModuleDependencies = supplied
@@ -203,10 +242,13 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             || IsDeclaredCrossModuleDependencyKey(key));
 
         if (!lifecycle.SetEquals(PermissionKeys)
+            // BL-573 (CT decision A): none of the three, or all three — never one or two.
+            || (stockBehaviour.Count != 0 && !stockBehaviour.SetEquals(StockBehaviourPermissionKeys))
             || !basePermissions.SetEquals(BasePermissionKeys)
             || !nonHumanPermissions.SetEquals(NonHumanPermissionKeys)
             || !crossModuleDependencies.SetEquals(DeclaredCrossModuleDependencyKeys)
             || relevantCount != PermissionKeys.Count
+                + stockBehaviour.Count
                 + BasePermissionKeys.Count
                 + NonHumanPermissionKeys.Count
                 + DeclaredCrossModuleDependencyKeys.Count
@@ -215,7 +257,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             || supplied.Any(IsBrandModuleKey))
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle and one non-human recovery key, with no Brand, Revision or product approve/reject key.");
+                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle and one non-human recovery key — either without the three stock-behaviour edit keys or with exactly all three (mdm.gskus / mdm.lskus / mdm.finished-goods .edit-stock-behaviour) — with no Brand, Revision or product approve/reject key.");
         }
     }
 
@@ -229,6 +271,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         foreach (var permission in declared.Where(permission =>
                      IsBasePermissionKey(permission.Key)
                      || IsOwnedPermissionKey(permission.Key)
+                     || IsStockBehaviourPermissionKey(permission.Key)
                      || IsNonHumanPermissionKey(permission.Key)))
         {
             var separator = permission.Key.LastIndexOf('.');
