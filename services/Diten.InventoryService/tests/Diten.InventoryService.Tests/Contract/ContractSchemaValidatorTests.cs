@@ -28,7 +28,9 @@ public sealed class ContractSchemaValidatorTests
         // WP-0174-P2 (MOD-0174 CT-D1 (a), owner decision 2026-10-05): the description-only single-writer step 1.0.0 → 1.0.1.
         // Still the frozen v1 bundle — InventoryBundleDescriptionNoteTests pins 1.0.0 and proves only descriptions changed.
         // WP-0175-Q4 (MOD-0175 CT-Q3 (a), owner decision 2026-10-07): the description-only step 1.0.1 → 1.0.2 (LOT_RETEST_DUE).
-        Assert.Contains("version: 1.0.2", text);
+        // WP-0173-PM2 (MOD-0290 R-12, proposal accepted 2026-10-09): the ADDITIVE step 1.0.2 → 1.1.0 (SkuLevel Item,
+        // getStockPresence) — InventoryBundleDescriptionNoteTests proves nothing of 1.0.0 was removed or changed but the allowed keys.
+        Assert.Contains("version: 1.1.0", text);
     }
 
     [Fact]

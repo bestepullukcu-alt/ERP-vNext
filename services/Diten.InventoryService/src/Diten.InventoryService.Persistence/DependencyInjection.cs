@@ -36,6 +36,9 @@ public static class DependencyInjection
         services.AddScoped<IInventoryReservationRepository, InventoryReservationRepository>();
         services.AddScoped<IReservationExpirySweeper, ReservationExpirySweeper>();
         services.AddScoped<ISkuPositionRebuilder, SkuPositionRebuilder>();
+        // WP-0173-PM2 (INVENTORY-BUNDLE 1.1.0 getStockPresence): tenant-wide presence read + its access audit.
+        services.AddScoped<IStockPresenceReader, StockPresenceReader>();
+        services.AddScoped<IInternalAccessAuditWriter, InternalAccessAuditWriter>();
         services.Configure<ReservationSweeperOptions>(configuration.GetSection(ReservationSweeperOptions.SectionName));
         services.AddSingleton<TransactionRetryCounter>();
 

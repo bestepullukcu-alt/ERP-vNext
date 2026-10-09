@@ -27,6 +27,8 @@ public static class DependencyInjection
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, ContractAuthorizationResultHandler>();
+        // WP-0173-PM2: service keys of the internal operations (own key pairs, Inventory:InternalServiceKeys).
+        services.AddSingleton<InternalAccess.InternalServiceKeyAuthenticator>();
 
         // ── Policy: the Location-LE check may be off ONLY in the Mock environment (ASSUMPTION-0173-07). ──
         var policy = configuration.GetSection(InventoryPolicyOptions.SectionName).Get<InventoryPolicyOptions>() ?? new InventoryPolicyOptions();

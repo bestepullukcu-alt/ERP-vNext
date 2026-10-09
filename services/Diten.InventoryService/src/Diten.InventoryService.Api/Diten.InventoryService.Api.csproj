@@ -5,6 +5,9 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Diten.InventoryService.Api</RootNamespace>
+        <!-- WP-0173-PM2: development secrets (Inventory:InternalServiceKeys) live in user secrets, written by
+             scripts/new-inventory-internal-key.ps1 — never in appsettings. -->
+        <UserSecretsId>7b6d7a06-3976-44cd-849b-3906d06d8854</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>

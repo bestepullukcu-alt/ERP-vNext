@@ -19,6 +19,7 @@ public static class InventoryIndexConfiguration
     public const string TransactionNumberIndex = "ux_tenant_le_transactionnumber";
     public const string ReversalIndex = "ux_tenant_le_reversestransactionid";
     public const string BalanceDimensionIndex = "ux_balance_dimension";
+    public const string StockPresenceIndex = "ix_tenant_sku_level";
     public const string ReservationIdempotencyIndex = "ux_tenant_le_reservation_idempotencykey";
     public const string SkuPositionIndex = "ux_sku_position";
     public const string LocationCodeIndex = "ux_location_code";
@@ -69,7 +70,10 @@ public static class InventoryIndexConfiguration
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.LocationId),
                 new CreateIndexOptions { Name = "ix_tenant_le_location" }),
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.WarehouseId),
-                new CreateIndexOptions { Name = "ix_tenant_le_warehouse" })
+                new CreateIndexOptions { Name = "ix_tenant_le_warehouse" }),
+            // WP-0173-PM2 getStockPresence: every legal entity of ONE tenant for one SKU — the only balance read without a company.
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.SkuId).Ascending(x => x.SkuLevel),
+                new CreateIndexOptions { Name = StockPresenceIndex })
         ];
     }
 

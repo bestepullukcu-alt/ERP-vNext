@@ -17,12 +17,23 @@ namespace Diten.InventoryService.Tests.Contract;
 /// <para>WP-0175-Q4 — the step 1.0.1 → 1.0.2 is description-only too (MOD-0175 CT-Q3 (a), owner decision 2026-10-07, same form as
 /// CT-D1): the version, one changelog line, the retest-due words appended to the same <c>available</c> description, and one more
 /// example (<c>lotRetestDue</c>) under the existing <c>UnprocessableMovement</c> examples.</para>
+/// <para>WP-0173-PM2 — the step 1.0.2 → 1.1.0 is ADDITIVE (MOD-0290 R-12, proposal accepted 2026-10-09): one more <c>SkuLevel</c>
+/// value (<c>Item</c>, appended — the three 1.0.0 values keep their positions) with the proposal's description, the new path
+/// <c>/stock-presence</c> (<c>getStockPresence</c>), the <c>internalApiKey</c> security scheme and the <c>StockPresence</c> schema.
+/// Still: no 1.0.0 key removed and none changed except the version and the <c>SkuLevel</c> description.</para>
 /// </summary>
 public sealed class InventoryBundleDescriptionNoteTests
 {
     private const string FrozenV100Sha256 = "456f63589ee1141dbe1ad999eda090b22c22af3ae1de07e1fcd0616ce44db4d8";
     private const string AvailableDescription = "components.schemas.AvailabilityView.properties.available.description";
     private const string RetestDueExample = "components.responses.UnprocessableMovement.content.application/json.examples.lotRetestDue.";
+    private const string SkuLevelDescription = "components.schemas.SkuLevel.description";
+
+    /// <summary>The 1.1.0 additions (WP-0173-PM2): exactly these subtrees, nothing else.</summary>
+    private static readonly string[] AdditivePrefixes =
+    [
+        "paths./stock-presence.", "components.schemas.StockPresence.", "components.securitySchemes.internalApiKey."
+    ];
 
     private static string FixturePath => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.0.0.openapi.yaml");
 
@@ -43,13 +54,56 @@ public sealed class InventoryBundleDescriptionNoteTests
         var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
-        Assert.Equal(["info.version"], changed);
-        Assert.Equal("1.0.2", current["info.version"]);
+        Assert.Equal(["info.version", SkuLevelDescription], changed);
+        Assert.Equal("1.1.0", current["info.version"]);
         Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
-                                           || k.StartsWith(RetestDueExample, StringComparison.Ordinal), "unexpected addition: " + k));
+                                           || k.StartsWith(RetestDueExample, StringComparison.Ordinal)
+                                           || k == "components.schemas.SkuLevel.enum[3]"
+                                           || AdditivePrefixes.Any(p => k.StartsWith(p, StringComparison.Ordinal)), "unexpected addition: " + k));
         Assert.Equal("LOT_RETEST_DUE", current[RetestDueExample + "value.error.code"]);
         Assert.Contains(AvailableDescription, added);
         Assert.Equal("FROZEN", current["info.x-status"]);
+    }
+
+    [Fact]
+    public void The_1_1_0_additions_are_exactly_the_accepted_proposal()
+    {
+        var current = Flatten(Load(ContractSchemas.ContractPath));
+
+        // Change 1: Item appended after the three 1.0.0 levels (their positions unchanged), with the proposal's description.
+        Assert.Equal(["Gsku", "Lsku", "FinishedGood", "Item"],
+            Enumerable.Range(0, 4).Select(i => current[$"components.schemas.SkuLevel.enum[{i}]"]));
+        Assert.False(current.ContainsKey("components.schemas.SkuLevel.enum[4]"));
+        Assert.StartsWith("Polymorphic stock level. Item = a material item", current[SkuLevelDescription]);
+
+        // Change 2: getStockPresence on its own server (InventoryService directly), service key only, the four statuses.
+        const string op = "paths./stock-presence.get.";
+        Assert.Equal("/api/internal/inventory", current["paths./stock-presence.servers[0].url"]);
+        Assert.Equal("getStockPresence", current[op + "operationId"]);
+        // An empty scope list flattens to nothing, so the operation's security is read from the parsed document itself.
+        var get = (IDictionary)((IDictionary)((IDictionary)Load(ContractSchemas.ContractPath)["paths"])["/stock-presence"]!)["get"]!;
+        var requirement = (IDictionary)Assert.Single((IList)get["security"]!)!;
+        Assert.Equal(["internalApiKey"], requirement.Keys.Cast<object>().Select(k => k.ToString()));
+        Assert.Equal(["200", "400", "401", "503"],
+            current.Keys.Where(k => k.StartsWith(op + "responses.", StringComparison.Ordinal))
+                .Select(k => k[(op + "responses.").Length..].Split('.')[0]).Distinct().OrderBy(s => s, StringComparer.Ordinal));
+        Assert.Equal(["X-Tenant-Id", "skuId", "skuLevel"], Enumerable.Range(0, 3).Select(i => current[$"{op}parameters[{i}].name"]));
+        Assert.All(Enumerable.Range(0, 3), i => Assert.Equal("true", current[$"{op}parameters[{i}].required"]));
+        Assert.Equal("#/components/schemas/StockPresence", current[op + "responses.200.content.application/json.schema.$ref"]);
+        Assert.Equal("INVENTORY_UNAVAILABLE", current[op + "responses.503.content.application/json.example.error.code"]);
+        Assert.Equal("X-Internal-Api-Key", current["components.securitySchemes.internalApiKey.name"]);
+        Assert.Equal("header", current["components.securitySchemes.internalApiKey.in"]);
+
+        // StockPresence: the six required members and NO quantity member.
+        Assert.Equal(["skuId", "skuLevel", "hasNonZeroStock", "coverage", "asOf", "contractVersion"],
+            Enumerable.Range(0, 6).Select(i => current[$"components.schemas.StockPresence.required[{i}]"]));
+        Assert.Equal(["asOf", "contractVersion", "coverage", "hasNonZeroStock", "skuId", "skuLevel"],
+            current.Keys.Where(k => k.StartsWith("components.schemas.StockPresence.properties.", StringComparison.Ordinal))
+                .Select(k => k.Split('.')[4]).Distinct().OrderBy(s => s, StringComparer.Ordinal));
+        Assert.Equal(["COMPLETE", "PARTIAL"], Enumerable.Range(0, 2).Select(i => current[$"components.schemas.StockPresence.properties.coverage.enum[{i}]"]));
+
+        var changelog = string.Join("\n", current.Where(kv => kv.Key.StartsWith("info.x-changelog[", StringComparison.Ordinal)).Select(kv => kv.Value));
+        Assert.Contains("1.1.0 — additive (MVP-1 CT, MOD-0290 R-12 and PRODUCT-MASTER 1.1): SkuLevel + Item; getStockPresence", changelog);
     }
 
     [Fact]

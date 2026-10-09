@@ -5,7 +5,8 @@ namespace Diten.InventoryService.Application.Common;
 /// ASSUMPTION-0173-04 adds (values of the frozen <c>error.code</c> string, emitted only with declared statuses),
 /// plus <see cref="InvalidRequest"/> which pack §12 names for structural field errors, plus
 /// <see cref="LegalEntityMasterUnavailable"/> which pack §19 W-0173-02 names (503, company selector), plus the eight lot /
-/// serial codes of the MOD-0174 pack §12 "Ledger posting rules" (WP-0174-P2, all 422; INVENTORY-BUNDLE v1 unchanged).
+/// serial codes of the MOD-0174 pack §12 "Ledger posting rules" (WP-0174-P2, all 422; INVENTORY-BUNDLE v1 unchanged), plus
+/// <see cref="InventoryUnavailable"/> which INVENTORY-BUNDLE 1.1.0 declares for <c>getStockPresence</c> (503, WP-0173-PM2).
 /// No other code may be added without a new pack version.
 /// </summary>
 public static class InventoryErrorCodes
@@ -50,13 +51,16 @@ public static class InventoryErrorCodes
     public const string SerialNotAvailable = "SERIAL_NOT_AVAILABLE";
     public const string SerialLotMismatch = "SERIAL_LOT_MISMATCH";
 
+    /// <summary>INVENTORY-BUNDLE 1.1.0 <c>getStockPresence</c>: the store could not be read (503, never a partial answer).</summary>
+    public const string InventoryUnavailable = "INVENTORY_UNAVAILABLE";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         InvalidMovementType, CrossLeForbidden, InsufficientStock, SerialCountMismatch, UnknownLocation,
         ProductMasterUnavailable, UnknownItem, InvalidRequest, IdempotencyKeyReused, SkuItemMismatch,
         UomConversionMissing, LotRequired, AlreadyReversed, LocationMasterUnavailable, InsufficientAvailable,
         ReservationConflict, LegalEntityMasterUnavailable, LotNotAllowed, UnknownLot, LotSkuMismatch, LotBlocked, LotExpired,
-        SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch, LotRetestDue
+        SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch, LotRetestDue, InventoryUnavailable
     };
 
     /// <summary>MOD-0175 Q4: the <c>LOT_RETEST_DUE</c> refusal (pre-check and in-transaction re-check give the same answer).</summary>

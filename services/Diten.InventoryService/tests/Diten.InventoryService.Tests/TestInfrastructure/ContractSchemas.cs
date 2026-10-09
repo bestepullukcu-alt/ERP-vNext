@@ -29,6 +29,9 @@ public static class ContractSchemas
     public const string BalancePage = "BalancePage";
     public const string TransactionPage = "TransactionPage";
     public const string Error = "Error";
+
+    /// <summary>INVENTORY-BUNDLE 1.1.0 (WP-0173-PM2) <c>getStockPresence</c>.</summary>
+    public const string StockPresence = "StockPresence";
     public const string ReservationResponse = "ReservationResponse";
 
     // LOCATION (v1 frozen + v1.1 owner).

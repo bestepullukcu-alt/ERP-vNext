@@ -40,6 +40,9 @@ public sealed class ContractValidatingHandler : DelegatingHandler
         // 401 / 403 and 404 (unknown / other-scope id) come from pack §8 / ASSUMPTION-0173-17 on every endpoint.
         Inv("POST", "/api/inventory/reservations", [200, 201, 400, 401, 403, 422], ContractSchemas.ReservationResponse),
         Inv("POST", "/api/inventory/reservations/{id}/release", [200, 400, 401, 403, 404, 409], ContractSchemas.ReservationResponse),
+        // 1.1.0 (WP-0173-PM2) getStockPresence — service-to-service, outside the scope middleware: EXACTLY the contract's
+        // statuses (no 403 — a key that does not open it is the same 401).
+        Inv("GET", "/api/internal/inventory/stock-presence", [200, 400, 401, 503], ContractSchemas.StockPresence),
 
         // LOCATION v1 (frozen reads). 400 (scope member in the query, malformed filter) / 401 / 403 / 503 (company not
         // confirmable) are the MOD-0173 scope refusals every endpoint may give.
