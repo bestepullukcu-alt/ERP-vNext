@@ -107,9 +107,13 @@ Dağınık test listesi verilmez.
 Durum anahtarı: `[x]` sahip "Tamam" dedi · `[ ]` bekliyor · ⏳ kod henüz dev'de değil.
 
 ### Sahibin ekran dışı işleri
-- [ ] `is-stok-mesaj` Stok ekibine ve kalite birimine Control Tower'ın hazırladığı mesajı gönderin (stok: yazılı onay + 8 soru; kalite: IU birimi + kalem onaycısı).
-- [ ] `is-stok-onay` Stok ekibinin yazılı onayı geldi (Global Ürün okumasında stok alanları dönmez; SKU'dan okunur). Gelince Control Tower'a iletin — bu onay olmadan kalem okuma bağlantıları canlıya çıkmaz.
-- [ ] `is-kalite-cevap` Kalite biriminin cevabı geldi: IU birimi (HIU mı, kendi kodumuz mu) ve kalem etkinleştirmesini onaylayacak pozisyon.
+- [x] `is-stok-mesaj` Stok ekibine ve kalite birimine Control Tower'ın hazırladığı mesajı gönderin (stok: yazılı onay + 8 soru; kalite: IU birimi + kalem onaycısı).
+- [x] `is-stok-onay` Stok ekibinin yazılı onayı geldi (Global Ürün okumasında stok alanları dönmez; SKU'dan okunur). Gelince Control Tower'a iletin — bu onay olmadan kalem okuma bağlantıları canlıya çıkmaz.
+- [x] `is-kalite-cevap` Kalite biriminin cevabı geldi: IU birimi (HIU mı, kendi kodumuz mu) ve kalem etkinleştirmesini onaylayacak pozisyon.
+- [ ] `is-push-hat` Ana çalışma dalını GitHub'a gönderin (PR değil): `git -C /Users/alitufanoglu/ERP-vNext/.claude/worktrees/kanban-preview push origin chore/ct-round-2`.
+- [ ] `is-stok-cevap-2` Push'tan sonra stok ekibine ikinci cevabı gönderin (kabul edilenler, üç çekince, R-12 beklentisi, bütün MVP'ler cevabı).
+- [ ] `is-crm-mesaj` CRM ekibine Marka değişiklikleri mesajını gönderin.
+- [ ] `is-qa-pozisyon` Kalem onayından (S2) önce dev'de "QA Müdürü" pozisyonu + en az iki kişi.
 - [ ] `is-canli-hesap` Canlı sorusunu cevaplayın: ekibiniz canlıda kiracı ekranlarına platform hesabıyla mı giriyor? (Evetse canlıda da sıradan yönetici hesabı önceden açılmalı.)
 - [ ] `is-rol-onerisi` Canlı rol önerisini inceleyin: 13 rol, görev ayrımı kuralları (kendi üretim, fason, satış). Dosya: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`. Hangi rollerin canlıda açılacağını söyleyin.
 - [ ] `is-ik-viewer` Canlı sorusu (güvenlik): canlıda İnsan Sermayesi modülü açık mı, "Viewer" rolü kimlerde? Açıksa Viewer ücret / yan hak ekranlarını görebiliyor (BL-581).
