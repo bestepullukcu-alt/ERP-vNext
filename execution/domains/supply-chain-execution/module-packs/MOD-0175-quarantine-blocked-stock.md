@@ -1426,6 +1426,34 @@ reviewed against the mockup. Merged into the MVP-1 branch. Decisions on the open
 - **O-Q5-3** `listHoldsBySource` not served → **FU-0175-Q5-03**, with MOD-0177 recall (its first consumer).
 - W-0175-01 (no Python, DataTable verifier) stays open to MVP-1 closure.
 
+**ITEM — `Item` in QUARANTINE, updateHold, people by name (WP-0174-ITEM, CT-MVP1-0174-ITEM v1, 2026-10-09; agent result, pending CT).**
+- **QUARANTINE-BUNDLE 1.1.0** (additive): `SkuLevel` + `Item`, nothing else. The 1.0.0 file is pinned and the diff is measured.
+- **Item stock.** Item-level stock is quarantined (intake and manual), blocked, decided and applied.
+  - The `qd-v1` field list is unchanged; for Item, `itemId == skuId` (tested).
+  - O-PM1-1 is closed.
+- **FU-0175-Q5-01 CLOSED — `updateHold`.**
+  - `PATCH /holds/{id}`: key `quarantine.holds.review`, If-Match, contract idempotency.
+  - Refusals: 409 `QUARANTINE_HOLD_CLOSED` and 409 `QUARANTINE_CONFLICT` (handler check + version-conditioned replace).
+  - Writes one `inventory_audit` row (`QUARANTINE_HOLD_UPDATED`, before / after).
+  - **Owner decision K-1:** no history row, because the frozen `HistoryAction` has no such value → **O-ITEM-1** (`NoteUpdated` in a
+    future additive version).
+  - The architecture test now allows `InventoryCollections.Audit` (Find / InsertOneAsync) and nothing else of the ledger.
+  - Kayıt Detayı edits the note in place. Drawn only for the review key (UAS-001); the JS uses the `STARTREVIEW` code, same key.
+- **FU-0175-Q5-02 CLOSED — people by name.**
+  - The Web fills `UserRef.name` (creator, history, decider, approver) and the "user:" approver candidates (`lookups/users`).
+  - Source: AuthService `GET /api/users/{id}/display-label`, called with the caller's token. No new endpoint, no contract change
+    (ASSUMPTION-0174-ITEM-02; resolver measurement in evidence §6).
+  - An unresolved id shows the short id + "unknown user".
+  - **O-ITEM-2:** names need `auth.users.lookup`, which only tenant Admin holds by default → role template decision.
+  - O-ITEM-3: `byUserName` on movements stays empty (not served).
+- **Measured.** Inventory 800 → **829** (own replica set); Web 685 → **694**; gateway 107/108 (known 5065); architecture 18/18.
+  - Warnings 0 / 21 / 7, unchanged.
+  - 21 red-first cases on the base code, run in a separate base worktree.
+  - Sabotages (a)–(e) red with 7 / 3 / 6 / 1 / 3 failures.
+  - Runtime probe on own ports, built-in browser: Lots → lot on an Item raw material → lotted receipt into QUARANTINE → note edit →
+    signed decision (ESIG-2026-000001) → approval by B in WorkCenter (ESIG-2026-000002) → Applied; people shown by name.
+- **Evidence.** `docs/records/audits/2026-10/mod-0174-item-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`, `mod-0174-item-shots/`.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts

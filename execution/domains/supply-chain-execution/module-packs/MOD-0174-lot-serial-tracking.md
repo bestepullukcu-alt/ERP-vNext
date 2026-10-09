@@ -1002,6 +1002,28 @@ Traceability resx + Traceability Lots view/JS/models + tests + evidence + pack. 
 movement type); actor names stay ids until a central user directory exists (FU-LOC2-04 + FU-0174-P5 together, central);
 F-3 shell "Search" → central layout owner. FU-0174-P5 CLOSED.
 
+**ITEM — `Item` level in TRACE (WP-0174-ITEM, CT-MVP1-0174-ITEM v1, 2026-10-09; agent result, pending CT).**
+- **TRACE-BUNDLE 1.3.0** (additive).
+  - `SkuLevel` + `Item`, appended.
+  - `createLot` gains two codes, both 422: `PRODUCT_MASTER_DATA_INCOMPLETE` (unknown lot flag; was 503 —
+    ASSUMPTION-0173-PM1-03 closed) and `SKU_LEVEL_NOT_STOCKABLE` (`stockable: false`; owner decision 2026-10-09).
+  - Measured against the pinned 1.2.0 file.
+- **Lots.**
+  - `createLot`, the lot reads and the GS1 check accept `Item` (`skuId == itemId`, checked with `getSku(level=Item)`).
+  - An Item lot is tracking mode `Lot`; the GS1 GTIN check is `Skipped` because the GTIN is null.
+  - K-G `AllowedSkuLevels` + `Item`. `WireNames.TryParseLegacySkuLevel` is removed.
+  - `getProduct` is read only at GSKU.
+- **`stockable: false`** (O-PM1-3) refuses a new lot. **ASSUMPTION-0174-ITEM-01:** when the member is missing, the PM1 rules apply.
+- **Web.** The Lots form accepts `Item`; Lots details show the SKU level (`Level.*`, 7 languages).
+  The Lots change-history actor stays an id (FU-LOC2-04 / FU-0174-P5 decision).
+- **Measured.** Inventory 800 → **829** (own replica set); Web 685 → **694**; gateway 107/108 (known 5065); architecture 18/18.
+  - Warnings 0 / 21 / 7, unchanged.
+  - 21 red-first cases on the base code, run in a separate base worktree.
+  - Sabotages (a)–(e) red with 7 / 3 / 6 / 1 / 3 failures.
+  - Runtime probe on own ports, built-in browser: Lots → lot on an Item raw material → lotted receipt into QUARANTINE → note edit →
+    signed decision (ESIG-2026-000001) → approval by B in WorkCenter (ESIG-2026-000002) → Applied; people shown by name.
+- **Evidence.** `docs/records/audits/2026-10/mod-0174-item-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`, `mod-0174-item-shots/`.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
