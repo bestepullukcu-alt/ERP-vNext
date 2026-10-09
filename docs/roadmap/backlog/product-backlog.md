@@ -8297,6 +8297,68 @@ Gelecek regresyon riski: 🟡 (bütün formlara dokunur). Sayfa başına değil 
 
 ---
 
+### BL-587
+
+**Pasife alınan ya da parolası sıfırlanan kullanıcının açık oturumu 2 saate kadar çalışmaya devam ediyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth + ağ geçidi + Web) · BULAN: sahip (KR2, 2026-10-09: Elif pasife alındı / parolası sıfırlandı, açık Görev Merkezi sayfası yenilemede hâlâ açılıyor) · KAYIT: 2026-10-09 · ÖNCELİK: 🔴
+
+Ölçüm (CT, hat `ce61c597c`):
+- Erişim belirtecinin ömrü 120 dakika (`Diten.AuthService.Api/appsettings.json:49` `AccessTokenExpirationMinutes`).
+- Auth, ağ geçidi ve Web'de kullanıcı başına oturum sürümü / güvenlik damgası denetimi YOK (arama: `SessionVersion`, `SecurityStamp`, `TokenVersion` — hiç).
+- BL-529 sıfırlamada yalnız yenileme belirteçlerini iptal ediyor. Elde kalan erişim belirteci süresi dolana kadar geçerli.
+- Pasife almada da aynı durum.
+
+Sonuç: işten çıkarılan ya da hesabı ele geçirildiği için kapatılan bir kullanıcı, açık oturumuyla 2 saate kadar bütün ekranları ve API'leri kullanabilir. Test listesindeki "sıfırlanan kişinin oturumu yenilemede düşer" beklentisi gerçekleşmiyor.
+
+Düzeltme önerisi (iki adım):
+1. **Hemen:** erişim belirteci ömrünü kısaltmak (ör. 15 dk; yenileme belirteci zaten iptal ediliyor), en kötü pencere 15 dk olur.
+   - Canlı ayar değişikliği sahibin "evet"iyle.
+   - Web'in sessiz yenileme akışı ölçülür (kullanıcı 15 dk'da bir atılmamalı).
+2. **Kalıcı:** kullanıcı başına oturum sürümü (`session_version` iddiası).
+   - Pasife alma, parola sıfırlama, parola değişimi ve (karar) rol değişiminde artar.
+   - Ağ geçidi her istekte kısa önbellekli (ör. 30 sn) karşılaştırma yapar; eşleşmezse 401.
+   - Web 401'de oturumu kapatır.
+   - BL-532 (yetki değişikliği yeniden girişte geçerli) ile birlikte ele alınabilir.
+
+Karşılaştırma: SAP'de kullanıcı kilitlemek yeni girişi engeller, açık oturum yönetici aracıyla sonlandırılır; Oracle'da kullanıcı devre dışı bırakılınca oturumlar geçersiz kılınır (ayrıntı doğrulanmadı).
+
+Gelecek regresyon riski: 🔴 (yetkisiz erişim penceresi canlıda var).
+
+---
+
+### BL-588
+
+**Canlı: oluşturma ekranında tarih seçici ilk tıklamada açılmıyor, ikinci tıklamada açılıyor**
+
+DURUM: AÇIK · SAHİP: CT (ortak ön yüz) · BULAN: canlı kullanıcılar (sahip iletti, 2026-10-09) · KAYIT: 2026-10-09
+
+Hangi ekran: "create ekranı" — büyük olasılıkla Görev oluşturma (`Tasks/Create` ya da Görev Merkezi hızlı oluşturma); sahip teyit edecek.
+
+Ortak tarih alanı `assets/js/shared/diten-datefield.js` + flatpickr (`_LayoutTenantShell`). Olası sebep: seçicinin ilk tıklamada kurulup açılmaması (tembel bağlama) ya da yan panel / iletişim kutusu içinde ilk odakta konum hesaplaması. Ölç, canlı sürümüyle aynı dalda yeniden üret, düzelt. Bütün tarih alanlarına ortak bileşende tek düzeltme.
+
+Gelecek regresyon riski: 🟢 (kullanım kolaylığı; her tarih alanında aynı kusur olabilir).
+
+---
+
+### BL-589
+
+**Görev Merkezi "+ Yeni ▸ Kaynak modülde oluştur" her kullanıcıya görünüyor ama işlevsiz (taklit)**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi) · BULAN: sahip (KR1, 2026-10-09, rolsüz Elif) · KAYIT: 2026-10-09
+
+Ölçüm:
+- `WorkCenterNext/app.js:1045` öğe izin bakılmadan çiziliyor ("Görev" öğesi `platform.tasks.create` ile doğru gizleniyor).
+- `openCreateInSource` (`:~11210`) modül listesini kullanıcının listedeki işlerinden türetiyor. İşi olmayan kullanıcıda liste boş, seçim yapılamıyor.
+- Seçilse bile yalnız "(mock)" bildirimi gösteriyor; kaynak modülün oluşturma adresi projeksiyonda yok.
+- Sonuç: rolsüz kullanıcı "+ Yeni" görüyor, tıklıyor, kullanamıyor (BL-208: açıklamasız ölü düğme).
+
+Düzeltme: sağlayıcı oluşturma adresi verene kadar "Kaynak modülde oluştur" öğesi gizlenir; menüde öğe kalmazsa "+ Yeni" düğmesi çizilmez (UAS-001 §6). Sağlayıcılar adres verince öğe yalnız kullanıcının oluşturma izni olan modülleri listeler.
+
+Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
