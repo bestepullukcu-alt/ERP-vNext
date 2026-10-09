@@ -47,9 +47,9 @@
 ## 3. Ürün sahibi kararları (mockup §15 + CT)
 | # | Karar | Hangi fazdan önce |
 |---|---|---|
-| K-W1 | Ertelemenin sonucu: **A** yeni tarihte planlı ziyaret · **B** yalnız not | W2 |
-| K-W2 | Kanıt: fotoğraf zorunlu mu, konum zorunlu mu; ek kanıtlar (imza / QR / süre / anti-fraud) hangileri | W3 |
-| K-W3 | Fotoğraf + imza saklama yeri (MOD-0262 ikili depo mu, başka) | W3 |
+| K-W1 | Ertelemenin sonucu: **A** yeni tarihte planlı ziyaret · **B** yalnız not — ✅ **KARAR (2026-10-09): A** — eski ziyaret "ertelendi" kapanır, yeni günde yeni planlı ziyaret oluşur, sıklıkta sayılır | W2 |
+| K-W2 | Kanıt: fotoğraf zorunlu mu, konum zorunlu mu; ek kanıtlar (imza / QR / süre / anti-fraud) hangileri — ✅ **KARAR (2026-10-09): kiracı ayarı**, varsayılan konum zorunlu + fotoğraf isteğe bağlı (ek kanıt seçenekleri W3 öncesi netleşir) | W3 |
+| K-W3 | Fotoğraf + imza saklama yeri (MOD-0262 ikili depo mu, başka) — ⏸ **ERTELENDİ (2026-10-09)**: W3 öncesi yeniden sorulacak; W1 / W2 etkilenmez | W3 |
 | K-W4 | Bağlılık modeli: pay % · aşama · birleşik | W4 |
 | K-W5 | Hekim tipolojisi: benimseme · iletişim stili · ikisi | W4 |
 | K-W6 | Endikasyon × hasta profili ve rakip verisinin sahibi (MDM mi CRM mi) ve kim girer | W4 |
@@ -63,7 +63,8 @@
 ## 4. Mimari ön koşul — denetim (AUD-001)
 - Bu iş **çok sayıda yeni yazma komutu** getirir: ziyareti başlat / bitir, kanıt yükle, rapor v2, eczane raporu, ön sipariş oluştur / onayla / reddet …
 - Mimari test bugün 27 denetimsiz CRM komutuyla kırmızı.
-- **Önerim:** Faz 8 (CRM'i merkezi denetim kaydına bağlama) **W3'ten önce** yapılsın. Yeni komutlar baştan denetimli doğar, kırmızı liste büyümez.
+- ✅ **KARAR (kullanıcı, 2026-10-09): Faz 8 EN SONDA.** CRM denetim yayıncısı Faz 8'de düzeltileceği için yeni komutlar (W1–W7) şimdilik mimari testin denetimsiz listesine eklenir; her paket §37'de yeni sayıyı yazar (27 → …), Faz 8 hepsini tek seferde bağlar. Main PR'ları bu kırmızı testle (admin-override) açılabilir (kullanıcı 2026-10-08).
+- (Önceki CT önerisi: Faz 8 W3'ten önce — kullanıcı seçmedi.)
 - Alternatif: her yeni komut kendi paketinde denetimli yazılır. Faz 8 yine en sonda kalır; bu durumda W3+ paketlerinin her biri denetim işini de taşır.
 
 ## 5. Fazlar ve paketler (prompt sayısı)
@@ -74,7 +75,7 @@
 | **W0** · Tasarım + kararlar | SoR haritası, veri modeli, API sözleşmeleri, K-W1…K-W12; mockup → paket bölme | CT belgesi (DESIGN-VW) | 0 (CT) |
 | **(süren)** 4M | Hedefler sayıları (planlı, plandakiler başta, seçili hafta) — Planla modunda aynen kullanılır | 4M-BE ∥ 4M-WEB | 2 (hazır) |
 | **W1** · Rapor kuralları (4K, güncellenmiş) | 48 sa son tarih, iptal kilidi, raporlayan = çağıran, takvim adları + iptal nedeni, T-1, rapor yetkileri, **"kaçırıldı" durumu** + 48 sa yapılamadı / ertele penceresi + yöneticiye bildirim işareti | W1-BE | 1 |
-| **(önerilen)** Faz 8 · AUD-CRM-1 | CRM komutlarını merkezi denetime bağla; mimari test yeşil | F8-a (altyapı + ilk grup) · F8-b (kalan komutlar) | 2 |
+| **(en sonda — kullanıcı kararı)** Faz 8 · AUD-CRM-1 | CRM komutlarını merkezi denetime bağla; mimari test yeşil | F8-a (altyapı + ilk grup) · F8-b (kalan komutlar) | 2 |
 | **W2** · Takvim çalışma alanı | **BE:** birleşik takvim okuması (taslak önizleme + planlı + rapor durumu tek akışta), neden kategorileri (referans seti), erteleme (K-W1), plan dışı ziyaret yalnız bugün, **saat sabiti** (sürükle → gün + saat). **WEB-a:** E1 takvim (FullCalendar), hafta başlığı, kartlar, süzgeçler, ayrıntı paneli, E2. **WEB-b:** Planla modu + Hedefler paneli gömülü + sürükle-bırak + ürün uygula | W2-BE · W2-WEB-a · W2-WEB-b | 3 |
 | **W3** · Ziyaret yürütme | **BE-a:** ziyaret yürütme kaydı (başlat / bitir, sunucu saati, kanıt: fotoğraf yükleme, konum uzaklığı, kiracı kanıt ayarı, ürün başına süre, işaretler, notlar, ortak ziyaret, imza). **BE-b:** içerik modeli: sunum notları (anahtar mesaj, konuşma metni, slayt süre hedefi, geçiş), itiraz kütüphanesi + onaylı yanıt, doktora özel hatırlatma (Content Studio). **WEB-a:** E3 kanıt + E4b kumanda + E4c bitiş (masaüstü bölünmüş). **WEB-b:** E4a doktor ekranı (tablet, PIN kilidi) | W3-BE-a · W3-BE-b · W3-WEB-a · W3-WEB-b | 4 |
 | **W4** · Rapor v2 | **BE-a:** hekim raporu modeli (ürün başına A / B / C, zorunluluk + "yok" seçenekleri, güvenlik soruları, önceki değer okuması, sunumdan ön doldurma). **BE-b:** veri: endikasyon × hasta profili, rakip ürün bilgisi (K-W6 SoR'a göre MDM / CRM). **BE-c:** doktor profili alanları (Contact: tipoloji, KOL, kanal, en uygun gün / saat, toplam hasta + kaynak). **WEB-a:** E5 hekim raporu sihirbazı. **WEB-b:** E6 eczane raporu (+ eczane rapor modeli BE kısmı WEB-b'nin eşi olarak BE-a'ya dahil) | W4-BE-a · W4-BE-b · W4-BE-c · W4-WEB-a · W4-WEB-b | 5 |
@@ -92,7 +93,7 @@
 - Geçmiş turlardan deneyim: her 4–5 pakette bir **E4 düzeltme paketi** çıkıyor (4I, 4J, 4L, 4M gibi) → **+5–7 düzeltme promptu**.
 - **Gerçekçi toplam: 30–33 prompt.**
 
-**Sıra ve paralellik:** önerilen sıra **4M ∥ W1 → (Faz 8) → W2 → W3 → W4 → W5 ∥ W6 → W7 → W9**.
+**Sıra ve paralellik:** sıra **(4M ✅) → W1 → W2 → W3 → W4 → W5 ∥ W6 → W7 → W9 → Faz 8** (kullanıcı 2026-10-09: Faz 8 en sonda).
 - Her fazda BE ve WEB paralel.
 - W5 ve W6 paralel gidebilir (W6'nın e-postaları W5'e bağlanır).
 - W7 bağımsız; veri kaynağı kararı erken gelirse öne alınabilir.
