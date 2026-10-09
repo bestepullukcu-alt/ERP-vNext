@@ -121,3 +121,42 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK (listesiz 27; Faz 8 en sonda); workStatus KAY
 DOĞRULA (E2): CRM 2470/0/5 tabanı (ContactLocationPiiHardeningTests.PiiMasking_… bilinen kararsız; tekrar koşunca geçer) · Web 822/0 (vekil anahtarı değiştiği için koş) · mimari 27. Testler belge Acceptance (4K 1–7 + 8a/8b/8c); sabotaj 4 (kırmızı kanıtla, geri al — `git checkout --` kullanma; geri alınca dosyaya touch). dotnet test -o kullanırsan çıktı klasörü REPO İÇİNDE.
 Commit: "feat(crm): WP-VW-W1 — visit work status (missed/expired), report deadline 48h, cancelled locked, reporter = caller, calendar names, visit-report RBAC" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, ön koşul raporu (anahtarlar Auth kataloğunda / 97c5 Admin rolünde var mı), saha temsilcisi yetki listesi, mobil için yeni alan / kodlar / durum listesi, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+## §37 CT kabul — W1 E2 ACCEPTED (2026-10-09)
+**Commit:** `6815fd3bc` (ajan `92bcb9401`, test dalına cherry-pick, çakışma yok). Push: test dalı.
+
+**CT K13:**
+- CRM 2470 → **2506/0/5** (+36). PII maskeleme testi bilinen kararsız test; bir koşuda düştü, tekrarında yeşil.
+- Web 822 → **826/0**.
+- Mimari: listesiz **27** (artmadı).
+
+**Kod okuması:**
+- `VisitReportDeadline` tek yer; durum (`VisitWorkStatus`) ve yazma kuralı (`ValidateDeadline`) aynı yardımcıyı okuyor.
+- Takvimde tek "şimdi" var; ürün adları için tek toplu MDM okuması yapılıyor (fail-open).
+- T-1: bağlantı hedefinde ad = doktor.
+- Rapor uçları:
+  - `crm.visit-report.read`;
+  - `record` + `planned-visit.manage`;
+  - `amend`;
+  - yedek kalktı (Web vekili dahil).
+
+**Ajanın yorum kararları (CT kabul):**
+1. Kayıt `record` + `manage` istiyor (D-RBAC ile aynı).
+2. Taslak `missed` / `rescheduled` sonuç sayılmıyor (belgeyle aynı).
+3. Gönderimde son tarih yalnız ilk gönderimde uygulanıyor; 60 dk pencere korunuyor.
+4. read-all raporlayanı boş bırakırsa raporlayan kendisi oluyor (eskiden plan sahibiydi). Yönetici Web'den girerse raporlayan yönetici görünür; bu doğru iz.
+5. Arşivli plan için ayrı durum yok.
+
+**Kullanıcıya bildirilecekler:**
+- 97c5 Admin'de `crm.planned-visit.read-all` yok → Admin de 48 saat kilidine takılır.
+- Saha temsilcisi listesine eklenecekler: `crm.account-contact.read`, `crm.account-relationship.read`, `crm.territory.read`. Sonuncusu dönem listesi ve yolculuk aşamaları hâlâ eski yedeği istediği için; F-RBAC artığı.
+
+**CT sabotajları:**
+- Durumda son tarih kontrolü "raporlandı"nın önüne alındı → 2 kırmızı (`W8a_priority_clashes`, `W8c_…`).
+- Gönderimde iptal kontrolü kapatıldı → 1 kırmızı (`K4_…`).
+- İkisi de `.bak` kopyasından geri alındı, dosyalara touch yapıldı.
+
+**Sıradaki:**
+- canlı E4 (fleet yeniden başlatılınca: takvim alanları, `?workStatus`, iptal 409, Ziyaret Yürütme yetkisi);
+- mobil notu (W8);
+- W2.
