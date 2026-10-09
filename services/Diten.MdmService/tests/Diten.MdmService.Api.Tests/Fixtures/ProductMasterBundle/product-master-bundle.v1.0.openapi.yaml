@@ -1,0 +1,221 @@
+openapi: 3.1.0
+info:
+  title: PRODUCT-MASTER-BUNDLE
+  description: >
+    MOD-0290 Product/Item/SKU Master — Wave-0 frozen contract (v1).
+    Canonical kimlik (Model A: GlobalProduct→Gsku→Lsku→FinishedGood). Consumer'lar READ-ONLY.
+    Model B (Product) bu contract'ta YOK (DEC-INV-17). Tenant+LegalEntity scoped (server-resolved).
+    Mock: `prism mock product-master-bundle.openapi.yaml`.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0290
+  x-decisions: [DEC-INV-17, 18]
+servers:
+  - url: /api/product-master
+security:
+  - bearerAuth: []
+paths:
+  /products/{itemId}:
+    get:
+      operationId: getProduct
+      summary: Ürün kimliği (ItemId → GlobalProduct)
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Ürün
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductRef' }
+              example:
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                canonicalCode: GP-000123
+                name: Amoksisilin 500mg Kapsül
+                lifecycleStatus: Active
+                baseUomId: EA
+                shelfLifeDays: 730
+                minRemainingShelfLifeDays: 180
+                storageCondition: "15-25C"
+                retestDays: 365
+                lotControlled: true
+                serialControlled: false
+                contractVersion: v1
+        '404': { $ref: '#/components/responses/UnknownItem' }
+  /skus/{skuId}:
+    get:
+      operationId: getSku
+      summary: SKU (SkuId + SkuLevel → Gsku|Lsku|FinishedGood)
+      parameters:
+        - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: level, in: query, required: true, schema: { $ref: '#/components/schemas/SkuLevel' } }
+      responses:
+        '200':
+          description: SKU
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SkuRef' }
+              example:
+                skuId: c3d4e5f6-0000-0000-0000-000000000002
+                skuLevel: Lsku
+                canonicalCode: LSKU-TR-000045
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                packUomCode: BOX
+                packQuantity: "10"
+                gtin: "08690000000017"
+                marketCode: TR
+                contractVersion: v1
+        '404': { $ref: '#/components/responses/UnknownSku' }
+  /skus/{skuId}/product:
+    get:
+      operationId: resolveSkuProduct
+      summary: SKU → GlobalProduct resolve (D-SKU-LINK — kritik)
+      parameters:
+        - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: level, in: query, required: true, schema: { $ref: '#/components/schemas/SkuLevel' } }
+      responses:
+        '200':
+          description: SKU'nun bağlı olduğu ItemId
+          content:
+            application/json:
+              example:
+                skuId: c3d4e5f6-0000-0000-0000-000000000002
+                skuLevel: Lsku
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                contractVersion: v1
+        '404': { $ref: '#/components/responses/UnknownSku' }
+  /skus/{skuId}/uom:
+    get:
+      operationId: getSkuUom
+      summary: SKU/item UoM + conversion
+      parameters:
+        - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: UoM bilgisi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UomInfo' }
+              example:
+                baseUomId: EA
+                conversions:
+                  - { fromUom: BOX, toUom: EA, numerator: "10", denominator: "1" }
+                  - { fromUom: PALLET, toUom: BOX, numerator: "100", denominator: "1" }
+                contractVersion: v1
+  /validate:
+    post:
+      operationId: validateRefs
+      summary: Toplu kimlik doğrulama (fail-closed consumer'lar için — bulk)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ValidateRequest' }
+            example:
+              refs:
+                - { itemId: b1f2c3d4-0000-0000-0000-000000000001 }
+                - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku }
+                - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku }
+      responses:
+        '200':
+          description: Doğrulama sonuçları
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidateResponse' }
+              example:
+                results:
+                  - { itemId: b1f2c3d4-0000-0000-0000-000000000001, exists: true }
+                  - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, exists: true }
+                  - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku, exists: false }
+                contractVersion: v1
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood] }
+    LifecycleStatus: { type: string, enum: [Draft, Active, Archived] }
+    ProductRef:
+      type: object
+      properties:
+        itemId: { type: string, format: uuid }
+        canonicalCode: { type: string }
+        name: { type: string }
+        lifecycleStatus: { $ref: '#/components/schemas/LifecycleStatus' }
+        baseUomId: { type: string }
+        shelfLifeDays: { type: integer, nullable: true }
+        minRemainingShelfLifeDays: { type: integer, nullable: true }
+        storageCondition: { type: string, nullable: true }
+        retestDays: { type: integer, nullable: true }
+        lotControlled: { type: boolean }
+        serialControlled: { type: boolean }
+        contractVersion: { type: string }
+    SkuRef:
+      type: object
+      properties:
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        canonicalCode: { type: string }
+        itemId: { type: string, format: uuid, description: 'resolved GlobalProduct (D-SKU-LINK)' }
+        packUomCode: { type: string, nullable: true }
+        packQuantity: { $ref: '#/components/schemas/Decimal' }
+        gtin: { type: string, nullable: true }
+        marketCode: { type: string, nullable: true }
+        contractVersion: { type: string }
+    UomConversion:
+      type: object
+      properties:
+        fromUom: { type: string }
+        toUom: { type: string }
+        numerator: { $ref: '#/components/schemas/Decimal' }
+        denominator: { $ref: '#/components/schemas/Decimal' }
+        effectiveFrom: { type: string, format: date-time, nullable: true }
+        effectiveTo: { type: string, format: date-time, nullable: true }
+    UomInfo:
+      type: object
+      properties:
+        baseUomId: { type: string }
+        conversions: { type: array, items: { $ref: '#/components/schemas/UomConversion' } }
+        contractVersion: { type: string }
+    ValidateRequest:
+      type: object
+      required: [refs]
+      properties:
+        refs:
+          type: array
+          items:
+            type: object
+            properties:
+              itemId: { type: string, format: uuid, nullable: true }
+              skuId: { type: string, format: uuid, nullable: true }
+              skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+    ValidateResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              itemId: { type: string, nullable: true }
+              skuId: { type: string, nullable: true }
+              skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+              exists: { type: boolean }
+        contractVersion: { type: string }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string }
+        contractVersion: { type: string }
+  responses:
+    UnknownItem:
+      description: Item bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_ITEM, message: "item bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    UnknownSku:
+      description: SKU bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_SKU, message: "sku bulunamadı", correlationId: req-2 }, contractVersion: v1 } } }

@@ -24,4 +24,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Diten.MdmService.Api\Diten.MdmService.Api.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- MOD-0290-FU04 S4 — product-master-bundle v1.1 (1.1.0-draft.7) copied from the contract line, byte for byte (the
+         YAML), with its JSON rendering and the v1.0 rendering; ProductMasterContractFixtureTests pins every SHA-256. -->
+    <None Include="Fixtures\ProductMasterBundle\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
