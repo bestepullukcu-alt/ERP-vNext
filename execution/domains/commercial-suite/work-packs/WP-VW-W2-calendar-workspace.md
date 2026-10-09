@@ -314,3 +314,14 @@ Commit: "feat(web): WP-VW-W2-WEB-a — visit workspace calendar (execute mode), 
 **CT sabotajı:** 15 dk adım kontrolü kaldırıldı → 1 kırmızı (`A_pin_time_outside_the_working_hours_or_off_the_grid_…`). `.bak` kopyasından geri alındı, dosyaya touch yapıldı, tam koşu yeşil.
 
 **Bekleyen:** W2-BE-a (`pinnedTime`'ı takvim okumasına taşıyacak), W2-WEB-a.
+
+### §37 ek — CT düzeltmesi: `pin_time_past_day_end` (kullanıcı isteği, 2026-10-09)
+- **Ne:** geçerli bir saatli sabitin ziyareti mesai bitişini aşıyorsa (ör. 17:45 + 30 dk) ziyaret erkene çekilir. Taşınanlar listesine artık `pin_time_conflict` değil, ayrı kod **`pin_time_past_day_end`** yazılır.
+- **Kod:**
+  - sabit `PlanningDayPins.PinTimePastDayEnd`;
+  - motorda ayrım: istenen saat + ziyaret süresi > günün pencere bitişi.
+- **Test:** `A_late_pin_whose_visit_would_end_after_the_day_moves_earlier_with_pin_time_past_day_end`.
+- **CT sabotajı:** ayrım kaldırıldı (hep `pin_time_conflict`) → 1 kırmızı. Geri alındı, touch yapıldı; tam tur yeşil.
+- CRM **2514/0/5**, mimari 27.
+- **W2-WEB-b için:** bu kodun kullanıcı metni 7 dilde eklenecek ("Ziyaret mesai bitişini aşıyor, erkene alındı").
+- **Mobil notu:** yeni taşıma nedeni `pin_time_past_day_end`.

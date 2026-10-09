@@ -44,6 +44,11 @@ public static class PlanningDayPins
     /// nearest free start of the day instead (a preview move, from = to = its day).</summary>
     public const string PinTimeConflict = "pin_time_conflict";
 
+    /// <summary>WP-VW-W2 (BE-b, CT, user 2026-10-09) — a time-pinned visit whose pinned start is valid but whose visit would
+    /// end after the day's working window: it sits at the nearest start that ends in time instead (a preview move, from =
+    /// to = its day). Said apart from <see cref="PinTimeConflict"/> so the rep knows the time, not another pin, was the cause.</summary>
+    public const string PinTimePastDayEnd = "pin_time_past_day_end";
+
     private static readonly string[] PinnableTargetTypes =
         { PlannedVisitTargetType.Contact, PlannedVisitTargetType.Pharmacy, PlannedVisitTargetType.Account };
 

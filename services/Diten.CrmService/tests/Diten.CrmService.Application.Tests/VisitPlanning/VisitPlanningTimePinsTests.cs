@@ -185,6 +185,31 @@ public sealed partial class VisitPlanningTests
         Assert.Equal((10 * 60 + 30, 11 * 60), (pure.Placed.Single(s => s.Key == 0).Start, pure.Placed.Single(s => s.Key == 1).Start));
     }
 
+    // ── 3b · a valid late time whose visit would end after the working day: its own reason (CT, user 2026-10-09) ────────
+
+    [Fact]
+    public async Task A_late_pin_whose_visit_would_end_after_the_day_moves_earlier_with_pin_time_past_day_end()
+    {
+        var env = Env.WithRealRoute(targetWeekStart: "2026-09-07");
+        env.Session.Selection.SelectedContacts.Clear();
+        var (_, doctors) = AddInstitution(env, "X", 4, KadikoyLat, KadikoyLng);
+        env.Session.DayPins.Add(new PlanningDayPin
+        {
+            WeekStart = "2026-09-07", TargetType = PlannedVisitTargetType.Contact, TargetId = doctors[1], ContactId = doctors[1],
+            Date = "2026-09-09", Scope = PlanningDayPinScopes.Visit, StartTime = "17:45"
+        });
+
+        var preview = (await env.Engine.PreviewAsync(env.Session, env.Options(Saturday5Sep), default)).Preview!;
+
+        var late = preview.Scheduled.Single(s => s.ContactId == doctors[1]);
+        Assert.Equal(("2026-09-09", "17:45"), (late.PlannedDate, late.PinnedTime));
+        Assert.True(Minutes(late.EndTime!) <= 18 * 60, $"ends {late.EndTime} — never past the working day");
+        Assert.NotEqual("17:45", late.StartTime);
+        var move = Assert.Single(preview.PinOverflow!, m => m.ContactId == doctors[1]);
+        Assert.Equal((PlanningDayPins.PinTimePastDayEnd, "2026-09-09", "2026-09-09"), (move.Reason, move.FromDate, move.ToDate));
+        Assert.DoesNotContain(preview.PinOverflow!, m => m.Reason == PlanningDayPins.PinTimeConflict);
+    }
+
     // ── 4 · a pin without a time is the 4E day pin ──────────────────────────────────────────────────────────────────
 
     [Fact]

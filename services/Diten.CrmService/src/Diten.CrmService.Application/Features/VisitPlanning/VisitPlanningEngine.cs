@@ -1069,7 +1069,11 @@ public sealed class VisitPlanningEngine
                 pinnedTimes[p.Item] = RouteTime.Format(tp.Minute);
                 if (RouteTime.ParseMinutes(p.Start) != tp.Minute)
                 {
-                    pinMoves.Add(new PinMove(p.Item, p.Date, p.Date, PlanningDayPins.PinTimeConflict));
+                    // the user asked (2026-10-09) to tell "ends after the working day" apart from "another pin had it"
+                    var dayEnd = RouteTime.ParseMinutes(budget.WindowFor(calendar.KindOf(p.Date), routeDay).End) ?? 18 * 60;
+                    var pastDayEnd = tp.Minute + Math.Max(1, p.Item.Candidate.DurationMinutes) > dayEnd;
+                    pinMoves.Add(new PinMove(p.Item, p.Date, p.Date,
+                        pastDayEnd ? PlanningDayPins.PinTimePastDayEnd : PlanningDayPins.PinTimeConflict));
                 }
             }
         }
