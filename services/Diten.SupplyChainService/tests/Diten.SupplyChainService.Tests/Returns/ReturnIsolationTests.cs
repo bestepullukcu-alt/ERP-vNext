@@ -40,7 +40,7 @@ public sealed class ReturnIsolationTests
   if(variant=="untrusted")((ClaimsIdentity)http.User.Identity!).AddClaim(new System.Security.Claims.Claim("sub",actor.ToString()));
   if(variant=="unauthenticated")http.User=new ClaimsPrincipal(new ClaimsIdentity());
   bool next=false;var middleware=new ReturnContextMiddleware(_=>{next=true;return Task.CompletedTask;},NullLogger<ReturnContextMiddleware>.Instance);
-  await middleware.InvokeAsync(http,new ReturnRequestContext(),new Diten.SupplyChainService.Application.Common.RequestContext());
+  await middleware.InvokeAsync(http,new ReturnRequestContext(),new Diten.SupplyChainService.Application.Common.RequestContext(),Diten.SupplyChainService.Tests.Common.StubLegalEntityScopeValidator.Valid);
   Assert.Equal(expected,http.Response.StatusCode);Assert.Equal(expected==200,next);
   if(expected!=200){http.Response.Body.Position=0;var response=await JsonDocument.ParseAsync(http.Response.Body);Assert.Equal(http.Response.Headers["X-Correlation-Id"].ToString(),response.RootElement.GetProperty("error").GetProperty("correlationId").GetString());}
   if(expected==401)Assert.Equal("Bearer",http.Response.Headers.WWWAuthenticate.ToString());

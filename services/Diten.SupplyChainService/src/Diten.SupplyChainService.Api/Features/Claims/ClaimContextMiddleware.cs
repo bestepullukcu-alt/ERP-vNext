@@ -34,14 +34,14 @@ public sealed class ClaimContextMiddleware(RequestDelegate next)
             var segment = authorization[7..].Split('.')[1].Replace('-', '+').Replace('_', '/');
             segment = segment.PadRight((segment.Length + 3) / 4 * 4, '=');
             using var payload = JsonDocument.Parse(Convert.FromBase64String(segment));
-            return payload.RootElement.ValueKind == JsonValueKind.Object && new[] { "tenant_id", "legal_entity_id", "sub" }.All(name =>
+            return payload.RootElement.ValueKind == JsonValueKind.Object && new[] { "tenant_id", "sub" }.All(name =>
                 payload.RootElement.EnumerateObject().Count(p => p.NameEquals(name)) == 1 &&
                 payload.RootElement.GetProperty(name).ValueKind == JsonValueKind.String &&
                 Uuid(payload.RootElement.GetProperty(name).GetString(), out var id) && id != Guid.Empty);
         }
         catch (Exception ex) when (ex is FormatException or JsonException or IndexOutOfRangeException or ArgumentException) { return false; }
     }
-    public async Task InvokeAsync(HttpContext http, ClaimRequestContext context, RequestContext loggingContext)
+    public async Task InvokeAsync(HttpContext http, ClaimRequestContext context, RequestContext loggingContext, ILegalEntityScopeValidator legalEntities)
     {
         var permission = http.GetEndpoint()?.Metadata.GetMetadata<ClaimPermissionAttribute>();
         if (permission is null) { await next(http); return; }
@@ -57,13 +57,15 @@ public sealed class ClaimContextMiddleware(RequestDelegate next)
         var authorization = http.Request.Headers.Authorization;
         if (http.User.Identity?.IsAuthenticated != true || authorization.Count != 1) { await Error(401, "UNAUTHENTICATED"); return; }
         if (!UniqueSignedIdentity(authorization[0]!) || !Identity(http, "tenant_id", out var tenant) ||
-            !Identity(http, "legal_entity_id", out var le) || !Identity(http, "sub", out var actor) ||
+            !Identity(http, "sub", out var actor) ||
             !permission.Permissions.Any(p => http.User.HasClaim("permission", p))) { await Error(403, "FORBIDDEN"); return; }
         if (!validCorrelation) { await Error(400, "INVALID_REQUEST"); return; }
-        Guid headerTenant = tenant, headerLe = le;
-        if ((http.Request.Headers.ContainsKey("X-Tenant-Id") && !Header(http.Request, "X-Tenant-Id", out headerTenant)) ||
-            (http.Request.Headers.ContainsKey("X-Legal-Entity-Id") && !Header(http.Request, "X-Legal-Entity-Id", out headerLe)))
+        Guid headerTenant = tenant;
+        if (http.Request.Headers.ContainsKey("X-Tenant-Id") && !Header(http.Request, "X-Tenant-Id", out headerTenant))
         { await Error(400, "INVALID_REQUEST"); return; }
+        // R-2: X-Legal-Entity-Id was optional here because it defaulted to the claim. With the claim gone there is
+        // nothing to default to, so it is REQUIRED — Claims is the only one of the five where this changed.
+        if (!Header(http.Request, "X-Legal-Entity-Id", out var headerLe)) { await Error(400, "INVALID_REQUEST"); return; }
         if (HttpMethods.IsPost(http.Request.Method))
         {
             var values = http.Request.Headers["Idempotency-Key"];
@@ -71,7 +73,16 @@ public sealed class ClaimContextMiddleware(RequestDelegate next)
             { await Error(400, "INVALID_REQUEST"); return; }
             context.IdempotencyKey = key;
         }
-        if (headerTenant != tenant || headerLe != le) { await Error(403, "FORBIDDEN"); return; }
+        if (headerTenant != tenant) { await Error(403, "FORBIDDEN"); return; }
+        // R-2: the request carries LegalEntityId now, so MDM decides whether it is the tenant's and Active.
+        // Claims answers a scope mismatch with 403 FORBIDDEN, not 404, so NotReferenceable keeps THIS module's
+        // convention — the place the retired headerLe != le branch sent a mismatch — rather than the other four's.
+        var le = headerLe;
+        switch (await legalEntities.ValidateAsync(tenant, le, authorization[0]!, context.CorrelationId, http.RequestAborted))
+        {
+            case LegalEntityScopeOutcome.NotReferenceable: await Error(403, "FORBIDDEN"); return;
+            case LegalEntityScopeOutcome.Unavailable: await Error(503, ContractErrorCodes.DependencyUnavailable); return;
+        }
         var scopeKeys = new[] { "tenantid", "legalentityid", "tenant_id", "legal_entity_id", "x-tenant-id", "x-legal-entity-id" };
         if (http.Request.Query.Keys.Any(k => k.All(c => c <= 127) && scopeKeys.Contains(k, StringComparer.OrdinalIgnoreCase)))
         { await Error(400, "INVALID_REQUEST"); return; }

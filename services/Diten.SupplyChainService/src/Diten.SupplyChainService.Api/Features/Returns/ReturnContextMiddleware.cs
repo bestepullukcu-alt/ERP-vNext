@@ -40,12 +40,12 @@ public sealed class ReturnContextMiddleware(RequestDelegate next, ILogger<Return
             var segment = authorization[7..].Split('.')[1].Replace('-', '+').Replace('_', '/');
             segment = segment.PadRight((segment.Length + 3) / 4 * 4, '=');
             using var payload = JsonDocument.Parse(Convert.FromBase64String(segment));
-            return new[] { "tenant_id", "legal_entity_id", "sub" }.All(name =>
+            return new[] { "tenant_id", "sub" }.All(name =>
                 payload.RootElement.EnumerateObject().Count(p => p.NameEquals(name)) == 1 && payload.RootElement.GetProperty(name).ValueKind == JsonValueKind.String && Uuid(payload.RootElement.GetProperty(name).GetString(), out var id) && id != Guid.Empty);
         }
         catch (Exception ex) when (ex is FormatException or JsonException or IndexOutOfRangeException or ArgumentException or InvalidOperationException) { return false; }
     }
-    public async Task InvokeAsync(HttpContext http, ReturnRequestContext context, RequestContext loggingContext)
+    public async Task InvokeAsync(HttpContext http, ReturnRequestContext context, RequestContext loggingContext, ILegalEntityScopeValidator legalEntities)
     {
         var permission = http.GetEndpoint()?.Metadata.GetMetadata<ReturnPermissionAttribute>();
         if (permission is null) { await next(http); return; }
@@ -61,7 +61,7 @@ public sealed class ReturnContextMiddleware(RequestDelegate next, ILogger<Return
         }
         var authorization = http.Request.Headers.Authorization;
         if (authorization.Count != 1 || http.User.Identity?.IsAuthenticated != true) { await Error(401); return; }
-        if (!UniqueSignedContextFields(authorization[0]!) || !Claim(http, "tenant_id", out var tenant) || !Claim(http, "legal_entity_id", out var le) || !Claim(http, "sub", out var actor) ||
+        if (!UniqueSignedContextFields(authorization[0]!) || !Claim(http, "tenant_id", out var tenant) || !Claim(http, "sub", out var actor) ||
             !http.User.HasClaim("permission", permission.Permission)) { await Error(403); return; }
         if (!validCorrelation) { await Error(400, message: "X-Correlation-Id must contain exactly one UUID value."); return; }
         if (!Header(http.Request, "X-Tenant-Id", out var headerTenant)) { await Error(400, message: "X-Tenant-Id must contain exactly one UUID value."); return; }
@@ -73,7 +73,17 @@ public sealed class ReturnContextMiddleware(RequestDelegate next, ILogger<Return
             { await Error(400, message: "Idempotency-Key must contain exactly one string value of length 1 to 128."); return; }
             context.IdempotencyKey = key;
         }
-        if (tenant != headerTenant || le != headerLe) { await Error(404, "RETURN_NOT_FOUND"); return; }
+        if (tenant != headerTenant) { await Error(404, "RETURN_NOT_FOUND"); return; }
+        // R-2: LegalEntityId artik token'da degil, istekle gelir. Kaynak tek: X-Legal-Entity-Id. Tenant'a ait
+        // ve Active oldugunu MDM soyler; Valid disindaki her sonuc reddeder (fail-closed).
+        var le = headerLe;
+        switch (await legalEntities.ValidateAsync(tenant, le, authorization[0]!, context.CorrelationId, http.RequestAborted))
+        {
+            // MDM yabanci ile pasifi ayirt etmez (TenantFilter lookup'in icinde), ikisi de modulun kendi
+            // NOT_FOUND'u olarak doner - eski le != headerLe dalinin gittigi yer, ifsa etmeyen cevap.
+            case LegalEntityScopeOutcome.NotReferenceable: await Error(404, "RETURN_NOT_FOUND"); return;
+            case LegalEntityScopeOutcome.Unavailable: await Error(503, ContractErrorCodes.DependencyUnavailable); return;
+        }
         if (http.Request.RouteValues.TryGetValue("returnId", out var id) && !Uuid(id?.ToString(), out _)) { await Error(400); return; }
         if (http.Request.Query.Keys.Any(k => k.All(c => c <= 127) && new[] { "tenantId", "tenant_id", "X-Tenant-Id", "legalEntityId", "legal_entity_id", "X-Legal-Entity-Id" }.Contains(k, StringComparer.OrdinalIgnoreCase)))
         { await Error(400); return; }

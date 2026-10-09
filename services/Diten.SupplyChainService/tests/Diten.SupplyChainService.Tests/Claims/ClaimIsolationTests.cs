@@ -46,7 +46,7 @@ public sealed class ClaimIsolationTests
  {
   var called=false;var context=new ClaimRequestContext();
   var middleware=new ClaimContextMiddleware(_=>{called=true;return Task.CompletedTask;});
-  await middleware.InvokeAsync(http,context,new RequestContext());
+  await middleware.InvokeAsync(http,context,new RequestContext(),Diten.SupplyChainService.Tests.Common.StubLegalEntityScopeValidator.Valid);
   http.Response.Body.Position=0;
   using var reader=new StreamReader(http.Response.Body,leaveOpen:true);
   var text=await reader.ReadToEndAsync();
