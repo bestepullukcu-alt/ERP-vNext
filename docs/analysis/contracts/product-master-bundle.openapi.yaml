@@ -16,7 +16,7 @@ info:
     satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
     tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
     kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
-  version: 1.1.0-draft.10
+  version: 1.1.0-draft.11
   x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
@@ -46,7 +46,7 @@ info:
     - "İstek başlığı boyutu (v1.1): MDM 64 KB'a kadar istek başlığını kabul eder. Gelen kimlik belirteçleri ~35 KB'tır; ASP.NET Core Kestrel'in varsayılan toplam başlık sınırı (32 KB) yetmez. Ölçüldü 2026-10-07 (bu dal): MDM `Program.cs` ve ağ geçidi `Program.cs` `MaxRequestHeadersTotalSize = 64 * 1024` taşıyor (commit 9dfe859f2). Sınır sözleşmenin parçasıdır: düşürülmesi bu sözleşmeyi kırar; S4 dilimi bunu ~35 KB belirteçli bir HTTP testiyle ölçer."
     - "Prism ile büyük başlık: Node'un varsayılan başlık sınırı küçüktür; taklidi `NODE_OPTIONS=--max-http-header-size=65536 npx @stoplight/prism-cli mock <dosya>` ile çalıştırın (DOĞRULANMADI)."
     - "Sözdizimi: v1.0 alanları OpenAPI 3.0 tarzı `nullable: true` taşır ve değiştirilmez; v1.1'de eklenen alanlar 3.1 sözdizimini (`type: [x, 'null']`, `anyOf: [$ref, {type: 'null'}]`) kullanır. Anlam aynıdır."
-    - "Örnekler: her işlem adlı örnekler (`examples`) taşır; ilk örnek v1.0 dosyasındaki örnektir (Prism varsayılan cevabı değişmez) ve 'v1.0-mock-only' işaretlidir."
+    - "Örnekler (draft.11, stok ekibinin isteği): her işlem adlı örnekler (`examples`) taşır ve İLK örnek tam v1.1 biçimindedir; Prism başlıksız istekte ilk örneği döndürür, yani bu dosyanın taklidi v1.1 cevabı verir. v1.0 dosyasındaki örnek değerleri değiştirilmeden `v1.0-mock` adıyla SON sıradadır. v1.0 Prism taklidi bu dosyayı değil dondurulmuş v1.0 dosyasını kullanır (x-status). Belli bir örnek için Prism'e `Prefer: example=<ad>` başlığı gönderilir (ör. `example=gsku`)."
     - "v1.1'de OLMAYAN (sonra): kalem GTIN'i; LSKU satış kutusu GTIN'i (alan var, ürün ana verisi planı P6'ya kadar null); GSKU seri takibi; koli / palet GTIN'i ve ambalaj hiyerarşisi (MOD-0178 Yerleştirme / Toplama / Paketleme, P9); tehlike sınıfı, CoA zorunlu mu, girişte varsayılan karantina (MOD-0175 Karantina / Bloke Stok)."
     - "Açık maddeler ve CT kararları (2026-10-07): execution/domains/master-data-management/module-packs/MOD-0290-FU04-item-material-master.md §25.1."
   x-changelog:
@@ -80,6 +80,9 @@ info:
     - date: "2026-10-09"
       version: 1.1.0-draft.10
       note: "Bağımsız inceleme (S4): BulkSkuReadItem'a `itemId` + `itemKind` eklendi (yalnız ekleme); toplu okumada tekrarlanan kimliğin bir kez cevaplanması notu."
+    - date: "2026-10-09"
+      version: 1.1.0-draft.11
+      note: "Stok ekibinin isteği (Prism ilk örneği döndürür): v1.1 işlemlerinin ilk örneği tam v1.1 biçiminde; v1.0 örnekleri değerleri aynı kalarak son sıraya alındı (v1.0 taklidi ayrı dosyada). Eksik alanlar örneklere yazıldı: getProduct Global Ürün örneğine deprecated `lotControlled` / `serialControlled` (OD-1), SkuRef örneklerine `minRemainingShelfLifeDays`, toplu okuma satırlarına `itemId` + `itemKind` (draft.10). Yeni örnekler: resolveSkuProduct `lsku`, getSkuUom `lsku-uom`, validateRefs `mixed`. Şema değişmedi."
 servers:
   - url: /api/product-master
 security:
@@ -99,30 +102,16 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ProductRef' }
               examples:
-                v1.0-mock:
-                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
-                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. Yalnız v1.0 Prism taklidi içindir; v1.1 sunucusu bu cevabı vermez: Global Ürün yanıtında stok alanları yok (O-1), kod GP- + 12 hane, saklama koşulu MOD-0048 kodu, birim `item-uom` kodu."
-                  value:
-                    itemId: b1f2c3d4-0000-0000-0000-000000000001
-                    canonicalCode: GP-000123
-                    name: Amoksisilin 500mg Kapsül
-                    lifecycleStatus: Active
-                    baseUomId: EA
-                    shelfLifeDays: 730
-                    minRemainingShelfLifeDays: 180
-                    storageCondition: "15-25C"
-                    retestDays: 365
-                    lotControlled: true
-                    serialControlled: false
-                    contractVersion: v1
                 global-product:
-                  summary: "v1.1 — Global Ürün (stok alanları yok; getSku'dan okunur)"
+                  summary: "v1.1 — Global Ürün (stok alanları yok, getSku'dan okunur; lot / seri bayrakları deprecated, şüphede evet)"
                   value:
                     itemId: b1f2c3d4-0000-0000-0000-000000000001
                     itemKind: GlobalProduct
                     canonicalCode: GP-000000000001
                     name: Amoksisilin 500mg Kapsül
                     lifecycleStatus: Active
+                    lotControlled: true
+                    serialControlled: true
                     contractVersion: v1.1
                 item:
                   summary: "v1.1 — malzeme kalemi /products/{itemId} üzerinden"
@@ -143,6 +132,22 @@ paths:
                     serialControlled: false
                     stockable: true
                     contractVersion: v1.1
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. Yalnız v1.0 Prism taklidi içindir; v1.1 sunucusu bu cevabı vermez: Global Ürün yanıtında stok alanları yok (O-1), kod GP- + 12 hane, saklama koşulu MOD-0048 kodu, birim `item-uom` kodu."
+                  value:
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    canonicalCode: GP-000123
+                    name: Amoksisilin 500mg Kapsül
+                    lifecycleStatus: Active
+                    baseUomId: EA
+                    shelfLifeDays: 730
+                    minRemainingShelfLifeDays: 180
+                    storageCondition: "15-25C"
+                    retestDays: 365
+                    lotControlled: true
+                    serialControlled: false
+                    contractVersion: v1
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/UnknownItem' }
   /skus/{skuId}:
@@ -160,40 +165,29 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/SkuRef' }
               examples:
-                v1.0-mock:
-                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
-                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. v1.1 sunucusunda: kod LS- + 12 hane, Lsku `gtin` null (O-6; örnekteki GTIN'in kontrol hanesi de geçersiz), birim `item-uom` kodu."
+                lsku:
+                  summary: "v1.1 — level=Lsku (stok alanları GSKU'dan, seri kendi alanı)"
                   value:
                     skuId: c3d4e5f6-0000-0000-0000-000000000002
                     skuLevel: Lsku
-                    canonicalCode: LSKU-TR-000045
+                    itemKind: GlobalProduct
+                    canonicalCode: LS-000000000045
                     itemId: b1f2c3d4-0000-0000-0000-000000000001
-                    packUomCode: BOX
-                    packQuantity: "10"
-                    gtin: "08690000000017"
-                    marketCode: TR
-                    contractVersion: v1
-                item:
-                  summary: "v1.1 — level=Item (skuId == itemId)"
-                  value:
-                    skuId: d4e5f6a7-0000-0000-0000-000000000003
-                    skuLevel: Item
-                    itemKind: Item
-                    canonicalCode: IT-000000000003
-                    itemId: d4e5f6a7-0000-0000-0000-000000000003
-                    name: Amoksisilin trihidrat
+                    name: "Amoksisilin 500mg Kapsül · 16 C62 · TR"
                     lifecycleStatus: Active
-                    packUomCode: null
+                    packUomCode: C62
+                    packQuantity: "16"
                     gtin: null
-                    marketCode: null
-                    materialType: ACTIVE_INGREDIENT
-                    baseUomId: KGM
-                    shelfLifeDays: 1825
-                    shelfLifeDaysSource: Own
-                    retestDays: 365
-                    storageConditions: [AMBIENT_15_25, PROTECT_FROM_MOISTURE]
+                    marketCode: TR
+                    materialType: null
+                    baseUomId: C62
+                    shelfLifeDays: 730
+                    shelfLifeDaysSource: Gsku
+                    retestDays: null
+                    minRemainingShelfLifeDays: 180
+                    storageConditions: [AMBIENT_15_25]
                     lotControlled: true
-                    serialControlled: false
+                    serialControlled: true
                     stockable: true
                     contractVersion: v1.1
                 gsku:
@@ -215,33 +209,10 @@ paths:
                     shelfLifeDays: 730
                     shelfLifeDaysSource: Own
                     retestDays: null
+                    minRemainingShelfLifeDays: 180
                     storageConditions: [AMBIENT_15_25]
                     lotControlled: true
                     serialControlled: null
-                    stockable: true
-                    contractVersion: v1.1
-                lsku:
-                  summary: "v1.1 — level=Lsku (stok alanları GSKU'dan, seri kendi alanı)"
-                  value:
-                    skuId: c3d4e5f6-0000-0000-0000-000000000002
-                    skuLevel: Lsku
-                    itemKind: GlobalProduct
-                    canonicalCode: LS-000000000045
-                    itemId: b1f2c3d4-0000-0000-0000-000000000001
-                    name: "Amoksisilin 500mg Kapsül · 16 C62 · TR"
-                    lifecycleStatus: Active
-                    packUomCode: C62
-                    packQuantity: "16"
-                    gtin: null
-                    marketCode: TR
-                    materialType: null
-                    baseUomId: C62
-                    shelfLifeDays: 730
-                    shelfLifeDaysSource: Gsku
-                    retestDays: null
-                    storageConditions: [AMBIENT_15_25]
-                    lotControlled: true
-                    serialControlled: true
                     stockable: true
                     contractVersion: v1.1
                 fg:
@@ -261,11 +232,49 @@ paths:
                     shelfLifeDays: 730
                     shelfLifeDaysSource: Gsku
                     retestDays: null
+                    minRemainingShelfLifeDays: 180
                     storageConditions: [AMBIENT_15_25]
                     lotControlled: true
                     serialControlled: true
                     stockable: true
                     contractVersion: v1.1
+                item:
+                  summary: "v1.1 — level=Item (skuId == itemId)"
+                  value:
+                    skuId: d4e5f6a7-0000-0000-0000-000000000003
+                    skuLevel: Item
+                    itemKind: Item
+                    canonicalCode: IT-000000000003
+                    itemId: d4e5f6a7-0000-0000-0000-000000000003
+                    name: Amoksisilin trihidrat
+                    lifecycleStatus: Active
+                    packUomCode: null
+                    gtin: null
+                    marketCode: null
+                    materialType: ACTIVE_INGREDIENT
+                    baseUomId: KGM
+                    shelfLifeDays: 1825
+                    shelfLifeDaysSource: Own
+                    retestDays: 365
+                    minRemainingShelfLifeDays: null
+                    storageConditions: [AMBIENT_15_25, PROTECT_FROM_MOISTURE]
+                    lotControlled: true
+                    serialControlled: false
+                    stockable: true
+                    contractVersion: v1.1
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. v1.1 sunucusunda: kod LS- + 12 hane, Lsku `gtin` null (O-6; örnekteki GTIN'in kontrol hanesi de geçersiz), birim `item-uom` kodu."
+                  value:
+                    skuId: c3d4e5f6-0000-0000-0000-000000000002
+                    skuLevel: Lsku
+                    canonicalCode: LSKU-TR-000045
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    packUomCode: BOX
+                    packQuantity: "10"
+                    gtin: "08690000000017"
+                    marketCode: TR
+                    contractVersion: v1
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/UnknownSku' }
   /skus/{skuId}/product:
@@ -283,13 +292,14 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/SkuProductLink' }
               examples:
-                v1.0-mock:
-                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                lsku:
+                  summary: "v1.1 — level=Lsku → Global Ürün"
                   value:
                     skuId: c3d4e5f6-0000-0000-0000-000000000002
                     skuLevel: Lsku
                     itemId: b1f2c3d4-0000-0000-0000-000000000001
-                    contractVersion: v1
+                    itemKind: GlobalProduct
+                    contractVersion: v1.1
                 item-self-link:
                   summary: "v1.1 — level=Item: kendisini döndürür"
                   value:
@@ -306,6 +316,13 @@ paths:
                     itemId: b1f2c3d4-0000-0000-0000-000000000001
                     itemKind: GlobalProduct
                     contractVersion: v1.1
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  value:
+                    skuId: c3d4e5f6-0000-0000-0000-000000000002
+                    skuLevel: Lsku
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    contractVersion: v1
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/UnknownSku' }
   /skus/{skuId}/uom:
@@ -327,15 +344,13 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/UomInfo' }
               examples:
-                v1.0-mock:
-                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
-                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. EA, BOX, PALLET taklit değerleridir; gerçek kodlar MOD-0048 `item-uom`'dan gelir."
+                lsku-uom:
+                  summary: "v1.1 — Lsku: üst GSKU'nun kutu ↔ adet çevrimi (O-3)"
                   value:
-                    baseUomId: EA
+                    baseUomId: C62
                     conversions:
-                      - { fromUom: BOX, toUom: EA, numerator: "10", denominator: "1" }
-                      - { fromUom: PALLET, toUom: BOX, numerator: "100", denominator: "1" }
-                    contractVersion: v1
+                      - { fromUom: XBX, toUom: C62, numerator: "16", denominator: "1", effectiveFrom: null, effectiveTo: null }
+                    contractVersion: v1.1
                 item-uom:
                   summary: "v1.1 — kalem, temel birim KGM; GRM aynı boyuttan türetilir"
                   value:
@@ -351,6 +366,15 @@ paths:
                       - { fromUom: XCS, toUom: XBX, numerator: "48", denominator: "1", effectiveFrom: null, effectiveTo: null }
                       - { fromUom: XBX, toUom: C62, numerator: "16", denominator: "1", effectiveFrom: null, effectiveTo: null }
                     contractVersion: v1.1
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. EA, BOX, PALLET taklit değerleridir; gerçek kodlar MOD-0048 `item-uom`'dan gelir."
+                  value:
+                    baseUomId: EA
+                    conversions:
+                      - { fromUom: BOX, toUom: EA, numerator: "10", denominator: "1" }
+                      - { fromUom: PALLET, toUom: BOX, numerator: "100", denominator: "1" }
+                    contractVersion: v1
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/UnknownSku' }
   /items/{itemId}:
@@ -456,8 +480,8 @@ paths:
                   summary: "v1.1 — Global Ürün kimliği ve bilinmeyen kimlik notFound'da"
                   value:
                     items:
-                      - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, canonicalCode: LS-000000000045, name: "Amoksisilin 500mg Kapsül · 16 C62 · TR", lifecycleStatus: Active }
-                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item, canonicalCode: IT-000000000003, name: Amoksisilin trihidrat, lifecycleStatus: Active }
+                      - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, itemId: b1f2c3d4-0000-0000-0000-000000000001, itemKind: GlobalProduct, canonicalCode: LS-000000000045, name: "Amoksisilin 500mg Kapsül · 16 C62 · TR", lifecycleStatus: Active }
+                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item, itemId: d4e5f6a7-0000-0000-0000-000000000003, itemKind: Item, canonicalCode: IT-000000000003, name: Amoksisilin trihidrat, lifecycleStatus: Active }
                     notFound: [b1f2c3d4-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000000]
                     contractVersion: v1.1
         '400': { $ref: '#/components/responses/BadRequest' }
@@ -472,8 +496,8 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/ValidateRequest' }
             examples:
-              v1.0-mock:
-                summary: "v1.0 taklit örneği (v1.0-mock-only)"
+              mixed:
+                summary: "v1.1 — (a) Global Ürün, (b) Lsku, bilinmeyen Gsku"
                 value:
                   refs:
                     - { itemId: b1f2c3d4-0000-0000-0000-000000000001 }
@@ -485,6 +509,13 @@ paths:
                   refs:
                     - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item }
                     - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Gsku }
+              v1.0-mock:
+                summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                value:
+                  refs:
+                    - { itemId: b1f2c3d4-0000-0000-0000-000000000001 }
+                    - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku }
+                    - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku }
       responses:
         '200':
           description: Doğrulama sonuçları
@@ -492,6 +523,21 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ValidateResponse' }
               examples:
+                mixed:
+                  summary: "v1.1 — bulunan satırlarda itemKind + lifecycleStatus; bulunamayan satırda yok"
+                  value:
+                    results:
+                      - { itemId: b1f2c3d4-0000-0000-0000-000000000001, exists: true, itemKind: GlobalProduct, lifecycleStatus: Active }
+                      - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, exists: true, itemKind: GlobalProduct, lifecycleStatus: Active }
+                      - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku, exists: false }
+                    contractVersion: v1.1
+                item:
+                  summary: "v1.1 — kalem bulundu; aynı kimlik Gsku seviyesinde yok"
+                  value:
+                    results:
+                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item, exists: true, itemKind: Item, lifecycleStatus: Active }
+                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Gsku, exists: false }
+                    contractVersion: v1.1
                 v1.0-mock:
                   summary: "v1.0 taklit örneği (v1.0-mock-only)"
                   value:
@@ -500,13 +546,6 @@ paths:
                       - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, exists: true }
                       - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku, exists: false }
                     contractVersion: v1
-                item:
-                  summary: "v1.1 — kalem bulundu; aynı kimlik Gsku seviyesinde yok"
-                  value:
-                    results:
-                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item, exists: true, itemKind: Item, lifecycleStatus: Active }
-                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Gsku, exists: false }
-                    contractVersion: v1.1
         '400': { $ref: '#/components/responses/BadRequest' }
 components:
   securitySchemes:
