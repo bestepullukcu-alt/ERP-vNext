@@ -547,6 +547,7 @@
   <data name="MasterData" xml:space="preserve"><value>Master Data</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Legal Entities</value></data>
   <data name="LegalEntity" xml:space="preserve"><value>Legal Entity</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>Select a legal entity.</value></data>
   <data name="LegalEntityUnavailable" xml:space="preserve"><value>The legal entity list is unavailable.</value></data>
   <data name="LegalEntityNone" xml:space="preserve"><value>This tenant has no active legal entity.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Workflow Approvals</value></data>

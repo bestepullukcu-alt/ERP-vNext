@@ -488,6 +488,7 @@
   <data name="MasterData" xml:space="preserve"><value>Datos maestros</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Entidades jurídicas</value></data>
   <data name="LegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>Seleccione una entidad jurídica.</value></data>
   <data name="LegalEntityUnavailable" xml:space="preserve"><value>La lista de entidades jurídicas no está disponible.</value></data>
   <data name="LegalEntityNone" xml:space="preserve"><value>Este inquilino no tiene ninguna entidad jurídica activa.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Aprobaciones de flujo de trabajo</value></data>

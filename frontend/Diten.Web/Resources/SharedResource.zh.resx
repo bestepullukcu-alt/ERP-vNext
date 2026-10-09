@@ -488,6 +488,7 @@
   <data name="MasterData" xml:space="preserve"><value>主数据</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>法律实体</value></data>
   <data name="LegalEntity" xml:space="preserve"><value>法律实体</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>请选择法律实体。</value></data>
   <data name="LegalEntityUnavailable" xml:space="preserve"><value>法律实体列表不可用。</value></data>
   <data name="LegalEntityNone" xml:space="preserve"><value>此租户没有有效的法律实体。</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>工作流审批</value></data>

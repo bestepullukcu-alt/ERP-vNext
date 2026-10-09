@@ -488,6 +488,7 @@
   <data name="MasterData" xml:space="preserve"><value>Мастер-данные</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Юридические лица</value></data>
   <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>Выберите юридическое лицо.</value></data>
   <data name="LegalEntityUnavailable" xml:space="preserve"><value>Список юридических лиц недоступен.</value></data>
   <data name="LegalEntityNone" xml:space="preserve"><value>У этого арендатора нет активного юридического лица.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Согласования рабочих процессов</value></data>

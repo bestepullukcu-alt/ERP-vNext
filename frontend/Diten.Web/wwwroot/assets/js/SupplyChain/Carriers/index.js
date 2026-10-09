@@ -233,10 +233,14 @@ const CarrierList = (function () {
 
     // Every call carries the company. Without it the adapter answers 400, so this is appended for list,
     // create and status change alike rather than only where a filter would go.
-    const withScope = (url) => {
-        if (!legalEntityScope) return url;
-        return `${url}${url.includes('?') ? '&' : '?'}legalEntityId=${encodeURIComponent(legalEntityScope)}`;
+    const withScope = (url, scope) => {
+        const value = scope || legalEntityScope;
+        if (!value) return url;
+        return `${url}${url.includes('?') ? '&' : '?'}legalEntityId=${encodeURIComponent(value)}`;
     };
+    // The create panel's own select is what a create is scoped to — not the list scope. Reading the list
+    // scope here would make the panel's required, changeable field decorative.
+    const formScope = () => String(document.getElementById('formLegalEntity')?.value || legalEntityScope || '');
     const buildListUrl = () => withScope(appliedFilters.status
         ? `${endpoint}?status=${encodeURIComponent(appliedFilters.status)}` : endpoint);
     const fillLegalEntitySelect = (element, selected) => {
@@ -438,7 +442,9 @@ const CarrierList = (function () {
         }
         setBusy(button, true);
         try {
-            const response = await fetch(withScope(endpoint), {
+            const createdScope = formScope();
+            if (!createdScope) { showFormError('formCarrierAlert', L.LegalEntityRequired); return; }
+            const response = await fetch(withScope(endpoint, createdScope), {
                 method: 'POST', credentials: 'same-origin', headers: requestHeaders(form, createIntent),
                 body: signature
             });
@@ -453,6 +459,12 @@ const CarrierList = (function () {
             window.showToast?.(result.idempotentReplay ? L.CreateReplaySuccess : L.CreateSuccess, 'success');
             createIntent = null;
             bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasCreateEdit'))?.hide();
+            // Created into another company: follow it, or the user would be told it worked and then not find
+            // the record in the list they are looking at.
+            if (createdScope !== legalEntityScope) {
+                legalEntityScope = createdScope;
+                $('#filterLegalEntity').val(legalEntityScope).trigger('change');
+            }
             dt.ajax.reload(null, false);
         } catch (error) {
             console.error('[Carriers] Create request outcome is unknown.', error);

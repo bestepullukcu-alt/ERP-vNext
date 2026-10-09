@@ -25,8 +25,12 @@ public sealed class CarrierIndexBehaviorTests
         Assert.Contains("fetch(buildListUrl()", _script);
         // R-2 (SHIPMENT-BUNDLE 3.2.0): create still targets the create endpoint, now wrapped so the required
         // legalEntityId reaches the adapter — every call carries the company, not just the filtered list.
-        Assert.Contains("fetch(withScope(endpoint)", _script);
-        Assert.Contains("legalEntityId=${encodeURIComponent(legalEntityScope)}", _script);
+        Assert.Contains("fetch(withScope(endpoint, createdScope)", _script);
+        // The create panel's own select scopes the create, not the list scope, or the required changeable
+        // field would be decorative. After a create into another company the list follows it.
+        Assert.Contains("const formScope = ()", _script);
+        Assert.Contains("if (createdScope !== legalEntityScope)", _script);
+        Assert.Contains("legalEntityId=${encodeURIComponent(value)}", _script);
         Assert.Contains("'/SupplyChain/api/legal-entities'", _script);
         Assert.Contains("withScope(`${endpoint}/${encodeURIComponent(carrierId)}/status`)", _script);
         Assert.DoesNotContain("method: 'DELETE'", _script);
