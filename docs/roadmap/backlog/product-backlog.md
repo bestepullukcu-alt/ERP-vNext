@@ -8398,6 +8398,26 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-597
+
+**Zaman Çizelgesi onay listesi deposunun kiracı süzgeci testle sabitlenmemiş (takeover kodu, savunma katmanı)**
+
+DURUM: AÇIK · SAHİP: CT (Zaman Çizelgesi) · BULAN: hat birleşmesi CT sabotajı M5 (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `TimeEntryRepositories.ListSubmittedInApprovalAsync`'ten `ExecutionFilter` (TenantId + IsDeleted) kaldırıldığında 353 Zaman Çizelgesi testinin hepsi yeşil kaldı.
+- Bugün sızıntı yok: `GetApprovalListHandler` sonucu MOD-0023 `DecidableInstanceIdsAsync` ile süzüyor; başka kiracının iş akışı kimliği bu kümede olmaz.
+- Ama "her sorgu TenantId ile sınırlanır" kuralının depo düzeyinde testi yok. Takeover'ın D1-FIX1 kodu; birleşmenin yarattığı bir boşluk değil.
+
+Yapılacak:
+- Depo testi: iki kiracıda Submitted haftalar → A'nın çağrısı yalnız A'nınkileri döner (weekIds null ve dolu iki yol);
+- sabotaj: `ExecutionFilter` kalkar → test kızarır.
+- Zaman Çizelgesi'nin bir sonraki turuna ya da küçük bir CT işine.
+
+Gelecek regresyon riski: 🟡 işleyici süzgeci değişirse depo düzeyinde koruma kalmaz.
+
+---
+
 ### BL-596
 
 **S3b stok kapısı ile S5 Web "Stok davranışı" bölümü aynı sürümde çıkmalı; Bitmiş Ürün kimlik gönderimi yok (canlı ön koşulu)**
