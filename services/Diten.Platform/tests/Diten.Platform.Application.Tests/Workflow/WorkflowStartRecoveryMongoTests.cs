@@ -1902,6 +1902,28 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         Assert.Single(await _tasks.ListByInstanceIdAsync(answer.Data.WorkflowInstanceId));
     }
 
+    [Fact]
+    public async Task A_start_told_unavailable_after_the_recovery_closed_it_answers_409_and_writes_nothing()
+    {
+        // FIX4 (CT X3) — between the reservation and the "unavailable", the instance was closed: never answered as a replay.
+        var request = Request("unavailable-after-close");
+
+        var answer = await HandlerWith(new UnavailableAfter(async () =>
+            {
+                var reserved = Assert.Single(await InstancesOfAsync(request));
+                await _context.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
+                    i => i.Id == reserved.Id,
+                    Builders<WorkflowInstance>.Update.Set(i => i.Status, WorkflowInstanceStatus.Cancelled)
+                        .Set(i => i.StartClosedReasonCode, WorkflowReasonCodes.WorkflowStartAbandoned));
+            }))
+            .Handle(Command(request), default);
+
+        Assert.Equal((409, WorkflowReasonCodes.WorkflowInstanceStartConflict), (answer.StatusCode, answer.ReasonCode));
+        var instance = Assert.Single(await InstancesOfAsync(request));
+        Assert.Equal(WorkflowInstanceStatus.Cancelled, instance.Status);
+        Assert.Empty(await _tasks.ListByInstanceIdAsync(instance.Id));
+    }
+
     // ── item 2 · the operator's wiring, all of it ───────────────────────────────────────────────────────────────
 
     [Fact]
