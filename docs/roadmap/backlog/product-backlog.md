@@ -8363,6 +8363,39 @@ Gelecek regresyon riski: 🟢.
 
 ---
 
+### BL-590
+
+**CI servis testleri: Platform.Eventing test projesi işin dışında (RabbitMQ ister)**
+
+DURUM: AÇIK · SAHİP: CT (CI) · BULAN: BL-577 (2026-10-09) · KAYIT: 2026-10-09
+
+`service-tests.yml` bekçisi `Platform.Eventing` testlerini "işin dışında, gerekçesiyle" listesinde tutuyor; testler gerçek RabbitMQ bekliyor.
+
+Yapılacak:
+- GitHub Actions servis konteyneri (`rabbitmq:3`, sürüm sabit) ile ayrı matris satırı;
+- atlanan = 0;
+- bekçi listesinden çıkar.
+
+Gelecek regresyon riski: 🟡 (olay yayını / tüketicileri CI'da ölçülmüyor).
+
+---
+
+### BL-591
+
+**Zaman Çizelgesi: `TimerHttpMongoTests.Twenty_parallel_starts_leave_exactly_one_running_segment` kararsız**
+
+DURUM: AÇIK · SAHİP: CT (Zaman Çizelgesi, MOD-0280) · BULAN: BL-577 yerel ölçümü (2026-10-09) · KAYIT: 2026-10-09
+
+Ölçüm (CI bunu ilk günden kırmızı gösterecek):
+- tam Platform koşusunda 20 paralel başlatmanın 3'ü 400 aldı;
+- tek başına 3 / 3 yeşil.
+
+Olası sebepler: testin paylaşılan Mongo / zaman kaynağıyla yarışı ya da gerçek bir eşzamanlılık açığı (iki çalışan bölüm). Ölç: hangisi? Gerçek açıksa "tek çalışan bölüm" değişmezi depoda tekil dizinle korunmalı.
+
+Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
