@@ -93,6 +93,20 @@
         "execution/domains/commercial-suite/work-packs/mockups/visit-planning"
       ],
       "port": 5099
+    },
+    {
+      "name": "mockups-workspace",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5098",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "execution/domains/commercial-suite/work-packs/mockups/visit-workspace"
+      ],
+      "port": 5098
     }
   ]
 }

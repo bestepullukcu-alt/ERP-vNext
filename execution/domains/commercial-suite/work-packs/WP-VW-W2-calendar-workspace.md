@@ -473,3 +473,6 @@ Geri alındı, touch yapıldı; tam tur yeşil.
 
 ## 2. tur
 Paket: [WP-VW-W2-round2.md](WP-VW-W2-round2.md) — W2-BE-c (hiz / kurum adi / tatil adi / sigmayanlar / gun dengesi) ∥ W2-WEB-b (Planla modu).
+
+## Tasarım farkları (2026-10-09)
+CT görsel karşılaştırma: [DESIGN-GAP-W2-2026-10-09](mockups/visit-workspace/DESIGN-GAP-W2-2026-10-09.md) — 23 fark; öneri W2-WEB-c (tasarım uyumu) ∥ W2-BE-d (panel verisi), WEB-b kabulünden sonra (+2 prompt).
