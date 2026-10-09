@@ -56,7 +56,7 @@ public sealed class UpdatePlanningSessionRequest
         => DayPins is null
             ? null
             : new DayPinsInput(DayPins.WeekStart, (DayPins.Pins ?? new List<DayPinRequest>())
-                .Select(p => new DayPinInput(p.TargetType, p.TargetId, p.ContactId, p.Date, p.Scope))
+                .Select(p => new DayPinInput(p.TargetType, p.TargetId, p.ContactId, p.Date, p.Scope, p.StartTime))
                 .ToList());
 
     /// <summary>WP-VP-FIX-2 (D9) — an ABSENT doctor list stays null ("leave the doctors as they are"); an empty one is an
@@ -94,6 +94,9 @@ public sealed class DayPinRequest
     public Guid? ContactId { get; set; }
     public string? Date { get; set; }
     public string? Scope { get; set; }
+
+    /// <summary>WP-VW-W2 (BE-b) — optional "HH:mm" start time of a visit pin (15-minute grid, working hours).</summary>
+    public string? StartTime { get; set; }
 }
 
 public sealed class SelectedContactRequest

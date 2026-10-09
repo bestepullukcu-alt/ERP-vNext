@@ -152,7 +152,10 @@ public sealed record PlannedSlotPreview(
     // WP-VP-4L (additive) — the rep's per-week extra visit (always said: false otherwise); and "weekly" when the target's
     // frequency is unknown (the weekly default, one visit per working week).
     bool IsExtra = false,
-    string? FrequencyDefault = null);
+    string? FrequencyDefault = null,
+    // WP-VW-W2 (BE-b, additive) — the rep's pinned START TIME of this visit ("HH:mm"; with IsPinned). The visit sits there,
+    // or — when another time pin had it — at the nearest free start (StartTime; the move says pin_time_conflict).
+    string? PinnedTime = null);
 
 /// <summary>WP-VP-4G (F4-9) — the report state of a preview slot.</summary>
 public static class PlannedSlotReportStatuses

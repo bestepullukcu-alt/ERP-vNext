@@ -51,7 +51,7 @@ public sealed record DayPinsInput(string? WeekStart, IReadOnlyList<DayPinInput>?
 
 /// <summary>WP-VP-4E — one day pin on the wire: the visit target (contact + contact id for a doctor, pharmacy / account +
 /// account id otherwise), the day (yyyy-MM-dd) and the scope (visit | institution; absent = visit).</summary>
-public sealed record DayPinInput(string? TargetType, Guid TargetId, Guid? ContactId, string? Date, string? Scope);
+public sealed record DayPinInput(string? TargetType, Guid TargetId, Guid? ContactId, string? Date, string? Scope, string? StartTime = null);
 
 /// <summary>Applies the session: generates the plan, writes the FU01 atoms atomically and flips the session to
 /// <c>committed</c>. Requires BOTH <c>crm.visit-plan.apply</c> AND FU01 <c>crm.planned-visit.manage</c> at the endpoint.</summary>

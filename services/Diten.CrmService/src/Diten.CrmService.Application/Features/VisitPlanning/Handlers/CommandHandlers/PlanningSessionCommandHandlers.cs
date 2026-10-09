@@ -156,6 +156,7 @@ public sealed class UpdatePlanningSessionSelectionHandler
     private readonly PlanningWorkingCalendar? _calendar;
     private readonly ICycleCapacityRepository? _capacities;
     private readonly TimeProvider _clock;
+    private readonly Features.RouteOptimization.IRouteOptimizationDefaultsProvider? _routeDefaults;
 
     public UpdatePlanningSessionSelectionHandler(
         ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository, ICallerScope caller,
@@ -166,8 +167,11 @@ public sealed class UpdatePlanningSessionSelectionHandler
         Features.CyclePeriod.Read.ICyclePeriodReader? periods = null,
         PlanningWorkingCalendar? calendar = null,
         ICycleCapacityRepository? capacities = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        // WP-VW-W2 (BE-b) — the configured route day: a time pin's working window, as the engine reads it.
+        Features.RouteOptimization.IRouteOptimizationDefaultsProvider? routeDefaults = null)
     {
+        _routeDefaults = routeDefaults;
         _products = products;
         _periods = periods;
         _calendar = calendar;
@@ -226,17 +230,21 @@ public sealed class UpdatePlanningSessionSelectionHandler
             var periodEnd = DateOnly.FromDateTime(period.EndDate.UtcDateTime);
             Func<DateOnly, string> kindOf = d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
                 ? PlanningDayKinds.Weekend : PlanningDayKinds.Working;
+            // WP-VW-W2 (BE-b) — the period's capacity also gives a time pin its day's working window (the engine's own).
+            var capacity = _capacities is null ? null
+                : await _capacities.GetByCyclePeriodAsync(tenantId, session.CyclePeriodId, cancellationToken);
             if (_calendar is not null)
             {
-                var capacity = _capacities is null ? null
-                    : await _capacities.GetByCyclePeriodAsync(tenantId, session.CyclePeriodId, cancellationToken);
                 var calendar = await _calendar.ResolveAsync(
                     period, capacity?.CalendarCountryCode, periodStart, periodEnd, cancellationToken);
                 kindOf = calendar.KindOf;
             }
 
+            var routeDay = _routeDefaults?.Current.WorkingDay ?? Features.RouteOptimization.RouteOptimizationDefaults.WorkingDay;
+            var pinDayBudget = PlanningDayBudget.From(capacity, routeDay);
             var (pinRefused, pinWeek, pins) = PlanningDayPins.Validate<bool>(
-                session, dayPins, periodStart, periodEnd, PlanningWeekCalendar.Today(_clock.GetUtcNow()), kindOf);
+                session, dayPins, periodStart, periodEnd, PlanningWeekCalendar.Today(_clock.GetUtcNow()), kindOf,
+                d => pinDayBudget.WindowFor(kindOf(d), routeDay));
             if (pinRefused is not null)
             {
                 return pinRefused;

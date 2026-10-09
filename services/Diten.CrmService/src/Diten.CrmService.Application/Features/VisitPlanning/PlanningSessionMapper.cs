@@ -148,7 +148,7 @@ internal static class PlanningSessionMapper
         => s.DayPins
             .Where(p => string.Equals(p.WeekStart, weekStart, StringComparison.Ordinal))
             .OrderBy(p => p.Date, StringComparer.Ordinal)
-            .Select(p => new PlanningDayPinDto(p.TargetType, p.TargetId, p.ContactId, p.Date, p.Scope))
+            .Select(p => new PlanningDayPinDto(p.TargetType, p.TargetId, p.ContactId, p.Date, p.Scope, p.StartTime))
             .ToList();
 
     public static IReadOnlyList<PlanningWeekDto> DetailWeeks(

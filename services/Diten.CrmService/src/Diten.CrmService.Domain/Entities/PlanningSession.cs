@@ -216,6 +216,10 @@ public sealed class PlanningDayPin
     public Guid? ContactId { get; set; }
     public string Date { get; set; } = string.Empty;
     public string Scope { get; set; } = PlanningDayPinScopes.Visit;
+
+    /// <summary>WP-VW-W2 (BE-b) — a VISIT pin's start time ("HH:mm" on the 15-minute grid): the visit sits at that time of
+    /// its day. Null = a day pin (4E), as every pin stored before it (an older pin reads without it).</summary>
+    public string? StartTime { get; set; }
 }
 
 /// <summary>WP-VP-4L (2) — one extra visit of a draft week: the target (a doctor: <c>contact</c> + the contact id; a
