@@ -115,7 +115,16 @@ public static class DependencyInjection
         // day kinds / budget / load (calendar days, reschedule options and the reschedule date rule share it).
         services.AddScoped<Features.VisitWorkspace.VisitReasonValidator>();
         services.AddScoped<Features.VisitWorkspace.VisitWorkspaceDays>();
-        services.AddScoped<Features.VisitWorkspace.IWorkspacePlanPreviewSource, Features.VisitWorkspace.EngineWorkspacePlanPreviewSource>();
+        // W2-BE-c (C1) — the engine preview behind a tenant-keyed, bounded cache (session version + today + the rep's
+        // written visits / reports stamp in the key); the calendar and the reschedule options share it.
+        services.AddSingleton<Features.VisitWorkspace.WorkspacePreviewCache>();
+        services.AddScoped<Features.VisitWorkspace.EngineWorkspacePlanPreviewSource>();
+        services.AddScoped<Features.VisitWorkspace.IWorkspacePlanPreviewSource>(sp => new Features.VisitWorkspace.CachedWorkspacePlanPreviewSource(
+            sp.GetRequiredService<Features.VisitWorkspace.EngineWorkspacePlanPreviewSource>(),
+            sp.GetRequiredService<Features.VisitWorkspace.WorkspacePreviewCache>(),
+            sp.GetRequiredService<Common.ITenantContext>(),
+            sp.GetRequiredService<Domain.Repositories.IPlannedVisitRepository>(),
+            sp.GetRequiredService<Domain.Repositories.IVisitReportRepository>()));
         // The workspace calendar reuses the W1 execution calendar read as-is (same work status / names / content).
         services.AddScoped<Features.VisitReport.Handlers.QueryHandlers.GetVisitCalendarHandler>();
         // WP-VP-3D — the shared per-doctor period-status reader (bulk reads only) + its batched segment seam.

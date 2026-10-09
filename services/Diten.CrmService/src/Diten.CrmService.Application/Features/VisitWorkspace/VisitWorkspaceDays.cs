@@ -110,7 +110,8 @@ public sealed class VisitWorkspaceDays
             var visits = load.GetValueOrDefault(day) ?? new List<Domain.Entities.PlannedVisit>();
             var planned = visits.Sum(v => (v.PlannedDurationMinutes ?? typical) + buffer);
             days.Add(new VisitWorkspaceDay(
-                day, kind, frame is not null, frame?.CyclePeriodId, budget.BudgetFor(kind), planned, visits.Count));
+                day, kind, frame is not null, frame?.CyclePeriodId, budget.BudgetFor(kind), planned, visits.Count,
+                frame?.Calendar.HolidayNameOf(day)));
         }
 
         return days;
@@ -160,7 +161,9 @@ public sealed record VisitWorkspaceDay(
     Guid? CyclePeriodId,
     int CapacityMinutes,
     int PlannedMinutes,
-    int PlannedCount)
+    int PlannedCount,
+    // W2-BE-c (C3) — the platform calendar's holiday name (null outside a period / when none).
+    string? HolidayName = null)
 {
     public bool IsWorking => Kind is PlanningDayKinds.Working or PlanningDayKinds.Half;
 

@@ -278,7 +278,8 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter, IWork
                     string.IsNullOrWhiteSpace(payload.SelectionReason)
                         ? $"{date:yyyy-MM-dd}: working day = {isWorkingDay}."
                         : payload.SelectionReason,
-                    IsHalfDay: isWorkingDay && IsHalfDay(payload));
+                    IsHalfDay: isWorkingDay && IsHalfDay(payload),
+                    HolidayName: string.IsNullOrWhiteSpace(payload.Holiday?.DayName) ? null : payload.Holiday!.DayName!.Trim());
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -385,8 +386,8 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter, IWork
         bool? IsWorkingDay,
         string? SelectionReason,
         IReadOnlyList<string>? ReasonCodes,
-        // WP-VP-3B — only the half-day flag of the governing holiday is read.
+        // WP-VP-3B — the half-day flag of the governing holiday; W2-BE-c — and its name (read only).
         HolidayPayload? Holiday = null);
 
-    private sealed record HolidayPayload(bool IsHalfDay);
+    private sealed record HolidayPayload(bool IsHalfDay, string? DayName = null);
 }

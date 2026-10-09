@@ -286,6 +286,9 @@ public static class DayBalancer
             }
         }
 
+        // W2-BE-c (C5) — day balance: a crowded day gives part of its big institution group to the emptiest day.
+        Rebalance(open, load, assigned, visits);
+
         // WP-VP-4G (F4-1) — why each overflow visit left: a day still had room for it (no near / light day) or none had.
         var costOf = visits.ToDictionary(v => v.Id, v => v.CostMinutes);
         var noNear = overflow
@@ -437,6 +440,95 @@ public static class DayBalancer
         }
 
         return new Result(assigned, rest.Overflow, rest.LoadMinutes, rest.NoNearDay);
+    }
+
+    /// <summary>W2-BE-c (C5) — an institution group whose minutes exceed this share of a day's budget may be split over
+    /// (at most) two days.</summary>
+    public const double SplitGroupShare = 0.6;
+
+    /// <summary>W2-BE-c (C5) — the soft target: the fullest day's fill minus the emptiest day's fill stays within this
+    /// share of the budget.</summary>
+    public const double BalanceGapShare = 0.5;
+
+    /// <summary>
+    /// W2-BE-c (C5) — the day-balance pass after the geography placement (pure, deterministic). While the fullest open day
+    /// is more than <see cref="BalanceGapShare"/> of a budget fuller than the emptiest one, the fullest day's largest
+    /// institution group that (a) costs more than <see cref="SplitGroupShare"/> of the day's budget and (b) sits on that
+    /// day alone gives its doctors to the emptiest day — one geographic side of the group (ordered along its longer
+    /// axis, ties by id), only while the move narrows the gap and fits the receiving budget. A group is split ONCE, so it
+    /// spans at most two days; its linked pharmacies stay with the day it keeps. Only the visits handed to the balancer
+    /// move: a pinned visit (fixed load) and an approved week are never inside it. No group above the threshold ⇒ the
+    /// layout is left as it is (the gap target is soft).
+    /// </summary>
+    private static void Rebalance(
+        List<Day> open, Dictionary<DateOnly, int> load, Dictionary<int, DateOnly> assigned, IReadOnlyList<Visit> visits)
+    {
+        if (open.Count < 2)
+        {
+            return;
+        }
+
+        double Fill(Day d) => (double)load[d.Date] / d.BudgetMinutes;
+        var groups = visits.Where(v => assigned.ContainsKey(v.Id))
+            .GroupBy(v => v.GroupKey, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
+        var split = new HashSet<string>(StringComparer.Ordinal);
+
+        for (var round = 0; round < open.Count * 2; round++)
+        {
+            var full = open.OrderByDescending(Fill).ThenBy(d => d.Date).First();
+            var empty = open.OrderBy(Fill).ThenBy(d => d.Date).First();
+            if (full.Date == empty.Date || Fill(full) - Fill(empty) <= BalanceGapShare)
+            {
+                return;
+            }
+
+            var big = groups
+                .Where(g => !split.Contains(g.Key)
+                            && g.Value.All(v => assigned[v.Id] == full.Date)
+                            && g.Value.Sum(v => v.CostMinutes) > SplitGroupShare * full.BudgetMinutes)
+                .OrderByDescending(g => g.Value.Sum(v => v.CostMinutes)).ThenBy(g => g.Key, StringComparer.Ordinal)
+                .Select(g => g.Value)
+                .FirstOrDefault();
+            if (big is null)
+            {
+                return;
+            }
+
+            split.Add(big[0].GroupKey);
+            var doctors = big.Where(v => !v.Follower).ToList();
+            var located = doctors.Where(v => v.Lat is not null && v.Lng is not null).ToList();
+            var byLat = located.Count == 0
+                || located.Max(v => v.Lat!.Value) - located.Min(v => v.Lat!.Value)
+                >= located.Max(v => v.Lng!.Value) - located.Min(v => v.Lng!.Value);
+            // one geographic side first: the far end of the longer axis (unlocated last), ties by id
+            var order = doctors
+                .OrderBy(v => v.Lat is null || v.Lng is null ? 1 : 0)
+                .ThenByDescending(v => byLat ? v.Lat ?? 0 : v.Lng ?? 0)
+                .ThenBy(v => v.Id)
+                .ToList();
+
+            var moved = 0;
+            foreach (var v in order)
+            {
+                if (moved >= doctors.Count - 1)
+                {
+                    break; // the group keeps at least one doctor on its first day
+                }
+
+                var fullAfter = (double)(load[full.Date] - v.CostMinutes) / full.BudgetMinutes;
+                var emptyAfter = (double)(load[empty.Date] + v.CostMinutes) / empty.BudgetMinutes;
+                if (load[empty.Date] + v.CostMinutes > empty.BudgetMinutes || fullAfter < emptyAfter)
+                {
+                    break;
+                }
+
+                assigned[v.Id] = empty.Date;
+                load[full.Date] -= v.CostMinutes;
+                load[empty.Date] += v.CostMinutes;
+                moved++;
+            }
+        }
     }
 
     /// <summary>WP-VP-3B — the load-only rule (no geography): groups largest first, each WHOLE to the working day with the

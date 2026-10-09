@@ -145,7 +145,7 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
         }
 
         // ── draft weeks: the engine preview of each session touching the window ────────────────────────────────────
-        var weekStates = new Dictionary<DateOnly, (string State, PlanningSession Session, WeekCapacityDto? Capacity, int Unplaced)>();
+        var weekStates = new Dictionary<DateOnly, (string State, PlanningSession Session, WeekCapacityDto? Capacity, IReadOnlyList<UnscheduledPreview> Unplaced)>();
         var draftDayMinutes = new Dictionary<DateOnly, int>();
         var draftTargets = new List<(Guid? AccountId, Guid? ContactId, string TargetType, Guid TargetId)>();
         var draftVisits = new List<(PlannedSlotPreview Slot, string WeekStart)>();
@@ -172,7 +172,7 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                         StateOf(weeks[i].Status),
                         session,
                         preview.WeekCapacity?.FirstOrDefault(c => c.WeekStart == weeks[index].WeekStart),
-                        preview.Unscheduled.Count(u => u.WeekNumber == index));
+                        preview.Unscheduled.Where(u => u.WeekNumber == index).ToList());
                 }
 
                 foreach (var day in preview.Days ?? Array.Empty<PlanningDayPreview>())
@@ -202,14 +202,40 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
             }
         }
 
+        // ── W2-BE-c (C2 + C4) — ONE bulk name read for every card and every unplaced visit: written atoms, draft slots,
+        // and the unplaced targets (a doctor's institution from the plan's own selection). ──────────────────────────
+        var contactAccount = sessions.SelectMany(s => s.Selection.SelectedContacts)
+            .GroupBy(c => c.ContactId).ToDictionary(g => g.Key, g => g.First().AccountId);
+        var unplacedAll = weekStates.Values.SelectMany(w => w.Unplaced).ToList();
+        Guid? UnplacedContact(UnscheduledPreview u)
+            => u.ContactId ?? (string.Equals(u.TargetType, PlannedVisitTargetType.Contact, StringComparison.Ordinal) ? u.TargetId : null);
+        Guid? UnplacedAccount(UnscheduledPreview u)
+            => VisitTargetNameReader.NamedByInstitution(u.TargetType)
+                ? u.TargetId
+                : UnplacedContact(u) is { } c && contactAccount.TryGetValue(c, out var acc) ? acc : null;
+        var names = await _names.ReadAsync(
+            tenantId,
+            atoms.Values.Select(a => a.AccountId)
+                .Concat(atoms.Values.Where(a => VisitTargetNameReader.NamedByInstitution(a.TargetType)).Select(a => (Guid?)a.TargetId))
+                .Concat(draftTargets.Select(t => t.AccountId))
+                .Concat(draftTargets.Where(t => VisitTargetNameReader.NamedByInstitution(t.TargetType)).Select(t => (Guid?)t.TargetId))
+                .Concat(unplacedAll.Select(UnplacedAccount)),
+            draftTargets.Select(t => t.ContactId).Concat(unplacedAll.Select(UnplacedContact)),
+            cancellationToken);
+        for (var i = 0; i < visits.Count; i++)
+        {
+            if (visits[i].PlannedVisitId is { } id && atoms.TryGetValue(id, out var atom))
+            {
+                visits[i] = visits[i] with
+                {
+                    AccountDisplayName = names.Account(
+                        atom.AccountId ?? (VisitTargetNameReader.NamedByInstitution(atom.TargetType) ? atom.TargetId : null))
+                };
+            }
+        }
+
         if (draftVisits.Count > 0)
         {
-            var names = await _names.ReadAsync(
-                tenantId,
-                draftTargets.Select(t => t.AccountId).Concat(draftTargets
-                    .Where(t => VisitTargetNameReader.NamedByInstitution(t.TargetType)).Select(t => (Guid?)t.TargetId)),
-                draftTargets.Select(t => t.ContactId),
-                cancellationToken);
             var keys = new HashSet<string>(StringComparer.Ordinal);
             foreach (var (slot, weekStart) in draftVisits)
             {
@@ -233,7 +259,8 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                             c.ProductName))
                         .ToList(),
                     PlannedVisitSource.RoutePlan, null, null, null, null, null,
-                    slot.IsPinned, PinnedTime: slot.PinnedTime, slot.IsExtra)); // W2-BE-b (CT wiring)
+                    slot.IsPinned, PinnedTime: slot.PinnedTime, slot.IsExtra, // W2-BE-b (CT wiring)
+                    AccountDisplayName: target.Account));
             }
         }
 
@@ -243,7 +270,7 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
         {
             var planned = draftDayMinutes.TryGetValue(d.Date, out var draft) ? draft : d.PlannedMinutes;
             return new WorkspaceDayDto(
-                d.Date.ToString("yyyy-MM-dd"), d.Kind, d.IsHoliday, null, d.CapacityMinutes, planned,
+                d.Date.ToString("yyyy-MM-dd"), d.Kind, d.IsHoliday, d.IsHoliday ? d.HolidayName : null, d.CapacityMinutes, planned,
                 Math.Max(0, d.CapacityMinutes - planned));
         }).ToList();
 
@@ -267,14 +294,22 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                     w.Capacity?.CapacityMinutes ?? inWeek.Sum(d => d.CapacityMinutes),
                     w.Capacity?.PlannedMinutes ?? inWeek.Sum(d => d.PlannedMinutes),
                     w.Capacity?.VisitCount ?? weekVisits,
-                    w.Unplaced));
+                    w.Unplaced.Count,
+                    SessionVersion: w.Session.Version,
+                    Unplaced: w.Unplaced
+                        .Select(u => new WorkspaceUnplacedDto(
+                            u.TargetType, u.TargetId,
+                            VisitTargetNameReader.NamedByInstitution(u.TargetType) ? names.Account(u.TargetId) : names.Contact(UnplacedContact(u)),
+                            names.Account(UnplacedAccount(u)), u.Reason))
+                        .ToList()));
             }
             else
             {
                 weeksOut.Add(new WorkspaceWeekDto(
                     monday.ToString("yyyy-MM-dd"), number,
                     monday.AddDays(6) < today ? WorkspaceWeekStates.Past : WorkspaceWeekStates.None, null,
-                    false, false, inWeek.Sum(d => d.CapacityMinutes), inWeek.Sum(d => d.PlannedMinutes), weekVisits, 0));
+                    false, false, inWeek.Sum(d => d.CapacityMinutes), inWeek.Sum(d => d.PlannedMinutes), weekVisits, 0,
+                    SessionVersion: null, Unplaced: Array.Empty<WorkspaceUnplacedDto>()));
             }
         }
 

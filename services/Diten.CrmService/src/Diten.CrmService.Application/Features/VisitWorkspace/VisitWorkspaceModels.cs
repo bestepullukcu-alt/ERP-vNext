@@ -59,7 +59,9 @@ public sealed record WorkspaceVisitDto(
     bool IsPinned,
     // W2-BE-b owns the time pin; until it lands this is always null (the field name is fixed: pinnedTime).
     string? PinnedTime,
-    bool IsExtra);
+    bool IsExtra,
+    // W2-BE-c (C2, additive) — the visit's institution name (written + draft; one bulk name read).
+    string? AccountDisplayName = null);
 
 /// <summary>One Monday-week of the window: its plan state and load.</summary>
 public sealed record WorkspaceWeekDto(
@@ -72,7 +74,15 @@ public sealed record WorkspaceWeekDto(
     int CapacityMinutes,
     int PlannedMinutes,
     int VisitCount,
-    int UnplacedCount);
+    int UnplacedCount,
+    // W2-BE-c (C4, additive) — the version approve / reopen expect (null = no plan), and the visits that did not fit
+    // (their count is UnplacedCount).
+    int? SessionVersion = null,
+    IReadOnlyList<WorkspaceUnplacedDto>? Unplaced = null);
+
+/// <summary>W2-BE-c (C4) — one visit of a week that could not be placed: its target, names and the engine's reason.</summary>
+public sealed record WorkspaceUnplacedDto(
+    string TargetType, Guid TargetId, string? DisplayName, string? AccountDisplayName, string Reason);
 
 /// <summary>One day of the window.</summary>
 public sealed record WorkspaceDayDto(
