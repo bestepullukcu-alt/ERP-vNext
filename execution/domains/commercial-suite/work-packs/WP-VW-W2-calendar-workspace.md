@@ -449,3 +449,24 @@ Geri alındı, touch yapıldı; tam tur yeşil.
 4. "Sonuç gir", Ziyaret Yürütme'yi bugünün tarihiyle açıyor (o sayfa tarih parametresi okumuyor).
 
 **Sıradaki:** fleet yeniden başlatılınca (Platform manifest + Web resx) canlı E4 → 2. tur (WEB-b + BE-c).
+
+### §37 ek — W2-WEB-a canlı E4 (2026-10-09, CT ayrı sekme, yalnız okuma) + CT düzeltmesi
+- **CT düzeltmesi (engelleyici):** takvim ızgarası hiç çizilmiyordu (yalnız araç çubuğu).
+  - Neden: `state.byId`, `DitenCalendar.create`'ten SONRA atanıyordu. FullCalendar ilk olayları create içinde çizerken `renderExtras` patlıyor, görünüm katmanı kurulmuyordu.
+  - Düzeltme: liste create'ten önce atanıyor, kart çizici ve tıklama `(state.byId || {})` ile korumalı.
+  - Duman testindeki sahte takvim artık gerçeği taklit ediyor (ilk olayları create içinde çiziyor) ve `createError` null olmalı. Düzeltmeden önce kırmızıydı, sonra yeşil.
+  - Web 854/0.
+- **Canlıda doğrulanan:**
+  - menü "Ziyaret Çalışma Alanı" (Ziyaret Planlama'nın üstünde);
+  - hafta şeridi 39–43 / 42–46;
+  - 41. hafta: 54 kart, gün başlıkları (Per 33 ziyaret · boş 0 sa, Cum 21), kaçırıldı geri sayımı "33 sa 25 dk kaldı";
+  - ayrıntı paneli: durum bandı, sıklık, Yapılamadı / Ertele;
+  - Ertele penceresi: 7 neden (TR), 0/500, 8 gün doluluk (taslak yük dahil), Kaydet kapalı;
+  - 42. hafta: taslak kartlar + 3 iptal, "Haftayı onayla";
+  - 44. hafta: Per 29 Eki "Tatil";
+  - 375 px: gün listesi, yatay kaydırma yok.
+- **2. tura (W2-BE-c / W2-WEB-b) bulgular:**
+  1. **Performans (BE-c, öncelikli):** `calendar` okuması 1 hafta da 5 hafta da ≈ 7 sn. Her okumada dönemin tüm taslak önizlemesi (motor + geo) baştan hesaplanıyor; `reschedule-options` de aynı. Önizleme sonucu oturum sürümüne göre önbelleğe alınmalı ya da yalnız istenen haftalar hesaplanmalı. Hafta oklarıyla gezinti de bu yüzden yavaş.
+  2. **Kurum süzgeci (BE-c + WEB-b):** "Tüm kurumlar" listesinde doktor adları var. Takvim yanıtında kurum adı (`accountDisplayName`) yok; Web hedef adını kullanıyor.
+  3. Tatil adı (BE-c), gün dengesi (BE-c), `pin_time_past_day_end` metni (WEB-b): önceden yazıldı.
+  4. Veri notu: 41. haftanın 54 ziyaretinin 6'sında ürün yok ("Planlanmış ürün yok" doğru gösteriliyor).

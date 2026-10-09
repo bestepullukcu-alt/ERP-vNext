@@ -422,6 +422,8 @@ public sealed class VisitWorkspaceWebTests
         if (node is null) { return; }
         var r = JsonDocument.Parse(node).RootElement;
 
+        // CT (live E4) — drawing the first events inside DitenCalendar.create must not throw (the grid would not render)
+        Assert.Equal(JsonValueKind.Null, r.GetProperty("createError").ValueKind);
         Assert.Equal(2, r.GetProperty("events").GetInt32());
         Assert.False(r.GetProperty("weekends").GetBoolean()); // Mon–Fri grid
         var card = r.GetProperty("cardHtml").GetString()!;

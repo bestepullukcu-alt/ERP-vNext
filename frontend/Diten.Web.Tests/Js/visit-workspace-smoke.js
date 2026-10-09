@@ -28,7 +28,11 @@ global.fetch = (url, o) => { calls.push({ url, method: (o && o.method) || 'GET',
   return Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve(JSON.stringify({ data: d })) }); };
 const cal = { data: null };
 global.window = { document: global.document, innerWidth: 1280, localStorage: { getItem: () => null, setItem: () => {} }, addEventListener: () => {}, showToast: () => {},
-  DitenCalendar: { create: (host, opts) => { cal.opts = opts; return { calendar: { setOption: (k, v) => { cal[k] = v; }, gotoDate: () => {} }, setData: (ev, days) => { cal.data = ev; cal.days = days; }, date: () => monday }; } } };
+  DitenCalendar: { create: (host, opts) => { cal.opts = opts;
+    // like the real FullCalendar: the initial events are drawn INSIDE create (eventContent → renderExtras), so a
+    // card renderer that is not ready yet throws here and the real grid never renders (CT live E4, 2026-10-09)
+    try { (opts.events || []).forEach(e => opts.renderExtras(e)); cal.createError = null; } catch (e) { cal.createError = String(e); }
+    return { calendar: { setOption: (k, v) => { cal[k] = v; }, gotoDate: () => {} }, setData: (ev, days) => { cal.data = ev; cal.days = days; }, date: () => monday }; } } };
 global.window.VisitWorkspaceCore = C0;
 require(dir + '/VisitPlanning/format.js');
 global.window.VisitWorkspaceL10n = { WeekLabel: '{0}. hafta', Unplaced: '⚠ {0}', Status_missed: 'Kaçırıldı', Status_draft: 'Taslak', CountdownLeft: '{0} sa {1} dk', HoursShort: '{0} sa', DayLoad: '{0} · {1}', CapacityLabel: '{0} / {1}' };
@@ -37,6 +41,7 @@ const tick = () => new Promise(r => setTimeout(r, 20));
 (async () => {
   await tick(); await tick();
   const out = {};
+  out.createError = cal.createError === undefined ? "not-called" : cal.createError;
   out.events = (cal.data || []).length;
   out.cardHtml = cal.opts.renderExtras({ id: 'a1' });
   out.header = cal.dayHeaderContent({ date: new Date(C0.addDays(monday, 3) + 'T00:00:00Z') }).html;

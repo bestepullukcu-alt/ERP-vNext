@@ -207,12 +207,15 @@
         visits.forEach(v => { byId[C.visitKey(v)] = v; });
         const events = visits.map(C.eventOf);
         const days = daysOf(state.week).map(d => ({ date: d.date, dayKind: d.isHoliday ? 'holiday' : (d.kind === 'weekend' ? 'weekend' : 'working'), holidayName: d.holidayName || L.HolidayLabel || '' }));
+        // CT (live E4) — the lookup is set BEFORE DitenCalendar.create: FullCalendar draws the first events inside create
+        // (eventContent → renderExtras), and a missing lookup threw there, so the grid never rendered.
+        state.byId = byId;
 
         if (!state.calendar && window.DitenCalendar) {
             state.calendar = window.DitenCalendar.create(host, {
                 zone: 'UTC', view: 'week', date: state.week, editable: false, events: events, days: [],
-                renderExtras: ev => { const v = state.byId[ev.id]; return v ? cardHtml(v) : ''; },
-                onEventClick: id => openDetail(state.byId[id]),
+                renderExtras: ev => { const v = (state.byId || {})[ev.id]; return v ? cardHtml(v) : ''; },
+                onEventClick: id => openDetail((state.byId || {})[id]),
                 onRangeChange: info => {
                     const monday = C.mondayOf(info.from);
                     if (monday !== state.week) { state.week = monday; load(false); }
