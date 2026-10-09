@@ -8398,6 +8398,27 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-595
+
+**Ortak dev Mongo'da 79 eski test veritabanı; yerel test betikleri ortak Mongo'ya düşebiliyor**
+
+DURUM: AÇIK · SAHİP: sahip (temizlik kararı) + CT (betik kuralı) · BULAN: WP-CI-SERVICE-TESTS-02 olayı (2026-10-09) · KAYIT: 2026-10-09
+
+Olay (2026-10-09 ~20:50):
+- BL-590 işçisinin yerel betiğinde iş-yerel mongod başlamadı (port meşgul). URI'ler boş kaldı; MDM App testleri ~3 dk varsayılan `localhost:27017`'ye, yani ortak dev Mongo'ya bağlandı. İşçi kendisi bildirdi.
+- CT salt okunur ölçtü: dev veritabanlarında (`DitenERP_Dev`, `diten_platform`, `diten_auth_v3`, `DitenEnterpriseDb`) pencerede test kaynaklı yazı yok. MDM testleri kendi adlı DB'lerini kullanır.
+- Betik düzeltildi: URI'ler kapalı porta, adım başarısızsa test yok.
+
+Ölçüm (salt okunur): ortak Mongo'da 96 veritabanı, 79'u test artığı (`*_itest*`, `*_Test_*`; çoğu `diten_platform_brd_itest_*`).
+
+Yapılacak:
+- (a) Sahip: test artığı DB'lerin silinmesine karar (dev verisi değil; ad desenleri listelenir, onaylı tek komut).
+- (b) CT kuralı: test fikstürlerinin varsayılanı `localhost:27017` OLMASIN; boş URI → test adlı atlama ya da kırmızı, ortak Mongo'ya asla bağlanmaz. Ölç ve iş aç.
+
+Gelecek regresyon riski: 🟡 bir sonraki boş URI ortak dev verisine yazabilir.
+
+---
+
 ### BL-594
 
 **Depoda izlenen derleme çıktısı: `.tmp-*/Debug` altında 797 dosya (dll, pdb, exe, appsettings kopyaları) ana dalda**
