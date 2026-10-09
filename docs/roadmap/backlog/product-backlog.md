@@ -7332,6 +7332,25 @@ ekranında 7 dil; (b) klavye kısayolları: kısayolu olmayan sayfada satır ç�
 konuşmasında ölçülerek yapılacak (SAP Web Assistant / Enable Now, Oracle Guided Learning — bu kayıttaki adlar hafızadan, doğrulanmadı).
 Modül paketi şablonuna "sayfa yardım metni" satırı eklenmesi aynı işin parçası. Gelecek regresyon riski: 🟢 (ek).
 
+
+**SAHİP KARARI 2026-10-09 (tartışma sonucu, dört öneri kabul):** ortak paket **WP-UX-COMMON-01** = BL-495 ("?" yardım) + BL-586 (Enter) + kısayol katmanının bütün kiracı sayfalarına yüklenmesi (BL-438'in kalanı) + adım adım tur motoru.
+- (1) Tur yalnız beş akışta: Görev Merkezi, Zaman Çizelgesi, Global Ürün / kalem onaya gönderme, kullanıcı + rol kurulumu, Toplantı. Diğer sayfalarda yalnız "?" metni.
+- (2) "Turu gördüm" ilk sürümde tarayıcıda; Profilim gelince kullanıcı kaydına taşınır.
+- (3) Diğer ekiplerin sayfaları eksik listesine girer (liste yalnız küçülür), o ekipler dokununca yazar.
+- (4) Sıra: ortak paket ilk boşalan sohbete; arka uç işleri (S3b, S2, IU) paralel devam eder.
+
+Aşamalar:
+- A ortak altyapı;
+- B kapanmış modüllere içerik (Kullanıcılar, Roller, Rol İzinleri, Kullanıcı Rolleri metinleri + Görev Merkezi ve Zaman Çizelgesi turları);
+- C her modül turunun kontrol listesine üç satır (Enter, "?", tur).
+
+Kütüphane: **Driver.js (MIT)**:
+- tek sürüm sabit, depoya kopyalanır, parmak izi kayıtlı, canlıdan yüklenmez;
+- sayfalar kütüphaneyi değil `DitenTour` ara katmanını çağırır;
+- metin yalnız dil dosyalarından ve düz metin;
+- ağ çağrısı yapmadığı ve CSP ile çakışmadığı ölçülür; çakışırsa kendi motor.
+
+Shepherd.js (v14+ ticari lisans) ve Intro.js (AGPL / ticari) KULLANILMAZ.
 ---
 
 ### BL-496
