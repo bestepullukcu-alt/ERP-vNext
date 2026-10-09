@@ -40,8 +40,14 @@ set**. Tamamı için `AGENTS.md` §6.1 Kural Haritası.
 
 ```
 5000 Gateway · 5001 Web · 5056 Auth · 5057 Platform · 5058 DevEnablement
-5059 MDM · 5060 HCM      ⚠ 5060, mikroservis bandının (5011–5060) son portu
+5059 MDM · 5060 HCM · 5061 CRM · 5062 PPM · 5066 SupplyChain
 ```
+
+⚠ Bant 5060'ta **bitmiyor**; burada yazan "5011–5060 son port" cümlesi yanlıştı. Tek yetkili
+kaynak `gateway/Diten.ApiGateway/ocelot.json`: tanıdığı portlar 5004, 5011, 5056–5062 ve 5066.
+En sık düşülen tuzak, SupplyChain'i 5061'de başlatmak — orası CRM'in rotası, ve gateway
+`/api/shipment-bundle`'ı 5066'ya yollar. 2026-10-10'da canlı ölçüldü: 5061'de başlatılan
+SupplyChain her sayfaya 503 verdirdi, gateway log'u `Connection refused (localhost:5066)` dedi.
 
 ## Neden bu dosya var
 
