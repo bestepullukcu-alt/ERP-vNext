@@ -470,14 +470,16 @@ public sealed class GetSignatureQueryHandler : IRequestHandler<GetSignatureQuery
     private readonly IESignatureRecordRepository _records;
     private readonly IESignatureInvalidationRepository _invalidations;
     private readonly ISignableSubjectRegistry _subjects;
+    private readonly IESignatureVisibility _visibility;
 
     public GetSignatureQueryHandler(IESignActorAccessor actors, IESignatureRecordRepository records,
-        IESignatureInvalidationRepository invalidations, ISignableSubjectRegistry subjects)
+        IESignatureInvalidationRepository invalidations, ISignableSubjectRegistry subjects, IESignatureVisibility visibility)
     {
         _actors = actors;
         _records = records;
         _invalidations = invalidations;
         _subjects = subjects;
+        _visibility = visibility;
     }
 
     public async Task<Response<SignatureRecordDto>> Handle(GetSignatureQuery request, CancellationToken ct)
@@ -489,8 +491,10 @@ public sealed class GetSignatureQueryHandler : IRequestHandler<GetSignatureQuery
         }
 
         var record = await _records.GetAsync(actor.TenantId, request.Id, ct);
-        // 404 when missing, in another tenant, or the subject is not visible to the caller (§4.5) — one answer.
+        // 404 when missing, in another tenant, hidden by the visibility rule (VIS1: a tenant-level record needs read), or the
+        // subject is not visible to the caller (§4.5) — one answer.
         if (record is null
+            || (await _visibility.ScopeAsync(actor, ESignatureVisibilityPurpose.Read, ct)).HidesTenantLevel(record)
             || (await _subjects.ResolveAsync(record.Module, record.SubjectType, record.SubjectId, ct)).Outcome != SignableSubjectOutcome.Found)
         {
             return ESignResponses.Fail<SignatureRecordDto>(ESignCodes.NotFound, 404, "Signature not found.");
@@ -549,9 +553,11 @@ public sealed class VerifySignatureCommandHandler : IRequestHandler<VerifySignat
     private readonly IESignatureVerifier _verifier;
     private readonly IAuditService _audit;
     private readonly ITenantAuthorizationContext _principal;
+    private readonly IESignatureVisibility _visibility;
 
     public VerifySignatureCommandHandler(IESignActorAccessor actors, IESignatureRecordRepository records,
-        IESignatureInvalidationRepository invalidations, IESignatureVerifier verifier, IAuditService audit, ITenantAuthorizationContext principal)
+        IESignatureInvalidationRepository invalidations, IESignatureVerifier verifier, IAuditService audit, ITenantAuthorizationContext principal,
+        IESignatureVisibility visibility)
     {
         _actors = actors;
         _records = records;
@@ -559,6 +565,7 @@ public sealed class VerifySignatureCommandHandler : IRequestHandler<VerifySignat
         _verifier = verifier;
         _audit = audit;
         _principal = principal;
+        _visibility = visibility;
     }
 
     public async Task<Response<VerificationResultDto>> Handle(VerifySignatureCommand request, CancellationToken ct)
@@ -570,7 +577,8 @@ public sealed class VerifySignatureCommandHandler : IRequestHandler<VerifySignat
         }
 
         var record = await _records.GetAsync(actor.TenantId, request.Id, ct);
-        if (record is null)
+        // VIS1: the same visibility rule as search / get — a tenant-level record is verified only by a read holder or its signer.
+        if (record is null || (await _visibility.ScopeAsync(actor, ESignatureVisibilityPurpose.Read, ct)).HidesTenantLevel(record))
         {
             return ESignResponses.Fail<VerificationResultDto>(ESignCodes.NotFound, 404, "Signature not found.");
         }
@@ -756,7 +764,7 @@ public sealed class SearchSignaturesQueryHandler : IRequestHandler<SearchSignatu
         var page = Math.Max(1, request.Page);
         var pageSize = Math.Clamp(request.PageSize <= 0 ? 25 : request.PageSize, 1, 100);
         var search = new ESignatureSearch(request.FromUtc, request.ToUtc, request.Module, request.SignerUserId, request.MeaningCode,
-            request.LegalEntityId, await _visibility.VisibleLegalEntitiesAsync(actor, ct), actor.UserIdText);
+            request.LegalEntityId, await _visibility.ScopeAsync(actor, ESignatureVisibilityPurpose.Read, ct));
         var (items, total) = await _records.SearchAsync(actor.TenantId, search, (page - 1) * pageSize, pageSize, ct);
         var invalidations = await _invalidations.GetBySignaturesAsync(actor.TenantId, items.Select(r => r.Id).ToList(), ct);
 

@@ -23,6 +23,14 @@ public interface IESignaturePdfRenderer
     byte[] Render(ESignatureExportDocument document);
 }
 
+/// <summary>VIS1 — what the file says about a record's company: the LegalEntity id, or the tenant-level label (no company).</summary>
+public static class ESignatureExportText
+{
+    public const string TenantLevel = "Kiracı düzeyi";
+
+    public static string Company(ESignatureRecord record) => record.LegalEntityId?.ToString("D") ?? TenantLevel;
+}
+
 /// <summary>CSV (KS-6): UTF-8 with BOM, <c>;</c> separator, the mockup's columns. Cells are neutralized against spreadsheet formulas.</summary>
 public static class ESignatureCsv
 {
@@ -45,7 +53,7 @@ public static class ESignatureCsv
                 $"{r.MeaningCode} — {r.MeaningTextAtSign}",
                 r.Module,
                 $"{r.SubjectDisplay} ({r.SubjectType}/{r.SubjectId})",
-                r.LegalEntityId?.ToString("D") ?? "",
+                ESignatureExportText.Company(r),
                 row.VerificationStatus
             }.Select(Cell)).Append("\r\n");
         }
@@ -132,7 +140,7 @@ public sealed class ExportHandlers :
         }
 
         var search = new ESignatureSearch(from, to, request.Module, request.SignerUserId, request.MeaningCode, request.LegalEntityId,
-            await _visibility.VisibleLegalEntitiesAsync(actor, ct), actor.UserIdText);
+            await _visibility.ScopeAsync(actor, ESignatureVisibilityPurpose.Export, ct));
         var (records, total) = await _records.SearchAsync(actor.TenantId, search, 0, MaxRows + 1, ct);
         if (total > MaxRows)
         {

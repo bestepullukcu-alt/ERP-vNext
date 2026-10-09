@@ -88,12 +88,19 @@ public sealed class ESignatureRecordRepository : IESignatureRecordRepository
         if (!string.IsNullOrWhiteSpace(search.MeaningCode)) conditions.Add(F.Eq(x => x.MeaningCode, search.MeaningCode));
         if (search.LegalEntityId is { } legalEntity) conditions.Add(F.Eq(x => x.LegalEntityId, legalEntity));
 
-        // Visibility (pack §8 KS-2, fail closed): the caller's own signatures, plus records of the legal entities in the
-        // caller's data scope. No scope ⇒ own signatures only.
-        var visibility = F.Eq(x => x.SignerUserId, search.ViewerUserId);
-        if (search.VisibleLegalEntityIds.Count > 0)
+        // Visibility = ESignatureVisibilityScope.CanSee as a query (pack §8 KS-2, VIS1): the caller's own signatures, records
+        // of the legal entities in the caller's data scope (no scope ⇒ none, fail closed), and — only for a caller the scope
+        // allows — the tenant-level records (no company). The tenant condition above bounds all three.
+        var scope = search.Visibility;
+        var visibility = F.Eq(x => x.SignerUserId, scope.ViewerUserId);
+        if (scope.LegalEntityIds.Count > 0)
         {
-            visibility |= F.In(x => x.LegalEntityId, search.VisibleLegalEntityIds.Select(id => (Guid?)id));
+            visibility |= F.In(x => x.LegalEntityId, scope.LegalEntityIds.Select(id => (Guid?)id));
+        }
+
+        if (scope.TenantLevelRecords)
+        {
+            visibility |= F.Eq(x => x.LegalEntityId, (Guid?)null);
         }
 
         conditions.Add(visibility);
