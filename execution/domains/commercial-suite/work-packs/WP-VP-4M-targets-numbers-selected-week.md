@@ -108,3 +108,33 @@ KORU/YAPMA: backend'e dokunma; yeni yazma ucu yok; mockup v3 Hedefler + eşit y�
 DOĞRULA (E2): Web (816/0 tabanı) · CRM 2466/0/5 (dokunulmaz) · mimari 27; JS node --check; -o çıktısı REPO İÇİNDE. Testler 4M-WEB Acceptance 1–5; sabotaj 1 (kırmızı kanıtla, geri al — `git checkout --` kullanma).
 Commit: "feat(web): WP-VP-4M-WEB — done/planned/remaining, plan doctors first, status by the selected week" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+## §37 CT kabul — 4M-BE + 4M-WEB E2 ACCEPTED (2026-10-09)
+**Commit'ler:**
+- BE: `1db6c77da` (ajan `dceb42e57`).
+- WEB: `5bf85bb8c` (ajan `0ac34ee10`).
+
+İkisi de test dalına cherry-pick edildi, çakışma çıkmadı. Test dalı push edildi.
+
+**CT K13:**
+- CRM 2466 → **2470/0/5**. `ContactLocationPiiHardeningTests.PiiMasking_…` bilinen kararsız test: bir koşuda düştü, tekrarında yeşil. 4M ile ilgisi yok.
+- Web 816 → **822/0**.
+- Mimari: listesiz **27** (değişmedi).
+
+**Kod okuması:**
+- `TryParseSelectedWeek` tek yer; iki uç da 400 `invalid_week` veriyor.
+- `ReferenceDay`: seçili Pazartesi, dönem hafta ortasında başlıyorsa dönemin ilk günü.
+- `quickCounts`, süzgecin okuduğu durumların aynısından sayılıyor.
+- `plannedThisWeek` yalnız yazılmış ziyaretleri sayıyor (iptal ve arşiv hariç).
+- Web:
+  - `targets` vekili sorgu dizgesini artık iletiyor (paket dışı ama gerekli; yeni yazma ucu yok);
+  - önbellek anahtarı haftayı içeriyor;
+  - sunucu 400 verirse okuma haftasız tekrarlanıyor;
+  - sayaçlar plandaki doktorları düşüyor.
+
+**CT sabotajları:**
+- BE: `plannedThisWeek` iptal edilenleri de saydı → 1 kırmızı (`Planned_this_week_says_a_written_visit_…`).
+- WEB: sayaçlar plandaki doktorları düşmedi → 1 kırmızı (`Plan_doctors_head_the_table_…`).
+- İkisi de `.bak` kopyasından geri alındı, dosya tarihleri yenilendi.
+
+**Sıradaki:** 4J + 4L + 4M canlı E4 (tek tur).
