@@ -37,9 +37,9 @@ Task-User, Viewer, deneme.
 
 | # | Modül | Bu modülde girilen | Sonraki modülün kullandığı | Kayıt |
 |---|---|---|---|---|
-| 1 | Kullanıcılar | Kadrodaki 8 hesap | Herkes | governance-users/2026-09-23.md ✅ |
-| 2 | Roller | `Çalışan`, `Ekip Lideri`, `Bölüm Yöneticisi`, `İK Yöneticisi`; `deneme` silme denemesi | Rol İzinleri | — |
-| 3 | Rol İzinleri | Dört role izinler (görev, zaman çizelgesi, onay) | Kullanıcı Rolleri, her ekran | — |
+| 1 | Kullanıcılar | Kadrodaki 8 hesap; sıradan kiracı yöneticisi `yonetici@diten.com` (9 Ekim) | Herkes | ✅ BİTTİ — governance-users/2026-09-23.md; yönetici hesabı kontrolü 9 Ekim |
+| 2 | Roller | `Çalışan`, `Ekip Lideri`, `Bölüm Yöneticisi`, `İK Yöneticisi`; `deneme` silme denemesi | Rol İzinleri | ✅ BİTTİ — sahip kontrol etti (5 Ekim), kapandı (9 Ekim) |
+| 3 | Rol İzinleri | Dört role izinler (görev, zaman çizelgesi, onay) | Kullanıcı Rolleri, her ekran | ✅ BİTTİ — veri girildi, ölçüldü (2 Ekim), kapandı (9 Ekim) |
 | 4 | Kullanıcı Rolleri | Kadro tablosundaki rol atamaları; pasif hesapların aktifleşmesi | Organizasyon, Görev Merkezi | — |
 | 5 | Organizasyon | Pozisyon bağlılıkları (kim kime bağlı) ve koltuklar | Görev atama kapsamı, haftanın onaycısı | — |
 | 6 | Görev Merkezi | Burak → Ayşe / Deniz görevleri; onaylı görev; Devret | Zaman çizelgesi (süre görevden gelir) | task-center/ |
@@ -122,12 +122,12 @@ Durum anahtarı: `[x]` sahip "Tamam" dedi · `[ ]` bekliyor · ⏳ kod henüz de
 - [ ] `is-canli-url` Canlıya çıkarken: e-posta bağlantı adresi (AuthService:FrontendBaseUrl) canlı adresle girilir. Girilmezse yeni kiracının ilk yönetici daveti reddedilir.
 - [ ] `is-pr` En sonda: tek PR'ı ana dala açın (Control Tower hazır olduğunu söyleyince).
 
-### Yönetici hesabı — Önce bu (10 dk)
-- [ ] `yh-1` Yeni kullanıcı oluştu ve Mailpit'e parola belirleme e-postası geldi mi?
-- [ ] `yh-2` Bağlantıyla parola belirleyip yonetici@diten.com ile giriş yapabildiniz mi?
-- [ ] `yh-3` Yeni hesapla Kullanıcılar ve Roller sayfaları açılıyor, bir kullanıcıyı düzenleyip kaydedebiliyor musunuz?
+### Yönetici hesabı — ✅ BİTTİ (9 Ekim, sahip)
+- [x] `yh-1` Yeni kullanıcı oluştu ve Mailpit'e parola belirleme e-postası geldi mi?
+- [x] `yh-2` Bağlantıyla parola belirleyip yonetici@diten.com ile giriş yapabildiniz mi?
+- [x] `yh-3` Yeni hesapla Kullanıcılar ve Roller sayfaları açılıyor, bir kullanıcıyı düzenleyip kaydedebiliyor musunuz?
 
-### Kullanıcılar + Roller — Kontrol edildi (5 Ekim)
+### Kullanıcılar + Roller — ✅ BİTTİ (kontrol 5 Ekim, kapanış 9 Ekim)
 - [x] `r-1` Ad alanına yalnız boşluk yazınca Türkçe uyarı çıkıyor ve kullanıcı oluşmuyor mu?
 - [x] `r-2` Kendi hesabınızı pasife alma / silme sunulmuyor mu?
 - [x] `r-3` Davet aşamasındaki birine "Parolayı Sıfırla" deyince doğru Türkçe cümle çıkıyor mu?
@@ -135,7 +135,7 @@ Durum anahtarı: `[x]` sahip "Tamam" dedi · `[ ]` bekliyor · ⏳ kod henüz de
 - [x] `r-5` Viewer rolünden "Dışa aktar" iznini kaldırınca kaydoluyor mu?
 - [x] `r-6` Admin (sistem rolü) satırında kilit var, izinleri değiştirilemiyor mu?
 
-### Rol İzinleri — Veri girildi, ölçüldü
+### Rol İzinleri — ✅ BİTTİ (veri 2 Ekim, kapanış 9 Ekim)
 - [ ] `ri-1` İzni verip kaydedince doğru görünüyor, sayfayı yenileyince kalıyor mu?
 - [ ] `ri-2` Yukarıdaki izinlerin hepsi ekranda bulunuyor mu?
 - [ ] `ri-3` Sistem rolünün (Admin) izinleri değiştirilemiyor mu?
