@@ -29,7 +29,12 @@ public sealed class ClaimIndexBehaviorTests
     public void List_query_is_limited_to_shipmentId_and_single_status()
     {
         var sets = Regex.Matches(_script, @"params\.set\('(?<name>\w+)'").Select(m => m.Groups["name"].Value).ToHashSet();
-        Assert.Equal(new HashSet<string> { "shipmentId", "status" }, sets);
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): the company is a third query key now — a required scope on every call,
+        // not an optional filter. Pinned so the wiring cannot be removed silently.
+        Assert.Equal(new HashSet<string> { "shipmentId", "status", "legalEntityId" }, sets);
+        Assert.Contains("fetch(withScope(endpoint, createdScope)", _script);
+        Assert.Contains("'/SupplyChain/api/legal-entities'", _script);
+        Assert.Contains("if (!await loadLegalEntities()) return;", _script);
         Assert.DoesNotContain("pageSize", _script);
         Assert.DoesNotContain("multiple", Read("frontend/Diten.Web/Views/SupplyChain/Claims/_Filter.cshtml"));
     }

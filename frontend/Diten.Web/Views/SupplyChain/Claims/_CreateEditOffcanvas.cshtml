@@ -23,6 +23,16 @@
             @Html.AntiForgeryToken()
             <div class="row g-4">
 
+                @* R-2 — company: chosen here but never a body field; the service refuses scope in a mutation
+                   payload, so the value rides the query and this select is not model-bound. It also scopes the
+                   shipment resolve below. No `required` attribute: this page adds no client tightening
+                   (Create_form_adds_no_client_tightening) and the script refuses an empty selection first. *@
+                <div class="col-12">
+                    <label for="formLegalEntity" class="form-label fw-medium">
+                        @SharedLocalizer["LegalEntity"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="formLegalEntity" class="form-select"></select>
+                </div>
                 @* 1 — shipmentId (required): UUID text + Resolve; stale-response guard in index.js (CU-13) *@
                 <div class="col-12">
                     <label for="claimShipmentId" class="form-label fw-medium">@Localizer["ShipmentId"] <span class="text-danger">*</span></label>

@@ -101,6 +101,11 @@ const ClaimsList = (function () {
     let defaultViewRecord = null;
     let defaultViewState = null;
     let appliedFilters = { status: '', shipmentId: '' };
+    // R-2 (SHIPMENT-BUNDLE 3.2.0): a REQUIRED scope on every call, not an optional filter — the service accepts
+    // exactly one company per call, so there is no 'all companies' answer to ask for. The page sends it as a
+    // query value; turning it into the downstream scope header is the adapter's job, never the browser's.
+    let legalEntities = [];
+    let legalEntityScope = '';
     const rowsById = new Map();
     const permissions = readPermissions();
 
@@ -269,6 +274,49 @@ const ClaimsList = (function () {
     };
 
     const handleUnauthorized = () => { window.DtDefaults?.handleUnauthorized?.(); };
+    const withScope = (url, scope) => {
+        const value = scope || legalEntityScope;
+        if (!value) return url;
+        return `${url}${url.includes('?') ? '&' : '?'}legalEntityId=${encodeURIComponent(value)}`;
+    };
+    // The create panel's own select scopes a create and its shipment lookup, not the list scope, or the
+    // panel's required changeable field would be decorative.
+    const formScope = () => String(document.getElementById('formLegalEntity')?.value || legalEntityScope || '');
+    const fillLegalEntitySelect = (element, selected) => {
+        if (!element) return;
+        element.innerHTML = '';
+        legalEntities.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            if (item.id === selected) option.selected = true;
+            element.appendChild(option);
+        });
+    };
+    const loadLegalEntities = async () => {
+        try {
+            const response = await fetch('/SupplyChain/api/legal-entities',
+                { credentials: 'same-origin', headers: traceHeaders() });
+            if (response.status === 401) { handleUnauthorized(); return false; }
+            if (!response.ok) { window.DtDefaults?.showError?.(t('LegalEntityUnavailable')); return false; }
+            let payload = null;
+            try { payload = await response.json(); } catch (_) { payload = null; }
+            const rows = Array.isArray(payload) ? payload : (payload?.data ?? payload?.items ?? []);
+            legalEntities = rows.map((row) => ({
+                id: String(row.legalEntityId ?? row.LegalEntityId ?? ''),
+                name: String(row.displayName ?? row.DisplayName ?? row.legalName ?? row.LegalName ?? row.code ?? '')
+            })).filter((row) => row.id);
+            // An empty answer is not an outage: the tenant genuinely has none.
+            if (legalEntities.length === 0) { window.DtDefaults?.showError?.(t('LegalEntityNone')); return false; }
+            legalEntityScope = legalEntities[0].id;
+            fillLegalEntitySelect(document.getElementById('filterLegalEntity'), legalEntityScope);
+            fillLegalEntitySelect(document.getElementById('formLegalEntity'), legalEntityScope);
+            return true;
+        } catch (error) {
+            window.DtDefaults?.showError?.(t('LegalEntityUnavailable'));
+            return false;
+        }
+    };
 
     // ─── List: three distinct states (skeleton / table incl. empty / error) ──
     const setListState = (state, failure) => {
@@ -324,6 +372,7 @@ const ClaimsList = (function () {
         const params = new URLSearchParams();
         if (appliedFilters.shipmentId !== '') params.set('shipmentId', appliedFilters.shipmentId);
         if (appliedFilters.status !== '') params.set('status', appliedFilters.status);
+        if (legalEntityScope) params.set('legalEntityId', legalEntityScope);
         const url = params.toString() ? `${endpoint}?${params.toString()}` : endpoint;
         rowsById.clear();
         try {
@@ -481,7 +530,9 @@ const ClaimsList = (function () {
         const sequence = resolveSequence;
         const isCurrent = () => sequence === resolveSequence && input.value === requested;
         try {
-            const response = await fetch(`${endpoint}/shipments/${encodeURIComponent(requested)}`,
+            // The shipment lookup goes through this module's own adapter, so it carries the panel's company —
+            // the company the claim will be created in.
+            const response = await fetch(withScope(`${endpoint}/shipments/${encodeURIComponent(requested)}`, formScope()),
                 { credentials: 'same-origin', headers: traceHeaders() });
             if (!isCurrent()) return; // late response for a previous UUID never populates
             if (!response.ok) {
@@ -562,7 +613,9 @@ const ClaimsList = (function () {
         createPending = true;
         if (save) save.disabled = true;
         try {
-            const response = await fetch(endpoint, {
+            const createdScope = formScope();
+            if (!createdScope) { showAlert('formClaimAlert', { status: 400, code: 'INVALID_REQUEST', reference: '' }); return; }
+            const response = await fetch(withScope(endpoint, createdScope), {
                 method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: bodyText
             });
             if (response.ok) {
@@ -698,7 +751,8 @@ const ClaimsList = (function () {
         const submit = document.getElementById('btnSubmitTransition');
         transitionPending = true;
         if (submit) submit.disabled = true;
-        const url = `${endpoint}/${encodeURIComponent(context.claimId)}/transition?shipmentId=${encodeURIComponent(context.shipmentId)}`;
+        // A transition acts on a row the list is showing, so it carries the list scope.
+        const url = withScope(`${endpoint}/${encodeURIComponent(context.claimId)}/transition?shipmentId=${encodeURIComponent(context.shipmentId)}`);
         try {
             const response = await fetch(url, {
                 method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: bodyText
@@ -789,6 +843,7 @@ const ClaimsList = (function () {
             status: document.getElementById('filterStatus')?.value || '',
             shipmentId: document.getElementById('filterShipmentId')?.value ?? '' // as typed; backend validates
         };
+        legalEntityScope = String(document.getElementById('filterLegalEntity')?.value || legalEntityScope);
         if (dt) window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount());
         reloadList();
     };
@@ -955,6 +1010,9 @@ const ClaimsList = (function () {
         if (!tableEl || typeof DataTable === 'undefined' || !window.DtDefaults) return;
         syncL10n();
         setListState('skeleton');
+        // Resolved BEFORE the table asks for rows: every list call needs it, so a table drawn first would
+        // fire one guaranteed 400.
+        if (!await loadLegalEntities()) return;
         const savedView = await loadDefaultView();
         if (savedView) appliedFilters = savedView.filters; // the first list request already carries the saved filters
 
