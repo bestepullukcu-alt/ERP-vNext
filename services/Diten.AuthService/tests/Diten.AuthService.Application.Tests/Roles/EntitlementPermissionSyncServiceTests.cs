@@ -1871,6 +1871,34 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.Empty(StockKeysHeldBy(rolePerms, catalog, admin));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BL573_A_deactivation_snapshot_reconciles_whether_or_not_the_catalog_carries_the_stock_keys(bool catalogCarriesStockKeys)
+    {
+        // CT survivor C2: a deactivation snapshot carries neither the owned lifecycle keys nor the stock-behaviour keys,
+        // and the authoritative set it is compared with must drop BOTH. If only the lifecycle keys were dropped, a catalog
+        // that already carries the three stock keys (after S5) could never be deactivated: the exact-set check would
+        // refuse the snapshot. The variant without the stock keys pins the snapshot shape itself.
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        if (catalogCarriesStockKeys)
+        {
+            WithStockBehaviourKeys(catalog);
+        }
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var snapshot = ProductIdentityDeclaredKeys(catalog)
+            .Where(key => !ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Contains(key)
+                          && !StockKeys.Contains(key))
+            .ToArray();
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            snapshot, Actor);
+
+        var stockIds = catalog.Where(p => StockKeys.Contains(p.Key)).Select(p => p.Id).ToHashSet();
+        Assert.DoesNotContain(rolePerms.Rows, grant => stockIds.Contains(grant.PermissionId));
+        Assert.Contains(rolePerms.Rows, grant => grant.RoleId == roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole));
+    }
+
     [Fact]
     public async Task BL573_A_tenant_without_the_product_module_entitlement_gets_no_stock_key()
     {
