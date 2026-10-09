@@ -16,7 +16,7 @@ info:
     satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
     tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
     kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
-  version: 1.1.0-draft.11
+  version: 1.1.0-draft.12
   x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
@@ -83,6 +83,9 @@ info:
     - date: "2026-10-09"
       version: 1.1.0-draft.11
       note: "Stok ekibinin isteği (Prism ilk örneği döndürür): v1.1 işlemlerinin ilk örneği tam v1.1 biçiminde; v1.0 örnekleri değerleri aynı kalarak son sıraya alındı (v1.0 taklidi ayrı dosyada). Eksik alanlar örneklere yazıldı: getProduct Global Ürün örneğine deprecated `lotControlled` / `serialControlled` (OD-1), SkuRef örneklerine `minRemainingShelfLifeDays`, toplu okuma satırlarına `itemId` + `itemKind` (draft.10). Yeni örnekler: resolveSkuProduct `lsku`, getSkuUom `lsku-uom`, validateRefs `mixed`. Şema değişmedi."
+    - date: "2026-10-09"
+      version: 1.1.0-draft.12
+      note: "S4 FIX1 (CT kararı): `/stockable-items` arama penceresi `page × pageSize` en çok 1000, aşan istek 400 `INVALID_PARAMETER`; `q` kırpılır, yalnız boşluk süzgeç değildir. Şema türleri değişmedi (yalnız açıklama)."
 servers:
   - url: /api/product-master
 security:
@@ -416,13 +419,13 @@ paths:
     get:
       operationId: searchStockableItems
       summary: "v1.1 — Stoklanabilir kalem / SKU araması (sayfalı)"
-      description: "Yalnız `stockable: true` kayıtlar döner; varsayılan olarak bütün seviyeler (Item, Gsku, Lsku, FinishedGood) aynı biçimde (`StockableItemRef`). `q`: kod ön eki YA DA adın içinde geçen metin; ordinal, büyük / küçük harf duyarsız, aksan katlaması yok; boş `q` serbesttir (süzme yok). `materialType` verilirse yalnız Item satırları döner. `status` verilmezse Retired dışındaki bütün durumlar döner; seçici ekranlar `status=Active` gönderir. Sıra: `canonicalCode` (ordinal, artan) — sayfalar arasında kararlı. `pageSize` > 100, `q` > 200 karakter ya da bilinmeyen enum değeri → 400. Son sayfanın ötesi → 200 ve boş `items`. Ürün satırları sunucunun çözdüğü tüzel kişi kapsamıyla, kalem satırları kiracı genelinde süzülür. Stoğun geçici 'Model A seçici' rotası (W-UI-01) bu uçla kalkar."
+      description: "Yalnız `stockable: true` kayıtlar döner; varsayılan olarak bütün seviyeler (Item, Gsku, Lsku, FinishedGood) aynı biçimde (`StockableItemRef`). `q`: kod ön eki YA DA adın içinde geçen metin; ordinal, büyük / küçük harf duyarsız, aksan katlaması yok; boş `q` serbesttir (süzme yok). `materialType` verilirse yalnız Item satırları döner. `status` verilmezse Retired dışındaki bütün durumlar döner; seçici ekranlar `status=Active` gönderir. Sıra: `canonicalCode` (ordinal, artan) — sayfalar arasında kararlı. `pageSize` > 100, `q` > 200 karakter ya da bilinmeyen enum değeri → 400. Arama penceresi (draft.12): `page × pageSize` en çok 1000; aşan istek → 400 `INVALID_PARAMETER` (daha derin sonuç için `q` / süzgeç daraltılır). Pencere içinde son sayfanın ötesi → 200 ve boş `items`. `q` baştan / sondan kırpılır; yalnız boşluk = süzgeç yok. Ürün satırları sunucunun çözdüğü tüzel kişi kapsamıyla, kalem satırları kiracı genelinde süzülür. Stoğun geçici 'Model A seçici' rotası (W-UI-01) bu uçla kalkar."
       parameters:
         - { name: q, in: query, required: false, schema: { type: string, maxLength: 200 }, description: "kod ön eki ya da ad içinde geçen metin" }
         - { name: skuLevel, in: query, required: false, schema: { $ref: '#/components/schemas/SkuLevel' } }
         - { name: materialType, in: query, required: false, schema: { $ref: '#/components/schemas/MaterialType' }, description: "Verilirse yalnız Item satırları döner" }
         - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/LifecycleStatus' }, description: "Verilmezse Retired dışındaki bütün durumlar" }
-        - { name: page, in: query, required: false, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: page, in: query, required: false, schema: { type: integer, minimum: 1, default: 1 }, description: "draft.12 — `page × pageSize` en çok 1000; aşan → 400 `INVALID_PARAMETER`" }
         - { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
       responses:
         '200':
