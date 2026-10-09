@@ -45,6 +45,23 @@ public static class ProductItemSkuMasterModels
         CodeReservationBindingState CodeBindingState,
         bool BindingReconciliationRequired);
 
+    public sealed class UpdateGlobalProductDraftRequest
+    {
+        public string? GlobalProductName { get; init; }
+        public int? ExpectedVersion { get; init; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed record GlobalProductDraftUpdateDto(
+        Guid Id,
+        string CanonicalCode,
+        string GlobalProductName,
+        ProductIdentityLifecycleStatus LifecycleStatus,
+        int Version,
+        bool IsReplay);
+
     public sealed record GlobalProductListItemDto(
         Guid Id,
         string CanonicalCode,
@@ -58,7 +75,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions);
 
     public sealed record GlobalProductSelectorDto(
         Guid Id,
@@ -165,9 +183,33 @@ public static class ProductItemSkuMasterModels
         decimal PackQuantity,
         string PackUomCode,
         ProductIdentityLifecycleStatus LifecycleStatus,
-        int Version,
+        int RevisionVersion,
+        int GskuVersion,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions,
+        // B2 (b) (GSKU FIX1): set when the latest identity approval was granted and could not be applied — the
+        // reason the pair is a draft again, for the maker to fix before submitting again.
+        string? IdentityNotAppliedReason = null,
+        // FIX2 item 1: where the draft's latest submit stands (SUBMIT_IN_FLIGHT, RESUBMIT_REQUIRED,
+        // RECONCILIATION_REQUIRED, SUBMISSION_ENDED) — the screen says what happens next for each.
+        string? IdentitySubmitState = null,
+        // FIX3 E2: with RECONCILIATION_REQUIRED, the version the reconciling repeat of the submit carries.
+        int? IdentitySubmitVersion = null,
+        // FIX3 (CT decision 1): set when the pair was completed with the submit-time proof because a reference was
+        // retired after the approval — the screen says so as information.
+        string? IdentityApprovalNote = null,
+        // FIX4 item 1 (b): STUCK when a correction or retirement request holds the GSKU in manual reconciliation; the
+        // request itself only for its requester (REPEAT_REQUEST sends it again, as it was).
+        string? LifecycleRequestState = null,
+        GskuPendingLifecycleRequestDto? PendingLifecycleRequest = null);
+
+    public sealed record GskuPendingLifecycleRequestDto(
+        string Kind,
+        int ExpectedGskuVersion,
+        decimal? PackQuantity,
+        string? PackUomCode,
+        string? RequestReason);
 
     public sealed record GskuCreateGlobalProductOptionDto(
         Guid Id,
@@ -180,9 +222,17 @@ public static class ProductItemSkuMasterModels
         int SortOrder,
         int MaximumDecimalPrecision);
 
+    public sealed record GskuMutationOptionsDto(
+        Guid GskuId,
+        int GskuVersion,
+        int RevisionVersion,
+        IReadOnlyList<GskuCreateUomOptionDto> Uoms);
+
+    // FIX3 B17: HasMore = more referenceable products match than this page holds (the picker pages with it).
     public sealed record GskuCreateOptionsDto(
         IReadOnlyList<GskuCreateGlobalProductOptionDto> GlobalProducts,
-        IReadOnlyList<GskuCreateUomOptionDto> Uoms);
+        IReadOnlyList<GskuCreateUomOptionDto> Uoms,
+        bool HasMore = false);
 
     public sealed class CreateFinishedGoodDraftRequest
     {
@@ -212,7 +262,12 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt)
+    {
+        // FG FIX1 item 1: the audited Draft cancellation as reads see it (None / PendingAudit / Cancelled) — it takes
+        // precedence over the stored Draft for actions and display; derived, never a stored flag.
+        public FinishedGoodCancellationDisposition CancellationDisposition { get; init; }
+    }
 
     public sealed record FinishedGoodDetailDto(
         Guid Id,
@@ -223,7 +278,12 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt)
+    {
+        // FG FIX1 item 1: the audited Draft cancellation as reads see it (None / PendingAudit / Cancelled) — it takes
+        // precedence over the stored Draft for actions and display; derived, never a stored flag.
+        public FinishedGoodCancellationDisposition CancellationDisposition { get; init; }
+    }
 
     public sealed record FinishedGoodGskuSelectorDto(
         Guid Id,
@@ -264,7 +324,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string>? AvailableActions = null);
 
     public sealed record LskuDetailDto(
         Guid Id,
@@ -275,7 +336,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string>? AvailableActions = null);
 
     public sealed record LskuCreateGskuOptionDto(
         Guid Id,

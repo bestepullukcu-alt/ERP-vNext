@@ -10,6 +10,23 @@ namespace Diten.ApiGateway.Tests;
 // integrity — no service is started, no HTTP call is made.
 public sealed class OcelotConfigurationTests
 {
+    [Theory]
+    [InlineData("/api/product-abbreviations")]
+    [InlineData("/api/product-abbreviations/{everything}")]
+    public void Abb_routes_preserve_exact_methods_destination_and_transparent_headers(string template)
+    {
+        var route = Assert.Single(LoadConfiguration().Routes, r => r.UpstreamPathTemplate == template);
+        Assert.Equal(template, route.DownstreamPathTemplate);
+        Assert.Equal(new[] { "GET", "OPTIONS", "PATCH", "POST" }, route.UpstreamHttpMethod.Order().ToArray());
+        var destination = Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal("localhost", destination.Host);
+        Assert.Equal(5059, destination.Port);
+        Assert.DoesNotContain("PUT", route.UpstreamHttpMethod);
+        Assert.DoesNotContain("DELETE", route.UpstreamHttpMethod);
+        foreach (var header in new[] { "Authorization", "X-Tenant-Id", "X-Correlation-Id", "Idempotency-Key" })
+            Assert.False(route.AddHeadersToRequest?.ContainsKey(header) ?? false);
+    }
+
     // Known downstream services as of this test's authoring: auth(5056), platform(5057), dev-enablement(5058),
     // mdm(5059), hcm(5060), pvg(5011), crm(5061), ppm(5062), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
     // this set — an unrecognized port is far more likely a typo than a new service.
@@ -179,6 +196,78 @@ public sealed class OcelotConfigurationTests
         ppmRoutes[0].DownstreamHostAndPorts[0].Port = 5062;
         ppmRoutes[0].UpstreamHttpMethod.Remove("OPTIONS");
         Assert.ThrowsAny<Exception>(() => AssertPpmRoute(ppmRoutes, "/api/v1/ppm"));
+    }
+
+    [Fact]
+    public void GlobalProducts_routes_allow_put_only_on_nested_template()
+    {
+        var config = LoadConfiguration();
+        var rootRoute = Assert.Single(config.Routes, candidate =>
+            string.Equals(candidate.UpstreamPathTemplate, "/api/global-products", StringComparison.Ordinal));
+        var nestedRoute = Assert.Single(config.Routes, candidate =>
+            string.Equals(candidate.UpstreamPathTemplate, "/api/global-products/{everything}", StringComparison.Ordinal));
+
+        Assert.Equal("/api/global-products/{everything}", nestedRoute.DownstreamPathTemplate);
+        Assert.Single(nestedRoute.DownstreamHostAndPorts);
+        Assert.Equal("localhost", nestedRoute.DownstreamHostAndPorts[0].Host);
+        Assert.Equal(5059, nestedRoute.DownstreamHostAndPorts[0].Port);
+        Assert.True(
+            new HashSet<string>(StringComparer.Ordinal) { "GET", "POST", "PUT", "OPTIONS" }.SetEquals(nestedRoute.UpstreamHttpMethod),
+            $"Unexpected Global Product catch-all methods: {string.Join(",", nestedRoute.UpstreamHttpMethod)}");
+        Assert.DoesNotContain("PUT", rootRoute.UpstreamHttpMethod);
+    }
+
+    [Theory]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001/edit-options")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001/correction-options")]
+    [InlineData("PUT", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/submit")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/identity-approval/withdraw")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/correction-requests")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/retirement-requests")]
+    public void Gsku_nested_contract_preserves_path_methods_and_destination(string method, string suffix)
+    {
+        var config = LoadConfiguration();
+        var root = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/gskus");
+        var nested = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/gskus/{everything}");
+        Assert.DoesNotContain("PUT", root.UpstreamHttpMethod);
+        Assert.True(new HashSet<string>(["GET", "POST", "PUT", "OPTIONS"], StringComparer.Ordinal)
+            .SetEquals(nested.UpstreamHttpMethod));
+        Assert.Contains(method, nested.UpstreamHttpMethod);
+        Assert.Equal("/api/gskus/" + suffix, nested.DownstreamPathTemplate.Replace("{everything}", suffix));
+        var host = Assert.Single(nested.DownstreamHostAndPorts);
+        Assert.Equal("localhost", host.Host);
+        Assert.Equal(5059, host.Port);
+        Assert.Equal("http", nested.DownstreamScheme);
+    }
+
+    [Theory]
+    [InlineData("GET", "")]
+    [InlineData("GET", "create-options")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("POST", "drafts")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/submit")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/identity-approval/withdraw")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/retirement-requests")]
+    public void Lsku_existing_routes_cover_lifecycle_without_broadening_methods(string method, string suffix)
+    {
+        var config = LoadConfiguration();
+        var root = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/lskus");
+        var nested = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/lskus/{everything}");
+        foreach (var route in new[] { root, nested })
+        {
+            Assert.True(new HashSet<string>(["GET", "POST", "OPTIONS"], StringComparer.Ordinal)
+                .SetEquals(route.UpstreamHttpMethod));
+            var host = Assert.Single(route.DownstreamHostAndPorts);
+            Assert.Equal("localhost", host.Host);
+            Assert.Equal(5059, host.Port);
+            Assert.Equal("http", route.DownstreamScheme);
+        }
+        var selected = suffix.Length == 0 ? root : nested;
+        Assert.Contains(method, selected.UpstreamHttpMethod);
+        Assert.Equal("/api/lskus" + (suffix.Length == 0 ? "" : "/" + suffix),
+            selected.DownstreamPathTemplate.Replace("{everything}", suffix));
     }
 
     private static void AssertPpmRoute(IReadOnlyCollection<FileRoute> ppmRoutes, string template)

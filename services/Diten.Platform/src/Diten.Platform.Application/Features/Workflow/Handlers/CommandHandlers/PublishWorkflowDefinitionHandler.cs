@@ -1,11 +1,14 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Workflow.Commands;
+using Diten.Platform.Application.Features.Workflow.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 
@@ -17,19 +20,29 @@ public sealed class PublishWorkflowDefinitionHandler
     private readonly ISlaEscalationRuleRepository? _slaRules;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUserContext;
+    private readonly IWorkflowInstanceRepository? _instances;
+    private readonly IApprovalTaskRepository? _approvalTasks;
+    private readonly ILogger<PublishWorkflowDefinitionHandler> _logger;
 
     public PublishWorkflowDefinitionHandler(
         IWorkflowTemplateRepository templateRepository,
         IWorkflowTemplateVersionRepository versionRepository,
         ITenantContext tenantContext,
         ICurrentUserContext currentUserContext,
-        ISlaEscalationRuleRepository? slaRules = null)
+        ISlaEscalationRuleRepository? slaRules = null,
+        // D2-FIX4 item 3 — what a republished rule set has to reach (see CreateSlaEscalationRuleHandler).
+        IWorkflowInstanceRepository? instances = null,
+        IApprovalTaskRepository? approvalTasks = null,
+        ILogger<PublishWorkflowDefinitionHandler>? logger = null)
     {
         _templateRepository = templateRepository;
         _versionRepository = versionRepository;
         _tenantContext = tenantContext;
         _currentUserContext = currentUserContext;
         _slaRules = slaRules;
+        _instances = instances;
+        _approvalTasks = approvalTasks;
+        _logger = logger ?? NullLogger<PublishWorkflowDefinitionHandler>.Instance;
     }
 
     public async Task<Response<PublishWorkflowDefinitionResponse>> Handle(
@@ -146,6 +159,10 @@ public sealed class PublishWorkflowDefinitionHandler
                     await _slaRules.CreateAsync(rule, ct);
                 }
             }
+
+            // D2-FIX4 item 3 — the rules were replaced: tasks of this template that rested under the old ones (or none) are
+            // looked at again by the next sweep, not when their day is over.
+            await WorkflowSlaLookReset.ForTemplateAsync(template.Id, _instances, _approvalTasks, _logger, ct);
         }
 
         var response = new PublishWorkflowDefinitionResponse(

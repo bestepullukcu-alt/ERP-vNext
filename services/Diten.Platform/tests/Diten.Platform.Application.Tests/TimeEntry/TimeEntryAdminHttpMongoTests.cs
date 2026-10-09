@@ -164,9 +164,12 @@ public sealed class TimeEntryAdminHttpMongoTests : TimeEntryScenario
         Assert.Equal(missing.ReasonCode, unreadable.ReasonCode);
         Assert.Empty(await StoredWeeksAsync());
 
-        // Non-vacuity: the same task becomes usable the moment the person may read it (a watcher is a data leg).
-        await Collection<Domain.Entities.Tasks.TaskWatcher>(PlatformCollections.TaskWatchers).InsertOneAsync(
-            new Domain.Entities.Tasks.TaskWatcher { TenantId = Tenant, TaskItemId = hidden, UserId = Person });
+        // Non-vacuity: the same task becomes usable the moment the person may read it through a FULL leg — here as its
+        // requester (the creator is a data leg). WP-WCN-TASK-REQUEST-01 FIX3 (CT decision A, 2026-10-04): this step used
+        // to make the person a WATCHER; a watcher reads the task but puts no time on it (pack §12 K3 / OD-4, the write
+        // gate's observer rule), so watching no longer proves the read check — TimeEntryTaskGateHttpMongoTests pins that.
+        await Collection<Domain.Entities.Tasks.TaskItem>(PlatformCollections.TaskItems).UpdateOneAsync(
+            t => t.Id == hidden, Builders<Domain.Entities.Tasks.TaskItem>.Update.Set(t => t.CreatedByUserId, Person));
         Assert.Equal(HttpStatusCode.OK, (await SaveAsync(0, CurrentWeek, null, Row(Monday, 60, hidden))).Status);
     }
 

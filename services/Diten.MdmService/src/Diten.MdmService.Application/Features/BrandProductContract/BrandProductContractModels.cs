@@ -60,7 +60,9 @@ public static class BrandProductContractFactory
         ReasonCodes: BrandProductReasonCodes.All,
         Permissions:
         [
-            "mdm.brands.read", "mdm.brands.create", "mdm.brands.update", "mdm.brands.archive",
+            // WP-MDM-BRAND-ACCEPT-01 FIX3 (M-5) — the nine keys of the brand-product-master module, export included (a
+            // test holds this list equal to the module manifest).
+            "mdm.brands.read", "mdm.brands.create", "mdm.brands.update", "mdm.brands.archive", "mdm.brands.export",
             "mdm.products.read", "mdm.products.create", "mdm.products.update", "mdm.products.archive"
         ],
         // Stated honestly so the UI can disable rather than fake, and so consumers do not assume more than
@@ -76,6 +78,7 @@ public static class BrandProductContractFactory
             "multi-brand-product-not-supported",
             "product-family-hierarchy-not-supported",
             "item-sku-uom-identifier-management-out-of-scope",
-            "import-export-engine-out-of-scope"
+            // FIX3 (M-5) — the brand register exports (CSV / XLSX, every matching row up to 50 000); there is no import.
+            "import-not-supported-brand-export-only"
         ]);
 }

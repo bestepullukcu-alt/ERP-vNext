@@ -28,6 +28,21 @@ public sealed class WorkflowInstance : TenantScopedEntity
 
     public string? CorrelationId { get; set; }
     public string? IdempotencyKey { get; set; }
+    public Guid? TrustedConsumerClientId { get; set; }
+    public Guid? DelegatedMakerUserId { get; set; }
+    public string? StartRequestFingerprint { get; set; }
+    public WorkflowStartCheckpoint StartCheckpoint { get; set; }
+    public Guid? InitialApprovalTaskId { get; set; }
+    public Guid? InitialAssignmentSnapshotId { get; set; }
+    public Guid? StartTransitionLogId { get; set; }
+
+    /// <summary>
+    /// WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 (item 3) — why a trusted start's RESERVATION was closed before its task was
+    /// fenced (today only "nobody but the starter may approve"). Every replay of the key answers with it, so the same
+    /// request keeps getting the same answer. Additive: a reservation closed before this field existed holds null and is
+    /// answered as no-eligible, the only reason such a close ever had — no migration.
+    /// </summary>
+    public string? StartClosedReasonCode { get; set; }
     public string? StartedBy { get; set; }
 
     /// <summary>WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — the starter's USER ID. <see cref="StartedBy"/> holds the actor

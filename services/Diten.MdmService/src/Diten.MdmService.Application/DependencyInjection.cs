@@ -1,7 +1,9 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Services;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 
 namespace Diten.MdmService.Application;
 
@@ -16,12 +18,21 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ExceptionHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.PerformanceBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ProductLegalEntityScopeWriteFenceBehavior<,>));
         // Registered last => innermost: only wraps real handler executions, so it audits the handler's actual outcome
         // (validation/exception failures short-circuit before reaching it).
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.AuditForwardingBehavior<,>));
         services.AddValidatorsFromAssembly(assembly);
         services.AddScoped<ProductAbbreviationAuthorization>();
         services.AddScoped<ProductAbbreviationWorkflow>();
+        services.AddScoped<IProductLegalEntityScopeEvaluator, ProductLegalEntityScopeEvaluator>();
+        services.AddScoped<ProductLegalEntityScopeWriteFenceCoordinator>();
+        services.AddScoped<ProductIdentityBackgroundScope>();
+        services.AddScoped<LskuBackgroundScope>();
+        services.AddSingleton<IProductLegalEntityScopeActivationDebt>(ProductLegalEntityScopeActivationDebt.Instance);
+        services.AddScoped<ProductLegalEntityScopeProductAccess>();
+        // MOD-0290-FU04 S3 — what the four stock-behaviour handlers share (permission, scope, write shape).
+        services.AddScoped<Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourContext>();
 
         return services;
     }

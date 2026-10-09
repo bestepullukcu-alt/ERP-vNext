@@ -6,7 +6,8 @@ namespace Diten.AuthService.Domain.Authorization;
 
 /// <summary>
 /// The pure decision core of the ONE-WAY export backfill, shared by every "{module}.export" key that used to be covered
-/// by its "{module}.read" key (BL-452: <c>auth.users.export</c>; WP-ROLES-CLOSE-01: <c>auth.roles.export</c>).
+/// by its "{module}.read" key (BL-452: <c>auth.users.export</c>; WP-ROLES-CLOSE-01: <c>auth.roles.export</c>;
+/// WP-MDM-BRAND-ACCEPT-01 M-4: <c>mdm.brands.export</c>, folded in here by WP-CT-LANE-TKO-MERGE-01 instead of a second rule).
 ///
 /// <para><b>What it does.</b> Before an export key existed, exporting a list needed only its read key. On the upgrade
 /// every role of an OLD tenant that holds read also receives export — nobody loses a capability they had yesterday —
@@ -77,8 +78,13 @@ public static class ExportGrantBackfill
     public static readonly KeyPair Users = new("auth.users.read", "auth.users.export", "users-export-backfill");
     public static readonly KeyPair Roles = new("auth.roles.read", "auth.roles.export", "roles-export-backfill");
 
+    /// <summary>WP-MDM-BRAND-ACCEPT-01 (M-4) — the Brands list's copy / print / file entries. Module brand-product-master is
+    /// not in the Admin template (DefaultRolePermissionTemplate.AdminModules), so every grant this pair backfills is a
+    /// Manual one an administrator can take away.</summary>
+    public static readonly KeyPair Brands = new("mdm.brands.read", "mdm.brands.export", "brands-export-backfill");
+
     /// <summary>Every pair the backfill covers. A new "{module}.export" key is one line here.</summary>
-    public static readonly IReadOnlyList<KeyPair> Keys = [Users, Roles];
+    public static readonly IReadOnlyList<KeyPair> Keys = [Users, Roles, Brands];
 
     /// <summary>A role document as the decision needs it. <paramref name="IsDeleted"/> roles prove the tenant's age and receive nothing.</summary>
     public sealed record RoleState(Guid RoleId, string Name, Guid TenantId, bool IsSystem, DateTimeOffset CreatedAt = default, bool IsDeleted = false);

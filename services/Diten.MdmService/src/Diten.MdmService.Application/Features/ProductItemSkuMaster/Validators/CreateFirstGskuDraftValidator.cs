@@ -36,6 +36,10 @@ public sealed class CreateFirstGskuDraftValidator : AbstractValidator<CreateFirs
         });
     }
 
+    // The pack rules of a GSKU: one place for create, update and correction (B11).
+    public static bool IsValidPack(decimal quantity, string? uom) =>
+        quantity > 0 && uom is not null && IsAllowedUom(uom) && HasValidPrecision(quantity, uom);
+
     internal static bool HasValidPrecision(decimal quantity, string uom)
     {
         var scale = (decimal.GetBits(quantity)[3] >> 16) & 0x7F;

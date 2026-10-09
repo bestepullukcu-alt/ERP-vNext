@@ -476,6 +476,8 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();
                 services.AddScoped<IWorkflowTemplateVersionRepository, WorkflowTemplateVersionRepository>();
                 services.AddScoped<IWorkflowInstanceRepository, WorkflowInstanceRepository>();
+                // FIX3 item 2 — a standalone mongod has no transactions: the start writes sequentially here, asked for by name.
+                services.AddSingleton(new Diten.Platform.Application.Features.Workflow.SequentialWorkflowStartWritesForTests());
                 services.AddScoped<IApprovalTaskRepository, ApprovalTaskRepository>();
                 services.AddScoped<IRuntimeAssignmentSnapshotRepository, RuntimeAssignmentSnapshotRepository>();
                 services.AddScoped<IWorkflowTransitionLogRepository, WorkflowTransitionLogRepository>();
@@ -504,6 +506,7 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddScoped<ITaskAssignmentScopeResolver, TaskAssignmentScopeResolver>();
                 services.AddScoped<ITaskTeamResolver, TaskTeamResolver>();
                 services.AddScoped<ITaskReadAccessPolicy, TaskReadAccessPolicy>();
+                services.AddScoped<ITaskWriteGate, TaskWriteGate>();
 
                 // ── T1b: MOD-0024's REAL transition path (TasksController → TransitionTaskItemHandler → the repository
                 //    choke point → the observer), so "start the task" is measured on the wire, not simulated ─────────

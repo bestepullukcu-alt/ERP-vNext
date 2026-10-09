@@ -100,6 +100,12 @@ public sealed class AcceptTimeSuggestionHandler : IRequestHandler<AcceptTimeSugg
             {
                 return Fail("Unknown task.", 400, TimeEntryReasonCodes.TargetInvalid, request);
             }
+
+            // FIX2 — the same write rule as a typed row (SaveTimeEntriesHandler).
+            if (!(await _tasks.TimeWritableTaskIdsAsync(userId, [task], ct)).Contains(task))
+            {
+                return Fail("Time cannot be recorded on this task.", 400, TimeEntryReasonCodes.TargetInvalid, request);
+            }
         }
         else
         {

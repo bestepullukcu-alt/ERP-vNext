@@ -36,9 +36,22 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
 
     public ExportGrantBackfillScenarioTests(AccountKindAcceptance.AuthTestHost host) => _host = host;
 
-    public static TheoryData<string> Keys => new() { "users", "roles" };
+    // WP-CT-LANE-TKO-MERGE-01 — "brands" (mdm.brands.export) runs every scenario too: the takeover's backfill intents
+    // (readers receive export once, a marked tenant is not looked at again, a revoke sticks) on the one rule.
+    public static TheoryData<string> Keys => new() { "users", "roles", "brands" };
 
-    private static ExportGrantBackfill.KeyPair Pair(string key) => key == "users" ? ExportGrantBackfill.Users : ExportGrantBackfill.Roles;
+    // The two scenarios whose PREMISE is the Admin template or the default tenant's Viewer holding the read key — true of
+    // the access-governance keys only (S-C: the default tenant's Viewer reads; the source correction: the template gives
+    // Admin export). Brand-product-master is not an Admin module and the default tenant's Viewer does not read brands, so
+    // these two run for users and roles; every other scenario, S-G's revoke included, runs for brands too.
+    public static TheoryData<string> TemplateKeys => new() { "users", "roles" };
+
+    private static ExportGrantBackfill.KeyPair Pair(string key) => key switch
+    {
+        "users" => ExportGrantBackfill.Users,
+        "brands" => ExportGrantBackfill.Brands,
+        _ => ExportGrantBackfill.Roles
+    };
     private static ExportGrantBackfill.KeyPair Other(ExportGrantBackfill.KeyPair pair) => pair == ExportGrantBackfill.Users ? ExportGrantBackfill.Roles : ExportGrantBackfill.Users;
 
     private IMongoCollection<Permission> Permissions => _host.Database.GetCollection<Permission>("permissions");
@@ -272,8 +285,8 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
     {
         var broken = Guid.NewGuid();
         var healthy = Guid.NewGuid();
-        var brokenReaders = await OldRoleAsync(broken, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
-        var healthyReaders = await OldRoleAsync(healthy, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+        var brokenReaders = await OldRoleAsync(broken, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey, ExportGrantBackfill.Brands.ReadKey);
+        var healthyReaders = await OldRoleAsync(healthy, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey, ExportGrantBackfill.Brands.ReadKey);
         var badId = Guid.NewGuid();
         var rawRoles = _host.Database.GetCollection<BsonDocument>("roles");
         await rawRoles.InsertOneAsync(new BsonDocument
@@ -783,7 +796,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
     // ── S-C ──────────────────────────────────────────────────────────────────────────────────────────────
 
     // The host started on an empty database: the production seeder created the keys, then the default tenant's roles.
-    [Theory, MemberData(nameof(Keys))]
+    [Theory, MemberData(nameof(TemplateKeys))]
     public async Task S_C_On_a_brand_new_database_the_default_tenants_Viewer_reads_but_does_not_export(string key)
     {
         var pair = Pair(key);
@@ -911,6 +924,9 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
     public async Task S_G_Export_backfilled_onto_a_custom_role_can_be_taken_away_on_the_products_own_path_and_stays_away(string key)
     {
         var pair = Pair(key);
+        // Merge WP-CT-LANE-TKO-MERGE-01 — brand-product-master is not an Admin module: for "brands" the template gives Admin
+        // nothing, so its backfilled grant is Manual (and removable) like everybody else's. The revoke that sticks is the same.
+        var templateGivesAdmin = pair != ExportGrantBackfill.Brands;
         var world = RoleEndpointWorld.Create(_host, "Rana", "Steward"); // a person of the old tenant who administers roles
         var tenant = world.TenantId;
         var admin = await RoleAsync(tenant, "Admin", old: true, system: true, GrantSource.System, pair.ReadKey);
@@ -921,7 +937,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
 
         // Admin: the template gives it export → template-managed, locked on the screen like the rest of its baseline.
         // Viewer and the custom role: nothing re-provisions the grant → it is the administrator's to take away.
-        Assert.Equal(GrantSource.System, (await GrantRowAsync(admin, export.Id)).GrantSource);
+        Assert.Equal(templateGivesAdmin ? GrantSource.System : GrantSource.Manual, (await GrantRowAsync(admin, export.Id)).GrantSource);
         Assert.Equal(GrantSource.Manual, (await GrantRowAsync(viewer, export.Id)).GrantSource);
         Assert.Equal(GrantSource.Manual, (await GrantRowAsync(readers, export.Id)).GrantSource);
 
@@ -931,9 +947,12 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Assert.True(revoked.StatusCode == HttpStatusCode.NoContent, await revoked.Content.ReadAsStringAsync());
         Assert.False(await HoldsAsync(readers, pair));
 
-        var locked = await client.DeleteAsync($"api/roles/{admin}/permissions/{export.Id}");
-        Assert.Equal(HttpStatusCode.Conflict, locked.StatusCode);
-        Assert.Contains(RoleErrorCodes.PermissionGrantManaged, await locked.Content.ReadAsStringAsync());
+        if (templateGivesAdmin)
+        {
+            var locked = await client.DeleteAsync($"api/roles/{admin}/permissions/{export.Id}");
+            Assert.Equal(HttpStatusCode.Conflict, locked.StatusCode);
+            Assert.Contains(RoleErrorCodes.PermissionGrantManaged, await locked.Content.ReadAsStringAsync());
+        }
 
         await DataSeeder.SeedAsync(_host.Database); // a restart
         await DataSeeder.SeedAsync(_host.Database);
@@ -1082,7 +1101,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
 
     // ── FIX2 item 4: the one-time SOURCE correction of what an earlier build wrote ────────────────────────
 
-    [Theory, MemberData(nameof(Keys))]
+    [Theory, MemberData(nameof(TemplateKeys))]
     public async Task System_filed_export_grants_of_an_earlier_build_become_Manual_once_can_then_be_revoked_and_nothing_is_added_or_removed(string key)
     {
         var pair = Pair(key);
@@ -1247,8 +1266,8 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
     {
         var withBrokenMark = Guid.NewGuid();
         var healthy = Guid.NewGuid();
-        var brokenMarkReaders = await OldRoleAsync(withBrokenMark, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
-        var healthyReaders = await OldRoleAsync(healthy, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+        var brokenMarkReaders = await OldRoleAsync(withBrokenMark, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey, ExportGrantBackfill.Brands.ReadKey);
+        var healthyReaders = await OldRoleAsync(healthy, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey, ExportGrantBackfill.Brands.ReadKey);
         var badMarkId = Guid.NewGuid();
         var textRoleId = Guid.NewGuid();
         var rawMarks = _host.Database.GetCollection<BsonDocument>(PermissionReconciliationMark.CollectionName);

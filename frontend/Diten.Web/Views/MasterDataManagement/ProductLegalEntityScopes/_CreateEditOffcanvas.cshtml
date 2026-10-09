@@ -1,0 +1,37 @@
+@using Diten.Web.Views.MasterDataManagement.ProductLegalEntityScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductLegalEntityScopesIndex> Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+@model Diten.Web.Models.ProductLegalEntityScopes.ProductLegalEntityScopeWriteViewModel
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit">
+    <div class="offcanvas-header">
+        <h5 id="productScopeFormTitle" class="offcanvas-title">@Localizer["ConfigureTitle"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="formProductScope" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="formAttemptToken" name="FormAttemptToken" value="@ViewData["ProductScopeAttemptToken"]" />
+            <input type="hidden" id="expectedVersion" name="ExpectedVersion" />
+            <div class="mb-3">
+                <label class="form-label" for="globalProductId">@Localizer["GlobalProduct"] *</label>
+                <select id="globalProductId" name="GlobalProductId" class="form-select" required><option value=""></option></select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="scopeMode">@Localizer["ScopeMode"] *</label>
+                <select id="scopeMode" name="Mode" class="form-select" required>
+                    <option value=""></option>
+                    <option value="1">@Localizer["GroupWide"]</option>
+                    <option value="2">@Localizer["Scoped"]</option>
+                </select>
+            </div>
+            <div id="legalEntityField" class="mb-3 d-none">
+                <label class="form-label" for="legalEntityIds">@Localizer["LegalEntities"] *</label>
+                <select id="legalEntityIds" name="LegalEntityIds" class="form-select" multiple="multiple"></select>
+                <div class="form-text">@Localizer["LegalEntityLimitHint"]</div>
+            </div>
+            <div id="requiredProgress">0/2</div>
+            <button id="btnSaveProductScope" type="button" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+        </form>
+    </div>
+</div>

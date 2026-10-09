@@ -235,4 +235,4 @@ public sealed record GetTaskTypeGoverningDocumentsQuery(
 /// the closest existing term+limit lookup — rather than opening a second one.
 /// </summary>
 public sealed record GetTaskLinkCandidatesQuery(string? Term, int Limit, string CorrelationId)
-    : IRequest<Response<IReadOnlyList<TaskLinkCandidateDto>>>;
+    : IRequest<Response<TaskLinkCandidatesDto>>;

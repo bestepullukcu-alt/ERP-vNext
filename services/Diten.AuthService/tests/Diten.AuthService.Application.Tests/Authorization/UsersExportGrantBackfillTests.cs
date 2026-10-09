@@ -298,7 +298,9 @@ public sealed class UsersExportGrantBackfillTests
     public void Both_export_keys_are_covered_and_name_the_keys_the_endpoints_and_screens_use()
     {
         Assert.Equal(
-            [(UsersExportGrantBackfill.ReadKey, UsersExportGrantBackfill.ExportKey), (RolesExportGrantBackfill.ReadKey, RolesExportGrantBackfill.ExportKey)],
+            [(UsersExportGrantBackfill.ReadKey, UsersExportGrantBackfill.ExportKey), (RolesExportGrantBackfill.ReadKey, RolesExportGrantBackfill.ExportKey),
+                // Merge WP-CT-LANE-TKO-MERGE-01 — the takeover's brands key is a pair of this one rule (WP-MDM-BRAND-ACCEPT-01 M-4).
+                ("mdm.brands.read", "mdm.brands.export")],
             ExportGrantBackfill.Keys.Select(k => (k.ReadKey, k.ExportKey)));
         Assert.Equal(RolesExportGrantBackfill.AuditSource, ExportGrantBackfill.Roles.AuditSource);
         Assert.NotEqual(ExportGrantBackfill.Users.AuditSource, ExportGrantBackfill.Users.CorrectionAuditSource);

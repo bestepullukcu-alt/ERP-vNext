@@ -114,6 +114,11 @@ public sealed class ModuleManifestCarriesNoAddressTests
             "ModuleManifestAction.IsRowAction",
             "ModuleManifestAction.IsToolbarAction",
             "ModuleManifestAction.PermissionKey",
+            // Reviewed 2026-10-01 (product-five takeover): a MODULE CODE naming which module owns the permission
+            // key. RegisterModuleManifestCommandHandler.ResolvePermissionOwnerModuleCode passes it through
+            // ModuleCatalogCodeNormalizer and hands it to the permission sync as an attribution label; nothing
+            // dials it, so it cannot carry a scheme/host/port. Same field on the page, below.
+            "ModuleManifestAction.PermissionOwnerModuleCode",
             "ModuleManifestAction.SortOrder",
             "ModuleManifestDocument.DisplayName",
             "ModuleManifestDocument.Domain",
@@ -152,6 +157,7 @@ public sealed class ModuleManifestCarriesNoAddressTests
             "ModuleManifestPage.PageCode",
             "ModuleManifestPage.PageType",
             "ModuleManifestPage.ParentPageCode",
+            "ModuleManifestPage.PermissionOwnerModuleCode",
             "ModuleManifestPage.RequiredPermission",
             "ModuleManifestPage.RoutePath",
             "ModuleManifestPage.SortOrder"

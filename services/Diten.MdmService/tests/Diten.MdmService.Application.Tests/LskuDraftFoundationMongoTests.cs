@@ -18,7 +18,6 @@ namespace Diten.MdmService.Application.Tests;
 public sealed class LskuDraftFoundationMongoTests
 {
     [Theory]
-    [InlineData(ProductIdentityLifecycleStatus.Draft)]
     [InlineData(ProductIdentityLifecycleStatus.IdentityApproved)]
     public async Task Referenceable_parent_create_persists_identity_evidence_binding_and_replays(
         ProductIdentityLifecycleStatus lifecycle)
@@ -102,7 +101,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Payload_drift_conflicts_without_second_code_or_provider_resolution()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var market = new MarketResolver();
         var handler = scope.Handler(scope.TenantA, market: market);
         Assert.True((await handler.Handle(Command(gsku.Id, "TR", "drift"), CancellationToken.None)).IsSuccessful);
@@ -118,10 +117,59 @@ public sealed class LskuDraftFoundationMongoTests
     }
 
     [Fact]
-    public async Task Concurrent_different_commands_have_one_winner_and_replayable_pending_reconciliation_loser()
+    public async Task Enforced_scope_denial_precedes_replay_payload_drift_and_second_mutation()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
+        var market = new MarketResolver();
+        var preparation = scope.Handler(scope.TenantA, market: market);
+        Assert.True((await preparation.Handle(Command(gsku.Id, "TR", "scope-drift"), default)).IsSuccessful);
+
+        var revision = await scope.Database
+            .GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")
+            .Find(item => item.Id == gsku.ProductDefinitionRevisionId)
+            .SingleAsync();
+        var candidateLegalEntityId = Guid.NewGuid();
+        var policy = ProductLegalEntityScopePolicy.Create(
+            scope.TenantA,
+            revision.GlobalProductId,
+            Guid.NewGuid(),
+            ProductLegalEntityScopeMode.Scoped,
+            [Guid.NewGuid()],
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow);
+        await scope.Database
+            .GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies")
+            .InsertOneAsync(policy);
+        var tenant = scope.Tenant(scope.TenantA);
+        var policies = new ProductLegalEntityScopePolicyRepository(scope.Database, tenant);
+        var enforced = ProductLegalEntityScopeTestFixture.Enforced(
+            tenant,
+            [candidateLegalEntityId],
+            policies);
+
+        var drift = await scope.Handler(scope.TenantA, market: market, access: enforced)
+            .Handle(Command(gsku.Id, "US", "scope-drift"), default);
+
+        Assert.False(drift.IsSuccessful);
+        Assert.Equal(404, drift.StatusCode);
+        Assert.Contains("GSKU_NOT_REFERENCEABLE", drift.Errors);
+        Assert.Equal(1, market.Calls);
+        Assert.Equal(1, await scope.Lskus.CountDocumentsAsync(FilterDefinition<Lsku>.Empty));
+        Assert.Equal(1, await scope.Reservations.CountDocumentsAsync(FilterDefinition<CodeReservation>.Empty));
+    }
+
+    /*
+     * LSKU FIX1 B1 — changed from "the loser is a reconcilable 202" (PACK:2150-2158). That 202 left the loser's admission
+     * on the GSKU for good and its consumed code pending. Now the market is checked before any admission; a loser that
+     * passed the check before the winner wrote meets the store's unique key, its consumed code is burned and its
+     * admission goes back. Either way it is a 409 LSKU_MARKET_ALREADY_EXISTS, and so is its repeat.
+     */
+    [Fact]
+    public async Task Concurrent_different_commands_have_one_winner_and_the_loser_is_refused_as_the_same_market()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var first = scope.Handler(scope.TenantA);
         var second = scope.Handler(scope.TenantA);
 
@@ -132,44 +180,29 @@ public sealed class LskuDraftFoundationMongoTests
         var winner = Assert.Single(results, result => result.IsSuccessful);
         Assert.Equal(201, winner.StatusCode);
         var loser = Assert.Single(results, result => !result.IsSuccessful);
-        Assert.Equal(202, loser.StatusCode);
-        Assert.Contains("LSKU_BINDING_RECONCILIATION_REQUIRED", loser.Errors);
+        Assert.Equal(409, loser.StatusCode);
+        Assert.Contains("LSKU_MARKET_ALREADY_EXISTS", loser.Errors);
         Assert.Equal(1, await scope.Lskus.CountDocumentsAsync(FilterDefinition<Lsku>.Empty));
-        var reservations = await scope.Reservations.Find(FilterDefinition<CodeReservation>.Empty).ToListAsync();
-        Assert.Equal(2, reservations.Count);
-        Assert.Equal(2, reservations.Select(x => x.ReservedCode).Distinct(StringComparer.Ordinal).Count());
-        var confirmed = Assert.Single(
-            reservations,
-            reservation => reservation.BindingState == CodeReservationBindingState.Confirmed);
-        var pending = Assert.Single(
-            reservations,
-            reservation => reservation.BindingState == CodeReservationBindingState.PendingIdentityWrite);
-        Assert.Equal(CodeReservationState.Consumed, confirmed.ReservationState);
-        Assert.Equal(CodeReservationState.Consumed, pending.ReservationState);
         var stored = await scope.Lskus.Find(FilterDefinition<Lsku>.Empty).SingleAsync();
+        var reservations = await scope.Reservations.Find(FilterDefinition<CodeReservation>.Empty).ToListAsync();
+        var confirmed = Assert.Single(reservations,
+            reservation => reservation.BindingState == CodeReservationBindingState.Confirmed);
         Assert.Equal(stored.Id, confirmed.ConsumedEntityId);
-        Assert.NotEqual(stored.Id, pending.ConsumedEntityId);
-        Assert.Equal(
-            ["RACE-A", "RACE-B"],
-            reservations.Select(x => x.ReservationCommandId).OrderBy(x => x, StringComparer.Ordinal));
+        // The loser either took no code (refused by the check) or its consumed code is burned — never left pending.
+        Assert.All(reservations.Where(x => x.Id != confirmed.Id),
+            x => Assert.Equal(CodeReservationBindingState.Burned, x.BindingState));
+        Assert.DoesNotContain(reservations, x => x.BindingState == CodeReservationBindingState.PendingIdentityWrite);
 
-        var losingCommandId = pending.ReservationCommandId;
+        var losingCommandId = Assert.Single(new[] { "RACE-A", "RACE-B" }, x => x != stored.CreationCommandId);
         var replay = await scope.Handler(scope.TenantA).Handle(
             Command(gsku.Id, "TR", losingCommandId),
             CancellationToken.None);
 
         Assert.False(replay.IsSuccessful);
-        Assert.Equal(202, replay.StatusCode);
-        Assert.Contains("LSKU_BINDING_RECONCILIATION_REQUIRED", replay.Errors);
+        Assert.Equal(409, replay.StatusCode);
+        Assert.Contains("LSKU_MARKET_ALREADY_EXISTS", replay.Errors);
         Assert.Equal(1, await scope.Lskus.CountDocumentsAsync(FilterDefinition<Lsku>.Empty));
-        var replayedReservations = await scope.Reservations.Find(FilterDefinition<CodeReservation>.Empty).ToListAsync();
-        Assert.Equal(2, replayedReservations.Count);
-        Assert.Equal(
-            reservations.Select(x => (x.Id, x.ReservedCode)).OrderBy(x => x.Id),
-            replayedReservations.Select(x => (x.Id, x.ReservedCode)).OrderBy(x => x.Id));
-        var replayedPending = Assert.Single(replayedReservations, x => x.Id == pending.Id);
-        Assert.Equal(CodeReservationState.Consumed, replayedPending.ReservationState);
-        Assert.Equal(CodeReservationBindingState.PendingIdentityWrite, replayedPending.BindingState);
+        Assert.Empty((await scope.Gskus.Find(x => x.Id == gsku.Id).SingleAsync()).ChildCreationAdmissions);
         var indexes = await (await scope.Lskus.Indexes.ListAsync()).ToListAsync();
         var identityIndex = Assert.Single(indexes, index => index["name"] == "ux_mdm_lskus_tenant_gsku_market");
         Assert.True(identityIndex["unique"].AsBoolean);
@@ -180,7 +213,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Soft_delete_tombstone_never_releases_gsku_market_or_canonical_code()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var handler = scope.Handler(scope.TenantA);
         var created = await handler.Handle(Command(gsku.Id, "TR", "tombstone-a"), CancellationToken.None);
         Assert.True(created.IsSuccessful);
@@ -203,7 +236,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Explicit_ambiguous_write_recovers_from_real_mongo_or_remains_pending_for_reconciliation()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var inner = scope.LskuRepository(scope.TenantA);
         var recovered = await scope.Handler(
                 scope.TenantA,
@@ -232,7 +265,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Provider_failure_mapping_mutates_neither_reservation_nor_identity(int statusCode)
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var response = await scope.Handler(scope.TenantA, market: new MarketResolver(statusCode))
             .Handle(Command(gsku.Id, "TR", "provider-" + statusCode), CancellationToken.None);
 
@@ -288,10 +321,24 @@ public sealed class LskuDraftFoundationMongoTests
             inner.GetByIdentityKeyAsync(gskuId, marketCode, cancellationToken);
 
         public async Task<LskuCreateResult> CreateDraftAsync(Lsku lsku, CancellationToken cancellationToken = default)
+            => await CreateAmbiguousAsync(lsku, null, cancellationToken);
+
+        public async Task<LskuCreateResult> CreateDraftWithAdmissionAsync(
+            Lsku lsku,
+            string admissionFingerprint,
+            CancellationToken cancellationToken = default)
+            => await CreateAmbiguousAsync(lsku, admissionFingerprint, cancellationToken);
+
+        private async Task<LskuCreateResult> CreateAmbiguousAsync(
+            Lsku lsku,
+            string? admissionFingerprint,
+            CancellationToken cancellationToken)
         {
             if (persistBeforeAmbiguous)
             {
-                var persisted = await inner.CreateDraftAsync(lsku, cancellationToken);
+                var persisted = admissionFingerprint is null
+                    ? await inner.CreateDraftAsync(lsku, cancellationToken)
+                    : await inner.CreateDraftWithAdmissionAsync(lsku, admissionFingerprint, cancellationToken);
                 Assert.True(persisted.Succeeded, persisted.ErrorCode);
             }
 
@@ -349,10 +396,35 @@ public sealed class LskuDraftFoundationMongoTests
             ProductIdentityLifecycleStatus lifecycle,
             Guid? id = null)
         {
+            var product = new GlobalProduct
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                CanonicalCode = "GP-" + Guid.NewGuid().ToString("N"),
+                GlobalProductName = "LSKU Parent",
+                GlobalProductNameNormalized = "LSKU PARENT " + Guid.NewGuid().ToString("N"),
+                CodeReservationId = Guid.NewGuid(),
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
+                IsDeleted = false
+            };
+            var revision = new ProductDefinitionRevision
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                GlobalProductId = product.Id,
+                RevisionIdentifier = "REV-001",
+                CreationCommandId = "REV:" + Guid.NewGuid().ToString("N"),
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
+                IsDeleted = false
+            };
+            await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);
+            await Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")
+                .InsertOneAsync(revision);
             var gsku = new Gsku
             {
                 Id = id ?? Guid.NewGuid(),
                 TenantId = tenantId,
+                ProductDefinitionRevisionId = revision.Id,
                 CanonicalCode = "GS-" + Guid.NewGuid().ToString("N"),
                 LifecycleStatus = lifecycle,
                 Version = 0
@@ -366,21 +438,28 @@ public sealed class LskuDraftFoundationMongoTests
         public CreateLskuDraftHandler Handler(
             Guid tenantId,
             ILskuRepository? lskus = null,
-            IVerifiedMarketReferenceResolver? market = null)
+            IVerifiedMarketReferenceResolver? market = null,
+            ProductLegalEntityScopeTestDependencies? access = null)
         {
             var tenant = Tenant(tenantId);
+            access ??= ProductLegalEntityScopeTestFixture.Preparation(tenant);
             return new CreateLskuDraftHandler(
                 new CodeReservationRepository(Database, tenant),
                 lskus ?? new LskuRepository(Database, tenant),
                 new GskuRepository(Database, tenant),
+                new ProductDefinitionRevisionRepository(Database, tenant),
+                new GlobalProductRepository(Database, tenant),
                 market ?? new MarketResolver(),
                 tenant,
-                new ActorContext());
+                new ActorContext(),
+                access.Rollouts,
+                access.Policies,
+                access.Candidates);
         }
 
         public async ValueTask DisposeAsync() => await _client.DropDatabaseAsync(_databaseName);
 
-        private static TenantContext Tenant(Guid tenantId)
+        internal TenantContext Tenant(Guid tenantId)
         {
             var context = new TenantContext();
             context.SetTenant(tenantId);

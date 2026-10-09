@@ -394,3 +394,66 @@ MOD-0162 / MOD-0165 / MOD-0151 flag setleri **değişmez**.
 1. **`Campaign / Targeting Boundary Pack Authorization`** (MOD-0165 / MOD-0167 zincirinin devamı)
 2. **`MOD-0290-FU02 — Brand/Product Master Implementation`** — yalnız §3/§4/§11/§12 sözleşmesi; campaign,
    frequency, visit ve content runtime'ı **açılmaz**.
+
+## Product-five entitlement end-to-end fix amendment — approved 2026-09-29
+
+This amendment records only `PRODUCT-FIVE-ENTITLEMENT-END-TO-END-FIX-02`. It preserves this pack's frontmatter,
+`status: draft`, `runtime_code_allowed: false` and all historical evidence. It authorizes no Brand/Product runtime,
+grant execution or live reconciliation; the runtime authority for the shared checkpoint remains in MOD-0018-FU18/FU19.
+
+### Bounded contract
+
+- `mdm.brands.read` remains owned by `brand-product-master`. The `product-item-sku-master` manifest is only a
+  consumer and carries that owner through explicit `PermissionOwnerModuleCode`; permission-key prefix inference is
+  forbidden. Registration order and replay must converge on the same owner and cannot re-attribute the permission to
+  the consumer module.
+- `mdm.product-identity.lifecycle-operations.recover` remains catalogued, but no new human-role grant may be created
+  through default-role selection (including Admin, Viewer and SuperAdmin), tenant-assignability, catalog
+  create/reactivate full-catalog auto-grant, or manual assignment in tenant or platform-admin context. Existing
+  historical grants are not scanned or automatically deleted; any remediation/revocation is a separate operation.
+- The policy is exact-key bounded. Existing Finished Good behavior, adjacent permissions, the previously approved
+  six-row GSKU/LSKU add delta and provenance-bounded stale LSKU direct-retire removal are not widened or redefined.
+  No live catalog/role mutation, token refresh, service restart or Production enablement is authorized.
+
+### Exact 24-path checkpoint allow-list
+
+1. `execution/domains/platform-shared-services/module-packs/MOD-0018-FU18-gsku-permission-onboarding.md`
+2. `execution/domains/platform-shared-services/module-packs/MOD-0018-FU19-lsku-permission-onboarding.md`
+3. `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs`
+4. `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs`
+5. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`
+6. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementSyncConsumerTests.cs`
+7. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs`
+8. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`
+9. `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+10. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+11. `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`
+12. `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IFullCatalogPermissionGrantService.cs`
+13. `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/FullCatalogPermissionGrantService.cs`
+14. `services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/InternalPermissionsController.cs`
+15. `services/Diten.AuthService/src/Diten.AuthService.Application/Features/Roles/Handlers/CommandHandlers/AssignPermissionCommandHandler.cs`
+16. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`
+17. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Permissions/FullCatalogPermissionGrantServiceTests.cs`
+18. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Permissions/InternalPermissionsControllerTests.cs`
+19. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/AssignPermissionCommandHandlerTests.cs`
+20. `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/ModuleManifestDocument.cs`
+21. `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleRegistration/RegisterModuleManifestCommandHandler.cs`
+22. `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ModuleRegistration/RegisterModuleManifestCommandHandlerTests.cs`
+23. `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ModuleCatalog/CatalogPermissionSyncServiceTests.cs`
+24. `execution/domains/master-data-management/module-packs/MOD-0290-FU01-brand-product-master-boundary.md`
+
+Every other tracked path is out of scope; `.local/**` and `.testoutput/**` remain non-checkpoint artifacts.
+
+### Test gates before checkpoint
+
+- MDM manifest tests prove exact unique canonical descriptors, recovery as non-interactive System-only metadata,
+  unchanged Finished Good contract, and explicit `brand-product-master` ownership for `mdm.brands.read`.
+- Platform registration/catalog tests prove page/action owner propagation, no prefix inference, descriptor-order
+  independence, replay convergence and the generic Auth payload retaining `brand-product-master`.
+- Auth tests prove recovery stays catalogued while every default/SuperAdmin/full-catalog/manual human grant-creation
+  path rejects it in tenant and platform-admin contexts; adjacent permission behavior and historical grants remain
+  unchanged.
+- Profile/sync/Mongo/consumer tests retain the six-row delta, zero recovery grants, provenance-bounded LSKU revoke,
+  replay idempotency, tenant/source isolation, Manual/System/other-source preservation and failure/retry semantics.
+- Focused affected suites plus Auth, MDM, Platform and Building Blocks Release builds must pass. Test evidence does
+  not claim live reconciliation, general authorization expansion, Finished Good acceptance or Production enablement.

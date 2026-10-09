@@ -685,6 +685,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Edit task</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Brand &amp; Product Master</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Product / Item / SKU Master</value>
   </data>

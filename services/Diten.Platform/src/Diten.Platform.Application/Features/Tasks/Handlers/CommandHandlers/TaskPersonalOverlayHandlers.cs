@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Commands;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Repositories;
@@ -40,12 +41,16 @@ public sealed class AddTaskPersonalNoteHandler
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public AddTaskPersonalNoteHandler(
         ITaskItemRepository tasks,
         ITaskPersonalOverlayRepository overlays,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _overlays = overlays;
         _currentUser = currentUser;
@@ -68,6 +73,13 @@ public sealed class AddTaskPersonalNoteHandler
         if (task is null)
         {
             return Response<Guid>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Personal, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<Guid>(command.CorrelationId);
         }
 
         var overlay = await _overlays.GetAsync(task.Id, _currentUser.UserId, ct)
@@ -155,12 +167,16 @@ public sealed class SetTaskSnoozeHandler : IRequestHandler<SetTaskSnoozeCommand,
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public SetTaskSnoozeHandler(
         ITaskItemRepository tasks,
         ITaskPersonalOverlayRepository overlays,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _overlays = overlays;
         _currentUser = currentUser;
@@ -191,6 +207,13 @@ public sealed class SetTaskSnoozeHandler : IRequestHandler<SetTaskSnoozeCommand,
         {
             return Response<NoContent>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Personal, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         var overlay = await _overlays.GetAsync(task.Id, _currentUser.UserId, ct)
@@ -224,12 +247,16 @@ public sealed class SetTaskPinnedHandler : IRequestHandler<SetTaskPinnedCommand,
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public SetTaskPinnedHandler(
         ITaskItemRepository tasks,
         ITaskPersonalOverlayRepository overlays,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _overlays = overlays;
         _currentUser = currentUser;
@@ -243,6 +270,13 @@ public sealed class SetTaskPinnedHandler : IRequestHandler<SetTaskPinnedCommand,
         {
             return Response<NoContent>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Personal, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         var overlay = await _overlays.GetAsync(task.Id, _currentUser.UserId, ct)

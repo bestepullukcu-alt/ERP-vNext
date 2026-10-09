@@ -624,6 +624,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>تحرير المهمة</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>البيانات الرئيسية للعلامات التجارية والمنتجات</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>البيانات الرئيسية للمنتج / الصنف / وحدة حفظ المخزون</value>
   </data>

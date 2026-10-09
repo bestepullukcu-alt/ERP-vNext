@@ -5,6 +5,7 @@ using Diten.Platform.Application.Features.Meetings.RecordLinks;
 using Diten.Platform.Application.Features.Meetings.Services;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Commands;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -283,17 +284,25 @@ public sealed class LinkExistingTaskHandler : IRequestHandler<LinkExistingTaskCo
     private readonly IAgendaItemRepository _agendaItems;
     private readonly ITaskItemRepository _tasks;
     private readonly IRecordLinkService _links;
+    private readonly ITaskReadAccessPolicy _readAccess;
+    private readonly ICurrentUserContext _currentUser;
 
     public LinkExistingTaskHandler(
         IMeetingRepository meetings,
         IAgendaItemRepository agendaItems,
         ITaskItemRepository tasks,
-        IRecordLinkService links)
+        IRecordLinkService links,
+        // WP-WCN-TASK-REQUEST-01 FIX3 (item 4) — required, for the reason the task write gate is: a read rule that
+        // defaults to "everybody reads" cannot be caught by review.
+        ITaskReadAccessPolicy readAccess,
+        ICurrentUserContext currentUser)
     {
         _meetings = meetings;
         _agendaItems = agendaItems;
         _tasks = tasks;
         _links = links;
+        _readAccess = readAccess;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NoContent>> Handle(LinkExistingTaskCommand command, CancellationToken ct)
@@ -308,11 +317,14 @@ public sealed class LinkExistingTaskHandler : IRequestHandler<LinkExistingTaskCo
 
         // Tenant-filtered by the repository's own execution filter — a cross-tenant or deleted task id reads as
         // "not found", never a metadata leak (pack §13).
+        //
+        // FIX3 (item 4) — and so does a task the caller cannot READ (MOD-0024's own read rule, BL-349): it was linked
+        // all the same, and the 404 / 200 / 409 that followed told the caller which ids exist in the tenant — then the
+        // meeting's linked-task list printed the title. Unreadable is absent: the same 404, the same body.
         var task = await _tasks.GetByIdAsync(request.TaskId, ct);
-        if (task is null)
+        if (task is null || !await _readAccess.CanReadAsync(task, _currentUser.UserId, ct))
         {
-            return Response<NoContent>.Fail(
-                "This task could not be found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return TaskWriteGate.NotFound.ToResponse<NoContent>(command.CorrelationId);
         }
 
         AgendaItem? agendaItem = null;
@@ -367,14 +379,17 @@ public sealed class ScheduleReviewMeetingForTaskHandler
     private readonly IMeetingIdempotencyKeyResolver _idempotency;
     private readonly ICurrentUserContext _currentUser;
     private readonly IMediator _mediator;
+    private readonly Tasks.Services.ITaskWriteGate _writeGate;
 
     public ScheduleReviewMeetingForTaskHandler(
         ITaskItemRepository tasks,
         IRecordLinkService links,
         IMeetingIdempotencyKeyResolver idempotency,
         ICurrentUserContext currentUser,
-        IMediator mediator)
+        IMediator mediator,
+        Tasks.Services.ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _links = links;
         _idempotency = idempotency;
@@ -389,8 +404,18 @@ public sealed class ScheduleReviewMeetingForTaskHandler
         var task = await _tasks.GetByIdAsync(command.TaskId, ct);
         if (task is null)
         {
+            // FIX3 (item 3) — the write gate's own "not found", body and all: the three ways this handler says a task
+            // is not there (none, unreadable, neither holder nor requester) must not be told apart by their text.
+            return Tasks.Services.TaskWriteGate.NotFound.ToResponse<ScheduleReviewMeetingForTaskResultDto>(command.CorrelationId);
+        }
+
+        // WP-WCN-TASK-REQUEST-01 FIX2 — the review meeting is linked ONTO the task and gates its completion: a write on
+        // the task, through its write gate (read 404; the sender of an accepted request may not direct its holder's
+        // review, 403). The holder-or-requester rule below narrows it further.
+        if (await _writeGate.CheckAsync(task, Tasks.Services.TaskWriteKind.Change, ct) is { } refused)
+        {
             return Response<ScheduleReviewMeetingForTaskResultDto>.Fail(
-                "This task could not be found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+                refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
         }
 
         // "the task must be one the actor can read" (pack §7 NE, K9-adjacent) — holder or requester, never a
@@ -399,8 +424,7 @@ public sealed class ScheduleReviewMeetingForTaskHandler
         var isRequester = task.CreatedByUserId == _currentUser.UserId;
         if (!isHolder && !isRequester)
         {
-            return Response<ScheduleReviewMeetingForTaskResultDto>.Fail(
-                "This task could not be found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return Tasks.Services.TaskWriteGate.NotFound.ToResponse<ScheduleReviewMeetingForTaskResultDto>(command.CorrelationId);
         }
 
         // K11 — the bridge's own idempotency, checked BEFORE the "already scheduled" guard below: a resubmit of

@@ -232,7 +232,7 @@ public sealed class TaskWaitingOnPersonTests
                     new FakePositionRepository([.. _positions]),
                     new FakeOrganizationUnitRepository([.. _units]),
                     Notifications,
-                    NullLogger<InquireTaskItemHandler>.Instance)
+                    NullLogger<InquireTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new InquireTaskItemCommand(
                         Task.Id, new InquireTaskItemRequest(Task.Version, reason, waitingOn), "corr"),
@@ -250,7 +250,7 @@ public sealed class TaskWaitingOnPersonTests
                     new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                     new FakeTaskAttachmentRepository(),
-                    Microsoft.Extensions.Logging.Abstractions.NullLogger<TransitionTaskItemHandler>.Instance)
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new TransitionTaskItemCommand(
                         Task.Id, target, new TaskTransitionRequest(Task.Version, null, null), "corr",

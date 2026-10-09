@@ -1,10 +1,23 @@
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using Diten.Platform.API.Configuration;
+using Diten.Platform.API.Security;
 using Diten.Platform.Application;
+using Diten.Platform.Application.Authorization;
+using Diten.Platform.Application.Features.Workflow;
+using Diten.Platform.Application.Features.Workflow.Services;
+using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.Platform.BackgroundJobs.Tests;
@@ -42,46 +55,80 @@ namespace Diten.Platform.BackgroundJobs.Tests;
 /// 76 and <c>builder.Build()</c> at line 221, and under minimal hosting a factory's
 /// <c>ConfigureAppConfiguration</c> is applied during <c>Build()</c> — i.e. AFTER the configuration under
 /// test has already been read and acted upon. A WAF-based guard therefore cannot influence what
-/// <c>AddInfrastructure</c> does. The cost of the choice made here is worth naming plainly: registrations
-/// made in Program.cs itself — its own four <c>AddHostedService</c> calls among them — are NOT covered by
-/// this file. Everything <c>AddApplication</c> and <c>AddInfrastructure</c> register is.
+/// <c>AddInfrastructure</c> does. The cost of the choice made here is worth naming plainly: registrations made
+/// in Program.cs itself are NOT covered by this file. The API-layer startup-maintenance registrations have their
+/// own production-helper test in <c>PlatformApiStartupExecutionModeTests</c>. Everything <c>AddApplication</c>
+/// and <c>AddInfrastructure</c> register is covered here.
 ///
 /// ⚠ WHY IT NEEDS A REAL MONGODB, which a composition test has no business needing. Measured 2026-08-31:
-/// <c>AddInfrastructure</c> does not merely REGISTER things. Between lines 497 and 549 it runs the entire
-/// migration and seed suite inline — <c>LegacySavedViewMigration</c>, <c>EnsureIndexesAsync</c>, every
-/// <c>*Seed.EnsureSeededAsync</c> — with <c>.GetAwaiter().GetResult()</c> and OUTSIDE the try/catch that
-/// honours <c>MongoDbSettings:AllowStartupWithoutDatabase</c>. (That same suite then runs a SECOND time at
-/// the end of the method, inside <c>RunMongoStartupInitialization</c>, where the switch is honoured — which
-/// is why a startup log prints <c>PositionAssignmentSeed</c> twice.) So composition cannot be separated from
-/// database access by configuration, and the switch that exists for this case is dead for the inline copy.
-/// That is a defect in its own right and is reported separately; this test simply cannot pretend otherwise.
+/// <c>AddInfrastructure</c> does not merely REGISTER things in its default mode. It runs the migration and seed
+/// suites inline and then runs the guarded startup initialization chain. The Development-only API-serving mode
+/// can now omit those operations explicitly, but this test deliberately composes the DEFAULT mode: it is the
+/// regression guard that an argument-free normal startup still builds under the production validation rules.
 ///
 /// Requiring Mongo is the established convention here rather than a new burden — see
 /// <c>MongoIntegrationHarness</c>, whose own comment states the position: "Tests built on this harness
 /// deliberately have no skip-if-unavailable escape hatch: a missing Mongo is a broken dev environment, and
-/// silently skipping is what let the bug ship." The database name below follows that file's rule for
-/// database-global work: a FIXED name, never a Guid, so it is reused rather than accumulated.
+/// silently skipping is what let the bug ship." This test instead starts a dynamic-loopback, test-owned Mongo
+/// process and deletes its whole data directory, so the default maintenance regression never reaches the
+/// application's Local Development database.
 ///
 /// ⚠ AND WHY THIS FILE LIVES IN THE BACKGROUND-JOBS TEST PROJECT rather than beside the other Platform
 /// tests. <c>AddInfrastructure</c> calls <c>BsonSerializer.RegisterSerializer</c>, which writes to a
 /// PROCESS-GLOBAL registry and THROWS if the type is already registered. Diten.Platform.Application.Tests
 /// registers those same serializers from a <c>[ModuleInitializer]</c> before its first test runs, so
 /// composing there fails with "There is already a serializer registered for type Guid" — red, but about the
-/// wrong thing. This project registers none, and hosted-service lifetime is its subject anyway. The same
-/// global registry is why the composition below is built ONCE per process behind a <c>Lazy</c>: a second
-/// <c>AddInfrastructure</c> call in one process would hit that registry again, so any further test added
-/// here must share this composition rather than compose its own.
+/// wrong thing. This project registers none, and hosted-service lifetime is its subject anyway.
+///
+/// ⚠ TWO COMPOSITIONS IN ONE PROCESS (2026-10-01). The default and the scheduler-off case each call
+/// <c>AddInfrastructure</c>, and the second call used to die on that same global registry — "There is already a
+/// serializer registered for type Guid" — whichever of the two ran second. <c>AddInfrastructure</c> now registers
+/// through <c>PlatformBsonSerializers.EnsureRegistered</c>: a repeat of the SAME serializers is accepted, a
+/// different one already in place is still refused (<c>PlatformBsonSerializersTests</c>).
 ///
 /// ⚠ THIS TEST WAS PROVED TO FAIL, not merely observed to pass. With the constructor parameter put back, it
 /// reports the production message verbatim — "Cannot consume scoped service 'MongoDB.Driver.IMongoDatabase'
 /// from singleton 'Microsoft.Extensions.Hosting.IHostedService'" — and it passes with the parameter removed.
 /// A guard that has only ever been green is not known to guard anything.
 /// </summary>
-public sealed class PlatformContainerValidationTests
+public sealed class PlatformContainerValidationTests : IClassFixture<PlatformContainerValidationTests.ContainerFixture>
 {
     [Fact]
     public async Task Platform_container_builds_under_the_validation_the_app_boots_with()
+        => await ValidateContainerAsync(runStartupMaintenance: true, schedulerEnabled: true);
+
+    [Fact]
+    public async Task Api_serving_container_builds_with_scheduler_and_dashboard_disabled()
+        => await ValidateContainerAsync(runStartupMaintenance: false, schedulerEnabled: false);
+
+    private static async Task ValidateContainerAsync(bool runStartupMaintenance, bool schedulerEnabled)
     {
+        await using var mongo = await OwnedMongoProcess.StartAsync();
+        var configuration = TestConfiguration(
+            mongo.ConnectionString,
+            "diten_platform_itest_container_validation",
+            schedulerEnabled);
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(configuration);
+        services.AddApplication();
+        services.AddInfrastructure(
+            configuration,
+            new ContainerValidationHostEnvironment(),
+            runStartupMaintenance: runStartupMaintenance);
+        services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource());
+        services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
+            Diten.Platform.API.Security.ClaimsActorPermissionContext>();
+        services.Configure<TrustedWorkflowStartAuthorizationOptions>(
+            configuration.GetSection(TrustedWorkflowStartAuthorizationOptions.SectionName));
+        services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier,
+            MongoOrgDataScopeCandidateAvailabilityClassifier>();
+        services.AddSingleton<ConfiguredTrustedWorkflowStartAuthorizationPolicy>();
+        services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<TrustedWorkflowStartAuthorizationOptions>,
+            TrustedWorkflowStartAuthorizationOptionsValidator>();
+        services.AddSingleton<ITrustedWorkflowStartAuthorizationPolicy>(provider =>
+            provider.GetRequiredService<ConfiguredTrustedWorkflowStartAuthorizationPolicy>());
+
         // ⚠ WHY ValidateOnBuild AND NOT JUST ValidateScopes, MEASURED RATHER THAN ASSUMED. Resolving
         // IEnumerable<IHostedService> from the root provider with ValidateScopes alone was tried against the
         // reverted (broken) code, and it DOES catch this particular defect — same message. ValidateOnBuild is
@@ -91,7 +138,7 @@ public sealed class PlatformContainerValidationTests
         // ask the same question rather than two similar ones.
         ServiceProvider? provider = null;
         var failure = Record.Exception(() =>
-            provider = Composition.Value.BuildServiceProvider(new ServiceProviderOptions
+            provider = services.BuildServiceProvider(new ServiceProviderOptions
             {
                 ValidateOnBuild = true,
                 ValidateScopes = true
@@ -108,6 +155,16 @@ public sealed class PlatformContainerValidationTests
             failure is null,
             "The Platform DI container does not build. This is the same validation the service performs at "
             + "startup, so the service will not start either.\n\n" + failure);
+
+        Assert.Equal(schedulerEnabled, services.Any(descriptor =>
+            descriptor.ServiceType == typeof(IBackgroundJobScheduler)));
+        Assert.Equal(schedulerEnabled, services.Any(descriptor =>
+            descriptor.ServiceType == typeof(EmailDispatchSweepJob)));
+        if (schedulerEnabled)
+        {
+            Assert.Equal(ServiceLifetime.Scoped, services.Single(descriptor =>
+                descriptor.ServiceType == typeof(EmailDispatchSweepJob)).Lifetime);
+        }
     }
 
     [Theory]
@@ -667,48 +724,130 @@ public sealed class PlatformContainerValidationTests
         public Task RegisterRecurringAsync(Diten.BuildingBlocks.BackgroundJobs.RecurringJobRegistration registration, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Composed once per process — see the BSON note in the class summary. Building several providers from
-    /// one collection is fine; calling <c>AddInfrastructure</c> more than once in a process is not.
-    /// </summary>
-    /// <summary>This test's own database — fixed name, reused across runs (see <see cref="TestConfiguration"/>).</summary>
+    /// <summary>This test's own database — fixed name, inside the class's own mongod (see <see cref="ContainerFixture"/>).</summary>
     internal const string ContainerDatabaseName = "diten_platform_itest_container_validation";
 
-    private static readonly Lazy<IServiceCollection> Composition = new(() =>
+    /// <summary>
+    /// Merge WP-CT-LANE-TKO-MERGE-01 — THE COMPOSITION THE LANE'S TESTS RESOLVE FROM, ON A TEST-OWNED MONGOD. The lane built it
+    /// once, lazily, against the shared localhost:27017; the takeover replaced the shared Mongo with a mongod each test owns. Both
+    /// kept: one owned mongod for this class (started once, its data directory removed afterwards), and on it the lane's
+    /// composition, unchanged.
+    /// </summary>
+    public sealed class ContainerFixture : IAsyncLifetime
     {
-        var configuration = TestConfiguration();
-        // BL-454 slice 2 stage D — the seed below (inside AddInfrastructure) writes the platform default templates, and it
-        // rightly never overwrites a row it does not recognise. A row an EARLIER run of a branch under development seeded
-        // (content that never shipped) would therefore stay for ever and make these tests measure stale templates. The
-        // test sets up its own state: before the seed runs, this database's platform default templates are removed.
-        ResetPlatformDefaultTemplates(new MongoDB.Driver.MongoClient(configuration["MongoDbSettings:ConnectionString"])
-            .GetDatabase(configuration["MongoDbSettings:DatabaseName"]));
+        private OwnedMongoProcess? _mongo;
+
+        public Lazy<IServiceCollection> Composition { get; private set; } = null!;
+
+        public async Task InitializeAsync()
+        {
+            _mongo = await OwnedMongoProcess.StartAsync();
+            var configuration = TestConfiguration(_mongo.ConnectionString, ContainerDatabaseName, schedulerEnabled: true);
+            Composition = new Lazy<IServiceCollection>(() =>
+            {
+                // BL-454 slice 2 stage D — the seed below (inside AddInfrastructure) writes the platform default templates, and
+                // it rightly never overwrites a row it does not recognise. The test sets up its own state: before the seed runs,
+                // this database's platform default templates are removed (on an owned, fresh mongod there are none to remove;
+                // kept so the rule holds wherever the database comes from).
+                ResetPlatformDefaultTemplates(new MongoDB.Driver.MongoClient(configuration["MongoDbSettings:ConnectionString"])
+                    .GetDatabase(configuration["MongoDbSettings:DatabaseName"]));
+                var services = new ServiceCollection();
+
+                // What the HOST always supplies, and therefore not a copy of Program.cs: WebApplicationBuilder
+                // registers the configuration and the logging services before any AddX of ours runs.
+                services.AddLogging();
+                services.AddSingleton(configuration);
+
+                services.AddApplication();
+                services.AddInfrastructure(configuration, new ContainerValidationHostEnvironment());
+
+                // ⚠ THE TWO THINGS THE WEB LAYER SUPPLIES THAT INFRASTRUCTURE SERVICES DEPEND ON (see the lane's note:
+                // IActorPermissionContext is Program.cs's own registration, reproduced; EndpointDataSource is an EMPTY data
+                // source rather than AddControllers(), which drags in the whole MVC subsystem).
+                services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource());
+                services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
+                    Diten.Platform.API.Security.ClaimsActorPermissionContext>();
+                // …and what the takeover's composition adds from Program.cs (the org data-scope classifier, the trusted
+                // workflow start policy): the same set ValidateContainerAsync registers, so both compositions are the app's.
+                services.Configure<TrustedWorkflowStartAuthorizationOptions>(
+                    configuration.GetSection(TrustedWorkflowStartAuthorizationOptions.SectionName));
+                services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier,
+                    MongoOrgDataScopeCandidateAvailabilityClassifier>();
+                services.AddSingleton<ConfiguredTrustedWorkflowStartAuthorizationPolicy>();
+                services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<TrustedWorkflowStartAuthorizationOptions>,
+                    TrustedWorkflowStartAuthorizationOptionsValidator>();
+                services.AddSingleton<ITrustedWorkflowStartAuthorizationPolicy>(provider =>
+                    provider.GetRequiredService<ConfiguredTrustedWorkflowStartAuthorizationPolicy>());
+
+                return services;
+            });
+        }
+
+        public async Task DisposeAsync()
+        {
+            if (_mongo is not null)
+            {
+                await _mongo.DisposeAsync();
+            }
+        }
+    }
+
+    private readonly ContainerFixture _fixture;
+
+    public PlatformContainerValidationTests(ContainerFixture fixture) => _fixture = fixture;
+
+    private Lazy<IServiceCollection> Composition => _fixture.Composition;
+
+    /// <summary>
+    /// D2-FIX5 item 5 — the REAL composition, read for what the SLA sweep would be given. Until now the only thing standing between
+    /// <c>Workflow:Escalation:StandingRest</c> and the sweep was a test that read <c>DependencyInjection.cs</c> as text and looked
+    /// for the registration's line: it passed with the line commented out of the method it names, or moved into a method nothing
+    /// calls. Here <c>AddInfrastructure</c> itself runs (without the startup maintenance — nothing is written), and the option the
+    /// sweep's handler is handed is resolved from the container it built: an operator's six hours arrive as six hours, and with
+    /// nothing configured the sweep keeps its day.
+    /// </summary>
+    [Fact]
+    public async Task AddInfrastructure_binds_the_escalation_options_from_configuration()
+    {
+        await using var mongo = await OwnedMongoProcess.StartAsync();
+
+        var configured = await ResolveEscalationOptionsAsync(
+            mongo, new Dictionary<string, string?> { ["Workflow:Escalation:StandingRest"] = "06:00:00" });
+        var unset = await ResolveEscalationOptionsAsync(mongo, new Dictionary<string, string?>());
+
+        Assert.Equal(TimeSpan.FromHours(6), configured.StandingRest);
+        Assert.Equal(WorkflowEscalationOptions.DefaultStandingRest, unset.StandingRest);
+    }
+
+    private static async Task<WorkflowEscalationOptions> ResolveEscalationOptionsAsync(
+        OwnedMongoProcess mongo, Dictionary<string, string?> overrides)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddConfiguration(TestConfiguration(mongo.ConnectionString, "diten_platform_itest_escalation_options", schedulerEnabled: false))
+            .AddInMemoryCollection(overrides)
+            .Build();
         var services = new ServiceCollection();
-
-        // What the HOST always supplies, and therefore not a copy of Program.cs: WebApplicationBuilder
-        // registers the configuration and the logging services before any AddX of ours runs.
         services.AddLogging();
-        services.AddSingleton(configuration);
-
+        services.AddSingleton<IConfiguration>(configuration);
         services.AddApplication();
-        services.AddInfrastructure(configuration, new ContainerValidationHostEnvironment());
+        services.AddInfrastructure(configuration, new ContainerValidationHostEnvironment(), runStartupMaintenance: false);
 
-        // ⚠ THE TWO THINGS THE WEB LAYER SUPPLIES THAT INFRASTRUCTURE SERVICES DEPEND ON. Measured: without
-        // these, ValidateOnBuild reports seventeen errors that are not defects — IActorPermissionContext
-        // (needed by TaskWorkItemProvider, TaskFieldDefinitionService and several Task handlers) and
-        // EndpointDataSource (needed by AuthorizationPolicyCache).
-        //
-        // The first is Program.cs's own registration, reproduced. The second is an EMPTY data source rather
-        // than AddControllers(): measured, AddControllers() drags in the whole MVC subsystem, which cannot be
-        // constructed outside a web host at all (IWebHostEnvironment, ControllerRequestDelegateFactory), and
-        // that produced a fresh set of failures about MVC rather than about this service. Routing is not what
-        // is under test here; the lifetimes of what Application and Infrastructure register are.
-        services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource());
-        services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
-            Diten.Platform.API.Security.ClaimsActorPermissionContext>();
+        await using var provider = services.BuildServiceProvider();
+        return provider.GetRequiredService<IOptions<WorkflowEscalationOptions>>().Value;
+    }
 
-        return services;
-    });
+    [Fact]
+    public void AddInfrastructure_defaults_to_running_startup_maintenance()
+    {
+        var overload = typeof(Diten.Platform.Infrastructure.DependencyInjection).GetMethods()
+            .Single(method =>
+                method.Name == nameof(Diten.Platform.Infrastructure.DependencyInjection.AddInfrastructure)
+                && method.GetParameters().Length == 4);
+        var maintenanceParameter = overload.GetParameters()[3];
+
+        Assert.True(maintenanceParameter.HasDefaultValue);
+        Assert.True(Assert.IsType<bool>(maintenanceParameter.DefaultValue));
+    }
 
     /// <summary>
     /// The service's OWN configuration files, with only what this test must pin layered on top.
@@ -720,17 +859,17 @@ public sealed class PlatformContainerValidationTests
     /// configuration reason having nothing to do with lifetimes — noise that teaches people to ignore it.
     /// Reading the shipped files means this test sees the same configuration surface the service does.
     /// </summary>
-    private static IConfiguration TestConfiguration() =>
+    private static IConfiguration TestConfiguration(
+        string mongoConnectionString, string databaseName, bool schedulerEnabled) =>
         new ConfigurationBuilder()
             .AddJsonFile(ApiSettingsPath("appsettings.json"), optional: false)
             .AddJsonFile(ApiSettingsPath("appsettings.Development.json"), optional: true)
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                // A database of this test's own, under a FIXED name so it is reused and cannot pile up —
-                // MongoIntegrationHarness.CreateIsolatedAsync's rule, for the same reason: what
-                // AddInfrastructure seeds is database-global, not tenant-scoped.
-                ["MongoDbSettings:ConnectionString"] = "mongodb://localhost:27017",
-                ["MongoDbSettings:DatabaseName"] = ContainerDatabaseName,
+                // A database inside the dynamic-loopback, test-owned mongod. The whole data directory is
+                // removed after the test; the Local Development Mongo service is never contacted.
+                ["MongoDbSettings:ConnectionString"] = mongoConnectionString,
+                ["MongoDbSettings:DatabaseName"] = databaseName,
                 ["MongoDbSettings:AllowStartupWithoutDatabase"] = "true",
                 // BL-454 — a value the defaults never produce, to prove the window is read from configuration.
                 ["Notifications:EmailDispatch:RetryWindowHours"] = "48",
@@ -746,13 +885,146 @@ public sealed class PlatformContainerValidationTests
                 ["ModuleRegistrationCredentials:Mdm:ActiveSecret"] =
                     "container-validation-only-module-registration-secret",
 
-                // ⚠ BackgroundJobs IS NOT OVERRIDDEN. appsettings.Development.json enables it, and that is
-                // load-bearing: Hangfire is what registers IBackgroundJobScheduler, which EmailDispatchSweepJob
-                // needs. Switching it off here would make the guard red for a reason the running service does
-                // not have.
+                ["BackgroundJobs:Enabled"] = schedulerEnabled.ToString(),
+                ["BackgroundJobs:DashboardEnabled"] = "false",
                 ["Smtp:Enabled"] = "false"
             })
             .Build();
+
+    private sealed class OwnedMongoProcess : IAsyncDisposable
+    {
+        private readonly Process _process;
+        private readonly string _root;
+
+        private OwnedMongoProcess(Process process, string root, int port)
+        {
+            _process = process;
+            _root = root;
+            ConnectionString = $"mongodb://127.0.0.1:{port}/?directConnection=true";
+        }
+
+        public string ConnectionString { get; }
+
+        public static async Task<OwnedMongoProcess> StartAsync()
+        {
+            var binary = new[]
+                {
+                    Environment.GetEnvironmentVariable("DITEN_TEST_MONGOD"),
+                    @"C:\Program Files\MongoDB\Server\8.0\bin\mongod.exe",
+                    @"C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe",
+                    @"C:\Program Files\MongoDB\Server\6.0\bin\mongod.exe",
+                    "/opt/homebrew/bin/mongod",
+                    "/usr/local/bin/mongod",
+                    "/opt/local/bin/mongod"
+                }
+                .FirstOrDefault(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                ?? throw new InvalidOperationException(
+                    "A local mongod binary is required; this test never uses the application MongoDB.");
+            var port = ReservePort();
+            var root = Path.Combine(
+                Path.GetTempPath(),
+                "diten-platform-container-validation-" + Guid.NewGuid().ToString("N"));
+            var data = Path.Combine(root, "data");
+            Directory.CreateDirectory(data);
+            var start = new ProcessStartInfo
+            {
+                FileName = binary,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var arguments = new List<string>
+            {
+                "--dbpath", data,
+                "--port", port.ToString(),
+                "--bind_ip", "127.0.0.1",
+                "--quiet"
+            };
+            if (!OperatingSystem.IsWindows())
+            {
+                arguments.Add("--nounixsocket");
+            }
+
+            foreach (var argument in arguments)
+            {
+                start.ArgumentList.Add(argument);
+            }
+
+            var process = Process.Start(start)
+                          ?? throw new InvalidOperationException("Failed to start the test-owned mongod process.");
+            var settings = MongoClientSettings.FromConnectionString(
+                $"mongodb://127.0.0.1:{port}/?directConnection=true");
+            settings.ServerSelectionTimeout = TimeSpan.FromMilliseconds(500);
+            var client = new MongoClient(settings);
+            try
+            {
+                for (var attempt = 0; attempt < 100; attempt++)
+                {
+                    if (process.HasExited)
+                    {
+                        throw new InvalidOperationException(
+                            $"Test-owned mongod exited with code {process.ExitCode}.");
+                    }
+
+                    try
+                    {
+                        await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(
+                            new BsonDocument("ping", 1));
+                        return new OwnedMongoProcess(process, root, port);
+                    }
+                    catch (Exception exception) when (exception is MongoException or TimeoutException)
+                    {
+                        await Task.Delay(100);
+                    }
+                }
+
+                throw new TimeoutException("Test-owned mongod did not become ready.");
+            }
+            catch
+            {
+                Stop(process);
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, recursive: true);
+                }
+
+                throw;
+            }
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            Stop(_process);
+            if (Directory.Exists(_root))
+            {
+                Directory.Delete(_root, recursive: true);
+            }
+
+            return ValueTask.CompletedTask;
+        }
+
+        private static int ReservePort()
+        {
+            using var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            return ((IPEndPoint)listener.LocalEndpoint).Port;
+        }
+
+        private static void Stop(Process process)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                    process.WaitForExit(5000);
+                }
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        }
+    }
 
     /// <summary>
     /// A settings file inside Diten.Platform.API, found by WALKING UP to the AGENTS.md marker rather than by

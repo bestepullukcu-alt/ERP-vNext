@@ -25,6 +25,9 @@ public interface ITenantEntitlementClient
     /// unavailable permits neither grant nor revoke.
     /// </summary>
     Task<TenantEntitlementReadResult> ReadEntitledModulesWithPermissionKeysAsync(Guid tenantId, CancellationToken ct);
+    Task<Diten.AuthService.Application.Common.Entitlements.EntitlementAuthoritySnapshot> ReadReconciliationAuthorityAsync(
+        Guid tenantId, string normalizedOperatorEmail, CancellationToken ct)
+        => throw new NotSupportedException("AUTHORITATIVE_RECONCILIATION_READ_REQUIRED");
 }
 
 /// <summary>An entitled module and the permission keys it declares in Platform's descriptor catalog.</summary>

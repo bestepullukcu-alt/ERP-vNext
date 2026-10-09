@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Infrastruc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Application.Tests", "tests\Diten.MdmService.Application.Tests\Diten.MdmService.Application.Tests.csproj", "{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Api.Tests", "tests\Diten.MdmService.Api.Tests\Diten.MdmService.Api.Tests.csproj", "{05A513C1-BD59-4FA5-A031-54B3DC6C7155}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,9 @@ Global
 		{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05A513C1-BD59-4FA5-A031-54B3DC6C7155}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05A513C1-BD59-4FA5-A031-54B3DC6C7155}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05A513C1-BD59-4FA5-A031-54B3DC6C7155}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05A513C1-BD59-4FA5-A031-54B3DC6C7155}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

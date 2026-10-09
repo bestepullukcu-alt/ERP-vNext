@@ -60,17 +60,42 @@
 <section class="card mb-3">
     <div class="card-header"><h6 class="mb-0">@Localizer["ReferencesSection"]</h6></div>
     <div class="card-body row g-3">
+        @* WP-MDM-BRAND-ACCEPT-01 FIX1 (item 8) — the owner company is picked BY NAME from the tenant's legal entities; its id
+           never reaches the reader. When the list cannot be read, the stored owner is kept (hidden) and said so. *@
         <div class="col-md-4">
             <label asp-for="OwnerCompanyId" class="form-label">@Localizer["OwnerCompanyId"]</label>
-            <input asp-for="OwnerCompanyId" class="form-control" />
+            @if (Model.OwnerCompaniesUnavailable)
+            {
+                <input asp-for="OwnerCompanyId" type="hidden" />
+                <div class="form-control-plaintext text-muted fst-italic">@Localizer["OwnerCompaniesUnavailable"]</div>
+            }
+            else
+            {
+                <select asp-for="OwnerCompanyId" class="form-select">
+                    <option value="">@Localizer["SelectOption"]</option>
+                    @foreach (var company in Model.OwnerCompanies)
+                    {
+                        <option value="@company.LegalEntityId">@company.Code — @company.Name</option>
+                    }
+                    @if (Model.OwnerCompanyId is { } current && Model.OwnerCompanies.All(x => x.LegalEntityId != current))
+                    {
+                        @* A stored owner the list no longer offers (archived, not referenceable): kept, not silently cleared. *@
+                        <option value="@current" selected>@Localizer["Unresolved"]</option>
+                    }
+                </select>
+            }
+        </div>
+        @* No master resolves a business unit or a therapeutic area here yet: a stored reference is kept (hidden) and reads
+           "could not be resolved"; the field is never a free-text id box. *@
+        <div class="col-md-4">
+            <label class="form-label">@Localizer["BusinessUnitId"]</label>
+            <input asp-for="BusinessUnitId" type="hidden" />
+            <div class="form-control-plaintext text-muted fst-italic">@(Model.BusinessUnitId is null ? "—" : Localizer["Unresolved"].Value)</div>
         </div>
         <div class="col-md-4">
-            <label asp-for="BusinessUnitId" class="form-label">@Localizer["BusinessUnitId"]</label>
-            <input asp-for="BusinessUnitId" class="form-control" />
-        </div>
-        <div class="col-md-4">
-            <label asp-for="TherapeuticAreaId" class="form-label">@Localizer["TherapeuticAreaId"]</label>
-            <input asp-for="TherapeuticAreaId" class="form-control" />
+            <label class="form-label">@Localizer["TherapeuticAreaId"]</label>
+            <input asp-for="TherapeuticAreaId" type="hidden" />
+            <div class="form-control-plaintext text-muted fst-italic">@(Model.TherapeuticAreaId is null ? "—" : Localizer["Unresolved"].Value)</div>
             <small class="text-muted" id="therapeuticAreaHelp">@Localizer["TherapeuticAreaHelp"]</small>
         </div>
         <div class="col-12"><small class="text-muted">@Localizer["ReferenceIdsOnlyHelp"]</small></div>

@@ -131,6 +131,19 @@ public static class TaskPermissions
     public const string ReadAll = "platform.tasks.read-all";
 
     /// <summary>
+    /// BL-509 — who may SEND a task request: ask somebody outside their assignment scope (another company of the
+    /// same tenant, typically) to take work on.
+    ///
+    /// <para><b>Explicit-grant-only</b> (AuthService <c>ExplicitGrantOnlyPermissions</c>), like
+    /// <see cref="ReadAll"/>: addressing a person across the company boundary shows that they exist, so the tenant
+    /// switches it on by granting the key to a role — it never arrives with the module.</para>
+    ///
+    /// <para>Accepting and declining need no key of their own: they ride <see cref="Update"/>, as accepting an
+    /// assignment always has. What matters there is "this was asked of you", which the handlers enforce.</para>
+    /// </summary>
+    public const string RequestsCreate = "platform.tasks.requests.create";
+
+    /// <summary>
     /// The permissions that gate a <b>personal work surface</b> — a page that shows or acts on the viewer's own
     /// task INSTANCES.
     ///
@@ -264,6 +277,52 @@ public static class TaskReasonCodes
     public const string AssigneeNotAssignable = "TASK_ASSIGNEE_NOT_ASSIGNABLE";
 
     /// <summary>
+    /// BL-509 — the person a request was addressed to cannot receive one. ONE answer for every reason — no usable
+    /// seat, a deactivated account, an unknown id, another tenant's user — so it cannot be used to find out who
+    /// exists (the same collapse <see cref="AssigneeNotAssignable"/> makes for assignment).
+    /// </summary>
+    public const string RequestRecipientUnavailable = "TASK_REQUEST_RECIPIENT_UNAVAILABLE";
+
+    /// <summary>BL-509 — an unanswered request stays in the unit it was sent from.</summary>
+    public const string RequestUnitFixed = "TASK_REQUEST_UNIT_FIXED";
+
+    /// <summary>BL-509 — the decline reason is longer than a task's own description may be.</summary>
+    public const string RequestDeclineReasonTooLong = "TASK_REQUEST_DECLINE_REASON_TOO_LONG";
+
+    /// <summary>BL-509 — a request addressed to its own sender. Giving yourself work is not a request.</summary>
+    public const string RequestToSelf = "TASK_REQUEST_TO_SELF";
+
+    /// <summary>BL-509 — only the person a request is addressed to may accept or decline it.</summary>
+    public const string RequestNotAddressee = "TASK_REQUEST_NOT_ADDRESSEE";
+
+    /// <summary>BL-509 — only the person who sent a request may withdraw it or address it to somebody else.</summary>
+    public const string RequestNotSender = "TASK_REQUEST_NOT_SENDER";
+
+    /// <summary>
+    /// BL-509 — the request is not waiting for an answer: it was already accepted, declined or withdrawn (or the
+    /// task never was a request). The loser of an accept / decline / withdraw race reads this or
+    /// <see cref="ConcurrencyConflict"/>.
+    /// </summary>
+    public const string RequestNotPending = "TASK_REQUEST_NOT_PENDING";
+
+    /// <summary>BL-509 — the request is still waiting for an answer; withdraw it before addressing or assigning it
+    /// to somebody else.</summary>
+    public const string RequestPending = "TASK_REQUEST_PENDING";
+
+    /// <summary>BL-509 — work nobody has accepted yet cannot be planned, started, parked or finished.</summary>
+    public const string RequestNotAccepted = "TASK_REQUEST_NOT_ACCEPTED";
+
+    /// <summary>
+    /// BL-509 — the sender of an accepted request tried to direct the work (reassign or edit). A refusal of
+    /// AUTHORITY: once somebody took the request on, the task is theirs; the sender watches and comments.
+    /// </summary>
+    public const string RequestSenderCannotDirect = "TASK_REQUEST_SENDER_CANNOT_DIRECT";
+
+    /// <summary>BL-509 — a request cannot carry an approval or a review: both are the sender naming who decides
+    /// about work that is not theirs to direct.</summary>
+    public const string RequestOptionNotSupported = "TASK_REQUEST_OPTION_NOT_SUPPORTED";
+
+    /// <summary>
     /// Cancelling someone else's task. A REFUSAL OF AUTHORITY, not a state conflict — an assignee who does not
     /// want the work returns it; only the requester (or administrative authority) calls it off.
     /// </summary>
@@ -279,6 +338,16 @@ public static class TaskReasonCodes
     /// wrong person.
     /// </summary>
     public const string ReviewPending = "REVIEW_PENDING";
+
+    /// <summary>
+    /// D2-FIX1 A1 — approval was switched off but the running MOD-0023 approval could not be withdrawn (it was decided
+    /// meanwhile, or the engine refused). The edit is saved and the task keeps its link, so nothing is left decidable
+    /// with nobody reading it; the next edit retries the withdraw.
+    /// </summary>
+    public const string ApprovalCancelFailed = "TASK_APPROVAL_CANCEL_FAILED";
+
+    /// <summary>D2-FIX1 A1 — the review's counterpart of <see cref="ApprovalCancelFailed"/>.</summary>
+    public const string ReviewCancelFailed = "TASK_REVIEW_CANCEL_FAILED";
 
     /// <summary>Review was submitted on a task that never asked for one.</summary>
     public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
@@ -412,6 +481,14 @@ public static class TaskReasonCodes
     /// someone "waiting for the reviewer" when no reviewer was ever asked sends them to wait on nobody.
     /// </summary>
     public const string ReviewStartFailed = "REVIEW_START_FAILED";
+
+    /// <summary>
+    /// WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 (CT item 7) — the review could not be OPENED because nobody but the submitter
+    /// could take it. MOD-0024's own word for MOD-0023's refusal: the engine keeps <c>WORKFLOW_NO_ELIGIBLE_APPROVER</c>
+    /// for its own callers (a start, an intermediate approval), while a REVIEW is not an approval and the client routes on
+    /// this code. A retry changes nothing until the reviewer does.
+    /// </summary>
+    public const string ReviewNoEligibleReviewer = "TASK_REVIEW_NO_ELIGIBLE_REVIEWER";
 
     /// <summary>A subtask may not itself have subtasks — one level only (pack §12 E2).</summary>
     public const string SubtaskDepthExceeded = "SUBTASK_DEPTH_EXCEEDED";
@@ -797,7 +874,12 @@ public sealed record CreateTaskItemRequest(
     /// nothing else on purpose: a client that sent titles and versions would be a second authority over what a
     /// citation says, and the first stale tab would write a citation nobody could reproduce.</para>
     /// </summary>
-    IReadOnlyList<string>? DocumentUids = null);
+    IReadOnlyList<string>? DocumentUids = null,
+    /// <summary>
+    /// BL-509 — who the work is ASKED of, when <c>AssignmentTarget</c> is <c>Offered</c>. Trailing and optional, so
+    /// every earlier caller and payload stays valid.
+    /// </summary>
+    Guid? OfferedToUserId = null);
 
 /// <summary>
 /// One checklist item as the create form describes it. No <c>Code</c> and no <c>SortOrder</c>: the code is the
@@ -878,6 +960,14 @@ public sealed record TaskFieldValueDto(
 
 public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 
+/// <summary>
+/// D2-FIX5 item 4 — the answer of a bulk delete that left something out: the ids of the tasks of this tenant that are still there
+/// (a withdraw MOD-0023 refused, or a task that kept changing after it was read). A bulk delete that left nothing out is still
+/// the body-less 204, so a caller that only reads the status keeps working; ids that do not exist (or belong to another tenant)
+/// are never named — they are answered like a delete.
+/// </summary>
+public sealed record BulkDeleteTaskItemResultDto(IReadOnlyList<Guid> SkippedIds);
+
 public sealed record ClaimTaskItemRequest(int ExpectedVersion);
 
 /// <param name="ClosureFieldValues">
@@ -937,6 +1027,14 @@ public sealed record PlanTaskItemResultDto(
     IReadOnlyList<TaskPlanWarningDto> Warnings,
     TaskPlanConflictDto? Conflict = null);
 
+/// <summary>
+/// WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 (item 2) — what an edit refusal carries when the edit itself LANDED and only a
+/// follow-up did not (withdrawing a running approval or review): the task's version after that write. Without it the
+/// form kept the version it loaded, and its "save again" lost to its own first save (TASK_CONCURRENCY_CONFLICT). A
+/// successful edit stays a body-less 204; only those refusals fill <c>data</c>.
+/// </summary>
+public sealed record TaskItemEditResultDto(int Version);
+
 /// <summary>Stable warning codes on a saved plan. Each has a sentence in the Task Center bridge (7 languages).</summary>
 public static class TaskPlanWarningCodes
 {
@@ -982,6 +1080,16 @@ public sealed record ReturnTaskItemRequest(int ExpectedVersion, string Reason);
 /// new holder is being told why this is now theirs.
 /// </summary>
 public sealed record ReassignTaskItemRequest(int ExpectedVersion, Guid AssigneeUserId, string Reason);
+
+/// <summary>BL-509 — decline a request addressed to me. <paramref name="Reason"/> is required, like a return's:
+/// the sender is being told why.</summary>
+public sealed record DeclineTaskOfferRequest(int ExpectedVersion, string Reason);
+
+/// <summary>BL-509 — the sender takes back a request nobody has answered yet.</summary>
+public sealed record WithdrawTaskOfferRequest(int ExpectedVersion, string? Note = null);
+
+/// <summary>BL-509 — the sender addresses a declined or withdrawn request to somebody else.</summary>
+public sealed record OfferTaskItemRequest(int ExpectedVersion, Guid OfferedToUserId);
 
 /// <summary>Tick/untick one checklist item. ExpectedVersion guards the RUN, not the task.</summary>
 public sealed record SetChecklistItemStateRequest(string ItemCode, bool Completed, int ExpectedVersion);
@@ -1172,7 +1280,19 @@ public sealed record TaskItemDetailDto(
     /// <summary>The task's TYPE, so an edit form can re-render it and ask that type for its governing documents.</summary>
     Guid? TaskTypeId = null,
     /// <summary>Faz 2a — the closing narrative, present only once the task is closed.</summary>
-    string? ClosureNote = null);
+    string? ClosureNote = null,
+    /// <summary>BL-509 — who the task is being asked of, while it is a request nobody has answered. Sent only to the
+    /// sender and the person asked; absent — not null — for every other reader.</summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    Guid? OfferedToUserId = null,
+    /// <summary>BL-509 — the task was born as a request (and stays marked as one after it is accepted).</summary>
+    bool IsRequest = false,
+    /// <summary>BL-509 — why the last person asked declined, in their own words. The sender's alone; absent for
+    /// every other reader.</summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? OfferDeclineReason = null);
 
 public sealed record TaskWatcherDto(Guid Id, Guid UserId, string Role, Guid? PositionId);
 
@@ -1815,3 +1935,9 @@ public sealed record TaskTemplateDto(
 /// <summary>MOD-0357 S4 — one row of the "link an existing task" picker. Deliberately lighter than
 /// <see cref="TaskItemListItemDto"/>: the picker asks one question ("which task?"), not the whole list shape.</summary>
 public sealed record TaskLinkCandidateDto(Guid Id, string Title);
+
+/// <summary>
+/// WP-WCN-TASK-REQUEST-01 FIX5 (item 2) — the picker's answer: the candidates, and whether the search stopped at its
+/// ceiling with matches left unjudged (the reader should narrow the search).
+/// </summary>
+public sealed record TaskLinkCandidatesDto(IReadOnlyList<TaskLinkCandidateDto> Items, bool Truncated);

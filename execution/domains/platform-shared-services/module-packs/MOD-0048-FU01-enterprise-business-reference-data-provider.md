@@ -83,6 +83,15 @@ form_field_count: 0
 > separate explicit user authorization of an exact allow-list, planned together with MOD-0290-FU04 (Item / Material
 > Master) slice S1.
 
+> **Isolated Market operational-mode code-start guard (2026-09-23):** the user separately authorizes implementation
+> of **`Verified Market Isolated Development Operational Mode & Durable Audit-Outbox Proof`** only within the exact
+> Section 20 amendment below. This authorization preserves the pack frontmatter/status and the historical 2026-08-09
+> Market run, but supersedes that runner's composition for every future invocation: the exact operational argument
+> must be dispatched before normal Platform Application/Infrastructure registration or host construction. The named
+> step is Development-only, default-disabled and grants **code/test start only**. It does not authorize a Local
+> Development publish, service/topology operation, configuration/credential mutation, Production/Staging enablement
+> or a claim that durable `audit_events` delivery has completed.
+
 ## 1. Module Summary
 
 This follow-up hardens the existing PSS-012 Business Reference Data runtime as the provider implementation path
@@ -2546,6 +2555,165 @@ immutable Published version with 249 values including `TW`, one namespaced publi
 Focused operational tests passed 26/26, all Business Reference Data tests passed 166/166, the full Platform suite
 passed 1537/1537, and the isolated Release API build completed with zero errors and seven pre-existing warnings.
 Production/Staging enablement remains prohibited and separately gated.
+
+### Authorized named-step amendment — `Verified Market Isolated Development Operational Mode & Durable Audit-Outbox Proof`
+
+This amendment is additive to the implemented Market foundation above. It does not rewrite the historical
+2026-08-09 owner/run evidence. For all future operational invocations it replaces only the invocation/composition and
+success-proof boundary: the current `--run-verified-market-provisioning` check occurs after normal Platform service
+registration and `builder.Build()`, while `AddInfrastructure` can run startup initialization and register hosted
+workers. The isolated mode must select the exact argument before those calls and construct only the minimum scoped
+Market publication dependencies. Absence of the exact argument retains normal Platform behavior unchanged.
+
+#### Exact code/test allow-list
+
+Only the following runtime paths may be created or changed for this named step:
+
+- `services/Diten.Platform/src/Diten.Platform.API/Program.cs`, limited to exact-argument dispatch before normal
+  `WebApplication`/Application/Infrastructure composition and immediate process exit after the isolated operation.
+- `services/Diten.Platform/src/Diten.Platform.API/Configuration/VerifiedMarketOperationalProvisioningOptions.cs`,
+  limited to the locked Market artifact, exact target owner and process-only operational inputs.
+- `services/Diten.Platform/src/Diten.Platform.API/Services/BusinessReferenceData/DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility.cs`,
+  limited to Development/default-disabled, exact process-source configuration, artifact and target-owner decisions.
+- `services/Diten.Platform/src/Diten.Platform.API/Services/BusinessReferenceData/VerifiedMarketOperationalProvisioningRunner.cs`,
+  limited to ordered topology/index/target preflight, the existing verified-Market loader/publisher call, durable
+  operation/publication read-back, durable audit-outbox proof and fail-closed result classification.
+- `services/Diten.Platform/src/Diten.Platform.API/Services/BusinessReferenceData/VerifiedMarketOperationalMode.cs`
+  (**planned exact file**), limited to isolated configuration construction, minimum service registration, one scoped
+  runner invocation and a deterministic non-zero failure exit; it is not an HTTP endpoint, hosted service or general
+  Platform host.
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/BusinessReferenceData/Services/VerifiedMarketOperationalGovernanceAuditAdapter.cs`
+  (**planned exact file**), limited to a Market-publish-only fail-closed `IBusinessReferenceDataGovernanceAuditAdapter`
+  implementation. It must reject every non-Market/non-publish use and may accept an append only after exact persisted
+  outbox proof; it cannot weaken the normal adapter.
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/BusinessReferenceData/Services/IVerifiedMarketOperationalPreflight.cs`
+  (**planned exact file**), limited to immutable topology/index/target/audit proof request/result contracts and stable
+  failure codes; it defines no generic repository or write API.
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/VerifiedMarketOperationalPersistenceServiceCollectionExtensions.cs`
+  (**planned exact file**), limited to the existing Mongo client/context, tenant/current-user context, BRD repository,
+  validation/evidence/event/publish/loader services, audit-outbox writer and the two operational proof services needed
+  by this mode. It must not call `AddInfrastructure`, `AddApplication`, `EnsureIndexes`, a seed/migration/initializer,
+  or register an `IHostedService`.
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/VerifiedMarketOperationalPreflight.cs`
+  (**planned exact file**), limited to read-only `hello`, index metadata, exact target/replay state and audit-outbox
+  correlation reads. Its only write-capable dependency is the existing supported audit-outbox writer used through
+  `IAuditService`; it adds no direct data-write method.
+
+Only the following test paths may be created or changed:
+
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedMarketOperationalEligibilityTests.cs`.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedMarketOperationalProvisioningRunnerTests.cs`.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedMarketOperationalMongoTests.cs`.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedMarketCatalogLoadMongoTests.cs`.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedMarketPublishMongoTests.cs`.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedMarketResolveMongoTests.cs`.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedMarketOperationalModeIsolationTests.cs`
+  (**planned exact file**).
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedMarketOperationalAuditMongoTests.cs`
+  (**planned exact file**).
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableMongoReplicaSet.cs` is an
+  unchanged reuse-only test fixture; it is not writable under this step.
+
+This pack file is the only governance/documentation path in scope. No other runtime, test, project, package,
+appsettings/configuration, artifact, Mongo index-definition, MDM/Auth/Gateway/frontend, `.antigravity`, `.local` or
+`.testoutput` path is eligible. In particular the existing generic catalog loader/publish service/repository contracts
+and normal Platform `DependencyInjection.cs` remain unchanged. A missing contract in one of those protected files
+blocks implementation and requires a separately approved pack revision; it cannot be solved by silently widening the
+allow-list.
+
+#### Locked operational contract and fail-closed gates
+
+- The only operation argument is exact ordinal `--run-verified-market-provisioning`. Missing, case-variant,
+  `=true`, duplicate or conflicting operation arguments do not enter isolated mode. Staging/Production always reject
+  before Mongo access or service construction.
+- The mode is default-disabled. It requires process-environment provenance, not an appsettings/default/CLI fallback,
+  for `BusinessReferenceData__VerifiedMarketOperationalProvisioning__Enabled=true`, the exact catalog path/version/
+  fingerprint/actor/idempotency namespace, `BusinessReferenceData__CatalogLoad__Enabled=false`, and
+  `BusinessReferenceData__Provider__ReferenceTenantId=00000000-0000-0000-0000-000000000001`. Resolved values must
+  equal those process values. No credential or secret is added.
+- The only input is exact file `mod-0290-market-reference.json`, version `UNSD-M49-2026-08-08`, SHA-256
+  `b94c45280195b0cb5faa155656c4690938790144d148fba279d2232204360039`, one `market` set and its locked 249 values.
+  The idempotency namespace is explicit, trimmed, stable and participates in the existing operation key; ambient,
+  generated or fallback namespaces are prohibited.
+- Before any write, read-only `hello` must prove a replica-set member that is the current writable primary. Required
+  existing BRD publish-operation and audit-outbox uniqueness/index specifications must match exactly. The mode never
+  initiates/reconfigures/restores Mongo and never creates, drops or repairs an index.
+- The new owner is exactly Platform Admin Tenant `00000000-0000-0000-0000-000000000001`. The historical owner
+  `97c59330-dbc4-4665-b29c-0c26dbb5cc93`, consumer tenant `74355e70-4c7d-410c-8cf6-db5fe3b9547f`, tenant assignments
+  and every non-`market` BRD set/version/pointer/operation are read-only invariants.
+- A fresh target has no Platform-owner `market` set/version/pointer/operation. A replay is accepted only when the exact
+  same namespace-derived operation key, version and fingerprint are already `COMPLETED/COMPLETION_VERIFIED`, the
+  pointer and immutable target agree, and the exact durable audit-outbox proof already exists. Every other pre-existing
+  target, partial checkpoint, different key/fingerprint, ambiguous duplicate or inconsistent read-back fails with a
+  stable manual-reconciliation result before a retry. The mode performs no retry loop, repair, restore or ownership
+  migration.
+- Publication continues to use only
+  `LoadVerifiedMarketCatalogFromFileAsync -> PublishVerifiedMarketAsync -> durable operation/checkpoints -> verified
+  publication read-back`; generic stewardship publish, generic catalog load, public HTTP APIs and direct Mongo writes
+  are prohibited.
+- The operational audit adapter cannot swallow an audit failure. `Queued` or exact `Duplicate` is acceptable only
+  after a read-back proves one matching durable `audit_outbox` record for the publication correlation, target tenant,
+  request type, entity/version, operation and generated audit idempotency key. `Rejected`, `EnqueueFailed`,
+  `SkippedRecursion`, missing/malformed/mismatched proof or an exception fails closed. If publication state may have
+  changed before proof becomes uncertain, the result is manual reconciliation, never automatic rerun.
+- Generic `AuditOutboxWorker` is deliberately not registered. Therefore this mode proves durable audit-outbox append,
+  not an `audit_events` delivery receipt. Turning that outbox row into a durable `audit_events` receipt remains a
+  separate bounded audit-delivery dependency/authorization; no worker bypass or success claim is allowed here.
+- The isolated service collection contains no normal startup migration/seed/reconciliation/permission sync/index DDL,
+  `BusinessReferenceDataCatalogLoadWorker`, verified-GSKU runner, module/page/action/notification registration,
+  Hangfire, Rabbit consumer, generic event-outbox publisher, generic audit worker, health endpoint, HTTP listener or
+  other hosted service.
+
+#### Authorized amendment — canonical Platform Admin operational actor semantics (2026-09-24)
+
+- This Development-only Market operational path accepts exactly Platform Admin Tenant
+  `00000000-0000-0000-0000-000000000001` and canonical Platform Administrator actor
+  `11111111-1111-1111-1111-111111111111`. Empty, whitespace, malformed, different or another-tenant actor input,
+  and any tenant mismatch, fail closed before publication, validation-result, operation or audit-outbox mutation.
+- The operational audit adapter records this operation with canonical actor type `PlatformAdministrator` and actor id
+  `11111111-1111-1111-1111-111111111111`; it must not infer or persist `TenantUser`. Durable outbox proof must match
+  both values in the same correlation/idempotency chain before operational success is returned.
+- Negative mutation evidence includes `business_reference_data_validation_results`: rejected actor or tenant input
+  must leave that collection, as well as Market set/version/pointer/operation and audit-outbox state, unchanged.
+- This amendment is bounded to the existing Section 20 allow-list, specifically the operational options,
+  eligibility, governance-audit adapter and preflight runtime paths plus
+  `VerifiedMarketOperationalEligibilityTests.cs`, `VerifiedMarketOperationalProvisioningRunnerTests.cs`,
+  `BusinessReferenceDataVerifiedMarketOperationalAuditMongoTests.cs` and
+  `BusinessReferenceDataVerifiedMarketOperationalMongoTests.cs`. It grants no additional runtime, test, project,
+  package, configuration or governance path.
+- Normal Platform host startup, generic BRD publishing, generic audit behavior, other actor types and
+  Staging/Production behavior remain unchanged. This amendment authorizes code/test alignment only; it grants no live
+  Market publication, Mongo operation, staging, commit, push or merge authority.
+
+#### Acceptance and test gates
+
+- [ ] Normal no-argument Platform behavior is unchanged and the operational service collection is not constructed.
+- [ ] Exact argument/default-disabled/near-match/duplicate/environment/process-source/tenant/artifact/version/hash/
+      actor/namespace/CatalogLoad negative cases fail before any Mongo mutation.
+- [ ] Service-collection and executable-boundary tests prove normal Platform Application/Infrastructure registration,
+      `builder.Build()` and every prohibited initializer/worker are not called in isolated mode.
+- [ ] Read-only topology/index tests reject standalone, secondary/non-writable, unknown topology and missing or
+      mismatched required index specifications; they create or alter nothing.
+- [ ] A test-owned real Mongo replica set proves exact Market-only first publication, exact same-key replay, foreign
+      target tenant rejection, non-exact pre-existing target rejection, partial/ambiguous-state manual reconciliation,
+      and same-key/different-fingerprint conflict.
+- [ ] Audit tests inject append rejection/failure/exception and mismatched/missing outbox proof and prove no successful
+      operational result. Positive proof matches the exact publication correlation/idempotency chain and survives a
+      process restart/read-back.
+- [ ] Before/after BSON snapshots prove zero mutation for the historical owner, ERPVNE8869, tenant assignments and all
+      non-Market sets/versions/pointers/operations. The Market artifact remains byte-for-byte unchanged.
+- [ ] Same-key replay creates no second Market set, version, operation or audit intent and returns the same verified
+      publication only when the existing audit proof is exact.
+- [ ] Isolated Release build and focused operational tests pass; affected-source -> build -> DLL -> test hashes remain
+      stable. Existing verified-Market resolve/enumeration and GSKU operational/publish/state-machine regressions pass.
+- [ ] Independent security and read-only audit review confirm no public surface, credential/config persistence,
+      cross-tenant write, normal-startup side effect, audit bypass or operational-run authority was introduced.
+
+Passing these gates closes only the code/test implementation of this isolated mode. A later live operation requires
+one exact approval naming the Local Development Mongo target, process identity, process-only values, artifact and
+idempotency namespace, backup/read-back boundaries, and the separate audit-delivery decision. It does not authorize
+the publish in this task and cannot be used as Production/Staging or consumer-live acceptance evidence.
+
 - After market code/test completion, request a separate exact operational provisioning approval. Do not provision
   through direct Mongo, startup/hosted worker, appsettings activation or a test-only production eligibility seam.
 - BL-017: quantity-free, kit and packaging-hierarchy presentations; do not add additional PackApplicability values
@@ -2580,3 +2748,64 @@ Production/Staging enablement remains prohibited and separately gated.
   remain exclusively in MOD-0290 step A and later steps; none is absorbed by this provider named step.
 - Production enablement, monitoring and operational handoff occur only after G2/G3 evidence and release gates close.
 - MOD-0290 C adapter/semantic-validation implementation remains in its own Module Pack and cannot be absorbed here.
+
+
+### LSKU workflow-safe Market prerequisite — approved integration 2026-09-09
+
+The protected approved workflow-safe Market amendment and current user approval authorize only the following
+additional paths for this slice (existing Auth purpose/provider/validator infrastructure is reused):
+
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/ReferenceData/IWorkflowVerifiedMarketReferenceResolver.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/PlatformWorkflowVerifiedMarketResolverClient.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/PlatformWorkflowVerifiedMarketResolverClientTests.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalVerifiedMarketReferenceDataController.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedMarketAuthorizationTests.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/WorkflowVerifiedMarketDependencyInjectionTests.cs`
+
+Background resolve uses the named reference-data service identity and independent static resolver credential.
+Interactive tenant-user resolve remains unchanged. Enumeration stays interactive-only; no fallback to an
+interactive bearer or another audience is added. DI redacts credential/bearer headers and disables redirects.
+These are source/test integrations, never catalog/credential/grant provisioning or live acceptance.
+
+Validation: Platform authorization/executor/named-token focused run 49 passed, 0 failed, 0 skipped;
+MDM workflow/interactive Market client and DI run 36 passed, 0 failed, 0 skipped. These are contract/unit
+results, not a claim of live resolver acceptance or new Mongo coverage. The first Platform test compilation
+found ambiguous target-typed `Response.Success`; its test fixture now names the result type explicitly.
+
+### GSKU trusted reference-data prerequisite integration (2026-09-08)
+
+The user authorized the existing workflow-safe reference-data purpose for GSKU recovery. The Market-named
+MDM identity provider issues only the exact Section D audience; it neither selects MarketCode nor authorizes a
+resource. The GSKU client is separately fixed to verified-gsku/resolve and the exact pack-applicability/uom pair.
+The resolver retains the existing static second factor, independently validated service tenant, duplicate-header
+rejection and interactive/service ambiguity rejection. Tenant-user resolve remains unchanged; enumerate-uom stays
+interactive-only. The protected final's broader service enumeration behavior is deliberately not integrated.
+No workflow-market client or LSKU lifecycle is part of this bounded GSKU prerequisite.
+
+Exact integrated runtime/test paths (not directory wildcards):
+
+- `services/Diten.Platform/src/Diten.Platform.API/Security/VerifiedReferenceDataRequestExecutor.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalBusinessReferenceDataController.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Security/VerifiedReferenceDataServiceTenantContext.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/ReferenceData/IWorkflowVerifiedMarketServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/AuthWorkflowVerifiedMarketServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/AuthWorkflowVerifiedMarketServiceIdentityProviderOptions.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedReferenceDataServiceTenantContextTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedResolverAuthorizationTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedReferenceDataRequestExecutorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/AuthWorkflowVerifiedMarketServiceIdentityProviderTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/PlatformWorkflowVerifiedGskuResolverClientTests.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Program.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/ReferenceData/IWorkflowVerifiedGskuReferenceResolver.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/PlatformWorkflowVerifiedGskuResolverClient.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedUomEnumerationAuthorizationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/WorkflowVerifiedMarketDependencyInjectionTests.cs`
+
+Evidence: Platform focused scheme/context/executor/resolver/UoM authorization 65 passed / 0 failed / 0 skipped;
+MDM provider/client/DI tests 11/0/0. The earlier MDM 9/0/0 run is a subset, not additive evidence.
+Auth real-Mongo grant evidence belongs to Section D. The universal GSKU resolver itself has no Mongo dependency;
+a test file named VerifiedResolveMongo is not counted as real-Mongo execution.
+Platform/Auth Release builds and MDM Release build passed. No credentials, configuration, grants, live requests,
+application data or services were changed. GSKU lifecycle integration and live acceptance remain separate gates.

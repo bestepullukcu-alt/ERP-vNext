@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalBusy" xml:space="preserve"><value>С этой записью уже выполняется операция. Повторите попытку чуть позже.</value></data>
+  <data name="RefusalCapacity" xml:space="preserve"><value>Эта запись сейчас не может принять больше изменений. Повторите попытку позже; если ошибка повторяется, обратитесь в поддержку.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>Запись изменилась, пока вы с ней работали. Обновите страницу и повторите попытку.</value></data>
+  <data name="RefusalDependents" xml:space="preserve"><value>От этого GSKU зависят записи, или под ним создаётся запись. Выведите их из использования или дождитесь завершения.</value></data>
+  <data name="RefusalForbidden" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>Действие остановлено из-за непредвиденного несоответствия; ничего не изменено. Обратитесь в поддержку.</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>Запрос недействителен. Проверьте поля и повторите попытку.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>Запись не найдена или недоступна вам.</value></data>
+  <data name="RefusalNotRequester" xml:space="preserve"><value>Отозвать это утверждение может только тот, кто его отправил.</value></data>
+  <data name="RefusalPackInvalid" xml:space="preserve"><value>Количество или единица упаковки недействительны. Исправьте их и повторите попытку.</value></data>
+  <data name="RefusalParentNotReady" xml:space="preserve"><value>Глобальный продукт не утверждён или на него больше нельзя ссылаться.</value></data>
+  <data name="RefusalReconciliation" xml:space="preserve"><value>Этот запрос ожидает проверки специалистом и до тех пор остаётся без изменений. Обратитесь в поддержку.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>Этот запрос уже был отправлен с другими данными. Обновите страницу и начните заново.</value></data>
+  <data name="RefusalRequestEnded" xml:space="preserve"><value>Запрос завершён без применения. Запустите его снова, если он ещё нужен.</value></data>
+  <data name="RefusalResubmit" xml:space="preserve"><value>Запрос не дошёл до службы утверждения. Отправьте тот же запрос ещё раз.</value></data>
+  <data name="RefusalRetirementInProgress" xml:space="preserve"><value>Этот GSKU выводится из использования.</value></data>
+  <data name="RefusalSelfApproval" xml:space="preserve"><value>Решение по запросу принял сам отправитель, поэтому оно не применено.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>Служба, необходимая для этого действия, сейчас недоступна. Повторите попытку чуть позже.</value></data>
+  <data name="RefusalSessionExpired" xml:space="preserve"><value>Служба утверждения не приняла ваш сеанс. Войдите снова и повторите действие.</value></data>
+  <data name="RefusalSetupIncomplete" xml:space="preserve"><value>Настройка утверждения для этого действия не завершена. Сообщите администратору.</value></data>
+  <data name="RefusalManualReconciliation" xml:space="preserve"><value>Служба утверждения и эта запись не согласуются, и повтор запроса этого не исправил. Запись остаётся без изменений до ручной сверки; обратитесь к администратору.</value></data>
+  <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>Утверждение закрыто без решения (отменено или истекло). Черновик можно изменить и отправить снова.</value></data>
+  <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Единица, используемая этим GSKU, была выведена из использования после утверждения. Утверждение остаётся в силе: оно применено со значениями, проверенными при отправке; выведенную единицу нельзя выбрать для новых записей.</value></data>
+</root>

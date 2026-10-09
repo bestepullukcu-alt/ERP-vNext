@@ -112,30 +112,27 @@ public sealed class TimesheetWeekRepository : TenantRepository<TimesheetWeek>, I
         }
     }
 
-    public async Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverAsync(Guid approverUserId, CancellationToken ct = default)
-        => await Collection.Find(SubmittedForApprover(approverUserId)).SortBy(x => x.SubmittedAtUtcTicks).ToListAsync(ct);
-
-    public async Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverByIdsAsync(
-        Guid approverUserId, IReadOnlyCollection<Guid> weekIds, CancellationToken ct = default)
+    public async Task<IReadOnlyList<TimesheetWeek>> ListSubmittedInApprovalAsync(
+        IReadOnlyCollection<Guid>? weekIds = null, CancellationToken ct = default)
     {
-        if (weekIds.Count == 0)
+        if (weekIds is { Count: 0 })
         {
             return [];
         }
 
-        var filter = Builders<TimesheetWeek>.Filter.And(
-            SubmittedForApprover(approverUserId),
-            Builders<TimesheetWeek>.Filter.In(x => x.Id, weekIds));
-        return await Collection.Find(filter).SortBy(x => x.SubmittedAtUtcTicks).ToListAsync(ct);
-    }
-
-    /// <summary>The approver's queue — ONE rule for the whole list and for the by-id read (BL-484): submitted, and
-    /// assigned to this person by MOD-0023.</summary>
-    private FilterDefinition<TimesheetWeek> SubmittedForApprover(Guid approverUserId)
-        => Builders<TimesheetWeek>.Filter.And(
+        var filters = new List<FilterDefinition<TimesheetWeek>>
+        {
             ExecutionFilter,
             Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Submitted),
-            Builders<TimesheetWeek>.Filter.Eq(x => x.AssignedApproverUserId, approverUserId));
+            Builders<TimesheetWeek>.Filter.Ne(x => x.WorkflowInstanceId, null)
+        };
+        if (weekIds is not null)
+        {
+            filters.Add(Builders<TimesheetWeek>.Filter.In(x => x.Id, weekIds));
+        }
+
+        return await Collection.Find(Builders<TimesheetWeek>.Filter.And(filters)).SortBy(x => x.SubmittedAtUtcTicks).ToListAsync(ct);
+    }
 
     public async Task<IReadOnlyList<TimesheetWeek>> ListNeedingFinalizationAsync(int limit, CancellationToken ct = default)
     {

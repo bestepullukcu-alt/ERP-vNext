@@ -237,6 +237,18 @@
         // routing one back to its own starter is refused up front (400 on create/edit, 409 on submit for review).
         TASK_APPROVAL_MANAGER_IS_SELF: 'errorApprovalManagerIsSelf',
         TASK_REVIEWER_IS_SUBMITTER: 'errorReviewerIsSubmitter',
+        // WP-WF-ENGINE-CANDIDATES-01 D2-FIX1 / D2-FIX2 + WP-WCN-TASK-REQUEST-01 FIX4 (item 6) — two refusals, two
+        // sentences. Submitting for review with nobody but the submitter to review it (the engine answers it as
+        // TASK_REVIEW_NO_ELIGIBLE_REVIEWER since D2-FIX2: "choose another reviewer"), and the workflow engine's own code
+        // for a decision whose next step only the starter could take — said to an APPROVER, so it never asks them to
+        // pick a reviewer.
+        TASK_REVIEW_NO_ELIGIBLE_REVIEWER: 'errorNoEligibleReviewer',
+        // FIX4 (item 7) — the running approval / review could not be withdrawn (409). On an EDIT the change is saved and
+        // saving again retries — that is this sentence; an act on the task (delete, cancel, return, reassign, release)
+        // asks for its own sentence through reasonOverridesFor (nothing was done).
+        TASK_APPROVAL_CANCEL_FAILED: 'errorApprovalCancelFailed',
+        TASK_REVIEW_CANCEL_FAILED: 'errorReviewCancelFailed',
+        WORKFLOW_NO_ELIGIBLE_APPROVER: 'errorNoEligibleApprover',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
         /*
          * BL-439 — AnswerInquiryHandler's three refusals. NOT_ADDRESSEE is the one a real reader meets: the
@@ -309,6 +321,36 @@
     };
 
     /*
+     * WP-WCN-TASK-REQUEST-01 FIX4 (item 7) — the same two codes answer an EDIT ("saved; save again to retry") and an ACT
+     * on the task — delete, cancel, return, reassign, release — ("the linked approval or review could not be withdrawn;
+     * nothing was done; try again shortly"). The base map gives the edit sentence; an act asks for this one.
+     */
+    const ACT_REASON_CODE_OVERRIDES = {
+        TASK_APPROVAL_CANCEL_FAILED: 'errorWorkflowWithdrawFailedOnAct',
+        TASK_REVIEW_CANCEL_FAILED: 'errorWorkflowWithdrawFailedOnAct'
+    };
+    const WITHDRAWING_ACTIONS = new Set(['delete', 'cancel', 'return', 'reassign', 'release']);
+
+    /*
+     * FIX5 (item 3) — REVIEW_PENDING is ONE server code for two refusals: the completion gate ("a reviewer still holds
+     * the work" — the base map's sentence) and submitting for review while a review is still open on the task. Only
+     * submitReview asks for the second sentence.
+     */
+    const SUBMIT_REVIEW_REASON_CODE_OVERRIDES = {
+        REVIEW_PENDING: 'errorReviewAlreadyOpen'
+    };
+
+    /**
+     * The ONE answer to "which sentences does this action ask for": inquire its own (BL-351), the acts that withdraw
+     * the task's linked workflow theirs (FIX4 item 7), every other action the base map (undefined).
+     */
+    const reasonOverridesFor = (actionCode) => {
+        if (actionCode === 'inquire') { return INQUIRE_REASON_CODE_OVERRIDES; }
+        if (actionCode === 'submitReview') { return SUBMIT_REVIEW_REASON_CODE_OVERRIDES; }
+        return WITHDRAWING_ACTIONS.has(actionCode) ? ACT_REASON_CODE_OVERRIDES : undefined;
+    };
+
+    /*
      * A 409 carrying one of the gate's blocking codes is a RULE refusing the write, not a lost race. The two need
      * different messages and different recovery advice, so the caller must be able to tell them apart.
      */
@@ -338,7 +380,13 @@
         'WorkflowGateEvaluationFailed',
         // WP-TASK-CALENDAR-ENGINE-01 — RULES about the holder's calendar and the task's state, not a race.
         'TASK_PLAN_CONFLICT',
-        'TASK_UNPLAN_NOT_ALLOWED'
+        'TASK_UNPLAN_NOT_ALLOWED',
+        // D2-FIX1 + FIX4 (item 6) — RULES, not races: nobody eligible to review / to decide the next step.
+        'TASK_REVIEW_NO_ELIGIBLE_REVIEWER',
+        'WORKFLOW_NO_ELIGIBLE_APPROVER',
+        // FIX4 (item 7) — a workflow that could not be withdrawn, a review still open: refusals, not races.
+        'TASK_APPROVAL_CANCEL_FAILED',
+        'TASK_REVIEW_CANCEL_FAILED'
     ]);
 
     /*
@@ -407,6 +455,8 @@
         PLAN_WARNING_MESSAGE_KEYS,
         planWarningMessage,
         INQUIRE_REASON_CODE_OVERRIDES,
+        ACT_REASON_CODE_OVERRIDES,
+        reasonOverridesFor,
         BLOCKING_REASON_CODES,
         isTransitionBlocked,
         isConcurrencyConflict,
@@ -514,8 +564,9 @@
                 data: Array.isArray(res.data?.people) ? res.data.people : []
             });
         },
-        /** MOD-0357 S4 — the "link an existing task" dialog's own search box. `data` is already the plain
-         * array (`TaskLinkCandidateDto[]`), never wrapped — unlike {@link assignablePeople} above. */
+        /** MOD-0357 S4 — the "link an existing task" picker's server search (FIX6: the typed term is sent). Since FIX5
+         * `data` is `{ items: TaskLinkCandidateDto[], truncated }` — truncated = the server stopped at its ceiling with
+         * matches it never judged. A server from before FIX5 answers a plain array (Meetings/form.js reads both). */
         linkCandidates: (term, limit) => {
             const params = new URLSearchParams();
             if (term) { params.set('term', term); }

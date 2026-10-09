@@ -318,7 +318,7 @@ public sealed class TaskNotificationDispatchPointsTests
                     new FakeCurrentUserContext(Me),
                     new FakeTenantContext(TaskTestData.Tenant),
                     NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll())
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll(), writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new CreateTaskItemCommand(
                         new CreateTaskItemRequest(
@@ -359,7 +359,7 @@ public sealed class TaskNotificationDispatchPointsTests
                 new FakeCurrentUserContext(Me),
                 new FakeTenantContext(TaskTestData.Tenant),
                 Notifications,
-                NullLogger<ClaimTaskItemHandler>.Instance);
+                NullLogger<ClaimTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
         public TransitionTaskItemHandler TransitionHandler(FakeTaskItemRepository tasks)
             => new(
@@ -374,6 +374,6 @@ public sealed class TaskNotificationDispatchPointsTests
                 Notifications,
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 new FakeTaskAttachmentRepository(),
-                NullLogger<TransitionTaskItemHandler>.Instance);
+                NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
     }
 }

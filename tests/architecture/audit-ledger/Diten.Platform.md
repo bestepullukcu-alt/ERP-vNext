@@ -39,6 +39,9 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 | komut | iz | üzerinden |
 |---|---|---|
+| StartTrustedWorkflowInstanceCommand | is-akisi-gecis-gunlugu | IWorkflowInstanceStartCoordinator |
+| CancelTrustedWorkflowInstanceCommand | is-akisi-gecis-gunlugu | ITrustedWorkflowCancellationCoordinator |
+| RunWorkflowEscalationsCommand | is-akisi-gecis-gunlugu | WorkflowTerminalTransitionWriter |
 
 ## Bilinen borç
 

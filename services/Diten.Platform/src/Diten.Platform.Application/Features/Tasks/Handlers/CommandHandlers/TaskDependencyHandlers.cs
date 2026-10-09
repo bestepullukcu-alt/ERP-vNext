@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -21,39 +23,46 @@ public sealed class AddTaskDependencyHandler : IRequestHandler<AddTaskDependency
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskDependencyRepository _dependencies;
     private readonly ITenantContext _tenantContext;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskWriteGate _writeGate;
 
     public AddTaskDependencyHandler(
         ITaskItemRepository tasks,
         ITaskDependencyRepository dependencies,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ICurrentUserContext currentUser,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _dependencies = dependencies;
         _tenantContext = tenantContext;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<Guid>> Handle(AddTaskDependencyCommand command, CancellationToken ct)
     {
         var dependsOn = command.Request.DependsOnTaskItemId;
 
-        // A cycle of length one. Checked first because it is the only case where both ids are the same record and
-        // every check below would otherwise report something less true ("duplicate", "not found").
+        // FIX2 — read (404) → relationship (403: BL-509 decision 3, a predecessor holds this task's start or
+        // completion, adding one is directing it; 409: the person a request waits on answers it first) → validation.
+        var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Change, ct) is { } refused)
+        {
+            return refused.ToResponse<Guid>(command.CorrelationId);
+        }
+
         if (dependsOn == command.TaskItemId)
         {
             return Response<Guid>.Fail(
                 "A task cannot depend on itself.", 400, TaskReasonCodes.DependencySelf, command.CorrelationId);
         }
 
-        var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
-        if (task is null)
-        {
-            return Response<Guid>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
-        }
-
         // The read goes through the tenant execution filter, so an edge to another tenant's task reports NOT
         // FOUND rather than refusing — the caller learns nothing about what exists elsewhere.
+        // FIX2 — and a predecessor the caller cannot read is "not found" too: an edge would otherwise confirm it.
         var predecessor = await _tasks.GetByIdAsync(dependsOn, ct);
-        if (predecessor is null)
+        if (await _writeGate.CheckAsync(predecessor, TaskWriteKind.Personal, ct) is not null)
         {
             return Response<Guid>.Fail(
                 "The task this one would depend on was not found.",
@@ -144,14 +153,32 @@ public sealed class AddTaskDependencyHandler : IRequestHandler<AddTaskDependency
 public sealed class RemoveTaskDependencyHandler : IRequestHandler<RemoveTaskDependencyCommand, Response<NoContent>>
 {
     private readonly ITaskDependencyRepository _dependencies;
+    private readonly ITaskItemRepository _tasks;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskWriteGate _writeGate;
 
-    public RemoveTaskDependencyHandler(ITaskDependencyRepository dependencies)
+    public RemoveTaskDependencyHandler(
+        ITaskDependencyRepository dependencies,
+        ITaskItemRepository tasks,
+        ICurrentUserContext currentUser,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _dependencies = dependencies;
+        _tasks = tasks;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NoContent>> Handle(RemoveTaskDependencyCommand command, CancellationToken ct)
     {
+        // FIX2 — the task's write gate first (404 when unreadable). BL-509 (decision 3) — lifting a predecessor is
+        // directing the holder's work as much as adding one is.
+        if (await _writeGate.CheckAsync(await _tasks.GetByIdAsync(command.TaskItemId, ct), TaskWriteKind.Change, ct)
+            is { } refused)
+        {
+            return refused.ToResponse<NoContent>(command.CorrelationId);
+        }
+
         var dependency = await _dependencies.GetByIdAsync(command.DependencyId, ct);
 
         // Both conditions are one 404: an edge belonging to a DIFFERENT task must not be removable through this

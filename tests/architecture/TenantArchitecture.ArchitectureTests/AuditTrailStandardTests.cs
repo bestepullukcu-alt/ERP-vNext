@@ -55,15 +55,21 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
     private static readonly Dictionary<string, Pinned> PinnedCounts = new(StringComparer.Ordinal)
     {
         // measured 2026-10-02 — see docs/records/audits/2026-10/
-        ["Diten.AuthService"] = new(Debt: 18, Exceptions: 0, K2Debt: 8),
+        // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): IssueServiceIdentityTokenCommand (İ5) — WP-GP-AUDIT-TRAIL-01 D3.
+        ["Diten.AuthService"] = new(Debt: 18, Exceptions: 1, K2Debt: 8),
         ["Diten.CrmService"] = new(Debt: 188, Exceptions: 0),
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
-        ["Diten.MdmService"] = new(Debt: 13, Exceptions: 0, Indirect: 8),
-        ["Diten.Platform"] = new(Debt: 139, Exceptions: 5, K2Debt: 192, WritingQueries: 3),
+        // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): iz mdm-guvenilir-kaynak-niyeti (b) + 11 dolaylı (akışa özgü işlemci)
+        // + 2 İ5 istisna (RetireGskuIdentityPair / RetireLskuIdentity — her zaman 403 DirectRetirementIsSystemOnly).
+        ["Diten.MdmService"] = new(Debt: 10, Exceptions: 2, Indirect: 19),
+        // Birleştirme WP-CT-LANE-TKO-MERGE-01: hattın WP-PLATFORM-AUDIT-INTX-01'i 25 borcu kapattı (164 → 139); takeover'ın
+        // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): Start/CancelTrustedWorkflowInstanceCommand — WP-WF-ENGINE-CANDIDATES-01 D2;
+        // RunWorkflowEscalationsCommand — WP-WF-ENGINE-CANDIDATES-01 (zaman aşımı / yükseltme WorkflowTransitionLog yazar).
+        ["Diten.Platform"] = new(Debt: 139, Exceptions: 5, K2Debt: 192, WritingQueries: 3, Indirect: 3),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
@@ -81,6 +87,25 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.AuthService", "auth-kullanici-iletimi", "b", "IUserAuditRecorder.RecordAsync/AdminPasswordReset.ResetAsync"),
         ("Diten.MdmService", "mdm-merkezi-iletim", "b", "IAuditableCommand+IAuditMetadataProvider"),
         ("Diten.MdmService", "mdm-kisaltma-gecmisi", "c", "IProductAbbreviationHistoryRepository.AppendIfAbsentAsync"),
+        // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): niyet durum değişikliğiyle aynı yazımda / işlemde, Platform'a iletilir.
+        ("Diten.MdmService", "mdm-guvenilir-kaynak-niyeti", "b",
+            "IProductLegalEntityScopePolicyRepository.CreateAsync"
+            + "/IProductLegalEntityScopePolicyRepository.ReplaceAsync"
+            + "/IProductLegalEntityScopePolicyRepository.UpdateAsync"
+            + "/IGlobalProductRepository.UpdateDraftAsync"
+            + "/IGlobalProductRepository.RetireIdentityAsync"
+            + "/IGlobalProductRepository.SubmitIdentityAsync"
+            + "/IGlobalProductRepository.AcquireLifecycleOperationAsync"
+            + "/IGlobalProductRepository.WithdrawIdentityApprovalAsync"
+            + "/IGskuRepository.MarkIdentityPendingAsync"
+            + "/IGskuRepository.AcquireCorrectionAsync"
+            + "/IGskuRepository.AcquireRetirementRequestAsync"
+            + "/IProductDefinitionRevisionRepository.MarkIdentityPendingAsync"
+            + "/ILskuRepository.SubmitIdentityAsync"
+            + "/ILskuRepository.AcquireLifecycleOperationAsync"
+            + "/IFirstGskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
+            + "/ILskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
+            + "/IProductAbbreviationRegisterRepository.AppendAuditIntentIfAbsentAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),

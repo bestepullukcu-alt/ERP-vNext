@@ -40,7 +40,9 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
             request is Queries.ResolveVerifiedGskuReferenceDataQuery
                 or Queries.EnumerateVerifiedGskuUomsQuery
                 or Queries.ResolveVerifiedMarketReferenceDataQuery
-                or Queries.EnumerateVerifiedMarketsQuery)
+                or Queries.EnumerateVerifiedMarketsQuery
+                // WP-PLT-ITEM-LISTS-01 FIX1 M6: the item-universal resolve answers by name too.
+                or Queries.ResolveItemUniversalReferenceDataQuery)
         {
             var timeout = TryCreateFailureResponse("REFERENCE_PROVIDER_TIMEOUT", 504);
             if (timeout is null)
@@ -69,7 +71,8 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
         catch (Exception ex) when (request is Queries.ResolveVerifiedGskuReferenceDataQuery
                                    or Queries.EnumerateVerifiedGskuUomsQuery
                                    or Queries.ResolveVerifiedMarketReferenceDataQuery
-                                   or Queries.EnumerateVerifiedMarketsQuery)
+                                   or Queries.EnumerateVerifiedMarketsQuery
+                                   or Queries.ResolveItemUniversalReferenceDataQuery)
         {
             _logger.LogWarning(
                 "Verified GSKU resolver provider dependency failed with {ExceptionType}.",

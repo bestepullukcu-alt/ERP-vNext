@@ -314,7 +314,7 @@
             const carriedBadge = item.carriedFromMeetingId
                 ? `<span class="badge bg-label-info ms-2">${esc(t('carriedFromPreviousMeetingBadge'))}</span>`
                 : '';
-            li.innerHTML = `<span>${esc(item.text)}${carriedBadge}</span>`;
+            li.innerHTML = `<span>${esc(agendaLineText(item))}${carriedBadge}</span>`;
             if (editable) {
                 const rowActions = document.createElement('div');
                 rowActions.className = 'd-flex gap-1';
@@ -365,11 +365,32 @@
      * task, so a badge would repeat the same word on every line): `resolveTypeLabel` is omitted, and the row
      * prints without one.
      */
+    /*
+     * WP-WCN-TASK-REQUEST-01 FIX4 — a linked task this reader may not read arrives with the CODE in place of its title
+     * (the server never sends a title its read rule refuses); it is shown as a sentence, never as the code.
+     */
+    const TASK_NOT_ACCESSIBLE = 'TASK_NOT_ACCESSIBLE';
+    const linkedTaskTitle = (title) => (title === TASK_NOT_ACCESSIBLE ? t('linkedTaskNotAccessible') : title);
+
+    /*
+     * FIX4 (item 1) — a carried-forward agenda line is STORED as a neutral code (one row every reader sees) and names
+     * its task only through its RecordLink: the title comes from THIS reader's linked-task list, which the server has
+     * already passed through the task read rule. Since FIX5 the server sends the code for EVERY carried line, whatever
+     * it stored (lines carried before FIX4 included), so no stored title reaches this screen.
+     */
+    const CARRIED_OPEN_ACTION = 'MEETING_CARRIED_OPEN_ACTION';
+    let linkedTaskTitleByRecordLinkId = {};
+    const agendaLineText = (item) => {
+        if (item.text !== CARRIED_OPEN_ACTION) { return item.text; }
+        const title = item.recordLinkId ? linkedTaskTitleByRecordLinkId[item.recordLinkId] : null;
+        return title ? `${t('carriedOpenActionLine')}: ${linkedTaskTitle(title)}` : t('carriedOpenActionLine');
+    };
+
     const renderLinkedTasks = (tasks) => {
         const list = document.getElementById('linkedTasksList');
         document.getElementById('noLinkedTasksHint')?.classList.toggle('d-none', tasks.length > 0);
         list.innerHTML = window.DitenRelatedRecords.renderRelatedRows(
-            tasks.map((task) => ({ id: '', title: task.title, link: task.link })),
+            tasks.map((task) => ({ id: '', title: linkedTaskTitle(task.title), link: task.link })),
             { esc, showId: false });
     };
 
@@ -386,8 +407,10 @@
         }
         document.getElementById('meetingNotFound')?.classList.add('d-none');
         document.getElementById('meetingDetailsBody')?.classList.remove('d-none');
+        const linkedTasks = tasksResult.ok ? (tasksResult.data || []) : [];
+        linkedTaskTitleByRecordLinkId = Object.fromEntries(linkedTasks.map((task) => [task.recordLinkId, task.title]));
         renderMeeting(meetingResult.data);
-        renderLinkedTasks(tasksResult.ok ? (tasksResult.data || []) : []);
+        renderLinkedTasks(linkedTasks);
     };
 
     /*
@@ -550,10 +573,56 @@
      * "Link existing task" is ONE field — a search-select — so it goes through `window.showConfirm` exactly
      * like the reassign-organizer picker above (M2), never the raw-Swal path `openCreateTaskDialog` takes.
      */
+    /*
+     * WP-WCN-TASK-REQUEST-01 FIX5/FIX6 — the candidates answer: { items, truncated } today; a plain array from a server
+     * deployed before FIX5 (the switch-over), read as it is. Anything else is UNREADABLE — said so, never shown as an
+     * empty list that looks like "no task to link". FIX7 — a refused call (403 / 500 / no answer) is FAILED, said so the
+     * same way: neither opens as an empty list.
+     */
+    const readLinkCandidates = (result) => {
+        if (!result?.ok) { return { items: [], truncated: false, unreadable: false, failed: true }; }
+        const data = result.data;
+        if (Array.isArray(data)) { return { items: data, truncated: false, unreadable: false }; }
+        if (data && Array.isArray(data.items)) { return { items: data.items, truncated: data.truncated === true, unreadable: false }; }
+        return { items: [], truncated: false, unreadable: true };
+    };
+
     const openLinkExistingTaskDialog = () => {
         void (async () => {
-            const candidatesResult = await window.TasksApi?.linkCandidates?.(null, 20);
-            const candidates = candidatesResult?.ok ? candidatesResult.data : [];
+            const first = readLinkCandidates(await window.TasksApi?.linkCandidates?.(null, 20));
+            if (first.failed || first.unreadable) {
+                const message = first.failed ? t('linkExistingTaskListFailed') : t('linkExistingTaskListUnreadable');
+                window.DitenModal?.error?.({ title: t('errorOccurred'), message });
+                return;
+            }
+            const candidates = first.items;
+            /*
+             * FIX6 (item 1) — the typed term goes to the SERVER (select2's search box, through the shared binder's
+             * optional remote mode), so "narrow your search" is advice the reader can follow. It is only given when
+             * the search can be sent — select2 is on the page.
+             */
+            const canSearch = !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
+            const truncated = first.truncated && canSearch;
+            const remoteSearch = {
+                // FIX7 — select2's own texts are English; this screen speaks the reader's language.
+                messages: {
+                    searching: t('linkExistingTaskSearching'),
+                    noResults: t('linkExistingTaskNoResults'),
+                    inputTooShort: t('linkExistingTaskInputTooShort'),
+                    errorLoading: t('linkExistingTaskListFailed')
+                },
+                search: async (term) => {
+                    const answer = readLinkCandidates(await window.TasksApi.linkCandidates(term, 20));
+                    // FIX7 — a failed or unreadable answer is never "no results": it rejects with its sentence.
+                    if (answer.failed) { throw Object.assign(new Error('LINK_CANDIDATES_FAILED'), { userMessage: t('linkExistingTaskListFailed') }); }
+                    if (answer.unreadable) { throw Object.assign(new Error('LINK_CANDIDATES_UNREADABLE'), { userMessage: t('linkExistingTaskListUnreadable') }); }
+                    const results = answer.items.map((candidate) => ({ id: candidate.id, text: candidate.title }));
+                    if (answer.truncated) {
+                        results.push({ id: '__truncated', text: t('linkExistingTaskTruncated'), disabled: true });
+                    }
+                    return results;
+                }
+            };
             // A leading BLANK entry, deliberately: a native `<select>` otherwise opens on its first real option
             // already selected, and confirming without touching it would link a task nobody chose.
             const taskOptions = { '': t('linkExistingTaskPlaceholder') };
@@ -571,7 +640,7 @@
                 window.DitenModal?.success?.({ title: t('toastTaskLinked'), timer: 1200 });
                 await reloadMeeting();
             }, {
-                subtext: '',
+                subtext: truncated ? t('linkExistingTaskTruncated') : '',
                 confirmButtonText: t('linkExistingTask'),
                 showInput: true,
                 inputType: 'select',
@@ -581,7 +650,7 @@
                 didOpen: (popup) => {
                     const box = (window.Swal && typeof window.Swal.getInput === 'function' && window.Swal.getInput())
                         || popup.querySelector('.swal2-select');
-                    if (box) { window.DitenDialog?.bindDialogSelect2?.(box, popup, { allowClear: false }); }
+                    if (box) { window.DitenDialog?.bindDialogSelect2?.(box, popup, { allowClear: false, remoteSearch }); }
                 }
             });
         })();

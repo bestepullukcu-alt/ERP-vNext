@@ -475,6 +475,7 @@ public sealed class TaskAssignmentWriteGuardTests
                 TaskDocumentFreezerDoubles.OverAnEmptyRegister(),
                 GuardFor(seats, positions, units, scopes,
                     permissions ?? TaskActors.Holding(TaskPermissions.Create, TaskPermissions.Assign), who),
+                TaskWriteGateDoubles.Open,
                 new TaskAssignmentDirection(scopes, seats, new FakeCurrentUserContext(who)),
                 Upward);
         }
@@ -545,7 +546,7 @@ public sealed class TaskAssignmentWriteGuardTests
                 GuardFor(seats, positions, units, ScopeResolver(positions, units, Me),
                     permissions ?? TaskActors.Holding(TaskPermissions.Assign), Me),
                 new FakeCurrentUserContext(Me),
-                new FakeTenantContext(TaskTestData.Tenant));
+                new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open);
         }
 
         public TaskItem Stored => _tasks.Items.Single();

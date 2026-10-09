@@ -136,6 +136,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Отменить эту задачу может только тот, кто её запросил. Если вы не хотите эту работу, верните её.</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>Вы не можете утверждать согласование, которое запрашиваете сами. Выберите другого ответственного за согласование.</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>Вы не можете проверять собственную работу. Попросите другого сотрудника проверить эту задачу.</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>Никто, кроме вас, не может проверить эту задачу. Выберите другого проверяющего.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Никто, кроме вас, не может принять решение на следующем шаге этого согласования. Попросите администратора изменить согласующих в процессе.</value></data>
+  <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>Изменения сохранены, но текущее согласование не удалось отозвать. Сохраните ещё раз, чтобы повторить попытку.</value></data>
+  <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>Изменения сохранены, но текущую проверку не удалось отозвать. Сохраните ещё раз, чтобы повторить попытку.</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>Не удалось отозвать связанное согласование или проверку, поэтому действие не выполнено. Повторите попытку чуть позже.</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>По этой задаче уже открыта проверка.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Укажите, чего ожидает задача.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Укажите название.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>Название может содержать не более 200 символов.</value></data>

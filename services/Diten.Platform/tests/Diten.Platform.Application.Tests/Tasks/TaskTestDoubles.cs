@@ -166,6 +166,20 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
     /// </summary>
     public int ForcedUpdateConflicts { get; set; }
 
+    /// <summary>D2-FIX4 — how many writes pass BEFORE <see cref="ForcedUpdateConflicts"/> start losing: "the first write lands,
+    /// the next one loses" (a parent's own cancel, then its subtask's).</summary>
+    public int WritesBeforeForcedConflicts { get; set; }
+
+    /// <summary>D2-FIX4 — every write the store was asked for, as the document looked when it was asked (whether it landed or
+    /// not): what ONE write carried is readable here, which the stored result alone cannot tell.</summary>
+    public List<TaskItem> WriteAttempts { get; } = [];
+
+    /// <summary>D2-FIX5 item 4 — task id → how many of ITS next versioned deletes lose their race (a task somebody keeps writing).</summary>
+    public Dictionary<Guid, int> DeleteConflicts { get; } = [];
+
+    /// <summary>D2-FIX5 item 4 — the id of every versioned delete the store was asked for, whether it landed or not.</summary>
+    public List<Guid> DeleteAttempts { get; } = [];
+
     /// <summary>
     /// WC-1 — the lifecycle event log this store writes to, exactly as the real repository does.
     ///
@@ -381,6 +395,18 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
                         && x.Lifecycle == Domain.Enums.Tasks.TaskLifecycle.Waiting)
             .ToList());
 
+    /// <summary>BL-509 — mirrors <c>TaskItemRepository.ListOfferedToAsync</c>, all three conditions included.</summary>
+    public Task<IReadOnlyList<TaskItem>> ListOfferedToAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskItem>>(_items
+            .Where(x => x.TenantId == TaskTestData.Tenant
+                        && !x.IsDeleted
+                        && x.OfferedToUserId == userId
+                        && x.AssignmentTarget == Domain.Enums.Tasks.TaskAssignmentTarget.Offered
+                        && x.AssigneeUserId is null
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Done
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Cancelled)
+            .ToList());
+
     public Task<IReadOnlyList<TaskItem>> ListByParentAsync(Guid parentTaskItemId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskItem>>(_items
             .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.ParentTaskItemId == parentTaskItemId)
@@ -410,11 +436,26 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
 
     public Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default)
     {
+        WriteAttempts.Add(Detach(task));
         if (ForcedUpdateConflicts > 0)
         {
-            // Exactly what Mongo's conditional write does when another writer got there first: no exception, a
-            // FALSE, and the stored document untouched.
-            ForcedUpdateConflicts--;
+            if (WritesBeforeForcedConflicts > 0)
+            {
+                WritesBeforeForcedConflicts--;
+            }
+            else
+            {
+                // Exactly what Mongo's conditional write does when another writer got there first: no exception, a
+                // FALSE, and the stored document untouched.
+                ForcedUpdateConflicts--;
+                return Task.FromResult(false);
+            }
+        }
+
+        // FIX3 — the real repository writes nothing when the entity was not read at the version the caller names
+        // (TaskStoreVersioning); the double keeps in step, so a handler test cannot pass a write production refuses.
+        if (task.Version != expectedVersion)
+        {
             return Task.FromResult(false);
         }
 
@@ -455,6 +496,27 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>D2-FIX4 item 7 — the conditional soft delete: only while the stored task is still at the version the caller read.</summary>
+    public Task<bool> DeleteAsync(Guid id, int expectedVersion, CancellationToken ct = default)
+    {
+        DeleteAttempts.Add(id);
+        if (DeleteConflicts.TryGetValue(id, out var remaining) && remaining > 0)
+        {
+            // Another writer got there first: no exception, a FALSE, and the stored document untouched.
+            DeleteConflicts[id] = remaining - 1;
+            return Task.FromResult(false);
+        }
+
+        var stored = _items.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant && !x.IsDeleted);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        stored.IsDeleted = true;
+        return Task.FromResult(true);
     }
 }
 
@@ -797,11 +859,14 @@ internal sealed class FakeTaskCommentRepository : ITaskCommentRepository
      * because a hand-copied clone silently drops every field added after it was written. Two doubles in this
      * suite have already hidden a defect exactly that way.
      */
-    public Task UpdateAsync(TaskComment comment, CancellationToken ct = default)
+    public Task<bool> UpdateAsync(TaskComment comment, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX4 (item 5) — the same condition as the real repository: only over the version that was read.
         var index = _comments.FindIndex(c => c.Id == comment.Id);
-        if (index >= 0) { _comments[index] = Clone(comment); }
-        return Task.CompletedTask;
+        if (index < 0 || _comments[index].Version != expectedVersion) { return Task.FromResult(false); }
+        comment.Version = expectedVersion + 1;
+        _comments[index] = Clone(comment);
+        return Task.FromResult(true);
     }
 
     private static TaskComment Clone(TaskComment comment)
@@ -1548,16 +1613,26 @@ internal sealed class FakeTaskReviewService : Diten.Platform.Application.Feature
     /// <summary>What the NEXT start returns. A second round after a refusal hands back a different id.</summary>
     public Guid InstanceId { get; set; } = Guid.Parse("beefbeef-beef-beef-beef-beefbeefbeef");
 
+    /// <summary>D2-FIX1 — with <see cref="CannotStart"/>, the engine's reason the start was refused.</summary>
+    public string? RefusalReasonCode { get; set; }
+
     public Task<Guid?> TryStartReviewAsync(TaskItem task, CancellationToken ct)
     {
         Started.Add(task.Id);
         return Task.FromResult<Guid?>(CannotStart ? null : InstanceId);
     }
 
-    public Task CancelReviewAsync(TaskItem task, CancellationToken ct)
+    public async Task<Diten.Platform.Application.Features.Tasks.Services.TaskReviewStartResult> StartReviewAsync(
+        TaskItem task, CancellationToken ct) =>
+        new(await TryStartReviewAsync(task, ct), CannotStart ? RefusalReasonCode : null);
+
+    /// <summary>D2-FIX1 A1 — set to make the next cancel report that the review could not be withdrawn.</summary>
+    public bool CannotCancel { get; set; }
+
+    public Task<bool> CancelReviewAsync(TaskItem task, CancellationToken ct)
     {
         Cancelled.Add(task.Id);
-        return Task.CompletedTask;
+        return Task.FromResult(!CannotCancel);
     }
 }
 
@@ -1580,10 +1655,13 @@ internal sealed class FakeTaskApprovalService : Diten.Platform.Application.Featu
         return Task.FromResult<Guid?>(CannotStart ? null : InstanceId);
     }
 
-    public Task CancelApprovalAsync(TaskItem task, CancellationToken ct)
+    /// <summary>D2-FIX1 A1 — set to make the next cancel report that the approval could not be withdrawn.</summary>
+    public bool CannotCancel { get; set; }
+
+    public Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct)
     {
         Cancelled.Add(task.Id);
-        return Task.CompletedTask;
+        return Task.FromResult(!CannotCancel);
     }
 
     public Task<IReadOnlyDictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>>

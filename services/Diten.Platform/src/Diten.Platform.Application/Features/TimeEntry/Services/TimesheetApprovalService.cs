@@ -8,6 +8,8 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using WorkflowContracts = Diten.Platform.Application.Features.Workflow;
 
+using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
+
 namespace Diten.Platform.Application.Features.TimeEntry.Services;
 
 /// <summary>MOD-0023's outcome for one instance, as this module reads it. Never stored as "the" decision — the
@@ -58,6 +60,21 @@ public interface ITimesheetApprovalService
     /// </summary>
     Task<IReadOnlyDictionary<Guid, TimesheetDecisionOutcome>> ReadOutcomesAsync(
         IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default);
+
+    /// <summary>
+    /// D1-FIX1 — which of <paramref name="workflowInstanceIds"/> have an OPEN approval task that
+    /// <paramref name="userId"/> may decide, by MOD-0023's own gate rule
+    /// (<c>WorkflowTaskTransitionSupport.MayDecide</c> over the task's assignment snapshot — no copy of the candidate
+    /// list is kept or consulted on this side). Two reads however many instances are asked about.
+    /// <para>Whoever may decide a week's approval may READ that week — and nobody else: a second holder of the
+    /// manager's seat could decide in the Task Center but not open the week, i.e. approve hours they could not see.</para>
+    /// <para><paramref name="includeDecidedByUser"/> adds the instances whose newest task this user has ALREADY decided:
+    /// the approvals list asks for them so that the decision is taken on board (the week then stops being Submitted and
+    /// drops off). It never makes somebody else's decision visible.</para>
+    /// </summary>
+    Task<IReadOnlySet<Guid>> DecidableInstanceIdsAsync(
+        Guid userId, IReadOnlyCollection<Guid> workflowInstanceIds, bool includeDecidedByUser = false,
+        CancellationToken ct = default);
 }
 
 /// <summary>
@@ -101,6 +118,7 @@ public sealed class TimesheetApprovalService : ITimesheetApprovalService
     private readonly IWorkflowTransitionLogRepository _transitions;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<TimesheetApprovalService> _logger;
+    private readonly IRuntimeAssignmentSnapshotRepository _snapshots;
 
     public TimesheetApprovalService(
         IMediator mediator,
@@ -109,8 +127,10 @@ public sealed class TimesheetApprovalService : ITimesheetApprovalService
         IApprovalTaskRepository approvalTasks,
         IWorkflowTransitionLogRepository transitions,
         ITenantContext tenantContext,
-        ILogger<TimesheetApprovalService> logger)
+        ILogger<TimesheetApprovalService> logger,
+        IRuntimeAssignmentSnapshotRepository snapshots)
     {
+        _snapshots = snapshots;
         _mediator = mediator;
         _templates = templates;
         _instances = instances;
@@ -367,4 +387,51 @@ public sealed class TimesheetApprovalService : ITimesheetApprovalService
     }
 
     private static string CorrelationId() => $"timesheet-approval:{Guid.NewGuid():N}";
+
+    public async Task<IReadOnlySet<Guid>> DecidableInstanceIdsAsync(
+        Guid userId, IReadOnlyCollection<Guid> workflowInstanceIds, bool includeDecidedByUser = false,
+        CancellationToken ct = default)
+    {
+        var decidable = new HashSet<Guid>();
+        if (userId == Guid.Empty || workflowInstanceIds.Count == 0)
+        {
+            return decidable;
+        }
+
+        // The NEWEST task of each instance is the one that counts (the list is newest first).
+        var newest = (await _approvalTasks.ListByInstanceIdsAsync(workflowInstanceIds, ct))
+            .GroupBy(t => t.WorkflowInstanceId)
+            .Select(g => g.First())
+            .ToList();
+        // The tasks somebody can still decide — the same three statuses the gate accepts.
+        var open = newest.Where(t => t.Status is ApprovalTaskStatus.WaitingApproval
+            or ApprovalTaskStatus.WaitingEvidence or ApprovalTaskStatus.Escalated).ToList();
+        var snapshots = (await _snapshots.ListByIdsAsync(
+                open.Select(t => t.AssignmentSnapshotId).OfType<Guid>().Distinct().ToList(), ct))
+            .ToDictionary(s => s.Id);
+
+        var principal = userId.ToString("D");
+        foreach (var task in open)
+        {
+            if (task.AssignmentSnapshotId is { } snapshotId
+                && snapshots.TryGetValue(snapshotId, out var snapshot)
+                && WorkflowTaskTransitionSupport.MayDecide(snapshot, principal))
+            {
+                decidable.Add(task.WorkflowInstanceId);
+            }
+        }
+
+        if (includeDecidedByUser)
+        {
+            foreach (var task in newest.Where(t => t.Status is ApprovalTaskStatus.Approved or ApprovalTaskStatus.Rejected))
+            {
+                if (WorkflowTaskTransitionSupport.PrincipalEquals(task.ActionedBy, principal))
+                {
+                    decidable.Add(task.WorkflowInstanceId);
+                }
+            }
+        }
+
+        return decidable;
+    }
 }

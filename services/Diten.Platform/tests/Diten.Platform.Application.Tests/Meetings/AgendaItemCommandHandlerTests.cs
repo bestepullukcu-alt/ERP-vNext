@@ -38,6 +38,40 @@ public sealed class AgendaItemCommandHandlerTests
         Assert.Equal(1, second.Data!.SortOrder);
     }
 
+    /// <summary>WP-WCN-TASK-REQUEST-01 FIX7 (item 4) — the create answer goes through MeetingAgendaCodes.TextFor: a store
+    /// that hands back a CARRIED line (from a previous meeting, naming its task) is answered with the code, never with
+    /// the stored text.</summary>
+    [Fact]
+    public async Task Add_answers_a_carried_line_with_the_code_not_the_stored_text()
+    {
+        var (meetings, agenda, tenantContext, currentUser, meeting) = Fixture();
+        var carriedFrom = Guid.NewGuid();
+        var handler = new AddAgendaItemHandler(meetings, new CarryingAgendaStore(agenda, carriedFrom), tenantContext, currentUser);
+
+        var added = await handler.Handle(
+            new AddAgendaItemCommand(meeting.Id, new AddAgendaItemRequest("Gizli görevin başlığı"), "corr"), CancellationToken.None);
+
+        Assert.Equal(MeetingAgendaCodes.CarriedOpenAction, added.Data!.Text);
+        Assert.Equal(carriedFrom, added.Data.CarriedFromMeetingId);
+        Assert.NotNull(added.Data.RecordLinkId);
+    }
+
+    /// <summary>The fake store, except that every line it creates comes back carried.</summary>
+    private sealed class CarryingAgendaStore(FakeAgendaItemRepository inner, Guid carriedFrom) : Diten.Platform.Domain.Repositories.IAgendaItemRepository
+    {
+        public Task<AgendaItem> CreateAsync(AgendaItem item, CancellationToken ct = default)
+        {
+            item.CarriedFromMeetingId = carriedFrom;
+            item.RecordLinkId = Guid.NewGuid();
+            return inner.CreateAsync(item, ct);
+        }
+
+        public Task<AgendaItem?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<IReadOnlyList<AgendaItem>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default) => inner.ListByMeetingIdAsync(meetingId, ct);
+        public Task<bool> UpdateAsync(AgendaItem item, int expectedVersion, CancellationToken ct = default) => inner.UpdateAsync(item, expectedVersion, ct);
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => inner.DeleteAsync(id, ct);
+    }
+
     // ── AC7 — reorder requires the EXACT live set ────────────────────────────────────────────────────────────
 
     [Fact]
