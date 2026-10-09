@@ -459,6 +459,40 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   `RESERVATION_CONFLICT`. Persisted: `inventory_reservations` 1 row (Released, Version 2, same tenant/LE), 2 audit rows
   (Created, Released), 2 outbox rows `InventoryReservationChanged` (Pending — RabbitMQ down on this machine).
 
+- **WP-0173-PM2 (agent result, pending CT, 2026-10-09) — INVENTORY-BUNDLE 1.1.0: `SkuLevel` `Item` + `getStockPresence`
+  (MOD-0290 R-12).** Branch `feature/sce/mod-0173-pm2` from `04ad7fb6d`; commits `4411a2108` (contract 1.1.0, additive, FROZEN,
+  README) and `56bf2c637` (code + tests).
+  - **What it serves.** `GET /api/internal/inventory/stock-presence` on InventoryService directly. It is not on the Gateway:
+    no route matches, and `ocelot.json` is unchanged (route test). The scope middleware does not cover the path, and JWT
+    authorization is off for it.
+  - **The key gate.** The only gate is `InternalServiceKeyFilter`, configured from `Inventory:InternalServiceKeys`
+    (`Identifier`, ≤ 2 `Secrets`, `Endpoints`). The header is `X-Internal-Api-Key: <identifier>:<secret>` (ASSUMPTION-0173-PM2-01).
+    - Comparison: SHA-256 + `FixedTimeEquals`, over every key and secret.
+    - One byte-identical 401 for: missing / wrong / unknown / other-operation key, user token (alone or with a key), and
+      http outside Development.
+    - Every call is audited in `inventory_audit` (key identifier, tenant, SKU, level, status, outcome, correlation); the secret
+      never appears.
+  - **The read.** `inventory_balances` for ONE tenant across ALL legal entities and ALL statuses: `OnHand ≠ 0`, live rows,
+    new index `ix_tenant_sku_level`. `inventory_sku_positions` carries AVAILABLE only, so it is not enough. A store read or
+    audit failure answers 503 `INVENTORY_UNAVAILABLE`; `coverage` is always `COMPLETE`.
+  - **`Item`.** Accepted only here. `postMovement` still refuses `skuLevel: Item` with 400 `INVALID_REQUEST`, at request
+    validation, before PRODUCT-MASTER (measured; PM1).
+  - **Configuration and dev key.** `appsettings.json` carries an empty key list, so every call is 401 until a key is configured.
+    `UserSecretsId` is added. `scripts/new-inventory-internal-key.ps1` writes the key straight into the user-secrets file (never
+    a command line), copies it to the clipboard, and rotates (2nd secret; `-RetireOldest`).
+  - **Tests.** Inventory 692 → **722/722**, Gateway 101/102 → 107/108 (the pre-existing 5065 red), Web 649/649, architecture
+    18/18, 0 new warnings.
+  - **Sabotages.** (a) tenant filter · (b) secret check · (c) AVAILABLE only · (d) negative as zero · (e) second secret ignored ·
+    (f) endpoint list → each red, restored (md5 equal).
+  - **Probe 27/27.** Run on own Auth / Platform / two Inventory hosts (Development + Staging) / own mongod.
+    - Every status and the other company → true; other tenant → false.
+    - Six refusals → identical 401; Staging over http → 401 + warning.
+    - p95 16 ms over 300 calls; live rotation without restart.
+    - 323 audit rows; secret scan 0.
+  - **Opens.** O-PM2-1 (header format → MDM), O-PM2-2 (TLS-terminating proxy → ForwardedHeaders), O-PM2-3 (`TestSettings`
+    defaults to 27017), O-PM2-4 (`Item` elsewhere → PM1), O-PM2-5 (gateway 5065 red, not PM2).
+  - **Evidence.** `docs/records/audits/2026-10/mod-0173-pm2-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`.
+
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).
