@@ -422,6 +422,126 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, user.Email, NewPassword)).StatusCode);
     }
 
+    // ── WP-EMAIL-LANG-01: a user's own mail language (PUT api/auth/me/preferences) ───────────────────────────────
+
+    private async Task<HttpResponseMessage> SetMyPreferencesAsync(string accessToken, Guid tenantId, object body)
+    {
+        using var client = _host.Client(accessToken, tenantId);
+        return await client.PutAsJsonAsync("api/auth/me/preferences", body);
+    }
+
+    [Fact]
+    public async Task A_user_sets_their_own_mail_language_and_the_change_is_audited_by_field_name()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        var set = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "fr" });
+
+        Assert.Equal(HttpStatusCode.OK, set.StatusCode);
+        Assert.Equal("fr", (await ReadUserAsync(user.Id)).PreferredLanguage);
+        var row = Assert.Single(await _host.Database.GetCollection<AuthAuditLog>("authAuditLogs")
+            .Find(r => r.EventName == UserAuditEvents.Updated && r.TenantId == tenantId).ToListAsync());
+        Assert.Contains(user.Id.ToString(), row.Metadata, StringComparison.OrdinalIgnoreCase);
+        using var metadata = JsonDocument.Parse(row.Metadata);
+        Assert.Equal("preferredLanguage", Assert.Single(metadata.RootElement.GetProperty("changedFields").EnumerateArray()).GetString());
+        Assert.Equal(JsonValueKind.Null, metadata.RootElement.GetProperty("previousPreferredLanguage").ValueKind);
+        Assert.Equal("fr", metadata.RootElement.GetProperty("preferredLanguage").GetString());
+    }
+
+    [Theory]
+    [InlineData("de")]
+    [InlineData("fr-FR")]
+    [InlineData("xx")]
+    public async Task A_language_outside_the_seven_is_refused_with_400_and_nothing_is_written(string language)
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        var set = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = language });
+
+        Assert.Equal(HttpStatusCode.BadRequest, set.StatusCode);
+        Assert.Contains("USER_PREFERRED_LANGUAGE_INVALID", await set.Content.ReadAsStringAsync());
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task Null_clears_the_users_mail_language()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "zh" })).StatusCode);
+
+        var cleared = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = (string?)null });
+
+        Assert.Equal(HttpStatusCode.OK, cleared.StatusCode);
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task The_body_cannot_name_another_user_or_tenant_or_set_any_other_field()
+    {
+        // Mass assignment: whatever else the body says, only the caller's own language changes.
+        var tenantId = Guid.NewGuid();
+        var me = await SeedTenantUserAsync(tenantId);
+        var other = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, me.Email, OldPassword);
+        var before = await ReadUserAsync(me.Id);
+
+        var set = await SetMyPreferencesAsync(session.AccessToken, tenantId, new
+        {
+            preferredLanguage = "es",
+            userId = other.Id,
+            id = other.Id,
+            tenantId = Guid.NewGuid(),
+            firstName = "Changed",
+            isActive = false,
+            email = "someone.else@lang.test",
+            mustChangePassword = true
+        });
+
+        Assert.Equal(HttpStatusCode.OK, set.StatusCode);
+        var after = await ReadUserAsync(me.Id);
+        Assert.Equal("es", after.PreferredLanguage);
+        Assert.Equal(before.FirstName, after.FirstName);
+        Assert.Equal(before.Email, after.Email);
+        Assert.Equal(before.IsActive, after.IsActive);
+        Assert.Equal(before.MustChangePassword, after.MustChangePassword);
+        Assert.Equal(tenantId, after.TenantId);
+        Assert.Null((await ReadUserAsync(other.Id)).PreferredLanguage); // the other user is untouched
+    }
+
+    [Fact]
+    public async Task A_platform_administrators_token_cannot_set_preferences_here()
+    {
+        var token = await PlatformCallerTokenAsync();
+
+        using var client = _host.Client(token);
+        var set = await client.PutAsJsonAsync("api/auth/me/preferences", new { preferredLanguage = "fr" });
+
+        Assert.Equal(HttpStatusCode.Forbidden, set.StatusCode);
+    }
+
+    [Fact]
+    public async Task An_account_written_before_the_field_existed_reads_as_no_choice_and_can_set_one()
+    {
+        // Mongo new-field rule: a document without the field is "no choice" (null), never unreadable.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var raw = _host.Database.GetCollection<BsonDocument>("users");
+        var id = new BsonDocument("_id", new BsonBinaryData(user.Id, GuidRepresentation.Standard));
+        await raw.UpdateOneAsync(id, new BsonDocument("$unset", new BsonDocument("PreferredLanguage", "")));
+        Assert.False((await raw.Find(id).SingleAsync()).Contains("PreferredLanguage"));
+
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword); // the account still signs in
+        Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" })).StatusCode);
+        Assert.Equal("ru", (await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
     // ── BL-454 stage D FIX1: the tenant-created event only CREATES ──────────────────────────────────────────────
 
     private async Task<HttpResponseMessage> TenantAdminInvitedByEventAsync(Guid tenantId, string email, string? trigger = "tenant-created-event")

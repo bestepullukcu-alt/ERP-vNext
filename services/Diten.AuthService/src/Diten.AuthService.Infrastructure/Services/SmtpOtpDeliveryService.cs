@@ -23,11 +23,13 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
 {
     private readonly SmtpOptions _options;
     private readonly ITenantEmailIdentityClient? _identity;
+    private readonly IUserRepository? _users;
 
-    public SmtpOtpDeliveryService(IOptions<SmtpOptions> options, ITenantEmailIdentityClient? identity = null)
+    public SmtpOtpDeliveryService(IOptions<SmtpOptions> options, ITenantEmailIdentityClient? identity = null, IUserRepository? users = null)
     {
         _options = options.Value;
         _identity = identity;
+        _users = users;
     }
 
     public async Task SendEmailOtpAsync(Guid tenantId, string email, string code, DateTime expiresAtUtc, CancellationToken ct)
@@ -59,7 +61,9 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
     public async Task<MailMessage> BuildMessageAsync(Guid tenantId, string email, string code, DateTime expiresAtUtc, CancellationToken ct)
     {
         var identity = tenantId == Guid.Empty || _identity is null ? null : await _identity.GetAsync(tenantId, ct);
-        var language = identity?.Language;
+        // WP-EMAIL-LANG-01 — the recipient's own language first, then the tenant's, then en.
+        var language = Diten.AuthService.Domain.Entities.UserLanguages.ForRecipient(
+            await PreferredLanguageOfAsync(tenantId, email, ct), identity?.Language);
         var rendered = VerificationCodeEmailTemplate.Render(language, identity?.DisplayName, code, expiresAtUtc);
 
         var message = new MailMessage
@@ -77,5 +81,23 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
         message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(rendered.Html, Encoding.UTF8, MediaTypeNames.Text.Html));
         message.To.Add(email);
         return message;
+    }
+
+    // The recipient's own choice, when it can be read; a read that fails never stops the code (the tenant's language applies).
+    private async Task<string?> PreferredLanguageOfAsync(Guid tenantId, string email, CancellationToken ct)
+    {
+        if (_users is null || tenantId == Guid.Empty || string.IsNullOrWhiteSpace(email))
+        {
+            return null;
+        }
+
+        try
+        {
+            return (await _users.GetByEmailAndTenantAsync(email.Trim().ToLowerInvariant(), tenantId, ct))?.PreferredLanguage;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return null;
+        }
     }
 }

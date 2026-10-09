@@ -128,21 +128,70 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
         }
 
         /*
-         * 7) Locale. QueueEmailNotificationRequest.Locale is a non-nullable string and its validator says NotEmpty,
-         *    so this adapter is the last place that can honour its own optional-looking Locale. It resolves rather
-         *    than defaults: caller's value → tenant's configured language → "en". The previous line here was
-         *    `request.Locale ?? string.Empty`, which satisfied the compiler and failed the validator.
+         * 7) Locale, per recipient. WP-EMAIL-LANG-01 (CT decision 2026-10-09) — each person is written to in their own
+         *    language: the recipients are grouped by the language they carry (EmailRecipientDto.Locale, a supported one),
+         *    and each group is its OWN dispatch — its own row, id and retries, so a retry never sends to another group.
+         *    No language = the caller's Locale, then the tenant's configured language, then "en" (the resolver).
+         *    Every recipient is in exactly one group; Cc and Bcc travel once, with the first group. A group's To is a
+         *    subset of the caller's To, so nobody sees an address the single message would not have shown them.
          */
-        var locale = await _localeResolver.ResolveAsync(request.TenantId, request.Locale, ct);
+        var groups = request.To
+            .GroupBy(recipient => SupportedLocaleOrNull(recipient.Locale))
+            .ToList();
 
+        Response<NotificationDispatchDto>? first = null;
+        Response<NotificationDispatchDto>? firstFailure = null;
+        for (var index = 0; index < groups.Count; index++)
+        {
+            var group = groups[index];
+            var locale = await _localeResolver.ResolveAsync(request.TenantId, group.Key ?? request.Locale, ct);
+            var response = await QueueAsync(
+                request, eventCode, templateKey, locale,
+                group.Select(recipient => recipient with { Locale = null }).ToList(),
+                index == 0 ? request.Cc : null,
+                index == 0 ? request.Bcc : null,
+                ct);
+            first ??= response;
+            if (!response.IsSuccessful)
+            {
+                firstFailure ??= response;
+            }
+        }
+
+        // One answer for the producer: the first failure when any group failed (each failure is logged above with its
+        // locale), otherwise the first group's dispatch.
+        return firstFailure ?? first!;
+    }
+
+    /// <summary>The supported recipient languages (the seven tenant languages); anything else is "no language".</summary>
+    public static readonly IReadOnlyList<string> RecipientLocales = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+
+    private static string? SupportedLocaleOrNull(string? locale)
+    {
+        if (string.IsNullOrWhiteSpace(locale))
+        {
+            return null;
+        }
+
+        var normalized = NotificationParsing.NormalizeLocale(locale);
+        var separator = normalized.IndexOfAny(['-', '_']);
+        var primary = separator > 0 ? normalized[..separator] : normalized;
+        return RecipientLocales.Contains(primary) ? primary : null;
+    }
+
+    private async Task<Response<NotificationDispatchDto>> QueueAsync(
+        NotificationEventDispatchRequest request, string eventCode, string templateKey, string locale,
+        IReadOnlyList<EmailRecipientDto> to, IReadOnlyList<EmailRecipientDto>? cc, IReadOnlyList<EmailRecipientDto>? bcc,
+        CancellationToken ct)
+    {
         // Delegate to the EXISTING pipeline unchanged. OptionalVariables pass through as-is (no adapter mutation).
         var queueRequest = new QueueEmailNotificationRequest(
             TemplateKey: templateKey,
             Locale: locale,
             Variables: request.Variables,
-            To: request.To,
-            Cc: request.Cc,
-            Bcc: request.Bcc,
+            To: to,
+            Cc: cc,
+            Bcc: bcc,
             CausationId: request.CausationId,
             Attachments: request.Attachments,
             MeetingAttendeeUserId: request.MeetingAttendeeUserId);

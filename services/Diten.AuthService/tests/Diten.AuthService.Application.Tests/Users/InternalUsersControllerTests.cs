@@ -183,6 +183,25 @@ public sealed class InternalUsersControllerTests
     }
 
     [Fact]
+    public async Task Contacts_carry_each_users_preferred_language_and_null_when_they_chose_none()
+    {
+        // WP-EMAIL-LANG-01 — the contract now has four fields: id, display name, address, preferred language.
+        var chose = NewUser("chose@a.test", "Cem", "Chose", TenantA);
+        chose.SetPreferredLanguage("fr");
+        var none = NewUser("none@a.test", "Nil", "None", TenantA);
+        var controller = Build(authorized: true, chose, none);
+
+        var result = await controller.GetContacts(TenantA, $"{chose.Id},{none.Id}", CancellationToken.None);
+
+        var rows = Assert.IsType<List<InternalUserContactDto>>(Assert.IsType<OkObjectResult>(result).Value);
+        Assert.Equal("fr", Assert.Single(rows, r => r.Id == chose.Id).PreferredLanguage);
+        Assert.Null(Assert.Single(rows, r => r.Id == none.Id).PreferredLanguage);
+        Assert.Equal(
+            ["Id", "DisplayName", "Email", "PreferredLanguage"],
+            typeof(InternalUserContactDto).GetProperties().Select(p => p.Name));
+    }
+
+    [Fact]
     public async Task Display_names_still_name_a_deactivated_user_so_history_keeps_its_labels()
     {
         var gone = NewUser("gone@a.test", "Gina", "Gone", TenantA);

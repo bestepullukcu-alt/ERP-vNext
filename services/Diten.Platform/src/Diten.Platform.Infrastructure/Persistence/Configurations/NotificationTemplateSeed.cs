@@ -219,7 +219,8 @@ public static class NotificationTemplateSeed
     /// <summary>The two languages the 1.0.0 tenant lifecycle mails were written in.</summary>
     internal static readonly string[] LifecycleV1Locales = ["en", "tr"];
 
-    private static IReadOnlyList<NotificationTemplate> CreatePlatformDefaults()
+    /// <summary>Every platform-default template the seed writes (internal: the seven-language parity test reads it).</summary>
+    internal static IReadOnlyList<NotificationTemplate> CreatePlatformDefaults()
     {
         return
         [

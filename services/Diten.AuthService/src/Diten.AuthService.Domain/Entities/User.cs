@@ -57,6 +57,25 @@ public sealed class User : EntityBase
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>
+    /// WP-EMAIL-LANG-01 — the language this user wants mail in (one of <see cref="UserLanguages.Supported"/>); null = no
+    /// choice, the tenant's language applies. Missing on documents written before the field: it reads as null.
+    /// </summary>
+    public string? PreferredLanguage { get; private set; }
+
+    /// <summary>Sets or clears (null / blank) the preference. A value outside the supported set is refused here too, so
+    /// no caller can store one.</summary>
+    public void SetPreferredLanguage(string? language)
+    {
+        if (!UserLanguages.TryNormalize(language, out var normalized))
+        {
+            throw new ArgumentException("Unsupported language.", nameof(language));
+        }
+
+        PreferredLanguage = normalized;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     public void UpdateProfile(string firstName, string lastName)
     {
         FirstName = firstName;

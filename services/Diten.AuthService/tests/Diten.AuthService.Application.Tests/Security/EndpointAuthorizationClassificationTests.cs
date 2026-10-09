@@ -46,6 +46,7 @@ public sealed class EndpointAuthorizationClassificationTests
     [InlineData(typeof(AuthController), nameof(AuthController.Logout))]
     [InlineData(typeof(AuthController), nameof(AuthController.ChangePassword))]
     [InlineData(typeof(AuthController), nameof(AuthController.Me))]
+    [InlineData(typeof(AuthController), nameof(AuthController.UpdateMyPreferences))] // WP-EMAIL-LANG-01: own record only
     [InlineData(typeof(PlatformAuthController), nameof(PlatformAuthController.ForcedChangePassword))]
     // (b) self-service — invited user redeems their set-password link before holding any permission.
     [InlineData(typeof(UsersController), nameof(UsersController.SetPassword))]

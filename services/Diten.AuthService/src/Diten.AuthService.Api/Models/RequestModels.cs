@@ -46,3 +46,7 @@ public sealed record SetTenantPasswordRequest(string Email, string Token, string
 public sealed record UpdateUserRequest(string? FirstName, string? LastName, bool? IsActive, string? AccountKind = null);
 public sealed record CreateRoleRequest(string Name, string DisplayName, string? Description);
 public sealed record UpdateRoleRequest(string DisplayName, string? Description);
+
+/// <summary>WP-EMAIL-LANG-01 — the ONLY field a user may set through <c>PUT api/auth/me/preferences</c>. There is no user
+/// id, tenant id or any other field here on purpose: anything else in the body is not bound (no mass assignment).</summary>
+public sealed record UpdateMyPreferencesRequest(string? PreferredLanguage);

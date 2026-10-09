@@ -93,6 +93,36 @@ public sealed class AuthController : CustomBaseController
         return CreateActionResultInstance(result);
     }
 
+    /// <summary>
+    /// WP-EMAIL-LANG-01 — the signed-in TENANT user's own preferences (today: the language their mail is written in).
+    /// The user is the token's <c>sub</c> and the tenant its <c>tenant_id</c>, nothing else: no id in the path or body,
+    /// no administrator path. Any other actor type (a platform administrator's token) is refused, as tenant doors do.
+    /// </summary>
+    [HttpPut("me/preferences")]
+    [Authorize]
+    public async Task<IActionResult> UpdateMyPreferences([FromBody] UpdateMyPreferencesRequest request, CancellationToken ct)
+    {
+        if (!string.Equals(User.FindFirst("actor_type")?.Value, TenantUserActorType, StringComparison.Ordinal))
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail("Only a tenant user can set their own preferences.", 403));
+        }
+
+        var subject = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+        if (!Guid.TryParse(subject, out var userId) || !Guid.TryParse(User.FindFirst("tenant_id")?.Value, out var tenantId)
+            || userId == Guid.Empty || tenantId == Guid.Empty)
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail("Unauthorized.", 401));
+        }
+
+        var result = await _mediator.Send(
+            new Diten.AuthService.Application.Features.Users.Commands.UpdateMyPreferencesCommand(
+                userId, tenantId, request?.PreferredLanguage, HttpContext.TraceIdentifier),
+            ct);
+        return CreateActionResultInstance(result);
+    }
+
+    private const string TenantUserActorType = "tenant_user";
+
     private static string ResolveRequestIp(HttpContext context)
     {
         var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();

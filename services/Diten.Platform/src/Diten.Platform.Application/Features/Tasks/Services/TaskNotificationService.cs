@@ -265,7 +265,7 @@ public sealed class TaskNotificationService : ITaskNotificationService
                     TenantId: _tenantContext.TenantId,
                     EventCode: eventCode,
                     To: recipients
-                        .Select(r => new EmailRecipientDto(r.Email, r.DisplayName))
+                        .Select(r => new EmailRecipientDto(r.Email, r.DisplayName, r.PreferredLanguage))
                         .ToList(),
                     Variables: await BuildVariablesAsync(task, eventCode, actingUserId, ct),
                     /*
