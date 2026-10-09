@@ -8185,6 +8185,39 @@ Gelecek regresyon riski: 🟡 (ilk kullanıcısız tüketici geldiğinde gerekec
 
 ---
 
+### BL-584
+
+**Ürün ana verisi okuma sözleşmesi v1.2: MVP-2 … MVP-5'in ek okuma istekleri (bütün MVP'ler belgesi, 2026-10-09)**
+
+DURUM: AÇIK · SAHİP: CT (MDM) · BULAN: MVP-1 kontrol kulesinin "bütün MVP'ler" istek belgesi (sahip iletti) · KAYIT: 2026-10-09
+
+Kaynak: `mod-0290-product-master-requirements-all-mvps-2026-10-09.md`.
+
+P0 maddeleri v1.1'e girdi:
+- X-01 durum satır başına;
+- X-02 boş olabilir bayraklar;
+- X-08 seviye kuralı (draft.6).
+
+v1.2'ye (yalnız ekleme) kalanlar ve CT önerisi:
+
+| # | İstek | Öncelik | CT önerisi |
+|---|---|---|---|
+| X-03 | Global Ürün / SKU araması (seçiciler) | P1 (MVP-2 / 3) | `/stockable-items` SKU ve kalemi zaten arar; Global Ürün (BOM üst ürünü) için `GET /products?q=` |
+| X-04 | Kalemsiz birim denetimi | P1 | Kalem için `getSkuUom(itemId)` yeterli (draft.6 notu); `validateRefs` satırına isteğe bağlı `uomId` |
+| X-05 | Kalemin SKU'ları (`GET /products/{itemId}/skus`) | P2 (MRP, geri çağırma) | Ekle |
+| X-07 | Olaylar `ProductLifecycleChanged`, `SkuPublished` | P2 | MDM'nin olay yayını yok; denetim çıkışı (outbox) deseniyle ayrı paket |
+| L-03 | Tarihli çevrim: `conversionId`, `asOf` | P2 (MVP-4) | Çevrimler etkin kayıtta yalnız eklenir, değişmez. Sürüm gerekmez; kararlı `conversionId` + `asOf` parametresi yeter (D-C) |
+| W-04 | GTIN ile SKU arama | P2 (MVP-5) | Ürün planı P6 (barkod) ile |
+| W-05 | Ambalaj hiyerarşisi ve düzey başına GTIN | P2 | Ürün planı P9; MVP-5 başlamadan önce (D-A) |
+| L-06 | ABC sınıfı | P2 | MDM'de DEĞİL: tüketimden hesaplanır, planlama / stok sahibi (SAP'de MRP görünümünde ama hesapla dolar) |
+| D-D | SKU × depo uygunluğu | — | MDM'de değil (konum / planlama sahibi) |
+
+D-B (saklama koşulu kod listesi) v1.1'de var (`StorageConditionCode`, `storageConditions`).
+
+Gelecek regresyon riski: 🟢 (ekleme; MVP-2 … MVP-5 canlıya çıkmadan önce).
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**

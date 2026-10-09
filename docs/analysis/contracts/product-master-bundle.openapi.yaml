@@ -16,7 +16,7 @@ info:
     satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
     tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
     kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
-  version: 1.1.0-draft.5
+  version: 1.1.0-draft.6
   x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
@@ -26,6 +26,8 @@ info:
     - "Yetkili okuma: stok davranışı için yetkili okuma `getSku`'dur (kalem için `getSku(level=Item)`); `getProduct`'taki kalem alanları aynı değerleri taşır. Kalemde `serialControlled: false` 'uygulanmaz' demektir (kalemde seri takibi yoktur)."
     - "Davranış daralması (O-1) — stok ekibi KOŞULLU KABUL etti (2026-10-09, OD-1): v1.1 sunucusu Global Ürün (`itemKind: GlobalProduct`) yanıtında ProductRef'in beş v1.0 stok alanını (`baseUomId`, `shelfLifeDays`, `minRemainingShelfLifeDays`, `storageCondition`, `retestDays`) döndürmez; bunlar SKU düzeyinden (`getSku`) okunur. Alan yok = bilinmiyor; false / 0 varsayılmaz. `lotControlled` ve `serialControlled` Global Ürün yanıtında KALIR (`deprecated`): `lotControlled` = Global Ürünün emekli olmayan bütün GSKU'larında aynı ise o değer, değilse (GSKU yok, değerler farklı ya da biri null) null; `serialControlled` = aynı kural, emekli olmayan LSKU ve Bitmiş Ürünleri üzerinde. SKU değeriyle çelişirse SKU geçerlidir. Bu iki alan Global Ürün yanıtından ancak bir ana sürümde (v2.0), bütün tüketiciler `getSku`'ya geçtikten sonra kalkar."
     - "`itemKind` yoksa GlobalProduct'tır (v1.0 sunucusu ve v1.0 örnekleri bu alanı taşımaz)."
+    - "Seviye kuralı (draft.6, bütün MVP'ler belgesi X-08): `level` / `skuLevel` `getSku`, `getSkuUom`, `resolveSkuProduct` ve `validateRefs`'te aynı ele alınır. Verilirse kimlik o seviyede olmalıdır (değilse 404 / `exists: false`), bilinmeyen değer 400. Verilmezse seviye kimlikten çözülür ve yanıtta döner. SKU kimlikleri (UUID) seviyeler arasında çakışmaz; kalemde `skuId == itemId`."
+    - "Kalemsiz birim denetimi (X-04): malzeme kaleminin birimi ve çevrimleri `getSkuUom(skuId = itemId)` ile okunur (kalem kendi SKU'sudur). Global Ürünün kendi birimi yoktur; birim ve çevrim GSKU düzeyindedir. Satır yalnız `itemId` + birim taşıyorsa (RFx, BOM bileşeni) ve kayıt bir kalemse aynı çağrı kullanılır. `validateRefs`'e birim denetimi v1.2'de değerlendirilecek."
     - "Tek durum listesi (2026-10-09, stok ekibi R-10): yayımlanan durumlar `Draft`, `Active`, `Deactivated`, `Retired`; v1.0 `Archived` hiç yayımlanmaz. İç durum eşlemesi `LifecycleStatus` açıklamasındadır. `Deactivated` yalnız malzeme kaleminde vardır ve geri alınabilir: yeniden etkinleştirme onayıyla `Active` olur (onay beklerken `Deactivated` yayımlanır). Global Ürün, GSKU, LSKU ve Bitmiş Üründe `Deactivated` yoktur; bu kayıtlar `Active`'ten yalnız `Retired`'a geçer. `Retired` geri alınmaz."
     - "Etkinleştirme kuralı (2026-10-09, stok ekibi R-04): `Active` bir kayıtta, seviyesinde uygulanan lot / seri bayrağı null olmaz. `lotControlled`: Item, Gsku, Lsku (GSKU'dan) ve FinishedGood'da `Active` iken dolu. `serialControlled`: Item'da false (uygulanmaz), Lsku ve FinishedGood'da `Active` iken dolu, Gsku'da her zaman null (seri takibi LSKU / Bitmiş Ürün düzeyinde karar verilir). Bayrak eksik kayıt onaylanmaz (kalem etkinleştirmesi S2, ürün kimlik onayı S3b uygular). Taslakta null olabilir."
     - "`canonicalCode` opaktır, ayrıştırılmaz. Gerçek biçim RCS-001 §4: `GP-` / `GS-` / `LS-` / `FG-` / `IT-` + 12 hane. v1.0 örneklerindeki `GP-000123` ve `LSKU-TR-000045` eski taklit değerleridir."
@@ -57,6 +59,9 @@ info:
     - date: "2026-10-09"
       version: 1.1.0-draft.5
       note: "Stok ekibinin koşullu kabulü (2026-10-09, OD-1 … OD-7, R-04 / R-06 / R-09 / R-10 / R-11) işlendi: Global Ürün yanıtında `lotControlled` / `serialControlled` kalır (deprecated, değer kuralı x-notes'ta; v2.0'da kalkar), beş stok alanı SKU'dan okunur; SkuRef'e `minRemainingShelfLifeDays` eklendi, `retestDays` / `minRemainingShelfLifeDays` GSKU'da (LSKU ve Bitmiş Ürün GSKU'dan) — boş olabilir; seviye tablosu ve alan bazında boş olabilirlik güncellendi; etkinleştirme kuralı (Active kayıtta lot / seri null olmaz); tek durum listesi ve `Deactivated`'ın geri alınabilirliği; `getSkuUom`'a isteğe bağlı `level` (verilirse getSku ile aynı kural; verilmezse v1.0 davranışı); `IU` yerel birim kodu notu; LSKU GTIN'i P6'ya kadar null. v1.0 parçaları değişmedi (getSkuUom'a eklenen parametre isteğe bağlıdır)."
+    - date: "2026-10-09"
+      version: 1.1.0-draft.6
+      note: "Bütün MVP'ler belgesi (2026-10-09) P0 maddeleri: X-08 seviye kuralı — `getSku` ve `resolveSkuProduct`'ta `level` isteğe bağlı oldu (v1.0'da zorunluydu; gevşetme geriye uyumlu), `validateRefs`'e seviyesiz satır biçimleri (b') ve (c') eklendi, dört işlemde aynı kural; X-04 kalem birim denetimi notu; X-01 zaten var (`validateRefs` satır başına `lifecycleStatus`). v1.2'ye kalanlar (X-03 Global Ürün araması, X-04 `validateRefs` birimi, X-05 kalemin SKU'ları, X-07 olaylar, L-03 tarihli çevrim kimliği, W-04 GTIN ile arama) BL-584'te."
 servers:
   - url: /api/product-master
 security:
@@ -128,7 +133,7 @@ paths:
       description: "v1.1 — stok davranışı için YETKİLİ okuma. `level` `Item` da alır. level=Item: `skuId == itemId`, `canonicalCode` IT-…, `itemKind` Item; `packUomCode`, `marketCode`, `gtin` null, `packQuantity` dönmez (kalem ambalaj / pazar seviyesi taşımaz; kalem GTIN'i sonra). level=Lsku: seri takibi kendi alanı, diğer stok alanları okuma anında üst GSKU'dan (O-3), `gtin` null (O-6). level=FinishedGood: `gtin` satış kutusu GTIN'idir (İTS karekodundaki (01), D-1). Var olan ama başka seviyedeki kimlik 404 alır. Seviyeye göre dolum SkuRef açıklamasındaki tablodadır."
       parameters:
         - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: level, in: query, required: true, schema: { $ref: '#/components/schemas/SkuLevel' } }
+        - { name: level, in: query, required: false, schema: { $ref: '#/components/schemas/SkuLevel' }, description: "v1.1 — isteğe bağlı (v1.0'da zorunluydu; gevşetme geriye uyumludur). Verilirse kimlik o seviyede olmalı, değilse 404; bilinmeyen değer 400. Verilmezse seviye kimlikten sunucuda çözülür ve yanıttaki `skuLevel` alanında döner (SKU kimlikleri seviyeler arasında çakışmaz). Seviye taşımayan satırlar (sipariş, sevkiyat) bu yolu kullanır." }
       responses:
         '200':
           description: SKU
@@ -250,7 +255,7 @@ paths:
       description: "v1.1 — level=Item: Global Ürün yoktur; dönen `itemId` kalemin kendisidir (= skuId), `itemKind` Item. level=FinishedGood: Bitmiş Ürün → GSKU (D-2, üst kayıt `FinishedGood.GskuId`) → Ürün Tanımı Sürümü → Global Ürün. Cevap şeması v1.0 örneğinin biçimini yazıya döker; tek yeni alan `itemKind`."
       parameters:
         - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: level, in: query, required: true, schema: { $ref: '#/components/schemas/SkuLevel' } }
+        - { name: level, in: query, required: false, schema: { $ref: '#/components/schemas/SkuLevel' }, description: "v1.1 — isteğe bağlı (v1.0'da zorunluydu; gevşetme geriye uyumludur). Verilirse kimlik o seviyede olmalı, değilse 404; bilinmeyen değer 400. Verilmezse seviye kimlikten sunucuda çözülür ve yanıttaki `skuLevel` alanında döner (SKU kimlikleri seviyeler arasında çakışmaz). Seviye taşımayan satırlar (sipariş, sevkiyat) bu yolu kullanır." }
       responses:
         '200':
           description: SKU'nun bağlı olduğu ItemId
@@ -437,7 +442,7 @@ paths:
     post:
       operationId: validateRefs
       summary: Toplu kimlik doğrulama (fail-closed consumer'lar için — bulk)
-      description: "v1.1 — Geçerli satır biçimleri: (a) yalnız `itemId` → Global Ürün ya da kalem var mı; (b) `skuId` + `skuLevel` → o seviyede SKU var mı (`skuLevel: Item` kabul edilir); (c) `itemId` + `skuId` + `skuLevel` → SKU o seviyede var mı VE D-SKU-LINK ile o `itemId`'ye mi çözülüyor. Seviye uyuşmazlığı (kimlik var ama başka seviyede) ya da (c)'de bağ uyuşmazlığı → `exists: false`. Başka biçim (ör. `skuLevel`'sız `skuId`, boş satır), bilinmeyen enum değeri ya da 200'den uzun `refs` → 400. `exists` = kaydın varlığı; kullanılabilirlik için `lifecycleStatus` okunur. Sonuç satırında v1.1 alanları `itemKind` ve `lifecycleStatus` döner (bulunamayan satırda yok)."
+      description: "v1.1 — Geçerli satır biçimleri: (a) yalnız `itemId` → Global Ürün ya da kalem var mı; (b) `skuId` + `skuLevel` → o seviyede SKU var mı (`skuLevel: Item` kabul edilir); (b') yalnız `skuId` (draft.6) → herhangi bir seviyede SKU var mı, sonuç satırında çözülen `skuLevel` döner; (c') `itemId` + `skuId` (seviyesiz) → SKU var mı VE o `itemId`'ye mi çözülüyor; (c) `itemId` + `skuId` + `skuLevel` → SKU o seviyede var mı VE D-SKU-LINK ile o `itemId`'ye mi çözülüyor. Seviye uyuşmazlığı (kimlik var ama başka seviyede) ya da (c)'de bağ uyuşmazlığı → `exists: false`. Başka biçim (ör. yalnız `skuLevel`, boş satır), bilinmeyen enum değeri ya da 200'den uzun `refs` → 400. Seviye kuralı `getSku`, `getSkuUom` ve `resolveSkuProduct` ile aynıdır. `exists` = kaydın varlığı; kullanılabilirlik için `lifecycleStatus` okunur. Sonuç satırında v1.1 alanları `itemKind` ve `lifecycleStatus` döner (bulunamayan satırda yok)."
       requestBody:
         required: true
         content:
