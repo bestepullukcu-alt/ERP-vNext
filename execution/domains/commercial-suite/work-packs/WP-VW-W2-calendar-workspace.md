@@ -470,3 +470,6 @@ Geri alındı, touch yapıldı; tam tur yeşil.
   2. **Kurum süzgeci (BE-c + WEB-b):** "Tüm kurumlar" listesinde doktor adları var. Takvim yanıtında kurum adı (`accountDisplayName`) yok; Web hedef adını kullanıyor.
   3. Tatil adı (BE-c), gün dengesi (BE-c), `pin_time_past_day_end` metni (WEB-b): önceden yazıldı.
   4. Veri notu: 41. haftanın 54 ziyaretinin 6'sında ürün yok ("Planlanmış ürün yok" doğru gösteriliyor).
+
+## 2. tur
+Paket: [WP-VW-W2-round2.md](WP-VW-W2-round2.md) — W2-BE-c (hiz / kurum adi / tatil adi / sigmayanlar / gun dengesi) ∥ W2-WEB-b (Planla modu).
