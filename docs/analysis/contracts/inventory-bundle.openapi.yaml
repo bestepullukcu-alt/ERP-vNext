@@ -6,7 +6,7 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.2.0
+  version: 1.2.1
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
@@ -16,6 +16,7 @@ info:
     - "1.0.2 — description-only, single-writer step (WP-0175-Q4, 2026-10-08; MOD-0175 CT-Q3 option (a), owner decision 2026-10-07, same form as CT-D1): (1) additive error code LOT_RETEST_DUE (422 on postMovement, example lotRetestDue) — a lot whose retest date is before the posting date (UTC day) refuses sales issue, production issue, transfer and supplier return; STATUS_TRANSFER from AVAILABLE into QUARANTINE / QUALITY_INSPECTION / BLOCKED, SCRAP, WRITE_OFF, REVERSAL and movements that keep the stock out of use (MOD-0175 decision movements other than a release; judged by the movement direction, never by sourceModule) still post; (2) AvailabilityView.available (getAvailability) also excludes retest-due lots (held by the MOD-0175 retest sweeper); the same rule bounds new reservations, existing reservations stay. No path, parameter, schema, property, type, enum, required list or status code changed."
     - "1.1.0 — additive (MVP-1 CT, MOD-0290 R-12 and PRODUCT-MASTER 1.1): SkuLevel + Item; getStockPresence (service-to-service, X-Internal-Api-Key + X-Tenant-Id, no quantities). No existing path, parameter, property, type, required list or status code changed."
     - "1.2.0 — additive (WP-0173-PM1, CT-PM1-1; PRODUCT-MASTER 1.1 consumer, MOD-0290 OD-1/3/4/5/10): three error codes on postMovement, all 422 under the existing UnprocessableMovement response — PRODUCT_MASTER_DATA_INCOMPLETE (a lot / serial flag the SKU level needs is unknown in PRODUCT-MASTER), ITEM_NOT_ACTIVE (the item / SKU lifecycle status does not allow the movement type), SKU_LEVEL_NOT_STOCKABLE (a Gsku movement of a product whose serial flag is not explicitly false) — and the postMovement description of the rules. No path, parameter, schema, property, type, enum, required list or status code changed."
+    - "1.2.1 — description only (WP-0174-ITEM, O-PM1-3): SKU_LEVEL_NOT_STOCKABLE also covers a SKU that PRODUCT-MASTER publishes stockable: false (every movement except REVERSAL). Nothing else changed."
 servers:
   - url: /api/inventory
 security:
@@ -30,7 +31,8 @@ paths:
         flags are read from getSku (the authoritative stock read); an unknown lot flag, or an unknown serial flag at Lsku /
         FinishedGood / Item, refuses with 422 PRODUCT_MASTER_DATA_INCOMPLETE — never read as false. At Gsku the serial flag is
         not applicable: the movement is accepted only when the product serial flag is explicitly false, otherwise 422
-        SKU_LEVEL_NOT_STOCKABLE (serial-tracked stock is held at Lsku / FinishedGood). Item level (skuId == itemId) is a
+        SKU_LEVEL_NOT_STOCKABLE (serial-tracked stock is held at Lsku / FinishedGood). 1.2.1 — a stockable: false SKU (any
+        level) is refused with the same 422 SKU_LEVEL_NOT_STOCKABLE. Item level (skuId == itemId) is a
         material item. Lifecycle (the most restrictive of the item and the SKU status): Active — every movement; Deactivated —
         no GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD or OPENING_BALANCE, every other type allowed; Retired (and the v1.0 Archived) —
         only SCRAP and WRITE_OFF; Draft, any other value or no value — nothing; a refusal is 422 ITEM_NOT_ACTIVE. REVERSAL

@@ -5,7 +5,7 @@ info:
     MOD-0174 Lot/Batch/Serial Tracking — Wave-0 frozen (v1), additive v1.1.
     Lot uniqueness = surrogate LotId + business key Tenant+SKU(skuId+skuLevel)+LotNumber (DEC-INV-14 as changed by the owner 2026-10-05, K-G; v1.0.0 said Tenant+Item+LotNumber — behaviour change B-1).
     INVENTORY movement lotId/serialIds ile buna bağlanır. Tenant+LegalEntity scoped.
-  version: 1.2.0
+  version: 1.3.0
   x-status: FROZEN
   x-owner: MOD-0174
   x-owner-service: Diten.InventoryService (MOD-0174, in-process with MOD-0173)
@@ -14,6 +14,7 @@ info:
     - "1.1.0 — additive (WP-0174-P1, accepted proposal drafts/trace-v1.1-proposal.md next to this file): LotRef / SerialRef / CreateLotRequest optional members; listLots optional filters + paging; getGenealogy optional depth; validateTrace typed results; new operations updateLot, changeLotStatus, getLotHistory, getLotDetail, listSerials, checkGs1Code, linkGenealogy, and the typed-lot migration operations (implemented by slice P4). contractVersion stays v1."
     - "1.1.0 behaviour changes — B-1: business key Tenant+SKU+LotNumber (the same lotNumber may exist twice under one itemId; LOT_ALREADY_EXISTS is per SKU). B-2: createLot without skuId+skuLevel → 422 LOT_SKU_REQUIRED (CT-D2). B-3: Expired is set automatically when expiryDate < today and can never be set or left by a caller."
     - "1.2.0 — additive (WP-0174-P4, CT decision K4-1 2026-10-06): new operation getManualLotMigrationStatus (GET /migration/status, trace.lots.read) answering whether the tenant's typed-lot entry is closed (manualLotEntryClosed, completedAt only when closed) — the Stock Ledger form and the W-UI-02 badges decide with the reader's own trace.lots.read. Every 1.0.0 / 1.1.0 element unchanged; contractVersion stays v1."
+    - "1.3.0 — additive (WP-0174-ITEM; MOD-0173 PM1 CT acceptance O-PM1-1 / O-PM1-3, PRODUCT-MASTER 1.1 §8.5 Q-1): SkuLevel gains Item (a material item that is its own SKU, skuId == itemId, never serial-tracked) — the same four values as INVENTORY-BUNDLE SkuLevel; createLot x-error-codes gain PRODUCT_MASTER_DATA_INCOMPLETE (422, PRODUCT-MASTER does not state whether the SKU is lot-controlled — was 503 PRODUCT_MASTER_UNAVAILABLE under ASSUMPTION-0173-PM1-03) and SKU_LEVEL_NOT_STOCKABLE (422, PRODUCT-MASTER publishes the SKU stockable: false — owner decision 2026-10-09), both under the existing Unprocessable response. No path, parameter, property, type, required list or status code changed; contractVersion stays v1."
   x-decisions: [DEC-INV-14, 18]
 servers: [{ url: /api/trace }]
 security: [{ bearerAuth: [] }]
@@ -78,7 +79,7 @@ paths:
       operationId: createLot
       summary: Lot oluştur (GR sırasında 0142 çağırır)
       x-permission: trace.lots.create
-      x-error-codes: [INVALID_REQUEST, LOT_NUMBER_INVALID, LOT_DATES_INVALID, LOT_SKU_REQUIRED, LOT_SKU_MISMATCH, UNKNOWN_ITEM, PRODUCT_NOT_LOT_CONTROLLED, LOT_ALREADY_EXISTS, IDEMPOTENCY_KEY_REUSED, PRODUCT_MASTER_UNAVAILABLE]
+      x-error-codes: [INVALID_REQUEST, LOT_NUMBER_INVALID, LOT_DATES_INVALID, LOT_SKU_REQUIRED, LOT_SKU_MISMATCH, UNKNOWN_ITEM, PRODUCT_NOT_LOT_CONTROLLED, LOT_ALREADY_EXISTS, IDEMPOTENCY_KEY_REUSED, PRODUCT_MASTER_UNAVAILABLE, PRODUCT_MASTER_DATA_INCOMPLETE, SKU_LEVEL_NOT_STOCKABLE]
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody:
         required: true
@@ -597,7 +598,7 @@ components:
         manualLotEntryClosed: { type: boolean }
         completedAt: { type: string, format: date-time, description: "v1.2 — present only when manualLotEntryClosed is true" }
         contractVersion: { type: string }
-    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood], description: "v1.1 — same values as INVENTORY-BUNDLE SkuLevel" }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood, Item], description: "v1.1 — same values as INVENTORY-BUNDLE SkuLevel" }
     Decimal: { type: string, pattern: '^\d{1,18}(\.\d{1,6})?$', description: "v1.1 — decimal as string, never a float" }
     Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
   responses:

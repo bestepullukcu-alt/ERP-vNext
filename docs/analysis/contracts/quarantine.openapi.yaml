@@ -9,12 +9,13 @@ info:
     Workflow approval (DEC-INV-08, KQ-F); "Numune / Referans" is BLOCKED stock at a sample location (KQ-E). Tenant from the token,
     company from the W-0173-02 scope (X-Legal-Entity-Id validated against MDM); another company → 403 CROSS_LE_FORBIDDEN,
     another tenant → 404. Success bodies are the schemas below; failures are the INVENTORY Error schema.
-  version: 1.0.0
+  version: 1.1.0
   x-status: FROZEN
   x-owner: MOD-0175
   x-owner-service: Diten.InventoryService (MOD-0175, in-process with MOD-0173 / MOD-0174)
   x-changelog:
     - "1.0.0 — frozen by WP-0175-Q1 from the accepted proposal (2026-10-08). Reconciliations of the freeze (evidence §2): R-1 the envelope is the measured INVENTORY / TRACE wire (unwrapped success body, Error on failure) — proposal rule 3 names 'the shape used by INVENTORY / TRACE'; R-2 a bucket carries an optional lotId (a lot-controlled stock row cannot be addressed otherwise; quarantineStock keeps the top-level lotId for mode Retest); R-3 settings are the scope company's (contract rule 2; the scope middleware refuses a legalEntityId query member) — no legalEntityId request member; R-4 Decision.disposition shows the resolved sampleLocationId."
+    - "1.1.0 — additive (WP-0174-ITEM; MOD-0173 PM1 CT acceptance O-PM1-1): SkuLevel gains Item (a material item that is its own SKU, skuId == itemId) — the same four values as INVENTORY-BUNDLE / TRACE-BUNDLE SkuLevel, so an Item-level bucket can be quarantined, blocked and decided and every hold / blocked / decision body carrying it stays valid. Nothing else changed: no path, parameter, property, type, required list, status code or other enum value; the qd-v1 signable field list is unchanged."
   x-decisions: [DEC-INV-08, KQ-A, KQ-B, KQ-C, KQ-D, KQ-E, KQ-F, KQ-G, KQ-H, KQ-I, CT-Q6, CT-Q8, CT-Q9]
 servers: [{ url: /api/quarantine }]
 security: [{ bearerAuth: [] }]
@@ -390,7 +391,7 @@ components:
   schemas:
     StockStatus: { type: string, enum: [AVAILABLE, QUALITY_INSPECTION, QUARANTINE, BLOCKED, IN_TRANSIT, DAMAGED, EXPIRED], description: "INVENTORY-BUNDLE StockStatus (inventory-bundle.openapi.yaml) — not owned here." }
     MovementType: { type: string, enum: [OPENING_BALANCE, GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD, GOODS_ISSUE_SALES, GOODS_ISSUE_PROD, WAREHOUSE_TRANSFER, LOCATION_TRANSFER, STATUS_TRANSFER, CUSTOMER_RETURN, SUPPLIER_RETURN, COUNT_GAIN, COUNT_LOSS, SCRAP, WRITE_OFF, REVERSAL], description: "INVENTORY-BUNDLE MovementType — not owned here." }
-    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood] }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood, Item] }
     HoldSource: { type: string, enum: [GoodsReceipt, Production, CustomerReturn, Manual, Retest, Rework, OtherInbound] }
     HoldStatus: { type: string, enum: [Open, DecisionPending, Decided] }
     ReviewState: { type: string, enum: [Waiting, InReview] }
