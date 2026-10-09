@@ -24,7 +24,8 @@ public sealed class StartFirstGskuIdentityWorkflowHandler(
     IProductLegalEntityScopePolicyRepository scopePolicies,
     ProductLegalEntityScopeCandidateFacade scopeCandidates,
     FirstGskuIdentityWorkflowProcessor processor,
-    FirstGskuIdentityWorkflowExecutionConfiguration executionConfiguration)
+    FirstGskuIdentityWorkflowExecutionConfiguration executionConfiguration,
+    IFirstGskuIdentityWorkflowOperationRepository? identityOperations = null)
     : IRequestHandler<StartFirstGskuIdentityWorkflowCommand, Response<FirstGskuIdentityWorkflowResult>>
 {
     public async Task<Response<FirstGskuIdentityWorkflowResult>> Handle(
@@ -66,9 +67,13 @@ public sealed class StartFirstGskuIdentityWorkflowHandler(
         if (gsku is null || revision is null || product is null) return Fail("GSKU_NOT_FOUND", 404);
         var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
         if (!decision.Allowed) return Fail("GSKU_NOT_FOUND", 404);
-        // S3b (R-04): a draft is sent for approval only with its lot flag set (an approved GSKU never has it unset).
+        // S3b (R-04): a NEW submit of a draft needs its lot flag set. (Only drafts are checked: an older approved GSKU may
+        // still have it unset — the read contract then publishes it stockable: false.) S3b FIX1: the repeat of an
+        // operation that already exists (the same operation id for this GSKU — e.g. a submit made before the gate, now
+        // waiting for its maker's replay) is not a new submit and is not stopped here.
         if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
-            && StockFlagGate.MissingForGsku(gsku) is { Count: > 0 } missing)
+            && StockFlagGate.MissingForGsku(gsku) is { Count: > 0 } missing
+            && !await IsRepeatAsync(input.OperationId, gsku.Id, cancellationToken))
             return Response<FirstGskuIdentityWorkflowResult>.Fail(StockFlagGate.Refusal(missing), 409);
         var result = await processor.StartInteractiveAsync(
             tenantContext.TenantId,
@@ -97,6 +102,11 @@ public sealed class StartFirstGskuIdentityWorkflowHandler(
                 result.IsReplay),
             operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed ? 200 : 202);
     }
+
+    private async Task<bool> IsRepeatAsync(Guid operationId, Guid gskuId, CancellationToken cancellationToken) =>
+        identityOperations is not null
+        && await identityOperations.GetByOperationIdAsync(operationId, cancellationToken) is { } existing
+        && existing.GskuId == gskuId;
 
     private static Response<FirstGskuIdentityWorkflowResult> Fail(string code, int statusCode) =>
         Response<FirstGskuIdentityWorkflowResult>.Fail(code, statusCode);

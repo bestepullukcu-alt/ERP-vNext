@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
@@ -91,18 +92,22 @@ public sealed class GetLskuByIdHandler
             lsku.Version,
             lsku.CreatedAt,
             lsku.UpdatedAt,
-            BuildAvailableActions(lsku, _actorContext)));
+            BuildAvailableActions(lsku, gsku, _actorContext)));
     }
 
     internal static IReadOnlyList<string> BuildAvailableActions(
         Lsku lsku,
+        Gsku gsku,
         IProductIdentityLifecycleActorContext actorContext)
     {
         var actions = new List<string> { "DETAILS" };
         if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
             && actorContext.HasPermission(LskuIdentityLifecyclePermissions.Submit))
         {
-            actions.Add("SUBMIT");
+            // S3b FIX1 (R2): the gate's own rule — a submit it would refuse is not offered; its reason is.
+            actions.Add(StockFlagGate.MissingForLsku(lsku, gsku).Count > 0
+                ? StockFlagGate.SubmitNeedsStockFlagsAction
+                : "SUBMIT");
         }
 
         if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval

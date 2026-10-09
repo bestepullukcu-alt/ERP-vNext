@@ -25,7 +25,8 @@ public sealed class StartLskuIdentityWorkflowHandler(
     IProductLegalEntityScopePolicyRepository scopePolicies,
     ProductLegalEntityScopeCandidateFacade scopeCandidates,
     LskuIdentityWorkflowProcessor processor,
-    LskuIdentityWorkflowExecutionConfiguration executionConfiguration)
+    LskuIdentityWorkflowExecutionConfiguration executionConfiguration,
+    ILskuIdentityWorkflowOperationRepository? identityOperations = null)
     : IRequestHandler<StartLskuIdentityWorkflowCommand, Response<LskuIdentityWorkflowResult>>
 {
     public async Task<Response<LskuIdentityWorkflowResult>> Handle(
@@ -58,9 +59,13 @@ public sealed class StartLskuIdentityWorkflowHandler(
             return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
         var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
         if (!decision.Allowed) return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
-        // S3b (R-04): a draft is sent for approval only with its serial flag and its GSKU's lot flag set.
+        // S3b (R-04): a NEW submit of a draft needs its serial flag and its GSKU's lot flag set. S3b FIX1: the repeat of an
+        // operation that already exists for this LSKU (the same operation id) is not a new submit and is not stopped here.
         if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
-            && StockFlagGate.MissingForLsku(lsku, gsku) is { Count: > 0 } missing)
+            && StockFlagGate.MissingForLsku(lsku, gsku) is { Count: > 0 } missing
+            && !(identityOperations is not null
+                 && await identityOperations.GetByOperationIdAsync(input.OperationId, cancellationToken) is { } existing
+                 && existing.LskuId == lsku.Id))
             return Response<LskuIdentityWorkflowResult>.Fail(StockFlagGate.Refusal(missing), 409);
         var result = await processor.StartInteractiveAsync(
             tenantContext.TenantId, input.LskuId, input.ExpectedVersion, input.OperationId,

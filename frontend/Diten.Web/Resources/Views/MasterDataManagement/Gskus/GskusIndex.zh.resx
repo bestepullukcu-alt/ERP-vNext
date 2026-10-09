@@ -55,4 +55,10 @@
   <data name="CurrentPageOnly" xml:space="preserve">
     <value>仅当前页</value>
   </data>
+  <data name="StockFlagLotControlled" xml:space="preserve">
+    <value>批次管理</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>要提交审批，请先在库存行为中填写其库存标志。</value>
+  </data>
 </root>

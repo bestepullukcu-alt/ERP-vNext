@@ -55,4 +55,10 @@
   <data name="CurrentPageOnly" xml:space="preserve">
     <value>Yalnızca mevcut sayfa</value>
   </data>
+  <data name="StockFlagLotControlled" xml:space="preserve">
+    <value>lot takibi</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>Onaya göndermek için önce stok davranışında stok bayraklarını girin.</value>
+  </data>
 </root>

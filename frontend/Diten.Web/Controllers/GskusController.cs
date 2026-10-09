@@ -848,9 +848,24 @@ public sealed class GskusController : Controller
         var status = NormalizedStatus(response.StatusCode);
         var sentences = new List<string>();
         var unmapped = false;
-        foreach (var code in codes)
+        // S3b FIX1 (R1): only an item shaped like a code (^[A-Z][A-Z0-9_]+$) is a code. What follows a code and is not
+        // one is that code's detail (STOCK_FLAGS_REQUIRED_FOR_APPROVAL names the unset flags) — never an unmapped code.
+        var details = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        var codeList = new List<string>();
+        foreach (var item in codes)
         {
-            string? sentence = KnownFailureKeys.TryGetValue(code, out var known)
+            if (IsCode(item)) codeList.Add(item);
+            else if (codeList.Count > 0)
+            {
+                if (!details.TryGetValue(codeList[^1], out var list)) details[codeList[^1]] = list = [];
+                list.Add(item);
+            }
+        }
+        foreach (var code in codeList)
+        {
+            string? sentence = code == StockFlagsRequired
+                ? StockFlagsSentence(details.GetValueOrDefault(code))
+                : KnownFailureKeys.TryGetValue(code, out var known)
                 ? _localizer[known].Value
                 : GskuRefusalSentences.Keys.TryGetValue(code, out var refusal)
                     ? _refusals[refusal].Value
@@ -870,8 +885,28 @@ public sealed class GskusController : Controller
             : StatusCode(status, new { success = false, errors = sentences.ToArray() });
     }
 
-    private static bool IsCode(string value) => value.Length is > 0 and <= 100
+    // S3b FIX1 (R1): a code starts with a letter — a field name ("lotControlled") or anything else is not a code.
+    private static bool IsCode(string value) => value.Length is > 1 and <= 100
+        && value[0] is >= 'A' and <= 'Z'
         && value.All(character => character is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_');
+
+    private const string StockFlagsRequired = "STOCK_FLAGS_REQUIRED_FOR_APPROVAL";
+
+    // The flags MDM names after the code, said in the reader's language (labels live in GskusIndex: GskuRefusals holds
+    // only the refusal map's sentences); a name the proxy does not know is not shown.
+    private static readonly IReadOnlyDictionary<string, string> StockFlagLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["lotControlled"] = "StockFlagLotControlled"
+    };
+
+    private string StockFlagsSentence(IReadOnlyList<string>? flags)
+    {
+        var labels = (flags ?? []).Where(StockFlagLabels.ContainsKey).Distinct(StringComparer.Ordinal)
+            .Select(flag => _localizer[StockFlagLabels[flag]].Value).ToList();
+        if (labels.Count == 0) labels.Add(_localizer[StockFlagLabels["lotControlled"]].Value);
+        return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            _refusals["RefusalStockFlagsRequired"].Value, string.Join(", ", labels));
+    }
 
     private sealed class NoRefusals : IStringLocalizer<GskuRefusals>
     {

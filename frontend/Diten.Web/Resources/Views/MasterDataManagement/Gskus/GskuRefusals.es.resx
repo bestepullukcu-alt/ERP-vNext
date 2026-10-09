@@ -24,5 +24,5 @@
   <data name="RefusalManualReconciliation" xml:space="preserve"><value>El servicio de aprobación y este registro no coinciden, y repetir la solicitud no lo resolvió. Queda como está hasta que alguien lo concilie; contacte con su administrador.</value></data>
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>La aprobación se cerró sin una decisión (cancelada o vencida). El borrador puede editarse y enviarse de nuevo.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Una unidad que usa este GSKU se retiró después de la aprobación. La aprobación sigue vigente: se aplicó con los valores validados al enviarla; la unidad retirada no puede elegirse para registros nuevos.</value></data>
-  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Defina el control por lote en el comportamiento de stock de este GSKU antes de enviarlo a aprobación.</value></data>
+  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Antes de enviar este GSKU a aprobación, defina en el comportamiento de stock: {0}.</value></data>
 </root>

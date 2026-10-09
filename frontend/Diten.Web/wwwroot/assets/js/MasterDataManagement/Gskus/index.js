@@ -180,7 +180,11 @@ const GskusList = (function () {
                 ? L.IdentityStateReconciliationRequired : L.IdentityStateReconciliationOtherUser,
             SUBMISSION_ENDED: L.IdentityStateSubmissionEnded
         }[submitState] || '';
-        const notAppliedText = submitStateText || (!notApplied ? ''
+        // S3b FIX1 (R2): the server offers STOCK_FLAGS_REQUIRED instead of SUBMIT when the gate would refuse — say why.
+        const rawActions = valueOf(detail, 'availableActions', 'AvailableActions');
+        const stockFlagsText = Array.isArray(rawActions) && rawActions.includes('STOCK_FLAGS_REQUIRED')
+            ? L.SubmitNeedsStockFlags : '';
+        const notAppliedText = submitStateText || stockFlagsText || (!notApplied ? ''
             : notApplied === 'FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED' ? L.IdentityNotAppliedParent
             : notApplied === 'REFERENCE_DATA_CONTRACT_CONFLICT' || notApplied === 'REFERENCE_NOT_SELECTABLE'
                 ? L.IdentityNotAppliedReference

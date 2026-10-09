@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
@@ -210,7 +211,13 @@ public sealed class GetGskuByIdHandler
             if ((submit is FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.ResubmitRequired
                  || submit == FirstGskuIdentitySubmitStateKind.ReconciliationRequired
                     && actorContext.TryResolveCanonicalHumanSubject(out var submitterSubject) && submitterSubject == submitter)
-                && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit)) actions.Add("SUBMIT");
+                && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit))
+                // S3b FIX1 (R2): a NEW submit the gate would refuse is not offered — its reason is (the reconciling repeat
+                // of an existing operation is not a new submit and stays offered).
+                actions.Add(submit != FirstGskuIdentitySubmitStateKind.ReconciliationRequired
+                            && StockFlagGate.MissingForGsku(gsku).Count > 0
+                    ? StockFlagGate.SubmitNeedsStockFlagsAction
+                    : "SUBMIT");
         }
 
         if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval

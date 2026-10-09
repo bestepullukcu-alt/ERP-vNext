@@ -24,7 +24,12 @@ namespace Diten.Web.Tests.Controllers;
 public sealed class LskuRefusalSentenceTests
 {
     private static readonly string[] Languages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
-    private static readonly string[] Keys = ["ErrorMarketAlreadyExists", "ErrorSubmitAbandoned", "ErrorDecisionNotApplicable", "ErrorSubmitTargetChanged"];
+    private static readonly string[] Keys =
+    [
+        "ErrorMarketAlreadyExists", "ErrorSubmitAbandoned", "ErrorDecisionNotApplicable", "ErrorSubmitTargetChanged",
+        // MOD-0290-FU04 S3b FIX1 (R5): the stock-flag gate's sentence, its flag labels and the action list's reason.
+        "ErrorStockFlagsRequired", "StockFlagSerialControlled", "StockFlagGskuLotControlled", "SubmitNeedsStockFlags"
+    ];
 
     [Fact]
     public async Task A_duplicate_market_is_said_in_its_own_sentence()

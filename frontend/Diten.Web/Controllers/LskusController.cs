@@ -387,6 +387,21 @@ public sealed class LskusController : Controller
         ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "ErrorStockFlagsRequired"
     };
 
+    private static readonly IReadOnlyDictionary<string, string> StockFlagLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["serialControlled"] = "StockFlagSerialControlled",
+        ["gsku.lotControlled"] = "StockFlagGskuLotControlled"
+    };
+
+    private string StockFlagsSentence(IEnumerable<string> flags)
+    {
+        var labels = flags.Where(StockFlagLabels.ContainsKey).Distinct(StringComparer.Ordinal)
+            .Select(flag => _l10n[StockFlagLabels[flag]].Value).ToList();
+        if (labels.Count == 0) labels.AddRange(StockFlagLabels.Values.Select(label => _l10n[label].Value));
+        return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            _l10n["ErrorStockFlagsRequired"].Value, string.Join(", ", labels));
+    }
+
     private async Task<IActionResult> RefusalAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (response.StatusCode == HttpStatusCode.Conflict && IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
@@ -400,7 +415,14 @@ public sealed class LskusController : Controller
                     && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0
                     && errors[0].ValueKind == JsonValueKind.String
                     && RefusalSentences.TryGetValue(errors[0].GetString()!, out var key))
-                    return StatusCode(409, new { success = false, errors = new[] { _l10n[key].Value } });
+                {
+                    // S3b FIX1: the stock-flag refusal names the unset flags after its code — said, not dropped.
+                    var sentence = key == "ErrorStockFlagsRequired"
+                        ? StockFlagsSentence(errors.EnumerateArray().Skip(1)
+                            .Where(item => item.ValueKind == JsonValueKind.String).Select(item => item.GetString()!))
+                        : _l10n[key].Value;
+                    return StatusCode(409, new { success = false, errors = new[] { sentence } });
+                }
             }
             catch (JsonException) { }
         }

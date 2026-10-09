@@ -24,5 +24,5 @@
   <data name="RefusalManualReconciliation" xml:space="preserve"><value>审批服务与此记录不一致，重复请求也未能解决。在有人手动核对之前，记录保持不变；请联系您的管理员。</value></data>
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>该审批未作决定即已关闭（已取消或已过期）。草稿可以编辑并重新提交。</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>此 GSKU 使用的某个单位在审批之后被停用。审批依然有效：它按提交时验证的值应用；被停用的单位不能用于新记录。</value></data>
-  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>在提交审批之前，请在此 GSKU 的库存行为中设置批次管理。</value></data>
+  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>在提交此 GSKU 审批之前，请在库存行为中设置：{0}。</value></data>
 </root>

@@ -64,12 +64,21 @@
     <value>审批服务在启动审批之前拒绝了此次提交。该 LSKU 仍为草稿，您可以重新提交。</value>
   </data>
   <data name="ErrorStockFlagsRequired" xml:space="preserve">
-    <value>在提交此 LSKU 审批之前，请在库存行为中设置其序列号管理以及其 GSKU 的批次管理。</value>
+    <value>在提交此 LSKU 审批之前，请在库存行为中设置：{0}。</value>
   </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>审批结果无法应用到此 LSKU，例如其市场或上级记录已不可用。该 LSKU 已恢复为草稿；请纠正原因后重新提交。</value>
   </data>
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>此 LSKU 在提交开始后已被更改或取消，因此未提交任何审批。请重新打开该 LSKU，如仍需要，请再次提交。</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>序列号管理（此 LSKU）</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>其 GSKU 的批次管理——须由有权编辑该 GSKU 的人员设置</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>要提交审批，请先在库存行为中填写其库存标志。</value>
   </data>
 </root>

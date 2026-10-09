@@ -55,4 +55,10 @@
   <data name="CurrentPageOnly" xml:space="preserve">
     <value>الصفحة الحالية فقط</value>
   </data>
+  <data name="StockFlagLotControlled" xml:space="preserve">
+    <value>التحكم بالدفعة</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>لإرساله للموافقة، أدخل أولاً مؤشرات المخزون في سلوك المخزون.</value>
+  </data>
 </root>

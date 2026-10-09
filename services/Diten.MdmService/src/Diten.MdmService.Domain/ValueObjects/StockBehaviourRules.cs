@@ -175,6 +175,11 @@ public static class StockBehaviourRules
 
     public const string DaysInvalid = "STOCK_DAYS_INVALID";
 
+    /// <summary>S3b FIX1: retest and minimum remaining shelf life are within the shelf life when it is known.</summary>
+    public static bool DaysWithinShelfLife(int? shelfLifeDays, int? retestDays, int? minRemainingShelfLifeDays) =>
+        shelfLifeDays is not { } shelf
+        || (retestDays is null || retestDays <= shelf) && (minRemainingShelfLifeDays is null || minRemainingShelfLifeDays <= shelf);
+
     /// <summary>O-15: a Finished Good's own shelf life never exceeds its GSKU's registered one.</summary>
     public static bool FinishedGoodShelfLifeWithinGsku(int? finishedGoodDays, int? gskuDays)
         => finishedGoodDays is null || gskuDays is null || finishedGoodDays <= gskuDays;

@@ -32,6 +32,8 @@ public sealed class GskuRefusalBridgeTests
         "REPEAT_REQUEST",
         "RESUBMIT_REQUIRED", "SUBMIT_IN_FLIGHT", "SUBMISSION_ENDED", "RECONCILIATION_REQUIRED",
         "SCALAR_QUANTITY_APPLIES", "VERIFIED_GSKU_RESOLVE",
+        // MOD-0290-FU04 S3b FIX1 (R2): the action list's "submit waits for the stock flags" — an action name, not an answer.
+        "STOCK_FLAGS_REQUIRED",
         // The recovery workers' flow names, their start-up and command-line refusals, and the log's placeholder for an
         // unreadable code: none of them is ever an answer of an endpoint.
         "FIRST_GSKU_IDENTITY", "GSKU_PAIR_RETIREMENT", "UNEXPECTED_FAILURE",

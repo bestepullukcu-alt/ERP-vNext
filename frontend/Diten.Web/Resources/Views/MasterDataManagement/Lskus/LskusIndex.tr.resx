@@ -64,12 +64,21 @@
     <value>Onay servisi bu gönderimi bir onay başlatmadan reddetti. LSKU hâlâ taslak; yeniden gönderebilirsiniz.</value>
   </data>
   <data name="ErrorStockFlagsRequired" xml:space="preserve">
-    <value>Bu LSKU'yu onaya göndermeden önce stok davranışında seri takibini ve GSKU'sunun lot takibini belirleyin.</value>
+    <value>Bu LSKU'yu onaya göndermeden önce stok davranışında şunu belirleyin: {0}.</value>
   </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>Onay bu LSKU'ya uygulanamadı; örneğin pazarı ya da üst kaydı artık kullanılamıyor. LSKU yeniden taslak oldu; nedeni düzeltip yeniden gönderin.</value>
   </data>
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>Bu LSKU gönderim başladıktan sonra değişti ya da iptal edildi; bu yüzden onaya hiçbir şey gönderilmedi. LSKU'yu yeniden açın ve hâlâ gerekiyorsa gönderin.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>seri takibi (bu LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>GSKU'sunun lot takibi — GSKU'yu düzenleme yetkisi olan kişi girmeli</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>Onaya göndermek için önce stok davranışında stok bayraklarını girin.</value>
   </data>
 </root>

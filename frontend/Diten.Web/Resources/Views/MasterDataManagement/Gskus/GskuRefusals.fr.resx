@@ -24,5 +24,5 @@
   <data name="RefusalManualReconciliation" xml:space="preserve"><value>Le service d'approbation et cet enregistrement ne concordent pas, et répéter la demande ne l'a pas résolu. Il reste en l'état jusqu'à un rapprochement manuel ; veuillez contacter votre administrateur.</value></data>
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>L'approbation a été clôturée sans décision (annulée ou expirée). Le brouillon peut être modifié et soumis à nouveau.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Une unité utilisée par ce GSKU a été retirée après l'approbation. L'approbation reste valable : elle a été appliquée avec les valeurs validées lors de la soumission ; l'unité retirée ne peut pas être choisie pour de nouveaux enregistrements.</value></data>
-  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Définissez le suivi par lot dans le comportement de stock de ce GSKU avant de l'envoyer pour approbation.</value></data>
+  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Avant d'envoyer ce GSKU pour approbation, définissez dans le comportement de stock : {0}.</value></data>
 </root>

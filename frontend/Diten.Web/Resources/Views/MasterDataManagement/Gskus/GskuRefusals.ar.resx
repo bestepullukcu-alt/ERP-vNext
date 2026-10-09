@@ -24,5 +24,5 @@
   <data name="RefusalManualReconciliation" xml:space="preserve"><value>لا تتطابق خدمة الموافقات مع هذا السجل، ولم يحلّ تكرار الطلب ذلك. يبقى السجل كما هو حتى تتم تسويته يدويًا؛ يرجى الاتصال بالمسؤول.</value></data>
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>أُغلقت الموافقة دون قرار (أُلغيت أو انتهت مدتها). يمكن تعديل المسودة وتقديمها مرة أخرى.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>أُوقف استخدام وحدة يستخدمها هذا الـ GSKU بعد الموافقة. تظل الموافقة سارية: طُبّقت بالقيم التي تم التحقق منها عند التقديم؛ ولا يمكن اختيار الوحدة الموقوفة في سجلات جديدة.</value></data>
-  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>حدّد التحكم بالدفعة في سلوك المخزون لهذا GSKU قبل إرساله للموافقة.</value></data>
+  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>قبل إرسال GSKU هذا للموافقة، حدّد في سلوك المخزون: {0}.</value></data>
 </root>

@@ -54,4 +54,10 @@
   <data name="CurrentPageOnly" xml:space="preserve">
     <value>Current page only</value>
   </data>
+  <data name="StockFlagLotControlled" xml:space="preserve">
+    <value>lot control</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>To send this for approval, first enter its stock flags in stock behaviour.</value>
+  </data>
 </root>

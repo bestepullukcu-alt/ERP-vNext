@@ -19,6 +19,12 @@ public static class StockFlagGate
 {
     public const string Required = "STOCK_FLAGS_REQUIRED_FOR_APPROVAL";
 
+    /// <summary>
+    /// S3b FIX1 (R2): the action a draft's read carries INSTEAD of SUBMIT when the gate would refuse it — the screen says
+    /// why (enter the stock flags first). The same Missing… functions decide both: no copy of the rule.
+    /// </summary>
+    public const string SubmitNeedsStockFlagsAction = "STOCK_FLAGS_REQUIRED";
+
     public const string LotControlled = "lotControlled";
     public const string SerialControlled = "serialControlled";
     public const string GskuLotControlled = "gsku.lotControlled";

@@ -154,6 +154,13 @@ public sealed class SetGskuStockBehaviourHandler(
             gsku.MinRemainingShelfLifeDays);
         if (plan.LockedField is not null)
             return StockBehaviourContext.Fail(StockBehaviourStoreCodes.FieldLocked, 409);
+        // S3b FIX1 (CT decision): the retest interval and the minimum remaining shelf life never exceed the shelf life,
+        // when it is known — checked on the record as it will be (a value once filled is locked, so a wrong one would stay).
+        if (!StockBehaviourRules.DaysWithinShelfLife(
+                plan.After(StockBehaviourFields.ShelfLifeDays, gsku.ShelfLifeDays),
+                plan.After(StockBehaviourFields.RetestDays, gsku.RetestDays),
+                plan.After(StockBehaviourFields.MinRemainingShelfLifeDays, gsku.MinRemainingShelfLifeDays)))
+            return StockBehaviourContext.Fail(StockBehaviourRules.DaysInvalid, 422);
 
         var baseUom = plan.After(StockBehaviourFields.BaseUomCode, gsku.BaseUomCode);
         var conversions = plan.After<List<ItemUomConversion>>(StockBehaviourFields.UomConversions, gsku.UomConversions);

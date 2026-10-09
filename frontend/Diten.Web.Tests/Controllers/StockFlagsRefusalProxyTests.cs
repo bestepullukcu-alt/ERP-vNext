@@ -1,0 +1,196 @@
+using System.Net;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Xml.Linq;
+using Diten.Web.Controllers;
+using Diten.Web.Views.MasterDataManagement.Gskus;
+using Diten.Web.Views.MasterDataManagement.Lskus;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Primitives;
+using Xunit;
+
+namespace Diten.Web.Tests.Controllers;
+
+/// <summary>
+/// MOD-0290-FU04 S3b FIX1 (R1, R5) — MDM refuses a flagless submit with its code followed by the unset flags
+/// (<c>["STOCK_FLAGS_REQUIRED_FOR_APPROVAL", "lotControlled"]</c>). The proxies say that as ONE sentence naming the flags in
+/// the reader's language; a field name is never taken for a code (no "unmapped" warning, no status sentence beside it)
+/// and never reaches the browser raw. The real controller actions are called; MDM is a scripted handler.
+/// </summary>
+public sealed class StockFlagsRefusalProxyTests
+{
+    private const string Code = "STOCK_FLAGS_REQUIRED_FOR_APPROVAL";
+    private static readonly string[] Languages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+
+    // The sabotage target "a field name counted as a code again".
+    [Fact]
+    public async Task A_gsku_refusal_with_its_flag_is_one_sentence_naming_the_flag_and_not_unmapped()
+    {
+        var result = await GskuSubmitAsync(Code, "lotControlled");
+
+        var (status, errors, body) = Read(result);
+        Assert.Equal(StatusCodes.Status409Conflict, status);
+        Assert.Equal("refusal:RefusalStockFlagsRequired[localized:StockFlagLotControlled]", Assert.Single(errors));
+        Assert.DoesNotContain("unmapped", body, StringComparison.Ordinal);
+        Assert.DoesNotContain(Code, body, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"lotControlled", body, StringComparison.Ordinal);
+    }
+
+    // A flag name the proxy does not know is not shown raw; the sentence still names the GSKU's one flag.
+    [Fact]
+    public async Task A_gsku_refusal_with_an_unknown_detail_still_says_one_sentence()
+    {
+        var result = await GskuSubmitAsync(Code, "somethingNew");
+
+        var (_, errors, body) = Read(result);
+        Assert.Equal("refusal:RefusalStockFlagsRequired[localized:StockFlagLotControlled]", Assert.Single(errors));
+        Assert.DoesNotContain("somethingNew", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("unmapped", body, StringComparison.Ordinal);
+    }
+
+    // Field-shaped items are details of the code before them — never a code of their own, even after a known code.
+    [Theory]
+    [InlineData("lotControlled")]
+    [InlineData("gsku.lotControlled")]
+    [InlineData("a")]
+    [InlineData("X")]
+    public async Task A_field_shaped_item_after_a_known_code_is_not_an_unmapped_code(string detail)
+    {
+        var result = await GskuSubmitAsync("GSKU_PARENT_NOT_APPROVED", detail);
+
+        var (_, errors, body) = Read(result);
+        Assert.Equal("localized:ErrorParentNotApproved", Assert.Single(errors));
+        Assert.DoesNotContain("unmapped", body, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(new[] { "serialControlled", "gsku.lotControlled" },
+        "ErrorStockFlagsRequired[StockFlagSerialControlled, StockFlagGskuLotControlled]")]
+    [InlineData(new[] { "gsku.lotControlled" }, "ErrorStockFlagsRequired[StockFlagGskuLotControlled]")]
+    [InlineData(new[] { "serialControlled" }, "ErrorStockFlagsRequired[StockFlagSerialControlled]")]
+    public async Task An_lsku_refusal_names_which_flag_is_missing(string[] flags, string sentence)
+    {
+        var result = await LskuSubmitAsync([Code, .. flags]);
+
+        var (status, errors, body) = Read(result);
+        Assert.Equal(StatusCodes.Status409Conflict, status);
+        Assert.Equal(sentence, Assert.Single(errors));
+        Assert.DoesNotContain(Code, body, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"serialControlled", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"gsku.", body, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("Gskus", "GskuRefusals", new[] { "RefusalStockFlagsRequired" })]
+    [InlineData("Gskus", "GskusIndex", new[] { "StockFlagLotControlled", "SubmitNeedsStockFlags" })]
+    [InlineData("Lskus", "LskusIndex", new[] { "ErrorStockFlagsRequired", "StockFlagSerialControlled", "StockFlagGskuLotControlled", "SubmitNeedsStockFlags" })]
+    public void The_stock_flag_sentences_are_in_all_seven_languages_and_name_the_flags(string folder, string file, string[] keys)
+    {
+        foreach (var language in Languages)
+        {
+            var path = Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources", "Views", "MasterDataManagement",
+                folder, $"{file}.{language}.resx");
+            var values = XDocument.Load(path).Root!.Elements("data")
+                .ToDictionary(x => x.Attribute("name")!.Value, x => x.Element("value")?.Value ?? string.Empty);
+            foreach (var key in keys)
+            {
+                Assert.True(values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value), $"{key} is missing in {language}");
+                // The refusal sentences carry the flag list; a label or the reason never has a placeholder.
+                Assert.Equal(key.EndsWith("StockFlagsRequired", StringComparison.Ordinal), value!.Contains("{0}", StringComparison.Ordinal));
+                // Well-formed: formatting with a label does not throw (a stray brace would, on the live screen).
+                Assert.Contains("label", string.Format(System.Globalization.CultureInfo.InvariantCulture, value + " {0}", "label"));
+            }
+        }
+    }
+
+    private static async Task<IActionResult> GskuSubmitAsync(params string[] errors)
+    {
+        var gateway = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["GatewayUrl"] = "https://gateway-fixture.invalid" }).Build();
+        var controller = new GskusController(new HttpClient(new Answer(Conflict(errors))), gateway,
+            new EphemeralDataProtectionProvider(), new FormatLocalizer<Diten.Web.SharedResource>("localized"),
+            new FormatLocalizer<GskusIndex>("localized"), NullLogger<GskusController>.Instance, new FormatLocalizer<GskuRefusals>("refusal"))
+        { ControllerContext = new ControllerContext { HttpContext = Context("mdm.gskus.submit", new() { ["ExpectedVersion"] = "3" }) } };
+        return await controller.SubmitLifecycle(Guid.NewGuid(), 3, CancellationToken.None);
+    }
+
+    private static async Task<IActionResult> LskuSubmitAsync(string[] errors)
+    {
+        var gateway = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["GatewayUrl"] = "http://gateway.lsku.test" }).Build();
+        var controller = new LskusController(new HttpClient(new Answer(Conflict(errors))), gateway,
+            new EphemeralDataProtectionProvider(), new FormatLocalizer<LskusIndex>(null), NullLogger<LskusController>.Instance)
+        { ControllerContext = new ControllerContext { HttpContext = Context("mdm.lskus.submit", new() { ["ExpectedVersion"] = "0" }) } };
+        return await controller.SubmitLifecycle(Guid.NewGuid(), 0, CancellationToken.None);
+    }
+
+    private static HttpResponseMessage Conflict(string[] errors) => new(HttpStatusCode.Conflict)
+    {
+        Content = new StringContent(JsonSerializer.Serialize(new { isSuccessful = false, statusCode = 409, errors }),
+            Encoding.UTF8, "application/json")
+    };
+
+    private static (int Status, string[] Errors, string Body) Read(IActionResult result)
+    {
+        var objectResult = Assert.IsType<ObjectResult>(result);
+        var body = JsonSerializer.Serialize(objectResult.Value);
+        using var document = JsonDocument.Parse(body);
+        var errors = document.RootElement.GetProperty("errors").EnumerateArray().Select(e => e.GetString()!).ToArray();
+        return (objectResult.StatusCode!.Value, errors, body);
+    }
+
+    private static DefaultHttpContext Context(string permission, Dictionary<string, StringValues> form)
+    {
+        var context = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim("tenant_id", Guid.NewGuid().ToString("D")),
+                new Claim("actor_type", "tenant_user"),
+                new Claim("sub", Guid.NewGuid().ToString("D")),
+                new Claim("permission", permission)
+            ], "fixture"))
+        };
+        // Synthetic fixture credential: only seen by the scripted handler, never sent to a network.
+        context.Request.Headers.Cookie = "access_token=synthetic-stock-flags-refusal";
+        context.Request.ContentType = "application/x-www-form-urlencoded";
+        form["__RequestVerificationToken"] = "synthetic-csrf";
+        context.Request.Form = new FormCollection(form);
+        return context;
+    }
+
+    private static string RepoRoot()
+    {
+        for (var current = new DirectoryInfo(AppContext.BaseDirectory); current is not null; current = current.Parent)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "AGENTS.md"))) return current.FullName;
+        }
+        throw new DirectoryNotFoundException("Repository root (AGENTS.md) not found.");
+    }
+
+    private sealed class Answer(HttpResponseMessage response) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+            => Task.FromResult(response);
+    }
+
+    // Says each key back (with a prefix); the stock-flag sentences carry a format item, as the resx values do.
+    private sealed class FormatLocalizer<T>(string? prefix) : IStringLocalizer<T>
+    {
+        public LocalizedString this[string name] => new(name, Text(name));
+        public LocalizedString this[string name, params object[] arguments] => new(name, Text(name));
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
+
+        private string Text(string name)
+        {
+            var text = prefix is null ? name : $"{prefix}:{name}";
+            return name.EndsWith("StockFlagsRequired", StringComparison.Ordinal) ? text + "[{0}]" : text;
+        }
+    }
+}

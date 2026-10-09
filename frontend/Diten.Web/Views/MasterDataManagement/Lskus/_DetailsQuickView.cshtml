@@ -22,5 +22,7 @@
             <dt>@Localizer["CreatedAt"]</dt><dd id="oc-created-at">-</dd>
             <dt>@Localizer["UpdatedAt"]</dt><dd id="oc-updated-at">-</dd>
         </dl>
+        @* S3b FIX1 (R2): a draft whose stock flags are unset is not offered SUBMIT — the reason is said instead. *@
+        <div class="alert alert-warning mb-0 d-none" role="status" id="oc-submit-needs-stock-flags">@Localizer["SubmitNeedsStockFlags"]</div>
     </div>
 </div>

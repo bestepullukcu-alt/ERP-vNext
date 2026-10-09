@@ -55,4 +55,10 @@
   <data name="CurrentPageOnly" xml:space="preserve">
     <value>Только текущая страница</value>
   </data>
+  <data name="StockFlagLotControlled" xml:space="preserve">
+    <value>учёт по партиям</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>Чтобы отправить на утверждение, сначала задайте складские флаги в складских параметрах.</value>
+  </data>
 </root>

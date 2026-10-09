@@ -64,12 +64,21 @@
     <value>Служба согласования отклонила эту отправку до запуска согласования. LSKU по-прежнему является черновиком; вы можете отправить его повторно.</value>
   </data>
   <data name="ErrorStockFlagsRequired" xml:space="preserve">
-    <value>Перед отправкой этого LSKU на утверждение задайте его учёт по серийным номерам и учёт по партиям его GSKU в складских параметрах.</value>
+    <value>Перед отправкой этого LSKU на утверждение задайте в складских параметрах: {0}.</value>
   </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>Согласование не удалось применить к этому LSKU, например потому что его рынок или родительская запись больше недоступны. LSKU снова стал черновиком; устраните причину и отправьте его повторно.</value>
   </data>
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>Этот LSKU был изменён или отменён после начала отправки, поэтому на согласование ничего не отправлено. Откройте LSKU снова и отправьте его, если он всё ещё нужен.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>учёт по серийным номерам (этот LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>учёт по партиям его GSKU — задаёт сотрудник с правом редактирования GSKU</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>Чтобы отправить на утверждение, сначала задайте складские флаги в складских параметрах.</value>
   </data>
 </root>

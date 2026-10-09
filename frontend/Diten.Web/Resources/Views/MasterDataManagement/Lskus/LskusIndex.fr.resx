@@ -64,12 +64,21 @@
     <value>Le service d'approbation a refusé cette soumission avant de démarrer une approbation. Le LSKU est toujours un brouillon ; vous pouvez le soumettre à nouveau.</value>
   </data>
   <data name="ErrorStockFlagsRequired" xml:space="preserve">
-    <value>Avant d'envoyer ce LSKU pour approbation, définissez son suivi par numéro de série et le suivi par lot de son GSKU dans le comportement de stock.</value>
+    <value>Avant d'envoyer ce LSKU pour approbation, définissez dans le comportement de stock : {0}.</value>
   </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>L'approbation n'a pas pu être appliquée à ce LSKU, par exemple parce que son marché ou son parent n'est plus utilisable. Le LSKU est de nouveau un brouillon ; corrigez la cause et soumettez-le à nouveau.</value>
   </data>
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>Ce LSKU a été modifié ou annulé après le début de la soumission ; rien n'a donc été envoyé en approbation. Rouvrez le LSKU et soumettez-le s'il est toujours nécessaire.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>le suivi par numéro de série (ce LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>le suivi par lot de son GSKU — à définir par une personne autorisée à modifier le GSKU</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>Pour l'envoyer en approbation, saisissez d'abord ses indicateurs de stock dans le comportement de stock.</value>
   </data>
 </root>

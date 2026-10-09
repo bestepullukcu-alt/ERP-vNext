@@ -64,12 +64,21 @@
     <value>The approval service refused this submission before starting an approval. The LSKU is still a draft; you can submit it again.</value>
   </data>
   <data name="ErrorStockFlagsRequired" xml:space="preserve">
-    <value>Before sending this LSKU for approval, set its serial control and its GSKU's lot control in stock behaviour.</value>
+    <value>Before sending this LSKU for approval, set in stock behaviour: {0}.</value>
   </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>The approval could not be applied to this LSKU, for example because its market or parent is no longer usable. The LSKU is a draft again; correct the cause and submit it again.</value>
   </data>
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>This LSKU changed or was cancelled after the submission started, so nothing was sent for approval. Open the LSKU again and submit it if it is still needed.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>serial control (this LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>lot control of its GSKU — someone allowed to edit the GSKU must set it</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>To send this for approval, first enter its stock flags in stock behaviour.</value>
   </data>
 </root>

@@ -303,6 +303,8 @@ const LskusList = (() => {
         if (!statusElement) throw new Error(L.ErrorGateway);
         statusElement.outerHTML = renderLifecycle(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'))
             .replace('<span ', '<span id="oc-status" ');
+        // S3b FIX1 (R2): the server offers STOCK_FLAGS_REQUIRED instead of SUBMIT when the gate would refuse — say why.
+        document.getElementById('oc-submit-needs-stock-flags')?.classList.toggle('d-none', !needsStockFlags(detail));
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
         return verified.state;
     };
@@ -331,6 +333,10 @@ const LskusList = (() => {
     const setLifecycleBusy = (button, busy) => {
         button?.classList.toggle('disabled', busy);
         button?.setAttribute('aria-disabled', busy ? 'true' : 'false');
+    };
+    const needsStockFlags = detail => {
+        const raw = detail?.availableActions ?? detail?.AvailableActions;
+        return Array.isArray(raw) && raw.includes('STOCK_FLAGS_REQUIRED');
     };
     const readAvailableActions = detail => {
         const raw = detail?.availableActions ?? detail?.AvailableActions;

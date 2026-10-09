@@ -86,7 +86,7 @@ public sealed class GetLskusHandler
                 lsku.Version,
                 lsku.CreatedAt,
                 lsku.UpdatedAt,
-                GetLskuByIdHandler.BuildAvailableActions(lsku, _actorContext));
+                GetLskuByIdHandler.BuildAvailableActions(lsku, gsku, _actorContext));
         }).ToList();
         return Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.LskuListItemDto>>.Success(
             new(items, request.PageNumber, request.PageSize, page.TotalCount));

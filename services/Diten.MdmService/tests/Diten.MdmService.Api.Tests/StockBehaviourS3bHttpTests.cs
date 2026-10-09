@@ -6,6 +6,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using Diten.MdmService.Tests.Shared;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -240,15 +241,244 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
     }
 
     // The refusals above must meet UNSET flags: this class never takes the older flows' flag fill (S3bSubmitFlags).
+    // S3b FIX1: measured on the compiled class, not its text — every method body of this class and of its compiler-made
+    // nested types (async state machines, lambdas) is read instruction by instruction; no call, delegate or field read
+    // may land on S3bSubmitFlags, whatever the source spells (an alias, a using static, a helper in between).
     [Fact]
     public void S3b_The_gate_tests_never_take_the_legacy_flag_fill()
     {
-        var source = File.ReadAllText(Path.Combine(TestSourceDirectory(), "StockBehaviourS3bHttpTests.cs"));
-        Assert.DoesNotContain("S3bSubmitFlags" + ".", source, StringComparison.Ordinal);
+        var reached = IlReferences.MembersReachedFrom(typeof(StockBehaviourS3bHttpTests))
+            .Where(x => x.DeclaringType == typeof(S3bSubmitFlags)).Select(x => x.Name).ToArray();
+        Assert.Empty(reached);
+        // The reader is measured too: the older flows' own hook does reach the fill.
+        Assert.Contains(IlReferences.MembersReachedFrom(typeof(GskuLifecycleHttpTests)),
+            x => x.DeclaringType == typeof(S3bSubmitFlags));
     }
 
-    private static string TestSourceDirectory([System.Runtime.CompilerServices.CallerFilePath] string path = "") =>
-        Path.GetDirectoryName(path)!;
+    // ------------------------------------------------------------------------------------------- S3b FIX1
+
+    // R2: the action list says what the gate will say. A flagless draft offers no SUBMIT but STOCK_FLAGS_REQUIRED (the
+    // screen's reason); once the flags are set, SUBMIT. The sabotage target "SUBMIT visible on a flagless draft".
+    [Fact]
+    public async Task S3b_FIX1_A_flagless_gsku_draft_offers_the_reason_instead_of_submit()
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+
+        var before = await GskuActionsAsync(gsku);
+        Assert.Contains(StockFlagGate.SubmitNeedsStockFlagsAction, before);
+        Assert.DoesNotContain("SUBMIT", before);
+
+        Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(gsku, version, new { lotControlled = true })).StatusCode);
+        var after = await GskuActionsAsync(gsku);
+        Assert.Contains("SUBMIT", after);
+        Assert.DoesNotContain(StockFlagGate.SubmitNeedsStockFlagsAction, after);
+    }
+
+    [Fact]
+    public async Task S3b_FIX1_A_flagless_lsku_draft_offers_the_reason_instead_of_submit_on_its_detail_and_in_the_list()
+    {
+        var records = await SeedAsync();
+        var lsku = await LskuDraftAsync(records.Gsku.Id, "TR");
+
+        foreach (var actions in new[] { await LskuActionsAsync(lsku), await LskuListActionsAsync(lsku) })
+        {
+            Assert.Contains(StockFlagGate.SubmitNeedsStockFlagsAction, actions);
+            Assert.DoesNotContain("SUBMIT", actions);
+        }
+
+        // Its own serial flag alone is not enough: the GSKU's lot is part of the same rule.
+        Assert.Equal(HttpStatusCode.OK, (await PutLskuAsync(lsku, (await LskuAsync(lsku)).Version, new { serialControlled = false })).StatusCode);
+        Assert.DoesNotContain("SUBMIT", await LskuActionsAsync(lsku));
+        Assert.Equal(HttpStatusCode.OK,
+            (await PutGskuAsync(records.Gsku.Id, (await GskuAsync(records.Gsku.Id)).Version, new { lotControlled = false })).StatusCode);
+        foreach (var actions in new[] { await LskuActionsAsync(lsku), await LskuListActionsAsync(lsku) })
+        {
+            Assert.Contains("SUBMIT", actions);
+            Assert.DoesNotContain(StockFlagGate.SubmitNeedsStockFlagsAction, actions);
+        }
+    }
+
+    // R3: the gate speaks only to someone who may see and submit the record. A flagless draft submitted by another
+    // tenant, out of the subject's product scope, or without the submit key gets exactly what it got before S3b —
+    // nothing in the answer says the record exists or what it lacks. The sabotage target "the gate before the scope".
+    [Theory]
+    [InlineData("foreign-tenant", HttpStatusCode.NotFound)]
+    [InlineData("out-of-scope", HttpStatusCode.NotFound)]
+    [InlineData("no-permission", HttpStatusCode.Forbidden)]
+    public async Task S3b_FIX1_The_gsku_gate_answers_after_tenant_scope_and_permission(string door, HttpStatusCode expected)
+    {
+        var product = await SeedProductAsync();
+        var (gsku, version) = await GskuDraftAsync(product);
+        var token = await RefusedTokenAsync(door, "mdm.gskus.submit");
+
+        var response = await SendAsync(HttpMethod.Post, $"/api/gskus/{gsku:D}/submit", new { expectedVersion = version }, token);
+
+        await AssertRefusedWithoutStockFlagsAsync(response, expected);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await GskuAsync(gsku)).LifecycleStatus);
+    }
+
+    [Theory]
+    [InlineData("foreign-tenant", HttpStatusCode.NotFound)]
+    [InlineData("out-of-scope", HttpStatusCode.NotFound)]
+    [InlineData("no-permission", HttpStatusCode.Forbidden)]
+    public async Task S3b_FIX1_The_lsku_gate_answers_after_tenant_scope_and_permission(string door, HttpStatusCode expected)
+    {
+        var records = await SeedAsync();
+        var lsku = await LskuDraftAsync(records.Gsku.Id, "TR");
+        var version = (await LskuAsync(lsku)).Version;
+        var token = await RefusedTokenAsync(door, "mdm.lskus.submit");
+
+        var response = await SendAsync(HttpMethod.Post, $"/api/lskus/{lsku:D}/submit", new { expectedVersion = version }, token);
+
+        await AssertRefusedWithoutStockFlagsAsync(response, expected);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await LskuAsync(lsku)).LifecycleStatus);
+    }
+
+    // Cross-field: with the shelf life known, the retest and the minimum remaining shelf life fit inside it — in one
+    // request, and against a shelf life already on the record. The sabotage target "the cross-field rule removed".
+    [Theory]
+    [InlineData(100, 101, null)]
+    [InlineData(100, null, 101)]
+    [InlineData(100, 101, 101)]
+    public async Task S3b_FIX1_Days_beyond_the_shelf_life_sent_with_it_are_422(int shelf, int? retest, int? minimum)
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+
+        var response = await PutGskuAsync(gsku, version, new { shelfLifeDays = shelf, retestDays = retest, minRemainingShelfLifeDays = minimum });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(StockBehaviourRules.DaysInvalid, await FirstErrorAsync(response));
+        Assert.Equal(version, (await GskuAsync(gsku)).Version);
+    }
+
+    [Fact]
+    public async Task S3b_FIX1_Days_are_measured_against_the_shelf_life_already_on_the_record()
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+        Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(gsku, version, new { shelfLifeDays = 100 })).StatusCode);
+
+        var beyond = await PutGskuAsync(gsku, version + 1, new { retestDays = 101 });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, beyond.StatusCode);
+        Assert.Equal(StockBehaviourRules.DaysInvalid, await FirstErrorAsync(beyond));
+
+        var equal = await PutGskuAsync(gsku, version + 1, new { retestDays = 100, minRemainingShelfLifeDays = 100 });
+        Assert.True(equal.StatusCode == HttpStatusCode.OK, await equal.Content.ReadAsStringAsync());
+        // A shorter shelf life under the days already set is the same mistake from the other side.
+        var shorter = await PutGskuAsync(gsku, version + 2, new { shelfLifeDays = 99 });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, shorter.StatusCode);
+        Assert.Equal(StockBehaviourRules.DaysInvalid, await FirstErrorAsync(shorter));
+    }
+
+    [Fact]
+    public async Task S3b_FIX1_Without_a_shelf_life_the_days_only_keep_their_own_bounds()
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+        var response = await PutGskuAsync(gsku, version, new { retestDays = 3650, minRemainingShelfLifeDays = 3650 });
+        Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+    }
+
+    // R-06: on a draft the new fields stay free (O-8) — set, changed, set again.
+    [Fact]
+    public async Task S3b_FIX1_On_a_gsku_draft_retest_and_minimum_remaining_change_freely()
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+        foreach (var (retest, minimum) in new[] { (30, 10), (60, 20), (15, 5) })
+        {
+            var response = await PutGskuAsync(gsku, version++, new { retestDays = retest, minRemainingShelfLifeDays = minimum });
+            Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+            var stored = await GskuAsync(gsku);
+            Assert.Equal(retest, stored.RetestDays);
+            Assert.Equal(minimum, stored.MinRemainingShelfLifeDays);
+        }
+    }
+
+    // R-06: the fields belong to the GSKU only — the LSKU and Finished Good doors do not take them.
+    [Theory]
+    [InlineData("lsku", "retestDays")]
+    [InlineData("lsku", "minRemainingShelfLifeDays")]
+    [InlineData("finished-good", "retestDays")]
+    [InlineData("finished-good", "minRemainingShelfLifeDays")]
+    public async Task S3b_FIX1_The_lsku_and_finished_good_doors_refuse_the_gsku_days(string level, string field)
+    {
+        var records = await SeedAsync();
+        var path = level == "lsku"
+            ? $"/api/lskus/{records.Lsku.Id:D}/stock-behaviour"
+            : $"/api/finished-goods/{records.FinishedGood.Id:D}/stock-behaviour";
+
+        var response = await SendAsync(HttpMethod.Put, path, new Dictionary<string, object> { ["expectedVersion"] = 1, [field] = 30 });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var lsku = await host.Database.GetCollection<BsonDocument>("mdm_lskus").Find(IdFilter(records.Lsku.Id)).SingleAsync();
+        Assert.False(lsku.Contains("RetestDays") || lsku.Contains("MinRemainingShelfLifeDays"));
+        var finishedGood = await host.Database.GetCollection<BsonDocument>("mdm_finished_goods").Find(IdFilter(records.FinishedGood.Id)).SingleAsync();
+        Assert.False(finishedGood.Contains("RetestDays") || finishedGood.Contains("MinRemainingShelfLifeDays"));
+    }
+
+    private async Task<string> RefusedTokenAsync(string door, string submitKey)
+    {
+        switch (door)
+        {
+            case "foreign-tenant":
+                return host.Token(Guid.NewGuid(), _maker, MakerPermissions);
+            case "out-of-scope":
+                await EnforceScopeForAnotherProductAsync();
+                return MakerToken();
+            case "no-permission":
+                return host.Token(_tenant, _maker, MakerPermissions.Where(x => x != submitKey).ToArray());
+            default:
+                throw new ArgumentOutOfRangeException(nameof(door), door, null);
+        }
+    }
+
+    private static async Task AssertRefusedWithoutStockFlagsAsync(HttpResponseMessage response, HttpStatusCode expected)
+    {
+        var text = await response.Content.ReadAsStringAsync();
+        Assert.True(response.StatusCode == expected, $"{response.StatusCode}: {text}");
+        Assert.DoesNotContain("STOCK_FLAGS", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("lotControlled", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("serialControlled", text, StringComparison.Ordinal);
+    }
+
+    // The tenant enforces product scope; the subject's Legal Entity sees one other product only.
+    private async Task EnforceScopeForAnotherProductAsync()
+    {
+        var legalEntity = Guid.NewGuid();
+        await host.Database.GetCollection<LegalEntity>("mdm_legal_entities").InsertOneAsync(new LegalEntity
+        {
+            Id = legalEntity, TenantId = _tenant, Code = "LE-" + legalEntity.ToString("N")[..8], LegalName = "Scope",
+            OperationalStatus = LegalEntityOperationalStatus.Active, IsDeleted = false
+        });
+        host.Scopes.Answer(_tenant, legalEntity);
+        var rollout = ProductLegalEntityScopeRolloutState.CreatePreparation(_tenant, Guid.NewGuid(), Guid.NewGuid(),
+            DateTimeOffset.UtcNow.AddMinutes(-1));
+        rollout.Mode = ProductLegalEntityScopeRolloutMode.Enforced;
+        await host.Database.GetCollection<ProductLegalEntityScopeRolloutState>("mdm_product_legal_entity_scope_rollout_states")
+            .InsertOneAsync(rollout);
+        await host.Database.GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies")
+            .InsertOneAsync(ProductLegalEntityScopePolicy.Create(_tenant, await SeedProductAsync(), Guid.NewGuid(),
+                ProductLegalEntityScopeMode.GroupWide, [], Guid.NewGuid(), DateTimeOffset.UtcNow.AddMinutes(-1)));
+    }
+
+    private async Task<string[]> GskuActionsAsync(Guid gsku) =>
+        Actions((await DataAsync(await host.Client(MakerToken()).GetAsync($"/api/gskus/{gsku:D}"))).GetProperty("availableActions"));
+
+    private async Task<string[]> LskuActionsAsync(Guid lsku) =>
+        Actions((await DataAsync(await host.Client(MakerToken()).GetAsync($"/api/lskus/{lsku:D}"))).GetProperty("availableActions"));
+
+    private async Task<string[]> LskuListActionsAsync(Guid lsku)
+    {
+        var page = await DataAsync(await host.Client(MakerToken()).GetAsync("/api/lskus?pageSize=100"));
+        return Actions(page.GetProperty("items").EnumerateArray().Single(x => x.GetProperty("id").GetGuid() == lsku)
+            .GetProperty("availableActions"));
+    }
+
+    private static string[] Actions(JsonElement array) => array.EnumerateArray().Select(x => x.GetString()!).ToArray();
+
+    private static async Task<JsonElement> DataAsync(HttpResponseMessage response)
+    {
+        Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        return (await Envelope.ReadAsync(response)).GetProperty("data");
+    }
 
     // ------------------------------------------------------------------------------------------- helpers
 
@@ -345,11 +575,11 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
         return body;
     }
 
-    private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object body)
+    private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object body, string? token = null)
     {
         using var request = new HttpRequestMessage(method, path) { Content = JsonContent.Create(body) };
         request.Headers.Add("Idempotency-Key", Guid.NewGuid().ToString("D"));
-        return await host.Client(MakerToken()).SendAsync(request);
+        return await host.Client(token ?? MakerToken()).SendAsync(request);
     }
 
     private static async Task<JsonElement> JsonAsync(HttpResponseMessage response)
