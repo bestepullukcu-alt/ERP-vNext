@@ -8398,6 +8398,27 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-593
+
+**Görev Merkezi: `WorkAggregation_Action_Decline` dil anahtarı 7 dilde yok (takeover'dan devralınan, 2 vitest kırmızısı)**
+
+DURUM: AÇIK · SAHİP: WCN düzeltme turu (l10n-agent) · BULAN: WP-CT-LANE-TKO-MERGE-01 (2026-10-09) · KAYIT: 2026-10-09
+
+Ölçüm:
+- Takeover ağacında (`07bcdbd8b`) ve birleşik ağaçta aynı 2 vitest kırmızısı.
+- Görev sağlayıcısı (`TaskWorkItemProvider`) "reddet" eylemini yayıyor. Web'de `WorkAggregation_Action_Decline` anahtarı hiçbir dilde yok; yalnız toplantının `WorkAggregation_Action_DeclineInvite`'ı var (`WorkCenterNextIndex.*.resx`).
+- Ekranda düğme etiketi ham kod olarak görünebilir.
+
+Yapılacak:
+- 7 dilde anahtar;
+- eylem kodu → anahtar eşleme testi (her yayılan eylem kodunun anahtarı var);
+- ekranda ölçüm.
+- WCN düzeltme turuna (BL-588 / BL-589 ile) girer.
+
+Gelecek regresyon riski: 🟡 yeni eylem kodu yine anahtarsız kalabilir; eşleme testi bunu kapatır.
+
+---
+
 ### BL-592
 
 **`mdm.product-master.read` hiçbir yerde sağlanmıyor: Enforced kiracıda okuma sözleşmesinin her ürün satırı 403 (canlı ön koşulu)**
