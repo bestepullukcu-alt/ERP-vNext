@@ -8422,6 +8422,8 @@ Gelecek regresyon riski: 🔴 canlı ön koşulu. Okuma sözleşmesi Enforced ki
 
 Kardeş canlı ön koşulu (2026-10-09, stok ekibinin R-02 hatırlatması): ağ geçidinde `/api/product-master` rotası yoktu. S4 FIX1'e eklendi (FU04 §25.1 R-02). İkisi birlikte kapanmadan stoğun üretimdeki ürün seçicisi çalışmaz.
 
+Stok ekibine söz (2026-10-09, yazılı cevapları): iki ön koşul kapanıp CT yazılı haber verene kadar canlı bağ kurulmaz; stok yerel taklitle sürer. Kapanış haberinde izni **varsayılan olarak hangi rollerin aldığı** da yazılır (stok kullanıcı rollerini buna göre planlayacak). Rol seçimi canlı rol önerisiyle (`docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`) hizalanır.
+
 ---
 
 ### BL-577
