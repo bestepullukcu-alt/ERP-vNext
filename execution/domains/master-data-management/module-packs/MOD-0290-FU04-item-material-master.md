@@ -964,6 +964,8 @@ Kaynak: stok ekibinin istek belgesi §8 (R-01 … R-12, OD-1 … OD-7; sahip ile
 | R-12 | Tüm tüzel kişilerde stok varlığı ucu stokta | Kabul; stok INVENTORY-BUNDLE 1.1.0 önerisini gönderdi (2026-10-09: `GET /api/internal/inventory/stock-presence`, `X-Internal-Api-Key` + `X-Tenant-Id`, doğrudan servis, `SkuLevel` + `Item`). CT cevabı: kabul + iki şart (yalnız bu uca açık ayrı anahtar çifti, Platform iç olay anahtarı yeniden kullanılmaz; sabit süreli karşılaştırma, sır günlüğe yazılmaz, canlıda https, tek tip 401); `skuLevel` zorunlu kalabilir | stok yazar; MDM istemcisi BL-585 |
 | D-3 | Stoklanabilir SKU seviyesi | **Kapandı (stok ekibi 2026-10-09):** GSKU seviyesinde hareket yalnız seri bayrağı açıkça false iken; true / null → LSKU / FG; GSKU'da seri null = uygulanmaz. Kalemler `Item` seviyesinde (`skuId == itemId`); stok INVENTORY sözleşmesine `Item` ekliyor | stok |
 | — | Servisten servise okuma | Bu turda yok (Auth yalnız `Diten.MDM` → Platform hedef kitleleri); stok çağıranın belirtecini iletiyor | BL-583 |
+| R-02 | Ağ geçidinde `/api/product-master` rotası (stoğun üretimdeki ürün seçicisi buna bağlı; hatırlatma 2026-10-09) | **Doğru, rota yok** (ölçüldü: origin/main, CT hattı, S4 dalı — 0). S4 FIX1'e eklendi: `/api/product-master/{everything}` → MDM 5059, var olan MDM rota deseni; `/api/internal/**` ağ geçidine açılmaz; rota kapsama testi + sabotaj. Canlı ön koşulu BL-592 ile birlikte | S4 FIX1 (integration-agent) |
+| — | Prism ilk örneği döndürür; v1.1 işlemlerinin ilk örneği v1.0 biçimindeydi (2026-10-09) | **Kabul** — sözleşme draft.11 (`00a4d4268`): ilk örnek tam v1.1, v1.0 örnekleri sona; v1.0 taklidi ayrı dosyada | sözleşme |
 
 ### 25.2 Follow-up
 

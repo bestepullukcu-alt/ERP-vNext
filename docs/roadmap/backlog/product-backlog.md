@@ -8420,6 +8420,8 @@ Yapılacak (tek iş, üç servis):
 
 Gelecek regresyon riski: 🔴 canlı ön koşulu. Okuma sözleşmesi Enforced kiracıda ürün satırı veremez.
 
+Kardeş canlı ön koşulu (2026-10-09, stok ekibinin R-02 hatırlatması): ağ geçidinde `/api/product-master` rotası yoktu. S4 FIX1'e eklendi (FU04 §25.1 R-02). İkisi birlikte kapanmadan stoğun üretimdeki ürün seçicisi çalışmaz.
+
 ---
 
 ### BL-577
