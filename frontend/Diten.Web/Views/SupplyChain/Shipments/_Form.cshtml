@@ -2,11 +2,14 @@
 @using Diten.Web.Views.SupplyChain.Shipments
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ShipmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 <form id="formShipment" novalidate>
     @Html.AntiForgeryToken()
     <div id="formShipmentAlert" class="alert alert-danger d-none" role="alert" tabindex="-1"></div>
     <div class="row g-4">
         <div class="col-12 col-lg-6"><section class="card h-100"><div class="card-body p-4"><h6 class="card-section-title mb-4"><i class="bx bx-link" aria-hidden="true"></i>@Localizer["SourceAndDestination"]</h6><div class="row g-3">
+            @* R-2: the company is chosen here and rides the query — never the body, which the service refuses scope in — so this select is not model-bound. *@
+            <div class="col-12 col-md-6"><label class="form-label" for="formLegalEntity">@SharedLocalizer["LegalEntity"] *</label><div class="diten-field"><i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i><select id="formLegalEntity" class="form-select" required></select></div></div>
             <div class="col-12 col-md-6"><label class="form-label" for="sourceModule">@Localizer["SourceModule"] *</label><div class="diten-field"><i class="bx bx-grid-alt diten-field-icon" aria-hidden="true"></i><input id="sourceModule" class="form-control" required /></div></div>
             <div class="col-12 col-md-6"><label class="form-label" for="sourceType">@Localizer["SourceType"] *</label><div class="diten-field"><i class="bx bx-category diten-field-icon" aria-hidden="true"></i><input id="sourceType" class="form-control" required /></div></div>
             <div class="col-12"><label class="form-label" for="sourceDocumentId">@Localizer["SourceDocumentId"] *</label><div class="diten-field"><i class="bx bx-file diten-field-icon" aria-hidden="true"></i><input id="sourceDocumentId" class="form-control" required /></div></div>
