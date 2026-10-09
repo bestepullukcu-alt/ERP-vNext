@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using Diten.AuthService.Api.Operational;
+using Diten.AuthService.Application.Tests.ServiceIdentityTokens;
 
 namespace Diten.AuthService.Application.Tests.Operational;
 
@@ -66,5 +68,41 @@ public sealed class OperationalSingleInstanceLockTests
         using var next = OperationalSingleInstanceLock.TryAcquire(name);
         Assert.True(next.Acquired);
         Assert.True(next.RecoveredFromAbandonedRun);
+    }
+
+    // FIX1 R4 (CT decision A): the lock is MACHINE-WIDE across sessions. A child in ANOTHER Unix session (setsid) holds
+    // the name; this process is refused. Without the Global\ prefix the child's lock would be session-scoped and this
+    // process would acquire it (measured).
+    [UnixFact]
+    public async Task A_run_in_another_session_holds_the_lock_and_this_run_is_refused()
+    {
+        var name = OperationalSingleInstanceLock.MachineWide(UniqueName());
+        var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        if (string.IsNullOrEmpty(host) && Path.GetFileNameWithoutExtension(Environment.ProcessPath) == "dotnet") host = Environment.ProcessPath;
+        Assert.True(host is not null && File.Exists(host), "The dotnet host running these tests is required.");
+        var start = new ProcessStartInfo("/usr/bin/python3") { UseShellExecute = false, RedirectStandardOutput = true };
+        foreach (var argument in new[]
+                 {
+                     "-c", "import os, sys; os.setsid(); os.execv(sys.argv[1], sys.argv[1:])",
+                     host!, "exec", typeof(OperationalLockHolder).Assembly.Location, OperationalLockHolder.Flag, name, "4000"
+                 }) start.ArgumentList.Add(argument);
+        using var child = Process.Start(start)!;
+        var line = await child.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(60));
+        Assert.NotNull(line);
+        Assert.StartsWith("HELD ", line);
+        Assert.NotEqual(OperationalLockHolder.GetSid(0), int.Parse(line![5..], System.Globalization.CultureInfo.InvariantCulture));
+
+        using (var mine = OperationalSingleInstanceLock.TryAcquire(name)) Assert.False(mine.Acquired);
+
+        await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(60));
+        Assert.Equal(0, child.ExitCode);
+        using var after = OperationalSingleInstanceLock.TryAcquire(name);
+        Assert.True(after.Acquired);
+    }
+
+    [Fact]
+    public void The_operational_command_uses_the_machine_wide_name()
+    {
+        Assert.Equal(@"Global\Diten.Auth.ProductIdentityEntitlementReconciliation", EntitlementReconciliationOperationalRunner.LockName);
     }
 }

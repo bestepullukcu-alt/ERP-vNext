@@ -234,7 +234,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         await using var scope = await fixture.ScopeAsync(output);
         using var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
         await using var sink = new ServiceClientSecretOutputSink();
-        var request = scope.Request() with { InheritedPipeHandle = pipe.GetClientHandleAsString() };
+        var request = scope.Request() with { InheritedPipeHandle = PipeHandles.ForSink(pipe) };
         await sink.PreflightAsync(request.InheritedPipeHandle!, CancellationToken.None);
         pipe.SafePipeHandle.Dispose();
         await Assert.ThrowsAsync<ServiceClientOperationalSecretDeliveryException>(() => scope.Service(sink).ExecuteAsync(request, OperationalTestData.Actor, CancellationToken.None));

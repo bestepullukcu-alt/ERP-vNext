@@ -1,14 +1,28 @@
 namespace Diten.AuthService.Api.Operational;
 
 /// <summary>
-/// WP-AUTH-BL570-01 — the machine-wide single-instance lock of an operational command, on every OS.
+/// WP-AUTH-BL570-01 — the single-instance lock of an operational command, on every OS.
 ///
-/// <para><b>Why a named <see cref="Mutex"/> (option a), not a Mongo lease (option b).</b> The named
-/// <see cref="Semaphore"/> it replaces throws <c>PlatformNotSupportedException</c> outside Windows. A named mutex is
-/// supported by .NET on Unix as well (shared state under the runtime's temp directory, measured on macOS 2026-10-07),
-/// keeps exactly the old scope — one machine, no database schema, no clock — and the OS gives it back when its owner
-/// dies: the next caller sees it ABANDONED, not held. A Mongo lease would add a record, an expiry to choose and a clock
-/// to trust, for a guard that was never more than machine-local.</para>
+/// <para><b>Scope — measured, not assumed (FIX1 R4, CT decision A).</b> A named <see cref="Mutex"/> WITHOUT a prefix is
+/// scoped to the Unix SESSION on .NET (measured 2026-10-07 on macOS: a second process in a new session, <c>setsid</c>,
+/// acquired the name while the first session held it). So the name is <see cref="MachineWide"/>: <c>Global\</c> —
+/// machine-local, ACROSS SESSIONS (measured on macOS: a new session is refused); across USERS not measured (no second
+/// account on the measuring machine). Windows: <c>Global\</c> is the machine namespace; creating a global object from
+/// a non-zero session needs <c>SeCreateGlobalPrivilege</c> — without it the constructor throws and this lock answers
+/// <c>OPERATION_LOCK_UNAVAILABLE</c> (fail closed; not measured on Windows).</para>
+///
+/// <para><b>Security note.</b> The lock state lives under <c>/tmp/.dotnet</c>, whose directories are world-writable
+/// without the sticky bit (files 0666; measured). (1) A local user who HOLDS the lock only stops the command
+/// (<c>OPERATION_ALREADY_RUNNING</c>): fail closed, availability only. (2) A local user who DELETES the lock file could
+/// break the exclusion — not tried (deleting is out of bounds for the measurement), so not measured; the unprefixed name
+/// had the same exposure, so the integrity exposure does not change. A store-level lease (across servers) is backlog.</para>
+///
+/// <para><b>Why a named mutex, not a Mongo lease (option b).</b> The named <see cref="Semaphore"/> it replaces throws
+/// <c>PlatformNotSupportedException</c> outside Windows. A named mutex keeps the old scope with no database schema and no
+/// clock, and the OS gives it back when its owner dies — the takeover itself always works. Whether the OS also SAYS so
+/// (<see cref="AbandonedMutexException"/> → <see cref="RecoveredFromAbandonedRun"/>) varies: macOS gives no signal when
+/// the owner PROCESS dies, and with <c>Global\</c> lost it in 2 of 3 in-process owner-thread exits (measured 2026-10-09);
+/// Windows is documented to signal it (not measured). The warning is a diagnostic, never a safety condition.</para>
 ///
 /// <para><b>Why a dedicated thread.</b> A mutex is owned by the THREAD that took it, and the command awaits while it
 /// holds the lock — its continuation may resume on another thread, where <c>ReleaseMutex</c> throws. So one private
@@ -33,6 +47,17 @@ public sealed class OperationalSingleInstanceLock : IDisposable
         RecoveredFromAbandonedRun = recovered;
         _owner = owner;
     }
+
+    /// <summary>
+    /// A lock in a given state without the OS (tests only, via InternalsVisibleTo): the OS's "abandoned" signal is not
+    /// reliable on macOS (measured — none after an owner PROCESS dies; with <c>Global\</c>, lost in 2 of 3 in-process
+    /// owner-thread exits), so the runner's reaction to it is tested on a lock that SAYS so.
+    /// </summary>
+    internal static OperationalSingleInstanceLock InState(bool acquired, bool recovered) =>
+        new(acquired, recovered, null, new ManualResetEventSlim(false));
+
+    /// <summary>The machine-wide (cross-session) name: <c>Global\</c> + <paramref name="name"/> (FIX1 R4).</summary>
+    public static string MachineWide(string name) => @"Global\" + name;
 
     public static OperationalSingleInstanceLock TryAcquire(string name)
     {

@@ -20,10 +20,11 @@ public static class UnixPipeHandleInspector
     public const int TypeFifo = 0x1000;
     public const int TypeSocket = 0xC000;
 
+    private const int GetDescriptorFlags = 1; // F_GETFD, same on macOS and Linux
+    private const int CloseOnExec = 1; // FD_CLOEXEC
     private const int GetStatusFlags = 3; // F_GETFL, same on macOS and Linux
     private const int AccessModeMask = 3; // O_ACCMODE
     private const int WriteOnly = 1;
-    private const int ReadWrite = 2;
     private const short PollOut = 0x4;
     private const short PollError = 0x8;
     private const short PollHangUp = 0x10;
@@ -31,20 +32,36 @@ public static class UnixPipeHandleInspector
 
     public readonly record struct Identity(long Device, ulong Inode, int Type);
 
-    private sealed record Layout(int DeviceOffset, int DeviceSize, int ModeOffset, int ModeSize, int InodeOffset, bool MacOs);
+    // Internal (tests via InternalsVisibleTo, BL570 FIX1 R2): a wrong layout must be refused by the proof.
+    internal sealed record Layout(int DeviceOffset, int DeviceSize, int ModeOffset, int ModeSize, int InodeOffset, bool MacOs);
 
-    private static readonly Lazy<Layout?> Proven = new(Prove, LazyThreadSafetyMode.ExecutionAndPublication);
+    private static readonly Lazy<Layout?> Proven = new(() => Candidate() is { } candidate ? Prove(candidate) : null,
+        LazyThreadSafetyMode.ExecutionAndPublication);
 
     public static bool IsSupported => Proven.Value is not null;
 
     /// <summary>The descriptor's identity, or null when it is not an open descriptor (or the platform is unsupported).</summary>
     public static Identity? Stat(int descriptor) => Proven.Value is { } layout ? Stat(descriptor, layout) : null;
 
-    /// <summary>Opened for writing (write-only or read-write)?</summary>
-    public static bool IsWritable(int descriptor)
+    /// <summary>
+    /// Opened WRITE-ONLY — exactly O_WRONLY (BL570 FIX1 R1). A read-write end (<c>exec 3&lt;&gt;fifo</c>) makes the
+    /// process its own reader: poll never reports a hang-up and the secret would sit in a named FIFO's kernel buffer
+    /// while "written once" is reported. The proof requires the same of a real pipe's write end.
+    /// </summary>
+    public static bool IsWriteOnly(int descriptor)
     {
         var flags = Fcntl(descriptor, GetStatusFlags);
-        return flags >= 0 && (flags & AccessModeMask) is WriteOnly or ReadWrite;
+        return flags >= 0 && (flags & AccessModeMask) == WriteOnly;
+    }
+
+    /// <summary>
+    /// INHERITED across exec: FD_CLOEXEC clear (BL570 FIX1 M1). The runtime's own pipes (signal / wake-up) are
+    /// close-on-exec; a descriptor the launcher handed over survived exec, so it is not.
+    /// </summary>
+    public static bool IsInherited(int descriptor)
+    {
+        var flags = Fcntl(descriptor, GetDescriptorFlags);
+        return flags >= 0 && (flags & CloseOnExec) == 0;
     }
 
     /// <summary>
@@ -58,7 +75,7 @@ public static class UnixPipeHandleInspector
         return revents is { } value && (value & PollOut) != 0 && (value & (PollError | PollHangUp | PollInvalid)) == 0;
     }
 
-    private static Identity? Stat(int descriptor, Layout layout)
+    internal static Identity? Stat(int descriptor, Layout layout)
     {
         var buffer = new byte[512];
         if (Fstat(descriptor, buffer, layout.MacOs) != 0) return null;
@@ -67,7 +84,7 @@ public static class UnixPipeHandleInspector
         return new Identity(device, BitConverter.ToUInt64(buffer, layout.InodeOffset), mode & TypeMask);
     }
 
-    private static Layout? Candidate()
+    internal static Layout? Candidate()
     {
         if (!BitConverter.IsLittleEndian) return null;
         if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture is Architecture.Arm64 or Architecture.X64)
@@ -79,9 +96,8 @@ public static class UnixPipeHandleInspector
         return null;
     }
 
-    private static Layout? Prove()
+    internal static Layout? Prove(Layout layout)
     {
-        if (Candidate() is not { } layout) return null;
         var opened = new List<int>();
         try
         {

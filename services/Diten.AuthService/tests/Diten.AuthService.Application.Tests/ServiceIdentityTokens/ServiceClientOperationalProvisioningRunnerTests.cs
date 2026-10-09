@@ -103,7 +103,8 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
     {
         using var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
         await using var sink = new ServiceClientSecretOutputSink();
-        await sink.PreflightAsync(pipe.GetClientHandleAsString(), CancellationToken.None);
+        var handle = PipeHandles.ForSink(pipe);
+        await sink.PreflightAsync(handle, CancellationToken.None);
         var secret = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         await sink.DeliverOnceAsync(Guid.NewGuid(), "fixture-client", secret, CancellationToken.None);
         using var reader = new StreamReader(pipe);
@@ -111,7 +112,7 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
         using var payload = JsonDocument.Parse(line!);
         Assert.True(payload.RootElement.GetProperty("Secret").GetString() == secret, "The OS pipe must contain the generated secret.");
         await Assert.ThrowsAnyAsync<Exception>(() => sink.DeliverOnceAsync(Guid.NewGuid(), "fixture-client", secret, CancellationToken.None));
-        await Assert.ThrowsAnyAsync<Exception>(() => sink.PreflightAsync(pipe.GetClientHandleAsString(), CancellationToken.None));
+        await Assert.ThrowsAnyAsync<Exception>(() => sink.PreflightAsync(handle, CancellationToken.None));
     }
 
     [Theory]
@@ -141,7 +142,7 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
     public async Task Already_broken_pipe_peer_is_rejected_before_operation_can_mutate()
     {
         using var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
-        var handle = pipe.GetClientHandleAsString();
+        var handle = PipeHandles.ForSink(pipe);
         // Close only the reader endpoint: the inherited writer handle remains valid and pipe-typed.
         pipe.SafePipeHandle.Dispose();
         AssertStillAnOpenPipe(handle);
@@ -185,13 +186,33 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
     public async Task Broken_peer_runner_has_zero_service_calls()
     {
         using var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
-        var handle = pipe.GetClientHandleAsString();
+        var handle = PipeHandles.ForSink(pipe);
         pipe.SafePipeHandle.Dispose();
         AssertStillAnOpenPipe(handle);
         await using var sink = new ServiceClientSecretOutputSink();
         var harness = new RunnerHarness("rotate-credential", sink, handle);
         Assert.Equal(5, await harness.Run());
         Assert.Equal(0, harness.Calls);
+    }
+
+    // WP-AUTH-BL570-01 FIX1 R2(a): the whole fail-closed promise — when this OS cannot verify the pipe, the command
+    // answers by name, exit 5, BEFORE the service runs: no credential is created or rotated.
+    [Fact]
+    public async Task An_unverifiable_secret_channel_platform_is_refused_by_name_before_any_credential_exists()
+    {
+        var harness = new RunnerHarness("rotate-credential", new UnsupportedPlatformSink(), "7");
+
+        Assert.Equal(5, await harness.Run());
+        Assert.Equal(0, harness.Calls);
+        Assert.Contains("\"secret-output-unsupported-platform\"", harness.Output.ToString());
+    }
+
+    private sealed class UnsupportedPlatformSink : IServiceClientSecretOutputSink
+    {
+        public Task PreflightAsync(string handle, CancellationToken ct) =>
+            throw new PlatformNotSupportedException(ServiceClientSecretOutputSink.UnsupportedPlatform);
+        public Task DeliverOnceAsync(Guid id, string code, string secret, CancellationToken ct) =>
+            throw new InvalidOperationException("must never be reached");
     }
 
     internal static string Envelope(ServiceClientOperationalProvisioningRequest request, string token = "test-token", string marker = OperationalTestData.Marker) =>

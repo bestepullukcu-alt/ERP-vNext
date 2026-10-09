@@ -32,11 +32,15 @@ public sealed class DisposableAuthMongoReplicaSet : IAsyncLifetime
     public static readonly string[] Collections = ["users", "roles", "permissions", "userRoles", "rolePermissions",
         "refreshTokens", "tenant_user_memberships", "auth_role_assignment_versions", "authAuditLogs"];
 
+    /// <summary>The installed mongod this fixture starts (BL570 FIX1 M6: OwnedMongoFact skips on the same answer).</summary>
+    public static string ResolveExecutable() =>
+        Environment.GetEnvironmentVariable("DITEN_TEST_MONGOD") ?? "C:/Program Files/MongoDB/Server/7.0/bin/mongod.exe";
+
     public async Task InitializeAsync()
     {
         BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         ConventionRegistry.Register("OwnedAuthReconciliation", new ConventionPack { new IgnoreExtraElementsConvention(true) }, _ => true);
-        var executable = Environment.GetEnvironmentVariable("DITEN_TEST_MONGOD") ?? "C:/Program Files/MongoDB/Server/7.0/bin/mongod.exe";
+        var executable = ResolveExecutable();
         Assert.True(Path.IsPathFullyQualified(executable) && File.Exists(executable), "An installed mongod binary is required.");
         using (var listener = new TcpListener(IPAddress.Loopback, 0))
         { listener.Start(); Port = ((IPEndPoint)listener.LocalEndpoint).Port; }

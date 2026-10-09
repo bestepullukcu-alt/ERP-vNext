@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- WP-AUTH-BL570-01 FIX1 R4: the test assembly has one tiny entry point (OperationalLockHolder) so a test can hold
+         the operational lock from a child process in ANOTHER Unix session. Under the test runner it is never called. -->
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
