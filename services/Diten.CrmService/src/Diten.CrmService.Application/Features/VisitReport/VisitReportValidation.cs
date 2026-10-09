@@ -149,18 +149,12 @@ public static class VisitReportValidation
             return null; // a completed visit carries no missed/rescheduled reason code
         }
 
-        // missed / rescheduled → a reason code is required and must be in the in-domain set.
-        if (reason is null)
-        {
-            return new Failure(
-                $"A reason code is required for a '{normalized}' outcome.", VisitReportErrorCodes.ReasonCodeRequired);
-        }
-
-        return VisitReportReasonCodes.IsKnown(reason)
-            ? null
-            : new Failure(
-                $"Unsupported reason code '{reason}'. Known values: {string.Join(", ", VisitReportReasonCodes.All)}.",
-                VisitReportErrorCodes.UnsupportedVocabularyValue);
+        // missed / rescheduled → a reason code is required. WHICH codes are valid is reference data (WP-VW-W2: the
+        // visit-outcome-reason set, checked by VisitReasonValidator in the handler) — never the legacy constant list.
+        return reason is null
+            ? new Failure(
+                $"A reason code is required for a '{normalized}' outcome.", VisitReportErrorCodes.ReasonCodeRequired)
+            : null;
     }
 
     /// <summary>The report-content shape for a completed visit: a non-empty outcome code (ref-data, bounded) and

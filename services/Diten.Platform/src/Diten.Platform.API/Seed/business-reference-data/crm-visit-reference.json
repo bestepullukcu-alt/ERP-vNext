@@ -1,0 +1,66 @@
+{
+  "catalog_version": "2026.10.09-crm-visit-reference",
+  "module": "BusinessReferenceData",
+  "note": "WP-VW-W2 (MOD-0155 visit workspace): the reasons a rep gives when a visit is cancelled, not done (missed) or rescheduled. applies_to lists the actions a reason can be used for; requires_note=true makes a note mandatory; label_<lang> carries the per-language label (en = display_name, the 4I rule). The two legacy codes stay inactive so old reports keep their names; they are not accepted on new writes.",
+  "sets": [
+    {
+      "set_code": "visit-outcome-reason",
+      "set_name": "Visit Outcome Reason",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "Why a planned visit was cancelled, not done or rescheduled. Tenant-scoped so a tenant can manage its own list; consumed by the CRM visit workspace dialogs and the visit report rules.",
+      "attribute_definitions": [
+        { "attribute_code": "applies_to", "display_name": "Applies to (comma-separated: cancel, missed, reschedule)", "data_type": "string", "is_required": false },
+        { "attribute_code": "requires_note", "display_name": "Requires a note (true / false)", "data_type": "string", "is_required": true },
+        { "attribute_code": "label_tr", "display_name": "Label (Turkish)", "data_type": "string", "is_required": true },
+        { "attribute_code": "label_fr", "display_name": "Label (French)", "data_type": "string", "is_required": true },
+        { "attribute_code": "label_es", "display_name": "Label (Spanish)", "data_type": "string", "is_required": true },
+        { "attribute_code": "label_zh", "display_name": "Label (Chinese)", "data_type": "string", "is_required": true },
+        { "attribute_code": "label_ar", "display_name": "Label (Arabic)", "data_type": "string", "is_required": true },
+        { "attribute_code": "label_ru", "display_name": "Label (Russian)", "data_type": "string", "is_required": true }
+      ],
+      "values": [
+        {
+          "value_code": "doctor_unavailable", "display_name": "Doctor not available / on leave", "description": "The doctor was not there or was on leave.", "is_active": true, "sort_order": 10,
+          "attributes": { "applies_to": "cancel,missed,reschedule", "requires_note": "false", "label_tr": "Doktor yok / izinde", "label_fr": "Médecin absent / en congé", "label_es": "Médico ausente / de permiso", "label_zh": "医生不在 / 休假", "label_ar": "الطبيب غير متاح / في إجازة", "label_ru": "Врача нет / в отпуске" }
+        },
+        {
+          "value_code": "doctor_declined", "display_name": "Doctor had no time / declined the meeting", "description": "The doctor had no time or declined the meeting.", "is_active": true, "sort_order": 20,
+          "attributes": { "applies_to": "cancel,missed,reschedule", "requires_note": "false", "label_tr": "Doktor zamanı yok / görüşmeyi reddetti", "label_fr": "Le médecin n'avait pas le temps / a refusé l'entretien", "label_es": "El médico no tenía tiempo / rechazó la reunión", "label_zh": "医生没有时间 / 拒绝会面", "label_ar": "لم يكن لدى الطبيب وقت / رفض المقابلة", "label_ru": "У врача нет времени / отказался от встречи" }
+        },
+        {
+          "value_code": "clinic_closed", "display_name": "Institution closed / no entry allowed", "description": "The institution was closed or entry was not allowed.", "is_active": true, "sort_order": 30,
+          "attributes": { "applies_to": "cancel,missed,reschedule", "requires_note": "false", "label_tr": "Kurum kapalı / girişe izin yok", "label_fr": "Établissement fermé / accès refusé", "label_es": "Institución cerrada / acceso no permitido", "label_zh": "机构关闭 / 不允许进入", "label_ar": "المؤسسة مغلقة / الدخول غير مسموح", "label_ru": "Учреждение закрыто / вход запрещён" }
+        },
+        {
+          "value_code": "rep_unavailable", "display_name": "Representative on leave / sick", "description": "The representative was on leave or sick.", "is_active": true, "sort_order": 40,
+          "attributes": { "applies_to": "cancel,missed,reschedule", "requires_note": "false", "label_tr": "Temsilci izinli / hasta", "label_fr": "Représentant en congé / malade", "label_es": "Representante de permiso / enfermo", "label_zh": "代表休假 / 生病", "label_ar": "المندوب في إجازة / مريض", "label_ru": "Представитель в отпуске / болен" }
+        },
+        {
+          "value_code": "meeting_conflict", "display_name": "Meeting / training conflict", "description": "A meeting or training clashed with the visit.", "is_active": true, "sort_order": 50,
+          "attributes": { "applies_to": "cancel,missed,reschedule", "requires_note": "false", "label_tr": "Toplantı / eğitim çakışması", "label_fr": "Conflit avec une réunion / formation", "label_es": "Conflicto con reunión / formación", "label_zh": "会议 / 培训冲突", "label_ar": "تعارض مع اجتماع / تدريب", "label_ru": "Совпадение с совещанием / обучением" }
+        },
+        {
+          "value_code": "travel_weather", "display_name": "Travel / weather conditions", "description": "Travel or weather made the visit impossible.", "is_active": true, "sort_order": 60,
+          "attributes": { "applies_to": "cancel,missed,reschedule", "requires_note": "false", "label_tr": "Ulaşım / hava koşulu", "label_fr": "Transport / conditions météo", "label_es": "Transporte / condiciones meteorológicas", "label_zh": "交通 / 天气原因", "label_ar": "المواصلات / الأحوال الجوية", "label_ru": "Транспорт / погодные условия" }
+        },
+        {
+          "value_code": "target_inactive", "display_name": "Doctor left the institution / target inactive", "description": "The doctor left the institution or the target is no longer active.", "is_active": true, "sort_order": 70,
+          "attributes": { "applies_to": "cancel,missed", "requires_note": "false", "label_tr": "Doktor kurumdan ayrıldı / hedef pasif", "label_fr": "Le médecin a quitté l'établissement / cible inactive", "label_es": "El médico dejó la institución / objetivo inactivo", "label_zh": "医生已离开机构 / 目标已停用", "label_ar": "غادر الطبيب المؤسسة / الهدف غير نشط", "label_ru": "Врач ушёл из учреждения / цель неактивна" }
+        },
+        {
+          "value_code": "other", "display_name": "Other", "description": "Another reason; a note is required.", "is_active": true, "sort_order": 80,
+          "attributes": { "applies_to": "cancel,missed,reschedule", "requires_note": "true", "label_tr": "Diğer", "label_fr": "Autre", "label_es": "Otro", "label_zh": "其他", "label_ar": "أخرى", "label_ru": "Другое" }
+        },
+        {
+          "value_code": "rescheduled_by_doctor", "display_name": "Rescheduled by the doctor (legacy)", "description": "Legacy reason kept so older reports keep their name; not accepted on new writes.", "is_active": false, "sort_order": 90,
+          "attributes": { "requires_note": "false", "label_tr": "Doktor erteledi (eski)", "label_fr": "Reporté par le médecin (ancien)", "label_es": "Aplazado por el médico (antiguo)", "label_zh": "医生改期（旧）", "label_ar": "أجّلها الطبيب (قديم)", "label_ru": "Перенесено врачом (устар.)" }
+        },
+        {
+          "value_code": "rescheduled_by_rep", "display_name": "Rescheduled by the representative (legacy)", "description": "Legacy reason kept so older reports keep their name; not accepted on new writes.", "is_active": false, "sort_order": 100,
+          "attributes": { "requires_note": "false", "label_tr": "Temsilci erteledi (eski)", "label_fr": "Reporté par le représentant (ancien)", "label_es": "Aplazado por el representante (antiguo)", "label_zh": "代表改期（旧）", "label_ar": "أجّلها المندوب (قديم)", "label_ru": "Перенесено представителем (устар.)" }
+        }
+      ]
+    }
+  ]
+}

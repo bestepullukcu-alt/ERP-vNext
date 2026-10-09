@@ -44,7 +44,8 @@ public sealed class VisitReportRuntimeTests
         public ICallerScope Caller { get; set; } = TestCallerScope.Unrestricted();
 
         public RecordVisitOutcomeHandler RecordOutcome(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports, Plans, Caller);
+            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports, Plans, Caller,
+                reasons: FakeVisitReasonSet.Permissive().Validator()); // WP-VW-W2 — reasons are reference data
 
         public SubmitVisitReportHandler Submit(Guid? tenant = null)
             => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports, Plans, Caller);

@@ -167,6 +167,42 @@ public sealed class PlannedVisitRuntimeTests
         Assert.Null(row.ContactId);
     }
 
+    /// <summary>WP-VW-W2 (Acceptance 5) — an unplanned visit is today's only, Source = unplanned, born planned.</summary>
+    [Fact]
+    public async Task Unplanned_today_is_201_with_source_unplanned_and_planned_status()
+    {
+        var f = new Fixture();
+        var acc = f.SeedAccount();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+
+        var r = await f.Create().Handle(Cmd(acc, plannedDate: today, planStatus: null) with { Unplanned = true }, default);
+
+        Assert.Equal(201, r.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        Assert.Equal(PlannedVisitSource.Unplanned, row.Source);
+        Assert.Equal(PlannedVisitStatus.Planned, row.PlanStatus);
+    }
+
+    [Fact]
+    public async Task Unplanned_tomorrow_is_400_and_the_plain_manual_create_is_unchanged()
+    {
+        var f = new Fixture();
+        var acc = f.SeedAccount();
+        var tomorrow = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1).ToString("yyyy-MM-dd");
+
+        var r = await f.Create().Handle(Cmd(acc, plannedDate: tomorrow) with { Unplanned = true }, default);
+        Assert.Equal(400, r.StatusCode);
+        Assert.Contains(Diten.CrmService.Application.Features.VisitWorkspace.VisitWorkspaceErrorCodes.UnplannedTodayOnly, r.Errors!);
+        Assert.Empty(f.Repo.Items);
+
+        // the old manual create (no unplanned flag): a future day, manual, draft — exactly as before
+        var manual = await f.Create().Handle(Cmd(acc, plannedDate: tomorrow), default);
+        Assert.Equal(201, manual.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        Assert.Equal(PlannedVisitSource.Manual, row.Source);
+        Assert.Equal(PlannedVisitStatus.Draft, row.PlanStatus);
+    }
+
     [Fact]
     public async Task Create_without_tenant_is_400()
     {

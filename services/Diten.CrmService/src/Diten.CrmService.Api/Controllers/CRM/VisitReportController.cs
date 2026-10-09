@@ -67,7 +67,8 @@ public sealed class VisitReportController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new RecordVisitOutcomeCommand(
                 request.PlannedVisitId, request.ExecutionOutcome, request.ExecutedAt, request.ReasonCode,
-                request.RescheduleToDate, request.RescheduleNotes, request.ReportedByResourceId, request.ExpectedVersion),
+                request.RescheduleToDate, request.RescheduleNotes, request.ReportedByResourceId, request.ExpectedVersion,
+                request.ReasonNote),
             cancellationToken));
 
     /// <summary>Records + submits a completed visit's report (immutable after the correction window).</summary>
@@ -79,7 +80,7 @@ public sealed class VisitReportController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new SubmitVisitReportCommand(
                 request.PlannedVisitId, request.ContentActuals, request.Samples, request.Feedback,
-                request.ExecutedAt, request.ReportedByResourceId, request.ExpectedVersion),
+                request.ExecutedAt, request.ReportedByResourceId, request.ExpectedVersion, request.ExecutionOutcome),
             cancellationToken));
 
     /// <summary>Files an append-only amendment to a finalised report (D-EDIT-WINDOW).</summary>
@@ -90,6 +91,7 @@ public sealed class VisitReportController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new AmendVisitReportCommand(
                 visitReportId, request.Reason, request.ReportedByResourceId,
-                request.ContentActuals, request.Samples, request.Feedback, request.ExpectedVersion),
+                request.ContentActuals, request.Samples, request.Feedback, request.ExpectedVersion,
+                request.RescheduleToDate),
             cancellationToken));
 }

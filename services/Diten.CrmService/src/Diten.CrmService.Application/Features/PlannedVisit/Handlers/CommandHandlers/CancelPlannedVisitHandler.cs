@@ -4,6 +4,7 @@ using Diten.CrmService.Application.Features.PlannedVisit.Commands;
 using Diten.CrmService.Application.Features.PlannedVisit.Contract;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
+using Diten.CrmService.Application.Features.VisitWorkspace;
 using MediatR;
 
 namespace Diten.CrmService.Application.Features.PlannedVisit.Handlers.CommandHandlers;
@@ -19,10 +20,17 @@ public sealed class CancelPlannedVisitHandler : IRequestHandler<CancelPlannedVis
     private readonly IActorContext _actor;
     private readonly IPlannedVisitRepository _repository;
     private readonly ICallerScope _caller;
+    private readonly VisitReasonValidator? _reasons;
+    private readonly TimeProvider _clock;
 
     public CancelPlannedVisitHandler(
-        ITenantContext tenant, IActorContext actor, IPlannedVisitRepository repository, ICallerScope caller)
+        ITenantContext tenant, IActorContext actor, IPlannedVisitRepository repository, ICallerScope caller,
+        // WP-VW-W2 — the reason set check (fail-closed when a code is sent and the check is not wired) + "today" (UTC).
+        VisitReasonValidator? reasons = null,
+        TimeProvider? clock = null)
     {
+        _reasons = reasons;
+        _clock = clock ?? TimeProvider.System;
         _caller = caller;
         _tenant = tenant;
         _actor = actor;
@@ -36,7 +44,11 @@ public sealed class CancelPlannedVisitHandler : IRequestHandler<CancelPlannedVis
             return Response<bool>.Fail("Tenant context is required.", 400);
         }
 
-        var reason = PlannedVisitValidation.Trim(request.CancellationReason);
+        // WP-VW-W2 — the reason is a reference-set code (+ note). Without a code the legacy free-text reason is still
+        // accepted for one more release (it becomes required; mobile note).
+        var reasonCode = PlannedVisitValidation.Trim(request.ReasonCode);
+        var note = PlannedVisitValidation.Trim(request.Note);
+        var reason = PlannedVisitValidation.Trim(request.CancellationReason) ?? reasonCode;
         if (reason is null)
         {
             return Response<bool>.Fail(
@@ -74,6 +86,31 @@ public sealed class CancelPlannedVisitHandler : IRequestHandler<CancelPlannedVis
                 409);
         }
 
+        // WP-VW-W2 — only today's or a future visit is cancelled; a past one is "missed" (not done / reschedule).
+        if (plan.PlannedDate < DateOnly.FromDateTime(_clock.GetUtcNow().UtcDateTime))
+        {
+            return Response<bool>.Fail(
+                new[]
+                {
+                    "A visit whose day has passed is not cancelled; record it as not done or reschedule it.",
+                    VisitWorkspaceErrorCodes.CancelPastDay
+                },
+                409);
+        }
+
+        if (reasonCode is not null)
+        {
+            var reasonFailure = _reasons is null
+                ? new VisitReasonValidator.Failure(
+                    "The reason list could not be read. Nothing was saved — please try again.",
+                    VisitWorkspaceErrorCodes.ReferenceDataUnavailable, 503)
+                : await _reasons.ValidateAsync(reasonCode, note, VisitOutcomeReasons.Cancel, cancellationToken);
+            if (reasonFailure is not null)
+            {
+                return Response<bool>.Fail(new[] { reasonFailure.Message, reasonFailure.Code }, reasonFailure.StatusCode);
+            }
+        }
+
         var expectedVersion = request.ExpectedVersion ?? plan.Version;
         if (expectedVersion != plan.Version)
         {
@@ -83,6 +120,8 @@ public sealed class CancelPlannedVisitHandler : IRequestHandler<CancelPlannedVis
         var now = DateTimeOffset.UtcNow;
         plan.PlanStatus = PlannedVisitStatus.Cancelled;
         plan.CancellationReason = reason;
+        plan.CancellationReasonCode = reasonCode is null ? null : VisitReasonValidator.Normalize(reasonCode);
+        plan.CancellationNote = reasonCode is null ? null : note;
         plan.UpdatedAt = now;
         plan.UpdatedBy = _actor.ActorName;
 

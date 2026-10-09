@@ -83,7 +83,8 @@ public sealed class VisitWorkspaceW1Tests
     private static ICallerScope Manager() => TestCallerScope.Unrestricted("manager-1");
 
     private RecordVisitOutcomeHandler Outcome(ICallerScope caller, DateTimeOffset now)
-        => new(TenantCtx(), new NullActorContext(), _reports, _plans, caller, new FixedClock(now));
+        => new(TenantCtx(), new NullActorContext(), _reports, _plans, caller, new FixedClock(now),
+            FakeVisitReasonSet.Permissive().Validator()); // WP-VW-W2 — reasons are reference data
 
     private SubmitVisitReportHandler Submit(ICallerScope caller, DateTimeOffset now)
         => new(TenantCtx(), new NullActorContext(), _reports, _plans, caller, new FixedClock(now));

@@ -4,6 +4,7 @@ using Diten.CrmService.Application.Features.VisitReport.Commands;
 using Diten.CrmService.Application.Features.VisitReport.Contract;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
+using Diten.CrmService.Application.Features.VisitWorkspace;
 using MediatR;
 
 namespace Diten.CrmService.Application.Features.VisitReport.Handlers.CommandHandlers;
@@ -68,6 +69,32 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
             return Fail(new VisitReportValidation.Failure(
                 "Only a submitted report can be amended; a draft is corrected by submitting.",
                 VisitReportErrorCodes.NotFinalised, 409));
+        }
+
+        // WP-VW-W2 (K-W1 = A) — once a reschedule created its new visit, its date is frozen: a different date is 409
+        // (the same date is a no-op). A date is set with the outcome, never by an amendment.
+        if (VisitReportValidation.Trim(request.RescheduleToDate) is { } rawDate)
+        {
+            var asked = VisitReportValidation.ParseDate(rawDate);
+            if (asked is null)
+            {
+                return Fail(new VisitReportValidation.Failure(
+                    "RescheduleToDate must be an ISO yyyy-MM-dd date.", VisitReportErrorCodes.RescheduleDateInvalid));
+            }
+
+            if (report.RescheduledToPlannedVisitId is not null && asked != report.RescheduleToDate)
+            {
+                return Fail(new VisitReportValidation.Failure(
+                    "The reschedule already created its new visit; its date can no longer change.",
+                    VisitWorkspaceErrorCodes.RescheduleAlreadyApplied, 409));
+            }
+
+            if (report.RescheduledToPlannedVisitId is null)
+            {
+                return Fail(new VisitReportValidation.Failure(
+                    "A reschedule date is recorded with the rescheduled outcome, not by an amendment.",
+                    VisitWorkspaceErrorCodes.RescheduleDateInvalid));
+            }
         }
 
         if (VisitReportValidation.ValidateAmendmentContent(request.ContentActuals, request.Samples, request.Feedback)

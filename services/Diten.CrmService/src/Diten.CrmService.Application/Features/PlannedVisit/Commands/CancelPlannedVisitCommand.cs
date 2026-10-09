@@ -11,4 +11,9 @@ namespace Diten.CrmService.Application.Features.PlannedVisit.Commands;
 public sealed record CancelPlannedVisitCommand(
     Guid PlannedVisitId,
     string? CancellationReason,
-    int? ExpectedVersion) : IRequest<Response<bool>>;
+    int? ExpectedVersion,
+    /// <summary>WP-VW-W2 — a code of the visit-outcome-reason reference set (applies_to ∋ cancel). When absent the legacy
+    /// free-text <see cref="CancellationReason"/> is still accepted for one more release (it will become required).</summary>
+    string? ReasonCode = null,
+    /// <summary>WP-VW-W2 — the note (≤ 500; required when the reason's requires_note).</summary>
+    string? Note = null) : IRequest<Response<bool>>;

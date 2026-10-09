@@ -4,6 +4,7 @@ using Diten.CrmService.Application.Features.VisitReport.Commands;
 using Diten.CrmService.Application.Features.VisitReport.Contract;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
+using Diten.CrmService.Application.Features.VisitWorkspace;
 using MediatR;
 using VisitReportEntity = Diten.CrmService.Domain.Entities.VisitReport;
 
@@ -27,12 +28,19 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
 
     private readonly ICallerScope _caller;
     private readonly TimeProvider _clock;
+    private readonly VisitReasonValidator? _reasons;
+    private readonly VisitWorkspaceDays? _days;
 
     public RecordVisitOutcomeHandler(
         ITenantContext tenant, IActorContext actor,
         IVisitReportRepository reports, IPlannedVisitRepository plannedVisits, ICallerScope caller,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        // WP-VW-W2 — the reason set check (fail-closed: not wired ⇒ 503) and the reschedule date rule.
+        VisitReasonValidator? reasons = null,
+        VisitWorkspaceDays? days = null)
     {
+        _reasons = reasons;
+        _days = days;
         _caller = caller;
         _clock = clock ?? TimeProvider.System;
         _tenant = tenant;
@@ -90,6 +98,26 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
         }
 
         var outcome = VisitExecutionOutcome.Normalize(request.ExecutionOutcome);
+        var isCompleted = string.Equals(outcome, VisitExecutionOutcome.Completed, StringComparison.Ordinal);
+        var isRescheduled = string.Equals(outcome, VisitExecutionOutcome.Rescheduled, StringComparison.Ordinal);
+        var reasonNote = VisitReasonValidator.Trim(request.ReasonNote) ?? VisitReasonValidator.Trim(request.RescheduleNotes);
+
+        // WP-VW-W2 (A2) — a missed / rescheduled reason comes from the visit-outcome-reason reference set (applies_to,
+        // requires_note); the legacy constant list is not consulted.
+        if (!isCompleted)
+        {
+            var reasonFailure = _reasons is null
+                ? new VisitReasonValidator.Failure(
+                    "The reason list could not be read. Nothing was saved — please try again.",
+                    VisitWorkspaceErrorCodes.ReferenceDataUnavailable, 503)
+                : await _reasons.ValidateAsync(
+                    request.ReasonCode, reasonNote,
+                    isRescheduled ? VisitOutcomeReasons.Reschedule : VisitOutcomeReasons.Missed, cancellationToken);
+            if (reasonFailure is not null)
+            {
+                return Fail(new VisitReportValidation.Failure(reasonFailure.Message, reasonFailure.Code, reasonFailure.StatusCode));
+            }
+        }
 
         // WP-E2E-FIX-1 (E9-B5) — a future visit can be rescheduled, but not marked completed or missed before its day.
         if (!string.Equals(outcome, VisitExecutionOutcome.Rescheduled, StringComparison.Ordinal)
@@ -108,6 +136,16 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
                 return Fail(new VisitReportValidation.Failure(
                     "RescheduleToDate must be an ISO yyyy-MM-dd date.", VisitReportErrorCodes.RescheduleDateInvalid));
             }
+
+            // WP-VW-W2 (A2) — the new day: after today, a working day, inside the rep's active period.
+            if (_days is not null
+                && !await _days.CanRescheduleToAsync(
+                    plan.Resource.ResourceId, rescheduleTo.Value, VisitReportValidation.Today(_clock), cancellationToken))
+            {
+                return Fail(new VisitReportValidation.Failure(
+                    $"{rescheduleTo:yyyy-MM-dd} cannot take the visit: it must be after today, a working day and inside the active cycle period.",
+                    VisitWorkspaceErrorCodes.RescheduleDateInvalid));
+            }
         }
 
         var resourceId = reporter ?? plan.Resource.ResourceId;
@@ -123,9 +161,7 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
         }
 
         var executedAt = VisitReportValidation.ParseInstant(request.ExecutedAt) ?? DateTimeOffset.UtcNow;
-        var reason = string.Equals(outcome, VisitExecutionOutcome.Completed, StringComparison.Ordinal)
-            ? null
-            : VisitReportReasonCodes.Normalize(request.ReasonCode);
+        var reason = isCompleted ? null : VisitReasonValidator.Normalize(request.ReasonCode!);
         var now = DateTimeOffset.UtcNow;
         var actor = _actor.ActorName;
 
@@ -145,6 +181,7 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
             existing.ReasonCode = reason;
             existing.RescheduleToDate = rescheduleTo;
             existing.RescheduleNotes = VisitReportValidation.Trim(request.RescheduleNotes);
+            existing.ReasonNote = isCompleted ? null : reasonNote;
             existing.ReportedByResourceId = resourceId!;
             existing.ExecutedAt = executedAt;
             existing.UpdatedAt = now;
@@ -164,6 +201,7 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
             ReasonCode = reason,
             RescheduleToDate = rescheduleTo,
             RescheduleNotes = VisitReportValidation.Trim(request.RescheduleNotes),
+            ReasonNote = isCompleted ? null : reasonNote,
             ReportedByResourceId = resourceId!,
             ExecutedAt = executedAt,
             CreatedAt = now,

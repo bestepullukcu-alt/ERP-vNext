@@ -43,4 +43,7 @@ public sealed record CreatePlannedVisitCommand(
     /// <summary>Snapshot provenance (D10/D11) — NOT validated, NOT an FK, NOT a form field. Kept so the default's origin
     /// and the target's selection origin stay auditable.</summary>
     Guid? StrategyTemplateId = null,
-    Guid? SegmentId = null) : IRequest<Response<Guid>>;
+    Guid? SegmentId = null,
+    /// <summary>WP-VW-W2 (A3) — a visit made TODAY without a plan: PlannedDate must be today (UTC, else 400
+    /// unplanned_visit_today_only), Source = unplanned, born planned. False = the unchanged manual create.</summary>
+    bool Unplanned = false) : IRequest<Response<Guid>>;

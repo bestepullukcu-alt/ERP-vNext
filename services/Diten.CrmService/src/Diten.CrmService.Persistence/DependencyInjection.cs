@@ -260,6 +260,8 @@ public static class DependencyInjection
         // sequential writes on dev standalone Mongo), so a half-applied plan can never survive (D-APPLY-ATOMICITY = C).
         services.AddScoped<IPlanningSessionRepository, PlanningSessionRepository>();
         services.AddScoped<IPlanningSessionApplyUnitOfWork, PlanningSessionApplyUnitOfWork>();
+        // WP-VW-W2 (K-W1 = A) — a submitted rescheduled report + the new planned visit it creates, all-or-nothing.
+        services.AddScoped<IVisitRescheduleUnitOfWork, VisitRescheduleUnitOfWork>();
 
         // MOD-0155 FU02 - VisitReport: the immutable record of an EXECUTED visit (one collection). No delete: a report is
         // a compliance record, corrections are append-only amendments. Single-document writes only, guarded by the
@@ -972,6 +974,8 @@ public static class DependencyInjection
             map.GetMemberMap(v => v.CampaignId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(v => v.PositionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(v => v.PlannedDate).SetSerializer(dateOnlyString);
+            // WP-VW-W2 — the reschedule back link (string Guid, the CRM class-map rule).
+            map.GetMemberMap(v => v.RescheduledFromPlannedVisitId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitResourceRef)))
         {
@@ -1193,6 +1197,8 @@ public static class DependencyInjection
         Map<VisitReport>(map =>
         {
             map.GetMemberMap(r => r.PlannedVisitId).SetSerializer(stringGuid);
+            // WP-VW-W2 — the reschedule forward link (string Guid, the CRM class-map rule).
+            map.GetMemberMap(r => r.RescheduledToPlannedVisitId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(r => r.RescheduleToDate).SetSerializer(
                 new NullableSerializer<DateOnly>(dateOnlyString));
         });

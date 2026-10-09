@@ -111,6 +111,13 @@ public static class DependencyInjection
         // WP-VP-3B (4b) — the tenant-keyed, short-lived memory of the calendar's resolved per-day answers (singleton).
         services.AddSingleton(_ => new Features.VisitPlanning.PlanningCalendarDayCache());
         services.AddScoped<Features.VisitPlanning.VisitPlanningEngine>();
+        // WP-VW-W2 — the visit workspace: the reason check against the visit-outcome-reason reference set, and the rep's
+        // day kinds / budget / load (calendar days, reschedule options and the reschedule date rule share it).
+        services.AddScoped<Features.VisitWorkspace.VisitReasonValidator>();
+        services.AddScoped<Features.VisitWorkspace.VisitWorkspaceDays>();
+        services.AddScoped<Features.VisitWorkspace.IWorkspacePlanPreviewSource, Features.VisitWorkspace.EngineWorkspacePlanPreviewSource>();
+        // The workspace calendar reuses the W1 execution calendar read as-is (same work status / names / content).
+        services.AddScoped<Features.VisitReport.Handlers.QueryHandlers.GetVisitCalendarHandler>();
         // WP-VP-3D — the shared per-doctor period-status reader (bulk reads only) + its batched segment seam.
         services.AddScoped<Features.Segmentation.Resolution.IContactSegmentSetReader,
             Features.Segmentation.Resolution.ContactSegmentSetReader>();

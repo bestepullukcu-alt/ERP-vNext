@@ -86,7 +86,9 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         // Claims v2 evidence-type lookup, Territory node planning-center type, Chain Template moderator picker.
         "evidence-type",
         "planning-center-type",
-        "content-moderator-role"
+        "content-moderator-role",
+        // WP-VW-W2 — the visit workspace cancel / not-done / reschedule reasons (CrmService validates; Web + mobile read).
+        "visit-outcome-reason"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>

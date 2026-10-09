@@ -24,6 +24,9 @@ public sealed class RecordVisitOutcomeRequest
     public string? RescheduleNotes { get; set; }
     public string? ReportedByResourceId { get; set; }
     public int? ExpectedVersion { get; set; }
+
+    /// <summary>WP-VW-W2 — the reason note (required when the reason's requires_note).</summary>
+    public string? ReasonNote { get; set; }
 }
 
 /// <summary>Submit (record + finalise) a completed visit's report. Keyed by PlannedVisitId (1:1).</summary>
@@ -36,6 +39,9 @@ public sealed class SubmitVisitReportRequest
     public string? ExecutedAt { get; set; }
     public string? ReportedByResourceId { get; set; }
     public int? ExpectedVersion { get; set; }
+
+    /// <summary>WP-VW-W2 — completed (default) · missed · rescheduled (finalises the recorded draft outcome).</summary>
+    public string? ExecutionOutcome { get; set; }
 }
 
 /// <summary>File an append-only amendment to a finalised report (D-EDIT-WINDOW). A reason is required.</summary>
@@ -47,4 +53,7 @@ public sealed class AmendVisitReportRequest
     public List<VisitReportSampleInput>? Samples { get; set; }
     public VisitReportFeedbackInput? Feedback { get; set; }
     public int? ExpectedVersion { get; set; }
+
+    /// <summary>WP-VW-W2 — frozen once the reschedule created its visit (409 visit_reschedule_already_applied).</summary>
+    public string? RescheduleToDate { get; set; }
 }

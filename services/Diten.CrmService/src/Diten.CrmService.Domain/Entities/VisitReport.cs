@@ -50,6 +50,13 @@ public sealed class VisitReport : EntityBase
 
     public string? RescheduleNotes { get; set; }
 
+    /// <summary>WP-VW-W2 — the note of a missed / rescheduled reason (required when the reason's <c>requires_note</c>).</summary>
+    public string? ReasonNote { get; set; }
+
+    /// <summary>WP-VW-W2 (K-W1 = A) — the new planned visit created when this rescheduled report was submitted. Set once;
+    /// it makes the reschedule idempotent and freezes the reschedule date.</summary>
+    public Guid? RescheduledToPlannedVisitId { get; set; }
+
     /// <summary>The reporting rep (FU01 <see cref="PlannedVisitResourceRef.ResourceId"/> shape — a STRING, no fake FK;
     /// MOD-0288 owns the Person/Position master).</summary>
     public string ReportedByResourceId { get; set; } = string.Empty;

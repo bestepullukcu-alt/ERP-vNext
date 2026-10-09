@@ -15,17 +15,26 @@ internal sealed class FakeVisitReportRepository : IVisitReportRepository
     public int InsertCount { get; private set; }
     public int ReplaceCount { get; private set; }
 
+    /// <summary>WP-VW-W2 — reads hand out COPIES (as a database does), so a handler's in-memory change is invisible
+    /// until a write succeeds (the atomicity tests).</summary>
+    public bool CloneOnRead { get; set; }
+
     private IEnumerable<VisitReportEntity> Scope(Guid tenantId)
         => Items.Where(x => x.TenantId == tenantId && !x.IsDeleted);
 
+    private VisitReportEntity? Out(VisitReportEntity? entity)
+        => entity is null || !CloneOnRead
+            ? entity
+            : System.Text.Json.JsonSerializer.Deserialize<VisitReportEntity>(System.Text.Json.JsonSerializer.Serialize(entity));
+
     public Task<VisitReportEntity?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
-        => Task.FromResult(Scope(tenantId).FirstOrDefault(x => x.Id == id));
+        => Task.FromResult(Out(Scope(tenantId).FirstOrDefault(x => x.Id == id)));
 
     public Task<VisitReportEntity?> GetByPlannedVisitIdAsync(Guid tenantId, Guid plannedVisitId, CancellationToken ct)
-        => Task.FromResult(Scope(tenantId)
+        => Task.FromResult(Out(Scope(tenantId)
             .Where(x => x.PlannedVisitId == plannedVisitId)
             .OrderBy(x => x.CreatedAt)
-            .FirstOrDefault());
+            .FirstOrDefault()));
 
     public Task<IReadOnlyList<VisitReportEntity>> ListAsync(Guid tenantId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<VisitReportEntity>>(

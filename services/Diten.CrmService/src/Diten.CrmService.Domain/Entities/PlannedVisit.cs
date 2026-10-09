@@ -97,8 +97,20 @@ public sealed class PlannedVisit : EntityBase
     /// <summary><see cref="PlannedVisitSource"/> — FU01 writes only <c>manual</c>; the rest are reserved.</summary>
     public string Source { get; set; } = PlannedVisitSource.Manual;
 
-    /// <summary>Required on the <c>cancelled</c> transition; not a create/edit field.</summary>
+    /// <summary>Required on the <c>cancelled</c> transition; not a create/edit field. System cancellations
+    /// (<c>week_reopened</c>) and the legacy free-text cancel keep using this field.</summary>
     public string? CancellationReason { get; set; }
+
+    /// <summary>WP-VW-W2 — the rep's cancellation reason: a code of the <c>visit-outcome-reason</c> reference set
+    /// (applies_to ∋ cancel). Null for a system / legacy cancellation.</summary>
+    public string? CancellationReasonCode { get; set; }
+
+    /// <summary>WP-VW-W2 — the rep's cancellation note (required when the reason's <c>requires_note</c> is true).</summary>
+    public string? CancellationNote { get; set; }
+
+    /// <summary>WP-VW-W2 (K-W1 = A) — set on a visit born from a reschedule: the visit it replaces. Its report carries
+    /// the forward link (<c>VisitReport.RescheduledToPlannedVisitId</c>).</summary>
+    public Guid? RescheduledFromPlannedVisitId { get; set; }
 
     public DateTimeOffset? ArchivedAt { get; set; }
     public string? ArchivedBy { get; set; }
@@ -433,7 +445,13 @@ public static class PlannedVisitSource
     public const string Import = "import";
     public const string Migration = "migration";
 
-    public static readonly IReadOnlyList<string> All = new[] { Manual, Campaign, RoutePlan, Import, Migration };
+    /// <summary>WP-VW-W2 (K-W1 = A) — written by the system when a rescheduled outcome is submitted.</summary>
+    public const string Reschedule = "reschedule";
+
+    /// <summary>WP-VW-W2 — a visit the rep made today without a plan (<c>unplanned: true</c> on create).</summary>
+    public const string Unplanned = "unplanned";
+
+    public static readonly IReadOnlyList<string> All = new[] { Manual, Campaign, RoutePlan, Import, Migration, Reschedule, Unplanned };
 
     public static bool IsKnown(string? value)
         => value is not null && All.Contains(value.Trim().ToLowerInvariant(), StringComparer.Ordinal);

@@ -68,7 +68,7 @@ public sealed class PlannedVisitsController : CustomBaseController
                 request.BusinessUnit, request.TerritoryNodeId, request.TerritoryModelId, request.CampaignId,
                 request.ContentEngagementJourneyId, request.ContentEngagementJourneyStageId,
                 request.PlanStatus, request.Source, request.ContentSource,
-                request.StrategyTemplateId, request.SegmentId),
+                request.StrategyTemplateId, request.SegmentId, request.Unplanned == true),
             cancellationToken));
 
     [HttpPut("api/crm/planned-visits/{plannedVisitId:guid}")]
@@ -102,7 +102,8 @@ public sealed class PlannedVisitsController : CustomBaseController
     public async Task<IActionResult> Cancel(
         Guid plannedVisitId, [FromBody] CancelPlannedVisitRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
-            new CancelPlannedVisitCommand(plannedVisitId, request.CancellationReason, request.ExpectedVersion),
+            new CancelPlannedVisitCommand(
+                plannedVisitId, request.CancellationReason, request.ExpectedVersion, request.ReasonCode, request.Note),
             cancellationToken));
 
     /// <summary>Archives a plan. Terminal — there is no unarchive endpoint.</summary>
