@@ -1471,6 +1471,71 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   **CT-E5W1-N1** the menu shows the e-İmza item under the domain heading "Platform Paylaşılan Hizmetler" — CT-D8 wants the
   item in its own "e-İmza" group (measure the nav grouping; no domain name visible to the tenant user).
 
+### E5W2 — CT decisions (2026-10-09, prompt v1 → v1.1)
+
+- **CT-D18:** NE-2 / CT-E5W1-N1 withdrawn (option 2).
+  - CT-D8 stays: every e-İmza page, the Settings pages included, sits in the module's own "e-İmza" group.
+  - The group stays under the catalog domain heading "Platform Paylaşılan Hizmetler". Domain, manifest domain and the
+    menu component do not change.
+  - Follow-up: FU-0022-NAV-01 (§20).
+- **CT-D19:** the WorkCenter approve action of a signature-required step carries the additive
+  `signatureActionCode = "workflow.task.approve"` (the E4 `signatureRequired` pattern, WorkAggregation; no contract
+  change). Platform registers the action in the catalog in-process through the existing registration command, with
+  defaults required, APPROVE and optional.
+- **CT-D20:** the e-signature proxy returns the export file as bytes (`Content-Disposition` kept, `no-store`); the
+  E5W1 proxy-target test may only grow; the resx generator lives in the evidence scripts, never in repo code.
+
+### E5W2 — implementation note (WP-0022-E5W2, 2026-10-09, pending CT)
+
+- **Branch and commits:** branch `feature/sce/mod-0022-e5w2` from `562afeaa5`, local only, no push.
+  - `9243f6bb2`: evidence §0, the §17.3 table, written before code, plus the BLOCKED measurement.
+  - `af8c102c6`: Platform.
+  - `188e516ae`: Web.
+  - Evidence: `docs/records/audits/2026-10/mod-0022-e5w2-evidence-2026-10-09.md` (+ `-scripts`, `mod-0022-e5w2-shots/`).
+  - Contract unchanged.
+- **Pages** (pack §11.1 / §11.3, tenant shell, UAS-001, all nav-visible in the e-İmza group):
+  - Requests: slim server list; sign through the dialog; reject with a red reason.
+  - Verification: deep link; verify; invalidate with a red reason, then the password (ticket intent invalidate).
+  - AuditExport: slim server list; PDF / CSV; export log with the file hash.
+  - Settings/Policy: table-form; save with a reason; company copy and revert.
+  - Settings/Meanings: slim client list plus the 7-language modal.
+  - Settings/SampleApprovals: no decision button on the caller's own sample (the server returns 403 anyway).
+- **Web plumbing:**
+  - `list/requests` and `list/signatures` translate only the list component's page wire onto the contract operations.
+  - `companies` reads MDM `legal-entities/lookup`.
+- **O-E5W1-1:** the `workflow-task` summary labels follow the request language (tr / en). Fields and hash unchanged; a
+  test checks the same hash in both languages.
+- **O-E5W1-2:** the İmzam history is a golden slim client list (filters, Save View).
+- **O-E5W1-3:** WorkCenter passes `signatureActionCode`. In the probe, a DrawRequired policy made the dialog offer only
+  drawing.
+- **Tests:**
+
+  | suite | before | after |
+  |---|---|---|
+  | Web | 630 / 632 | **656 / 658** (the same 2 quarantine reds — Q5) |
+  | Platform filtered | 581 | **594 / 594** |
+  | architecture | 18 | **18** |
+
+  Build: 0 errors, the same warnings as the base.
+- **Sabotages:**
+  - (a) `/Platform` route
+  - (b) own-sample hiding removed
+  - (c) label in a canonical field
+  - (d) `signatureActionCode` removed
+
+  Each turned a test red and was restored; diff empty.
+- **Runtime probe** (own stack, browser):
+  - API 10/10.
+  - Browser B1–B12, 17 screenshots, 375 px included.
+  - The PDF / CSV export through the Web proxy: SHA-256 of the bytes = log `fileHash`.
+- **OPEN for the CT:**
+  - O-E5W2-1: `searchSignatures` / `createExport` show signatures with a null company only to their signer, so an
+    administrator cannot export workflow-task signatures. Is that the intended KS-2 behaviour?
+  - O-E5W2-2: the contract serves no drawn-signature image (only `imageHash` is shown).
+  - O-E5W2-3: the company lists depend on MDM access.
+  - W-0022-01: no Python.
+  - The MVP-1 checkout has merged E5B and Q5 since the base: merge before any push.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
@@ -1492,6 +1557,10 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
 - FU-0022-10: `docs/analysis/` is not one of the five folders of `docs-organization.md` (§1 :13-20). This contract draft
   follows the existing precedent `drafts/trace-v1.1-proposal.md`. The CT decides the long-term place.
 - FU-0022-11: orphan image cleanup when a sign transaction fails after storing the PNG.
+- FU-0022-NAV-01 (CT-D18): tenant menu domain heading / sub-group for platform modules — let a module such as e-İmza
+  show its own group without the shared domain heading "Platform Paylaşılan Hizmetler" (menu infrastructure, platform owner;
+  `DynamicModuleMenu/Default.cshtml:56-58`, `GetTenantNavigationMenuQueryHandler.cs:94-141`, Domain seed-once
+  `RegisterModuleManifestCommandHandler.cs:18-20`).
 
 ## 21. UI input — approved mockup
 
