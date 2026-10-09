@@ -54,7 +54,26 @@ if [ "$port" -ge 49152 ]; then
   exit 2
 fi
 
-uri="mongodb://127.0.0.1:${port}/?replicaSet=${rs}&serverSelectionTimeoutMS=5000"
+# Q480 (owner decision, 2026-10-09): 15000 ms, raised from 5000.
+#
+# WHY, AND WHAT IT DOES NOT FIX. Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+# injects error 91 (ShutdownInProgress) into commitTransaction. Q214 measured what follows: the driver reads 91
+# as "this server is going away", marks the lane set's ONLY server Unknown, and learns otherwise only when its
+# monitor's hello long-poll returns — up to 10 s. The product then retries, and the retry must first select a
+# server. At 5000 the selection gave up inside that window and the product answered 503, so the test passed
+# only when the fault happened to land in the second half of the monitor cycle: green in Q266 and Q335, red
+# when run alone. 15000 outlasts the poll, so the retry commits and the outcome stops depending on a clock.
+#
+# ⚠ This is NOT Q214's recommended fix, and it was taken knowing so. Q214 R1-R3 — inject error 8 with the
+# UnknownTransactionCommitResult label, scope the fail point with appName, assert how many times it fired, as
+# CapacityPlans/CapacityAtomicityTests.cs:108-127 already does — addresses the 91 problem itself and takes
+# about 80 s off the suite. Raising this value instead leaves error 91's 10 s stall in place and buys the
+# green with waiting, which is why Q214 lists it under "not recommended as the fix".
+#
+# The cost is bounded and is a wait, not a wrong answer: a caller whose lane mongod is unreachable now takes
+# up to 15 s instead of 5 s to fail closed. A port that is closed outright still refuses in about a second —
+# the timeout only governs a host that answers while no replica-set member does.
+uri="mongodb://127.0.0.1:${port}/?replicaSet=${rs}&serverSelectionTimeoutMS=15000"
 
 printf 'export DITEN_PLATFORM_TEST_MONGO_URI=%q\n' "$uri"
 printf 'export MVP6_MOD0192_MONGO_URI=%q\n' "$uri"
