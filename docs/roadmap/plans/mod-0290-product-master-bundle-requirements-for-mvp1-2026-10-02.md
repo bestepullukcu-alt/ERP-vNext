@@ -4,6 +4,8 @@
 **From:** MVP-1 Control Tower (MOD-0173 Inventory Ledger & Valuation, `Diten.InventoryService` 5066)
 **Date:** 2026-10-02 · **Status:** request (owner decision 2026-10-02: MDM builds it; MVP-1 consumes only)
 **Tracking IDs on the MVP-1 side:** FU-PM-01 (blocks real use and G1), FU-UI2-02, FU-UI2-03, BG-01, W-UI-01
+**All MVPs:** what MVP-2 … MVP-6 need, plus the cross-cutting requirements X-01 … X-08, is in
+`mod-0290-product-master-requirements-all-mvps-2026-10-09.md` (this document stays the detailed MVP-1 list).
 
 > Placement: `docs/roadmap/` — it describes work that has not happened yet (docs-organization §1, question 3).
 > Measurement method: read-only code inspection of `services/Diten.MdmService` on branch
