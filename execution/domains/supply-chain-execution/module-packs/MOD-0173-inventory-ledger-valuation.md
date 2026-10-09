@@ -555,6 +555,26 @@ FROZEN.** Fast-forwarded into the MVP-1 branch. Decisions on the opens:
   - O-PM1-7: gateway 5065.
 - **Evidence.** `docs/records/audits/2026-10/mod-0173-pm1-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`, `mod-0173-pm1-shots/`.
 
+**PM1 — CT acceptance (2026-10-09).** The CT merged the MVP-1 branch (VIS1) into `feature/sce/mod-0173-pm1` (clean) and measured
+the merged tree: Inventory **800/800** on the CT's OWN replica set (27217), Web **685/685**, gateway **107/108** (known 5065 red),
+architecture **18/18**; the two PRODUCT-MASTER files are byte-identical to `56490f48e`. CT sabotage (own): the Retired rule allowed
+every movement type → 8 red in `ProductMasterV11RulesTests` (Retired × STATUS_TRANSFER / COUNT_LOSS / LOCATION_TRANSFER /
+CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY-BUNDLE 1.2.0 FROZEN.** Decisions on the opens:
+- **O-PM1-1 → WP-0174-ITEM (before MDM v1.1 goes live):** TRACE 1.3.0 + QUARANTINE 1.1.0 add `Item` (additive). Until then a
+  lot-controlled material at `Item` level cannot get a lot (`createLot` refuses the level), so its receipt cannot post, and an
+  `Item` quarantine hold breaks the QUARANTINE list schema. ASSUMPTION-0173-PM1 `createLot` unknown lot flag → 503 gets its own
+  TRACE code in the same WP.
+- **O-PM1-2:** REVERSAL is exempt from the lifecycle check in every state (a correction must stay possible; a Draft item has no
+  transaction to reverse) — CT-PM1-2 amended accordingly.
+- **O-PM1-3 → WP-0174-ITEM:** `stockable: false` refuses every movement with 422 `SKU_LEVEL_NOT_STOCKABLE`.
+- **O-PM1-4:** accepted — OD-3 lets customer returns and count gains in on a Deactivated item.
+- **O-PM1-5:** the Gateway route `/api/product-master` is MDM's R-02 — reminded to MDM; production picker depends on it.
+- **O-PM1-6 → small FU batch** (raw `Item` label on the ledger list; GlobalProduct picker text). O-PM1-7 → procurement owner.
+- **CT-PM1-4 (dev environment):** the first `getSku` example of draft.8 is the v1.0 shape (no flags, no lifecycle), so the fleet's
+  Prism makes every posting 422 under PM1 (correct fail-closed behaviour). The fleet's 4010 is switched to a dev PRODUCT-MASTER
+  bridge (the PM1 `pm-stub.js` with a dataset seeded from the v1.0 example ids: Amoksisilin GP-000123 / LSKU-TR-000045, lot true,
+  serial false, plus `Item` materials); MDM is asked to make the first example of each v1.1 operation complete (draft.9).
+
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).
