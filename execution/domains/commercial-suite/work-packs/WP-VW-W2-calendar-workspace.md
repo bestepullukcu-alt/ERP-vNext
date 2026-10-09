@@ -409,3 +409,16 @@ Geri alındı, touch yapıldı; tam tur yeşil.
 - **CT sabotajları:** taslak yükü kapatıldı + hafta numarası 1 yapıldı → 2 kırmızı (`A7b`, `A6b`). Geri alındı, touch yapıldı.
 - CRM **2543/0/5** (iki tam tur).
 - **Bilinen sınır:** `holidayName` boş (çalışma takvimi okuması adı taşımıyor). Web "Tatil" yazar.
+
+## W2-WEB-b turuna eklenenler (kullanıcı, 2026-10-09)
+2. tur (WEB-a kabulünden sonra) üç paket olur: **W2-WEB-b** (Planla modu) + **W2-BE-c** (tatil adı + gün dengesi), paralel.
+- **Tatil adı:**
+  - takvim `days[].holidayName` boş geliyor; Working Calendar okuması adı taşımıyor;
+  - BE-c: çözümleyici tatil adını (kiracının dilinde, yoksa İngilizce) `VisitWorkspaceDays` → takvim okumasına taşır;
+  - Web, ad yoksa "Tatil" yazar.
+- **Gün dengesi (motor):**
+  - canlıda taslak haftalarda Pazartesi 29 ziyaret / 425 dk, Salı 3 / 43 dk;
+  - tek kurumdaki çok doktor aynı güne toplanıyor (4G `LightDayLoadRatio 0.5`, küme bütünlüğü);
+  - BE-c: büyük kurum kümesini (ör. > gün bütçesinin %60'ı) iki güne bölmeye izin ver ya da gün yükü farkına üst sınır koy;
+  - kural CT'de netleşir; 4G / 4L / W2-BE-b testleri korunur.
+- **`pin_time_past_day_end`** kullanıcı metni 7 dilde (WEB-b).
