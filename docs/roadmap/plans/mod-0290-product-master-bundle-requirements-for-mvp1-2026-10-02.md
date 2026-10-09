@@ -135,3 +135,69 @@ InventoryService via `Inventory__Upstream__ProductMasterBaseUrl`, the Web via an
 - Consumer: `services/Diten.InventoryService` (README, `Infrastructure/Upstream/ProductMasterHttpClient.cs`)
 - Decisions: `docs/analysis/inventory-capability-scope-and-dependency-report.md` §9 (DEC-INV-09, -11, -17), §20.1 (G1)
 - MVP-1 packs: `execution/domains/supply-chain-execution/module-packs/MOD-0173-*.md` (FU-PM-01, W-UI-01)
+
+---
+
+## 8. Revision 2026-10-09 — answer to MDM's PRODUCT-MASTER v1.1 questions (owner decisions)
+
+MDM proposed v1.1: the seven stock fields leave `getProduct` (GlobalProduct) and are read from `getSku`; a missing field means
+"unknown". Measured on every branch (2026-10-09): no v1.1 contract or draft exists, MDM serves no `/api/product-master` route,
+and MDM's model has none of the seven fields at any level (`GlobalProduct.cs`, `Gsku.cs`, `Lsku.cs`). The lifecycle enum is
+`Draft / PendingIdentityApproval / IdentityApproved / Retired` (`ProductIdentityLifecycleStatus.cs`).
+
+### 8.1 Owner decisions
+
+| # | Decision |
+|---|---|
+| OD-1 | **v1.1 is additive, not breaking.** `lotControlled` and `serialControlled` STAY on `getProduct` in v1.1 (deprecated; the value of the item's GSKU) and are ADDED to `getSku`; when both exist the SKU value wins. They leave `getProduct` only in a major version (v2.0) after every consumer has moved. The other five fields may move to the SKU only (no consumer reads them from the product today). |
+| OD-2 | Push first: MDM pushes the v1.1 contract file (with changelog) and the MDM code to its branch; MVP-1 merges it and ships its consumer change before v1.1 goes live. |
+| OD-3 | Deactivated item — allowed: sales / production issue, customer return (into quarantine), warehouse / location / status transfer, count difference, scrap, write-off, reversal. Refused: purchase receipt, production receipt. Recorded as an addition to DEC-INV-17. |
+| OD-4 | Retired item: only scrap / write-off (with an exception record), including stock that comes back through a reversal. |
+| OD-5 | Lot flag unknown → goods receipt is refused (GxP). Shelf life unknown → receipt allowed, dates entered by hand. |
+| OD-6 | `skuId == itemId` for raw materials: accepted (inventory checks only `sku.itemId == movement.itemId`). |
+| OD-7 | Quality: unit **IU** as a local code marked "not UN/ECE Rec 20" (not `HIU`); item activation and critical-field corrections approved by **QA Manager**; material master data treated as GxP master data — no objection. |
+
+### 8.2 Requirements added or changed
+
+**R-04 (changed) · Lot / serial flags** on BOTH `getProduct` (kept, deprecated, OD-1) and `getSku` (new). LSKU carries its own
+`serialControlled`; every other stock field of an LSKU is read from its GSKU. Wire type `[boolean, null]`; both flags are
+**required before an item can be activated**, so "unknown" never occurs on an active item.
+
+**R-06 (changed) · Shelf-life / storage / retest on the SKU.** MDM must ADD `shelfLifeDays`, `retestDays`,
+`minRemainingShelfLifeDays`, `storageCondition` to the GSKU (LSKU inherits) and return them on `getSku`; nullable, optional.
+Use on the inventory side: lot creation proposes expiry (manufacture date + shelf life) and retest date (+ retest days),
+a different date needs a reason (MOD-0176); goods receipt checks the remaining shelf life against the minimum (MOD-0176);
+storage condition drives putaway (MVP-5).
+
+**R-09 (new) · Material type and item kind** on `getProduct` / `getSku`: `materialType` (raw material, packaging material,
+intermediate, finished good) and `itemKind` (`GlobalProduct` …) as contract enums; GTIN at the sales-box level (LSKU /
+FinishedGood), `gtin: null` elsewhere (D-1).
+
+**R-10 (new) · One lifecycle list.** Today three lists disagree: contract `Draft / Active / Archived`, MDM `Draft /
+PendingIdentityApproval / IdentityApproved / Retired`, v1.1 adds `Deactivated`. MDM publishes ONE list and its wire mapping
+(e.g. IdentityApproved → Active), states whether Deactivated is reversible, and amends the MOD-0290 pack (it says the
+lifecycle is "exactly" four states, `:222`, `:888`). Consumers apply OD-3 / OD-4.
+
+**R-11 (new) · Contract text** states: nullability per field and SKU level, the LSKU inheritance rule, the FinishedGood rule
+(D-2), and the same `level` handling on `getSku` and `getSkuUom`.
+
+**R-12 (MVP-1 delivers, for MDM) · Cross-legal-entity stock presence** before retiring an item: an additive INVENTORY-BUNDLE
+operation, called with MDM's service identity (internal key), answers yes / no per SKU for every legal entity and stock status
+of the tenant — no quantities. MDM refuses retirement until it exists. MDM sends its request / response expectation; MVP-1
+writes the contract draft.
+
+### 8.3 MVP-1 consumer change (after MDM's push)
+
+`ProductMasterHttpClient.cs:54-55`, `ProductReference.cs:8-9` (nullable flags), `UpstreamHttp.OptionalBool` use,
+`MovementFormSources.cs:68,233` (Web form), `StubProductMaster.cs`, `PrismConsumedContractSmokeTests.cs`, Prism fixtures:
+read the flags from `getSku`, unknown → refuse (OD-5), add the lifecycle rule (OD-3 / OD-4).
+
+### 8.4 Directions for the other MVP teams (the MVP-1 CT forwards them)
+
+| MVP | Module | Today | Direction |
+|---|---|---|---|
+| MVP-2 | 0140–0145 Procurement | product references unchecked (`PermissiveProductReferenceValidator`); GRN passes lot / serial through | no PO / receipt for a Deactivated or Retired item (OD-3 / OD-4); GRN reads the lot / serial flags from `getSku` and refuses "unknown" itself instead of relying on the inventory refusal |
+| MVP-3 | 0193 BOM | existence check only (default permissive) | a Deactivated or Retired component cannot enter a new BOM / routing revision |
+| MVP-4 | 0188 Demand (+0189 / 0191) | base UoM per SKU, port not wired | read the base UoM from `getSkuUom`, never from `getProduct`; no replenishment proposal for a Deactivated item |
+| MVP-5 | 0178–0182 Warehouse | not built | storage condition and FEFO data from `getSku` (R-06) |
+| MVP-6 | 0183–0187 etc. | no product-master call | none |
