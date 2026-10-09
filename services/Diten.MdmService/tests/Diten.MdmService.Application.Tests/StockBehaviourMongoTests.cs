@@ -1005,13 +1005,20 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         private static readonly Dictionary<string, Dictionary<string, string?>> Sets = new()
         {
             // WP-PLT-ITEM-LISTS-02 (the FIX1 M5 pattern): the units are Platform's, from the shared contract fixture.
-            [ItemReferenceSets.ItemUom] = System.Text.Json.Nodes.JsonNode
-                .Parse(File.ReadAllText(Diten.MdmService.Application.Tests.ReferenceData.PlatformItemReferenceResolverClientTests.ContractFixturePath()))!["item_uoms"]!
-                .AsArray().ToDictionary(code => (string)code!, _ => (string?)null),
-            [ItemReferenceSets.StorageCondition] = new() { ["AMBIENT_15_25"] = "TEMPERATURE", ["COOL_2_8"] = "TEMPERATURE",
-                ["FROZEN_BELOW_MINUS_20"] = "TEMPERATURE", ["PROTECT_FROM_LIGHT"] = "PROTECTION",
-                ["PROTECT_FROM_MOISTURE"] = "PROTECTION" }
+            [ItemReferenceSets.ItemUom] = Contract()["item_uoms"]!.AsArray().ToDictionary(code => (string)code!, _ => (string?)null),
+            // FIX1: the storage conditions (with their kind) too.
+            [ItemReferenceSets.StorageCondition] = Contract()["storage_conditions"]!.AsObject()
+                .ToDictionary(pair => pair.Key, pair => (string?)pair.Value)
         };
+
+        // FIX1: a missing fixture names its path (a static initializer would otherwise fail with no file named).
+        private static System.Text.Json.Nodes.JsonNode Contract()
+        {
+            var path = Diten.MdmService.Application.Tests.ReferenceData.PlatformItemReferenceResolverClientTests.ContractFixturePath();
+            return File.Exists(path)
+                ? System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!
+                : throw new InvalidOperationException($"The Platform ↔ MDM item-list contract fixture was not found: {path}.");
+        }
 
         public Task<ItemReferenceResolveResult> ResolveLatestAsync(IReadOnlyList<ItemReferenceRequest> requests,
             CancellationToken cancellationToken = default)

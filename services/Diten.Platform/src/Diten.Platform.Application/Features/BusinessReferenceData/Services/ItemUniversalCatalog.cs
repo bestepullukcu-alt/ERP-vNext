@@ -12,6 +12,11 @@ namespace Diten.Platform.Application.Features.BusinessReferenceData.Services;
 /// Versioning: a value change is a new deployment version, and only the CHANGED list gets a new version id and number;
 /// an unchanged list keeps both, so a proof an item stored under an earlier deployment is the same proof today. MDM keeps
 /// the proof of a code it already holds and resolves only new codes (ItemReferenceCheck), so a V1 proof stays valid.
+///
+/// RULE (FIX1 R1): a code is RETIRED, never removed or redefined. A stored proof vouches for the meaning the code had
+/// when it was resolved; a later version may only ADD codes (or an attribute that leaves the meaning alone, like
+/// CodeStandard). Removing a code, or changing its dimension, precision, factor or condition, would make every proof
+/// that names it vouch for something else, silently. ItemUniversalReferenceDataTests holds the frozen V1 snapshot.
 ///   ITEM-UNIVERSAL-V1 (2026-10-07): the three lists, each version 1.
 ///   ITEM-UNIVERSAL-V2 (2026-10-09, WP-PLT-ITEM-LISTS-02): item-uom version 2 — the local unit IU (quality unit's
 ///     decision, OD-7; MOD-0290-FU04 O-21) and the CodeStandard attribute on every unit. storage-condition and

@@ -1,5 +1,5 @@
 {
-  "_comment": "WP-PLT-ITEM-LISTS-01 contract (FIX1 R2: request bodies, 404 and 400 shapes, the 200 limit and the material types too). Platform's tests produce every response from the real handler and bind every request to the real DTO; MDM's tests compare the body the real client sends and feed every response to it. A change on either side turns one of them red. WP-PLT-ITEM-LISTS-02: ITEM-UNIVERSAL-V2 — item-uom is version 2 (IU added, CodeStandard on every unit); storage-condition and material-type keep version 1 and their ids. item_uoms binds the unit list on both sides (the M5 pattern); previous_versions names the item-uom V1 proof an item created under V1 still carries.",
+  "_comment": "WP-PLT-ITEM-LISTS-01 contract (FIX1 R2: request bodies, 404 and 400 shapes, the 200 limit and the material types too). Platform's tests produce every response from the real handler and bind every request to the real DTO; MDM's tests compare the body the real client sends and feed every response to it. A change on either side turns one of them red. WP-PLT-ITEM-LISTS-02: ITEM-UNIVERSAL-V2 — item-uom is version 2 (IU added, CodeStandard on every unit); storage-condition and material-type keep version 1 and their ids. item_uoms binds the unit list on both sides (the M5 pattern); previous_versions names the item-uom V1 proof an item created under V1 still carries. FIX1: storage_conditions (code → ConditionKind) binds the storage list the same way; MDM's fakes read all three lists from here.",
   "maximum_selections": 200,
   "material_types": [
     "ACTIVE_INGREDIENT",
@@ -24,6 +24,13 @@
     "XCS",
     "XRO"
   ],
+  "storage_conditions": {
+    "AMBIENT_15_25": "TEMPERATURE",
+    "COOL_2_8": "TEMPERATURE",
+    "FROZEN_BELOW_MINUS_20": "TEMPERATURE",
+    "PROTECT_FROM_LIGHT": "PROTECTION",
+    "PROTECT_FROM_MOISTURE": "PROTECTION"
+  },
   "previous_versions": {
     "item-uom": [
       {

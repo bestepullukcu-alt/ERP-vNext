@@ -132,6 +132,8 @@ public static class StockReferenceCheck
         string? packUomCode,
         CancellationToken cancellationToken)
     {
+        // Unlike the item master's check (ItemReferenceCheck keeps a held code's proof and never asks again), every code
+        // here — held ones too — is resolved again on each write (WP-PLT-ITEM-LISTS-02 FIX1, see the re-stamp below).
         var requests = uoms.Distinct(StringComparer.Ordinal)
             .Select(code => new ItemReferenceRequest(ItemReferenceSets.ItemUom, code))
             .Concat(storageConditions.Distinct(StringComparer.Ordinal)
@@ -184,6 +186,9 @@ public static class StockReferenceCheck
             }
             else if (ToSelection(selection) is { } proof)
             {
+                // RE-STAMPS: a held code that is still selectable gets the CURRENT version's proof (an ITEM-UNIVERSAL-V1
+                // item-uom proof becomes V2's); a retired held code keeps its old proof (branch above). Harmless by the
+                // catalog's rule — a code is retired, never redefined — so the new proof vouches for the same meaning.
                 proofs[key] = proof;
             }
             else

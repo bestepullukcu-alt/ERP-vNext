@@ -18,11 +18,9 @@ public sealed class FakeItemReferences : IItemReferenceResolver
     {
         // WP-PLT-ITEM-LISTS-02 (the FIX1 M5 pattern): the units are Platform's, from the shared contract fixture.
         [ItemReferenceSets.ItemUom] = ItemListContract.ItemUoms().ToDictionary(code => code, _ => (string?)null),
-        [ItemReferenceSets.StorageCondition] = new() { ["AMBIENT_15_25"] = "TEMPERATURE", ["COOL_2_8"] = "TEMPERATURE",
-            ["FROZEN_BELOW_MINUS_20"] = "TEMPERATURE", ["PROTECT_FROM_LIGHT"] = "PROTECTION",
-            ["PROTECT_FROM_MOISTURE"] = "PROTECTION" },
-        [ItemReferenceSets.MaterialType] = new() { ["ACTIVE_INGREDIENT"] = null, ["EXCIPIENT"] = null,
-            ["RAW_MATERIAL"] = null, ["PACKAGING_PRIMARY"] = null, ["PACKAGING_SECONDARY"] = null, ["INTERMEDIATE"] = null }
+        // FIX1: the storage conditions (with their kind) and material types too.
+        [ItemReferenceSets.StorageCondition] = ItemListContract.StorageConditions(),
+        [ItemReferenceSets.MaterialType] = ItemListContract.MaterialTypes().ToDictionary(code => code, _ => (string?)null)
     };
 
     public ConcurrentQueue<IReadOnlyList<ItemReferenceRequest>> Calls { get; } = new();
@@ -78,18 +76,35 @@ public sealed class FakeItemReferences : IItemReferenceResolver
 /// </summary>
 internal static class ItemListContract
 {
+    public const string RelativeFixturePath =
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/Fixtures/item-universal-resolve.contract.json";
+
+    // FIX1: read in a static initializer — a moved or missing file must say WHICH file, not fail the host with a bare
+    // TypeInitializationException.
     public static string FixturePath()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "services")))
             directory = directory.Parent;
-        return Path.Combine(directory!.FullName, "services", "Diten.Platform", "tests", "Diten.Platform.Application.Tests",
-            "BusinessReferenceData", "Fixtures", "item-universal-resolve.contract.json");
+        var path = directory is null ? null : Path.Combine(directory.FullName, RelativeFixturePath);
+        return path is not null && File.Exists(path)
+            ? path
+            : throw new InvalidOperationException(
+                $"The Platform ↔ MDM item-list contract fixture was not found: {RelativeFixturePath} (searched upward from "
+                + $"{AppContext.BaseDirectory}). MDM's item fakes read their lists from it; if it moved, move this path too.");
     }
 
+    private static System.Text.Json.Nodes.JsonNode Fixture() =>
+        System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(FixturePath()))!;
+
     public static IReadOnlyList<string> ItemUoms() =>
-        System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(FixturePath()))!["item_uoms"]!.AsArray()
-            .Select(code => (string)code!).ToList();
+        Fixture()["item_uoms"]!.AsArray().Select(code => (string)code!).ToList();
+
+    public static IReadOnlyList<string> MaterialTypes() =>
+        Fixture()["material_types"]!.AsArray().Select(code => (string)code!).ToList();
+
+    public static Dictionary<string, string?> StorageConditions() =>
+        Fixture()["storage_conditions"]!.AsObject().ToDictionary(pair => pair.Key, pair => (string?)pair.Value);
 }
 
 /// <summary>MOD-0290-FU04 §8.3: the inventory team's tenant-wide "non-zero stock?" answer, as a test sets it.</summary>

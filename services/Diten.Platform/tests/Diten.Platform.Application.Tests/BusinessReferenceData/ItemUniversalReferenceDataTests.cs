@@ -103,6 +103,54 @@ public sealed class ItemUniversalReferenceDataTests
         Assert.Contains(("MGM", "GRM"), derivable);
     }
 
+    // FIX1 R1: what ITEM-UNIVERSAL-V1 vouched for, FROZEN — written out here, never read from the catalog. An item that
+    // stored a V1 proof keeps it forever (ItemReferenceCheck never re-resolves a held code), so every V1 code must stay,
+    // with the same meaning. CodeStandard (V2) is excluded: it says where a code comes from, not what it means.
+    private static readonly (string Set, string Code, (string Key, string? Value)[] Attributes)[] V1Snapshot =
+    [
+        ("item-uom", "C62", [("DimensionCode", "COUNT"), ("MaximumDecimalPrecision", "0"), ("FactorToDimensionBase", "1")]),
+        ("item-uom", "MC", [("DimensionCode", "MASS"), ("MaximumDecimalPrecision", "3"), ("FactorToDimensionBase", "0.000000001")]),
+        ("item-uom", "MGM", [("DimensionCode", "MASS"), ("MaximumDecimalPrecision", "3"), ("FactorToDimensionBase", "0.000001")]),
+        ("item-uom", "GRM", [("DimensionCode", "MASS"), ("MaximumDecimalPrecision", "3"), ("FactorToDimensionBase", "0.001")]),
+        ("item-uom", "KGM", [("DimensionCode", "MASS"), ("MaximumDecimalPrecision", "3"), ("FactorToDimensionBase", "1")]),
+        ("item-uom", "MLT", [("DimensionCode", "VOLUME"), ("MaximumDecimalPrecision", "3"), ("FactorToDimensionBase", "0.001")]),
+        ("item-uom", "LTR", [("DimensionCode", "VOLUME"), ("MaximumDecimalPrecision", "3"), ("FactorToDimensionBase", "1")]),
+        ("item-uom", "MTR", [("DimensionCode", "LENGTH"), ("MaximumDecimalPrecision", "3"), ("FactorToDimensionBase", "1")]),
+        ("item-uom", "MTK", [("DimensionCode", "AREA"), ("MaximumDecimalPrecision", "3"), ("FactorToDimensionBase", "1")]),
+        ("item-uom", "XBX", [("DimensionCode", "PACKAGE"), ("MaximumDecimalPrecision", "0"), ("FactorToDimensionBase", null)]),
+        ("item-uom", "XCS", [("DimensionCode", "PACKAGE"), ("MaximumDecimalPrecision", "0"), ("FactorToDimensionBase", null)]),
+        ("item-uom", "XRO", [("DimensionCode", "PACKAGE"), ("MaximumDecimalPrecision", "0"), ("FactorToDimensionBase", null)]),
+        ("storage-condition", "AMBIENT_15_25", [("ConditionKind", "TEMPERATURE"), ("TemperatureMinC", "15"), ("TemperatureMaxC", "25"), ("ProtectFromLight", "false"), ("ProtectFromMoisture", "false")]),
+        ("storage-condition", "COOL_2_8", [("ConditionKind", "TEMPERATURE"), ("TemperatureMinC", "2"), ("TemperatureMaxC", "8"), ("ProtectFromLight", "false"), ("ProtectFromMoisture", "false")]),
+        ("storage-condition", "FROZEN_BELOW_MINUS_20", [("ConditionKind", "TEMPERATURE"), ("TemperatureMinC", null), ("TemperatureMaxC", "-20"), ("ProtectFromLight", "false"), ("ProtectFromMoisture", "false")]),
+        ("storage-condition", "PROTECT_FROM_LIGHT", [("ConditionKind", "PROTECTION"), ("TemperatureMinC", null), ("TemperatureMaxC", null), ("ProtectFromLight", "true"), ("ProtectFromMoisture", "false")]),
+        ("storage-condition", "PROTECT_FROM_MOISTURE", [("ConditionKind", "PROTECTION"), ("TemperatureMinC", null), ("TemperatureMaxC", null), ("ProtectFromLight", "false"), ("ProtectFromMoisture", "true")]),
+        ("material-type", "ACTIVE_INGREDIENT", []),
+        ("material-type", "EXCIPIENT", []),
+        ("material-type", "RAW_MATERIAL", []),
+        ("material-type", "PACKAGING_PRIMARY", []),
+        ("material-type", "PACKAGING_SECONDARY", []),
+        ("material-type", "INTERMEDIATE", []),
+    ];
+
+    // FIX1 R1 (catalog rule: a code is retired, never removed or redefined). Every V1 value is still in the catalog, with
+    // exactly the attributes V1 gave it — none removed, none changed, none added except CodeStandard.
+    [Fact]
+    public void Every_v1_value_is_still_there_with_the_meaning_v1_vouched_for()
+    {
+        Assert.Equal(23, V1Snapshot.Length);
+        foreach (var (set, code, attributes) in V1Snapshot)
+        {
+            var value = ItemUniversalCatalog.Find(set, code);
+            Assert.True(value is not null, $"V1 code {set}:{code} is gone — a code is retired, never removed");
+            var now = value!.Attributes.Where(pair => pair.Key != ItemUniversalCatalog.CodeStandard)
+                .OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => (pair.Key, pair.Value)).ToArray();
+            var then = attributes.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToArray();
+            Assert.True(then.SequenceEqual(now),
+                $"V1 code {set}:{code} changed meaning — V1: [{string.Join(", ", then)}], now: [{string.Join(", ", now)}]");
+        }
+    }
+
     // The rule "a value change is a new deployment version": only item-uom changed in V2 — it has a new version id and
     // number; storage-condition and material-type keep V1's (literal: the ids items stored under V1 carry).
     [Fact]
@@ -347,6 +395,10 @@ public sealed class ItemUniversalReferenceDataTests
         // WP-PLT-ITEM-LISTS-02: the unit list and item-uom's V1 proof — the same file binds MDM's fakes and its V1 test.
         Assert.Equal(fixture["item_uoms"]!.AsArray().Select(x => (string)x!),
             ItemUniversalCatalog.Values.Where(x => x.SetCode == "item-uom").Select(x => x.ValueCode));
+        Assert.Equal(
+            fixture["storage_conditions"]!.AsObject().Select(pair => (pair.Key, (string?)pair.Value)),
+            ItemUniversalCatalog.Values.Where(x => x.SetCode == "storage-condition")
+                .Select(x => (x.ValueCode, x.Attributes[ItemUniversalCatalog.ConditionKind])));
         var v1 = Assert.Single(fixture["previous_versions"]!["item-uom"]!.AsArray());
         Assert.Equal(ItemUniversalCatalog.ItemUomCatalogVersionIdV1, Guid.Parse((string)v1!["catalog_version_id"]!));
         Assert.Equal(1, (int)v1["catalog_version_number"]!);

@@ -66,8 +66,10 @@ public sealed class ItemListsHttpTests(MdmHttpHost host) : IAsyncLifetime
         Assert.Contains(("item-uom", "IU"), platform.Asked);
         var id = (await Envelope.ReadAsync(response)).GetProperty("data").GetGuid();
         var item = await host.Database.GetCollection<Item>(ItemRepository.CollectionName).Find(x => x.Id == id).SingleAsync();
-        Assert.Equal(Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0004"), item.BaseUomSelection!.CatalogVersionId);
-        Assert.Equal(2, item.BaseUomSelection.CatalogVersionNumber);
+        var (uomId, uomNumber) = ContractVersion(JsonNode.Parse(File.ReadAllText(ContractEndpoint.ContractFixturePath()))!, "item-uom");
+        Assert.Equal(uomId, item.BaseUomSelection!.CatalogVersionId);
+        Assert.Equal(uomNumber, item.BaseUomSelection.CatalogVersionNumber);
+        Assert.Equal(2, uomNumber);
         Assert.Contains(item.UomConversions, c => c.FromUom == "GRM" && c.ToUom == "IU" && c.Numerator == "100000");
         Assert.Equal("TEMPERATURE", item.StorageConditionKinds!["AMBIENT_15_25"]);
     }
@@ -90,15 +92,18 @@ public sealed class ItemListsHttpTests(MdmHttpHost host) : IAsyncLifetime
         var id = (await Envelope.ReadAsync(created)).GetProperty("data").GetGuid();
         var items = host.Database.GetCollection<Item>(ItemRepository.CollectionName);
         // The store as V1 left it: every proof carries the V1 version of its list.
-        var v1 = JsonNode.Parse(File.ReadAllText(ContractEndpoint.ContractFixturePath()))!["previous_versions"]!["item-uom"]![0]!;
+        var fixture = JsonNode.Parse(File.ReadAllText(ContractEndpoint.ContractFixturePath()))!;
+        var v1 = fixture["previous_versions"]!["item-uom"]![0]!;
         var v1Uom = Guid.Parse((string)v1["catalog_version_id"]!);
+        // FIX1: storage-condition and material-type did not change in V2 — their contract answer IS their V1 proof.
+        var (storageId, storageNumber) = ContractVersion(fixture, "storage-condition");
+        var (materialId, materialNumber) = ContractVersion(fixture, "material-type");
         var resolvedUnderV1 = new DateTimeOffset(2026, 10, 8, 9, 0, 0, TimeSpan.Zero);
         await items.UpdateOneAsync(x => x.Id == id, Builders<Item>.Update
             .Set(x => x.BaseUomSelection, Proof("item-uom", "KGM", v1Uom, (int)v1["catalog_version_number"]!, resolvedUnderV1))
-            .Set(x => x.MaterialTypeSelection, Proof("material-type", "RAW_MATERIAL",
-                Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0003"), 1, resolvedUnderV1))
+            .Set(x => x.MaterialTypeSelection, Proof("material-type", "RAW_MATERIAL", materialId, materialNumber, resolvedUnderV1))
             .Set(x => x.StorageConditionSelections, new List<ReferenceCatalogSelection> { Proof("storage-condition",
-                "AMBIENT_15_25", Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002"), 1, resolvedUnderV1) }));
+                "AMBIENT_15_25", storageId, storageNumber, resolvedUnderV1) }));
         var version = (await items.Find(x => x.Id == id).SingleAsync()).Version;
 
         var platform = new ContractEndpoint { AnswerAnySubset = true };
@@ -122,7 +127,7 @@ public sealed class ItemListsHttpTests(MdmHttpHost host) : IAsyncLifetime
         Assert.Equal(v1Uom, item.BaseUomSelection!.CatalogVersionId);
         Assert.Equal(1, item.BaseUomSelection.CatalogVersionNumber);
         Assert.Equal(resolvedUnderV1, item.BaseUomSelection.ResolvedAtUtc);
-        Assert.Equal(Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002"), Assert.Single(item.StorageConditionSelections).CatalogVersionId);
+        Assert.Equal(storageId, Assert.Single(item.StorageConditionSelections).CatalogVersionId);
         Assert.Contains(item.UomConversions, c => c.FromUom == "GRM" && c.ToUom == "IU");
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"api/mdm/items/{id}")).StatusCode);
     }
@@ -134,6 +139,13 @@ public sealed class ItemListsHttpTests(MdmHttpHost host) : IAsyncLifetime
             PlatformBaseAddress = new Uri("https://platform.test/"), Timeout = TimeSpan.FromSeconds(2),
             CredentialIdentifier = "resolver-id", CredentialSecret = "resolver-secret"
         }), Microsoft.Extensions.Logging.Abstractions.NullLogger<PlatformItemReferenceResolverClient>.Instance);
+
+    // The version a set's selections carry in the contract answer (one version per set — the client's own rule).
+    private static (Guid Id, int Number) ContractVersion(JsonNode fixture, string set)
+    {
+        var selection = fixture["response"]!["data"]!["selections"]!.AsArray().First(x => (string)x!["set_code"]! == set)!;
+        return (Guid.Parse((string)selection["catalog_version_id"]!), (int)selection["catalog_version_number"]!);
+    }
 
     private static ReferenceCatalogSelection Proof(string set, string value, Guid versionId, int versionNumber,
         DateTimeOffset resolvedAt) => new()
