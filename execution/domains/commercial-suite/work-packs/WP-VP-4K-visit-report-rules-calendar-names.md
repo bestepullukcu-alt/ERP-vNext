@@ -1,5 +1,7 @@
 # WORK PACKAGE — WP-VP-4K · Ziyaret raporu kuralları, takvim adları ve rapor yetkileri (backend)
 
+> ⤷ **2026-10-09: BU PAKET AYRICA DAĞITILMAZ** — içeriği [WP-VW-W1](WP-VW-W1-visit-report-rules-statuses.md) içine alındı (madde 1–7 + Acceptance 1–7 orada referansla geçerli).
+
 > **CT (SoR), 2026-10-08.** Android durum raporu + CT kod doğrulaması: [CT değerlendirmesi](mobile/2026-10-08-visit-planning-contract/CT-REVIEW-android-visit-report-status-2026-10-08.md).
 > - **Kullanıcı kararları (2026-10-08):**
 >   - **İptal edilmiş planlanan ziyaret:** düzenlenemez ve rapor girilemez.
