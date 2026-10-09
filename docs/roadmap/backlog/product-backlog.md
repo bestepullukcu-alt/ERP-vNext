@@ -8376,6 +8376,8 @@ Yapılacak:
 - atlanan = 0;
 - bekçi listesinden çıkar.
 
+**Ek (CT kararı, BL-577 kabulü 2026-10-09):** `AccountKindAcceptanceHost.Tests` da bugün "işin dışında" listesinde. Yerelde 68 / 68 koşuyor ve `DITEN_ITEST_MONGOD_BIN_DIR` işte zaten var. Bu işte matris satırı olarak eklenir ve listeden çıkar.
+
 Gelecek regresyon riski: 🟡 (olay yayını / tüketicileri CI'da ölçülmüyor).
 
 ---
