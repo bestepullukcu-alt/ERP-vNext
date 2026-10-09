@@ -317,6 +317,11 @@ public static class DependencyInjection
         services.AddScoped<DeferredPlatformJobHandler>();
         services.AddScoped<EmailDispatchJob>();
         services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
+        // BL-549 + BL-539 — the abandoned-start recovery and its gauges (one meter for the process).
+        services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowStartRecoverySweepJob>();
+        services.AddSingleton<Features.Workflow.Services.WorkflowStartRecoveryMetrics>();
+        // FIX1 item 4 — the gauges while the recovery job is off (read-only; idle when the job runs).
+        services.AddHostedService<Features.Workflow.BackgroundJobs.WorkflowStartRecoveryCountingService>();
         // WC-4 — the ONE place a task notification is sent from (opt-out, actor skip, real addresses,
         // never fails the write).
         services.AddScoped<Features.Tasks.Services.ITaskNotificationService,

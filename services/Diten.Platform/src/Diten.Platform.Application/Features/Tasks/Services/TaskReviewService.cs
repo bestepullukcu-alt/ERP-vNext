@@ -219,7 +219,10 @@ public sealed class TaskReviewService : ITaskReviewService
     public async Task<Guid?> TryStartReviewAsync(TaskItem task, CancellationToken ct) =>
         (await StartReviewAsync(task, ct)).InstanceId;
 
-    public async Task<TaskReviewStartResult> StartReviewAsync(TaskItem task, CancellationToken ct)
+    public Task<TaskReviewStartResult> StartReviewAsync(TaskItem task, CancellationToken ct) =>
+        StartReviewAsync(task, maySupersede: true, ct);
+
+    private async Task<TaskReviewStartResult> StartReviewAsync(TaskItem task, bool maySupersede, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
 
@@ -241,6 +244,7 @@ public sealed class TaskReviewService : ITaskReviewService
              */
             var latest = await _instances.GetLatestByObjectRefAsync(
                 BuildObjectRef(task.Id), ReviewObjectType, task.Id.ToString(), ct);
+            string? halfStartKey = null;
             if (latest is not null && IsOpen(latest.Status))
             {
                 /*
@@ -258,10 +262,22 @@ public sealed class TaskReviewService : ITaskReviewService
                     return new(latest.Id, null);
                 }
 
-                _logger.LogWarning(
-                    "The live review {InstanceId} of task {TaskId} has no open task in the engine: its start was never completed, "
-                    + "so it is neither adopted nor replaced.", latest.Id, task.Id);
-                return new(null, Workflow.WorkflowReasonCodes.WorkflowInstanceStartConflict);
+                /*
+                 * WP-WF-ENGINE-RECOVERY-01 FIX1 item 3 — A HALF START IS COMPLETED, NOT WAITED ON. The engine completes a generic
+                 * start whose task was never written when the SAME key is replayed with the same facts (BL-549). So the start
+                 * below is replayed under the round's own key: the engine writes its task and this call adopts the round. Facts
+                 * that changed meanwhile (another reviewer, another starter) get the engine's 409; FIX2 item 5 — the half start is
+                 * then superseded (closed) and a new round started, below.
+                 */
+                if (string.IsNullOrWhiteSpace(latest.IdempotencyKey))
+                {
+                    _logger.LogWarning(
+                        "The live review {InstanceId} of task {TaskId} has no open task in the engine and no key to complete it "
+                        + "with: it is neither adopted nor replaced.", latest.Id, task.Id);
+                    return new(null, Workflow.WorkflowReasonCodes.WorkflowInstanceStartConflict);
+                }
+
+                halfStartKey = latest.IdempotencyKey;
             }
 
             var templateId = await EnsureTemplateAsync(ct);
@@ -296,7 +312,7 @@ public sealed class TaskReviewService : ITaskReviewService
                  * storing the link still resolves to one instance), and a new round after a refusal produces a
                  * different one.
                  */
-                IdempotencyKey: $"task-review:{_tenantContext.TenantId}:{task.Id}:"
+                IdempotencyKey: halfStartKey ?? $"task-review:{_tenantContext.TenantId}:{task.Id}:"
                     + ((latest?.Id ?? task.ReviewWorkflowInstanceId)?.ToString() ?? "initial"),
                 CommentRequired: false,
                 EvidenceRequired: false,
@@ -304,6 +320,11 @@ public sealed class TaskReviewService : ITaskReviewService
 
             var response = await _mediator.Send(
                 new StartWorkflowInstanceCommand(request, CorrelationId()), ct);
+
+            if (halfStartKey is not null && maySupersede && TaskApprovalService.IsRefusedReplay(response))
+            {
+                return await SupersedeAndRestartAsync(task, latest!.Id, ct);
+            }
 
             if (!response.IsSuccessful || response.Data is null)
             {
@@ -335,6 +356,26 @@ public sealed class TaskReviewService : ITaskReviewService
             _logger.LogError(ex, "Starting task review for {TaskId} threw; the task stays in progress.", task.Id);
             return new(null, null);
         }
+    }
+
+    /// <summary>FIX2 item 5 — close the half start the edited submission cannot complete, then start a new round (once).
+    /// See <see cref="TaskApprovalService"/>'s twin.</summary>
+    private async Task<TaskReviewStartResult> SupersedeAndRestartAsync(TaskItem task, Guid halfStartId, CancellationToken ct)
+    {
+        var closed = await _mediator.Send(new Workflow.Commands.SupersedeWorkflowHalfStartCommand(halfStartId, CorrelationId()), ct);
+        if (!closed.IsSuccessful)
+        {
+            _logger.LogWarning(
+                "workflow.half_start.supersede_failed Task={TaskId} Instance={InstanceId} Reason={ReasonCode}: the half start "
+                + "could not be closed; the task stays in progress.",
+                task.Id, halfStartId, closed.ReasonCode);
+            return new(null, Workflow.WorkflowReasonCodes.WorkflowInstanceStartConflict);
+        }
+
+        _logger.LogInformation(
+            "workflow.half_start.superseded Task={TaskId} Instance={InstanceId}: its facts or its submitter changed, so it was "
+            + "closed and a new review round is started.", task.Id, halfStartId);
+        return await StartReviewAsync(task, maySupersede: false, ct);
     }
 
     /// <summary>An instance somebody can still decide: opening (Pending), running (Active) or escalated.</summary>

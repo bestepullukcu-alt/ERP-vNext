@@ -552,6 +552,8 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
                     services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();
                     services.AddScoped<IWorkflowTemplateVersionRepository, WorkflowTemplateVersionRepository>();
                     services.AddScoped<IWorkflowInstanceRepository, WorkflowInstanceRepository>();
+                    // FIX3 item 2 — a standalone mongod has no transactions: the start writes sequentially here, asked for by name.
+                    services.AddSingleton(new Diten.Platform.Application.Features.Workflow.SequentialWorkflowStartWritesForTests());
                     services.AddScoped<IApprovalTaskRepository, ApprovalTaskRepository>();
                     services.AddScoped<IRuntimeAssignmentSnapshotRepository, RuntimeAssignmentSnapshotRepository>();
                     services.AddScoped<IWorkflowTransitionLogRepository, WorkflowTransitionLogRepository>();

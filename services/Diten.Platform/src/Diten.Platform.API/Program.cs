@@ -14,6 +14,14 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
+// BL-540 (1) · WP-WF-ENGINE-RECOVERY-01 FIX1 — the operator's one-shot orphan recovery: decided before anything else, and
+// the whole run (configuration, services, work) inside its own failure net. See WorkflowOrphanRecoveryOperationalMode.
+if (WorkflowOrphanRecoveryOperationalMode.IsRequested(args))
+{
+    Environment.ExitCode = await WorkflowOrphanRecoveryOperationalMode.RunAsync(args);
+    return;
+}
+
 var apiStartupExecutionMode = ApiStartupExecutionMode.Resolve(args);
 
 if (await VerifiedMarketOperationalMode.TryRunAsync(args))

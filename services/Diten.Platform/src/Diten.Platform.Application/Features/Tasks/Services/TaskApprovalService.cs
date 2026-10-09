@@ -171,7 +171,10 @@ public sealed class TaskApprovalService : ITaskApprovalService
         _logger = logger;
     }
 
-    public async Task<Guid?> TryStartApprovalAsync(TaskItem task, CancellationToken ct)
+    public Task<Guid?> TryStartApprovalAsync(TaskItem task, CancellationToken ct) =>
+        TryStartApprovalAsync(task, maySupersede: true, ct);
+
+    private async Task<Guid?> TryStartApprovalAsync(TaskItem task, bool maySupersede, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
 
@@ -196,6 +199,7 @@ public sealed class TaskApprovalService : ITaskApprovalService
              */
             var latest = await _instances.GetLatestByObjectRefAsync(
                 BuildObjectRef(task.Id), ApprovalObjectType, task.Id.ToString(), ct);
+            string? halfStartKey = null;
             if (latest is not null && IsOpen(latest.Status))
             {
                 if ((await OpenTasksAsync(latest.Id, ct)).Count > 0)
@@ -203,10 +207,19 @@ public sealed class TaskApprovalService : ITaskApprovalService
                     return latest.Id;
                 }
 
-                _logger.LogWarning(
-                    "The live approval {InstanceId} of task {TaskId} has no open task in the engine: its start was never completed, "
-                    + "so it is neither adopted nor replaced.", latest.Id, task.Id);
-                return null;
+                // WP-WF-ENGINE-RECOVERY-01 FIX1 item 3 — a half start is completed: the start below is replayed under the
+                // round's own key and the same facts, the engine writes the missing task (BL-549) and the round is linked.
+                // FIX2 item 5 — changed facts (another manager, a new due date) or another person get the engine's 409; the
+                // half start is then superseded (closed) and a new round started, below.
+                if (string.IsNullOrWhiteSpace(latest.IdempotencyKey))
+                {
+                    _logger.LogWarning(
+                        "The live approval {InstanceId} of task {TaskId} has no open task in the engine and no key to complete it "
+                        + "with: it is neither adopted nor replaced.", latest.Id, task.Id);
+                    return null;
+                }
+
+                halfStartKey = latest.IdempotencyKey;
             }
 
             var templateId = await EnsureTemplateAsync(ct);
@@ -229,13 +242,19 @@ public sealed class TaskApprovalService : ITaskApprovalService
                 ReasonCode: null,
                 // Idempotent per ROUND (D2-FIX5 item 3): a retried start must not open a second approval for the same work, and
                 // a new round after a closed one must not replay it. The first round's key is the task's own, unchanged.
-                IdempotencyKey: $"task-approval:{_tenantContext.TenantId}:{task.Id}" + (latest is null ? string.Empty : $":{latest.Id}"),
+                IdempotencyKey: halfStartKey
+                    ?? $"task-approval:{_tenantContext.TenantId}:{task.Id}" + (latest is null ? string.Empty : $":{latest.Id}"),
                 CommentRequired: false,
                 EvidenceRequired: false,
                 DueAt: task.DueAt);
 
             var response = await _mediator.Send(
                 new StartWorkflowInstanceCommand(request, CorrelationId()), ct);
+
+            if (halfStartKey is not null && maySupersede && IsRefusedReplay(response))
+            {
+                return await SupersedeAndRestartAsync(task, latest!.Id, ct);
+            }
 
             if (!response.IsSuccessful || response.Data is null)
             {
@@ -269,6 +288,35 @@ public sealed class TaskApprovalService : ITaskApprovalService
             _logger.LogError(ex, "Starting task approval for {TaskId} threw; the task is kept, ungated start is not.", task.Id);
             return null;
         }
+    }
+
+    /// <summary>The engine refused the replay of a half start's key: the facts or the person changed (409 start-conflict).</summary>
+    internal static bool IsRefusedReplay(Common.Response<Workflow.StartWorkflowInstanceResponse> response) =>
+        !response.IsSuccessful
+        && response.StatusCode == 409
+        && response.ReasonCode == WorkflowReasonCodes.WorkflowInstanceStartConflict;
+
+    /// <summary>
+    /// FIX2 item 5 — CLOSE AND RESTART. The half start the edited request cannot complete is closed through the engine's taskless
+    /// close (named reason, log, event, audit row); the latest round is then closed, so the start below keys on it and opens a
+    /// new round with the facts as they are now. Once only: a second refusal is reported, never looped on.
+    /// </summary>
+    private async Task<Guid?> SupersedeAndRestartAsync(TaskItem task, Guid halfStartId, CancellationToken ct)
+    {
+        var closed = await _mediator.Send(new SupersedeWorkflowHalfStartCommand(halfStartId, CorrelationId()), ct);
+        if (!closed.IsSuccessful)
+        {
+            _logger.LogWarning(
+                "workflow.half_start.supersede_failed Task={TaskId} Instance={InstanceId} Reason={ReasonCode}: the half start "
+                + "could not be closed; the task is kept and `start` stays gated.",
+                task.Id, halfStartId, closed.ReasonCode);
+            return null;
+        }
+
+        _logger.LogInformation(
+            "workflow.half_start.superseded Task={TaskId} Instance={InstanceId}: its facts or its starter changed, so it was "
+            + "closed and a new approval round is started.", task.Id, halfStartId);
+        return await TryStartApprovalAsync(task, maySupersede: false, ct);
     }
 
     public async Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct)
