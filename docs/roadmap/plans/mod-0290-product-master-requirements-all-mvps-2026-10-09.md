@@ -131,3 +131,21 @@ open (D186-01, pack `:296`).
 Weight, dimensions, volume, hazardous goods (UN number / class), HS / customs code, country of origin, MOQ / order multiple,
 lot-sizing rule, item lead time, purchasable / producible flags, supplier-item links, CoA / inspection flags, scrap %, phantom /
 kit flags. If a later pack asks for one, it is added here with its evidence.
+
+## 8. MDM answer (2026-10-09, contract draft `1.1.0-draft.6`)
+
+| Item | MDM answer | Our position |
+|---|---|---|
+| X-01 | `validateRefs` returns `lifecycleStatus` per row (v1.1) | accepted |
+| X-02 | every stock field nullable; lot / serial required before activation (v1.1) | accepted |
+| X-08 | `level` optional on `getSku`, `getSkuUom`, `resolveSkuProduct`, `validateRefs`; resolved from the id and returned; a given level must match (404 / `exists:false`); level-less `skuId` rows accepted (v1.1) | accepted |
+| X-03 | `/stockable-items` already searches SKUs and items; GlobalProduct search `GET /products?q=` in v1.2 | ask: is `/stockable-items` in the contract? (not usable otherwise) |
+| X-04 | a material item is its own SKU → `getSkuUom(skuId = itemId)` answers today; GlobalProduct has no UoM (GSKU level); `uomId` in `validateRefs` in v1.2 | accepted; implies a new sku level `Item` → confirm (Q-1) |
+| X-05 | SKUs of an item in v1.2 | accepted |
+| X-07 | events in a separate package (no event publishing in MDM yet) | accepted |
+| L-03 / D-C | conversions are append-only on an active record → no version; stable `conversionId` + `asOf` in v1.2 | accepted; write the append-only rule into the contract; MVP-4 (0188 `ConversionContractVersion`) uses `conversionId` + `asOf` instead |
+| W-04 / W-05 / D-A | with MDM packages P6 (barcode) and P9 (packaging hierarchy), before MVP-5 | accepted |
+| D-B | storage condition is already a code list (`StorageConditionCode`, multiple `storageConditions`); the v1.0 text field carries the code | accepted |
+| D-D | SKU × warehouse eligibility not in MDM | agreed |
+| L-06 | ABC is computed from consumption → planning / inventory side, not MDM | agreed; request withdrawn |
+| §7 | nothing added without evidence | agreed |
