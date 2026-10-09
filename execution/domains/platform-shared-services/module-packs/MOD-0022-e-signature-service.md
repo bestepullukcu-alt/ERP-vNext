@@ -1674,6 +1674,18 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   verifies the company 2 record → 200.
 - **OPEN O-FUB1-1:** `getSignature` does not apply the company scope. Changing it would affect the Q3 read; the CT decides.
 
+### FUB1 — CT acceptance (2026-10-09)
+
+- **CT-ACCEPTED.** CT merged the MVP-1 branch (docs only) into `feature/mvp1-fub1` and re-ran Platform filtered **615/615**, Web
+  **687/687**, architecture **18/18**; read the verify change (`CanSee` — the same whole rule as search / export). CT sabotage (own):
+  the signer clause of `CanSee` removed → `The_signer_verifies_their_own_company_record_even_outside_their_scope` and
+  `The_signer_still_sees_their_own_signature_without_the_read_key` red, restored, porcelain clean (the CT's broader `~Verif` filter
+  also picked BusinessReferenceData fixture tests that fail at 1 ms outside the standard filter — environment, not this change).
+  **FU-0022-VIS-02 CLOSED.** Fast-forwarded into the MVP-1 branch.
+- **O-FUB1-1 (CT decision):** get-by-id of a company record stays gated by the subject provider (the owning module's rule — e.g.
+  MOD-0175's provider checks the company, Q3); no data-scope check added there. Verify, search and export use `CanSee`.
+- **O-FUB1-2:** the PM1 picker guard widened for the product picker's single-product read — accepted.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
