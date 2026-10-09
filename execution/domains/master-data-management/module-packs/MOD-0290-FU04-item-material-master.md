@@ -961,7 +961,7 @@ Kaynak: stok ekibinin istek belgesi §8 (R-01 … R-12, OD-1 … OD-7; sahip ile
 | OD-2 | Önce push; MDM kodunu kendi dallarına alacaklar | **Push evet, birleştirme hayır** — sözleşme + Prism; MDM kodu tek PR ana dala girince ya da dev MDM üzerinden | sahip (push) |
 | OD-3 / OD-4 / OD-5 / OD-6 | Kullanım dışı / emekli hareketleri, lot bilinmiyor → ret, kalem = SKU | Kabul (stok uygular) | stok |
 | OD-7 | IU yerel kod (b); onaycı QA Müdürü; GxP ana veri | **Kabul**; QA Müdürü için vekil / en az iki kişi önerildi | IU: WP-PLT-ITEM-LISTS-02; S2 |
-| R-12 | Tüm tüzel kişilerde stok varlığı ucu stokta | Kabul; MDM beklentisi gönderildi (SKU + seviye; `hasNonZeroStock`, `coverage`, `asOf`; 2 sn bütçe; PARTIAL = cevap yok) | stok yazar |
+| R-12 | Tüm tüzel kişilerde stok varlığı ucu stokta | Kabul; stok INVENTORY-BUNDLE 1.1.0 önerisini gönderdi (2026-10-09: `GET /api/internal/inventory/stock-presence`, `X-Internal-Api-Key` + `X-Tenant-Id`, doğrudan servis, `SkuLevel` + `Item`). CT cevabı: kabul + iki şart (yalnız bu uca açık ayrı anahtar çifti, Platform iç olay anahtarı yeniden kullanılmaz; sabit süreli karşılaştırma, sır günlüğe yazılmaz, canlıda https, tek tip 401); `skuLevel` zorunlu kalabilir | stok yazar; MDM istemcisi BL-585 |
 | D-3 | Stoklanabilir SKU seviyesi | **Kapandı (stok ekibi 2026-10-09):** GSKU seviyesinde hareket yalnız seri bayrağı açıkça false iken; true / null → LSKU / FG; GSKU'da seri null = uygulanmaz. Kalemler `Item` seviyesinde (`skuId == itemId`); stok INVENTORY sözleşmesine `Item` ekliyor | stok |
 | — | Servisten servise okuma | Bu turda yok (Auth yalnız `Diten.MDM` → Platform hedef kitleleri); stok çağıranın belirtecini iletiyor | BL-583 |
 

@@ -8218,6 +8218,27 @@ Gelecek regresyon riski: 🟢 (ekleme; MVP-2 … MVP-5 canlıya çıkmadan önce
 
 ---
 
+### BL-585
+
+**MDM'in stok varlığı istemcisi gerçek uca bağlı değil: kalem emekliye ayırma her zaman "stok servisi yok" ile reddediliyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM) · BULAN: FU04 S1 (bilinçli: `UnavailableInventoryStockAvailabilityClient`) + stok ekibinin INVENTORY-BUNDLE 1.1.0 önerisi (2026-10-09) · KAYIT: 2026-10-09
+
+Bugünkü durum:
+- `IInventoryStockAvailabilityClient` var; üretimde kayıtlı uygulama "Unavailable" döner. Bu yüzden emekliye ayırma 503 ile reddedilir (kapalı başarısız, doğru).
+- Stok ekibi `GET /api/internal/inventory/stock-presence` önerisini yazdı. CT iki güvenlik şartıyla kabul etti (FU04 §25.1 R-12 satırı).
+
+Yapılacak (stok sözleşmesi dondurulunca):
+- HTTP istemcisi: doğrudan InventoryService; yönlendirme kapalı; gizli başlıklar maskeli; 2 sn; `coverage: PARTIAL` / 5xx / zaman aşımı / okunamayan cevap → Unavailable.
+- Ayrı anahtar çifti (`ditenmdmservice`) ayarı; canlıda https dışı taban reddedilir.
+- Dev'de anahtar üretim betiği (sır yazdırmadan).
+- Açılış uyarısı.
+- Testler: sözleşme fikstürüyle istek / cevap bağlama; sabotaj.
+
+Gelecek regresyon riski: 🟢 bugün kapalı başarısız. Bağlanmazsa canlıda hiçbir kalem emekliye ayrılamaz (işlevsel eksik).
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
