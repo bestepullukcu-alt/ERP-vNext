@@ -106,3 +106,13 @@
 - içerik / slayt hazırlama (Content Studio'da);
 - mobil uygulamanın kodu (mobil ekip; biz sözleşme notu veriyoruz);
 - check-in anti-fraud backend'i (mobilin anti-fraud modülü; biz yalnız alanı taşırız).
+
+## 7. Yan iş — MDM Marka değişikliği (2026-10-09)
+- Analiz: [MDM-BRAND-CHANGE-crm-impact-2026-10-09](MDM-BRAND-CHANGE-crm-impact-2026-10-09.md).
+- **Zorunlu, kodsuz:**
+  - kiracı planına "Marka" modülü (MDM ekibi yapar);
+  - özel CRM rollerine `mdm.brands.read` / `mdm.products.read` (kullanıcı verir);
+  - main senkronunda MDM dosyaları.
+- **WP-MDM-BRAND-1 (1 prompt):** MDM PR'ı main'e girdikten sonra, W4'ten önce. Seçici ve kayıt `isLinkable` kuralını uygular, Ziyaret Sıklığı'na marka / ürün doğrulaması eklenir, "Ürünler" bağımlılık envanteri testle korunur.
+- **Plan kuralı:** W4 (rakip / endikasyon) ve W6 (sipariş) yalnız **Global Ürün / GSKU** kullanır, Marka altı "Ürünler" kaydını kullanmaz.
+- **Toplam prompt:** +1.
