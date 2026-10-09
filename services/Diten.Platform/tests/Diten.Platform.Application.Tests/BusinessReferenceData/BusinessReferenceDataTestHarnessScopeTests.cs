@@ -69,6 +69,10 @@ public sealed class BusinessReferenceDataTestHarnessScopeTests
             () => BusinessReferenceDataTestHarness.CreateAsync(perRun));
 
         Assert.Contains("not registered", refused.Message);
+        // This client is built outside any harness, so nothing else has taken the machine-wide lock for it. Listing
+        // database names while another process is emptying or creating them is exactly the BL-395 window; the lock
+        // is taken once per process (Lazy<Task>), so asking again here costs nothing.
+        await PlatformMongoTestLock.EnsureHeldAsync();
         var client = new MongoClient(PlatformMongoTestConnection.RequireConnectionString());
         var names = await (await client.ListDatabaseNamesAsync()).ToListAsync();
         Assert.DoesNotContain(databaseName, names);
@@ -96,6 +100,9 @@ public sealed class BusinessReferenceDataTestHarnessScopeTests
     {
         const string scope = "harness_blank_proof";
         var databaseName = BusinessReferenceDataTestHarness.DatabaseNameFor(scope);
+        // The reads below happen AFTER the first harness is disposed, so the harness's own lock no longer covers
+        // them — this test asserts what survives release, which is the window BL-395 describes.
+        await PlatformMongoTestLock.EnsureHeldAsync();
         var client = new MongoClient(PlatformMongoTestConnection.RequireConnectionString());
 
         await using (var first = await BusinessReferenceDataTestHarness.CreateAsync(scope))

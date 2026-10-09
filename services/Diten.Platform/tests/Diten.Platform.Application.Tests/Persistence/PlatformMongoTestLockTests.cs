@@ -158,18 +158,34 @@ public sealed class PlatformMongoTestLockTests
      * that build their own MongoClient against the shared mongod are held to the same rule here. SABOTAGE: delete
      * the EnsureHeldAsync line from WorkflowTransitionGateMongoRepositoryTests and this names that file.
      * Weakness, stated: a text match — a call inside a comment would satisfy it.
+     *
+     * ⚠ THE SCAN'S BASIS CHANGED WITH Q131a, AND THE ANCHOR CAUGHT IT. This looked for a hard-coded
+     * `mongodb://localhost:27017`, which was how the harness addressed the shared mongod when BL-395 wrote it.
+     * Q131a made that address FORBIDDEN: the URI now comes only from DITEN_PLATFORM_TEST_MONGO_URI through
+     * PlatformMongoTestConnection, which refuses ports 27017-27021 outright. So after Q131a no file matched, the
+     * scan was empty, and the one thing standing between this test and being green forever was the anchor below —
+     * which went red and named MongoIntegrationHarness. The basis is now the resolver call, which is the only
+     * sanctioned way to reach the shared mongod; the old literal stays in the net so re-hardcoding is still named.
      */
     [Fact]
     public void Every_file_that_addresses_the_shared_mongod_takes_the_lock()
     {
         var project = Path.Combine(RepoPaths.Services(), "Diten.Platform", "tests", "Diten.Platform.Application.Tests");
-        var sharedMongod = new Regex(@"mongodb://(?:localhost|127\.0\.0\.1):27017");
+        var sharedMongod = new Regex(
+            @"PlatformMongoTestConnection\s*\.\s*RequireConnectionString\s*\(\s*\)|mongodb://(?:localhost|127\.0\.0\.1):27017");
+        // The resolver and its own tests are not callers: Validate is pure by its stated contract and its tests only
+        // hand it strings — one of them is the literal 27017 it must refuse, which is why it matches at all.
+        var resolver = new[]
+        {
+            "Persistence/PlatformMongoTestConnection.cs",
+            "Persistence/PlatformMongoTestConnectionTests.cs"
+        };
         var separator = Path.DirectorySeparatorChar;
 
         var addressing = Directory.EnumerateFiles(project, "*.cs", SearchOption.AllDirectories)
             .Where(path => !path.Contains($"{separator}obj{separator}") && !path.Contains($"{separator}bin{separator}"))
             .Select(path => (Path: Path.GetRelativePath(project, path).Replace('\\', '/'), Body: File.ReadAllText(path)))
-            .Where(file => sharedMongod.IsMatch(file.Body))
+            .Where(file => sharedMongod.IsMatch(file.Body) && !resolver.Contains(file.Path))
             .ToArray();
 
         // A scan that silently finds nothing is green forever; the harness itself must always be in it.
