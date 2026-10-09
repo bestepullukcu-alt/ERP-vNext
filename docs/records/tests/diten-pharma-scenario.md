@@ -111,7 +111,9 @@ Durum anahtarı: `[x]` sahip "Tamam" dedi · `[ ]` bekliyor · ⏳ kod henüz de
 - [ ] `is-stok-onay` Stok ekibinin yazılı onayı geldi (Global Ürün okumasında stok alanları dönmez; SKU'dan okunur). Gelince Control Tower'a iletin — bu onay olmadan kalem okuma bağlantıları canlıya çıkmaz.
 - [ ] `is-kalite-cevap` Kalite biriminin cevabı geldi: IU birimi (HIU mı, kendi kodumuz mu) ve kalem etkinleştirmesini onaylayacak pozisyon.
 - [ ] `is-canli-hesap` Canlı sorusunu cevaplayın: ekibiniz canlıda kiracı ekranlarına platform hesabıyla mı giriyor? (Evetse canlıda da sıradan yönetici hesabı önceden açılmalı.)
-- [ ] `is-rol-onerisi` Canlı rol önerisini inceleyin (kendi üretim, fason üretim, satış için hangi rol, hangi izin). Control Tower hazırlıyor; hazır olunca burada yazacak.
+- [ ] `is-rol-onerisi` Canlı rol önerisini inceleyin: 13 rol, görev ayrımı kuralları (kendi üretim, fason, satış). Dosya: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`. Hangi rollerin canlıda açılacağını söyleyin.
+- [ ] `is-ik-viewer` Canlı sorusu (güvenlik): canlıda İnsan Sermayesi modülü açık mı, "Viewer" rolü kimlerde? Açıksa Viewer ücret / yan hak ekranlarını görebiliyor (BL-581).
+- [ ] `is-mod0290-sorular` MOD-0290 ürün yapısı için 5 soru (tek ürün kaydı, Lokal SKU ekseni, fason ürünler, ülkeye özel ambalaj, canlı onaycı). Harita: `docs/reference/modules/tenant/MOD-0290-urun-kalem-sku-haritasi.md`.
 - [ ] `is-marka-plan` MDM ürün ekranları dev'e gelince: Platform → Planlar → ürün ana verisini içeren her plana "Marka" modülünü ekleyin (dev'de siz; canlıda onayınızla).
 - [ ] `is-canli-url` Canlıya çıkarken: e-posta bağlantı adresi (AuthService:FrontendBaseUrl) canlı adresle girilir. Girilmezse yeni kiracının ilk yönetici daveti reddedilir.
 - [ ] `is-pr` En sonda: tek PR'ı ana dala açın (Control Tower hazır olduğunu söyleyince).
