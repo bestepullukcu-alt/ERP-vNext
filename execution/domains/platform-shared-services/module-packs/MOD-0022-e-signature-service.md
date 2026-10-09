@@ -1455,6 +1455,22 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   - FU-0022-E4-01 is not in this part: it needs a schema change (E5B).
   - The Python DataTable verifier was not run (W-0022-01).
 
+### E5W1 — CT acceptance (2026-10-09)
+
+- **CT-ACCEPTED.** CT re-ran Web.Tests **630/632**, Platform filtered **581/581**, architecture **18/18** in the agent worktree. The 2
+  Web reds are `NavManifestL10nGuardTests` for the quarantine pages (`Nav.Page.QUARANTINEQUEUE / BLOCKEDSTOCK / RETESTQUEUE /
+  QUARANTINESETTINGS`, all 7 languages) — present on the MVP-1 branch since MOD-0175 Q1 (a CT miss: Web tests were not run at the
+  Inventory acceptances) → MOD-0175 Q5 scope. Read the proxy controller: cookie token, tenant from the token, bodies never logged;
+  CSRF covered by the `SameSite=Lax` auth cookies (`AuthTokenCookies.cs:124`). CT sabotage (own): UAS-001 gate of İmzam →
+  `@if (false)` → `UAS_001_without_the_page_key_only_the_access_explanation_is_drawn` red, restored, porcelain clean. Screenshots
+  01 / 07 reviewed against mockup v2. Touches outside §5 accepted: `WorkCenterNext/{Index,Details}.cshtml` (dialog partial),
+  `mock-data.js` (action fields). §17.3 table written after coding (recorded in the evidence §0) — accepted once; next Web WPs
+  must write it first. Fast-forwarded into the MVP-1 branch.
+- **To E5W2:** O-E5W1-1 `workflow-task` summary labels localized (Platform provider, tr/en); O-E5W1-3 WorkCenter passes the
+  step action code so the visual mode follows the policy; O-E5W1-2 İmzam history filters / saved views as the golden slim list;
+  **CT-E5W1-N1** the menu shows the e-İmza item under the domain heading "Platform Paylaşılan Hizmetler" — CT-D8 wants the
+  item in its own "e-İmza" group (measure the nav grouping; no domain name visible to the tenant user).
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
