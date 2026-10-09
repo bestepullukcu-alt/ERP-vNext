@@ -1,0 +1,103 @@
+name: service-tests
+
+# BL-577 — the service test projects, on Linux. phase1-gates.yml only BUILDS the service solutions; before this file
+# none of their tests ran in CI, so Linux-only behaviour (BL-570: the Auth operator commands' Unix secret channel and
+# lock) was never measured. Guide: docs/guides/operations/ci-service-tests.md.
+#
+# Triggers (Control Tower decision, to save Actions minutes): pull requests, pushes to main, and by hand. A branch
+# push does NOT run these; phase1-gates.yml keeps its own triggers.
+#
+# The architecture guard CiServiceTestsGuardTests reads this file: the matrix must name every service test project
+# (or the guard's named list of projects outside this job), and every job keeps its timeout, its hang timeout, the
+# pinned mongod and DITEN_TEST_MONGOD.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  # mongod is pinned: the same major version as dev (measured `db version v7.0.28`). MongoDB publishes 7.0 for
+  # Ubuntu 22.04 (jammy) and NOT for 24.04 (noble: 8.0 and later; measured 2026-10-09 in repo.mongodb.org), hence
+  # runs-on: ubuntu-22.04 below. The digest is written HERE — never read from the server the tarball comes from.
+  MONGODB_VERSION: "7.0.28"
+  MONGODB_TARBALL: mongodb-linux-x86_64-ubuntu2204-7.0.28.tgz
+  MONGODB_SHA256: 7fc16f46fb10753b982ab03bd9d7dd5920d18d181259f825c2462ca903c55d4d
+
+jobs:
+  service-tests:
+    name: service-tests (${{ matrix.suite }})
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: platform-app
+            project: services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj
+          - suite: platform-bgjobs
+            project: services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj
+          - suite: auth-app
+            project: services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj
+          - suite: mdm-app
+            project: services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj
+    env:
+      SUITE: ${{ matrix.suite }}
+      PROJECT: ${{ matrix.project }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install mongod (pinned version and digest)
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$MONGODB_TARBALL" "https://fastdl.mongodb.org/linux/$MONGODB_TARBALL"
+          echo "$MONGODB_SHA256  $RUNNER_TEMP/$MONGODB_TARBALL" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$MONGODB_TARBALL" -C "$RUNNER_TEMP"
+          bin="$RUNNER_TEMP/${MONGODB_TARBALL%.tgz}/bin"
+          "$bin/mongod" --version | grep -F "db version v$MONGODB_VERSION"
+          # Platform's disposable mongod, and Auth's acceptance host (a directory), use this binary.
+          echo "DITEN_TEST_MONGOD=$bin/mongod" >> "$GITHUB_ENV"
+          echo "DITEN_ITEST_MONGOD_BIN_DIR=$bin" >> "$GITHUB_ENV"
+
+      # MDM's Mongo tests connect to MONGO_TEST_URI / MDM_TEST_MONGO (default localhost:27017) instead of starting
+      # their own mongod: a job-local standalone one, with the same pinned binary, data in the runner's temp.
+      - name: Start a job-local mongod (MDM)
+        if: startsWith(matrix.suite, 'mdm-')
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mongo-data"
+          "$DITEN_TEST_MONGOD" --dbpath "$RUNNER_TEMP/mongo-data" --port 27017 --bind_ip 127.0.0.1 \
+            --fork --logpath "$RUNNER_TEMP/mongod.log"
+          echo "MONGO_TEST_URI=mongodb://127.0.0.1:27017" >> "$GITHUB_ENV"
+          echo "MDM_TEST_MONGO=mongodb://127.0.0.1:27017" >> "$GITHUB_ENV"
+
+      # A hung test must not hold the job until its timeout: --blame-hang-timeout aborts and names it (lesson 8).
+      - name: Test
+        run: |
+          dotnet test "$PROJECT" -c Debug --blame-hang --blame-hang-timeout 20m \
+            --logger "trx;LogFileName=$SUITE.trx" --results-directory "$RUNNER_TEMP/test-results"
+
+      # dotnet test exits 0 when tests are skipped. Runs even after a red test step, so both are reported.
+      - name: Skipped = 0
+        if: always()
+        run: python3 scripts/check_trx_no_skipped.py "$RUNNER_TEMP/test-results/$SUITE.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-${{ matrix.suite }}
+          path: ${{ runner.temp }}/test-results
+          if-no-files-found: warn
