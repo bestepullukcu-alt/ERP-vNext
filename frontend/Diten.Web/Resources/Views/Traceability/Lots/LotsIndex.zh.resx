@@ -661,4 +661,9 @@
   <data name="Validation.Required" xml:space="preserve">
     <value>此字段为必填项。</value>
   </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>已提交审批</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>批次放行正在等待质量审批；批准后批次状态才会改变。请打开“提交决定”页面签名并提交。</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>打开“提交决定”页面</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>待批准</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>放行决定待批准 · {0}</value></data>
 </root>

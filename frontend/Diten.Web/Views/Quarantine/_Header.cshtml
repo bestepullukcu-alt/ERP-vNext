@@ -1,0 +1,42 @@
+@model string
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    Breadcrumb "Kalite / {sayfa}" (pack §9) + the mockup's tab strip (Karantina Kuyruğu · Bloke Stok · Yeniden Test). The mockup
+    draws the three lists as tabs of one page; the manifest makes them three pages (§21.2), so the strip is three LINKS. The
+    count chips are filled by quarantine-ui.js from each list's own total (no extra request on the list being shown).
+    MODEL: the active page code. Tabs follow the page keys (UAS-001: a page a user may not open is not offered).
+*@
+@{
+    var tabs = new (string Code, string Url, string Icon, string Key, string Permission)[]
+    {
+        ("QUARANTINEQUEUE", "/Quarantine", "bx-shield-quarter", "Quarantine.Tabs.Queue", "quarantine.holds.read"),
+        ("BLOCKEDSTOCK", "/Quarantine/Blocked", "bx-block", "Quarantine.Tabs.Blocked", "quarantine.holds.read"),
+        ("RETESTQUEUE", "/Quarantine/Retest", "bx-time-five", "Quarantine.Tabs.Retest", "quarantine.holds.read"),
+        ("QUARANTINESETTINGS", "/Quarantine/Settings", "bx-cog", "Quarantine.Tabs.Settings", "quarantine.settings.manage")
+    };
+    var active = tabs.FirstOrDefault(t => t.Code == Model);
+    var crumb = active.Key is null ? ViewData["Title"]?.ToString() : Localizer[active.Key].Value;
+}
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item text-muted">@Localizer["Quarantine.Common.Crumb.Root"]</li>
+        <li class="breadcrumb-item active text-primary" aria-current="page" id="qr-crumb">@crumb</li>
+    </ol>
+</nav>
+<ul class="nav nav-pills flex-wrap gap-2 mb-4" role="tablist" id="qr-tabs">
+    @foreach (var tab in tabs.Where(t => Perms.Has(t.Permission)))
+    {
+        var on = tab.Code == Model;
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 @(on ? "active" : "bg-white shadow-sm")" href="@tab.Url" @(on ? "aria-current=page" : "") data-qr-tab="@tab.Code">
+                <i class="bx @tab.Icon"></i><span>@Localizer[tab.Key]</span>
+                @if (tab.Code != "QUARANTINESETTINGS")
+                {
+                    <span class="badge rounded-pill @(on ? "bg-white text-primary" : "bg-label-secondary")" data-qr-count="@tab.Code"></span>
+                }
+            </a>
+        </li>
+    }
+</ul>

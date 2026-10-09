@@ -991,6 +991,11 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Serial Explorer</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Traceability</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Typed Lot Migration</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Quality</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>Quarantine queue</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Blocked stock</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>Retest queue</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Quarantine settings</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>e-Signature</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>My Signature</value></data>
   <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>Signature Requests</value></data>

@@ -661,4 +661,9 @@
   <data name="Validation.Required" xml:space="preserve">
     <value>Bu alan zorunludur.</value>
   </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>Onaya gönderildi</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>Lot serbest bırakma kalite onayı bekliyor; lot durumu onaydan sonra değişir. Kararı imzalayıp göndermek için Karar Gönder sayfasını açın.</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>Karar Gönder sayfasını aç</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>Serbest bırakma kararı onay bekliyor · {0}</value></data>
 </root>

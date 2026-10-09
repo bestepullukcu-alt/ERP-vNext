@@ -112,6 +112,10 @@ public static class PlatformSchemaMigrations
         await DropIndexIfExistsAsync(
             database.GetCollection<WorkingCalendar>(PlatformCollections.WorkingCalendars).Indexes,
             "ux_working_calendars_scope_country_year_code");
+
+        // MOD-0022 E5B (FU-0022-E4-01) — the per-task UNIQUE e-signature index becomes a lookup index under a new name, so
+        // a task can be re-signed. Dropped only when name AND options are exactly E2's; logged; a no-op once done.
+        await ESignatureSchemaMigrations.RetireWorkflowTaskUniqueIndexAsync(database, cancellationToken: cancellationToken);
     }
 
     private static async Task DropIndexIfExistsAsync<TDocument>(

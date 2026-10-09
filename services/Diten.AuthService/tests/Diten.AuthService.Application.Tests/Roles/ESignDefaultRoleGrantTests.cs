@@ -87,11 +87,12 @@ public sealed class ESignDefaultRoleGrantTests
         Assert.DoesNotContain(key, DefaultRolePermissionTemplate.DefaultSignerPermissions);
     }
 
+    // E5B CT-Q15 — the set gained esign.signatures.read (E3: exactly sign + my-samples).
     [Fact]
-    public void The_signer_set_is_exactly_sign_and_my_samples()
+    public void The_signer_set_is_exactly_sign_my_samples_and_signature_read()
     {
         Assert.Equal(
-            new[] { "esign.my-samples.manage", "esign.signatures.sign" },
+            new[] { "esign.my-samples.manage", "esign.signatures.read", "esign.signatures.sign" },
             DefaultRolePermissionTemplate.DefaultSignerPermissions.OrderBy(k => k, StringComparer.Ordinal).ToArray());
     }
 

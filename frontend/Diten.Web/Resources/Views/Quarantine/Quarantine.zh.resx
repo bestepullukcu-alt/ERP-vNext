@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Quarantine.Common.Crumb.Root" xml:space="preserve"><value>质量</value></data>
+  <data name="Quarantine.Common.Company.Label" xml:space="preserve"><value>公司</value></data>
+  <data name="Quarantine.Common.Company.Placeholder" xml:space="preserve"><value>请选择公司</value></data>
+  <data name="Quarantine.Common.Company.Required" xml:space="preserve"><value>请选择您所在的公司，以查看其隔离记录。</value></data>
+  <data name="Quarantine.Common.Company.Unavailable" xml:space="preserve"><value>无法加载公司列表。请稍后重试。</value></data>
+  <data name="Quarantine.Common.NamesUnavailable" xml:space="preserve"><value>暂时无法读取产品和库位名称，显示的是标识符。数量是正确的。</value></data>
+  <data name="Quarantine.Common.Back" xml:space="preserve"><value>返回</value></data>
+  <data name="Quarantine.Common.Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Quarantine.Common.Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Quarantine.Common.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Quarantine.Common.Select" xml:space="preserve"><value>请选择</value></data>
+  <data name="Quarantine.Common.Yes" xml:space="preserve"><value>是</value></data>
+  <data name="Quarantine.Common.No" xml:space="preserve"><value>否</value></data>
+  <data name="Quarantine.Common.Days" xml:space="preserve"><value>{0} 天</value></data>
+  <data name="Quarantine.Common.DaysLeft" xml:space="preserve"><value>还剩 {0} 天</value></data>
+  <data name="Quarantine.Common.DaysPast" xml:space="preserve"><value>已超过 {0} 天</value></data>
+  <data name="Quarantine.Common.Target" xml:space="preserve"><value>目标 {0} 天 · 公司</value></data>
+  <data name="Quarantine.Common.ReasonCounter" xml:space="preserve"><value>{0} / 至少 10</value></data>
+  <data name="Quarantine.Common.ReasonMin" xml:space="preserve"><value>理由至少需要 10 个字符。</value></data>
+  <data name="Quarantine.Tabs.Queue" xml:space="preserve"><value>隔离队列</value></data>
+  <data name="Quarantine.Tabs.Blocked" xml:space="preserve"><value>冻结库存</value></data>
+  <data name="Quarantine.Tabs.Retest" xml:space="preserve"><value>复检队列</value></data>
+  <data name="Quarantine.Tabs.Settings" xml:space="preserve"><value>隔离设置</value></data>
+  <data name="Quarantine.Col.Product" xml:space="preserve"><value>产品</value></data>
+  <data name="Quarantine.Col.Lot" xml:space="preserve"><value>批次</value></data>
+  <data name="Quarantine.Col.LotNo" xml:space="preserve"><value>批号</value></data>
+  <data name="Quarantine.Col.Expiry" xml:space="preserve"><value>有效期</value></data>
+  <data name="Quarantine.Col.WarehouseLocation" xml:space="preserve"><value>仓库 / 库位</value></data>
+  <data name="Quarantine.Col.StockStatus" xml:space="preserve"><value>库存状态</value></data>
+  <data name="Quarantine.Col.Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="Quarantine.Col.EnteredAt" xml:space="preserve"><value>入库日期</value></data>
+  <data name="Quarantine.Col.Wait" xml:space="preserve"><value>等待</value></data>
+  <data name="Quarantine.Col.Source" xml:space="preserve"><value>来源 / 单据</value></data>
+  <data name="Quarantine.Col.Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Quarantine.Col.Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Quarantine.Col.BlockReason" xml:space="preserve"><value>冻结原因</value></data>
+  <data name="Quarantine.Col.BlockedAt" xml:space="preserve"><value>冻结日期</value></data>
+  <data name="Quarantine.Col.Pending" xml:space="preserve"><value>是否待决</value></data>
+  <data name="Quarantine.Col.RetestDate" xml:space="preserve"><value>复检日期</value></data>
+  <data name="Quarantine.Col.OnHand" xml:space="preserve"><value>现有库存</value></data>
+  <data name="Quarantine.Col.MoveNo" xml:space="preserve"><value>移动编号</value></data>
+  <data name="Quarantine.Col.Date" xml:space="preserve"><value>日期</value></data>
+  <data name="Quarantine.Col.MoveType" xml:space="preserve"><value>移动类型</value></data>
+  <data name="Quarantine.Col.StatusChange" xml:space="preserve"><value>状态变更</value></data>
+  <data name="Quarantine.Col.User" xml:space="preserve"><value>用户</value></data>
+  <data name="Quarantine.Field.Reason" xml:space="preserve"><value>理由</value></data>
+  <data name="Quarantine.Field.BlockReason" xml:space="preserve"><value>冻结原因</value></data>
+  <data name="Quarantine.Filter.AllWarehouses" xml:space="preserve"><value>全部仓库</value></data>
+  <data name="Quarantine.Filter.AllStockStatuses" xml:space="preserve"><value>全部库存状态</value></data>
+  <data name="Quarantine.Filter.AllSources" xml:space="preserve"><value>全部来源</value></data>
+  <data name="Quarantine.Filter.LateOnly" xml:space="preserve"><value>仅显示逾期</value></data>
+  <data name="Quarantine.Filter.Clear" xml:space="preserve"><value>清除</value></data>
+  <data name="Quarantine.Action.Decide" xml:space="preserve"><value>作出决定</value></data>
+  <data name="Quarantine.Action.Detail" xml:space="preserve"><value>详情</value></data>
+  <data name="Quarantine.Action.Dispose" xml:space="preserve"><value>处置决定</value></data>
+  <data name="Quarantine.Action.Unblock" xml:space="preserve"><value>解除冻结</value></data>
+  <data name="Quarantine.Action.CompleteReview" xml:space="preserve"><value>完成审查</value></data>
+  <data name="Quarantine.Action.BlockStock" xml:space="preserve"><value>冻结库存</value></data>
+  <data name="Quarantine.Action.Quarantine" xml:space="preserve"><value>隔离</value></data>
+  <data name="Quarantine.Status.AVAILABLE" xml:space="preserve"><value>可用</value></data>
+  <data name="Quarantine.Status.QUALITY_INSPECTION" xml:space="preserve"><value>质量检验</value></data>
+  <data name="Quarantine.Status.QUARANTINE" xml:space="preserve"><value>隔离</value></data>
+  <data name="Quarantine.Status.BLOCKED" xml:space="preserve"><value>冻结</value></data>
+  <data name="Quarantine.Status.IN_TRANSIT" xml:space="preserve"><value>在途</value></data>
+  <data name="Quarantine.Status.DAMAGED" xml:space="preserve"><value>损坏</value></data>
+  <data name="Quarantine.Status.EXPIRED" xml:space="preserve"><value>过期</value></data>
+  <data name="Quarantine.HoldState.Waiting" xml:space="preserve"><value>等待中</value></data>
+  <data name="Quarantine.HoldState.InReview" xml:space="preserve"><value>审查中</value></data>
+  <data name="Quarantine.HoldState.Pending" xml:space="preserve"><value>待批准</value></data>
+  <data name="Quarantine.HoldState.Decided" xml:space="preserve"><value>已决定</value></data>
+  <data name="Quarantine.Workflow.Draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Quarantine.Workflow.Submitted" xml:space="preserve"><value>已提交</value></data>
+  <data name="Quarantine.Workflow.PendingApproval" xml:space="preserve"><value>待批准</value></data>
+  <data name="Quarantine.Workflow.Approved" xml:space="preserve"><value>已批准 · 待执行</value></data>
+  <data name="Quarantine.Workflow.Applied" xml:space="preserve"><value>已执行</value></data>
+  <data name="Quarantine.Workflow.Rejected" xml:space="preserve"><value>已驳回</value></data>
+  <data name="Quarantine.Workflow.Cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="Quarantine.Workflow.TimedOut" xml:space="preserve"><value>已超时</value></data>
+  <data name="Quarantine.Workflow.Withdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="Quarantine.Workflow.StartFailed" xml:space="preserve"><value>无法提交审批</value></data>
+  <data name="Quarantine.Workflow.ApplyFailed" xml:space="preserve"><value>无法执行</value></data>
+  <data name="Quarantine.Workflow.FourEyesViolation" xml:space="preserve"><value>违反四眼原则</value></data>
+  <data name="Quarantine.DecisionKind.HoldDecision" xml:space="preserve"><value>隔离决定</value></data>
+  <data name="Quarantine.DecisionKind.Disposition" xml:space="preserve"><value>处置</value></data>
+  <data name="Quarantine.DecisionKind.Unblock" xml:space="preserve"><value>解除冻结</value></data>
+  <data name="Quarantine.DecisionKind.LotRelease" xml:space="preserve"><value>批次放行</value></data>
+  <data name="Quarantine.LineDecision.Release" xml:space="preserve"><value>放行</value></data>
+  <data name="Quarantine.LineDecision.Reject" xml:space="preserve"><value>拒收</value></data>
+  <data name="Quarantine.LineDecision.Block" xml:space="preserve"><value>冻结</value></data>
+  <data name="Quarantine.Source.GoodsReceipt" xml:space="preserve"><value>收货</value></data>
+  <data name="Quarantine.Source.Production" xml:space="preserve"><value>生产</value></data>
+  <data name="Quarantine.Source.CustomerReturn" xml:space="preserve"><value>客户退货</value></data>
+  <data name="Quarantine.Source.Manual" xml:space="preserve"><value>手工</value></data>
+  <data name="Quarantine.Source.Retest" xml:space="preserve"><value>复检</value></data>
+  <data name="Quarantine.Source.Rework" xml:space="preserve"><value>返工</value></data>
+  <data name="Quarantine.Source.OtherInbound" xml:space="preserve"><value>其他入库</value></data>
+  <data name="Quarantine.Origin.QuarantineDecision" xml:space="preserve"><value>隔离决定</value></data>
+  <data name="Quarantine.Origin.ManualBlock" xml:space="preserve"><value>手工冻结</value></data>
+  <data name="Quarantine.Origin.Rework" xml:space="preserve"><value>返工</value></data>
+  <data name="Quarantine.Origin.OtherInbound" xml:space="preserve"><value>其他入库</value></data>
+  <data name="Quarantine.Origin.LotBlocked" xml:space="preserve"><value>冻结批次</value></data>
+  <data name="Quarantine.LotStatus.Draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Quarantine.LotStatus.Released" xml:space="preserve"><value>已放行</value></data>
+  <data name="Quarantine.LotStatus.Blocked" xml:space="preserve"><value>冻结</value></data>
+  <data name="Quarantine.LotStatus.Expired" xml:space="preserve"><value>过期</value></data>
+  <data name="Quarantine.MovementType.OPENING_BALANCE" xml:space="preserve"><value>期初余额</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PO" xml:space="preserve"><value>采购收货</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PROD" xml:space="preserve"><value>生产入库</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_SALES" xml:space="preserve"><value>销售出库</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_PROD" xml:space="preserve"><value>生产领料</value></data>
+  <data name="Quarantine.MovementType.WAREHOUSE_TRANSFER" xml:space="preserve"><value>仓间调拨</value></data>
+  <data name="Quarantine.MovementType.LOCATION_TRANSFER" xml:space="preserve"><value>库位转移</value></data>
+  <data name="Quarantine.MovementType.STATUS_TRANSFER" xml:space="preserve"><value>状态转移</value></data>
+  <data name="Quarantine.MovementType.CUSTOMER_RETURN" xml:space="preserve"><value>客户退货</value></data>
+  <data name="Quarantine.MovementType.SUPPLIER_RETURN" xml:space="preserve"><value>退货给供应商</value></data>
+  <data name="Quarantine.MovementType.COUNT_GAIN" xml:space="preserve"><value>盘盈</value></data>
+  <data name="Quarantine.MovementType.COUNT_LOSS" xml:space="preserve"><value>盘亏</value></data>
+  <data name="Quarantine.MovementType.SCRAP" xml:space="preserve"><value>报废</value></data>
+  <data name="Quarantine.MovementType.WRITE_OFF" xml:space="preserve"><value>核销</value></data>
+  <data name="Quarantine.MovementType.REVERSAL" xml:space="preserve"><value>冲销</value></data>
+  <data name="Quarantine.History.Quarantined" xml:space="preserve"><value>已隔离</value></data>
+  <data name="Quarantine.History.ReviewStarted" xml:space="preserve"><value>已开始审查</value></data>
+  <data name="Quarantine.History.DecisionSubmitted" xml:space="preserve"><value>决定已提交审批</value></data>
+  <data name="Quarantine.History.Approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="Quarantine.History.Rejected" xml:space="preserve"><value>审批被驳回</value></data>
+  <data name="Quarantine.History.Cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="Quarantine.History.TimedOut" xml:space="preserve"><value>已超时</value></data>
+  <data name="Quarantine.History.Withdrawn" xml:space="preserve"><value>决定已撤回</value></data>
+  <data name="Quarantine.History.Applied" xml:space="preserve"><value>库存移动已执行</value></data>
+  <data name="Quarantine.History.ApplyFailed" xml:space="preserve"><value>无法执行</value></data>
+  <data name="Quarantine.History.FourEyesViolation" xml:space="preserve"><value>违反四眼原则 · 无库存移动</value></data>
+  <data name="Quarantine.History.Blocked" xml:space="preserve"><value>已冻结</value></data>
+  <data name="Quarantine.History.ReviewCompleted" xml:space="preserve"><value>审查已完成</value></data>
+  <data name="Quarantine.History.Disposed" xml:space="preserve"><value>处置已执行</value></data>
+  <data name="Quarantine.History.Unblocked" xml:space="preserve"><value>已解除冻结</value></data>
+  <data name="Quarantine.History.SampleRetained" xml:space="preserve"><value>已留样</value></data>
+  <data name="Quarantine.Queue.Title" xml:space="preserve"><value>隔离队列</value></data>
+  <data name="Quarantine.Queue.Kpi.Pending" xml:space="preserve"><value>待决定的行</value></data>
+  <data name="Quarantine.Queue.Kpi.InReview" xml:space="preserve"><value>{0} 行审查中</value></data>
+  <data name="Quarantine.Queue.Kpi.Quantity" xml:space="preserve"><value>总数量 · 按单位</value></data>
+  <data name="Quarantine.Queue.Kpi.Late" xml:space="preserve"><value>超过等待目标</value></data>
+  <data name="Quarantine.Queue.Kpi.ExpirySoon" xml:space="preserve"><value>90 天内到期：{0}</value></data>
+  <data name="Quarantine.Queue.Empty" xml:space="preserve"><value>没有符合筛选条件的隔离记录。</value></data>
+  <data name="Quarantine.Queue.Footer" xml:space="preserve"><value>共 {0} 条记录</value></data>
+  <data name="Quarantine.Queue.Legend.Late" xml:space="preserve"><value>已超过等待目标</value></data>
+  <data name="Quarantine.Queue.Legend.Expiry" xml:space="preserve"><value>有效期 ≤ 90 天</value></data>
+  <data name="Quarantine.Details.Title" xml:space="preserve"><value>隔离记录</value></data>
+  <data name="Quarantine.Details.BackToQueue" xml:space="preserve"><value>返回队列</value></data>
+  <data name="Quarantine.Details.GoToLot" xml:space="preserve"><value>查看批次</value></data>
+  <data name="Quarantine.Details.LateAlert" xml:space="preserve"><value>等待时间超过目标：{0} 天（目标 {1} 天 · 公司）。</value></data>
+  <data name="Quarantine.Details.Fact.Lot" xml:space="preserve"><value>批号</value></data>
+  <data name="Quarantine.Details.Fact.Expiry" xml:space="preserve"><value>有效期</value></data>
+  <data name="Quarantine.Details.Fact.Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="Quarantine.Details.Fact.Where" xml:space="preserve"><value>仓库 / 库位</value></data>
+  <data name="Quarantine.Details.Fact.Wait" xml:space="preserve"><value>等待时间</value></data>
+  <data name="Quarantine.Details.Fact.Source" xml:space="preserve"><value>来源</value></data>
+  <data name="Quarantine.Details.Fact.CreatedBy" xml:space="preserve"><value>创建人</value></data>
+  <data name="Quarantine.Details.Quality.Title" xml:space="preserve"><value>质量信息</value></data>
+  <data name="Quarantine.Details.Quality.Coa" xml:space="preserve"><value>CoA 参考号（来自批次）</value></data>
+  <data name="Quarantine.Details.Quality.LotStatus" xml:space="preserve"><value>批次状态</value></data>
+  <data name="Quarantine.Details.Quality.Note" xml:space="preserve"><value>分析结果备注</value></data>
+  <data name="Quarantine.Details.Quality.NoNote" xml:space="preserve"><value>无分析备注。</value></data>
+  <data name="Quarantine.Details.Quality.Attachments" xml:space="preserve"><value>附件 · 仅引用</value></data>
+  <data name="Quarantine.Details.History.Title" xml:space="preserve"><value>决定历史</value></data>
+  <data name="Quarantine.Details.History.Empty" xml:space="preserve"><value>暂无记录。</value></data>
+  <data name="Quarantine.Details.History.Signature" xml:space="preserve"><value>电子签名 · {0}</value></data>
+  <data name="Quarantine.Details.History.ApproverSignature" xml:space="preserve"><value>审批人签名 · {0}</value></data>
+  <data name="Quarantine.Details.Moves.Title" xml:space="preserve"><value>库存移动</value></data>
+  <data name="Quarantine.Details.Moves.Subtitle" xml:space="preserve"><value>本记录在库存台账中产生的状态变更</value></data>
+  <data name="Quarantine.Details.Moves.Empty" xml:space="preserve"><value>此记录没有库存移动。</value></data>
+  <data name="Quarantine.Details.StartReview" xml:space="preserve"><value>开始审查</value></data>
+  <data name="Quarantine.Details.StartReviewText" xml:space="preserve"><value>记录变为“审查中”；库存不移动。</value></data>
+  <data name="Quarantine.Details.ReviewNote" xml:space="preserve"><value>审查备注（可选）</value></data>
+  <data name="Quarantine.Details.ReviewStarted" xml:space="preserve"><value>记录已进入审查。</value></data>
+  <data name="Quarantine.Workflow.Box" xml:space="preserve"><value>工作流</value></data>
+  <data name="Quarantine.Workflow.NoDecision" xml:space="preserve"><value>没有等待审批的决定。</value></data>
+  <data name="Quarantine.Workflow.LastDecision" xml:space="preserve"><value>最近决定</value></data>
+  <data name="Quarantine.Workflow.Decision" xml:space="preserve"><value>决定</value></data>
+  <data name="Quarantine.Workflow.Decider" xml:space="preserve"><value>决定人</value></data>
+  <data name="Quarantine.Workflow.Approver" xml:space="preserve"><value>审批人</value></data>
+  <data name="Quarantine.Workflow.Instance" xml:space="preserve"><value>实例</value></data>
+  <data name="Quarantine.Workflow.DeciderSignature" xml:space="preserve"><value>决定人签名</value></data>
+  <data name="Quarantine.Workflow.ApproverSignature" xml:space="preserve"><value>审批人签名</value></data>
+  <data name="Quarantine.Workflow.Refresh" xml:space="preserve"><value>刷新状态</value></data>
+  <data name="Quarantine.Workflow.Refreshed" xml:space="preserve"><value>状态已更新：{0}</value></data>
+  <data name="Quarantine.Workflow.Withdraw" xml:space="preserve"><value>撤回决定</value></data>
+  <data name="Quarantine.Workflow.WithdrawTitle" xml:space="preserve"><value>要撤回该决定吗？</value></data>
+  <data name="Quarantine.Workflow.WithdrawText" xml:space="preserve"><value>审批任务将被取消，记录重新打开。库存不移动。</value></data>
+  <data name="Quarantine.Workflow.WithdrawDone" xml:space="preserve"><value>决定已撤回。</value></data>
+  <data name="Quarantine.Workflow.Reapply" xml:space="preserve"><value>重新执行</value></data>
+  <data name="Quarantine.Workflow.ReapplyText" xml:space="preserve"><value>已批准的决定将使用相同的移动键重新执行；已过账的行不会重复过账。</value></data>
+  <data name="Quarantine.Workflow.Reapplied" xml:space="preserve"><value>决定已重新执行。</value></data>
+  <data name="Quarantine.Workflow.SubmitLink" xml:space="preserve"><value>签名并提交</value></data>
+  <data name="Quarantine.Decide.PageTitle" xml:space="preserve"><value>作出决定</value></data>
+  <data name="Quarantine.Decide.Title" xml:space="preserve"><value>作出决定 · {0}</value></data>
+  <data name="Quarantine.Decide.Step.Decision" xml:space="preserve"><value>决定</value></data>
+  <data name="Quarantine.Decide.Step.Sign" xml:space="preserve"><value>电子签名</value></data>
+  <data name="Quarantine.Decide.Step.Skipped" xml:space="preserve"><value>策略关闭 · 跳过此步骤</value></data>
+  <data name="Quarantine.Decide.FourEyes.On" xml:space="preserve"><value>四眼原则已开启：由另一位 QA 用户审批此决定；决定人不能审批自己的决定。</value></data>
+  <data name="Quarantine.Decide.FourEyes.Off" xml:space="preserve"><value>公司策略中四眼原则已关闭；审批仍由决定人以外的人完成。</value></data>
+  <data name="Quarantine.Decide.Partial.Label" xml:space="preserve"><value>部分决定</value></data>
+  <data name="Quarantine.Decide.Partial.Hint" xml:space="preserve"><value>放行部分数量，其余数量另作决定</value></data>
+  <data name="Quarantine.Decide.Field.Decision" xml:space="preserve"><value>决定</value></data>
+  <data name="Quarantine.Decide.Option.Release" xml:space="preserve"><value>库存可用于销售和预留。</value></data>
+  <data name="Quarantine.Decide.Option.Reject" xml:space="preserve"><value>转入冻结库存列表；之后需要处置决定。</value></data>
+  <data name="Quarantine.Decide.Option.Block" xml:space="preserve"><value>库存被冻结；审查继续。</value></data>
+  <data name="Quarantine.Decide.Field.Lines" xml:space="preserve"><value>数量分配</value></data>
+  <data name="Quarantine.Decide.Lines.Pick" xml:space="preserve"><value>请选择决定</value></data>
+  <data name="Quarantine.Decide.Lines.Release" xml:space="preserve"><value>放行 → 可用</value></data>
+  <data name="Quarantine.Decide.Lines.Reject" xml:space="preserve"><value>拒收 → 冻结</value></data>
+  <data name="Quarantine.Decide.Lines.Block" xml:space="preserve"><value>冻结 → 冻结</value></data>
+  <data name="Quarantine.Decide.Lines.Sum" xml:space="preserve"><value>合计 / 可用数量</value></data>
+  <data name="Quarantine.Decide.Field.Coa" xml:space="preserve"><value>已核对 CoA / 分析结果</value></data>
+  <data name="Quarantine.Decide.Field.NewRetest" xml:space="preserve"><value>新的复检日期</value></data>
+  <data name="Quarantine.Decide.NewRetest.Hint" xml:space="preserve"><value>放行已过复检日期的批次需要新的日期（晚于今天，早于有效期）。</value></data>
+  <data name="Quarantine.Decide.Err.Decision" xml:space="preserve"><value>请选择一个决定。</value></data>
+  <data name="Quarantine.Decide.Err.Lines" xml:space="preserve"><value>两行必须是不同的决定，每个数量大于零，且合计等于可用数量。</value></data>
+  <data name="Quarantine.Decide.Err.BlockReason" xml:space="preserve"><value>请选择冻结原因。</value></data>
+  <data name="Quarantine.Decide.Err.Coa" xml:space="preserve"><value>放行前请确认已核对 CoA / 分析结果。</value></data>
+  <data name="Quarantine.Decide.Err.Retest" xml:space="preserve"><value>请输入新的复检日期。</value></data>
+  <data name="Quarantine.Decide.Closed" xml:space="preserve"><value>此记录当前无法作出决定（{0}）。</value></data>
+  <data name="Quarantine.Decide.Button.Next" xml:space="preserve"><value>下一步：电子签名</value></data>
+  <data name="Quarantine.Decide.Button.SignSend" xml:space="preserve"><value>签名并提交</value></data>
+  <data name="Quarantine.Decide.Button.Send" xml:space="preserve"><value>提交审批</value></data>
+  <data name="Quarantine.Sign.Summary" xml:space="preserve"><value>待签名的决定</value></data>
+  <data name="Quarantine.Sign.Info" xml:space="preserve"><value>签名连同用户、日期时间和签名含义一起加入决定。决定将提交审批；库存仅在批准后移动。</value></data>
+  <data name="Quarantine.Sign.NotRequired" xml:space="preserve"><value>策略不要求此决定签名；将不签名提交审批。库存仅在批准后移动。</value></data>
+  <data name="Quarantine.Sign.Movement" xml:space="preserve"><value>批准后的库存移动</value></data>
+  <data name="Quarantine.Sign.ReasonLine" xml:space="preserve"><value>理由：“{0}”</value></data>
+  <data name="Quarantine.Sign.Cancelled" xml:space="preserve"><value>签名已取消；决定未提交。</value></data>
+  <data name="Quarantine.Sent.Toast" xml:space="preserve"><value>已提交审批</value></data>
+  <data name="Quarantine.Sent.Title" xml:space="preserve"><value>已提交审批</value></data>
+  <data name="Quarantine.Sent.Text" xml:space="preserve"><value>{0} 正在等待审批。审批人批准后库存才会移动。</value></data>
+  <data name="Quarantine.Disposition.PageTitle" xml:space="preserve"><value>处置决定</value></data>
+  <data name="Quarantine.Disposition.Title" xml:space="preserve"><value>处置决定 · {0}</value></data>
+  <data name="Quarantine.Disposition.Step" xml:space="preserve"><value>处置</value></data>
+  <data name="Quarantine.Disposition.BlockedQty" xml:space="preserve"><value>冻结 {0}</value></data>
+  <data name="Quarantine.Disposition.Field.Kind" xml:space="preserve"><value>处置方式</value></data>
+  <data name="Quarantine.Disposition.Destroy" xml:space="preserve"><value>销毁</value></data>
+  <data name="Quarantine.Disposition.ReturnToSupplier" xml:space="preserve"><value>退回供应商</value></data>
+  <data name="Quarantine.Disposition.Rework" xml:space="preserve"><value>返工</value></data>
+  <data name="Quarantine.Disposition.Sample" xml:space="preserve"><value>留作样品 / 对照品</value></data>
+  <data name="Quarantine.Disposition.Move.Destroy" xml:space="preserve"><value>报废出库</value></data>
+  <data name="Quarantine.Disposition.Move.ReturnToSupplier" xml:space="preserve"><value>退货出库</value></data>
+  <data name="Quarantine.Disposition.Move.Rework" xml:space="preserve"><value>返工转移（冻结 → 隔离）</value></data>
+  <data name="Quarantine.Disposition.Move.Sample" xml:space="preserve"><value>转移到样品库位（状态仍为冻结）</value></data>
+  <data name="Quarantine.Disposition.Move.Title" xml:space="preserve"><value>批准后库存台账中将生成的移动</value></data>
+  <data name="Quarantine.Disposition.Move.Line" xml:space="preserve"><value>{0} · {1} · {2}</value></data>
+  <data name="Quarantine.Disposition.Field.Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="Quarantine.Disposition.Qty.Hint" xml:space="preserve"><value>最多 {0} · 剩余数量仍为冻结</value></data>
+  <data name="Quarantine.Disposition.Field.Supplier" xml:space="preserve"><value>供应商</value></data>
+  <data name="Quarantine.Disposition.SuppliersUnavailable" xml:space="preserve"><value>无法加载供应商列表。</value></data>
+  <data name="Quarantine.Disposition.Field.ReturnDoc" xml:space="preserve"><value>退货单号</value></data>
+  <data name="Quarantine.Disposition.Field.Method" xml:space="preserve"><value>销毁方式</value></data>
+  <data name="Quarantine.Disposition.Method.INCINERATION" xml:space="preserve"><value>焚烧 · 持证设施</value></data>
+  <data name="Quarantine.Disposition.Method.CHEMICAL_NEUTRALIZATION" xml:space="preserve"><value>化学中和</value></data>
+  <data name="Quarantine.Disposition.Method.LICENSED_MEDICAL_WASTE" xml:space="preserve"><value>交由持证医疗废物公司处理</value></data>
+  <data name="Quarantine.Disposition.Field.Date" xml:space="preserve"><value>销毁日期</value></data>
+  <data name="Quarantine.Disposition.SampleMissing" xml:space="preserve"><value>该仓库未设置样品库位。请在隔离设置中选择。</value></data>
+  <data name="Quarantine.Disposition.Closed" xml:space="preserve"><value>此记录当前无法作出处置决定。</value></data>
+  <data name="Quarantine.Disposition.Err.Kind" xml:space="preserve"><value>请选择处置方式。</value></data>
+  <data name="Quarantine.Disposition.Err.Qty" xml:space="preserve"><value>请输入大于零且不超过 {0} 的数量。</value></data>
+  <data name="Quarantine.Disposition.Err.Supplier" xml:space="preserve"><value>请选择供应商。</value></data>
+  <data name="Quarantine.Disposition.Err.ReturnDoc" xml:space="preserve"><value>请输入退货单号。</value></data>
+  <data name="Quarantine.Disposition.Err.Method" xml:space="preserve"><value>请选择销毁方式。</value></data>
+  <data name="Quarantine.Disposition.Err.Date" xml:space="preserve"><value>请输入销毁日期。</value></data>
+  <data name="Quarantine.Blocked.Title" xml:space="preserve"><value>冻结库存</value></data>
+  <data name="Quarantine.Blocked.Filter.AllReasons" xml:space="preserve"><value>全部冻结原因</value></data>
+  <data name="Quarantine.Blocked.Filter.PendingOnly" xml:space="preserve"><value>仅显示待处置</value></data>
+  <data name="Quarantine.Blocked.Pending.Yes" xml:space="preserve"><value>是 · 待处置</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewed" xml:space="preserve"><value>否 · 审查已完成</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewing" xml:space="preserve"><value>否 · 审查进行中</value></data>
+  <data name="Quarantine.Blocked.ActivePending" xml:space="preserve"><value>决定待批准 · {0}</value></data>
+  <data name="Quarantine.Blocked.UnblockDisabled" xml:space="preserve"><value>审查完成前不能解除冻结</value></data>
+  <data name="Quarantine.Blocked.Info" xml:space="preserve"><value>只有审查已完成的记录才能解除冻结。解除冻结是一项决定：需签名并提交审批，批准后库存变为可用。</value></data>
+  <data name="Quarantine.Blocked.Empty" xml:space="preserve"><value>没有符合筛选条件的冻结库存。</value></data>
+  <data name="Quarantine.Unblock.Title" xml:space="preserve"><value>要解除冻结此库存吗？</value></data>
+  <data name="Quarantine.Unblock.Text" xml:space="preserve"><value>批准后库存由冻结变为可用，并可用于销售/预留。决定需签名并提交审批；此操作会写入决定历史。</value></data>
+  <data name="Quarantine.Unblock.Confirm" xml:space="preserve"><value>解除冻结</value></data>
+  <data name="Quarantine.CompleteReview.Title" xml:space="preserve"><value>要完成审查吗？</value></data>
+  <data name="Quarantine.CompleteReview.Done" xml:space="preserve"><value>审查已完成；现在可以解除冻结。</value></data>
+  <data name="Quarantine.BlockStock.Title" xml:space="preserve"><value>冻结库存</value></data>
+  <data name="Quarantine.BlockStock.Warn" xml:space="preserve"><value>所选可用库存将立即变为冻结（安全方向；无审批流程）。</value></data>
+  <data name="Quarantine.BlockStock.Lot" xml:space="preserve"><value>批次</value></data>
+  <data name="Quarantine.BlockStock.LotSearch" xml:space="preserve"><value>搜索批号</value></data>
+  <data name="Quarantine.BlockStock.Row" xml:space="preserve"><value>库存行（可用）</value></data>
+  <data name="Quarantine.BlockStock.NoRows" xml:space="preserve"><value>此批次没有可用库存。</value></data>
+  <data name="Quarantine.BlockStock.Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="Quarantine.BlockStock.QtyInvalid" xml:space="preserve"><value>请输入大于零且不超过所选行的数量。</value></data>
+  <data name="Quarantine.BlockStock.Note" xml:space="preserve"><value>备注</value></data>
+  <data name="Quarantine.BlockStock.Confirm" xml:space="preserve"><value>冻结</value></data>
+  <data name="Quarantine.BlockStock.Done" xml:space="preserve"><value>库存已冻结 · {0}</value></data>
+  <data name="Quarantine.Retest.Title" xml:space="preserve"><value>复检队列</value></data>
+  <data name="Quarantine.Retest.Info" xml:space="preserve"><value>已过复检日期的批次，在作出质量决定之前不能用于销售、预留和出库。</value></data>
+  <data name="Quarantine.Retest.Horizon" xml:space="preserve"><value>已过期或 {0} 天内到期的批次</value></data>
+  <data name="Quarantine.Retest.State.Upcoming" xml:space="preserve"><value>即将到期</value></data>
+  <data name="Quarantine.Retest.State.DueClosed" xml:space="preserve"><value>已过期 · 禁止使用</value></data>
+  <data name="Quarantine.Retest.State.Quarantined" xml:space="preserve"><value>隔离中</value></data>
+  <data name="Quarantine.Retest.Open" xml:space="preserve"><value>打开隔离记录</value></data>
+  <data name="Quarantine.Retest.Confirm.Title" xml:space="preserve"><value>要隔离此批次吗？</value></data>
+  <data name="Quarantine.Retest.Confirm.Text" xml:space="preserve"><value>批次 {0} 的可用库存（{1}）将立即转为隔离，并加入隔离队列。</value></data>
+  <data name="Quarantine.Retest.Confirm.DefaultReason" xml:space="preserve"><value>复检日期 {0} · 样品送 QC 实验室</value></data>
+  <data name="Quarantine.Retest.Done" xml:space="preserve"><value>{0} 已隔离 · {1} 已加入隔离队列。</value></data>
+  <data name="Quarantine.Retest.Empty" xml:space="preserve"><value>复检队列中没有批次。</value></data>
+  <data name="Quarantine.Submit.PageTitle" xml:space="preserve"><value>提交决定</value></data>
+  <data name="Quarantine.Submit.Title" xml:space="preserve"><value>提交决定 · {0}</value></data>
+  <data name="Quarantine.Submit.Step" xml:space="preserve"><value>决定</value></data>
+  <data name="Quarantine.Submit.Intro" xml:space="preserve"><value>此决定为草稿：请签名并提交审批。库存在批准后移动。</value></data>
+  <data name="Quarantine.Submit.NotDraft" xml:space="preserve"><value>此决定已无法提交（{0}）。</value></data>
+  <data name="Quarantine.Submit.LotRelease" xml:space="preserve"><value>批次 {0} → 放行</value></data>
+  <data name="Quarantine.Settings.Title" xml:space="preserve"><value>隔离设置</value></data>
+  <data name="Quarantine.Settings.Description" xml:space="preserve"><value>公司的隔离规则、审批人、样品库位和冻结原因。</value></data>
+  <data name="Quarantine.Settings.Section.General" xml:space="preserve"><value>常规</value></data>
+  <data name="Quarantine.Settings.WaitTarget" xml:space="preserve"><value>等待目标（天）</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Hint" xml:space="preserve"><value>1–60 天；超过此时间的队列行将被标记。</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Invalid" xml:space="preserve"><value>请输入 1 到 60 之间的天数。</value></data>
+  <data name="Quarantine.Settings.Reconcile" xml:space="preserve"><value>重新读取间隔（秒）</value></data>
+  <data name="Quarantine.Settings.Reconcile.Hint" xml:space="preserve"><value>读取界面时，最多以此频率查询待审批决定的状态。</value></data>
+  <data name="Quarantine.Settings.FourEyes" xml:space="preserve"><value>四眼原则</value></data>
+  <data name="Quarantine.Settings.FourEyes.Hint" xml:space="preserve"><value>决定人不能审批同一决定；执行时会再次检查。</value></data>
+  <data name="Quarantine.Settings.LotRelease" xml:space="preserve"><value>批次放行审批</value></data>
+  <data name="Quarantine.Settings.LotRelease.Hint" xml:space="preserve"><value>草稿或冻结批次放行时需要质量审批。</value></data>
+  <data name="Quarantine.Settings.Approvers" xml:space="preserve"><value>审批候选人</value></data>
+  <data name="Quarantine.Settings.Approvers.Hint" xml:space="preserve"><value>职位或用户；最多 10 个。决定人本人不会作为候选人发送。</value></data>
+  <data name="Quarantine.Settings.Approvers.Kind" xml:space="preserve"><value>类型</value></data>
+  <data name="Quarantine.Settings.Approvers.Value" xml:space="preserve"><value>候选人</value></data>
+  <data name="Quarantine.Settings.Approvers.Position" xml:space="preserve"><value>职位</value></data>
+  <data name="Quarantine.Settings.Approvers.User" xml:space="preserve"><value>用户</value></data>
+  <data name="Quarantine.Settings.Approvers.Empty" xml:space="preserve"><value>无候选人 — 决定无法提交审批。</value></data>
+  <data name="Quarantine.Settings.Approvers.Invalid" xml:space="preserve"><value>请选择职位或输入有效的用户标识。</value></data>
+  <data name="Quarantine.Settings.Approvers.Max" xml:space="preserve"><value>最多可设置 10 个候选人。</value></data>
+  <data name="Quarantine.Settings.SampleLocations" xml:space="preserve"><value>样品库位</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Hint" xml:space="preserve"><value>每个仓库一个可存储库位；留样库存在此仍为冻结。</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Empty" xml:space="preserve"><value>未设置样品库位。</value></data>
+  <data name="Quarantine.Settings.Sample.Warehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="Quarantine.Settings.Sample.Location" xml:space="preserve"><value>样品库位</value></data>
+  <data name="Quarantine.Settings.Add" xml:space="preserve"><value>添加</value></data>
+  <data name="Quarantine.Settings.Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="Quarantine.Settings.Saved" xml:space="preserve"><value>设置已保存。</value></data>
+  <data name="Quarantine.Settings.Template.Section" xml:space="preserve"><value>审批模板</value></data>
+  <data name="Quarantine.Settings.Template.Code" xml:space="preserve"><value>模板代码</value></data>
+  <data name="Quarantine.Settings.Template.Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Quarantine.Settings.Template.Version" xml:space="preserve"><value>已发布版本</value></data>
+  <data name="Quarantine.Settings.Template.Published" xml:space="preserve"><value>已发布</value></data>
+  <data name="Quarantine.Settings.Template.Missing" xml:space="preserve"><value>缺失</value></data>
+  <data name="Quarantine.Settings.Template.Prepare" xml:space="preserve"><value>准备审批模板</value></data>
+  <data name="Quarantine.Settings.Template.Text" xml:space="preserve"><value>INV-QUARANTINE-RELEASE 模板将以您的权限创建并发布；若已存在，则报告其版本。</value></data>
+  <data name="Quarantine.Settings.Template.Created" xml:space="preserve"><value>模板已发布 · 版本 {0}</value></data>
+  <data name="Quarantine.Settings.Template.Existing" xml:space="preserve"><value>模板已发布 · 版本 {0}</value></data>
+  <data name="Quarantine.Settings.Section.BlockReasons" xml:space="preserve"><value>冻结原因</value></data>
+  <data name="Quarantine.Settings.BR.Code" xml:space="preserve"><value>代码</value></data>
+  <data name="Quarantine.Settings.BR.CodeHint" xml:space="preserve"><value>大写字母、数字和下划线；以字母开头（如 QC_REJECT）。之后不可更改。</value></data>
+  <data name="Quarantine.Settings.BR.CodeInvalid" xml:space="preserve"><value>代码格式无效（如 QC_REJECT）。</value></data>
+  <data name="Quarantine.Settings.BR.Name" xml:space="preserve"><value>名称</value></data>
+  <data name="Quarantine.Settings.BR.Active" xml:space="preserve"><value>启用</value></data>
+  <data name="Quarantine.Settings.BR.Locked" xml:space="preserve"><value>已使用</value></data>
+  <data name="Quarantine.Settings.BR.Add" xml:space="preserve"><value>添加冻结原因</value></data>
+  <data name="Quarantine.Settings.BR.Edit" xml:space="preserve"><value>编辑冻结原因</value></data>
+  <data name="Quarantine.Settings.BR.Saved" xml:space="preserve"><value>冻结原因已保存。</value></data>
+  <data name="Quarantine.Settings.Lang.tr" xml:space="preserve"><value>土耳其语</value></data>
+  <data name="Quarantine.Settings.Lang.en" xml:space="preserve"><value>英语</value></data>
+  <data name="Quarantine.Settings.Lang.fr" xml:space="preserve"><value>法语</value></data>
+  <data name="Quarantine.Settings.Lang.es" xml:space="preserve"><value>西班牙语</value></data>
+  <data name="Quarantine.Settings.Lang.zh" xml:space="preserve"><value>中文</value></data>
+  <data name="Quarantine.Settings.Lang.ar" xml:space="preserve"><value>阿拉伯语</value></data>
+  <data name="Quarantine.Settings.Lang.ru" xml:space="preserve"><value>俄语</value></data>
+  <data name="Quarantine.Errors.GENERIC" xml:space="preserve"><value>操作未能完成，请重试。</value></data>
+  <data name="Quarantine.Errors.FORBIDDEN" xml:space="preserve"><value>您没有执行此操作的权限。</value></data>
+  <data name="Quarantine.Errors.UNAUTHORIZED" xml:space="preserve"><value>您的会话已结束，请重新登录。</value></data>
+  <data name="Quarantine.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>暂时无法访问隔离服务，请稍后重试。</value></data>
+  <data name="Quarantine.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>无法加载签名窗口；决定未提交。</value></data>
+  <data name="Quarantine.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>请先选择您所在的公司。</value></data>
+  <data name="Quarantine.Errors.INVALID_REQUEST" xml:space="preserve"><value>请求不完整或有误，请检查字段。</value></data>
+  <data name="Quarantine.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>同一操作以不同内容重复提交。请刷新页面后重试。</value></data>
+  <data name="Quarantine.Errors.REASON_REQUIRED" xml:space="preserve"><value>理由须为 10–1000 个字符。</value></data>
+  <data name="Quarantine.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>此记录属于其他公司。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_NOT_FOUND" xml:space="preserve"><value>未找到隔离记录。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_NOT_FOUND" xml:space="preserve"><value>未找到冻结库存记录。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_FOUND" xml:space="preserve"><value>未找到决定。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_CONFLICT" xml:space="preserve"><value>您查看期间记录已更改。请刷新后重试。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_INVALID" xml:space="preserve"><value>决定无效：单一决定只有一行且为记录全部数量。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_PARTIAL_SUM_MISMATCH" xml:space="preserve"><value>部分决定的合计必须等于记录数量。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_COA_NOT_CONFIRMED" xml:space="preserve"><value>放行需要确认已核对 CoA。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_REQUIRED" xml:space="preserve"><value>拒收 / 冻结需要有效的冻结原因。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_RETEST_DATE_REQUIRED" xml:space="preserve"><value>此放行需要新的复检日期（晚于今天，早于有效期）。</value></data>
+  <data name="Quarantine.Errors.LOT_DATES_INVALID" xml:space="preserve"><value>批次日期不一致（复检日期不能晚于有效期）。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_QUANTITY_INVALID" xml:space="preserve"><value>数量必须大于零且不超过冻结数量。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SUPPLIER_REQUIRED" xml:space="preserve"><value>退回供应商需要供应商和退货单号。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DESTRUCTION_METHOD_REQUIRED" xml:space="preserve"><value>销毁需要方式和不早于 30 天前的日期。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_REQUIRED" xml:space="preserve"><value>策略要求此决定进行电子签名。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_MISMATCH" xml:space="preserve"><value>签名与此决定、您本人或策略含义不符。请重新签名。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_ALREADY_PENDING" xml:space="preserve"><value>此记录已有另一项决定在等待审批。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_DRAFT" xml:space="preserve"><value>此决定不是草稿；无法再次提交。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_PENDING" xml:space="preserve"><value>该决定已不在等待审批。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_APPLICABLE" xml:space="preserve"><value>只有执行失败的决定才能重新执行。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOT_DECIDER" xml:space="preserve"><value>只有决定人可以执行此操作。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_CLOSED" xml:space="preserve"><value>隔离记录已关闭。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_CLOSED" xml:space="preserve"><value>冻结库存记录已关闭。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_LOT_HELD" xml:space="preserve"><value>批次已冻结或过期；只能销毁。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_NOT_SET" xml:space="preserve"><value>该仓库未设置样品库位（隔离设置）。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_INVALID" xml:space="preserve"><value>样品库位必须位于同一仓库、处于启用状态且可存储。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_REVIEW_NOT_COMPLETED" xml:space="preserve"><value>审查完成前不能解除冻结。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_CHANGED" xml:space="preserve"><value>决定期间库存已变化。请重新打开记录。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_RESERVED" xml:space="preserve"><value>部分库存已被预留；预留将无法覆盖，因此未执行任何操作。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOTHING_AVAILABLE" xml:space="preserve"><value>此批次没有可用库存。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_APPROVERS_NOT_CONFIGURED" xml:space="preserve"><value>未设置除您之外的审批候选人（隔离设置）。决定未提交。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_TEMPLATE_MISSING" xml:space="preserve"><value>审批模板未发布。请在隔离设置中使用“准备审批模板”。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_FORBIDDEN" xml:space="preserve"><value>您无权启动审批流程。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_REJECTED" xml:space="preserve"><value>工作流服务拒绝了该请求。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_UNAVAILABLE" xml:space="preserve"><value>工作流服务不可用；未提交任何内容。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_LANGUAGE_MISSING" xml:space="preserve"><value>冻结原因必须提供全部七种语言的名称。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_EXISTS" xml:space="preserve"><value>已存在使用此代码的冻结原因。</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_IN_USE" xml:space="preserve"><value>已使用的冻结原因不能停用。</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOT" xml:space="preserve"><value>未找到批次。</value></data>
+  <data name="Quarantine.Errors.INSUFFICIENT_STOCK" xml:space="preserve"><value>库存不足。</value></data>
+  <data name="Quarantine.Errors.LOT_BLOCKED" xml:space="preserve"><value>批次已冻结；无法执行此移动。</value></data>
+  <data name="Quarantine.Errors.LOT_EXPIRED" xml:space="preserve"><value>批次已过期；无法执行此移动。</value></data>
+  <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>批次已过复检日期；在作出质量决定前不能使用。</value></data>
+  <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>过账期间已关闭。</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>库位未知或不可用。</value></data>
+</root>

@@ -4,8 +4,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.InventoryService.Persistence.Quarantine;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -13,20 +15,30 @@ using Xunit;
 namespace Diten.InventoryService.Tests.TestInfrastructure;
 
 /// <summary>
-/// The REAL host of <see cref="TraceApiFactory"/> with the slice Q1 TEST approval port switched on
-/// (<c>Quarantine:TestApprovalPort:Enabled</c>, allowed because the suite database is a DB-010 test database). Production
-/// keeps the Workflow port; <see cref="WorkflowQuarantineApiFactory"/> (port off, MOD-0023 faked at the HTTP edge) proves that.
+/// The REAL host of <see cref="TraceApiFactory"/> with the TEST approval port of the suite (<see cref="TestApprovalPort"/> +
+/// <see cref="TestApprovalController"/>, both in this test assembly since Q5 O-Q2-5) in place of the Workflow port. Production
+/// code has the Workflow port only; <see cref="WorkflowQuarantineApiFactory"/> (no test port, MOD-0023 faked at the HTTP edge)
+/// runs that production wiring.
 /// </summary>
 public class QuarantineApiFactory : TraceApiFactory
 {
-    /// <summary>The Q1 test approval port; off in <see cref="WorkflowQuarantineApiFactory"/> (the production Workflow port).</summary>
+    /// <summary>The test approval port; off in <see cref="WorkflowQuarantineApiFactory"/> (the production Workflow port).</summary>
     protected virtual bool TestApprovalPort => true;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
-        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
-            new Dictionary<string, string?> { ["Quarantine:TestApprovalPort:Enabled"] = TestApprovalPort ? "true" : "false" }));
+        if (!TestApprovalPort)
+        {
+            return;
+        }
+
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<Diten.InventoryService.Application.Features.Quarantine.Ports.IQuarantineApprovalPort>();
+            services.AddScoped<Diten.InventoryService.Application.Features.Quarantine.Ports.IQuarantineApprovalPort, TestApprovalPort>();
+            services.AddControllers().AddApplicationPart(typeof(TestApprovalController).Assembly);
+        });
     }
 
     /// <summary>Runs the intake sweep once for one tenant (the hosted sweep is off in tests).</summary>

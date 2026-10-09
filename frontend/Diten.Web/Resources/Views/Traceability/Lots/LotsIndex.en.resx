@@ -661,4 +661,9 @@
   <data name="Validation.Required" xml:space="preserve">
     <value>This field is required.</value>
   </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>Sent for approval</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>The lot release is waiting for a quality approval; the lot status changes after approval. Open the Send decision page to sign and send the decision.</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>Open the Send decision page</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>Awaiting approval</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>Release decision awaiting approval · {0}</value></data>
 </root>

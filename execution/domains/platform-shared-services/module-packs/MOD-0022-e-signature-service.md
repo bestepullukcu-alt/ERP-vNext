@@ -205,8 +205,8 @@ An architecture test pins this (§17).
 
 Indexes: unique `(TenantId, SignatureNumber)`; unique `(TenantId, SignerUserId, IdempotencyKey)`;
 `(TenantId, Module, SubjectType, SubjectId, SignedAtUtc desc)`; `(TenantId, SignedAtUtc desc)` (export);
-`(TenantId, SignerUserId, SignedAtUtc desc)`; `(TenantId, RequestId)`; unique partial `(TenantId, Context.workflowTaskId)`
-where present (one signature binds one task — E4).
+`(TenantId, SignerUserId, SignedAtUtc desc)`; `(TenantId, RequestId)`; partial lookup `(TenantId, Context.workflowTaskId)`
+where present (E5B: no longer unique — a task can be re-signed; one signature binds one APPROVAL, enforced by the E4 gate).
 
 ### Other entities
 
@@ -1535,6 +1535,46 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   - O-E5W2-3: the company lists depend on MDM access.
   - W-0022-01: no Python.
   - The MVP-1 checkout has merged E5B and Q5 since the base: merge before any push.
+
+### E5B — implementation note (WP-0022-E5B, 2026-10-09; agent result, pending CT)
+
+- Branch `feature/sce/mod-0022-e5b` from `562afeaa5` (isolated worktree). Commit `4caca506d` (Platform ESign schema / repository /
+  handler + tests, AuthService default-role template + tests); local only, no push. Evidence:
+  `docs/records/audits/2026-10/mod-0022-e5b-evidence-2026-10-09.md`. Contract unchanged — measured: `esign.openapi.yaml` promises no
+  "one signature per task" (`signSubject` does not even list `ESIGN_SIGNATURE_MISMATCH`; the addendum's "no binding to another task"
+  is the approval-time rule the gate keeps).
+- **FU-0022-E4-01 closed (agent):** `ux_esign_records_tenant_workflow_task` (unique) → lookup `ix_esign_records_tenant_workflow_task`
+  (same keys, same partial filter). A task can be re-signed after an invalidated / wrongly-meant signature. "One signature binds one
+  approval" lives only in the E4 gate (context task + single use on the transition log; `ESignatureGate.cs` unchanged); a task is
+  approved once, so it holds at most one BOUND signature. `ESignatureTaskBindingException` removed.
+- Startup step `ESignatureSchemaMigrations` (called last in `PlatformSchemaMigrations.RunAsync`, before the manifest): drops the old
+  index only when name AND every stored option equal E2's (mongod 9 reports `collation: {locale: "simple"}` — accepted as "none");
+  anything else under that name is left and logged as WARNING; idempotent. Runtime: base build → E5B startup 1 drops + builds the
+  lookup index, startup 2 logs "absent — nothing to do", index list identical.
+- **CT-Q15:** `esign.signatures.read` joins `DefaultSignerPermissions` (new tenants; no reconciler grant). Measured: the default Viewer
+  already received it through the generic Tenant-read clause, so the effective grant of a new tenant is unchanged — the key is now an
+  explicit member of the signer set.
+- Tests: Platform filtered 581 → **594/594** (+5 re-sign, +8 index migration; the O-E4-1 measurement test now expects 201 + 200);
+  AuthService 1062 → **1063/1063**; Web 630/632 (same 2 quarantine reds); architecture 18/18; no new build warning. K3: (a) gate single
+  use, (b) CT-Q15 line, (c) exact-match condition → red, restored clean. Probe (own AuthService + base / E5B Platform, own mongod)
+  **25/25**. Owner fleet untouched.
+- **OPEN for the CT:** O-E5B-1 §4 index sentence is stale (CT edits §4); O-E5B-2 optional §11.70 wording "one signature binds one
+  approval"; O-E5B-3 `DataSeeder` tops up the seed tenant's default roles on every AuthService start (pre-existing, outside CT-D10 (b));
+  the evidence §7 records one unintended run of `PlatformSchemaContractMongoTests` against 27017 during the baseline (own-prefix test DB,
+  dropped by the test).
+
+### E5B — CT acceptance (2026-10-09)
+
+- **CT-ACCEPTED.** CT re-ran Platform filtered **594/594**, AuthService Application **1063/1063**, Web **630/632** (the 2 known quarantine
+  nav keys, MOD-0175 Q5), architecture **18/18** in the agent worktree; read `ESignatureSchemaMigrations` (drop only on the exact E2
+  name + options; mongod 9 `{locale:"simple"}` = no collation; idempotent) and the manifest change. CT sabotage (own): collation
+  check removed (any collation accepted) → `An_index_of_that_name_with_another_definition_is_left_untouched(extra-option)` red,
+  restored, porcelain clean. One call added to `PlatformSchemaMigrations.RunAsync` — the documented place for retired-index drops,
+  accepted. O-E5B-1 fixed by the CT (§4 index sentence). O-E5B-2: §11.70 reads "one signature binds one approval" in spirit —
+  kept. O-E5B-3 (`DataSeeder` completes the seed tenant's default roles at every AuthService start, since E3) → FU-0022-SEED-01:
+  confirm it is limited to the seed tenant and record it as an exception to CT-D10. Note: the `~Workflow` / schema filters open
+  test-prefixed databases on 27017 (since E4) — accepted, test databases are dropped; fleet processes untouched. Merged into the
+  MVP-1 branch.
 
 ## 20. Follow-up Items
 

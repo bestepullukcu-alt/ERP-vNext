@@ -991,6 +991,11 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Seri Gezgini</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>İzlenebilirlik</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Elle Girilmiş Lotları Aktarma</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Kalite</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>Karantina Kuyruğu</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Bloke Stok</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>Yeniden Test Kuyruğu</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Karantina Ayarları</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>e-İmza</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>İmzam</value></data>
   <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>İmza Talepleri</value></data>

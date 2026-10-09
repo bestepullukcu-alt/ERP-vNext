@@ -13,45 +13,14 @@ public sealed record ApprovalStart(bool Started, string? InstanceId, string? Err
 }
 
 /// <summary>
-/// Where a submitted decision goes for approval (pack §1 Q1: "driven by an internal approval port"). Slice Q1 ships two
-/// implementations: <see cref="UnavailableApprovalPort"/> (the production default — no approval path exists before the
-/// Workflow integration of Q2, so a submit fails closed with <c>QUARANTINE_WORKFLOW_UNAVAILABLE</c> and NOTHING moves:
-/// DEC-INV-08, no release without workflow) and <see cref="InternalTestApprovalPort"/> (tests and the own-instance runtime
-/// probe on a DB-010 test database only). Q2 replaces both by the Workflow client.
+/// Where a submitted decision goes for approval (pack §1 Q1: "driven by an internal approval port"). Production has ONE
+/// implementation since Q5 (O-Q2-5): <c>WorkflowApprovalPort</c> — MOD-0023 (DEC-INV-08, KQ-F: no release without workflow).
+/// The Q1 test port lives in the test suite only.
 /// The outcome comes back through <c>QuarantineOutcomeApplier</c>.
 /// </summary>
 public interface IQuarantineApprovalPort
 {
     Task<ApprovalStart> StartAsync(QuarantineDecision decision, CancellationToken cancellationToken = default);
-}
-
-/// <summary>Production default of slice Q1: the Workflow integration is slice Q2 — refuse, fail-closed.</summary>
-public sealed class UnavailableApprovalPort : IQuarantineApprovalPort
-{
-    public Task<ApprovalStart> StartAsync(QuarantineDecision decision, CancellationToken cancellationToken = default)
-        => Task.FromResult(ApprovalStart.Failed(QuarantineErrorCodes.WorkflowUnavailable, 503,
-            "The approval workflow is not connected yet (MOD-0175 slice Q2); the decision was not sent and no stock moved."));
-}
-
-/// <summary>
-/// Test approval port (Q1): accepts every submit with a synthetic instance id <c>test:{decisionId}</c>; the test (or the
-/// probe) then reports the outcome through the test-approval endpoint. Registered only when
-/// <c>Quarantine:TestApprovalPort:Enabled</c> is true AND the database is a DB-010 test database (startup refuses otherwise).
-/// </summary>
-public sealed class InternalTestApprovalPort : IQuarantineApprovalPort
-{
-    public const string InstancePrefix = "test:";
-
-    public Task<ApprovalStart> StartAsync(QuarantineDecision decision, CancellationToken cancellationToken = default)
-        => Task.FromResult(ApprovalStart.Ok(InstancePrefix + decision.Id.ToString("D")));
-}
-
-/// <summary>Configuration of the test approval port (section <c>Quarantine:TestApprovalPort</c>).</summary>
-public sealed class QuarantineTestApprovalOptions
-{
-    public const string SectionName = "Quarantine:TestApprovalPort";
-
-    public bool Enabled { get; set; }
 }
 
 /// <summary>An active reservation of a SKU (CT-Q6 refusal details).</summary>
