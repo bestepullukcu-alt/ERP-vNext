@@ -380,3 +380,14 @@ Geri alındı, touch yapıldı; tam tur yeşil.
 - tenant seti yalnız `CatalogLoad:TenantId` (97c5) için yükleniyor; başka kiracıda 503.
 
 **Sıradaki:** fleet yeniden başlatılınca canlı kontrol: set oluştu mu, `reasons`, `calendar`, `reschedule-options`.
+
+### Sözleşme eki 2 — iki adımlı "Kaydet" davranışı (BE-a ajanı doğruladı, 2026-10-09)
+1. **Yarıda kalan kayıt güvenle tekrarlanır.** 1. adım geçip 2. adım düşerse (ağ, 503) taslak kalır. Yeniden "Kaydet" iki çağrıyı tekrar yapar: 1. adım taslağın üzerine yazar, 2. adım kesinleştirir.
+2. **Çift tıklama ikinci ziyaret açmaz.** 2. adım 60 dk içinde tekrar çağrılırsa hata dönmez ve yeni ziyaret oluşmaz. 60 dk'dan sonra `409 visit_report_edit_window_closed` döner.
+3. **Erteleme tarihi iki adımda da kontrol edilir.** Hata kodu her iki adımda `visit_reschedule_date_invalid`.
+4. **Not:**
+   - sınır 500 (`maxNoteLength`, sözleşme ucu); aşılırsa `visit_reason_note_too_long`;
+   - Web yalnız `reasonNote` gönderir (`rescheduleNotes` göndermez).
+5. **Durum hataları:**
+   - 48 sa son tarih geçtiyse iki adım da `409 visit_report_deadline_passed` (read-all muaf);
+   - taslak yoksa ya da sonucu farklıysa 2. adım `409 visit_report_invalid_transition` döner.
