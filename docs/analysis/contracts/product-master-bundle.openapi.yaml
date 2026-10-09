@@ -7,7 +7,7 @@ info:
     Model B (Product) bu contract'ta YOK (DEC-INV-17). Tenant+LegalEntity scoped (server-resolved).
     Mock: `prism mock product-master-bundle.openapi.yaml`.
     v1.1 (MOD-0290-FU04 Kalem / Malzeme Ana Kaydı; stok ekibiyle uzlaşma 2026-10-07, ürün ana verisi planı §4a) —
-    YALNIZ EKLEME, tek bilinçli istisna O-1 davranış daralmasıdır (aşağıda). Dışarıya TEK okuma sözleşmesi vardır:
+    YALNIZ EKLEME, tek bilinçli istisna O-1 davranış daralmasıdır (aşağıda; 2026-10-09 stok ekibinin koşullu kabulüyle lot / seri bayrakları daralmanın DIŞINDA, OD-1). Dışarıya TEK okuma sözleşmesi vardır:
     mevcut v1 yolları (`getProduct`, `getSku`, `resolveSkuProduct`, `getSkuUom`, `validateRefs`) malzeme kalemini de
     (`itemKind: Item`) cevaplar. Yeni yollar (`/items/{itemId}`, `/stockable-items`, `/skus/bulk-read`) eklenir ama
     eskilerin yerine geçmez. Kalemde kalem kimliği = SKU kimliği (`skuId == itemId`, `skuLevel: Item`); SKU → kalem
@@ -16,7 +16,7 @@ info:
     satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
     tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
     kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
-  version: 1.1.0-draft.4
+  version: 1.1.0-draft.5
   x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
@@ -24,11 +24,13 @@ info:
   x-notes:
     - "Açık enum kuralı: Yanıt enum'ları AÇIKTIR. Tüketici bilinmeyen değeri hata saymaz: LifecycleStatus'ta 'yeni hareket yok' (ters kayıt yine kabul), diğerlerinde değeri olduğu gibi taşır. Kesin enum üreten istemci kullanılmaz. İstek parametresinde bilinmeyen değer 400."
     - "Yetkili okuma: stok davranışı için yetkili okuma `getSku`'dur (kalem için `getSku(level=Item)`); `getProduct`'taki kalem alanları aynı değerleri taşır. Kalemde `serialControlled: false` 'uygulanmaz' demektir (kalemde seri takibi yoktur)."
-    - "Davranış daralması (O-1): v1.1 sunucusu Global Ürün (`itemKind: GlobalProduct`) yanıtında ProductRef'in v1.0 stok alanlarını döndürmez; bu alanlar SKU düzeyinden (`getSku`) okunur. Alan yok = bilinmiyor; false / 0 varsayılmaz. Stok ekibinin yazılı onayı bekleniyor."
+    - "Davranış daralması (O-1) — stok ekibi KOŞULLU KABUL etti (2026-10-09, OD-1): v1.1 sunucusu Global Ürün (`itemKind: GlobalProduct`) yanıtında ProductRef'in beş v1.0 stok alanını (`baseUomId`, `shelfLifeDays`, `minRemainingShelfLifeDays`, `storageCondition`, `retestDays`) döndürmez; bunlar SKU düzeyinden (`getSku`) okunur. Alan yok = bilinmiyor; false / 0 varsayılmaz. `lotControlled` ve `serialControlled` Global Ürün yanıtında KALIR (`deprecated`): `lotControlled` = Global Ürünün emekli olmayan bütün GSKU'larında aynı ise o değer, değilse (GSKU yok, değerler farklı ya da biri null) null; `serialControlled` = aynı kural, emekli olmayan LSKU ve Bitmiş Ürünleri üzerinde. SKU değeriyle çelişirse SKU geçerlidir. Bu iki alan Global Ürün yanıtından ancak bir ana sürümde (v2.0), bütün tüketiciler `getSku`'ya geçtikten sonra kalkar."
     - "`itemKind` yoksa GlobalProduct'tır (v1.0 sunucusu ve v1.0 örnekleri bu alanı taşımaz)."
+    - "Tek durum listesi (2026-10-09, stok ekibi R-10): yayımlanan durumlar `Draft`, `Active`, `Deactivated`, `Retired`; v1.0 `Archived` hiç yayımlanmaz. İç durum eşlemesi `LifecycleStatus` açıklamasındadır. `Deactivated` yalnız malzeme kaleminde vardır ve geri alınabilir: yeniden etkinleştirme onayıyla `Active` olur (onay beklerken `Deactivated` yayımlanır). Global Ürün, GSKU, LSKU ve Bitmiş Üründe `Deactivated` yoktur; bu kayıtlar `Active`'ten yalnız `Retired`'a geçer. `Retired` geri alınmaz."
+    - "Etkinleştirme kuralı (2026-10-09, stok ekibi R-04): `Active` bir kayıtta, seviyesinde uygulanan lot / seri bayrağı null olmaz. `lotControlled`: Item, Gsku, Lsku (GSKU'dan) ve FinishedGood'da `Active` iken dolu. `serialControlled`: Item'da false (uygulanmaz), Lsku ve FinishedGood'da `Active` iken dolu, Gsku'da her zaman null (seri takibi LSKU / Bitmiş Ürün düzeyinde karar verilir). Bayrak eksik kayıt onaylanmaz (kalem etkinleştirmesi S2, ürün kimlik onayı S3b uygular). Taslakta null olabilir."
     - "`canonicalCode` opaktır, ayrıştırılmaz. Gerçek biçim RCS-001 §4: `GP-` / `GS-` / `LS-` / `FG-` / `IT-` + 12 hane. v1.0 örneklerindeki `GP-000123` ve `LSKU-TR-000045` eski taklit değerleridir."
     - "`contractVersion`: sunucu her yanıtta yayımlanan sürümü döner; tüketici bu alanla dallanmaz."
-    - "Birim kodları veridir (MOD-0048 Referans Veri Yönetimi, `item-uom` listesi, UN/ECE Rec 20); tüketici sabit kodlamaz. v1.0 örneklerindeki EA, BOX, PALLET yalnız örnektir. Kutu / koli için kesin kodlar S1'de tohumdan önce doğrulanır (O-21); örneklerdeki XBX / XCS bu doğrulamaya tabidir."
+    - "Birim kodları veridir (MOD-0048 Referans Veri Yönetimi, `item-uom` listesi, UN/ECE Rec 20); tüketici sabit kodlamaz. v1.0 örneklerindeki EA, BOX, PALLET yalnız örnektir. Kutu / koli için kesin kodlar S1'de tohumdan önce doğrulanır (O-21); örneklerdeki XBX / XCS bu doğrulamaya tabidir. Uluslararası ünite için listede yerel `IU` kodu vardır; UN/ECE Rec 20 dışıdır ve listede öyle işaretlidir (kalite birimi kararı 2026-10-09; Rec 20'nin `HIU` = 100 IU kodu kullanılmaz)."
     - "Ondalık metinler (Decimal) tam (exact) ayrıştırılır; double / float kullanılmaz. Birim çevriminde pay ve payda her zaman sıfırdan büyüktür (v1.1 kuralı, açıklama olarak; dondurulmuş v1.0 `UomConversion` şeması değiştirilmedi)."
     - "Taslak ve eksik kayıtlar: zorunlu stok alanı henüz dolmamış kayıtta (taslak ya da ilk doldurmadan önce) SkuRef'te alan null, ProductRef'te alan yok döner ve `stockable` false'tur. Kalemde `shelfLifeDays` / `retestDays` dolu ya da null olabilir (O-9). Ambalaj dışı kalemde boş `storageConditions` listesi `stockable: true`'yu engeller (CT kararı)."
     - "Stok hareket kuralı stok tarafından uygulanır; MDM yalnız durumu ve `stockable`'ı yayımlar. `stockable: false` kayıtta stok yeni hareket kabul etmez (ters kayıt hariç) — CT kararı (LifecycleStatus açıklaması)."
@@ -37,7 +39,7 @@ info:
     - "Prism ile büyük başlık: Node'un varsayılan başlık sınırı küçüktür; taklidi `NODE_OPTIONS=--max-http-header-size=65536 npx @stoplight/prism-cli mock <dosya>` ile çalıştırın (DOĞRULANMADI)."
     - "Sözdizimi: v1.0 alanları OpenAPI 3.0 tarzı `nullable: true` taşır ve değiştirilmez; v1.1'de eklenen alanlar 3.1 sözdizimini (`type: [x, 'null']`, `anyOf: [$ref, {type: 'null'}]`) kullanır. Anlam aynıdır."
     - "Örnekler: her işlem adlı örnekler (`examples`) taşır; ilk örnek v1.0 dosyasındaki örnektir (Prism varsayılan cevabı değişmez) ve 'v1.0-mock-only' işaretlidir."
-    - "v1.1'de OLMAYAN (sonra): kalem GTIN'i; GSKU seri takibi; koli / palet GTIN'i ve ambalaj hiyerarşisi (MOD-0178 Yerleştirme / Toplama / Paketleme, P9); tehlike sınıfı, CoA zorunlu mu, girişte varsayılan karantina (MOD-0175 Karantina / Bloke Stok)."
+    - "v1.1'de OLMAYAN (sonra): kalem GTIN'i; LSKU satış kutusu GTIN'i (alan var, ürün ana verisi planı P6'ya kadar null); GSKU seri takibi; koli / palet GTIN'i ve ambalaj hiyerarşisi (MOD-0178 Yerleştirme / Toplama / Paketleme, P9); tehlike sınıfı, CoA zorunlu mu, girişte varsayılan karantina (MOD-0175 Karantina / Bloke Stok)."
     - "Açık maddeler ve CT kararları (2026-10-07): execution/domains/master-data-management/module-packs/MOD-0290-FU04-item-material-master.md §25.1."
   x-changelog:
     - date: "2026-10-06"
@@ -52,6 +54,9 @@ info:
     - date: "2026-10-07"
       version: 1.1.0-draft.4
       note: "S0-FIX1 (bağımsız inceleme, 945fee37c): davranış daralması (O-1) — stok ekibinin yazılı onayı bekleniyor; ProductRef'in v1.0 stok alanlarına `deprecated: true` + açıklama; açık enum kuralı; bütün işlemlerde adlı örnekler (ilk örnek v1.0 örneği, 'v1.0-mock-only'); materialType yanıt alanları MaterialType'a bağlandı; StorageConditionCode beş kodla enum; getSkuUom'a 404, /stockable-items · /skus/bulk-read · /validate'e 400; validateRefs `refs` en çok 200; çevrim pay / paydasının sıfırdan büyük olması v1.1 açıklaması olarak (dondurulmuş UomConversion şemasına dokunulmadı — CT kararı); yalnız yeni v1.1 şemalarına `required`; v1.1 alanlarında 3.1 sözdizimi; BulkSkuReadItem'a lifecycleStatus; arama / toplu okuma / doğrulama anlamları; v1.0 kopyası ayrı dosyada. v1.0'da bilinçli değişen satırlar: `example` → `examples` (değerler aynı), ProductRef stok alanlarının açıklaması, getSkuUom 404, /validate 400, `refs` maxItems, UomInfo / ValidateRequest / ValidateResponse'a eklenen açıklama."
+    - date: "2026-10-09"
+      version: 1.1.0-draft.5
+      note: "Stok ekibinin koşullu kabulü (2026-10-09, OD-1 … OD-7, R-04 / R-06 / R-09 / R-10 / R-11) işlendi: Global Ürün yanıtında `lotControlled` / `serialControlled` kalır (deprecated, değer kuralı x-notes'ta; v2.0'da kalkar), beş stok alanı SKU'dan okunur; SkuRef'e `minRemainingShelfLifeDays` eklendi, `retestDays` / `minRemainingShelfLifeDays` GSKU'da (LSKU ve Bitmiş Ürün GSKU'dan) — boş olabilir; seviye tablosu ve alan bazında boş olabilirlik güncellendi; etkinleştirme kuralı (Active kayıtta lot / seri null olmaz); tek durum listesi ve `Deactivated`'ın geri alınabilirliği; `getSkuUom`'a isteğe bağlı `level` (verilirse getSku ile aynı kural; verilmezse v1.0 davranışı); `IU` yerel birim kodu notu; LSKU GTIN'i P6'ya kadar null. v1.0 parçaları değişmedi (getSkuUom'a eklenen parametre isteğe bağlıdır)."
 servers:
   - url: /api/product-master
 security:
@@ -284,6 +289,11 @@ paths:
       description: "v1.1 — Kalem için `skuId == itemId`; seviye kimlikten sunucuda çözülür. Yön: 1 `fromUom` = `numerator` / `denominator` `toUom`; çevrim girildiği yönde yayımlanır, tüketici grafı iki yönde kesin kesirle (ters yön payda / pay) yürür. Pay ve payda her zaman sıfırdan büyük ondalık metindir (v1.1 kuralı; işaret ve üs gösterimi yok), MDM yuvarlamaz, tüketici tam ayrıştırır (double yok). Yalnız kaydın kullandığı birimlerin çiftleri döner. Her birim temel birime en çok 4 adımda ulaşır; 'adım' = graftaki kenar sayısı (stok 4 adıma kadar zincirler). Aynı boyuttaki çevrimlerin (KGM ↔ GRM, LTR ↔ MLT) değeri MOD-0048 `item-uom` çarpanından türetilir ve listede açıkça döner; tüketici hesaplamaz. GSKU: kutu ↔ adet. Lsku: üst GSKU'nun çevrimleri (O-3). Bitmiş Ürün: koli ↔ kutu + üst GSKU'nun kutu ↔ adet çevrimi; temel birim ↔ kutu ↔ koli tek çağrıda okunur. `effectiveFrom` / `effectiveTo` v1.1'de null (geçerlilik aralığı yok; etkin kayıtta çevrim eklenir, değiştirilmez)."
       parameters:
         - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
+        - name: level
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/SkuLevel' }
+          description: "v1.1 — isteğe bağlı. Verilirse `getSku` ile birebir aynı kural: bilinmeyen değer 400, kimlik başka seviyede varsa 404. Verilmezse seviye kimlikten sunucuda çözülür (v1.0 davranışı)."
       responses:
         '200':
           description: UoM bilgisi
@@ -586,8 +596,9 @@ components:
             (kural: kayıtta en çok bir sıcaklık koşulu — CT kararı, MOD-0290-FU04 O-2).
           - `shelfLifeDays` / `retestDays` dolu ya da null (O-9). `minRemainingShelfLifeDays` isteğe bağlı (O-7).
           - Zorunlu stok alanı dolmamış kalemde (taslak) alan yok döner ve `stockable` false'tur.
-        `itemKind: GlobalProduct` (ya da alan yok) ise stok davranışı SKU düzeyindedir: v1.1 sunucusu bu türde v1.0 ve
-        v1.1 stok alanlarını döndürmez (O-1, `deprecated` işaretli alanlar); yetkili okuma `getSku`.
+        `itemKind: GlobalProduct` (ya da alan yok) ise stok davranışı SKU düzeyindedir: v1.1 sunucusu bu türde beş v1.0
+        stok alanını ve v1.1 stok alanlarını döndürmez (O-1); `lotControlled` / `serialControlled` döner (deprecated,
+        OD-1, değer kuralı x-notes'ta). Yetkili okuma `getSku`.
       properties:
         itemId: { type: string, format: uuid }
         canonicalCode: { type: string }
@@ -598,8 +609,8 @@ components:
         minRemainingShelfLifeDays: { type: integer, nullable: true, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında isteğe bağlıdır (O-7); `deprecated` yalnız Global Ürün kullanımını işaretler." }
         storageCondition: { type: string, nullable: true, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında sıcaklık koşulu kodunu taşır (O-2); `deprecated` yalnız Global Ürün kullanımını işaretler." }
         retestDays: { type: integer, nullable: true, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında dolu ya da null döner (O-9); `deprecated` yalnız Global Ürün kullanımını işaretler." }
-        lotControlled: { type: boolean, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında dolu döner; `deprecated` yalnız Global Ürün kullanımını işaretler." }
-        serialControlled: { type: boolean, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında her zaman false = uygulanmaz; `deprecated` yalnız Global Ürün kullanımını işaretler." }
+        lotControlled: { type: boolean, nullable: true, deprecated: true, description: "Global Ürün yanıtında KALIR (OD-1, 2026-10-09): emekli olmayan bütün GSKU'larda aynı ise o değer, değilse null; SKU değeriyle çelişirse SKU geçerlidir; yetkili okuma getSku. v2.0'da Global Ürün yanıtından kalkar. Kalem (itemKind: Item) yanıtında kalemin değeri. `deprecated` yalnız Global Ürün kullanımını işaretler." }
+        serialControlled: { type: boolean, nullable: true, deprecated: true, description: "Global Ürün yanıtında KALIR (OD-1, 2026-10-09): emekli olmayan bütün LSKU ve Bitmiş Ürünlerde aynı ise o değer, değilse null; SKU değeriyle çelişirse SKU geçerlidir; yetkili okuma getSku. v2.0'da Global Ürün yanıtından kalkar. Kalem (itemKind: Item) yanıtında her zaman false = uygulanmaz. `deprecated` yalnız Global Ürün kullanımını işaretler." }
         contractVersion: { type: string }
         itemKind: { $ref: '#/components/schemas/ItemKind' }
         materialType: { anyOf: [{ $ref: '#/components/schemas/MaterialType' }, { type: 'null' }], description: "v1.1 — Item'da dolu; GlobalProduct yanıtında yok" }
@@ -617,12 +628,17 @@ components:
           | baseUomId          | dolu            | dolu              | GSKU'dan (O-3) | dolu (= üst GSKU'nunki, O-14)           |
           | shelfLifeDays      | dolu ya da null | dolu (ruhsatlı)   | GSKU'dan (O-3) | kendi değeri (≤ GSKU); boşsa üst GSKU'dan |
           | shelfLifeDaysSource| Own             | Own               | Gsku (O-3)     | Own ya da Gsku                          |
-          | retestDays         | dolu ya da null | null              | null           | null                                    |
+          | retestDays         | dolu ya da null | dolu ya da null   | GSKU'dan (O-3) | GSKU'dan                                |
+          | minRemainingShelfLifeDays | dolu ya da null | dolu ya da null | GSKU'dan (O-3) | GSKU'dan                         |
           | storageConditions  | dolu            | dolu              | GSKU'dan (O-3) | dolu                                    |
           | lotControlled      | dolu            | dolu              | GSKU'dan (O-3) | dolu                                    |
-          | serialControlled   | false (uyg. değil) | null (sonra)   | dolu           | dolu                                    |
+          | serialControlled   | false (uyg. değil) | null (seviyesi değil) | dolu    | dolu                                    |
           | stockable          | dolu            | dolu              | GSKU'dan (O-3) | dolu                                    |
-          | gtin (v1.0 alanı)  | null (sonra)    | null (gereksiz)   | null (O-6)     | satış kutusu GTIN-14, İTS (01) (D-1)    |
+          | gtin (v1.0 alanı)  | null (sonra)    | null (gereksiz)   | null (P6'ya kadar, O-6) | satış kutusu GTIN-14, İTS (01) (D-1) |
+        "dolu" sütunları `Active` kayıt içindir; taslakta null olabilir. `lotControlled` ve `serialControlled` için
+        `Active` kayıtta seviyesinde uygulanan bayrak null olmaz (etkinleştirme kuralı, x-notes). `retestDays` ve
+        `minRemainingShelfLifeDays` her seviyede isteğe bağlıdır (null = tanımsız; stok tarafı OD-5'i uygular:
+        raf ömrü tanımsızsa giriş kabul edilir, tarih elle girilir; lot bayrağı tanımsızsa giriş reddedilir).
         Kalemde `shelfLifeDays` / `retestDays` dolu ya da null olabilir (O-9). Ambalaj dışı kalemde boş `storageConditions`
         `stockable: true`'yu engeller (CT kararı). `stockable: false` kayıtta stok yeni hareket kabul etmez (ters kayıt
         hariç). Birim çevrimleri `getSkuUom`'dan okunur.
@@ -643,10 +659,11 @@ components:
         baseUomId: { type: [string, 'null'], description: "v1.1 — MOD-0048 `item-uom` kodu (UN/ECE Rec 20; veridir, sabit kodlanmaz); stok her zaman temel birimde tutulur" }
         shelfLifeDays: { type: [integer, 'null'], description: "v1.1 — etkin değer (kaynak `shelfLifeDaysSource`)" }
         shelfLifeDaysSource: { $ref: '#/components/schemas/ShelfLifeSource' }
-        retestDays: { type: [integer, 'null'], description: "v1.1 — yalnız Item seviyesinde" }
+        retestDays: { type: [integer, 'null'], description: "v1.1 — Item kendi değeri; Gsku kendi değeri (isteğe bağlı); Lsku ve FinishedGood GSKU'dan (okuma anında, kopyalanmaz)" }
+        minRemainingShelfLifeDays: { type: [integer, 'null'], description: "v1.1 (2026-10-09, R-06) — mal kabulde gereken en az kalan raf ömrü (gün). Item kendi değeri; Gsku kendi değeri; Lsku ve FinishedGood GSKU'dan. İsteğe bağlı; doluysa stok mal kabulde uygular (MOD-0176)" }
         storageConditions: { type: array, items: { $ref: '#/components/schemas/StorageConditionCode' }, description: "v1.1 — çoklu seçim" }
-        lotControlled: { type: [boolean, 'null'], description: v1.1 }
-        serialControlled: { type: [boolean, 'null'], description: "v1.1 — SKU düzeyi seri takibi (pazara bağlı, İTS): Lsku ve FinishedGood'da dolu; Item'da false = uygulanmaz; Gsku'da null (sonra)" }
+        lotControlled: { type: [boolean, 'null'], description: "v1.1 — Item, Gsku ve FinishedGood kendi değeri, Lsku GSKU'dan; Active kayıtta null olmaz (etkinleştirme kuralı)" }
+        serialControlled: { type: [boolean, 'null'], description: "v1.1 — SKU düzeyi seri takibi (pazara bağlı, İTS): Lsku ve FinishedGood'da dolu (Active kayıtta null olmaz); Item'da false = uygulanmaz; Gsku'da her zaman null (seri takibi LSKU / Bitmiş Ürün düzeyinde karar verilir)" }
         stockable: { type: [boolean, 'null'], description: "v1.1 — false ise stok yeni hareket kabul etmez (ters kayıt hariç)" }
     UomConversion:
       type: object
