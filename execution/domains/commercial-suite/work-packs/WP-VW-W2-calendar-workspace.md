@@ -282,3 +282,35 @@ KORU/YAPMA: ARCH GATE (play/kampanya görünmez); mevcut Ziyaret Planlama / Ziya
 DOĞRULA (E2): Web 826/0 tabanı · CRM dokunulmaz · mimari 27. Testler belge Acceptance 1–7 (durum eşlemesi, geri sayım, E2 kuralları ve hata metinleri saf fonksiyon olarak Node'da; vekil yolları/yetkileri; 7 dil dolu ve anahtar yankısı değil); sabotaj 1 (requiresNote yok sayılsın → kırmızı; geri al — `git checkout --` YOK). dotnet test -o çıktısı REPO İÇİNDE.
 Commit: "feat(web): WP-VW-W2-WEB-a — visit workspace calendar (execute mode), detail panel, cancel / not done / reschedule dialogs" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, mockup'tan bilinçli sapmalar, BE-a/BE-b'ye bağımlı kısımlar, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — W2-BE-b E2 ACCEPTED (2026-10-09)
+**Commit:** `b0f6febaf` (ajan `09060cded`, test dalına cherry-pick, çakışma yok). Push: test dalı.
+
+**CT K13:**
+- CRM 2506 → **2513/0/5** (+7); iki tam koşu da yeşil.
+- Mimari: listesiz **27**. Yeni yazma komutu yok; mevcut seçim güncellemesi kullanılıyor.
+
+**Kod okuması:**
+- `PlanningDayPin.StartTime` (class-map otomatik alıyor; eski kayıt boş okunuyor).
+- Doğrulama `PlanningDayPins` içinde:
+  - 15 dk adım ve yalnız ziyaret sabiti → `pin_time_invalid`;
+  - pencere dışı ya da öğle arası → `pin_time_outside_hours`; pencere = `PlanningDayBudget.WindowFor`.
+- Saf `DayTimePins.Place` gün rotasının üstünde çalışıyor; iyileştirici değişmedi.
+- Çakışma → `PinMove(..., pin_time_conflict)`.
+- Gün değiştiren sabit o günde saatsiz kalıyor.
+
+**Ajanın paket dışı düzeltmesi (CT kabul):**
+- `RouteDay` iç ziyaret kimliği `Guid.NewGuid()` yerine artık listedeki sıradan üretiliyor.
+- Neden: iyileştirici eşit dakikalı yolları bu kimlikle ayırıyordu, aynı gün koşudan koşuya farklı sırada çıkıyordu.
+- Kimlik yalnız `RouteDay` içindeki eşlemede kullanılıyor, dışarı sızmıyor. 4E / 4G yerleşimini de kararlı kılıyor.
+
+**Ajanın kararları (CT kabul, kullanıcıya bildirildi):**
+- Saatli sabit, doktorun müsaitlik penceresini yok sayar (temsilcinin açık seçimi).
+- Gün sonunu aşan geç saat `pin_time_conflict` olarak kayar.
+- `pinnedTime` istenen saat, `startTime` gerçek saat.
+
+**CT sabotajı:** 15 dk adım kontrolü kaldırıldı → 1 kırmızı (`A_pin_time_outside_the_working_hours_or_off_the_grid_…`). `.bak` kopyasından geri alındı, dosyaya touch yapıldı, tam koşu yeşil.
+
+**Bekleyen:** W2-BE-a (`pinnedTime`'ı takvim okumasına taşıyacak), W2-WEB-a.
