@@ -1576,6 +1576,23 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   test-prefixed databases on 27017 (since E4) — accepted, test databases are dropped; fleet processes untouched. Merged into the
   MVP-1 branch.
 
+### E5W2 — CT acceptance (2026-10-09)
+
+- **CT-ACCEPTED.** The CT first merged the MVP-1 branch (E5B, Q5) into `feature/sce/mod-0022-e5w2` (only conflict: this pack's §19,
+  both notes kept — `72aa711ac`) and measured the MERGED tree: Web **675/675** (no red left), Platform filtered **607/607**,
+  architecture **18/18**. Read the proxy file branch (`FileTypes`, bytes + Content-Disposition + `no-store`, bodies not logged) and
+  the Platform additions (`WorkflowSignableActions`, `WorkflowSignableActionRegistrationWorker` + 2 lines in `Program.cs` — outside
+  §5 but required by CT-D19, accepted). CT sabotage (own): `application/pdf` removed from `FileTypes` →
+  `The_export_file_comes_back_as_bytes_with_its_name_and_number_and_is_never_cached` red, restored, porcelain clean. Screenshots
+  01 / 06 reviewed against mockup v2. Fast-forwarded into the MVP-1 branch. Decisions on the opens:
+- **O-E5W2-1 → FU-0022-VIS-01 (before G1, Part 11 §11.10(b)/(e)):** signatures whose `LegalEntityId` is null (pure `workflow-task`
+  subjects) are visible only to the signer in search / export; a tenant record must be retrievable by the holders of
+  `esign.signatures.read` / `esign.signatures.export` at tenant scope. Platform visibility rule, small WP.
+- **O-E5W2-2 → FU-0022-IMG-01 (post-MVP-1):** no contract operation returns the drawn appearance image; the viewer shows the image
+  hash. §11.50 manifestation (name, date / time, meaning) is shown — the image is appearance only (KS-10).
+- **O-E5W2-3:** company lists need MDM — accepted (fleet has MDM).
+- W-0022-01 (no Python) open to MVP-1 closure.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
