@@ -1,5 +1,3 @@
-const fs = require("fs");
-const path = require("path");
 const { loadScript } = require("./load-script");
 
 /*
@@ -12,17 +10,13 @@ const { loadScript } = require("./load-script");
  * — the same choice date-field-never-dies-silently.test.js already made for this component instead of loading
  * the real vendor bundle into jsdom.
  *
- * Organization/PositionAssignments/form.js's OWN copy (`guardDateAgainstSilentMisparse`, altInput/altFormat
- * shape — that file cannot depend on this component being loaded, since its host view never loads it) is
- * checked below by structural equivalence: it must implement the identical close-time contract and actually be
- * wired to the flatpickr instance it creates.
+ * Organization/PositionAssignments/form.js no longer carries its own copy (XMC-001): it delegates to this guard,
+ * and that delegation is measured through the real form in position-assignments-date-guard.test.js. Every entry
+ * path (Enter, Tab / blur, click outside) × field shape (plain, altInput, enableTime) is measured with the real
+ * flatpickr in date-field-typed-commit-paths.test.js.
  */
 
 const DATEFIELD = "wwwroot/assets/js/shared/diten-datefield.js";
-const repoRoot = path.resolve(__dirname, "..", "..", "..");
-const POSITION_ASSIGNMENTS_FORM = path.join(
-  repoRoot, "frontend", "Diten.Web", "wwwroot", "assets", "js", "Organization", "PositionAssignments", "form.js"
-);
 
 const fakeInstance = ({ altInput = false } = {}) => {
   const input = document.createElement("input");

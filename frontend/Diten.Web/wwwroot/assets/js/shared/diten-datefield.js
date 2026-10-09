@@ -57,17 +57,44 @@
          * `lastTyped`, a copy of the box taken when the field was enhanced (or left over from an earlier close),
          * so a field that already held a value, or one whose default was written without an event (quick-create's
          * setDate(today, false)), read the pick as a misparse and CLEARED it: the first pick was lost, the second
-         * (into the now-empty box) was kept. The session now starts clean (onOpen) and a calendar selection clears
-         * the typed text (onValueUpdate fires inside updateValue, BEFORE onClose). Typed text followed by a click
-         * outside is still judged — that close sets no value, so it fires no onValueUpdate.
+         * (into the now-empty box) was kept. The session now starts clean (onOpen).
+         *
+         * WCN-FIX-02 — WHAT RESETS THE TYPED TEXT, AND WHAT MUST NOT.
+         *  - A pick FROM THE CALENDAR resets it: a click on a day (capture phase, so it runs before flatpickr's
+         *    own selectDate → close) and Enter on a focused day.
+         *  - onValueUpdate must NOT reset it. flatpickr fires it from updateValue BEFORE onClose on every path
+         *    that commits typed text — Enter (onKeyDown → setDate → close), Tab (onBlur → setDate) and, on an
+         *    enableTime field, a click outside (documentClick → setDate → updateTime → updateValue). A reset there
+         *    switched this guard off exactly where the reader types ("31.02.2026" + Enter was saved as 03.03.2026).
+         *  - flatpickr's own `input` event, dispatched after onChange with the NORMALISED value, must not overwrite
+         *    what the reader typed either (it did, so plain fields leaked on Enter / Tab even before BL-588).
+         *    `isTrusted` cannot tell the two apart — scripted input (tests, automation, other components) is
+         *    untrusted too — so the echo is recognised by its cause: onChange marks the next `input` as the
+         *    library's own and the mark expires at the end of the task.
          */
         let lastTyped = '';
-        target.addEventListener('input', () => { lastTyped = target.value; });
+        let libraryEcho = false;
+        target.addEventListener('input', () => {
+            if (libraryEcho) { libraryEcho = false; return; }
+            lastTyped = target.value;
+        });
+        if (Array.isArray(instance.config.onChange)) {
+            instance.config.onChange.push(() => {
+                libraryEcho = true;
+                Promise.resolve().then(() => { libraryEcho = false; });
+            });
+        }
         if (Array.isArray(instance.config.onOpen)) {
             instance.config.onOpen.push(() => { lastTyped = ''; });
         }
-        if (Array.isArray(instance.config.onValueUpdate)) {
-            instance.config.onValueUpdate.push(() => { lastTyped = ''; });
+        const calendar = instance.calendarContainer;
+        if (calendar && typeof calendar.addEventListener === 'function') {
+            const fromDay = (event) => !!(event.target && typeof event.target.closest === 'function'
+                && event.target.closest('.flatpickr-day:not(.flatpickr-disabled)'));
+            calendar.addEventListener('click', (event) => { if (fromDay(event)) { lastTyped = ''; } }, true);
+            calendar.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && fromDay(event)) { lastTyped = ''; }
+            }, true);
         }
 
         instance.config.onClose.push((selectedDates) => {

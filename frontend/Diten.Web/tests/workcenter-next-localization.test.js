@@ -200,7 +200,7 @@ describe("WorkCenterNext localization resources", () => {
     const retired = ["NewOpenSource", "NewInSource", "NewInSourceDesc", "NewInSourceSubtext", "NewCreateInSource",
       "NewPickModuleLabel", "NewPickModule", "ToastCreateInSource"];
     retired.forEach((key) => {
-      expect(app, `app.js still asks for ${key}`).not.toMatch(new RegExp(`t[f]?\\('${key}'`));
+      expect(app, `app.js still asks for ${key}`).not.toMatch(new RegExp(`t[f]?\\(\\s*(['"\`])${key}\\1`));
       locales.forEach((locale) => {
         expect(names(locale), `${key} is back in a locale`).not.toContain(key);
       });

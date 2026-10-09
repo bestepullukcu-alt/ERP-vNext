@@ -91,6 +91,34 @@ describe("BL-588: the first calendar pick is written to the field", () => {
     expect(input.value).toBe("2026-10-21");
   });
 
+  test("text typed in the box and then a day picked FROM THE CALENDAR: the pick is kept (WCN-FIX-02)", () => {
+    // The calendar click resets the typed text before flatpickr's selectDate → close runs the guard; without that
+    // reset the half-typed text is judged against the pick and the pick is cleared.
+    const { input, fp } = shared();
+    fp.open();
+    input.value = "2026-10-";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fp.jumpToDate("2026-10-01");
+    day(fp, 2026, 9, 20).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(input.value).toBe("2026-10-20");
+    expect(input.classList.contains("is-invalid")).toBe(false);
+  });
+
+  test("text typed in the box and then a day chosen with the KEYBOARD (Enter on the focused day): kept (WCN-FIX-02)", () => {
+    const { input, fp } = shared();
+    fp.open();
+    input.value = "2026-10-";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fp.jumpToDate("2026-10-01");
+    const target = day(fp, 2026, 9, 20);
+    target.focus();
+    target.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true }));
+
+    expect(input.value).toBe("2026-10-20");
+    expect(input.classList.contains("is-invalid")).toBe(false);
+  });
+
   test("BL-391 still holds: text typed in the session that does not read back is cleared and marked invalid", () => {
     const { input, fp } = shared();
     fp.open();
@@ -142,7 +170,8 @@ describe("XMC-001: PositionAssignments uses the shared guard, not a copy of its 
     "PositionAssignments", "Form.cshtml"), "utf8");
 
   test("form.js delegates to DitenDateField.guardAgainstSilentMisparse with the altFormat shape", () => {
-    expect(form).toContain("window.DitenDateField?.guardAgainstSilentMisparse?.(instance, 'altFormat')");
+    expect(form).toContain("window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse");
+    expect(form).toContain("sharedGuard(instance, 'altFormat');");
     expect(form, "a private copy of the guard came back").not.toMatch(/lastTyped/);
     expect(form).toContain("guardDateAgainstSilentMisparse(el._flatpickr);");
   });

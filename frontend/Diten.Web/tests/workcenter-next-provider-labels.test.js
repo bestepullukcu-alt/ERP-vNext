@@ -19,6 +19,8 @@ const LOCALES = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
 const PLATFORM_FEATURES = "services/Diten.Platform/src/Diten.Platform.Application/Features";
 const MDM_FEATURES = "services/Diten.MdmService/src/Diten.MdmService.Application/Features";
 const PROJECTION_SERVICE = `${PLATFORM_FEATURES}/WorkAggregation/Services/WorkItemProjectionService.cs`;
+const PLATFORM_INFRA_WORK_AGGREGATION = "services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/WorkAggregation";
+const HTTP_PROVIDER = `${PLATFORM_INFRA_WORK_AGGREGATION}/HttpWorkItemProvider.cs`;
 
 // Every .cs file below `relative` (repo-relative, "/" separated, sorted). An absent folder yields nothing.
 const csFilesUnder = (relative) => {
@@ -44,13 +46,16 @@ const csFilesUnder = (relative) => {
  *   · Platform  — every Features/<feature>/Providers/*.cs (Task, Meeting, WorkAggregation, TimeEntry, …)
  *   · Platform  — the projection service (approval rows are labelled there, not in a provider)
  *   · MDM       — every .cs under Features/<feature>/WorkItems/** (the MDM side projects its own rows)
+ *   · Platform  — every .cs under Infrastructure/Services/WorkAggregation (the HTTP provider labels the rows it
+ *                 relays from a remote provider, e.g. its permission-denied reason) — WCN-FIX-02
  */
 const PROVIDER_FAMILIES = {
   platformProviders: csFilesUnder(PLATFORM_FEATURES)
     .filter((file) => /^[^/]+\/Providers\/[^/]+\.cs$/.test(file.slice(PLATFORM_FEATURES.length + 1))),
   projectionService: fs.existsSync(path.join(REPO, PROJECTION_SERVICE)) ? [PROJECTION_SERVICE] : [],
   mdmWorkItems: csFilesUnder(MDM_FEATURES)
-    .filter((file) => /^[^/]+\/WorkItems\//.test(file.slice(MDM_FEATURES.length + 1)))
+    .filter((file) => /^[^/]+\/WorkItems\//.test(file.slice(MDM_FEATURES.length + 1))),
+  infrastructureProviders: csFilesUnder(PLATFORM_INFRA_WORK_AGGREGATION)
 };
 const MDM_PRESENT = fs.existsSync(path.join(REPO, MDM_FEATURES));
 const PROVIDER_SOURCES = Object.values(PROVIDER_FAMILIES).flat();
@@ -115,12 +120,16 @@ const dynamicKeys = () => {
   return keys;
 };
 
+// Only an entry with a NON-EMPTY <value> counts: `<data name="X"><value></value></data>` renders an empty label,
+// which is no better on screen than the raw key (WCN-FIX-02).
 const resxKeys = (locale) => {
   const xml = fs.readFileSync(path.join(RESX_DIR, `WorkCenterNextIndex.${locale}.resx`), "utf8");
   const keys = new Set();
-  const entry = /<data name="([^"]+)"/g;
+  const entry = /<data name="([^"]+)"[^>]*>\s*<value>([\s\S]*?)<\/value>/g;
   let match;
-  while ((match = entry.exec(xml)) !== null) { keys.add(match[1]); }
+  while ((match = entry.exec(xml)) !== null) {
+    if (match[2].trim().length > 0) { keys.add(match[1]); }
+  }
   return keys;
 };
 
@@ -148,6 +157,8 @@ describe("provider resource labels are translated", () => {
       `${PLATFORM_FEATURES}/Meetings/Providers/MeetingWorkItemProvider.cs`
     ]));
     expect(PROVIDER_FAMILIES.projectionService).toEqual([PROJECTION_SERVICE]);
+    expect(PROVIDER_FAMILIES.infrastructureProviders).toContain(HTTP_PROVIDER);
+    expect([...staticKeysIn([HTTP_PROVIDER])]).toContain("WorkAggregation_ActionDisabled_PermissionDenied");
 
     const taskKeys = staticKeysIn([`${PLATFORM_FEATURES}/Tasks/Providers/TaskWorkItemProvider.cs`]);
     expect([...taskKeys]).toContain("WorkAggregation_Action_Accept");
@@ -182,7 +193,7 @@ describe("provider resource labels are translated", () => {
     expect(expected.filter((key) => key.endsWith("_"))).toEqual([]);
   });
 
-  it("has every emitted key in all 7 languages", () => {
+  it("has every emitted key in all 7 languages, each with a non-empty value", () => {
     const missing = [];
     expected.forEach((key) => {
       LOCALES.forEach((locale) => {

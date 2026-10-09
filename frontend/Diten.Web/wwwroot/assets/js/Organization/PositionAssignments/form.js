@@ -115,9 +115,24 @@
      * shared component's defect: it compared a CALENDAR PICK with a stale copy of the box and cleared it, so the
      * first pick into a pre-filled date was lost. The one shared guard (`DitenDateField.guardAgainstSilentMisparse`,
      * altFormat shape) is used instead, so the fix — and any later one — lands here too. The view loads it.
+     *
+     * WCN-FIX-02 — the copy was self-sufficient; a delegation is not. If the view stops loading the shared script,
+     * the GxP dates would silently lose the guard, so that is said in the console (as `DitenDateField.enhance`
+     * does for a missing flatpickr) instead of being skipped.
      */
+    let guardMissingReported = false;
     const guardDateAgainstSilentMisparse = (instance) => {
-        window.DitenDateField?.guardAgainstSilentMisparse?.(instance, 'altFormat');
+        const sharedGuard = window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse;
+        if (typeof sharedGuard !== 'function') {
+            if (!guardMissingReported) {
+                guardMissingReported = true;
+                console.error('[Assignment Form] The effective dates are NOT protected against a typed date that '
+                    + 'does not exist (BL-391): assets/js/shared/diten-datefield.js is not loaded on this page. Load it '
+                    + 'after flatpickr and before this script.');
+            }
+            return;
+        }
+        sharedGuard(instance, 'altFormat');
     };
 
     const initDatePickers = () => {
