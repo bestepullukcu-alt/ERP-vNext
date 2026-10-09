@@ -422,3 +422,30 @@ Geri alındı, touch yapıldı; tam tur yeşil.
   - BE-c: büyük kurum kümesini (ör. > gün bütçesinin %60'ı) iki güne bölmeye izin ver ya da gün yükü farkına üst sınır koy;
   - kural CT'de netleşir; 4G / 4L / W2-BE-b testleri korunur.
 - **`pin_time_past_day_end`** kullanıcı metni 7 dilde (WEB-b).
+
+## §37 CT kabul — W2-WEB-a E2 ACCEPTED (2026-10-09)
+**Commit:** `674d6dc65` (ajan `60baa0375`, test dalına cherry-pick, çakışma yok) + CT menü commit'i. Push: test dalı.
+
+**CT K13:**
+- Web 826 → **854/0** (+28; Node'da saf kurallar + sahte DOM duman testi).
+- Platform CRM manifest testleri 12/0 (CT +1).
+- CRM dokunulmadı (2543).
+- Mimari: **27**.
+
+**Kod okuması:**
+- Yeni sayfa `/CRM/VisitWorkspace` (UAS-001 erişim uyarısı).
+- Ortak `DitenCalendar` (vendored FullCalendar, UTC duvar saati).
+- `workspace-core.js` saf kurallar: durum → renk / simge, geri sayım, eylemler, not kuralı, iki adımlı Kaydet, hata metinleri.
+- Vekil her uçta CRM ucunun anahtarlarının **hepsini** istiyor, 204 tuzağına karşı korumalı. Plan dışı yalnız `unplanned:true`. 7 dil / 113 anahtar, menü anahtarı `Nav.Page.VISITWORKSPACE`.
+
+**CT işi:** Platform `CrmManifestProvider` → `VISIT_WORKSPACE` sayfası (sıra 63, `crm.visit-report.read`, Ziyaret Planlama'nın üstü) + test `Visit_workspace_is_registered_above_visit_planning`. Ajan Platform'a dokunmamıştı.
+
+**CT sabotajı:** vekil yetki kontrolü kapatıldı → `A5_each_proxy_reaches_its_crm_path_only_with_all_its_keys` (5+ satır) kırmızı. Geri alındı, touch yapıldı.
+
+**Ajanın bildirdiği eksikler (2. tur adayları):**
+1. Takvim yanıtında hafta oturumunun sürümü yok (onay / yeniden açma öncesi ayrı okuma yapılıyor; çalışıyor).
+2. Yerleştirilemeyen ziyaretlerin listesi yok; yalnız sayı var.
+3. Ziyaretin planlama oturumu yanıtta yok.
+4. "Sonuç gir", Ziyaret Yürütme'yi bugünün tarihiyle açıyor (o sayfa tarih parametresi okumuyor).
+
+**Sıradaki:** fleet yeniden başlatılınca (Platform manifest + Web resx) canlı E4 → 2. tur (WEB-b + BE-c).

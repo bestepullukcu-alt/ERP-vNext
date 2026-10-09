@@ -107,6 +107,10 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 // WP-VP-FIX-1 (D7) — MOD-0155 FU05 Visit Planning console (the rep's week plan → apply writes FU01 atoms)
                 // and FU02 Visit Execution calendar (record / amend the immutable Visit Report). Both pages existed with
                 // no sidebar entry. Planning sits right before Planned Visits (65), Execution right after it.
+                // WP-VW-W2 (CT, WEB-a) — the Visit Workspace: one calendar to plan, run and report visits (MOD-0155 VW).
+                // Above Visit Planning; the older pages stay until W9. The page itself also needs crm.visit-plan.read
+                // (its own UAS-001 notice otherwise).
+                new ModuleManifestPage("VISIT_WORKSPACE", "Visit Workspace", "/CRM/VisitWorkspace", VisitReportRead, null, true, "List", 63, []),
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
                     new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),

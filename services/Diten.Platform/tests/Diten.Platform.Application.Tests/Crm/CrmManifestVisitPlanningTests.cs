@@ -28,6 +28,18 @@ public sealed class CrmManifestVisitPlanningTests
     }
 
     [Fact]
+    public void Visit_workspace_is_registered_above_visit_planning()
+    {
+        // WP-VW-W2 (CT) — the one-calendar workspace sits right above Visit Planning, gated by crm.visit-report.read.
+        var page = Assert.Single(Manifest.Pages, p => p.PageCode == "VISIT_WORKSPACE");
+        Assert.Equal("/CRM/VisitWorkspace", page.RoutePath);
+        Assert.Equal("crm.visit-report.read", page.RequiredPermission);
+        Assert.True(page.IsNavigationVisible);
+        Assert.Equal(63, page.SortOrder);
+        Assert.True(page.SortOrder < Assert.Single(Manifest.Pages, p => p.PageCode == "VISIT_PLANNING").SortOrder);
+    }
+
+    [Fact]
     public void Visit_execution_is_registered_after_planned_visits_with_record_and_amend()
     {
         var page = Assert.Single(Manifest.Pages, p => p.PageCode == "VISIT_EXECUTION");
