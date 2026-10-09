@@ -63,6 +63,9 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>Onay servisi bu gönderimi bir onay başlatmadan reddetti. LSKU hâlâ taslak; yeniden gönderebilirsiniz.</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Bu LSKU'yu onaya göndermeden önce stok davranışında seri takibini ve GSKU'sunun lot takibini belirleyin.</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>Onay bu LSKU'ya uygulanamadı; örneğin pazarı ya da üst kaydı artık kullanılamıyor. LSKU yeniden taslak oldu; nedeni düzeltip yeniden gönderin.</value>
   </data>

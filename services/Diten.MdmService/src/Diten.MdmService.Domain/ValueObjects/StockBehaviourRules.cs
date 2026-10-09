@@ -166,6 +166,15 @@ public static class StockBehaviourRules
 
     public static bool IsValidShelfLife(int? days) => days is null or >= 1 and <= MaximumShelfLifeDays;
 
+    /// <summary>
+    /// S3b (R-06): a GSKU's retest interval / minimum remaining shelf life at receipt — 0 to the shelf-life ceiling
+    /// (<see cref="MaximumShelfLifeDays"/>, the same bound as the shelf life); 0 = "no minimum" / "retest at once" is
+    /// the stock team's to read.
+    /// </summary>
+    public static bool IsValidOptionalDays(int? days) => days is null or >= 0 and <= MaximumShelfLifeDays;
+
+    public const string DaysInvalid = "STOCK_DAYS_INVALID";
+
     /// <summary>O-15: a Finished Good's own shelf life never exceeds its GSKU's registered one.</summary>
     public static bool FinishedGoodShelfLifeWithinGsku(int? finishedGoodDays, int? gskuDays)
         => finishedGoodDays is null || gskuDays is null || finishedGoodDays <= gskuDays;

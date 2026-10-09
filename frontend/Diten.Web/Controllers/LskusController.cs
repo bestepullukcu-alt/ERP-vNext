@@ -382,7 +382,9 @@ public sealed class LskusController : Controller
         ["LSKU_MARKET_ALREADY_EXISTS"] = "ErrorMarketAlreadyExists",
         ["LSKU_IDENTITY_SUBMIT_ABANDONED"] = "ErrorSubmitAbandoned",
         ["LSKU_IDENTITY_SUBMIT_TARGET_CHANGED"] = "ErrorSubmitTargetChanged",
-        ["LSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "ErrorDecisionNotApplicable"
+        ["LSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "ErrorDecisionNotApplicable",
+        // MOD-0290-FU04 S3b (R-04): its serial flag and its GSKU's lot flag must be set before it is sent for approval.
+        ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "ErrorStockFlagsRequired"
     };
 
     private async Task<IActionResult> RefusalAsync(HttpResponseMessage response, CancellationToken cancellationToken)

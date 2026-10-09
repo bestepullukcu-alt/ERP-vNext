@@ -6,6 +6,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryH
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -57,6 +58,10 @@ public sealed class StartLskuIdentityWorkflowHandler(
             return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
         var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
         if (!decision.Allowed) return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
+        // S3b (R-04): a draft is sent for approval only with its serial flag and its GSKU's lot flag set.
+        if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+            && StockFlagGate.MissingForLsku(lsku, gsku) is { Count: > 0 } missing)
+            return Response<LskuIdentityWorkflowResult>.Fail(StockFlagGate.Refusal(missing), 409);
         var result = await processor.StartInteractiveAsync(
             tenantContext.TenantId, input.LskuId, input.ExpectedVersion, input.OperationId,
             maker, token, executionConfiguration.LeaseDuration, executionConfiguration.RetryDelay,

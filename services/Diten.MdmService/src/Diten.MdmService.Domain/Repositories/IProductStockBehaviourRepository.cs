@@ -35,6 +35,8 @@ public static class StockBehaviourFields
     public const string BaseUomCode = "BaseUomCode";
     public const string UomConversions = "UomConversions";
     public const string ShelfLifeDays = "ShelfLifeDays";
+    public const string RetestDays = "RetestDays";
+    public const string MinRemainingShelfLifeDays = "MinRemainingShelfLifeDays";
     public const string StorageConditionCodes = "StorageConditionCodes";
     public const string LotControlled = "LotControlled";
     public const string SerialControlled = "SerialControlled";

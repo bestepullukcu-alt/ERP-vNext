@@ -63,6 +63,9 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>El servicio de aprobación rechazó este envío antes de iniciar una aprobación. El LSKU sigue siendo un borrador; puede enviarlo de nuevo.</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Antes de enviar este LSKU a aprobación, defina su control por número de serie y el control por lote de su GSKU en el comportamiento de stock.</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>La aprobación no se pudo aplicar a este LSKU, por ejemplo porque su mercado o su elemento principal ya no se puede usar. El LSKU vuelve a ser un borrador; corrija la causa y envíelo de nuevo.</value>
   </data>

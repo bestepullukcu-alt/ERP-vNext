@@ -212,9 +212,9 @@ public static class ProductMasterContract
         node["materialType"] = null;
         node["baseUomId"] = gsku.BaseUomCode;
         ShelfLife(node, gsku.ShelfLifeDays, "Own");
-        // Not on product SKUs yet (S3b adds retest / minimum remaining shelf life to the GSKU; the LSKU inherits).
-        node["retestDays"] = null;
-        node["minRemainingShelfLifeDays"] = null;
+        // S3b (R-06): the GSKU's own; an LSKU and a Finished Good read them from their GSKU (never copied).
+        node["retestDays"] = gsku.RetestDays;
+        node["minRemainingShelfLifeDays"] = gsku.MinRemainingShelfLifeDays;
         if (gsku.StorageConditionCodes is { Count: > 0 } codes) node["storageConditions"] = Codes(codes);
         node["lotControlled"] = gsku.LotControlled;
         // Serial control is decided at LSKU / Finished Good level; a GSKU has none.
@@ -236,9 +236,9 @@ public static class ProductMasterContract
         node["materialType"] = null;
         node["baseUomId"] = gsku.BaseUomCode;
         ShelfLife(node, gsku.ShelfLifeDays, "Gsku");
-        // Not on product SKUs yet (S3b adds retest / minimum remaining shelf life to the GSKU; the LSKU inherits).
-        node["retestDays"] = null;
-        node["minRemainingShelfLifeDays"] = null;
+        // S3b (R-06): the GSKU's own; an LSKU and a Finished Good read them from their GSKU (never copied).
+        node["retestDays"] = gsku.RetestDays;
+        node["minRemainingShelfLifeDays"] = gsku.MinRemainingShelfLifeDays;
         if (gsku.StorageConditionCodes is { Count: > 0 } codes) node["storageConditions"] = Codes(codes);
         node["lotControlled"] = gsku.LotControlled;
         node["serialControlled"] = lsku.SerialControlled;
@@ -258,9 +258,9 @@ public static class ProductMasterContract
         node["baseUomId"] = gsku.BaseUomCode;
         if (finishedGood.ShelfLifeDays is not null) ShelfLife(node, finishedGood.ShelfLifeDays, "Own");
         else ShelfLife(node, gsku.ShelfLifeDays, "Gsku");
-        // Not on product SKUs yet (S3b adds retest / minimum remaining shelf life to the GSKU; the LSKU inherits).
-        node["retestDays"] = null;
-        node["minRemainingShelfLifeDays"] = null;
+        // S3b (R-06): the GSKU's own; an LSKU and a Finished Good read them from their GSKU (never copied).
+        node["retestDays"] = gsku.RetestDays;
+        node["minRemainingShelfLifeDays"] = gsku.MinRemainingShelfLifeDays;
         if (finishedGood.StorageConditionCodes is { Count: > 0 } codes) node["storageConditions"] = Codes(codes);
         node["lotControlled"] = finishedGood.LotControlled;
         node["serialControlled"] = finishedGood.SerialControlled;

@@ -63,6 +63,9 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>审批服务在启动审批之前拒绝了此次提交。该 LSKU 仍为草稿，您可以重新提交。</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>在提交此 LSKU 审批之前，请在库存行为中设置其序列号管理以及其 GSKU 的批次管理。</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>审批结果无法应用到此 LSKU，例如其市场或上级记录已不可用。该 LSKU 已恢复为草稿；请纠正原因后重新提交。</value>
   </data>

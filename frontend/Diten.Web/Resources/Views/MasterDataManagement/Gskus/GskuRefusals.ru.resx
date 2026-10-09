@@ -24,4 +24,5 @@
   <data name="RefusalManualReconciliation" xml:space="preserve"><value>Служба утверждения и эта запись не согласуются, и повтор запроса этого не исправил. Запись остаётся без изменений до ручной сверки; обратитесь к администратору.</value></data>
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>Утверждение закрыто без решения (отменено или истекло). Черновик можно изменить и отправить снова.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Единица, используемая этим GSKU, была выведена из использования после утверждения. Утверждение остаётся в силе: оно применено со значениями, проверенными при отправке; выведенную единицу нельзя выбрать для новых записей.</value></data>
+  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Перед отправкой на утверждение задайте учёт по партиям в складских параметрах этого GSKU.</value></data>
 </root>

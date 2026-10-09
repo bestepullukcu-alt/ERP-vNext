@@ -116,12 +116,15 @@ public sealed class SetGskuStockBehaviourHandler(
             return StockBehaviourContext.Fail(StockBehaviourErrors.Forbidden, 403);
         if (!StockBehaviourContext.ValidCommand(command.GskuId, command.ExpectedVersion, command.OperationId)
             || command is { BaseUomCode: null, UomConversions: null, ShelfLifeDays: null, StorageConditionCodes: null,
-                LotControlled: null, Stockable: null }
+                LotControlled: null, Stockable: null, RetestDays: null, MinRemainingShelfLifeDays: null }
             || command.BaseUomCode is { Length: 0 })
             return StockBehaviourContext.Fail(StockBehaviourErrors.Invalid, 400);
         if (StockBehaviourContext.ShapeError(command.UomConversions, command.StorageConditionCodes, command.ShelfLifeDays)
             is { } shape)
             return StockBehaviourContext.Fail(shape, 422);
+        if (!StockBehaviourRules.IsValidOptionalDays(command.RetestDays)
+            || !StockBehaviourRules.IsValidOptionalDays(command.MinRemainingShelfLifeDays))
+            return StockBehaviourContext.Fail(StockBehaviourRules.DaysInvalid, 422);
 
         var (gsku, scopeCode, scopeStatus) = await context.ResolveGskuAsync(
             StockBehaviourPermissions.EditGsku, command.GskuId, cancellationToken);
@@ -130,7 +133,7 @@ public sealed class SetGskuStockBehaviourHandler(
         var fingerprint = StockBehaviourPlan.Fingerprint("gsku", gsku.Id, command.ExpectedVersion, new
         {
             command.BaseUomCode, command.UomConversions, command.ShelfLifeDays, command.StorageConditionCodes,
-            command.LotControlled, command.Stockable
+            command.LotControlled, command.Stockable, command.RetestDays, command.MinRemainingShelfLifeDays
         });
         if (StockBehaviourContext.Stale(gsku.Id, gsku.Version, command.ExpectedVersion, gsku.StockBehaviourCommand,
                 command.OperationId, fingerprint) is { } stale)
@@ -145,6 +148,10 @@ public sealed class SetGskuStockBehaviourHandler(
         plan.Field(StockBehaviourFields.StorageConditionCodes, command.StorageConditionCodes, gsku.StorageConditionCodes);
         plan.Field(StockBehaviourFields.LotControlled, command.LotControlled, gsku.LotControlled);
         plan.Field(StockBehaviourFields.Stockable, command.Stockable, gsku.Stockable);
+        // S3b: the same O-8 rule — free on a Draft, a first fill on an approved GSKU, locked once filled.
+        plan.Field(StockBehaviourFields.RetestDays, command.RetestDays, gsku.RetestDays);
+        plan.Field(StockBehaviourFields.MinRemainingShelfLifeDays, command.MinRemainingShelfLifeDays,
+            gsku.MinRemainingShelfLifeDays);
         if (plan.LockedField is not null)
             return StockBehaviourContext.Fail(StockBehaviourStoreCodes.FieldLocked, 409);
 

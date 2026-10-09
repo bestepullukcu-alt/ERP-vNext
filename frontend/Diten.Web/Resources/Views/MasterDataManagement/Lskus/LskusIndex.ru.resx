@@ -63,6 +63,9 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>Служба согласования отклонила эту отправку до запуска согласования. LSKU по-прежнему является черновиком; вы можете отправить его повторно.</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Перед отправкой этого LSKU на утверждение задайте его учёт по серийным номерам и учёт по партиям его GSKU в складских параметрах.</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>Согласование не удалось применить к этому LSKU, например потому что его рынок или родительская запись больше недоступны. LSKU снова стал черновиком; устраните причину и отправьте его повторно.</value>
   </data>

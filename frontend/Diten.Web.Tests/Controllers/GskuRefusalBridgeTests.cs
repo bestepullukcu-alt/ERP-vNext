@@ -18,8 +18,9 @@ public sealed class GskuRefusalBridgeTests
     private static readonly string[] Languages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
 
     // The GSKU code of MDM: the controller and every file of the GSKU flows and the shared product-identity workflow.
+    // MOD-0290-FU04 S3b: + StockFlagGate (the GSKU submit's lot-flag refusal).
     private static readonly Regex GskuFile = new(
-        @"^(Gsku|FirstGsku|ProductIdentityWorkflow|IFirstGsku|IGsku|PlatformWorkflowVerifiedGsku|IVerifiedGsku|CreateFirstGsku|UpdateGsku|RetireGsku|StartGsku|StartFirstGsku|WithdrawFirstGsku|GetGsku)[^/]*\.cs$",
+        @"^(Gsku|FirstGsku|ProductIdentityWorkflow|IFirstGsku|IGsku|PlatformWorkflowVerifiedGsku|IVerifiedGsku|CreateFirstGsku|UpdateGsku|RetireGsku|StartGsku|StartFirstGsku|WithdrawFirstGsku|GetGsku|StockFlagGate)[^/]*\.cs$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex CodeLiteral = new("\"([A-Z][A-Z0-9]+(?:_[A-Z0-9]+)+)\"", RegexOptions.CultureInvariant);

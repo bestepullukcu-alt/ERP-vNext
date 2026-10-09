@@ -63,6 +63,9 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>Le service d'approbation a refusé cette soumission avant de démarrer une approbation. Le LSKU est toujours un brouillon ; vous pouvez le soumettre à nouveau.</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Avant d'envoyer ce LSKU pour approbation, définissez son suivi par numéro de série et le suivi par lot de son GSKU dans le comportement de stock.</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>L'approbation n'a pas pu être appliquée à ce LSKU, par exemple parce que son marché ou son parent n'est plus utilisable. Le LSKU est de nouveau un brouillon ; corrigez la cause et soumettez-le à nouveau.</value>
   </data>

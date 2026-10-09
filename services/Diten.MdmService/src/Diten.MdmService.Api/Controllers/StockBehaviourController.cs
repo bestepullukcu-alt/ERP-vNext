@@ -36,7 +36,8 @@ public sealed class StockBehaviourController : CustomBaseController
         if (!TryParseOperationId(idempotencyKey, out var operationId)) return InvalidIdempotencyKey();
         return CreateActionResultInstance(await _mediator.Send(new SetGskuStockBehaviourCommand(
             id, request.ExpectedVersion.Value, operationId, request.BaseUomCode, request.UomConversions,
-            request.ShelfLifeDays, request.StorageConditionCodes, request.LotControlled, request.Stockable),
+            request.ShelfLifeDays, request.StorageConditionCodes, request.LotControlled, request.Stockable,
+            request.RetestDays, request.MinRemainingShelfLifeDays),
             cancellationToken));
     }
 
@@ -112,6 +113,9 @@ public sealed class StockBehaviourController : CustomBaseController
         public List<string>? StorageConditionCodes { get; init; }
         public bool? LotControlled { get; init; }
         public bool? Stockable { get; init; }
+        // S3b (R-06)
+        public int? RetestDays { get; init; }
+        public int? MinRemainingShelfLifeDays { get; init; }
 
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? UnmappedFields { get; init; }

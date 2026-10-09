@@ -63,6 +63,9 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>رفضت خدمة الموافقة هذا الإرسال قبل بدء أي موافقة. لا يزال LSKU مسودة؛ يمكنك إرساله مرة أخرى.</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>قبل إرسال LSKU هذا للموافقة، حدّد التحكم بالرقم التسلسلي له والتحكم بالدفعة لـ GSKU التابع له في سلوك المخزون.</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>تعذّر تطبيق الموافقة على هذا LSKU، على سبيل المثال لأن سوقه أو سجله الأصلي لم يعد قابلاً للاستخدام. عاد LSKU مسودة؛ صحّح السبب ثم أرسله مرة أخرى.</value>
   </data>

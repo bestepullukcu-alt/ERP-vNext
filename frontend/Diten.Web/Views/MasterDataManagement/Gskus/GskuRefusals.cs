@@ -244,5 +244,7 @@ public static class GskuRefusalSentences
         ["GSKU_RETIREMENT_REQUEST_MANUAL_RECONCILIATION_NEEDED"] = "RefusalManualReconciliation",
         ["GSKU_RETIREMENT_REQUEST_STUCK_ON_RECORD_ANSWER"] = "RefusalManualReconciliation",
         ["GSKU_RETIREMENT_REQUEST_STUCK_ON_RELEASE_CONFLICT"] = "RefusalManualReconciliation",
+        // MOD-0290-FU04 S3b (R-04): a draft is sent for approval only with its lot flag set.
+        ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "RefusalStockFlagsRequired",
     };
 }

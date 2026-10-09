@@ -6,6 +6,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryH
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -65,6 +66,10 @@ public sealed class StartFirstGskuIdentityWorkflowHandler(
         if (gsku is null || revision is null || product is null) return Fail("GSKU_NOT_FOUND", 404);
         var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
         if (!decision.Allowed) return Fail("GSKU_NOT_FOUND", 404);
+        // S3b (R-04): a draft is sent for approval only with its lot flag set (an approved GSKU never has it unset).
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+            && StockFlagGate.MissingForGsku(gsku) is { Count: > 0 } missing)
+            return Response<FirstGskuIdentityWorkflowResult>.Fail(StockFlagGate.Refusal(missing), 409);
         var result = await processor.StartInteractiveAsync(
             tenantContext.TenantId,
             input.GskuId,

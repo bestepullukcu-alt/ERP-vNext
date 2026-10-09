@@ -37,6 +37,10 @@ public sealed class Gsku : EntityBase, IAuditIntentAggregate
     public int? ShelfLifeDays { get; set; }
     public List<string>? StorageConditionCodes { get; set; }
     public bool? LotControlled { get; set; }
+    // S3b (R-06): retest interval and the minimum remaining shelf life at goods receipt, in days; optional. The LSKU and
+    // the Finished Good read them from here at read time (never copied). Missing on an older document = null.
+    public int? RetestDays { get; set; }
+    public int? MinRemainingShelfLifeDays { get; set; }
     public bool? Stockable { get; set; }
     // The MOD-0048 selection proof of every unit and storage code the stock fields hold (pack §12), replaced as a whole
     // when one of them changes; derived, so never locked itself.
