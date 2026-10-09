@@ -575,6 +575,28 @@ CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY
   bridge (the PM1 `pm-stub.js` with a dataset seeded from the v1.0 example ids: Amoksisilin GP-000123 / LSKU-TR-000045, lot true,
   serial false, plus `Item` materials); MDM is asked to make the first example of each v1.1 operation complete (draft.9).
 
+### FUB1 — implementation note (WP-MVP1-FUB1, 2026-10-09, pending CT) — O-PM1-6 closed
+
+- **Branch and commit:** branch `feature/mvp1-fub1` from `9697fda76`, local only, no push. Commit `02905f3ea` (FU01 Web).
+  Evidence: `docs/records/audits/2026-10/mvp1-fub1-evidence-2026-10-09.md`.
+- **Ledger list:**
+  - `SkuLevelItem` added to `StockLedgerIndex.{7}` (the StockMovements wording), `_IndexL10n` and the required keys.
+  - The `Item` level is labelled in 7 languages; the movement list already was.
+  - New guard: every level the ledger knows is labelled in both lists in 7 languages.
+- **Product picker:**
+  - A Global Product shows its own name ("code · name"), read with getProduct (`/api/product-master/products/{itemId}`,
+    the read the ledger labels already use; at most one call per product on the page).
+  - The SKU's display name is the second line (`PickerOption.Sub`, a select2 two-line template in the ledger filter,
+    the movement list filter and the movement form).
+  - A failed read keeps today's text. The SKU picker is unchanged.
+- **PM1 guard `Product_and_sku_pickers_call_only_the_contract_search_for_Active_records` extended:** besides the search,
+  only that one product read is allowed (OPEN O-FUB1-2 for the W-UI-01 closure note).
+- **Tests:**
+  - Web 685 → **687** (+2).
+  - Before-red was shown with the base label files and with the old picker behaviour.
+  - Sabotage (b) (raw level) → red; restored, diff empty.
+- No InventoryService, contract, Lots or Quarantine file was touched.
+
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).

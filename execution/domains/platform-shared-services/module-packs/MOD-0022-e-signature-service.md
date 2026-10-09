@@ -1653,6 +1653,27 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   status, hashes and integrity flags only — no signer, meaning or subject data — so the exposure is existence + validity of a known
   UUID → **FU-0022-VIS-02** (apply the same data scope to verify for company records), before G1, low risk.
 
+### FUB1 — implementation note (WP-MVP1-FUB1, 2026-10-09, pending CT) — FU-0022-VIS-02 closed
+
+- **Branch and commit:** branch `feature/mvp1-fub1` from `9697fda76`, local only, no push. Commit `6df0be02b`. Evidence:
+  `docs/records/audits/2026-10/mvp1-fub1-evidence-2026-10-09.md` (+ `-scripts`).
+- **Change:** `verifySignature` applies the whole `ESignatureVisibilityScope.CanSee` rule, like search and export:
+  - the signer sees their own record;
+  - a company record outside the caller's SEC-002 scope → 404, as if absent;
+  - tenant-level records keep the VIS1 rule.
+  - `getSignature` is unchanged (`HidesTenantLevel`; for a company record its gate is the subject provider).
+- **Consumers measured:** the E4 gate uses `IESignatureVerifier` in-process (`ESignatureGate.cs:124`); MOD-0175 Q3 reads
+  `GET signatures/{id}` (`GatewayESignClient.cs:51`). Nobody calls verify over HTTP except the Verification screen.
+- **Tests:**
+  - Platform filtered 613 → **615** (+2, written first; out-of-scope verify was 200, now 404).
+  - The E4 gate and VIS1 tests are unchanged and green.
+  - Q3 (`~Quarantine`, own mongod) 141/141.
+- **Sabotage:** (a) the new check removed → red; restored, diff empty.
+- **Runtime probe** (own stack + own MDM stub on 15059): A, whose company scope (company 1) comes through the real
+  org-unit / position / assignment chain, verifies company 1 → 200, company 2 → 404, tenant-level → 200. The signer B
+  verifies the company 2 record → 200.
+- **OPEN O-FUB1-1:** `getSignature` does not apply the company scope. Changing it would affect the Q3 read; the CT decides.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
