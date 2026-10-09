@@ -16,7 +16,7 @@ info:
     satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
     tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
     kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
-  version: 1.1.0-draft.7
+  version: 1.1.0-draft.8
   x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
@@ -28,6 +28,8 @@ info:
     - "`itemKind` yoksa GlobalProduct'tır (v1.0 sunucusu ve v1.0 örnekleri bu alanı taşımaz)."
     - "Seviye kuralı (draft.6, bütün MVP'ler belgesi X-08): `level` / `skuLevel` `getSku`, `getSkuUom`, `resolveSkuProduct` ve `validateRefs`'te aynı ele alınır. Verilirse kimlik o seviyede olmalıdır (değilse 404 / `exists: false`), bilinmeyen değer 400. Verilmezse seviye kimlikten çözülür ve yanıtta döner. SKU kimlikleri (UUID) seviyeler arasında çakışmaz; kalemde `skuId == itemId`."
     - "Stok tarafının seviye kuralları (stok ekibi, 2026-10-09 — bilgi; MDM uygulamaz): GSKU seviyesinde stok hareketi yalnız ürünün seri bayrağı açıkça false ise yapılır; true ya da null ise hareket LSKU / Bitmiş Ürün seviyesindedir. GSKU'da `serialControlled: null` 'bu seviyede uygulanmaz' demektir, 'bilinmiyor' değil. Lot bayrağı bilinmiyorsa giriş reddedilir. Hammadde ve ambalaj kalemleri `Item` seviyesinde stoklanır (`skuId == itemId`, `skuLevel: Item`)."
+    - "Çevrim kuralı (draft.8, stok ekibi L-03): etkin (Active) kayıtta birim çevrimi yalnız EKLENİR; var olan çevrim değiştirilmez ve silinmez. Bu yüzden çevrimin sürümü yoktur ve v1.1'de `effectiveFrom` / `effectiveTo` null'dur. v1.2'de her çevrime kararlı bir `conversionId` ve `getSkuUom`'a `asOf` parametresi eklenecek (BL-584); planlama sürüm yerine bunları kullanır. Taslak kayıtta çevrimler serbestçe düzenlenebilir."
+    - "Sözleşme kapsamı: `/stockable-items`, `/items/{itemId}` ve `/skus/bulk-read` bu sözleşmenin (v1.1) parçasıdır, MDM'in iç uçları değildir; stoğun hareket formundaki ürün seçicisi `/stockable-items`'ı kullanır (W-UI-01 feragati kalkar)."
     - "Kalemsiz birim denetimi (X-04): malzeme kaleminin birimi ve çevrimleri `getSkuUom(skuId = itemId)` ile okunur (kalem kendi SKU'sudur). Global Ürünün kendi birimi yoktur; birim ve çevrim GSKU düzeyindedir. Satır yalnız `itemId` + birim taşıyorsa (RFx, BOM bileşeni) ve kayıt bir kalemse aynı çağrı kullanılır. `validateRefs`'e birim denetimi v1.2'de değerlendirilecek."
     - "Tek durum listesi (2026-10-09, stok ekibi R-10): yayımlanan durumlar `Draft`, `Active`, `Deactivated`, `Retired`; v1.0 `Archived` hiç yayımlanmaz. İç durum eşlemesi `LifecycleStatus` açıklamasındadır. `Deactivated` yalnız malzeme kaleminde vardır ve geri alınabilir: yeniden etkinleştirme onayıyla `Active` olur (onay beklerken `Deactivated` yayımlanır). Global Ürün, GSKU, LSKU ve Bitmiş Üründe `Deactivated` yoktur; bu kayıtlar `Active`'ten yalnız `Retired`'a geçer. `Retired` geri alınmaz."
     - "Etkinleştirme kuralı (2026-10-09, stok ekibi R-04): `Active` bir kayıtta, seviyesinde uygulanan lot / seri bayrağı null olmaz. `lotControlled`: Item, Gsku, Lsku (GSKU'dan) ve FinishedGood'da `Active` iken dolu. `serialControlled`: Item'da false (uygulanmaz), Lsku ve FinishedGood'da `Active` iken dolu, Gsku'da her zaman null (seri takibi LSKU / Bitmiş Ürün düzeyinde karar verilir). Bayrak eksik kayıt onaylanmaz (kalem etkinleştirmesi S2, ürün kimlik onayı S3b uygular). Taslakta null olabilir."
@@ -66,6 +68,9 @@ info:
     - date: "2026-10-09"
       version: 1.1.0-draft.7
       note: "Stok ekibinin netleştirme cevabı: Global Ürün yanıtındaki deprecated `lotControlled` / `serialControlled` değer kuralı şüphede EVET'e yuvarlar (biri true ya da null → true; hepsi kesin false → false; SKU yoksa null); stok tarafının seviye kuralları bilgi notu olarak (GSKU seviyesinde hareket yalnız seri bayrağı açıkça false iken; kalemler Item seviyesinde). Şema değişmedi."
+    - date: "2026-10-09"
+      version: 1.1.0-draft.8
+      note: "Stok ekibinin isteği: çevrim kuralı açıkça yazıldı (etkin kayıtta yalnız eklenir, değiştirilmez / silinmez; sürüm yok; v1.2'de conversionId + asOf); `/stockable-items`, `/items/{itemId}`, `/skus/bulk-read`'in sözleşmenin parçası olduğu notu. Şema değişmedi."
 servers:
   - url: /api/product-master
 security:
