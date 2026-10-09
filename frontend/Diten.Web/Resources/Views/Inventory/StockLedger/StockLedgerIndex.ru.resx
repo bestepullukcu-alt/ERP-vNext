@@ -46,6 +46,7 @@
   <data name="SkuLevelGsku" xml:space="preserve"><value>Глобальный SKU</value></data>
   <data name="SkuLevelLsku" xml:space="preserve"><value>Локальный SKU</value></data>
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Готовая продукция</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Материальная позиция</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>Для этого движения в источнике недостаточно запаса. Ничего не изменено; проверьте доступное количество и повторите попытку.</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>Это движение уже сторнировано. Ничего не изменено; обновите список, чтобы увидеть сторно.</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>Сейчас невозможно проверить данные товара или места хранения, поэтому изменения не внесены. Повторите попытку, когда связь восстановится.</value></data>

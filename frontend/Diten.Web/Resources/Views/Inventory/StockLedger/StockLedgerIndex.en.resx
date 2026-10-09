@@ -46,6 +46,7 @@
   <data name="SkuLevelGsku" xml:space="preserve"><value>Global SKU</value></data>
   <data name="SkuLevelLsku" xml:space="preserve"><value>Local SKU</value></data>
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Finished good</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Material item</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>There is not enough stock at the source for this movement. Nothing was changed; check the available quantity and try again.</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>This movement has already been reversed. Nothing was changed; reload the list to see the reversal.</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>Product or location data cannot be checked right now, so no change was made. Try again when the connection is back.</value></data>

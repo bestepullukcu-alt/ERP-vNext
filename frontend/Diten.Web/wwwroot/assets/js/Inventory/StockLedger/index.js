@@ -90,6 +90,8 @@ const StockLedgerList = (function () {
             allowClear: true,
             width: 'element',
             language: { searching: () => L().Searching || '', noResults: () => L().NoResults || '' },
+            // FUB1 (O-PM1-6): a Global Product shows its own name, its SKU name on a second line
+            templateResult: (o) => (o && o.sub ? $('<div>').append($('<div>').text(o.text), $('<small class="d-block text-muted">').text(o.sub)) : o.text),
             ajax: {
                 url: `/StockMovements/lookups/${kind}`,
                 dataType: 'json',
@@ -97,7 +99,7 @@ const StockLedgerList = (function () {
                 data: (params) => ({ q: params.term || '' }),
                 processResults: (data) => {
                     pickerNotice(data?.available !== false);
-                    return { results: (data?.items || []).map((item) => ({ id: item.value, text: item.text })) };
+                    return { results: (data?.items || []).map((item) => ({ id: item.value, text: item.text, sub: item.sub || '' })) };
                 },
                 error: (xhr) => { if (xhr?.statusText !== 'abort') pickerNotice(false); }
             }

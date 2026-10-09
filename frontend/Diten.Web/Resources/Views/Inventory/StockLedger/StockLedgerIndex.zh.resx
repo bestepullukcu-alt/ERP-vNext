@@ -46,6 +46,7 @@
   <data name="SkuLevelGsku" xml:space="preserve"><value>全球 SKU</value></data>
   <data name="SkuLevelLsku" xml:space="preserve"><value>本地 SKU</value></data>
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>成品</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>物料项</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>来源处库存不足，无法执行此移动。未做任何更改；请检查可用数量后重试。</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>此移动已被冲销。未做任何更改；请刷新列表查看冲销记录。</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>暂时无法校验产品或库位数据，因此未做任何更改。请在连接恢复后重试。</value></data>

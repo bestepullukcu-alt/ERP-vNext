@@ -2,8 +2,11 @@ using System.Text.Json;
 
 namespace Diten.Web.Models.Inventory;
 
-/// <summary>One picker option: <c>value</c> is what the filter sends, <c>text</c> what the reader sees.</summary>
-public sealed record PickerOption(string Value, string Text);
+/// <summary>
+/// One picker option: <c>value</c> is what the filter sends, <c>text</c> what the reader sees. <c>sub</c> (FUB1, optional) is a
+/// second, smaller line — the SKU's display name under a Global Product's own name.
+/// </summary>
+public sealed record PickerOption(string Value, string Text, string? Sub = null);
 
 /// <summary>A picker answer. <see cref="Available"/> false = the source could not be asked; the screen says so.</summary>
 public sealed record PickerResult(IReadOnlyList<PickerOption> Items, bool Available)
@@ -19,6 +22,11 @@ public sealed record PickerResult(IReadOnlyList<PickerOption> Items, bool Availa
 /// Item (a material item, <c>skuId == itemId</c>). Every id the screen later sends is still checked by MOD-0173 against
 /// PRODUCT-MASTER (fail-closed), so a picker can only narrow a query, never create a reference. No hardcoded list and no
 /// fallback data: the source down = an empty picker that says it is unavailable.
+/// <para><b>FUB1 (O-PM1-6).</b> A stockable row of a Global Product carries the SKU's display name, not the product's
+/// (contract: "Ürün SKU'su: okuma anında türetilen görünen ad"). The PRODUCT picker therefore reads the product's own name with
+/// the contract read the stock ledger already uses for its labels (<c>GET /api/product-master/products/{itemId}</c>, ≤ one call
+/// per product on the page) and shows the SKU name as the second line. A product the read cannot answer keeps today's text —
+/// the picker never fails on it. The SKU picker is unchanged (stockable-items only).</para>
 /// </summary>
 public sealed class ProductPickerSource
 {
@@ -26,6 +34,9 @@ public sealed class ProductPickerSource
     public static readonly IReadOnlyList<string> AllowedPaths = ["/api/product-master/stockable-items"];
 
     public const string Path = "/api/product-master/stockable-items";
+
+    /// <summary>FUB1 — the product read of the product picker only (<c>{ProductPath}{itemId}</c>, PRODUCT-MASTER v1 getProduct).</summary>
+    public const string ProductPath = "/api/product-master/products/";
 
     /// <summary>Rows of one picker page (the contract allows at most 100).</summary>
     public const int PageSize = 20;
@@ -45,10 +56,15 @@ public sealed class ProductPickerSource
     {
         var page = await PageAsync(search, 1, PageSize, cancellationToken);
         if (page is null) return PickerResult.Unavailable;
-        var options = page.Rows
+        var picked = page.Rows
             .GroupBy(r => r.ItemId, StringComparer.OrdinalIgnoreCase)
             .Select(g => g.OrderBy(r => r.SkuLevel == "Item" ? 0 : 1).First())
-            .Select(r => new PickerOption(r.ItemId, ProductText(r)))
+            .ToList();
+        var names = await ProductNamesAsync(picked.Where(r => r.SkuLevel != "Item").Select(r => r.ItemId), cancellationToken);
+        var options = picked
+            .Select(r => r.SkuLevel != "Item" && names.TryGetValue(r.ItemId, out var product)
+                ? new PickerOption(r.ItemId, product, r.Name)
+                : new PickerOption(r.ItemId, ProductText(r)))
             .ToList();
         return new PickerResult(options, true);
     }
@@ -117,6 +133,27 @@ public sealed class ProductPickerSource
         {
             return null;
         }
+    }
+
+    /// <summary>The Global Products' own names (code · name), by itemId; a product the read does not answer is left out.</summary>
+    private async Task<Dictionary<string, string>> ProductNamesAsync(IEnumerable<string> itemIds, CancellationToken cancellationToken)
+    {
+        var replies = await Task.WhenAll(itemIds.Distinct(StringComparer.OrdinalIgnoreCase).Select(async id =>
+            (Id: id, Reply: await _gateway.GetAsync(ProductPath + Uri.EscapeDataString(id), cancellationToken))));
+        var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (id, reply) in replies)
+        {
+            if (!reply.IsSuccess) continue;
+            try
+            {
+                using var doc = JsonDocument.Parse(reply.Body);
+                var text = Join(Text(doc.RootElement, "canonicalCode"), Text(doc.RootElement, "name"));
+                if (!string.IsNullOrWhiteSpace(text)) names[id] = text;
+            }
+            catch (JsonException) { }
+        }
+
+        return names;
     }
 
     private static PickerOption SkuOption(Row r) => new(r.SkuLevel + ":" + r.SkuId, Join(r.Code, r.Name) ?? r.SkuId);
