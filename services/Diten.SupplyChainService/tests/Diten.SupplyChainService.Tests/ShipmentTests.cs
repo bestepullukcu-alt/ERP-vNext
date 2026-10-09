@@ -19,6 +19,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
+using Diten.SupplyChainService.Tests.Common;
 
 namespace Diten.SupplyChainService.Tests;
 
@@ -68,7 +69,8 @@ public sealed class ShipmentTests(ITestOutputHelper output)
                 ["JwtSettings:Issuer"] = "mod0183-tests",
                 ["JwtSettings:Audience"] = "mod0183-tests"
             }));
-            builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(probe)));
+            builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(probe))
+                .StubLegalEntityValidation());
         }
     }
     private static JsonObject CreateBody() => JsonNode.Parse("""
@@ -169,7 +171,9 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         Assert.Equal(404, (await Send(c, "GET", "/" + Guid.NewGuid())).Status);
         Assert.Equal(403, (await Send(c, "GET", "/" + id, permissions: [])).Status);
         Assert.Equal(403, (await Send(c, "POST", "", CreateBody(), "forbidden", permissions: [])).Status);
-        Assert.Equal(403, (await Send(c, "GET", "/" + id, omitLeClaim: true)).Status);
+        // R-2: the token no longer carries legal_entity_id, so omitting it is not a rejection — the
+        // X-Legal-Entity-Id header already carried the scope. Before R-2 this line asserted 403.
+        Assert.Equal(200, (await Send(c, "GET", "/" + id, omitLeClaim: true)).Status);
         Assert.Equal(400, (await Send(c, "GET", "/" + id, omitCorrelation: true)).Status);
         Assert.Equal(400, (await Send(c, "GET", "/" + id, correlation: "not-a-uuid")).Status);
         Assert.Equal(400, (await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "other-root", correlation: Guid.NewGuid().ToString())).Status);

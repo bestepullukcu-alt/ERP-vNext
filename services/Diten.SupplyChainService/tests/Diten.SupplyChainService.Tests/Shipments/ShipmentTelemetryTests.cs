@@ -29,6 +29,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
 using Xunit;
 using Xunit.Abstractions;
+using Diten.SupplyChainService.Tests.Common;
 
 namespace Diten.SupplyChainService.Tests.Shipments;
 
@@ -346,6 +347,7 @@ public sealed class ShipmentTelemetryTests(ITestOutputHelper output)
             builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings()));
             builder.ConfigureServices(s =>
             {
+                s.StubLegalEntityValidation();
                 s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(probe));
                 if (commits is null) return;
                 var settings = MongoClientSettings.FromConnectionString(connection);

@@ -19,6 +19,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
+using Diten.SupplyChainService.Tests.Common;
 
 namespace Diten.SupplyChainService.Tests;
 
@@ -53,7 +54,8 @@ public sealed class SourceIntakeTests(ITestOutputHelper output)
         {
             builder.UseEnvironment("Testing");
             builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Configuration()));
-            builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(probe)));
+            builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(probe))
+                .StubLegalEntityValidation());
         }
     }
     private sealed class Warehouse : HttpMessageHandler, IWarehouseReadClient

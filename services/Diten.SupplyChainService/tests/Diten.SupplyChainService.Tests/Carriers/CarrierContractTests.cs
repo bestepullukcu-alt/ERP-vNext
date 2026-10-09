@@ -16,6 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
+using Diten.SupplyChainService.Tests.Common;
 namespace Diten.SupplyChainService.Tests.Carriers;
 public sealed class CarrierContractTests
 {
@@ -58,6 +59,7 @@ public sealed class CarrierContractTests
         {
             builder.UseEnvironment("Testing"); builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings));
             builder.ConfigureServices(s => {
+                s.StubLegalEntityValidation();
                 s.Replace(ServiceDescriptor.Singleton<ICarrierCommitProbe>(probe));
                 s.Replace(ServiceDescriptor.Scoped<ICarrierRepository>(sp => new CountingRepository(new CarrierRepository(sp.GetRequiredService<IMongoDatabase>(), probe), probe)));
             });
@@ -181,10 +183,21 @@ public sealed class CarrierContractTests
         Assert.Equal(201,(await Send(c,body:Body("c"),key:"lowercase")).Status);
     }
     [Theory]
-    [InlineData("tenant_id")] [InlineData("legal_entity_id")] [InlineData("sub")]
+    // R-2 dropped legal_entity_id from the signed trio — the scope arrives in X-Legal-Entity-Id — so a duplicate
+    // of that claim is no longer a scope conflict. DuplicateLegalEntityClaimIsIgnored below asserts the new truth.
+    [InlineData("tenant_id")] [InlineData("sub")]
     public async Task DuplicateClaimsFailClosed(string claim)
     {
         using var app=new Factory(new());using var c=app.CreateClient();Assert.Equal(claim == "sub" ? 401 : 403,(await Send(c,body:Body(),badClaim:claim,correlation:"bad")).Status);Assert.Equal(0,await Count(app,"carriers"));
+    }
+    // R-2's positive counterpart: a second, conflicting legal_entity_id claim changes nothing, because the
+    // middleware never reads it. The scope the request is served under is the header's.
+    [Fact]
+    public async Task DuplicateLegalEntityClaimIsIgnored()
+    {
+        using var app=new Factory(new());using var c=app.CreateClient();
+        Assert.Equal(201,(await Send(c,body:Body(),badClaim:"legal_entity_id")).Status);
+        Assert.Equal(1,await Count(app,"carriers"));
     }
     [Theory]
     [InlineData("read")] [InlineData("create")] [InlineData("status.change")]
@@ -257,7 +270,9 @@ public sealed class CarrierContractTests
     public async Task SignedDuplicateJsonContextMemberIsRejected()
     {
         using var app=new Factory(new());using var c=app.CreateClient();
-        foreach(var name in new[]{"tenant_id","legal_entity_id","sub"})
+        // legal_entity_id is deliberately absent: R-2 removed it from UniqueSignedContextFields, so a duplicate
+        // member for it is ignored rather than rejected.
+        foreach(var name in new[]{"tenant_id","sub"})
         {
             var parts=Token(_tenant,_le).Split('.');var payload=Base64UrlEncoder.Decode(parts[1]);
             payload=payload[..^1]+",\""+name+"\":\""+Guid.NewGuid()+"\"}";
@@ -310,7 +325,9 @@ public sealed class CarrierContractTests
         Assert.Equal(403,(await Send(c,body:Body(),permissions:[],correlation:"bad")).Status);
         Assert.Equal(400,(await Send(c,body:Body(),correlation:"bad")).Status);
         Assert.Equal(400,(await Send(c,body:Body(),key:"")).Status);
-        Assert.Equal(404,(await Send(c,body:new JsonObject(),alter:r=>{r.Headers.Remove("X-Legal-Entity-Id");r.Headers.Add("X-Legal-Entity-Id",Guid.NewGuid().ToString());})).Status);
+        // The claim-versus-header mismatch stage is gone: after R-2 an unknown legal entity is MDM's answer, not a
+        // local comparison. LegalEntityMiddlewareWiringTests asserts Carriers' 404 on NotReferenceable without
+        // needing an MDM; this suite's host stubs the validator, so the line that used to live here is there now.
         Assert.Equal(400,(await Send(c,path:"/bad/status",body:Change("Active"))).Status);
         Assert.Equal(400,(await Send(c,"GET",path:"?status=bad")).Status);
         Assert.Equal(415,(await Send(c,body:Body(),alter:r=>r.Content=new StringContent("{}",Encoding.UTF8,"text/plain"))).Status);

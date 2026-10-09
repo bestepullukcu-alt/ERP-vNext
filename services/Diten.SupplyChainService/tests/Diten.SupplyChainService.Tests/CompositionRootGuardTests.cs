@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using Diten.SupplyChainService.Application.Common;
+using Diten.SupplyChainService.Infrastructure.Common;
 
 namespace Diten.SupplyChainService.Tests;
 
@@ -63,6 +65,21 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
         Assert.True(missing.Length == 0, "Optional Diten.* dependencies that silently resolve to null:\n" + string.Join("\n", missing));
     }
 
+    // R-2 (PR #134). The five *ContextMiddleware classes take ILegalEntityScopeValidator, and the integration
+    // factories replace it with a stub (TestHostLegalEntities) because a test host has no MDM to ask. That
+    // replacement is only safe while production still wires the real one, so the real one is named here: without
+    // this fact the validator could be stubbed everywhere and nothing would notice — K23's shape, implemented but
+    // never active. AddHttpClient<TService, TImpl> carries no ImplementationType, so the descriptor cannot be
+    // inspected; the service is resolved and its runtime type asserted instead.
+    [Fact]
+    public void LegalEntityScopeValidator_IsTheRealMdmOne_InTheProductionContainer()
+    {
+        using var scope = host.Services.CreateScope();
+        var validator = scope.ServiceProvider.GetService<ILegalEntityScopeValidator>();
+        Assert.NotNull(validator);
+        Assert.Equal(typeof(MdmLegalEntityScopeValidator), validator.GetType());
+    }
+
     public sealed class Host : IDisposable
     {
         private readonly Factory _factory;
@@ -115,6 +132,9 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
 
         public IReadOnlyList<Type> Controllers { get; }
         public IReadOnlyList<Type> ImplementationTypes { get; }
+        // The production provider itself, for facts that must name the concrete type the container hands over
+        // rather than merely that something is registered.
+        public IServiceProvider Services => _factory.Services;
 
         public IEnumerable<string> UnresolvableRequired(Type type) =>
             Constructor(type)?.GetParameters()

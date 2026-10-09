@@ -33,11 +33,14 @@ public sealed class ClaimIsolationTests
   http.Request.Method="POST";http.Request.ContentType="application/json";
   http.Request.Headers["X-Correlation-Id"]="44444444-4444-4444-4444-444444444444";
   http.Request.Headers["Idempotency-Key"]="key";
-  var payload=JsonSerializer.Serialize(new {tenant_id=Tenant,legal_entity_id=LegalEntity,sub=Actor});
+  // R-2: the legal entity comes WITH THE REQUEST. Sending it as a header (and leaving it out of the token
+  // below) is what these component checks now assert the middleware reads.
+  http.Request.Headers["X-Legal-Entity-Id"]=LegalEntity.ToString();
+  var payload=JsonSerializer.Serialize(new {tenant_id=Tenant,sub=Actor});
   var segment=Convert.ToBase64String(Encoding.UTF8.GetBytes(payload)).TrimEnd('=').Replace('+','-').Replace('/','_');
   http.Request.Headers.Authorization="Bearer e30."+segment+".synthetic";
   http.User=new ClaimsPrincipal(new ClaimsIdentity(new[] {
-   new Claim("tenant_id",Tenant.ToString()),new Claim("legal_entity_id",LegalEntity.ToString()),
+   new Claim("tenant_id",Tenant.ToString()),
    new Claim("sub",Actor.ToString()),new Claim("permission",ClaimPermissions.Create)},"component-only"));
   http.SetEndpoint(new Endpoint(_=>Task.CompletedTask,new EndpointMetadataCollection(new ClaimPermissionAttribute(ClaimPermissions.Create)),"component-only"));
   http.Response.Body=new MemoryStream();return http;

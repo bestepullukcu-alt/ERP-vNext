@@ -25,6 +25,7 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
+using Diten.SupplyChainService.Tests.Common;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -67,7 +68,8 @@ internal sealed class LoadTestFactory(LoadProbe probe, string referenceUrl) : We
     {
         builder.UseEnvironment("Testing");
         builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings(referenceUrl)));
-        builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<ILoadCommitProbe>(probe)));
+        builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<ILoadCommitProbe>(probe))
+            .StubLegalEntityValidation());
     }
 }
 
