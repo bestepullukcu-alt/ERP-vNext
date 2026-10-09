@@ -69,6 +69,26 @@ flowchart TD
 | Kalem / malzeme | — | Hammadde, ambalaj | Ekranı yapılacak (FU04 S5) |
 | Görev Merkezi | `/WorkCenterNext` | Onaycı onayı burada verir | Dev'de |
 
+## 3b. CRM bağlantısı (Marka / marka ürünleri)
+
+Bugünkü bağlantı (`origin/main`):
+- CRM segment doğrulayıcısı `GET api/mdm/brands/{id}` ve `api/mdm/products/{id}`'yi ağ geçidi üzerinden, kullanıcı belirteciyle okuyor (`Diten.CrmService.Infrastructure/Segmentation/MdmSegmentProductReferenceValidator.cs`).
+- Bilgi içerikleri, ziyaret sıklığı politikaları ve kampanyalar `BrandId` / `ProductId` taşıyor.
+- CRM marka yazmıyor.
+
+Takeover'daki değişiklikler (tek PR'la gelir):
+- marka izinleri kendi modülünde (`brand-product-master`, 9 anahtar);
+- yeni bağ yalnız Etkin ve geçerlilik tarihi içindeki markaya (`brand_not_linkable`);
+- detayda `isLinkable` / `liveProductCount`;
+- güncelleme `expectedVersion` ister;
+- sayfalı liste;
+- 8 yeni hata kodu;
+- dışa aktarma.
+
+CRM'e gönderilen cevap (2026-10-09, sahip iletir):
+- **Şartlar:** plana "Marka" modülü; CRM rollerinde `mdm.brands.read` / `mdm.products.read`.
+- **Öneriler:** seçimde `isLinkable`; kodları sözleşme ucundan okumak; açık soru 1 kapanana kadar "Ürünler" kaydına yeni bağımlılık eklememek.
+
 ## 4. Sahibe sorulan açık sorular (2026-10-09)
 
 | # | Soru | CT önerisi | Cevap |
