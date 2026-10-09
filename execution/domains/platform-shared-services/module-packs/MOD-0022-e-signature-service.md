@@ -1471,6 +1471,33 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   **CT-E5W1-N1** the menu shows the e-İmza item under the domain heading "Platform Paylaşılan Hizmetler" — CT-D8 wants the
   item in its own "e-İmza" group (measure the nav grouping; no domain name visible to the tenant user).
 
+### E5B — implementation note (WP-0022-E5B, 2026-10-09; agent result, pending CT)
+
+- Branch `feature/sce/mod-0022-e5b` from `562afeaa5` (isolated worktree). Commit `4caca506d` (Platform ESign schema / repository /
+  handler + tests, AuthService default-role template + tests); local only, no push. Evidence:
+  `docs/records/audits/2026-10/mod-0022-e5b-evidence-2026-10-09.md`. Contract unchanged — measured: `esign.openapi.yaml` promises no
+  "one signature per task" (`signSubject` does not even list `ESIGN_SIGNATURE_MISMATCH`; the addendum's "no binding to another task"
+  is the approval-time rule the gate keeps).
+- **FU-0022-E4-01 closed (agent):** `ux_esign_records_tenant_workflow_task` (unique) → lookup `ix_esign_records_tenant_workflow_task`
+  (same keys, same partial filter). A task can be re-signed after an invalidated / wrongly-meant signature. "One signature binds one
+  approval" lives only in the E4 gate (context task + single use on the transition log; `ESignatureGate.cs` unchanged); a task is
+  approved once, so it holds at most one BOUND signature. `ESignatureTaskBindingException` removed.
+- Startup step `ESignatureSchemaMigrations` (called last in `PlatformSchemaMigrations.RunAsync`, before the manifest): drops the old
+  index only when name AND every stored option equal E2's (mongod 9 reports `collation: {locale: "simple"}` — accepted as "none");
+  anything else under that name is left and logged as WARNING; idempotent. Runtime: base build → E5B startup 1 drops + builds the
+  lookup index, startup 2 logs "absent — nothing to do", index list identical.
+- **CT-Q15:** `esign.signatures.read` joins `DefaultSignerPermissions` (new tenants; no reconciler grant). Measured: the default Viewer
+  already received it through the generic Tenant-read clause, so the effective grant of a new tenant is unchanged — the key is now an
+  explicit member of the signer set.
+- Tests: Platform filtered 581 → **594/594** (+5 re-sign, +8 index migration; the O-E4-1 measurement test now expects 201 + 200);
+  AuthService 1062 → **1063/1063**; Web 630/632 (same 2 quarantine reds); architecture 18/18; no new build warning. K3: (a) gate single
+  use, (b) CT-Q15 line, (c) exact-match condition → red, restored clean. Probe (own AuthService + base / E5B Platform, own mongod)
+  **25/25**. Owner fleet untouched.
+- **OPEN for the CT:** O-E5B-1 §4 index sentence is stale (CT edits §4); O-E5B-2 optional §11.70 wording "one signature binds one
+  approval"; O-E5B-3 `DataSeeder` tops up the seed tenant's default roles on every AuthService start (pre-existing, outside CT-D10 (b));
+  the evidence §7 records one unintended run of `PlatformSchemaContractMongoTests` against 27017 during the baseline (own-prefix test DB,
+  dropped by the test).
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
