@@ -8398,6 +8398,30 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-592
+
+**`mdm.product-master.read` hiçbir yerde sağlanmıyor: Enforced kiracıda okuma sözleşmesinin her ürün satırı 403 (canlı ön koşulu)**
+
+DURUM: AÇIK · SAHİP: CT (Auth + Platform + MDM) · BULAN: FU04 S4 bağımsız incelemesi (2026-10-09) · KAYIT: 2026-10-09 · CANLI ÖN KOŞULU
+
+Ölçüm:
+- `git log --all -S"mdm.product-master.read" -- services` yalnız S4 commit'i (`af5cad3eb`).
+- İzin Auth tohumunda, rol şablonlarında ve MDM modül manifestinde yok; hiçbir kiracı rolü bu izni tutamaz.
+- Enforced yayılımda `ResolveContextAsync` anahtarı Platform'a sorar. Platform'un izin listesi sabit 37 anahtar (`TrustedLegalEntityScopeCredentialAuthenticator.cs:13` `MaxAllowedPairs`, `:33` `FirstConsumerPermissions`, `:92-96` `AllowsPair`). Bu anahtarı reddeder → 403 `LEGAL_ENTITY_SCOPE_FORBIDDEN`.
+- Kalem satırları çalışır; ürün satırları herkese 403 (kapalı başarısız, sızıntı değil).
+- Testler göremiyor: `FakeLegalEntityScopes` her anahtarı kabul ediyor.
+
+Yapılacak (tek iş, üç servis):
+- MDM manifestine izin (S5 ile ya da önce);
+- Auth ürün kimliği profilinde isteğe bağlı anahtar (BL-573 deseni) ve hangi rollerin alacağı (öneri: Viewer okuma; stok servisinin çağıranı olan kullanıcı rolleri);
+- Platform izin listesi + kimlik bilgisi bağlaması + `MaxAllowedPairs`;
+- gerçek doğrulayıcıya karşı test;
+- MDM testlerinde sahte nesnenin anahtar listesi Platform'unkine bağlanır.
+
+Gelecek regresyon riski: 🔴 canlı ön koşulu. Okuma sözleşmesi Enforced kiracıda ürün satırı veremez.
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
