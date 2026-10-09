@@ -205,8 +205,8 @@ An architecture test pins this (§17).
 
 Indexes: unique `(TenantId, SignatureNumber)`; unique `(TenantId, SignerUserId, IdempotencyKey)`;
 `(TenantId, Module, SubjectType, SubjectId, SignedAtUtc desc)`; `(TenantId, SignedAtUtc desc)` (export);
-`(TenantId, SignerUserId, SignedAtUtc desc)`; `(TenantId, RequestId)`; unique partial `(TenantId, Context.workflowTaskId)`
-where present (one signature binds one task — E4).
+`(TenantId, SignerUserId, SignedAtUtc desc)`; `(TenantId, RequestId)`; partial lookup `(TenantId, Context.workflowTaskId)`
+where present (E5B: no longer unique — a task can be re-signed; one signature binds one APPROVAL, enforced by the E4 gate).
 
 ### Other entities
 
@@ -1497,6 +1497,19 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   approval"; O-E5B-3 `DataSeeder` tops up the seed tenant's default roles on every AuthService start (pre-existing, outside CT-D10 (b));
   the evidence §7 records one unintended run of `PlatformSchemaContractMongoTests` against 27017 during the baseline (own-prefix test DB,
   dropped by the test).
+
+### E5B — CT acceptance (2026-10-09)
+
+- **CT-ACCEPTED.** CT re-ran Platform filtered **594/594**, AuthService Application **1063/1063**, Web **630/632** (the 2 known quarantine
+  nav keys, MOD-0175 Q5), architecture **18/18** in the agent worktree; read `ESignatureSchemaMigrations` (drop only on the exact E2
+  name + options; mongod 9 `{locale:"simple"}` = no collation; idempotent) and the manifest change. CT sabotage (own): collation
+  check removed (any collation accepted) → `An_index_of_that_name_with_another_definition_is_left_untouched(extra-option)` red,
+  restored, porcelain clean. One call added to `PlatformSchemaMigrations.RunAsync` — the documented place for retired-index drops,
+  accepted. O-E5B-1 fixed by the CT (§4 index sentence). O-E5B-2: §11.70 reads "one signature binds one approval" in spirit —
+  kept. O-E5B-3 (`DataSeeder` completes the seed tenant's default roles at every AuthService start, since E3) → FU-0022-SEED-01:
+  confirm it is limited to the seed tenant and record it as an exception to CT-D10. Note: the `~Workflow` / schema filters open
+  test-prefixed databases on 27017 (since E4) — accepted, test databases are dropped; fleet processes untouched. Merged into the
+  MVP-1 branch.
 
 ## 20. Follow-up Items
 
