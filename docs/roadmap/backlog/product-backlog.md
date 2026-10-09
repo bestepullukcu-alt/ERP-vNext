@@ -8107,6 +8107,59 @@ Gelecek regresyon riski: 🟢 ayrı kiracıda. 🔴 tohumlayıcı yanlış kirac
 
 ---
 
+### BL-581
+
+**Varsayılan Viewer rolü, açılan modülün bütün "read" izinlerini alıyor: İK'nın ücret / yan hak ve hassas erişim ekranları da dahil**
+
+DURUM: AÇIK · SAHİP: CT (Auth yetki) · BULAN: canlı rol analizi (2026-10-09, alt ajan; CT kodu okuyarak doğruladı) · KAYIT: 2026-10-09
+
+Kural (`origin/main`):
+- `EntitlementPermissionSyncService.SelectForRole`, Viewer'a modülün eylemi tam `read` olan her iznini veriyor (`:367-375`).
+- `DefaultRolePermissionTemplate` Viewer süzgeci yalnız kiracı ayarları ve ürün okumalarını dışarıda bırakıyor (`:73-92, 127-132`).
+
+Sonuç:
+- İnsan Sermayesi modülü açık bir kiracıda Viewer rolündeki herkes `hcm.compensation-benefits.read` (ücret / yan hak) ve `hcm.sensitive-access.read` ekranlarını açabilir.
+- Yetenek Ekosistemi açıksa `tep.salary-benchmarking.read` için de aynısı geçerli.
+- `platform.meetings.read-all` "yalnız elle" listesinde değil, `platform.tasks.read-all` ise listede. Admin, toplantıların hepsini modül açılınca otomatik alıyor.
+
+Düzeltme:
+- Hassas okuma anahtarları `ExplicitGrantOnlyPermissions`'a girer ya da Viewer süzgecinde açıkça dışlanır.
+- Var olan Viewer atamalarının geri alınması ayrı karar: geri alma denetim satırıyla yapılır.
+
+Sahibe soru: canlıda İnsan Sermayesi modülü açık mı, Viewer rolü kimlerde?
+
+Karşılaştırma:
+- SAP: HR bilgi tipleri ayrı yetki nesnesiyle korunur (P_ORGIN); genel görüntüleme rolüne girmez.
+- Oracle: hassas kişi verisi ayrı veri güvenlik politikasıyla korunur.
+
+Gelecek regresyon riski: 🔴 (kişisel ve ücret verisi geniş bir role açık).
+
+---
+
+### BL-582
+
+**Canlı rol analizinin bulduğu rol kurma boşlukları: QA / onaycı rolü kiracı ekranından kurulamıyor, bazı izinler katalogda yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth yetki + ilgili modül sahipleri, XMC) · BULAN: canlı rol analizi (2026-10-09) · KAYIT: 2026-10-09
+
+Kayıt: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md` §8 (her biri dosya:satır kanıtlı). Özet:
+
+- **G1:** Doküman Yönetimi'nin 124 izninden 123'ü platform kapsamlı; kiracı yöneticisi SOP okumayı bile bir role veremez. QA rolü kurulamaz.
+- **G2:** İş akışı başlat / onayla / reddet platform kapsamlı. Takeover dalı düzeltiyor (`SeedOwnedTenantScopeKeys.cs:58-65`); tek PR'la gelir.
+- **G3:** Viewer yalnız eylemi `read` olanı alıyor; `view` / `search` kullanan modüller okuyucuya hiçbir şey vermiyor.
+- **G5:** Modülle Admin'e gelen izin kaldırılamıyor. Admin'i 1–2 BT kişisiyle sınırlama önerisi.
+- **G8 / G9:** Satın alma ve denetim okuma izinleri kodda zorunlu ama katalogda yok; kimseye verilemez.
+- **G10:** Kiracının denetim izi ekranı yok.
+- **G13:** `platform.workflow.instances.*` ekranda "Doküman Örnekleri" diye görünüyor.
+- **G16:** CAPA kapatma onayı için ayrı izin yok.
+- **G18:** GQD / QADocumentation rolleri yalnız test kiracısında ve izinsiz.
+
+Her madde ayrı WP olarak sınıflanır; başka modülün dosyası gerekiyorsa XMC-001 ile sahibe sorulur.
+
+Gelecek regresyon riski: 🟡 (GxP görev ayrımı canlıda rol ile kurulamıyor).
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
