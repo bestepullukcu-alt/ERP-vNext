@@ -160,3 +160,17 @@ Commit: "feat(crm): WP-VW-W1 — visit work status (missed/expired), report dead
 - canlı E4 (fleet yeniden başlatılınca: takvim alanları, `?workStatus`, iptal 409, Ziyaret Yürütme yetkisi);
 - mobil notu (W8);
 - W2.
+
+## §37 ek — canlı E4 ACCEPTED (2026-10-09, CT ayrı sekme, yalnız okuma)
+- Ziyaret Yürütme Admin'de açılıyor; 403 yok (yeni anahtarlar Admin'de var).
+- `contract`: `reportDeadlineHours = 48`, `workStatuses` 9 kod doğru sırada.
+- Takvim (1–31 Eki, 57 ziyaret):
+  - 8 Eki → `missed` (33), son tarih `2026-10-10T23:59:59Z`;
+  - 9 Eki → `today` (21);
+  - 12 Eki → `cancelled` (3), `cancellationReason = week_reopened`.
+- `plannedContent` 107 öğenin 107'sinde ürün adı var.
+- `?workStatus=missed,expired` → 33; `?workStatus=today` → 21; `bogus` → `400 visit_report_work_status_invalid`.
+- **Canlı denenmedi:**
+  - T-1: canlı veride `account-contact-link` hedefi yok; testle kanıtlı;
+  - iptal 409: yazma denemesi, kullanıcı onayı yok; testle kanıtlı.
+- Mobil notu: [MOBILE-NOTE-2026-10-09](mobile/2026-10-09-visit-workspace-w1/MOBILE-NOTE-2026-10-09-visit-status-report-rules.md). Kapsadığı paketler: W1, 4L, 4M, saha temsilcisi yetkileri.

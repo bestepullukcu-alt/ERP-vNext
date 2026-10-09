@@ -76,7 +76,7 @@
 - **B4 (taslak → planlı ucu) ve B11 (tip / amaç / durum etiketleri):** Faz 6'da (Planlanan Ziyaretler).
 - **B5 (sonuç kodu seti):** referans verisi + SB-3c.
 - **B10 (check-in):** kapsam dışı, ayrı modül.
-- Hepsi WP-VP-4K ile gelecek; teslimde ayrıca bildirilecek.
+- Hepsi WP-VW-W1 ile geldi (4K onun içine alındı) — **teslim notu:** [MOBILE-NOTE-2026-10-09](../2026-10-09-visit-workspace-w1/MOBILE-NOTE-2026-10-09-visit-status-report-rules.md).
 
 ## 5. Teşekkür / gözlem
 - **BiDi yaklaşımınız** (bağlam = etiketin ilk güçlü harfi) Web'deki yalıtımla uyumlu. Web'de ayrıca **sayı oranları** ("0 / 5") RTL'de ters dönüyordu; LRI…PDI ile yalıttık. Mobilde "yapılan / kalan" gibi oranlar gösteriyorsanız aynı sorun olabilir.
