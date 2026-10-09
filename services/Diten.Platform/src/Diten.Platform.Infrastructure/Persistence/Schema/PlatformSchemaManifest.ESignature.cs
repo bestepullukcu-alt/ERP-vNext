@@ -37,13 +37,15 @@ public static partial class PlatformSchemaManifest
                 // E3 — usage of a sample (a used sample cannot be withdrawn).
                 new(Builders<ESignatureRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.AppearanceSampleId),
                     new CreateIndexOptions { Name = "ix_esign_records_tenant_sample" }),
-                // One signature binds one workflow task (E4). Partial on the key's existence: signatures without a task
-                // context stay outside the unique space.
+                // E5B (FU-0022-E4-01, CT-D16) — a LOOKUP index, no longer unique: a task whose signature was invalidated
+                // or carried the wrong meaning can be signed again. "One signature binds one approval" lives in one place,
+                // the E4 gate (context = this task, single use on the transition log). The E2 unique index of the same keys
+                // is dropped at startup by ESignatureSchemaMigrations (exact match only). Partial on the key's existence:
+                // signatures without a task context are not indexed.
                 new(Builders<ESignatureRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending("Context.workflowTaskId"),
                     new CreateIndexOptions<ESignatureRecord>
                     {
-                        Unique = true,
-                        Name = "ux_esign_records_tenant_workflow_task",
+                        Name = ESignatureSchemaMigrations.WorkflowTaskLookupIndex,
                         PartialFilterExpression = Builders<ESignatureRecord>.Filter.Exists("Context.workflowTaskId")
                     })
             }),

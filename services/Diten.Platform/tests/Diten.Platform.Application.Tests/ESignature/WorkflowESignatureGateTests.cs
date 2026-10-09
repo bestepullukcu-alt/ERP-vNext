@@ -23,7 +23,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// Real HTTP host, real Mongo (DB-010 test-owned replica set).
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
-public sealed class WorkflowESignatureGateTests : IClassFixture<WorkflowESignatureTestHost>
+public sealed partial class WorkflowESignatureGateTests : IClassFixture<WorkflowESignatureTestHost>
 {
     private const string Signatures = "api/v1/esign/signatures";
     private const string Workflow = "api/v1/workflow";
@@ -380,8 +380,8 @@ public sealed class WorkflowESignatureGateTests : IClassFixture<WorkflowESignatu
         Assert.Equal((409, ESignCodes.SignatureRequired), await ApproveAsync(w, w.B, next.Id, null));
         var approveSigned = await SignAsync(w, w.B, s with { TaskId = next.Id }, meaning: "APPROVE");
         Assert.Equal((409, ESignCodes.SignatureMismatch), await ApproveAsync(w, w.B, next.Id, approveSigned)); // RELEASE expected
-        // E2 index "one signature per workflow task" (ux_esign_records_tenant_workflow_task): the wrongly-meant signature
-        // occupies the task, so a corrected signature is refused AT SIGNING — measured, reported as OPEN O-E4-1 (CT).
+        // E4 measured here that E2's unique per-task index refused the corrected signature AT SIGNING (409, O-E4-1). E5B
+        // (FU-0022-E4-01) relaxed the index: the corrected signature is recorded and approves; the wrong one stays refused.
         using var client = _host.Client(w.Token(w.B));
         var second = await client.PostAsJsonAsync(Signatures, new
         {
@@ -395,8 +395,13 @@ public sealed class WorkflowESignatureGateTests : IClassFixture<WorkflowESignatu
             },
             idempotencyKey = Key()
         });
-        Assert.Equal((409, ESignCodes.SignatureMismatch), ((int)second.StatusCode, Reason(await second.Content.ReadAsStringAsync())));
+        var secondBody = await second.Content.ReadAsStringAsync();
+        Assert.True(second.StatusCode == HttpStatusCode.Created, $"re-sign: {(int)second.StatusCode} {secondBody}");
+        var corrected = Data(secondBody).GetProperty("id").GetGuid();
+        Assert.Equal((409, ESignCodes.SignatureMismatch), await ApproveAsync(w, w.B, next.Id, approveSigned)); // still wrong
         Assert.Equal("WaitingApproval", await TaskStatusAsync(next.Id));
+        Assert.Equal(200, (await ApproveAsync(w, w.B, next.Id, corrected)).Status);
+        Assert.Equal("Approved", await TaskStatusAsync(next.Id));
     }
 
     [Fact]

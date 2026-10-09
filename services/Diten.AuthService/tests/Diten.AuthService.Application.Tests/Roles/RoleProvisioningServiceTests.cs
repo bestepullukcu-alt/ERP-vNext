@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 
 namespace Diten.AuthService.Application.Tests.Roles;
@@ -149,6 +150,48 @@ public sealed class RoleProvisioningServiceTests
         Assert.NotEqual(Guid.Empty, roles.IdOf(TenantA, "Admin"));
         Assert.NotEqual(Guid.Empty, roles.IdOf(TenantA, "Viewer"));
         Assert.Empty(rolePerms.Assigned);
+    }
+
+    // MOD-0022 E5B CT-Q15 — a tenant provisioned AFTER the esign keys are in the catalog: both default signer roles hold
+    // esign.signatures.read next to sign + my-samples. A tenant provisioned BEFORE (catalog without esign keys) is not
+    // touched by the later provisioning, and the startup reconciler plans no esign grant for its roles (CT-D10 (b)).
+    [Fact]
+    public async Task CT_Q15_new_tenant_signers_can_read_signatures_and_an_existing_tenant_is_unchanged()
+    {
+        var catalog = Catalog();
+        var roles = new FakeRoleRepository();
+        var rolePerms = new FakeRolePermissionRepository(catalog);
+        var service = new RoleProvisioningService(roles, new FakePermissionRepository(catalog), rolePerms);
+
+        await service.EnsureDefaultRolesAsync(TenantB, CancellationToken.None); // existing tenant: before the esign keys
+        var tenantBBefore = rolePerms.Assigned.Where(rp => rp.TenantId == TenantB).Select(rp => (rp.RoleId, rp.PermissionId)).ToList();
+
+        catalog.Add(new Permission("esign", "signatures", "sign", "Sign", null, moduleOverride: "esign"));
+        catalog.Add(new Permission("esign", "signatures", "read", "Read signature", null, moduleOverride: "esign"));
+        catalog.Add(new Permission("esign", "my-samples", "manage", "Manage own sample", null, moduleOverride: "esign"));
+        catalog.Add(new Permission("esign", "signatures", "invalidate", "Invalidate", null, moduleOverride: "esign"));
+
+        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None); // new tenant
+
+        foreach (var role in new[] { "Admin", "Viewer" })
+        {
+            var keys = rolePerms.KeysFor(roles.IdOf(TenantA, role), TenantA, catalog).ToList();
+            Assert.Contains("esign.signatures.read", keys);
+            Assert.Contains("esign.signatures.sign", keys);
+            Assert.Contains("esign.my-samples.manage", keys);
+        }
+
+        Assert.DoesNotContain("esign.signatures.invalidate",
+            rolePerms.KeysFor(roles.IdOf(TenantA, "Viewer"), TenantA, catalog));
+
+        var tenantBAfter = rolePerms.Assigned.Where(rp => rp.TenantId == TenantB).Select(rp => (rp.RoleId, rp.PermissionId)).ToList();
+        Assert.Equal(tenantBBefore, tenantBAfter);
+
+        var existing = rolePerms.Assigned.Select(rp => (rp.RoleId, rp.PermissionId)).ToHashSet();
+        var planned = TenantAdminSelfServiceReconciler.PlanMissingGrants(
+            new[] { "Admin", "Viewer" }.Select(name => new TenantAdminSelfServiceReconciler.RoleRef(roles.IdOf(TenantB, name), name, TenantB)),
+            catalog, existing);
+        Assert.DoesNotContain(planned, g => catalog.Single(p => p.Id == g.PermissionId).Key.StartsWith("esign.", StringComparison.Ordinal));
     }
 
     // ── Hand-written fakes ──
