@@ -8398,6 +8398,29 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-596
+
+**S3b stok kapısı ile S5 Web "Stok davranışı" bölümü aynı sürümde çıkmalı; Bitmiş Ürün kimlik gönderimi yok (canlı ön koşulu)**
+
+DURUM: AÇIK · SAHİP: CT (sıralama) · BULAN: FU04 S3b bağımsız incelemesi (2026-10-09) · KAYIT: 2026-10-09 · CANLI ÖN KOŞULU
+
+Ölçüm:
+- S3b (`7611c62e9`) lot / seri bayrağı eksik GSKU / LSKU taslağının onaya gönderimini 409 `STOCK_FLAGS_REQUIRED_FOR_APPROVAL` ile reddediyor (stok ekibinin R-04 şartı).
+- Bayrakları girecek Web kapısı yok (`git grep -i stock-behaviour -- frontend` boş; S5 işi).
+- S5'siz sürümde ekrandan yaratılan her GSKU / LSKU taslağı gönderilemez.
+- Bitmiş Ürün için kimlik gönderimi / onayı bugün yok. Kural (`StockFlagGate.MissingForFinishedGood`) hazır, bağlanacak yer yok.
+
+CT kararı (2026-10-09):
+- kapı açık kalır, anahtar yok;
+- S3b FIX1'de bayraksız taslakta SUBMIT eylemi gizlenir ya da nedenli pasif olur;
+- S5 aynı sohbetin bir sonraki işi;
+- S3b ve S5 birlikte canlıya çıkar.
+- FG kimlik gönderimi yazıldığında kapı çağrısı tarama testiyle zorunlu (S3b FIX1 R4).
+
+Gelecek regresyon riski: 🔴 S5'siz canlıya çıkarsa ürün SKU onayı ekrandan yapılamaz.
+
+---
+
 ### BL-595
 
 **Ortak dev Mongo'da 79 eski test veritabanı; yerel test betikleri ortak Mongo'ya düşebiliyor**
