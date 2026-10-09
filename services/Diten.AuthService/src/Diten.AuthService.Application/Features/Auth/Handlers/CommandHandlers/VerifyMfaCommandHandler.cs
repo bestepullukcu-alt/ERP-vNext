@@ -22,7 +22,6 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IAuthAuditService _authAuditService;
-    private readonly ITenantLegalEntityScopeClient? _legalEntityScopeClient;
 
     public VerifyMfaCommandHandler(
         IMfaChallengeService mfaChallengeService,
@@ -35,8 +34,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         ITokenService tokenService,
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
-        IAuthAuditService authAuditService,
-        ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
+        IAuthAuditService authAuditService)
     {
         _mfaChallengeService = mfaChallengeService;
         _tenantLoginSettingsClient = tenantLoginSettingsClient;
@@ -49,7 +47,6 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _authAuditService = authAuditService;
-        _legalEntityScopeClient = legalEntityScopeClient;
     }
 
     public async Task<Response<AuthResponse>> Handle(VerifyMfaCommand request, CancellationToken ct)
@@ -88,11 +85,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             rolePermissions,
             ct);
 
-        var legalEntityId = _legalEntityScopeClient is null
-            ? null
-            : await _legalEntityScopeClient.ResolveSingleAsync(challenge.TenantId, user.Id, ct);
-        var accessToken = _tokenService.GenerateTenantAccessToken(
-            user, roles, permissions, settings.SessionTimeoutMinutes, legalEntityId);
+        var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions, settings.SessionTimeoutMinutes);
         var refreshTokenStr = _tokenService.GenerateRefreshToken();
         var refreshTokenHash = _refreshTokenHasher.Hash(refreshTokenStr);
         var refreshExpiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenLifetimeDays);

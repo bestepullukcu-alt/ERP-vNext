@@ -29,16 +29,6 @@ public sealed class TokenService : ITokenService
 
     public string GenerateAccessToken(User user, IEnumerable<string> roles, IEnumerable<string> permissions, int expiresInMinutes)
     {
-        return GenerateTenantAccessToken(user, roles, permissions, expiresInMinutes, legalEntityId: null);
-    }
-
-    public string GenerateTenantAccessToken(
-        User user,
-        IEnumerable<string> roles,
-        IEnumerable<string> permissions,
-        int expiresInMinutes,
-        Guid? legalEntityId)
-    {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -51,11 +41,6 @@ public sealed class TokenService : ITokenService
             // flag derived from the user's real state, so the shell guard can require a first-login change.
             new("pwd_change_required", user.MustChangePassword ? "true" : "false")
         };
-
-        if (legalEntityId is { } resolvedLegalEntityId && resolvedLegalEntityId != Guid.Empty)
-        {
-            claims.Add(new Claim("legal_entity_id", resolvedLegalEntityId.ToString("D")));
-        }
 
         foreach (var role in roles)
         {
