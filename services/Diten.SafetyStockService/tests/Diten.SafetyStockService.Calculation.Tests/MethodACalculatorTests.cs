@@ -54,6 +54,36 @@ public sealed class MethodACalculatorTests
     }
 
     [Fact]
+    public void Calculate_RepeatingDailyAverage_ReturnsExactRawCandidate()
+    {
+        // Arrange
+        var fixture = CreateFixture(1m, 0m, 0m);
+
+        // Act
+        var result = _calculator.Calculate(new MethodARequest(fixture, 3m));
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(1m, result.CandidateQuantity);
+        Assert.Equal(1m / 3m, result.Trace?.AverageDailyDemand);
+        Assert.Equal(1m, result.Trace?.RawCandidateQuantity);
+    }
+
+    [Fact]
+    public void Calculate_RepeatingCandidate_UsesDecimalPrecisionWithoutUnitRounding()
+    {
+        // Arrange
+        var fixture = CreateFixture(1m, 0m, 0m);
+
+        // Act
+        var result = _calculator.Calculate(new MethodARequest(fixture, 2m));
+
+        // Assert
+        Assert.Equal(2m / 3m, result.CandidateQuantity);
+        Assert.Equal(1m / 3m, result.Trace?.AverageDailyDemand);
+    }
+
+    [Fact]
     public void Calculate_LeapDayWindow_CountsEachIncludedCalendarDay()
     {
         // Arrange
@@ -360,6 +390,35 @@ public sealed class MethodACalculatorTests
 
         // Act
         var result = _calculator.Calculate(new MethodARequest(fixture, 2m));
+
+        // Assert
+        AssertFailure(result, MethodAError.ArithmeticOverflow);
+    }
+
+    [Fact]
+    public void Calculate_LargeIntermediateProductWithRepresentableCandidate_DoesNotOverflow()
+    {
+        // Arrange
+        var fixture = CreateFixture(decimal.MaxValue, 0m);
+
+        // Act
+        var result = _calculator.Calculate(new MethodARequest(fixture, 2m));
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(decimal.MaxValue, result.CandidateQuantity);
+        Assert.Equal(decimal.MaxValue, result.Trace?.RawCandidateQuantity);
+    }
+
+    [Fact]
+    public void Calculate_PositiveCandidateBelowDecimalPrecision_ReturnsNoCandidate()
+    {
+        // Arrange
+        var smallestPositiveDecimal = 0.0000000000000000000000000001m;
+        var fixture = CreateFixture(smallestPositiveDecimal);
+
+        // Act
+        var result = _calculator.Calculate(new MethodARequest(fixture, smallestPositiveDecimal));
 
         // Assert
         AssertFailure(result, MethodAError.ArithmeticOverflow);

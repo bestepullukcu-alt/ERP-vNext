@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Numerics;
 
 namespace Diten.SafetyStockService.Calculation;
 
@@ -81,7 +82,14 @@ public sealed class MethodACalculator
                 totalDemand = checked(totalDemand + day.DemandQuantity!.Value);
 
             var averageDailyDemand = checked(totalDemand / calendarDayCount);
-            var rawCandidateQuantity = checked(averageDailyDemand * request.CoverageDays.Value);
+            if (totalDemand > 0m && averageDailyDemand == 0m)
+                return Fail(MethodAError.ArithmeticOverflow, "The daily average cannot be represented as a nonzero decimal.");
+
+            // The average is a finite decimal trace value; calculate the candidate from the
+            // aggregate ratio so rounding the repeating average cannot change the raw result.
+            if (!TryCalculateRawCandidate(totalDemand, request.CoverageDays.Value, calendarDayCount, out var rawCandidateQuantity))
+                return Fail(MethodAError.ArithmeticOverflow, "The raw candidate cannot be represented as a nonzero decimal.");
+
             var trace = new MethodATrace(
                 fixture.Version,
                 fixture.Scope!,
@@ -109,6 +117,63 @@ public sealed class MethodACalculator
         && !string.IsNullOrWhiteSpace(scope.LegalEntityId)
         && !string.IsNullOrWhiteSpace(scope.SkuId)
         && !string.IsNullOrWhiteSpace(scope.WarehouseId);
+
+    private static bool TryCalculateRawCandidate(
+        decimal totalDemand,
+        decimal coverageDays,
+        int calendarDayCount,
+        out decimal rawCandidateQuantity)
+    {
+        rawCandidateQuantity = 0m;
+        if (totalDemand == 0m)
+            return true;
+
+        var (demandCoefficient, demandScale) = GetDecimalParts(totalDemand);
+        var (coverageCoefficient, coverageScale) = GetDecimalParts(coverageDays);
+        var numerator = demandCoefficient * coverageCoefficient;
+        var denominator = calendarDayCount * BigInteger.Pow(10, demandScale + coverageScale);
+        var maximumCoefficient = (BigInteger.One << 96) - 1;
+        if (numerator > maximumCoefficient * denominator)
+            return false;
+
+        for (var scale = 28; scale >= 0; scale--)
+        {
+            var coefficient = BigInteger.DivRem(numerator * BigInteger.Pow(10, scale), denominator, out var remainder);
+            var twiceRemainder = remainder * 2;
+            if (twiceRemainder > denominator || (twiceRemainder == denominator && !coefficient.IsEven))
+                coefficient++;
+
+            if (coefficient > maximumCoefficient)
+                continue;
+
+            if (coefficient.IsZero)
+                return false;
+
+            while (scale > 0 && coefficient % 10 == 0)
+            {
+                coefficient /= 10;
+                scale--;
+            }
+
+            var low = unchecked((int)(uint)(coefficient & uint.MaxValue));
+            var middle = unchecked((int)(uint)((coefficient >> 32) & uint.MaxValue));
+            var high = unchecked((int)(uint)((coefficient >> 64) & uint.MaxValue));
+            rawCandidateQuantity = new decimal(low, middle, high, false, (byte)scale);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static (BigInteger Coefficient, int Scale) GetDecimalParts(decimal value)
+    {
+        var bits = decimal.GetBits(value);
+        var coefficient = ((BigInteger)(uint)bits[2] << 64)
+            + ((BigInteger)(uint)bits[1] << 32)
+            + (uint)bits[0];
+        var scale = (bits[3] >> 16) & 0xFF;
+        return (coefficient, scale);
+    }
 
     private static string FormatDate(DateOnly date) =>
         date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
