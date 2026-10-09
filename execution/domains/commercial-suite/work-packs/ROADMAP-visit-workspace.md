@@ -116,3 +116,19 @@
 - **WP-MDM-BRAND-1 (1 prompt):** MDM PR'ı main'e girdikten sonra, W4'ten önce. Seçici ve kayıt `isLinkable` kuralını uygular, Ziyaret Sıklığı'na marka / ürün doğrulaması eklenir, "Ürünler" bağımlılık envanteri testle korunur.
 - **Plan kuralı:** W4 (rakip / endikasyon) ve W6 (sipariş) yalnız **Global Ürün / GSKU** kullanır, Marka altı "Ürünler" kaydını kullanmaz.
 - **Toplam prompt:** +1.
+
+### 7.1 Kullanıcı kararı (2026-10-09) — Marka her yerde, planın EN SONUNDA
+- **Karar:** Segment, Ziyaret Sıklığı Politikası, Kampanya, Bilgi içeriği, Ziyaret planlama, Strateji şablonu, ürün adları ve İddialar'ın **hepsi Marka kullanmalı**.
+- **Şimdi hiçbir şey değişmez.** MDM birleşik PR'ını push edip main'e aldıktan **ve** bizim işimiz (W1…W9 + Faz 8) bittikten sonra yapılır.
+- WP-MDM-BRAND-1 (§7) bu fazın içine alındı; ayrıca ve erken yapılmaz.
+- **Faz adı:** **W10 · Marka entegrasyonu** (Faz 8'den sonra, en son).
+- **Ön koşullar:**
+  - MDM PR'ı main'de;
+  - MDM'nin "Marka → Global Ürün" birleştirme kararı. Ziyaret planlama, strateji şablonu, ürün adları ve iddialar Global Ürün kullanıyor; markayı Global Ürün'den türetmek için bu bağ gerekir.
+- **Kapsam o gün netleşir:**
+  - seçicide ve kayıtta `isLinkable` kuralı;
+  - her modülde marka alanı veya markanın Global Ürün'den türetilmesi;
+  - "Ürünler" bağımlılıklarının geçişi;
+  - eski veri.
+- **Tahmini prompt:** 3–5. Kesin sayı MDM kararından sonra.
+- **Sıra:** W1 → W2 → W3 → W4 → W5 ∥ W6 → W7 → W9 → Faz 8 → **W10 Marka**.
