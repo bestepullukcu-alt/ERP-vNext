@@ -49,14 +49,32 @@
             return;
         }
 
-        let lastTyped = target.value || '';
+        /*
+         * BL-588 (WP-WCN-FIX-01) — ONLY text TYPED in the current open session is judged; a calendar pick never is.
+         *
+         * MEASURED (jsdom + the real vendored flatpickr 4.6.13): flatpickr's selectDate runs updateValue →
+         * close (onClose, THIS guard) → and only then onChange / `input`. The guard used to compare the pick with
+         * `lastTyped`, a copy of the box taken when the field was enhanced (or left over from an earlier close),
+         * so a field that already held a value, or one whose default was written without an event (quick-create's
+         * setDate(today, false)), read the pick as a misparse and CLEARED it: the first pick was lost, the second
+         * (into the now-empty box) was kept. The session now starts clean (onOpen) and a calendar selection clears
+         * the typed text (onValueUpdate fires inside updateValue, BEFORE onClose). Typed text followed by a click
+         * outside is still judged — that close sets no value, so it fires no onValueUpdate.
+         */
+        let lastTyped = '';
         target.addEventListener('input', () => { lastTyped = target.value; });
+        if (Array.isArray(instance.config.onOpen)) {
+            instance.config.onOpen.push(() => { lastTyped = ''; });
+        }
+        if (Array.isArray(instance.config.onValueUpdate)) {
+            instance.config.onValueUpdate.push(() => { lastTyped = ''; });
+        }
 
         instance.config.onClose.push((selectedDates) => {
             const raw = lastTyped.trim();
             if (!raw) {
                 target.classList.remove('is-invalid');
-                lastTyped = target.value;
+                lastTyped = '';
                 return;
             }
 
@@ -68,7 +86,7 @@
             } else {
                 target.classList.remove('is-invalid');
             }
-            lastTyped = target.value;
+            lastTyped = '';
         });
     };
 

@@ -886,14 +886,8 @@
   <data name="MeetingLocationPlaceholder" xml:space="preserve">
     <value>Teams / Meeting room 2</value>
   </data>
-  <data name="NewPickModuleLabel" xml:space="preserve">
-    <value>Which module?</value>
-  </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>The calendar connection is not in place yet: this record shows only on this screen and is lost when you close the page. The due date is unchanged.</value>
-  </data>
-  <data name="NewInSourceSubtext" xml:space="preserve">
-    <value>The record is created in that module and stays there; the Task Center keeps no copy.</value>
   </data>
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>Yes, {0}</value>
@@ -1066,23 +1060,11 @@
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>A personal to-do — lives in WorkCenter</value>
   </data>
-  <data name="NewInSource" xml:space="preserve">
-    <value>Create in source module</value>
-  </data>
-  <data name="NewInSourceDesc" xml:space="preserve">
-    <value>A module's own record — lives in that module</value>
-  </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Task title…</value>
   </data>
   <data name="NewCreate" xml:space="preserve">
     <value>Create</value>
-  </data>
-  <data name="NewPickModule" xml:space="preserve">
-    <value>Pick a module</value>
-  </data>
-  <data name="NewCreateInSource" xml:space="preserve">
-    <value>Create in source</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Personal</value>
@@ -1101,9 +1083,6 @@
   </data>
   <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
     <value>{0} · added to My Work</value>
-  </data>
-  <data name="ToastCreateInSource" xml:space="preserve">
-    <value>Create would open in the {0} module (mock)</value>
   </data>
   <data name="ScopeAll" xml:space="preserve">
     <value>All</value>
@@ -1571,6 +1550,15 @@
   </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Cancel task</value>
+  </data>
+  <data name="WorkAggregation_Action_Decline" xml:space="preserve">
+    <value>Decline</value>
+  </data>
+  <data name="WorkAggregation_Action_Withdraw" xml:space="preserve">
+    <value>Withdraw request</value>
+  </data>
+  <data name="WorkAggregation_Action_Offer" xml:space="preserve">
+    <value>Send request</value>
   </data>
   <data name="ToastActionApplied" xml:space="preserve">
     <value>{1} — '{0}' completed</value>

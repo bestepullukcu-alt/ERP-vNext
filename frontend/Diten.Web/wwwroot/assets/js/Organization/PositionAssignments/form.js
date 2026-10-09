@@ -108,29 +108,16 @@
 
     /*
      * BL-391 — "2026-09-13" typed into this altInput (display format gg.aa.yyyy) silently saved as a DIFFERENT
-     * date (2026-06-20); no warning, no rejection. `allowInput: true` hands flatpickr free text on close, and
-     * flatpickr's own parser is lenient enough to resolve text that does not match `altFormat` into SOME date
-     * anyway. Effective/valid-to are GxP-relevant dates, so a silent drift here is worse than on an ordinary
-     * field — the exact text left in the altInput is tracked as the reader types (an `input` listener, captured
-     * BEFORE flatpickr's own close-time reformat can overwrite it), and on close that text is compared against
-     * flatpickr re-rendering whatever it resolved back into the SAME `altFormat`. Anything that does not read
-     * back identical — or nothing resolved at all — clears the field and marks it invalid (the same `is-invalid`
-     * class `validate()` below already uses) instead of keeping a date nobody typed.
+     * date (2026-06-20). Effective/valid-to are GxP-relevant dates, so the typed text is checked on close against
+     * flatpickr re-rendering what it resolved in the SAME altFormat; a mismatch clears the field and marks it invalid.
+     *
+     * WP-WCN-FIX-01 (XMC-001, BL-588) — this file used to carry its OWN copy of that guard, and the copy had the
+     * shared component's defect: it compared a CALENDAR PICK with a stale copy of the box and cleared it, so the
+     * first pick into a pre-filled date was lost. The one shared guard (`DitenDateField.guardAgainstSilentMisparse`,
+     * altFormat shape) is used instead, so the fix — and any later one — lands here too. The view loads it.
      */
     const guardDateAgainstSilentMisparse = (instance) => {
-        if (!instance) return;
-        const target = instance.altInput || instance.input;
-        let lastTyped = target.value || '';
-        target.addEventListener('input', () => { lastTyped = target.value; });
-        instance.config.onClose.push((selectedDates) => {
-            const raw = lastTyped.trim();
-            if (!raw) { target.classList.remove('is-invalid'); lastTyped = target.value; return; }
-            const resolved = selectedDates[0];
-            const reformatted = resolved ? instance.formatDate(resolved, instance.config.altFormat) : '';
-            if (!resolved || reformatted !== raw) { instance.clear(); target.classList.add('is-invalid'); }
-            else { target.classList.remove('is-invalid'); }
-            lastTyped = target.value;
-        });
+        window.DitenDateField?.guardAgainstSilentMisparse?.(instance, 'altFormat');
     };
 
     const initDatePickers = () => {

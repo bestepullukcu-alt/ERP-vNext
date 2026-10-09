@@ -120,25 +120,8 @@ describe("BL-391: DitenDateField.guardAgainstSilentMisparse never lets a misread
   });
 });
 
-describe("BL-391: PositionAssignments/form.js's OWN altInput guard matches the same close-time contract", () => {
-  const source = fs.readFileSync(POSITION_ASSIGNMENTS_FORM, "utf8");
-
-  test("guardDateAgainstSilentMisparse re-renders through the SAME altFormat the field displays, not dateFormat", () => {
-    expect(source).toContain("instance.formatDate(resolved, instance.config.altFormat)");
-  });
-
-  test("a mismatch or an unresolved date clears the field and marks the VISIBLE (altInput) element invalid", () => {
-    expect(source).toContain("if (!resolved || reformatted !== raw) { instance.clear(); target.classList.add('is-invalid'); }");
-    expect(source).toContain("const target = instance.altInput || instance.input;");
-  });
-
-  test("the raw typed text is captured on 'input', before flatpickr's own close-time reformat can overwrite it", () => {
-    expect(source).toContain("target.addEventListener('input', () => { lastTyped = target.value; });");
-  });
-
-  test("the guard is actually wired to the flatpickr instance initDatePickers() just created", () => {
-    const initFn = source.slice(source.indexOf("const initDatePickers"), source.indexOf("const dateOrNull"));
-    expect(initFn).toContain("window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });");
-    expect(initFn).toContain("guardDateAgainstSilentMisparse(el._flatpickr);");
-  });
-});
+/*
+ * WP-WCN-FIX-01 (XMC-001, BL-588) — PositionAssignments/form.js no longer carries its OWN copy of this guard (the copy
+ * had the shared one's BL-588 defect too). It calls `DitenDateField.guardAgainstSilentMisparse(instance, 'altFormat')`;
+ * that delegation and the view's script order are asserted in date-field-first-pick.test.js, against the real flatpickr.
+ */

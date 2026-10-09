@@ -886,14 +886,8 @@
   <data name="MeetingLocationPlaceholder" xml:space="preserve">
     <value>Teams / قاعة الاجتماعات 2</value>
   </data>
-  <data name="NewPickModuleLabel" xml:space="preserve">
-    <value>أي وحدة؟</value>
-  </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>لم يتم بعد إعداد الاتصال بالتقويم: يظهر هذا السجل على هذه الشاشة فقط ويُفقد عند إغلاق الصفحة. لا يتغيّر تاريخ الاستحقاق.</value>
-  </data>
-  <data name="NewInSourceSubtext" xml:space="preserve">
-    <value>يُنشأ السجل في تلك الوحدة ويبقى فيها؛ ولا يحتفظ مركز المهام بنسخة منه.</value>
   </data>
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>نعم، {0}</value>
@@ -1066,23 +1060,11 @@
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>مهمة شخصية — تعيش في مركز العمل</value>
   </data>
-  <data name="NewInSource" xml:space="preserve">
-    <value>إنشاء في الوحدة المصدر</value>
-  </data>
-  <data name="NewInSourceDesc" xml:space="preserve">
-    <value>سجل خاص بالوحدة — يعيش في تلك الوحدة</value>
-  </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>عنوان المهمة…</value>
   </data>
   <data name="NewCreate" xml:space="preserve">
     <value>إنشاء</value>
-  </data>
-  <data name="NewPickModule" xml:space="preserve">
-    <value>اختر وحدة</value>
-  </data>
-  <data name="NewCreateInSource" xml:space="preserve">
-    <value>إنشاء في المصدر</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>شخصي</value>
@@ -1101,9 +1083,6 @@
   </data>
   <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
     <value>{0} · أُضيف إلى مهامي</value>
-  </data>
-  <data name="ToastCreateInSource" xml:space="preserve">
-    <value>سيُفتح الإنشاء في وحدة {0} (تجريبي)</value>
   </data>
   <data name="ScopeAll" xml:space="preserve">
     <value>الكل</value>
@@ -1571,6 +1550,15 @@
   </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>إلغاء المهمة</value>
+  </data>
+  <data name="WorkAggregation_Action_Decline" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="WorkAggregation_Action_Withdraw" xml:space="preserve">
+    <value>سحب الطلب</value>
+  </data>
+  <data name="WorkAggregation_Action_Offer" xml:space="preserve">
+    <value>إرسال الطلب</value>
   </data>
   <data name="ToastActionApplied" xml:space="preserve">
     <value>{1} — تم تنفيذ «{0}»</value>

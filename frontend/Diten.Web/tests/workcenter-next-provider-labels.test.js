@@ -16,10 +16,44 @@ const REPO = path.resolve(__dirname, "..", "..", "..");
 const RESX_DIR = path.resolve(__dirname, "..", "Resources", "Views", "WorkCenterNext");
 const LOCALES = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
 
-const PROVIDER_SOURCES = [
-  "services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs",
-  "services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/Services/WorkItemProjectionService.cs"
-];
+const PLATFORM_FEATURES = "services/Diten.Platform/src/Diten.Platform.Application/Features";
+const MDM_FEATURES = "services/Diten.MdmService/src/Diten.MdmService.Application/Features";
+const PROJECTION_SERVICE = `${PLATFORM_FEATURES}/WorkAggregation/Services/WorkItemProjectionService.cs`;
+
+// Every .cs file below `relative` (repo-relative, "/" separated, sorted). An absent folder yields nothing.
+const csFilesUnder = (relative) => {
+  const absolute = path.join(REPO, relative);
+  if (!fs.existsSync(absolute)) { return []; }
+  const found = [];
+  const walk = (dir) => {
+    fs.readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) { walk(full); }
+      else if (entry.isFile() && entry.name.endsWith(".cs")) {
+        found.push(path.relative(REPO, full).split(path.sep).join("/"));
+      }
+    });
+  };
+  walk(absolute);
+  return found.sort();
+};
+
+/*
+ * The scanned set is DERIVED, never listed: a fixed list once covered Task + the projection service only, so a
+ * key emitted by the Meeting provider or the MDM work-item handlers could ship raw without this guard noticing.
+ *   · Platform  — every Features/<feature>/Providers/*.cs (Task, Meeting, WorkAggregation, TimeEntry, …)
+ *   · Platform  — the projection service (approval rows are labelled there, not in a provider)
+ *   · MDM       — every .cs under Features/<feature>/WorkItems/** (the MDM side projects its own rows)
+ */
+const PROVIDER_FAMILIES = {
+  platformProviders: csFilesUnder(PLATFORM_FEATURES)
+    .filter((file) => /^[^/]+\/Providers\/[^/]+\.cs$/.test(file.slice(PLATFORM_FEATURES.length + 1))),
+  projectionService: fs.existsSync(path.join(REPO, PROJECTION_SERVICE)) ? [PROJECTION_SERVICE] : [],
+  mdmWorkItems: csFilesUnder(MDM_FEATURES)
+    .filter((file) => /^[^/]+\/WorkItems\//.test(file.slice(MDM_FEATURES.length + 1)))
+};
+const MDM_PRESENT = fs.existsSync(path.join(REPO, MDM_FEATURES));
+const PROVIDER_SOURCES = Object.values(PROVIDER_FAMILIES).flat();
 
 // prefix constant in the provider → the enum whose members complete the key
 const DYNAMIC_KEYS = [
@@ -54,9 +88,9 @@ const enumMembers = (relative, enumName) => {
     .filter((name) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(name));
 };
 
-const staticKeys = () => {
+const staticKeysIn = (sources) => {
   const keys = new Set();
-  PROVIDER_SOURCES.forEach((relative) => {
+  sources.forEach((relative) => {
     const source = stripCsComments(readRepo(relative));
     const literal = /"(WorkAggregation_[A-Za-z][A-Za-z0-9_]*)"/g;
     let match;
@@ -67,6 +101,8 @@ const staticKeys = () => {
   });
   return keys;
 };
+
+const staticKeys = () => staticKeysIn(PROVIDER_SOURCES);
 
 const dynamicKeys = () => {
   const keys = new Set();
@@ -103,6 +139,34 @@ describe("provider resource labels are translated", () => {
     expect(expected).toContain("WorkAggregation_Action_Approve");
     expect(expected).toContain("WorkAggregation_ActionDisabled_PermissionDenied");
     expect(expected.length).toBeGreaterThan(15);
+  });
+
+  it("derives the scanned sources from the folders and finds known keys in EACH family (no blind spot)", () => {
+    // The derived set must really reach every family — an empty glob would pass the 7-language check vacuously.
+    expect(PROVIDER_FAMILIES.platformProviders).toEqual(expect.arrayContaining([
+      `${PLATFORM_FEATURES}/Tasks/Providers/TaskWorkItemProvider.cs`,
+      `${PLATFORM_FEATURES}/Meetings/Providers/MeetingWorkItemProvider.cs`
+    ]));
+    expect(PROVIDER_FAMILIES.projectionService).toEqual([PROJECTION_SERVICE]);
+
+    const taskKeys = staticKeysIn([`${PLATFORM_FEATURES}/Tasks/Providers/TaskWorkItemProvider.cs`]);
+    expect([...taskKeys]).toContain("WorkAggregation_Action_Accept");
+
+    const meetingKeys = staticKeysIn(PROVIDER_FAMILIES.platformProviders.filter((file) => file.includes("/Meetings/")));
+    expect([...meetingKeys]).toContain("WorkAggregation_Action_AcceptInvite");
+
+    const projectionKeys = staticKeysIn(PROVIDER_FAMILIES.projectionService);
+    expect([...projectionKeys]).toContain("WorkAggregation_Action_Approve");
+
+    if (MDM_PRESENT) {
+      expect(PROVIDER_FAMILIES.mdmWorkItems.length).toBeGreaterThan(0);
+      expect([...staticKeysIn(PROVIDER_FAMILIES.mdmWorkItems)]).toContain("WorkAggregation_Action_Cancel");
+    }
+
+    // …and every family's keys reach the set the 7-language check runs over.
+    [taskKeys, meetingKeys, projectionKeys].forEach((family) => {
+      [...family].forEach((key) => expect(expected).toContain(key));
+    });
   });
 
   it("expands dynamic status keys from the enums, not from a hand-written list", () => {

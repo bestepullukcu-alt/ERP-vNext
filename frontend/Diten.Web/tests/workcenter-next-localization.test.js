@@ -188,47 +188,23 @@ describe("WorkCenterNext localization resources", () => {
    * promising something the dialog no longer did. The key is deleted rather than left unused, so it cannot be
    * picked up again by someone looking for a plausible-sounding label.
    */
-  it("confirms with a CREATE label, and the retired open-label key is gone", () => {
+  /*
+   * WP-WCN-FIX-01 (BL-589) — THE WHOLE DIALOG IS GONE NOW. "+ Yeni ▸ Kaynak modülde oluştur" was a mock (drawn without
+   * a permission check, a module list made of the user's own work items, a confirm that only toasted "(mock)"). It
+   * was removed with `openCreateInSource`, and — by this file's own rule above — its keys are DELETED rather than left
+   * unused, so nobody picks a plausible-sounding label up again for a dialog that does not exist.
+   */
+  it("keeps no key of the deleted create-in-source dialog in any language, and app.js asks for none", () => {
     const app = fs.readFileSync(
       path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
-    const fn = app.slice(app.indexOf("const openCreateInSource"), app.indexOf("const openMeetingForm"));
-
-    expect(fn, "the create-in-source dialog stopped naming CREATING").toContain("confirmText: t('NewCreateInSource')");
-    // The LOOKUP, not the bare name: a comment in that function still explains the history on purpose.
-    expect(app).not.toContain("t('NewOpenSource')");
-
-    // And the dead key must not reappear in any language.
-    locales.forEach((locale) => {
-      expect(names(locale)).not.toContain("NewOpenSource");
-      expect(names(locale)).toContain("NewCreateInSource");
+    const retired = ["NewOpenSource", "NewInSource", "NewInSourceDesc", "NewInSourceSubtext", "NewCreateInSource",
+      "NewPickModuleLabel", "NewPickModule", "ToastCreateInSource"];
+    retired.forEach((key) => {
+      expect(app, `app.js still asks for ${key}`).not.toMatch(new RegExp(`t[f]?\\('${key}'`));
+      locales.forEach((locale) => {
+        expect(names(locale), `${key} is back in a locale`).not.toContain(key);
+      });
     });
-  });
-
-  it("opens nothing from that dialog, so the CREATE label stays true", () => {
-    // Non-vacuity for the label above: if the open were restored, "Create in source" would be a lie again.
-    const app = fs.readFileSync(
-      path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
-    /*
-     * ⚠ THE END MARKER IS NO LONGER A NEIGHBOUR'S NAME, and that is the whole point of this comment.
-     *
-     * It was `openMeetingForm`, which got deleted (2026-08-24), so it became `createMeetingFollowup` — which
-     * got deleted too (2026-08-25, BL-244). Each time, `indexOf` answered -1, the slice ran to the END OF THE
-     * FILE, and the assertion started reading eight thousand lines of unrelated code. The second time it went
-     * red loudly; there is no guarantee the third would have.
-     *
-     * A window pinned to code that is allowed to disappear is not a window. This one ends at the next
-     * declaration at this indentation level, whatever it happens to be called.
-     */
-    const from = app.indexOf("const openCreateInSource");
-    expect(from, "the function under test is gone; this assertion proves nothing").toBeGreaterThan(-1);
-    const rest = app.slice(from + 1);
-    const next = rest.search(/\n {4}const \w+ = /);
-    const fn = next === -1 ? rest : rest.slice(0, next);
-    // Non-vacuity, twice over: the slice must be a FUNCTION, not the file and not an empty string.
-    expect(fn.length, "the slice collapsed").toBeGreaterThan(200);
-    expect(fn.length, "the slice swallowed the file").toBeLessThan(app.length / 4);
-
-    expect(fn).not.toContain("global.open");
   });
 
   /*

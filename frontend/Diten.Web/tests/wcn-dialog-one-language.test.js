@@ -126,7 +126,12 @@ describe("eight dialogs, four moved and four dressed", () => {
      * start time and a length (a day plan or a time block), so it is no longer a confirmation and moved to the
      * dressed-form group below — asserted there, not dropped.
      */
-    ["const openMeetingScheduler", "const openCreateInSource"]
+    /*
+     * ⚠ ONE NOW (WP-WCN-FIX-01, BL-589): the module-choice dialog (`openCreateInSource`) was DELETED with the mock
+     * "+ Yeni ▸ Kaynak modülde oluştur" entry — it could only toast "(mock)". Its absence is asserted in
+     * wcn-create-task-needs-create-permission.test.js, not here.
+     */
+    ["const openMeetingScheduler"]
       .forEach((name) => {
         const fn = APP.slice(APP.indexOf(name), APP.indexOf(name) + 2600);
         expect(fn.indexOf(name), `${name} vanished`).toBe(0);
@@ -269,9 +274,10 @@ describe("every box carries a real example", () => {
     });
   });
 
-  it("declares the six new strings in all seven languages", () => {
+  // WP-WCN-FIX-01 (BL-589) — FIVE now: NewPickModuleLabel was deleted with the create-in-source dialog it labelled.
+  it("declares the five new strings in all seven languages", () => {
     ["DatePlaceholder", "DateTimePlaceholder", "MeetingWhenLabel", "MeetingTitlePlaceholder",
-      "MeetingLocationPlaceholder", "NewPickModuleLabel"].forEach((key) =>
+      "MeetingLocationPlaceholder"].forEach((key) =>
       LANGS.forEach((lang) =>
         expect(String(value(resx(lang), key) || "").trim(), `${lang}/${key}`).not.toBe("")));
   });
@@ -292,16 +298,16 @@ describe("a field gets a glyph only when the glyph says something", () => {
      * The wrapper that broke it must not come back INSIDE A POPUP. `.diten-field` is right everywhere else in
      * this product, so the check is scoped to the dialog functions rather than to the whole file.
      */
-    ["const openDatePicker", "const openMeetingScheduler", "const openCreateInSource",
-      "const openNew"].forEach((name) => {
+    // BL-589 — `openCreateInSource` deleted (see above); `openNew` was already gone, so it is not listed either.
+    ["const openDatePicker", "const openMeetingScheduler"].forEach((name) => {
+      expect(APP.indexOf(name), `${name} vanished — this check would read nothing`).toBeGreaterThan(-1);
       const fn = APP.slice(APP.indexOf(name), APP.indexOf(name) + 2600);
       expect(fn, `${name} put a wrapper around a dialog input`).not.toContain("diten-field");
     });
   });
 
-  it("leaves the select and the prose boxes without one", () => {
-    const select = APP.slice(APP.indexOf("const openCreateInSource"), APP.indexOf("const openCreateInSource") + 1800);
-    expect(select, "a second arrow was added to a select").not.toContain("classList.add('wcn-");
+  it("leaves the prose boxes without one", () => {
+    // BL-589 — the select this also checked lived in the deleted `openCreateInSource` dialog.
     const reason = APP.slice(APP.indexOf("wcnReasonText"), APP.indexOf("wcnReasonText") + 400);
     expect(reason, "a glyph was put on a free-text box").not.toContain("wcn-date-input");
   });
