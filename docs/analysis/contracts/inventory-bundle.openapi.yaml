@@ -6,7 +6,7 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.1.0
+  version: 1.2.0
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
@@ -15,6 +15,7 @@ info:
     - "1.0.1 — description-only, single-writer step (WP-0174-P2, 2026-10-06; MOD-0174 CT-D1 option (a), owner decision 2026-10-05): AvailabilityView.available (getAvailability) excludes the AVAILABLE stock of Blocked / Expired lots; the same rule bounds the reservations. No path, parameter, schema, property, type, enum, required list or status code changed; BalanceView rows keep their stock status and their own available."
     - "1.0.2 — description-only, single-writer step (WP-0175-Q4, 2026-10-08; MOD-0175 CT-Q3 option (a), owner decision 2026-10-07, same form as CT-D1): (1) additive error code LOT_RETEST_DUE (422 on postMovement, example lotRetestDue) — a lot whose retest date is before the posting date (UTC day) refuses sales issue, production issue, transfer and supplier return; STATUS_TRANSFER from AVAILABLE into QUARANTINE / QUALITY_INSPECTION / BLOCKED, SCRAP, WRITE_OFF, REVERSAL and movements that keep the stock out of use (MOD-0175 decision movements other than a release; judged by the movement direction, never by sourceModule) still post; (2) AvailabilityView.available (getAvailability) also excludes retest-due lots (held by the MOD-0175 retest sweeper); the same rule bounds new reservations, existing reservations stay. No path, parameter, schema, property, type, enum, required list or status code changed."
     - "1.1.0 — additive (MVP-1 CT, MOD-0290 R-12 and PRODUCT-MASTER 1.1): SkuLevel + Item; getStockPresence (service-to-service, X-Internal-Api-Key + X-Tenant-Id, no quantities). No existing path, parameter, property, type, required list or status code changed."
+    - "1.2.0 — additive (WP-0173-PM1, CT-PM1-1; PRODUCT-MASTER 1.1 consumer, MOD-0290 OD-1/3/4/5/10): three error codes on postMovement, all 422 under the existing UnprocessableMovement response — PRODUCT_MASTER_DATA_INCOMPLETE (a lot / serial flag the SKU level needs is unknown in PRODUCT-MASTER), ITEM_NOT_ACTIVE (the item / SKU lifecycle status does not allow the movement type), SKU_LEVEL_NOT_STOCKABLE (a Gsku movement of a product whose serial flag is not explicitly false) — and the postMovement description of the rules. No path, parameter, schema, property, type, enum, required list or status code changed."
 servers:
   - url: /api/inventory
 security:
@@ -24,6 +25,16 @@ paths:
     post:
       operationId: postMovement
       summary: Stok hareketi post et (stok değiştiren TEK API)
+      description: >-
+        1.2.0 — PRODUCT-MASTER 1.1 rules (MOD-0290 OD-1 / OD-3 / OD-4 / OD-5 / OD-10, CT-PM1-2 / CT-PM1-3). The lot and serial
+        flags are read from getSku (the authoritative stock read); an unknown lot flag, or an unknown serial flag at Lsku /
+        FinishedGood / Item, refuses with 422 PRODUCT_MASTER_DATA_INCOMPLETE — never read as false. At Gsku the serial flag is
+        not applicable: the movement is accepted only when the product serial flag is explicitly false, otherwise 422
+        SKU_LEVEL_NOT_STOCKABLE (serial-tracked stock is held at Lsku / FinishedGood). Item level (skuId == itemId) is a
+        material item. Lifecycle (the most restrictive of the item and the SKU status): Active — every movement; Deactivated —
+        no GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD or OPENING_BALANCE, every other type allowed; Retired (and the v1.0 Archived) —
+        only SCRAP and WRITE_OFF; Draft, any other value or no value — nothing; a refusal is 422 ITEM_NOT_ACTIVE. REVERSAL
+        copies its original and is accepted in every state. PRODUCT-MASTER unreachable stays 503 PRODUCT_MASTER_UNAVAILABLE.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
         - $ref: '#/components/parameters/LegalEntityOverride'
@@ -482,6 +493,9 @@ components:
             periodClosed: { value: { error: { code: POSTING_PERIOD_CLOSED, message: "Kapalı döneme posting", correlationId: req-5 }, contractVersion: v1 } }
             lotRetestDue: { value: { error: { code: LOT_RETEST_DUE, message: "Yeniden test tarihi geçmiş lot", details: { lotId: lot-777, lotNumber: L-777, lotStatus: Released, retestDate: "2026-10-01" }, correlationId: req-6 }, contractVersion: v1 } }
             unknownLocation: { value: { error: { code: UNKNOWN_LOCATION, message: "location bulunamadı", correlationId: req-6 }, contractVersion: v1 } }
+            productMasterDataIncomplete: { value: { error: { code: PRODUCT_MASTER_DATA_INCOMPLETE, message: "PRODUCT-MASTER does not state the lot / serial flag this SKU level needs", details: { skuLevel: Lsku, lotControlled: null, serialControlled: true }, correlationId: req-13 }, contractVersion: v1 } }
+            itemNotActive: { value: { error: { code: ITEM_NOT_ACTIVE, message: "The item / SKU lifecycle status does not allow a GOODS_RECEIPT_PO movement", details: { itemLifecycleStatus: Deactivated, skuLifecycleStatus: Deactivated, movementType: GOODS_RECEIPT_PO }, correlationId: req-14 }, contractVersion: v1 } }
+            skuLevelNotStockable: { value: { error: { code: SKU_LEVEL_NOT_STOCKABLE, message: "A GSKU-level movement needs a product whose serial flag is explicitly false", details: { skuLevel: Gsku, productSerialControlled: true }, correlationId: req-15 }, contractVersion: v1 } }
     ProductMasterUnavailable:
       description: itemId/skuId doğrulaması yapılamadı (fail-closed, silent-pass YOK)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: PRODUCT_MASTER_UNAVAILABLE, message: "PRODUCT-MASTER erişilemedi", correlationId: req-7 }, contractVersion: v1 } } }
