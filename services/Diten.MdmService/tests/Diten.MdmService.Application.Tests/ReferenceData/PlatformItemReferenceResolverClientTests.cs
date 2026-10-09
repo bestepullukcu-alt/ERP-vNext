@@ -24,7 +24,7 @@ public sealed class PlatformItemReferenceResolverClientTests
 {
     private static readonly ItemReferenceRequest[] ContractRequest =
     [
-        new("material-type", "RAW_MATERIAL"), new("item-uom", "KGM"), new("item-uom", "GRM"),
+        new("material-type", "RAW_MATERIAL"), new("item-uom", "KGM"), new("item-uom", "GRM"), new("item-uom", "IU"),
         new("storage-condition", "AMBIENT_15_25"), new("storage-condition", "PROTECT_FROM_LIGHT")
     ];
 
@@ -38,7 +38,7 @@ public sealed class PlatformItemReferenceResolverClientTests
         var result = await Client(handler).ResolveLatestAsync(ContractRequest);
 
         Assert.True(result.IsSuccessful, result.FailureCode);
-        Assert.Equal(5, result.Selections.Count);
+        Assert.Equal(6, result.Selections.Count);
         Assert.Equal("TEMPERATURE", result.Selections.Single(x => x.ValueCode == "AMBIENT_15_25").Attributes["ConditionKind"]);
         Assert.Equal("MASS", result.Selections.Single(x => x.ValueCode == "KGM").Attributes["DimensionCode"]);
         var request = Assert.Single(handler.Requests);
@@ -50,7 +50,23 @@ public sealed class PlatformItemReferenceResolverClientTests
         Assert.Equal("Bearer user-token", request.Authorization);
         Assert.Equal("resolver-id", request.Headers[PlatformItemReferenceResolverClient.CredentialIdHeader]);
         Assert.Equal("VERIFIED_GSKU_RESOLVE", request.Headers[PlatformItemReferenceResolverClient.AudienceHeader]);
-        Assert.Equal(5, JsonNode.Parse(request.Body)!["selections"]!.AsArray().Count);
+        Assert.Equal(6, JsonNode.Parse(request.Body)!["selections"]!.AsArray().Count);
+    }
+
+    // WP-PLT-ITEM-LISTS-02: the contract's IU (ITEM-UNIVERSAL-V2, item-uom version 2) is trusted like any unit, with its
+    // own dimension and its local-code mark carried through to the item.
+    [Fact]
+    public async Task The_contract_iu_is_trusted_with_its_own_dimension_and_its_local_code_mark()
+    {
+        var result = await Client(new Recording(_ => Json(HttpStatusCode.OK, ContractResponse()))).ResolveLatestAsync(ContractRequest);
+
+        Assert.True(result.IsSuccessful, result.FailureCode);
+        var iu = result.Selections.Single(x => x.SetCode == "item-uom" && x.ValueCode == "IU");
+        Assert.Equal("BIOLOGICAL_ACTIVITY", iu.Attributes["DimensionCode"]);
+        Assert.Equal("LOCAL", iu.Attributes["CodeStandard"]);
+        Assert.Equal(2, iu.CatalogVersionNumber);
+        Assert.Equal("UNECE_REC20", result.Selections.Single(x => x.ValueCode == "KGM").Attributes["CodeStandard"]);
+        Assert.NotNull(ItemRules.ToSelection(iu));
     }
 
     // Each way an answer can fail to cover the request exactly.
@@ -64,6 +80,7 @@ public sealed class PlatformItemReferenceResolverClientTests
     [InlineData("unit-bad-precision")]
     [InlineData("attributes-null")]
     [InlineData("version-disagrees-in-set")]
+    [InlineData("v1-and-v2-in-one-set")]
     [InlineData("catalog-version-empty")]
     [InlineData("catalog-version-id-empty")]
     [InlineData("catalog-version-number-zero")]
@@ -85,6 +102,13 @@ public sealed class PlatformItemReferenceResolverClientTests
             case "unit-bad-precision": Find("GRM")["attributes"]!["MaximumDecimalPrecision"] = "three"; break;
             case "attributes-null": Find("RAW_MATERIAL")["attributes"] = null; break;
             case "version-disagrees-in-set": Find("GRM")["catalog_version_id"] = Guid.NewGuid().ToString(); break;
+            // WP-PLT-ITEM-LISTS-02 (L2 kept): one answer with KGM still on V1 and IU on V2 is two deployments — untrusted.
+            case "v1-and-v2-in-one-set":
+                var v1 = ContractFixture()["previous_versions"]!["item-uom"]![0]!;
+                Find("KGM")["catalog_version"] = v1["catalog_version"]!.DeepClone();
+                Find("KGM")["catalog_version_id"] = v1["catalog_version_id"]!.DeepClone();
+                Find("KGM")["catalog_version_number"] = v1["catalog_version_number"]!.DeepClone();
+                break;
             // FIX1 (CT L3): on the single-member set, so no other rule (one version per set) can catch it first.
             case "catalog-version-empty": Find("RAW_MATERIAL")["catalog_version"] = ""; break;
             case "catalog-version-id-empty": Find("RAW_MATERIAL")["catalog_version_id"] = Guid.Empty.ToString(); break;

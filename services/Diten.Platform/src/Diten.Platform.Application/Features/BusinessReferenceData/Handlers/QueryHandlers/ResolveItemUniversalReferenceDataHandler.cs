@@ -8,7 +8,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.BusinessReferenceData.Handlers.QueryHandlers;
 
 /// <summary>
-/// WP-PLT-ITEM-LISTS-01: exact LATEST resolution against ITEM-UNIVERSAL-V1, many selections in one call (≤ 200, the
+/// WP-PLT-ITEM-LISTS-01: exact LATEST resolution against the current item catalog deployment (ITEM-UNIVERSAL-V2), many selections in one call (≤ 200, the
 /// item create asks every code it stores). Code-owned: no repository, no tenant assignment — a resolved tenant is still
 /// required (the trust executor's tenant). Refusals are named: a malformed request or a set outside the three is 400; a
 /// value the list does not hold is 404 REFERENCE_VALUE_NOT_FOUND with the missing pairs as data.
@@ -66,7 +66,7 @@ public sealed class ResolveItemUniversalReferenceDataHandler
         {
             var value = ItemUniversalCatalog.Find(selection!.SetCode, selection.ValueCode)!;
             return new ItemUniversalResolveSelection(value.SetCode, value.ValueCode, ItemUniversalCatalog.CatalogVersion,
-                ItemUniversalCatalog.GetVersionId(value.SetCode), ItemUniversalCatalog.CatalogVersionNumber,
+                ItemUniversalCatalog.GetVersionId(value.SetCode), ItemUniversalCatalog.GetVersionNumber(value.SetCode),
                 ItemUniversalCatalog.ResolutionMode, now, IsRetired: false, SelectableForNew: true, value.Attributes);
         }).ToList();
         return Task.FromResult(Response<ItemUniversalResolveResult>.Success(new ItemUniversalResolveResult(resolved, [])));

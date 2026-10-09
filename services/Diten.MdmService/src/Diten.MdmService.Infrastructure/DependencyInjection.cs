@@ -36,7 +36,7 @@ public static class DependencyInjection
             configuration.GetSection(VerifiedGskuResolverOptions.SectionName));
         services.AddHttpClient<IVerifiedGskuReferenceResolver, PlatformVerifiedGskuResolverClient>();
         // MOD-0290-FU04 S1: no provider for the item lists and no tenant-wide stock query yet — both fail closed.
-        // WP-PLT-ITEM-LISTS-01 (CT decision A): the item lists come from Platform's ITEM-UNIVERSAL-V1 resolver — always
+        // WP-PLT-ITEM-LISTS-01 (CT decision A): the item lists come from Platform's item universal catalog (ITEM-UNIVERSAL-Vn) resolver — always
         // this client, like the GSKU / market clients. Without its "VerifiedGskuResolver" configuration it fails closed AT
         // THE CALL (the item answers 503 ITEM_REFERENCE_LIST_UNAVAILABLE + REFERENCE_PROVIDER_CONFIGURATION_INVALID, with a
         // warning); the start is not refused (ItemReferenceProviderStartupWarning says it once outside Development).

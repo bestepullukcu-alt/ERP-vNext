@@ -28,7 +28,7 @@ public sealed class ItemReferenceClientWiringTests
     private const string UserToken = "fix1-user-token-value";
     private static readonly ItemReferenceRequest[] Asked =
     [
-        new("material-type", "RAW_MATERIAL"), new("item-uom", "KGM"), new("item-uom", "GRM"),
+        new("material-type", "RAW_MATERIAL"), new("item-uom", "KGM"), new("item-uom", "GRM"), new("item-uom", "IU"),
         new("storage-condition", "AMBIENT_15_25"), new("storage-condition", "PROTECT_FROM_LIGHT")
     ];
 
