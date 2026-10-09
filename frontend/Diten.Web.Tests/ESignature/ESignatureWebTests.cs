@@ -161,9 +161,14 @@ public sealed class ESignatureWebTests : IClassFixture<WebApplicationFactory<Pro
         Assert.DoesNotContain("\"/Platform", manifest, StringComparison.Ordinal);
 
         // the proxy forwards to the e-signature API and the two AuthService re-auth operations, nowhere else
+        // (E5W2, CT-D20 — additions only: the two list operations the page-wire helpers call, and MDM's company lookup)
         var controller = Code(Read(Web, "Controllers", "ESignatureController.cs"));
         var targets = Regex.Matches(controller, @"""(?<p>/api/[^""{]+)").Select(m => m.Groups["p"].Value).Distinct().OrderBy(x => x, StringComparer.Ordinal).ToList();
-        Assert.Equal(new[] { "/api/tenant-auth/esign/reauth", "/api/tenant-auth/esign/ticket", "/api/v1/esign", "/api/v1/esign/" }, targets);
+        Assert.Equal(new[]
+        {
+            "/api/legal-entities/lookup", "/api/tenant-auth/esign/reauth", "/api/tenant-auth/esign/ticket", "/api/v1/esign", "/api/v1/esign/",
+            "/api/v1/esign/requests", "/api/v1/esign/signatures"
+        }, targets);
         Assert.DoesNotContain("/Platform", controller, StringComparison.Ordinal);
     }
 

@@ -98,14 +98,15 @@ public sealed class ESignatureArchitectureTests
     }
 
     /// <summary>
-    /// E5W1 (WP-0022-E5W1): a page is nav-visible only once its Web route exists — ESIGN_MYSIGNATURE now; the six others stay hidden
-    /// until E5W2 builds them (a nav entry to a missing route is a dead link in every tenant shell).
+    /// E5W1 (WP-0022-E5W1): a page is nav-visible only once its Web route exists (a nav entry to a missing route is a dead link in
+    /// every tenant shell). E5W2 built the six others (ESignatureController), so all seven are visible now, in pack §11.1 order.
     /// </summary>
     [Fact]
     public void Only_the_pages_the_Web_already_serves_are_nav_visible()
     {
         var manifest = new ESignManifestProvider().GetManifest();
-        Assert.Equal(new[] { "ESIGN_MYSIGNATURE" }, manifest.Pages.Where(p => p.IsNavigationVisible).Select(p => p.PageCode).ToArray());
+        Assert.Equal(new[] { "ESIGN_REQUESTS", "ESIGN_VERIFICATION", "ESIGN_AUDITEXPORT", "ESIGN_MYSIGNATURE", "ESIGN_POLICY", "ESIGN_MEANINGS", "ESIGN_SAMPLEAPPROVALS" },
+            manifest.Pages.Where(p => p.IsNavigationVisible).OrderBy(p => p.SortOrder).Select(p => p.PageCode).ToArray());
         Assert.Equal(7, manifest.Pages.Count);
     }
 

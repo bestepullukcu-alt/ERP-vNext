@@ -933,4 +933,10 @@
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>手工录入批次迁移</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>电子签名</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>我的签名</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>签名请求</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>签名验证</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>审计导出</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>电子签名策略</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>签名含义</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>签名样本审批</value></data>
 </root>

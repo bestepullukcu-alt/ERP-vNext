@@ -934,4 +934,10 @@
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Migration des lots saisis manuellement</value></data>
   <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Signature électronique</value></data>
   <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Ma signature</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>Demandes de signature</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>Vérification des signatures</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>Export d'audit</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Politique de signature</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significations de signature</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Approbation des modèles</value></data>
 </root>
