@@ -493,6 +493,23 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
     defaults to 27017), O-PM2-4 (`Item` elsewhere → PM1), O-PM2-5 (gateway 5065 red, not PM2).
   - **Evidence.** `docs/records/audits/2026-10/mod-0173-pm2-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`.
 
+**PM2 — CT acceptance (2026-10-09).** CT ran the Inventory suite on its OWN replica set (`INVENTORY_TEST_MONGO`, port 27217 —
+not the owner's 27017): **722/722**; gateway **107/108** (the one red, `EveryRoute_DownstreamPortIsInKnownServiceSet` / port 5065, is
+pre-existing on the MVP-1 branch and belongs to the procurement routes); after merging the MVP-1 branch (E5W2) into
+`feature/sce/mod-0173-pm2` (clean) architecture **18/18**. Read `InternalServiceKeyFilter` (one 401 body, user token refused,
+https outside Development, refusals audited, secret never logged), `InternalServiceKeyAuthenticator` (SHA-256 of both sides +
+`FixedTimeEquals`, ≤ 2 secrets, endpoint list) and `StockPresenceReader` (`TenantId` + `SkuId` + `SkuLevel` + `OnHand ≠ 0` on
+`inventory_balances`, no legal-entity filter on purpose). CT sabotage (own): the "user token sent" refusal removed →
+`Every_refused_key_gets_the_same_401_with_the_same_body_byte_for_byte` red, restored, porcelain clean. **INVENTORY-BUNDLE 1.1.0
+FROZEN.** Fast-forwarded into the MVP-1 branch. Decisions on the opens:
+- **O-PM2-1** key header `X-Internal-Api-Key: <identifier>:<secret>` — accepted; the CT tells MDM with the freeze note.
+- **O-PM2-2** behind a TLS-terminating proxy the request is not https → 401 (safe direction) → **FU-0173-PM2-01** (deployment): Kestrel
+  TLS or `ForwardedHeaders` with a known-proxy list before production.
+- **O-PM2-3** `TestSettings` falls back to the owner's 27017 → **FU-0173-TEST-01**, delivered in PM1 (no default: the suite refuses to
+  start without `INVENTORY_TEST_MONGO`, or starts its own ephemeral replica set). CT note: the CT's own Inventory runs at the Q3 / Q4 /
+  Q4R / Q5 acceptances also used the 27017 test database `diten_inventory_s1_tests` (not the live data) — disclosed to the owner.
+- **O-PM2-4** `Item` on the other operations → PM1. **O-PM2-5** gateway 5065 red → procurement owner.
+
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).
