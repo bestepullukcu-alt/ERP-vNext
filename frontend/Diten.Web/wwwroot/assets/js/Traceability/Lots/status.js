@@ -61,6 +61,20 @@ window.LotStatus = (function () {
                 acknowledgeImpact: !!popupRef?.querySelector('#lotStatusAck')?.checked,
                 ifMatch: data.etag
             }, token);
+            if (result.ok && result.json?.pending) {
+                // MOD-0175 KQ-I (pack §11.4): 202 — the release waits for a quality approval; the lot is unchanged. The requester
+                // signs and sends the decision on the Karar Gönder page (pendingRequestId).
+                window.showToast?.(t('Status.Dialog.Pending.Title'), 'success');
+                const submitUrl = result.json.submitUrl;
+                window.showConfirm?.(t('Status.Dialog.Pending.Title'), () => { if (submitUrl) window.location.href = submitUrl; }, {
+                    type: 'success',
+                    subtext: ui.esc(t('Status.Dialog.Pending.Text')),
+                    confirmButtonText: t('Status.Dialog.Pending.Link'),
+                    cancelButtonText: t('Cancel')
+                });
+                options?.onDone?.(result.json);
+                return;
+            }
             if (result.ok && result.json?.success) {
                 window.showToast?.(t('Status.Dialog.Done'), 'success');
                 options?.onDone?.(result.json);

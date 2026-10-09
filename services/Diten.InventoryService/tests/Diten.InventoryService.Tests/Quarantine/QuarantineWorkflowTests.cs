@@ -88,9 +88,36 @@ public sealed class QuarantineWorkflowTests : IClassFixture<WorkflowQuarantineAp
         var chips = display["chips"]!.AsArray().Select(c => c!.GetValue<string>()).ToList();
         Assert.InRange(chips.Count, 1, 5);
         Assert.All(chips, c => Assert.True(c.Length <= 32));
+        // Q5 (O-5 / O-Q2-4): readable labels from the existing resolvers — the lot NUMBER and the warehouse / location CODES, not ids
+        var lotNumber = s.Lots.LotDocument(Id(hold.GetProperty("lot"), "lotId"))["LotNumber"].AsString;
+        Assert.Contains("Lot " + lotNumber, chips);
+        Assert.Contains("Depo " + s.Ledger.WarehouseNode.Code, chips);
+        Assert.Contains(chips, c => c.StartsWith("Lokasyon ", StringComparison.Ordinal));
+        Assert.Contains("Lot " + lotNumber, display["subtitle"]!.GetValue<string>());
 
         // the instance is the decider's: MOD-0023 sees the starter = the decider (what makes its SoD work)
         Assert.Equal(s.Ledger.User, Assert.Single(Workflow.InstancesOf(decisionId)).StartedBy);
+    }
+
+    /// <summary>Q5 runtime finding: a disposition's WorkCenter title read "Disposition · Destroy" (enum names) — it carries the kind's label.</summary>
+    [Fact]
+    public async Task A_disposition_approval_carries_a_readable_kind_and_links_to_its_blocked_record()
+    {
+        var s = await WorldAsync();
+        var lot = await s.ReleasedLotAsync();
+        var (_, hold) = await s.HoldAsync("100", lot);
+        var reject = await s.DecideAsync(Id(hold, "holdId"), [QuarantineScenario.Line(1, "Reject", 100m)], "QUALITY_REJECT", coa: false);
+        Workflow.Approve(Id((await s.SubmitAsync(Id(reject, "decisionId"))).GetProperty("workflow"), "instanceId"), s.Approver);
+        Assert.Equal("Applied", Id(await s.ExpectAsync(HttpMethod.Get, $"/api/quarantine/decisions/{Id(reject, "decisionId")}", null, 200), "state"));
+        var blocked = await s.BlockedOfDecisionAsync(Id(reject, "decisionId"), 1);
+
+        var draft = await s.DisposeAsync(Id(blocked, "blockedId"),
+            new { kind = "Destroy", quantity = 40m, destructionMethod = "Yakma (lisanslı firma)", destructionDate = DateTime.UtcNow.ToString("yyyy-MM-dd") });
+        await s.SubmitAsync(Id(draft, "decisionId"));
+        var display = Assert.Single(Workflow.StartBodies, b => b["objectId"]!.GetValue<string>() == Id(draft, "decisionId"))["displayContext"]!.AsObject();
+        Assert.Equal($"Karantina kararı {Id(draft, "decisionNumber")} · İmha", display["title"]!.GetValue<string>());
+        Assert.Contains("İmha", display["chips"]!.AsArray().Select(c => c!.GetValue<string>()));
+        Assert.Equal($"/Quarantine/Blocked?q={Id(blocked, "blockedNumber")}", display["deepLinkUrl"]!.GetValue<string>());
     }
 
     [Fact]
@@ -459,8 +486,11 @@ public sealed class QuarantineWorkflowTests : IClassFixture<WorkflowQuarantineAp
         Assert.Equal("Draft", s.Lots.LotDocument(lot)["Status"].AsString);
 
         Workflow.Approve(Id(submitted.GetProperty("workflow"), "instanceId"), s.Approver);
+        // Q5 runtime finding: the MOD-0174 lot page reads only quality-status — that read alone applies the approved release
+        var status = await s.ExpectAsync(HttpMethod.Get, $"/api/quarantine/lots/{lot}/quality-status", null, 200);
+        Assert.False(status.TryGetProperty("pendingLotRelease", out _));
+        Assert.Equal("Released", s.Lots.LotDocument(lot)["Status"].AsString);
         var decision = await s.ExpectAsync(HttpMethod.Get, $"/api/quarantine/decisions/{decisionId}", null, 200);
         Assert.Equal("Applied", Id(decision, "state"));
-        Assert.Equal("Released", s.Lots.LotDocument(lot)["Status"].AsString);
     }
 }

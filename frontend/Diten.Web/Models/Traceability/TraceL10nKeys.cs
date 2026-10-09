@@ -37,7 +37,9 @@ public static class TraceL10nKeys
         .. LotFormRules.Countries.Select(code => "Country." + code),
         "Validation.Required", "Validation.LotFormat", "Validation.DatesOrder", "Validation.ReasonMin", "Validation.FixFields",
         "Status.Dialog.Title", "Status.Dialog.Reason", "Status.Dialog.Confirm", "Status.Dialog.ConfirmBlock", "Status.Dialog.Impact",
-        "Status.Dialog.PickOne", "Status.Dialog.AcknowledgeRequired", "Status.Dialog.Done", "Cancel"
+        "Status.Dialog.PickOne", "Status.Dialog.AcknowledgeRequired", "Status.Dialog.Done", "Cancel",
+        // MOD-0175 Q5 (pack §11.4): the lot release that waits for a quality approval (TRACE 202) + the lot page badge.
+        "Status.Dialog.Pending.Title", "Status.Dialog.Pending.Text", "Status.Dialog.Pending.Link", "Quality.PendingApproval", "Quality.PendingApproval.Title"
     ];
 
     public static readonly IReadOnlyList<string> Serials =

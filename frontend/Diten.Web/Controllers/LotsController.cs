@@ -260,6 +260,20 @@ public sealed class LotsController : Controller
             acknowledgeImpact = input.AcknowledgeImpact == true
         }, idempotencyKey, input.IfMatch, cancellationToken);
         if (!reply.IsSuccess) return WriteRefusal(reply);
+        if (reply.StatusCode == StatusCodes.Status202Accepted)
+        {
+            // MOD-0175 KQ-I (TRACE 1.2.0 x-lot-release-gate, pack §11.4): Draft/Blocked → Released waits for a quality approval.
+            // The lot is unchanged; pendingRequestId is the QUARANTINE decision (LotRelease, Draft) the requester signs and sends.
+            var pendingRequestId = ReadPendingRequestId(reply.Body);
+            return Json(new
+            {
+                success = true,
+                pending = true,
+                pendingRequestId,
+                submitUrl = pendingRequestId is null ? null : $"/Quarantine/Decisions/{Uri.EscapeDataString(pendingRequestId)}/Submit"
+            });
+        }
+
         var lot = reply.Read<LotRefDto>();
         return Json(new { success = true, status = lot?.Status, etag = reply.ETag });
     }
@@ -437,6 +451,21 @@ public sealed class LotsController : Controller
     }
 
     private static string? Text(JsonElement e, string name) => e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    /// <summary>TRACE 202 PendingApproval body <c>{ lotId, pendingRequestId, contractVersion }</c> → the decision id.</summary>
+    private static string? ReadPendingRequestId(string body)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            var id = Text(doc.RootElement, "pendingRequestId");
+            return Guid.TryParse(id, out var guid) ? guid.ToString("D") : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
 
     private static bool Positive(string? quantity) =>
         decimal.TryParse(quantity, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var q) && q > 0m;

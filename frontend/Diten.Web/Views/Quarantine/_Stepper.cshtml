@@ -1,0 +1,20 @@
+@model string
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@*
+    The two-step header of Karar Ver / Disposition / Karar Gönder (mockup "1 Karar · 2 Elektronik imza"). MODEL: the resx key of
+    step 1. The script marks the active step (data-qr-step) and shows "politika kapalı · bu adım atlanır" when the server's
+    decision says no signature is required (signatureRequired = false).
+*@
+<div class="d-flex align-items-center gap-3 flex-wrap mb-4" id="qr-stepper">
+    <div class="d-flex align-items-center gap-2" data-qr-step="1">
+        <span class="badge rounded-pill bg-primary" data-qr-step-dot>1</span>
+        <span class="fw-medium">@Localizer[Model]</span>
+    </div>
+    <span class="flex-grow-1 border-top" style="max-width:4rem"></span>
+    <div class="d-flex align-items-center gap-2 text-muted" data-qr-step="2">
+        <span class="badge rounded-pill bg-label-secondary" data-qr-step-dot>2</span>
+        <span class="fw-medium">@Localizer["Quarantine.Decide.Step.Sign"]</span>
+        <small class="text-muted d-none" id="qr-step-skipped">· @Localizer["Quarantine.Decide.Step.Skipped"]</small>
+    </div>
+</div>

@@ -47,12 +47,6 @@ public sealed record SubmitDecisionCommand(Guid DecisionId, string? SignatureId,
 /// <summary>§4.11 reapplyDecision — "Yeniden uygula" after ApplyFailed (same ledger keys, CT-Q9).</summary>
 public sealed record ReapplyDecisionCommand(Guid DecisionId) : IRequest<Response<DecisionDto>>;
 
-/// <summary>
-/// NOT part of QUARANTINE-BUNDLE: the Q1 test approval port's outcome (tests and the own-instance runtime probe on a DB-010
-/// test database only — the endpoint does not exist otherwise).
-/// </summary>
-public sealed record RecordTestOutcomeCommand(Guid DecisionId, ApprovalOutcome Outcome, Guid ApproverUserId) : IRequest<Response<DecisionDto>>;
-
 /// <summary>§4.17 saveSettings (the resolved company).</summary>
 public sealed record SaveSettingsCommand(
     int? WaitTargetDays,

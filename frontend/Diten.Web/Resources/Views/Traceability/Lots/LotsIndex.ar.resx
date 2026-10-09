@@ -661,4 +661,9 @@
   <data name="Validation.Required" xml:space="preserve">
     <value>هذا الحقل مطلوب.</value>
   </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>أُرسل للموافقة</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>الإفراج عن التشغيلة بانتظار موافقة الجودة؛ تتغير حالتها بعد الموافقة. افتح صفحة إرسال القرار لتوقيعه وإرساله.</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>فتح صفحة إرسال القرار</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>بانتظار الموافقة</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>قرار الإفراج بانتظار الموافقة · {0}</value></data>
 </root>
