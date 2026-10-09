@@ -8323,6 +8323,8 @@ Düzeltme önerisi (iki adım):
 
 Karşılaştırma: SAP'de kullanıcı kilitlemek yeni girişi engeller, açık oturum yönetici aracıyla sonlandırılır; Oracle'da kullanıcı devre dışı bırakılınca oturumlar geçersiz kılınır (ayrıntı doğrulanmadı).
 
+**SAHİP ONAYI 2026-10-09:** canlıda erişim belirteci ömrü 15 dakika ("ok 15 dk"). 1. adım Kullanıcılar + Roller düzeltme turunda; şart: Web'in sessiz yenilemesi ölçülür, kullanıcı çalışırken atılmaz.
+
 Gelecek regresyon riski: 🔴 (yetkisiz erişim penceresi canlıda var).
 
 ---
