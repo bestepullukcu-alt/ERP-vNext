@@ -510,6 +510,51 @@ FROZEN.** Fast-forwarded into the MVP-1 branch. Decisions on the opens:
   Q4R / Q5 acceptances also used the 27017 test database `diten_inventory_s1_tests` (not the live data) — disclosed to the owner.
 - **O-PM2-4** `Item` on the other operations → PM1. **O-PM2-5** gateway 5065 red → procurement owner.
 
+**PM1 — PRODUCT-MASTER v1.1 consumer (WP-0173-PM1, CT-MVP1-0173-PM1 v1, 2026-10-09; agent result, pending CT).**
+- **Contracts.**
+  - `product-master-bundle.openapi.yaml` 1.1.0-draft.8 and the v1.0 copy were taken unchanged from `56490f48e` (OD-8).
+  - **INVENTORY-BUNDLE 1.2.0** is additive (CT-PM1-1): three 422 codes, `PRODUCT_MASTER_DATA_INCOMPLETE`, `ITEM_NOT_ACTIVE` and
+    `SKU_LEVEL_NOT_STOCKABLE`, plus the `postMovement` rule note.
+- **Rules** (`ProductMasterStockRules`, pure).
+  - Lot / serial flags come from `getSku` as `bool?`. An unknown flag is never read as false.
+  - Lot null → `PRODUCT_MASTER_DATA_INCOMPLETE`.
+  - GSKU is accepted only when the product is explicitly serial-free; otherwise `SKU_LEVEL_NOT_STOCKABLE`.
+  - LSKU / FG serial null → data incomplete.
+- **Lifecycle.**
+  - **ASSUMPTION-0173-PM1-01:** the effective status is the most restrictive of the item row, the SKU row and `getSku`;
+    Archived = Retired.
+  - Deactivated: no OPENING_BALANCE / GOODS_RECEIPT_PO / GOODS_RECEIPT_PROD.
+  - Retired: only SCRAP / WRITE_OFF.
+  - Draft, unknown or missing: nothing (CT-PM1-2/3) → `ITEM_NOT_ACTIVE`.
+  - **ASSUMPTION-0173-PM1-02:** REVERSAL is not checked against PRODUCT-MASTER (the contract accepts it in every state).
+- **MDM calls per movement:** 4 → **3** (GSKU 4: + getProduct).
+- **Item level.** Item is open on postMovement, availability, balance, transactions and reservations. TRACE and QUARANTINE still refuse
+  `Item` with 400.
+- **Lots.** **ASSUMPTION-0173-PM1-03:** in `createLot` an unknown lot flag → 503 `PRODUCT_MASTER_UNAVAILABLE`.
+- **Web.**
+  - Flags come from `getSku`; an unknown flag blocks the form.
+  - The picker uses `/stockable-items?status=Active` (**W-UI-01 closed**).
+  - Item level is selectable; resx in 7 languages.
+- **FU-0173-TEST-01 delivered.** `TestSettings` has no 27017 fallback. **ASSUMPTION-0173-PM1-04:** the address comes from
+  `INVENTORY_TEST_MONGO` (27017 refused) or from the suite's own EphemeralMongo replica set.
+- **Measured.**
+  - Inventory 722 → **800** (own mongod); Web 675 → **685**; gateway 107/108 (pre-existing 5065); architecture 18/18.
+  - Warnings 0 / 21 / 7, unchanged.
+  - 30 red-first cases.
+  - Sabotages (a)–(e) red with 3 / 2 / 1 / 7 / 1 failures.
+  - Runtime probe on own ports: Item receipt 201; unknown-lot SKU 422 / form blocked; Deactivated receipt 422 `ITEM_NOT_ACTIVE` on
+    screen.
+- **Opens.**
+  - **O-PM1-1:** QUARANTINE 1.1.0 + TRACE 1.3.0 (`Item`) are required before MDM v1.1 goes live (owner decision). An Item receipt
+    into QUARANTINE opens a hold that `HoldList` cannot carry.
+  - O-PM1-2: REVERSAL vs CT-PM1-2.
+  - O-PM1-3: `stockable:false`.
+  - O-PM1-4: Deactivated CUSTOMER_RETURN / COUNT_GAIN.
+  - O-PM1-5: there is no gateway route for `/api/product-master` (the Web bridge is Development only).
+  - O-PM1-6: ledger "Item" label / Global Product picker text.
+  - O-PM1-7: gateway 5065.
+- **Evidence.** `docs/records/audits/2026-10/mod-0173-pm1-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`, `mod-0173-pm1-shots/`.
+
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).
