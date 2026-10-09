@@ -14,6 +14,7 @@ using Diten.SupplyChainService.Infrastructure.Features.Returns;
 using Diten.SupplyChainService.Application.Features.Claims;
 using Diten.SupplyChainService.Persistence.Features.Claims;
 using Diten.SupplyChainService.Infrastructure.Features.Claims;
+using Diten.SupplyChainService.Infrastructure.Common;
 using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
 using System.Text.Json.Serialization;
@@ -75,6 +76,9 @@ builder.Services.AddReturnPersistence();
 builder.Services.AddHttpClient<IReturnReferenceReader, ReturnReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
 builder.Services.AddClaimPersistence();
 builder.Services.AddHttpClient<IClaimReferenceReader, ClaimReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+// R-2 (PR #134): one validator for all five modules. LegalEntityId now arrives on the request, so every
+// *ContextMiddleware asks MDM whether it is the token tenant's and Active before the request reaches a handler.
+builder.Services.AddHttpClient<ILegalEntityScopeValidator, MdmLegalEntityScopeValidator>(client => client.Timeout = TimeSpan.FromSeconds(5));
 // Capacity (MOD-0192) is NOT composed, for the same reason as S&OP below. CT tried it on 2026-10-03
 // and K3 caught it: the service failed at builder.Build() with 3 unresolved registrations, because
 // CapacityRepository itself depends on IDemandFixtureReader. CT's first reading of the handler
