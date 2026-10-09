@@ -619,22 +619,25 @@ internal sealed class PassThroughLocaleResolver
 {
     public Task<string> ResolveAsync(Guid tenantId, string? requested, CancellationToken ct = default)
         => Task.FromResult(string.IsNullOrWhiteSpace(requested) ? "en" : requested.Trim().ToLowerInvariant());
+}
 
-    /// <summary>BL-454 slice 2 stage D — the invitation service, recorded (the created event's only effect here).</summary>
-    private sealed class RecordingInvitations : Diten.Platform.Application.Contracts.IAdminUserInvitationService
+/// <summary>
+/// BL-454 slice 2 stage D — the invitation service, recorded (the created event's only effect here). BL-590: at file
+/// level — written inside PassThroughLocaleResolver (e3d3a7331), the test class could not see it and the project did not build.
+/// </summary>
+internal sealed class RecordingInvitations : Diten.Platform.Application.Contracts.IAdminUserInvitationService
+{
+    public List<(Tenant Tenant, TenantAdminUser Admin)> Invited { get; } = [];
+    public string? LinkRootRefusal() => null;
+
+    public Task<Diten.Platform.Application.Contracts.AdminUserInvitationResult> InviteAsync(
+        Tenant tenant, TenantAdminUser adminUser, Diten.Platform.Application.Contracts.AdminInvitationTrigger trigger, CancellationToken cancellationToken)
     {
-        public List<(Tenant Tenant, TenantAdminUser Admin)> Invited { get; } = [];
-        public string? LinkRootRefusal() => null;
-
-        public Task<Diten.Platform.Application.Contracts.AdminUserInvitationResult> InviteAsync(
-            Tenant tenant, TenantAdminUser adminUser, Diten.Platform.Application.Contracts.AdminInvitationTrigger trigger, CancellationToken cancellationToken)
+        lock (Invited)
         {
-            lock (Invited)
-            {
-                Invited.Add((tenant, adminUser));
-            }
-
-            return Task.FromResult(new Diten.Platform.Application.Contracts.AdminUserInvitationResult("https://login.test", "https://app.test/account/set-password", true, true));
+            Invited.Add((tenant, adminUser));
         }
+
+        return Task.FromResult(new Diten.Platform.Application.Contracts.AdminUserInvitationResult("https://login.test", "https://app.test/account/set-password", true, true));
     }
 }
