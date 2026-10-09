@@ -36,7 +36,7 @@ public sealed class SupplyChainClaimsControllerTests
     // ── List ────────────────────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task List_forwards_only_the_two_published_query_keys_without_scope_headers()
+    public async Task List_forwards_only_the_two_published_query_keys_and_the_legal_entity_header()
     {
         var handler = new CaptureHandler(_ => Json(HttpStatusCode.OK, "{\"items\":[],\"total\":0,\"contractVersion\":\"v1\"}"));
         var controller = CreateController(handler, [Read]);
@@ -50,7 +50,11 @@ public sealed class SupplyChainClaimsControllerTests
         Assert.Equal("Bearer test-token", request.Headers["Authorization"]);
         Assert.Equal(Trace.ToString("D"), request.Headers["X-Correlation-Id"]);
         Assert.False(request.Headers.ContainsKey("X-Tenant-Id"));
-        Assert.False(request.Headers.ContainsKey("X-Legal-Entity-Id"));
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): ClaimContextMiddleware now REQUIRES X-Legal-Entity-Id. Before R-2 the
+        // header was optional there because it defaulted to the legal_entity_id claim, which is why this
+        // adapter deliberately sent no scope headers at all. With the claim gone it must send this one.
+        // X-Tenant-Id stays absent: the middleware still defaults it from the token.
+        Assert.Equal(LegalEntity.ToString("D"), request.Headers["X-Legal-Entity-Id"]);
         Assert.DoesNotContain("tenant", request.Uri, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("page", request.Uri, StringComparison.OrdinalIgnoreCase);
     }
@@ -139,7 +143,11 @@ public sealed class SupplyChainClaimsControllerTests
         Assert.Equal(Root.ToString("D"), post.Headers["X-Correlation-Id"]);
         Assert.Equal("intent-key-1", post.Headers["Idempotency-Key"]);
         Assert.False(post.Headers.ContainsKey("X-Tenant-Id"));
-        Assert.False(post.Headers.ContainsKey("X-Legal-Entity-Id"));
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): ClaimContextMiddleware now REQUIRES X-Legal-Entity-Id. Before R-2 the
+        // header was optional there because it defaulted to the legal_entity_id claim, which is why this
+        // adapter deliberately sent no scope headers at all. With the claim gone it must send this one.
+        // X-Tenant-Id stays absent: the middleware still defaults it from the token.
+        Assert.Equal(LegalEntity.ToString("D"), post.Headers["X-Legal-Entity-Id"]);
         // The browser gets its own trace back, never the root.
         Assert.Equal(Trace.ToString("D"), controller.Response.Headers["X-Correlation-Id"].ToString());
     }
@@ -373,6 +381,10 @@ public sealed class SupplyChainClaimsControllerTests
         };
         claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
         var context = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test")) };
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): the adapter reads LegalEntityId from the query, not the token, so the
+        // harness sends what the page sends. The adapter builds the downstream query from bound action
+        // parameters only, so this key never reaches the gateway.
+        context.Request.QueryString = new QueryString("?legalEntityId=" + LegalEntity.ToString("D"));
         context.Request.Headers.Cookie = "access_token=test-token";
         context.Request.Headers["X-Correlation-Id"] = Trace.ToString("D");
         if (idempotencyKey is not null) context.Request.Headers["Idempotency-Key"] = idempotencyKey;

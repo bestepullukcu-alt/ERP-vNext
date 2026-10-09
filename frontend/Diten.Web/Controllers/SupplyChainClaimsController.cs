@@ -5,6 +5,7 @@ using Diten.Web.Models.SupplyChain.Claims;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Diten.Web.Services.SupplyChain;
 
 namespace Diten.Web.Controllers;
 
@@ -170,9 +171,16 @@ public sealed class SupplyChainClaimsController : Controller
         if (!TryGetToken(out var token)) return ContractFailure(StatusCodes.Status401Unauthorized, "UNAUTHENTICATED");
         if (!TryGetBrowserTrace(out var trace)) return ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST");
 
+        // R-2: ClaimContextMiddleware now REQUIRES X-Legal-Entity-Id — before R-2 it was optional because it
+        // defaulted to the legal_entity_id claim, and these two proxies deliberately sent no scope headers.
+        // With the claim gone they must send it, or every Claims read and mutation answers 400.
+        if (!LegalEntityScopeRequest.TryResolve(Request, out var legalEntityId))
+            return ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST");
+
         using var request = new HttpRequestMessage(HttpMethod.Get, targetUrl);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Headers.TryAddWithoutValidation(CorrelationHeader, trace.ToString("D"));
+        request.Headers.TryAddWithoutValidation(LegalEntityHeader, legalEntityId.ToString("D"));
         try
         {
             using var response = await _httpClient.SendAsync(request, cancellationToken);
@@ -212,6 +220,12 @@ public sealed class SupplyChainClaimsController : Controller
         {
             return ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST");
         }
+        // R-2: resolved before the Shipment lookup, so a request with no legal entity is refused without
+        // spending a gateway round trip on it.
+        if (!LegalEntityScopeRequest.TryResolve(Request, out var mutationLegalEntityId))
+        {
+            return ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST");
+        }
 
         var lookup = await LookupShipmentAsync(shipmentId, token, trace, cancellationToken);
         if (lookup.Failure is not null) return lookup.Failure;
@@ -232,6 +246,7 @@ public sealed class SupplyChainClaimsController : Controller
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Headers.TryAddWithoutValidation(CorrelationHeader, root.Root.ToString("D"));
         request.Headers.TryAddWithoutValidation(IdempotencyHeader, idempotencyKey);
+        request.Headers.TryAddWithoutValidation(LegalEntityHeader, mutationLegalEntityId.ToString("D"));
         _logger.LogInformation("Claims mutation forwarded. Trace {Trace} Root {Root} Target {TargetUrl}.",
             trace, root.Root, targetUrl);
 
@@ -268,10 +283,16 @@ public sealed class SupplyChainClaimsController : Controller
     private async Task<ShipmentLookup> LookupShipmentAsync(Guid shipmentId, string token, Guid trace,
         CancellationToken cancellationToken)
     {
-        if (!TryResolveScopeClaim(["tenant_id", "tenantId"], "/tenantId", out var tenantId)
-            || !TryResolveScopeClaim(["legal_entity_id", "legalEntityId"], "/legalEntityId", out var legalEntityId))
+        if (!TryResolveScopeClaim(["tenant_id", "tenantId"], "/tenantId", out var tenantId))
         {
             return new(default, ContractFailure(StatusCodes.Status403Forbidden, "FORBIDDEN"));
+        }
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): LegalEntityId is the user's choice on the page, arriving as
+        // ?legalEntityId=. Missing or malformed is a REQUEST fault (400), not an authorization answer (403) —
+        // the service's own middleware answers a missing X-Legal-Entity-Id the same way.
+        if (!LegalEntityScopeRequest.TryResolve(Request, out var legalEntityId))
+        {
+            return new(default, ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST"));
         }
 
         using var request = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}{ShipmentsPath}/{shipmentId:D}");

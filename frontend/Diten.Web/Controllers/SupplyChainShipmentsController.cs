@@ -5,6 +5,7 @@ using Diten.Web.Models.SupplyChain.Shipments;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Diten.Web.Services.SupplyChain;
 
 namespace Diten.Web.Controllers;
 
@@ -168,9 +169,13 @@ public sealed class SupplyChainShipmentsController : Controller
         var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
         if (string.IsNullOrWhiteSpace(token)) return FailRequest(request, StatusCodes.Status401Unauthorized, out localStatus);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        if (!TryResolveScopeClaim(["tenant_id", "tenantId"], "/tenantId", out var tenantId)
-            || !TryResolveScopeClaim(["legal_entity_id", "legalEntityId"], "/legalEntityId", out var legalEntityId))
+        if (!TryResolveScopeClaim(["tenant_id", "tenantId"], "/tenantId", out var tenantId))
             return FailRequest(request, StatusCodes.Status403Forbidden, out localStatus);
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): LegalEntityId is the user's choice on the page, arriving as
+        // ?legalEntityId=. Missing or malformed is a REQUEST fault (400), not an authorization answer (403) —
+        // the service's own middleware answers a missing X-Legal-Entity-Id the same way.
+        if (!LegalEntityScopeRequest.TryResolve(Request, out var legalEntityId))
+            return FailRequest(request, StatusCodes.Status400BadRequest, out localStatus);
         request.Headers.TryAddWithoutValidation(TenantHeader, tenantId.ToString("D"));
         request.Headers.TryAddWithoutValidation(LegalEntityHeader, legalEntityId.ToString("D"));
         if (!TryForwardUuidHeader(request, CorrelationHeader))

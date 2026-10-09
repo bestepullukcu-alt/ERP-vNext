@@ -5,6 +5,7 @@ using Diten.Web.Models.SupplyChain.Returns;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Diten.Web.Services.SupplyChain;
 
 namespace Diten.Web.Controllers;
 
@@ -396,10 +397,17 @@ public sealed class SupplyChainReturnsController : Controller
             return false;
         }
 
-        if (!TryResolveScopeClaim(["tenant_id", "tenantId"], "/tenantId", out var tenantId)
-            || !TryResolveScopeClaim(["legal_entity_id", "legalEntityId"], "/legalEntityId", out var legalEntityId))
+        if (!TryResolveScopeClaim(["tenant_id", "tenantId"], "/tenantId", out var tenantId))
         {
             failure = ContractFailure(StatusCodes.Status403Forbidden, "INVALID_REQUEST");
+            return false;
+        }
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): LegalEntityId is the user's choice on the page, arriving as
+        // ?legalEntityId=. Missing or malformed is a REQUEST fault (400), not an authorization answer (403) —
+        // the service's own middleware answers a missing X-Legal-Entity-Id the same way.
+        if (!LegalEntityScopeRequest.TryResolve(Request, out var legalEntityId))
+        {
+            failure = ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST");
             return false;
         }
 

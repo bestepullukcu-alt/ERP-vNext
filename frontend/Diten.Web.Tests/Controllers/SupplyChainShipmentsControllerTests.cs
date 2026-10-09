@@ -123,6 +123,10 @@ public sealed class SupplyChainShipmentsControllerTests
             new("tenant_id", Tenant.ToString("D")), new("legal_entity_id", LegalEntity.ToString("D")) };
         claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
         var context = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test")) };
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): the adapter reads LegalEntityId from the query, not the token, so the
+        // harness sends what the page sends. The adapter builds the downstream query from bound action
+        // parameters only, so this key never reaches the gateway.
+        context.Request.QueryString = new QueryString("?legalEntityId=" + LegalEntity.ToString("D"));
         context.Request.Headers.Cookie = "access_token=test-token";
         context.Request.Headers["X-Correlation-Id"] = Correlation.ToString("D");
         if (includeIntent) context.Request.Headers["Idempotency-Key"] = "intent-key";
