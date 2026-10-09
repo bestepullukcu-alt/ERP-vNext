@@ -1004,8 +1004,10 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
     {
         private static readonly Dictionary<string, Dictionary<string, string?>> Sets = new()
         {
-            [ItemReferenceSets.ItemUom] = new() { ["C62"] = null, ["MGM"] = null, ["GRM"] = null, ["KGM"] = null,
-                ["MLT"] = null, ["LTR"] = null, ["XBX"] = null, ["XCS"] = null },
+            // WP-PLT-ITEM-LISTS-02 (the FIX1 M5 pattern): the units are Platform's, from the shared contract fixture.
+            [ItemReferenceSets.ItemUom] = System.Text.Json.Nodes.JsonNode
+                .Parse(File.ReadAllText(Diten.MdmService.Application.Tests.ReferenceData.PlatformItemReferenceResolverClientTests.ContractFixturePath()))!["item_uoms"]!
+                .AsArray().ToDictionary(code => (string)code!, _ => (string?)null),
             [ItemReferenceSets.StorageCondition] = new() { ["AMBIENT_15_25"] = "TEMPERATURE", ["COOL_2_8"] = "TEMPERATURE",
                 ["FROZEN_BELOW_MINUS_20"] = "TEMPERATURE", ["PROTECT_FROM_LIGHT"] = "PROTECTION",
                 ["PROTECT_FROM_MOISTURE"] = "PROTECTION" }

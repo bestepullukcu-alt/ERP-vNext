@@ -14,7 +14,7 @@ namespace Diten.Platform.API.Controllers.Internal;
 
 /// <summary>
 /// WP-PLT-ITEM-LISTS-01 (MOD-0048-FU01 named step "Universal Item Reference Lists for MOD-0290-FU04"): exact resolution
-/// of ITEM-UNIVERSAL-V1 for MDM. No new trust path: the verified-reference executor with the existing MDM resolver
+/// of the item universal catalog (ITEM-UNIVERSAL-Vn) for MDM. No new trust path: the verified-reference executor with the existing MDM resolver
 /// credential and header audience (as the verified-market controller), plus a tenant JWT or MDM's trusted service
 /// token. Anonymous at the MVC layer by design — the executor refuses every unauthenticated request by name.
 /// </summary>

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 namespace Diten.MdmService.Infrastructure.ReferenceData;
 
 /// <summary>
-/// WP-PLT-ITEM-LISTS-01: the item lists (MOD-0048 ITEM-UNIVERSAL-V1) from Platform's
+/// WP-PLT-ITEM-LISTS-01: the item lists (MOD-0048 ITEM-UNIVERSAL-Vn) from Platform's
 /// <c>POST api/internal/v1/reference-data/item-universal/resolve</c>. The PlatformVerifiedGskuResolverClient trust pattern:
 /// the MDM resolver credential + audience headers and the caller's own tenant JWT, a 2-second budget, fail-closed.
 /// An answer that does not exactly cover the request — a pair missing or extra, a version that disagrees inside a set, a

@@ -48,21 +48,75 @@ public sealed class ItemUniversalReferenceDataTests
         Assert.Equal(3, storage.Count(x => x.Attributes[ItemUniversalCatalog.ConditionKind] == ItemUniversalCatalog.Temperature));
     }
 
-    // MOD-0290-FU04 O-21 (UN/ECE Rec 20 Rev 11e, measured): roll = XRO; no single-unit "international unit" in V1.
+    // MOD-0290-FU04 O-21 (UN/ECE Rec 20 Rev 11e, measured): roll = XRO. V2 (WP-PLT-ITEM-LISTS-02): the local IU; Rec 20's
+    // HIU (hundred international units) is NOT used — the quality unit's decision.
     [Fact]
-    public void The_item_units_are_the_agreed_rec_20_codes_with_dimension_precision_and_factor()
+    public void The_item_units_are_the_agreed_codes_with_dimension_precision_and_factor()
     {
         var units = ItemUniversalCatalog.Values.Where(x => x.SetCode == "item-uom").ToList();
-        Assert.Equal(new[] { "C62", "MC", "MGM", "GRM", "KGM", "MLT", "LTR", "MTR", "MTK", "XBX", "XCS", "XRO" },
+        Assert.Equal(new[] { "C62", "MC", "MGM", "GRM", "KGM", "IU", "MLT", "LTR", "MTR", "MTK", "XBX", "XCS", "XRO" },
             units.Select(x => x.ValueCode));
         Assert.All(units, unit =>
         {
             var dimension = unit.Attributes[ItemUniversalCatalog.DimensionCode];
-            Assert.Contains(dimension, new[] { "COUNT", "MASS", "VOLUME", "LENGTH", "AREA", "PACKAGE" });
+            Assert.Contains(dimension, new[] { "COUNT", "MASS", "VOLUME", "LENGTH", "AREA", "PACKAGE", "BIOLOGICAL_ACTIVITY" });
             Assert.True(int.Parse(unit.Attributes[ItemUniversalCatalog.MaximumDecimalPrecision]!) >= 0);
             Assert.Equal(dimension == "PACKAGE", unit.Attributes[ItemUniversalCatalog.FactorToDimensionBase] is null);
         });
-        Assert.DoesNotContain(units, x => x.ValueCode is "RO" or "HIU" or "IU");
+        Assert.DoesNotContain(units, x => x.ValueCode is "RO" or "HIU");
+        var iu = Assert.Single(units, x => x.ValueCode == "IU");
+        Assert.Equal("International unit", iu.DisplayName);
+        Assert.Equal("1", iu.Attributes[ItemUniversalCatalog.FactorToDimensionBase]);
+        Assert.Equal("0", iu.Attributes[ItemUniversalCatalog.MaximumDecimalPrecision]);
+    }
+
+    // OD-7: IU is marked as outside UN/ECE Rec 20; every other unit says it is a Rec 20 code — the attribute is on every
+    // unit, so "no attribute" never reads as either.
+    [Fact]
+    public void IU_is_marked_as_a_local_code_outside_rec_20_and_every_other_unit_as_rec_20()
+    {
+        var units = ItemUniversalCatalog.Values.Where(x => x.SetCode == "item-uom").ToList();
+        Assert.All(units, unit => Assert.True(unit.Attributes.ContainsKey(ItemUniversalCatalog.CodeStandard), unit.ValueCode));
+        Assert.Equal(new[] { "IU" },
+            units.Where(x => x.Attributes[ItemUniversalCatalog.CodeStandard] == "LOCAL").Select(x => x.ValueCode));
+        Assert.All(units.Where(x => x.ValueCode != "IU"),
+            unit => Assert.Equal("UNECE_REC20", unit.Attributes[ItemUniversalCatalog.CodeStandard]));
+    }
+
+    // IU ↔ mg is substance-specific: no factor may derive it. Two units are derivable from each other only inside one
+    // dimension with both factors known; IU shares its dimension with no other unit, so it derives with nothing — an item
+    // states IU ↔ MGM as an explicit conversion.
+    [Fact]
+    public void IU_has_its_own_dimension_so_no_factor_derives_it_from_a_mass_or_any_other_unit()
+    {
+        var units = ItemUniversalCatalog.Values.Where(x => x.SetCode == "item-uom").ToList();
+        var derivable = (from a in units
+                         from b in units
+                         where a.ValueCode != b.ValueCode
+                               && a.Attributes[ItemUniversalCatalog.DimensionCode] == b.Attributes[ItemUniversalCatalog.DimensionCode]
+                               && a.Attributes[ItemUniversalCatalog.FactorToDimensionBase] is not null
+                               && b.Attributes[ItemUniversalCatalog.FactorToDimensionBase] is not null
+                         select (a.ValueCode, b.ValueCode)).ToList();
+
+        Assert.Equal("BIOLOGICAL_ACTIVITY", units.Single(x => x.ValueCode == "IU").Attributes[ItemUniversalCatalog.DimensionCode]);
+        Assert.DoesNotContain(derivable, pair => pair.Item1 == "IU" || pair.Item2 == "IU");
+        Assert.Contains(("MGM", "GRM"), derivable);
+    }
+
+    // The rule "a value change is a new deployment version": only item-uom changed in V2 — it has a new version id and
+    // number; storage-condition and material-type keep V1's (literal: the ids items stored under V1 carry).
+    [Fact]
+    public void Only_the_changed_list_has_a_new_version_and_the_unchanged_lists_keep_theirs()
+    {
+        Assert.Equal("ITEM-UNIVERSAL-V2", ItemUniversalCatalog.CatalogVersion);
+        Assert.Equal(Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0004"), ItemUniversalCatalog.GetVersionId("item-uom"));
+        Assert.Equal(2, ItemUniversalCatalog.GetVersionNumber("item-uom"));
+        Assert.Equal(Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0001"), ItemUniversalCatalog.ItemUomCatalogVersionIdV1);
+        Assert.NotEqual(ItemUniversalCatalog.ItemUomCatalogVersionIdV1, ItemUniversalCatalog.GetVersionId("item-uom"));
+        Assert.Equal(Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002"), ItemUniversalCatalog.GetVersionId("storage-condition"));
+        Assert.Equal(1, ItemUniversalCatalog.GetVersionNumber("storage-condition"));
+        Assert.Equal(Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0003"), ItemUniversalCatalog.GetVersionId("material-type"));
+        Assert.Equal(1, ItemUniversalCatalog.GetVersionNumber("material-type"));
     }
 
     // FU01 §4: the five `uom` values appear in `item-uom` with the same meaning — one code never carries two.
@@ -101,9 +155,9 @@ public sealed class ItemUniversalReferenceDataTests
         Assert.Equal(3, result.Data!.Selections.Count);
         Assert.All(result.Data.Selections, x =>
         {
-            Assert.Equal("ITEM-UNIVERSAL-V1", x.CatalogVersion);
+            Assert.Equal("ITEM-UNIVERSAL-V2", x.CatalogVersion);
             Assert.Equal(ItemUniversalCatalog.GetVersionId(x.SetCode), x.CatalogVersionId);
-            Assert.Equal(1, x.CatalogVersionNumber);
+            Assert.Equal(ItemUniversalCatalog.GetVersionNumber(x.SetCode), x.CatalogVersionNumber);
             Assert.Equal("LATEST", x.ResolutionMode);
             Assert.False(x.IsRetired);
             Assert.True(x.SelectableForNew);
@@ -290,6 +344,12 @@ public sealed class ItemUniversalReferenceDataTests
         Assert.Equal((int)fixture["maximum_selections"]!, ItemUniversalCatalog.MaximumSelections);
         Assert.Equal(fixture["material_types"]!.AsArray().Select(x => (string)x!),
             ItemUniversalCatalog.Values.Where(x => x.SetCode == "material-type").Select(x => x.ValueCode));
+        // WP-PLT-ITEM-LISTS-02: the unit list and item-uom's V1 proof — the same file binds MDM's fakes and its V1 test.
+        Assert.Equal(fixture["item_uoms"]!.AsArray().Select(x => (string)x!),
+            ItemUniversalCatalog.Values.Where(x => x.SetCode == "item-uom").Select(x => x.ValueCode));
+        var v1 = Assert.Single(fixture["previous_versions"]!["item-uom"]!.AsArray());
+        Assert.Equal(ItemUniversalCatalog.ItemUomCatalogVersionIdV1, Guid.Parse((string)v1!["catalog_version_id"]!));
+        Assert.Equal(1, (int)v1["catalog_version_number"]!);
     }
 
     // FIX1 M1: a code longer than 64 is a malformed request (never echoed back as "not found"); the body is capped at 64 KB.
