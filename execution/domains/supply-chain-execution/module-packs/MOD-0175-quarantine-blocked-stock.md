@@ -1414,6 +1414,18 @@ Contracts unchanged (QUARANTINE 1.0.0, TRACE, ESIGN).
 
 Evidence: `docs/records/audits/2026-10/mod-0175-q5-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`, `mod-0175-q5-shots/`.
 
+**Q5 — CT acceptance (2026-10-09).** CT re-ran Web **649/649** (the 2 quarantine `Nav.Page.*` reds of the MVP-1 branch closed),
+Inventory **692/692** (the Prism smoke tests green in the CT run) and architecture **18/18** in the agent worktree; §17.3 table
+committed before code (5c453f347). Read `QuarantineController` (E5W1 proxy pattern: cookie token, tenant from the token, bodies
+not logged) and the two Upstream changes (`canonicalCode` / `name` display labels only, no rule reads them). CT sabotage (own):
+Disposition page UAS-001 gate → `@if (false)` → `UAS_001_…(view: "Disposition")` red, restored, porcelain clean. Screenshots 03 / 04
+reviewed against the mockup. Merged into the MVP-1 branch. Decisions on the opens:
+- **O-Q5-1** `updateHold` (analysis note PATCH) in the contract but not served → **FU-0175-Q5-01**, before G1.
+- **O-Q5-2** creator / approver / candidates shown as user ids → **FU-0175-Q5-02**: the Web resolves display names through the existing
+  person / user label resolver (no contract change), before G1.
+- **O-Q5-3** `listHoldsBySource` not served → **FU-0175-Q5-03**, with MOD-0177 recall (its first consumer).
+- W-0175-01 (no Python, DataTable verifier) stays open to MVP-1 closure.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
