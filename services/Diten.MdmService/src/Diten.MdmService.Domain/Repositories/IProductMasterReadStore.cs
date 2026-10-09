@@ -74,5 +74,9 @@ public sealed record ProductMasterStockableRow(
 
 /// <param name="Rows">Each source's first Window rows, in canonical-code order within the source.</param>
 /// <param name="Total">Every matching row of every source.</param>
-/// <param name="Unreadable">Rows the store matched but could not read (skipped, never answered half-read).</param>
-public sealed record ProductMasterStockablePage(IReadOnlyList<ProductMasterStockableRow> Rows, long Total, int Unreadable);
+/// <param name="Unreadable">Rows of the window the store matched but could not read (skipped, never answered
+/// half-read): their kind and id only — never their content.</param>
+public sealed record ProductMasterStockablePage(
+    IReadOnlyList<ProductMasterStockableRow> Rows, long Total, IReadOnlyList<ProductMasterUnreadableRow> Unreadable);
+
+public sealed record ProductMasterUnreadableRow(ProductMasterRowKind Kind, string Id);

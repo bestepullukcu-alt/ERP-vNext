@@ -87,13 +87,22 @@ public sealed class ProductMasterController : ControllerBase
     private async Task<string?> BodyAsync(CancellationToken cancellationToken)
     {
         if (Request.ContentLength > ProductMasterContract.MaximumBodyBytes) return null;
-        var buffer = new byte[ProductMasterContract.MaximumBodyBytes + 1];
-        var length = 0;
-        int read;
-        while (length < buffer.Length
-               && (read = await Request.Body.ReadAsync(buffer.AsMemory(length, buffer.Length - length), cancellationToken)) > 0)
-            length += read;
-        return length > ProductMasterContract.MaximumBodyBytes ? null : Encoding.UTF8.GetString(buffer, 0, length);
+        // S4 FIX2 (M8): the 64 KB (+1) window is rented, not allocated per request.
+        var limit = ProductMasterContract.MaximumBodyBytes + 1;
+        var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(limit);
+        try
+        {
+            var length = 0;
+            int read;
+            while (length < limit
+                   && (read = await Request.Body.ReadAsync(buffer.AsMemory(length, limit - length), cancellationToken)) > 0)
+                length += read;
+            return length > ProductMasterContract.MaximumBodyBytes ? null : Encoding.UTF8.GetString(buffer, 0, length);
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
     private IActionResult TooLarge() => Json(StatusCodes.Status413PayloadTooLarge, ProductMasterContract.Error(

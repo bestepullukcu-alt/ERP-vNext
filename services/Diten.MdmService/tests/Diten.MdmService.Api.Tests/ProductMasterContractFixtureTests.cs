@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Diten.MdmService.Api.Tests;
 
@@ -17,7 +16,7 @@ namespace Diten.MdmService.Api.Tests;
 /// compares the two; where it is not, the test says so by name (it is not proof then).
 /// </para>
 /// </summary>
-public sealed class ProductMasterContractFixtureTests(ITestOutputHelper output)
+public sealed class ProductMasterContractFixtureTests
 {
     public const string V11YamlSha256 = "ac9c7b428174203f3ecef0da32e12ee8788069fd09c06a848000d549c0fcad4d";
     public const string V11JsonSha256 = "3faae76fb6fbebb5897654d23b6f5c7dc9239e1d5bd98042cb1a50fa388acfa1";
@@ -31,37 +30,17 @@ public sealed class ProductMasterContractFixtureTests(ITestOutputHelper output)
         Assert.Equal(V11YamlSha256, Sha256(ProductMasterContractSchema.FixturePath(ProductMasterContractSchema.V11Yaml)));
 
     // S4 FIX1 (R6): the fixture against the contract line's own file, found through SOURCE.txt (the line's worktree next
-    // to this one under .claude/worktrees). Not found (CI, another machine): the test says so by name and proves nothing.
-    [Fact]
+    // to this one under .claude/worktrees). S4 FIX2 (M5): where the line is not on the machine (CI, another checkout) the
+    // test is SKIPPED by name — reported as skipped, never as a green that proved nothing.
+    [ContractLineFact]
     public void S4_Fixture_v11_is_the_contract_lines_current_file()
     {
-        var source = File.ReadAllLines(ProductMasterContractSchema.FixturePath("SOURCE.txt"));
-        var worktree = Value(source, "worktree:");
-        var v11 = Value(source, "v1.1:");
-        var v10 = Value(source, "v1.0:");
-        var worktrees = WorktreesDirectory();
-        var line = worktrees is null ? null : Path.Combine(worktrees, worktree);
-        if (line is null || !File.Exists(Path.Combine(line, v11)))
-        {
-            output.WriteLine($"SKIPPED (named): the contract line '{worktree}' is not on this machine — the fixture was not "
-                             + "compared with the line's current file; only its own pins ran.");
-            return;
-        }
-        Assert.True(V11YamlSha256 == Sha256(Path.Combine(line, v11)),
+        var line = ContractLine.Locate()!;
+        Assert.True(V11YamlSha256 == Sha256(line.V11),
             "The contract line moved on: copy its product-master-bundle.openapi.yaml into the fixture again (and its JSON).");
-        Assert.Equal(V10YamlSha256, Sha256(Path.Combine(line, v10)));
+        Assert.Equal(V10YamlSha256, Sha256(line.V10));
     }
 
-    private static string Value(IEnumerable<string> lines, string key) =>
-        lines.Single(line => line.StartsWith(key, StringComparison.Ordinal))[key.Length..].Trim();
-
-    private static string? WorktreesDirectory()
-    {
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-            if (directory.Name == "worktrees" && directory.Parent?.Name == ".claude")
-                return directory.FullName;
-        return null;
-    }
 
     [Fact]
     public void S4_Fixture_json_renderings_are_pinned()
@@ -152,4 +131,35 @@ public sealed class ProductMasterContractFixtureTests(ITestOutputHelper output)
 
     internal static string Sha256(string path) =>
         Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
+}
+
+/// <summary>The contract line's two files on this machine (SOURCE.txt names them), or null when the line is not here.</summary>
+internal sealed record ContractLine(string Worktree, string V11, string V10)
+{
+    public static ContractLine? Locate()
+    {
+        var source = File.ReadAllLines(ProductMasterContractSchema.FixturePath("SOURCE.txt"));
+        var worktree = Value(source, "worktree:");
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (directory.Name != "worktrees" || directory.Parent?.Name != ".claude") continue;
+            var root = Path.Combine(directory.FullName, worktree);
+            var line = new ContractLine(worktree, Path.Combine(root, Value(source, "v1.1:")), Path.Combine(root, Value(source, "v1.0:")));
+            return File.Exists(line.V11) ? line : null;
+        }
+        return null;
+    }
+
+    private static string Value(IEnumerable<string> lines, string key) =>
+        lines.Single(line => line.StartsWith(key, StringComparison.Ordinal))[key.Length..].Trim();
+}
+
+/// <summary>A fact that runs only where the contract line is on the machine; elsewhere it is reported SKIPPED by name.</summary>
+public sealed class ContractLineFactAttribute : FactAttribute
+{
+    public ContractLineFactAttribute()
+    {
+        if (ContractLine.Locate() is null)
+            Skip = "The contract line (SOURCE.txt) is not on this machine: the fixture was not compared with the line's current file.";
+    }
 }

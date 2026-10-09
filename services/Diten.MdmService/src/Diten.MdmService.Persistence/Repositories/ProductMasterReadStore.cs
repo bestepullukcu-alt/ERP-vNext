@@ -26,6 +26,11 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
 
     public ProductMasterReadStore(IMongoDatabase database, ITenantContext tenantContext)
     {
+        ArgumentNullException.ThrowIfNull(database);
+        ArgumentNullException.ThrowIfNull(tenantContext);
+        // S4 FIX2 (M6): as the scope policy store — no read without a trusted tenant.
+        if (tenantContext.TenantId == Guid.Empty)
+            throw new InvalidOperationException("A trusted tenant is required for product master reads.");
         _items = database.GetCollection<Item>(ItemRepository.CollectionName);
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
         _lskus = database.GetCollection<Lsku>("mdm_lskus");
@@ -106,10 +111,10 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
         if (search.Window is < 1) throw new ArgumentOutOfRangeException(nameof(search), "The window is at least one row.");
         var rows = new List<ProductMasterStockableRow>();
         long total = 0;
-        var unreadable = 0;
+        var unreadable = new List<ProductMasterUnreadableRow>();
 
-        async Task RunAsync<T>(IMongoCollection<T> collection, FilterDefinition<T> match, IEnumerable<BsonDocument> stages,
-            Func<BsonDocument, ProductMasterStockableRow> read)
+        async Task RunAsync<T>(ProductMasterRowKind kind, IMongoCollection<T> collection, FilterDefinition<T> match,
+            IEnumerable<BsonDocument> stages, Func<BsonDocument, ProductMasterStockableRow> read)
         {
             var pipeline = new List<BsonDocument>(stages);
             if (search.Query is { Length: > 0 } query)
@@ -144,26 +149,43 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
                                                       or KeyNotFoundException or OverflowException or ArgumentException
                                                       or InvalidOperationException)
                 {
-                    // A row the store cannot read is skipped and counted (the caller logs it by name); it never fails
-                    // the whole search and is never answered half-read.
-                    unreadable++;
+                    // A row the store cannot read is skipped and named (kind + id; the caller logs it); it is never
+                    // answered half-read. A window with nothing readable is the caller's 503 (S4 FIX2 R1).
+                    unreadable.Add(new(kind, IdText(row)));
                 }
             }
         }
 
         if (search.Items)
-            await RunAsync(_items, ItemMatch(search), ItemStages(), ReadItem);
+            await RunAsync(ProductMasterRowKind.Item, _items, ItemMatch(search), ItemStages(), ReadItem);
         if (search.ProductScope is { } scope)
         {
             if (search.Gskus)
-                await RunAsync(_gskus, GskuMatch(search), GskuStages(scope), row => ReadProduct(row, ProductMasterRowKind.Gsku));
+                await RunAsync(ProductMasterRowKind.Gsku, _gskus, GskuMatch(search), GskuStages(scope),
+                    row => ReadProduct(row, ProductMasterRowKind.Gsku));
             if (search.Lskus)
-                await RunAsync(_lskus, LskuMatch(search), LskuStages(scope), row => ReadProduct(row, ProductMasterRowKind.Lsku));
+                await RunAsync(ProductMasterRowKind.Lsku, _lskus, LskuMatch(search), LskuStages(scope),
+                    row => ReadProduct(row, ProductMasterRowKind.Lsku));
             if (search.FinishedGoods)
-                await RunAsync(_finishedGoods, FinishedGoodMatch(search), FinishedGoodStages(scope),
-                    row => ReadProduct(row, ProductMasterRowKind.FinishedGood));
+                await RunAsync(ProductMasterRowKind.FinishedGood, _finishedGoods, FinishedGoodMatch(search),
+                    FinishedGoodStages(scope), row => ReadProduct(row, ProductMasterRowKind.FinishedGood));
         }
         return new(rows, total, unreadable);
+    }
+
+    private static string IdText(BsonValue row)
+    {
+        try
+        {
+            var id = row.AsBsonDocument.GetValue("_id", BsonNull.Value);
+            return id is BsonBinaryData { SubType: BsonBinarySubType.UuidStandard } binary
+                ? binary.ToGuid().ToString("D")
+                : $"<{id.BsonType}>";
+        }
+        catch (InvalidCastException)
+        {
+            return "<unreadable>";
+        }
     }
 
     // §16.3 inverse — the wanted published statuses as stored ones (a PendingActivation item by its activation kind).
@@ -348,9 +370,54 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
                 { "input", new BsonDocument("$arrayElemAt", new BsonArray { "$R", 0 }) }
             })));
         if (!scope.Unrestricted)
+        {
             foreach (var stage in ProductLegalEntityScopeAggregation.CreateAccessStages(
                          _tenantId, scope.CandidateLegalEntityIds, scope.ServerNowUtc))
                 yield return stage;
+            // S4 FIX2 (M3): the scope stages already joined the tenant's one live Global Product (ScopeGlobalProducts,
+            // size 1 is one of their checks) — its name is read from there, no second lookup.
+            yield return new BsonDocument("$set", new BsonDocument("Gp",
+                new BsonDocument("$arrayElemAt", new BsonArray { "$ScopeGlobalProducts", 0 })));
+        }
+        else
+        {
+            foreach (var stage in GlobalProductLookup(tenant)) yield return stage;
+        }
+        yield return new BsonDocument("$set", new BsonDocument("SearchName", new BsonDocument("$concat", new BsonArray(
+            nameParts.Select(part => part is BsonString { Value: var text } && text.StartsWith('$')
+                ? Text(text)
+                : part)))));
+        yield return new BsonDocument("$project", new BsonDocument
+        {
+            { "CanonicalCode", 1 }, { "SearchName", 1 }, { "LifecycleStatus", 1 }, { "BaseUomCode", 1 },
+            { "LotControlled", 1 }, { "SerialControlled", 1 }, { "PackQuantity", 1 }, { "PackUomCode", 1 },
+            { "MarketCode", 1 }, { "ProductName", "$Gp.GlobalProductName" },
+            { "GlobalProductId", "$" + ProductLegalEntityScopeAggregation.ResolvedGlobalProductIdField }
+        });
+    }
+
+    // A name part as text. The pack quantity is stored as decimal text with its scale ("16.50"); the name shows it as
+    // DecimalText does ("16.5") — S4 FIX2 (M1): trailing zeros after the point, then a bare point, are cut, so a search
+    // finds what the screen shows.
+    private static BsonValue Text(string fieldPath)
+    {
+        var raw = new BsonDocument("$toString", new BsonDocument("$ifNull", new BsonArray { fieldPath, "" }));
+        if (fieldPath != "$PackQuantity") return raw;
+        var trimmed = new BsonDocument("$rtrim", new BsonDocument
+        {
+            { "input", new BsonDocument("$rtrim", new BsonDocument { { "input", raw }, { "chars", "0" } }) },
+            { "chars", "." }
+        });
+        return new BsonDocument("$cond", new BsonArray
+        {
+            new BsonDocument("$gte", new BsonArray { new BsonDocument("$indexOfBytes", new BsonArray { raw, "." }), 0 }),
+            trimmed,
+            raw
+        });
+    }
+
+    private static IEnumerable<BsonDocument> GlobalProductLookup(BsonBinaryData tenant)
+    {
         yield return new BsonDocument("$lookup", new BsonDocument
         {
             { "from", "mdm_global_products" },
@@ -369,17 +436,6 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
         });
         yield return new BsonDocument("$match", new BsonDocument("Gp", new BsonDocument("$size", 1)));
         yield return new BsonDocument("$set", new BsonDocument("Gp", new BsonDocument("$arrayElemAt", new BsonArray { "$Gp", 0 })));
-        yield return new BsonDocument("$set", new BsonDocument("SearchName", new BsonDocument("$concat", new BsonArray(
-            nameParts.Select(part => part is BsonString { Value: var text } && text.StartsWith('$')
-                ? new BsonDocument("$toString", new BsonDocument("$ifNull", new BsonArray { part, "" }))
-                : part)))));
-        yield return new BsonDocument("$project", new BsonDocument
-        {
-            { "CanonicalCode", 1 }, { "SearchName", 1 }, { "LifecycleStatus", 1 }, { "BaseUomCode", 1 },
-            { "LotControlled", 1 }, { "SerialControlled", 1 }, { "PackQuantity", 1 }, { "PackUomCode", 1 },
-            { "MarketCode", 1 }, { "ProductName", "$Gp.GlobalProductName" },
-            { "GlobalProductId", "$" + ProductLegalEntityScopeAggregation.ResolvedGlobalProductIdField }
-        });
     }
 
     private static ProductMasterStockableRow ReadItem(BsonDocument row)

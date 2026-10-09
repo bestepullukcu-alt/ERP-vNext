@@ -84,7 +84,7 @@ public sealed class ProductMasterQueryHandler :
             if (await reader.GlobalProductAsync(id, cancellationToken) is not { } product) return Fail(UnknownItem, 404);
             var flags = await _store.GetLiveSkuFlagsOfGlobalProductAsync(product.Id, cancellationToken);
             return Ok(GlobalProductRef(product, TrueInDoubt(flags.GskuLots), TrueInDoubt(flags.ChildSerials)));
-        }, cancellationToken);
+        }, cancellationToken, "getProduct");
 
     // The item shortcut: a Global Product id is 404 here.
     public Task<Response<JsonObject>> Handle(GetProductMasterItemQuery query, CancellationToken cancellationToken) =>
@@ -94,7 +94,7 @@ public sealed class ProductMasterQueryHandler :
             return await reader.ItemAsync(id, cancellationToken) is { } item
                 ? Ok(ItemProductRef(item))
                 : Fail(UnknownItem, 404);
-        }, cancellationToken);
+        }, cancellationToken, "getMaterialItem");
 
     // ------------------------------------------------------------------------------------------- getSku / resolveSkuProduct
 
@@ -107,7 +107,7 @@ public sealed class ProductMasterQueryHandler :
             var level = await ResolveLevelAsync(reader, id, asked, cancellationToken);
             var sku = level is null ? null : await SkuRefAsync(reader, id, level, cancellationToken);
             return sku is null ? Fail(UnknownSku, 404) : Ok(sku);
-        }, cancellationToken);
+        }, cancellationToken, "getSku");
 
     // D-SKU-LINK: an item links to itself; a GSKU / LSKU / Finished Good to its Global Product (FG → GSKU → GP, D-2).
     public Task<Response<JsonObject>> Handle(GetProductMasterSkuProductQuery query, CancellationToken cancellationToken) =>
@@ -120,7 +120,7 @@ public sealed class ProductMasterQueryHandler :
             return hit is null
                 ? Fail(UnknownSku, 404)
                 : Ok(SkuProductLink(id, hit.Level, hit.ItemId, hit.ItemKind));
-        }, cancellationToken);
+        }, cancellationToken, "resolveSkuProduct");
 
     // ------------------------------------------------------------------------------------------- getSkuUom
 
@@ -146,7 +146,7 @@ public sealed class ProductMasterQueryHandler :
                 default:
                     return Fail(UnknownSku, 404);
             }
-        }, cancellationToken);
+        }, cancellationToken, "getSkuUom");
 
     // ------------------------------------------------------------------------------------------- searchStockableItems
 
@@ -162,6 +162,8 @@ public sealed class ProductMasterQueryHandler :
                 || !TryParseInt(query.PageSize, DefaultPageSize, out var pageSize) || pageSize is < 1 or > MaximumPageSize
                 || (long)page * pageSize > MaximumSearchWindow
                 || query.Q?.Length > MaximumQueryLength
+                // draft.13 (S4 FIX2 R4): a control character (U+0000–U+001F) is not text — 400, never a store pattern.
+                || query.Q is not null && query.Q.Any(char.IsControl)
                 || query.SkuLevel is not null && !TryParseLevel(query.SkuLevel, out level)
                 || query.MaterialType is not null && !TryParseMaterialType(query.MaterialType, out materialType)
                 || query.Status is not null && !LifecycleStatuses.Contains(query.Status))
@@ -198,10 +200,11 @@ public sealed class ProductMasterQueryHandler :
                 statuses.Products,
                 productScope,
                 page * pageSize), cancellationToken);
-            if (found.Unreadable > 0)
+            // S4 FIX2 (R1): every skipped row by kind and id (never its content).
+            foreach (var skipped in found.Unreadable)
                 _logger.LogWarning(
-                    "PRODUCT_MASTER_SEARCH_ROW_UNREADABLE: {Count} stockable-search row(s) could not be read and were skipped.",
-                    found.Unreadable);
+                    "PRODUCT_MASTER_SEARCH_ROW_UNREADABLE: a {Kind} row ({Id}) could not be read and was skipped.",
+                    skipped.Kind, skipped.Id);
 
             // Stable order: the canonical code (ordinal; codes are unique per kind), then the kind.
             var pageRows = found.Rows
@@ -209,6 +212,9 @@ public sealed class ProductMasterQueryHandler :
                 .Skip((page - 1) * pageSize).Take(pageSize)
                 .Select(row => (JsonNode?)StockableRow(row))
                 .ToArray();
+            // S4 FIX2 (R1): nothing readable but rows were there → the store cannot answer this page (a systematic read
+            // failure must not look like an empty catalogue). At least one row read: 200, the skipped ones logged.
+            if (pageRows.Length == 0 && found.Unreadable.Count > 0) return Fail(Unavailable, 503);
             return Ok(new JsonObject
             {
                 ["items"] = new JsonArray(pageRows),
@@ -217,7 +223,7 @@ public sealed class ProductMasterQueryHandler :
                 ["totalCount"] = found.Total,
                 ["contractVersion"] = ContractVersion
             });
-        }, cancellationToken);
+        }, cancellationToken, "searchStockableItems");
 
     private static JsonObject StockableRow(ProductMasterStockableRow row)
     {
@@ -322,7 +328,7 @@ public sealed class ProductMasterQueryHandler :
                 });
             }
             return Ok(new JsonObject { ["items"] = items, ["notFound"] = notFound, ["contractVersion"] = ContractVersion });
-        }, cancellationToken);
+        }, cancellationToken, "bulkReadSkus");
 
     // ------------------------------------------------------------------------------------------- validateRefs
 
@@ -375,7 +381,7 @@ public sealed class ProductMasterQueryHandler :
                 results.Add(result);
             }
             return Ok(new JsonObject { ["results"] = results, ["contractVersion"] = ContractVersion });
-        }, cancellationToken);
+        }, cancellationToken, "validateRefs");
 
     private static bool TryReadRef(JsonElement entry, out (Guid? ItemId, Guid? SkuId, string? Level) reference)
     {
@@ -495,7 +501,7 @@ public sealed class ProductMasterQueryHandler :
     // ------------------------------------------------------------------------------------------- plumbing
 
     private async Task<Response<JsonObject>> RunAsync(
-        Func<ProductMasterReader, Task<Response<JsonObject>>> read, CancellationToken cancellationToken)
+        Func<ProductMasterReader, Task<Response<JsonObject>>> read, CancellationToken cancellationToken, string operation)
     {
         if (!_tenantContext.IsResolved || _tenantContext.TenantId == Guid.Empty) return Fail(TenantContextRequired, 400);
         var reader = new ProductMasterReader(_items, _globalProducts, _revisions, _gskus, _lskus, _finishedGoods, _store,
@@ -508,16 +514,30 @@ public sealed class ProductMasterQueryHandler :
         {
             return Fail(refusal.Code, refusal.StatusCode);
         }
-        // The store could not be reached (timeout, driver failure) or a record could not be read (S4 FIX1: a document the
-        // serializer cannot map, a repository's refusal): a coded 503, never an empty answer and never a 500. A read
-        // cancelled by its own caller propagates.
-        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
-                                          && ProductLegalEntityScopeWriteFenceCoordinator.ClassifyRolloutReadFailure(exception)
-                                          != ProductLegalEntityScopeWriteFenceCoordinator.RolloutReadFailure.None)
+        // The store could not be reached (timeout, driver failure) or a stored record could not be read (S4 FIX2 M4: only
+        // a DATA read failure — the driver's / serializer's own exceptions; a defect elsewhere stays a 500): a coded 503,
+        // never an empty answer. A read cancelled by its own caller propagates.
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested && IsStoreReadFailure(exception))
         {
-            _logger.LogWarning("PRODUCT_MASTER_READ_FAILED: {Failure} — answered 503.", exception.GetType().Name);
+            _logger.LogWarning("PRODUCT_MASTER_READ_FAILED: {Code} on {Operation} — {Failure}.",
+                Unavailable, operation, exception.GetType().FullName);
             return Fail(Unavailable, 503);
         }
+    }
+
+    /// <summary>
+    /// A failure of the store or of a stored document: a timeout, the driver's MongoException family, the BSON library's
+    /// BsonException family, or a FormatException / InvalidCastException the BSON library itself raised (a document the
+    /// serializer cannot map). (The Application layer does not reference the driver: the families are recognised by name.)
+    /// </summary>
+    public static bool IsStoreReadFailure(Exception exception)
+    {
+        if (exception is TimeoutException) return true;
+        for (var type = exception.GetType(); type is not null; type = type.BaseType)
+            if (type.FullName is "MongoDB.Driver.MongoException" or "MongoDB.Bson.BsonException")
+                return true;
+        return exception is FormatException or InvalidCastException
+               && exception.Source is { } source && source.StartsWith("MongoDB.", StringComparison.Ordinal);
     }
 
     private static Response<JsonObject> Ok(JsonObject body) => Response<JsonObject>.Success(body);

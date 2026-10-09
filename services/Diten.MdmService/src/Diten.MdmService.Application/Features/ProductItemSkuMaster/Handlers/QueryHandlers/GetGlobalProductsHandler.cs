@@ -239,7 +239,8 @@ public sealed class ProductLegalEntityScopeConsumerGuard
 
     /// <summary>
     /// MOD-0290-FU04 S4 FIX1 (R4) — <see cref="EvaluateAsync"/> for many Global Products with ONE policy read: the same
-    /// decision per product (the same evaluator, the same refusals); evidence that cannot be read denies them all.
+    /// decision per product (the same evaluator, the same refusals). When the batch read cannot be read, each product is
+    /// decided by the single path (S4 FIX2 R2) — never the whole batch denied for one product's evidence.
     /// </summary>
     public async Task<IReadOnlyDictionary<Guid, ProductLegalEntityScopeConsumerDecision>> EvaluateManyAsync(
         ProductLegalEntityScopeConsumerContext context,
@@ -261,17 +262,19 @@ public sealed class ProductLegalEntityScopeConsumerGuard
             foreach (var id in ids) decisions[id] = await EvaluateAsync(context, id, cancellationToken);
             return decisions;
         }
+        IReadOnlyDictionary<Guid, ProductLegalEntityScopePolicy> policies;
         try
         {
-            var policies = await _policies.GetByGlobalProductIdsAsync(ids, cancellationToken);
-            foreach (var id in ids) decisions[id] = Decide(context, id, policies.GetValueOrDefault(id));
+            policies = await _policies.GetByGlobalProductIdsAsync(ids, cancellationToken);
         }
         catch (Exception exception) when (IsInvalidEvidence(exception))
         {
-            foreach (var id in ids)
-                decisions[id] = ProductLegalEntityScopeConsumerDecision.Denied(
-                    ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
+            // S4 FIX2 (R2): one unreadable policy must not deny the whole batch — the single path denies only its own
+            // product. The batch read failed, so every product is decided the single way: the same decision per product.
+            foreach (var id in ids) decisions[id] = await EvaluateAsync(context, id, cancellationToken);
+            return decisions;
         }
+        foreach (var id in ids) decisions[id] = Decide(context, id, policies.GetValueOrDefault(id));
         return decisions;
     }
 
