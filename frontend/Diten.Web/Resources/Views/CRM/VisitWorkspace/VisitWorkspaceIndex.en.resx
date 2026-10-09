@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Visit Workspace</value></data>
+  <data name="PageSubtitle" xml:space="preserve"><value>Plan, visit and report: all in one calendar.</value></data>
+  <data name="TodayButton" xml:space="preserve"><value>Today</value></data>
+  <data name="PreviousWeek" xml:space="preserve"><value>Previous week</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Next week</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Approve the week</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Reopen the week</value></data>
+  <data name="UnplannedVisit" xml:space="preserve"><value>Unplanned visit</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="FilterAccount" xml:space="preserve"><value>Institution</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="FilterAllAccounts" xml:space="preserve"><value>All institutions</value></data>
+  <data name="FilterAllProducts" xml:space="preserve"><value>All products</value></data>
+  <data name="NoPlanWeek" xml:space="preserve"><value>There is no plan for this week.</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>Visit</value></data>
+  <data name="WhatToPresent" xml:space="preserve"><value>What do I present</value></data>
+  <data name="PreviousVisit" xml:space="preserve"><value>From the previous visit</value></data>
+  <data name="FrequencyTitle" xml:space="preserve"><value>Frequency</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Close</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancel</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Save</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Reason</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Note</value></data>
+  <data name="NoteRequired" xml:space="preserve"><value>required for this reason</value></data>
+  <data name="NewDate" xml:space="preserve"><value>New date</value></data>
+  <data name="ReopenReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="ReopenHint" xml:space="preserve"><value>At least 10 characters; it is kept in the week's history.</value></data>
+  <data name="UnplacedTitle" xml:space="preserve"><value>Visits that did not fit this week</value></data>
+  <data name="UnplacedHint" xml:space="preserve"><value>To keep a visit in this week, pin it to a day in Plan mode.</value></data>
+  <data name="UnplannedTitle" xml:space="preserve"><value>Unplanned visit</value></data>
+  <data name="UnplannedHint" xml:space="preserve"><value>Add a single visit for today by hand. Add later visits as targets in Plan mode.</value></data>
+  <data name="DoctorLabel" xml:space="preserve"><value>Doctor</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>Search by name (at least 2 letters)</value></data>
+  <data name="TimeLabel" xml:space="preserve"><value>Time</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Add</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>Week {0}</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="WeekStateApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="WeekStatePast" xml:space="preserve"><value>Past</value></data>
+  <data name="WeekStateNone" xml:space="preserve"><value>No plan</value></data>
+  <data name="CapacityLabel" xml:space="preserve"><value>{0} / {1} planned</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>{0} h</value></data>
+  <data name="Unplaced" xml:space="preserve"><value>⚠ {0} visits did not fit</value></data>
+  <data name="UnplacedDetail" xml:space="preserve"><value>{0} visits of this week could not be placed in its working days (capacity or holidays).</value></data>
+  <data name="HolidayLabel" xml:space="preserve"><value>Holiday</value></data>
+  <data name="DayLoad" xml:space="preserve"><value>{0} visits · free {1}</value></data>
+  <data name="NoVisitDay" xml:space="preserve"><value>No visit on this day.</value></data>
+  <data name="Status_cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Status_not_done" xml:space="preserve"><value>Not done</value></data>
+  <data name="Status_rescheduled" xml:space="preserve"><value>Rescheduled</value></data>
+  <data name="Status_reported" xml:space="preserve"><value>Reported</value></data>
+  <data name="Status_expired" xml:space="preserve"><value>Time is up</value></data>
+  <data name="Status_report_missing" xml:space="preserve"><value>Report missing</value></data>
+  <data name="Status_missed" xml:space="preserve"><value>Missed</value></data>
+  <data name="Status_today" xml:space="preserve"><value>Today</value></data>
+  <data name="Status_planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Icon_Pinned" xml:space="preserve"><value>Pinned</value></data>
+  <data name="Icon_Unplanned" xml:space="preserve"><value>Unplanned</value></data>
+  <data name="Icon_Rescheduled" xml:space="preserve"><value>Came from a reschedule</value></data>
+  <data name="CountdownLeft" xml:space="preserve"><value>{0} h {1} min left</value></data>
+  <data name="CountdownPassed" xml:space="preserve"><value>The time to report is over</value></data>
+  <data name="BandMissed" xml:space="preserve"><value>Missed: within 48 hours record it as not done or reschedule it.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>Locked: the 48 hours passed without a report; your manager is informed.</value></data>
+  <data name="BandReportMissing" xml:space="preserve"><value>The visit is done; send its report.</value></data>
+  <data name="BandDraft" xml:space="preserve"><value>Draft week: the plan can still change.</value></data>
+  <data name="BandCancelled" xml:space="preserve"><value>This visit was cancelled.</value></data>
+  <data name="RolePromo" xml:space="preserve"><value>promo</value></data>
+  <data name="RoleReminder" xml:space="preserve"><value>reminder</value></data>
+  <data name="NoContent" xml:space="preserve"><value>No product planned.</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Done {0} / {1} · planned {2}</value></data>
+  <data name="Outcome_completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Outcome_missed" xml:space="preserve"><value>Not done</value></data>
+  <data name="Outcome_rescheduled" xml:space="preserve"><value>Rescheduled</value></data>
+  <data name="Action_cancel" xml:space="preserve"><value>Cancel the visit</value></data>
+  <data name="Action_result" xml:space="preserve"><value>Enter the result</value></data>
+  <data name="Action_notDone" xml:space="preserve"><value>Not done</value></data>
+  <data name="Action_reschedule" xml:space="preserve"><value>Reschedule</value></data>
+  <data name="Action_sendReport" xml:space="preserve"><value>Send the report</value></data>
+  <data name="Action_plan" xml:space="preserve"><value>Open the plan</value></data>
+  <data name="LockedInfo" xml:space="preserve"><value>Read-only record. Editing and report entry are closed.</value></data>
+  <data name="DlgCancelTitle" xml:space="preserve"><value>Cancel the visit</value></data>
+  <data name="DlgNotDoneTitle" xml:space="preserve"><value>The visit could not be done</value></data>
+  <data name="DlgRescheduleTitle" xml:space="preserve"><value>Reschedule the visit</value></data>
+  <data name="RescheduleDayLoad" xml:space="preserve"><value>{0} visits · {1} / {2}</value></data>
+  <data name="RescheduleNoDays" xml:space="preserve"><value>No working day is open in the coming weeks.</value></data>
+  <data name="ReasonsUnavailable" xml:space="preserve"><value>The reason list could not be read. Please try again.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="Saved" xml:space="preserve"><value>Saved.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>The action could not be completed.</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>The calendar could not be loaded.</value></data>
+  <data name="ApproveDone" xml:space="preserve"><value>The week is approved.</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>The week is open again.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>Reopen: {0}</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>No doctor found.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>The 48-hour reporting time is over; the visit is locked.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>This visit is cancelled; nothing can be recorded on it.</value></data>
+  <data name="Err_visit_reason_invalid" xml:space="preserve"><value>Choose a reason from the list.</value></data>
+  <data name="Err_visit_reason_note_required" xml:space="preserve"><value>This reason needs a note.</value></data>
+  <data name="Err_visit_reason_note_too_long" xml:space="preserve"><value>The note is too long (at most 500 characters).</value></data>
+  <data name="Err_visit_reschedule_date_invalid" xml:space="preserve"><value>Pick a working day after today, inside the active period.</value></data>
+  <data name="Err_visit_report_reschedule_date_invalid" xml:space="preserve"><value>The new date is not a valid date.</value></data>
+  <data name="Err_visit_reschedule_already_applied" xml:space="preserve"><value>The new visit already exists; its date can no longer change.</value></data>
+  <data name="Err_visit_cancel_past_day" xml:space="preserve"><value>A past visit is not cancelled; record it as not done or reschedule it.</value></data>
+  <data name="Err_unplanned_visit_today_only" xml:space="preserve"><value>An unplanned visit can only be added for today.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>The reason list could not be read. Please try again.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>The 60-minute correction window has closed; correct it with an amendment.</value></data>
+  <data name="Err_visit_report_invalid_transition" xml:space="preserve"><value>This visit's state does not allow this step. Reload and try again.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>You can only act on your own visits.</value></data>
+  <data name="Err_visit_reason_applies_to_invalid" xml:space="preserve"><value>The reason list could not be read for this action.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>The visit's day has not come yet.</value></data>
+  <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>This visit can no longer be changed.</value></data>
+  <data name="Err_planned_visit_overlap" xml:space="preserve"><value>Another visit is planned at this time.</value></data>
+</root>

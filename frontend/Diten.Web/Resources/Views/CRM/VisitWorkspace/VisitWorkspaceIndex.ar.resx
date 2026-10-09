@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>مساحة عمل الزيارات</value></data>
+  <data name="PageSubtitle" xml:space="preserve"><value>خطّط، زُر، وأبلغ: كل ذلك في تقويم واحد.</value></data>
+  <data name="TodayButton" xml:space="preserve"><value>اليوم</value></data>
+  <data name="PreviousWeek" xml:space="preserve"><value>الأسبوع السابق</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>الأسبوع التالي</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>اعتماد الأسبوع</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>إعادة فتح الأسبوع</value></data>
+  <data name="UnplannedVisit" xml:space="preserve"><value>زيارة غير مخطط لها</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="FilterAccount" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="FilterAllAccounts" xml:space="preserve"><value>كل المؤسسات</value></data>
+  <data name="FilterAllProducts" xml:space="preserve"><value>كل المنتجات</value></data>
+  <data name="NoPlanWeek" xml:space="preserve"><value>لا توجد خطة لهذا الأسبوع.</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>الزيارة</value></data>
+  <data name="WhatToPresent" xml:space="preserve"><value>ماذا سأعرض</value></data>
+  <data name="PreviousVisit" xml:space="preserve"><value>من الزيارة السابقة</value></data>
+  <data name="FrequencyTitle" xml:space="preserve"><value>التكرار</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>حفظ</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>السبب</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="NoteRequired" xml:space="preserve"><value>مطلوبة لهذا السبب</value></data>
+  <data name="NewDate" xml:space="preserve"><value>التاريخ الجديد</value></data>
+  <data name="ReopenReason" xml:space="preserve"><value>المبرر</value></data>
+  <data name="ReopenHint" xml:space="preserve"><value>10 أحرف على الأقل؛ يُحفظ في سجل الأسبوع.</value></data>
+  <data name="UnplacedTitle" xml:space="preserve"><value>زيارات لم تتسع لها هذه الأسبوع</value></data>
+  <data name="UnplacedHint" xml:space="preserve"><value>للإبقاء على زيارة في هذا الأسبوع، ثبّتها على يوم في وضع التخطيط.</value></data>
+  <data name="UnplannedTitle" xml:space="preserve"><value>زيارة غير مخطط لها</value></data>
+  <data name="UnplannedHint" xml:space="preserve"><value>أضف زيارة واحدة لليوم يدويًا. أضف الزيارات المستقبلية كأهداف في وضع التخطيط.</value></data>
+  <data name="DoctorLabel" xml:space="preserve"><value>الطبيب</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>ابحث بالاسم (حرفان على الأقل)</value></data>
+  <data name="TimeLabel" xml:space="preserve"><value>الوقت</value></data>
+  <data name="AddButton" xml:space="preserve"><value>إضافة</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>الأسبوع {0}</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="WeekStateApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="WeekStatePast" xml:space="preserve"><value>منقضٍ</value></data>
+  <data name="WeekStateNone" xml:space="preserve"><value>لا خطة</value></data>
+  <data name="CapacityLabel" xml:space="preserve"><value>مخطط {0} / {1}</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>{0} س</value></data>
+  <data name="Unplaced" xml:space="preserve"><value>⚠ لم تتسع {0} زيارات</value></data>
+  <data name="UnplacedDetail" xml:space="preserve"><value>تعذّر وضع {0} زيارات من هذا الأسبوع في أيام العمل (السعة أو العطل).</value></data>
+  <data name="HolidayLabel" xml:space="preserve"><value>عطلة</value></data>
+  <data name="DayLoad" xml:space="preserve"><value>{0} زيارات · متاح {1}</value></data>
+  <data name="NoVisitDay" xml:space="preserve"><value>لا توجد زيارة في هذا اليوم.</value></data>
+  <data name="Status_cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="Status_not_done" xml:space="preserve"><value>لم تتم</value></data>
+  <data name="Status_rescheduled" xml:space="preserve"><value>مؤجلة</value></data>
+  <data name="Status_reported" xml:space="preserve"><value>تم الإبلاغ</value></data>
+  <data name="Status_expired" xml:space="preserve"><value>انتهت المهلة</value></data>
+  <data name="Status_report_missing" xml:space="preserve"><value>التقرير ناقص</value></data>
+  <data name="Status_missed" xml:space="preserve"><value>فائتة</value></data>
+  <data name="Status_today" xml:space="preserve"><value>اليوم</value></data>
+  <data name="Status_planned" xml:space="preserve"><value>مخططة</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Icon_Pinned" xml:space="preserve"><value>مثبتة</value></data>
+  <data name="Icon_Unplanned" xml:space="preserve"><value>غير مخطط لها</value></data>
+  <data name="Icon_Rescheduled" xml:space="preserve"><value>ناتجة عن تأجيل</value></data>
+  <data name="CountdownLeft" xml:space="preserve"><value>متبقٍ {0} س {1} د</value></data>
+  <data name="CountdownPassed" xml:space="preserve"><value>انتهت مهلة الإبلاغ</value></data>
+  <data name="BandMissed" xml:space="preserve"><value>فائتة: خلال 48 ساعة سجّلها كـ"لم تتم" أو أجّلها.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>مقفلة: مرت 48 ساعة دون تقرير؛ تم إبلاغ مديرك.</value></data>
+  <data name="BandReportMissing" xml:space="preserve"><value>تمت الزيارة؛ أرسل تقريرها.</value></data>
+  <data name="BandDraft" xml:space="preserve"><value>أسبوع مسودة: قد تتغير الخطة.</value></data>
+  <data name="BandCancelled" xml:space="preserve"><value>أُلغيت هذه الزيارة.</value></data>
+  <data name="RolePromo" xml:space="preserve"><value>ترويج</value></data>
+  <data name="RoleReminder" xml:space="preserve"><value>تذكير</value></data>
+  <data name="NoContent" xml:space="preserve"><value>لا يوجد منتج مخطط.</value></data>
+  <data name="Frequency" xml:space="preserve"><value>منجز {0} / {1} · مخطط {2}</value></data>
+  <data name="Outcome_completed" xml:space="preserve"><value>تمت</value></data>
+  <data name="Outcome_missed" xml:space="preserve"><value>لم تتم</value></data>
+  <data name="Outcome_rescheduled" xml:space="preserve"><value>مؤجلة</value></data>
+  <data name="Action_cancel" xml:space="preserve"><value>إلغاء الزيارة</value></data>
+  <data name="Action_result" xml:space="preserve"><value>إدخال النتيجة</value></data>
+  <data name="Action_notDone" xml:space="preserve"><value>لم تتم</value></data>
+  <data name="Action_reschedule" xml:space="preserve"><value>تأجيل</value></data>
+  <data name="Action_sendReport" xml:space="preserve"><value>إرسال التقرير</value></data>
+  <data name="Action_plan" xml:space="preserve"><value>فتح الخطة</value></data>
+  <data name="LockedInfo" xml:space="preserve"><value>سجل للقراءة فقط. التعديل وإدخال التقرير مغلقان.</value></data>
+  <data name="DlgCancelTitle" xml:space="preserve"><value>إلغاء الزيارة</value></data>
+  <data name="DlgNotDoneTitle" xml:space="preserve"><value>تعذّر إجراء الزيارة</value></data>
+  <data name="DlgRescheduleTitle" xml:space="preserve"><value>تأجيل الزيارة</value></data>
+  <data name="RescheduleDayLoad" xml:space="preserve"><value>{0} زيارات · {1} / {2}</value></data>
+  <data name="RescheduleNoDays" xml:space="preserve"><value>لا يوجد يوم عمل متاح في الأسابيع القادمة.</value></data>
+  <data name="ReasonsUnavailable" xml:space="preserve"><value>تعذّرت قراءة قائمة الأسباب. يرجى المحاولة مرة أخرى.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم الحفظ.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>تعذّر إكمال الإجراء.</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>تعذّر تحميل التقويم.</value></data>
+  <data name="ApproveDone" xml:space="preserve"><value>تم اعتماد الأسبوع.</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>أُعيد فتح الأسبوع.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>إعادة فتح: {0}</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>لم يُعثر على طبيب.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>انتهت مهلة الإبلاغ البالغة 48 ساعة؛ الزيارة مقفلة.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>هذه الزيارة ملغاة؛ لا يمكن تسجيل شيء عليها.</value></data>
+  <data name="Err_visit_reason_invalid" xml:space="preserve"><value>اختر سببًا من القائمة.</value></data>
+  <data name="Err_visit_reason_note_required" xml:space="preserve"><value>هذا السبب يحتاج إلى ملاحظة.</value></data>
+  <data name="Err_visit_reason_note_too_long" xml:space="preserve"><value>الملاحظة طويلة جدًا (500 حرف كحد أقصى).</value></data>
+  <data name="Err_visit_reschedule_date_invalid" xml:space="preserve"><value>اختر يوم عمل بعد اليوم ضمن الفترة النشطة.</value></data>
+  <data name="Err_visit_report_reschedule_date_invalid" xml:space="preserve"><value>التاريخ الجديد غير صالح.</value></data>
+  <data name="Err_visit_reschedule_already_applied" xml:space="preserve"><value>الزيارة الجديدة موجودة بالفعل؛ لا يمكن تغيير تاريخها.</value></data>
+  <data name="Err_visit_cancel_past_day" xml:space="preserve"><value>لا تُلغى زيارة سابقة؛ سجّلها كـ"لم تتم" أو أجّلها.</value></data>
+  <data name="Err_unplanned_visit_today_only" xml:space="preserve"><value>يمكن إضافة الزيارة غير المخطط لها لليوم فقط.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>تعذّرت قراءة قائمة الأسباب، حاول مرة أخرى.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>انتهت نافذة التصحيح البالغة 60 دقيقة؛ صحّح عبر تعديل.</value></data>
+  <data name="Err_visit_report_invalid_transition" xml:space="preserve"><value>حالة هذه الزيارة لا تسمح بهذه الخطوة. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>يمكنك التصرف في زياراتك فقط.</value></data>
+  <data name="Err_visit_reason_applies_to_invalid" xml:space="preserve"><value>تعذّرت قراءة قائمة الأسباب لهذا الإجراء.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>لم يحن يوم الزيارة بعد.</value></data>
+  <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>لم يعد بالإمكان تغيير هذه الزيارة.</value></data>
+  <data name="Err_planned_visit_overlap" xml:space="preserve"><value>توجد زيارة أخرى مخططة في هذا الوقت.</value></data>
+</root>

@@ -699,6 +699,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>法律概况</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>拜访工作台</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>拜访计划</value>
   </data>

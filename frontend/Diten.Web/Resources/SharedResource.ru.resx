@@ -699,6 +699,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Правовые профили</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>Рабочая область визитов</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>Планирование визитов</value>
   </data>

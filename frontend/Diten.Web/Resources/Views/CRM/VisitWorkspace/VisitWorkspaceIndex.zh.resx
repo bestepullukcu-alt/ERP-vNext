@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>拜访工作台</value></data>
+  <data name="PageSubtitle" xml:space="preserve"><value>计划、拜访、报告：尽在一个日历中。</value></data>
+  <data name="TodayButton" xml:space="preserve"><value>今天</value></data>
+  <data name="PreviousWeek" xml:space="preserve"><value>上一周</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>下一周</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>确认本周</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>重新开放本周</value></data>
+  <data name="UnplannedVisit" xml:space="preserve"><value>计划外拜访</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="FilterAccount" xml:space="preserve"><value>机构</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="FilterAllAccounts" xml:space="preserve"><value>所有机构</value></data>
+  <data name="FilterAllProducts" xml:space="preserve"><value>所有产品</value></data>
+  <data name="NoPlanWeek" xml:space="preserve"><value>本周没有计划。</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>拜访</value></data>
+  <data name="WhatToPresent" xml:space="preserve"><value>我要介绍什么</value></data>
+  <data name="PreviousVisit" xml:space="preserve"><value>上次拜访</value></data>
+  <data name="FrequencyTitle" xml:space="preserve"><value>频率</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>关闭</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>取消</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>保存</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>原因</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>备注</value></data>
+  <data name="NoteRequired" xml:space="preserve"><value>此原因必填</value></data>
+  <data name="NewDate" xml:space="preserve"><value>新日期</value></data>
+  <data name="ReopenReason" xml:space="preserve"><value>理由</value></data>
+  <data name="ReopenHint" xml:space="preserve"><value>至少 10 个字符；将保存在本周历史中。</value></data>
+  <data name="UnplacedTitle" xml:space="preserve"><value>本周无法安排的拜访</value></data>
+  <data name="UnplacedHint" xml:space="preserve"><value>要将拜访保留在本周，请在计划模式中将其固定到某一天。</value></data>
+  <data name="UnplannedTitle" xml:space="preserve"><value>计划外拜访</value></data>
+  <data name="UnplannedHint" xml:space="preserve"><value>手动添加一次今天的拜访。未来的拜访请在计划模式中作为目标添加。</value></data>
+  <data name="DoctorLabel" xml:space="preserve"><value>医生</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>按姓名搜索（至少 2 个字母）</value></data>
+  <data name="TimeLabel" xml:space="preserve"><value>时间</value></data>
+  <data name="AddButton" xml:space="preserve"><value>添加</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>第 {0} 周</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="WeekStateApproved" xml:space="preserve"><value>已确认</value></data>
+  <data name="WeekStatePast" xml:space="preserve"><value>已过去</value></data>
+  <data name="WeekStateNone" xml:space="preserve"><value>无计划</value></data>
+  <data name="CapacityLabel" xml:space="preserve"><value>已计划 {0} / {1}</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>{0} 小时</value></data>
+  <data name="Unplaced" xml:space="preserve"><value>⚠ {0} 次拜访未能安排</value></data>
+  <data name="UnplacedDetail" xml:space="preserve"><value>本周有 {0} 次拜访无法安排到工作日（容量或节假日）。</value></data>
+  <data name="HolidayLabel" xml:space="preserve"><value>节假日</value></data>
+  <data name="DayLoad" xml:space="preserve"><value>{0} 次拜访 · 空闲 {1}</value></data>
+  <data name="NoVisitDay" xml:space="preserve"><value>这一天没有拜访。</value></data>
+  <data name="Status_cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="Status_not_done" xml:space="preserve"><value>未完成</value></data>
+  <data name="Status_rescheduled" xml:space="preserve"><value>已改期</value></data>
+  <data name="Status_reported" xml:space="preserve"><value>已报告</value></data>
+  <data name="Status_expired" xml:space="preserve"><value>已超时</value></data>
+  <data name="Status_report_missing" xml:space="preserve"><value>缺少报告</value></data>
+  <data name="Status_missed" xml:space="preserve"><value>已错过</value></data>
+  <data name="Status_today" xml:space="preserve"><value>今天</value></data>
+  <data name="Status_planned" xml:space="preserve"><value>已计划</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Icon_Pinned" xml:space="preserve"><value>已固定</value></data>
+  <data name="Icon_Unplanned" xml:space="preserve"><value>计划外</value></data>
+  <data name="Icon_Rescheduled" xml:space="preserve"><value>来自改期</value></data>
+  <data name="CountdownLeft" xml:space="preserve"><value>剩余 {0} 小时 {1} 分钟</value></data>
+  <data name="CountdownPassed" xml:space="preserve"><value>报告期限已过</value></data>
+  <data name="BandMissed" xml:space="preserve"><value>已错过：请在 48 小时内标记为未完成或改期。</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>已锁定：48 小时内未提交报告；已通知您的经理。</value></data>
+  <data name="BandReportMissing" xml:space="preserve"><value>拜访已完成；请提交报告。</value></data>
+  <data name="BandDraft" xml:space="preserve"><value>草稿周：计划仍可能变化。</value></data>
+  <data name="BandCancelled" xml:space="preserve"><value>此拜访已取消。</value></data>
+  <data name="RolePromo" xml:space="preserve"><value>推广</value></data>
+  <data name="RoleReminder" xml:space="preserve"><value>提醒</value></data>
+  <data name="NoContent" xml:space="preserve"><value>未计划产品。</value></data>
+  <data name="Frequency" xml:space="preserve"><value>已完成 {0} / {1} · 已计划 {2}</value></data>
+  <data name="Outcome_completed" xml:space="preserve"><value>已完成</value></data>
+  <data name="Outcome_missed" xml:space="preserve"><value>未完成</value></data>
+  <data name="Outcome_rescheduled" xml:space="preserve"><value>已改期</value></data>
+  <data name="Action_cancel" xml:space="preserve"><value>取消拜访</value></data>
+  <data name="Action_result" xml:space="preserve"><value>录入结果</value></data>
+  <data name="Action_notDone" xml:space="preserve"><value>未完成</value></data>
+  <data name="Action_reschedule" xml:space="preserve"><value>改期</value></data>
+  <data name="Action_sendReport" xml:space="preserve"><value>提交报告</value></data>
+  <data name="Action_plan" xml:space="preserve"><value>打开计划</value></data>
+  <data name="LockedInfo" xml:space="preserve"><value>只读记录。编辑和报告录入已关闭。</value></data>
+  <data name="DlgCancelTitle" xml:space="preserve"><value>取消拜访</value></data>
+  <data name="DlgNotDoneTitle" xml:space="preserve"><value>拜访未能完成</value></data>
+  <data name="DlgRescheduleTitle" xml:space="preserve"><value>拜访改期</value></data>
+  <data name="RescheduleDayLoad" xml:space="preserve"><value>{0} 次拜访 · {1} / {2}</value></data>
+  <data name="RescheduleNoDays" xml:space="preserve"><value>未来几周没有可用的工作日。</value></data>
+  <data name="ReasonsUnavailable" xml:space="preserve"><value>无法读取原因列表。请重试。</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="Saved" xml:space="preserve"><value>已保存。</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>操作未能完成。</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>无法加载日历。</value></data>
+  <data name="ApproveDone" xml:space="preserve"><value>本周已确认。</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>本周已重新开放。</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>重新开放：{0}</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>未找到医生。</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>48 小时报告期限已过；拜访已锁定。</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>此拜访已取消；无法记录。</value></data>
+  <data name="Err_visit_reason_invalid" xml:space="preserve"><value>请从列表中选择原因。</value></data>
+  <data name="Err_visit_reason_note_required" xml:space="preserve"><value>此原因需要备注。</value></data>
+  <data name="Err_visit_reason_note_too_long" xml:space="preserve"><value>备注过长（最多 500 个字符）。</value></data>
+  <data name="Err_visit_reschedule_date_invalid" xml:space="preserve"><value>请选择今天之后、处于有效周期内的工作日。</value></data>
+  <data name="Err_visit_report_reschedule_date_invalid" xml:space="preserve"><value>新日期无效。</value></data>
+  <data name="Err_visit_reschedule_already_applied" xml:space="preserve"><value>新拜访已存在；其日期无法再更改。</value></data>
+  <data name="Err_visit_cancel_past_day" xml:space="preserve"><value>过去的拜访不能取消；请标记为未完成或改期。</value></data>
+  <data name="Err_unplanned_visit_today_only" xml:space="preserve"><value>计划外拜访只能添加到今天。</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>无法读取原因列表，请重试。</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>60 分钟更正窗口已关闭；请通过修订更正。</value></data>
+  <data name="Err_visit_report_invalid_transition" xml:space="preserve"><value>此拜访的状态不允许此步骤。请刷新后重试。</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>您只能处理自己的拜访。</value></data>
+  <data name="Err_visit_reason_applies_to_invalid" xml:space="preserve"><value>无法读取此操作的原因列表。</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>拜访日期尚未到来。</value></data>
+  <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>此拜访已无法更改。</value></data>
+  <data name="Err_planned_visit_overlap" xml:space="preserve"><value>该时间已计划了另一个拜访。</value></data>
+</root>
