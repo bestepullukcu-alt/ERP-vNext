@@ -6,7 +6,7 @@
 
 | Contract | Owner | Format | Durum |
 |---|---|---|---|
-| **INVENTORY-BUNDLE** | MOD-0173 | `inventory-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 · mock DOĞRULANDI (Prism 4.10.5)** · 1.0.2 description-only (1.0.1 MOD-0174 CT-D1 lot hold; 1.0.2 MOD-0175 CT-Q3: `LOT_RETEST_DUE` + availability "retest-due lots excluded") |
+| **INVENTORY-BUNDLE** | MOD-0173 | `inventory-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 · mock DOĞRULANDI (Prism 4.10.5)** · **1.1.0 additive** (WP-0173-PM2, MOD-0290 R-12): `SkuLevel` + `Item`; `getStockPresence` — `GET /api/internal/inventory/stock-presence`, service-to-service (`X-Internal-Api-Key` + `X-Tenant-Id`, no quantities, not on the Gateway) · 1.0.2 description-only (1.0.1 MOD-0174 CT-D1 lot hold; 1.0.2 MOD-0175 CT-Q3: `LOT_RETEST_DUE` + availability "retest-due lots excluded") |
 | **PRODUCT-MASTER-BUNDLE** | MOD-0290 | `product-master-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 CT-review PASS · freeze-ready** |
 | **LOCATION** | Location Master | `location.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **TRACE-BUNDLE** | MOD-0174 | `trace.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |

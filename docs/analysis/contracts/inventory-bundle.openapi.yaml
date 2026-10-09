@@ -6,7 +6,7 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.0.2
+  version: 1.1.0
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
@@ -14,6 +14,7 @@ info:
     - "1.0.0 — Wave-0 frozen contract (MOD-0173)."
     - "1.0.1 — description-only, single-writer step (WP-0174-P2, 2026-10-06; MOD-0174 CT-D1 option (a), owner decision 2026-10-05): AvailabilityView.available (getAvailability) excludes the AVAILABLE stock of Blocked / Expired lots; the same rule bounds the reservations. No path, parameter, schema, property, type, enum, required list or status code changed; BalanceView rows keep their stock status and their own available."
     - "1.0.2 — description-only, single-writer step (WP-0175-Q4, 2026-10-08; MOD-0175 CT-Q3 option (a), owner decision 2026-10-07, same form as CT-D1): (1) additive error code LOT_RETEST_DUE (422 on postMovement, example lotRetestDue) — a lot whose retest date is before the posting date (UTC day) refuses sales issue, production issue, transfer and supplier return; STATUS_TRANSFER from AVAILABLE into QUARANTINE / QUALITY_INSPECTION / BLOCKED, SCRAP, WRITE_OFF, REVERSAL and movements that keep the stock out of use (MOD-0175 decision movements other than a release; judged by the movement direction, never by sourceModule) still post; (2) AvailabilityView.available (getAvailability) also excludes retest-due lots (held by the MOD-0175 retest sweeper); the same rule bounds new reservations, existing reservations stay. No path, parameter, schema, property, type, enum, required list or status code changed."
+    - "1.1.0 — additive (MVP-1 CT, MOD-0290 R-12 and PRODUCT-MASTER 1.1): SkuLevel + Item; getStockPresence (service-to-service, X-Internal-Api-Key + X-Tenant-Id, no quantities). No existing path, parameter, property, type, required list or status code changed."
 servers:
   - url: /api/inventory
 security:
@@ -223,9 +224,71 @@ paths:
             application/json:
               example: { reservationId: rsv-4001, status: RELEASED, availableAfter: "70.000", contractVersion: v1 }
         '409': { $ref: '#/components/responses/ReservationConflict' }
+  /stock-presence:
+    servers:
+      - url: /api/internal/inventory
+        description: >-
+          InventoryService directly (service-to-service). Not routed through the Gateway; the Gateway answers 404 for
+          /api/internal/inventory/** (route-coverage test).
+    get:
+      operationId: getStockPresence
+      summary: Does any legal entity of the tenant hold a non-zero balance of this SKU? (service-to-service, no quantities)
+      description: >-
+        1.1.0 (MOD-0290 R-12). Caller is a service identity, never a user token. First caller MDM (key identifier
+        ditenmdmservice), before it retires an item / SKU. hasNonZeroStock is true when ANY legal entity of the tenant holds a
+        non-zero balance of this SKU in ANY stock status (available, quarantine, quality inspection, blocked, in transit,
+        reserved). A negative balance is non-zero. A never-stocked SKU is 200 with hasNonZeroStock false (no 404; the SKU is
+        not validated against PRODUCT-MASTER here). coverage COMPLETE = every legal entity of the tenant was read; PARTIAL is
+        reserved for a future partitioned store (MDM treats PARTIAL as no answer); today a read failure is a 503, never
+        PARTIAL. asOf = UTC time of the projection read. Target p95 < 500 ms (MDM budget 2 s, no retry, fail-closed). Every
+        call is logged and audited (caller identifier, tenant, skuId, skuLevel, result, correlation id); the secret never.
+      security:
+        - internalApiKey: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          description: The tenant whose legal entities are read (UUID). The answer covers only that tenant.
+          schema: { type: string, format: uuid }
+        - name: skuId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+        - name: skuLevel
+          in: query
+          required: true
+          description: Item for material items; Gsku / Lsku / FinishedGood as stocked.
+          schema: { $ref: '#/components/schemas/SkuLevel' }
+      responses:
+        '200':
+          description: Presence of stock (no quantities)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockPresence' }
+              example: { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Item, hasNonZeroStock: true, coverage: COMPLETE, asOf: "2026-10-09T10:00:00.000Z", contractVersion: v1 }
+        '400':
+          description: Missing / malformed skuId, unknown skuLevel, missing or non-UUID X-Tenant-Id
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_REQUEST, message: "skuId is required and must be a UUID.", correlationId: req-11 }, contractVersion: v1 } } }
+        '401':
+          description: >-
+            Missing, wrong, or not-authorised-for-this-operation key (also a user token, or plain http outside development) —
+            always the same status and the same body.
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { message: "Unauthorized." }, contractVersion: v1 } } }
+        '503':
+          description: The inventory store could not be read (never a partial answer)
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVENTORY_UNAVAILABLE, message: "The inventory store could not be read.", correlationId: req-12 }, contractVersion: v1 } } }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    internalApiKey:
+      type: apiKey
+      in: header
+      name: X-Internal-Api-Key
+      description: >-
+        1.1.0 — one key per calling service, value "<identifier>:<secret>" (e.g. identifier ditenmdmservice). Dedicated to
+        the operations its configuration lists (MDM: getStockPresence only); never the Platform internal-event key. Compared
+        in constant time; at most two valid secrets per identifier (rotation overlap). The secret lives only in each
+        service's secure configuration — never in the repository, on a command line, in a log or in a report.
   parameters:
     IdempotencyKey:
       name: Idempotency-Key
@@ -245,8 +308,12 @@ components:
       description: Finansal precision — float değil, string decimal.
     SkuLevel:
       type: string
-      enum: [Gsku, Lsku, FinishedGood]
-      description: Polimorfik — üçü de stok tutabilir; per-product default Lsku.
+      enum: [Gsku, Lsku, FinishedGood, Item]
+      description: >-
+        Polymorphic stock level. Item = a material item (raw material, packaging, intermediate) that is its own SKU
+        (skuId == itemId, PRODUCT-MASTER 1.1). Stock-level rules (OD-10): serial-tracked stock is held at Lsku / FinishedGood;
+        a Gsku-level movement is accepted only when the product's serial flag is explicitly false. Item-level stock carries no
+        serials (PRODUCT-MASTER returns serialControlled: false for items).
     MovementType:
       type: string
       description: CANONICAL/SABİT (DEC-INV-16) — kullanıcı yeni yaratamaz.
@@ -386,6 +453,16 @@ components:
             message: { type: string }
             details: { type: object, additionalProperties: true }
             correlationId: { type: string }
+        contractVersion: { type: string }
+    StockPresence:
+      type: object
+      required: [skuId, skuLevel, hasNonZeroStock, coverage, asOf, contractVersion]
+      properties:
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        hasNonZeroStock: { type: boolean }
+        coverage: { type: string, enum: [COMPLETE, PARTIAL] }
+        asOf: { type: string, format: date-time }
         contractVersion: { type: string }
   responses:
     BadRequest:
