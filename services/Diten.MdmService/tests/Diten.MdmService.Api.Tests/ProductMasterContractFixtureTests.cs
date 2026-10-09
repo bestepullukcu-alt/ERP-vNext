@@ -7,7 +7,7 @@ namespace Diten.MdmService.Api.Tests;
 
 /// <summary>
 /// MOD-0290-FU04 S4 — the contract file the schema tests read. v1.1 is not on this branch: the YAML is copied byte for
-/// byte from the contract line (1.1.0-draft.11, chore/ct-round-2 00a4d4268; provenance in Fixtures/.../SOURCE.txt) and
+/// byte from the contract line (1.1.0-draft.13, a928e7781; provenance in Fixtures/.../SOURCE.txt) and
 /// pinned by SHA-256; the JSON next to it is its rendering (YAML → JSON, no edit) and is tied back to the YAML by every
 /// name it carries.
 /// <para>
@@ -19,15 +19,15 @@ namespace Diten.MdmService.Api.Tests;
 /// </summary>
 public sealed class ProductMasterContractFixtureTests(ITestOutputHelper output)
 {
-    public const string V11YamlSha256 = "57d1ec313b377f4ec56024078064caafcf9d40c50b9912f9f68b3efad19a9942";
-    public const string V11JsonSha256 = "bf47cc59af47b81c9f3f621708cbebd0a3bb85321accbacbba316a59d2883010";
+    public const string V11YamlSha256 = "ac9c7b428174203f3ecef0da32e12ee8788069fd09c06a848000d549c0fcad4d";
+    public const string V11JsonSha256 = "3faae76fb6fbebb5897654d23b6f5c7dc9239e1d5bd98042cb1a50fa388acfa1";
     public const string V10JsonSha256 = "9dec887b5b124acfa8d022df155789113fded5abc06e976b41366a1950182e8d";
     // The frozen v1.0 (the contract line's product-master-bundle.v1.0.openapi.yaml; measured byte-identical to the v1.0
     // file this branch carries). Copied too, so the test never reads outside its fixtures.
     public const string V10YamlSha256 = "8c5ed4679319be39f73ad6b03fa89beb734ea16d8607cdb1c5b53844a383ca3a";
 
     [Fact]
-    public void S4_Fixture_v11_yaml_is_the_contract_draft11_byte_for_byte() =>
+    public void S4_Fixture_v11_yaml_is_the_pinned_contract_draft_byte_for_byte() =>
         Assert.Equal(V11YamlSha256, Sha256(ProductMasterContractSchema.FixturePath(ProductMasterContractSchema.V11Yaml)));
 
     // S4 FIX1 (R6): the fixture against the contract line's own file, found through SOURCE.txt (the line's worktree next
@@ -80,7 +80,7 @@ public sealed class ProductMasterContractFixtureTests(ITestOutputHelper output)
     {
         var yaml = File.ReadAllText(ProductMasterContractSchema.FixturePath(ProductMasterContractSchema.V11Yaml));
         var root = ProductMasterContractSchema.V11.Root;
-        Assert.Equal("1.1.0-draft.11", root.GetProperty("info").GetProperty("version").GetString());
+        Assert.Equal("1.1.0-draft.13", root.GetProperty("info").GetProperty("version").GetString());
         var names = new List<string>();
         foreach (var path in root.GetProperty("paths").EnumerateObject())
         {

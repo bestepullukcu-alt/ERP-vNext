@@ -3,7 +3,7 @@
   "info": {
     "title": "PRODUCT-MASTER-BUNDLE",
     "description": "MOD-0290 Product/Item/SKU Master — Wave-0 frozen contract (v1). Canonical kimlik (Model A: GlobalProduct→Gsku→Lsku→FinishedGood). Consumer'lar READ-ONLY. Model B (Product) bu contract'ta YOK (DEC-INV-17). Tenant+LegalEntity scoped (server-resolved). Mock: `prism mock product-master-bundle.openapi.yaml`. v1.1 (MOD-0290-FU04 Kalem / Malzeme Ana Kaydı; stok ekibiyle uzlaşma 2026-10-07, ürün ana verisi planı §4a) — YALNIZ EKLEME, tek bilinçli istisna O-1 davranış daralmasıdır (aşağıda; 2026-10-09 stok ekibinin koşullu kabulüyle lot / seri bayrakları daralmanın DIŞINDA, OD-1). Dışarıya TEK okuma sözleşmesi vardır: mevcut v1 yolları (`getProduct`, `getSku`, `resolveSkuProduct`, `getSkuUom`, `validateRefs`) malzeme kalemini de (`itemKind: Item`) cevaplar. Yeni yollar (`/items/{itemId}`, `/stockable-items`, `/skus/bulk-read`) eklenir ama eskilerin yerine geçmez. Kalemde kalem kimliği = SKU kimliği (`skuId == itemId`, `skuLevel: Item`); SKU → kalem çözümlemesi (D-SKU-LINK) kalem için kendisini döndürür. `itemId` v1.0'da Global Ürün kimliğidir; v1.1'de `itemKind` hangisi olduğunu söyler (kimlikler UUID'dir, çakışmaz). Kalemler kiracı geneli ana veridir: kalem satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR: tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.\n",
-    "version": "1.1.0-draft.11",
+    "version": "1.1.0-draft.13",
     "x-status": "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur.",
     "x-frozen-baseline": "1.0.0",
     "x-owner": "MOD-0290",
@@ -22,7 +22,7 @@
       "Sözleşme kapsamı: `/stockable-items`, `/items/{itemId}` ve `/skus/bulk-read` bu sözleşmenin (v1.1) parçasıdır, MDM'in iç uçları değildir; stoğun hareket formundaki ürün seçicisi `/stockable-items`'ı kullanır (W-UI-01 feragati kalkar).",
       "`itemKind` (draft.9 / draft.10): MDM v1.1 sunucusu `ProductRef`, `SkuRef`, `SkuProductLink`, arama ve toplu okuma satırlarında `itemKind`'ı HER ZAMAN yazar (toplu okuma satırına `itemId` + `itemKind` draft.10'da eklendi); toplu okumada tekrarlanan kimlik ilk geçtiği yerde bir kez cevaplanır; alan v1.0 uyumu için şemada zorunlu değildir. Tüketici `itemKind` yoksa GlobalProduct sayar.",
       "v1.0 türü ve boş ürün (draft.9): v1.0 `ProductRef.lotControlled` / `serialControlled` boolean'dır. Emekli olmayan SKU'su olmayan Global Üründe v1.1 sunucusu bu iki alanı null döndürür (şüphede evet kuralının 'SKU yok' durumu). SKU'su olmayan üründe stok hareketi yapılamaz (stok ekibi, 2026-10-09). Bu, v1.0 türüne karşı bilinçli bir istisnadır.",
-      "Hata kodları (draft.9, açık liste): `UNKNOWN_ITEM` / `UNKNOWN_SKU` (404); `INVALID_UUID` / `INVALID_PARAMETER` / `BATCH_LIMIT_EXCEEDED` / `TENANT_CONTEXT_REQUIRED` (400); `PRODUCT_MASTER_UNAVAILABLE`, `LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE`, `PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID` (503). Liste büyüyebilir. Tüketici bilinmeyen 4xx'i ret, bilinmeyen 5xx'i 'cevap yok' sayar (kapalı başarısız).",
+      "Hata kodları (draft.9, açık liste): `UNKNOWN_ITEM` / `UNKNOWN_SKU` (404); `INVALID_UUID` / `INVALID_PARAMETER` / `BATCH_LIMIT_EXCEEDED` / `TENANT_CONTEXT_REQUIRED` (400); `REQUEST_TOO_LARGE` (413, draft.13); `PRODUCT_MASTER_UNAVAILABLE`, `LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE`, `PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID` (503). Liste büyüyebilir. Tüketici bilinmeyen 4xx'i ret, bilinmeyen 5xx'i 'cevap yok' sayar (kapalı başarısız).",
       "Kalemsiz birim denetimi (X-04): malzeme kaleminin birimi ve çevrimleri `getSkuUom(skuId = itemId)` ile okunur (kalem kendi SKU'sudur). Global Ürünün kendi birimi yoktur; birim ve çevrim GSKU düzeyindedir. Satır yalnız `itemId` + birim taşıyorsa (RFx, BOM bileşeni) ve kayıt bir kalemse aynı çağrı kullanılır. `validateRefs`'e birim denetimi v1.2'de değerlendirilecek.",
       "Tek durum listesi (2026-10-09, stok ekibi R-10): yayımlanan durumlar `Draft`, `Active`, `Deactivated`, `Retired`; v1.0 `Archived` hiç yayımlanmaz. İç durum eşlemesi `LifecycleStatus` açıklamasındadır. `Deactivated` yalnız malzeme kaleminde vardır ve geri alınabilir: yeniden etkinleştirme onayıyla `Active` olur (onay beklerken `Deactivated` yayımlanır). Global Ürün, GSKU, LSKU ve Bitmiş Üründe `Deactivated` yoktur; bu kayıtlar `Active`'ten yalnız `Retired`'a geçer. `Retired` geri alınmaz.",
       "Etkinleştirme kuralı (2026-10-09, stok ekibi R-04): `Active` bir kayıtta, seviyesinde uygulanan lot / seri bayrağı null olmaz. `lotControlled`: Item, Gsku, Lsku (GSKU'dan) ve FinishedGood'da `Active` iken dolu. `serialControlled`: Item'da false (uygulanmaz), Lsku ve FinishedGood'da `Active` iken dolu, Gsku'da her zaman null (seri takibi LSKU / Bitmiş Ürün düzeyinde karar verilir). Bayrak eksik kayıt onaylanmaz (kalem etkinleştirmesi S2, ürün kimlik onayı S3b uygular). Taslakta null olabilir.",
@@ -95,6 +95,16 @@
         "date": "2026-10-09",
         "version": "1.1.0-draft.11",
         "note": "Stok ekibinin isteği (Prism ilk örneği döndürür): v1.1 işlemlerinin ilk örneği tam v1.1 biçiminde; v1.0 örnekleri değerleri aynı kalarak son sıraya alındı (v1.0 taklidi ayrı dosyada). Eksik alanlar örneklere yazıldı: getProduct Global Ürün örneğine deprecated `lotControlled` / `serialControlled` (OD-1), SkuRef örneklerine `minRemainingShelfLifeDays`, toplu okuma satırlarına `itemId` + `itemKind` (draft.10). Yeni örnekler: resolveSkuProduct `lsku`, getSkuUom `lsku-uom`, validateRefs `mixed`. Şema değişmedi."
+      },
+      {
+        "date": "2026-10-09",
+        "version": "1.1.0-draft.12",
+        "note": "S4 FIX1 (CT kararı): `/stockable-items` arama penceresi `page × pageSize` en çok 1000, aşan istek 400 `INVALID_PARAMETER`; `q` kırpılır, yalnız boşluk süzgeç değildir. Şema türleri değişmedi (yalnız açıklama)."
+      },
+      {
+        "date": "2026-10-09",
+        "version": "1.1.0-draft.13",
+        "note": "S4 FIX1 bağımsız incelemesi: `/skus/bulk-read` ve `/validate`'e 413 `REQUEST_TOO_LARGE` yanıtı (gövde en çok 64 KB; sunucu zaten uyguluyordu, sözleşmede yoktu); hata kodu listesine eklendi; `q` içinde kontrol karakteri 400. Şema türleri değişmedi."
       }
     ]
   },
@@ -660,7 +670,7 @@
       "get": {
         "operationId": "searchStockableItems",
         "summary": "v1.1 — Stoklanabilir kalem / SKU araması (sayfalı)",
-        "description": "Yalnız `stockable: true` kayıtlar döner; varsayılan olarak bütün seviyeler (Item, Gsku, Lsku, FinishedGood) aynı biçimde (`StockableItemRef`). `q`: kod ön eki YA DA adın içinde geçen metin; ordinal, büyük / küçük harf duyarsız, aksan katlaması yok; boş `q` serbesttir (süzme yok). `materialType` verilirse yalnız Item satırları döner. `status` verilmezse Retired dışındaki bütün durumlar döner; seçici ekranlar `status=Active` gönderir. Sıra: `canonicalCode` (ordinal, artan) — sayfalar arasında kararlı. `pageSize` > 100, `q` > 200 karakter ya da bilinmeyen enum değeri → 400. Son sayfanın ötesi → 200 ve boş `items`. Ürün satırları sunucunun çözdüğü tüzel kişi kapsamıyla, kalem satırları kiracı genelinde süzülür. Stoğun geçici 'Model A seçici' rotası (W-UI-01) bu uçla kalkar.",
+        "description": "Yalnız `stockable: true` kayıtlar döner; varsayılan olarak bütün seviyeler (Item, Gsku, Lsku, FinishedGood) aynı biçimde (`StockableItemRef`). `q`: kod ön eki YA DA adın içinde geçen metin; ordinal, büyük / küçük harf duyarsız, aksan katlaması yok; boş `q` serbesttir (süzme yok). `materialType` verilirse yalnız Item satırları döner. `status` verilmezse Retired dışındaki bütün durumlar döner; seçici ekranlar `status=Active` gönderir. Sıra: `canonicalCode` (ordinal, artan) — sayfalar arasında kararlı. `pageSize` > 100, `q` > 200 karakter ya da bilinmeyen enum değeri → 400. Arama penceresi (draft.12): `page × pageSize` en çok 1000; aşan istek → 400 `INVALID_PARAMETER` (daha derin sonuç için `q` / süzgeç daraltılır). Pencere içinde son sayfanın ötesi → 200 ve boş `items`. `q` baştan / sondan kırpılır; yalnız boşluk = süzgeç yok. `q` içinde kontrol karakteri (U+0000–U+001F) → 400 `INVALID_PARAMETER` (draft.13). Ürün satırları sunucunun çözdüğü tüzel kişi kapsamıyla, kalem satırları kiracı genelinde süzülür. Stoğun geçici 'Model A seçici' rotası (W-UI-01) bu uçla kalkar.",
         "parameters": [
           {
             "name": "q",
@@ -706,7 +716,8 @@
               "type": "integer",
               "minimum": 1,
               "default": 1
-            }
+            },
+            "description": "draft.12 — `page × pageSize` en çok 1000; aşan → 400 `INVALID_PARAMETER`"
           },
           {
             "name": "pageSize",
@@ -861,6 +872,9 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "413": {
+            "$ref": "#/components/responses/RequestTooLarge"
           }
         }
       }
@@ -1016,6 +1030,9 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "413": {
+            "$ref": "#/components/responses/RequestTooLarge"
           }
         }
       }
@@ -1687,6 +1704,27 @@
                 "correlationId": "req-2"
               },
               "contractVersion": "v1"
+            }
+          }
+        }
+      },
+      "RequestTooLarge": {
+        "description": "v1.1 (draft.13) — istek gövdesi 64 KB'tan büyük (`/skus/bulk-read`, `/validate`). Gövde okunmaz, istek reddedilir; kimlik listesi parçalanarak gönderilir.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": {
+                "code": "REQUEST_TOO_LARGE",
+                "message": "istek gövdesi çok büyük",
+                "details": {
+                  "maxBytes": 65536
+                },
+                "correlationId": "req-5"
+              },
+              "contractVersion": "v1.1"
             }
           }
         }

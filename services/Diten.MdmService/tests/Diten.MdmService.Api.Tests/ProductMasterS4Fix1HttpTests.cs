@@ -154,7 +154,9 @@ public sealed partial class ProductMasterS4HttpTests
 
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        Assert.Empty(ProductMasterContractSchema.V11.ValidateAgainst("Error", document.RootElement));
+        // draft.13 declares the 413 on both operations.
+        Assert.Empty(ProductMasterContractSchema.V11.ValidateResponse(
+            path == "validate" ? "validateRefs" : "bulkReadSkus", 413, document.RootElement));
         Assert.Equal("REQUEST_TOO_LARGE", document.RootElement.GetProperty("error").GetProperty("code").GetString());
     }
 

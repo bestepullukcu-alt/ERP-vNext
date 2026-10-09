@@ -8,7 +8,7 @@ worktree: kanban-preview
 v1.1: docs/analysis/contracts/product-master-bundle.openapi.yaml
 v1.0: docs/analysis/contracts/product-master-bundle.v1.0.openapi.yaml
 
-v1.1 copied at: 1.1.0-draft.11, chore/ct-round-2 00a4d4268 (2026-10-09)
+v1.1 copied at: 1.1.0-draft.13, kanban-preview a928e7781 (2026-10-09)
 v1.0 is frozen, unchanged since 4f9c63309^
 
 The .json files are the YAML rendered as JSON with no edit:
