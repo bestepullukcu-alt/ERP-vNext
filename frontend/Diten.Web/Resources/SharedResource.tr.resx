@@ -546,6 +546,9 @@
   <data name="PositionAssignments" xml:space="preserve"><value>Pozisyon Atamaları</value></data>
   <data name="MasterData" xml:space="preserve"><value>Ana Veri</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Tüzel Kişilikler</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Tüzel Kişilik</value></data>
+  <data name="LegalEntityUnavailable" xml:space="preserve"><value>Tüzel kişilik listesi kullanılamıyor.</value></data>
+  <data name="LegalEntityNone" xml:space="preserve"><value>Bu kiracının etkin tüzel kişiliği yok.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>İş Akışı Onayları</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Dokümantasyon Yapıları</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Kontrollü Belgeler</value></data>

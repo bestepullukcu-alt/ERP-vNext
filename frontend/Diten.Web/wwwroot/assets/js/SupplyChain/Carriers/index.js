@@ -17,6 +17,10 @@ const CarrierList = (function () {
     let L = window.L10n || {};
     let permissions = { canCreate: false, canChangeStatus: false };
     let appliedFilters = { status: '' };
+    // R-2 (SHIPMENT-BUNDLE 3.2.0): the company is a REQUIRED scope on every call, not an optional filter —
+    // the service takes exactly one X-Legal-Entity-Id, so there is no 'all companies' list to ask for.
+    let legalEntities = [];
+    let legalEntityScope = '';
     let defaultViewRecord = null;
     let defaultViewState = null;
     let saveFilterArmed = false;
@@ -215,6 +219,7 @@ const CarrierList = (function () {
     const bindFilterEvents = () => {
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = { status: String($('#filterStatus').val() || '') };
+            legalEntityScope = String($('#filterLegalEntity').val() || legalEntityScope);
             dt.ajax.reload(() => setSaveFilterVisible(isDirtyComparedToDefault(dt)), true);
             bootstrap.Collapse.getOrCreateInstance(document.getElementById(filterCollapseId), { toggle: false }).hide();
         });
@@ -226,8 +231,55 @@ const CarrierList = (function () {
         });
     };
 
-    const buildListUrl = () => appliedFilters.status
-        ? `${endpoint}?status=${encodeURIComponent(appliedFilters.status)}` : endpoint;
+    // Every call carries the company. Without it the adapter answers 400, so this is appended for list,
+    // create and status change alike rather than only where a filter would go.
+    const withScope = (url) => {
+        if (!legalEntityScope) return url;
+        return `${url}${url.includes('?') ? '&' : '?'}legalEntityId=${encodeURIComponent(legalEntityScope)}`;
+    };
+    const buildListUrl = () => withScope(appliedFilters.status
+        ? `${endpoint}?status=${encodeURIComponent(appliedFilters.status)}` : endpoint);
+    const fillLegalEntitySelect = (element, selected) => {
+        if (!element) return;
+        element.innerHTML = '';
+        legalEntities.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            if (item.id === selected) option.selected = true;
+            element.appendChild(option);
+        });
+    };
+    const loadLegalEntities = async () => {
+        try {
+            const response = await fetch('/SupplyChain/api/legal-entities',
+                { credentials: 'same-origin', headers: getAuthHeaders() });
+            if (response.status === 401) { handleUnauthorized(); return false; }
+            if (!response.ok) { showLegalEntityOutage(); return false; }
+            const payload = await readJson(response);
+            const rows = Array.isArray(payload) ? payload : (payload?.data ?? payload?.items ?? []);
+            legalEntities = rows.map((row) => ({
+                id: String(row.legalEntityId ?? row.LegalEntityId ?? ''),
+                name: String(row.displayName ?? row.DisplayName ?? row.legalName ?? row.LegalName ?? row.code ?? '')
+            })).filter((row) => row.id);
+            // An empty answer is not an outage: the tenant genuinely has no referenceable company, and the
+            // page says so instead of offering an empty required field.
+            if (legalEntities.length === 0) { showLegalEntityEmpty(); return false; }
+            // Exactly one company auto-selects, as R-2 requires. With several, the first is the opening scope
+            // rather than a blank: the service has no 'all companies' answer, so a blank would guarantee a 400.
+            legalEntityScope = legalEntities[0].id;
+            fillLegalEntitySelect(document.getElementById('filterLegalEntity'), legalEntityScope);
+            fillLegalEntitySelect(document.getElementById('formLegalEntity'), legalEntityScope);
+            return true;
+        } catch (error) {
+            showLegalEntityOutage();
+            return false;
+        }
+    };
+    const showLegalEntityOutage = () => window.DtDefaults?.showError?.(L.LegalEntityUnavailable
+        || 'Company list is unavailable.');
+    const showLegalEntityEmpty = () => window.DtDefaults?.showError?.(L.LegalEntityNone
+        || 'No referenceable company is assigned to this tenant.');
     const handleUnauthorized = () => window.DtDefaults?.handleUnauthorized?.();
     const readJson = async (response) => {
         try { return await response.json(); } catch (error) { return null; }
@@ -386,7 +438,7 @@ const CarrierList = (function () {
         }
         setBusy(button, true);
         try {
-            const response = await fetch(endpoint, {
+            const response = await fetch(withScope(endpoint), {
                 method: 'POST', credentials: 'same-origin', headers: requestHeaders(form, createIntent),
                 body: signature
             });
@@ -432,7 +484,7 @@ const CarrierList = (function () {
         const run = async () => {
             setBusy(button, true);
             try {
-                const response = await fetch(`${endpoint}/${encodeURIComponent(carrierId)}/status`, {
+                const response = await fetch(withScope(`${endpoint}/${encodeURIComponent(carrierId)}/status`), {
                     method: 'POST', credentials: 'same-origin', headers: requestHeaders(form, intent),
                     body: signature
                 });
@@ -512,6 +564,9 @@ const CarrierList = (function () {
         if (!tableElement) return;
         syncL10n();
         readPermissions();
+        // The company scope is resolved BEFORE the table asks for rows: every list call needs it, so a table
+        // drawn first would fire one guaranteed 400.
+        if (!await loadLegalEntities()) return;
         await loadDefaultView();
         dt = new DataTable(tableElement, window.DtDefaults.create({
             // R-4a (Returns draft UI-PM-03): DataTables calls .abort() on whatever ajax returns; an async function returns a

@@ -23,8 +23,12 @@ public sealed class CarrierIndexBehaviorTests
     public void EmitsOnlyListCreateAndStatusOperations()
     {
         Assert.Contains("fetch(buildListUrl()", _script);
-        Assert.Contains("fetch(endpoint", _script);
-        Assert.Contains("/${encodeURIComponent(carrierId)}/status", _script);
+        // R-2 (SHIPMENT-BUNDLE 3.2.0): create still targets the create endpoint, now wrapped so the required
+        // legalEntityId reaches the adapter — every call carries the company, not just the filtered list.
+        Assert.Contains("fetch(withScope(endpoint)", _script);
+        Assert.Contains("legalEntityId=${encodeURIComponent(legalEntityScope)}", _script);
+        Assert.Contains("'/SupplyChain/api/legal-entities'", _script);
+        Assert.Contains("withScope(`${endpoint}/${encodeURIComponent(carrierId)}/status`)", _script);
         Assert.DoesNotContain("method: 'DELETE'", _script);
         Assert.DoesNotContain("method: 'PATCH'", _script);
         Assert.DoesNotContain("method: 'PUT'", _script);

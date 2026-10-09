@@ -8,6 +8,10 @@
 <script id="carriers-l10n" type="application/json">
     @Json.Serialize(new Dictionary<string, string>
     {
+        @* R-2: the company selector's label and its two failure messages. *@
+        ["LegalEntity"] = SharedLocalizer["LegalEntity"].Value,
+        ["LegalEntityUnavailable"] = SharedLocalizer["LegalEntityUnavailable"].Value,
+        ["LegalEntityNone"] = SharedLocalizer["LegalEntityNone"].Value,
         ["Active"] = SharedLocalizer["Active"].Value,
         ["Passive"] = SharedLocalizer["Passive"].Value,
         ["Unknown"] = SharedLocalizer["Unknown"].Value,

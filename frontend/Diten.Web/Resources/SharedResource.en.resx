@@ -546,6 +546,9 @@
   <data name="PositionAssignments" xml:space="preserve"><value>Position Assignments</value></data>
   <data name="MasterData" xml:space="preserve"><value>Master Data</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Legal Entities</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Legal Entity</value></data>
+  <data name="LegalEntityUnavailable" xml:space="preserve"><value>The legal entity list is unavailable.</value></data>
+  <data name="LegalEntityNone" xml:space="preserve"><value>This tenant has no active legal entity.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Workflow Approvals</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Documentation Structures</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Controlled Documents</value></data>
