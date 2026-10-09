@@ -8398,6 +8398,29 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-594
+
+**Depoda izlenen derleme çıktısı: `.tmp-*/Debug` altında 797 dosya (dll, pdb, exe, appsettings kopyaları) ana dalda**
+
+DURUM: AÇIK · SAHİP: CT (depo hijyeni) + CRM ekibi (kendi klasörleri, XMC-001) · BULAN: WP-WCN-FIX-01 AŞAMA 0 (2026-10-09) · KAYIT: 2026-10-09
+
+Ölçüm (`git ls-files`, origin/main'de de 797):
+- `services/Diten.CrmService/src` 456, `services/Diten.CrmService/tests` 284;
+- `frontend/Diten.Web/.tmp-fu07w` 27, `.tmp-fu11` 27;
+- `Diten.BuildingBlocks.Security.Secrets/.tmp-fu11` 3 (derlenmiş kütüphane; sır değeri değil).
+- İlk ekleme: `0f71a237c` (2026-08-28, "checkpoint: CRM Campaign…") ve `1cca77a8f` (2026-05-13).
+- Web klasörlerinde `appsettings*.json` kopyaları var: kaynak dosyalarla aynı (ölçülmeli: kaynakta olmayan bir değer var mı?).
+
+Yapılacak:
+- `git rm --cached` (dosyalar diskte kalır) + `.gitignore`'a `**/.tmp-*/`;
+- CRM klasörleri için CRM ekibine sor (XMC-001);
+- appsettings kopyalarını kaynakla karşılaştır.
+- Tek PR'a ayrı commit olarak.
+
+Gelecek regresyon riski: 🟡 depo şişiyor; derleme çıktısı yanlışlıkla kaynakmış gibi aranıyor (git grep isabetleri); kopya ayar dosyası kaynaktan ayrışırsa yanıltır.
+
+---
+
 ### BL-593
 
 **Görev Merkezi: `WorkAggregation_Action_Decline` dil anahtarı 7 dilde yok (takeover'dan devralınan, 2 vitest kırmızısı)**
