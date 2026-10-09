@@ -194,6 +194,19 @@ writes the contract draft.
 `MovementFormSources.cs:68,233` (Web form), `StubProductMaster.cs`, `PrismConsumedContractSmokeTests.cs`, Prism fixtures:
 read the flags from `getSku`, unknown → refuse (OD-5), add the lifecycle rule (OD-3 / OD-4).
 
+### 8.5 Round 2 (2026-10-09) — MDM's answer (draft `1.1.0-draft.5`) and our reply
+
+MDM accepted OD-1 … OD-7, R-04, R-06, R-09 … R-11 (single lifecycle `Draft / Active / Deactivated / Retired`; Deactivated only on
+material items and reversible; `getSkuUom` optional `level`; read key `mdm.product-master.read`). Owner decisions on their questions:
+
+| # | Decision |
+|---|---|
+| OD-8 | **Contract only.** MVP-1 takes the pushed v1.1 contract file and develops against Prism; MDM code is taken from `main` after MDM's PR lands (no merge of MDM's product branch into the MVP-1 branch). |
+| OD-9 | **Fail-safe deprecated flags.** On `getProduct` the deprecated `lotControlled` / `serialControlled` round up under doubt: `true` if any applicable non-retired SKU is `true` or `null`; `false` only if all are `false`; `null` only when no SKU exists. The current consumer then over-requires, never under-requires, even before its change ships. |
+| OD-10 | **Serial at GSKU = not applicable.** `serialControlled: null` on a GSKU is not "unknown". Serial-tracked stock is held at LSKU / FinishedGood; a GSKU-level movement is allowed only when the product's serial flag is explicitly `false`, otherwise refused. "Unknown lot flag → refuse" stays. Closes D-3. |
+| OD-11 | `materialType` is for material items only; "finished good" maps to `itemKind: GlobalProduct` (Gsku / Lsku / FinishedGood). |
+| Q-1 (open, to MDM) | R-12 lists `skuLevel: Item`. Are material items stocked at `Item` level (`skuId == itemId`)? If yes, v1.1 `SkuLevel` gains `Item` and INVENTORY-BUNDLE needs an additive version; R-12's draft waits for the answer. |
+
 ### 8.4 Directions for the other MVP teams (the MVP-1 CT forwards them)
 
 | MVP | Module | Today | Direction |
