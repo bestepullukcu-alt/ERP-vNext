@@ -1,0 +1,263 @@
+[
+  {
+    "case": "unknown-commit-retried",
+    "configured": {
+      "count": 10,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": {
+            "t": 1789597514,
+            "i": 1
+          }
+        },
+        "signature": {
+          "hash": {
+            "$binary": {
+              "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+              "subType": "00"
+            }
+          },
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": {
+          "t": 1789597514,
+          "i": 1
+        }
+      }
+    },
+    "disabled": {
+      "count": 12,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": {
+            "t": 1789597516,
+            "i": 1
+          }
+        },
+        "signature": {
+          "hash": {
+            "$binary": {
+              "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+              "subType": "00"
+            }
+          },
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": {
+          "t": 1789597516,
+          "i": 1
+        }
+      }
+    },
+    "result": {
+      "carrierId": "975eda12-f16d-49a4-ac53-d69d512a545e",
+      "carrierCode": "commit-retry",
+      "status": "Active",
+      "idempotentReplay": false,
+      "contractVersion": "v1"
+    },
+    "persistence": {
+      "carriers": [
+        {
+          "_id": "975eda12-f16d-49a4-ac53-d69d512a545e",
+          "TenantId": "b74821d9-1c8f-493f-94ff-a1f0368227d9",
+          "IsDeleted": false,
+          "DeletedAt": null,
+          "CreatedAt": "2026-09-16T22:25:16.089296+00:00",
+          "UpdatedAt": null,
+          "Version": 1,
+          "LegalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+          "CarrierCode": "commit-retry",
+          "DisplayName": "Outage",
+          "SupportedModes": [
+            "Road"
+          ],
+          "ExternalReference": null,
+          "Status": "Active",
+          "CreatedBy": "c3c7f129-e6a5-4282-9e3b-c5b475487308",
+          "UpdatedBy": null
+        }
+      ],
+      "carrier_idempotency": [
+        {
+          "_id": "cf263fa5-3f93-4ffa-9327-769ff8afa0a2",
+          "TenantId": "b74821d9-1c8f-493f-94ff-a1f0368227d9",
+          "LegalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+          "Operation": "createCarrier",
+          "TargetId": "create",
+          "IdempotencyKey": "outage",
+          "Fingerprint": "v1:{\"CarrierCode\":\"commit-retry\",\"DisplayName\":\"Outage\",\"SupportedModes\":[\"Road\"],\"ExternalReference\":null}",
+          "FormatVersion": 1,
+          "CarrierId": "975eda12-f16d-49a4-ac53-d69d512a545e",
+          "CarrierCode": "commit-retry",
+          "ResultingStatus": "Active",
+          "StatusCode": 201,
+          "ContractVersion": "v1",
+          "CorrelationId": "576144d8-12a9-44db-aa84-759b80d70aaa",
+          "ActorId": "c3c7f129-e6a5-4282-9e3b-c5b475487308"
+        }
+      ],
+      "carrier_audit": [
+        {
+          "_id": "002b9f8d-b568-45ca-a8d7-f118e0d6920c",
+          "TenantId": "b74821d9-1c8f-493f-94ff-a1f0368227d9",
+          "LegalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+          "CarrierId": "975eda12-f16d-49a4-ac53-d69d512a545e",
+          "Operation": "createCarrier",
+          "Version": 1,
+          "FromStatus": null,
+          "ToStatus": "Active",
+          "ReasonCode": null,
+          "ActorId": "c3c7f129-e6a5-4282-9e3b-c5b475487308",
+          "CorrelationId": "576144d8-12a9-44db-aa84-759b80d70aaa",
+          "OccurredAt": {
+            "$date": "2026-09-16T22:25:16.090Z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "case": "unknown-commit-exhausted-and-recovered",
+    "configured": {
+      "count": 12,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": {
+            "t": 1789597516,
+            "i": 1
+          }
+        },
+        "signature": {
+          "hash": {
+            "$binary": {
+              "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+              "subType": "00"
+            }
+          },
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": {
+          "t": 1789597516,
+          "i": 1
+        }
+      }
+    },
+    "disabled": {
+      "count": 15,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": {
+            "t": 1789597516,
+            "i": 1
+          }
+        },
+        "signature": {
+          "hash": {
+            "$binary": {
+              "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+              "subType": "00"
+            }
+          },
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": {
+          "t": 1789597516,
+          "i": 1
+        }
+      }
+    },
+    "unavailable": {
+      "error": {
+        "code": "PERSISTENCE_UNAVAILABLE",
+        "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable.",
+        "correlationId": "2ba73a5a-8a9e-45ca-9476-98f6c6bef155"
+      },
+      "contractVersion": "v1"
+    },
+    "unavailableState": {
+      "carriers": [],
+      "carrier_idempotency": [],
+      "carrier_audit": []
+    },
+    "recovered": {
+      "carrierId": "43a70b7a-2b43-43c4-a7ec-27719d1b0d01",
+      "carrierCode": "commit-unknown",
+      "status": "Active",
+      "idempotentReplay": false,
+      "contractVersion": "v1"
+    },
+    "persistence": {
+      "carriers": [
+        {
+          "_id": "43a70b7a-2b43-43c4-a7ec-27719d1b0d01",
+          "TenantId": "5aac877a-9a22-4936-af53-565ae241e9b6",
+          "IsDeleted": false,
+          "DeletedAt": null,
+          "CreatedAt": "2026-09-16T22:25:19.815399+00:00",
+          "UpdatedAt": null,
+          "Version": 1,
+          "LegalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+          "CarrierCode": "commit-unknown",
+          "DisplayName": "Outage",
+          "SupportedModes": [
+            "Road"
+          ],
+          "ExternalReference": null,
+          "Status": "Active",
+          "CreatedBy": "c3c7f129-e6a5-4282-9e3b-c5b475487308",
+          "UpdatedBy": null
+        }
+      ],
+      "carrier_idempotency": [
+        {
+          "_id": "dd765ade-710b-4c29-b388-e4679cf272b3",
+          "TenantId": "5aac877a-9a22-4936-af53-565ae241e9b6",
+          "LegalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+          "Operation": "createCarrier",
+          "TargetId": "create",
+          "IdempotencyKey": "outage",
+          "Fingerprint": "v1:{\"CarrierCode\":\"commit-unknown\",\"DisplayName\":\"Outage\",\"SupportedModes\":[\"Road\"],\"ExternalReference\":null}",
+          "FormatVersion": 1,
+          "CarrierId": "43a70b7a-2b43-43c4-a7ec-27719d1b0d01",
+          "CarrierCode": "commit-unknown",
+          "ResultingStatus": "Active",
+          "StatusCode": 201,
+          "ContractVersion": "v1",
+          "CorrelationId": "14f90575-92e9-4c3d-9a37-54b6322b1a44",
+          "ActorId": "c3c7f129-e6a5-4282-9e3b-c5b475487308"
+        }
+      ],
+      "carrier_audit": [
+        {
+          "_id": "e81bcdb4-a6c3-44ff-ac6c-f6fd00abb10b",
+          "TenantId": "5aac877a-9a22-4936-af53-565ae241e9b6",
+          "LegalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+          "CarrierId": "43a70b7a-2b43-43c4-a7ec-27719d1b0d01",
+          "Operation": "createCarrier",
+          "Version": 1,
+          "FromStatus": null,
+          "ToStatus": "Active",
+          "ReasonCode": null,
+          "ActorId": "c3c7f129-e6a5-4282-9e3b-c5b475487308",
+          "CorrelationId": "14f90575-92e9-4c3d-9a37-54b6322b1a44",
+          "OccurredAt": {
+            "$date": "2026-09-16T22:25:19.816Z"
+          }
+        }
+      ]
+    }
+  }
+]

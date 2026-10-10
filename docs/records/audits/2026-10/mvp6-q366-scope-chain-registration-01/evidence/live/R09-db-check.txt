@@ -1,0 +1,12 @@
+{
+  ShipmentNumber: 'SHP-a4cd43d5f3834f1fa49d78a95e3ea2ec',
+  Status: 'Closed',
+  TenantId: '00000000-0000-0000-0000-000000000001',
+  LegalEntityId: '477b0f55-1d38-4459-a280-96e645332355',
+  Version: 5,
+  Pod: {
+    RecipientNameLen: 19,
+    Evidence: 1
+  }
+}
+sce_shipment_audit: 5  sce_shipment_outbox: 6  shipments total: 1

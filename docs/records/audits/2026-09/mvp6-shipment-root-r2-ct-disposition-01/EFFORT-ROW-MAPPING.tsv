@@ -1,0 +1,6 @@
+source_row	delivery	prior_state	ct_state	gross_omp	portfolio_net_new_omp	mapped_existing_reserve	evidence	update_rule
+0183-R2-01	Candidate preparation	HISTORICAL_CANDIDATE_READY_NOT_DELIVERED	UNCHANGED	0/0/0	0/0/0	None	mvp6-shipment-root-r2-emission-rework-01	Do not invent historical delivered hours
+0183-R2-02	Exact mutation application and writer validation	REMAINING	CLOSED_BOUNDED_DELIVERY	4/8/16	0/0/0	0183-3-REMAINING 9.6/16/25.6	emission-exec-01 SOP and applied delta	Successor effort report may close this allocation; forecast is not measured actual effort
+0183-R2-03	Independent applied-source runtime VER	REMAINING	CLOSED_BOUNDED_DELIVERY	6/12/20	0/0/0	0183-6-REMAINING 20/36/64	emission-independent-ver-01 SOP and acceptance	Successor effort report may close this allocation; do not duplicate Test/VER reserve
+0183-R2-04	Root-specific real-Auth browser regression	REMAINING	OPEN	2/4/8	0/0/0	0183-6-REMAINING 20/36/64	No completed browser lane input	Retain browser reserve; PNG also remains open
+0183-R2-TOTAL	Root R2 rework envelope	REMAINING_WITHIN_RESERVES	PARTIAL_CLOSED_BROWSER_OPEN	12/24/44	0/0/0	Backend 4/8/16 plus Test/VER 8/16/28	Combined three input packages	Closed planning envelope 10/20/36; remaining 2/4/8; never add gross total again

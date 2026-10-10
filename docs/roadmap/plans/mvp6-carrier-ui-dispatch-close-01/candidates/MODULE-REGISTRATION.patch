@@ -1,0 +1,374 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj
+@@ -2,6 +2,7 @@
+ <ProjectReference Include="../Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj" />
+ <ProjectReference Include="../Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj" />
+ <ProjectReference Include="../../../Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj" />
++<ProjectReference Include="../../../Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
+ <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+ <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+ <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" /></ItemGroup></Project>
+--- /dev/null
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/CarrierManagementManifestProvider.cs
+@@ -0,0 +1,40 @@
++using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
++
++namespace Diten.SupplyChainService.Api.ModuleRegistration;
++
++public sealed class CarrierManagementManifestProvider : IModuleManifestProvider
++{
++    private const string Read = "supplychain.carriers.read";
++    private const string Create = "supplychain.carriers.create";
++    private const string ChangeStatus = "supplychain.carriers.status.change";
++
++    public ModuleManifestDocument GetManifest() =>
++        new(
++            ModuleCode: "carrier-management",
++            ModuleName: "CarrierManagement",
++            DisplayName: "Carrier Management",
++            Domain: "SupplyChainExecution",
++            Service: "DitenSupplyChainService",
++            ModuleVersion: "1.0.0",
++            IsTenantAssignable: true,
++            SortOrder: 400,
++            Pages:
++            [
++                new ModuleManifestPage(
++                    PageCode: "CARRIERS",
++                    DisplayName: "Carriers",
++                    RoutePath: "/SupplyChain/Carriers",
++                    RequiredPermission: Read,
++                    ParentPageCode: null,
++                    IsNavigationVisible: true,
++                    PageType: "List",
++                    SortOrder: 10,
++                    Actions:
++                    [
++                        new ModuleManifestAction("CREATE", "Create", Create, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
++                        new ModuleManifestAction("CHANGE_STATUS", "Change Status", ChangeStatus, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
++                    ])
++            ],
++            Icon: "bx-truck",
++            IsBaseline: false);
++}
+--- /dev/null
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/IModuleManifestProvider.cs
+@@ -0,0 +1,8 @@
++using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
++
++namespace Diten.SupplyChainService.Api.ModuleRegistration;
++
++public interface IModuleManifestProvider
++{
++    ModuleManifestDocument GetManifest();
++}
+--- /dev/null
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ModuleRegistrationHostedService.cs
+@@ -0,0 +1,147 @@
++using System.Net.Http.Json;
++using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
++using Microsoft.Extensions.Options;
++
++namespace Diten.SupplyChainService.Api.ModuleRegistration;
++
++/// <summary>
++/// Pushes this service's module manifest to the Platform module-catalog at startup (self-registration). BEST-EFFORT
++/// with retry: runs after the app is up (BackgroundService), retries a few times with increasing backoff to swallow the
++/// "Platform not ready yet" startup race, and NEVER crashes startup. Safe to repeat every restart (Platform reconcile is
++/// idempotent). Sends X-Internal-Api-Key (S2S, direct to Platform — /api/internal is not gateway-exposed).
++/// </summary>
++public sealed class ModuleRegistrationHostedService : BackgroundService
++{
++    private const string InternalApiKeyHeader = "X-Internal-Api-Key";
++    private const int MaxAttempts = 5;
++
++    private readonly IEnumerable<IModuleManifestProvider> _manifestProviders;
++    private readonly PlatformRegistrationOptions _options;
++    private readonly IHttpClientFactory _httpClientFactory;
++    private readonly ILogger<ModuleRegistrationHostedService> _logger;
++
++    public ModuleRegistrationHostedService(
++        IEnumerable<IModuleManifestProvider> manifestProviders,
++        IOptions<PlatformRegistrationOptions> options,
++        IHttpClientFactory httpClientFactory,
++        ILogger<ModuleRegistrationHostedService> logger)
++    {
++        _manifestProviders = manifestProviders;
++        _options = options.Value;
++        _httpClientFactory = httpClientFactory;
++        _logger = logger;
++    }
++
++    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
++    {
++        await RunRegistrationsAsync(Task.Delay, stoppingToken);
++    }
++
++    public async Task RunRegistrationsAsync(
++        Func<TimeSpan, CancellationToken, Task> delay,
++        CancellationToken stoppingToken)
++    {
++        if (string.IsNullOrWhiteSpace(_options.BaseUrl) || string.IsNullOrWhiteSpace(_options.InternalApiKey))
++        {
++            _logger.LogWarning("Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured.");
++            return;
++        }
++
++        // Push EVERY registered provider as its own manifest (GoldenSlim + GoldenCompact + …). Each is independent
++        // and best-effort: one module's failure (or the shutdown signal) never blocks the others.
++        foreach (var provider in _manifestProviders)
++        {
++            if (stoppingToken.IsCancellationRequested)
++            {
++                break;
++            }
++
++            var manifest = provider.GetManifest();
++            try
++            {
++                var stopped = await ModuleRegistrationRetry.RunAsync(
++                    attempt: (attemptNumber, ct) => TryRegisterAsync(manifest, attemptNumber, ct),
++                    maxAttempts: MaxAttempts,
++                    backoff: attemptNumber => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber)), // 2s, 4s, 8s, 16s
++                    delay: delay,
++                    stoppingToken);
++
++                if (!stopped)
++                {
++                    _logger.LogWarning(
++                        "Module self-registration gave up after {MaxAttempts} attempts (Platform unreachable?). ModuleCode={ModuleCode}",
++                        MaxAttempts,
++                        manifest.ModuleCode);
++                }
++            }
++            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
++            {
++                // Service shutting down — fine.
++                break;
++            }
++            catch (Exception ex)
++            {
++                // Best-effort: one module's failure must not block the others or startup.
++                _logger.LogError(ex, "Self-registration failed for module {ModuleCode}.", manifest.ModuleCode);
++            }
++        }
++    }
++
++    /// <returns><c>true</c> to STOP (success or non-retryable), <c>false</c> to RETRY (connection refused / 5xx).</returns>
++    private async Task<bool> TryRegisterAsync(ModuleManifestDocument manifest, int attemptNumber, CancellationToken ct)
++    {
++        try
++        {
++            using var request = new HttpRequestMessage(
++                HttpMethod.Post,
++                $"{_options.BaseUrl.TrimEnd('/')}/api/internal/module-catalog/register-manifest")
++            {
++                Content = JsonContent.Create(manifest)
++            };
++            request.Headers.Add(InternalApiKeyHeader, _options.InternalApiKey);
++
++            var client = _httpClientFactory.CreateClient();
++            using var response = await client.SendAsync(request, ct);
++
++            if (response.IsSuccessStatusCode)
++            {
++                _logger.LogInformation(
++                    "Module manifest self-registered with Platform. ModuleCode={ModuleCode} Attempt={Attempt}",
++                    manifest.ModuleCode,
++                    attemptNumber);
++                return true;
++            }
++
++            if ((int)response.StatusCode >= 500)
++            {
++                _logger.LogWarning(
++                    "Module self-registration attempt {Attempt} got {StatusCode}; will retry. ModuleCode={ModuleCode}",
++                    attemptNumber,
++                    (int)response.StatusCode,
++                    manifest.ModuleCode);
++                return false;
++            }
++
++            // 4xx (e.g. 401 bad key) is not transient — stop without retrying.
++            _logger.LogWarning(
++                "Module self-registration got non-retryable {StatusCode}. ModuleCode={ModuleCode}",
++                (int)response.StatusCode,
++                manifest.ModuleCode);
++            return true;
++        }
++        catch (OperationCanceledException) when (ct.IsCancellationRequested)
++        {
++            return true; // shutting down
++        }
++        catch (HttpRequestException ex)
++        {
++            // Connection refused / Platform not up yet — retry.
++            _logger.LogWarning(
++                ex,
++                "Module self-registration attempt {Attempt} could not reach Platform; will retry. ModuleCode={ModuleCode}",
++                attemptNumber,
++                manifest.ModuleCode);
++            return false;
++        }
++    }
++}
+--- /dev/null
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/PlatformRegistrationOptions.cs
+@@ -0,0 +1,8 @@
++namespace Diten.SupplyChainService.Api.ModuleRegistration;
++
++public sealed class PlatformRegistrationOptions
++{
++    public const string SectionName = "PlatformRegistration";
++    public string BaseUrl { get; set; } = string.Empty;
++    public string InternalApiKey { get; set; } = string.Empty;
++}
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+@@ -15,6 +15,7 @@
+ using Diten.SupplyChainService.Persistence.Features.Claims;
+ using Diten.SupplyChainService.Infrastructure.Features.Claims;
+ using Diten.SupplyChainService.Api.Features.Loads;
++using Diten.SupplyChainService.Api.ModuleRegistration;
+ using Diten.SupplyChainService.Application.Features.Loads;
+ using Diten.SupplyChainService.Persistence.Features.Loads;
+ using Diten.SupplyChainService.Infrastructure.Features.Loads;
+@@ -82,6 +83,10 @@
+ builder.Services.AddHttpClient<IClaimReferenceReader, ClaimReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHttpClient<ILoadReferenceReader, LoadReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHostedService<ShipmentOutboxWorker>();
++builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
++builder.Services.AddHttpClient();
++builder.Services.AddSingleton<IModuleManifestProvider, CarrierManagementManifestProvider>();
++builder.Services.AddHostedService<ModuleRegistrationHostedService>();
+ builder.Services.AddControllers().AddJsonOptions(o =>
+ {
+     o.JsonSerializerOptions.PropertyNameCaseInsensitive = false;
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/appsettings.json
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/appsettings.json
+@@ -1,5 +1,14 @@
+ {
+- "Urls": "http://127.0.0.1:5061",
+- "AllowedHosts": "*",
+- "Logging": { "LogLevel": { "Default": "Information", "Microsoft.AspNetCore": "Warning" } }
++  "Urls": "http://127.0.0.1:5061",
++  "AllowedHosts": "*",
++  "Logging": {
++    "LogLevel": {
++      "Default": "Information",
++      "Microsoft.AspNetCore": "Warning"
++    }
++  },
++  "PlatformRegistration": {
++    "BaseUrl": "http://localhost:5057",
++    "InternalApiKey": ""
++  }
+ }
+--- /dev/null
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Carriers/CarrierManagementManifestProviderTests.cs
+@@ -0,0 +1,31 @@
++using Diten.SupplyChainService.Api.ModuleRegistration;
++using Xunit;
++
++namespace Diten.SupplyChainService.Tests.Carriers;
++
++public sealed class CarrierManagementManifestProviderTests
++{
++    private static readonly Diten.BuildingBlocks.ModuleRegistration.Abstractions.ModuleManifestDocument Manifest =
++        new CarrierManagementManifestProvider().GetManifest();
++
++    [Fact]
++    public void Declares_exact_tenant_page_and_three_existing_permissions()
++    {
++        Assert.Equal("carrier-management", Manifest.ModuleCode);
++        Assert.Equal("SupplyChainExecution", Manifest.Domain);
++        Assert.Equal("DitenSupplyChainService", Manifest.Service);
++        Assert.True(Manifest.IsTenantAssignable);
++        Assert.False(Manifest.IsBaseline);
++
++        var page = Assert.Single(Manifest.Pages);
++        Assert.Equal("CARRIERS", page.PageCode);
++        Assert.Equal("/SupplyChain/Carriers", page.RoutePath);
++        Assert.Equal("supplychain.carriers.read", page.RequiredPermission);
++        Assert.True(page.IsNavigationVisible);
++        Assert.Equal(
++            ["supplychain.carriers.create", "supplychain.carriers.status.change"],
++            page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
++        Assert.DoesNotContain(page.Actions, action => action.ActionCode.Contains("EDIT", StringComparison.Ordinal));
++        Assert.DoesNotContain(page.Actions, action => action.ActionCode.Contains("DELETE", StringComparison.Ordinal));
++    }
++}
+--- /dev/null
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Carriers/CarrierModuleRegistrationHostedServiceTests.cs
+@@ -0,0 +1,71 @@
++using System.Net;
++using Diten.SupplyChainService.Api.ModuleRegistration;
++using Microsoft.Extensions.Logging.Abstractions;
++using Microsoft.Extensions.Options;
++using Xunit;
++
++namespace Diten.SupplyChainService.Tests.Carriers;
++
++public sealed class CarrierModuleRegistrationHostedServiceTests
++{
++    [Fact]
++    public async Task Sends_exact_manifest_with_supported_internal_key()
++    {
++        var handler = new RecordingHandler();
++        var service = CreateService(handler, configured: true);
++
++        await service.RunRegistrationsAsync((_, _) => Task.CompletedTask, CancellationToken.None);
++
++        var request = Assert.Single(handler.Requests);
++        Assert.Contains("carrier-management", request.Body, StringComparison.Ordinal);
++        Assert.Equal("test-only-secret", request.InternalApiKey);
++        Assert.False(request.HasDedicatedCredential);
++    }
++
++    [Fact]
++    public async Task Missing_internal_key_fails_closed_without_request()
++    {
++        var handler = new RecordingHandler();
++        var service = CreateService(handler, configured: false);
++
++        await service.RunRegistrationsAsync((_, _) => Task.CompletedTask, CancellationToken.None);
++
++        Assert.Empty(handler.Requests);
++    }
++
++    private static ModuleRegistrationHostedService CreateService(RecordingHandler handler, bool configured)
++    {
++        var options = new PlatformRegistrationOptions
++        {
++            BaseUrl = "https://platform.test",
++            InternalApiKey = configured ? "test-only-secret" : string.Empty
++        };
++        return new ModuleRegistrationHostedService(
++            [new CarrierManagementManifestProvider()],
++            Options.Create(options),
++            new TestHttpClientFactory(handler),
++            NullLogger<ModuleRegistrationHostedService>.Instance);
++    }
++
++    private sealed class TestHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
++    {
++        public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
++    }
++
++    private sealed class RecordingHandler : HttpMessageHandler
++    {
++        public List<CapturedRequest> Requests { get; } = [];
++
++        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
++        {
++            var body = request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync(cancellationToken);
++            request.Headers.TryGetValues("X-Internal-Api-Key", out var keys);
++            Requests.Add(new CapturedRequest(body, keys?.SingleOrDefault(),
++                request.Headers.Contains("X-Module-Registration-Credential-Id")
++                || request.Headers.Contains("X-Module-Registration-Credential")));
++            return new HttpResponseMessage(HttpStatusCode.OK);
++        }
++    }
++
++    private sealed record CapturedRequest(string Body, string? InternalApiKey, bool HasDedicatedCredential);
++}

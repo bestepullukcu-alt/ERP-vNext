@@ -1,0 +1,45 @@
+{
+  "phase": "list",
+  "startedAt": "2026-09-26T07:43:26.951Z",
+  "cases": {
+    "login-actor-a": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "login-actor-le-b": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        ".AspNetCore.Culture",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "list-isolation": {
+      "verdict": "PASS",
+      "actorA": {
+        "status": 200,
+        "count": 7,
+        "containsAllLiveFixtures": true,
+        "containsDeleted": false
+      },
+      "actorLeB": {
+        "status": 200,
+        "count": 0,
+        "leAFixturesVisible": 0
+      }
+    }
+  },
+  "db": [],
+  "png": [],
+  "console": [],
+  "finishedAt": "2026-09-26T07:43:29.692Z"
+}

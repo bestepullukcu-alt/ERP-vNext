@@ -1,0 +1,14 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md b/execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+@@ -409,7 +409,9 @@ gateway/shared permissions,UI,E5/G5 and existing external architecture failures
+ this acceptance. MOD0185 reference dependency may cite this decision; no downstream DEV grant.
+ Historical sections and test evidence remain intact.
+ 
+-## 31. Self-registration (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++## 31. Self-registration
++
++Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff-owner-decision-01.md`
+ 
+ **Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
+ **Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).

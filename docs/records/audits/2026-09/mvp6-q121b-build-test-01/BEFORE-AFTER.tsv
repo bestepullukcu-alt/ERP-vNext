@@ -1,0 +1,13 @@
+suite	before (BASE+Q117)	after (BASE+Q117+Q121)	expected	result
+build: Platform Application.Tests	0 errors / 127 warnings	0 errors / 127 warnings	0 errors, warnings equal	PASS
+build: Architecture	0 / 0	0 / 0	0 errors	PASS
+build: SupplyChain.sln · Secrets.Tests · Web.Tests · Gateway.Tests	-	0 errors (W 0 · 0 · 18 · 5)	0 errors (Q119 W 0 · 0 · 18 · 5)	PASS
+Platform Application.Tests	4333/4397 (64 failed)	4333/4397 (64 failed)	identical counts	PASS (identical; same 64 failures)
+  PpmAuditRetentionPolicySeedMongoTests.Inserts_only_missing_…_idempotent	Passed	Passed	same outcome	PASS
+  StandaloneMongoTransactionFailClosedTests.StandaloneMongo_ReturnsTyped503_…	Passed	Passed	same outcome	PASS
+  SubscriptionSessionAndStandaloneFailureTests.StandaloneMongo_ProductionSubscriptionWriter_…	Passed	Passed	same outcome	PASS
+Architecture	17/18 (NoTestCreatesItsOwnDatabasePerRun: the 2 files)	18/18	18/18	PASS
+SupplyChain single process	-	375/408 (33 failed)	407/408	DEVIATION — 32 CapacityPlans tests hard-code 127.0.0.1:57192 (rsmod192, owned by Q122); 1 = by-design ClaimReplay exclusion
+Gateway	-	87/87	87	PASS
+Web	-	158/158	158	PASS
+Secrets	-	5/5	5	PASS

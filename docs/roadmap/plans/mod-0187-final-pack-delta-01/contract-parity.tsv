@@ -1,0 +1,4 @@
+operation	JSON_pointer	statuses	request_schema
+queryClaims	/paths/~1claims/get	200,400,401,403,500,503	{}
+createClaim	/paths/~1claims/post	201,400,401,403,404,409,415,422,500,502,503	{'$ref': '#/components/schemas/CreateClaimCommand'}
+transitionClaim	/paths/~1claims~1{claimId}~1transition/post	200,400,401,403,404,409,415,422,500,503	{'$ref': '#/components/schemas/TransitionClaimCommand'}

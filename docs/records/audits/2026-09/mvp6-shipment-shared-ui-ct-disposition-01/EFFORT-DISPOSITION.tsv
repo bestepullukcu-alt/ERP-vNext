@@ -1,0 +1,5 @@
+item	ledger_row	current_omp	new_delivered_omp	disposition	reason
+A03 and shared modal implementation	0183-4-DELIVERED	40/64/104	0/0/0	NO_NEW_CREDIT	Bounded frontend and seven-language implementation already fully credited; no exact separate split
+Independent shared UI verification	0183-6-REMAINING	14/24/44	0/0/0	RETAIN_RESERVE	Verification shares unsplit broader UI/browser/PNG reserve; no trustworthy A03/modal allocation
+Shared modal polish	S7-REMAINING	2.4/4/8	0/0/0	NO_TRANSFER	No exact ledger mapping proves this successor consumes a separable S7 allocation; avoid duplicate credit
+PNG and remaining UI	0183-6-REMAINING	14/24/44	0/0/0	OPEN_RETAINED	A08/A09/A10/A12/A14/PNG remain open or not run

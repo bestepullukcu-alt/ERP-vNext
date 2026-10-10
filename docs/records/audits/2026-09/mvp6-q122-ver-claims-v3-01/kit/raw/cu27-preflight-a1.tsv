@@ -1,0 +1,7 @@
+url	origin	status	allow_methods	allow_origin
+http://127.0.0.1:5900/api/shipment-bundle/claims	http://127.0.0.1:5901	204		
+http://127.0.0.1:5900/api/shipment-bundle/claims	http://localhost:5001	204	POST	http://localhost:5001
+http://127.0.0.1:5900/api/shipment-bundle/claims/00000000-0000-4000-8000-000000000001/transition	http://127.0.0.1:5901	204		
+http://127.0.0.1:5900/api/shipment-bundle/claims/00000000-0000-4000-8000-000000000001/transition	http://localhost:5001	204	POST	http://localhost:5001
+http://127.0.0.1:5900/api/shipment-bundle/claimsXYZ	http://127.0.0.1:5901	204		
+http://127.0.0.1:5900/api/shipment-bundle/claimsXYZ	http://localhost:5001	204	POST	http://localhost:5001

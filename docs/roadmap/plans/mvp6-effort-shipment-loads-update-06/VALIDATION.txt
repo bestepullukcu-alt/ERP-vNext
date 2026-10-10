@@ -1,0 +1,7 @@
+PASS input hashes: 9/9
+PASS effort row count: baseline 103; successor 105 after two visibility splits
+PASS unaffected effort rows exact: 95/95
+PASS portfolio ML totals: delivered 1432; remaining 1382; total 2814
+PASS module invariants: Shipment 228/66; Carrier 180/28; Loads 136/144
+PASS delivery headings: 10 plus portfolio; Carrier PNG OPEN
+PASS Loads transition/detail/lookup-root scope retained as unestimated

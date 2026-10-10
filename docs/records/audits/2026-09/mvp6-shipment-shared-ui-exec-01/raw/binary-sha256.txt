@@ -1,0 +1,2 @@
+4333ef13bb8d6875bcea8d696ff687d0d09daa2bfc70c7234982c87482cfa5db  /private/tmp/mvp6-shipment-shared-ui-target-GSFmjs/frontend/Diten.Web/bin/Debug/net8.0/Diten.Web.dll
+bd8bc6bb31c9c7137f1c81dfe547893dff02e6016e76735b3c99925bfe5bc59e  /private/tmp/mvp6-shipment-shared-ui-target-GSFmjs/frontend/Diten.Web.Tests/bin/Debug/net8.0/Diten.Web.Tests.dll

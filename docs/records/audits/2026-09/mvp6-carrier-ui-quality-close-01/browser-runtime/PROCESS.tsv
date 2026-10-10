@@ -1,0 +1,6 @@
+service	port	start_pid	final_state
+Gateway	5300	83256	STOPPED
+Web	5301	83326	STOPPED
+Auth	5356	83115	STOPPED
+Platform	5357	83016	STOPPED
+SupplyChain	5361	83185	STOPPED

@@ -1,0 +1,68 @@
+[
+  {
+    "path": "docs/analysis/contracts/sandop-capacity.openapi.yaml",
+    "match": true,
+    "expected": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+    "actual": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-r2-01/sandop-capacity.openapi.candidate.yaml",
+    "match": true,
+    "expected": "5dc5e9750797ea687fce2e959b17d9b3312231b5701238815cab48e7ca3b661c",
+    "actual": "5dc5e9750797ea687fce2e959b17d9b3312231b5701238815cab48e7ca3b661c"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-r2-01/sandop-capacity-semantics-v2.0.0-rc.2.md",
+    "match": true,
+    "expected": "9f7d87fc72934dc204fb6dffba1a6646ef583dea3c24d996974e716a9add9b20",
+    "actual": "9f7d87fc72934dc204fb6dffba1a6646ef583dea3c24d996974e716a9add9b20"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-r2-01/publication-candidate.patch",
+    "match": true,
+    "expected": "0e1aca53609c2cd137c50882615e65cf1870e37ddad212891decad6f2a0e8835",
+    "actual": "0e1aca53609c2cd137c50882615e65cf1870e37ddad212891decad6f2a0e8835"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-r2-independent-ver-01/SOP-22.md",
+    "match": true,
+    "expected": "2ee760e20b5fa40d90c4f45c6ede622d4f1ccd45752c80f0ddb41e09a72097bb",
+    "actual": "2ee760e20b5fa40d90c4f45c6ede622d4f1ccd45752c80f0ddb41e09a72097bb"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-r2-release-review-01/SOP-22.md",
+    "match": true,
+    "expected": "7deb1387c5b55300d452688c5e595a978e2a491e2f82a7ff3bb2d0a28ca8daaf",
+    "actual": "7deb1387c5b55300d452688c5e595a978e2a491e2f82a7ff3bb2d0a28ca8daaf"
+  },
+  {
+    "path": "docs/analysis/contracts/demand.openapi.yaml",
+    "match": true,
+    "expected": "3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d",
+    "actual": "3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/sandop-capacity.openapi.final-proposed.yaml",
+    "match": true,
+    "expected": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+    "actual": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/sandop-capacity-semantics-v2.0.0.md",
+    "match": true,
+    "expected": "e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442",
+    "actual": "e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/publication-proposed.patch",
+    "match": true,
+    "expected": "0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04",
+    "actual": "0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/candidate-to-final.diff",
+    "match": true,
+    "expected": "cfe1b6c37b2714d9c70ab25072d98ecdddc27e7df92eb66d6ef48dd7bac1141f",
+    "actual": "cfe1b6c37b2714d9c70ab25072d98ecdddc27e7df92eb66d6ef48dd7bac1141f"
+  }
+]

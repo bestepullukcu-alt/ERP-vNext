@@ -1,0 +1,29 @@
+--- a/frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml
++++ b/frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml
+@@ -24,6 +24,7 @@
+     var currentUserJson = JsonSerializer.Serialize(currentUser);
+     var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
+     var layoutDirection = string.Equals(currentCulture, "ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
++    var globalSearchPlaceholder = $"{SharedLocalizer["Search"].Value.TrimEnd('.')} [CTRL + K]";
+     var activeController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+     var currentPath = Context.Request.Path.Value ?? string.Empty;
+     var canAccessHcmEmployeeDraft = PermissionClaims.HasPermission(User, "mod0251.employee.create_draft");
+@@ -35,6 +36,7 @@
+     data-shell="tenant"
+     @* BL-294/nav — main.js is a STATIC asset with no access to the resx, so the Ctrl+K palette's
+        "could not load" text is handed to it here, already localized in the request's culture. *@
++    data-global-search-placeholder="@globalSearchPlaceholder"
+     data-nav-load-failed="@SharedLocalizer["NavigationLoadFailed"]"
+     data-nav-load-failed-hint="@SharedLocalizer["NavigationLoadFailedHint"]">
+ 
+--- a/frontend/Diten.Web/wwwroot/assets/js/main.js
++++ b/frontend/Diten.Web/wwwroot/assets/js/main.js
+@@ -210,7 +210,7 @@
+ // -----------------------------------------------------------------------------
+ const SearchConfig = {
+   container: '#autocomplete',
+-  placeholder: 'Search [CTRL + K]',
++  placeholder: document.documentElement.dataset.globalSearchPlaceholder || 'Search [CTRL + K]',
+   classNames: {
+     detachedContainer: 'd-flex flex-column',
+     detachedFormContainer: 'd-flex align-items-center justify-content-between border-bottom',

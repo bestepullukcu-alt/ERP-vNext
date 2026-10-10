@@ -1,0 +1,11 @@
+Q64d end-of-lane check 2026-09-27T00:36:21+0300
+uname: Darwin
+branch: feature/mvp6-logistics
+HEAD: 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+index.lock: absent
+staged: 0
+diff paths: 19 ; identical to preflight: yes
+base manifest re-check: 14566 / 14566
+lane listeners (57xx, 37994): 0
+lane supervisor socket: absent
+untracked items under docs/records/audits/2026-09 written by this lane: mvp6-q64d-claims-runtime-01/ only

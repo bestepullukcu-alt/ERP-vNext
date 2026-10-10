@@ -1,0 +1,31 @@
+{
+  sabotage: [
+    {
+      OccurredAt: '2026-10-04T20:12:46+03:00',
+      ReceivedAt: '2026-10-04T20:12:48.3762550+00:00',
+      Note: 'S-date sabotage'
+    }
+  ],
+  fixedGolden: [
+    {
+      Version: 2,
+      OccurredAt: '2026-10-04T23:06:37+03:00',
+      ReceivedAt: '2026-10-04T20:06:40.4075930+00:00'
+    },
+    {
+      Version: 3,
+      OccurredAt: '2026-10-04T23:07:00+03:00',
+      ReceivedAt: '2026-10-04T20:07:04.6018180+00:00'
+    },
+    {
+      Version: 4,
+      OccurredAt: '2026-10-04T23:07:21+03:00',
+      ReceivedAt: '2026-10-04T20:07:22.5663460+00:00'
+    },
+    {
+      Version: 5,
+      OccurredAt: '2026-10-04T23:07:34+03:00',
+      ReceivedAt: '2026-10-04T20:07:35.8259800+00:00'
+    }
+  ]
+}

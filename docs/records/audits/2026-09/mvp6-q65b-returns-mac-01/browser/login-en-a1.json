@@ -1,0 +1,93 @@
+{
+  "phase": "login",
+  "locale": "en",
+  "startedAt": "2026-09-30T20:36:03.433Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "login-full": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Returns",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.zLvpeErSZWM",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-readonly": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Returns",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.zLvpeErSZWM",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-noread": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Returns",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.zLvpeErSZWM",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "login-full",
+      "at": "2026-09-30T20:36:09.562Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "login-readonly",
+      "at": "2026-09-30T20:36:12.249Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 12,
+  "endedAt": "2026-09-30T20:36:15.418Z"
+}

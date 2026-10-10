@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="LoadsTitle" xml:space="preserve"><value>Cargas</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Consulte los planes de carga y cree uno a partir de referencias existentes de transportista y envío.</value></data>
+  <data name="AddNewLoad" xml:space="preserve"><value>Agregar carga</value></data>
+  <data name="LoadNumber" xml:space="preserve"><value>Número de carga</value></data>
+  <data name="CarrierId" xml:space="preserve"><value>ID del transportista</value></data>
+  <data name="CarrierIdHelp" xml:space="preserve"><value>UUID del transportista. Debe estar activo y admitir el modo seleccionado.</value></data>
+  <data name="ShipmentIds" xml:space="preserve"><value>Envíos</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>ID de envío</value></data>
+  <data name="ShipmentIdsHelp" xml:space="preserve"><value>Al menos un UUID de envío. Los envíos deben estar en borrador o planificados; se conserva el orden introducido.</value></data>
+  <data name="AddShipment" xml:space="preserve"><value>Agregar envío</value></data>
+  <data name="RemoveShipment" xml:space="preserve"><value>Quitar envío</value></data>
+  <data name="Mode" xml:space="preserve"><value>Modo</value></data>
+  <data name="ModeRoad" xml:space="preserve"><value>Carretera</value></data>
+  <data name="ModeAir" xml:space="preserve"><value>Aéreo</value></data>
+  <data name="ModeSea" xml:space="preserve"><value>Marítimo</value></data>
+  <data name="ModeRail" xml:space="preserve"><value>Ferroviario</value></data>
+  <data name="ModeParcel" xml:space="preserve"><value>Paquetería</value></data>
+  <data name="PlannedDepartAt" xml:space="preserve"><value>Salida planificada</value></data>
+  <data name="PlannedDepartAtHelp" xml:space="preserve"><value>Su fecha y hora locales. Se envían en UTC.</value></data>
+  <data name="PlannedDepartAtInvalid" xml:space="preserve"><value>Introduzca una fecha y hora válidas que existan en su zona horaria.</value></data>
+  <data name="Stops" xml:space="preserve"><value>Paradas</value></data>
+  <data name="StopsHelp" xml:space="preserve"><value>Al menos dos paradas numeradas de 1 a N, con al menos una recogida y una entrega.</value></data>
+  <data name="StopSequence" xml:space="preserve"><value>Secuencia</value></data>
+  <data name="StopLocationReferenceId" xml:space="preserve"><value>Referencia de ubicación</value></data>
+  <data name="StopAction" xml:space="preserve"><value>Acción</value></data>
+  <data name="ActionPickup" xml:space="preserve"><value>Recogida</value></data>
+  <data name="ActionDelivery" xml:space="preserve"><value>Entrega</value></data>
+  <data name="ActionReturn" xml:space="preserve"><value>Devolución</value></data>
+  <data name="AddStop" xml:space="preserve"><value>Agregar parada</value></data>
+  <data name="RemoveStop" xml:space="preserve"><value>Quitar parada</value></data>
+  <data name="FilterCarrierId" xml:space="preserve"><value>ID del transportista (UUID)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Planificada</value></data>
+  <data name="StatusTendered" xml:space="preserve"><value>Ofertada</value></data>
+  <data name="StatusAccepted" xml:space="preserve"><value>Aceptada</value></data>
+  <data name="StatusDispatched" xml:space="preserve"><value>Despachada</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Completada</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="EmptyList" xml:space="preserve"><value>No se encontraron cargas.</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>No proporcionado</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Referencia de soporte</value></data>
+  <data name="ListUnavailable" xml:space="preserve"><value>No se pudieron cargar las cargas. Inténtelo de nuevo más tarde.</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>Revise los valores introducidos e inténtelo de nuevo.</value></data>
+  <data name="AccessDenied" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>El plan de carga se creó correctamente.</value></data>
+  <data name="CreateReplaySuccess" xml:space="preserve"><value>Esta solicitud de plan de carga ya se completó correctamente.</value></data>
+  <data name="RetrySameRequest" xml:space="preserve"><value>Reintente sin modificar el formulario para conservar la identidad de la solicitud.</value></data>
+  <data name="ErrCarrierNotFound" xml:space="preserve"><value>No se encontró ningún transportista activo con este ID en su ámbito.</value></data>
+  <data name="ErrCarrierModeUnsupported" xml:space="preserve"><value>El transportista no admite el modo seleccionado.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>No se encontró ningún envío con este ID en su ámbito.</value></data>
+  <data name="ErrShipmentNotEligible" xml:space="preserve"><value>Solo se pueden agregar a una carga los envíos en borrador o planificados.</value></data>
+  <data name="ErrShipmentCarrierMismatch" xml:space="preserve"><value>Un envío ya está asignado a otro transportista.</value></data>
+  <data name="ErrShipmentAlreadyAssigned" xml:space="preserve"><value>Un envío ya pertenece a otra carga.</value></data>
+  <data name="ErrDuplicateShipment" xml:space="preserve"><value>El mismo envío aparece más de una vez.</value></data>
+  <data name="ErrInvalidLoadStops" xml:space="preserve"><value>Las paradas deben numerarse de 1 a N e incluir al menos una recogida y una entrega.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Esta solicitud ya se recibió con valores diferentes. Para hacer otra solicitud, cierre este formulario y abra uno nuevo.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>Esta solicitud ya no coincide con la carga que inició. Cierre este formulario y abra uno nuevo.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Los datos de transportista o envío no están disponibles temporalmente. Reintente la misma solicitud.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>No se pudieron leer los datos de transportista o envío. Contacte con soporte indicando la referencia.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>No se pudo confirmar el estado actual del envío. Reintente la misma solicitud más tarde.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>El resultado de la solicitud no está disponible.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Se produjo un error inesperado. Contacte con soporte indicando la referencia.</value></data>
+</root>

@@ -1,0 +1,20 @@
+{
+  "actor": "readonly",
+  "role": "Q122Matrix-settle",
+  "requestedKeys": [
+    "supplychain.claims.read",
+    "supplychain.claims.settle",
+    "supplychain.shipments.read"
+  ],
+  "supplychainKeysBefore": [
+    "supplychain.claims.decide",
+    "supplychain.claims.read",
+    "supplychain.shipments.read"
+  ],
+  "supplychainKeysAfter": [
+    "supplychain.claims.read",
+    "supplychain.claims.settle",
+    "supplychain.shipments.read"
+  ],
+  "membershipsSoftDeleted": 1
+}

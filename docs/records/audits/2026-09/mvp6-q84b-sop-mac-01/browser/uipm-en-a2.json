@@ -1,0 +1,622 @@
+{
+  "phase": "uipm",
+  "locale": "en",
+  "startedAt": "2026-09-30T19:51:44.255Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "UI-PM-05": {
+      "result": "PASS",
+      "during": [
+        {
+          "section": "summary",
+          "display": "block",
+          "height": 145,
+          "dNone": false,
+          "contentHidden": true
+        },
+        {
+          "section": "snapshots",
+          "display": "block",
+          "height": 161,
+          "dNone": false,
+          "contentHidden": true
+        },
+        {
+          "section": "signoffs",
+          "display": "block",
+          "height": 161,
+          "dNone": false,
+          "contentHidden": true
+        }
+      ],
+      "after": [
+        {
+          "section": "summary",
+          "display": "none"
+        },
+        {
+          "section": "snapshots",
+          "display": "none"
+        },
+        {
+          "section": "signoffs",
+          "display": "none"
+        }
+      ],
+      "method": "GET section responses delayed 3 s in the browser (route.continue); real responses",
+      "evidence": [
+        "png/uipm05-skeleton-visible-en-2.png",
+        "png/uipm05-content-loaded-en-2.png"
+      ]
+    },
+    "UI-PM-12": {
+      "result": "PASS",
+      "state": [
+        {
+          "section": "summary",
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "message": "The service is temporarily unavailable. Try again; the same request will be sent.",
+          "referenceShown": true,
+          "retry": true
+        },
+        {
+          "section": "snapshots",
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "message": "The service is temporarily unavailable. Try again; the same request will be sent.",
+          "referenceShown": true,
+          "retry": true
+        },
+        {
+          "section": "signoffs",
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "message": "The service is temporarily unavailable. Try again; the same request will be sent.",
+          "referenceShown": true,
+          "retry": true
+        }
+      ],
+      "retried": {
+        "summary": {
+          "kind": "fail",
+          "before": {
+            "errorVisible": true,
+            "others": [
+              "snapshots:content",
+              "signoffs:content"
+            ]
+          },
+          "reloadRequest": true,
+          "status": 200,
+          "contentVisible": true,
+          "errorHidden": true
+        },
+        "snapshots": {
+          "kind": "fail",
+          "before": {
+            "errorVisible": true,
+            "others": [
+              "summary:content",
+              "signoffs:content"
+            ]
+          },
+          "reloadRequest": true,
+          "status": 200,
+          "contentVisible": true,
+          "errorHidden": true
+        },
+        "signoffs": {
+          "kind": "malformed",
+          "before": {
+            "errorVisible": true,
+            "others": [
+              "summary:content",
+              "snapshots:content"
+            ]
+          },
+          "reloadRequest": true,
+          "status": 200,
+          "contentVisible": true,
+          "errorHidden": true
+        }
+      },
+      "rawErrorInPage": false,
+      "method": "crafted in browser: summary 503, snapshots 500, sign-offs 200 malformed (all at once for the error states); then per section, only that section failing, retry against the real service",
+      "evidence": [
+        "png/uipm12-section-errors-en-2.png",
+        "png/uipm12-after-retry-en-2.png",
+        "png/uipm12-snapshots-after-retry-en.png"
+      ]
+    },
+    "UI-PM-09": {
+      "result": "PASS",
+      "out": {
+        "create-escape": {
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": "btnOpenCreatePlan",
+            "tag": "BUTTON",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          }
+        },
+        "create-close-button": {
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": "btnOpenCreatePlan",
+            "tag": "BUTTON",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          }
+        },
+        "offcanvasCaptureSnapshot": {
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": "btnOpenCaptureSnapshot",
+            "tag": "BUTTON",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          }
+        },
+        "offcanvasRecordSignOff": {
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": "btnOpenRecordSignOff",
+            "tag": "BUTTON",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          }
+        }
+      },
+      "scope": "r2 / OD-F-Q145-1: stable toolbar/page openers only (Create plan, Capture snapshot, Record sign-off); no row-menu surface exists",
+      "evidence": [
+        "png/uipm09-entry-focus-returned-en-2.png",
+        "png/uipm09-details-focus-returned-en-2.png"
+      ]
+    },
+    "UI-PM-10": {
+      "result": "PASS",
+      "out": {
+        "create": {
+          "status": 422,
+          "errorCode": "INVALID_DEMAND_REFERENCE",
+          "panelOpen": true,
+          "focus": {
+            "id": "planName",
+            "tag": "INPUT",
+            "inCreate": true,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "alert": "The demand plan reference is unknown or not published.\nSupport reference: 60d2777a-4a91-49a9-8b18-fc1e58818208",
+          "inputsKept": true,
+          "escapeClosed": true,
+          "afterEscape": {
+            "id": "btnOpenCreatePlan",
+            "tag": "BUTTON",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          }
+        },
+        "capture": {
+          "status": 422,
+          "errorCode": "INVALID_DEMAND_REFERENCE",
+          "panelOpen": true,
+          "focus": {
+            "id": "captureDemandPlanId",
+            "tag": "INPUT",
+            "inCreate": false,
+            "inCapture": true,
+            "inSignOff": false
+          },
+          "alert": "The demand plan reference is unknown or not published.\nSupport reference: aaa70e4b-5091-4c8b-b1bd-c713915f5ad7",
+          "escapeClosed": true
+        }
+      },
+      "exempt": "record sign-off submit is reached through window.showConfirm (OD-F-Q145-1); not asserted",
+      "evidence": [
+        "png/uipm10-create-422-focus-inside-en-2.png",
+        "png/uipm10-capture-422-focus-inside-en-2.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "uipm05-skeleton-visible-en-2.png",
+      "sha256": "13a79578f2a4643f603677819fb9582a6d777d9459ee995306215962220be06f",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:51:45.962Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm05-content-loaded-en-2.png",
+      "sha256": "19d7e34dcc8d0606797983d7bcadeacf395381c23ec06f74579626370cb36d61",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:51:50.290Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-section-errors-en-2.png",
+      "sha256": "ac35dd0b30d7f731a61413d807e4cc5f9a8d6675baa0d0bd339ee14c39d5c1f3",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:51:52.806Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-snapshots-after-retry-en.png",
+      "sha256": "2b493a3a25aba54a9c3d6a4b208a8abcf27b2aa2fed1d2fc04fa6337cfac5697",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:51:59.523Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-after-retry-en-2.png",
+      "sha256": "2848fe465bd2c8c6ed0b27118b4e78416b806608549be7ca7cdcd727285e0214",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:52:04.484Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm09-entry-focus-returned-en-2.png",
+      "sha256": "71dd7abcb49e2771db791c23f8c08af630633819e0cbb0a8719078a34c762d3a",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:52:08.198Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm09-details-focus-returned-en-2.png",
+      "sha256": "67c0e2fa38489590900801a06f873bcc3849e1cc0c5998cf38db19f6a8d44c74",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:52:11.556Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm10-create-422-focus-inside-en-2.png",
+      "sha256": "156f86316992ccd9f885796daed6a9721b3bebf7d445c2ea4a2db3e1d20558ce",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:52:14.670Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm10-capture-422-focus-inside-en-2.png",
+      "sha256": "0bbdab601f401768247eb213e91210af42ae3f4f2f7e63f1714abdf209923a67",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:52:17.956Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "uipm-en-pm12",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "tag": "uipm-en-pm12",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "tag": "uipm-en-pm12-snapshots",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "uipm-en-pm05",
+      "at": "2026-09-30T19:51:48.920Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm05",
+      "at": "2026-09-30T19:51:48.920Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm05",
+      "at": "2026-09-30T19:51:48.920Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12",
+      "at": "2026-09-30T19:51:51.120Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 503,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12",
+      "at": "2026-09-30T19:51:51.120Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 500,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12",
+      "at": "2026-09-30T19:51:51.166Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-09-30T19:51:54.370Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 503,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-09-30T19:51:54.485Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-09-30T19:51:54.486Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-09-30T19:51:55.799Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-09-30T19:51:55.799Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-09-30T19:51:55.799Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-snapshots",
+      "at": "2026-09-30T19:51:57.379Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 500,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-snapshots",
+      "at": "2026-09-30T19:51:57.453Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-snapshots",
+      "at": "2026-09-30T19:51:57.453Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-snapshots",
+      "at": "2026-09-30T19:51:58.580Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-snapshots",
+      "at": "2026-09-30T19:51:58.580Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-snapshots",
+      "at": "2026-09-30T19:51:58.580Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-signoffs",
+      "at": "2026-09-30T19:52:00.440Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-signoffs",
+      "at": "2026-09-30T19:52:00.492Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-signoffs",
+      "at": "2026-09-30T19:52:00.492Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-signoffs",
+      "at": "2026-09-30T19:52:01.580Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-signoffs",
+      "at": "2026-09-30T19:52:01.580Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-signoffs",
+      "at": "2026-09-30T19:52:01.580Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm09",
+      "at": "2026-09-30T19:52:08.346Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm09",
+      "at": "2026-09-30T19:52:08.431Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm09",
+      "at": "2026-09-30T19:52:08.431Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-09-30T19:52:13.897Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api",
+      "status": 422,
+      "errorCode": "INVALID_DEMAND_REFERENCE",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-09-30T19:52:15.457Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-09-30T19:52:15.457Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-09-30T19:52:15.457Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-09-30T19:52:17.078Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 422,
+      "errorCode": "INVALID_DEMAND_REFERENCE",
+      "idempotencyKey": true
+    }
+  ],
+  "shellFonts": 18,
+  "endedAt": "2026-09-30T19:52:18.565Z"
+}

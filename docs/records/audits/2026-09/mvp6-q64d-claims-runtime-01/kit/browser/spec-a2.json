@@ -1,0 +1,100 @@
+{
+  "phase": "spec",
+  "startedAt": "2026-09-26T21:25:00.981Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "spec": {
+      "result": "PASS",
+      "exit": 0,
+      "specSha256": "5c30b9030982c8c73124f7bea8d8358511bb5e190d546a7550578480385649a1",
+      "stdoutTail": "\nRunning 17 tests using 1 worker\n\n  ✓   1 claims-ui.spec.mjs:46:3 › Claims list (CU-01…CU-05, CU-31) › list loads through the same-origin adapter only; skeleton then table (1.8s)\n  ✓   2 claims-ui.spec.mjs:59:3 › Claims list (CU-01…CU-05, CU-31) › filter sends only status and shipmentId (1.3s)\n  ✓   3 claims-ui.spec.mjs:70:3 › Claims list (CU-01…CU-05, CU-31) › QuickView makes no by-ID request (CU-31) (1.9s)\n  ✓   4 claims-ui.spec.mjs:88:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create positive: 250.00 EUR on a Dispatched shipment; body is exact text (2.5s)\n  ✓   5 claims-ui.spec.mjs:110:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create negative: lowercase currency → localized 400, inputs kept (CU-11) (2.4s)\n  ✓   6 claims-ui.spec.mjs:127:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › ineligible shipment: note + disabled submit (CU-17) (1.8s)\n  ✓   7 claims-ui.spec.mjs:136:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › carrier checkbox enabled only when the shipment has a carrier (CU-10) (1.8s)\n  ✓   8 claims-ui.spec.mjs:147:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › unknown shipment → one safe not-found text, no shipment data (CU-14) (1.5s)\n  ✓   9 claims-ui.spec.mjs:162:3 › Transition (CU-08, CU-20…CU-22) › allowed transition Open → Investigating returns 200 and reloads (2.1s)\n  ✓  10 claims-ui.spec.mjs:175:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) (3.5s)\n  -  11 claims-ui.spec.mjs:201:3 › Transition (CU-08, CU-20…CU-22) › reused key with a changed body → 409 IDEMPOTENCY_KEY_REUSED, retry stops (CU-19)\n  ✓  12 claims-ui.spec.mjs:208:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › without read: only _AccessDenied inside the shell (856ms)\n  ✓  13 claims-ui.spec.mjs:222:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › read-only: no create CTA and no row actions (1.0s)\n  ✓  14 claims-ui.spec.mjs:232:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: LE-B list excludes LE-A claims; ?shipmentId=<LE-A> → empty (155ms)\n  ✓  15 claims-ui.spec.mjs:242:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: resolve of an LE-A shipment from LE-B → 404 safe-not-found (125ms)\n  ✓  16 claims-ui.spec.mjs:255:5 › Languages (CU-24, CU-25) › screen in tr (1.7s)\n  ✓  17 claims-ui.spec.mjs:255:5 › Languages (CU-24, CU-25) › screen in ar (RTL) (1.8s)\n\n  1 skipped\n  16 passed (27.6s)\n",
+      "stderrTail": ""
+    }
+  },
+  "png": [
+    {
+      "name": "spec/01-list-en.png",
+      "sha256": "3800e7edd097c03ac9ff4c5433bd431affa6e580b863e852457b7393effbc4e5",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/02-create-201.png",
+      "sha256": "1a65b5df010f56cc53e748b19377c5dfeb5b3fb4afc7f449f6a9a553fede5741",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/03-create-400.png",
+      "sha256": "817db49e1a67519ac6ada57ed41656d686c7889fbe2b54013b0f9616425e7e86",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/04-transition-422.png",
+      "sha256": "4ba546f32c3b27b2dca422d8fd8288e7f99dcb7f2937210b67e547f41d7e35da",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/05-access-denied.png",
+      "sha256": "3ce2d84809b50a9415708c26953cf456e6166a06d9580cf152f510320f1e33a4",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-1024.png",
+      "sha256": "74785ec2381371b310dee2a50790f42a65cdeb3e2494b0cb8b359ff1d9859ca8",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-1440.png",
+      "sha256": "2104b49cd67fe3f6247f7fa3c5d26814e005a792899cfb9a62311c6c288a991a",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-390.png",
+      "sha256": "ac589d58b33824b5f0aba9d2cf3eb45429cea05ca4d97a2a2642a49fb6acc775",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-768.png",
+      "sha256": "509a460b95645fcf2a4f157579438bb693240cfc3fcea794118bcebdc3e2e4e2",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-1024.png",
+      "sha256": "7d1b41c429b94c3760a6139196b3ead1a36506e09fa0a9ba6d3dcd8f7ebc200d",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-1440.png",
+      "sha256": "ba91bc904e796f2056b41587cb0c91f2312d7261880d3f4baed659f5a01ae442",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-390.png",
+      "sha256": "07d73a67134c22d4af666625de4b396c291f006ca2dd78e2e8cff922a96c6b0d",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-768.png",
+      "sha256": "2392fc084d0d03f52df2be289ac74f301a0e5f648611236b9f9085d4c64ae428",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:25:29.440Z"
+}

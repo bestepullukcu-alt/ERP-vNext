@@ -1,0 +1,32 @@
+# Prospective UI-owned allowlist (28 paths). This file grants no write authority.
+frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs
+frontend/Diten.Web/Models/SupplyChain/Shipments/ShipmentViewModels.cs
+frontend/Diten.Web/Views/SupplyChain/Shipments/ShipmentsIndex.cs
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/Create.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/Details.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/_LineEditor.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/_DataTable.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/_TransitionOffcanvas.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/_PodOffcanvas.cshtml
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.l10n.js
+frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.en.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.tr.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.fr.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.es.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.zh.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.ar.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.ru.resx
+frontend/Diten.Web.Tests/Controllers/SupplyChainShipmentsControllerTests.cs
+frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs
+frontend/Diten.Web.Tests/JavaScript/ShipmentIndexBehaviorTests.cs
+frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs
+
+# Shared/protected integration files are excluded; see SHARED-INTEGRATION-HANDOFF.md.
+

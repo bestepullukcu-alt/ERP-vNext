@@ -1,0 +1,17 @@
+{
+  "detail": 200,
+  "replay": 200,
+  "sameShipment": true,
+  "podPersisted": true,
+  "rootObserved": null,
+  "db": {
+    "counts": {
+      "sce_shipments": 0,
+      "sce_shipment_history": 0,
+      "sce_shipment_audit": 0,
+      "sce_shipment_outbox": 0,
+      "sce_shipment_receipts": 0
+    },
+    "outbox": {}
+  }
+}

@@ -1,0 +1,6 @@
+resource	action	result
+Processes/ports	None created or restarted	No lane resources to stop
+Database/fixtures	No connection or seed	No cleanup required; operational27017 untouched
+Tokens/cookies	None obtained or generated	No secrets retained
+Browser/PNG	No session or capture	No export workaround
+Product/git	No mutation	Only this new audit directory written

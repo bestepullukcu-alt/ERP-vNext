@@ -1,0 +1,45 @@
+using Xunit;
+
+namespace Diten.Platform.Application.Tests.Persistence;
+
+public sealed class PlatformMongoTestConnectionTests : IDisposable
+{
+    private readonly string? _original =
+        Environment.GetEnvironmentVariable(PlatformMongoTestConnection.EnvironmentVariableName);
+
+    [Fact]
+    public void MissingUri_FailsClosed()
+    {
+        Environment.SetEnvironmentVariable(PlatformMongoTestConnection.EnvironmentVariableName, null);
+
+        var ex = Assert.Throws<InvalidOperationException>(PlatformMongoTestConnection.RequireConnectionString);
+
+        Assert.Contains(PlatformMongoTestConnection.EnvironmentVariableName, ex.Message);
+        Assert.Contains("fail closed", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("mongodb://localhost:27017")]
+    [InlineData("mongodb://127.0.0.1:27017/?directConnection=true")]
+    [InlineData("mongodb://127.0.0.1:27018/?directConnection=true")]
+    public void ProtectedOperationalPorts_FailClosed(string connectionString)
+    {
+        Environment.SetEnvironmentVariable(PlatformMongoTestConnection.EnvironmentVariableName, connectionString);
+
+        var ex = Assert.Throws<InvalidOperationException>(PlatformMongoTestConnection.RequireConnectionString);
+
+        Assert.Contains("protected MongoDB port", ex.Message);
+    }
+
+    [Fact]
+    public void LaneOwnedExplicitPort_IsAccepted()
+    {
+        var connectionString = "mongodb://127.0.0.1:37017/?replicaSet=q131";
+        Environment.SetEnvironmentVariable(PlatformMongoTestConnection.EnvironmentVariableName, connectionString);
+
+        Assert.Equal(connectionString, PlatformMongoTestConnection.RequireConnectionString());
+    }
+
+    public void Dispose() =>
+        Environment.SetEnvironmentVariable(PlatformMongoTestConnection.EnvironmentVariableName, _original);
+}

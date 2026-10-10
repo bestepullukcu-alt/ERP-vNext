@@ -1,0 +1,108 @@
+{
+  "phase": "spec",
+  "extra": null,
+  "startedAt": "2026-09-27T13:37:20.876Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "spec": {
+      "result": "PASS",
+      "exit": 0,
+      "specSha256": "ab3cb56db126caca8ced0b71b7d8c0cb23a5b071d216e533e7d12b7118e64e5c",
+      "stdoutTail": "\nRunning 18 tests using 1 worker\n\n  ✓   1 claims-ui.spec.mjs:46:3 › Claims list (CU-01…CU-05, CU-31) › list loads through the same-origin adapter only; skeleton then table (1.8s)\n  ✓   2 claims-ui.spec.mjs:59:3 › Claims list (CU-01…CU-05, CU-31) › filter sends only status and shipmentId (1.7s)\n  ✓   3 claims-ui.spec.mjs:70:3 › Claims list (CU-01…CU-05, CU-31) › QuickView makes no by-ID request (CU-31) (1.2s)\n  ✓   4 claims-ui.spec.mjs:88:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create positive: 250.00 EUR on a Dispatched shipment; body is exact text (1.9s)\n  ✓   5 claims-ui.spec.mjs:110:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create negative: lowercase currency → localized 400, inputs kept (CU-11) (1.9s)\n  ✓   6 claims-ui.spec.mjs:127:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create 400 keeps keyboard focus in the surface; Escape closes it without Tab (CU-25, Q122-D5) (2.0s)\n  ✓   7 claims-ui.spec.mjs:151:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › ineligible shipment: note + disabled submit (CU-17) (1.6s)\n  ✓   8 claims-ui.spec.mjs:160:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › carrier checkbox enabled only when the shipment has a carrier (CU-10) (1.8s)\n  ✓   9 claims-ui.spec.mjs:171:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › unknown shipment → one safe not-found text, no shipment data (CU-14) (1.6s)\n  ✓  10 claims-ui.spec.mjs:186:3 › Transition (CU-08, CU-20…CU-22) › allowed transition Open → Investigating returns 200 and reloads (2.0s)\n  ✓  11 claims-ui.spec.mjs:199:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) (3.1s)\n  -  12 claims-ui.spec.mjs:225:3 › Transition (CU-08, CU-20…CU-22) › reused key with a changed body → 409 IDEMPOTENCY_KEY_REUSED, retry stops (CU-19)\n  ✓  13 claims-ui.spec.mjs:232:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › without read: only _AccessDenied inside the shell (996ms)\n  ✓  14 claims-ui.spec.mjs:246:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › read-only: no create CTA and no row actions (1.0s)\n  ✓  15 claims-ui.spec.mjs:256:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: LE-B list excludes LE-A claims; ?shipmentId=<LE-A> → empty (125ms)\n  ✓  16 claims-ui.spec.mjs:266:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: resolve of an LE-A shipment from LE-B → 404 safe-not-found (110ms)\n  ✓  17 claims-ui.spec.mjs:279:5 › Languages (CU-24, CU-25) › screen in tr (1.6s)\n  ✓  18 claims-ui.spec.mjs:279:5 › Languages (CU-24, CU-25) › screen in ar (RTL) (1.8s)\n\n  1 skipped\n  17 passed (27.9s)\n",
+      "stderrTail": ""
+    }
+  },
+  "png": [
+    {
+      "name": "spec/01-list-en.png",
+      "sha256": "fc3039005ca897ba8f3df6466e1e17be770dc0d66ae4068dd16e9f2d9652c50a",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/02-create-201.png",
+      "sha256": "e57effeae54da2fbddbaec3f618355716d858c24d4c65dec7bc1e7999d718885",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/03-create-400.png",
+      "sha256": "e57da6d32691431be5d6defbf4420759ce2ce3f208ed2ee81142ed85df210634",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/03b-create-400-escape.png",
+      "sha256": "2118826547a766acec1d5c22fd89c79fa4ecd5360ef81795e1a6b562be816db8",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/04-transition-422.png",
+      "sha256": "96271e63d7e15deb0f663cb71c3639b6a675b82f0734baeb3373927d99b01b6e",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/05-access-denied.png",
+      "sha256": "3ce2d84809b50a9415708c26953cf456e6166a06d9580cf152f510320f1e33a4",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-1024.png",
+      "sha256": "eaf2169bdc28d260541dc1e9db899f8928cca94d8ac99bb63e43970cee081737",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-1440.png",
+      "sha256": "f9a05e5c5235a1086fc47fd2249651b3b6a19794a59bc2878654337ea74ae326",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-390.png",
+      "sha256": "3927aed90df0100ed7d940f2ec5997c7cba069ab85b1f18473e266dcfd9a38f1",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-768.png",
+      "sha256": "f38721996d5f4726bdf40569af5395e97a42da9389fefa99de18eebcca0945c3",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-1024.png",
+      "sha256": "5559e6cb227ff0c6588ab209c8dafe430071669069c5f822c5b4423251bb7a1f",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-1440.png",
+      "sha256": "35e9c01e1f7c780c49be79c116d5f4d60e921296f07eaf33ee292d35ced2590f",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-390.png",
+      "sha256": "ed08f7a0d7d067b6a496d63a1c4568092738fd02fdb3c709d0037d027ba0bdf7",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-768.png",
+      "sha256": "51ecd5ae202612214401593614607721d26392a89affaa2e046549a0a71d09b5",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [],
+  "endedAt": "2026-09-27T13:37:49.451Z"
+}

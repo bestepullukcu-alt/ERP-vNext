@@ -1,0 +1,10 @@
+tree	target	exit	warnings	errors	log
+treeB	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0	logs/build-treeB--Diten.SupplyChainService.log
+treeB	frontend/Diten.Web/Diten.Web.csproj	0	15	0	logs/build-treeB--Diten.Web.log
+treeB	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	4	0	logs/build-treeB--Diten.Web.Tests.log
+treeA	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0	logs/build-treeA--Diten.SupplyChainService.log
+treeA	frontend/Diten.Web/Diten.Web.csproj	0	15	0	logs/build-treeA--Diten.Web.log
+treeA	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	3	0	logs/build-treeA--Diten.Web.Tests.log
+
+# build warnings: treeB has 1 warning treeA does not have
+> frontend/Diten.Web.Tests/Forms/CapacityPlanFormContractTests.cs(121,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013)

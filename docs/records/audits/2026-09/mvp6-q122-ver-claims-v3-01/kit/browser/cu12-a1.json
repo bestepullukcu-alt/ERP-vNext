@@ -1,0 +1,122 @@
+{
+  "phase": "cu12",
+  "extra": null,
+  "startedAt": "2026-09-27T12:10:46.833Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-12-presence-not-nonempty": {
+      "result": "PASS",
+      "sentBody": "{\"shipmentId\":\"c8312c99-24be-4b2f-a683-a417a0ae4a25\",\"reasonCode\":\"\",\"claimedAmount\":\"12.00\",\"currency\":\"EUR\",\"evidenceReferenceIds\":[\"\"]}",
+      "createStatus": 201,
+      "claimId": "006d596f-0967-4bd0-bbfb-4bb772188e25",
+      "formAttributes": [
+        {
+          "id": "",
+          "required": false,
+          "maxLength": -1,
+          "pattern": null
+        },
+        {
+          "id": "claimShipmentId",
+          "required": false,
+          "maxLength": -1,
+          "pattern": null
+        },
+        {
+          "id": "claimLinkCarrier",
+          "required": false,
+          "maxLength": -1,
+          "pattern": null
+        },
+        {
+          "id": "claimReasonCode",
+          "required": false,
+          "maxLength": -1,
+          "pattern": null
+        },
+        {
+          "id": "claimClaimedAmount",
+          "required": false,
+          "maxLength": -1,
+          "pattern": null
+        },
+        {
+          "id": "claimCurrency",
+          "required": false,
+          "maxLength": -1,
+          "pattern": null
+        },
+        {
+          "id": "claimEvidence_fb998ef5-7e8b-4bc7-b324-59da12f81e18",
+          "required": false,
+          "maxLength": -1,
+          "pattern": null
+        }
+      ],
+      "emptyResolutionNoteTransition": {
+        "status": 200,
+        "requestCorrelation": "9d524a5e-c0e9-4c2d-8dff-aabd3043d3c2",
+        "idempotencyKey": "7407abc0-27f6-48d7-bb33-ac223bf9c1f8",
+        "responseCorrelation": "9d524a5e-c0e9-4c2d-8dff-aabd3043d3c2",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": true,
+        "errorCode": null,
+        "errorCorrelation": null,
+        "errorMessage": null,
+        "okKeys": [
+          "approvedAmount",
+          "claimId",
+          "claimNumber",
+          "contractVersion",
+          "idempotentReplay",
+          "shipmentId",
+          "status"
+        ],
+        "claimId": "006d596f-0967-4bd0-bbfb-4bb772188e25",
+        "claimStatus": "Investigating",
+        "approvedAmount": null,
+        "idempotentReplay": false,
+        "items": null,
+        "rootLeak": []
+      },
+      "dbCheck": "see raw/db/cu12-exact-empty-*.json"
+    }
+  },
+  "png": [
+    {
+      "name": "cu12-empty-reason-evidence-en.png",
+      "sha256": "59da435086a35cabc9d140519b61b9ad56285a7d5e9f0298abafab05a19ace85",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:10:49.706Z",
+      "phase": "cu12",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "cu12",
+      "text": "Claim created.",
+      "type": "success",
+      "at": "2026-09-27T12:10:48.955Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "cu12",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu12",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "cu12": {
+    "claimId": "006d596f-0967-4bd0-bbfb-4bb772188e25"
+  },
+  "endedAt": "2026-09-27T12:10:49.756Z"
+}

@@ -1,0 +1,18 @@
+# verify from: repository root — shasum -a 256 -c docs/records/audits/2026-10/mvp6-q382-date-tests-01/ARTIFACTS.sha256
+# Q382 · generated 2026-10-04 13:29:56 +0300 (Europe/Istanbul) · start 2026-10-04 12:29:03 +03 · HEAD c1f2dffe8 · git status --short 35 · nothing staged (0 staged)
+38b6648524ad8b4b05aea56e5a6e967c22b5e2480713d325b11a8e03960c01e2  frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js
+1889605f96123b0edcdee1613609a96a3a41adbc611bb649805d55358785ab47  frontend/Diten.Web.Tests/JavaScript/Node/shipment-details-datetime.test.mjs
+9a88ff62a9fc2e8a110a0211221fabd13f20570d80af0c2ec73839487f8d4953  frontend/Diten.Web.Tests/JavaScript/ShipmentDetailsDateNodeTests.cs
+e906fdb220f8e431ef874c28b9168efa62dcb3f1adfdcab6f2569a2726462577  frontend/Diten.Web.Tests/README.md
+c82b6327682912704d1e415582e411ed0b44d5156e834d9cd1c3eb6112756089  docs/records/audits/2026-10/mvp6-q382-date-tests-01/REPORT.md
+12a930625e424cf64bec51be3c060b242a79a02aa75b3ff22d1f4b8603299e68  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/details-js.diff
+343253353217a3175692aae0b5df72e126ddf944c845f946abff702d04ebb2cc  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/final-Europe-Istanbul.tap
+7fb4b1fbb08f8c687fa9f3c963c58074ef0474b4beeb6dc100db56fb06925d37  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/final-UTC.tap
+7485d1be59ace6ce271ea3518f7e3a7d8c6d41fddcf4f6c9ac5eabd665dd7537  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/live-dom-check.cjs.txt
+b155e98932f4e1b989402b7ffda2d13b39711f14afd13c6f854d44a600fdc8df  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/live-dom-check.txt
+e3c9d842f01a684d897289f4e0af982fad3010414fe282bc6030ccc865b27f6d  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/restored-Europe-Istanbul.tap
+937135f682b83b5270466e05a9dbe00c7da74d12c6b06c7591b434798a0c5b51  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/restored-UTC.tap
+f31d6180c537fff639dd8da66daef9019b69937977ecb8f6df0457a31088cbc5  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/sabotage-Europe-Istanbul.tap
+2214c450dd200e8747bc9c5a9963eef0c3013e60d7b5723b9ef0374957d179a7  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/sabotage-UTC.tap
+5fdb81ba2e04db0619c77991d3236f1e0960ddce9a5f99a65d4405c6789328e5  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/sabotage-hash.txt
+751d71885b3427381bf509b68ea196b06bc1d5f02f823f97b36db5527f5b1aee  docs/records/audits/2026-10/mvp6-q382-date-tests-01/evidence/suite-results.txt

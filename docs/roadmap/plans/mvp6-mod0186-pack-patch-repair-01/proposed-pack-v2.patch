@@ -1,0 +1,19 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+@@ -7,7 +7,7 @@
+ golden_reference: none
+ entity_base: EntityBase
+ status: draft
+-status_note: "MVP6-MOD0186-PREP-02 v1.0: owner decision set D186-01..06 prepared; amendment and Phase1.5 OPEN; DEV/VER HELD."
++status_note: "FINAL-PACK-DELTA-01: published SHIPMENT-BUNDLE 3.0.0 and Returns annex are bound by exact hashes; Phase 1.5/integration-owner gate remains open; DEV/VER HELD."
+ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+@@ -480,6 +480,7 @@
+ SHA25693c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571.
+ Returns three operations and schemas in §22 remain unchanged by Loads publication. Carrier/Loads
+ annexes apply only to their own families. No inherited Returns error/replay/permission authority.
++Final-pack delta binding (candidate until CT disposition): published YAML SHA256 `5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c`; Returns annex SHA256 `00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11`; guard authority SHA256 `768757bb1fb9e39a324960e25c0e3943adb4bd6231d3dd50bf098915274406fb`. These exact bindings establish packaging parity only; they do not grant runtime uptake.
+ 
+ Settled sources: MOD0183 bounded CT acceptance (2026-09-16); MOD0184 bounded CT acceptance
+ `docs/records/audits/2026-09/mvp6-mod0184-ct-accept-02-2026-09-18/README.md`;

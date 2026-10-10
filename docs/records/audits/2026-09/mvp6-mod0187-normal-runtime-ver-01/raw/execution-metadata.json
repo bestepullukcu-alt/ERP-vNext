@@ -1,0 +1,112 @@
+{
+  "archiveSha256": "edb759a07475184e11ae7ef94698f6300572b72aaeb2a39c7e2be13b74795a21",
+  "archiveManifestSha256": "92879d2098e5c50fb4c2862ee52060cbe8ba1aab2e038e77f513f49680e80f80",
+  "sourceEntries": 341,
+  "sourceHashFailuresBeforeBuild": 0,
+  "sourceHashFailuresAfterBuild": 0,
+  "apiDllSha256": "4673a6b970a4ee31c3413325b4024349ad91773262fb6e56e84eebbd1106fb8b",
+  "apiDllMtimeUtc": "2026-09-22T07:00:32.061939+00:00",
+  "runtimeProcess": {
+    "binary": "/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+    "binarySha256": "4673a6b970a4ee31c3413325b4024349ad91773262fb6e56e84eebbd1106fb8b",
+    "apiPid": 30183,
+    "mongoPid": 30178,
+    "apiPort": 5187,
+    "proxyPort": 5287,
+    "mongoPort": 27987,
+    "mongoDatabase": "diten_claims_normal_ver",
+    "replicaSet": "claims_normal_ver",
+    "claimsReferenceTarget": "forward-only proxy -> http://127.0.0.1:5187/",
+    "jwtSecretRecorded": false,
+    "bearerRecorded": false
+  },
+  "securityRestart": {
+    "priorApiPid": 30663,
+    "newApiPid": 31048,
+    "binarySha256": "4673a6b970a4ee31c3413325b4024349ad91773262fb6e56e84eebbd1106fb8b",
+    "replay": {
+      "method": "POST",
+      "path": "/api/shipment-bundle/claims",
+      "requestCorrelation": "00000000-0000-0000-0000-000000000000",
+      "requestBodySha256": "6c2b18265900d620b8d89d956defbb448ba77e4536c6d5ad4aada5fc502152f5",
+      "requestBodyBytes": 113,
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "x-correlation-id": "00000000-0000-0000-0000-000000000000"
+      },
+      "body": {
+        "claimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+        "claimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+        "shipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+        "status": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "responseBodySha256": "9a25364acbeff19fe30152d47d94a7b23a56cec99b06e3aa5c7b0078d666892f",
+      "responseBodyBytes": 240
+    },
+    "beforeCounts": {
+      "claims": 1,
+      "claims_receipts": 1,
+      "claims_audit": 1,
+      "claims_outbox": 1
+    },
+    "afterCounts": {
+      "claims": 1,
+      "claims_receipts": 1,
+      "claims_audit": 1,
+      "claims_outbox": 1
+    },
+    "dependencyReadsBefore": 8,
+    "dependencyReadsAfter": 8,
+    "pass": true
+  },
+  "security": {
+    "anonymous": {
+      "status": 401,
+      "code": "UNAUTHENTICATED",
+      "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+    },
+    "missingCreatePermission": {
+      "status": 403,
+      "code": "FORBIDDEN",
+      "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+    },
+    "foreignTenant": {
+      "status": 404,
+      "code": "CLAIM_NOT_FOUND",
+      "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+    },
+    "foreignLegalEntity": {
+      "status": 404,
+      "code": "CLAIM_NOT_FOUND",
+      "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+    },
+    "ownerScopeCounts": {
+      "claims": 0,
+      "claims_receipts": 0,
+      "claims_audit": 0,
+      "claims_outbox": 0
+    },
+    "pass": true
+  },
+  "testCounts": {
+    "claims-reference.trx": {
+      "total": 36,
+      "passed": 36,
+      "failed": 0
+    },
+    "same-host.trx": {
+      "total": 272,
+      "passed": 272,
+      "failed": 0
+    },
+    "shipment-exact.trx": {
+      "total": 12,
+      "passed": 12,
+      "failed": 0
+    }
+  }
+}

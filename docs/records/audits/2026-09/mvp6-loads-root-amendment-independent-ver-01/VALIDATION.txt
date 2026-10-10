@@ -1,0 +1,11 @@
+PASS verifier_exit
+PASS semantic_verdict_rework
+PASS full_meta_schema_zero
+PASS semantic_validator_zero
+PASS refs_298
+PASS examples_236
+PASS all_fixtures
+PASS all_annex_policy_checks
+PASS all_mutants_killed
+PASS single_stale_version_finding
+PASS no_source_drift

@@ -1,0 +1,5 @@
+{
+  set: 'rsq335',
+  members: 1,
+  state: 'PRIMARY'
+}

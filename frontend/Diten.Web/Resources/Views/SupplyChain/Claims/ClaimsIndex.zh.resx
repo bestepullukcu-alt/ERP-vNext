@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>索赔</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>登记、调查并裁定与货运相关的承运商索赔。</value></data>
+  <data name="AddNewClaims" xml:space="preserve"><value>新增索赔</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>操作</value></data>
+  <data name="ClaimNumber" xml:space="preserve"><value>索赔编号</value></data>
+  <data name="ClaimId" xml:space="preserve"><value>索赔 ID</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>货运 ID</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>输入货运的 UUID。</value></data>
+  <data name="ClaimedAmount" xml:space="preserve"><value>索赔金额</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>币种</value></data>
+  <data name="ClaimSummary" xml:space="preserve"><value>索赔摘要</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>没有符合当前筛选条件的索赔。</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>无法加载索赔。</value></data>
+  <data name="Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>未提供</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>支持参考号</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>已复制到剪贴板。</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>返回的索赔数</value></data>
+  <data name="ApprovedAmountNotListed" xml:space="preserve"><value>批准金额不包含在列表数据中；它会在批准后的确认消息中显示。</value></data>
+  <data name="StatusOpen" xml:space="preserve"><value>待处理</value></data>
+  <data name="StatusInvestigating" xml:space="preserve"><value>调查中</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="StatusSettled" xml:space="preserve"><value>已结算</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="StatusWithdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>已计划</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>已发运</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>运输中</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>已交付</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>异常</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建索赔</value></data>
+  <data name="Resolve" xml:space="preserve"><value>查询</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>创建索赔前请先查询货运。</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>货运编号</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>货运状态</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>仅可为状态为“已发运”“运输中”“已交付”“异常”或“已关闭”的货运创建索赔。</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>该货运的状态不允许创建索赔。</value></data>
+  <data name="LinkShipmentCarrier" xml:space="preserve"><value>关联该货运的承运商</value></data>
+  <data name="NoShipmentCarrier" xml:space="preserve"><value>仅当所查询的货运已指定承运商时可用。</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>原因代码</value></data>
+  <data name="AmountHelp" xml:space="preserve"><value>按输入原样发送，例如 250.00。</value></data>
+  <data name="CurrencyHelp" xml:space="preserve"><value>三字母代码，按输入原样发送，例如 EUR。</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>证据引用</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>证据引用</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>添加引用</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>移除引用</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>可选。引用按显示顺序发送。</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>创建索赔</value></data>
+  <data name="ClaimCreated" xml:space="preserve"><value>索赔已创建。</value></data>
+  <data name="ClaimCreateReplayed" xml:space="preserve"><value>此索赔已由同一请求创建，显示为已完成。</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>更改索赔状态</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>新状态</value></data>
+  <data name="ActionInvestigate" xml:space="preserve"><value>开始调查</value></data>
+  <data name="ActionWithdraw" xml:space="preserve"><value>撤回</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>批准</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="ActionSettle" xml:space="preserve"><value>结算（不记账付款）</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="TargetSettledLabel" xml:space="preserve"><value>已结算（运营状态，不记账付款）</value></data>
+  <data name="SettledNoPaymentNote" xml:space="preserve"><value>结算仅更改索赔状态，不会记账任何付款、应付或应收款项。</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>发生时间</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>带时区偏移的日期和时间，例如 2026-09-26T14:30:00+03:00。</value></data>
+  <data name="ApprovedAmount" xml:space="preserve"><value>批准金额</value></data>
+  <data name="ApprovedAmountHelp" xml:space="preserve"><value>批准时必填；取值为零到索赔金额之间。</value></data>
+  <data name="ResolutionCode" xml:space="preserve"><value>处理结果代码</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>备注</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>应用状态</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>要将索赔状态更改为所选值吗？</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>索赔状态已更新。</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>此状态变更已由同一请求应用，显示为已完成。</value></data>
+  <data name="ApprovedAmountResult" xml:space="preserve"><value>批准金额</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>此操作的请求仍在处理中。</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>请求无效。请检查输入的值。</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>您的会话已结束，请重新登录。</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="ErrClaimNotFound" xml:space="preserve"><value>未找到该记录，或您无法访问该记录。</value></data>
+  <data name="ErrUnsupportedMediaType" xml:space="preserve"><value>不支持该请求格式。</value></data>
+  <data name="ErrClaimShipmentIneligible" xml:space="preserve"><value>货运状态不允许创建索赔。</value></data>
+  <data name="ErrClaimCarrierMismatch" xml:space="preserve"><value>承运商与货运的承运商不一致或不可用。</value></data>
+  <data name="ErrClaimAmountInvalid" xml:space="preserve"><value>索赔金额必须大于零。</value></data>
+  <data name="ErrClaimApprovalAmountInvalid" xml:space="preserve"><value>批准金额必须介于零与索赔金额之间。</value></data>
+  <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>仅在批准时才能提交批准金额。</value></data>
+  <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>索赔已在此期间发生变化，无法再执行此状态变更。列表已重新加载。</value></data>
+  <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>该请求与货运记录已不再一致。</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>此请求已使用不同的值接收。如需提交不同的请求，请关闭此表单并打开新表单。</value></data>
+  <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>货运参考数据无效，请联系支持团队。</value></data>
+  <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>货运参考数据不完整，请稍后重试同一请求。</value></data>
+  <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>货运参考数据暂时不可用，请重试同一请求。</value></data>
+  <data name="ErrClaimStorageUnavailable" xml:space="preserve"><value>索赔服务暂时不可用，结果尚未确认；请重试同一请求。</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>发生意外错误。您可以重试同一操作。</value></data>
+</root>

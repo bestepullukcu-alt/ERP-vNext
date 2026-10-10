@@ -1,0 +1,15 @@
+cap-get-noauth         GET  /api/supply-chain/capacity-plans/0999b814-0ed9-4a68-9056-ca9aec0a2a0a 404 
+cap-get-auth           GET  /api/supply-chain/capacity-plans/0999b814-0ed9-4a68-9056-ca9aec0a2a0a 404 
+cap-post-noauth        POST /api/supply-chain/capacity-plans                     404 
+cap-post-auth          POST /api/supply-chain/capacity-plans                     404 
+sop-get-noauth         GET  /api/supply-chain/sandop-plans/0999b814-0ed9-4a68-9056-ca9aec0a2a0a 404 
+sop-get-auth           GET  /api/supply-chain/sandop-plans/0999b814-0ed9-4a68-9056-ca9aec0a2a0a 404 
+sop-post-noauth        POST /api/supply-chain/sandop-plans                       404 
+sop-post-auth          POST /api/supply-chain/sandop-plans                       404 
+ship-list-auth         GET  /api/shipment-bundle/shipments                       200 {"items":[],"page":1,"pageSize":50,"total":0,"contractVersion":"v1"}
+ship-list-noauth       GET  /api/shipment-bundle/shipments                       401 {"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"9d3c5dc9-67d5-4ba3-aa9b-677d4c2524d4"},"contractVersion":"v1"}
+carriers-auth          GET  /api/shipment-bundle/carriers                        403 {"error":{"code":"INVALID_REQUEST","message":"Required authorization context or permission is missing.","correlationId":"a3f20017-69f0-46b2-9976-64588cdcfd82"},
+loads-noauth           GET  /api/shipment-bundle/loads                           401 {"error":{"code":"INVALID_REQUEST","message":"Load request could not be completed.","correlationId":"3d892f76-ebfb-4d62-823b-dc3ca6a9923e"},"contractVersion":"v
+returns-noauth         GET  /api/shipment-bundle/returns                         401 {"error":{"code":"INVALID_REQUEST","message":"INVALID REQUEST","correlationId":"5c247e7f-0fd5-4f28-8ae2-0d8d355e9e48"},"contractVersion":"v1"}
+claims-noauth          GET  /api/shipment-bundle/claims                          401 {"error":{"code":"UNAUTHENTICATED","message":"Authentication is required.","correlationId":"8ae7b74d-56f3-410a-8d57-f381a7af27d0"},"contractVersion":"v1"}
+unknown-noauth         GET  /api/supply-chain/nothing-here                       404 

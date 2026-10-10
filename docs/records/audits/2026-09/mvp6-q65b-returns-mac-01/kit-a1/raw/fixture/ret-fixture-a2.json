@@ -1,0 +1,11 @@
+{
+  "run": "46bab3",
+  "tenants": {
+    "T1": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+    "T2": "00000000-0000-0000-0000-000000000001"
+  },
+  "steps": [],
+  "catalogWaitSeconds": 1.6,
+  "catalogMissing": [],
+  "stopped": "mongosh failed rc=1 MongoServerError: E11000 duplicate key error collection: DitenAuth_RetQ65b01.permissions index: Module_1_Resource_1_Action_1 dup key: { Module: \"reverse-logistics\", Resource: \"returns\", Action: \"authorize\" }\n"
+}

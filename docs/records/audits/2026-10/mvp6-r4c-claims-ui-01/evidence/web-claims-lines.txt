@@ -1,0 +1,93 @@
+# Web adapter lines (SupplyChainClaimsController), each with its trace; mutations also name the Shipment root
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace cf2ebbec-35e1-4aee-a198-66977dbbdedd.
+Shipment lookup for a claim answered 200. Trace 26fe0134-5b9c-4152-bdc8-a59582d8324d.
+Shipment lookup for a claim answered 200. Trace a8567d0e-8672-4e33-a01e-01fa9b604449.
+Claims mutation forwarded. Trace a8567d0e-8672-4e33-a01e-01fa9b604449 Root b43dd46b-0dd5-4294-b9a6-23c383433771 Target http://localhost:5000/api/shipment-bundle/claims.
+Claims gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/claims. Trace a8567d0e-8672-4e33-a01e-01fa9b604449 Root b43dd46b-0dd5-4294-b9a6-23c383433771.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace a2d1c363-cfb1-427d-ab8f-ebd503cfb7f0.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 6218f96a-326a-4b4f-abc3-bafba496dfc8.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 90b8cd74-0cd4-474a-81d5-64c58cb2f065.
+Shipment lookup for a claim answered 200. Trace 59cdaf7e-d9f3-4a3b-b3a7-6dcae9b3f85f.
+Claims mutation forwarded. Trace 59cdaf7e-d9f3-4a3b-b3a7-6dcae9b3f85f Root b43dd46b-0dd5-4294-b9a6-23c383433771 Target http://localhost:5000/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition.
+Claims gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition. Trace 59cdaf7e-d9f3-4a3b-b3a7-6dcae9b3f85f Root b43dd46b-0dd5-4294-b9a6-23c383433771.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace a11167e4-292f-40d7-b136-67c9885714cd.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace f29e14fa-ff57-4cd1-a632-18cb09aa688b.
+Shipment lookup for a claim answered 200. Trace 512e5b2c-27c6-49c6-ab13-2675d5b66972.
+Claims mutation forwarded. Trace 512e5b2c-27c6-49c6-ab13-2675d5b66972 Root b43dd46b-0dd5-4294-b9a6-23c383433771 Target http://localhost:5000/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition.
+Claims gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition. Trace 512e5b2c-27c6-49c6-ab13-2675d5b66972 Root b43dd46b-0dd5-4294-b9a6-23c383433771.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace dccff811-b78e-4723-ad6c-56520fc07046.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 33c78306-780b-436f-8019-c5b62b927d75.
+Shipment lookup for a claim answered 200. Trace 7b3261eb-488a-4e1e-921a-b785e11e9c72.
+Claims mutation forwarded. Trace 7b3261eb-488a-4e1e-921a-b785e11e9c72 Root b43dd46b-0dd5-4294-b9a6-23c383433771 Target http://localhost:5000/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition.
+Claims gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition. Trace 7b3261eb-488a-4e1e-921a-b785e11e9c72 Root b43dd46b-0dd5-4294-b9a6-23c383433771.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 0e7cd6b4-d16c-480c-a2ab-49eac7a0c965.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 0ab48f9f-9025-4052-8f1f-1a26222aecbd.
+Shipment lookup for a claim answered 200. Trace 039dc744-603b-4f29-aef9-5baba0159002.
+Claims mutation forwarded. Trace 039dc744-603b-4f29-aef9-5baba0159002 Root b43dd46b-0dd5-4294-b9a6-23c383433771 Target http://localhost:5000/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition.
+Claims gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition. Trace 039dc744-603b-4f29-aef9-5baba0159002 Root b43dd46b-0dd5-4294-b9a6-23c383433771.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 5962cd79-1ae1-4d12-8398-dbe9264370fc.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 897e6504-0bdd-460f-84bb-b418285b1be0.
+Shipment lookup for a claim answered 200. Trace 8ab13fee-ec7b-466e-b322-7a72ff0d89a4.
+Shipment lookup for a claim answered 200. Trace 915225de-b305-4840-9686-52d9f288f838.
+Claims mutation forwarded. Trace 915225de-b305-4840-9686-52d9f288f838 Root 53f384a4-3559-4366-b9aa-60d23b69cff9 Target http://localhost:5000/api/shipment-bundle/claims.
+Claims gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/claims. Trace 915225de-b305-4840-9686-52d9f288f838 Root 53f384a4-3559-4366-b9aa-60d23b69cff9.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 0c7a79eb-4f84-42e2-9f11-5c0a5ccf50de.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 69768b28-0b16-4712-88e5-af878a669c3d.
+Shipment lookup for a claim answered 200. Trace 5ac8e358-f65e-4839-8d23-6c56d223bc5d.
+Claims mutation forwarded. Trace 5ac8e358-f65e-4839-8d23-6c56d223bc5d Root 53f384a4-3559-4366-b9aa-60d23b69cff9 Target http://localhost:5000/api/shipment-bundle/claims/88d91434-55aa-4460-884a-2c6e4fe6eb96/transition.
+Claims gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/claims/88d91434-55aa-4460-884a-2c6e4fe6eb96/transition. Trace 5ac8e358-f65e-4839-8d23-6c56d223bc5d Root 53f384a4-3559-4366-b9aa-60d23b69cff9.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 42ff5494-5081-4c34-92c9-ec95f2160ffd.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 76f0b67c-15a0-499e-83cc-baa012e7f438.
+Shipment lookup for a claim answered 200. Trace 99f1b006-66bb-406a-b3b4-3c0c354dc3bd.
+Shipment lookup for a claim answered 200. Trace fdbfebb8-e87c-4d5e-a6ae-07a8f3fd8166.
+Claims mutation forwarded. Trace fdbfebb8-e87c-4d5e-a6ae-07a8f3fd8166 Root e6abe031-96af-4910-bd33-8ae941f464d5 Target http://localhost:5000/api/shipment-bundle/claims.
+Claims gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/claims. Trace fdbfebb8-e87c-4d5e-a6ae-07a8f3fd8166 Root e6abe031-96af-4910-bd33-8ae941f464d5.
+Shipment lookup for a claim answered 200. Trace 09dcbb7e-80cd-46e5-8bd0-998d76b114f4.
+Claims mutation forwarded. Trace 09dcbb7e-80cd-46e5-8bd0-998d76b114f4 Root e6abe031-96af-4910-bd33-8ae941f464d5 Target http://localhost:5000/api/shipment-bundle/claims.
+Claims gateway answered 409 for POST http://localhost:5000/api/shipment-bundle/claims. Trace 09dcbb7e-80cd-46e5-8bd0-998d76b114f4 Root e6abe031-96af-4910-bd33-8ae941f464d5.
+Shipment lookup for a claim answered 200. Trace 6bb92bca-f0c2-4697-8b52-714f2e87c1d1.
+Shipment lookup for a claim answered 200. Trace 8c2f07b8-3002-42e9-8e9c-47784b943ba9.
+Claims mutation forwarded. Trace 8c2f07b8-3002-42e9-8e9c-47784b943ba9 Root e3896107-bc07-41c5-8949-53c760015ce7 Target http://localhost:5000/api/shipment-bundle/claims.
+Claims gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/claims. Trace 8c2f07b8-3002-42e9-8e9c-47784b943ba9 Root e3896107-bc07-41c5-8949-53c760015ce7.
+Shipment lookup for a claim answered 200. Trace 9b9a11e3-32fd-43e1-85a1-b4fb706e82ec.
+Claims mutation forwarded. Trace 9b9a11e3-32fd-43e1-85a1-b4fb706e82ec Root e3896107-bc07-41c5-8949-53c760015ce7 Target http://localhost:5000/api/shipment-bundle/claims.
+Claims gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/claims. Trace 9b9a11e3-32fd-43e1-85a1-b4fb706e82ec Root e3896107-bc07-41c5-8949-53c760015ce7.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace f01f57ec-78e8-420d-900f-d6784e2cff8b.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 9bca9ae4-a200-4267-b560-d6c00899252e.
+Shipment lookup for a claim answered 200. Trace 2e795915-2a31-4acf-90d9-2704ef28cc08.
+Shipment lookup for a claim answered 200. Trace f1454c90-7b6f-4a7b-a442-b93664a2803b.
+Claims mutation forwarded. Trace f1454c90-7b6f-4a7b-a442-b93664a2803b Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266 Target http://localhost:5000/api/shipment-bundle/claims.
+Claims gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/claims. Trace f1454c90-7b6f-4a7b-a442-b93664a2803b Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266.
+Shipment lookup for a claim answered 200. Trace ed8f68ce-a94c-48eb-b7df-f3b1cd0bb49f.
+Claims mutation forwarded. Trace ed8f68ce-a94c-48eb-b7df-f3b1cd0bb49f Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266 Target http://localhost:5000/api/shipment-bundle/claims.
+Claims gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/claims. Trace ed8f68ce-a94c-48eb-b7df-f3b1cd0bb49f Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 71c70fcc-14b5-41aa-858b-7cc0f815f089.
+Shipment lookup for a claim answered 200. Trace 6f2e7fa5-c3de-4b4f-8e1f-0a94b89a0e42.
+Claims mutation forwarded. Trace 6f2e7fa5-c3de-4b4f-8e1f-0a94b89a0e42 Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266 Target http://localhost:5000/api/shipment-bundle/claims/6c6d0a8c-4a58-481c-a0f9-bf7068b1685d/transition.
+Claims gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/claims/6c6d0a8c-4a58-481c-a0f9-bf7068b1685d/transition. Trace 6f2e7fa5-c3de-4b4f-8e1f-0a94b89a0e42 Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266.
+Shipment lookup for a claim answered 200. Trace 55108f1e-6ffe-4fe1-bfbd-0a8771cbd761.
+Claims mutation forwarded. Trace 55108f1e-6ffe-4fe1-bfbd-0a8771cbd761 Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266 Target http://localhost:5000/api/shipment-bundle/claims/6c6d0a8c-4a58-481c-a0f9-bf7068b1685d/transition.
+Claims gateway answered 422 for POST http://localhost:5000/api/shipment-bundle/claims/6c6d0a8c-4a58-481c-a0f9-bf7068b1685d/transition. Trace 55108f1e-6ffe-4fe1-bfbd-0a8771cbd761 Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace cef3dbb9-7930-46f1-9e0c-c46881d90b79.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace c59405c8-af87-46ec-8d0d-2c1d13affb87.
+Shipment lookup for a claim answered 200. Trace 87e943b1-094b-4422-9075-8e74b229982a.
+Claims mutation forwarded. Trace 87e943b1-094b-4422-9075-8e74b229982a Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266 Target http://localhost:5000/api/shipment-bundle/claims/cc07b692-604d-40a1-87cd-8c085b3d4daf/transition.
+Claims gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/claims/cc07b692-604d-40a1-87cd-8c085b3d4daf/transition. Trace 87e943b1-094b-4422-9075-8e74b229982a Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266.
+Shipment lookup for a claim answered 200. Trace 60c694e0-b3d6-4e88-ba8e-2115a04e37f6.
+Claims mutation forwarded. Trace 60c694e0-b3d6-4e88-ba8e-2115a04e37f6 Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266 Target http://localhost:5000/api/shipment-bundle/claims/cc07b692-604d-40a1-87cd-8c085b3d4daf/transition.
+Claims gateway answered 409 for POST http://localhost:5000/api/shipment-bundle/claims/cc07b692-604d-40a1-87cd-8c085b3d4daf/transition. Trace 60c694e0-b3d6-4e88-ba8e-2115a04e37f6 Root 5fd00f08-88b2-4ace-abcc-b1ce7f29b266.
+Claims gateway answered 502 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 1f15f5d4-1127-4ebb-b6ca-5525ed22dc8f.
+Claims gateway answered 502 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 66666666-6666-4666-8666-666666666666.
+Claims gateway answered 502 for GET http://localhost:5000/api/shipment-bundle/claims. Trace d920fc71-c4ea-4f29-aca3-ff64c68f84e8.
+Claims list request timed out. Trace 1d577582-4ca8-4919-bf18-ed2af2507c93.
+Claims list request timed out. Trace c545cdb2-6d31-4445-907b-5de1f33228db.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 9263d65c-c4cd-4cc5-ac68-d0de302b3e49.
+Shipment lookup for a claim answered 200. Trace a7feec8f-e140-4184-9d81-590fc334e48c.
+Claims mutation forwarded. Trace a7feec8f-e140-4184-9d81-590fc334e48c Root e6abe031-96af-4910-bd33-8ae941f464d5 Target http://localhost:5000/api/shipment-bundle/claims/02e00fbe-38a7-4538-8f71-3c6796ae30a3/transition.
+Claims gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/claims/02e00fbe-38a7-4538-8f71-3c6796ae30a3/transition. Trace a7feec8f-e140-4184-9d81-590fc334e48c Root e6abe031-96af-4910-bd33-8ae941f464d5.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace a8d1b463-fb09-4a0c-b630-52fab407d622.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace aee5b6be-f76b-4251-bc08-bc9d100aea21.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims?status=Investigating. Trace db1d1a30-fa32-4a15-8f6d-1084b0bdff9c.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims?status=Rejected. Trace 695b9bde-959b-480c-bd74-fd2657f04f78.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 72df0db5-b1a1-4e95-b62b-c17f2cb8c325.
+Claims gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/claims. Trace 2a75157b-acbc-492a-94c1-0929c4862de7.

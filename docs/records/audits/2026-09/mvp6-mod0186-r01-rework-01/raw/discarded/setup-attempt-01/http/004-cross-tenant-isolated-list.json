@@ -1,0 +1,29 @@
+{
+  "name": "cross-tenant-isolated-list",
+  "request": {
+    "bodyUtf8": null,
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "X-Correlation-Id": "a28947ee-a798-4a98-96b2-3f39fc81f90a",
+      "X-Legal-Entity-Id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "X-Tenant-Id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    },
+    "method": "GET",
+    "path": "/api/shipment-bundle/returns"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "items": [],
+      "total": 0
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 16:20:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "a28947ee-a798-4a98-96b2-3f39fc81f90a"
+    },
+    "status": 200
+  }
+}

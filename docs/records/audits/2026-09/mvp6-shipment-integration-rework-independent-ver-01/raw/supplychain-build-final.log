@@ -1,0 +1,24 @@
+  Determining projects to restore...
+CSSM_ModuleLoad(): One or more parameters passed to a function were not valid.
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj (in 267 ms).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/Diten.BuildingBlocks.Eventing.csproj (in 273 ms).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj (in 256 ms).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj (in 2.03 sec).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj (in 2.03 sec).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj (in 2.38 sec).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj (in 2.38 sec).
+  1 of 8 projects are up-to-date for restore.
+  Diten.SupplyChainService.Domain -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Release/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Release/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Release/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Release/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/bin/Release/net8.0/Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.SupplyChainService.Api -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:03:41.98

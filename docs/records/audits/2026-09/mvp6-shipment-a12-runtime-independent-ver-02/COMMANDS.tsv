@@ -1,0 +1,12 @@
+utc_start	utc_end	phase	step	command_redacted	exit
+2026-09-26T07:25:45Z	2026-09-26T07:25:46Z	K05	mongod-start	mongod --replSet rsShipmentA12RtVer02 --port 34994 --bind_ip 127.0.0.1 --dbpath <lane> --fork	0
+2026-09-26T07:25:47Z	2026-09-26T07:25:48Z	K05	rs-initiate	rs.initiate single member 127.0.0.1:34994	0
+2026-09-26T07:26:18Z	2026-09-26T07:26:18Z	K06*	auth-launch	supervisor: env -i + <auth.env placeholders substituted in memory> dotnet Diten.AuthService.Api.dll --urls http://127.0.0.1:5456	started pid 15830
+2026-09-26T07:26:32Z	2026-09-26T07:26:32Z	K06*	mdm-launch	supervisor: env -i + <mdm.env placeholders substituted in memory> dotnet Diten.MdmService.Api.dll --urls http://127.0.0.1:5459	started pid 15912
+2026-09-26T07:27:26Z	2026-09-26T07:27:26Z	K06*	platform-launch	supervisor: env -i + <platform.env placeholders substituted in memory> dotnet Diten.Platform.API.dll --urls http://127.0.0.1:5457	started pid 16032
+2026-09-26T07:28:38Z	2026-09-26T07:28:38Z	K06*	auth-launch	supervisor: env -i + <auth.env placeholders substituted in memory> dotnet Diten.AuthService.Api.dll --urls http://127.0.0.1:5456	started pid 16224
+2026-09-26T07:28:52Z	2026-09-26T07:28:52Z	K06*	platform-launch	supervisor: env -i + <platform.env placeholders substituted in memory> dotnet Diten.Platform.API.dll --urls http://127.0.0.1:5457	started pid 16257
+2026-09-26T07:28:53Z	2026-09-26T07:28:53Z	K06*	mdm-launch	supervisor: env -i + <mdm.env placeholders substituted in memory> dotnet Diten.MdmService.Api.dll --urls http://127.0.0.1:5459	started pid 16319
+2026-09-26T07:28:56Z	2026-09-26T07:28:56Z	K06*	supplychain-launch	supervisor: env -i + <supplychain.env placeholders substituted in memory> dotnet Diten.SupplyChainService.Api.dll --urls http://127.0.0.1:5461	started pid 16336
+2026-09-26T07:28:58Z	2026-09-26T07:28:58Z	K06*	gateway-launch	supervisor: env -i + <gateway.env placeholders substituted in memory> dotnet Diten.ApiGateway.dll --urls http://127.0.0.1:5400	started pid 16357
+2026-09-26T07:29:01Z	2026-09-26T07:29:01Z	K06*	web-launch	supervisor: env -i + <web.env placeholders substituted in memory> dotnet Diten.Web.dll --urls http://127.0.0.1:5401 --contentRoot <source project>	started pid 16378

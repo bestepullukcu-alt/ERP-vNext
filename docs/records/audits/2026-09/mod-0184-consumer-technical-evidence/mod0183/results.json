@@ -1,0 +1,246 @@
+{
+  "kind": "technical static/executable specification evidence; not approval or runtime conformance",
+  "branch": "feature/mvp6-logistics",
+  "head": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "canonicalBefore": "f6415bbfda42a61a9845e7e1fc843be087bf249cac6bcdc9cb678284766450a1",
+  "patchHash": "2cbcf65b4909419a2d0a79d688b3ed95ee33f0993fc666ef5c5edda246f0920f",
+  "packageHashChecks": [
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/README.md",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/baseline.json",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/carrier-semantics-v1.1.0.md",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/error-matrix.json",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/examples.json",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/preservation-results.json",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/proposed-publication-hashes.json",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/publication-after-approval.patch",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/shipment-bundle-1.0.0-to-1.1.0.candidate.diff",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/shipment-bundle.openapi.candidate.yaml",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py",
+      "match": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validation-results.json",
+      "match": true
+    }
+  ],
+  "publishedHashChecks": {
+    "docs/analysis/contracts/shipment-bundle.openapi.yaml": {
+      "actual": "8954f8af0024fe6c31f1cc49dc717a408d7d48e511fbacb4571d7887c4fac6a4",
+      "match": true
+    },
+    "docs/analysis/contracts/carrier-semantics-v1.1.0.md": {
+      "actual": "87557ef9f5b5a4427862effbece2bb528ebc1b95361c29416373709223021fee",
+      "match": true
+    }
+  },
+  "publishedOpenAPI": "PASS",
+  "nonCarrierPaths": {
+    "/shipments": true,
+    "/shipments/{shipmentId}": true,
+    "/shipments/{shipmentId}/transition": true,
+    "/shipments/{shipmentId}/pod": true,
+    "/loads": true,
+    "/loads/{loadId}/transition": true,
+    "/returns": true,
+    "/returns/{returnId}/transition": true,
+    "/claims": true,
+    "/claims/{claimId}/transition": true
+  },
+  "allExistingComponents": {
+    "securitySchemes": {
+      "bearerAuth": true
+    },
+    "parameters": {
+      "CorrelationId": true,
+      "IdempotencyKey": true,
+      "ShipmentId": true
+    },
+    "schemas": {
+      "Decimal": true,
+      "ContractVersion": true,
+      "ShipmentStatus": true,
+      "CarrierStatus": true,
+      "TransportMode": true,
+      "LoadStatus": true,
+      "ReturnStatus": true,
+      "ClaimStatus": true,
+      "ShipmentLine": true,
+      "CreateShipmentCommand": true,
+      "TransitionShipmentCommand": true,
+      "CapturePodCommand": true,
+      "PodView": true,
+      "ShipmentResponse": true,
+      "ShipmentSummary": true,
+      "ShipmentDetail": true,
+      "ShipmentListResponse": true,
+      "PodResponse": true,
+      "CreateCarrierCommand": true,
+      "ChangeCarrierStatusCommand": true,
+      "CarrierSummary": true,
+      "CarrierResponse": true,
+      "CarrierListResponse": true,
+      "LoadStop": true,
+      "CreateLoadCommand": true,
+      "TransitionLoadCommand": true,
+      "LoadSummary": true,
+      "LoadResponse": true,
+      "LoadListResponse": true,
+      "ReturnLine": true,
+      "CreateReturnCommand": true,
+      "TransitionReturnCommand": true,
+      "ReturnSummary": true,
+      "ReturnResponse": true,
+      "ReturnListResponse": true,
+      "CreateClaimCommand": true,
+      "TransitionClaimCommand": true,
+      "ClaimSummary": true,
+      "ClaimResponse": true,
+      "ClaimListResponse": true,
+      "ShipmentEventPayload": true,
+      "LoadEventPayload": true,
+      "ReturnEventPayload": true,
+      "ClaimEventPayload": true,
+      "LifecycleEventEnvelope": true,
+      "EventAcceptedResponse": true,
+      "Error": true
+    },
+    "responses": {
+      "BadRequest": true,
+      "NotFound": true,
+      "Conflict": true,
+      "Unprocessable": true,
+      "DependencyUnavailable": true
+    }
+  },
+  "otherTopLevel": {
+    "openapi": true,
+    "servers": true,
+    "security": true,
+    "tags": true,
+    "webhooks": true
+  },
+  "shipmentReachableRefs": [
+    "#/components/parameters/CorrelationId",
+    "#/components/parameters/IdempotencyKey",
+    "#/components/parameters/ShipmentId",
+    "#/components/responses/BadRequest",
+    "#/components/responses/Conflict",
+    "#/components/responses/DependencyUnavailable",
+    "#/components/responses/NotFound",
+    "#/components/responses/Unprocessable",
+    "#/components/schemas/CapturePodCommand",
+    "#/components/schemas/ContractVersion",
+    "#/components/schemas/CreateShipmentCommand",
+    "#/components/schemas/Decimal",
+    "#/components/schemas/Error",
+    "#/components/schemas/PodResponse",
+    "#/components/schemas/PodView",
+    "#/components/schemas/ShipmentDetail",
+    "#/components/schemas/ShipmentLine",
+    "#/components/schemas/ShipmentListResponse",
+    "#/components/schemas/ShipmentResponse",
+    "#/components/schemas/ShipmentStatus",
+    "#/components/schemas/ShipmentSummary",
+    "#/components/schemas/TransitionShipmentCommand"
+  ],
+  "sourceFilesUnchanged": true,
+  "sourceHashes": {
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj": "538e96c6af15637e2e476350ac1982a596c3e140f1e8f7f89fd92ec6a014d985",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/appsettings.json": "8bd8b168db554080fbf101ade9796cb19171a7771b85bdea89e6be6f6ed7f0a5",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs": "74d2d2007cb89976c41e5460ca841f442e24b9d4e6290daf5b59f7929e069736",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ShipmentContextMiddleware.cs": "5db994141d70f033d0421ed4eea3cea21aeedf2562a75e7eeb1b2f5d8737ff50",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ContractError.cs": "e1075090637ecde25ba458859e5b592b52adcdba2462b97e1ef3d28ad828d4d7",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/ShipmentsController.cs": "149150b2f2e76eb7443415b0600e728600c8c9d89fcaba0bdafc461beb9e5793",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/CustomBaseController.cs": "321ee43cad27806f6e9cac06f88a9ffd350a6dde050b4042d7f2ae5d66b07ff6",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj": "b598894f4741ed773e1c4ae015ce584a47d3c2e48e29aefdd3e722c280888f1d",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Authorization/HasPermissionAttribute.cs": "0b31e354aa118df875aba9f03b097afef08360a851e071f6becfcdaa2a41322d",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Authorization/ShipmentPermissions.cs": "46f9cebff09e584ab29d7d351c2d816d6ebff616287a569fbe9109d887e05525",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Eventing/ShipmentOutboxWorker.cs": "5de854b49c4490be759b9120f455e4db1f61d5948f030c9cc6b3f31b4258b628",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/SourceIntake/ReadOnlySourceClients.cs": "080e8ded77d2fbc0c279c03140fecb04f6a83cdf047454fec2dd05a19acb2bbb",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/SourceIntake/FrozenReadSchema.cs": "9cd82faa0dca83b13613f5d08d6344f262704a56d2269f5c8103efcf60175a1c",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/DependencyInjection.cs": "b17792801495c58fd3d7a46c5cf9197f4761da8acd5753465282830d432cc3b2",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj": "74b6362d25cd2ef91b6e5f33be75a818b8549b4a4b0803e5682bcb38659f3037",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/RequestFingerprint.cs": "7446f1eed56ec208d0762d0a52f15bda198d3f08e437976bb47abb1e7ac89fc0",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs": "33beb3132db4bfaa7fe47c37069ac6e51f80487d7c90a4c0927aa2c57574d178",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentModels.cs": "21b358b5f0b4af2f54e36a8cb2c219c68a433ea2faed9451ccc03a921a23a6c4",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Queries/GetShipmentListQuery.cs": "582f45644a7e0f4b26e9a27e1107b57dd18527ccc2d58de8bbec92837ab85dfa",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Queries/GetShipmentByIdQuery.cs": "cc1056ce4ddceacd80ff911701a067141f5b96483e3240fedbb29306d295da86",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/CreateShipmentCommand.cs": "940c20661b333917421eddd326a4e718490721bb979bc0830403e4009ccdc6a0",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/TransitionShipmentCommand.cs": "561602ffe5c066145e2f20cf989ad528608f0e041988ebdac193589d9e57286e",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/CapturePodCommand.cs": "a7505f307c56c950116ccba54646dd1d8bd597f7f7759dcc9173819019b9da80",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/TransitionShipmentValidator.cs": "73e34cea323e3f90c54b1e6c0e84a9a34ba593f85b52cb496ebd19236c478931",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/ShipmentNoteRules.cs": "d5a16a25b67907199830b6ae1c9be81e15655f02af99c0a5f0c51e8a4db768d3",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/GetShipmentListValidator.cs": "d50359e100618c4a278ae4bdd9830f9a3f89232b2bd6833ff6449640c8b55a96",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/CapturePodValidator.cs": "2134888eb5931647f859674058fa22ff28f1b3344457ede8df81798047baf8ea",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/ShipmentLineValidator.cs": "f726c1c01d3c8de6d9cfa1353666e95c85f5c8312071871d11d09bf8ddbb32c5",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/CreateShipmentValidator.cs": "1a6fd6ce369101141466ac581f189bc7f9e8b2e2f60184a391a600f7ddda040a",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CreateShipmentHandler.cs": "96f9d319377b45087b2af142f32f0190dc064b901b3d96e751b7c9d3aea96676",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/TransitionShipmentHandler.cs": "d1901667f138886f64bf481c09afd3119f42433084b9a72fe9f65d29f2c9a152",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CapturePodHandler.cs": "56d635da6d183d30dbe999767088c1436080067d4a43480cacf102d200e2f37c",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentListHandler.cs": "6f19b899606655674bd5bb37ab484c76698ce1583123ec2eae50520e79ea264c",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs": "d9a1aecdd3f51439b135d364a6fcb574a6a9c88853239ba6a38351aaf974d32f",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/WarehouseIntakeCoordinator.cs": "954dfbdf5825ee5609e777f59c76cb55ec0ffd9e280f152e834500e9d9c3d072",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/WarehouseShipmentMapper.cs": "040251b4cb96ef9fd578f748ea30b95a2e135e99f541683088c6bf8b693ca415",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/Contracts/SourceClients.cs": "3c391d0becd4a022e10d70232e23bbfc807fabbda78bd5c6c337ec9b5d6f2973",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/Response.cs": "e9b2595c74c28027faf0c8f7c9d6a724e9b9732db5aef7f689255eeab2310776",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/IResponse.cs": "4f891deabdd6c21e2919d47dc557b4e7b2af39cb40348a3b350f5bb9627a3d4c",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/RequestContext.cs": "46cd3aeb5b425d71e4fa4e83191e0299df5ea485cac2a9d5946488b386ead7e8",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/PerformanceBehavior.cs": "ee9a4759ce74eba26a8599f61b7d8320d33ff1a067b82cdcead69bb73a3b5cd6",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/LoggingBehavior.cs": "2302db846e5376df1a0eac25d8e6b73fe740e1dda5dd6a344eec1cd9464b1f9f",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/ExceptionHandlingBehavior.cs": "ad77113956c6052fda52f632cc81824f28d9a4b5c5f8a19fb9591cb176d0481e",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/ValidationBehavior.cs": "2f7d2705cf167b421bb416b4fc12ad7a53e9a7dcfa5552bacfdd1ac5afaa253e",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj": "dfa8aef748834f47f0135ddb4d626c71985810b048546bbcadc084968399108b",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentChange.cs": "d04b1346e3e2c508d85c974d3a9ca4d3df77fb48c55be77e1092a0d86bee95cc",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentStatus.cs": "d979c1ccaf90980c5fc1900af103a375fbc2ca96e25e92cbf37cdfffacc9de15",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs": "51a52c90cad2e6225f585cc742c9742ae242a230b13ec5d972cb172815f4e41e",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLifecycle.cs": "73812d110d02773db442f29287a0f37a12e07b665c5ca9748d71d53dd9fd1b68",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLine.cs": "d56f98d643af7f9cea110f7ed649dd494e05154d0915be6ac420125bc498ffb6",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLifecycleEntry.cs": "cbd26f07baf8e392de1f653ba0a7d6a329a1c8e71903b212e0578944303d741e",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentMutationResult.cs": "0c5b6847c2022749c593671461097b32969f069dc9bf07ce3c47cf4ff05d553d",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs": "a6c4f67cd95c10b5e3163efc97bb0c9dda924cb031d87088319e839ba716b325",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ProofOfDelivery.cs": "280a37e4cc2a67b6174ab44c2977dc143a95da947e74c6eb82b9ea956bd5cecc",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentScope.cs": "2db360cfc96578ff478558443c07ba6117a25ee2fde87f0dc265659c3e406701",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/SourceIntake/SourceIntent.cs": "d2cf0ed240275a629abd0fe9f139859881989b582eaa59707216a765eb93f91b",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Common/EntityBase.cs": "a1f313b526c459542226d2693d73998a393b119fe3a0ae0c735b092c738bec6e",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/ShipmentSchema.cs": "df9fe448332d79820d3149344f78d6ddd14247a5f0dc9ec8132ca0f596584549",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/DependencyInjection.cs": "ac0b00e29ca40fea365794fbdc41ee9e27b4fff6a9f10a869f33ebabb8bac0dd",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj": "97f68ac32c8336d0467d7bc2028b0b0c38a031c22640b8e2df6ba864182f6c11",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/SourceIntakeStore.cs": "c1294f5b43fed2253bebb2bca47150ac8bb059ee3076dc7019fc34b6a82bbe83",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentOutboxStore.cs": "6ca3231614b59652273c1a9dfe2b5527dc308249dcde81c024361e08d628c831",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs": "f0c3f2943712c7e32d2ef4abd6e02a3544ed56ec79d8968915451d5018975df1",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/NoOpShipmentCommitProbe.cs": "142442b288870f9691e342606513ff511b077f0e8bfa2b30a83f239faad8d521",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/IShipmentCommitProbe.cs": "9a0d3f76497df9e792ef8d7a77abe5e1d268fcc9cf600c00183b4cc41efbb6d0"
+  },
+  "canonicalUnchanged": true
+}

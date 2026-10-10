@@ -1,0 +1,18 @@
+criterion	verdict	evidence	boundary
+422-row source identity	PASS	SOURCE-VERIFICATION.json; VERIFIED-SOURCE-MANIFEST.tsv	422/422 entries match; source archive ebd5d80c...
+Authorized three-file delta	PASS	CHANGED-PRESERVED.tsv	Three target hashes exact
+Protected composition and B controls	PASS	CHANGED-PRESERVED.tsv	Program.cs, CapacityAtomicityTests.cs and SandopAtomicityTests.cs exact
+Fresh native .NET 8 build	PASS	RAW-EVIDENCE.tar.gz::raw/build-success.log	SDK 8.0.417; zero warnings/errors
+CapacityPlans successor regression	PASS	RAW-EVIDENCE.tar.gz::raw/capacity-ver.trx	39/39; identities reconciled, not added to historical 36/34
+Exact duplicate-name HTTP response	PASS	RAW-EVIDENCE.tar.gz::raw/http-restart-evidence.json	409 CAPACITY_SCENARIO_NAME_CONFLICT; exact message
+Replay and error precedence	PASS	RAW-EVIDENCE.tar.gz::raw/http-restart-evidence.json	Same payload replays original; changed payload returns IDEMPOTENCY_KEY_REUSED before name conflict
+Deterministic duplicate policy	PASS	RAW-EVIDENCE.tar.gz::raw/capacity-ver.trx	Dedicated policy test passed
+Unique-index race	PASS	RAW-EVIDENCE.tar.gz::raw/capacity-ver.trx	Race loser converged to name conflict without extra write set
+X01 preservation	PASS	RAW-EVIDENCE.tar.gz::raw/capacity-ver.trx	Three X01 cases passed
+X07/read-fault preservation	PASS	RAW-EVIDENCE.tar.gz::raw/capacity-ver.trx	21 X07 identities passed, including five later-read boundaries and mutants
+Hosted atomicity preservation	PASS	RAW-EVIDENCE.tar.gz::raw/capacity-ver.trx	Fixture mutations and fenced terminal single-effect test passed
+Authenticated HTTP persistence	PASS	RAW-EVIDENCE.tar.gz::raw/http-restart-evidence.json	One plan and one scenario; two receipt/audit/outbox records; all scoped queries exit 0
+Same-binary restart	PASS	RAW-EVIDENCE.tar.gz::raw/http-restart-evidence.json	Binary fb6a73d7... used by both processes against same database and fixtures
+Secrets/tokens excluded	PASS	RAW-EVIDENCE.tar.gz	No bearer token or usable secret retained
+Repository/source no-change	PASS	SOP-22-VER.md	Only verifier-owned report directory created; writer checkout and repository sources untouched
+CT/full-module/E5/G5	NOT ASSESSED	Scope boundary	Independent technical VER only

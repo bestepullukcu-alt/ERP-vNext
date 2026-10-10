@@ -1,0 +1,15 @@
+criterion	writer_result	evidence	boundary
+Exact three-file application	PASS	SOURCE-MANIFEST.tsv and CHANGED-PRESERVED.tsv	Only BC-DELTA paths changed relative to B
+Fresh native .NET 8 build	PASS	raw-build.log; raw-build.exit	0 warnings; 0 errors
+Exact duplicate-name HTTP message	PASS	http-restart-evidence.json duplicate-name and duplicate-after-restart	409 CAPACITY_SCENARIO_NAME_CONFLICT with exact published message
+Replay precedence	PASS	http-restart-evidence.json replay and replay-after-restart	Original scenario replayed; no second scenario
+Changed-payload precedence	PASS	http-restart-evidence.json changed-payload	409 IDEMPOTENCY_KEY_REUSED before name conflict
+Deterministic duplicate policy	PASS	capacity-successor.trx Duplicate_policy_preserves_replay_precedence_scope_and_non_name_duplicate_failures	Fresh successor binary
+Unique-index race	PASS	capacity-successor.trx Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set	Fresh successor binary
+X01 preservation	PASS	capacity-successor.trx X01 tests	Three X01 tests passed
+X07 and hosted/read-fault preservation	PASS	capacity-successor.trx X07 tests and preserved CapacityAtomicityTests.cs hash	All later-read boundaries and scoped reconciliation mutants passed
+Process restart	PASS	http-restart-evidence.json	Same binary and DB; plan read and receipt replay survived restart
+Scoped persistence	PASS	db-evidence.json	1 plan; 1 scenario; 2 receipts/audit/outbox; no active slot/evaluation in this scenario-only probe
+Historical B/C suites	INHERITED ONLY	mvp6-three-scope-application-01 archives	36 and 34 are not added and are not relabeled as combined runtime evidence
+Independent VER	PENDING	VER-HANDOFF.md	Must be produced by a different agent
+

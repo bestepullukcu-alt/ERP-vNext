@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# CANDIDATE — NOT APPROVED. MVP6 evidence kit orchestrator (steps 1-9; step 10 is a separate capability gate).
+# Runs natively on the owner's Mac from the repository root. Read-only toward Git; writes only to a disposable
+# workspace under the temp root and to ${EVIDENCE_DIR}. Stops at the first failed gate; nothing is retried silently.
+# Usage: KIT=<kit dir> REPO=<repo root> run-lane.sh <lane.env>
+set -euo pipefail
+source "${1:?lane.env}"
+export KIT="${KIT:?}" REPO="${REPO:?}"
+source "$KIT/kit-lib.sh"
+export LANE_ID LANE_CAMEL LANE_PORT_BASE MONGO_PORT BASE_HEAD EVIDENCE_DIR DOTNET_BIN BROWSER_ORIGIN_HOST
+require_lane_base; require_mongo_port
+E="$REPO/$EVIDENCE_DIR"; [[ ! -e "$E" ]] || { echo "evidence dir exists" >&2; exit 1; }
+W="$(mktemp -d "${TMPDIR:-/private/tmp}/mvp6-${LANE_ID}-XXXXXX")"; export W
+touch "$W/.mvp6-evidence-kit-workspace"; mkdir -p "$W/logs" "$E"; : > "$W/pids.tsv"
+step() { local n="$1"; shift; log "BEGIN $n"; if "$@"; then printf '%s\t%s\t0\n' "$(ts)" "$n" >> "$E/COMMANDS.tsv";
+         else rc=$?; printf '%s\t%s\t%s\n' "$(ts)" "$n" "$rc" >> "$E/COMMANDS.tsv"; die "$n failed (workspace kept; run 09 after review)"; fi; }
+
+# 0. preflight: branch/HEAD recorded, dirty tree snapshot (never cleaned, stashed or checked out)
+git -C "$REPO" rev-parse HEAD > "$E/repo-head-before.txt"
+git -C "$REPO" status --porcelain=v1 --untracked-files=all | sort > "$E/repo-status-before.txt"
+printf 'phase\tcommand\texit\n' > "$E/COMMANDS.tsv"
+# 1. exact source input
+step source   python3 "$KIT/01-compose-source.py" --repo "$REPO" --base-head "$BASE_HEAD" --overlays "$OVERLAYS_TSV" --dest "$W/source" --out "$E"
+# 2. native .NET 8
+step dotnet   "$KIT/02-check-dotnet.sh" "$E"
+export DOTNET_ROOT="$(dirname "$DOTNET_BIN")" DOTNET_MULTILEVEL_LOOKUP=0 DOTNET_ROLL_FORWARD=LatestPatch
+for row in "${KIT_SERVICES[@]}"; do IFS='|' read -r n _ proj _ <<< "$row"
+  step "build-$n" bash -c "cd '$W/source/$proj' && '$DOTNET_BIN' build -c Release -m:1 /nr:false -p:UseSharedCompilation=false 2>&1 | python3 '$KIT/06-redact.py' filter > '$E/build-$n.log'; exit \${PIPESTATUS[0]}"
+done
+step source-rehash python3 "$KIT/01-compose-source.py" --verify-only --dest "$W/source" --out "$E"
+# 3. effective configuration BEFORE start + isolated replica set
+step config   python3 "$KIT/03-lane-config.py" --source "$W/source" --workspace "$W" --out "$E" --camel "$LANE_CAMEL" --base "$LANE_PORT_BASE" --mongo-port "$MONGO_PORT"
+# 4. ports + disposable gateway routes (repo ocelot.json never edited)
+step ports    python3 "$KIT/04-ports-gateway.py" --repo "$REPO" --base-head "$BASE_HEAD" --source "$W/source" --owned-manifest "$E/OWNED-SOURCE-MANIFEST.tsv" --workspace "$W" --out "$E" --base "$LANE_PORT_BASE" --mongo-port "$MONGO_PORT"
+step mongo    "$KIT/03-start-mongo.sh" "$E"
+# 5. secrets (run time only) -> fixture seed (lane-specific, GAP) -> launch -> real-Auth login
+step secrets  python3 "$KIT/05-secrets-identities.py" generate --workspace "$W"
+step seed     "${LANE_SEED:?lane-specific reviewed fixture seed script required}"
+printf 'service\tdll_sha256\tpid\tlistener\tcwd\truntime\tstarted\n' > "$E/SOURCE-BINARY-PROCESS.tsv"
+for row in "${KIT_SERVICES[@]}"; do IFS='|' read -r n _ _ _ <<< "$row"; step "launch-$n" "$KIT/07-launch-bind.sh" "$n" "$E"; done
+step login    python3 "$KIT/05-secrets-identities.py" login --workspace "$W" --gateway "http://127.0.0.1:$(lane_port 5000)" --identities "$IDENTITIES_TSV" --out "$E"
+# 6-8. scenarios are lane-specific: each wraps browser steps in 07-browser-bind open/close and every mutation or
+#      negative case in 08-db-snapshot (before) / action / 08-db-snapshot (after) / 08-db-diff.
+step scenarios "${LANE_SCENARIOS:?lane-specific scenario runner required}"
+# 6. permanent-evidence secret scan (needs the live secrets file)
+step secret-scan python3 "$KIT/06-redact.py" scan --workspace "$W" --root "$E" --out "$E/SECRET-SCAN.txt"
+# 9. cleanup + verification
+step cleanup  "$KIT/09-cleanup.sh" "$E"
+( cd "$E" && find . -type f ! -name ARTIFACTS.sha256 -print0 | sort -z | xargs -0 shasum -a 256 > ARTIFACTS.sha256 )
+echo "lane complete: $EVIDENCE_DIR"

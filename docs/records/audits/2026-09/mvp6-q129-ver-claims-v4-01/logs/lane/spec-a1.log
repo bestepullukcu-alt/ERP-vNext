@@ -1,0 +1,4 @@
+{"ok": false, "rc": 1, "log": "run-harness-claims_runtime-a10.log"}
+phase spec rc 1
+K10 PASS: spec-after
+pair spec rc 0

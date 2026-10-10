@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+"""CANDIDATE — NOT APPROVED.  Step 3b/4a: effective configuration, captured and verified BEFORE any start.
+
+Layers exactly what ASP.NET Core's default host reads for each service, in precedence order:
+  appsettings.json < appsettings.Development.json < user-secrets (Development only; KEY NAMES read, values never
+  printed) < environment overrides (this file) < command line (--urls).
+Then asserts:
+  * no value anywhere mentions 27017; every mongodb:// URI targets 127.0.0.1:<MONGO_PORT> with the lane replica set;
+  * every localhost/127.0.0.1 URL targets a lane port or the closed sentinel port;
+  * every Mongo database name is Diten<Svc>_<LANE_CAMEL> (DB-010 fixed suffix, never a GUID);
+  * every secret-named key is overridden by a run-time secret (repo dev secrets and PreviousSecrets entries
+    are replaced index by index so a repo-signed token cannot validate);
+  * every user-secrets key is overridden, or the run fails (user secrets can silently point at 27017).
+Outputs: <W>/env/<svc>.env (non-secret, @secret:NAME placeholders), <E>/EFFECTIVE-CONFIG-REDACTED.tsv,
+         <E>/CONFIG-CHECK.txt.   The launcher resolves @secret:NAME from <W>/secrets/lane.env at exec time.
+"""
+import argparse, csv, json, os, re, sys
+from pathlib import Path
+
+SERVICES = {  # name: (canonical port, project dir, user-secrets id or None)
+  "mdm": (5059, "services/Diten.MdmService/src/Diten.MdmService.Api", None),
+  "platform": (5057, "services/Diten.Platform/src/Diten.Platform.API", "587d48b8-25d7-414f-a302-fe1078fb12ea"),
+  "auth": (5056, "services/Diten.AuthService/src/Diten.AuthService.Api", "b3fe3b17-5003-4df5-bcb4-2c824961b480"),
+  "supplychain": (5061, "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api", None),
+  "gateway": (5000, "gateway/Diten.ApiGateway", None),
+  "web": (5001, "frontend/Diten.Web", None),
+}
+SECRET_KEY = re.compile(r"(secret|password|apikey|api_key|internalapikey|token|signing)", re.I)
+URL = re.compile(r"(?:localhost|127\.0\.0\.1)\.?:(\d{2,5})")
+
+def overrides(L):
+    p = L["mongo_uri"]
+    u = lambda s: f"http://127.0.0.1:{L['ports'][s]}"
+    sentinel = f"http://127.0.0.1:{L['sentinel']}"
+    jwt = {"JwtSettings:Secret": "@secret:JWT_SECRET"}
+    return {
+      "auth": {**jwt, "MongoDbSettings:ConnectionString": p, "MongoDbSettings:DatabaseName": f"DitenAuth_{L['camel']}",
+               "InternalEventAuth:ApiKey": "@secret:INTERNAL_EVENT_KEY", "PlatformService:BaseUrl": u("platform"),
+               "PlatformService:FrontendBaseUrl": u("web"), "PlatformService:InternalApiKey": "@secret:PLATFORM_INTERNAL_KEY",
+               "Smtp:Enabled": "false", "Eventing:Transport": "InMemory"},
+      "platform": {**jwt, "MongoDbSettings:ConnectionString": p, "MongoDbSettings:DatabaseName": f"DitenPlatform_{L['camel']}",
+               "BackgroundJobs:Enabled": "false", "BackgroundJobs:DashboardEnabled": "true",  # recovery-01 startup precedent
+               "BackgroundJobs:StorageDatabaseName": f"DitenHangfire_{L['camel']}",
+               "PublicBaseUrl": u("gateway") + "/api/personalization", "AuthService:BaseUrl": u("auth"),
+               "AuthService:FrontendBaseUrl": u("web"), "AuthService:InternalApiKey": "@secret:AUTH_INTERNAL_KEY",
+               "AuthService:TenantLoginUrlTemplate": u("web") + "/account/login?tenantId={tenantId}",
+               "MdmService:BaseUrl": u("mdm"), "ModuleRegistrationCredentials:Mdm:ActiveSecret": "@secret:MDM_MODULE_SECRET",
+               "Smtp:Enabled": "false"},
+      "mdm": {**jwt, "Mongo:ConnectionString": p, "Mongo:DatabaseName": f"DitenMdm_{L['camel']}",
+              "PlatformRegistration:BaseUrl": u("platform"), "PlatformRegistration:InternalApiKey": "@secret:PLATFORM_INTERNAL_KEY",
+              "PlatformRegistration:ModuleRegistrationCredentialSecret": "@secret:MDM_MODULE_SECRET"},
+      "supplychain": {**jwt, "Mongo:ConnectionString": p, "Mongo:DatabaseName": f"DitenSupplyChain_{L['camel']}",
+                      "PlatformRegistration:BaseUrl": u("platform"),   # HEAD default points at operational 5057
+                      "Urls": u("supplychain")},   # packaged Urls=5061 won over env in carrier-e2e; --urls also passed
+      "gateway": {**jwt, "GlobalConfiguration:BaseUrl": u("gateway")},
+      "web": {**jwt, "ConnectionStrings:MongoDb": p, "DatabaseName": f"DitenWeb_{L['camel']}", "GatewayUrl": u("gateway"),
+              "PlatformServiceUrl": u("platform"), "ApiSettings:BaseUrl": sentinel, "ApiSettings:PublicApiUrl": sentinel,
+              "Platform:InternalApiKey": "@secret:PLATFORM_INTERNAL_KEY"},
+    }
+# GAP (must be confirmed from source before adoption): which inbound key each receiver validates, so the kit can
+# assert sender/receiver pairs are equal.  Pairs above follow key names only.
+
+def flatten(o, pre=""):
+    if isinstance(o, dict):
+        for k, v in o.items(): yield from flatten(v, f"{pre}{k}:")
+    elif isinstance(o, list):
+        for i, v in enumerate(o): yield from flatten(v, f"{pre}{i}:")
+    else: yield pre[:-1], "" if o is None else str(o)
+
+def load_json(p):
+    if not p.exists(): return {}
+    txt = p.read_text(encoding="utf-8-sig")
+    txt = re.sub(r"^\s*//.*$", "", txt, flags=re.M)          # appsettings may carry // comments
+    return dict(flatten(json.loads(txt))) if txt.strip() else {}
+
+def main():
+    a = argparse.ArgumentParser()
+    a.add_argument("--source", required=True); a.add_argument("--workspace", required=True); a.add_argument("--out", required=True)
+    a.add_argument("--camel", required=True); a.add_argument("--base", type=int, required=True); a.add_argument("--mongo-port", type=int, required=True)
+    a.add_argument("--user-secrets-root", default=os.path.expanduser("~/.microsoft/usersecrets"))
+    o = a.parse_args()
+    ports = {n: o.base * 100 + (v[0] - 5000) for n, v in SERVICES.items()}
+    L = {"camel": o.camel, "ports": ports, "sentinel": o.base * 100 + 99,
+         "mongo_uri": f"mongodb://127.0.0.1:{o.mongo_port}/?replicaSet=rs{o.camel}&directConnection=true"}
+    allowed = set(ports.values()) | {L["sentinel"], o.mongo_port}
+    fails, rows, rewrites = [], [], []
+    env_dir = Path(o.workspace, "env"); env_dir.mkdir(parents=True, exist_ok=True)
+    ov_all = overrides(L)
+    for name, (_, proj, usid) in SERVICES.items():
+        bindir = Path(o.source, proj, "bin/Release/net8.0")          # the files the process will actually read
+        layers = [("appsettings.json", load_json(bindir / "appsettings.json")),
+                  ("appsettings.Development.json", load_json(bindir / "appsettings.Development.json"))]
+        us = {}
+        if usid:
+            us = load_json(Path(o.user_secrets_root, usid, "secrets.json"))
+            layers.append(("user-secrets", us))
+        eff, src = {}, {}
+        for lname, d in layers:
+            for k, v in d.items(): eff[k.lower()], src[k.lower()] = (k, v), lname
+        ov = dict(ov_all[name])
+        # replace EVERY secret-named key (incl. PreviousSecrets:N) with a run-time secret
+        for kl, (k, v) in list(eff.items()):
+            if SECRET_KEY.search(k) and k not in ov and v not in ("", "false", "true") and not v.isdigit():
+                ov[k] = f"@secret:RANDOM_{name.upper()}_{re.sub(r'[^A-Za-z0-9]', '_', k).upper()}"
+        # Any remaining localhost URL outside the lane (HEAD examples found by the dry run: Seq 5341, Platform
+        # WorkAggregation remote provider 5058) is forced to the closed sentinel and listed for review — fail-closed.
+        for kl, (k, v) in list(eff.items()):
+            if k not in ov and any(int(x) not in allowed for x in URL.findall(v)):
+                ov[k] = URL.sub(lambda m: m.group(0).split(":")[0] + f":{L['sentinel']}", v); rewrites.append(f"{name}\t{k}\t{v}\tsentinel")
+        for k, v in ov.items(): eff[k.lower()], src[k.lower()] = (k, v), "env"
+        for kl in (k.lower() for k in us):
+            if src.get(kl) != "env": fails.append(f"{name}: user-secrets key not overridden: {eff[kl][0]}")
+        for kl, (k, v) in sorted(eff.items()):
+            if "27017" in v: fails.append(f"{name}: {k} mentions 27017")
+            if v.startswith("mongodb://") and not v.startswith(f"mongodb://127.0.0.1:{o.mongo_port}/"):
+                fails.append(f"{name}: {k} Mongo URI not lane replica set")
+            for port in URL.findall(v):
+                if int(port) not in allowed: fails.append(f"{name}: {k} targets non-lane port {port}")
+            if re.search(r"databasename$", kl) and "hangfire" not in kl and not v.endswith("_" + o.camel):
+                fails.append(f"{name}: {k} database name not DB-010 fixed suffix")
+            shown = "[REDACTED]" if (SECRET_KEY.search(k) or v.startswith("@secret:")) else v
+            rows.append([name, k, shown, src[kl]])
+        with open(env_dir / f"{name}.env", "w") as f:
+            f.write("ASPNETCORE_ENVIRONMENT=Development\nDOTNET_ROLL_FORWARD=LatestPatch\n")
+            for k, v in sorted(ov.items()):   # single-quoted: Mongo URIs contain '&'
+                if "'" in v: sys.exit(f"FAIL quote in value for {k}")
+                f.write(f"{k.replace(':', '__')}='{v}'\n")
+    with open(Path(o.out, "EFFECTIVE-CONFIG-REDACTED.tsv"), "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t", lineterminator="\n"); w.writerow(["service", "key", "value", "layer"]); w.writerows(rows)
+    Path(o.out, "CONFIG-SENTINEL-REWRITES.tsv").write_text("service\tkey\thead_value\trewritten_to\n" + "".join(r + "\n" for r in rewrites))
+    Path(o.out, "CONFIG-CHECK.txt").write_text(
+        f"ports\t{json.dumps(ports, sort_keys=True)}\nsentinel\t{L['sentinel']}\nmongo\t127.0.0.1:{o.mongo_port} rs{o.camel}\n"
+        f"operational27017Referenced\t{any('27017' in x for x in fails)}\nfailures\t{len(fails)}\n" + "".join(f"FAIL\t{x}\n" for x in fails)
+        + f"RESULT\t{'PASS' if not fails else 'FAIL'}\n")
+    print("PASS" if not fails else "FAIL", len(fails)); sys.exit(1 if fails else 0)
+
+if __name__ == "__main__": main()

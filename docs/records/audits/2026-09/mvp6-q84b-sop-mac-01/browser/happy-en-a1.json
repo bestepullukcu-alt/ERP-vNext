@@ -1,0 +1,322 @@
+{
+  "phase": "happy",
+  "locale": "en",
+  "startedAt": "2026-09-30T19:48:59.159Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "MOD0190-happy-create": {
+      "result": "PASS",
+      "planId": "5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "createStatus": 201,
+      "createBodyKeys": [
+        "name",
+        "horizonStart",
+        "horizonEnd",
+        "demandPlanId",
+        "demandPlanVersion"
+      ],
+      "entry": {
+        "title": "S&OP Plans",
+        "cta": 1,
+        "tables": 0
+      },
+      "draft": {
+        "title": "Q84b en plan d7868baf",
+        "status": "Draft",
+        "captureVisible": true,
+        "signOffVisible": false
+      },
+      "listRequestsOnEntry": 0,
+      "evidence": [
+        "png/happy-01-entry-en.png",
+        "png/happy-02-create-offcanvas-en.png",
+        "png/happy-03-details-draft-en.png"
+      ]
+    },
+    "MOD0190-happy-capture": {
+      "result": "PASS",
+      "capStatus": 201,
+      "prefill": {
+        "demandPlanId": "DP-Q84B-01",
+        "demandPlanVersion": "1",
+        "capturedAtSet": true
+      },
+      "afterCap": {
+        "snapshotRows": 1,
+        "status": "In Review",
+        "signOffVisible": true
+      },
+      "evidence": [
+        "png/happy-04-capture-offcanvas-en.png",
+        "png/happy-05-details-after-capture-en.png"
+      ]
+    },
+    "MOD0190-happy-signoff": {
+      "result": "PASS",
+      "soStatus": 201,
+      "snapshotOptions": 2,
+      "afterSo": {
+        "signOffRows": 1
+      },
+      "afterReload": {
+        "signOffRows": 1,
+        "snapshotRows": 1,
+        "statusBadgeClass": "badge bg-label-warning",
+        "status": "In Review",
+        "text": "2026-09-30T19:49:07.0215080+00:00\t\n0859dbb6-7b52-4431-94b4-a7df6b50073c\n\tFinance\tApproved\tQ84b en sign-off\t\n93ba7047-1883-4fbb-949b-413dae80dc76"
+      },
+      "evidence": [
+        "png/happy-06-signoff-offcanvas-en.png",
+        "png/happy-07-signoff-confirm-en.png",
+        "png/happy-08-details-after-signoff-reload-en.png"
+      ]
+    },
+    "UI-PM-01": {
+      "result": "PASS",
+      "entryShell": {
+        "layoutWrappers": 1,
+        "layoutMenus": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "htmlDir": "ltr",
+        "htmlLang": "en"
+      },
+      "detailsShell": {
+        "layoutWrappers": 1,
+        "layoutMenus": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "htmlDir": "ltr",
+        "htmlLang": "en"
+      },
+      "note": "entry and details render with every partial (create/capture/sign-off offcanvas, L10n); exactly one shell each",
+      "evidence": [
+        "png/happy-01-entry-en.png",
+        "png/happy-08-details-after-signoff-reload-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "happy-01-entry-en.png",
+      "sha256": "ddc0edbc33e82e850f43ee6a8b92f197a68ec40b76126b754689782c4038200a",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:49:01.443Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-02-create-offcanvas-en.png",
+      "sha256": "a4e965aaf32b1a71b511b2ce3dd2351c7a7c04643a69be8cfbff206255a8ab7a",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:49:01.911Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-03-details-draft-en.png",
+      "sha256": "1ff1994a19a0bcc8de33dc836f1c3d7cf7a5f8a6abd4067b600b03eb169dc4d8",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:49:03.774Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-04-capture-offcanvas-en.png",
+      "sha256": "b37b56765199497f28a54cfcf984234145b2d51cdb20f22cb15dd7f4df385653",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:49:04.231Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-05-details-after-capture-en.png",
+      "sha256": "30810927bff012d89fa985640f611d3b0ca8167fec307d6af6cc7ec271c48bf3",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:49:06.092Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-06-signoff-offcanvas-en.png",
+      "sha256": "64cf37351c2a5ab314092100345cf30ce8dc5de33de43f2dbe65b980b8e209fd",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:49:06.555Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-07-signoff-confirm-en.png",
+      "sha256": "a20e31397acad7bed3351b7154d0730403fd9923bacba754ea563235ec248496",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:49:06.769Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-08-details-after-signoff-reload-en.png",
+      "sha256": "2848fe465bd2c8c6ed0b27118b4e78416b806608549be7ca7cdcd727285e0214",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:49:10.442Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "happy-en",
+      "text": "Plan created.",
+      "type": "success",
+      "at": "2026-09-30T19:49:02.281Z"
+    },
+    {
+      "tag": "happy-en",
+      "text": "Snapshot captured.",
+      "type": "success",
+      "at": "2026-09-30T19:49:04.356Z"
+    },
+    {
+      "tag": "happy-en",
+      "text": "Sign-off recorded.",
+      "type": "success",
+      "at": "2026-09-30T19:49:07.066Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:02.421Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api",
+      "status": 201,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:02.650Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:02.650Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:02.651Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:04.373Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:04.394Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:04.394Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:04.402Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 201,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:07.083Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:07.102Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:07.102Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:07.113Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 201,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:08.833Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:08.833Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T19:49:08.833Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 6,
+  "endedAt": "2026-09-30T19:49:10.473Z"
+}

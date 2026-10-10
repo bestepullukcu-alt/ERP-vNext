@@ -1,0 +1,546 @@
+---
+id: MOD-0183
+name: Shipment Tracking & POD
+domain: supply-chain-execution
+service: Diten.SupplyChainService
+shell: tenant
+golden_reference: compact
+entity_base: EntityBase
+status: ready-for-dev
+status_note: "Phase A spec approved by owner on 2026-09-15; first executable slice is backend/contract only. WAREHOUSE-OUTBOUND v1 is present; adapter compatibility and integrated acceptance remain separately gated."
+owner: supply-chain-execution / control-tower
+branch: feature/mvp6-logistics
+started: 2026-09-15
+target: 2026-09-30
+form_field_count: 13
+---
+
+# MOD-0183 — Shipment Tracking & POD
+
+> **Identity gate:** `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0183 --name "Shipment Tracking & POD"`
+> returned `OK` on 2026-09-15. The canonical source is Blueprint 8.1 and the module ID registry.
+>
+> **Phase A owner decision:** MVP-6 is the first contract-first lane. Approval of this pack authorizes Phase B to
+> scaffold `Diten.SupplyChainService` on port 5061 and implement the bounded MOD-0183 backend slice. It does not
+> authorize runtime work for MOD-0184/0185/0186/0187/0190/0192/0147/0148.
+>
+> **ASSUMPTION:** the first slice is backend-only (`shell: none`). UI shape and form-field count are intentionally
+> not invented; any tenant UI requires an approved follow-up or pack revision with an explicit Slim/Compact decision.
+
+## 1. Module Summary
+
+MOD-0183 is the system of record for a shipment and its proof of delivery. It owns shipment identity, shipment
+lifecycle, delivery confirmation, exceptions, immutable lifecycle history, idempotent commands, audit evidence and
+the correlation chain emitted through the Event Bus. It is the first writer in the MVP-6 logistics sequence.
+
+The first Phase B slice provides a contract-faithful backend vertical slice and the initial
+`Diten.SupplyChainService` scaffold. It is developed against published mocks and does not wait for another service
+implementation. Central consumer contracts are present. Unresolved compatibility gates affect their adapters and G5 integration evidence; see the readiness record linked below.
+
+## 2. Ownership and Boundaries
+
+**Owns:**
+
+- Shipment aggregate and server-minted shipment number.
+- Shipment line references; product and stock facts remain external references.
+- Shipment lifecycle and append-only lifecycle entries.
+- Proof of delivery, including delivery time, receiver, evidence references and exception note.
+- Shipment lifecycle event payloads in `SHIPMENT-BUNDLE`.
+- Correlation and causation propagation for its own HTTP commands and events.
+
+**Consumes:**
+
+- `INVENTORY-BUNDLE` v1 frozen read surface for availability/balance/transaction reconciliation.
+- Event Bus transport/envelope from Diten Building Blocks.
+- `WAREHOUSE-OUTBOUND` v1, centrally owned by MOD-0178: read-only outbound list/detail and `OutboundShipmentReadyEvent`.
+- `SUPPLIER` v1 was inspected: MOD-0140 owns it; it serves MOD-0147/0148 and is not a MOD-0183 runtime dependency.
+- Product and Location identifiers as opaque references through their frozen contracts when validation is needed.
+
+**Does not own:**
+
+- Warehouse task, pick, pack or shipment-ready trigger semantics.
+- Inventory balance, reservation or movement truth; no shadow stock.
+- Carrier master, routing/load, reverse logistics, claims or supplier master.
+- Gateway global route files, permission registry or shared platform registrations.
+
+## 3. Owned Objects
+
+| Object | Purpose |
+|---|---|
+| `Shipment` | Stable shipment identity, source references, route endpoints and current lifecycle state |
+| `ShipmentLine` | Opaque item/SKU, quantity and warehouse-dispatch line references; no stock balance |
+| `ShipmentLifecycleEntry` | Append-only transition history with correlation/causation and actor evidence |
+| `ProofOfDelivery` | Delivery confirmation bound one-to-one to a delivered shipment |
+| `ShipmentException` | Shipment-owned exception record; claims remain MOD-0187 |
+| Commands | Create, assign carrier/load references, dispatch, record exception, capture POD, cancel |
+| Queries | List shipments, get shipment, get lifecycle, get POD, reconcile source references |
+| API | `/api/shipment-bundle/shipments/**` from `SHIPMENT-BUNDLE` v1 |
+| Events | Shipment created/dispatched/in-transit/exception/delivered/cancelled and POD captured v1 |
+| Permissions | `supplychain.shipments.read`, `.create`, `.dispatch`, `.pod.capture`, `.cancel`, `.reconcile` |
+
+## 4. Entity Fields
+
+### Shipment
+
+| Field | Rule |
+|---|---|
+| `Id` | Server-minted stable UUID |
+| `TenantId` | Required; server context only, never request body |
+| `LegalEntityId` | Required; server context/header policy only, never request body |
+| `ShipmentNumber` | Server-minted, tenant/legal-entity unique |
+| `WarehouseReferenceId` | Required opaque Location warehouse reference; map `OutboundShipment.warehouseId`, never `outboundId` |
+| `SourceModule` / `SourceType` / `SourceDocumentId` | Required frozen create fields; Warehouse mapping is `MOD-0178` / `WAREHOUSE_OUTBOUND` / `outboundId` |
+| `SourceSystem` / `ExternalRef` | Optional DEC-INV-19 reconciliation hooks |
+| `CarrierId` | Optional MOD-0184 reference |
+| `LoadPlanId` | Optional internal MOD-0185 reference; wire projection is `loadId`; no new assignment API |
+| `ShipToReference` | Required opaque delivery destination reference |
+| `Lines` | At least one `ShipmentLine`; quantity uses the frozen v1 decimal-string schema |
+| `PlannedShipAt` / `PlannedDeliverAt` | UTC date-time; planned delivery cannot precede planned shipment |
+| `Status` | `Draft`, `Planned`, `Dispatched`, `InTransit`, `Delivered`, `Exception`, `Closed`, `Cancelled` |
+| `IsDeleted` / audit fields | Repo-standard soft delete and audit fields |
+
+### ProofOfDelivery
+
+| Field | Rule |
+|---|---|
+| `Id` | Server-minted stable UUID |
+| `ShipmentId` | Required; one active POD per shipment |
+| `ReceivedAt` | Required UTC date-time |
+| `RecipientName` | Required, trimmed |
+| `EvidenceReferenceIds` | At least one immutable document/evidence reference; binary content not stored here |
+| `Note` | Optional, max 1000 |
+| `CorrelationId` | Required UUID propagated from command through emitted events |
+
+Indexes are tenant-first: `(TenantId, LegalEntityId, ShipmentNumber)` unique; `(TenantId, LegalEntityId, Status,
+PlannedDeliverAt)`; `(TenantId, LegalEntityId, WarehouseReferenceId)`; lifecycle entries by
+`(TenantId, ShipmentId, Sequence)` unique; POD by `(TenantId, ShipmentId)` unique among non-deleted records.
+
+## 5. Repo Scope
+
+Phase B may write only:
+
+- `services/Diten.SupplyChainService/**` for the initial five-layer service scaffold and MOD-0183 slice.
+- `services/Diten.SupplyChainService/src/**/Features/Shipments/**`.
+- `services/Diten.SupplyChainService/tests/**/Shipments/**` and service-level architecture/contract tests.
+- `docs/reference/architecture/api/**` for generated MOD-0183 API reference.
+- `docs/records/audits/**` for verification evidence.
+- This module pack and applicable backlog/seam records required by closure.
+
+The frozen file `docs/analysis/contracts/shipment-bundle.openapi.yaml` is implementation authority. Phase B must not
+edit it; any additive contract revision is a separately versioned, single-writer Phase A change.
+
+## 6. Protected Paths
+
+- `.antigravity/**`.
+- `gateway/Diten.ApiGateway/**/ocelot.json`; only `integration-agent` may change routes in a separate WP.
+- `frontend/Diten.Web/Controllers/Archive/**`, `frontend/Diten.Web/Views/Archive/**`.
+- `frontend/Diten.Web/Views/Shared/_Layout.cshtml` and shared shell files.
+- Every other domain service and every non-MOD-0183 feature in `Diten.SupplyChainService`.
+- Existing eight frozen Wave-0 contracts and central Warehouse/Supplier contracts.
+- MOD-0184/0185/0186/0187/0190/0192/0147/0148 runtime paths.
+
+## 7. Dependencies
+
+| Dependency | State for Phase B | Rule |
+|---|---|---|
+| `SHIPMENT-BUNDLE` v1 | SATISFIED when Phase A validation passes | Owned frozen contract |
+| `INVENTORY-BUNDLE` v1 | SATISFIED | Consume via generated/manual contract client or mock; reads only in this slice |
+| Event Bus | SATISFIED as platform foundation | Use outbox/event envelope; preserve correlation UUID |
+| Location/Product contracts | SATISFIED | Opaque IDs; validation through frozen mock where invoked |
+| `WAREHOUSE-OUTBOUND` v1 | PRESENT / FROZEN; compatibility PARTIAL | GET list/detail + ready event; mapping and GAP-0183-01/02/03 in readiness record |
+| `SUPPLIER` v1 | PRESENT / FROZEN; N/A for this slice | Supplier identity belongs to MOD-0140; no Shipment dependency |
+| MOD-0184 Carrier | OPEN | Optional reference only; no Carrier aggregate here |
+| MOD-0185 Load | OPEN | Optional reference only; no LoadPlan aggregate here |
+
+The missing-contract claim is resolved. The inbound adapter remains disabled for untrusted tenant/legal-entity
+context or non-UUID/mismatched correlation; no local contract substitute, scope guessing or silent correlation
+replacement is allowed. The approved HTTP core is independent of this blocked automatic intake.
+
+## 8. Runtime Constraints
+
+- Service: `Diten.SupplyChainService`, port 5061, five layers + CQRS/MediatR.
+- MongoDB tenant/legal-entity scoped collections; cross-tenant and cross-LE lookup returns 404.
+- `TenantId` and `LegalEntityId` never come from mutation payloads.
+- State transitions are append-only history; a delivered/cancelled shipment is not edited back to an earlier state.
+- Commands require `Idempotency-Key` and UUID `X-Correlation-Id` exactly as frozen contract v1 specifies.
+- Duplicate idempotency key returns the prior successful result without a second transition/event.
+- State transition + outbox event are atomic or use an explicit compensating/partial marker; silent partial success is forbidden.
+- Inventory is consumed by API/mock only; no database/internal-type sharing and no second balance.
+- **Explicit pack exception to the default response-envelope rule:** the externally observable
+  `/api/shipment-bundle` wire response is the unwrapped OpenAPI v1 schema, matching the eight Wave-0 mock contracts.
+  Application handlers may use `Response<T>` internally, but the contract adapter unwraps `Data`; it must not add
+  `data/isSuccessful/statusCode/errors` fields to this frozen wire surface. This exception is required for exact
+  contract/mock compatibility and is limited to this contract route.
+
+## 9. Layout & Shell Contract
+
+`shell: none`. Phase B creates no Razor UI, menu, DataTable, localization surface or frontend route.
+
+## 10. Backend File Convention
+
+- Five projects/layers: Api, Application, Domain, Persistence, Infrastructure.
+- Each command/query/handler/validator is in its own file.
+- Feature root: `Features/Shipments/Commands`, `Queries`, `Handlers/CommandHandlers`,
+  `Handlers/QueryHandlers`, `Validators`, and `ShipmentModels.cs`.
+- Four pipeline behaviors and `CustomBaseController` are installed before endpoint implementation.
+- Specific repositories are allowed for append-only lifecycle/idempotency/outbox atomicity; no generic repository shortcut
+  may weaken tenant, legal-entity or current-state transition predicates.
+
+## 11. Frontend File Contract
+
+Not applicable in the first slice. A future UI requires a pack revision/follow-up with tenant shell, exact form fields,
+DataTable decision and Slim/Compact reference.
+
+## 12. Validation Rules
+
+| Field/Header | Required | Rule | Persistence/pre-check |
+|---|---|---|---|
+| `Idempotency-Key` | State changes | Trimmed, max 128 | `(TenantId, LegalEntityId, operation, IdempotencyKey)` unique replay record |
+| `X-Correlation-Id` | Every operation | UUID, non-empty | Persist on lifecycle/outbox records for mutations |
+| `WarehouseReferenceId` | Create | Non-empty opaque reference | Warehouse mapping uses `warehouseId`; source identity separately uses `outboundId` |
+| `ShipToReference` | Create | Non-empty opaque reference | — |
+| `Lines` | Create | At least one; fields and decimal-string quantity match v1 schema | Product refs validate when mock available |
+| `PlannedShipAt` | Create | UTC | Must be before optional planned delivery |
+| `TargetStatus` / `OccurredAt` | Transitions | Frozen transition matrix + UTC timestamp | Current state is checked atomically |
+| `ReceivedAt` | POD | UTC, not before dispatch | Shipment must be Dispatched or InTransit |
+| `RecipientName` | POD | Trimmed, non-empty | — |
+| `EvidenceReferenceIds` | POD | At least one | Reference only; no binary upload |
+
+## 13. Failure Path to Verify
+
+- Duplicate idempotency key replays the first result and creates no second lifecycle/outbox record.
+- Invalid lifecycle transition returns `INVALID_SHIPMENT_TRANSITION` with correlation ID and no write.
+- A concurrent or repeated transition is resolved by atomic current-state validation plus idempotency; invalid state returns `INVALID_SHIPMENT_TRANSITION` without a write.
+- Unknown/cross-tenant/cross-LE shipment returns 404 without existence leakage.
+- Duplicate POD returns 409 `POD_ALREADY_CAPTURED`.
+- Missing/invalid UUID correlation returns 400 and publishes no event.
+- Unavailable Warehouse detail, incompatible correlation or untrusted tenant/LE context keeps automatic intake blocked and emits no fabricated shipment.
+- Inventory reconciliation failure is explicit and never mutates inventory or shipment state silently.
+
+## 14. Authorization Convention
+
+Actor type: tenant user/service actor. Server-side permissions:
+
+- Read: `supplychain.shipments.read`.
+- Create: `supplychain.shipments.create`.
+- Dispatch/transitions: `supplychain.shipments.dispatch`.
+- POD: `supplychain.shipments.pod.capture`.
+- Cancel: `supplychain.shipments.cancel`.
+- Reconcile: `supplychain.shipments.reconcile`.
+
+Permission definition/seed is a shared seam and must be handled by its single owner/integration WP. Phase B may use
+the approved names but must not edit shared permission registries outside an explicitly authorized integration task.
+
+## 15. Gateway / API Routing Decision
+
+The canonical contract family is `/api/shipment-bundle/**` to service port 5061, exactly matching the OpenAPI
+`servers.url` plus its paths. The Phase B developer does not edit
+`ocelot.json`. A separate `integration-agent` WP adds the route after controller endpoints exist and validates
+`Authorization`, `X-Tenant-Id`, `X-Legal-Entity-Id`, `X-Correlation-Id` and `Idempotency-Key` propagation.
+
+## 16. Acceptance Criteria
+
+- [ ] `Diten.SupplyChainService` builds with the mandated five layers, four pipeline behaviors and base controller.
+- [ ] Create shipment persists exactly one tenant/legal-entity scoped shipment and one lifecycle/outbox entry.
+- [ ] Repeating the same create/transition idempotency key returns the same result without a second write/event.
+- [ ] Allowed transitions match `SHIPMENT-BUNDLE` v1 and invalid transitions fail without partial state.
+- [ ] Capturing POD transitions the shipment to Delivered atomically and emits the specified events once.
+- [ ] A command's UUID correlation ID is preserved across shipment lifecycle and POD events.
+- [ ] Cross-tenant/cross-LE reads and mutations return 404; missing permissions return 403.
+- [ ] Inventory data is read only through `INVENTORY-BUNDLE` v1 mock/client; no stock collection or balance exists locally.
+- [ ] Warehouse intake uses the recorded v1 map; incompatible correlation, missing trusted scope and source drift are explicit blocked/reconciliation states, never fabricated shipments.
+- [ ] Contract examples pass a live mock smoke test and implementation payloads match the frozen OpenAPI.
+- [ ] G5 evidence plan covers shipment→carrier/load→POD→return/claim, source reconciliation and regression; module
+      completion remains open until downstream modules and central contracts pass E5 integration.
+
+## 17. Test Expectations
+
+- DCP-002 identity verifier PASS.
+- OpenAPI syntax/reference validation and Prism mock startup/smoke for `SHIPMENT-BUNDLE`.
+- Domain transition matrix unit tests.
+- Handler tests for tenant/legal-entity isolation, permission denial, idempotency, concurrent state transition and atomic outbox.
+- API contract tests for every success and declared error response.
+- Mongo integration tests use isolated test database naming per DB-010.
+- Runtime E4 for MOD-0183 state changes; G5 requires later E5 cross-module integration.
+- Architecture tests include the new service and verify no competing stock SoR or direct foreign database access.
+
+## 18. Ready-for-dev Checklist
+
+- [x] Canonical ID/name passed DCP-002.
+- [x] DCP-009 and Supply Chain domain boundary were read.
+- [x] Owned contract is versioned, validated and frozen as `SHIPMENT-BUNDLE` v1.
+- [x] Backend-only first slice selected; no UI/form pattern invented.
+- [x] Service/port, entity base, owned objects and repository paths are explicit.
+- [x] Commands, queries, event/correlation behavior and error codes are frozen in the contract.
+- [x] Tenant/legal-entity, RBAC, idempotency, concurrency, audit and outbox gates are explicit.
+- [x] At least four failure paths and measurable acceptance criteria are defined.
+- [x] Gateway ownership remains with `integration-agent`.
+- [x] Central `WAREHOUSE-OUTBOUND` is present; field mapping, adapter compatibility gaps and fail-closed boundary are recorded.
+- [ ] All Warehouse automatic-intake compatibility gates pass (GAP-0183-01/02/03 remain open).
+- [x] User explicitly authorized `ready-for-dev` for Phase A on 2026-09-15.
+
+## 19. Implementation Notes
+
+- **ASSUMPTION:** the Phase B runtime naming root is `Shipments`; this is derived from the canonical module name and
+  contract base path and may not broaden into Carrier/Load/Reverse/Claims features.
+- **ASSUMPTION:** the target date `2026-09-30` is a planning default required by the module-pack schema; it is not a
+  commitment to promote the eight draft packs or complete all MVP-6 integration by that date.
+- **ASSUMPTION:** UUID `X-Correlation-Id` is mandatory on every frozen HTTP operation and maps losslessly to the Event
+  Bus `Guid CorrelationId` for lifecycle events.
+- **ASSUMPTION:** warehouse-originated creation is an adapter into the owned create-shipment command, using central
+  `WAREHOUSE-OUTBOUND` v1. Provenance snapshots remain internal and cannot extend the frozen create DTO.
+- This pack supersedes the earlier DCP-009 note that named MOD-0173 as the only possible initial service-scaffold
+  trigger, based on the owner's explicit 2026-09-15 instruction that MOD-0183 is the first contract-first lane.
+
+## 20. Follow-up Items
+
+- Central CT review: resolve correlation, trusted LE event context and strict OpenAPI example compatibility gaps
+  recorded in `docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md`; contract publication is no longer missing.
+- MOD-0184 pack must freeze Carrier before MOD-0185 Routing/Load becomes executable.
+- MOD-0186 and MOD-0187 become executable after Shipment lifecycle v1 is frozen and verified.
+- Separate integration WP for gateway route and permission/shared registration seams.
+- Separate UI follow-up after actor journeys and form fields are approved.
+- G5 E5 integration after all MVP-6 modules and central consumer contracts are available.
+
+## 21. Readiness reconciliation — 2026-09-15
+
+See [field mapping, assumptions, SOP §17 prompt, DoR and Phase 1.5 checklist](../../../../docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md).
+The user explicitly approved the reconciled MOD-0183 scope and Phase 1.5 checklist in this session. That approval
+is recorded; it is not implementation or acceptance evidence. The subsequent CT request invokes independent
+acceptance before advancing to MOD-0184. No runtime implementation is present at this inspection.
+
+Exact initial HTTP surface: `queryShipments`, `createShipment`, `getShipment`, `transitionShipment`,
+`captureProofOfDelivery`. Lifecycle/POD/history/source-reconciliation queries without a frozen standalone route
+are internal/read-model responsibilities, not authorization to invent endpoints. Carrier/load assignment commands
+listed conceptually in §3 are not implemented without an approved frozen assignment surface. `loadId`/`carrierId`
+remain nullable read-model references. Shipment event production is in scope; the bundle webhook documents consumer
+intake and does not authorize a new public Shipment event-ingest endpoint.
+
+**Status:** core planning/approval recorded; automatic Warehouse intake NOT READY; runtime acceptance NOT READY.
+All §16 implementation acceptance boxes remain open. MOD-0184 remains draft and sequence-gated.
+
+## 22. Self-registration
+
+Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff-owner-decision-01.md`
+
+**Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
+**Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).
+This section specifies; it authorizes no code, `Program.cs`, `.csproj`, appsettings, `SharedResource`, Platform or gateway change, no new permission key or ID, and no commit, push or stash.
+
+### Identity (D3 = A)
+
+| Field | Value |
+|---|---|
+| ModuleCode / ModuleName / DisplayName | `shipment-tracking-pod` / `ShipmentTrackingPod` / `Shipment Tracking & POD` |
+| Domain / Service | `SupplyChainExecution` / `DitenSupplyChainService` |
+| ModuleVersion / IsTenantAssignable / IsBaseline | `1.0.0` / true / false |
+| SortOrder / Icon (SOFT, seed-once) | 390 / `bx-package` |
+| Provider / tests (proposed paths) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ShipmentTrackingPodManifestProvider.cs` / `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ShipmentTrackingPodManifestProviderTests.cs` |
+| Scope | every RoutePath starts with `/SupplyChain/`, none with `/Platform/` → Tenant |
+
+### Pages
+
+| PageCode | DisplayName | RoutePath (verbatim) | RequiredPermission | Parent | Nav | PageType | Sort |
+|---|---|---|---|---|---|---|---|
+| `SHIPMENTS` | Shipments | `/SupplyChain/Shipments` | `supplychain.shipments.read` | — | **true** | List | 10 |
+| `SHIPMENT_CREATE` | Create Shipment | `/SupplyChain/Shipments/Create` | `supplychain.shipments.create` | `SHIPMENTS` | false | Detail | 11 |
+| `SHIPMENT_DETAILS` | Shipment Details | `/SupplyChain/Shipments/Details/{shipmentId:guid}` | `supplychain.shipments.read` | `SHIPMENTS` | false | Detail | 12 |
+
+### Actions
+
+| Page | ActionCode | DisplayName | PermissionKey | Placement | Dangerous |
+|---|---|---|---|---|---|
+| `SHIPMENT_CREATE` | `SAVE` | Save | `supplychain.shipments.create` | Toolbar | no |
+| `SHIPMENT_DETAILS` | `CHANGE_STATUS` | Change Status | `supplychain.shipments.dispatch` | Toolbar | no |
+| `SHIPMENT_DETAILS` | `CANCEL` | Cancel Shipment | `supplychain.shipments.cancel` | Toolbar | **yes** |
+| `SHIPMENT_DETAILS` | `CAPTURE_POD` | Capture POD | `supplychain.shipments.pod.capture` | Toolbar | no |
+
+All keys are existing constants in `Diten.SupplyChainService.Infrastructure/Authorization/ShipmentPermissions.cs`. Not modeled: the list row's details link (navigation) and `supplychain.shipments.reconcile` (API-only, no UI route or button). Route truth today: `SupplyChainShipmentsController` (`[Route("SupplyChain/Shipments")]`) in the A12 successor archive `docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/successor-source.tar.gz` (`7b6a0d1a…`).
+
+### Navigation keys (NAV-L10N-KEYS.tsv; 0/7 present today)
+
+| Key | Required languages | Ships with |
+|---|---|---|
+| `Nav.Domain.SUPPLYCHAINEXECUTION` | en, tr, fr, es, zh, ar, ru | first SupplyChain provider to ship (with the DCP-009 §21 foundation) |
+| `Nav.Module.SHIPMENTTRACKINGPOD` | en, tr, fr, es, zh, ar, ru | this provider |
+| `Nav.Page.SHIPMENTS` | en, tr, fr, es, zh, ar, ru | this provider |
+
+Values are added to `frontend/Diten.Web/Resources/SharedResource.{lang}.resx` by the integration owner and reviewed by the l10n agent (no empty value, no English placeholder, no key echoing its own name). This pack does not supply or approve values.
+
+### Tests (TEST-PLAN.md §2; all required before the module counts as closed)
+
+| ID | Pass condition |
+|---|---|
+| M-01 | Identity exactly as above; `IsTenantAssignable` true |
+| M-02 | Every manifest `RequiredPermission` / `PermissionKey` is in the reflected `public const string` fields of `ShipmentPermissions` |
+| M-03 | Every reflected key is in the manifest or on the API-only allow-list with a reason: `supplychain.shipments.reconcile` (API-only) |
+| M-04 | Manifest RoutePaths = the frontend view-route set of `SupplyChainShipmentsController`, counts equal (cross-checked by W-01) |
+| M-05 | The action table above equals the manifest actions per page (code, key, placement, dangerous flag) |
+| M-06 | PageCodes, RoutePaths and ActionCodes (per page) unique, case-insensitive |
+| M-07 | Exactly one `IsNavigationVisible` page, with a null parent; every other page has a parent |
+| M-08 | No RoutePath starts with `/Platform/` |
+
+Shared guards W-01…W-04 and reconcile-state R-01…R-04 (DCP-009 §21.3) must also be green for this module.
+
+### Ship rule (D4 = A)
+
+The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navigation keys ship **together with this module's UI** in the integrated target (Q14/Q15), never ahead of it. If Shipment is the first SupplyChain module to ship, the DCP-009 §21 foundation and `Nav.Domain.SUPPLYCHAINEXECUTION` ship with it.
+
+### Open gaps (carried, not solved)
+
+1. The Shipment UI is not in the common checkout; route truth is the archived A12 successor source until integration.
+2. The RoutePath keeps the `:guid` constraint verbatim (other manifests use `{id}`); the platform normalizer's handling is confirmed by R-01.
+3. The details action bar is a page-level bar; `Toolbar` is the nearest supported placement.
+4. `supplychain.shipments.read` is also a UI prerequisite of Returns/Claims create and transition (G-SHIPREAD); the single-key action model cannot express that conjunction.
+5. Runtime tests R-02…R-04 need a native executor and the integrated target.
+
+## 23. Tenant UI declaration (Q234, 2026-10-02) — record of the UI that is in the tree
+
+**Evidence:** `docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/` (F-Q231-3: this pack said the module has no UI while the tree holds one) and the files read for
+`docs/records/audits/2026-10/mvp6-q233-q234-pack-reconcile-01/MOD0183-UI-DECLARATION.md`. Every row below is derived from a file in the tree; no screen and no field is
+declared that has no view behind it.
+
+**What this section is.** A record of what exists and what is missing. It accepts nothing, ticks no checkbox and authorizes no code,
+gateway, permission, navigation or contract change. `status` is unchanged. No backend, contract or business rule in §§1–22 is changed.
+The frontmatter values `shell: tenant`, `golden_reference: compact` and `form_field_count: 13` describe the UI. For the UI, the opening
+ASSUMPTION ("backend-only … `shell: none`"), §9 ("`shell: none`"), §11 ("Not applicable in the first slice"), the §18 line "Backend-only
+first slice selected; no UI/form pattern invented", the §20 item "Separate UI follow-up" and §22 open gap 1 ("The Shipment UI is not in the
+common checkout") are superseded by this section; for the backend they remain as written. The UI files are untracked working-tree files
+(they arrived through Q202a, per Q231 `SLICE-GATE-MATRIX.tsv` row 14); acceptance is for CT and the owner (SOP §32 K13).
+
+### 23.1 Layout and shell — as in the tree
+
+- `shell: tenant`: each of the three page views states `Layout = "_LayoutTenantShell";` explicitly — `Index.cshtml:7`, `Create.cshtml:8`,
+  `Details.cshtml:8`. No partial (`_*.cshtml`) in the folder sets a `Layout`.
+- View folder `frontend/Diten.Web/Views/SupplyChain/Shipments/`; route base `/SupplyChain/Shipments` (`SupplyChainShipmentsController.cs:12`); no `/Platform` prefix.
+
+### 23.2 Screens and routes — as in the tree
+
+Browser → same-origin MVC adapter → `{GatewayUrl}/api/shipment-bundle/…`. All paths are `frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs`.
+
+| Surface | MVC route (controller line) | View / form | UI gate in the tree | Adapter target |
+|---|---|---|---|---|
+| List page | GET `/SupplyChain/Shipments` (`:39`) | `Index.cshtml` + `_Filter.cshtml` + `_DataTable.cshtml` | `supplychain.shipments.read` (`Index.cshtml:9`); Create button only with `.create` (`:17`) | — |
+| Create page | GET `/SupplyChain/Shipments/Create` (`:42`) | `Create.cshtml` + `_Form.cshtml` | `supplychain.shipments.create` (`Create.cshtml:10`) | — |
+| Details page | GET `/SupplyChain/Shipments/Details/{shipmentId:guid}` (`:45`) | `Details.cshtml` | `supplychain.shipments.read` (`Details.cshtml:11`) | — |
+| Change Status (form on the Details page) | — | `_TransitionOffcanvas.cshtml` | button built only when a target is allowed for the current status and the key is held (`details.js:70-80`) | — |
+| Capture POD (form on the Details page) | — | `_PodOffcanvas.cshtml` | `.pod.capture` and status Dispatched or InTransit (`details.js:81`) | — |
+| List adapter | GET `…/api?status=&sourceDocumentId=&page=&pageSize=` (`:52`) | — | `.read`; `pageSize` 1–200 | GET `/api/shipment-bundle/shipments` |
+| Detail adapter | GET `…/api/{shipmentId:guid}` (`:67`) | — | `.read` | GET `/api/shipment-bundle/shipments/{shipmentId}` |
+| Create adapter | POST `…/api` (`:75`) | — | `.create`; antiforgery | POST `/api/shipment-bundle/shipments` |
+| Transition adapter | POST `…/api/{shipmentId:guid}/transition` (`:86`) | — | `.cancel` when the target is `Cancelled`, otherwise `.dispatch`; antiforgery | POST `/api/shipment-bundle/shipments/{shipmentId}/transition` |
+| POD adapter | POST `…/api/{shipmentId:guid}/pod` (`:100`) | — | `.pod.capture`; antiforgery | POST `/api/shipment-bundle/shipments/{shipmentId}/pod` |
+
+These are the five frozen operations of §21 and nothing else. No edit, delete, bulk, import or export screen exists in the tree; none is declared.
+The three pages equal the three pages of §22.
+
+### 23.3 Create form — the field count that decides the golden reference
+
+Counted from `_Form.cshtml` (inputs) and `CreateShipmentViewModel` / `CreateShipmentLineViewModel` (`frontend/Diten.Web/Models/SupplyChain/Shipments/ShipmentViewModels.cs:5-25`).
+Rule: AGENTS.md §6 — only fields the user fills in the create form; `Id`, `TenantId`, `IsDeleted`, `CreatedAt`, `UpdatedAt`, audit fields and
+DataTable checkbox/action columns are not counted. The repeatable line container is not counted; its field types are counted once each
+(the same rule MOD-0186 §32.6 states).
+
+| # | Field | Where | Required in the form | Input |
+|---|---|---|---|---|
+| 1 | `sourceModule` | `_Form.cshtml:10` | yes | text |
+| 2 | `sourceType` | `:11` | yes | text |
+| 3 | `sourceDocumentId` | `:12` | yes | text |
+| 4 | `warehouseReferenceId` | `:13` | yes | text |
+| 5 | `shipToReference` | `:14` | yes | text |
+| 6 | `plannedShipAt` | `:17` | yes | date-time picker |
+| 7 | `plannedDeliverAt` | `:18` | no | date-time picker |
+| 8 | `lines[].lineNumber` | `:23` (line template) | yes | text |
+| 9 | `lines[].itemId` | `:23` | yes | text (UUID checked in `create.js:54`) |
+| 10 | `lines[].skuId` | `:23` | yes | text (UUID checked in `create.js:54`) |
+| 11 | `lines[].quantity` | `:23` | yes | text, `inputmode=decimal`, sent as a string |
+| 12 | `lines[].uomId` | `:23` | yes | text |
+| 13 | `lines[].inventoryReferenceId` | `:23` | no | text |
+
+`form_field_count: 13`. 13 is more than 8 → **`golden_reference: compact`** (AGENTS.md §6). The tree is consistent with that: separate
+`Create.cshtml`, `Details.cshtml` and `_Form.cshtml`, and no create/edit offcanvas in `Index.cshtml`.
+Sensitivity, recorded and not hidden: if only the seven header fields were counted the result would be 7 and the rule would say `slim`.
+The count of 13 follows the stated rule; CT may rule otherwise (F-Q234-1). Not counted: `shipmentNumber` and `status` (server-set).
+
+### 23.4 The two other forms (Details page)
+
+| Form | Field | Required attribute | Note |
+|---|---|---|---|
+| Change Status (`_TransitionOffcanvas.cshtml:4`) | `targetStatus` | yes | options built from the current status and the held keys (`details.js:11-13`, `:70-71`) |
+| | `occurredAt` | yes | `datetime-local`, defaulted to now |
+| | `reasonCode` | no | text |
+| | `note` | no | `maxlength="2000"` — see G183-UI-10 |
+| Capture POD (`_PodOffcanvas.cshtml:4`) | `recipientName` | yes | text |
+| | `receivedAt` | yes | `datetime-local`, defaulted to now |
+| | `evidenceReferenceIds` | yes | free text, split on line breaks and commas (`details.js:137`) — see G183-UI-06 |
+| | `note` | no | `maxlength="2000"` — see G183-UI-10 |
+
+Both forms are `novalidate` (G183-UI-05). Both submit through `window.showConfirm` (`details.js:128`).
+
+### 23.5 List — as in the tree
+
+`data-dt-standard="v2"` (`_DataTable.cshtml:4`); `DtDefaults.create` with `serverSide: true`, `stateSave: false`, `searching: false`
+(`index.js:66-67`). Columns: responsive control, `shipmentNumber`, `sourceDocumentId`, `status`, `plannedShipAt`, `plannedDeliverAt`,
+details link (`index.js:69-76`). Filter (`_Filter.cshtml:4`): `status` select with eight values, `sourceDocumentId` text, Apply and Reset.
+No checkbox column, no BulkActionBar, and the export collection button is filtered out (`index.js:64-65`).
+
+### 23.6 Frontend file contract — the files that exist
+
+- Views (10 `.cshtml`): `Index`, `Create`, `Details`, `_Form`, `_Filter`, `_DataTable`, `_IndexL10n`, `_LineEditor`, `_TransitionOffcanvas`, `_PodOffcanvas`; marker class `ShipmentsIndex.cs`.
+- Controller `frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs`; models `frontend/Diten.Web/Models/SupplyChain/Shipments/ShipmentViewModels.cs`.
+- Scripts (4) in `frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/`: `index.js`, `index.l10n.js`, `create.js`, `details.js`.
+- Resources (7): `frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx`, 63 keys each (counted for Q234; Q231 L10n row).
+- Tests (4) in `frontend/Diten.Web.Tests/`: `Controllers/ShipmentJsonAdapterChallengeTests.cs`, `Forms/ShipmentFormContractTests.cs`, `JavaScript/ShipmentDetailActionTests.cs`, `JavaScript/ShipmentIndexBehaviorTests.cs`.
+
+Differences from the Compact file set of `module-pack-standard.md` §5, recorded and not decided here (F-Q234-2):
+
+- No `Edit.cshtml`. The frozen contract has no update operation (§21: five operations), so there is nothing for an edit page to call.
+- Change Status and Capture POD are offcanvas forms on the Details page. They are action forms, not the `_CreateEditOffcanvas.cshtml` / `_DetailsQuickView.cshtml` that Compact forbids; whether they fit the Compact contract is for CT.
+- `_LineEditor.cshtml` is a one-line comment; the line editor is the `<template>` inside `_Form.cshtml:23`.
+- `verify_datatable_page.py . --area SupplyChain --module Shipments --reference compact` and `quality-gate-datatable` have not been run by any record read here.
+
+### 23.7 UI acceptance rows — none accepted, none ticked
+
+Derived from the tree. "State" is what Q231 measured by reading (E1); nothing here was run.
+
+| ID | Criterion | Derived from | State (Q231, static) |
+|---|---|---|---|
+| SU-01 | Each of the three page views states `Layout = "_LayoutTenantShell";` and no partial sets a Layout | §23.1 | present by reading |
+| SU-02 | UAS-001: without the page permission only `_AccessDenied` renders inside the shell — no heading, filter, table, button or redirect — on all three pages | `Index.cshtml:9-13`, `Create.cshtml:10-14`, `Details.cshtml:11-15` | static MET (matrix row 8); live check open (Q231 R-03); list-API 403 path NOT MET → G183-UI-07 |
+| SU-03 | The list loads through the same-origin adapter and the Gateway, with `status` / `sourceDocumentId` filter and server paging | `index.js`; controller `:52-65` | NOT MET — G183-UI-02 |
+| SU-04 | Create sends the 13 fields of §23.3 with at least one line, one idempotency key per unchanged payload, and opens Details on success | `create.js:44-80` | not run; blocked by G183-UI-02, G183-UI-03 |
+| SU-05 | Details shows summary, schedule, lines and POD; an unknown or foreign shipment shows the safe not-found text with a support reference | `Details.cshtml:23-26`; `details.js:95-109` | not run |
+| SU-06 | Change Status offers only the targets allowed for the current status and the held keys; `Cancelled` needs `.cancel`, every other target `.dispatch` | `details.js:11-13,70-71`; controller `:92-93` | not run; G183-UI-05 |
+| SU-07 | Capture POD is offered only in Dispatched or InTransit with `.pod.capture`; evidence references are sent as a list | `details.js:81,134-138` | not run; G183-UI-05, G183-UI-06 |
+| SU-08 | A server failure or a denied save is distinguishable from a validation error | `create.js:56-60`; `details.js:49-52` | NOT MET — G183-UI-04 |
+| SU-09 | Loading, empty and error are three distinct states on the list and on Details | `index.js:51,57-59`; `_DataTable.cshtml:4` | NOT MET — G183-UI-07 |
+| SU-10 | Seven languages: every key present and non-empty in en, tr, fr, es, zh, ar, ru; status names localized | 7 `.resx`, 63 keys each; `_Filter.cshtml:4` | keys MET (matrix row L10n); status names NOT MET — G183-UI-09 |
+| SU-11 | The note limit is the same in the UI, the adapter and the service | `ShipmentViewModels.cs:34,42`; §4 | NOT MET — G183-UI-10 |
+| SU-12 | Confirmations use the shared premium wrapper (`window.showConfirm`, MOD-0013); no native dialog | `details.js:128` | present by reading |
+| SU-13 | DataTable verifier and `quality-gate-datatable` results are recorded against `--reference compact` | §23.6 | not run |
+| SU-14 | A real user can hold the six keys and reach the three pages from the navigation | §22; `Program.cs` | NOT MET — G183-UI-03 |
+
+### 23.8 Open items — the SOP §18.0 rows Q231 measured as NOT MET, and two further measured gaps
+
+Source: `docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SLICE-GATE-MATRIX.tsv` and `SOP-22.md`. Recorded, not decided and not fixed here.
+
+| Item | §18.0 row / subject | Finding | What is missing |
+|---|---|---|---|
+| G183-UI-01 | Golden flow | F-Q231-8 | No golden-flow document with the five SOP §18.0 elements (actor, trigger, interaction sequence, expected response, success result). The backend sequence is one sentence in the readiness record; the UI journey list → create → details → change status → capture POD is unwritten. |
+| G183-UI-02 | No-shell: gateway has 0 routes | F-Q231-1 | Every UI adapter calls `{GatewayUrl}/api/shipment-bundle/…`; `ocelot.json` has no route for that family. Backend wired, frontend wired, the link between them missing (SOP K4). Gateway edits belong to `integration-agent` only (§6, §15). |
+| G183-UI-03 | No-shell: permission seed | F-Q231-2 | Nothing gives a user the six `supplychain.shipments.*` keys: no seed outside the service, and the manifest provider / registration hosted service are not registered in the service `Program.cs`. With the UAS gate in place every user would get the access-denied panel. Needs a run to confirm (Q231 R-02). |
+| G183-UI-04 | Contract blocker: error-code mismatch | F-Q231-4 | The backend sends `INVALID_REQUEST` for 500 and for 403; the UI maps `INTERNAL_ERROR` and `PERSISTENCE_UNAVAILABLE`, which the backend never sends. A server failure or a denied save is shown as "Check the entered values". The other half of this §18.0 row — a UI with no UI contract in the pack (F-Q231-3) — is what this §23 records; whether that half is thereby closed is for CT. |
+| G183-UI-05 | Validation: no client validation on Change Status and Capture POD | F-Q231-6 | Both offcanvas forms are `novalidate` and have no script check; an empty date throws inside the submit handler and the user sees nothing. Server validation is authoritative and tested. |
+| G183-UI-06 | Audit / evidence for POD | F-Q231-7 | POD evidence is a free-text list of reference strings that nothing resolves or verifies; no shared evidence service is called. §4 and §12 of this pack prescribe "reference only", and the readiness record calls POD regulated: an owner decision, not a coding slip. |
+| G183-UI-07 | UX states | F-Q231-5, F-Q231-12 | The list shows a failed load as an empty table plus a toast; if the list API answers 403 the page shows a toast and an empty table, which UAS-001 §6 forbids. The details page draws its cards before data arrives under a "Loading…" heading; the skeleton element in `_DataTable.cshtml` is never shown by a script; no field-level validation messages. |
+| G183-UI-08 | Observability | F-Q231-9 | No metrics and no traces in the service. SOP §18.0 asks for "required" ones; none is defined for this module in this pack or in the readiness record. |
+| G183-UI-09 | Hard-coded status names | F-Q231-11 | The eight shipment status names are hard-coded English in `_Filter.cshtml` and shown raw in the list badge, the details status and the target-status dropdown, in all seven languages. |
+| G183-UI-10 | Note length mismatch 2000 vs 1000 | F-Q231-10 | Note is max 2000 in the UI (`ShipmentViewModels.cs:34,42`; `maxlength="2000"` in both offcanvas files) and max 1000 on the server (§4 of this pack; `ShipmentNoteRules.cs:15`). A 1500-character note passes the UI and the adapter and is rejected by the service. |
+
+Not carried into this table: the Low findings F-Q231-13 to F-Q231-16 (see the Q231 `SOP-22.md`). The contract version this pack names
+("`SHIPMENT-BUNDLE` v1", no version, no hash — F-Q218-10) is not changed by this section.
+
+### 23.9 Not authorized by this section
+
+UI code changes; gateway, permission-seed, navigation or shared-resource edits (single integration owner); contract changes; a `status`
+change; ticking any acceptance or checklist box; commit or push. `execution/registries/module-implementation-status.md` is a separate path and is not updated here.

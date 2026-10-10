@@ -1,0 +1,105 @@
+{
+  "phase": "login",
+  "mode": "v3",
+  "startedAt": "2026-09-27T10:04:31.600Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "login-full": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        },
+        {
+          "name": ".AspNetCore.Antiforgery.8uYfVt45Bkw",
+          "httpOnly": true
+        }
+      ]
+    },
+    "login-readonly": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        },
+        {
+          "name": ".AspNetCore.Antiforgery.8uYfVt45Bkw",
+          "httpOnly": true
+        }
+      ]
+    },
+    "login-noread": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        },
+        {
+          "name": ".AspNetCore.Antiforgery.8uYfVt45Bkw",
+          "httpOnly": true
+        }
+      ]
+    },
+    "login-leb": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        },
+        {
+          "name": ".AspNetCore.Antiforgery.8uYfVt45Bkw",
+          "httpOnly": true
+        }
+      ]
+    },
+    "login-t2user": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        },
+        {
+          "name": ".AspNetCore.Antiforgery.8uYfVt45Bkw",
+          "httpOnly": true
+        }
+      ]
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-27T10:04:47.309Z"
+}

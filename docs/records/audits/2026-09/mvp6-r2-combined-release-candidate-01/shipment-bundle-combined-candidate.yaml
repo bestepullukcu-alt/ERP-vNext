@@ -1,0 +1,4010 @@
+openapi: 3.1.0
+info:
+  title: SHIPMENT-BUNDLE
+  description: >
+    MOD-0183 Shipment Tracking & POD, MOD-0184 Carrier Management, MOD-0185 Routing &
+    Load Planning, MOD-0186 Reverse Logistics ve MOD-0187 Claims Management icin MVP-6
+    owned, mock-ready frozen contract (v1). TenantId ve LegalEntityId sunucuda JWT
+    baglamindan resolve edilir; request body icinde kabul edilmez. INVENTORY yalniz
+    frozen INVENTORY contract'indan reference/availability olarak okunur; bu bundle
+    shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+    yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+    WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+  version: 2.0.0
+  x-status: CANDIDATE
+  x-candidate-revision: R2
+  x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+  x-consumes:
+    - INVENTORY
+    - "CONSUMES: WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)"
+  x-contract-version: v1
+servers:
+  - url: /api/shipment-bundle
+security:
+  - bearerAuth: []
+tags:
+  - { name: Shipments, description: MOD-0183 Shipment/POD SoR }
+  - { name: Carriers, description: MOD-0184 Carrier SoR }
+  - { name: Loads, description: MOD-0185 Routing/Load SoR }
+  - { name: Returns, description: MOD-0186 Reverse Logistics SoR }
+  - { name: Claims, description: MOD-0187 Claims SoR }
+paths:
+  /shipments:
+    get:
+      tags: [Shipments]
+      operationId: queryShipments
+      summary: Shipment listesi sorgula
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ShipmentStatus' } }
+        - { name: sourceDocumentId, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: Shipment listesi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentListResponse' }
+              example:
+                items:
+                  - shipmentId: 18300000-0000-0000-0000-000000000001
+                    shipmentNumber: SHP-2026-000001
+                    sourceDocumentId: SO-900
+                    status: Dispatched
+                    carrierId: 18400000-0000-0000-0000-000000000001
+                    loadId: 18500000-0000-0000-0000-000000000001
+                    plannedShipAt: '2026-09-20T08:00:00Z'
+                    plannedDeliverAt: '2026-09-21T16:00:00Z'
+                    actualDeliverAt: null
+                page: 1
+                pageSize: 50
+                total: 1
+                contractVersion: v1
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Shipments]
+      operationId: createShipment
+      summary: Shipment olustur
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateShipmentCommand' }
+            example:
+              sourceModule: MOD-0141
+              sourceType: SALES_ORDER
+              sourceDocumentId: SO-900
+              warehouseReferenceId: wh-01
+              shipToReference: CUST-100/ADDR-2
+              plannedShipAt: '2026-09-20T08:00:00Z'
+              plannedDeliverAt: '2026-09-21T16:00:00Z'
+              lines:
+                - lineNumber: '1'
+                  itemId: b1f2c3d4-0000-0000-0000-000000000001
+                  skuId: c3d4e5f6-0000-0000-0000-000000000002
+                  quantity: '30.000'
+                  uomId: EA
+                  inventoryReferenceId: rsv-4001
+      responses:
+        '201':
+          description: Shipment Draft durumunda olusturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentResponse' }
+              example:
+                shipmentId: 18300000-0000-0000-0000-000000000001
+                shipmentNumber: SHP-2026-000001
+                status: Draft
+                idempotentReplay: false
+                contractVersion: v1
+        '200':
+          description: Ayni Idempotency-Key icin orijinal sonuc
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentResponse' }
+              example: { shipmentId: 18300000-0000-0000-0000-000000000001, shipmentNumber: SHP-2026-000001, status: Draft, idempotentReplay: true, contractVersion: v1 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
+  /shipments/{shipmentId}:
+    get:
+      tags: [Shipments]
+      operationId: getShipment
+      summary: Shipment ve POD gorunumunu getir
+      parameters:
+        - { $ref: '#/components/parameters/ShipmentId' }
+        - { $ref: '#/components/parameters/CorrelationId' }
+      responses:
+        '200':
+          description: Shipment detayi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentDetail' }
+              example:
+                shipmentId: 18300000-0000-0000-0000-000000000001
+                shipmentNumber: SHP-2026-000001
+                sourceModule: MOD-0141
+                sourceType: SALES_ORDER
+                sourceDocumentId: SO-900
+                warehouseReferenceId: wh-01
+                shipToReference: CUST-100/ADDR-2
+                carrierId: 18400000-0000-0000-0000-000000000001
+                loadId: 18500000-0000-0000-0000-000000000001
+                status: Delivered
+                plannedShipAt: '2026-09-20T08:00:00Z'
+                plannedDeliverAt: '2026-09-21T16:00:00Z'
+                actualDeliverAt: '2026-09-21T15:42:00Z'
+                lifecycleCorrelationId: 18300000-0000-0000-0000-000000000001
+                lines:
+                  - { lineNumber: '1', itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, quantity: '30.000', uomId: EA, inventoryReferenceId: rsv-4001 }
+                pod: { recipientName: Ada Yilmaz, receivedAt: '2026-09-21T15:42:00Z', evidenceReferenceIds: [doc-pod-9001], note: Eksiksiz teslim }
+                contractVersion: v1
+        '404': { $ref: '#/components/responses/NotFound' }
+  /shipments/{shipmentId}/transition:
+    post:
+      tags: [Shipments]
+      operationId: transitionShipment
+      summary: Shipment lifecycle durumunu ilerlet
+      description: >
+        Izinli gecisler: Draft->Planned|Cancelled; Planned->Dispatched|Cancelled;
+        Dispatched->InTransit|Delivered|Exception; InTransit->Delivered|Exception;
+        Exception->InTransit|Cancelled; Delivered->Closed. Diger gecisler
+        INVALID_SHIPMENT_TRANSITION ile deterministik reddedilir.
+      parameters:
+        - { $ref: '#/components/parameters/ShipmentId' }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionShipmentCommand' }
+            example: { targetStatus: Dispatched, occurredAt: '2026-09-20T08:15:00Z', reasonCode: CARRIER_HANDOFF, note: Carrier scan alindi }
+      responses:
+        '200':
+          description: Lifecycle gecisi uygulandi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentResponse' }
+              example: { shipmentId: 18300000-0000-0000-0000-000000000001, shipmentNumber: SHP-2026-000001, status: Dispatched, idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /shipments/{shipmentId}/pod:
+    post:
+      tags: [Shipments]
+      operationId: captureProofOfDelivery
+      summary: Teslim kanitini kaydet ve shipment'i Delivered yap
+      description: Yalniz Dispatched veya InTransit durumundan kabul edilir.
+      parameters:
+        - { $ref: '#/components/parameters/ShipmentId' }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CapturePodCommand' }
+            example: { recipientName: Ada Yilmaz, receivedAt: '2026-09-21T15:42:00Z', evidenceReferenceIds: [doc-pod-9001], note: Eksiksiz teslim }
+      responses:
+        '201':
+          description: POD kaydedildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PodResponse' }
+              example: { podId: 18300000-0000-0000-0000-000000000099, shipmentId: 18300000-0000-0000-0000-000000000001, shipmentStatus: Delivered, receivedAt: '2026-09-21T15:42:00Z', idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /carriers:
+    get:
+      tags:
+      - Carriers
+      operationId: queryCarriers
+      summary: Carrier listesi sorgula
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/CarrierStatus'
+      responses:
+        '200':
+          description: Carrier listesi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarrierListResponse'
+              example:
+                items:
+                - carrierId: 18400000-0000-0000-0000-000000000001
+                  carrierCode: CARR-01
+                  displayName: North Star Logistics
+                  status: Active
+                  supportedModes:
+                  - Road
+                total: 1
+                contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/CarrierResponseCorrelation'
+        '400':
+          $ref: '#/components/responses/CarrierQError400'
+        '401':
+          $ref: '#/components/responses/CarrierQError401'
+        '403':
+          $ref: '#/components/responses/CarrierQError403'
+        '404':
+          $ref: '#/components/responses/CarrierQError404'
+        '500':
+          $ref: '#/components/responses/CarrierQError500'
+        '503':
+          $ref: '#/components/responses/CarrierQError503'
+      description: 'Carrier-only normative semantics: carrier-semantics-v1.1.0.md (CO-184-04-01 §§3–5 and CO-184-05-01
+        §§6–7). Apply the annex first-failing-stage precedence, signed tenant/LE/actor context and exact operation
+        permission. All application responses MUST include X-Correlation-Id: current valid request UUID (lowercase
+        hyphenated), or one generated rejection trace UUID when missing/invalid/ambiguous. Nil UUID is valid. Transport/router/startup
+        failures outside this operation are excluded; errors use Error, never an outer envelope.'
+      x-normative-annex: carrier-semantics-v1.1.0.md
+    post:
+      tags:
+      - Carriers
+      operationId: createCarrier
+      summary: Carrier olustur
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCarrierCommand'
+            example:
+              carrierCode: CARR-01
+              displayName: North Star Logistics
+              supportedModes:
+              - Road
+              externalReference: EXT-CARR-88
+      responses:
+        '201':
+          description: Carrier olusturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarrierResponse'
+              examples:
+                first:
+                  value:
+                    carrierId: 18400000-0000-0000-0000-000000000001
+                    carrierCode: CARR-01
+                    status: Active
+                    idempotentReplay: false
+                    contractVersion: v1
+                replay:
+                  summary: Current response correlation is in header; original audit remains unchanged.
+                  value:
+                    carrierId: 18400000-0000-0000-0000-000000000001
+                    carrierCode: CARR-01
+                    status: Active
+                    idempotentReplay: true
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/CarrierResponseCorrelation'
+        '409':
+          $ref: '#/components/responses/CarrierCError409'
+        '422':
+          $ref: '#/components/responses/CarrierCreateUnprocessable'
+        '400':
+          $ref: '#/components/responses/CarrierCError400'
+        '401':
+          $ref: '#/components/responses/CarrierCError401'
+        '403':
+          $ref: '#/components/responses/CarrierCError403'
+        '404':
+          $ref: '#/components/responses/CarrierCError404'
+        '415':
+          $ref: '#/components/responses/CarrierCError415'
+        '500':
+          $ref: '#/components/responses/CarrierCError500'
+        '503':
+          $ref: '#/components/responses/CarrierCError503'
+      description: 'Carrier-only normative semantics: carrier-semantics-v1.1.0.md (CO-184-04-01 §§3–5 and CO-184-05-01
+        §§6–7). Apply the annex first-failing-stage precedence, signed tenant/LE/actor context and exact operation
+        permission. All application responses MUST include X-Correlation-Id: current valid request UUID (lowercase
+        hyphenated), or one generated rejection trace UUID when missing/invalid/ambiguous. Nil UUID is valid. Transport/router/startup
+        failures outside this operation are excluded; errors use Error, never an outer envelope. Durable replay is
+        scoped by tenant, LE, operationId, target and exact parsed key; authorize and validate before lookup. The
+        response header carries CURRENT request correlation; ORIGINAL committed correlation/actor remain in audit.
+        Replay returns the original success snapshot with idempotentReplay=true and original HTTP status (create 201,
+        status 200). No success-body fields are added. Different valid payload under a committed key returns 409 IDEMPOTENCY_KEY_REUSED.
+        No receipt for failed requests, no TTL, no new mutation/audit on replay. Unknown commit uses 503 and same-key
+        recovery.'
+      x-normative-annex: carrier-semantics-v1.1.0.md
+  /carriers/{carrierId}/status:
+    post:
+      tags:
+      - Carriers
+      operationId: changeCarrierStatus
+      summary: Carrier durumunu degistir
+      description: 'Active<->Suspended; Retired terminal durumdur. Carrier-only normative semantics: carrier-semantics-v1.1.0.md
+        (CO-184-04-01 §§3–5 and CO-184-05-01 §§6–7). Apply the annex first-failing-stage precedence, signed tenant/LE/actor
+        context and exact operation permission. All application responses MUST include X-Correlation-Id: current valid
+        request UUID (lowercase hyphenated), or one generated rejection trace UUID when missing/invalid/ambiguous.
+        Nil UUID is valid. Transport/router/startup failures outside this operation are excluded; errors use Error,
+        never an outer envelope. Durable replay is scoped by tenant, LE, operationId, target and exact parsed key;
+        authorize and validate before lookup. The response header carries CURRENT request correlation; ORIGINAL committed
+        correlation/actor remain in audit. Replay returns the original success snapshot with idempotentReplay=true
+        and original HTTP status (create 201, status 200). No success-body fields are added. Different valid payload
+        under a committed key returns 409 IDEMPOTENCY_KEY_REUSED. No receipt for failed requests, no TTL, no new mutation/audit
+        on replay. Unknown commit uses 503 and same-key recovery.'
+      parameters:
+      - name: carrierId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeCarrierStatusCommand'
+            example:
+              targetStatus: Suspended
+              reasonCode: COMPLIANCE_HOLD
+      responses:
+        '200':
+          description: Carrier durumu degisti
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarrierResponse'
+              examples:
+                first:
+                  value:
+                    carrierId: 18400000-0000-0000-0000-000000000001
+                    carrierCode: CARR-01
+                    status: Suspended
+                    idempotentReplay: false
+                    contractVersion: v1
+                replay:
+                  summary: Current response correlation is in header; original audit remains unchanged.
+                  value:
+                    carrierId: 18400000-0000-0000-0000-000000000001
+                    carrierCode: CARR-01
+                    status: Suspended
+                    idempotentReplay: true
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/CarrierResponseCorrelation'
+        '404':
+          $ref: '#/components/responses/CarrierSError404'
+        '422':
+          $ref: '#/components/responses/CarrierSError422'
+        '400':
+          $ref: '#/components/responses/CarrierSError400'
+        '401':
+          $ref: '#/components/responses/CarrierSError401'
+        '403':
+          $ref: '#/components/responses/CarrierSError403'
+        '409':
+          $ref: '#/components/responses/CarrierSError409'
+        '415':
+          $ref: '#/components/responses/CarrierSError415'
+        '500':
+          $ref: '#/components/responses/CarrierSError500'
+        '503':
+          $ref: '#/components/responses/CarrierSError503'
+      x-normative-annex: carrier-semantics-v1.1.0.md
+  /loads:
+    get:
+      tags:
+      - Loads
+      operationId: queryLoads
+      summary: Load planlarini sorgula
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/LoadStatus'
+      - name: carrierId
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: X-Tenant-Id
+        in: header
+        required: true
+        description: 'Validation only: must match validated JWT claim; never selects scope.'
+        schema:
+          type: string
+          format: uuid
+      - name: X-Legal-Entity-Id
+        in: header
+        required: true
+        description: 'Validation only: must match validated JWT claim; never selects scope.'
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Load listesi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadListResponse'
+              example:
+                items:
+                - loadId: 18500000-0000-0000-0000-000000000001
+                  loadNumber: LOAD-18500000000000000000000000000001
+                  carrierId: 18400000-0000-0000-0000-000000000001
+                  shipmentIds:
+                  - 18300000-0000-0000-0000-000000000001
+                  status: Planned
+                total: 1
+                contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+        '400':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '401':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+            WWW-Authenticate:
+              required: true
+              schema:
+                type: string
+                const: Bearer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '403':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '404':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                LOAD_NOT_FOUND:
+                  summary: LOAD_NOT_FOUND
+                  value:
+                    error:
+                      code: LOAD_NOT_FOUND
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '500':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  summary: INTERNAL_ERROR
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '503':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                PERSISTENCE_UNAVAILABLE:
+                  summary: PERSISTENCE_UNAVAILABLE
+                  value:
+                    error:
+                      code: PERSISTENCE_UNAVAILABLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+      x-loads-semantics: loads-semantics-v2.0.0.md
+      description: ' Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved
+        design only.'
+    post:
+      tags:
+      - Loads
+      operationId: createLoadPlan
+      summary: Route ve load plan olustur
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: X-Tenant-Id
+        in: header
+        required: true
+        description: 'Validation only: must match validated JWT claim; never selects scope.'
+        schema:
+          type: string
+          format: uuid
+      - name: X-Legal-Entity-Id
+        in: header
+        required: true
+        description: 'Validation only: must match validated JWT claim; never selects scope.'
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLoadCommand'
+            example:
+              carrierId: 18400000-0000-0000-0000-000000000001
+              shipmentIds:
+              - 18300000-0000-0000-0000-000000000001
+              mode: Road
+              plannedDepartAt: '2026-09-20T08:00:00Z'
+              stops:
+              - sequence: 1
+                locationReferenceId: wh-01
+                action: Pickup
+              - sequence: 2
+                locationReferenceId: CUST-100/ADDR-2
+                action: Delivery
+      responses:
+        '201':
+          description: Load Draft durumunda olusturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadResponse'
+              example:
+                loadId: 18500000-0000-0000-0000-000000000001
+                loadNumber: LOAD-18500000000000000000000000000001
+                status: Draft
+                idempotentReplay: false
+                contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+        '404':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                LOAD_NOT_FOUND:
+                  summary: LOAD_NOT_FOUND
+                  value:
+                    error:
+                      code: LOAD_NOT_FOUND
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CARRIER_NOT_FOUND:
+                  summary: CARRIER_NOT_FOUND
+                  value:
+                    error:
+                      code: CARRIER_NOT_FOUND
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_NOT_FOUND:
+                  summary: SHIPMENT_NOT_FOUND
+                  value:
+                    error:
+                      code: SHIPMENT_NOT_FOUND
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '409':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CORRELATION_ROOT_MISMATCH:
+                  summary: CORRELATION_ROOT_MISMATCH
+                  value:
+                    error:
+                      code: CORRELATION_ROOT_MISMATCH
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                IDEMPOTENCY_KEY_REUSED:
+                  summary: IDEMPOTENCY_KEY_REUSED
+                  value:
+                    error:
+                      code: IDEMPOTENCY_KEY_REUSED
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_ALREADY_ASSIGNED:
+                  summary: SHIPMENT_ALREADY_ASSIGNED
+                  value:
+                    error:
+                      code: SHIPMENT_ALREADY_ASSIGNED
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '422':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                SHIPMENT_NOT_ELIGIBLE:
+                  summary: SHIPMENT_NOT_ELIGIBLE
+                  value:
+                    error:
+                      code: SHIPMENT_NOT_ELIGIBLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_CARRIER_MISMATCH:
+                  summary: SHIPMENT_CARRIER_MISMATCH
+                  value:
+                    error:
+                      code: SHIPMENT_CARRIER_MISMATCH
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CARRIER_MODE_UNSUPPORTED:
+                  summary: CARRIER_MODE_UNSUPPORTED
+                  value:
+                    error:
+                      code: CARRIER_MODE_UNSUPPORTED
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                DUPLICATE_SHIPMENT:
+                  summary: DUPLICATE_SHIPMENT
+                  value:
+                    error:
+                      code: DUPLICATE_SHIPMENT
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                INVALID_LOAD_STOPS:
+                  summary: INVALID_LOAD_STOPS
+                  value:
+                    error:
+                      code: INVALID_LOAD_STOPS
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '400':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '401':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+            WWW-Authenticate:
+              required: true
+              schema:
+                type: string
+                const: Bearer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '403':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '415':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '500':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  summary: INTERNAL_ERROR
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '502':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                DEPENDENCY_RESPONSE_INVALID:
+                  summary: DEPENDENCY_RESPONSE_INVALID
+                  value:
+                    error:
+                      code: DEPENDENCY_RESPONSE_INVALID
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '503':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                REFERENCE_STATE_UNAVAILABLE:
+                  summary: REFERENCE_STATE_UNAVAILABLE
+                  value:
+                    error:
+                      code: REFERENCE_STATE_UNAVAILABLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                DEPENDENCY_UNAVAILABLE:
+                  summary: DEPENDENCY_UNAVAILABLE
+                  value:
+                    error:
+                      code: DEPENDENCY_UNAVAILABLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                PERSISTENCE_UNAVAILABLE:
+                  summary: PERSISTENCE_UNAVAILABLE
+                  value:
+                    error:
+                      code: PERSISTENCE_UNAVAILABLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+      x-loads-semantics: loads-semantics-v2.0.0.md
+      description: ' Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved
+        design only.'
+  /loads/{loadId}/transition:
+    post:
+      tags:
+      - Loads
+      operationId: transitionLoad
+      summary: Load lifecycle durumunu ilerlet
+      description: "Izinli gecisler: Draft->Planned|Cancelled; Planned->Tendered|Cancelled; Tendered->Accepted|Cancelled;\
+        \ Accepted->Dispatched|Cancelled; Dispatched->Completed. Diger gecisler INVALID_LOAD_TRANSITION ile reddedilir.\n\
+        \ Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved design only."
+      parameters:
+      - name: loadId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: X-Tenant-Id
+        in: header
+        required: true
+        description: 'Validation only: must match validated JWT claim; never selects scope.'
+        schema:
+          type: string
+          format: uuid
+      - name: X-Legal-Entity-Id
+        in: header
+        required: true
+        description: 'Validation only: must match validated JWT claim; never selects scope.'
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionLoadCommand'
+            example:
+              targetStatus: Dispatched
+              occurredAt: '2026-09-20T08:10:00Z'
+              note: Gate cikisi kaydedildi
+      responses:
+        '200':
+          description: Load gecisi uygulandi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadResponse'
+              example:
+                loadId: 18500000-0000-0000-0000-000000000001
+                loadNumber: LOAD-18500000000000000000000000000001
+                status: Dispatched
+                idempotentReplay: false
+                contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+        '404':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                LOAD_NOT_FOUND:
+                  summary: LOAD_NOT_FOUND
+                  value:
+                    error:
+                      code: LOAD_NOT_FOUND
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CARRIER_NOT_FOUND:
+                  summary: CARRIER_NOT_FOUND
+                  value:
+                    error:
+                      code: CARRIER_NOT_FOUND
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_NOT_FOUND:
+                  summary: SHIPMENT_NOT_FOUND
+                  value:
+                    error:
+                      code: SHIPMENT_NOT_FOUND
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '422':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                SHIPMENT_NOT_ELIGIBLE:
+                  summary: SHIPMENT_NOT_ELIGIBLE
+                  value:
+                    error:
+                      code: SHIPMENT_NOT_ELIGIBLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_CARRIER_MISMATCH:
+                  summary: SHIPMENT_CARRIER_MISMATCH
+                  value:
+                    error:
+                      code: SHIPMENT_CARRIER_MISMATCH
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CARRIER_MODE_UNSUPPORTED:
+                  summary: CARRIER_MODE_UNSUPPORTED
+                  value:
+                    error:
+                      code: CARRIER_MODE_UNSUPPORTED
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                INVALID_LOAD_TRANSITION:
+                  summary: INVALID_LOAD_TRANSITION
+                  value:
+                    error:
+                      code: INVALID_LOAD_TRANSITION
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '400':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '401':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+            WWW-Authenticate:
+              required: true
+              schema:
+                type: string
+                const: Bearer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '403':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '409':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CORRELATION_ROOT_MISMATCH:
+                  summary: CORRELATION_ROOT_MISMATCH
+                  value:
+                    error:
+                      code: CORRELATION_ROOT_MISMATCH
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                IDEMPOTENCY_KEY_REUSED:
+                  summary: IDEMPOTENCY_KEY_REUSED
+                  value:
+                    error:
+                      code: IDEMPOTENCY_KEY_REUSED
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_ALREADY_ASSIGNED:
+                  summary: SHIPMENT_ALREADY_ASSIGNED
+                  value:
+                    error:
+                      code: SHIPMENT_ALREADY_ASSIGNED
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '415':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  summary: INVALID_REQUEST
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '500':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  summary: INTERNAL_ERROR
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '502':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                DEPENDENCY_RESPONSE_INVALID:
+                  summary: DEPENDENCY_RESPONSE_INVALID
+                  value:
+                    error:
+                      code: DEPENDENCY_RESPONSE_INVALID
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '503':
+          description: Loads-local application rejection. First failing phase in approved annex wins.
+          headers:
+            X-Correlation-Id:
+              required: true
+              description: Current request correlation UUID; one fallback UUID for absent/invalid/ambiguous input.
+                Success body remains unchanged.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                REFERENCE_STATE_UNAVAILABLE:
+                  summary: REFERENCE_STATE_UNAVAILABLE
+                  value:
+                    error:
+                      code: REFERENCE_STATE_UNAVAILABLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                DEPENDENCY_UNAVAILABLE:
+                  summary: DEPENDENCY_UNAVAILABLE
+                  value:
+                    error:
+                      code: DEPENDENCY_UNAVAILABLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                PERSISTENCE_UNAVAILABLE:
+                  summary: PERSISTENCE_UNAVAILABLE
+                  value:
+                    error:
+                      code: PERSISTENCE_UNAVAILABLE
+                      message: Request rejected.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+      x-loads-semantics: loads-semantics-v2.0.0.md
+  /returns:
+    get:
+      tags:
+      - Returns
+      operationId: queryReturns
+      summary: Return/RMA listesi sorgula
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: shipmentId
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/ReturnStatus'
+      - name: X-Tenant-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
+          annex.
+      - name: X-Legal-Entity-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
+          annex.
+      responses:
+        '200':
+          description: Return listesi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnListResponse'
+              example:
+                items:
+                - returnId: 18600000-0000-0000-0000-000000000001
+                  rmaNumber: RMA-18600000000000000000000000000001
+                  shipmentId: 18300000-0000-0000-0000-000000000001
+                  status: Authorized
+                total: 1
+                contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+        '400':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '401':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+            WWW-Authenticate:
+              schema:
+                type: string
+                const: Bearer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '403':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '404':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RETURN_NOT_FOUND:
+                  value:
+                    error:
+                      code: RETURN_NOT_FOUND
+                      message: RETURN NOT FOUND
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '500':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: INTERNAL ERROR
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '503':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                PERSISTENCE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: PERSISTENCE_UNAVAILABLE
+                      message: PERSISTENCE UNAVAILABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+      description: '
+
+        Unpublished Returns R2 candidate. Normative semantics-candidate.md governs module-specific validation, numeric/instant
+        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
+        publisher.'
+    post:
+      tags:
+      - Returns
+      operationId: createReturn
+      summary: Shipment icin Return/RMA talebi olustur
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: X-Tenant-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
+          annex.
+      - name: X-Legal-Entity-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
+          annex.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReturnCommand'
+            example:
+              shipmentId: 18300000-0000-0000-0000-000000000001
+              reasonCode: DAMAGED_IN_TRANSIT
+              lines:
+              - shipmentLineNumber: '1'
+                quantity: '2.000'
+                uomId: EA
+              evidenceReferenceIds:
+              - photo-damage-22
+      responses:
+        '201':
+          description: Return Requested durumunda olusturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnResponse'
+              examples:
+                committed:
+                  value:
+                    returnId: 18600000-0000-0000-0000-000000000001
+                    rmaNumber: RMA-18600000000000000000000000000001
+                    shipmentId: 18300000-0000-0000-0000-000000000001
+                    status: Requested
+                    idempotentReplay: false
+                    contractVersion: v1
+                replay:
+                  value:
+                    returnId: 18600000-0000-0000-0000-000000000001
+                    rmaNumber: RMA-18600000000000000000000000000001
+                    shipmentId: 18300000-0000-0000-0000-000000000001
+                    status: Requested
+                    idempotentReplay: true
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+        '400':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '401':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+            WWW-Authenticate:
+              schema:
+                type: string
+                const: Bearer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '403':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '404':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RETURN_NOT_FOUND:
+                  value:
+                    error:
+                      code: RETURN_NOT_FOUND
+                      message: RETURN NOT FOUND
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_NOT_FOUND:
+                  value:
+                    error:
+                      code: SHIPMENT_NOT_FOUND
+                      message: SHIPMENT NOT FOUND
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_LINE_NOT_FOUND:
+                  value:
+                    error:
+                      code: SHIPMENT_LINE_NOT_FOUND
+                      message: SHIPMENT LINE NOT FOUND
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '409':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CORRELATION_ROOT_MISMATCH:
+                  value:
+                    error:
+                      code: CORRELATION_ROOT_MISMATCH
+                      message: CORRELATION ROOT MISMATCH
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                IDEMPOTENCY_KEY_REUSED:
+                  value:
+                    error:
+                      code: IDEMPOTENCY_KEY_REUSED
+                      message: IDEMPOTENCY KEY REUSED
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                RETURN_SOURCE_CHANGED:
+                  value:
+                    error:
+                      code: RETURN_SOURCE_CHANGED
+                      message: RETURN SOURCE CHANGED
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '415':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '422':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                DUPLICATE_RETURN_LINE:
+                  value:
+                    error:
+                      code: DUPLICATE_RETURN_LINE
+                      message: DUPLICATE RETURN LINE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                INVALID_RETURN_QUANTITY:
+                  value:
+                    error:
+                      code: INVALID_RETURN_QUANTITY
+                      message: INVALID RETURN QUANTITY
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                RETURN_UOM_MISMATCH:
+                  value:
+                    error:
+                      code: RETURN_UOM_MISMATCH
+                      message: RETURN UOM MISMATCH
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                SHIPMENT_NOT_RETURNABLE:
+                  value:
+                    error:
+                      code: SHIPMENT_NOT_RETURNABLE
+                      message: SHIPMENT NOT RETURNABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                RETURN_QUANTITY_EXCEEDED:
+                  value:
+                    error:
+                      code: RETURN_QUANTITY_EXCEEDED
+                      message: RETURN QUANTITY EXCEEDED
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '500':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: INTERNAL ERROR
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '502':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                DEPENDENCY_RESPONSE_INVALID:
+                  value:
+                    error:
+                      code: DEPENDENCY_RESPONSE_INVALID
+                      message: DEPENDENCY RESPONSE INVALID
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                RETURN_SHIPMENT_ROOT_INVALID:
+                  value:
+                    error:
+                      code: RETURN_SHIPMENT_ROOT_INVALID
+                      message: RETURN SHIPMENT ROOT INVALID
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '503':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                REFERENCE_STATE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: REFERENCE_STATE_UNAVAILABLE
+                      message: REFERENCE STATE UNAVAILABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                DEPENDENCY_UNAVAILABLE:
+                  value:
+                    error:
+                      code: DEPENDENCY_UNAVAILABLE
+                      message: DEPENDENCY UNAVAILABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                PERSISTENCE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: PERSISTENCE_UNAVAILABLE
+                      message: PERSISTENCE UNAVAILABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                RETURN_SHIPMENT_ROOT_UNAVAILABLE:
+                  value:
+                    error:
+                      code: RETURN_SHIPMENT_ROOT_UNAVAILABLE
+                      message: RETURN SHIPMENT ROOT UNAVAILABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+      description: '
+
+        Unpublished Returns R2 candidate. Normative semantics-candidate.md governs module-specific validation, numeric/instant
+        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
+        publisher.'
+  /returns/{returnId}/transition:
+    post:
+      tags:
+      - Returns
+      operationId: transitionReturn
+      summary: Return/RMA lifecycle durumunu ilerlet
+      description: 'Izinli gecisler: Requested->Authorized|Rejected; Authorized->InTransit|Cancelled; InTransit->Received;
+        Received->Dispositioned; Dispositioned->Closed. Diger gecisler INVALID_RETURN_TRANSITION ile reddedilir. INVENTORY
+        posting bu API''nin disindadir ve frozen INVENTORY contract''ina korele referansla yapilir.
+
+
+        Unpublished Returns R2 candidate. Normative semantics-candidate.md governs module-specific validation, numeric/instant
+        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
+        publisher.'
+      parameters:
+      - name: returnId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: X-Tenant-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
+          annex.
+      - name: X-Legal-Entity-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
+          annex.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionReturnCommand'
+            example:
+              targetStatus: Received
+              occurredAt: '2026-09-25T12:10:00Z'
+              inventoryTransactionReferenceId: txn-8801
+              dispositionCode: INSPECTION_REQUIRED
+      responses:
+        '200':
+          description: Return gecisi uygulandi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnResponse'
+              examples:
+                committed:
+                  value:
+                    returnId: 18600000-0000-0000-0000-000000000001
+                    rmaNumber: RMA-18600000000000000000000000000001
+                    shipmentId: 18300000-0000-0000-0000-000000000001
+                    status: Received
+                    idempotentReplay: false
+                    contractVersion: v1
+                replay:
+                  value:
+                    returnId: 18600000-0000-0000-0000-000000000001
+                    rmaNumber: RMA-18600000000000000000000000000001
+                    shipmentId: 18300000-0000-0000-0000-000000000001
+                    status: Received
+                    idempotentReplay: true
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+        '400':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '401':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+            WWW-Authenticate:
+              schema:
+                type: string
+                const: Bearer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '403':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '404':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RETURN_NOT_FOUND:
+                  value:
+                    error:
+                      code: RETURN_NOT_FOUND
+                      message: RETURN NOT FOUND
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '409':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CORRELATION_ROOT_MISMATCH:
+                  value:
+                    error:
+                      code: CORRELATION_ROOT_MISMATCH
+                      message: CORRELATION ROOT MISMATCH
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                IDEMPOTENCY_KEY_REUSED:
+                  value:
+                    error:
+                      code: IDEMPOTENCY_KEY_REUSED
+                      message: IDEMPOTENCY KEY REUSED
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '415':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '422':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_RETURN_TRANSITION:
+                  value:
+                    error:
+                      code: INVALID_RETURN_TRANSITION
+                      message: INVALID RETURN TRANSITION
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                DISPOSITION_REQUIRED:
+                  value:
+                    error:
+                      code: DISPOSITION_REQUIRED
+                      message: DISPOSITION REQUIRED
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '500':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: INTERNAL ERROR
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '503':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                PERSISTENCE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: PERSISTENCE_UNAVAILABLE
+                      message: PERSISTENCE UNAVAILABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+  /claims:
+    get:
+      tags:
+      - Claims
+      operationId: queryClaims
+      summary: Claim listesi sorgula
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: shipmentId
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/ClaimStatus'
+      responses:
+        '200':
+          description: Claim listesi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimListResponse'
+              example:
+                items:
+                - claimId: 18700000-0000-0000-0000-000000000001
+                  claimNumber: CLM-2026-001
+                  shipmentId: 18300000-0000-0000-0000-000000000001
+                  status: Investigating
+                  claimedAmount: '250.00'
+                  currency: USD
+                total: 1
+                contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '400':
+          description: Claims 400; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request schema or context is invalid.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '401':
+          description: Claims 401; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                UNAUTHENTICATED:
+                  value:
+                    error:
+                      code: UNAUTHENTICATED
+                      message: Authentication is required.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+            WWW-Authenticate:
+              schema:
+                type: string
+              example: Bearer
+        '403':
+          description: Claims 403; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                FORBIDDEN:
+                  value:
+                    error:
+                      code: FORBIDDEN
+                      message: The requested operation is not permitted.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '500':
+          description: Claims 500; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: An internal error occurred.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '503':
+          description: Claims 503; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CLAIM_STORAGE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: CLAIM_STORAGE_UNAVAILABLE
+                      message: Claim storage is unavailable.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+      description: 'Claims R2 normative candidate. See claims-semantics-r2.md and R01–R30. No runtime or publication
+        acceptance. Executable policy profile:
+
+        {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
+        true, "edges": [["Open", "Investigating"], ["Open", "Withdrawn"], ["Investigating", "Approved"], ["Investigating",
+        "Rejected"], ["Approved", "Settled"], ["Rejected", "Closed"], ["Settled", "Closed"]], "eligible": ["Dispatched",
+        "InTransit", "Delivered", "Exception", "Closed"], "errors": {"lifecycle": [422, "INVALID_CLAIM_TRANSITION"],
+        "malformed": [502, "CLAIM_REFERENCE_INVALID"], "missing": [503, "CLAIM_REFERENCE_INCOMPLETE"], "payload":
+        [409, "IDEMPOTENCY_KEY_REUSED"], "root": [409, "CLAIM_CORRELATION_MISMATCH"]}, "financialPosting": false,
+        "lexicalAmount": true, "lexicalTime": true, "outbox": "Pending", "permissions": {"Approved": "decide", "Closed":
+        "decide", "Investigating": "investigate", "Open": "create", "Rejected": "decide", "Settled": "settle", "Withdrawn":
+        "investigate"}, "publisher": false, "retainAmount": true, "rootBeforePayload": true, "scopeReceipt": true,
+        "unknownCommitRecovery": true, "worker": false, "zeroApproval": true}
+
+        Claims-only decimal profile; shared schemas unchanged. Authentication, scope/base permission, header/query/body,
+        exact target grant, receipt root/fingerprint, fresh reference/target, root, business/lifecycle, atomic commit.
+        All application responses echo request trace; rejection-only trace generated when invalid. Saved business
+        root is never GET trace.'
+    post:
+      tags:
+      - Claims
+      operationId: createClaim
+      summary: Shipment claim'i olustur
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClaimCommand'
+            example:
+              shipmentId: 18300000-0000-0000-0000-000000000001
+              carrierId: 18400000-0000-0000-0000-000000000001
+              reasonCode: DAMAGE
+              claimedAmount: '250.00'
+              currency: USD
+              evidenceReferenceIds:
+              - photo-damage-22
+              - pod-9001
+      responses:
+        '201':
+          description: Claim Open durumunda olusturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimResponse'
+              example:
+                claimId: 18700000-0000-0000-0000-000000000001
+                claimNumber: CLM-2026-001
+                shipmentId: 18300000-0000-0000-0000-000000000001
+                status: Open
+                approvedAmount: null
+                idempotentReplay: false
+                contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '400':
+          description: Claims 400; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request schema or context is invalid.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '401':
+          description: Claims 401; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                UNAUTHENTICATED:
+                  value:
+                    error:
+                      code: UNAUTHENTICATED
+                      message: Authentication is required.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+            WWW-Authenticate:
+              schema:
+                type: string
+              example: Bearer
+        '403':
+          description: Claims 403; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                FORBIDDEN:
+                  value:
+                    error:
+                      code: FORBIDDEN
+                      message: The requested operation is not permitted.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '404':
+          description: Claims 404; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CLAIM_NOT_FOUND:
+                  value:
+                    error:
+                      code: CLAIM_NOT_FOUND
+                      message: Claim or referenced resource was not found.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '409':
+          description: Claims 409; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                IDEMPOTENCY_KEY_REUSED:
+                  value:
+                    error:
+                      code: IDEMPOTENCY_KEY_REUSED
+                      message: Idempotency key was used for a different request.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CLAIM_CORRELATION_MISMATCH:
+                  value:
+                    error:
+                      code: CLAIM_CORRELATION_MISMATCH
+                      message: Correlation does not match the lifecycle root.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '415':
+          description: Claims 415; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                UNSUPPORTED_MEDIA_TYPE:
+                  value:
+                    error:
+                      code: UNSUPPORTED_MEDIA_TYPE
+                      message: Content type is not supported.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '422':
+          description: Claims 422; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CLAIM_AMOUNT_INVALID:
+                  value:
+                    error:
+                      code: CLAIM_AMOUNT_INVALID
+                      message: Claimed amount must be greater than zero.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CLAIM_SHIPMENT_INELIGIBLE:
+                  value:
+                    error:
+                      code: CLAIM_SHIPMENT_INELIGIBLE
+                      message: Shipment is not eligible for a claim.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CLAIM_CARRIER_MISMATCH:
+                  value:
+                    error:
+                      code: CLAIM_CARRIER_MISMATCH
+                      message: Carrier does not match the shipment.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '500':
+          description: Claims 500; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: An internal error occurred.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '502':
+          description: Claims 502; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CLAIM_REFERENCE_INVALID:
+                  value:
+                    error:
+                      code: CLAIM_REFERENCE_INVALID
+                      message: Reference response is invalid.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '503':
+          description: Claims 503; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CLAIM_REFERENCE_INCOMPLETE:
+                  value:
+                    error:
+                      code: CLAIM_REFERENCE_INCOMPLETE
+                      message: Required reference data is unavailable.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CLAIM_REFERENCE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: CLAIM_REFERENCE_UNAVAILABLE
+                      message: Reference service is unavailable.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CLAIM_STORAGE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: CLAIM_STORAGE_UNAVAILABLE
+                      message: Claim storage is unavailable.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+      description: 'Claims R2 normative candidate. See claims-semantics-r2.md and R01–R30. No runtime or publication
+        acceptance. Executable policy profile:
+
+        {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
+        true, "edges": [["Open", "Investigating"], ["Open", "Withdrawn"], ["Investigating", "Approved"], ["Investigating",
+        "Rejected"], ["Approved", "Settled"], ["Rejected", "Closed"], ["Settled", "Closed"]], "eligible": ["Dispatched",
+        "InTransit", "Delivered", "Exception", "Closed"], "errors": {"lifecycle": [422, "INVALID_CLAIM_TRANSITION"],
+        "malformed": [502, "CLAIM_REFERENCE_INVALID"], "missing": [503, "CLAIM_REFERENCE_INCOMPLETE"], "payload":
+        [409, "IDEMPOTENCY_KEY_REUSED"], "root": [409, "CLAIM_CORRELATION_MISMATCH"]}, "financialPosting": false,
+        "lexicalAmount": true, "lexicalTime": true, "outbox": "Pending", "permissions": {"Approved": "decide", "Closed":
+        "decide", "Investigating": "investigate", "Open": "create", "Rejected": "decide", "Settled": "settle", "Withdrawn":
+        "investigate"}, "publisher": false, "retainAmount": true, "rootBeforePayload": true, "scopeReceipt": true,
+        "unknownCommitRecovery": true, "worker": false, "zeroApproval": true}
+
+        Claims-only decimal profile; shared schemas unchanged. Authentication, scope/base permission, header/query/body,
+        exact target grant, receipt root/fingerprint, fresh reference/target, root, business/lifecycle, atomic commit.
+        All application responses echo request trace; rejection-only trace generated when invalid. Saved business
+        root is never GET trace.'
+  /claims/{claimId}/transition:
+    post:
+      tags:
+      - Claims
+      operationId: transitionClaim
+      summary: Claim lifecycle durumunu ilerlet
+      description: 'Claims R2 normative candidate. See claims-semantics-r2.md and R01–R30. No runtime or publication
+        acceptance. Executable policy profile:
+
+        {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
+        true, "edges": [["Open", "Investigating"], ["Open", "Withdrawn"], ["Investigating", "Approved"], ["Investigating",
+        "Rejected"], ["Approved", "Settled"], ["Rejected", "Closed"], ["Settled", "Closed"]], "eligible": ["Dispatched",
+        "InTransit", "Delivered", "Exception", "Closed"], "errors": {"lifecycle": [422, "INVALID_CLAIM_TRANSITION"],
+        "malformed": [502, "CLAIM_REFERENCE_INVALID"], "missing": [503, "CLAIM_REFERENCE_INCOMPLETE"], "payload":
+        [409, "IDEMPOTENCY_KEY_REUSED"], "root": [409, "CLAIM_CORRELATION_MISMATCH"]}, "financialPosting": false,
+        "lexicalAmount": true, "lexicalTime": true, "outbox": "Pending", "permissions": {"Approved": "decide", "Closed":
+        "decide", "Investigating": "investigate", "Open": "create", "Rejected": "decide", "Settled": "settle", "Withdrawn":
+        "investigate"}, "publisher": false, "retainAmount": true, "rootBeforePayload": true, "scopeReceipt": true,
+        "unknownCommitRecovery": true, "worker": false, "zeroApproval": true}
+
+        Claims-only decimal profile; shared schemas unchanged. Authentication, scope/base permission, header/query/body,
+        exact target grant, receipt root/fingerprint, fresh reference/target, root, business/lifecycle, atomic commit.
+        All application responses echo request trace; rejection-only trace generated when invalid. Saved business
+        root is never GET trace.'
+      parameters:
+      - name: claimId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionClaimCommand'
+            example:
+              targetStatus: Approved
+              occurredAt: '2026-09-27T09:00:00Z'
+              resolutionCode: CARRIER_ACCEPTED
+              approvedAmount: '200.00'
+              note: Evidence accepted
+      responses:
+        '200':
+          description: Claim gecisi uygulandi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimResponse'
+              example:
+                claimId: 18700000-0000-0000-0000-000000000001
+                claimNumber: CLM-2026-001
+                shipmentId: 18300000-0000-0000-0000-000000000001
+                status: Approved
+                approvedAmount: '200.00'
+                idempotentReplay: false
+                contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '400':
+          description: Claims 400; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: Request schema or context is invalid.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '401':
+          description: Claims 401; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                UNAUTHENTICATED:
+                  value:
+                    error:
+                      code: UNAUTHENTICATED
+                      message: Authentication is required.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+            WWW-Authenticate:
+              schema:
+                type: string
+              example: Bearer
+        '403':
+          description: Claims 403; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                FORBIDDEN:
+                  value:
+                    error:
+                      code: FORBIDDEN
+                      message: The requested operation is not permitted.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '404':
+          description: Claims 404; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CLAIM_NOT_FOUND:
+                  value:
+                    error:
+                      code: CLAIM_NOT_FOUND
+                      message: Claim or referenced resource was not found.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '409':
+          description: Claims 409; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                IDEMPOTENCY_KEY_REUSED:
+                  value:
+                    error:
+                      code: IDEMPOTENCY_KEY_REUSED
+                      message: Idempotency key was used for a different request.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CLAIM_CORRELATION_MISMATCH:
+                  value:
+                    error:
+                      code: CLAIM_CORRELATION_MISMATCH
+                      message: Correlation does not match the lifecycle root.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '415':
+          description: Claims 415; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                UNSUPPORTED_MEDIA_TYPE:
+                  value:
+                    error:
+                      code: UNSUPPORTED_MEDIA_TYPE
+                      message: Content type is not supported.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '422':
+          description: Claims 422; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_CLAIM_TRANSITION:
+                  value:
+                    error:
+                      code: INVALID_CLAIM_TRANSITION
+                      message: Claim transition is not allowed.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CLAIM_APPROVAL_AMOUNT_INVALID:
+                  value:
+                    error:
+                      code: CLAIM_APPROVAL_AMOUNT_INVALID
+                      message: Approved amount must be between zero and the claimed amount.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                CLAIM_APPROVED_AMOUNT_NOT_ALLOWED:
+                  value:
+                    error:
+                      code: CLAIM_APPROVED_AMOUNT_NOT_ALLOWED
+                      message: Approved amount is not allowed for this action.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '500':
+          description: Claims 500; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: An internal error occurred.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '503':
+          description: Claims 503; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CLAIM_STORAGE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: CLAIM_STORAGE_UNAVAILABLE
+                      message: Claim storage is unavailable.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+webhooks:
+  shipmentLifecycleEvent:
+    post:
+      operationId: receiveShipmentLifecycleEvent
+      summary: Event Bus'a yayilan shipment-bundle lifecycle event'i
+      description: >
+        correlationId ilk HTTP X-Correlation-Id degeriyle ayni UUID olmalidir ve
+        shipment->load->POD->return/claim zincirindeki tum turetilmis event'lerde
+        degistirilmeden tasinir.
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleEventEnvelope' }
+            example:
+              eventId: 90000000-0000-0000-0000-000000000001
+              eventType: ShipmentDelivered
+              occurredAt: '2026-09-21T15:42:00Z'
+              correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+              causationId: 90000000-0000-0000-0000-000000000000
+              aggregateType: Shipment
+              aggregateId: 18300000-0000-0000-0000-000000000001
+              payload: { shipmentId: 18300000-0000-0000-0000-000000000001, shipmentNumber: SHP-2026-000001, status: Delivered, podId: 18300000-0000-0000-0000-000000000099 }
+              contractVersion: v1
+      responses:
+        '202':
+          description: Event kabul edildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventAcceptedResponse' }
+              example: { eventId: 90000000-0000-0000-0000-000000000001, accepted: true, contractVersion: v1 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: true
+      description: UUID; uretilen lifecycle event envelope'indaki correlationId ile birebir ayni tasinir.
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 128 }
+    ShipmentId:
+      name: shipmentId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    Decimal:
+      type: string
+      pattern: '^-?\d+(\.\d+)?$'
+    ContractVersion:
+      type: string
+      const: v1
+    ShipmentStatus: { type: string, enum: [Draft, Planned, Dispatched, InTransit, Delivered, Exception, Closed, Cancelled] }
+    CarrierStatus: { type: string, enum: [Active, Suspended, Retired] }
+    TransportMode: { type: string, enum: [Road, Air, Sea, Rail, Parcel] }
+    LoadStatus: { type: string, enum: [Draft, Planned, Tendered, Accepted, Dispatched, Completed, Cancelled] }
+    ReturnStatus: { type: string, enum: [Requested, Authorized, Rejected, InTransit, Received, Dispositioned, Closed, Cancelled] }
+    ClaimStatus: { type: string, enum: [Open, Investigating, Approved, Rejected, Settled, Closed, Withdrawn] }
+    ShipmentLine:
+      type: object
+      additionalProperties: false
+      required: [lineNumber, itemId, skuId, quantity, uomId]
+      properties:
+        lineNumber: { type: string }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        inventoryReferenceId: { type: [string, 'null'], description: Frozen INVENTORY reservation/transaction reference; balance degildir. }
+    CreateShipmentCommand:
+      type: object
+      additionalProperties: false
+      required: [sourceModule, sourceType, sourceDocumentId, warehouseReferenceId, shipToReference, plannedShipAt, lines]
+      properties:
+        sourceModule: { type: string }
+        sourceType: { type: string }
+        sourceDocumentId: { type: string }
+        warehouseReferenceId: { type: string, description: WAREHOUSE-SHIPMENT-TRIGGER contract'i gelene kadar opaque reference. }
+        shipToReference: { type: string }
+        plannedShipAt: { type: string, format: date-time }
+        plannedDeliverAt: { type: [string, 'null'], format: date-time }
+        lines: { type: array, minItems: 1, items: { $ref: '#/components/schemas/ShipmentLine' } }
+    TransitionShipmentCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, occurredAt]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/ShipmentStatus' }
+        occurredAt: { type: string, format: date-time }
+        reasonCode: { type: [string, 'null'] }
+        note: { type: [string, 'null'], maxLength: 1000 }
+    CapturePodCommand:
+      type: object
+      additionalProperties: false
+      required: [recipientName, receivedAt, evidenceReferenceIds]
+      properties:
+        recipientName: { type: string, minLength: 1 }
+        receivedAt: { type: string, format: date-time }
+        evidenceReferenceIds: { type: array, minItems: 1, items: { type: string } }
+        note: { type: [string, 'null'], maxLength: 1000 }
+    PodView:
+      type: object
+      required: [recipientName, receivedAt, evidenceReferenceIds]
+      properties:
+        recipientName: { type: string }
+        receivedAt: { type: string, format: date-time }
+        evidenceReferenceIds: { type: array, items: { type: string } }
+        note: { type: [string, 'null'] }
+    ShipmentResponse:
+      type: object
+      required: [shipmentId, shipmentNumber, status, idempotentReplay, contractVersion]
+      properties:
+        shipmentId: { type: string, format: uuid }
+        shipmentNumber: { type: string }
+        status: { $ref: '#/components/schemas/ShipmentStatus' }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ShipmentSummary:
+      type: object
+      properties:
+        shipmentId: { type: string, format: uuid }
+        shipmentNumber: { type: string }
+        sourceDocumentId: { type: string }
+        status: { $ref: '#/components/schemas/ShipmentStatus' }
+        carrierId: { type: [string, 'null'], format: uuid }
+        loadId: { type: [string, 'null'], format: uuid }
+        plannedShipAt: { type: string, format: date-time }
+        plannedDeliverAt: { type: [string, 'null'], format: date-time }
+        actualDeliverAt: { type: [string, 'null'], format: date-time }
+    ShipmentDetail:
+      allOf:
+        - { $ref: '#/components/schemas/ShipmentSummary' }
+        - type: object
+          required: [sourceModule, sourceType, warehouseReferenceId, shipToReference, lines, contractVersion]
+          properties:
+            sourceModule: { type: string }
+            sourceType: { type: string }
+            warehouseReferenceId: { type: string }
+            shipToReference: { type: string }
+            lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
+            pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
+            lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted root correlation UUID; producer emits it explicitly. No derivation or backfill.' }
+            contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ShipmentListResponse:
+      type: object
+      required: [items, page, pageSize, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ShipmentSummary' } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    PodResponse:
+      type: object
+      required: [podId, shipmentId, shipmentStatus, receivedAt, idempotentReplay, contractVersion]
+      properties:
+        podId: { type: string, format: uuid }
+        shipmentId: { type: string, format: uuid }
+        shipmentStatus: { $ref: '#/components/schemas/ShipmentStatus' }
+        receivedAt: { type: string, format: date-time }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CreateCarrierCommand:
+      type: object
+      additionalProperties: false
+      required: [carrierCode, displayName, supportedModes]
+      properties:
+        carrierCode: { type: string, minLength: 1 }
+        displayName: { type: string, minLength: 1 }
+        supportedModes: { type: array, minItems: 1, items: { $ref: '#/components/schemas/TransportMode' } }
+        externalReference: { type: [string, 'null'] }
+    ChangeCarrierStatusCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, reasonCode]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/CarrierStatus' }
+        reasonCode: { type: string }
+    CarrierSummary:
+      type: object
+      required: [carrierId, carrierCode, displayName, status, supportedModes]
+      properties:
+        carrierId: { type: string, format: uuid }
+        carrierCode: { type: string }
+        displayName: { type: string }
+        status: { $ref: '#/components/schemas/CarrierStatus' }
+        supportedModes: { type: array, items: { $ref: '#/components/schemas/TransportMode' } }
+    CarrierResponse:
+      type: object
+      required: [carrierId, carrierCode, status, idempotentReplay, contractVersion]
+      properties:
+        carrierId: { type: string, format: uuid }
+        carrierCode: { type: string }
+        status: { $ref: '#/components/schemas/CarrierStatus' }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CarrierListResponse:
+      type: object
+      required: [items, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CarrierSummary' } }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    LoadStop:
+      type: object
+      additionalProperties: false
+      required: [sequence, locationReferenceId, action]
+      properties:
+        sequence: { type: integer, minimum: 1 }
+        locationReferenceId: { type: string }
+        action: { type: string, enum: [Pickup, Delivery, Return] }
+    CreateLoadCommand:
+      type: object
+      additionalProperties: false
+      required: [carrierId, shipmentIds, mode, plannedDepartAt, stops]
+      properties:
+        carrierId: { type: string, format: uuid }
+        shipmentIds: { type: array, minItems: 1, items: { type: string, format: uuid } }
+        mode: { $ref: '#/components/schemas/TransportMode' }
+        plannedDepartAt: { type: string, format: date-time }
+        stops: { type: array, minItems: 2, items: { $ref: '#/components/schemas/LoadStop' } }
+    TransitionLoadCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, occurredAt]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/LoadStatus' }
+        occurredAt: { type: string, format: date-time }
+        note: { type: [string, 'null'] }
+    LoadSummary:
+      type: object
+      properties:
+        loadId: { type: string, format: uuid }
+        loadNumber: { type: string }
+        carrierId: { type: string, format: uuid }
+        shipmentIds: { type: array, items: { type: string, format: uuid } }
+        status: { $ref: '#/components/schemas/LoadStatus' }
+    LoadResponse:
+      type: object
+      required: [loadId, loadNumber, status, idempotentReplay, contractVersion]
+      properties:
+        loadId: { type: string, format: uuid }
+        loadNumber: { type: string }
+        status: { $ref: '#/components/schemas/LoadStatus' }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    LoadListResponse:
+      type: object
+      required: [items, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LoadSummary' } }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ReturnLine:
+      type: object
+      additionalProperties: false
+      required: [shipmentLineNumber, quantity, uomId]
+      properties:
+        shipmentLineNumber: { type: string }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+    CreateReturnCommand:
+      type: object
+      additionalProperties: false
+      required: [shipmentId, reasonCode, lines]
+      properties:
+        shipmentId: { type: string, format: uuid }
+        reasonCode: { type: string }
+        lines: { type: array, minItems: 1, items: { $ref: '#/components/schemas/ReturnLine' } }
+        evidenceReferenceIds: { type: array, items: { type: string } }
+    TransitionReturnCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, occurredAt]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/ReturnStatus' }
+        occurredAt: { type: string, format: date-time }
+        inventoryTransactionReferenceId: { type: [string, 'null'], description: Frozen INVENTORY movement reference; stok bakiyesi degildir. }
+        dispositionCode: { type: [string, 'null'] }
+    ReturnSummary:
+      type: object
+      properties:
+        returnId: { type: string, format: uuid }
+        rmaNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ReturnStatus' }
+    ReturnResponse:
+      allOf:
+        - { $ref: '#/components/schemas/ReturnSummary' }
+        - type: object
+          required: [idempotentReplay, contractVersion]
+          properties:
+            idempotentReplay: { type: boolean }
+            contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ReturnListResponse:
+      type: object
+      required: [items, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ReturnSummary' } }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CreateClaimCommand:
+      type: object
+      additionalProperties: false
+      required: [shipmentId, reasonCode, claimedAmount, currency]
+      properties:
+        shipmentId: { type: string, format: uuid }
+        carrierId: { type: [string, 'null'], format: uuid }
+        reasonCode: { type: string }
+        claimedAmount: { $ref: '#/components/schemas/Decimal' }
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        evidenceReferenceIds: { type: array, items: { type: string } }
+    TransitionClaimCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, occurredAt]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/ClaimStatus' }
+        occurredAt: { type: string, format: date-time }
+        resolutionCode: { type: [string, 'null'] }
+        approvedAmount: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        note: { type: [string, 'null'] }
+    ClaimSummary:
+      type: object
+      properties:
+        claimId: { type: string, format: uuid }
+        claimNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ClaimStatus' }
+        claimedAmount: { $ref: '#/components/schemas/Decimal' }
+        currency: { type: string }
+    ClaimResponse:
+      type: object
+      required: [claimId, claimNumber, shipmentId, status, idempotentReplay, contractVersion]
+      properties:
+        claimId: { type: string, format: uuid }
+        claimNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ClaimStatus' }
+        approvedAmount: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ClaimListResponse:
+      type: object
+      required: [items, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ClaimSummary' } }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ShipmentEventPayload:
+      type: object
+      required: [shipmentId, shipmentNumber, status]
+      properties:
+        shipmentId: { type: string, format: uuid }
+        shipmentNumber: { type: string }
+        status: { $ref: '#/components/schemas/ShipmentStatus' }
+        carrierId: { type: [string, 'null'], format: uuid }
+        loadId: { type: [string, 'null'], format: uuid }
+        podId: { type: [string, 'null'], format: uuid }
+        reasonCode: { type: [string, 'null'] }
+    LoadEventPayload:
+      type: object
+      required: [loadId, loadNumber, status, shipmentIds]
+      properties:
+        loadId: { type: string, format: uuid }
+        loadNumber: { type: string }
+        status: { $ref: '#/components/schemas/LoadStatus' }
+        shipmentIds: { type: array, items: { type: string, format: uuid } }
+    ReturnEventPayload:
+      type: object
+      required: [returnId, rmaNumber, shipmentId, status]
+      properties:
+        returnId: { type: string, format: uuid }
+        rmaNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ReturnStatus' }
+        inventoryTransactionReferenceId: { type: [string, 'null'] }
+    ClaimEventPayload:
+      type: object
+      required: [claimId, claimNumber, shipmentId, status]
+      properties:
+        claimId: { type: string, format: uuid }
+        claimNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ClaimStatus' }
+        approvedAmount: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+    LifecycleEventEnvelope:
+      type: object
+      additionalProperties: false
+      required: [eventId, eventType, occurredAt, correlationId, aggregateType, aggregateId, payload, contractVersion]
+      properties:
+        eventId: { type: string, format: uuid }
+        eventType:
+          type: string
+          enum: [ShipmentCreated, ShipmentPlanned, ShipmentDispatched, ShipmentInTransit, ShipmentDelivered, ShipmentException, ShipmentClosed, ShipmentCancelled, PodCaptured, LoadCreated, LoadPlanned, LoadTendered, LoadAccepted, LoadDispatched, LoadCompleted, LoadCancelled, ReturnRequested, ReturnAuthorized, ReturnRejected, ReturnInTransit, ReturnReceived, ReturnDispositioned, ReturnClosed, ReturnCancelled, ClaimOpened, ClaimInvestigating, ClaimApproved, ClaimRejected, ClaimSettled, ClaimClosed, ClaimWithdrawn]
+        occurredAt: { type: string, format: date-time }
+        correlationId: { type: string, format: uuid, description: Ilk command X-Correlation-Id degeri; zincir boyunca degistirilemez. }
+        causationId: { type: [string, 'null'], format: uuid }
+        aggregateType: { type: string, enum: [Shipment, Load, Return, Claim] }
+        aggregateId: { type: string, format: uuid }
+        payload:
+          oneOf:
+            - { $ref: '#/components/schemas/ShipmentEventPayload' }
+            - { $ref: '#/components/schemas/LoadEventPayload' }
+            - { $ref: '#/components/schemas/ReturnEventPayload' }
+            - { $ref: '#/components/schemas/ClaimEventPayload' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    EventAcceptedResponse:
+      type: object
+      required: [eventId, accepted, contractVersion]
+      properties:
+        eventId: { type: string, format: uuid }
+        accepted: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    Error:
+      type: object
+      required: [error, contractVersion]
+      properties:
+        error:
+          type: object
+          required: [code, message, correlationId]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string, format: uuid }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+  responses:
+    BadRequest:
+      description: Request semasi veya header gecersiz
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: INVALID_REQUEST, message: Request schema validation failed, details: { field: plannedShipAt }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 }
+    NotFound:
+      description: Kayit tenant/legal-entity scope'unda bulunamadi
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            shipment: { value: { error: { code: SHIPMENT_NOT_FOUND, message: Shipment bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            carrier: { value: { error: { code: CARRIER_NOT_FOUND, message: Carrier bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            load: { value: { error: { code: LOAD_NOT_FOUND, message: Load bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            return: { value: { error: { code: RETURN_NOT_FOUND, message: Return bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            claim: { value: { error: { code: CLAIM_NOT_FOUND, message: Claim bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+    Conflict:
+      description: Idempotency veya tekillik cakismasi
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            idempotency: { value: { error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency-Key farkli payload ile kullanildi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            duplicatePod: { value: { error: { code: POD_ALREADY_CAPTURED, message: Shipment icin POD zaten kayitli, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+    Unprocessable:
+      description: Is kurali veya lifecycle gecisi gecersiz
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            shipmentTransition: { value: { error: { code: INVALID_SHIPMENT_TRANSITION, message: Shipment lifecycle gecisi gecersiz, details: { from: Draft, to: Delivered }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            loadTransition: { value: { error: { code: INVALID_LOAD_TRANSITION, message: Load lifecycle gecisi gecersiz, details: { from: Draft, to: Dispatched }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            returnTransition: { value: { error: { code: INVALID_RETURN_TRANSITION, message: Return lifecycle gecisi gecersiz, details: { from: Requested, to: Received }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            claimTransition: { value: { error: { code: INVALID_CLAIM_TRANSITION, message: Claim lifecycle gecisi gecersiz, details: { from: Open, to: Settled }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            inventory: { value: { error: { code: INVENTORY_REFERENCE_INVALID, message: Frozen INVENTORY reference gecersiz veya availability yetersiz, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+    DependencyUnavailable:
+      description: Frozen consumed contract mock'u erisilemez
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            inventory: { value: { error: { code: INVENTORY_UNAVAILABLE, message: Frozen INVENTORY mock erisilemez, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            warehouseGap: { value: { error: { code: WAREHOUSE_SHIPMENT_TRIGGER_UNAVAILABLE, message: 'GAP: merkez CT WAREHOUSE-SHIPMENT-TRIGGER uretmeli', correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+    CarrierQError400:
+      description: Carrier-only 400; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E04_0:
+              summary: E04 correlation header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Correlation-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E04_1:
+              summary: E04 tenant header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Tenant-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E04_2:
+              summary: E04 LE header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Legal-Entity-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E06_3:
+              summary: E06 malformed path/query/JSON/schema
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Request schema validation failed.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierQError401:
+      description: Carrier-only 401; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+        WWW-Authenticate:
+          description: MUST be present; no validator details.
+          schema:
+            type: string
+            const: Bearer
+          example: Bearer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E02_0:
+              summary: E02 authentication
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Authentication required.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierQError403:
+      description: Carrier-only 403; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E03_0:
+              summary: E03 unusable claims veya missing permission
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Required authorization context or permission is missing.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierQError404:
+      description: Carrier-only 404; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E05_0:
+              summary: E05 header/claim mismatch
+              value:
+                error:
+                  code: CARRIER_NOT_FOUND
+                  message: Carrier not found.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierQError500:
+      description: Carrier-only 500; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E13_0:
+              summary: E13 unexpected internal error
+              value:
+                error:
+                  code: INTERNAL_ERROR
+                  message: An unexpected internal error occurred.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierQError503:
+      description: Carrier-only 503; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E12_0:
+              summary: E12 unavailable persistence / exhausted safe retry / unresolved commit
+              value:
+                error:
+                  code: PERSISTENCE_UNAVAILABLE
+                  message: Persistence outcome is unavailable; retry the request using the same idempotency key when
+                    applicable.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCError400:
+      description: Carrier-only 400; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E04_0:
+              summary: E04 correlation header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Correlation-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E04_1:
+              summary: E04 tenant header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Tenant-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E04_2:
+              summary: E04 LE header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Legal-Entity-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E04_3:
+              summary: E04 key header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Idempotency-Key must contain exactly one string value of length 1 to 128.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E06_4:
+              summary: E06 malformed path/query/JSON/schema
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Request schema validation failed.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCError401:
+      description: Carrier-only 401; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+        WWW-Authenticate:
+          description: MUST be present; no validator details.
+          schema:
+            type: string
+            const: Bearer
+          example: Bearer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E02_0:
+              summary: E02 authentication
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Authentication required.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCError403:
+      description: Carrier-only 403; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E03_0:
+              summary: E03 unusable claims veya missing permission
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Required authorization context or permission is missing.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCError404:
+      description: Carrier-only 404; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E05_0:
+              summary: E05 header/claim mismatch
+              value:
+                error:
+                  code: CARRIER_NOT_FOUND
+                  message: Carrier not found.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCError409:
+      description: Carrier-only 409; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E09_0:
+              summary: E09 committed scoped key / different validated payload
+              value:
+                error:
+                  code: IDEMPOTENCY_KEY_REUSED
+                  message: Idempotency-Key was used with a different payload.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E10_1:
+              summary: E10 reserved same-scope code
+              value:
+                error:
+                  code: CARRIER_CODE_CONFLICT
+                  message: Carrier code is already reserved.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCError415:
+      description: Carrier-only 415; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E07_0:
+              summary: E07 unsupported request media type
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Request content type is not supported.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCError500:
+      description: Carrier-only 500; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E13_0:
+              summary: E13 unexpected internal error
+              value:
+                error:
+                  code: INTERNAL_ERROR
+                  message: An unexpected internal error occurred.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCError503:
+      description: Carrier-only 503; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E12_0:
+              summary: E12 unavailable persistence / exhausted safe retry / unresolved commit
+              value:
+                error:
+                  code: PERSISTENCE_UNAVAILABLE
+                  message: Persistence outcome is unavailable; retry the request using the same idempotency key when
+                    applicable.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierCreateUnprocessable:
+      description: Is kurali veya lifecycle gecisi gecersiz; preserved existing create422, no new Carrier create business
+        rule. X-Correlation-Id MUST be present.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+    CarrierSError400:
+      description: Carrier-only 400; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E04_0:
+              summary: E04 correlation header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Correlation-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E04_1:
+              summary: E04 tenant header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Tenant-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E04_2:
+              summary: E04 LE header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: X-Legal-Entity-Id must contain exactly one UUID value.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E04_3:
+              summary: E04 key header
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Idempotency-Key must contain exactly one string value of length 1 to 128.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E06_4:
+              summary: E06 malformed path/query/JSON/schema
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Request schema validation failed.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierSError401:
+      description: Carrier-only 401; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+        WWW-Authenticate:
+          description: MUST be present; no validator details.
+          schema:
+            type: string
+            const: Bearer
+          example: Bearer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E02_0:
+              summary: E02 authentication
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Authentication required.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierSError403:
+      description: Carrier-only 403; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E03_0:
+              summary: E03 unusable claims veya missing permission
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Required authorization context or permission is missing.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierSError404:
+      description: Carrier-only 404; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E05_0:
+              summary: E05 header/claim mismatch
+              value:
+                error:
+                  code: CARRIER_NOT_FOUND
+                  message: Carrier not found.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+            E08_1:
+              summary: E08 target unavailable in scope
+              value:
+                error:
+                  code: CARRIER_NOT_FOUND
+                  message: Carrier not found.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierSError409:
+      description: Carrier-only 409; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E09_0:
+              summary: E09 committed scoped key / different validated payload
+              value:
+                error:
+                  code: IDEMPOTENCY_KEY_REUSED
+                  message: Idempotency-Key was used with a different payload.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierSError415:
+      description: Carrier-only 415; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E07_0:
+              summary: E07 unsupported request media type
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: Request content type is not supported.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierSError422:
+      description: Carrier-only 422; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E11_0:
+              summary: E11 invalid lifecycle / new-key same-state
+              value:
+                error:
+                  code: INVALID_CARRIER_TRANSITION
+                  message: Carrier lifecycle transition is invalid.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierSError500:
+      description: Carrier-only 500; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E13_0:
+              summary: E13 unexpected internal error
+              value:
+                error:
+                  code: INTERNAL_ERROR
+                  message: An unexpected internal error occurred.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+    CarrierSError503:
+      description: Carrier-only 503; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
+        MUST be present.
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CarrierResponseCorrelation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            E12_0:
+              summary: E12 unavailable persistence / exhausted safe retry / unresolved commit
+              value:
+                error:
+                  code: PERSISTENCE_UNAVAILABLE
+                  message: Persistence outcome is unavailable; retry the request using the same idempotency key when
+                    applicable.
+                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                contractVersion: v1
+  headers:
+    CarrierResponseCorrelation:
+      description: MUST be present on every Carrier application response. Current valid request UUID on success/replay;
+        C_trace on error. Original audit correlation is never rewritten. See normative annex.
+      schema:
+        type: string
+        format: uuid
+      example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa

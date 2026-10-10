@@ -1,0 +1,1 @@
+Owner process mongod PID 27146 received SIGTERM. lsof -nP -iTCP:57192 -sTCP:LISTEN returned exit 1 with zero listeners.

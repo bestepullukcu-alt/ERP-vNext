@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>خطط S&amp;OP</value></data>
+  <data name="PlanId" xml:space="preserve"><value>معرّف الخطة</value></data>
+  <data name="PlanName" xml:space="preserve"><value>اسم الخطة</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>بداية الأفق</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>نهاية الأفق</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>معرّف خطة الطلب</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>إصدار خطة الطلب</value></data>
+  <data name="Status" xml:space="preserve"><value>حالة الخطة</value></data>
+  <data name="Status.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status.InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Status.Approved" xml:space="preserve"><value>معتمدة</value></data>
+  <data name="Status.Rejected" xml:space="preserve"><value>مرفوضة</value></data>
+  <data name="Status.Archived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>غير متوفر</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>مرجع الدعم</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>تم النسخ إلى الحافظة.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>لا يزال الطلب السابق قيد المعالجة.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>املأ جميع الحقول المطلوبة.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>الطلب غير صالح. تحقّق من المدخلات وحاول مرة أخرى.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>تعذّر تتبّع الطلب. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مرة أخرى.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
+  <data name="ErrUnknownSandopPlan" xml:space="preserve"><value>لم يتم العثور على خطة S&amp;OP هذه أو أنها غير متاحة لك.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>توجد بالفعل خطة S&amp;OP لهذا الأفق وإصدار خطة الطلب هذا.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>لم تعد حالة الخطة تسمح بالتقاط لقطة. تمت إعادة تحميل الخطة.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>لم تعد حالة الخطة تسمح بتسجيل الاعتمادات. تمت إعادة تحميل الخطة.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>تم تسجيل قرار بالفعل لهذا الدور وهذه اللقطة.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>سبق استخدام هذا الطلب بقيم مختلفة. غيّر المدخلات لإرسال طلب جديد.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>مرجع خطة الطلب غير معروف أو غير منشور.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>اللقطة المحددة لا تنتمي إلى هذه الخطة.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>الخدمة غير متاحة مؤقتًا. حاول مرة أخرى؛ سيتم إرسال الطلب نفسه.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>تعذّر تأكيد النتيجة. حاول مرة أخرى؛ سيتم إرسال الطلب نفسه ولن يُسجَّل أي شيء مرتين.</value></data>
+  <data name="SandopPlansPageDescription" xml:space="preserve"><value>أنشئ خطة S&amp;OP أو افتح خطة موجودة باستخدام معرّفها.</value></data>
+  <data name="NoPlanListNote" xml:space="preserve"><value>لا تُعرض الخطط هنا. احتفظ بمعرّف الخطة الظاهر بعد الإنشاء لفتح الخطة لاحقًا.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>إنشاء خطة</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>فتح الخطة</value></data>
+  <data name="OpenPlanTitle" xml:space="preserve"><value>فتح خطة باستخدام المعرّف</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>أدخل معرّف UUID للخطة كما ظهر بعد الإنشاء.</value></data>
+  <data name="PlanIdInvalid" xml:space="preserve"><value>أدخل معرّف خطة صالحًا (UUID).</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>خطة S&amp;OP جديدة</value></data>
+  <data name="HorizonOrderInvalid" xml:space="preserve"><value>يجب أن تكون نهاية الأفق في يوم البداية أو بعده.</value></data>
+  <data name="DemandReferenceHelp" xml:space="preserve"><value>أدخل مرجع خطة DEMAND تمامًا كما نُشر.</value></data>
+  <data name="RequiredFilled" xml:space="preserve"><value>الحقول المطلوبة المكتملة</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>تم إنشاء الخطة.</value></data>
+</root>

@@ -1,0 +1,5 @@
+  Failed Diten.Web.Tests.JavaScript.ShipmentDetailActionTests.StableIntentPreservesPayloadAndKey [16 ms]
+  Failed Diten.Web.Tests.Controllers.SupplyChainShipmentsControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: BadGateway, body: "") [31 ms]
+  Failed Diten.Web.Tests.Controllers.SupplyChainShipmentsControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: ServiceUnavailable, body: "") [< 1 ms]
+  Failed Diten.Web.Tests.Controllers.SupplyChainShipmentsControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: GatewayTimeout, body: "<html>gateway timeout</html>") [< 1 ms]
+Failed!  - Failed:     4, Passed:     1, Skipped:     0, Total:     5, Duration: 37 ms - Diten.Web.Tests.dll (net8.0)

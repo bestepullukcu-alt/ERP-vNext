@@ -1,0 +1,47 @@
+@using Diten.Web.Views.SupplyChain.Returns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReturnsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+}
+
+<div class="card">
+    @* State 1 — skeleton (first load only; never a spinner or a loading caption) *@
+    <div id="skeleton-loader" class="backbone-skeleton p-4" aria-hidden="true">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    @* State 3 — error (distinct from empty; a malformed envelope lands here, never as an empty table) *@
+    <div id="returns-error-state" class="p-4 text-center d-none" role="alert" aria-live="assertive">
+        <i class="bx bx-error-circle fs-2 text-danger d-block mb-2" aria-hidden="true"></i>
+        <p class="mb-1 fw-medium" id="returns-error-message">@Localizer["ListErrorState"]</p>
+        <p class="mb-3 small text-muted d-none" id="returns-error-reference">
+            <span>@Localizer["SupportReference"]</span>:
+            <bdi dir="ltr" class="font-monospace" id="returns-error-reference-value"></bdi>
+            <button type="button" class="btn btn-sm btn-icon btn-text-secondary js-copy-value" id="returns-error-reference-copy"
+                    aria-label="@SharedLocalizer["Copy"]"><i class="bx bx-copy" aria-hidden="true"></i></button>
+        </p>
+        <button type="button" class="btn btn-sm btn-label-primary" id="btnReturnsRetry">@Localizer["Retry"]</button>
+    </div>
+
+    @* State 2 — table (empty text comes from L10n EmptyState via DataTables language.emptyTable) *@
+    <div class="card-datatable table-responsive d-none" id="returns-table-host">
+        <table id="dt-returns" data-dt-standard="v2" class="datatables-returns table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["RmaNumber"]</th>
+                    <th>@Localizer["ShipmentId"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["ActionsHeader"]</th>
+                </tr>
+            </thead>
+        </table>
+        <p class="small text-muted px-4 py-2 mb-0" id="returns-total" aria-live="polite"></p>
+    </div>
+</div>

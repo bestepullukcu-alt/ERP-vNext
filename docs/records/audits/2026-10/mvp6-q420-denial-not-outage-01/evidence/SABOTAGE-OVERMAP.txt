@@ -1,0 +1,15 @@
+[SABOTAGE-OVERMAP] RETURN create, user WITHOUT shipments.read
+    -> 403 code=INVALID_REQUEST message='INVALID REQUEST' (0.85s)
+[SABOTAGE-OVERMAP] RETURN create, user WITH shipments.read (control: reaches business rules)
+    -> 422 code=SHIPMENT_NOT_RETURNABLE message='SHIPMENT NOT RETURNABLE' (0.26s)
+[SABOTAGE-OVERMAP] CLAIM create naming a carrier, user WITHOUT carriers.read
+    -> 403 code=FORBIDDEN message='The requested operation is not permitted.' (0.28s)
+[SABOTAGE-OVERMAP] CLAIM create, user WITHOUT shipments.read
+    -> 403 code=FORBIDDEN message='The requested operation is not permitted.' (0.02s)
+[SABOTAGE-OVERMAP] CLAIM create naming a carrier, user WITH carriers.read (control)
+    -> 404 code=CLAIM_NOT_FOUND message='Claim or referenced resource was not found.' (0.16s)
+[SABOTAGE-OVERMAP] dependency itself (B, GET shipment, full grant): 500 1.67s {"error":{"code":"INTERNAL_ERROR","message":"Operation could not be completed.","correlationId":"c7ab0957-a13a-4a10-8da2-53bdb056060d"},"contractVersion":"v1"}
+[SABOTAGE-OVERMAP] RETURN create, fully granted, dependency DOWN
+    -> 403 code=INVALID_REQUEST message='INVALID REQUEST' (1.63s)
+[SABOTAGE-OVERMAP] CLAIM create, fully granted, dependency DOWN
+    -> 403 code=FORBIDDEN message='The requested operation is not permitted.' (1.71s)

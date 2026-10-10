@@ -1,0 +1,10 @@
+File: docs/guides/operations/mvp6-development-process-v1.0.md
+Before sha256: d88f00a9e1333f6c22ea7f626e91bf66ad48ff53d6476d9da7b30a771b8ec707
+After sha256:  0f8abacd426f03be7bcbb0ad34510f3c7ce1c3ca9e66a5028305f674fab9641d
+Position: end of section 5 "Evidence checklist", after the "Incomplete archive?" bullet (new line 65), before "## 6."
+Occurrences after edit: 1
+Inserted line (verbatim from decision A1, docs/records/decisions/2026-09/mvp6-evidence-kit-adoption-owner-decision-01.md):
+- Environment evidence is produced with the MVP6 evidence kit (guide: mvp6-evidence-kit-v1.0.md in this folder; scripts: scripts/evidence-kit/).
+diff (before -> after):
+64a65
+> - Environment evidence is produced with the MVP6 evidence kit (guide: mvp6-evidence-kit-v1.0.md in this folder; scripts: scripts/evidence-kit/).

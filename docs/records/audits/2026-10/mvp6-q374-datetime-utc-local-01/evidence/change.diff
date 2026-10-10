@@ -1,0 +1,60 @@
+--- pre-edit/details.js	2026-10-03 23:30:23
++++ wwwroot/assets/js/SupplyChain/Shipments/details.js	2026-10-03 23:30:53
+@@ -58,8 +58,25 @@
+         showError(`${message}${correlation ? ` ${L.supportReference}: ${correlation}` : ''}`, alertId);
+         return code;
+     };
++    // Q374: a datetime-local field holds the user's LOCAL wall clock; the wire is UTC (pack §12). The field is filled and
++    // read as local time and converted only here, so the field, the request and the displayed value are one instant.
++    const pad = (n) => String(n).padStart(2, '0');
++    const localInputValue = (when) => `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}T${pad(when.getHours())}:${pad(when.getMinutes())}`;
++    const zoneLabel = (when) => { const offset = -when.getTimezoneOffset(); const sign = offset < 0 ? '-' : '+';
++        return `${Intl.DateTimeFormat().resolvedOptions().timeZone || ''} (UTC${sign}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)})`.trim(); };
++    const prefillNow = (id) => { const now = new Date(); document.getElementById(id).value = localInputValue(now);
++        const zone = document.getElementById(`${id}Zone`); if (zone) zone.textContent = zoneLabel(now); };
+     // Client check before any request: an empty date used to throw inside the submit handler and show nothing.
+-    const instant = (id) => { const value = new Date(document.getElementById(id).value); return Number.isNaN(value.getTime()) ? null : value; };
++    const instant = (id) => {
++        const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(document.getElementById(id).value);
++        if (!match) return null;
++        const [, year, month, day, hour, minute, second] = match.map(Number);
++        const value = new Date(year, month - 1, day, hour, minute, second || 0);
++        // A wall-clock time that does not exist (out-of-range parts, or a skipped daylight-saving hour) is rejected, not shifted.
++        const exact = value.getFullYear() === year && value.getMonth() === month - 1 && value.getDate() === day
++            && value.getHours() === hour && value.getMinutes() === minute;
++        return exact ? value : null;
++    };
+     const rejectInvalid = (form, checks, alertId) => {
+         form.querySelectorAll('.is-invalid').forEach((field) => field.classList.remove('is-invalid'));
+         document.getElementById(alertId)?.classList.add('d-none');
+@@ -90,12 +107,12 @@
+             const button = document.createElement('button'); button.className = 'btn btn-primary'; button.textContent = L.transition;
+             button.addEventListener('click', () => { const select = document.getElementById('targetStatus');
+                 select.replaceChildren(...allowedTargets(shipment.status).map((target) => new Option(statusLabel(target), target)));
+-                document.getElementById('occurredAt').value = new Date().toISOString().slice(0, 16);
++                prefillNow('occurredAt');
+                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasTransition')).show(); }); actions.appendChild(button);
+         }
+         if (permissions.canCapturePod && ['Dispatched', 'InTransit'].includes(shipment.status)) {
+             const button = document.createElement('button'); button.className = 'btn btn-success'; button.textContent = L.capturePod;
+-            button.addEventListener('click', () => { document.getElementById('receivedAt').value = new Date().toISOString().slice(0, 16);
++            button.addEventListener('click', () => { prefillNow('receivedAt');
+                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasPod')).show(); }); actions.appendChild(button);
+         }
+     };
+--- pre-edit/_TransitionOffcanvas.cshtml	2026-10-03 23:30:23
++++ Views/SupplyChain/Shipments/_TransitionOffcanvas.cshtml	2026-10-03 23:30:23
+@@ -1,4 +1,4 @@
+ @using Diten.Web.Views.SupplyChain.Shipments
+ @using Microsoft.AspNetCore.Mvc.Localization
+ @inject IHtmlLocalizer<ShipmentsIndex> Localizer
+-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasTransition" aria-labelledby="transitionTitle"><div class="offcanvas-header border-bottom"><h5 id="transitionTitle">@Localizer["Transition"]</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button></div><div class="offcanvas-body"><form id="formTransition" novalidate>@Html.AntiForgeryToken()<div id="transitionAlert" class="alert alert-danger d-none" role="alert"></div><label class="form-label" for="targetStatus">@Localizer["TargetStatus"]</label><select id="targetStatus" class="form-select mb-3" required></select><label class="form-label" for="occurredAt">@Localizer["OccurredAt"]</label><input id="occurredAt" type="datetime-local" class="form-control mb-3" required /><label class="form-label" for="reasonCode">@Localizer["ReasonCode"]</label><input id="reasonCode" class="form-control mb-3" /><label class="form-label" for="transitionNote">@Localizer["Note"]</label><textarea id="transitionNote" class="form-control mb-1" maxlength="1000" aria-describedby="transitionNoteCounter" data-note-counter="transitionNoteCounter"></textarea><div id="transitionNoteCounter" class="form-text text-end mb-3" aria-live="polite">0 / 1000</div><button type="submit" class="btn btn-primary w-100">@Localizer["ConfirmAction"]</button></form></div></div>
++<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasTransition" aria-labelledby="transitionTitle"><div class="offcanvas-header border-bottom"><h5 id="transitionTitle">@Localizer["Transition"]</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button></div><div class="offcanvas-body"><form id="formTransition" novalidate>@Html.AntiForgeryToken()<div id="transitionAlert" class="alert alert-danger d-none" role="alert"></div><label class="form-label" for="targetStatus">@Localizer["TargetStatus"]</label><select id="targetStatus" class="form-select mb-3" required></select><label class="form-label" for="occurredAt">@Localizer["OccurredAt"]</label><input id="occurredAt" type="datetime-local" class="form-control" aria-describedby="occurredAtZone" required /><div id="occurredAtZone" class="form-text mb-3"></div><label class="form-label" for="reasonCode">@Localizer["ReasonCode"]</label><input id="reasonCode" class="form-control mb-3" /><label class="form-label" for="transitionNote">@Localizer["Note"]</label><textarea id="transitionNote" class="form-control mb-1" maxlength="1000" aria-describedby="transitionNoteCounter" data-note-counter="transitionNoteCounter"></textarea><div id="transitionNoteCounter" class="form-text text-end mb-3" aria-live="polite">0 / 1000</div><button type="submit" class="btn btn-primary w-100">@Localizer["ConfirmAction"]</button></form></div></div>
+--- pre-edit/_PodOffcanvas.cshtml	2026-10-03 23:30:23
++++ Views/SupplyChain/Shipments/_PodOffcanvas.cshtml	2026-10-03 23:30:23
+@@ -1,4 +1,4 @@
+ @using Diten.Web.Views.SupplyChain.Shipments
+ @using Microsoft.AspNetCore.Mvc.Localization
+ @inject IHtmlLocalizer<ShipmentsIndex> Localizer
+-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasPod" aria-labelledby="podTitle"><div class="offcanvas-header border-bottom"><h5 id="podTitle">@Localizer["CapturePod"]</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button></div><div class="offcanvas-body"><form id="formPod" novalidate>@Html.AntiForgeryToken()<div id="podAlert" class="alert alert-danger d-none" role="alert"></div><label class="form-label" for="recipientName">@Localizer["RecipientName"]</label><input id="recipientName" class="form-control mb-3" required /><label class="form-label" for="receivedAt">@Localizer["ReceivedAt"]</label><input id="receivedAt" type="datetime-local" class="form-control mb-3" required /><label class="form-label" for="evidenceReferenceIds">@Localizer["EvidenceReferenceIds"]</label><textarea id="evidenceReferenceIds" class="form-control mb-3" required aria-describedby="evidenceHelp"></textarea><div id="evidenceHelp" class="form-text mb-3">@Localizer["EvidenceHelp"]</div><label class="form-label" for="podNoteInput">@Localizer["Note"]</label><textarea id="podNoteInput" class="form-control mb-1" maxlength="1000" aria-describedby="podNoteInputCounter" data-note-counter="podNoteInputCounter"></textarea><div id="podNoteInputCounter" class="form-text text-end mb-3" aria-live="polite">0 / 1000</div><button type="submit" class="btn btn-primary w-100">@Localizer["ConfirmAction"]</button></form></div></div>
++<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasPod" aria-labelledby="podTitle"><div class="offcanvas-header border-bottom"><h5 id="podTitle">@Localizer["CapturePod"]</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button></div><div class="offcanvas-body"><form id="formPod" novalidate>@Html.AntiForgeryToken()<div id="podAlert" class="alert alert-danger d-none" role="alert"></div><label class="form-label" for="recipientName">@Localizer["RecipientName"]</label><input id="recipientName" class="form-control mb-3" required /><label class="form-label" for="receivedAt">@Localizer["ReceivedAt"]</label><input id="receivedAt" type="datetime-local" class="form-control" aria-describedby="receivedAtZone" required /><div id="receivedAtZone" class="form-text mb-3"></div><label class="form-label" for="evidenceReferenceIds">@Localizer["EvidenceReferenceIds"]</label><textarea id="evidenceReferenceIds" class="form-control mb-3" required aria-describedby="evidenceHelp"></textarea><div id="evidenceHelp" class="form-text mb-3">@Localizer["EvidenceHelp"]</div><label class="form-label" for="podNoteInput">@Localizer["Note"]</label><textarea id="podNoteInput" class="form-control mb-1" maxlength="1000" aria-describedby="podNoteInputCounter" data-note-counter="podNoteInputCounter"></textarea><div id="podNoteInputCounter" class="form-text text-end mb-3" aria-live="polite">0 / 1000</div><button type="submit" class="btn btn-primary w-100">@Localizer["ConfirmAction"]</button></form></div></div>

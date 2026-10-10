@@ -1,0 +1,22 @@
+# Authority and exact contract binding
+
+D187-01…06 reconciled design is approved **for consumer amendment candidate preparation only**, from the actual user message in this conversation beginning “MVP6-RETURNS-CLAIMS-OWNER-DECISION-FINAL-01 içindeki D186-01…06 ve D187-01…06 uzlaştırılmış tasarım önerilerini, yalnız ayrı Returns ve Claims consumer amendment adaylarının hazırlanması için onaylıyorum.” The same message explicitly fixes zero approval, no cross-claim total/duplicate limit, granted self-approval, Withdrawn=investigate, Closed=decide, lexical amount/time,409 IDEMPOTENCY_KEY_REUSED,422 INVALID_CLAIM_TRANSITION, inherited Shipment root and Pending-only outbox. It excludes publication, consumer release consent, guard, runtime, Program.cs, Phase1.5, promotion and DEV GO. This is the real conversation source; no fabricated durable decision/signature is created. Archived owner-approval.txt and historical A/B proposals are corroboration, not substitute human authority.
+
+|Input|Exact identity|Current standing|
+|---|---|---|
+|Canonical YAML|2.0.0 / wirev1;93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571|Current published baseline; insufficient for final Claims dispatch|
+|Proposed final YAML|3.0.0 / wirev1;5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c|Exact final proposal; independently verified, not published|
+|Proposed Claims annex|claims-semantics-v3.0.0.md;16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63|Use controlling rules, then detailed clauses; historical proposal labels are provenance|
+|Proposed root annex|shipment-root-semantics-v3.0.0.md;7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af|Authoritative persisted Shipment root; no trace/ID derivation|
+|Publication patch|944a228d076807d643fa1ce714a982aab2e8438e064aea3479a90b4e11b75396|Separate publication owner; this lane cannot apply|
+|Final independent VER|mvp6-combined-final-release-ver-01/SOP-22.md; evidence archive90575b5cbe64f13264b20975f5f57c4334e3d5d952cf1f11f90a85f192e26999|Bounded technical PASS; actual final grants missing|
+|Claims stateful rework|bd533a4da51657e0e6eb6736e07e603bdf849dda82dd85a99ed0b715c489da60 archive|Accepted bounded model only|
+|Claims independent VER|0262d231ae47b4ca069c48bd217bf20d199a28160a3b705fe966a1d18ebea29d archive|Fresh at that historical run; not rerun now|
+
+Proposed canonical destinations after publication: docs/analysis/contracts/shipment-bundle.openapi.yaml, claims-semantics-v3.0.0.md and shipment-root-semantics-v3.0.0.md. Preparation reads these under final-release-pack-01/publication/docs/analysis/contracts/. Do not silently substitute current2.0.0, old91d505root, or combined candidate d763b… bytes. Final version3.0.0 remains recommendation until actual release decision. A different published hash requires targeted delta disposition, not assumption or a new full PREP cycle.
+
+Exactly queryClaims GET /claims, createClaim POST /claims, transitionClaim POST /claims/{claimId}/transition under /api/shipment-bundle. No by-ID GET/edit/delete endpoint. Schema pointers: #/components/schemas/CreateClaimCommand, TransitionClaimCommand, ClaimSummary, ClaimListResponse, ClaimStatus, ClaimEventPayload, LifecycleEventEnvelope, Decimal, Error; root #/components/schemas/ShipmentDetail. Module-specific examples/responses are operation-local; shared schemas untouched.
+
+Dependencies: direct producer seam is Shipment getShipment; optional Carrier reference via published queryCarriers, no invented Carrier-by-ID endpoint. No Returns, Loads, Inventory, Warehouse or finance HTTP/DB dependency. MOD0185 acceptance is not a new technical precondition. Claims can use contract-faithful Shipment/Carrier mocks in separately approved bounded isolated DEV after publication; successful REAL create requires published+implemented+verified authoritative root seam. Lack of live producer uptake cannot be hidden by a fixture or default root, but is not a reason to redo this specification. Production rollout remains separate.
+
+Final root/Claims annex retains statements about old baseline missing root as provenance; proposed YAML exposes optional nullable lifecycleCorrelationId, while real canonical still2.0.0. Schema presence does not establish runtime emission or historical authority. Missing/null/empty root503 CLAIM_REFERENCE_INCOMPLETE, malformed502 CLAIM_REFERENCE_INVALID, different valid UUID409 CLAIM_CORRELATION_MISMATCH; authoritative nil preserved. Returns-specific root codes/fingerprints are not copied.

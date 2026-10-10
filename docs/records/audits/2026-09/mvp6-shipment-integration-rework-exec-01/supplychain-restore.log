@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj (in 62 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj (in 1.31 sec).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj (in 3 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj (in 0.8 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj (in 65 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj (in 2 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/Diten.BuildingBlocks.Eventing.csproj (in 2 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj (in 82 ms).

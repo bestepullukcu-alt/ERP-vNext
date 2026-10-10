@@ -1,0 +1,8 @@
+14:04:39 start treeB--web-tests
+14:04:51 end treeB--web-tests rc=0
+14:04:51 start treeB--supplychain-tests
+14:09:18 end treeB--supplychain-tests rc=1
+14:09:18 start treeA--web-tests
+14:09:29 end treeA--web-tests rc=0
+14:09:29 start treeA--supplychain-tests
+14:14:12 end treeA--supplychain-tests rc=1

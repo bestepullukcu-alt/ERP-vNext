@@ -1,0 +1,11 @@
+[
+  'authorize(reverse-logistics)',
+  'cancel(reverse-logistics)',
+  'close(reverse-logistics)',
+  'create(reverse-logistics)',
+  'disposition(reverse-logistics)',
+  'read(reverse-logistics)',
+  'receive(reverse-logistics)',
+  'transit(reverse-logistics)',
+  'transition(reverse-logistics)'
+]

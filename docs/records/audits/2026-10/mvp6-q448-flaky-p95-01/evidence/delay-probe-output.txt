@@ -1,0 +1,3 @@
+samples=1200 os=Unix 26.5.2 stopwatchHiRes=True
+elapsed-requested ms: min=-0.613 p1=0.150 median=2.096 max=30.830
+early returns (elapsed < requested): 5 of 1200; worst for 57 ms: 56.484 ms

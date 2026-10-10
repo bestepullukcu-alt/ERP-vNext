@@ -1,0 +1,26 @@
+MVP6-EFFORT-BASELINE-RECONCILE-02 validation
+date: 2026-09-24 Europe/Istanbul
+
+R0 rows: 103
+R1 rows: 103
+IDs/order preserved: PASS
+Changed physical rows: 4
+Non-MOD-0183 changed rows: 0
+
+Replacement O/M/P:
+old four UI-related reserves: 70.8 / 118 / 211.2 hours
+new four exact reserves: 76 / 132 / 224 hours
+delta: +5.2 / +14 / +12.8 hours
+
+Most-likely totals:
+Shipment delivered: 140 hours
+Shipment remaining: 154 hours
+Shipment total: 294 hours
+Shipment completion: 47.6%
+Portfolio delivered: 1292 hours
+Portfolio remaining: 1512 hours
+Portfolio total: 2804 hours
+Portfolio completion: 46.1%
+
+No runtime, build or product test was executed.
+

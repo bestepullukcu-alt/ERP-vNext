@@ -1,0 +1,4 @@
+attempt	result	disposition
+parallel-build-test	StaticWebAssets cache file was concurrently locked	Discarded orchestration collision; rerun sequentially
+sequential-without-roll-forward	ASP.NET Core 8 runtime unavailable; testhost aborted	Discarded environment attempt; rerun with DOTNET_ROLL_FORWARD=Major
+roll-forward-sandboxed	MvcTestingAppManifest write denied in registered worktree	Discarded sandbox attempt; rerun through approved dotnet test execution

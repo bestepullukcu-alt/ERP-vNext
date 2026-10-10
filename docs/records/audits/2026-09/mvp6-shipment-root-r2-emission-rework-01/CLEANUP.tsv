@@ -1,0 +1,6 @@
+resource	result
+candidate_api_5762	STOPPED
+isolated_mongo_40996	STOPPED
+operational_mongo_27017	NOT_USED
+real_checkout_product_source	UNCHANGED
+commit_push_stash	NONE

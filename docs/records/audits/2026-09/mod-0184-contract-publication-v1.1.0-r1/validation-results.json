@@ -1,0 +1,69 @@
+{
+  "kind": "static specification validation; not runtime or consumer adoption",
+  "checks": {
+    "canonical": {
+      "openapi31": "PASS",
+      "resolvedRefOccurrences": 167,
+      "schemaValidatedInlineExamples": 46
+    },
+    "candidate": {
+      "openapi31": "PASS",
+      "resolvedRefOccurrences": 238,
+      "schemaValidatedInlineExamples": 88
+    },
+    "compatibility": {
+      "existingComponentsUnchanged": true,
+      "allSchemasUnchanged": true,
+      "nonCarrierPathsUnchanged": 10,
+      "requestParametersAndBodiesUnchanged": true,
+      "wireVersion": "v1",
+      "baseUrlUnchanged": true,
+      "consumerAcceptance": "NOT PROVEN"
+    },
+    "operationResponseMatrix": {
+      "queryCarriers": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "500",
+        "503"
+      ],
+      "createCarrier": [
+        "201",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409",
+        "415",
+        "422",
+        "500",
+        "503"
+      ],
+      "changeCarrierStatus": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409",
+        "415",
+        "422",
+        "500",
+        "503"
+      ]
+    },
+    "originalCarrierExamplesPreserved": 5,
+    "boundaryCorpus": "PASS: nil/uppercase UUID; scalar whitespace/comma/codepoint keys; 0/129 rejected; whitespace names; duplicate modes; missing/null/empty optional reference; empty reason",
+    "exampleExchanges": 44,
+    "publicationPatch": "PASS: apply/check only in disposable directory; resulting OAS validated, both proposed hashes and annex resolution verified; canonical untouched"
+  },
+  "tools": {
+    "openapi-spec-validator": "0.7.2",
+    "jsonschema": "4.25.1",
+    "PyYAML": "6.0.3"
+  },
+  "verdict": "STATIC PASS; publication/consumer adoption NOT established"
+}

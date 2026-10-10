@@ -1,0 +1,19 @@
+id	requirement	disposition	controlling_evidence	boundary
+A01	Scoped Draft create against exact Published DEMAND fixture	PASS	http-independent-ver 22-record archive: create 201 + scoped Mongo state; final production hashes unchanged	Fixture-only; no live DEMAND producer claim
+A02	Immutable snapshot provenance, InReview transition, older snapshot preservation, no DEMAND series copy	PASS	HTTP capture/list state plus final 19/19 SandopLifecycleTests	Bounded fixture provenance only
+A03	Same-plan immutable snapshot sign-off; duplicate role cannot overwrite; no automatic approval	PASS	HTTP sign-off/list/replay plus final lifecycle/concurrency tests	No Workflow/quorum integration
+A04	Three mutations use durable receipt, exact key/fingerprint, atomic audit and at-most-one Pending event	PASS	HTTP replay, concurrent same-key, rollback/retry and scoped Mongo state; final direct-Mongo tests	Publisher/delivery excluded
+A05	Current correlation in response; original correlation in audit/event; missing/malformed/duplicate correlation and application 401 fallback	PARTIAL	HTTP verifies current/original correlation and parser-level 401; DEV-only malformed correlation exists	Independent runtime lacks missing and duplicate header cases and application-generated 401 fallback
+A06	Tenant/LE isolation 404 and missing permission 403	PASS	Independent HTTP foreign tenant, foreign LE and no-permission cases	Direct-service only; gateway excluded
+A07	Six operations, three events and full published 400/401/409/422/503 precedence/required-null parity	PARTIAL	Six operations and selected 409/503 paths independently pass; schema/event checks in 19/19 core	No independent exhaustive operation/error matrix; see F01-F04
+A08	No MOD-0192 persistence/internal DTO sharing; frozen mock boundary	PASS	38/43 disjoint ownership, 379-source manifest and fixture-only DI composition	No live producer uptake
+A09	Bounded E4 decision-to-fixture provenance; live producer and E5/G5 remain separate	PASS_BOUNDARY	HTTP/DB provenance and Pending audit/outbox evidence	Not E5/G5 or full-module acceptance
+F01	Approved/Rejected/Archived capture returns 409 SANDOP_PLAN_STATE_CONFLICT	OPEN	No matching independent HTTP or final 19-test identity found	Exact acceptance evidence required
+F02	Sign-off outside InReview returns 409 SANDOP_SIGN_OFF_STATE_CONFLICT	OPEN	No matching independent HTTP or final 19-test identity found	Exact acceptance evidence required
+F03	Wrong-plan snapshot returns 422 INVALID_SNAPSHOT_REFERENCE	OPEN	No matching independent HTTP or final 19-test identity found	Exact acceptance evidence required
+F04	Missing/malformed/duplicate X-Correlation-Id each returns 400 with one fallback UUID and zero write; application-generated 401 follows annex	OPEN	Independent 22-record run contains parser-level 401 only; DEV 27-record run contains malformed only	Independent direct-service runtime evidence required
+T01	Final Sandop core suite	PASS	Successor independent VER 19/19	The isolated 1/1 test is a subset and is not additive
+T02	Committed-acknowledgement oracle regression	PASS	Successor independent VER isolated 1/1 and full 19/19	Executed receipt-visible branch; unresolved branch assertion reviewed, not separately forced in successor
+T03	Broad same-host suite	NON_PASS	DEV 271/276	No repository PASS or waiver
+T04	Loads UnknownCommitResultRetriesAndCommitsExactlyOnce	NON_PASS	DEV isolated 0/1	Unrelated to MOD-0190 source, but remains a real repository failure
+R01	Target runtime is native ASP.NET Core 8	PASS_WITH_PROVENANCE	Successful independent process launched via /Users/natig/.dotnet/dotnet; host has Microsoft.AspNetCore.App 8.0.23 only; runtimeconfig requests 8.0.0; recorded env has no roll-forward key	Historical ASP.NET Core 10 Major-roll-forward attempt failed before successor and is not controlling evidence

@@ -1,0 +1,45 @@
+{
+  "case": "recheck-permission-create-readonly",
+  "method": "POST",
+  "path": "/api/shipment-bundle/shipments",
+  "requestHeaders": {
+    "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+    "X-Legal-Entity-Id": "10000000-0000-0000-0000-000000000001",
+    "X-Correlation-Id": "7f5ec116-42bd-44de-a5a6-82c26ef6e12c",
+    "Idempotency-Key": "sra-recheck-denied"
+  },
+  "requestBody": {
+    "sourceModule": "MOD-0178",
+    "sourceType": "WAREHOUSE_OUTBOUND",
+    "sourceDocumentId": "SRA-OUT-001",
+    "warehouseReferenceId": "SRA-WH-001",
+    "shipToReference": "SRA-SHIPTO-001",
+    "plannedShipAt": "2026-09-24T15:06:25.005646+00:00",
+    "plannedDeliverAt": "2026-09-24T16:06:25.005646+00:00",
+    "lines": [
+      {
+        "lineNumber": "1",
+        "itemId": "20fa2637-8de0-41d8-bc18-616cfc4df1fc",
+        "skuId": "eba92f61-7aae-4eb3-9c24-5ca77a57c939",
+        "quantity": "2.000",
+        "uomId": "EA",
+        "inventoryReferenceId": "SRA-INV-001"
+      }
+    ]
+  },
+  "requestBytes": 463,
+  "status": 403,
+  "responseHeaders": {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Correlation-Id": "7f5ec116-42bd-44de-a5a6-82c26ef6e12c"
+  },
+  "responseBody": {
+    "error": {
+      "code": "INVALID_REQUEST",
+      "message": "Required shipment permission is missing.",
+      "correlationId": "7f5ec116-42bd-44de-a5a6-82c26ef6e12c"
+    },
+    "contractVersion": "v1"
+  },
+  "responseBytes": 167
+}

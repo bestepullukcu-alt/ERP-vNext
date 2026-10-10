@@ -1,0 +1,15 @@
+criterion	result	evidence	boundary
+provenance_root_r2	PASS	SOP-22.md	accepted producer changed only 11 detail/probe paths and explicitly excluded mutation
+provenance_351_snapshot	PASS	target-manifest.tsv; prior 351 manifest	final create path lacks persisted lifecycle root
+red_fresh_create	PASS	evidence/red/red.log; evidence/red/red-repeat.trx	new record lacks LifecycleCorrelationId on exact final source
+candidate_build	PASS	evidence/green/green.log	native .NET 8 Release build
+candidate_create_persist_detail	PASS	evidence/green/green.trx; evidence/green/external-create.json	root equals first accepted create X-Correlation-Id
+candidate_replay	PASS	evidence/green/external-create.json	same key/payload/root replays without extra write
+candidate_audit_outbox	PASS	evidence/green/external-create.json	one audit, one receipt, one Pending outbox; trace/root unchanged
+candidate_restart	PASS	evidence/green/external-restart.json	same DB and binary retains exact root
+legacy_root_states	PASS	evidence/green/root-storage.trx	missing/null/malformed/valid/nil remain distinct; 6/6
+replay_concurrency	PASS	evidence/green/replay-concurrency.trx	1/1
+rollback	PASS	evidence/green/rollback.trx	1/1 atomic rollback/retry
+combined_parallel_filter	ENVIRONMENT_FAIL	evidence/green/regression.log	12 tests hit pre-existing process-global Guid serializer collision; separate controlling runs passed
+real_checkout_apply	HELD	OWNER-DECISION-TEXT.md	new two production paths and ShipmentTests path are outside prior 11-path no-mutation authority
+independent_ver	NOT_RUN	OWNER-DECISION-TEXT.md	required after authorized real application

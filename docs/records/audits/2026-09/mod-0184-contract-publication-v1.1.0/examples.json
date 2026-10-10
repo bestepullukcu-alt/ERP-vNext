@@ -1,0 +1,764 @@
+[
+  {
+    "scenario": "E02 authentication",
+    "operation": "Q",
+    "status": 401,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb",
+      "WWW-Authenticate": "Bearer"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Authentication required.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E02 authentication",
+    "operation": "C",
+    "status": 401,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb",
+      "WWW-Authenticate": "Bearer"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Authentication required.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E02 authentication",
+    "operation": "S",
+    "status": 401,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb",
+      "WWW-Authenticate": "Bearer"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Authentication required.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E03 unusable claims veya missing permission",
+    "operation": "Q",
+    "status": 403,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Required authorization context or permission is missing.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E03 unusable claims veya missing permission",
+    "operation": "C",
+    "status": 403,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Required authorization context or permission is missing.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E03 unusable claims veya missing permission",
+    "operation": "S",
+    "status": 403,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Required authorization context or permission is missing.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 correlation header",
+    "operation": "Q",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Correlation-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 correlation header",
+    "operation": "C",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Correlation-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 correlation header",
+    "operation": "S",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Correlation-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 tenant header",
+    "operation": "Q",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Tenant-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 tenant header",
+    "operation": "C",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Tenant-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 tenant header",
+    "operation": "S",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Tenant-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 LE header",
+    "operation": "Q",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Legal-Entity-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 LE header",
+    "operation": "C",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Legal-Entity-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 LE header",
+    "operation": "S",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Legal-Entity-Id must contain exactly one UUID value.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 key header",
+    "operation": "C",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Idempotency-Key must contain exactly one string value of length 1 to 128.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E04 key header",
+    "operation": "S",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Idempotency-Key must contain exactly one string value of length 1 to 128.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E05 header/claim mismatch",
+    "operation": "Q",
+    "status": 404,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "CARRIER_NOT_FOUND",
+        "message": "Carrier not found.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E05 header/claim mismatch",
+    "operation": "C",
+    "status": 404,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "CARRIER_NOT_FOUND",
+        "message": "Carrier not found.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E05 header/claim mismatch",
+    "operation": "S",
+    "status": 404,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "CARRIER_NOT_FOUND",
+        "message": "Carrier not found.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E06 malformed path/query/JSON/schema",
+    "operation": "Q",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Request schema validation failed.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E06 malformed path/query/JSON/schema",
+    "operation": "C",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Request schema validation failed.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E06 malformed path/query/JSON/schema",
+    "operation": "S",
+    "status": 400,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Request schema validation failed.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E07 unsupported request media type",
+    "operation": "C",
+    "status": 415,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Request content type is not supported.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E07 unsupported request media type",
+    "operation": "S",
+    "status": 415,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Request content type is not supported.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E08 target unavailable in scope",
+    "operation": "S",
+    "status": 404,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "CARRIER_NOT_FOUND",
+        "message": "Carrier not found.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E09 committed scoped key / different validated payload",
+    "operation": "C",
+    "status": 409,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "IDEMPOTENCY_KEY_REUSED",
+        "message": "Idempotency-Key was used with a different payload.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E09 committed scoped key / different validated payload",
+    "operation": "S",
+    "status": 409,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "IDEMPOTENCY_KEY_REUSED",
+        "message": "Idempotency-Key was used with a different payload.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E10 reserved same-scope code",
+    "operation": "C",
+    "status": 409,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "CARRIER_CODE_CONFLICT",
+        "message": "Carrier code is already reserved.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E11 invalid lifecycle / new-key same-state",
+    "operation": "S",
+    "status": 422,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_CARRIER_TRANSITION",
+        "message": "Carrier lifecycle transition is invalid.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E12 unavailable persistence / exhausted safe retry / unresolved commit",
+    "operation": "Q",
+    "status": 503,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "PERSISTENCE_UNAVAILABLE",
+        "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E12 unavailable persistence / exhausted safe retry / unresolved commit",
+    "operation": "C",
+    "status": 503,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "PERSISTENCE_UNAVAILABLE",
+        "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E12 unavailable persistence / exhausted safe retry / unresolved commit",
+    "operation": "S",
+    "status": 503,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "PERSISTENCE_UNAVAILABLE",
+        "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E13 unexpected internal error",
+    "operation": "Q",
+    "status": 500,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "An unexpected internal error occurred.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E13 unexpected internal error",
+    "operation": "C",
+    "status": 500,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "An unexpected internal error occurred.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "E13 unexpected internal error",
+    "operation": "S",
+    "status": 500,
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "body": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "An unexpected internal error occurred.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "evidence": "schema-validated owner oracle, NOT runtime"
+  },
+  {
+    "scenario": "missing JWT + invalid correlation + invalid key",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Authentication required.",
+        "correlationId": "cccccccc-3333-4333-8333-cccccccccccc"
+      },
+      "contractVersion": "v1"
+    },
+    "responseHeaders": {
+      "X-Correlation-Id": "cccccccc-3333-4333-8333-cccccccccccc",
+      "WWW-Authenticate": "Bearer"
+    },
+    "expectedDbAccess": false,
+    "evidence": "precedence oracle only; not executed"
+  },
+  {
+    "scenario": "valid JWT / missing permission + invalid correlation",
+    "status": 403,
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Required authorization context or permission is missing.",
+        "correlationId": "cccccccc-3333-4333-8333-cccccccccccc"
+      },
+      "contractVersion": "v1"
+    },
+    "responseHeaders": {
+      "X-Correlation-Id": "cccccccc-3333-4333-8333-cccccccccccc"
+    },
+    "expectedDbAccess": false,
+    "evidence": "precedence oracle only; not executed"
+  },
+  {
+    "scenario": "authorized + invalid correlation/tenant/LE/key",
+    "status": 400,
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "X-Correlation-Id must contain exactly one UUID value.",
+        "correlationId": "cccccccc-3333-4333-8333-cccccccccccc"
+      },
+      "contractVersion": "v1"
+    },
+    "responseHeaders": {
+      "X-Correlation-Id": "cccccccc-3333-4333-8333-cccccccccccc"
+    },
+    "expectedDbAccess": false,
+    "evidence": "precedence oracle only; not executed"
+  },
+  {
+    "scenario": "valid tenant mismatch + invalid key",
+    "status": 400,
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Idempotency-Key must contain exactly one string value of length 1 to 128.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "expectedDbAccess": false,
+    "evidence": "precedence oracle only; not executed"
+  },
+  {
+    "scenario": "valid headers / tenant mismatch + malformed body",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "CARRIER_NOT_FOUND",
+        "message": "Carrier not found.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "expectedDbAccess": false,
+    "evidence": "precedence oracle only; not executed"
+  },
+  {
+    "scenario": "valid context + malformed body + previously committed key",
+    "status": 400,
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Request schema validation failed.",
+        "correlationId": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+      },
+      "contractVersion": "v1"
+    },
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "expectedDbAccess": false,
+    "evidence": "precedence oracle only; not executed"
+  },
+  {
+    "scenario": "RP02 different current correlation replay",
+    "operation": "createCarrier",
+    "requestHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb",
+      "Idempotency-Key": "same-original-key"
+    },
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "status": 201,
+    "body": {
+      "carrierId": "18400000-0000-0000-0000-000000000001",
+      "carrierCode": "CARR-01",
+      "status": "Active",
+      "idempotentReplay": true,
+      "contractVersion": "v1"
+    },
+    "expectedPersistedAuditCorrelation": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa",
+    "expectedAdditionalMutations": 0,
+    "evidence": "replay oracle only; not executed"
+  },
+  {
+    "scenario": "RP02 different current correlation replay",
+    "operation": "changeCarrierStatus",
+    "requestHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb",
+      "Idempotency-Key": "same-original-key"
+    },
+    "responseHeaders": {
+      "X-Correlation-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"
+    },
+    "status": 200,
+    "body": {
+      "carrierId": "18400000-0000-0000-0000-000000000001",
+      "carrierCode": "CARR-01",
+      "status": "Suspended",
+      "idempotentReplay": true,
+      "contractVersion": "v1"
+    },
+    "expectedPersistedAuditCorrelation": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa",
+    "expectedAdditionalMutations": 0,
+    "evidence": "replay oracle only; not executed"
+  }
+]

@@ -1,0 +1,11 @@
+run	start_local	end_local	seconds	exit	capped	free_gib_before	free_gib_after	summary
+run01	2026-10-02 21:01:22	2026-10-02 21:05:56	273	1	no	8.18	8.22	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m 31 s
+run02	2026-10-02 21:05:56	2026-10-02 21:09:50	234	1	no	8.22	8.10	Failed!  - Failed:     1, Passed:   416, Skipped:     0, Total:   417, Duration: 3 m 51 s
+run03	2026-10-02 21:09:50	2026-10-02 21:13:53	244	1	no	8.10	8.11	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m
+run04	2026-10-02 21:13:53	2026-10-02 21:18:24	270	1	no	8.11	8.11	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m 28 s
+run05	2026-10-02 21:18:24	2026-10-02 21:22:54	270	1	no	8.11	8.00	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m 27 s
+run06	2026-10-02 21:22:54	2026-10-02 21:26:59	245	1	no	8.00	8.10	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m 3 s
+run07	2026-10-02 21:26:59	2026-10-02 21:31:18	259	1	no	8.10	7.93	Failed!  - Failed:     1, Passed:   416, Skipped:     0, Total:   417, Duration: 4 m 16 s
+run08	2026-10-02 21:31:18	2026-10-02 21:35:26	248	1	no	7.93	7.86	Failed!  - Failed:     1, Passed:   416, Skipped:     0, Total:   417, Duration: 4 m 5 s
+run09	2026-10-02 21:35:26	2026-10-02 21:39:26	240	1	no	7.86	8.01	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 3 m 58 s
+run10	2026-10-02 21:39:26	2026-10-02 21:43:28	242	1	no	8.01	8.02	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m

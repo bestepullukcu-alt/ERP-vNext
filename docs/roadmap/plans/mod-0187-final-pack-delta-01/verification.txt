@@ -1,0 +1,22 @@
+Fresh preparation checks; no runtime tests executed
+Patch apply exit0 --fuzz=0
+patching file 'execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md'
+Disposable result byte-equal proposed-pack.md; status draft
+47 unique owned paths; Program.cs/worker excluded
+Returns PREP02 explicit service path intersection:0
+30 acceptance rows present
+DCP-002 exit0 per dcp-002.txt
+MATCH	51d92c75b761e5c7195eda102d08f2b7f472b979d9940bdf21ae72cb7cab7fcb	AGENTS.md
+MATCH	c49ec37a45b492e22988fdf7225aaa90b68c7a09fa4d0491dea06fe7cd793fe3	execution/domains/supply-chain-execution/domain-config.md
+MATCH	a342054cddcd88a9fae67f21b51ca90eadcdf355e6119c77c9578bae744b1c1f	execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+MATCH	d27c64d41be65e61bedd2191c955f9e23e84f355b0726ac8b906310a3b7f1bf3	docs/roadmap/plans/mod-0187-prep-02/prospective-owned-paths.txt
+MATCH	939ea014383b3e1ba46d7b60032d444135d8f8fd113b3a98c358531687015e03	docs/records/audits/2026-09/mvp6-claims-r2-stateful-rework-01/r01-r30-evidence-classification.md
+MATCH	38815d4ec8f954756320ab20f92bce58f0129e681300ba5a3ccab0860be650f7	docs/records/audits/2026-09/mvp6-consumer-r2-rework-ct-close-01/README.md
+MATCH	b4e88f0842c26bce7d29ff31edf2fadfce61c33970f23709fb3d5db5ee2bb76f	docs/records/audits/2026-09/mvp6-claims-stateful-independent-ver-02/SOP-22.md
+MATCH	c2be7ff0b968dda72efb2015abba1718981ba902217305f29b7fb8e6fa9832a1	docs/records/audits/2026-09/mvp6-combined-final-release-pack-01/SOP-22.md
+MATCH	4be065d84112a2a7e5808b840e3f3d338ec54184505b3ac22c198c51d7f74a5c	docs/records/audits/2026-09/mvp6-combined-final-release-ver-01/SOP-22.md
+MATCH	93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571	docs/analysis/contracts/shipment-bundle.openapi.yaml
+MATCH	7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+MATCH	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	docs/records/audits/2026-09/mvp6-combined-final-release-pack-01/publication/docs/analysis/contracts/shipment-bundle.openapi.yaml
+MATCH	16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63	docs/records/audits/2026-09/mvp6-combined-final-release-pack-01/publication/docs/analysis/contracts/claims-semantics-v3.0.0.md
+MATCH	7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af	docs/records/audits/2026-09/mvp6-combined-final-release-pack-01/publication/docs/analysis/contracts/shipment-root-semantics-v3.0.0.md

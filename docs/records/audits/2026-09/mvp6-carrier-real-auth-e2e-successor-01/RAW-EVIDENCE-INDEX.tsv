@@ -1,0 +1,9 @@
+evidence	location	disposition
+Final UI 21-path fresh rehash	ui-21-path-rehash.log	PASS 21/21
+Environment-close sealed inputs	docs/records/audits/2026-09/mvp6-carrier-ver-environment-close-01/ARTIFACTS.sha256	PASS all listed files
+UI-quality sealed inputs	docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/ARTIFACTS.sha256	PASS all listed files
+Latest independent Auth evidence	docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-02/evidence.tar.gz	Integrity PASS; verdict REWORK; not successor PASS
+NumericDate candidate evidence	docs/records/audits/2026-09/mvp6-carrier-numericdate-rework-01/evidence.tar.gz	Integrity PASS; candidate-only; not writer-complete or independent PASS
+Fresh runtime HTTP and DB evidence	Not created	Start prerequisite BLOCKED
+Fresh browser evidence	Not created	Start prerequisite BLOCKED
+Bearer tokens or secrets	Not stored	No runtime launched

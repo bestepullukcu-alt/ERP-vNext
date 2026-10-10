@@ -1,0 +1,9 @@
+component	source_binding	binary_binding	process_binding
+Auth	FINAL-22-SOURCE-MANIFEST.tsv	evidence.tar.gz::raw/runtime-binaries.sha256	127.0.0.1:5656
+Platform	FINAL-22-SOURCE-MANIFEST.tsv	evidence.tar.gz::raw/runtime-binaries.sha256	127.0.0.1:5657
+MDM	FINAL-22-SOURCE-MANIFEST.tsv	evidence.tar.gz::raw/runtime-binaries.sha256	127.0.0.1:5659
+SupplyChain	BUILD-SOURCE-MANIFEST.tsv	evidence.tar.gz::raw/runtime-binaries.sha256	127.0.0.1:5661; restarted once for persistence
+Gateway	BUILD-SOURCE-MANIFEST.tsv	evidence.tar.gz::raw/runtime-binaries.sha256	127.0.0.1:5600
+Web	FINAL-UI-SOURCE.tsv	evidence.tar.gz::raw/runtime-binaries.sha256	127.0.0.1:5601
+MongoDB	evidence.tar.gz::raw/effective-config-redacted.json	n/a	127.0.0.1:38994 replica set rsCarrierRealAuthExec01
+

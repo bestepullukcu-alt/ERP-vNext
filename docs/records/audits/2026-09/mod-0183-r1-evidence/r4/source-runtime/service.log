@@ -1,0 +1,26 @@
+[17:17:03 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[17:17:04 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[17:17:04 INF] Now listening on: http://127.0.0.1:5061
+[17:17:04 INF] Application started. Press Ctrl+C to shut down.
+[17:17:04 INF] Hosting environment: Production
+[17:17:04 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery
+[17:17:04 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[17:17:04 INF] Executing endpoint 'HTTP: GET /health'
+[17:17:04 INF] Setting HTTP status code 200.
+[17:17:04 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[17:17:04 INF] Executed endpoint 'HTTP: GET /health'
+[17:17:04 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 83.957ms
+[17:17:06 INF] Application is shutting down...
+[17:17:06 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[17:17:07 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[17:17:07 INF] Now listening on: http://127.0.0.1:5061
+[17:17:07 INF] Application started. Press Ctrl+C to shut down.
+[17:17:07 INF] Hosting environment: Production
+[17:17:07 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery
+[17:17:07 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[17:17:07 INF] Executing endpoint 'HTTP: GET /health'
+[17:17:07 INF] Setting HTTP status code 200.
+[17:17:07 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[17:17:07 INF] Executed endpoint 'HTTP: GET /health'
+[17:17:07 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 51.9593ms
+[17:17:08 INF] Application is shutting down...

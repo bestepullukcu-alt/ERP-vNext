@@ -1,0 +1,4 @@
+/SupplyChain/Claims/api -> 401 | {"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"55555555-5555-4555-8555-555555555555"},"contractVersion":"v1"}
+/SupplyChain/Claims/api/shipments/21c7563a-2fb6-4426-8b1b-d3b6e95af1e2 -> 401 | {"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"55555555-5555-4555-8555-555555555555"},"contractVersion":"v1"}
+/SupplyChain/Claims -> 302 | 
+POST unauth -> 401

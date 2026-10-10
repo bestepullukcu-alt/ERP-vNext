@@ -1,0 +1,14 @@
+stage	artifact	sha256	result	role
+owner_decision	docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01/AUTHORITY.md	d33a492a5af24281696c4959d1d20245f8bd92e095e9edaeee18070e662070b0	PASS	current-role exact application authority
+owner_target	docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/COMBINED-SHARED-UI-CANDIDATE.patch	1e53a3a63661e85b6a165dcf8aaf48451cc077af85713234e22496ec6e861c45	PASS	authorized 12-path patch
+owner_conditions	docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/BASELINE-PATCH-TARGET.tsv	0a8b1e48d53630070bacbce61294bc8ecf5d82961ab7196dea0794dd81c47470	PASS	exact preimage and target table
+writer_source	docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01/COMBINED-360-SOURCE-MANIFEST.tsv	7d7bec63a1f2e9e906864e5dea6dc96a00e94a280b830dd06f95a8b68246b4fc	PASS	applied 360-source identity
+writer_archive	docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01/combined-source.tar.gz	490d51be87d249265a2cc9fe6d1f8f3b23bd6976f4e5830d733bff2dfff613a3	PASS	immutable applied source
+writer_inventory	docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01/CHANGED-FILES.tsv	1a2fa3e1c8e6963710eca96305cba288129f5447badd0265227215bcb5a9d3e7	PASS	12 target paths
+writer_artifacts	docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01/ARTIFACTS.sha256	6038d295caf2b5f77a89901374f0f02dc68fbf0d90f6a81a3b726aa95b3f7067	PASS	15/15 verified
+independent_ver_report	docs/records/audits/2026-09/mvp6-shipment-shared-ui-independent-ver-01/SOP-22-VER.md	f75a2912616127a1d93a18da0e0e686b3b74d018e6c475492e9157243aad0e7c	PASS	independent verdict
+independent_ver_acceptance	docs/records/audits/2026-09/mvp6-shipment-shared-ui-independent-ver-01/ACCEPTANCE.tsv	07a300668b4e9b1e58e670d887509b674e54d46ec0c5c14e59ec90ef42c258b1	PASS	fresh/inherited/NOT RUN matrix
+independent_ver_evidence	docs/records/audits/2026-09/mvp6-shipment-shared-ui-independent-ver-01/evidence.tar.gz	fbde626ca38281e95796f024b975d6597134c6aa29ed11381c872bd0b9b287ab	PASS	raw evidence
+independent_ver_artifacts	docs/records/audits/2026-09/mvp6-shipment-shared-ui-independent-ver-01/ARTIFACTS.sha256	4304e356b2a0694ace1f2c5b7504b7beb4553b6865343ac0fbd755fb704cf867	PASS	6/6 verified
+accessibility_ct	docs/records/audits/2026-09/mvp6-shipment-line-accessibility-ct-disposition-01/SOP-22.md	7453b4fcdc0a264b0d1233771e65b41c9935f0cb25f982fe5fccd98556c52f61	PASS	separate prior PRES-183-01 acceptance
+accessibility_successor	docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/FINAL-354-SUCCESSOR-SOURCE-MANIFEST.tsv	dcc6662696db5e689d2d4f6facbb5106ca53d06a957caf21c5fabc912a0c7c88	PASS	three accepted files preserved

@@ -1,0 +1,12 @@
+Q64e end-of-lane check 2026-09-27T13:11:42+0300
+uname: Darwin
+branch: feature/mvp6-logistics
+HEAD: 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+index.lock: absent
+staged: 0
+diff paths: 19; identical to preflight: yes
+base manifest re-check: 14566 / 14566
+v1/v2/Q64d folders untouched: 0 mismatches in draft-02 SHA256SUMS; 0 in Q64d SHA256SUMS
+lane listeners (58xx, 38994): 0
+57192: other lane q119 mongod (not this lane): 76249
+lane sockets: 0

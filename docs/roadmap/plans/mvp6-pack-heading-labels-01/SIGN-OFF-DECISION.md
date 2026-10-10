@@ -1,0 +1,39 @@
+# Owner sign-off — pack heading-label correction (Q73, extends Q50)
+
+**NOT APPROVED — prepared text only.** One decision for all eight files. Decides: owner (repository owner).
+
+## Owner question
+
+Do you approve removing the stale "NOT APPROVED" / "proposal" heading suffixes from the 11 sections you have already
+signed, and adding one `Approved: <record>` line under each, in the 8 pack/DCP files listed?
+
+**Recommended answer: A — approve.** It changes labels only, corrects text that currently contradicts your signed
+decisions, and every patch is hash-gated.
+
+| Option | Effect |
+|---|---|
+| **A — Approve (recommended)** | 8 patches applied on exact hashes; 11 headings corrected; 11 approval-note lines added; no other byte changes. |
+| B — Approve without the approval-note lines | Needs a new patch set and new hashes (labels only). |
+| C — Defer | The headings keep contradicting the signed records (verifier O4, Q71 A-07). |
+
+## Exact decision text (NOT APPROVED — prepared text only)
+
+> I approve applying the eight heading-label patches in `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/`, each only if its target file has exactly the before SHA-256 and the result has exactly the after SHA-256:
+>
+> - `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/01-DCP-009-supply-chain-inventory-heading-labels.patch` → `execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md`: before `e346043dd6d8163be561353fb393ee7b2b7f424c10239c282538c4f47020cec6`, after `6b12ce685114248e89b78729546f43e86836d52f337599cb399de2993920046b`;
+> - `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/02-MOD-0183-shipment-tracking-pod-heading-labels.patch` → `execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md`: before `8e269efa44b47bef41a81745a946ccef9d30a26d8ddf175000e80aad2242eadf`, after `2a65ce1d516c1850bef74f9d26e5d54dfc6042acae45ad5199730ef43ddf2c83`;
+> - `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/03-MOD-0184-carrier-management-heading-labels.patch` → `execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md`: before `346288abaf9c26c9bfeebf1c923c8201166bb5c930f2389b57528014c1bffd1e`, after `35bead97350624074d5d67e4119eaafba59a9eb68dd15f8e1f5729564291dc21`;
+> - `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/04-MOD-0185-routing-load-planning-heading-labels.patch` → `execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md`: before `45b5dd3325b4c917eeaa9cb6b5268008173579e4525f4c90f25c43630c27caa5`, after `9ec4ef1bc1db21e07e01d5e8c0671ea4809840e6245d8749fb4da0a8b75abd2e`;
+> - `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/05-MOD-0186-reverse-logistics-heading-labels.patch` → `execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md`: before `a762305ec789f0b2547d5205135a0ff70b64e83f4a63b839a985432a46d8a552`, after `fa7bd61e7635cbf5a84c433562fb1a371ed80a08626f6f39e4b881c66f8c3e27`;
+> - `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/06-MOD-0187-claims-management-heading-labels.patch` → `execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md`: before `31cb35c38fd97c91172884156a32b69ec219e3cf4f96ad5f9124dc3c8ad06626`, after `8ed42fad66b7739b8c56778a57e0ead84cc8ce3678ea4868306263ac501a94a2`;
+> - `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/07-MOD-0190-sop-workflow-signoffs-heading-labels.patch` → `execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md`: before `8403d8f46059c99ef34d3fe08b3cacdbbbefb321f30f921b620eceda9180ea40`, after `56fb8e7d19daa36370747f391ac92c05eca1b51c84d643fbdf7ace687b82ac41`;
+> - `docs/roadmap/plans/mvp6-pack-heading-labels-01/patches/08-MOD-0192-capacity-planning-heading-labels.patch` → `execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md`: before `de81a0e289fff2732ca333357654fcd0ea7254fd9496391d2b06933d1891946c`, after `9b8b90f1def56be975d63c456a6fb61ba574fec8e2060457d53c72c839fdf813`;
+>
+> Each patch only removes a stale status suffix ("(PATCH PROPOSAL — NOT APPROVED until owner sign-off)", "(PACK-ALIGNMENT-0n proposal — NOT APPROVED)" or "(proposed draft delta)") from a heading that I have already signed, and adds under it one line naming the approving decision record listed in the package README. It changes no business rule, acceptance criterion, owned-path list, status, contract or any other text. One named writer applies the patches after rechecking every hash; any mismatch stops that file's application. This decision does not approve any other pack change, code, registry update, commit, push or stash.
+
+## After approval
+
+1. A chat lane records the decision on CT instruction.
+2. One named writer applies the patches, working tree only, and records the before and after hashes.
+3. A read-only VER checks the result.
+4. The commit happens in the next Mac Terminal session.

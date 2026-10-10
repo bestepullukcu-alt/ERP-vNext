@@ -1,0 +1,25 @@
+H1-code91-sst5000-early	0.156	cluster-open state=ReplicaSetPrimary/Connected sst=5000ms heartbeat=10000ms
+H1-code91-sst5000-early	0.176	fault-armed state=ReplicaSetPrimary/Connected
+H1-code91-sst5000-early	0.210	commit#0 THREW-RETRYABLE MongoNodeIsRecoveringException after 0.034s state=Unknown/Disconnected
+H1-code91-sst5000-early	5.226	escaped the retry loop: TimeoutException isMongoException=False hasUnknownLabel= state=Unknown/Disconnected
+H1-code91-sst5000-early	10.112	RESULT errorCode=91 delay=0s outcome=ESCAPED:TimeoutException appVisibleExceptions=2 rowsCommitted=0 serverUsableAgainAt=10.112s (count waited 0.026s)
+H2-code91-sst5000-late	0.133	cluster-open state=ReplicaSetPrimary/Connected sst=5000ms heartbeat=10000ms
+H2-code91-sst5000-late	7.161	fault-armed state=ReplicaSetPrimary/Connected
+H2-code91-sst5000-late	7.190	commit#0 THREW-RETRYABLE MongoNodeIsRecoveringException after 0.029s state=Unknown/Disconnected
+H2-code91-sst5000-late	10.098	commit#1 OK after 2.907s state=ReplicaSetPrimary/Connected
+H2-code91-sst5000-late	10.125	RESULT errorCode=91 delay=7s outcome=COMMITTED appVisibleExceptions=1 rowsCommitted=1 serverUsableAgainAt=10.125s (count waited 0.026s)
+H3-code91-sst30000-early	0.127	cluster-open state=ReplicaSetPrimary/Connected sst=30000ms heartbeat=10000ms
+H3-code91-sst30000-early	0.145	fault-armed state=ReplicaSetPrimary/Connected
+H3-code91-sst30000-early	0.170	commit#0 THREW-RETRYABLE MongoNodeIsRecoveringException after 0.026s state=Unknown/Disconnected
+H3-code91-sst30000-early	10.134	commit#1 OK after 9.964s state=ReplicaSetPrimary/Connected
+H3-code91-sst30000-early	10.189	RESULT errorCode=91 delay=0s outcome=COMMITTED appVisibleExceptions=1 rowsCommitted=1 serverUsableAgainAt=10.189s (count waited 0.053s)
+H4-code8-sst5000-early	0.152	cluster-open state=ReplicaSetPrimary/Connected sst=5000ms heartbeat=10000ms
+H4-code8-sst5000-early	0.174	fault-armed state=ReplicaSetPrimary/Connected
+H4-code8-sst5000-early	0.187	commit#0 THREW-RETRYABLE MongoCommandException after 0.013s state=ReplicaSetPrimary/Connected
+H4-code8-sst5000-early	0.198	commit#1 OK after 0.011s state=ReplicaSetPrimary/Connected
+H4-code8-sst5000-early	0.219	RESULT errorCode=8 delay=0s outcome=COMMITTED appVisibleExceptions=1 rowsCommitted=1 serverUsableAgainAt=0.219s (count waited 0.017s)
+H5-code91-sst5000-hb1000	0.133	cluster-open state=ReplicaSetPrimary/Connected sst=5000ms heartbeat=1000ms
+H5-code91-sst5000-hb1000	0.151	fault-armed state=ReplicaSetPrimary/Connected
+H5-code91-sst5000-hb1000	0.179	commit#0 THREW-RETRYABLE MongoNodeIsRecoveringException after 0.027s state=Unknown/Disconnected
+H5-code91-sst5000-hb1000	1.094	commit#1 OK after 0.916s state=ReplicaSetPrimary/Connected
+H5-code91-sst5000-hb1000	1.122	RESULT errorCode=91 delay=0s outcome=COMMITTED appVisibleExceptions=1 rowsCommitted=1 serverUsableAgainAt=1.122s (count waited 0.023s)

@@ -1,0 +1,32 @@
+{
+  "name": "scope-404",
+  "request": {
+    "bodyUtf8": null,
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "X-Correlation-Id": "a0f20ccd-abc9-4062-990e-3262e1e9dc4c",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Tenant-Id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    },
+    "method": "GET",
+    "path": "/api/shipment-bundle/returns"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "error": {
+        "code": "RETURN_NOT_FOUND",
+        "correlationId": "a0f20ccd-abc9-4062-990e-3262e1e9dc4c",
+        "message": "RETURN NOT FOUND"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 16:20:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "a0f20ccd-abc9-4062-990e-3262e1e9dc4c"
+    },
+    "status": 404
+  }
+}

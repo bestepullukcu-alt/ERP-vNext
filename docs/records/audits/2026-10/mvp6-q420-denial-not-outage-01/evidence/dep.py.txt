@@ -1,0 +1,6 @@
+import sys, json; sys.argv = [sys.argv[0], sys.argv[1], 'DEP', 'x']
+src = open(sys.argv[1] + '/probe.py').read().split("state = W")[0]; g = {}; exec(src, g)
+st = json.load(open(sys.argv[1] + '/state.json'))
+for name, path, perms in [('B GET shipment, token WITHOUT shipments.read', f"/api/shipment-bundle/shipments/{st['shipmentId']}", ['supplychain.returns.create']),
+                          ('B GET carriers, token WITHOUT carriers.read', '/api/shipment-bundle/carriers', ['supplychain.claims.create', 'supplychain.shipments.read'])]:
+    s, b, d = g['call'](58421, 'GET', path, perms); print(f'[DEPENDENCY] {name}\n    -> {s} {b[:200]}')

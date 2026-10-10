@@ -1,0 +1,43 @@
+{
+  "priorApiPid": 30663,
+  "newApiPid": 31048,
+  "binarySha256": "4673a6b970a4ee31c3413325b4024349ad91773262fb6e56e84eebbd1106fb8b",
+  "replay": {
+    "method": "POST",
+    "path": "/api/shipment-bundle/claims",
+    "requestCorrelation": "00000000-0000-0000-0000-000000000000",
+    "requestBodySha256": "6c2b18265900d620b8d89d956defbb448ba77e4536c6d5ad4aada5fc502152f5",
+    "requestBodyBytes": 113,
+    "status": 201,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "x-correlation-id": "00000000-0000-0000-0000-000000000000"
+    },
+    "body": {
+      "claimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+      "claimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+      "shipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+      "status": "Open",
+      "approvedAmount": null,
+      "idempotentReplay": true,
+      "contractVersion": "v1"
+    },
+    "responseBodySha256": "9a25364acbeff19fe30152d47d94a7b23a56cec99b06e3aa5c7b0078d666892f",
+    "responseBodyBytes": 240
+  },
+  "beforeCounts": {
+    "claims": 1,
+    "claims_receipts": 1,
+    "claims_audit": 1,
+    "claims_outbox": 1
+  },
+  "afterCounts": {
+    "claims": 1,
+    "claims_receipts": 1,
+    "claims_audit": 1,
+    "claims_outbox": 1
+  },
+  "dependencyReadsBefore": 8,
+  "dependencyReadsAfter": 8,
+  "pass": true
+}

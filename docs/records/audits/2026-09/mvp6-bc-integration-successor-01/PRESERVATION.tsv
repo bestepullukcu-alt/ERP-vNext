@@ -1,0 +1,5 @@
+control	path	sha256	result
+Program.cs composition	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs	50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0	PASS
+X07 hosted/read-fault test	services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs	2c133ac1b6b431db074b0054b0337bbc3957fce5869c7aca9291454a53681c43	PASS
+MOD-0190 accepted S&OP test	services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs	eba2da6f47a4935b61857a95534b3d1697635910190e3838494d96d956af7f43	PASS
+Unchanged B entries	(all other B paths)	N/A	PASS (419/419)

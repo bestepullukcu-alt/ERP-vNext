@@ -1,0 +1,5 @@
+feat(supply-chain): add MOD-0185 Loads bounded source
+
+Loads feature source, tests and probes. The three Loads probes are the Q117 versions (no static secret).
+Work packages: MOD-0185 WPs; Q117; Q202a.
+46 files from pathspec/S2.txt (Q230 commit plan).

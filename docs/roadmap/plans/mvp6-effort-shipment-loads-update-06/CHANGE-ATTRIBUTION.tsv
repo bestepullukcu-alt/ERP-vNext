@@ -1,0 +1,6 @@
+change_class	delivered_optimistic_delta	delivered_most_likely_delta	delivered_pessimistic_delta	remaining_optimistic_delta	remaining_most_likely_delta	remaining_pessimistic_delta	total_optimistic_delta	total_most_likely_delta	total_pessimistic_delta	interpretation
+completed_shipment_integration	12	24	40	-12	-24	-40	0	0	0	Existing integration/source/build/route reserve transferred after independent closure
+carrier_ct_readiness	0	0	0	0	0	0	0	0	0	PARTIAL recorded; PNG OPEN prevents Test/VER credit
+loads_estimate_correction	0	0	0	2	10	8.8	2	10	8.8	Bounded UI and live/root replacements reconcile against existing reserves
+loads_scope_clarification	0	0	0	UNESTIMATED	UNESTIMATED	UNESTIMATED	UNESTIMATED	UNESTIMATED	UNESTIMATED	Transition/detail/lookup-root UI remains in full-MVP scope but lacks a reliable estimate
+numeric_net	12	24	40	-10	-14	-31.2	2	10	8.8	Completed work and estimate correction kept separate

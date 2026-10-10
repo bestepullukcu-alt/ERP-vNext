@@ -1,0 +1,24 @@
+{
+  "existing_file_drift": [],
+  "baseline_count": 14545,
+  "prospective_count": 11,
+  "existing_prospective": [
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs"
+  ],
+  "new_prospective": [
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentDetailReadResult.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentDetailMaterializer.cs",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentRootStorageTests.cs",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentRootHttpTests.cs",
+    "services/Diten.SupplyChainService/tests/root_uptake/runtime_probe.py",
+    "services/Diten.SupplyChainService/tests/root_uptake/restart_probe.py",
+    "services/Diten.SupplyChainService/tests/root_uptake/verify_evidence.py"
+  ],
+  "runtime_tests_executed": false,
+  "old_73_checks_revalidated": false,
+  "head_unchanged": true,
+  "index_unchanged": true
+}

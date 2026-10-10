@@ -33,7 +33,12 @@ public static class DefaultRolePermissionTemplate
     /// </summary>
     // MOD-0149 — "crm-account" is the module code carried by the seeded crm.account.* permissions (tenant-scoped).
     // Adding it here grants the tenant Admin role the full crm.account.* baseline via the standard SelectFor breadth clause.
-    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact" };
+    // Q358 — TEMPORARY, EXPIRES 2026-11-03. "shipment-tracking-pod" (MOD-0183) gives every tenant's Admin the five
+    // supplychain.shipments.* keys WITHOUT a Shipments entitlement, so MVP-6 can open now. It suspends the curated-list
+    // decision above for this one module only. Remove it once the entitlement path is measured granting Admin the same
+    // keys; by the expiry it is re-approved in writing or removed. Decision:
+    // docs/records/decisions/2026-10/mvp6-shipment-admin-baseline-temporary-widening-owner-decision-01.md
+    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "shipment-tracking-pod" };
 
     /// <summary>
     /// İŞ3-FAZ0 TRANSITION BRIDGE — derives a permission's authz <see cref="PermissionScope"/> from its existing

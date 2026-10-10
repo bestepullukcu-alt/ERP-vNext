@@ -1,0 +1,121 @@
+@using Diten.Web.Models.SupplyChain.Claims
+@using Diten.Web.Views.SupplyChain.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    // MOD-0187 Claims tenant list (pack §32). DRAFT overlay — not built, not writer-complete.
+    ViewData["Title"] = Localizer["ClaimsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@* UAS-001: without read, only the shared denial surface inside the shell — no title, filter, table, skeleton, button,
+   toast or redirect (pack §32.9). *@
+@if (!Perms.Has(ClaimUiPermissions.Read))
+{
+    <partial name="_AccessDenied" model="@Localizer["ClaimsTitle"].Value" />
+    return;
+}
+@{
+    var permissions = ClaimPagePermissions.From(Perms.Has);
+    var canTransition = permissions.CanInvestigate || permissions.CanDecide || permissions.CanSettle;
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/SupplyChain/Claims/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ClaimsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② No BulkActionBar and no checkbox column (CU-SCR-01). *@
+
+@* ③ DataTable Card — skeleton, empty and error are three distinct states (VIEW-001 §3.1) *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-claims" data-dt-standard="v2"> *@
+<partial name="~/Views/SupplyChain/Claims/_DataTable.cshtml" />
+
+@* ④ Offcanvas panels *@
+@* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/SupplyChain/Claims/_DetailsQuickView.cshtml" />
+@if (permissions.CanCreate)
+{
+    <partial name="~/Views/SupplyChain/Claims/_CreateEditOffcanvas.cshtml" />
+}
+
+@if (canTransition)
+{
+    @* Transition input surface. G-MODAL (pack §32.13): window.showConfirm cannot be shown to host inputs, so the inputs
+       live in this module-owned offcanvas inside the owned Index.cshtml (no 22nd path); the final confirmation still goes
+       through window.showConfirm. README FINDING F6 asks CT whether a separate partial needs a scope amendment. *@
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasClaimTransition" aria-labelledby="offcanvasClaimTransitionLabel">
+        <div class="offcanvas-header p-4">
+            <div class="min-w-0">
+                <h5 id="offcanvasClaimTransitionLabel" class="offcanvas-title mb-0">@Localizer["TransitionTitle"]</h5>
+                <small class="text-muted d-block text-truncate"><bdi dir="ltr" id="transitionClaimNumber"></bdi></small>
+            </div>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+        </div>
+        <div class="offcanvas-body border-top p-4">
+            <div id="formClaimTransitionAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+            <form id="formClaimTransition" class="pt-0" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label for="transitionTarget" class="form-label fw-medium">@Localizer["TransitionTarget"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-git-branch diten-field-icon" aria-hidden="true"></i>
+                            <select id="transitionTarget" class="form-select"></select>
+                        </div>
+                        <div id="transitionSettleNote" class="form-text d-none">@Localizer["SettledNoPaymentNote"]</div>
+                    </div>
+                    <div class="col-12">
+                        <label for="transitionOccurredAt" class="form-label fw-medium">@Localizer["OccurredAt"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-time-five diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" id="transitionOccurredAt" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" aria-describedby="transitionOccurredAtHelp" />
+                        </div>
+                        <div id="transitionOccurredAtHelp" class="form-text">@Localizer["OccurredAtHelp"]</div>
+                    </div>
+                    <div class="col-12 d-none" id="transitionApprovedAmountGroup">
+                        <label for="transitionApprovedAmount" class="form-label fw-medium">@Localizer["ApprovedAmount"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-check-shield diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" id="transitionApprovedAmount" class="form-control" inputmode="decimal" dir="ltr" autocomplete="off" aria-describedby="transitionApprovedAmountHelp" />
+                        </div>
+                        <div id="transitionApprovedAmountHelp" class="form-text">@Localizer["ApprovedAmountHelp"]</div>
+                    </div>
+                    <div class="col-12">
+                        <label for="transitionResolutionCode" class="form-label fw-medium">@Localizer["ResolutionCode"]</label>
+                        <div class="diten-field">
+                            <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" id="transitionResolutionCode" class="form-control" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label for="transitionNote" class="form-label fw-medium">@Localizer["NoteLabel"]</label>
+                        <div class="diten-field">
+                            <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                            <textarea id="transitionNote" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+            <button type="button" id="btnSubmitTransition" class="btn btn-primary">@Localizer["SubmitTransition"]</button>
+        </div>
+    </div>
+}
+
+@* Display decision only (UAS-001 §4); the backend [HasPermission] stays the authority. *@
+<script id="claims-permissions" type="application/json">@Json.Serialize(new { canCreate = permissions.CanCreate, canInvestigate = permissions.CanInvestigate, canDecide = permissions.CanDecide, canSettle = permissions.CanSettle })</script>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/SupplyChain/Claims/_IndexL10n.cshtml" />
+    <script src="~/assets/js/SupplyChain/Claims/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/SupplyChain/Claims/index.js" asp-append-version="true"></script>
+}

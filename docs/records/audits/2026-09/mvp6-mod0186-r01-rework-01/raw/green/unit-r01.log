@@ -1,0 +1,33 @@
+  Diten.SupplyChainService.Domain -> /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Release/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Release/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Release/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Release/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.SupplyChainService.Api -> /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+  Diten.SupplyChainService.Tests -> /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Release/net8.0/Diten.SupplyChainService.Tests.dll
+Test run for /private/tmp/mvp6-mod0186-r01-rework-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Release/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 10.0.2)
+[xUnit.net 00:00:00.15]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.27]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.28]   Starting:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "{\"error\":{\"code\":\"INTERNAL_ERROR\"},\"contrac"···) [36 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "not-json") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 501, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 401, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 403, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.MalformedSuccessfulRoot_RemainsReturnsRootInvalid [22 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerShipmentRootInvalid500_MapsToReturnsRootInvalid [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.RefusedProducer_RemainsDependencyUnavailable [1 ms]
+[xUnit.net 00:00:00.46]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.TimedOutProducer_RemainsDependencyUnavailable [1 ms]
+
+Test Run Successful.
+Total tests: 10
+     Passed: 10
+ Total time: 1.2589 Seconds

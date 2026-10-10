@@ -1,0 +1,7 @@
+sha256	path_or_artifact
+9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3	docs/analysis/contracts/sandop-capacity.openapi.yaml
+e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442	docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d	docs/analysis/contracts/demand.openapi.yaml
+0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04	docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/publication-proposed.patch
+2c1fdbe120a41215c72e0d81c573b578557c9d0a1c2ba0c11c6597826a8974fb	docs/records/audits/2026-09/mvp6-sandop-capacity-final-ver-01/SOP-22.md
+ed42a33a082f579dd3350b0e9c1b14f1b70c68691910604a357ca5bb799f5756	raw-evidence.tar.gz

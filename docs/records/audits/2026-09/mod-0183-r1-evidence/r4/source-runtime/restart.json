@@ -1,0 +1,42 @@
+{
+  "result": "PASS",
+  "processIds": [
+    87347,
+    87362
+  ],
+  "unchanged": true,
+  "collections": {
+    "sce_shipments": {
+      "count": 29,
+      "sha256": "e06de3247cb08fd015ac273e6ed8685867d9d3d7ee678370cf352f86baae9717"
+    },
+    "sce_shipment_receipts": {
+      "count": 49,
+      "sha256": "82f9a573912479b2d4be999308e9317ef3e86dff00761fb2109a48686b312eae"
+    },
+    "sce_shipment_history": {
+      "count": 49,
+      "sha256": "3f8b767195648547515b1be5cbb7c76a26a11ac2e26325baebdc53f7bdbe7bb9"
+    },
+    "sce_shipment_audit": {
+      "count": 49,
+      "sha256": "4fc002782440bfb91fc2ad41b2e1e1c65b0e102a7446f3c9616888027913d61e"
+    },
+    "sce_shipment_outbox": {
+      "count": 52,
+      "sha256": "bb7639d381aaf0a215b95fb9053f887ca4f2de738ebe39dfe12770775f72e44c"
+    },
+    "sce_shipment_source_links": {
+      "count": 15,
+      "sha256": "3b6d224890108fd1ac64da47cba343eca4800d1ca1842df6a0e1cfc829bba7ea"
+    },
+    "sce_shipment_source_intents": {
+      "count": 15,
+      "sha256": "69b044444d5d3be3fa3af7e210129c8f74434d728ac826784cbfbc7cda48cdda"
+    },
+    "sce_shipment_source_evidence": {
+      "count": 19,
+      "sha256": "84dce457d9118938035fb37970251d9b7e1f41f3857d8257aaef202c677b269d"
+    }
+  }
+}

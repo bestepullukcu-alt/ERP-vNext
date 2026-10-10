@@ -5501,6 +5501,40 @@
         "DELETE"
       ],
       "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/shipment-bundle",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5066
+        }
+      ],
+      "UpstreamPathTemplate": "/api/shipment-bundle",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/shipment-bundle/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5066
+        }
+      ],
+      "UpstreamPathTemplate": "/api/shipment-bundle/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
     }
   ],
   "GlobalConfiguration": {

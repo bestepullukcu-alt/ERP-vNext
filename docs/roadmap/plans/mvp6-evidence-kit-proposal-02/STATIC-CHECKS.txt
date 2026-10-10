@@ -1,0 +1,74 @@
+STATIC-CHECKS — MVP6 evidence kit v1.1 proposal (Q57, AL-MVP6-KIT-V11-01)
+run_at_istanbul	2026-09-26T12:06:44+03:00
+host	Linux workspace (chat lane); tools: GNU bash, version 5.2.21(1)-release (x86; Python 3.11.15; node v22.22.2; shellcheck 0.11.0
+scope	all 26 files under proposed/; scratch only under /tmp (removed at the end); no service, Mongo or browser run; placeholders/FAKE values only
+note	Python: ast.parse + compile() in memory instead of py_compile, so no __pycache__ is written. Inputs of check 8 are the six services' appsettings*.json/csproj staged read-only from the working tree (unmodified vs HEAD per git status); K04 printed no values.
+
+# 1 bash -n
+OK    bash -n kit/ek_lib.sh
+OK    bash -n kit/k02_runtime.sh
+OK    bash -n kit/k05_mongo.sh
+OK    bash -n kit/k06_build_launch.sh
+OK    bash -n kit/k10_snap.sh
+OK    bash -n kit/k11_cleanup.sh
+OK    bash -n kit/run-kit.sh
+# 2 Python syntax (ast.parse + in-memory compile; no __pycache__ written)
+OK    python kit/k00_ctl.py
+OK    python kit/k00_supervisor.py
+OK    python kit/k01_source.py
+OK    python kit/k03_ports.py
+OK    python kit/k04_config.py
+OK    python kit/k04b_gateway_routes.py
+OK    python kit/k07_identity.py
+OK    python kit/k08_redact_scan.py
+OK    python kit/k09_binding.py
+OK    python kit/k10_db_diff.py
+# 3 node --check
+OK    node --check kit/k10_db_snapshot.js
+OK    node --check templates/served-asset-hash.js
+# 4 shellcheck version: 0.11.0
+OK    shellcheck -S warning: 0 findings (7 files)
+      info-level notes (not defects):  6 SC1091; 4 SC2015; 6 SC2094;
+      SC1091 = sourced ek_lib.sh not followed; SC2015 = A&&B||C in v1.0 lines; SC2094 = false positive (file name only in a description string)
+# 5 forbidden strings
+OK    no proposed file names docs/analysis/ (DocsPathGuard)
+      note: 'secrets/' mentioned in: k07_identity.py k08_redact_scan.py (comments/docstrings)
+# 6 secret-scanner self-test (3 fake secrets planted in /tmp)
+      planted 1 raw lane secret in a log            -> caught (exact raw)
+      planted 2 base64url actor password in a PNG   -> caught (exact b64url-nopad)
+      planted 3 bearer JWT pattern in an HTTP capture -> caught (pattern jwt/bearer-header)
+      control clean.txt                             -> not flagged
+      report contains no planted value
+OK    self-test 3/3 caught, exit 1
+OK    --exact with no lane values fails (no vacuous PASS)
+# 7 synthetic K01 (D3): wrapped + headerless overlay, then real-HEAD-top overlay
+OK    v1.1 K01 PASS; overlays (order wrapper matched rows): 1 wrap-src/ 2 2;2 - 1 1;
+OK    v1.0 K01 fails on the same input (defect reproduced)
+# 8 synthetic K04 (D1/D2/D4) on the real HEAD-tracked appsettings of the 6 services (copied to /tmp; no user-secrets)
+OK    K04 shared/render/check PASS: auth-platform PASS (5 keys, one value);platform-mdm-active PASS (2 keys, one value);svcid PASS (2 keys, one value);
+OK    D1 platform env: jobs on, standard jobs off, dashboard off, Hangfire DB suffixed
+OK    D4 env files: 16 secret keys, all placeholders; 0 literals
+OK    N1 auth-platform not rotated -> check FAIL (FAIL)
+OK    N2 literal secret in overrides.tsv -> render refused
+OK    N3 literal value in an env file -> check FAIL (D4 finding)
+# 9 synthetic supervisor (D4/G4): env passing, reveal refusal, K11 removes W, seal is the last write
+OK    socket inside W refused
+OK    helper run sees 6 lane values (5 groups + 1 actor) in its environment
+OK    reveal to a pipe refused
+OK    seal PASS after W removed; records ARTIFACTS hash; 6 exact values
+OK    no write after the seal: COMMANDS.tsv unchanged, ARTIFACTS.sha256 verifies
+OK    shutdown removed the socket
+# 10 synthetic G2/G3 (ek_run, ek_unique)
+OK    ek_run: 2 commands -> 2 one-line rows, exit codes 3 and 0 captured
+OK    ek_unique: next free name x-a2.log
+# 11 synthetic K10 (G3/G5)
+OK    setup pair asserting only the actor row (A12 F3 shape) -> FAIL (outbox +2, audit +1 unasserted)
+OK    same pair with --totals -> PASS
+OK    reused snapshot files refused (G3)
+OK    before == after refused
+# 12 synthetic G1 (served-asset hash)
+OK    record-served + route.fulfill hash rows written; expected hash served, wrong expectation aborted
+# scratch removed: /tmp/q57-selftest.itiS
+# 13 pattern scan of this proposal folder (copy in /tmp, k08 pattern rules)
+OK    31 files scanned, 0 hits
+# RESULT: ALL OK

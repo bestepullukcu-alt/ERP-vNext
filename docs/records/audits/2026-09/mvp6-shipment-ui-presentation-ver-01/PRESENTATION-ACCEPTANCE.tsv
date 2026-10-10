@@ -1,0 +1,16 @@
+criterion	result	evidence	boundary_or_gap
+Final source binding	PASS	raw/source-manifest-check.tsv; 354/354 exact; controlling manifest SHA256 e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3	Mutable checkout was not used as source authority.
+Native build	PASS	raw/build-web.log; exit 0; Diten.Web.dll b7bf5cf8949e587da087565956dc3071e302c6cbe23513a6b4724dcf561df5ae	19 pre-existing/unrelated warnings retained; no product fix.
+Seven-language resource parity	PASS	L10N-MATRIX.tsv; raw/l10n-key-parity.tsv; raw/l10n-values.tsv	63 keys, zero missing/empty in each culture.
+Arabic RTL	PASS	L10N-MATRIX.tsv; RESPONSIVE-MEASUREMENTS.tsv	Live list/create html lang=ar dir=rtl; shared responsive-modal chrome finding remains PRES-183-02.
+Missing-key and browser console	PASS	raw/l10n-key-parity.tsv; raw/console-result.json	No missing/empty Shipment key; 0 browser console error/warning. Fixture server navigation 404 warnings are isolated environment noise, not browser console findings.
+390 responsive	PASS	RESPONSIVE-MEASUREMENTS.tsv	Actual innerWidth=390, DPR=1, no document overflow on list/create/detail.
+768 responsive	PASS	RESPONSIVE-MEASUREMENTS.tsv	Actual innerWidth=768, DPR=1, no document overflow on list/create/detail.
+DataTable responsive behavior	PASS	RESPONSIVE-MEASUREMENTS.tsv; raw/browser-measurements.json	Server-loaded row, responsive control, collapsed action access, stateSave:false and same-origin MVC adapter observed.
+Repository DataTable quality gate	OPEN	raw/datatable-quality-gate.log; exit 1	49 PASS/35 FAIL; controlling bounded scope conflicts with generic full-CRUD/direct-Gateway expectations. PRES-183-03.
+Filter keyboard/accessibility	PASS	raw/browser-measurements.json	Status and Source Document labels bind to controls; Apply/Reset are native buttons.
+Create keyboard/focus	FAIL	raw/browser-measurements.json; ACCESSIBILITY-FINDINGS.tsv	Logical Tab order and focused error summary pass; repeatable-line inputs are unnamed/unbound (PRES-183-01).
+Detail/action keyboard	PASS	raw/browser-measurements.json	Enter opens transition/POD dialogs; dialog role/aria-modal/labelledby and bound action fields observed; focus enters transition dialog.
+Unsupported operations absent	PASS	Exact source inspection and UI surface	No edit/delete/bulk/assign/reconcile/history requirement added.
+Durable PNG	OPEN	ACCESSIBILITY-FINDINGS.tsv	Inline screenshot was inspected but is not claimed as a durable artifact.
+Prior policy/runtime acceptance	INHERITED	mvp6-shipment-ui-functional-ct-consolidation-01	Not rerun and not widened by this presentation lane.

@@ -1,0 +1,5 @@
+id	module	status	description	denominator_treatment	next_trigger
+0185-RS-05	0185	MANDATORY_UNESTIMATED	Producer-owned authoritative Load-root read implementation	Outside 2842-hour numeric denominator; no invented estimate	Final version selection, exact consumer consent, publication, then exact producer uptake scope
+0185-RS-06	0185	OPEN_SCOPE_UNESTIMATED	Independent Loads detail surface	Outside numeric denominator	Owner decides whether list-row behavior is sufficient or a detail surface is required
+0185-RS-07	0185	OPEN_SCOPE_UNESTIMATED	Searchable Carrier/Shipment/location lookup UX	Outside numeric denominator	Owner selects usability scope against published producer operations
+

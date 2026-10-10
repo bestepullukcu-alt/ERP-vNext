@@ -1,0 +1,56 @@
+[
+  {
+    "name": "old-original-consumer",
+    "command": [
+      "/private/tmp/mod0184-oas-tools/bin/python",
+      "-B",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/check_consumer.py"
+    ],
+    "cwd": "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy",
+    "exit": 0
+  },
+  {
+    "name": "schema",
+    "command": [
+      "/private/tmp/mod0184-oas-tools/bin/python",
+      "-B",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py"
+    ],
+    "cwd": "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy",
+    "exit": 0
+  },
+  {
+    "name": "old-r1-consumer",
+    "command": [
+      "/private/tmp/mod0184-oas-tools/bin/python",
+      "-B",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_consumer.py",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/before"
+    ],
+    "cwd": "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy",
+    "exit": 0
+  },
+  {
+    "name": "new-r1-consumer",
+    "command": [
+      "/private/tmp/mod0184-oas-tools/bin/python",
+      "-B",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_consumer.py",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/after"
+    ],
+    "cwd": "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy",
+    "exit": 0
+  },
+  {
+    "name": "revision",
+    "command": [
+      "/private/tmp/mod0184-oas-tools/bin/python",
+      "-B",
+      "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_revision.py"
+    ],
+    "cwd": "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt/copy",
+    "exit": 0
+  }
+]

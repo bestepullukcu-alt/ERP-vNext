@@ -1,0 +1,32 @@
+case	result	evidence	observation
+exact patch and 22-path target	PASS	APPLIED-SOURCE-MANIFEST.tsv; raw/target-manifest-check.log	22/22 target hashes matched
+native .NET 8 toolchain	PASS	raw/dotnet-runtime.txt	SDK 8.0.417; ASP.NET Core and .NET runtime 8.0.23; no major roll-forward
+Auth build	PASS	raw/build/auth.log; raw/build/auth.exit	0 errors, 0 warnings
+Platform build	PASS	raw/build/platform.log; raw/build/platform.exit	0 errors, 0 warnings
+MDM build	PASS	raw/build/mdm.log; raw/build/mdm.exit	0 errors, 0 warnings
+Platform focused tests	PASS	raw/tests/platform-carrier-auth-successor-dev.trx	8/8
+MDM validator focused tests	PASS	raw/tests/mdm-carrier-auth-successor-dev.trx	7/7
+valid Platform service identity	PASS	raw/runtime/service-identity-negative-safe.json	control request 200
+wrong signing key	PASS	raw/runtime/service-identity-negative-safe.json	401
+wrong caller	PASS	raw/runtime/service-identity-negative-safe.json	401
+wrong audience	PASS	raw/runtime/service-identity-negative-safe.json	401
+over-broad scope	PASS	raw/runtime/service-identity-negative-safe.json	401
+wrong tenant/actor/legal entity	PASS	raw/runtime/service-identity-negative-safe.json	all 401
+header without valid signed identity	PASS	raw/runtime/mdm-header-only.headers	401
+exactly one active authorized LE login	PASS	raw/runtime/login-refresh-safe.json	200; exact LE claim emitted
+refresh issuance	PASS	raw/runtime/login-refresh-safe.json	200; exact LE claim emitted
+refresh re-resolution	PASS	raw/runtime/refresh-reresolution-safe.json	revoked assignment removed claim on refresh; scope restored after probe
+zero scope	PASS	raw/runtime/zero-login-safe.json	200; LE claim omitted
+multiple scope	PASS	raw/runtime/multiple-login-safe.json	200; LE claim omitted
+inactive LE	PASS	raw/runtime/inactive-login-safe.json	200; LE claim omitted
+revoked scope	PASS	raw/runtime/revoked-login-safe.json	200; soft-deleted assignment omitted claim
+dependency refusal	PASS	raw/runtime/dependency-refused-login-safe.json	login remains fail-closed for LE claim
+dependency timeout	PASS	raw/runtime/dependency-timeout-login-safe.json	login remains fail-closed for LE claim
+MFA issuance	PASS	raw/runtime/mfa-safe.json	challenge has no token; verified token carries exact LE claim
+forced-password issuance	PASS	raw/runtime/forced-password-safe.json	pre/post change tokens carry exact LE claim; password flag changes
+tenant/actor boundaries	PASS	raw/runtime/other-actor.*; raw/runtime/other-tenant.*	resolver returns no authoritative LE outside exact tuple
+Platform restart	PASS	raw/runtime/post-platform-restart-login-safe.json	same DB and binary; correct LE claim after restart
+Auth full application suite	NOT ESTABLISHED	raw/auth-regression-attempt.log	attempt produced no TRX/output; not counted as PASS
+Platform aggregate health	PARTIAL	raw/runtime/health.tsv	503 from unrelated disabled business-reference-data provider; successor endpoint and chain succeeded
+Carrier UI E2E	OPEN	INDEPENDENT-VER-HANDOFF.md	successor handoff produced; UI was not modified in this WP
+

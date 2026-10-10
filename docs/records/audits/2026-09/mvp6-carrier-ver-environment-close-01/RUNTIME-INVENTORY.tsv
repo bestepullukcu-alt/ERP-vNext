@@ -1,0 +1,8 @@
+kind	executable_or_path	version_or_hash	disposition
+native-dotnet-host	/Users/natig/.dotnet/dotnet	SHA256 6d06c4a53676021a7572c989528067a3fe1195f569c27fbcac25e5302dc0d72c	USE
+native-sdk	/Users/natig/.dotnet/sdk/8.0.417	8.0.417 arm64	USE
+native-core-runtime	/Users/natig/.dotnet/shared/Microsoft.NETCore.App/8.0.23	8.0.23	USE
+native-aspnet-runtime	/Users/natig/.dotnet/shared/Microsoft.AspNetCore.App/8.0.23	8.0.23	USE
+system-dotnet	/usr/local/share/dotnet/dotnet	SDK 10.0.102; ASP.NET Core 10.0.2	DO NOT LABEL NATIVE NET8
+homebrew-link	/opt/homebrew/bin/dotnet	resolves to system .NET 10 host	DO NOT USE FOR SUCCESSOR
+installation	N/A	native .NET 8 is already present	NO INSTALL REQUIRED

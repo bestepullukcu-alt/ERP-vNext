@@ -1,0 +1,9 @@
+11dc49b68ee92baa5be169497537e602d03c7c6092733172bf01bd42781bbae9  docs/records/audits/2026-09/mvp6-r2-composition-ins-01/README.md
+9e1e03b147d47d5f702e4c8433b8e55efd7a062a483e37c9dd0b474035d85671  docs/records/audits/2026-09/mvp6-r2-composition-ins-01/manifest.sha256
+38815d4ec8f954756320ab20f92bce58f0129e681300ba5a3ccab0860be650f7  docs/records/audits/2026-09/mvp6-consumer-r2-rework-ct-close-01/README.md
+f08083a6caf9886b4f90195e2c00619440c4e0bf9856cd5a9f4786b89a6c6db4  docs/records/audits/2026-09/mvp6-guard-payload-path-disposition-r2/README.md
+0799c84f02e4e72c26da43fa99355d141546c77abb67719ce4c2a923b59b2421  docs/records/audits/2026-09/mvp6-guard-payload-path-disposition-r2/final.patch
+b1dd34f588e360b92041275f12b6f5b1f996b7fb1ef3a207cb3f3c91e30364c1  docs/records/audits/2026-09/mvp6-guard-payload-path-disposition-r2/payload.txt
+cd399b2179aada749738121a1863065830c938cf055e82450cd2d7dec5a309df  docs/records/decisions/2026-09/mvp6-guard-complete-disposition-owner-approval-01.json
+0cf9b2a0a3ade81be71ba0a6bc2e80814862228d58b8e18295019a436607e2b5  docs/records/audits/2026-09/mvp6-guard-approval-validation-01/SOP-22.md
+93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571  docs/analysis/contracts/shipment-bundle.openapi.yaml

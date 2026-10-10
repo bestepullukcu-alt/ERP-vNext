@@ -1,0 +1,19 @@
+{
+  "revisionScope": "only CarrierCreateUnprocessable media examples removed",
+  "removedExamples": [
+    "shipmentTransition",
+    "loadTransition",
+    "returnTransition",
+    "claimTransition",
+    "inventory"
+  ],
+  "oldFindingCount": 4,
+  "newFindingCount": 0,
+  "fixtures": 44,
+  "negativeMutationsRejected": 7,
+  "inlineResponseGroups": "26 PASS, create422 N/A (schema retained; no approved scenario)",
+  "annexAnd44FixturesByteIdentical": true,
+  "decision": "candidate technical correction PASS; owner policy approval pending",
+  "candidateSha256": "05a7ad0c8e26f46983a712e475f39fa5288164f0385f351e3d3a04860d9d8034",
+  "patchSha256": "9f96389b08758ee4fb5d12fe9d6381a7cadaff058deeb8d46b36f89466e4cd88"
+}

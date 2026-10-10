@@ -1,0 +1,126 @@
+
+Golden DataTable Verify Report
+================================
+Passed: 63
+Failed: 27
+
+[PASS] Index.cshtml exists
+[PASS] _Filter.cshtml exists
+[PASS] _DataTable.cshtml exists
+[PASS] _IndexL10n.cshtml exists
+[PASS] index.js exists
+[PASS] index.l10n.js exists
+[PASS] dt-defaults.js exists
+[PASS] backbone-custom.css exists
+[PASS] Slim reference has _CreateEditOffcanvas.cshtml
+[PASS] Index.cshtml includes <partial name="_Filter" />
+[PASS] Index.cshtml uses _LayoutTenantShell
+[PASS] Index.cshtml does NOT use legacy _LayoutBackbone
+[PASS] DataTable markup has #skeleton-loader
+[PASS] Index.cshtml has #offcanvasDetailsPreview
+[PASS] Slim _CreateEditOffcanvas.cshtml has #offcanvasCreateEdit
+[FAIL] Form declares a strongly typed ViewModel
+  - Missing @model declaration in /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_CreateEditOffcanvas.cshtml
+[PASS] Index.cshtml shows @Localizer["PageDescription"]
+[PASS] _Filter.cshtml has #inlineFilterHost
+[PASS] _Filter.cshtml has #inlineFilterCollapse
+[PASS] _Filter.cshtml uses pt-0 pb-3 wrapper
+[PASS] _Filter.cshtml does not use pt-2
+[PASS] index.js does not add mx-* to inlineFilterHost
+[PASS] Inline filter host aligns with px-3
+[PASS] index.js references #btnFilterApply
+[PASS] index.js references #btnFilterReset
+[FAIL] Apply click updates Save View visibility
+  - Expected Apply handler to sync Save View visibility based on applied state (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] Save View payload has non-empty default name
+  - Expected saveDefaultView payload viewName to fall back to 'Default' when no saved/localized name is available (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] personalizationClient sends tenant header only for tenant users
+  - Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/personalization-client.js)
+[PASS] Reset click prevents native form reset
+[FAIL] Reset click recalculates Save View dirty visibility
+  - Expected Reset handler to call setSaveFilterVisible(isDirtyComparedToDefault(api)) after factory reset (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] Reset baseline is factory table state
+  - Expected getResetBaselineState() to return empty filters/search + default colVis + default columnOrder + baseOrder, not saved view state (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] Reset click restores full factory table state
+  - Reset must call applySavedTableState(api, getResetBaselineState()) or equivalent; clearing only filters/search leaves ColVis stale (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[PASS] Filter control change does not toggle Save View
+[PASS] dt-defaults.js topStart rowClass matches golden toolbar contract
+[PASS] dt-defaults.js bottomStart rowClass matches golden toolbar contract
+[PASS] backbone-custom.css has MOD-0022 media query
+[PASS] Responsive toolbar reserves top safe-area (padding-top)
+[PASS] Export button height aligned (dt-export-collection-btn min-block-size)
+[PASS] backbone-custom.css has shared inline filter Select2 styling
+[PASS] Inline filter styling follows form-select-sm standard
+[PASS] Index.cshtml does not embed inline filter CSS in @section Styles
+[PASS] Index.cshtml does not embed toolbar CSS in @section Styles
+[PASS] Index.cshtml includes <partial name="_IndexL10n" />
+[PASS] Index.cshtml includes script: ~/assets/js/SupplyChain/Claims/index.l10n.js
+[PASS] Index.cshtml does not inline-assign window.L10n keys
+[PASS] _IndexL10n.cshtml renders application/json payload
+[PASS] index.l10n.js parses payload JSON
+[PASS] index.l10n.js merges payload into window.L10n
+[FAIL] _IndexL10n.cshtml provides Active
+  - Missing L10n key: Active (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Passive
+  - Missing L10n key: Passive (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Unknown
+  - Missing L10n key: Unknown (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Actions
+  - Missing L10n key: Actions (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Edit
+  - Missing L10n key: Edit (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides ViewDetails
+  - Missing L10n key: ViewDetails (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[PASS] _IndexL10n.cshtml provides QuickView
+[FAIL] _IndexL10n.cshtml provides BulkDelete
+  - Missing L10n key: BulkDelete (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides BulkDeleteConfirm
+  - Missing L10n key: BulkDeleteConfirm (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[PASS] _IndexL10n.cshtml provides AreYouSure
+[PASS] _IndexL10n.cshtml provides Cancel
+[PASS] _IndexL10n.cshtml provides Search
+[FAIL] _IndexL10n.cshtml provides Export
+  - Missing L10n key: Export (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Import
+  - Missing L10n key: Import (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml)
+[PASS] _IndexL10n.cshtml provides Filter
+[PASS] _IndexL10n.cshtml provides Apply
+[PASS] _IndexL10n.cshtml provides Reset
+[PASS] _IndexL10n.cshtml provides ShowAll
+[PASS] _IndexL10n.cshtml provides SaveView
+[PASS] _IndexL10n.cshtml provides ColumnVisibility
+[PASS] _IndexL10n.cshtml provides Status
+[PASS] Index.cshtml has <table id="..." data-dt-standard="v2">
+[PASS] Index.cshtml includes script: ~/assets/js/SupplyChain/Claims/index.js
+[PASS] Index.cshtml has no inline onclick=
+[PASS] Index.cshtml does not define/call populateOffcanvas(...)
+[PASS] index.js uses DataTables v2 constructor (new DataTable(...))
+[PASS] index.js uses window.DtDefaults.create(...)
+[PASS] index.js uses DtDefaults.exportButtons(...)
+[PASS] index.js includes .js-quick-view selector
+[PASS] index.js uses event delegation (closest('.js-quick-view'))
+[FAIL] index.js defines getAuthHeaders()
+  - Missing getAuthHeaders() helper (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] index.js uses getAuthHeaders() in fetch headers
+  - Missing headers: getAuthHeaders() usage (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[PASS] index.js does not read HttpOnly auth cookies or build Bearer tokens
+[FAIL] direct-gateway profile uses window.API service base
+  - Direct Gateway profile requires window.API.{service} as the service base URL (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[PASS] index.js does not use jQuery DataTable plugin (.(DataTable|dataTable)(...))
+[FAIL] _DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)
+  - Missing select-all checkbox header (class containing dt-checkboxes-select-all) (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/Views/SupplyChain/Claims/_DataTable.cshtml)
+[FAIL] index.js declares bulk action config (bulkOptions / bulkBarSelector)
+  - Missing bulk action config (bulkOptions or bulkBarSelector wiring) (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] index.js wires bulk selection (getSelectedIds(...) or onBulkAction)
+  - Missing bulk selection wiring (expected getSelectedIds(...) or bulkOptions.onBulkAction) (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] index.js calls bulk endpoint (.../bulk)
+  - Missing bulk endpoint binding (expected URL ending with /bulk) (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])
+  - Missing bulk delete trigger (#btnBulkDelete, .bulk-delete-btn or [data-bulk-action]) (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)
+  - Missing reload-with-toast lifecycle wiring; tek satır ve bulk delete aynı reloadWithToast üzerinden gitmeli (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+[FAIL] index.js wires clear-selection (clearSelectionSelector or clearSelection())
+  - Missing clear-selection wiring (bulk bar must expose a clear control) (file: /Users/natig/mvp6-env/claims/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js)
+
+Result: FAIL
+exit 1

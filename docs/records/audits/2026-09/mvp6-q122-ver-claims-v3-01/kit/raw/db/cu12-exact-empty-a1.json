@@ -1,0 +1,59 @@
+{
+  "label": "cu12",
+  "claims": {
+    "006d596f-0967-4bd0-bbfb-4bb772188e25": {
+      "found": true,
+      "status": "Investigating",
+      "claimNumber": "CLM-006d596f09674bd0bbfb4bb772188e25",
+      "claimedAmount": "12.00",
+      "approvedAmount": null,
+      "currency": "EUR",
+      "reasonCode": "",
+      "evidenceReferenceIds": [
+        ""
+      ],
+      "carrierId": null,
+      "correlationRoot": "08920312-1334-437b-b443-3a25261b6358",
+      "isDeleted": false,
+      "version": 2,
+      "receipts": [
+        {
+          "statusCode": 201,
+          "resultingStatus": "Open",
+          "correlationRoot": "08920312-1334-437b-b443-3a25261b6358"
+        },
+        {
+          "statusCode": 200,
+          "resultingStatus": "Investigating",
+          "correlationRoot": "08920312-1334-437b-b443-3a25261b6358"
+        }
+      ],
+      "audit": [
+        {
+          "version": 1,
+          "correlationRoot": "08920312-1334-437b-b443-3a25261b6358",
+          "resolutionCode": null,
+          "note": null
+        },
+        {
+          "version": 2,
+          "correlationRoot": "08920312-1334-437b-b443-3a25261b6358",
+          "resolutionCode": "",
+          "note": ""
+        }
+      ],
+      "outbox": [
+        {
+          "status": "Pending",
+          "eventType": "ClaimOpened",
+          "correlationId": "08920312-1334-437b-b443-3a25261b6358"
+        },
+        {
+          "status": "Pending",
+          "eventType": "ClaimInvestigating",
+          "correlationId": "08920312-1334-437b-b443-3a25261b6358"
+        }
+      ]
+    }
+  }
+}

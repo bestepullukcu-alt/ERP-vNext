@@ -1,0 +1,14 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md b/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+@@ -319,7 +319,9 @@ intake and does not authorize a new public Shipment event-ingest endpoint.
+ **Status:** core planning/approval recorded; automatic Warehouse intake NOT READY; runtime acceptance NOT READY.
+ All §16 implementation acceptance boxes remain open. MOD-0184 remains draft and sequence-gated.
+ 
+-## 22. Self-registration (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++## 22. Self-registration
++
++Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff-owner-decision-01.md`
+ 
+ **Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
+ **Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).

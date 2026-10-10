@@ -1,0 +1,5 @@
+path	sha256	role
+docs/analysis/contracts/shipment-bundle.openapi.yaml	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	canonical_baseline
+docs/analysis/contracts/loads-semantics-v2.0.0.md	a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1	canonical_loads_annex_baseline
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-disposition-01/SOP-22.md	74f39739fd2f23d61c6304685f5040188ab97508fd113575b5be6e26e0821e59	controlling_disposition
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-disposition-01/OWNER-DECISION-PACK.md	ce972cb23b67975ee8b0c641c0ba7fc3d1766a161dad278965f298915637a3ae	selected_policy_text

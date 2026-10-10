@@ -1,0 +1,45 @@
+{
+  "python": "3.9.6 (default, Dec  2 2025, 07:27:58) \n[Clang 17.0.0 (clang-1700.6.3.2)]",
+  "tooldeps": "/private/tmp/mvp6-combined-final-release-q16pebui/tooldeps",
+  "validator": {
+    "name": "openapi-spec-validator",
+    "version": "0.7.2"
+  },
+  "yaml": "6.0.3",
+  "jsonschema": "4.25.1",
+  "schema": {
+    "path": "/private/tmp/mvp6-combined-final-release-q16pebui/tooldeps/openapi_spec_validator/resources/schemas/v3.1/schema.json",
+    "sha256": "e7cb616a2a10849a166c4e4a93c62c56cfea02cc00eadf287e2fb875e7124098",
+    "source": "offline packaged OpenAPI 3.1 schema"
+  },
+  "inputs": {
+    "amendment-01": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-01/sandop-capacity.openapi.candidate.yaml",
+      "sha256": "88070dc3fa27aff9ba0d4b40ba1a43641906f77d369e4ce1a84be75ae267816d",
+      "openapi": "3.1.0",
+      "metaSchemaErrors": [],
+      "fullDocumentErrors": [],
+      "negativeControls": {
+        "badOpenapiVersionMetaErrors": 1,
+        "badOpenapiVersionFullErrors": 1,
+        "missingTitleMetaErrors": 1,
+        "missingTitleFullErrors": 1
+      },
+      "verdict": "PASS"
+    },
+    "amendment-candidate-01": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-candidate-01/sandop-capacity.openapi.yaml",
+      "sha256": "aa6a1e1e238ad347e03dc793dfef8f6f7dad786ec0bb9d7871603f63f4d8a658",
+      "openapi": "3.1.0",
+      "metaSchemaErrors": [],
+      "fullDocumentErrors": [],
+      "negativeControls": {
+        "badOpenapiVersionMetaErrors": 1,
+        "badOpenapiVersionFullErrors": 1,
+        "missingTitleMetaErrors": 1,
+        "missingTitleFullErrors": 1
+      },
+      "verdict": "PASS"
+    }
+  }
+}

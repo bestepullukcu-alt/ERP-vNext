@@ -1,0 +1,7 @@
+#!/bin/bash
+# usage: mongo.sh <W> start|stop <a|b>
+W=$1; A=$2; N=$3; P=$([ $N = a ] && echo 57420 || echo 57421)
+if [ $A = start ]; then mkdir -p $W/db-$N; mongod --port $P --bind_ip 127.0.0.1 --replSet rsq420$N --dbpath $W/db-$N --logpath $W/evidence/mongod-$N.log --fork --pidfilepath $W/mongod-$N.pid | tail -1
+  mongosh --quiet --port $P --eval "try{rs.status().ok}catch(e){rs.initiate({_id:'rsq420$N',members:[{_id:0,host:'127.0.0.1:$P'}]}).ok}"
+  for i in $(seq 1 40); do mongosh --quiet --port $P --eval 'db.hello().isWritablePrimary' 2>/dev/null | grep -q true && break; sleep 0.5; done; echo "mongod $N primary on $P"
+else mongosh --quiet --port $P --eval 'db.getSiblingDB("admin").shutdownServer()' >/dev/null 2>&1; for i in $(seq 1 20); do nc -z 127.0.0.1 $P 2>/dev/null || break; sleep 0.5; done; nc -z 127.0.0.1 $P && echo "mongod $N STILL UP" || echo "mongod $N stopped"; fi

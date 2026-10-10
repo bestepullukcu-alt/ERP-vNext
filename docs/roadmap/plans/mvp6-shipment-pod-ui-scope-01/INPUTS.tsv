@@ -1,0 +1,18 @@
+kind	path_or_identity	sha256_or_value	use_or_boundary
+repository_head	feature/mvp6-logistics	4a8d4d4b339528a88e6220fb8402e5a2c771136c	inspection baseline; dirty working tree
+dirty_inventory	git status --porcelain=v1 -uall	f38b029fa2ed8f58ce00452994f2272e257d3ca75e2f594fb223581c17f89225	2542 entries at preflight; pre-existing user/lane state
+module_pack	execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md	32381634163a2acff440475f4582c05defc8261957386dfa43d5c8fc7eaf962e	current backend-scoped ready-for-dev pack
+canonical_contract	docs/analysis/contracts/shipment-bundle.openapi.yaml	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	SHIPMENT-BUNDLE info.version 3.0.0 / wire v1
+root_annex	docs/analysis/contracts/shipment-root-semantics-v3.0.0.md	7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af	detail lifecycleCorrelationId semantics only
+backend_ct	docs/records/audits/2026-09/mvp6-mod0183-ct-review-01-2026-09-16.md	3f345b04c4017f87e967c158ce7f186f9f1384410483cd3a47c5c429cbaee92b	bounded backend E4 accepted; UI/integration excluded
+root_ct	docs/records/audits/2026-09/mvp6-root-r2-producer-ct-accept-01/README.md	4cca61682757ae1a3f615cfa40027fd8a4dc39fe38f6a2421a64c092b80c4102	bounded detail root uptake accepted
+root_ver	docs/records/audits/2026-09/mvp6-root-r2-producer-ver-02/SOP-22-VER-REPORT.md	a593ab2e32a45dc91adce6b0621d9af920617146a1dfaba62c0ede52b977a0c8	independent root runtime evidence
+integration_record	docs/records/audits/2026-09/mvp6-three-scope-application-01/SOP-22.md	fd277c1ec18ece035b952ea9853dafc6e7f4f05069ea6153c8b2e3c191a84b28	selected 422-source target PASS; not common-checkout/full-module acceptance
+initial_source_manifest	docs/records/audits/2026-09/mod-0183-r1-evidence/changed-files.json	455100e92090aa8b92a3bd8f5e29264a44e2971b674ecd213d9dd1cd9ceb84cd	historical MOD-0183 R1 source evidence
+root_source_manifest	docs/records/audits/2026-09/mvp6-root-r2-producer-dev-01/changed-files.json	e842442cd6052ba2f18046860b94695f978103f6da853844da7c3a58271354f2	root uptake source delta
+selected_controller	/private/tmp/mvp6-integration-baseline-422-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/ShipmentsController.cs	149150b2f2e76eb7443415b0600e728600c8c9d89fcaba0bdafc461beb9e5793	five operation runtime surface
+selected_models	/private/tmp/mvp6-integration-baseline-422-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentModels.cs	21b358b5f0b4af2f54e36a8cb2c219c68a433ea2faed9451ccc03a921a23a6c4	create/transition/POD fields
+selected_permissions	/private/tmp/mvp6-integration-baseline-422-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Authorization/ShipmentPermissions.cs	46f9cebff09e584ab29d7d351c2d816d6ebff616287a569fbe9109d887e05525	exact permission literals
+gateway_baseline	gateway/Diten.ApiGateway/ocelot.json	b0121d2f5b7f809dc3dfd9a406b411bfd1ebb0b5b57faaf42b9ca69fabc1229f	no /api/shipment-bundle route observed; shared writer required
+proposed_pack_patch	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/PROPOSED-PACK.patch	20eacc55cb5bd7e76fc4db61e26d73b0d8c5f8c9849e2a4f5c3f93f8844f630c	unapplied; git apply --check and disposable apply PASS
+proposed_pack_target	disposable MOD-0183 pack target	464d10b47642df62b615548fa00696fbe712bbe311f2c2c10458d20f80b5e29a	not repository state; owner approval required

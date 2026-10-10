@@ -1,0 +1,25 @@
+// CANDIDATE — NOT APPROVED. Step 8: DB snapshot for one mutation or negative case.
+// Generalises docs/records/audits/2026-09/mvp6-shipment-remaining-acceptance-disposition-01/evidence/a08-a09-a12-01/scripts/db-snapshot.js
+// (hard-coded DB and Shipment collections) into a spec-driven snapshot with a content digest and an oplog marker.
+// Run:  mongosh --quiet --host 127.0.0.1 --port $MONGO_PORT --file 08-db-snapshot.js   with env:
+//   KIT_DB=DitenSupplyChain_<Camel>  KIT_SPEC='[{"c":"sce_shipments","f":{"_id":"<id>"}},{"c":"sce_shipment_audit","f":{"ShipmentId":"<id>"}}]'
+//   KIT_STATE_FIELDS='Status,Version,IsDeleted,LegalEntityId,Pod'  KIT_LABEL='a08-before'
+// Never builds a URI with the DB appended after query parameters (bc-successor-independent-ver-01 selected `test`).
+const dbName = process.env.KIT_DB, spec = JSON.parse(process.env.KIT_SPEC), label = process.env.KIT_LABEL;
+const fields = (process.env.KIT_STATE_FIELDS || '').split(',').filter(Boolean);
+if (!dbName || !/_[A-Za-z0-9]+$/.test(dbName)) throw new Error('KIT_DB missing or not DB-010 fixed-suffix');
+const crypto = require('crypto');
+if (db.adminCommand({ getCmdLineOpts: 1 }).parsed.net.port === 27017) throw new Error('operational 27017 refused');
+const d = db.getSiblingDB(dbName);
+const REDACT = /(password|secret|token|hash|apikey)/i;
+const clean = (o) => JSON.parse(JSON.stringify(o, (k, v) => REDACT.test(k) ? '[REDACTED]' : v));
+const out = { label, capturedAt: new Date().toISOString(), db: dbName, collections: {},
+  // oplog marker: lets the diff step list EVERY write between two snapshots, not only the counted collections
+  oplogTs: db.getSiblingDB('local').oplog.rs.find().sort({ $natural: -1 }).limit(1).next().ts };
+for (const s of spec) {
+  const docs = d.getCollection(s.c).find(s.f).sort({ _id: 1 }).toArray().map(clean);
+  const digest = crypto.createHash('sha256').update(EJSON.stringify(docs, { relaxed: false })).digest('hex');
+  out.collections[s.c] = { filter: s.f, count: docs.length, sha256: digest,
+    state: docs.slice(0, 5).map(x => Object.fromEntries(fields.filter(f => f in x).map(f => [f, x[f]]))) };
+}
+print(EJSON.stringify(out, { relaxed: true }));

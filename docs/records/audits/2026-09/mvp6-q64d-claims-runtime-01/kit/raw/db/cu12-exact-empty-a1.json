@@ -1,0 +1,44 @@
+{
+ "claimId": "97f2d311-d4e1-43ff-aa69-025c50aaa942",
+ "claimFieldNames": [
+  "_id",
+  "TenantId",
+  "IsDeleted",
+  "DeletedAt",
+  "CreatedAt",
+  "UpdatedAt",
+  "Version",
+  "LegalEntityId",
+  "CreatedBy",
+  "UpdatedBy",
+  "ClaimNumber",
+  "ShipmentId",
+  "CarrierId",
+  "ReasonCode",
+  "ClaimedAmount",
+  "Currency",
+  "ApprovedAmount",
+  "EvidenceReferenceIds",
+  "Status",
+  "CorrelationRoot",
+  "LastEventId",
+  "ReferenceSnapshot"
+ ],
+ "claim": {
+  "ReasonCode": "",
+  "EvidenceReferenceIds": [
+   ""
+  ],
+  "Status": "Investigating"
+ },
+ "audit": [
+  {
+   "ResolutionCode": null,
+   "Note": null
+  },
+  {
+   "ResolutionCode": "",
+   "Note": ""
+  }
+ ]
+}

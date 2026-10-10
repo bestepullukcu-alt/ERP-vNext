@@ -1,0 +1,235 @@
+{
+  "phase": "happy",
+  "locale": "ar",
+  "startedAt": "2026-09-30T20:38:43.475Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "MOD0186-happy-list-create": {
+      "result": "PASS",
+      "returnId": "d4bacf4b-ed51-4809-84e4-f46d6af36aa6",
+      "rmaNumber": "RMA-D4BACF4BED51480984E4F46D6AF36AA6",
+      "createStatus": 201,
+      "responseStatus": "Requested",
+      "createBodyKeys": [
+        "shipmentId",
+        "reasonCode",
+        "lines"
+      ],
+      "resolve": {
+        "resolveStatus": 200,
+        "shipmentStatus": "تم التسليم",
+        "lines": 1,
+        "saveEnabled": true
+      },
+      "listStatus": 200,
+      "before": {
+        "rows": 1,
+        "add": 1,
+        "title": "المرتجعات"
+      },
+      "afterCreate": {
+        "rowPresent": true,
+        "rowText": "RMA-D4BACF4BED51480984E4F46D6AF36AA6 dbe16ee1-1d7d-44c1-bd57-2456ef22f738 مطلوب "
+      },
+      "evidence": [
+        "png/happy-01-list-ar.png",
+        "png/happy-02-create-resolved-ar.png",
+        "png/happy-03-list-after-create-ar.png"
+      ]
+    },
+    "MOD0186-happy-details": {
+      "result": "PASS",
+      "qv": {
+        "rma": "RMA-D4BACF4BED51480984E4F46D6AF36AA6",
+        "status": "مطلوب",
+        "returnIdShown": "d4bacf4b-ed51-4809-84e4-f46d6af36aa6"
+      },
+      "byIdRequests": 0,
+      "evidence": [
+        "png/happy-04-quickview-ar.png"
+      ]
+    },
+    "MOD0186-happy-authorize": {
+      "result": "PASS",
+      "transitionStatus": 200,
+      "responseStatus": "Authorized",
+      "panel": {
+        "target": "Authorized",
+        "occurredAtSet": true
+      },
+      "quickViewStatusBefore": "مطلوب",
+      "quickViewStatusAfter": "مُعتمد",
+      "afterReload": {
+        "rowPresent": true,
+        "rowText": "RMA-D4BACF4BED51480984E4F46D6AF36AA6 dbe16ee1-1d7d-44c1-bd57-2456ef22f738 مُعتمد "
+      },
+      "evidence": [
+        "png/happy-05-transition-panel-ar.png",
+        "png/happy-06-transition-confirm-ar.png",
+        "png/happy-07-after-authorize-reload-ar.png"
+      ]
+    },
+    "UI-PM-01": {
+      "result": "PASS",
+      "listShell": {
+        "layoutWrappers": 1,
+        "layoutMenus": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "htmlDir": "rtl",
+        "htmlLang": "ar"
+      },
+      "note": "list page with every partial (filter, table, QuickView, create, transition surface, L10n)",
+      "evidence": [
+        "png/happy-01-list-ar.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "happy-01-list-ar.png",
+      "sha256": "3d68fc43ed2f93e9933c0453adca26572addf05a36d7b6d4e290340a74d733eb",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:46.421Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-02-create-resolved-ar.png",
+      "sha256": "c6827845aaf5863d007ecc6b5d01a40b1a45ec667e09f54bbac6b4ba0d6eaba8",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:47.157Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-03-list-after-create-ar.png",
+      "sha256": "20e56c2563ced9754880fad2ed05ea8b8267ce27cc08bce26376b006eab65d2f",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:49.066Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-04-quickview-ar.png",
+      "sha256": "c744170eb896019bdd8d5910c1a2c2cfac27af05d0b8f7407f270b06b66a5c78",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:49.435Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-05-transition-panel-ar.png",
+      "sha256": "e2fc6f400fff92a8c052503ac775ba57f99fb53b852f881081b15a29abf16a0b",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:50.220Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-06-transition-confirm-ar.png",
+      "sha256": "86ea3e5dfb3c2d7457b22685ef9bb740bb0c8765a4cda6681c303e56f688bd67",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:50.563Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-07-after-authorize-reload-ar.png",
+      "sha256": "304bf217965293c1f15abe66a02bdf71a8b3cc23c718512611f4af51376dea8f",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:54.518Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "happy-ar",
+      "text": "تم إنشاء المرتجع.",
+      "type": "success",
+      "at": "2026-09-30T20:38:47.229Z"
+    },
+    {
+      "tag": "happy-ar",
+      "text": "تم تحديث حالة المرتجع.",
+      "type": "success",
+      "at": "2026-09-30T20:38:50.985Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "happy-ar",
+      "at": "2026-09-30T20:38:45.183Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-09-30T20:38:47.051Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api/shipments/dbe16ee1-1d7d-44c1-bd57-2456ef22f738",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-09-30T20:38:47.230Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api",
+      "status": 201,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-09-30T20:38:47.263Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-09-30T20:38:50.985Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api/d4bacf4b-ed51-4809-84e4-f46d6af36aa6/transition",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-09-30T20:38:51.011Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-09-30T20:38:52.992Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 4,
+  "info": {
+    "UI-PM-07 (row-menu transition panel focus, informational)": {
+      "id": "transitionTarget",
+      "tag": "SELECT",
+      "inCreate": false,
+      "inTransition": true,
+      "classes": "form-select",
+      "text": "مُعتمد\nمرفوض"
+    }
+  },
+  "endedAt": "2026-09-30T20:38:54.547Z"
+}

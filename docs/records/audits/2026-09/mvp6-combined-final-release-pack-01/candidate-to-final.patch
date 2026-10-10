@@ -1,0 +1,111 @@
+--- candidate/shipment-bundle-combined-candidate.yaml
++++ final/shipment-bundle.openapi.yaml
+@@ -10,9 +10,9 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 2.0.0
+-  x-status: CANDIDATE
+-  x-candidate-revision: R2
++  version: 3.0.0
++  x-status: FROZEN
++  x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+   x-consumes:
+     - INVENTORY
+@@ -1547,7 +1547,7 @@
+                     contractVersion: v1
+       description: '
+ 
+-        Unpublished Returns R2 candidate. Normative semantics-candidate.md governs module-specific validation, numeric/instant
++        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
+         replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
+         publisher.'
+     post:
+@@ -1920,7 +1920,7 @@
+                     contractVersion: v1
+       description: '
+ 
+-        Unpublished Returns R2 candidate. Normative semantics-candidate.md governs module-specific validation, numeric/instant
++        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
+         replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
+         publisher.'
+   /returns/{returnId}/transition:
+@@ -1934,7 +1934,7 @@
+         posting bu API''nin disindadir ve frozen INVENTORY contract''ina korele referansla yapilir.
+ 
+ 
+-        Unpublished Returns R2 candidate. Normative semantics-candidate.md governs module-specific validation, numeric/instant
++        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
+         replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
+         publisher.'
+       parameters:
+@@ -2355,7 +2355,7 @@
+                 type: string
+                 format: uuid
+               example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-      description: 'Claims R2 normative candidate. See claims-semantics-r2.md and R01–R30. No runtime or publication
++      description: 'Claims normative semantics for SHIPMENT-BUNDLE 3.0.0. See claims-semantics-v3.0.0.md and R01–R30. No runtime or publication
+         acceptance. Executable policy profile:
+ 
+         {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
+@@ -2656,7 +2656,7 @@
+                 type: string
+                 format: uuid
+               example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-      description: 'Claims R2 normative candidate. See claims-semantics-r2.md and R01–R30. No runtime or publication
++      description: 'Claims normative semantics for SHIPMENT-BUNDLE 3.0.0. See claims-semantics-v3.0.0.md and R01–R30. No runtime or publication
+         acceptance. Executable policy profile:
+ 
+         {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
+@@ -2680,7 +2680,7 @@
+       - Claims
+       operationId: transitionClaim
+       summary: Claim lifecycle durumunu ilerlet
+-      description: 'Claims R2 normative candidate. See claims-semantics-r2.md and R01–R30. No runtime or publication
++      description: 'Claims normative semantics for SHIPMENT-BUNDLE 3.0.0. See claims-semantics-v3.0.0.md and R01–R30. No runtime or publication
+         acceptance. Executable policy profile:
+ 
+         {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
+--- candidate/shipment-root-semantics-candidate.md
++++ final/shipment-root-semantics-v3.0.0.md
+@@ -1,8 +1,8 @@
+-# Shipment root candidate R2 semantics
++# Shipment root semantics — SHIPMENT-BUNDLE 3.0.0 / wire v1
+ 
+ - ShipmentDetail.lifecycleCorrelationId is optional, nullable UUID.
+ - Upgraded Shipment producer explicitly emits the field on persisted ShipmentDetail reads.
+ - The value is authoritative persisted root only; consumers do not derive or backfill it.
+ - Tenant/LE scope, read permissions, wire contractVersion v1, lifecycle and non-root operations remain unchanged.
+-- Candidate metadata is R2 only; contract version remains 2.0.0 and status is CANDIDATE.
++- Publication metadata proposal is SHIPMENT-BUNDLE 3.0.0 / wire v1. Prepared bytes have FROZEN metadata; actual publication requires the separate owner release decision.
+ - Prior 91d505 artifact was not reconstructed or claimed.
+--- candidate/returns-semantics-candidate.md
++++ final/returns-semantics-v3.0.0.md
+@@ -1,4 +1,4 @@
+-# Returns R2 — NEW UNPUBLISHED CANDIDATE
++# Returns semantics — SHIPMENT-BUNDLE 3.0.0 / wire v1
+ ## Authority and activation
+ The user's latest approval authorizes separate D186/D187 consumer amendment candidates only.
+ No canonical publication, consumer release consent, guard activation, runtime/Program.cs, Phase1.5,
+@@ -6,7 +6,7 @@
+ Shipment root design is already approved. Consume authoritative persisted lifecycleCorrelationId via
+ published getShipment; preserve root, never derive from IDs, read trace or shared database.
+ Real successful fresh create requires published AND implemented AND verified producer seam.
+-Root R2 schema/semantics dependency is pinned separately in root-binding.md. No root candidate is merged here. Missing/null503; malformed502; mismatch409.
++Root schema is composed in this bundle; shipment-root-semantics-v3.0.0.md is its normative annex. Publication does not establish producer runtime uptake. Missing/null503; malformed502; mismatch409.
+ No new root candidate, worker, publisher or source writes. Pending local outbox only.
+ 
+ ## Common validation boundaries (module-specific differences follow)
+--- candidate/claims-semantics-r2.md
++++ final/claims-semantics-v3.0.0.md
+@@ -1,6 +1,6 @@
+-# Claims R2 normative candidate — D187 approved design, not release authority
+-
+-This is a NEW reconstructed candidate; historical hashes/PASS do not apply. Scope: Claims operations only. Baseline metadata 2.0.0 is retained solely for composition; no final release version chosen. wire v1 unchanged.
++# Claims semantics — SHIPMENT-BUNDLE 3.0.0 / wire v1
++
++Publication proposal: SHIPMENT-BUNDLE 3.0.0 / wire v1. Scope: Claims operations only. The approved reconstructed design is unchanged; candidate-to-final metadata and path deltas are bound separately. Actual publication requires the separate owner release decision.
+ 
+ ## Controlling reconciled rules
+ Withdrawn requires investigate, Closed requires decide. Open target has create permission check then invalid lifecycle. No creator-only exception or mandatory actor separation. Lifecycle 422 INVALID_CLAIM_TRANSITION; payload 409 IDEMPOTENCY_KEY_REUSED; root 409 CLAIM_CORRELATION_MISMATCH. No worker, publisher, transport or finance posting; outbox remains Pending.

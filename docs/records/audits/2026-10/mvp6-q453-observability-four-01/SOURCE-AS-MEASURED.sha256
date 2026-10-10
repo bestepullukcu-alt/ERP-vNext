@@ -1,0 +1,6 @@
+# verify from: repository root
+# NOT FOR VERIFICATION (docs-organization K6): the 4 repository paths Q453 changed, hashed at measurement time (equal to the scratch copy that was built, run and suited).
+68084c01e5ade0c1469063cdd600ceb409ef1b411bccf9afa72f493a39ee104c  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarriersController.cs
+d0289d3fe4ae522e9434a6f83778d82e950cd0bd4e62c58ab6760e5367125870  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadsController.cs
+6e0dd85e7a41d4206d34100bc185f15e6592944ce2d0f97cb86d972cef0aeaf3  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnsController.cs
+916f9c5c96d42b45a2dd26df584800e1401bda646f1cebcf78d32f7778065849  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimsController.cs

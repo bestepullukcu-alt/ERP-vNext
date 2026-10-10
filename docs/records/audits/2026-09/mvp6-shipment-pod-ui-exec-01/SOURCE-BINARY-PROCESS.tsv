@@ -1,0 +1,7 @@
+component	source_evidence	binary_sha256	process_evidence	result
+Shipment UI	UI-SOURCE-MANIFEST.tsv (28/28)	2909efd3bf3225b8f15d12a39a361d12fb20e05722877f43128a8ac918f42708 (Diten.Web.dll)	NOT STARTED	SOURCE→BINARY PASS; process gated by B-01/B-02
+Gateway	CRM 35/35 + Shipment 12/12 target hashes	c2efbb3aec7e213c82010958ffb90fc82cacd890fc73be31790165eaa2b31ac3 (Diten.ApiGateway.dll)	NOT STARTED	BINARY PASS; Carrier topology FAIL
+CRM	CRM 35/35 target hashes	4f66d70717f57121fc2709ea9547f6b73d4e628599f701fbe6ef0365b3588ae5 (Diten.CrmService.Api.dll)	NOT STARTED	SOURCE→BINARY PASS
+SupplyChain	40/40 backend + 18/18 predecessor + Shipment 12/12 target hashes	UNAVAILABLE	NOT STARTED	SOURCE→BINARY FAIL: 23 CS0234 errors
+Mongo	N/A	N/A	NOT STARTED	No database created; effective settings/runtime check correctly not attempted after compile/topology gate failed
+Browser	28 UI sources	N/A	NOT STARTED	No browser evidence or acceptance claim

@@ -1,0 +1,174 @@
+# Q91 STATIC-CHECKS — MOD-0186 Returns tenant UI draft overlay
+# Run at 2026-09-26 20:09:45 +03:00 (Istanbul) in the chat-lane Linux VM workspace, scratch /tmp/q91; node v22.23.2, xmllint 20913, python 3.10, tree-sitter-c-sharp 0.23.5 (pip, VM /tmp)
+# STATIC checks only. No dotnet build/test, no analyzers, no Razor compile, no browser run (see NOT-VERIFIED.md).
+# Totals: 168 PASS / 0 FAIL. The SHA256SUMS verification of this folder is run after this file is written; its result is in README.md (hand-off line).
+
+status	check	detail
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js	
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.l10n.js	
+PASS	node --check runtime-scenarios/returns-ui.spec.mjs	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.ar.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.en.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.es.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.fr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.ru.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.tr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.zh.resx	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ar.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.en.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.es.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.fr.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ru.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.tr.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.zh.resx.fragment.xml	
+PASS	json.load gateway-returns-routes.ocelot-fragment.json	
+PASS	resx key parity ReturnsIndex.{7 langs}	en=105, tr=105, fr=105, es=105, zh=105, ar=105, ru=105
+PASS	resx no empty value / no key echo	[]
+PASS	resx no placeholder text	[]
+PASS	resx non-en values identical to en — only the allow-listed fr:ActionsHeader ("Actions")	[('fr', 'ActionsHeader')]
+PASS	resx zh/ar/ru contain no English words (≥4 Latin letters; uppercase codes excluded)	[]
+PASS	resx ar: every value contains Arabic script (real script, ar = RTL)	[]
+PASS	resx zh: every value contains CJK script (real script, ar = RTL)	[]
+PASS	resx ru: every value contains Cyrillic script (real script, ar = RTL)	[]
+PASS	resx: exactly 21 Err* keys (one per published Returns code)	21
+PASS	resx: one identical safe-not-found text for Return and Shipment 404 (pack §32.8), 7 languages	
+PASS	contract: the three bound Returns operations publish 21 error codes	['CORRELATION_ROOT_MISMATCH', 'DEPENDENCY_RESPONSE_INVALID', 'DEPENDENCY_UNAVAILABLE', 'DISPOSITION_REQUIRED', 'DUPLICATE_RETURN_LINE', 'IDEMPOTENCY_KEY_REUSED', 'INTERNAL_ERROR', 'INVALID_REQUEST', 'INVALID_RETURN_QUANTITY', 'INVALID_RETURN_TRANSITION', 'PERSISTENCE_UNAVAILABLE', 'REFERENCE_STATE_UNAVAILABLE', 'RETURN_NOT_FOUND', 'RETURN_QUANTITY_EXCEEDED', 'RETURN_SHIPMENT_ROOT_INVALID', 'RETURN_SHIPMENT_ROOT_UNAVAILABLE', 'RETURN_SOURCE_CHANGED', 'RETURN_UOM_MISMATCH', 'SHIPMENT_LINE_NOT_FOUND', 'SHIPMENT_NOT_FOUND', 'SHIPMENT_NOT_RETURNABLE']
+PASS	controller PublishedCodes == contract codes	[]
+PASS	controller originates only published codes (every code literal outside PublishedCodes; SHIPMENT_ROOT_INVALID is only read from the Shipment)	[]
+PASS	index.js ERROR_KEY maps all 21 published codes	[]
+PASS	resx Err* keys == Err + PascalCase(contract codes)	[]
+PASS	index.js code → key naming matches the resx keys	[]
+PASS	backend Features/Returns wire codes == contract codes (SHIPMENT_ROOT_INVALID is the inbound Shipment code, ReturnReferenceReader.cs:42)	['SHIPMENT_ROOT_INVALID']
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/Controllers/SupplyChainReturnsControllerTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/Forms/ReturnFormContractTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/JavaScript/ReturnIndexBehaviorTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Controllers/SupplyChainReturnsController.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Models/SupplyChain/Returns/ReturnViewModels.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Views/SupplyChain/Returns/ReturnsIndex.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ReverseLogisticsManifestProvider.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ReverseLogisticsManifestProviderTests.cs	[]
+PASS	cshtml: no hard-coded UI text (text nodes / aria-label / title / placeholder)	[]
+PASS	js: no hard-coded English phrases in string literals (console lines excluded)	[]
+PASS	no native dialogs (alert/confirm/prompt) and no direct Swal.fire	[]
+PASS	no inline event handlers / javascript: URLs in views or JS-built markup	[]
+PASS	no browser storage in module JS	[]
+PASS	no timers, polling or push channels in module JS	[]
+PASS	no "Permission denied"/"Forbidden" UI text in views, JS or resx (pack §32.12 grep)	[]
+PASS	permission keys in the overlay == backend ReturnPermissions (3 constants + 6 ForTarget values) + the approved G-SHIPREAD prerequisite supplychain.shipments.read; nothing invented	used=['supplychain.returns.authorize', 'supplychain.returns.cancel', 'supplychain.returns.close', 'supplychain.returns.create', 'supplychain.returns.disposition', 'supplychain.returns.read', 'supplychain.returns.receive', 'supplychain.returns.transit', 'supplychain.returns.transition', 'supplychain.shipments.read'] diff=[]
+PASS	ReturnUiPermissions.ForTarget mirrors ReturnPermissions.ForTarget exactly (7 targets → 6 keys)	{'Authorized': 'supplychain.returns.authorize', 'Rejected': 'supplychain.returns.authorize', 'InTransit': 'supplychain.returns.transit', 'Cancelled': 'supplychain.returns.cancel', 'Received': 'supplychain.returns.receive', 'Dispositioned': 'supplychain.returns.disposition', 'Closed': 'supplychain.returns.close'} vs {'Authorized': 'supplychain.returns.authorize', 'Rejected': 'supplychain.returns.authorize', 'InTransit': 'supplychain.returns.transit', 'Cancelled': 'supplychain.returns.cancel', 'Received': 'supplychain.returns.receive', 'Dispositioned': 'supplychain.returns.disposition', 'Closed': 'supplychain.returns.close'}
+PASS	controller routes == pack §32.4 (1 page + 4 adapters), nothing else	[]
+PASS	js URL literals only the §32.4 same-origin adapter base	['/SupplyChain/Returns/api']
+PASS	controller downstream bases = published /api/shipment-bundle/returns and /shipments	{'/api/shipment-bundle/returns', '/api/shipment-bundle/shipments'}
+PASS	scope: X-Tenant-Id/X-Legal-Entity-Id filled only from the caller's signed claims, never read from the browser (ReturnContextMiddleware.cs:64-68, 76)	
+PASS	scope headers sent on list, shipment lookup and both mutations (one helper, 3 call sites)	
+PASS	controller: 4 JSON adapters, antiforgery on the 2 POSTs	
+PASS	root never reaches the browser: response header and error correlationId are the browser trace (F8)	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: const endpoint = '/SupplyChain/Returns/api';	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: new DataTable(tableEl, window.DtDefaults.create({	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: serverSide: false	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: stateSave: false	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: personalizationClient	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: dt-export-collection-btn	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: createIntent.bodyText !== bodyText	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: transitionIntent.bodyText !== bodyText	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: 'Idempotency-Key': key	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: failure.code === 'IDEMPOTENCY_KEY_REUSED' || failure.code === 'CORRELA	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: intent.blocked = true;	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: if (createPending)	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: if (transitionPending)	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: result?.idempotentReplay === true	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: const INVENTORY_REFERENCE_TARGETS = new Set(['Received', 'Dispositione	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: const DANGEROUS_TARGETS = new Set(['Rejected', 'Cancelled']);	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: window.showConfirm?.(	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: shipmentId=${encodeURIComponent(context.shipmentId)}	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: InTransit: ['Received'],	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: Authorized: ['InTransit', 'Cancelled'],	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: const ELIGIBLE_SHIPMENT_STATUSES = new Set(['Delivered', 'Closed']);	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: nowWithOffset	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _script: const INVALID_REQUEST_NOTICE = Object.freeze({ 401: 'NoticeSessionEnde	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _l10n: const requiredKeys	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _l10n: 'ErrPersistenceUnavailable'	
+PASS	dry-run ReturnIndexBehaviorTests Contains in _l10n: document.getElementById('returns-l10n')	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: :5000	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: :5061	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: /api/shipment-bundle	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: Authorization	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: X-Tenant-Id	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: X-Legal-Entity-Id	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: tenantId	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: legalEntityId	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: lifecycleCorrelationId	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: localStorage	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: sessionStorage	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: indexedDB	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: document.cookie	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: setTimeout	
+PASS	dry-run ReturnIndexBehaviorTests forbidden token absent: setInterval	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: method: 'DELETE'	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: method: 'PUT'	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: method: 'PATCH'	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: /bulk	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: /upload	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: /import	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: /Details/	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: js-edit-item	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: delete-record	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: /inventory	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: /warehouse	
+PASS	dry-run ReturnIndexBehaviorTests unsupported token absent: remaining	
+PASS	dry-run: create body/lines built from typed text (no trim/convert/replace)	
+PASS	dry-run: create body in contract order shipmentId, reasonCode, lines, evidenceReferenceIds	
+PASS	dry-run: resolve stale-response guard (≥3 isCurrent checks)	
+PASS	dry-run: line rows written with textContent only	
+PASS	dry-run: QuickView reads the loaded row, no request	
+PASS	dry-run: transition body without trim	
+PASS	dry-run: list query limited to shipmentId + single status	
+PASS	dry-run: no hard-coded user text (showToast\?\.\('[A-Za-z])	
+PASS	dry-run: no hard-coded user text (showConfirm\?\.\('[A-Za-z])	
+PASS	dry-run: no hard-coded user text (textContent = '[A-Za-z])	
+PASS	dry-run: no native dialog in index.js	
+PASS	dry-run form: the contract field hosts exist once	
+PASS	dry-run form: line-row template carries lineNumber, shipped quantity, UoM, return quantity once each	
+PASS	dry-run form: no scope, root, key or "remaining" field	
+PASS	dry-run form: no client tightening; decimal text input	
+PASS	dry-run: transition surface has the published inputs only	
+PASS	dry-run: all 6 .cshtml state Layout = "_LayoutTenantShell"	
+PASS	dry-run: UAS-001 gate precedes every protected surface	
+PASS	dry-run: no bulk, no checkbox, no Details page, no QuickView Edit; one v2 table; no "Loading"	
+PASS	dry-run: _IndexL10n bridges every resx key once	105
+PASS	dry-run: Received wording is a manual assertion; shipped ≠ remaining	
+PASS	manifest provider (§33): ModuleCode: "reverse-logistics"	
+PASS	manifest provider (§33): ModuleName: "ReverseLogistics"	
+PASS	manifest provider (§33): DisplayName: "Reverse Logistics"	
+PASS	manifest provider (§33): Domain: "SupplyChainExecution"	
+PASS	manifest provider (§33): Service: "DitenSupplyChainService"	
+PASS	manifest provider (§33): ModuleVersion: "1.0.0"	
+PASS	manifest provider (§33): IsTenantAssignable: true	
+PASS	manifest provider (§33): SortOrder: 420	
+PASS	manifest provider (§33): Icon: "bx-undo"	
+PASS	manifest provider (§33): IsBaseline: false	
+PASS	manifest provider (§33): PageCode: "RETURNS"	
+PASS	manifest provider (§33): RoutePath: "/SupplyChain/Returns"	
+PASS	manifest provider (§33): RequiredPermission: ReturnPermissions.Read	
+PASS	manifest provider (§33): IsNavigationVisible: true	
+PASS	manifest provider (§33): PageType: "List"	
+PASS	manifest provider (§33): "CREATE", "Create Return", ReturnPermissions.Create, "Toolbar"	
+PASS	manifest provider (§33): "AUTHORIZE", "Authorize", ReturnPermissions.ForTarget("Authorized")!	
+PASS	manifest provider (§33): "REJECT", "Reject", ReturnPermissions.ForTarget("Rejected")!	
+PASS	manifest provider (§33): "MARK_IN_TRANSIT", "Mark In Transit", ReturnPermissions.ForTarget("InTransit")!	
+PASS	manifest provider (§33): "CANCEL", "Cancel Return", ReturnPermissions.ForTarget("Cancelled")!	
+PASS	manifest provider (§33): "RECEIVE", "Receive (manual assertion)", ReturnPermissions.ForTarget("Received")!	
+PASS	manifest provider (§33): "DISPOSITION", "Disposition", ReturnPermissions.ForTarget("Dispositioned")!	
+PASS	manifest provider (§33): "CLOSE", "Close", ReturnPermissions.ForTarget("Closed")!	
+PASS	manifest provider: 8 actions (1 Toolbar + 7 RowAction); dangerous = REJECT, CANCEL only	
+PASS	provider tests: M-01…M-08 present; M-02 reflects ForTarget (D5 = A); M-03 allow-lists .transition with a reason	
+PASS	nav key fragments: Nav.Module.REVERSELOGISTICS + Nav.Page.RETURNS × 7 languages, no empty or echo value	7
+PASS	gateway fragment = pack §32.10 routes (GET+POST /returns, POST /transition, OPTIONS, 5061) + 5-header passthrough + getShipment confirmation	
+PASS	_shared-integration Program.cs line names ReverseLogisticsManifestProvider	
+PASS	_shared-integration icon/SortOrder per pack §33 (bx-undo, 420)	
+PASS	every _shared-integration file states it is not applied	
+PASS	FILE-PLAN OWNED+SR-D4 rows == SOURCE-MANIFEST module+SR rows	23 / 23; diff=[]
+PASS	FILE-PLAN maps every §32.1–§32.14 and §33 item	24 section rows; missing=[]
+PASS	SOURCE-MANIFEST sha256 matches every overlay file (36)	[]
+PASS	overlay archive returns-ui-draft-overlay.tar.gz extracts byte-identical to overlay/ (diff -r empty), 36 files; rebuild gives the same hash (deterministic)	35dd1489d293e881894ae63590f394543c33c886dfe4a969602c062523f1a014
+PASS	verify_module_id.py . --check-id MOD-0186 --name "Reverse Logistics" (read-only gate, pack §32.1; name from the frontmatter)	exit 0: OK  MOD-0186: proven against Blueprint/registry.

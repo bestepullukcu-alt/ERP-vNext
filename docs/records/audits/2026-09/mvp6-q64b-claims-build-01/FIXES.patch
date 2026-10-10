@@ -1,0 +1,124 @@
+# Q64b FIXES.patch — minimal corrections found for the MOD-0187 Claims UI DRAFT (Q64a, archive bc0f5819…).
+# Applied ONLY in ~/mvp6-env/claims-fixes (APFS clone of the composed tree ~/mvp6-env/claims, SOURCE-MANIFEST 2dfebddb…).
+# NOT applied to the repository. Paths are repo-relative. Each hunk group carries its reason.
+#
+# FIX-01 (shared seam, SR-D4 — integration owner, not a module file)
+#   gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs (from the A12 360 overlay) pins 6 /api/shipment-bundle/ routes.
+#   The Claims _shared-integration gateway fragment adds 2 routes, so the guard fails 8 != 6 (NOT-VERIFIED N14).
+#   Correction: the count moves with the fragment. Result: ApiGateway.Tests 86/87 -> 87/87.
+#
+# FIX-02 (module file, D-01)
+#   index.js passes the async function loadClaims as the DataTables `ajax` option. DataTables 2 keeps the function's
+#   return value (a Promise) as its jqXHR and calls .abort() on ajax.reload(); the call throws
+#   "TypeError: xhr.abort is not a function", so the list never reloads after create/transition/filter/retry and the
+#   create handler's catch logs "[Claims] Create request failed" after a 201. Correction: a wrapper that returns nothing.
+#
+# FIX-03 (module files + module test, D-02)
+#   Every partial (_CreateEditOffcanvas, _DataTable, _DetailsQuickView, _Filter, _IndexL10n) sets
+#   Layout = "_LayoutTenantShell". ASP.NET Core applies an explicitly set Layout to a partial, so the page rendered 6
+#   complete tenant shells (6 <html>, 6 bootstrap.js/menu.js/main.js; "Identifier 'menu' has already been declared";
+#   Bootstrap's dropdown data-api registered 6x, so a row "⋮" click toggles an even number of times and never opens —
+#   no transition is reachable from the UI). Correction: partials carry no Layout (Index.cshtml keeps it); the module
+#   test Every_claims_view_states_the_tenant_shell now requires the Layout on the page view and forbids it in partials.
+#   NOTE: pack §32.2 literally says "every Claims .cshtml states Layout" — CT/pack owner should scope that to page views.
+#
+--- a/gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs	2026-09-26 22:14:44
++++ b/gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs	2026-09-26 22:33:34
+@@ -133,7 +133,7 @@
+             .ToArray();
+ 
+         Assert.Equal(35, crmRoutes.Length);
+-        Assert.Equal(6, supplyChainRoutes.Length);
++        Assert.Equal(8, supplyChainRoutes.Length); // +2 Claims routes (SR-D4 gateway fragment: GET/POST /claims, POST /claims/{claimId}/transition)
+         Assert.All(crmRoutes, route => AssertRoutePort(route, 5065));
+         Assert.All(supplyChainRoutes, route => AssertRoutePort(route, 5061));
+     }
+--- a/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js	2026-09-26 22:14:45
++++ b/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js	2026-09-26 22:43:16
+@@ -881,7 +881,9 @@
+             serverSide: false,
+             stateSave: false,
+             processing: false,
+-            ajax: loadClaims,
++            // DataTables 2 keeps the ajax function's return value as its jqXHR and calls .abort() on reload; an async
++            // function returns a Promise (no abort), so ajax.reload() threw and the list never reloaded. Return nothing.
++            ajax: (data, callback) => { void loadClaims(data, callback); },
+             order: [[1, 'desc']],
+             colReorder: { columns: ':gt(0):not(:last-child)' },
+             responsive: { details: { type: 'column', target: 0 } },
+--- a/frontend/Diten.Web/Views/SupplyChain/Claims/_CreateEditOffcanvas.cshtml	2026-09-26 22:14:45
++++ b/frontend/Diten.Web/Views/SupplyChain/Claims/_CreateEditOffcanvas.cshtml	2026-09-26 22:51:47
+@@ -3,8 +3,7 @@
+ @inject IHtmlLocalizer<ClaimsIndex> Localizer
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ @{
+-    // Pack §32.2: every Claims .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+-    Layout = "_LayoutTenantShell";
++    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+ }
+ 
+ @* Create-only offcanvas (pack §32.6, form_field_count 6). No edit mode (CU-SCR-02).
+--- a/frontend/Diten.Web/Views/SupplyChain/Claims/_DataTable.cshtml	2026-09-26 22:14:45
++++ b/frontend/Diten.Web/Views/SupplyChain/Claims/_DataTable.cshtml	2026-09-26 22:51:47
+@@ -3,8 +3,7 @@
+ @inject IHtmlLocalizer<ClaimsIndex> Localizer
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ @{
+-    // Pack §32.2: every Claims .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+-    Layout = "_LayoutTenantShell";
++    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+ }
+ 
+ <div class="card">
+--- a/frontend/Diten.Web/Views/SupplyChain/Claims/_DetailsQuickView.cshtml	2026-09-26 22:14:45
++++ b/frontend/Diten.Web/Views/SupplyChain/Claims/_DetailsQuickView.cshtml	2026-09-26 22:51:47
+@@ -3,8 +3,7 @@
+ @inject IHtmlLocalizer<ClaimsIndex> Localizer
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ @{
+-    // Pack §32.2: every Claims .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+-    Layout = "_LayoutTenantShell";
++    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+ }
+ 
+ @* QuickView (pack §32.5, CU-31): the clicked row's summary and a copyable claimId only. No by-ID request, no edit
+--- a/frontend/Diten.Web/Views/SupplyChain/Claims/_Filter.cshtml	2026-09-26 22:14:45
++++ b/frontend/Diten.Web/Views/SupplyChain/Claims/_Filter.cshtml	2026-09-26 22:51:47
+@@ -3,8 +3,7 @@
+ @inject IHtmlLocalizer<ClaimsIndex> Localizer
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ @{
+-    // Pack §32.2: every Claims .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+-    Layout = "_LayoutTenantShell";
++    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+ }
+ 
+ @* Inline collapse filter (pack §32.5): exactly the two published query parameters, nothing else (CU-02). *@
+--- a/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml	2026-09-26 22:14:45
++++ b/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml	2026-09-26 22:51:47
+@@ -3,8 +3,7 @@
+ @inject IHtmlLocalizer<ClaimsIndex> Localizer
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ @{
+-    // Pack §32.2: every Claims .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+-    Layout = "_LayoutTenantShell";
++    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+ }
+ 
+ @* JSON bridge (pack §32.9): shared toolbar vocabulary from SharedResource, module text from ClaimsIndex.{lang}.resx.
+--- a/frontend/Diten.Web.Tests/Forms/ClaimFormContractTests.cs	2026-09-26 22:14:45
++++ b/frontend/Diten.Web.Tests/Forms/ClaimFormContractTests.cs	2026-09-26 22:51:47
+@@ -150,9 +150,12 @@
+     [Fact]
+     public void Every_claims_view_states_the_tenant_shell()
+     {
++        // The page view states the tenant shell; partials must not (a partial Layout renders a second full shell — Q64b D-02).
+         foreach (var file in Directory.EnumerateFiles(Path.Combine(Root(), ViewDir), "*.cshtml"))
+         {
+-            Assert.Contains("Layout = \"_LayoutTenantShell\";", File.ReadAllText(file));
++            var text = File.ReadAllText(file);
++            if (Path.GetFileName(file).StartsWith('_')) Assert.DoesNotContain("Layout = ", text);
++            else Assert.Contains("Layout = \"_LayoutTenantShell\";", text);
+         }
+     }
+ 

@@ -1,0 +1,8 @@
+stage	identity/evidence
+source	FINAL-354-SOURCE-MANIFEST.tsv SHA256 e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3
+patch	b01-b02.patch SHA256 12fa97aef9e2ea360882a3a0f2c80fc32f5658fe7aa1f05d0af03b86c62034af
+web binary	Diten.Web.dll SHA256 36676e880e58b3782de50920ec9ac3d17891b4c8fc2d23b128af6d092e411793
+process	Gateway 5820; Web 5821; Auth 5876; Platform 5877; MDM 5879; SupplyChain 5881; Mongo 42014
+browser	real Auth-issued session through Gateway; evidence/runtime/browser-observations.json
+persistence	DitenSupplyChain_ShipmentUiB01B02; evidence/runtime/persisted-after-actions.txt
+cleanup	evidence/runtime/cleanup.tsv

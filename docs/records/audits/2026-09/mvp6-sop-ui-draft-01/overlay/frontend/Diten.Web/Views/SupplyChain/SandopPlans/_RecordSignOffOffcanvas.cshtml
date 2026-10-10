@@ -1,0 +1,62 @@
+@using Diten.Web.Views.SupplyChain.SandopPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SandopPlanDetails> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Pack §23.2: every S&OP .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+    Layout = "_LayoutTenantShell";
+}
+
+@* Record sign-off (pack §23.6, RecordSignOffRequest): snapshot from THIS plan's listSandopSnapshots only, role (5), decision
+   (2) and an optional comment (≤ 2000, checked by details.js without truncating; omitted when empty). The inputs live in
+   this offcanvas; the final confirmation goes through window.showConfirm (MOD-0013; CT verdict F6 precedent). *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRecordSignOff" aria-labelledby="offcanvasRecordSignOffLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasRecordSignOffLabel" class="offcanvas-title">@Localizer["RecordSignOffTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formRecordSignOffAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+
+        <form id="formRecordSignOff" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="signOffSnapshotId" class="form-label fw-medium">@Localizer["Snapshot"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-camera diten-field-icon" aria-hidden="true"></i>
+                        <select id="signOffSnapshotId" class="form-select" dir="ltr"></select>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="signOffRole" class="form-label fw-medium">@Localizer["Role"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-user-check diten-field-icon" aria-hidden="true"></i>
+                        <select id="signOffRole" class="form-select"></select>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="signOffDecision" class="form-label fw-medium">@Localizer["Decision"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-check-shield diten-field-icon" aria-hidden="true"></i>
+                        <select id="signOffDecision" class="form-select"></select>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="signOffComment" class="form-label fw-medium">@Localizer["Comment"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="signOffComment" class="form-control" rows="4" aria-describedby="signOffCommentHelp"></textarea>
+                    </div>
+                    <div id="signOffCommentHelp" class="form-text">@Localizer["CommentHelp"]</div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSubmitRecordSignOff" class="btn btn-primary">@Localizer["RecordSignOff"]</button>
+    </div>
+</div>

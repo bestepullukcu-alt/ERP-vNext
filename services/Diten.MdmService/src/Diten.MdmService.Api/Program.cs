@@ -127,3 +127,7 @@ static void ValidateRequiredJwtSetting(string? value, string key)
         throw new InvalidOperationException($"Configuration error: '{key}' is missing or empty.");
     }
 }
+
+// Q366: exposes the top-level Program to WebApplicationFactory<Program> so CompositionRootGuardTests can build the real
+// MDM host (Platform, Auth and SupplyChain already declare the same line).
+public partial class Program;

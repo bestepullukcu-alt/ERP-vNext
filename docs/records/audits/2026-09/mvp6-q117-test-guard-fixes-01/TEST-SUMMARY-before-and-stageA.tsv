@@ -1,0 +1,4 @@
+tree	suite	exit	summary
+build-BASE	supplychain-single	-	Failed!  - Failed:     1, Passed:   407, Skipped:     0, Total:   408, Duration: 4 m 46 s - Diten.SupplyChainService.Tests.dll (net8.0)
+build-BASE	supplychain-single-serial	-	Failed!  - Failed:     1, Passed:   407, Skipped:     0, Total:   408, Duration: 4 m 39 s - Diten.SupplyChainService.Tests.dll (net8.0)
+build-A	supplychain-single	-	Failed!  - Failed:     1, Passed:   407, Skipped:     0, Total:   408, Duration: 5 m - Diten.SupplyChainService.Tests.dll (net8.0)

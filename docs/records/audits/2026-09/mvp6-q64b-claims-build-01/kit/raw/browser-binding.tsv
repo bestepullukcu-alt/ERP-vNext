@@ -1,0 +1,5 @@
+kind	url_or_path	source_path	http	observed	expected	result
+served-asset	/assets/js/SupplyChain/Claims/index.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js	200	55f2c4fbd417372137b45f65f3c5bc693878c6e25f44e64b7236a6c95a16659d	55f2c4fbd417372137b45f65f3c5bc693878c6e25f44e64b7236a6c95a16659d	match
+served-asset	/assets/js/SupplyChain/Claims/index.l10n.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js	200	2a0ece421e85d95ffe57eaaf2847d6fc6db6029f46fea1f574f4cd745e352851	2a0ece421e85d95ffe57eaaf2847d6fc6db6029f46fea1f574f4cd745e352851	match
+browser-url	http://127.0.0.1:5501/SupplyChain/Claims	-	-	127.0.0.1:5501	127.0.0.1:5501	match
+browser-url	http://127.0.0.1:5501/account/login?tenantId=97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	-	127.0.0.1:5501	127.0.0.1:5501	match

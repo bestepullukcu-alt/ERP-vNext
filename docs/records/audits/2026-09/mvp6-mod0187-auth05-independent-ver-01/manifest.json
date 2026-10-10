@@ -1,0 +1,41 @@
+{
+  "workPackage": "MVP6-MOD0187-AUTH-05-INDEPENDENT-VER-01",
+  "role": "independent-verifier",
+  "verdict": "PARTIAL",
+  "rowSummary": {"pass": 4, "partial": 26, "fail": 0},
+  "input": {
+    "auth05RawArchiveSha256": "828143e8a0b81799f1388f6502aa378b73ad9f76bc2696496dcb64311243efad",
+    "sourceArchiveSha256": "eaf786e647ef019f862c7dcc4f0b2ab29b2b5a36ff1bee98d2cca8d2863cc766",
+    "sourceManifestSha256": "4ae0f286479761512f50216e5bd8be721e48ae4839c062b57cfdd29696e2daa8",
+    "sourceEntries": 97,
+    "writerComplete": true
+  },
+  "rawEvidenceArchiveSha256": "98444c005cfa98b33329e6b8443919f42565694f7d942715f6c4dd6229eaa2b1",
+  "fresh": {
+    "restoreExit": 0,
+    "buildExit": 0,
+    "apiBinarySha256": "3138a53a4eec057786afb2a32f1b5e73da189338a968072e38a368d338629368",
+    "testBinarySha256": "156514e2f35d4fdf4adc1f892a93b2a4614d4b9d6f4bf06006c6f19d0651b4b5",
+    "claimsCore": {"passed": 120, "failed": 0, "skipped": 0},
+    "apiPort": 5067,
+    "mongoPort": 27917,
+    "replicaSet": "claims_auth05_ind",
+    "database": "diten_claims_auth05_ind"
+  },
+  "runtime": {
+    "authenticatedFlow": "PASS",
+    "jwtNegative": "PASS",
+    "rbacAndScope": "PASS_SELECTED",
+    "realShipmentUptake": "PASS_SELECTED",
+    "sameKeyConcurrency": "PASS_8_WAY",
+    "differentKeyConcurrency": "PASS_8_WAY",
+    "dependencyRefusalZeroWrite": "PASS",
+    "restart": "PASS"
+  },
+  "productSourceChanges": [],
+  "programChanges": [],
+  "secretsArchived": false,
+  "ctAcceptanceClaimed": false,
+  "e5Claimed": false,
+  "g5Claimed": false
+}

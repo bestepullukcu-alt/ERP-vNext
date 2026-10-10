@@ -1,0 +1,12 @@
+surface	browser_or_mvc_route	gateway_downstream	permission	method	contract_operation	owner	boundary
+list page	GET /SupplyChain/Shipments	-	supplychain.shipments.read	GET	-	UI	Tenant shell; nav-visible; UAS-001 fail-closed
+list adapter	GET /SupplyChain/Shipments/api?status=&sourceDocumentId=&page=&pageSize=	GET /api/shipment-bundle/shipments	supplychain.shipments.read	GET	queryShipments	UI + integration	Only four frozen query keys; pageSize 1..200
+create page	GET /SupplyChain/Shipments/Create	-	supplychain.shipments.create	GET	-	UI	Compact create route; no edit route
+create adapter	POST /SupplyChain/Shipments/api	POST /api/shipment-bundle/shipments	supplychain.shipments.create	POST	createShipment	UI + integration	Antiforgery; stable per-intent Idempotency-Key
+detail page	GET /SupplyChain/Shipments/Details/{shipmentId:guid}	-	supplychain.shipments.read	GET	-	UI	Non-nav page; no lifecycle/POD standalone GET
+detail adapter	GET /SupplyChain/Shipments/api/{shipmentId:guid}	GET /api/shipment-bundle/shipments/{shipmentId}	supplychain.shipments.read	GET	getShipment	UI + integration	Shows detail, lines, POD and nullable root
+transition action	POST /SupplyChain/Shipments/api/{shipmentId:guid}/transition	POST /api/shipment-bundle/shipments/{shipmentId}/transition	dispatch or cancel exact target	POST	transitionShipment	UI + integration	Cancelled requires .cancel; every other target requires .dispatch
+POD action	POST /SupplyChain/Shipments/api/{shipmentId:guid}/pod	POST /api/shipment-bundle/shipments/{shipmentId}/pod	supplychain.shipments.pod.capture	POST	captureProofOfDelivery	UI + integration	References only; no upload endpoint
+empty list	client render	-	supplychain.shipments.read	-	-	UI	Create CTA only with .create
+unsupported edit/delete/bulk/assign/reconcile/history	absent	absent	-	-	-	protected	No control, proxy or request
+

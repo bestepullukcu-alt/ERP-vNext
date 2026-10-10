@@ -1,0 +1,9 @@
+folder	module	total	passed	failed	skipped	timed_out	test_seconds
+Shipments (root + Shipments/)	MOD-0183	74	74	0	0	0	8.1
+Carriers	MOD-0184	36	36	0	0	0	5.1
+Loads	MOD-0185	33	33	0	0	0	30.1
+Claims	MOD-0187	129	128	1	0	0	2.3
+Returns	MOD-0186	78	78	0	0	0	63.8
+CapacityPlans	MOD-0192	48	48	0	0	0	138.0
+SandopPlans	MOD-0190	19	19	0	0	0	13.0
+TOTAL	all seven	417	416	1	0	0	260.4

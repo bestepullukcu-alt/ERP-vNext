@@ -1,0 +1,433 @@
+Diten.SupplyChainService.Tests.ShipmentRootHttpTests.AcceptanceContractRequiresScopedReadOnlyDetail
+Diten.SupplyChainService.Tests.ShipmentRootHttpTests.MutatingShipmentActionsNeverCarryTheReadPermissionAlone
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "missing")
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "null")
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "malformed")
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "valid")
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "nil")
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.MaterializationDoesNotMutateRawDocument
+Diten.SupplyChainService.Tests.ShipmentTests.GoldenFlow_Replay_Outbox_AndRestartAreDurable
+Diten.SupplyChainService.Tests.ShipmentTests.Scope_Rbac_Schema_AndCorrelationFailClosed
+Diten.SupplyChainService.Tests.ShipmentTests.ReplayConflict_AndConcurrentCreateOrTransitionProduceOneWinner
+Diten.SupplyChainService.Tests.ShipmentTests.FailureBeforeCommitRollsBackEveryRecordAndRetrySucceeds
+Diten.SupplyChainService.Tests.ShipmentTests.EveryForbiddenTransitionLeavesPersistenceUnchanged
+Diten.SupplyChainService.Tests.ShipmentTests.CancelPermissionIsRequiredAndCannotDispatch
+Diten.SupplyChainService.Tests.ShipmentTests.AllowedBranchesAndPodFailureHaveAtomicHistory
+Diten.SupplyChainService.Tests.ShipmentTests.NormalizedReplayAndCrossScopeListRemainIsolated
+Diten.SupplyChainService.Tests.ShipmentTests.UnicodeQuantityIsRejectedBeforeAnyPersistence
+Diten.SupplyChainService.Tests.ShipmentTests.TransitionNoteBoundaryCountsScalarsAndRejectsWithoutWrites
+Diten.SupplyChainService.Tests.ShipmentTests.PodNoteBoundaryCountsScalarsAndRejectsWithoutWrites
+Diten.SupplyChainService.Tests.ShipmentTests.OutboxRetryPreservesCanonicalBytesAndIdentity
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "30.000", expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "-30.000", expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "0", expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "000.010", expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "٣٠.٠٠٠", expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "۳۰.۰۰۰", expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "３０.０００", expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "3٠.000", expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "1e3", expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "+30", expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: ".5", expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "30.", expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: null, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "", expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"···, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"···, expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀"···, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀"···, expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: null, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "", expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"···, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"···, expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: False)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀"···, expected: True)
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀"···, expected: False)
+Diten.SupplyChainService.Tests.SourceClientTests.WarehouseFrozenDetailAndPagePreserveFactsAndForwardTrustedScope
+Diten.SupplyChainService.Tests.SourceClientTests.ExplicitWarehouseFailures(status: 404, code: "DEPENDENCY_HTTP_404")
+Diten.SupplyChainService.Tests.SourceClientTests.ExplicitWarehouseFailures(status: 503, code: "DEPENDENCY_HTTP_503")
+Diten.SupplyChainService.Tests.SourceClientTests.ExplicitWarehouseFailures(status: 200, code: "SCHEMA_INCOMPATIBLE")
+Diten.SupplyChainService.Tests.SourceClientTests.WarehouseTimeoutAndStrictNullableGapAreExplicit
+Diten.SupplyChainService.Tests.SourceClientTests.TrustedContextRejectsMissingUnauthenticatedAndConflictingScopes
+Diten.SupplyChainService.Tests.SourceClientTests.InventoryReadOnlyScopeAndFailureIsolation
+Diten.SupplyChainService.Tests.SourceIntakeTests.EightConcurrentIntakesCommitOnceAndIdenticalReplayChangesNothing
+Diten.SupplyChainService.Tests.SourceIntakeTests.TrustedSuppliedRootIsPreservedAsSourceAndLocalCorrelation
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "quantity")
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "order")
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "orderRef")
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "lines")
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "warehouse")
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "address")
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "status")
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "empty-lines")
+Diten.SupplyChainService.Tests.SourceIntakeTests.SameSourceIdentityIsIsolatedByTenantAndLegalEntity
+Diten.SupplyChainService.Tests.SourceIntakeTests.InvalidCorrelationAndDependencyFailuresCannotClaimSource
+Diten.SupplyChainService.Tests.SourceIntakeTests.FailedTransactionRetainsOnlyPendingDefaultsAndRestartCommitsThoseExactDefaults
+Diten.SupplyChainService.Tests.SourceIntakeTests.CancelledOrSoftDeletedShipmentKeepsSourceReserved(deleted: False)
+Diten.SupplyChainService.Tests.SourceIntakeTests.CancelledOrSoftDeletedShipmentKeepsSourceReserved(deleted: True)
+Diten.SupplyChainService.Tests.Shipments.ContractErrorCodeParityTests.ContractErrorCodes_WhenComparedWithContract_ContainsEveryContractCode
+Diten.SupplyChainService.Tests.Shipments.ContractErrorCodeParityTests.ContractErrorCodes_WhenComparedWithContract_DeclaresNoCodeTheContractLacks
+Diten.SupplyChainService.Tests.Shipments.ContractErrorCodeParityTests.ContractErrorCodesAll_WhenComparedWithConstants_ListsEachConstantExactlyOnce
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.OperationDuration_WhenOperationsComplete_RecordsOneTaggedMillisecondValueEachSoP95CanBeReported
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.IntakeBlocked_WhenWarehouseUnavailableOrCorrelationIncompatible_MovesAndCommitRetryDoesNot
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.SourceDrifts_WhenRecordedSourceChanges_MovesOnEveryDetectionAndNotOnReplayOrCommitRetry
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.SourceDrifts_WhenAConcurrentIntakePreparedTheIntentFirst_CountsTheSecondDriftSiteToo
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.SourceDrifts_WhenTheCommitTimeHashGuardFires_EndsAsCommitFailedAndIsNotCounted
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.IdempotentReplays_WhenDuplicateKeyIsReplayed_MovesOnceAndTransientTransactionRetryDoesNot
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.ScopeDenials_WhenHeaderScopeIsAnotherTenant_MovesAndInScopeRequestDoesNot
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.OutboxPending_WhenMutationCommits_MovesPerEventAndReplayOrTransientRetryDoesNotAddMore
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.OutboxRetries_WhenPublishFailsBelowMaxAttempts_MovesOnceAndStaleRepeatDoesNot
+Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.OutboxDeadLetters_WhenAttemptsExhaustOrFailureIsTerminal_MovesOnceEachAndRepeatDoesNot
+Diten.SupplyChainService.Tests.Shipments.ShipmentTrackingPodManifestProviderTests.Identity_WhenComparedWithPack22_MatchesEveryField
+Diten.SupplyChainService.Tests.Shipments.ShipmentTrackingPodManifestProviderTests.Pages_WhenComparedWithPack22_MatchEveryColumn
+Diten.SupplyChainService.Tests.Shipments.ShipmentTrackingPodManifestProviderTests.Actions_WhenComparedWithPack22_MatchPerPageCodeKeyPlacementAndDangerousFlag
+Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Invalid_fixture_creates_nothing_in_five_effect_collections
+Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Checksum_mismatch_produces_422_and_no_capture_effects
+Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Unavailable_dependency_returns_declared_503
+Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Receipt_insert_failure_after_plan_write_rolls_back_and_same_key_retries
+Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Mongo_unique_index_rejects_definite_duplicate_plan_without_partial_effect
+Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Unknown_commit_without_receipt_returns_unresolved_then_exact_key_recovers
+Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Committed_write_concern_uncertainty_resolves_original_receipt
+Diten.SupplyChainService.Tests.SandopPlans.SandopConcurrencyTests.Concurrent_different_keys_cannot_record_same_role_twice
+Diten.SupplyChainService.Tests.SandopPlans.SandopContractTests.Fingerprint_normalizes_member_order_but_retains_decimal_lexeme_and_unicode
+Diten.SupplyChainService.Tests.SandopPlans.SandopContractTests.Schema_rejects_extra_fields_and_invalid_enums
+Diten.SupplyChainService.Tests.SandopPlans.SandopContractTests.Module_request_gate_requires_permission_and_preserves_exact_key_and_correlation
+Diten.SupplyChainService.Tests.SandopPlans.SandopIsolationTests.Tenant_and_legal_entity_cross_scope_reads_are_404
+Diten.SupplyChainService.Tests.SandopPlans.SandopIsolationTests.Cross_scope_mutation_cannot_disclose_receipt_or_plan
+Diten.SupplyChainService.Tests.SandopPlans.SandopLifecycleTests.Create_capture_signoff_preserves_prior_snapshot_and_draft_to_inreview
+Diten.SupplyChainService.Tests.SandopPlans.SandopLifecycleTests.All_five_role_decisions_leave_plan_in_review_and_outbox_pending
+Diten.SupplyChainService.Tests.SandopPlans.SandopReplayTests.Exact_key_replays_original_body_without_second_effect_and_changed_payload_conflicts
+Diten.SupplyChainService.Tests.SandopPlans.SandopReplayTests.Replay_survives_new_client_and_does_not_reread_fixture
+Diten.SupplyChainService.Tests.SandopPlans.SandopReplayTests.Exact_key_is_not_trimmed
+Diten.SupplyChainService.Tests.SandopPlans.SandopReplayTests.All_three_mutations_replay_without_duplicate_effects_or_fixture_reread
+Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "entitlement", reached: 1)
+Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "aggregate", reached: 2)
+Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "receipt", reached: 3)
+Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "audit", reached: 4)
+Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "outbox", reached: 5)
+Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.MultilineFailure_SecondLineOverCap_LeavesNoFirstLineDebit
+Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PostCommitResponseLoss_RecoversOriginalReceipt_NotZeroWrites
+Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.UnknownCommit_Unresolved503_AllOrNoneThenSameKeyRecovery
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Create_Races_RespectsExactCap(first: "6", second: "6", successes: 1)
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Create_Races_RespectsExactCap(first: "4", second: "6", successes: 2)
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.SameKey_TwentyConcurrentCalls_OneAggregateReceiptEvent
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Release_ReplayAndDifferentKey_DebitsExactlyOnce(target: Rejected)
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Release_ReplayAndDifferentKey_DebitsExactlyOnce(target: Cancelled)
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_NumericEquivalentAllowed_DriftConflictsAtomically
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "uom")
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "item")
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "sku")
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.ClosedAndManualReceived_RetainEntitlementOpaqueReferenceAndPendingEvents
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.RmaNumber_KnownCollision_MaxThreeAttemptsAndAtomicRecovery
+Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Entitlement_DefaultCaseInsensitiveCollection_UsesExplicitOrdinalOperations
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "1e2")
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "+1")
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: " 1")
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "1.")
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: ".1")
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "١")
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "1.0", b: "1.00")
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "-0", b: "000.000")
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "123456789012345678901234567890.1234567890123456789"···, b: "123456789012345678901234567890.1234567890123456789"···)
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_Arithmetic_HasNoPrecisionLoss
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Fingerprint_NumericAndInstantEquivalence_ReplaysWhileArrayOrderConflicts
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Wire_BoundedShape_RejectsNullEvidenceAndExtrasAllowsOpaqueEmpty
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Instant_LeapSecond_OffsetEquivalentDistinctFromNextSecond
+Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Instant_GregorianYearZeroAndBoundaries_KeepEquivalentInstants
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Scope_AnotherTenantOrLE_CannotReadMutateOrReplay
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.SoftDelete_HidesAggregate_PreservesReceiptAndEntitlement
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "valid", expected: 200)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "unknown-query", expected: 200)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "scope-query", expected: 400)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "missing-scope", expected: 400)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "foreign-scope", expected: 404)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "duplicate-root", expected: 400)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "missing-root", expected: 400)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "untrusted", expected: 403)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "unauthenticated", expected: 401)
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Permissions_ReturnsSpecificTargets_HaveNoClaimsInheritance
+Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Receipt_SameKeyDifferentLegalEntity_IsIndependent
+Diten.SupplyChainService.Tests.Returns.ReturnLifecycleTests.Lifecycle_All64Pairs_MatchesSevenCanonicalArrows
+Diten.SupplyChainService.Tests.Returns.ReturnLifecycleTests.Entitlement_OnlyRejectedCancelled_Release
+Diten.SupplyChainService.Tests.Returns.ReturnLifecycleTests.Lifecycle_ActualRepository_All64PairsRejectWithoutWrites
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_PersistedNil_IsPreserved
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "missing", status: 503, code: "RETURN_SHIPMENT_ROOT_UNAVAILABLE")
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "null", status: 503, code: "RETURN_SHIPMENT_ROOT_UNAVAILABLE")
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "bad", status: 502, code: "RETURN_SHIPMENT_ROOT_INVALID")
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "", status: 502, code: "RETURN_SHIPMENT_ROOT_INVALID")
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "sourceModule", status: 502)
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "shipmentId", status: 503)
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "status", status: 503)
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_DuplicateOrNonpositiveLines_RejectsMalformed
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_MockedTransport_OnlyShipmentGetAndTrustedScope
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerShipmentRootInvalid500_MapsToReturnsRootInvalid
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "{\"error\":{\"code\":\"INTERNAL_ERROR\"},\"contrac"···)
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "not-json")
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 501, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 401, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 403, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.RefusedProducer_RemainsDependencyUnavailable
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.TimedOutProducer_RemainsDependencyUnavailable
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.MalformedSuccessfulRoot_RemainsReturnsRootInvalid
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "0")
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "-0.00")
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "-1")
+Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.LocalDuplicateLines_RejectsBeforeReferenceLookup
+Diten.SupplyChainService.Tests.Returns.ReturnReplayTests.Receipt_RootBeforePayload_AndCurrentActorDoesNotRewriteAudit
+Diten.SupplyChainService.Tests.Returns.ReturnReplayTests.Receipt_AfterLaterState_ReturnsOriginalResultWithoutReread
+Diten.SupplyChainService.Tests.Returns.ReturnReplayTests.RestartReceipt
+Diten.SupplyChainService.Tests.Returns.ReturnReplayTests.RawCreateAudit_PreservesUuidSpellingAndOmission_WhileFingerprintNormalizes
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnresolvedUnknownCommitReturns503WithoutPretendingRollbackOrSuccess
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "assignment")
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "entity")
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "receipt")
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "audit")
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "event")
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "beforeCommit")
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.CancellationReleaseAndAggregateAuditReceiptEventCommitTogether
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.AcknowledgedCommitLossRetriesFromDurableReceiptWithoutDuplicateWrites
+Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.CompetingCreatesForOneShipmentCommitExactlyOneOwner
+Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.ConcurrentSameKeyRequestsProduceOneCommitAndOneDurableReplay
+Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.RetryAfterCancellationNeverDeletesNewOwnersAssignment
+Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.ConcurrentPlannedAndCancelledTransitionsProduceOnlyASerialLifecycle
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.EveryRequiredCreateFieldAndTransitionFieldIsEnforcedBeforeWrites
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.CreateSchemaRejectsNullWrongTypeEnumsAndArrayBoundsWithoutInventingDefaults
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.DuplicateShipmentAndInvalidStopSequencesAreBusiness422ButReturnStopAndEmptyLocationStayAllowed
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.FrozenThreeOperationWireAndSuccessfulCreateList
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.SchemaUnknownFieldsAndNoExtraRoutesAreRejected
+Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.TwoTenantsByTwoLegalEntitiesCanReuseIdsWithoutCrossScopeVisibility
+Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.PermissionScopesAndTrustedHeaderMismatchFailBeforePersistence
+Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.AuthenticationAndPostAuthDuplicateSignedClaimsHaveDistinctOutcomes
+Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.ScopeQueryKeysAreRejectedAfterOneDecodeAndUnknownKeysRemainIgnored
+Diten.SupplyChainService.Tests.Loads.LoadLifecycleTests.EverySourceTargetPairMatchesFrozenLifecycleAndRejectedPairsAreAtomic
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.ReferencesAreGetOnlyAndCarryTrustedScopeAndCorrelation
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.CarrierAndShipmentReferenceProfilesFailClosedOnMissingOrContradictoryData
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.BusinessReferenceOutcomesMatchApprovedCarrierAndShipmentRules
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.UpstreamAuthServerAndUnexpectedStatusesFailClosedAsSpecified
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.FreshRetryReobservesDependenciesButSuccessfulReplayDoesNot
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.PendingOutboxAndHistoricalReplaySurviveApiRestart
+Diten.SupplyChainService.Tests.Loads.LoadReplayTests.RootPrecedesFingerprintAndReplayUsesOriginalReceiptWithoutDependencyReads
+Diten.SupplyChainService.Tests.Loads.LoadReplayTests.HistoricalCreateReplayAfterCancellationDoesNotReacquireAssignment
+Diten.SupplyChainService.Tests.Loads.LoadReplayTests.TransitionReplayReturnsHistoricalStatusAndNoteNullNormalizationIsExact
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Approval_ZeroRetainedThroughSettlementAndClosure_ExactBsonStrings
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1e2")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "+1")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1.")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: ".1")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: " 1")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1 ")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "١")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "--1")
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "0", positive: False, negative: False)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0", positive: False, negative: False)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0.000", positive: False, negative: False)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "000250.00", positive: True, negative: False)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0.01", positive: False, negative: True)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "0.0000000000000000000000000000000000000001", positive: True, negative: False)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "000250.00", right: "250", expected: 0)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "-0", right: "0", expected: 0)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "1.0000000000000000000000000000000000001", right: "1", expected: 1)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "-1.0000000000000000000000000000000000001", right: "-1", expected: -1)
+Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "99999999999999999999999999999999999999", right: "100000000000000000000000000000000000000", expected: -1)
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.MissingUniqueIndex_FailsClosedBeforeAnyWrite
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.DriverCapacityFailure_HasMeasuredExceptionType
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Storage_CapacityExceeded_FailsWithoutPartialDocuments
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "aggregate")
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "receipt")
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "audit")
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "outbox")
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "beforeCommit")
+Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_ResponseLostAfterCommit_RecoversOriginalReceiptWithoutSecondWrite
+Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests.DefiniteNumberCollisionAfterSoftDelete_DoesNotRenumberOrPartiallyWrite
+Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests.Create_TwentySameKeys_OneFourCollectionCommit
+Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests.Create_TwentyDifferentKeysSameShipment_AllIndependentClaims
+Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests.Transition_ConcurrentApproveReject_OneWinnerAndLifecycleLoser
+Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_OpaqueEvidencePreservesEmptyDuplicatesOrder
+Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"evidenceReferenceIds\":null")
+Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"tenantId\":\"x\"")
+Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"reasonCode\":\"duplicate\"")
+Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_NumberTokenCannotReplaceDecimalString
+Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-09-20T12:34:56.1234567890123456789+03:00", valid: True)
+Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-02-30T12:00:00Z", valid: False)
+Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-09-20T12:00:00", valid: False)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claims", match: True)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claims/123/transition", match: True)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claimsXYZ", match: False)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/returns", match: False)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "00000000-0000-0000-0000-000000000000", valid: True)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA", valid: True)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", valid: False)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "{aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa}", valid: False)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: " aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", valid: False)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_UnauthenticatedPrecedesBadHeader
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "missing")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "duplicate")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "nil")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidCorrelationHasGeneratedRejectionTrace(value: null)
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidCorrelationHasGeneratedRejectionTrace(value: "not-a-uuid")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_OptionalScopeMismatchForbidden
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "duplicate")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "empty")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "overlong")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_ScalarKeyIsNotSplitOrCountedAsUtf16(kind: "comma,inside")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_ScalarKeyIsNotSplitOrCountedAsUtf16(kind: "unicode")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "TeNaNtId")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "LEGALENTITYID")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "tenant_ID")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "legal_ENTITY_id")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "X-TENANT-ID")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "x-LEGAL-entity-ID")
+Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_OrdinaryUnknownQueryAndNilTraceProceedWithSignedScope
+Diten.SupplyChainService.Tests.Claims.ClaimLifecycleTests.CanTransition_All49Pairs_ExactlySevenFrozenArrows
+Diten.SupplyChainService.Tests.Claims.ClaimOutboxTests.Mutations_PersistPendingOutboxAndOriginalTransitionTime
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Open, suffix: "create")
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Investigating, suffix: "investigate")
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Withdrawn, suffix: "investigate")
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Approved, suffix: "decide")
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Rejected, suffix: "decide")
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Settled, suffix: "settle")
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Closed, suffix: "decide")
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Withdrawn, grant: "create", expected: 403)
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Withdrawn, grant: "investigate", expected: 200)
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Closed, grant: "settle", expected: 403)
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Closed, grant: "decide", expected: 200)
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Approved, grant: "create", expected: 403)
+Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Approved, grant: "decide", expected: 200)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Draft", eligible: False)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Planned", eligible: False)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Dispatched", eligible: True)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "InTransit", eligible: True)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Delivered", eligible: True)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Exception", eligible: True)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Closed", eligible: True)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Cancelled", eligible: False)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "missing", status: 503)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "null", status: 503)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "empty", status: 503)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "malformed", status: 502)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RealNilRoot_PreservesNilAndUsesSeparateNonNilDependencyTrace
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_MismatchedIdentity_IsMalformedNotNotFound
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Active")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Suspended")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Retired")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "carrierCode")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "displayName")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "status")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "supportedModes")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "carrierId")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitCarrierNotInList_Generic404
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitCarrierWithNullShipmentCarrier_BusinessMismatch422
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitCarrierWithMissingShipmentField_IncompleteBeforeCarrierRead
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "refusal", status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "timeout", status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "invalid-json", status: 502, code: "CLAIM_REFERENCE_INVALID")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "not-found", status: 404, code: "CLAIM_NOT_FOUND")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ProducerShipmentRootInvalid500_MapsToClaimReferenceInvalid
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\"···)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "not-json")
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···)
+Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 501, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···)
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.NilAuthoritativeRoot_PersistsAndReplaysWithoutDefaulting
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Scope_SoftDeleteAndActorReplay_PreserveReceiptAndAudit
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_RootBeforeChangedPayload_AndOriginalResultReplay
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.CreateFingerprint_LexicalAmountChanges_Conflicts
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.CreateFingerprint_NullableOmissionAndEmptyEvidence_Replays
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.CreateFingerprint_EvidenceOrderAndMultiplicity_RemainSignificant
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.TransitionFingerprint_EquivalentInstantsDifferentText_Conflicts
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.ExactCreateListAndHistoricalReplay
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Active", expected: 422)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Suspended", expected: 200)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Retired", expected: 200)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Active", expected: 200)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Suspended", expected: 422)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Retired", expected: 200)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Active", expected: 422)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Suspended", expected: 422)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Retired", expected: 422)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "entity")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "receipt")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "audit")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "beforeCommit")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AfterCommitFailureRecoversByReceipt(unknown: False)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AfterCommitFailureRecoversByReceipt(unknown: True)
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.SimultaneousReplayAndCodeUniquenessHaveSingleWinners
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.TwoByTwoScopesDeletedReservationsAndReceiptVisibility
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "tenant_id")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "legal_entity_id")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "sub")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "read")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "create")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "status.change")
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.OrderedHeaderBodyAndReplayValidation
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.HeaderBoundariesNilCorrelationAndSchemaStrings
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.StatusReplayFingerprintAndDeletedHistoricalReceipt
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.CanonicalFingerprintPreservesModeOrderDuplicatesAndStrings
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.SignedDuplicateJsonContextMemberIsRejected
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.ConcurrentDifferentPayloadUsesFirstCommittedReceipt
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.IndexCreationFailureIsNotIgnored
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.BarrierSynchronizedDistinctTargetsEqualValidSerialHistory
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.ValidationStagesOneThroughFiveDoNotCallRepository
+Diten.SupplyChainService.Tests.Carriers.CarrierManagementManifestProviderTests.Declares_exact_tenant_page_and_three_existing_permissions
+Diten.SupplyChainService.Tests.Carriers.CarrierModuleRegistrationHostedServiceTests.Sends_exact_manifest_with_supported_internal_key
+Diten.SupplyChainService.Tests.Carriers.CarrierModuleRegistrationHostedServiceTests.Missing_internal_key_fails_closed_without_request
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-missing")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-status")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-correlation")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-causation")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-time")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-payload")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-duplicate")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-missing")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-status")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-correlation")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-time")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-duplicate")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "slot-not-released")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_reconciliation_read_failure_is_not_success
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-broad", aggregateSkip: 0)
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-exact", aggregateSkip: 1)
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-broad", aggregateSkip: 2)
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-exact", aggregateSkip: 3)
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "active-slot", aggregateSkip: 4)
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Unknown_commit_without_receipt_stays_unresolved
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_commit_ack_loss_recovers_original_scoped_receipt
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_ack_loss_keeps_one_scoped_terminal_effect
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Duplicate_policy_preserves_replay_precedence_scope_and_non_name_duplicate_failures
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Scenario_name_conflict_uses_the_exact_successor_message
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Request_does_not_accept_client_scope_or_unknown_fields
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Plan_projection_has_published_wire_keys_and_provenance
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityIsolationTests.Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Finite", count: 1)
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Infinite", count: 0)
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityReplayTests.Fingerprint_uses_decoded_business_body_and_exact_target
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: null)
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: "")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: "   ")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.OperationalPorts_FailClosed(value: "mongodb://127.0.0.1:27017/?replicaSet=rs0")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.OperationalPorts_FailClosed(value: "mongodb://localhost/?replicaSet=rs0")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.RemoteHostOrMissingReplicaSet_FailsClosed(value: "mongodb://db.example.test:31994/?replicaSet=rsq131")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.RemoteHostOrMissingReplicaSet_FailsClosed(value: "mongodb://127.0.0.1:31994/")
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.LaneReplicaSet_IsAccepted_AndKeepsTheFiveSecondSelectionTimeout
+Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.ExplicitSelectionTimeout_IsKept

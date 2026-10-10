@@ -1,0 +1,112 @@
+{
+  "phase": "cu05",
+  "extra": null,
+  "startedAt": "2026-09-27T13:34:32.279Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-05-skeleton-empty-error": {
+      "result": "PASS",
+      "skeletonDuringLoad": {
+        "skeletonVisible": true,
+        "tableVisible": false,
+        "errorVisible": false,
+        "skeletonDisplay": "block"
+      },
+      "skeletonLate": {
+        "skeletonVisibleAt2000ms": true
+      },
+      "afterLoad": {
+        "skeletonVisible": false,
+        "tableVisible": true
+      },
+      "skeletonTimeline": "1163:none:1 1265:block:1 1364:block:1 1464:block:1 1565:block:1 1665:block:1 1765:block:1 1865:block:1 1964:block:1 2065:block:1 2165:block:1 2265:block:1 2365:block:1 2464:block:1 2565:block:1 2664:block:1 2764:block:1 2865:block:1 2968:block:1 3065:block:1 3164:block:1 3265:block:1 3364:block:1 3465:block:1 3565:block:1 3665:block:1 3880:none:1 3964:none:1 4065:none:1 4165:none:1 4265:none:1 4365:none:1 4465:none:1 4564:none:1 4665:none:1 4764:none:1 4865:none:1 4964:none:1 5065:none:1 5164:none:1",
+      "empty": {
+        "tableVisible": true,
+        "skeletonVisible": false,
+        "errorVisible": false,
+        "text": "No data available in table"
+      },
+      "error503": {
+        "errorVisible": true,
+        "tableVisible": false,
+        "skeletonVisible": false,
+        "message": "Claims are temporarily unavailable. The outcome is not confirmed; try the same request again.",
+        "reference": "11111111-2222-4333-8444-555555555555",
+        "retryVisible": true
+      },
+      "note": "empty text is the shared localized DtEmptyTable (by design, Q64a F13)"
+    }
+  },
+  "png": [
+    {
+      "name": "cu05-skeleton-en.png",
+      "sha256": "f1d4e30fed2b51cd686cd673964ce6f1b8b5c145b02ae3465e2c945c4cc90aa4",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T13:34:34.611Z",
+      "phase": "cu05",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-after-load-en.png",
+      "sha256": "e36262626fc220fe6f58c918a8b498eb244deef5253813a1145c6ee8fd2df550",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T13:34:37.966Z",
+      "phase": "cu05",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-empty-en.png",
+      "sha256": "7cd098e16f1661b33f47732771b43e8bb77e2b5f604d710fe0451857addb5a6c",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T13:34:40.672Z",
+      "phase": "cu05",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-error-503-en.png",
+      "sha256": "dc77de899e14e06458cc9cd1e3f90bb878ad9bb55be0316ebd42890a97aec6b4",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T13:34:43.270Z",
+      "phase": "cu05",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "cu05-error",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "cu05-skeleton",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu05-skeleton",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu05-empty",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu05-empty",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu05-error",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu05-error",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T13:34:43.292Z"
+}

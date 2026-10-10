@@ -1,0 +1,17 @@
+[
+  {
+    "source": "/private/tmp/mod0183-ver-r4/verification-report.md",
+    "copy": "docs/records/audits/2026-09/mvp6-continuation-review-2026-09-16/ver-04-report.md",
+    "sha256": "2c0d5669855cd1db8295b74e196b31bda4728f3522739921cc650d999ce8eee7"
+  },
+  {
+    "source": "/private/tmp/mod0183-ver-r5/verification-report.md",
+    "copy": "docs/records/audits/2026-09/mvp6-continuation-review-2026-09-16/ver-05-report.md",
+    "sha256": "4dfc6a373774b56fa75a958384d80ce4946d4af8852ee71ef068705fd1d7f922"
+  },
+  {
+    "source": "/private/tmp/mod0183-ver-r6/verification-report.md",
+    "copy": "docs/records/audits/2026-09/mvp6-continuation-review-2026-09-16/ver-06-report.md",
+    "sha256": "27f64f80256b7dab8744c3617a898a3cc2d20a0c51cc56205aef6ed229404ae1"
+  }
+]

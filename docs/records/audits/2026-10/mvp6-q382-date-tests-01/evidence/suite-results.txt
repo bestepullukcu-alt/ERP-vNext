@@ -1,0 +1,13 @@
+## before (HEAD-state copy, original details.js 44895025): 161 passed / 1 failed / 162 total
+  Failed: Diten.Web.Tests.Controllers.ShipmentJsonAdapterChallengeTests.Unauthenticated_adapter_uses_json_401_while_page_keeps_login_redirect
+## after (this lane): 163 passed / 1 failed / 164 total
+  Passed: Diten.Web.Tests.JavaScript.ShipmentDetailsDateNodeTests.DateRoundTripHoldsInZone(zone: "UTC")
+  Passed: Diten.Web.Tests.JavaScript.ShipmentDetailsDateNodeTests.DateRoundTripHoldsInZone(zone: "Europe/Istanbul")
+  Failed: Diten.Web.Tests.Controllers.ShipmentJsonAdapterChallengeTests.Unauthenticated_adapter_uses_json_401_while_page_keeps_login_redirect
+## sabotage (bridge only, UTC prefill restored): 1 passed / 1 failed / 2 total
+  Passed: Diten.Web.Tests.JavaScript.ShipmentDetailsDateNodeTests.DateRoundTripHoldsInZone(zone: "UTC")
+  Failed: Diten.Web.Tests.JavaScript.ShipmentDetailsDateNodeTests.DateRoundTripHoldsInZone(zone: "Europe/Istanbul")
+## final bytes (re-run after the comment fix): 163 passed / 1 failed / 164 total
+  Failed: Diten.Web.Tests.Controllers.ShipmentJsonAdapterChallengeTests.Unauthenticated_adapter_uses_json_401_while_page_keeps_login_redirect
+  Passed: Diten.Web.Tests.JavaScript.ShipmentDetailsDateNodeTests.DateRoundTripHoldsInZone(zone: "UTC")
+  Passed: Diten.Web.Tests.JavaScript.ShipmentDetailsDateNodeTests.DateRoundTripHoldsInZone(zone: "Europe/Istanbul")

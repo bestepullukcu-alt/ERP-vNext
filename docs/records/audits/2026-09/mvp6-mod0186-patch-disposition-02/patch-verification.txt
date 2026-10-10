@@ -1,0 +1,6 @@
+Fresh in-memory exact unified-hunk application; no pack written.
+Baseline 07a8a0159b5ab02fecc7b1aa6314106d81b1584150169f457cb9a395614a04b7
+Patch 2a1843eb52b8fd0b61a553c06a75d07b32dda57bf020734d946c004b82893709
+Target 745e9cc74abf8791d5fd9f96086ae8a721bfe041b6a4168353af059c6d34fc54
+Two hunks;1removed status_note;2added lines (status_note + exact published binding). Context matched exactly; all hunk counts checked; no fuzzy application.
+status:draft preserved; all other baseline lines byte-preserved.

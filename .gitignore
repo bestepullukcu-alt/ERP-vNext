@@ -20,3 +20,12 @@ tmp/
 .dotnet/
 scratch/
 execution/DASHBOARD.md
+
+# Generated test and tooling output — never committed (Q348, 2026-10-03).
+TestResults/
+*.trx
+*.bak-*
+/rework-results.json
+
+# Per-developer Claude Code permission overrides — local only (R-5, PR #134).
+.claude/settings.local.json

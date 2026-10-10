@@ -1,0 +1,10 @@
+# MOD-0187 Claims — frontend Program.cs / DI (no new line required)
+#
+# SupplyChainClaimsController takes (HttpClient, IConfiguration, ILogger<>) exactly like SupplyChainShipmentsController;
+# the transient default HttpClient registration (builder.Services.AddHttpClient();) already exists in frontend Program.cs.
+# MVC discovers the controller by convention. No frontend Program.cs edit is proposed.
+#
+# DEPENDENCY (FINDING F3): the controller uses Diten.Web.Security.JsonAdapterEndpointAttribute and relies on the JSON
+# challenge branch in frontend Program.cs (OnRedirectToLogin → 401 JSON when the endpoint carries the attribute). Both
+# exist in the A12 360 overlay (7b6a0d1a…) and NOT in the common checkout. The isolated environment recipe already
+# applies that overlay; the integrated target must contain it before this module lands.

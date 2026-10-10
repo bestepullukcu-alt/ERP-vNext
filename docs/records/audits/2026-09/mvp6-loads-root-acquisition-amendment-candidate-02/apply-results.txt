@@ -1,0 +1,6 @@
+git apply --check: PASS
+git apply: PASS
+applied YAML SHA256: aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744
+applied annex SHA256: e2107301e3c6cfae5e6768de77c19f5b4fa5ea7ff42f1a4023650bd3fb7750cd
+YAML byte equality: PASS
+annex byte equality: PASS

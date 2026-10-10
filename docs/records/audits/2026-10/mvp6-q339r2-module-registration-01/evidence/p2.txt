@@ -1,0 +1,9 @@
+== p2 pid=65571 now_listening=yes after_s=1
+== p2 GET /health -> 200
+== p2 alive_before_stop=yes
+== p2 stopped; 58339 free
+--- requests received by stand-in Platform on 58340: 1
+{"at": "16:20:53", "method": "POST", "path": "/api/internal/module-catalog/register-manifest", "header_names": ["Content-Type", "Host", "Transfer-Encoding", "X-Internal-Api-Key"], "X-Internal-Api-Key": "<redacted len=45 sha8=e96ab27d>", "moduleCode": "shipment-tracking-pod", "pages": ["SHIPMENTS", "SHIPMENT_CREATE", "SHIPMENT_DETAILS"], "body_bytes": 1920}
+--- service log
+[19:20:53 INF] Module manifest self-registered with Platform. ModuleCode=shipment-tracking-pod Attempt=1 CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=

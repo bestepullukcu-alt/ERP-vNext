@@ -1,0 +1,3 @@
+reserve_id	reserve_scope	reserve_optimistic_hours	reserve_most_likely_hours	reserve_pessimistic_hours	root_r2_allocation_optimistic	root_r2_allocation_most_likely	root_r2_allocation_pessimistic	remaining_unallocated_optimistic	remaining_unallocated_most_likely	remaining_unallocated_pessimistic	disposition
+0183-3-REMAINING	Shipment module-owned wiring and narrow rework	9.6	16	25.6	4	8	16	5.6	8	9.6	FULLY_COVERED
+0183-6-REMAINING	Composed runtime and independent browser VER	20	36	64	8	16	28	12	20	36	FULLY_COVERED

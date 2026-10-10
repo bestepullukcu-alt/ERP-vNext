@@ -1,0 +1,9 @@
+PASS yaml_byte_identical_to_candidate01
+PASS old_version_claim_removed
+PASS new_version_claim_exactly_once
+PASS one_line_replacement_only
+PASS wire_v1_preserved
+PASS no_negotiation_warning_preserved
+PASS root_authority_preserved
+PASS apply_yaml_byte_equal
+PASS apply_annex_byte_equal

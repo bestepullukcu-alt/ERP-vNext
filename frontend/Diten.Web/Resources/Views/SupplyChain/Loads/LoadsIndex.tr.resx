@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="LoadsTitle" xml:space="preserve"><value>Yükler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Yük planlarını görüntüleyin ve mevcut taşıyıcı ve sevkiyat referanslarından yük planı oluşturun.</value></data>
+  <data name="AddNewLoad" xml:space="preserve"><value>Yük Ekle</value></data>
+  <data name="LoadNumber" xml:space="preserve"><value>Yük Numarası</value></data>
+  <data name="CarrierId" xml:space="preserve"><value>Taşıyıcı Kimliği</value></data>
+  <data name="CarrierIdHelp" xml:space="preserve"><value>Taşıyıcının UUID değeri. Seçilen modu destekleyen aktif bir taşıyıcı olmalıdır.</value></data>
+  <data name="ShipmentIds" xml:space="preserve"><value>Sevkiyatlar</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>Sevkiyat Kimliği</value></data>
+  <data name="ShipmentIdsHelp" xml:space="preserve"><value>En az bir sevkiyat UUID değeri. Sevkiyatlar Taslak veya Planlandı durumunda olmalıdır; girdiğiniz sıra korunur.</value></data>
+  <data name="AddShipment" xml:space="preserve"><value>Sevkiyat Ekle</value></data>
+  <data name="RemoveShipment" xml:space="preserve"><value>Sevkiyatı kaldır</value></data>
+  <data name="Mode" xml:space="preserve"><value>Mod</value></data>
+  <data name="ModeRoad" xml:space="preserve"><value>Karayolu</value></data>
+  <data name="ModeAir" xml:space="preserve"><value>Havayolu</value></data>
+  <data name="ModeSea" xml:space="preserve"><value>Denizyolu</value></data>
+  <data name="ModeRail" xml:space="preserve"><value>Demiryolu</value></data>
+  <data name="ModeParcel" xml:space="preserve"><value>Paket</value></data>
+  <data name="PlannedDepartAt" xml:space="preserve"><value>Planlanan Hareket</value></data>
+  <data name="PlannedDepartAtHelp" xml:space="preserve"><value>Yerel tarih ve saatiniz. UTC olarak gönderilir.</value></data>
+  <data name="PlannedDepartAtInvalid" xml:space="preserve"><value>Saat diliminizde var olan geçerli bir tarih ve saat girin.</value></data>
+  <data name="Stops" xml:space="preserve"><value>Duraklar</value></data>
+  <data name="StopsHelp" xml:space="preserve"><value>En az iki durak; 1’den N’ye numaralı, en az bir Yükleme ve bir Teslimat içermeli.</value></data>
+  <data name="StopSequence" xml:space="preserve"><value>Sıra</value></data>
+  <data name="StopLocationReferenceId" xml:space="preserve"><value>Konum Referansı</value></data>
+  <data name="StopAction" xml:space="preserve"><value>İşlem</value></data>
+  <data name="ActionPickup" xml:space="preserve"><value>Yükleme</value></data>
+  <data name="ActionDelivery" xml:space="preserve"><value>Teslimat</value></data>
+  <data name="ActionReturn" xml:space="preserve"><value>İade</value></data>
+  <data name="AddStop" xml:space="preserve"><value>Durak Ekle</value></data>
+  <data name="RemoveStop" xml:space="preserve"><value>Durağı kaldır</value></data>
+  <data name="FilterCarrierId" xml:space="preserve"><value>Taşıyıcı Kimliği (UUID)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Planlandı</value></data>
+  <data name="StatusTendered" xml:space="preserve"><value>Teklif Edildi</value></data>
+  <data name="StatusAccepted" xml:space="preserve"><value>Kabul Edildi</value></data>
+  <data name="StatusDispatched" xml:space="preserve"><value>Sevk Edildi</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="EmptyList" xml:space="preserve"><value>Yük bulunamadı.</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Sağlanmadı</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data>
+  <data name="ListUnavailable" xml:space="preserve"><value>Yükler yüklenemedi. Daha sonra tekrar deneyin.</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>Girilen değerleri kontrol edip yeniden deneyin.</value></data>
+  <data name="AccessDenied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>Yük planı başarıyla oluşturuldu.</value></data>
+  <data name="CreateReplaySuccess" xml:space="preserve"><value>Bu yük planı isteği daha önce başarıyla tamamlandı.</value></data>
+  <data name="RetrySameRequest" xml:space="preserve"><value>İstek kimliğini korumak için formu değiştirmeden yeniden deneyin.</value></data>
+  <data name="ErrCarrierNotFound" xml:space="preserve"><value>Kapsamınızda bu kimliğe sahip aktif taşıyıcı bulunamadı.</value></data>
+  <data name="ErrCarrierModeUnsupported" xml:space="preserve"><value>Taşıyıcı seçilen modu desteklemiyor.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>Kapsamınızda bu kimliğe sahip sevkiyat bulunamadı.</value></data>
+  <data name="ErrShipmentNotEligible" xml:space="preserve"><value>Bir yüke yalnızca Taslak veya Planlandı durumundaki sevkiyatlar eklenebilir.</value></data>
+  <data name="ErrShipmentCarrierMismatch" xml:space="preserve"><value>Bir sevkiyat zaten farklı bir taşıyıcıya atanmış.</value></data>
+  <data name="ErrShipmentAlreadyAssigned" xml:space="preserve"><value>Bir sevkiyat zaten başka bir yüke ait.</value></data>
+  <data name="ErrDuplicateShipment" xml:space="preserve"><value>Aynı sevkiyat birden fazla kez listelenmiş.</value></data>
+  <data name="ErrInvalidLoadStops" xml:space="preserve"><value>Duraklar 1’den N’ye numaralı olmalı ve en az bir Yükleme ile bir Teslimat içermelidir.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten alındı. Farklı bir istek için bu formu kapatıp yeni bir form açın.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>Bu istek başlattığı yükle artık eşleşmiyor. Bu formu kapatıp yeni bir form açın.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Taşıyıcı veya sevkiyat verileri geçici olarak kullanılamıyor. Aynı isteği yeniden deneyin.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Taşıyıcı veya sevkiyat verileri okunamadı. Referansla destek ekibine başvurun.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>Sevkiyatın güncel durumu doğrulanamadı. Aynı isteği daha sonra yeniden deneyin.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>İsteğin sonucu şu anda belirlenemiyor.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Beklenmeyen bir hata oluştu. Referansla destek ekibine başvurun.</value></data>
+</root>

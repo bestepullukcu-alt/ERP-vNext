@@ -1,0 +1,1366 @@
+[
+  {
+    "path": "services/Diten.SupplyChainService/Diten.SupplyChainService.sln",
+    "sha256": "4aff7ba721fe3c8528f33e2024d9cfb658733280a3f0228dcc09ebe5f370f72e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/README.md",
+    "sha256": "7ca4cff26ad346be0314a9c4b478aff4c82abe55963585b3c4fa84743f5c236f"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/runtime_probe.py",
+    "sha256": "5a4d88ec602faf93e8b06ada29b8b05da720a2ab5eaad086f90be0c28588d552"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/verify_evidence.py",
+    "sha256": "b05167a33a0ecacb21745e0e26fa5ae48b84b6da0490517f41e9c4d6b95bf1ef"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/sent_body_probe.py",
+    "sha256": "e390694644201c0d3e797d486d1abb015cdc4286d7bfbb09842af2cac8121e97"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/source_restart_probe.py",
+    "sha256": "51c83e4f18fdb003a705c51ee3678b3ef7975c47bf8845d1807ec56fc5d3ceb8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/contract_regression_probe.py",
+    "sha256": "3d16d2b2511577d1504fc7f7f04ccb80767e890c893196a0f501135e55f6f35e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/startup_probe.py",
+    "sha256": "1f9155d7a0cb11ef80972f7e0babc7f0944bd341ebfa2844c777b8ddfac13be5"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/test_runtime_capture.py",
+    "sha256": "ea50dec116662f4b3458e14f1aa4e75d10fcbf9050d5ce9fd2b207e68986f473"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/loads/runtime_probe.py",
+    "sha256": "e5ee0aed4e93cc340928bfb9e060a88c6feda0c7b538b5262a9c639c2080a4a6"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/loads/verify_evidence.py",
+    "sha256": "bb1a8c9fff87a2d7b07a495741000b70878304a118783338838d8de1cccd73e2"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/loads/restart_probe.py",
+    "sha256": "296c150a7b426c1664aae5e5cb7e90614bf7fdb88de77f52a5a0165f58cd5dcf"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/loads/failure_probe.py",
+    "sha256": "8f6cc448b3d54808e1fdb5f572575fab8c71e65dbfa1edaedeead6bf4ac75a63"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SourceClientTests.cs",
+    "sha256": "e04f0c220c558c826517fdd2ea36d875bd655e0febdb749862b90a280fbee6e0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentRootHttpTests.cs",
+    "sha256": "3f086517d67067fc7528501ed888adbe26293181257d396ed16360c191b2f3c0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs",
+    "sha256": "835a1738c87d67e1c9aabde0e0a5d459eba1523c92e4ac2b9055441ce8d370e9"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentRootStorageTests.cs",
+    "sha256": "e620323736547164351554a9a19804cc3fd083a8160470274168188f907e9518"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentTests.cs",
+    "sha256": "4399366cd95b5754f7115a067cadda221bb219fc39c0f1417b5589ae742f4bd5"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SourceIntakeTests.cs",
+    "sha256": "05bd1128e31a7598d615bd649f7d13f6c20303768e4127ef3f2737e766c977f9"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj",
+    "sha256": "90457f887b527421ed544285b3c4113bc412bf159c90432c6a3a9328aac698a3"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadReplayTests.cs",
+    "sha256": "339cfa25f19233aa8aa299729e983c36969e9a2d52f2a3151c54ce69046d3a80"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadLifecycleTests.cs",
+    "sha256": "62578700235ecd94d802145af5fac333bc163917633f44a5ff0f1f1a6b62488a"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadAtomicityTests.cs",
+    "sha256": "38f82163deb50fc385950fc18354cf63d25c3186e934342bdd141b61377da54b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadIsolationTests.cs",
+    "sha256": "86bda1874580722103b6224a5ecbc7b45eb6e58da830f5c34ba5885698778fc9"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadReferenceTests.cs",
+    "sha256": "95359ff40beee9b713e313d37aae454255c4de5fe272d478937bf6f8e28e9525"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadConcurrencyTests.cs",
+    "sha256": "7d1e058f737ee556e5edb8a0b4dc255bca157419d47b936e826655d0e6c742c0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadContractTests.cs",
+    "sha256": "01bf7087461b3b3fb5502ca5ddf268248e45b2e59c4e9151035b81d022bd7d0c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Carriers/CarrierContractTests.cs",
+    "sha256": "9bad4d542805d1f479a2dcd5d4a82e1d0b88447dcc9ed226628f61c1e65ade23"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnReplayTests.cs",
+    "sha256": "df01bbec41c434a39612f7db7f5c5aa2630e1ffc283dd03faa7c83bdc2a07ebe"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs",
+    "sha256": "fd7d9739a228b2112c771825bca2c9d8e96fa7f5086c30e7987ad1d912a8fcf4"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnLifecycleTests.cs",
+    "sha256": "79c800a5c177645e4fdbef599f03abbb608ad09b79a9619b42f1bc11635500b2"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnContractTests.cs",
+    "sha256": "54a8028a5009fc556c9f1a038b0da40fead01ad09cecd90dca0a56c8edcbd9da"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnConcurrencyTests.cs",
+    "sha256": "a88ca330f191eb3bea94c1cf60e10552aca2f3ea4d09045af2536f2dabd9bc0b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnIsolationTests.cs",
+    "sha256": "6c7894e68090d6bed837ca1b6bf7365b49fc3e19fef5e9c61546c4cc65e46be1"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnReferenceTests.cs",
+    "sha256": "c66eca35ca909a0228195c831386ad869caaa4b4b20d00f0399effb69e1fa635"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimContractTests.cs",
+    "sha256": "7950b0280038b651f19844c6ae2d2edef22c5b15e88d12ce546b5f7219e46892"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimPermissionTests.cs",
+    "sha256": "9ec68b2d2684ab43b1657af0df26a84c037095d5fe6fa065770b08d340ab5edc"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReferenceTests.cs",
+    "sha256": "ecb3641e6c6245af370f286ba3f6dc564016aa244c0790f11bc653b0f380f573"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimIsolationTests.cs",
+    "sha256": "d112497ded68afd4226e223948589820393fd2ab7037d478001c1aa8f11b8def"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimConcurrencyTests.cs",
+    "sha256": "69c9fd8b2f19e1046be805701e61186a53be99035c9524530ed0b3e81f2da37d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimOutboxTests.cs",
+    "sha256": "c0930491e3b751dff4373941cc0532d624301841e29c2e623eb0a5025c3c70e9"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimAmountTests.cs",
+    "sha256": "dfd4e72ef6900997f41f7a6e7fcbdbb3bad2155737e73985e5b40dfe9f28d971"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReplayTests.cs",
+    "sha256": "f1c0916cfddebffe702de0d5490bd08c493eea364b6521e6a640eeef55662420"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimAtomicityTests.cs",
+    "sha256": "bc72742fcb7e1b15ee4d3cf129669ba27de5778672c8cd08cbfe5d3f39f0f0de"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimLifecycleTests.cs",
+    "sha256": "56eb72c0e4ece4b4549a3c8e6364582a15aa0860316f9528508a3e0167b07c57"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/root_uptake/runtime_probe.py",
+    "sha256": "fd6736871fb6a7c24a0ae37b41037027eb77ba808d48f417c1389aec5ccdf127"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/root_uptake/verify_evidence.py",
+    "sha256": "a74442421b1aa0e9b9755467f364778a7d222220c6ce96aba43c3b592a9476f8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/root_uptake/restart_probe.py",
+    "sha256": "de14966a0e3c554601feab5d79ead2e3d2147b4809b3f63187ece0ba0f4f17ba"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/carriers/runtime_probe.py",
+    "sha256": "a9eabcb4259876ddac7fa0f4329ab8d309e291c7e4a53507bff9ecd822d43a06"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/carriers/verify_evidence.py",
+    "sha256": "b898437bc64fa0a4bc8d851ab28adbc34038feb9a0cdb159b8ea7a29089bbd9f"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/carriers/restart_probe.py",
+    "sha256": "8ff2674d5cc17c38b7349b0617523239e2502e4c4bb9622a393cac9d1d63f434"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/carriers/test_outage_capture.py",
+    "sha256": "32036af47cc1247e10515f8e1e8cd8304a762086a2d55add259d2f143be26d0c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/returns/runtime_probe.py",
+    "sha256": "582d37e5701a456e2fa8b2477f54c925ed407793bbbb6e0637351141743d703f"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/returns/verify_evidence.py",
+    "sha256": "7906404545e0e48e85751f469b686650518a847afcd390e31f49e0926d2b1aa1"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/returns/restart_probe.py",
+    "sha256": "4127cd2bc01f1c178d1e23750dba623f1762e085ef1362e8b5a75b89d42bb360"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/claims/runtime_probe.py",
+    "sha256": "2f19fd5fe2887f49f231bacaf26e627f6d80e6fdc0a5f55a8d43fcf184597c47"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/claims/verify_evidence.py",
+    "sha256": "78af2a44f5b90650eeaa1c0acb23ab28047a46d713ceaf47b95cc1e43a37d5b5"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/tests/claims/restart_probe.py",
+    "sha256": "575c8fc19fc88c125d56710bc6e145219de6102b5c395af021b7827fda4aea57"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj",
+    "sha256": "538e96c6af15637e2e476350ac1982a596c3e140f1e8f7f89fd92ec6a014d985"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/appsettings.json",
+    "sha256": "8bd8b168db554080fbf101ade9796cb19171a7771b85bdea89e6be6f6ed7f0a5"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs",
+    "sha256": "a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ShipmentContextMiddleware.cs",
+    "sha256": "5db994141d70f033d0421ed4eea3cea21aeedf2562a75e7eeb1b2f5d8737ff50"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ContractError.cs",
+    "sha256": "e1075090637ecde25ba458859e5b592b52adcdba2462b97e1ef3d28ad828d4d7"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadContractError.cs",
+    "sha256": "70ed4d6b27e1d407bc2edc7b85c15423086dba5c7cb8a91a078f50187a8bd8b6"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadContextMiddleware.cs",
+    "sha256": "dced8a88602fc9446fb011fdd55c354fd68f1e28a86c3b664daf65bc4753792e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadsController.cs",
+    "sha256": "a75f157106ed84a30a5e1ca66453302e2eb2c80ff3b83a821d0f7572755e6e36"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarrierContractError.cs",
+    "sha256": "bb348554dbf02b78dd90176344e383da1fd16f72a6a742615f9d698dedf3683b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarriersController.cs",
+    "sha256": "d82bd483cd723dfa90d7bbd361100d0901ae81d463fad5e7c4f940f218fab456"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarrierContextMiddleware.cs",
+    "sha256": "98599ec1d1bfa6ad79586b8bf37657ceb0055478947d371fd0fdf51d83a7daa7"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnsController.cs",
+    "sha256": "dbb036cce6b974e2e808fde0dc396211ed8450c19fa0c5e2806c1d35589fb4fe"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnContractError.cs",
+    "sha256": "6b1a88f8b18139c18c28834bebaa367dd2ced9498c149afc5847f4bdc093a152"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnContextMiddleware.cs",
+    "sha256": "464bd7676b27096cc7f34f88ae04436cac3fa56ac6fe431be03504d6e7ad3bb6"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimContextMiddleware.cs",
+    "sha256": "f81abe15bfdf7550d20c98f198f651f69c53dbc39557f141e9a16b5109ca7a68"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimContractError.cs",
+    "sha256": "11c12d2e962926f8ced892e24704527b26b26d71eb563aafc9d1582a95cf0373"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimsController.cs",
+    "sha256": "b6f819d2e289e835c7a44e0573f66cb732099ec8e5f96315b83a361d68f14553"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/ShipmentsController.cs",
+    "sha256": "149150b2f2e76eb7443415b0600e728600c8c9d89fcaba0bdafc461beb9e5793"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/CustomBaseController.cs",
+    "sha256": "321ee43cad27806f6e9cac06f88a9ffd350a6dde050b4042d7f2ae5d66b07ff6"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj",
+    "sha256": "b598894f4741ed773e1c4ae015ce584a47d3c2e48e29aefdd3e722c280888f1d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Loads/LoadPermissions.cs",
+    "sha256": "457dcbb59e1a7d17a7880d81ae6ed75b7f361617364aa95f187b186905348fcb"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Loads/LoadPermissionAttribute.cs",
+    "sha256": "c0a202123fcedde23a9e2c1d5f468b02f99581baec825b6b372bd637a849a179"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Loads/LoadReferenceReader.cs",
+    "sha256": "9761a06c6423b3f6666b00aab7cdc09d9d1628267a16994f0fbfab5c165ff043"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Carriers/CarrierPermissions.cs",
+    "sha256": "a4a2886358846808f8575eb5a393c913b1b93ceceebb43e4e340e5db171d5ea2"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Carriers/CarrierPermissionAttribute.cs",
+    "sha256": "280680df41a24a320f696ec5b814afdf4ae735c3c1b7a7730adee23b4e5a14cb"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnPermissions.cs",
+    "sha256": "9c3f64ed87e178695809e1932c2d0d32226a902a7d25181f4c2b6639ff6a05a6"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs",
+    "sha256": "b499556f6d96b74e63b1789836bbbb050f3410489b2ec0d5c84357741cc99d8d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnPermissionAttribute.cs",
+    "sha256": "bdb399f9126b38c3dfd50b8148414ec55d88c252b4ef2e757e60a50d25eb015d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimPermissionAttribute.cs",
+    "sha256": "ec760a90498dac831af42fc85442931d0f8e7fa0a0fa09129690c85bc5682934"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs",
+    "sha256": "8d5fe25c7a202d1cc893aa8100ba7eeb3c26193b3275ad7224a871de0f830788"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimPermissions.cs",
+    "sha256": "03c697514d502b8797b8a7fd5622e3d1547db159213c7a60f2e806e391aff4ce"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Authorization/HasPermissionAttribute.cs",
+    "sha256": "0b31e354aa118df875aba9f03b097afef08360a851e071f6becfcdaa2a41322d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Authorization/ShipmentPermissions.cs",
+    "sha256": "46f9cebff09e584ab29d7d351c2d816d6ebff616287a569fbe9109d887e05525"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Eventing/ShipmentOutboxWorker.cs",
+    "sha256": "5de854b49c4490be759b9120f455e4db1f61d5948f030c9cc6b3f31b4258b628"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/SourceIntake/ReadOnlySourceClients.cs",
+    "sha256": "080e8ded77d2fbc0c279c03140fecb04f6a83cdf047454fec2dd05a19acb2bbb"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/SourceIntake/FrozenReadSchema.cs",
+    "sha256": "9cd82faa0dca83b13613f5d08d6344f262704a56d2269f5c8103efcf60175a1c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/DependencyInjection.cs",
+    "sha256": "b17792801495c58fd3d7a46c5cf9197f4761da8acd5753465282830d432cc3b2"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj",
+    "sha256": "74b6362d25cd2ef91b6e5f33be75a818b8549b4a4b0803e5682bcb38659f3037"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/LoadRequestFingerprint.cs",
+    "sha256": "326e857b75d7a1e223e89f09c9c1a031224a3abe1a1bda561ceda35c8015c9a8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/LoadReferenceSnapshot.cs",
+    "sha256": "d6f1cf0318f02ca03f11096bbfa9b00da9513b1c0ac1f8f0f7b994d2afc9c9a3"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/ILoadReferenceReader.cs",
+    "sha256": "b4d7968f1d3682488c6948ec9bca8f166ca0fdec7e669d629d8b948b1328e113"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/LoadRequestContext.cs",
+    "sha256": "e60d11a6e223dc94fe073e32cd7bcbefb97afc39d18ec02707c8acf396ea7e82"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/LoadModels.cs",
+    "sha256": "edb0b15e158d7949b1f76771b7e5618ba158a425f199a8a4d9d043fb01691b94"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Queries/GetLoadListQuery.cs",
+    "sha256": "c43e218b5b1c511e073de8de712ce80a976cc9a748305fcd3c7049034b9c4816"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Commands/TransitionLoadCommand.cs",
+    "sha256": "acbac41622bbbfdf39f09292013934b8dc94a8c0931d9aa2a414d5d6eec6e33b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Commands/CreateLoadCommand.cs",
+    "sha256": "fa8188ce2b12c07d2345a1c357f9a628a5d33f00b88e2b3fd7f3c504afd06f85"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Validators/GetLoadListValidator.cs",
+    "sha256": "5fb9464406821436b8e443d56b8fdf57d9669f151d0a6f8f0c95415b76c51b9e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Validators/TransitionLoadValidator.cs",
+    "sha256": "004663e06daa12ac8d0ccdc906f3c0ba6148e2dbfab2a39300a1ea7b1c6b805c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Validators/CreateLoadValidator.cs",
+    "sha256": "91212068c4f04af99dd2d58c580a46b3e896b3bb95345d716eb8ca8880a3eabe"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Handlers/CommandHandlers/TransitionLoadHandler.cs",
+    "sha256": "39f91648d6c54088a284f453ac38fdfc8cacc08de5eedcb0ee3cfa81fd638fec"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Handlers/CommandHandlers/CreateLoadHandler.cs",
+    "sha256": "67d85885205a4fc5540f18a06e769bd928344180ad38b5669d9accd887fc52cb"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Handlers/QueryHandlers/GetLoadListHandler.cs",
+    "sha256": "9b2f43a8fe05d418abb73983d40a2365e32e66c3e01da741b33680136c3297cb"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/RequestFingerprint.cs",
+    "sha256": "7446f1eed56ec208d0762d0a52f15bda198d3f08e437976bb47abb1e7ac89fc0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs",
+    "sha256": "261599302d76dae29322664c845e2b2dc7ad1262b69588cf0f1860b083dc75b0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentModels.cs",
+    "sha256": "21b358b5f0b4af2f54e36a8cb2c219c68a433ea2faed9451ccc03a921a23a6c4"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Queries/GetShipmentListQuery.cs",
+    "sha256": "582f45644a7e0f4b26e9a27e1107b57dd18527ccc2d58de8bbec92837ab85dfa"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Queries/GetShipmentByIdQuery.cs",
+    "sha256": "cc1056ce4ddceacd80ff911701a067141f5b96483e3240fedbb29306d295da86"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/CreateShipmentCommand.cs",
+    "sha256": "940c20661b333917421eddd326a4e718490721bb979bc0830403e4009ccdc6a0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/TransitionShipmentCommand.cs",
+    "sha256": "561602ffe5c066145e2f20cf989ad528608f0e041988ebdac193589d9e57286e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/CapturePodCommand.cs",
+    "sha256": "a7505f307c56c950116ccba54646dd1d8bd597f7f7759dcc9173819019b9da80"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/TransitionShipmentValidator.cs",
+    "sha256": "73e34cea323e3f90c54b1e6c0e84a9a34ba593f85b52cb496ebd19236c478931"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/ShipmentNoteRules.cs",
+    "sha256": "d5a16a25b67907199830b6ae1c9be81e15655f02af99c0a5f0c51e8a4db768d3"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/GetShipmentListValidator.cs",
+    "sha256": "d50359e100618c4a278ae4bdd9830f9a3f89232b2bd6833ff6449640c8b55a96"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/CapturePodValidator.cs",
+    "sha256": "2134888eb5931647f859674058fa22ff28f1b3344457ede8df81798047baf8ea"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/ShipmentLineValidator.cs",
+    "sha256": "f726c1c01d3c8de6d9cfa1353666e95c85f5c8312071871d11d09bf8ddbb32c5"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/CreateShipmentValidator.cs",
+    "sha256": "1a6fd6ce369101141466ac581f189bc7f9e8b2e2f60184a391a600f7ddda040a"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CreateShipmentHandler.cs",
+    "sha256": "96f9d319377b45087b2af142f32f0190dc064b901b3d96e751b7c9d3aea96676"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/TransitionShipmentHandler.cs",
+    "sha256": "d1901667f138886f64bf481c09afd3119f42433084b9a72fe9f65d29f2c9a152"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CapturePodHandler.cs",
+    "sha256": "56d635da6d183d30dbe999767088c1436080067d4a43480cacf102d200e2f37c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentListHandler.cs",
+    "sha256": "6f19b899606655674bd5bb37ab484c76698ce1583123ec2eae50520e79ea264c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs",
+    "sha256": "bd86160e3273d605f99a4d276a80400473789b99cd3939e09dab4ea59f1f9c33"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/CarrierModels.cs",
+    "sha256": "8487ade38fdee010c8705237ee20a3aa002f8465104e026adf70427ba98ab108"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/CarrierRequestFingerprint.cs",
+    "sha256": "61e06591695a249dbfdefb385ae2953f8a4b18059a8d8b903b33c1ae02dccc9f"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/CarrierRequestContext.cs",
+    "sha256": "81214c51ed613e9fb27483506a60720fefc40b6303cbf91492de6a1e91333d70"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Queries/GetCarrierListQuery.cs",
+    "sha256": "bc875e4731abebeb4d827d8603bcacce8ff3c3a60529a05f7082faacf844df86"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Commands/CreateCarrierCommand.cs",
+    "sha256": "b758414f4bc18caa4e206fb022e7555af9f13fff07dfa64a16816b3d44f023fd"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Commands/ChangeCarrierStatusCommand.cs",
+    "sha256": "7376ab7003c2d5448c88917c12edb4d43dd17f17ecc399742dde3d3a61eb153a"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Validators/GetCarrierListValidator.cs",
+    "sha256": "1a7bc0a4e96b71173f1490ebd3784b82c174809c81bdc61c989eab8755cf6cc7"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Validators/CreateCarrierValidator.cs",
+    "sha256": "0e41592b9f9559c462d25e32eb0d20a400988440ba219ce01ebd6342f507e2a4"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Validators/ChangeCarrierStatusValidator.cs",
+    "sha256": "10f01feede8abca2397295839971d81943acb0d1a57b16c892f53e61bf31e396"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Handlers/CommandHandlers/CreateCarrierHandler.cs",
+    "sha256": "d24ed4f1e66dde749d9b787bf0736a49afc0c9bf21db814709e6cd32c551d8b8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Handlers/CommandHandlers/ChangeCarrierStatusHandler.cs",
+    "sha256": "c13843b578d7a8b30e5156463773b58b6b7fd358dec251376e75479972c49c08"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Handlers/QueryHandlers/GetCarrierListHandler.cs",
+    "sha256": "992d46e1f8a5b6d71ef1814e32ae08093b8e9756bc1c1a611be3ec9208b24aa9"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/ReturnSourceSnapshot.cs",
+    "sha256": "6362c05e19f58f084acb3ac7e81646549b4145a2f5ce5344339a87cbd6f1cceb"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/ReturnModels.cs",
+    "sha256": "b4fec3945f2f8d560394a16db3594d14489def644699d2fc4d140c7bf3648c35"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/IReturnReferenceReader.cs",
+    "sha256": "a4040831ea56049c0d133e594aa3e6946a2e29bf27be10a7628a66ffcec14b38"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/ReturnRequestContext.cs",
+    "sha256": "92ed7ed15e2b2136c103d5228fa0b913d2619e7bcc3a6708841595ca901e4945"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/ReturnRequestFingerprint.cs",
+    "sha256": "49299c018629e23ada8324a63297c6e7c53b069d08e75c1a83201f93e9873db7"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Queries/GetReturnListQuery.cs",
+    "sha256": "c019e87ea32bd5374cdad71d5546955d55577bf30e33cd5899ec6c066ea78f8d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Commands/TransitionReturnCommand.cs",
+    "sha256": "df81cc314a05a4a8bb5d5aa07e4d3bc7ee8b7f8f781006b1850de5a62ce98687"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Commands/CreateReturnCommand.cs",
+    "sha256": "c4a4da1205733458d18be945fa8a9ccdf8b4e516083a9f458505539dd434ca05"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Validators/GetReturnListValidator.cs",
+    "sha256": "8fbebd7fa37c5bb09a9bd0f73f984970d025ea66e6efda3597c99242a4592774"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Validators/TransitionReturnValidator.cs",
+    "sha256": "35e0a398e63a2f44bff6fbd2ebfe22bdb5f60c4a2cb40937e766421655cb3cf0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Validators/CreateReturnValidator.cs",
+    "sha256": "64c8227c78e17d7dab3672a5af9e75f90134a5f99230be50c7aed1f1848def4f"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Handlers/CommandHandlers/TransitionReturnHandler.cs",
+    "sha256": "fc10ff2b1db776a91193a44b8d71ba4cbd8521f41e66df94b7a164840812824d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Handlers/CommandHandlers/CreateReturnHandler.cs",
+    "sha256": "baaaf177b7f4ac51a40d3f498a57f5f43fc54fcdd47919bfa56b13439c9e927c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/Handlers/QueryHandlers/GetReturnListHandler.cs",
+    "sha256": "63c3d1d28c4f8d7cdd77c1c7595f622943bedb45adaf1cea5a6820e4ef742d2c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/WarehouseIntakeCoordinator.cs",
+    "sha256": "954dfbdf5825ee5609e777f59c76cb55ec0ffd9e280f152e834500e9d9c3d072"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/WarehouseShipmentMapper.cs",
+    "sha256": "040251b4cb96ef9fd578f748ea30b95a2e135e99f541683088c6bf8b693ca415"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/Contracts/SourceClients.cs",
+    "sha256": "3c391d0becd4a022e10d70232e23bbfc807fabbda78bd5c6c337ec9b5d6f2973"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/ClaimModels.cs",
+    "sha256": "2b8b79d618fcd21e5197bbe36c3089e2888aad36e2b7adc24d28adabb7c9911b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/ClaimRequestContext.cs",
+    "sha256": "f49b1e5a0e987d6d48ad5e7d88c5f7ab9974dcb83d7ad420fe19da6c3b0e259f"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/IClaimReferenceReader.cs",
+    "sha256": "038b1a42edec31273fcdba92fb1628a4d04aa997f3972dffb5274f017a8a50b8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/ClaimRequestFingerprint.cs",
+    "sha256": "82b28c195e5dcc3c8b2b009baec9f4af2cf535054a12b534644d8656042e9314"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Queries/GetClaimListQuery.cs",
+    "sha256": "fcb25ca1fbd670d7dcbd8f0c0efcdb3667ce50c40cf81e0d4504b0b9f06326f0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Commands/CreateClaimCommand.cs",
+    "sha256": "e921a2551a3c3425f39ae3976858808f8d0e5e180d1120513dbb8ba96501c7c3"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Commands/TransitionClaimCommand.cs",
+    "sha256": "c02fc6daf0de997ea4de325b2d738eca992c777861e7468a3755c7e9e08dedcd"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Validators/TransitionClaimValidator.cs",
+    "sha256": "f17dacde38169ec66c58d212a8925ffc16b544fe4ddf582c25fa62987ffd3ee0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Validators/CreateClaimValidator.cs",
+    "sha256": "a0b26fda1a5843bfc87d382fb75e92fa33de9b7fd21e654213e5335555e0f266"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Validators/GetClaimListValidator.cs",
+    "sha256": "337d8de737bed571c42abfc1a8b7ca7d31a4e5c2bc5c952f69f34afb51fd3a6d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Handlers/CommandHandlers/CreateClaimHandler.cs",
+    "sha256": "6244605b66e7eac2287a68eed1ba66832973e8b221131022ad0eb67f3053a0e4"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Handlers/CommandHandlers/TransitionClaimHandler.cs",
+    "sha256": "4f73eb5b0343c2781afaa472b2cc33c9905f1f9cf39e55686d35627a805df6a7"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/Handlers/QueryHandlers/GetClaimListHandler.cs",
+    "sha256": "c83f35600934e2ecdf66605d4d9d7d758d848f685f6d75b6b5580e85a6af25bf"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/Response.cs",
+    "sha256": "e9b2595c74c28027faf0c8f7c9d6a724e9b9732db5aef7f689255eeab2310776"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/IResponse.cs",
+    "sha256": "4f891deabdd6c21e2919d47dc557b4e7b2af39cb40348a3b350f5bb9627a3d4c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/RequestContext.cs",
+    "sha256": "46cd3aeb5b425d71e4fa4e83191e0299df5ea485cac2a9d5946488b386ead7e8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/PerformanceBehavior.cs",
+    "sha256": "ee9a4759ce74eba26a8599f61b7d8320d33ff1a067b82cdcead69bb73a3b5cd6"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/LoggingBehavior.cs",
+    "sha256": "2302db846e5376df1a0eac25d8e6b73fe740e1dda5dd6a344eec1cd9464b1f9f"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/ExceptionHandlingBehavior.cs",
+    "sha256": "ad77113956c6052fda52f632cc81824f28d9a4b5c5f8a19fb9591cb176d0481e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/ValidationBehavior.cs",
+    "sha256": "2f7d2705cf167b421bb416b4fc12ad7a53e9a7dcfa5552bacfdd1ac5afaa253e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj",
+    "sha256": "dfa8aef748834f47f0135ddb4d626c71985810b048546bbcadc084968399108b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/ILoadRepository.cs",
+    "sha256": "6a7cce0ecd949d8536d61fa0a2ad126d0820bc0a5fc0061e8ba4248308371850"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadAssignment.cs",
+    "sha256": "be2da887dc8edd9612aceb884c0ca8af167f780e39669fbebd1e0e06849b1e16"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadPlan.cs",
+    "sha256": "f852baee67a9eff37481ae941c828518496336a8cbc6efb2cecf9f94cd55fa28"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadStatus.cs",
+    "sha256": "4a1217536bbd35a0b70d1111f0fb7cf022755b92e7eb75577a78806b5bfdff29"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadScope.cs",
+    "sha256": "3daf7a7ff6a1ab094081a31a385b28d587abf8a6200acd030c1a964e6407a027"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadStop.cs",
+    "sha256": "e972b00682e149397dd96235a2aa9dfc2ad93f6f01cd6c56581111cc6556c7ab"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadLifecycle.cs",
+    "sha256": "877796900e1a71260de334193dd6590d667f09777e55316ba0cd7aa15055f712"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadMutationResult.cs",
+    "sha256": "0fc0b49951d2801292f4ffe6b92273178073ae7b343ec1c7fa76ef8295353106"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadAuditEntry.cs",
+    "sha256": "c6655f0bb5cb541ad1fd5b30eef630deb80789c33e2f0b3f6dd7bc4fa16c26a6"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentChange.cs",
+    "sha256": "d04b1346e3e2c508d85c974d3a9ca4d3df77fb48c55be77e1092a0d86bee95cc"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentStatus.cs",
+    "sha256": "d979c1ccaf90980c5fc1900af103a375fbc2ca96e25e92cbf37cdfffacc9de15"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs",
+    "sha256": "83840fc4561e2cb88e8ab92e1970c3a1e07be0f334c23714f3ee727edbc5ef33"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLifecycle.cs",
+    "sha256": "73812d110d02773db442f29287a0f37a12e07b665c5ca9748d71d53dd9fd1b68"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLine.cs",
+    "sha256": "d56f98d643af7f9cea110f7ed649dd494e05154d0915be6ac420125bc498ffb6"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentDetailReadResult.cs",
+    "sha256": "c56c28658228fb7e0230135094da6801cc45576492add18b4b135a5bf9f6e8f8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLifecycleEntry.cs",
+    "sha256": "cbd26f07baf8e392de1f653ba0a7d6a329a1c8e71903b212e0578944303d741e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentMutationResult.cs",
+    "sha256": "0c5b6847c2022749c593671461097b32969f069dc9bf07ce3c47cf4ff05d553d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs",
+    "sha256": "a6c4f67cd95c10b5e3163efc97bb0c9dda924cb031d87088319e839ba716b325"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ProofOfDelivery.cs",
+    "sha256": "280a37e4cc2a67b6174ab44c2977dc143a95da947e74c6eb82b9ea956bd5cecc"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentScope.cs",
+    "sha256": "2db360cfc96578ff478558443c07ba6117a25ee2fde87f0dc265659c3e406701"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/Carrier.cs",
+    "sha256": "083e595d72113e0461ea2dd6ae3623b7c61db8c2cad4fd2122ef7756588ece61"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierPersistenceUnavailableException.cs",
+    "sha256": "8fe2d0f6dda9716bc69196b08b2a37b02bf71edfd30ca7ff128031e1993c3e01"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierLifecycle.cs",
+    "sha256": "1ef4cfbc599716351de402dd8e5dd0f497b26bdabe521b4140a3030992ad36bd"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/ICarrierRepository.cs",
+    "sha256": "b8bc0a9a995a68f327dad13e15bfa75530ba81ba781efdc0b6ca46c1666290d4"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierStatus.cs",
+    "sha256": "e40c34c4da10501ca27713bdda1b449775b5306d48328f9e177ac9d93decfe15"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierMutationResult.cs",
+    "sha256": "c837b5a9ece37d80960980eaf270107f1d55bcbc9299683f4a752c8bbb49646d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierScope.cs",
+    "sha256": "359678cd6dd1b1167fe003fe2eabd0911c1472bd6b6b51f940c762260354add8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/TransportMode.cs",
+    "sha256": "3accae49a758ddb00510cfd31687d4afa65cd7d40ac4c43f939648279d188083"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/IReturnRepository.cs",
+    "sha256": "bb73f4b04d813b5ba15003f26c1143a041f42f4c4709e2574a8b2f91dcfddddf"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnScope.cs",
+    "sha256": "3d20ca92a7dc0af710cc8257d708f697e8886829330b710bab5cb2c5449d682c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnQuantity.cs",
+    "sha256": "032f977cb27a077516825362dd48a70f9f9385a4a6237da22ed7bb029ba69089"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnStatus.cs",
+    "sha256": "7e533fb5b2c030656de1f23be87e0193b6751f1799591282a6b28280916bbca8"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnAuditEntry.cs",
+    "sha256": "3024eb3f1ca11c5b755278881970ccd041e324ac3c5ff1e94c56163620c80645"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnEntitlement.cs",
+    "sha256": "b4e6fe8afa7df3e6a8bc4be0275c09f5cf366eab8c2b79af540a902d39ff1727"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnLifecycle.cs",
+    "sha256": "5a085a15e838b9e8de8e355d0567b883b83db516b9e830bd76ea8b9909044ff4"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnMutationResult.cs",
+    "sha256": "9c5cc448ff3389779aea7e5843169252528cac6ae6e66fb922f889784b925f03"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnOrder.cs",
+    "sha256": "b4e738312cb623a3db7c6c22a0b73b1ed2a6b3b636159aa67ffb12c7ca94d000"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/ReturnLine.cs",
+    "sha256": "828004478950f02d97f34f87e7ce5803d38100a95b4f68be5fb50c79f8792584"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/SourceIntake/SourceIntent.cs",
+    "sha256": "d2cf0ed240275a629abd0fe9f139859881989b582eaa59707216a765eb93f91b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/ClaimReferenceSnapshot.cs",
+    "sha256": "98ebe4ad25aa6f550dec19f07dd243baccc4fc91393d227d32ecd2a5b3c820d0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/IClaimRepository.cs",
+    "sha256": "610ca7678a9c29025b355d78c631c4fcc5a5845b0c177cb8f962d2708bade87b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/ClaimLifecycle.cs",
+    "sha256": "59f6efd43a697c248f5035212a9f448c6639c2163773c09378308e7c6a8642ca"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/ClaimMutationResult.cs",
+    "sha256": "e090934c14cab18e50b9e2e37dfc9dd83134c8214b403b15cda4c5436cd1e6c0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/ClaimScope.cs",
+    "sha256": "1cbfd707348766dfaeeb8c1ac58d9212f314075982665f1f2834100f3484de49"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/ClaimAuditEntry.cs",
+    "sha256": "2926601eaf33f2b2767b94ef9d2b740794b52eddd4cc0e2b2ad974b3724bb8a3"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/ExactClaimAmount.cs",
+    "sha256": "52e72bea4d19cf578a8ff93818cb9e0f3743da8cec8ddd43323807bbb96c1701"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/Claim.cs",
+    "sha256": "44011bc61cd7cf9785e3caad54709d6261de2f61d73ab9f7a468355a7aa80150"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/ClaimStatus.cs",
+    "sha256": "fcb5c62634afb387a76c74d26328b5268329f1c7d99695a1bdefe5cedaee4eb9"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Common/EntityBase.cs",
+    "sha256": "a1f313b526c459542226d2693d73998a393b119fe3a0ae0c735b092c738bec6e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/ShipmentSchema.cs",
+    "sha256": "df9fe448332d79820d3149344f78d6ddd14247a5f0dc9ec8132ca0f596584549"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/DependencyInjection.cs",
+    "sha256": "ac0b00e29ca40fea365794fbdc41ee9e27b4fff6a9f10a869f33ebabb8bac0dd"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj",
+    "sha256": "97f68ac32c8336d0467d7bc2028b0b0c38a031c22640b8e2df6ba864182f6c11"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadSchema.cs",
+    "sha256": "910c01f1d20ac9cc9623ca5480d12a1407b57c770aacad3a83949b68aecd31e5"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/ILoadCommitProbe.cs",
+    "sha256": "b3305b8b99396d2f001eee59d232a6687f7d7a7b0e529f6d4932ebfe7066960c"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadRepository.cs",
+    "sha256": "1f50f47a45d5e498858b31593adf27d556c1aa58cef0c62bc347b11acdfe8637"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadPersistenceRegistration.cs",
+    "sha256": "bcdc47029928870eac686b85f5dd3dfe9565803da66ce49712ea5853014a19b7"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadOutboxStore.cs",
+    "sha256": "b57853776550ca586e3357c5a8c30e5e38896371cfb44eadebeeca214ff7f827"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/NoOpLoadCommitProbe.cs",
+    "sha256": "03659cab45f66f223d21f2cfd520c456085d30a1b1ca5da839b2b4c4d113e1e2"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentDetailMaterializer.cs",
+    "sha256": "832bc229cd6be609d6bea9fbff103f15dbd475901a93f56fcaae922641a8985d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/SourceIntakeStore.cs",
+    "sha256": "c1294f5b43fed2253bebb2bca47150ac8bb059ee3076dc7019fc34b6a82bbe83"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentOutboxStore.cs",
+    "sha256": "6ca3231614b59652273c1a9dfe2b5527dc308249dcde81c024361e08d628c831"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs",
+    "sha256": "51a79d9c9f809782e8ec41d06ef559385b84b0b928561469fba76c48847e5d7b"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/NoOpShipmentCommitProbe.cs",
+    "sha256": "142442b288870f9691e342606513ff511b077f0e8bfa2b30a83f239faad8d521"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/IShipmentCommitProbe.cs",
+    "sha256": "9a0d3f76497df9e792ef8d7a77abe5e1d268fcc9cf600c00183b4cc41efbb6d0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/ICarrierCommitProbe.cs",
+    "sha256": "ea47440a8372ce557787379bd703ea02c8af72c40c718aa43d91e35de58bd3d7"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/CarrierPersistenceRegistration.cs",
+    "sha256": "908333b6511990061695d3342bd948b10ffdb7dae7a4bbb63ecc8e8a7b479c48"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/CarrierRepository.cs",
+    "sha256": "2c8ae26d2350be62506de78c3df3ff11f68d7ad44921ef19ba9217cffcd81e6d"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/NoOpCarrierCommitProbe.cs",
+    "sha256": "be907d9c81f120109fbd42574f7875c43abcccbccd13366e390d820a1a87416a"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/CarrierSchema.cs",
+    "sha256": "e7b5eaad20dc15cc7310aec7af0dd36e38cad44e1d9ad419555f9aad3a3de265"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnPersistenceRegistration.cs",
+    "sha256": "527544c6864e9bdb6cfd87f154b9301a0e53e1c21912e2d759550ada31353bb7"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnRepository.cs",
+    "sha256": "7e0c0f460a22a70fffd796a9b626aac83dd578830421e3521e5a439997354108"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/NoOpReturnCommitProbe.cs",
+    "sha256": "0929047e7ec46c7c7c95d946ac80c767046fcc284341a9898245ae2d944d8280"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnSchema.cs",
+    "sha256": "bff3c6c1425f7e78430782591580de83d152847248d83856e071a8b9d8205a9a"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/IReturnCommitProbe.cs",
+    "sha256": "400126d48ec925c76d8b9b2373e1b3c5ab6259f74e667134a8370c6ee6e5da58"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnOutboxStore.cs",
+    "sha256": "8cb86e597c572d943de1d57afb4c3cccd70a9f07c1f917f71a06890a9e457fcb"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Claims/NoOpClaimCommitProbe.cs",
+    "sha256": "4082bb189256e6bffbec4440913f4fd2544ed79ce88252324cd86007d069a222"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Claims/ClaimOutboxStore.cs",
+    "sha256": "7e66de1bcd0fca817cd157a310e96042ab8fc0a43c30fb903d2644c81bb12eea"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Claims/ClaimPersistenceRegistration.cs",
+    "sha256": "0361088e461cfac00ecf3b34b39ee311a9e58f0b82d51327b82f44ae196752de"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Claims/ClaimRepository.cs",
+    "sha256": "bc4271597ebc10a2321d664fea76b3f50c1f4eae1497b664c3515cef1a19989e"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Claims/IClaimCommitProbe.cs",
+    "sha256": "71cf0ae5d7fc65be462905b79ea5355539568f26485cf3c13f1de57042417bf0"
+  },
+  {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Claims/ClaimSchema.cs",
+    "sha256": "e1107b5d70c4c458264e5dbd6ce6b8389468c49654e2e5c2c254b53ce95ec0f4"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretRedactor.cs",
+    "sha256": "c87de8a71f946cc5dfbdbe0487f43c50f0ec928280d8809ddeed9ce5175c4d96"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtSecretRotationResolver.cs",
+    "sha256": "dbce0abb76e59d8f8871252dc104680df5daa5ec5be5cfdf999810e070bf3dfc"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretRequirementValidator.cs",
+    "sha256": "364c4803ad729c6994414be0c61bc6b788352d03e47bffdc8329e0565421d791"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretValidationResult.cs",
+    "sha256": "b47dda97466984e8069f55ddc72c369f88f5e50be79114cac95596b4e2d34a41"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/RequiredSecretDefinition.cs",
+    "sha256": "d68a444a23ea8a0985de03fa7a138f16e361f87f7c7c1af14d5bbfa2ada02184"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretRedactor.cs",
+    "sha256": "b78abc31852c4cd2324ab3a790615ae1bd5cf23298541676f47ca0a330d5f230"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretRequirementValidator.cs",
+    "sha256": "35788a543d74d184bc09a803b0cfd75695e15f84af84147c45ce9b334d2ed0bc"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretValidationException.cs",
+    "sha256": "54b90099120dfeaaba693011dafe4c4feba4dd1ad0bf063e78f44d286c9fbbb4"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretRotationResolver.cs",
+    "sha256": "15b6d9a8c60ab654c41cef6b4c7047441ebca4c016f0e5889a2ed9374de5d86f"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretsProvider.cs",
+    "sha256": "15b20a5b3b583f66e8f75cbf34f994df9b4f6f64223e389a6d91de37a95197d2"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretRedactionOptions.cs",
+    "sha256": "57271717a8cc81eeff4ea6f14f471d70eec86ba8aa4a26c1118d0a865678da96"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ConfigurationSecretsProvider.cs",
+    "sha256": "b118f061555db2a0473f32f71bac1ca5ddbc49806453843d91f48fb4068b848f"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtSecretRotationOptions.cs",
+    "sha256": "ccdfefd621b39f94d7906a7a64a650132164afe45475c301e5554a2c7899fb8c"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretServiceCollectionExtensions.cs",
+    "sha256": "809bced41724ce87aaf13d406bad1b152ea165a1422a67c949511f91092bd339"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretsProviderOptions.cs",
+    "sha256": "a2d9e1a2da627876b8a9a6827e1594d71135c53907e37f4095f8866a1016f339"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj",
+    "sha256": "19ec252014f3fba09b7e3dd0366552d96a3478dc978be8374da6d1377988a30e"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs",
+    "sha256": "6aeb051c7750c41994b4b8d9a912fa8c8cbdd94a7637da441ee8897ad956d700"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/tools/scan_production_secrets.py",
+    "sha256": "a86dc6c1866624e100e53c5655130866b994b708a8482cb6af4b44f4535ef0a4"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/tools/Scan-ProductionSecrets.ps1",
+    "sha256": "85794337fc3c1f3961508f1d46c8a82636d9f778bcfb435bc536dab86c625037"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/.tmp-fu11/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.pdb",
+    "sha256": "550ee3f3d4d31489417f397f7eb0d7a575b4a1fae041cf39f42a64f86286a6dd"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/.tmp-fu11/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll",
+    "sha256": "a43502687b12d50543ecfa2cf8b7d68cbd97bfbd394628f25518d70c4f060ff0"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/.tmp-fu11/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.deps.json",
+    "sha256": "758e3bcf781ab89f3be80ab2e663284e3f586d0b01e48470926088c88caa4e99"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/obj-hierarchy-check/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.csproj.FileListAbsolute.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin-verify/Diten.BuildingBlocks.Security.Secrets.pdb",
+    "sha256": "a0c8987ca9ebed980bb6e900babef28eb7167169de820efdae4c12fbd94b31bc"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin-verify/Diten.BuildingBlocks.Security.Secrets.dll",
+    "sha256": "c902ebfa00c4fa4425d4a72df22aea44a0355d33152179766926abf789d60122"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin-verify/Diten.BuildingBlocks.Security.Secrets.deps.json",
+    "sha256": "758e3bcf781ab89f3be80ab2e663284e3f586d0b01e48470926088c88caa4e99"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj",
+    "sha256": "6a1cff2e8b5dd80b47fb8bfcb1f60e7e5985832e4a84788b8e955240d3f81b30"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/SecretRequirementValidatorTests.cs",
+    "sha256": "0e15851dfae26ed431f70189905abe4d372172ae778941a23a22c44765b05fb9"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/IBackgroundJob.cs",
+    "sha256": "063dfbf4f62d91c214819100f3dddc122b7414711838fc9cdfeeb2a594d0bc2f"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/BackgroundJobDescriptor.cs",
+    "sha256": "d56c218a472ad40bf33072156729307251849fbd591e40518cd7c5d89fdbcea1"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/RecurringJobRegistration.cs",
+    "sha256": "fd3e739c8decbeecabe44766b2d20cc984959992d6fc85f727847cc51f4f4970"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/IBackgroundJobScheduler.cs",
+    "sha256": "55b64003d5026de1e4b56ddb40539190812507eee7a2ef3829cc194e63faa5cf"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/BackgroundJobContext.cs",
+    "sha256": "b5d09c7dacde88c23bdbc42075937a6cefdf96fd22f1bd9b531601338215f796"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/IRecurringJobRegistrar.cs",
+    "sha256": "66eb14d6fd6e56aad83bb133d8eaa3919e1efc5a875d0eb1426a9e02ee860570"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/BackgroundJobSchedulerOptions.cs",
+    "sha256": "617e6ca79b161861a98d05b57428f16c944affcb00fdeedee5f0a08adc729c48"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/IBackgroundJobHandler.cs",
+    "sha256": "58ade16985c870749460082d8cb5e7d623b5ab0b13a6c0e1e656596e045e83e7"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/Diten.BuildingBlocks.BackgroundJobs.csproj",
+    "sha256": "12985a174dc55d6f519f2205bf7b35d0123d6d7dfa7fe3fe34f2f3028ba30604"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/JobRegistrationOptions.cs",
+    "sha256": "2b6917f909ee90372192fbb8769c3a911664f49b55c4f5c29f0f765b01358c8e"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/BackgroundJobTriggerTypes.cs",
+    "sha256": "56dceda13a17650b46e7250f285226ecd7562be8d621bb324484debb3cfd6102"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/BackgroundJobValidationException.cs",
+    "sha256": "7817caa02715fd634899b7cd4ffa1579f711f3c1e74be2f40397cf3236a0c01f"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj",
+    "sha256": "12985a174dc55d6f519f2205bf7b35d0123d6d7dfa7fe3fe34f2f3028ba30604"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/ModuleManifestDocument.cs",
+    "sha256": "bba6a9cc7ab6ad3aee9ccf9e67ad231c14e18d90d90733ba432d10c2ff419718"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/ModuleRegistrationRetry.cs",
+    "sha256": "042a25881c9eba2d7f7fc1f14180e6b5ef176fcfc0df8e4071a4bbf78b43af92"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/IIntegrationEvent.cs",
+    "sha256": "55b6e002d2409af5352463d2cc392b68484af392cbd063d2c23a232df849c9a9"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventErrorRedactor.cs",
+    "sha256": "57cb3105df2c8f51678d4533239f4f138a03efbbf576d9cfc380f8f17cff120e"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventPublishOptions.cs",
+    "sha256": "eaac42f4aa59a84710d2cb0b27608d7f245f91c59414e794a22965f4beacf4da"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/HmacSha256EventSignature.cs",
+    "sha256": "b257fb36830d3c1d3156a8fcdf3134d5ca60e4dc2d31ffe65b7cf0a80b5f3a72"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/IInternalEvent.cs",
+    "sha256": "eb57c8d6566312d8813af607e758d6dbf9b84e56112a6ae1b6b0aa1ed2f594ce"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/TrustedTransportMetadata.cs",
+    "sha256": "5ba770f02fb9e6036a3b96f93ba2b9d3cd5b2eabb2b4f3b193a7a16ebb26c7ba"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/IEventHandler.cs",
+    "sha256": "c9e640000b1144bdd112892fcf2f6076fdb6bde2aa634cf4ba3b25afaec9df30"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/SignedEventContracts.cs",
+    "sha256": "a7ca21dd05a7ef7271c50bfc8b1426abf1b09c5e7ef4c4b275dcbc672ca9a707"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventValidationException.cs",
+    "sha256": "8cdd2900329572a35ad457de01fba9d921bb9bb728832deef8913e071d0263d7"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/IEventTransportPublisher.cs",
+    "sha256": "9ab0ed4f39acaac2ed7bbb47718e3c35881aeefc1a51d88c24f7f01d527a2bff"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventTransportMessage.cs",
+    "sha256": "b7084f67c99793de044b31735ecb18690f8b189d1068ac0d241d3a4219ec39c5"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventName.cs",
+    "sha256": "bcc17746f8fc383779653d27b884ab9681486598bc1ce5118d9d751e1423f7ed"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventOutboxPublisherProcessor.cs",
+    "sha256": "0118c390544f7708af8e09f4755f2ca5789dc100a04f4b31125565729ec2c632"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventPayloadContractValidator.cs",
+    "sha256": "ad56fa265c8b5f233458f92ed0369edcb5d584d89752acbdd04bbb0a468e9362"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventTransportExceptions.cs",
+    "sha256": "655780c9b774ceec0bbde6ad86000b5d7b5acb46f2c25bdb800f974f2e429f26"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/IDomainEvent.cs",
+    "sha256": "0f0b0a5e136ccd4fc888a1d64a1c3d1d2091b44cbe57c58931c11e3e6fca902b"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventMetadata.cs",
+    "sha256": "655418034e189bacefcfc6fc53234955bd169ea88290d6cdae9bad074fe80533"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/ITrustedTransportMetadataProvider.cs",
+    "sha256": "d842a810590da86700f100f1e9e7a9f76511ef2b21030fbcaac822c687e81534"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/OutboxEventBus.cs",
+    "sha256": "17a4d5e3c576c2f2b519eb4c0ab9e47c485000d72d17bf464fa2f2b7290c7372"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventOutboxContracts.cs",
+    "sha256": "a369c4757bc419073d7d938523d6611d07f6313e72ff26be04e57c738ce2e160"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/Diten.BuildingBlocks.Eventing.csproj",
+    "sha256": "12985a174dc55d6f519f2205bf7b35d0123d6d7dfa7fe3fe34f2f3028ba30604"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/EventEnvelope.cs",
+    "sha256": "7e12393398b5149d23eb2a406e84fa15e59b4277fe8c0aeed2c9561d5edd7a7f"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/ICanonicalIntegrationEvent.cs",
+    "sha256": "adc4e9c4e2ace3ff561cef6627284645ee6b5621a16e54c96628b53ba6cb08a5"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/IEventBus.cs",
+    "sha256": "e289b8101024b13445816ebfc9b6139c4687256c836dc32fdf35b24004c81a1f"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/RawSignatureHeaderExtractor.cs",
+    "sha256": "890e067b73e16cb1a2cf56dda82fd2b1f5cbbd278d2da105294f869f0dcc94ce"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceStability.cs",
+    "sha256": "69d64af21ce18a9f08464e437f6cd9ea7385a76ddd23c160828ba76f980bac0e"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceEndpointManifest.cs",
+    "sha256": "3316472e577dfe2589af9b71417f23b5b7f090a9a8132c96c74081beddca920e"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceVisibility.cs",
+    "sha256": "7ba8f2f4d9d45acf8935d44e120a0ed11dc1375d08ddffb25524525515e4c630"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/IInterfaceManifestProvider.cs",
+    "sha256": "ffd9474245ea0238523edb2c6445054eb0698de1c7deea31c63451bccfe51a2c"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/ConsumesInterfaceAttribute.cs",
+    "sha256": "077b6412b9ea5771d5b746aff0a31af9e1e45f1d721ca7cd5477860792085523"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceDefinitionManifest.cs",
+    "sha256": "d1d43075242e8bed85d489cfb5993d83414dc723664a0f5c444e6e234b29ae43"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceRegistryAttribute.cs",
+    "sha256": "c64e3a0fcecd68b02814cdff9fecf12935188d009c7138c7eeecfe242048b4d4"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceReviewDecision.cs",
+    "sha256": "a5d867f5c4be69645e39cb950bada0480147f074fa581fa8167f9f840318c788"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceManifestDocument.cs",
+    "sha256": "21d8aa15f95f7c9353440c86240f6d18afbe09531773fb548671fa2b060b49bd"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj",
+    "sha256": "12985a174dc55d6f519f2205bf7b35d0123d6d7dfa7fe3fe34f2f3028ba30604"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceConsumerManifest.cs",
+    "sha256": "d78b9963745e4eb03bef33002388cb9a618586c9d828f17a08db8c7b22043c96"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceLifecycleStatus.cs",
+    "sha256": "d91a571a5e3a185a6e8eb1ceb513162678ed2f499d97ef5d661084c488a22638"
+  },
+  {
+    "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/InterfaceChangeType.cs",
+    "sha256": "2af34383c9d3eb35e15087bc143af06a229586ec598a0b2a5101237d35fbab24"
+  }
+]

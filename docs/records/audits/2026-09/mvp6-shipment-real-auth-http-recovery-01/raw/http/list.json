@@ -1,0 +1,37 @@
+{
+  "case": "list",
+  "method": "GET",
+  "path": "/api/shipment-bundle/shipments?page=1&pageSize=50",
+  "requestHeaders": {
+    "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+    "X-Legal-Entity-Id": "10000000-0000-0000-0000-000000000001",
+    "X-Correlation-Id": "cade56f6-4e91-46f4-84f0-4e3bcf2eabcd"
+  },
+  "requestBody": null,
+  "requestBytes": 0,
+  "status": 200,
+  "responseHeaders": {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Correlation-Id": "cade56f6-4e91-46f4-84f0-4e3bcf2eabcd"
+  },
+  "responseBody": {
+    "items": [
+      {
+        "shipmentId": "0857dd87-b133-4b2e-8d90-92ed4aa0bcbd",
+        "shipmentNumber": "SHP-0857dd87b1334b2e8d9092ed4aa0bcbd",
+        "sourceDocumentId": "SRA-OUT-001",
+        "status": "Draft",
+        "carrierId": null,
+        "loadId": null,
+        "plannedShipAt": "2026-09-24T15:06:25.005646+00:00",
+        "plannedDeliverAt": "2026-09-24T16:06:25.005646+00:00",
+        "actualDeliverAt": null
+      }
+    ],
+    "page": 1,
+    "pageSize": 50,
+    "total": 1,
+    "contractVersion": "v1"
+  },
+  "responseBytes": 386
+}

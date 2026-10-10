@@ -1,0 +1,161 @@
+{
+  "actors": [
+    "actor-a",
+    "actor-b",
+    "actor-le-b"
+  ],
+  "fixtures": {
+    "A08": {
+      "root": "770306bf-b5b5-4645-b232-3d2b8713c323",
+      "shipmentId": "868e6fed-32bb-4301-9f6e-fb5223ce6b6a",
+      "sourceDocumentId": "S-A08-63c92617"
+    },
+    "A09-DUP": {
+      "root": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+      "shipmentId": "ba94aaf0-36e9-450c-b982-49406667eeb7",
+      "sourceDocumentId": "S-A09-DUP-eb703504"
+    },
+    "A09-STATE": {
+      "root": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+      "shipmentId": "777e506c-5b08-4e8e-8201-b4604896c61b",
+      "sourceDocumentId": "S-A09-STATE-cfd42b93"
+    },
+    "A12": {
+      "root": "cca9a611-b53d-4ed9-8484-99528d903381",
+      "shipmentId": "194c6d7b-a529-4bbf-83ce-f9263d38bb75",
+      "sourceDocumentId": "S-A12-adfd411c"
+    }
+  },
+  "legalEntity": "30000000-0000-0000-0000-0000000000a1",
+  "setupCalls": [
+    {
+      "body": {
+        "contractVersion": "v1",
+        "idempotentReplay": false,
+        "shipmentId": "868e6fed-32bb-4301-9f6e-fb5223ce6b6a",
+        "shipmentNumber": "SHP-868e6fed32bb43019f6efb5223ce6b6a",
+        "status": "Draft"
+      },
+      "fixture": "A08",
+      "key": "K-A08-CREATE",
+      "operation": "create",
+      "payloadSha256": "3dbd13c90e061d56866b38c1e25583da47f0fcd26163dbb139e9da8ca9130df3",
+      "requestCorrelation": "770306bf-b5b5-4645-b232-3d2b8713c323",
+      "responseCorrelation": "770306bf-b5b5-4645-b232-3d2b8713c323",
+      "status": 201
+    },
+    {
+      "body": {
+        "contractVersion": "v1",
+        "idempotentReplay": false,
+        "shipmentId": "ba94aaf0-36e9-450c-b982-49406667eeb7",
+        "shipmentNumber": "SHP-ba94aaf036e9450cb98249406667eeb7",
+        "status": "Draft"
+      },
+      "fixture": "A09-DUP",
+      "key": "K-A09-DUP-CREATE",
+      "operation": "create",
+      "payloadSha256": "5315891d3e8f9c8e49345854b8eeda26d9681781a0c97ab0d22fa1ac3159898c",
+      "requestCorrelation": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+      "responseCorrelation": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+      "status": 201
+    },
+    {
+      "body": {
+        "contractVersion": "v1",
+        "idempotentReplay": false,
+        "shipmentId": "ba94aaf0-36e9-450c-b982-49406667eeb7",
+        "shipmentNumber": "SHP-ba94aaf036e9450cb98249406667eeb7",
+        "status": "Planned"
+      },
+      "fixture": "A09-DUP",
+      "key": "K-A09-DUP-PLANNED",
+      "operation": "transition-Planned",
+      "payloadSha256": "56894245027c54cd89ebb55425c76310b35f10017523a7ccf882964fa8b5e3ce",
+      "requestCorrelation": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+      "responseCorrelation": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+      "status": 200
+    },
+    {
+      "body": {
+        "contractVersion": "v1",
+        "idempotentReplay": false,
+        "shipmentId": "ba94aaf0-36e9-450c-b982-49406667eeb7",
+        "shipmentNumber": "SHP-ba94aaf036e9450cb98249406667eeb7",
+        "status": "Dispatched"
+      },
+      "fixture": "A09-DUP",
+      "key": "K-A09-DUP-DISPATCHED",
+      "operation": "transition-Dispatched",
+      "payloadSha256": "ddd2884ed08645a70e49cff6d06ba69fcf89348e0f267814ba64f719d9f45161",
+      "requestCorrelation": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+      "responseCorrelation": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+      "status": 200
+    },
+    {
+      "body": {
+        "contractVersion": "v1",
+        "idempotentReplay": false,
+        "shipmentId": "777e506c-5b08-4e8e-8201-b4604896c61b",
+        "shipmentNumber": "SHP-777e506c5b084e8e8201b4604896c61b",
+        "status": "Draft"
+      },
+      "fixture": "A09-STATE",
+      "key": "K-A09-STATE-CREATE",
+      "operation": "create",
+      "payloadSha256": "d336be3cf0e84ee6221c54b229989f6289589659799b4615663efeed36dad4fd",
+      "requestCorrelation": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+      "responseCorrelation": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+      "status": 201
+    },
+    {
+      "body": {
+        "contractVersion": "v1",
+        "idempotentReplay": false,
+        "shipmentId": "777e506c-5b08-4e8e-8201-b4604896c61b",
+        "shipmentNumber": "SHP-777e506c5b084e8e8201b4604896c61b",
+        "status": "Planned"
+      },
+      "fixture": "A09-STATE",
+      "key": "K-A09-STATE-PLANNED",
+      "operation": "transition-Planned",
+      "payloadSha256": "56894245027c54cd89ebb55425c76310b35f10017523a7ccf882964fa8b5e3ce",
+      "requestCorrelation": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+      "responseCorrelation": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+      "status": 200
+    },
+    {
+      "body": {
+        "contractVersion": "v1",
+        "idempotentReplay": false,
+        "shipmentId": "777e506c-5b08-4e8e-8201-b4604896c61b",
+        "shipmentNumber": "SHP-777e506c5b084e8e8201b4604896c61b",
+        "status": "Dispatched"
+      },
+      "fixture": "A09-STATE",
+      "key": "K-A09-STATE-DISPATCHED",
+      "operation": "transition-Dispatched",
+      "payloadSha256": "ddd2884ed08645a70e49cff6d06ba69fcf89348e0f267814ba64f719d9f45161",
+      "requestCorrelation": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+      "responseCorrelation": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+      "status": 200
+    },
+    {
+      "body": {
+        "contractVersion": "v1",
+        "idempotentReplay": false,
+        "shipmentId": "194c6d7b-a529-4bbf-83ce-f9263d38bb75",
+        "shipmentNumber": "SHP-194c6d7ba5294bbf83cef9263d38bb75",
+        "status": "Draft"
+      },
+      "fixture": "A12",
+      "key": "K-A12-CREATE",
+      "operation": "create",
+      "payloadSha256": "6814000de46936dd1621adc0cc1508dd40547c1b130d53234d0ccd82bf164108",
+      "requestCorrelation": "cca9a611-b53d-4ed9-8484-99528d903381",
+      "responseCorrelation": "cca9a611-b53d-4ed9-8484-99528d903381",
+      "status": 201
+    }
+  ],
+  "tenant": "97c59330-dbc4-4665-b29c-0c26dbb5cc93"
+}

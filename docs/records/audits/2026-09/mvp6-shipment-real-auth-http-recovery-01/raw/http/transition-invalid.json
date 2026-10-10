@@ -1,0 +1,32 @@
+{
+  "case": "transition-invalid",
+  "method": "POST",
+  "path": "/api/shipment-bundle/shipments/0857dd87-b133-4b2e-8d90-92ed4aa0bcbd/transition",
+  "requestHeaders": {
+    "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+    "X-Legal-Entity-Id": "10000000-0000-0000-0000-000000000001",
+    "X-Correlation-Id": "f87ab867-ce62-49a5-bb8a-bbd6abe1d84b",
+    "Idempotency-Key": "sra-trans-invalid"
+  },
+  "requestBody": {
+    "targetStatus": "Closed",
+    "occurredAt": "2026-09-24T14:12:25.005646+00:00",
+    "reasonCode": null,
+    "note": "invalid"
+  },
+  "requestBytes": 108,
+  "status": 422,
+  "responseHeaders": {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Correlation-Id": "f87ab867-ce62-49a5-bb8a-bbd6abe1d84b"
+  },
+  "responseBody": {
+    "error": {
+      "code": "INVALID_SHIPMENT_TRANSITION",
+      "message": "INVALID_SHIPMENT_TRANSITION",
+      "correlationId": "f87ab867-ce62-49a5-bb8a-bbd6abe1d84b"
+    },
+    "contractVersion": "v1"
+  },
+  "responseBytes": 166
+}

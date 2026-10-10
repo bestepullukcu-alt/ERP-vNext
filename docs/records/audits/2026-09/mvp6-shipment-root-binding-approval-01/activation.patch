@@ -1,0 +1,19 @@
+--- /private/tmp/mvp6-shipment-root-binding-activation-01/docs-path-authority.before.json	2026-09-19 20:57:18
++++ /private/tmp/mvp6-shipment-root-binding-activation-01/docs-path-authority.candidate.json	2026-09-19 20:57:18
+@@ -1,11 +1,14 @@
+ {
+   "schemaVersion": 1,
+   "status": "APPROVED",
+-  "decision": {"path": "docs/records/decisions/2026-09/mvp6-loads-docs-path-owner-binding-01.json", "sha256": "170ea3c5e47af103aeeceda471606d60fc31e69bff233279cb9ecd4cd6c805e7"},
++  "decision": {
++    "path": "docs/records/decisions/2026-09/mvp6-shipment-root-docs-path-owner-binding-01.json",
++    "sha256": "fe06837bf77c70dacd3525a3b05a9168bb2965cd5bfc3ba3927efa90892a2307"
++  },
+   "canonicalTargets": [
+     {
+       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+-      "sha256": "93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571"
++      "sha256": "91d505c900ce214262fd35ecb6bad9f005b4bbc42f1680d9db7cc1932bf0fbc9"
+     },
+     {
+       "path": "docs/analysis/contracts/carrier-semantics-v1.1.0.md",

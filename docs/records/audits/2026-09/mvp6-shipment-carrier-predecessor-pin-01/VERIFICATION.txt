@@ -1,0 +1,23 @@
+MVP6-SHIPMENT-CARRIER-PREDECESSOR-PIN-01 verification
+
+PASS  branch feature/mvp6-logistics; HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+PASS  controlling Carrier target manifest SHA256 8b727462abfddcb8b054b8d75b40f6e3029cc84e57462190d9950850c62757ed
+PASS  registered Carrier checkout remains present at the recorded HEAD
+PASS  18/18 materialized Carrier target files match their recorded hashes
+PASS  no existing durable archive was found for this exact 18-path shared set
+PASS  deterministic archive contains exactly 18 unique regular-file members
+PASS  18/18 archive member hashes match PREDECESSOR-MANIFEST.tsv
+PASS  independent deterministic reconstruction produced the same archive SHA256
+PASS  later Carrier quality patch versus predecessor intersection: 0 paths
+PASS  final 21-path Carrier UI manifest versus predecessor intersection: 0 paths
+PASS  unapplied shared Search proposal versus predecessor intersection: 0 paths
+PASS  all Carrier audit patch headers inspected: 52 declared changed paths, 0 intersections with the 18-path pin
+PASS  Shipment successor preconditions: 9/9 modified preimages match; 3/3 added paths absent
+PASS  only this audit output directory changed in the common checkout
+PASS  common-checkout dirty inventory excluding this output remained SHA256 0b8aec454e0327257ff8dc955170ca7901ca5ef3ef1f19d36f61a703d78b5882
+
+NOT RUN  build, unit/integration test, HTTP, process or browser checks
+NOT DONE source transfer, patch application, owner approval or release acceptance
+
+Archive construction: Python 3 tarfile USTAR; sorted paths; uid/gid/mtime=0; mode=0644; gzip mtime=0 and empty filename.
+Archive SHA256: f83d4c607441d286ff3e3439d662e51d54764e6830fc46642d01348eceac0bc7

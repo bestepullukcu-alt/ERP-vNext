@@ -1,0 +1,17 @@
+evidence_id	path	use	fresh_integrity_result
+EV-01	docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/SHA256SUMS	Auth/Platform candidate package seal	PASS
+EV-02	docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/SOP-22.md	BLOCKED disposition and missing runtime VER	PASS via package seal
+EV-03	docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/OWNER-DECISION-TEXT.md	UNAPPROVED decision state	PASS via package seal
+EV-04	docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/ARTIFACTS.sha256	Carrier UI VER package seal	PASS, all listed artifacts
+EV-05	docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/raw/runtime-admin-jwt-claims-safe.json	Real Auth token claim boundary	PASS via UI package seal
+EV-06	docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/raw/runtime-authorized-page-failure.log	Missing-LE fail-closed result	PASS via UI package seal
+EV-07	docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/raw/v2-scoped-list.json	Diagnostic list only	PASS integrity; N/A real-Auth acceptance
+EV-08	docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/raw/v2-scoped-create.json	Diagnostic create only	PASS integrity; N/A real-Auth acceptance
+EV-09	docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/raw/v2-scoped-create-replay.json	Diagnostic replay only	PASS integrity; N/A real-Auth acceptance
+EV-10	docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/raw/v2-scoped-status.json	Diagnostic status only	PASS integrity; N/A real-Auth acceptance
+EV-11	docs/records/audits/2026-09/mvp6-carrier-browser-evidence-01/ARTIFACTS.sha256	Browser evidence package seal	PASS, all listed artifacts
+EV-12	docs/records/audits/2026-09/mvp6-carrier-browser-evidence-01/BROWSER-ACCEPTANCE.tsv	UAS/UI/L10n/responsive boundaries	PASS via browser package seal
+EV-13	docs/records/audits/2026-09/mvp6-carrier-browser-evidence-01/SCREENSHOT-INDEX.tsv	Visible-capture hashes and retention boundary	PASS via browser package seal
+EV-14	docs/records/audits/2026-09/mvp6-bc-successor-independent-ver-01/SHA256SUMS	Shared integration verifier package seal	PASS, all listed artifacts
+EV-15	docs/records/audits/2026-09/mvp6-bc-successor-independent-ver-01/VERIFIED-SOURCE-MANIFEST.tsv	422-row source manifest	PASS; sha256 dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634
+EV-16	fresh real-Auth raw HTTP/browser evidence	Not created	OPEN; dependency prevented execution

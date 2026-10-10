@@ -419,7 +419,7 @@ Frontmatter listesinin açıklamalı karşılığı.
 
 ## 8. Runtime Constraints
 
-- **Servis:** `Diten.CrmService` (port **5061**), **yeni servis yaratılmaz** (FU01A §16).
+- **Servis:** `Diten.CrmService` (port **5065**), **yeni servis yaratılmaz** (FU01A §16).
 - **Gateway:** tüm çağrılar `:5000` üzerinden; browser JS **servis portuna gitmez** (same-origin MVC proxy).
 - **Soft delete:** `DELETE` ve `PATCH` **yoktur** — kaldırma = archive (path **ve** gömülü adım); archived kayıt
   update kabul etmez (**409**). Archived adım **diziden silinmez**.
@@ -815,7 +815,7 @@ gereksinimi bu FU'da **yoktur**.
 
 **Karar: Gateway değişikliği GEREKSİZ.**
 
-- Mevcut `ocelot.json` kaydı: `"/api/crm/knowledge/{everything}"` → `localhost:5061`,
+- Mevcut `ocelot.json` kaydı: `"/api/crm/knowledge/{everything}"` → `localhost:5065`,
   `["GET","POST","PUT","OPTIONS"]` (`gateway/Diten.ApiGateway/ocelot.json:2245-2258`).
 - §8.1'deki **tüm** route'lar bu wildcard'ın altındadır (`/api/crm/knowledge/paths…`, adım alt-route'ları
   `/paths/{id}/steps…` dâhil, `/api/crm/knowledge/path/contract`) → **yeni Upstream/Downstream çifti gerekmez**.
@@ -825,7 +825,7 @@ gereksinimi bu FU'da **yoktur**.
 - `DELETE`/`PATCH` wildcard'da **zaten yok** → bu metotlar Gateway seviyesinde de **404**.
 - `gateway/Diten.ApiGateway/**/ocelot.json` **protected path**'tir; bu pack oraya yazmaz. İleride explicit route
   istenirse **ayrı `integration-agent` task'ı** açılır.
-- Browser JS **`:5061`'e gitmez**; same-origin MVC proxy (`/CRM/KnowledgePaths/api/...`) → Gateway `:5000`.
+- Browser JS **`:5065`'e gitmez**; same-origin MVC proxy (`/CRM/KnowledgePaths/api/...`) → Gateway `:5000`.
 
 ---
 

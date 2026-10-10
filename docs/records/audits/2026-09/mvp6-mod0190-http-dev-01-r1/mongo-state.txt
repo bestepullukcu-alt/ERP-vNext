@@ -1,0 +1,1 @@
+After authenticated POST 500, independent mongosh counts in DitenSupplyChain_Mod0190_Test: sandop_plans=0; sandop_snapshots=0; sandop_sign_offs=0; sandop_receipts=0; sandop_audit=0; sandop_outbox=0. Replica set rs190http on 127.0.0.1:57590 had isWritablePrimary=true.

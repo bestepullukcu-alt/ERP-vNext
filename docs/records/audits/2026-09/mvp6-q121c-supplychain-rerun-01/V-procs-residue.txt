@@ -1,0 +1,13 @@
+lane processes: 1
+  841 /opt/homebrew/opt/mongodb-community@8.0/bin/mongod --config /opt/homebrew/etc/mongod.conf
+tmp: 9 dirs, 0 files
+~/mvp6-env/q121c/tmp/MSBuildTemp
+~/mvp6-env/q121c/tmp/484421bb-2f0c-4cf5-b6e1-282f80743d10
+~/mvp6-env/q121c/tmp/e22be659-a912-44c8-9de1-8cf0e1717469
+~/mvp6-env/q121c/tmp/fa4e844a-3ea4-49b3-bd08-c3680ecbf5a9
+~/mvp6-env/q121c/tmp/1867267b-6f08-4ddb-bd61-2f8ed109b494
+~/mvp6-env/q121c/tmp/69e45da1-6a23-4fe2-91f5-6f201e8c3a4f
+~/mvp6-env/q121c/tmp/4e01c419-f0ff-4e49-8ed2-10d2b76a5fe6
+~/mvp6-env/q121c/tmp/398880d4-ffce-42fe-ad5c-30d87a31c7d0
+~/mvp6-env/q121c/tmp/d42bc099-7623-4d34-9471-8353d0d63eb1
+lane processes (re-check with a command line not containing the pattern): 0 — the earlier '1' was the checking shell itself

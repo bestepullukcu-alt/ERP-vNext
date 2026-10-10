@@ -1,0 +1,67 @@
+Shipment lookup for a return answered 200. Trace 806fdcd2-f1d4-4594-8eb6-db21dad96dbe.
+Returns mutation forwarded. Trace 806fdcd2-f1d4-4594-8eb6-db21dad96dbe Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns.
+Returns gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/returns. Trace 806fdcd2-f1d4-4594-8eb6-db21dad96dbe Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 48b6cac9-9f25-427e-923e-c014012ec4e9.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 50e3822f-2552-4546-830a-c37e97ba4aa8.
+Shipment lookup for a return answered 200. Trace 8ab6b132-45ee-4686-a865-478bc9324a9f.
+Returns mutation forwarded. Trace 8ab6b132-45ee-4686-a865-478bc9324a9f Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition.
+Returns gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition. Trace 8ab6b132-45ee-4686-a865-478bc9324a9f Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 6e012ca2-0d6a-4fe5-8e27-277e7bb0853e.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 47310a90-05e0-4913-90a8-afa9daf66032.
+Shipment lookup for a return answered 200. Trace 2c7ef76d-4e02-4341-815b-c3393b8b3cac.
+Returns mutation forwarded. Trace 2c7ef76d-4e02-4341-815b-c3393b8b3cac Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition.
+Returns gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition. Trace 2c7ef76d-4e02-4341-815b-c3393b8b3cac Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 7a8afdd4-3f80-4d1f-a585-a680ed2d66f9.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace a2a7b054-59db-4113-a7fa-12f2e837c4df.
+Shipment lookup for a return answered 200. Trace 43faecc3-a6d4-42c4-a20c-5a50bb2aff18.
+Returns mutation forwarded. Trace 43faecc3-a6d4-42c4-a20c-5a50bb2aff18 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition.
+Returns gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition. Trace 43faecc3-a6d4-42c4-a20c-5a50bb2aff18 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 34868976-4175-46a9-b821-026936b8b46d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace f3a92f93-b5c2-4cc1-b574-431b8430bcea.
+Shipment lookup for a return answered 200. Trace 44003918-f320-42f8-a6d2-29ed2eac844c.
+Returns mutation forwarded. Trace 44003918-f320-42f8-a6d2-29ed2eac844c Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition.
+Returns gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition. Trace 44003918-f320-42f8-a6d2-29ed2eac844c Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace bb91925b-7f79-453f-9ab9-f9ebec122647.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 68c52f8a-8aab-4709-a9fc-91a8da85603c.
+Shipment lookup for a return answered 200. Trace 41bac1c8-1e2b-472c-ac1d-98507b2e0022.
+Returns mutation forwarded. Trace 41bac1c8-1e2b-472c-ac1d-98507b2e0022 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition.
+Returns gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/returns/6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c/transition. Trace 41bac1c8-1e2b-472c-ac1d-98507b2e0022 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace d49c4b89-cb25-4a2a-ba99-8c01662418e6.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 4a17d381-ad06-4694-9e1b-cef67ba1ff0e.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 6bebb005-7547-456b-9402-4dd51fbc1399.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns?status=Closed. Trace 3f0f3228-8540-4710-8bbd-bce330e48184.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 77fdb4d9-7ec6-45d4-821f-f6f75c738191.
+Shipment lookup for a return answered 200. Trace f333c7ef-e704-400a-ad14-2f0f12ef0e30.
+Shipment lookup for a return answered 200. Trace 311187eb-40ca-4e21-a671-be85002bbfc3.
+Returns mutation forwarded. Trace 311187eb-40ca-4e21-a671-be85002bbfc3 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns.
+Returns gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/returns. Trace 311187eb-40ca-4e21-a671-be85002bbfc3 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Shipment lookup for a return answered 200. Trace 685b60ab-cd04-4993-8f7b-860c084ba0cf.
+Returns mutation forwarded. Trace 685b60ab-cd04-4993-8f7b-860c084ba0cf Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns.
+Returns gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/returns. Trace 685b60ab-cd04-4993-8f7b-860c084ba0cf Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 9c4ff983-a228-44a8-bcff-01b73a663499.
+Shipment lookup for a return answered 200. Trace b68e7c22-4428-4201-867a-0d8e2177a13c.
+Shipment lookup for a return answered 200. Trace c9406642-ccd3-4bb0-9c21-e36738995853.
+Returns mutation forwarded. Trace c9406642-ccd3-4bb0-9c21-e36738995853 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns.
+Returns gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/returns. Trace c9406642-ccd3-4bb0-9c21-e36738995853 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Shipment lookup for a return answered 200. Trace 37b018ee-660a-4fe5-b69b-58aefc0c6c24.
+Returns mutation forwarded. Trace 37b018ee-660a-4fe5-b69b-58aefc0c6c24 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns.
+Returns gateway answered 409 for POST http://localhost:5000/api/shipment-bundle/returns. Trace 37b018ee-660a-4fe5-b69b-58aefc0c6c24 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace f8f41377-b303-445e-881f-9851f2c5190d.
+Shipment lookup for a return answered 200. Trace b8fbc292-dbba-4841-b6a7-76c6dbe34a21.
+Shipment lookup for a return answered 200. Trace 7d7ed7a5-f1ed-4832-85c9-0adbf6cd5ba3.
+Returns mutation forwarded. Trace 7d7ed7a5-f1ed-4832-85c9-0adbf6cd5ba3 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns.
+Returns gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/returns. Trace 7d7ed7a5-f1ed-4832-85c9-0adbf6cd5ba3 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Shipment lookup for a return answered 200. Trace eee6b1a5-205f-4e62-94c8-cd8a90658161.
+Returns mutation forwarded. Trace eee6b1a5-205f-4e62-94c8-cd8a90658161 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns.
+Returns gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/returns. Trace eee6b1a5-205f-4e62-94c8-cd8a90658161 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 85be4667-c7e9-4145-bf0f-466776da1fd0.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace a867dea5-1308-4ec2-9dfa-9e15c0eed6c1.
+Shipment lookup for a return answered 200. Trace b0783c5d-8a01-4b45-9459-115b37573014.
+Returns mutation forwarded. Trace b0783c5d-8a01-4b45-9459-115b37573014 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d Target http://localhost:5000/api/shipment-bundle/returns/a4a79ccd-62da-49bc-bcaa-d710f95b566d/transition.
+Returns gateway answered 200 for POST http://localhost:5000/api/shipment-bundle/returns/a4a79ccd-62da-49bc-bcaa-d710f95b566d/transition. Trace b0783c5d-8a01-4b45-9459-115b37573014 Root 66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace cbda5206-97ba-4392-83c0-ec13d02a4ba5.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 6c6fdb01-c9dd-487b-b293-310597f8b49d.
+Returns gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 06d119ba-b0d9-4283-82e6-19b7523ce29f.
+Shipment lookup for a return answered 502. Trace 91530745-3239-45d8-b1fc-60bb64187118.
+Shipment lookup for a return answered 502. Trace c280ce9c-255c-45b6-98d8-28d0833e536b.
+Returns gateway answered 502 for GET http://localhost:5000/api/shipment-bundle/returns. Trace 6677a763-36e2-4731-9849-77ec5be0a6e8.

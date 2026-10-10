@@ -1,0 +1,28 @@
+PASS source docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/ARTIFACTS.sha256
+PASS source docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/UNESTIMATED-SCOPE.tsv
+PASS source docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/EFFORT.tsv
+PASS source docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/REPORT.md
+PASS source docs/roadmap/plans/mvp6-loads-ui-scope-01/SHA256SUMS
+PASS source docs/roadmap/plans/mvp6-loads-ui-scope-01/SCOPE.md
+PASS source docs/roadmap/plans/mvp6-loads-ui-scope-01/EFFORT.md
+PASS source docs/roadmap/plans/mvp6-loads-ui-scope-01/ACCEPTANCE.md
+PASS source docs/roadmap/plans/mvp6-loads-ui-scope-01/SHARED-HANDOFF.md
+PASS source execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+PASS source docs/analysis/workpackages/WP-MVP6-logistics.md
+PASS source docs/analysis/contracts/shipment-bundle.openapi.yaml
+PASS source docs/analysis/contracts/loads-semantics-v2.0.0.md
+PASS source docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-02/SOP-22.md
+PASS source docs/records/audits/2026-09/mvp6-shipment-real-auth-http-recovery-01/FINDINGS.md
+PASS source docs/records/audits/2026-09/mvp6-shipment-real-auth-http-recovery-01/SOP-22.md
+PASS SCOPE-DISPOSITION.tsv rows=6 columns=6
+PASS EFFORT.tsv rows=8 columns=13
+PASS SCENARIOS.tsv rows=7 columns=5
+PASS PORTFOLIO-IMPACT.tsv rows=14 columns=5
+PASS SOURCES.tsv rows=16 columns=3
+PASS baseline_delivered=[1052.1999999999998, 1432.0, 1859.8]
+PASS baseline_remaining=[822.8, 1382.0, 2580.0]
+PASS net_add=[16.0, 28.0, 48.0]
+PASS successor_remaining=[838.8, 1410.0, 2628.0]
+PASS successor_total=[1890.9999999999998, 2842.0, 4487.8]
+PASS loads_index=44.2%
+PASS portfolio_index=50.4%

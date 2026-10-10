@@ -1,0 +1,3 @@
+PASS: real process restart, frozen-wire validation, scoped state, HTTP probes; evidence: /private/tmp/mod0183-dev-r3/runtime/golden
+PASS: 22 golden probes + R2 quantity and Unicode note boundaries with five-collection non-mutation
+PASS: 33 recorded requests match independent transport-boundary capture; zero mismatches

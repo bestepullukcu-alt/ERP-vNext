@@ -1,0 +1,41 @@
+oq_id	source (file/sheet/cell)	question	why it matters	proposed answer options
+OQ-SOP-17	SOPCalculation.xlsx/Sheet1!D4 vs F4	GIT Actual: tooltip says UNAPPROVED out-invoices by invoice date; TR note says approved invoices. Which?	Decides whether GIT and sell-in double-count the same goods	A) GIT = unapproved (in transit), sell-in = approved (recommended; no overlap) · B) both approved, split by date
+OQ-SOP-19	Sheet1!D6 vs F6	Sell-in actual: approval date (tooltip) or goods-in-transit date (TR note)?	Month in which stock enters the wholesaler	A) approval date = receipt confirmation (recommended) · B) GIT date
+OQ-SOP-23	Sheet1!D10	Wholesaler stock ACTUAL editable for past, current and future months by HOC+CEO?	Editing actuals breaks auditability; future 'actual' is a forecast	A) past/current editable with audit + reason, future read-only (recommended) · B) as written
+OQ-SOP-24a	Sheet1!D11	Who enters the sell-out forecast?	Role/permission design	A) HOC per wholesaler, CEO approves · B) HOC only · C) Commercial demand planner
+OQ-SOP-24b	Sheet1!D11	'Sell Out Actual and Forecast should be 0 for December-2016' — still needed?	Legacy data rule	A) drop (recommended) · B) keep as data-migration rule
+OQ-SOP-26	Sheet1!C13:D13	'Shipment Needs' has no tooltip and no TR note	Unknown calculation	A) = need formula of SOP-29 shown separately · B) remove line
+OQ-SOP-27	Sheet1!F14	TR note: shipment is 'cancelled' if no future sales forecast; tooltip has only roll-over. Is the cancellation rule required?	Automatic cancellation of planned shipments	A) warn, do not cancel automatically (recommended) · B) auto-set to 0
+OQ-SOP-29	Sheet1!D16	Is obligatory + safety stock added once per shipment period or per month? Which window is 'take according to lead time'?	Shipment quantity can double	A) once per period, window = [arrival month, next arrival) (recommended) · B) per month
+OQ-SOP-30	Sheet1!D17	TODO restrictions (do not count production actual/order inside the lead-time window) — in scope?	Avoids counting supply that cannot arrive	A) implement as written (recommended) · B) drop
+OQ-SOP-32	Sheet1!D19 vs F19	Non-reserved stock: tooltip = non-reserved batches suitable for the country; TR note = stock reserved to country and contractor company	Contradiction on what is available	A) tooltip wording (recommended) · B) TR note
+OQ-SOP-33/40	Sheet1!rows 20 and 27 (ids 33 and 40), F20 '??'	Two 'Production Needs' lines with different logic (shipment vs CWH stock at m+LT; MW stock negative at m−LT_P). Which one survives? TR note of 40 shows the need at m + LT(factory→CWH)	Duplicate KPI, different numbers	A) keep id 40 (MW-stock based) and drop 33 · B) keep both with distinct names
+OQ-SOP-39	Sheet1!D26, F26 '??'	MAIN WH current-month formula mixes manufacturer WH and main WH; which 'Lead Time' is meant?	Projection correctness	A) LT-F-CW (factory→main WH) (recommended) · B) LT-P
+OQ-SOP-40	Sheet1!D27 vs F27	Production need displayed at m − LT_P (tooltip) or at m + LT factory→CWH (TR note)?	Planner sees the need in a different month	A) m − LT_P (release date) (recommended) · B) TR note
+OQ-SOP-41	Sheet1!D28	What happens when the order-need month is already in the past (need is late)?	Late needs silently disappear	A) show in current month flagged LATE (recommended) · B) show in past month
+OQ-SOP-34	Sheet1!D21 vs F21	Order forecast: tooltip = CEO manual with roll-over; TR note = sum of sell-out forecast and production order data	Source of the order forecast	A) manual with proposal from AO-01 calculation (recommended) · B) TR note
+OQ-SOP-36	Sheet1!F23	Production actual per country: TR note allocates batch qty × country order qty / total order qty; tooltip sums batch qty. Which?	Multi-country batches	A) allocation by order share (recommended when batch serves several countries) · B) plain sum
+OQ-SOP-37	Sheet1!D24	'If last 6 months are 0 take next 6 months' — next 6 months of what (forecast)?	New products have no history	A) next 6 months sell-out forecast (recommended) · B) zero
+OQ-SOP-43	Sheet1!C29:F29	Relocation: no tooltip; effect on wholesaler stock (+/−) not stated	Stock roll-forward	A) −from source wholesaler, +to target (recommended) · B) display only
+OQ-SOP-ID	Sheet1!A2:A29	id 42 missing; data_number and order differ for id 40 (2250 vs 2150). Intentional?	Line ordering on screen	A) use 'order' for display (recommended) · B) data_number
+OQ-SOP-COL	Sheet1!D8, D9	Yellow band '>1<3': is 3 inclusive? Is Min distributor stock in months?	Colour boundaries	A) yellow 1 < x < 3, green ≥ 3, min stock in months (recommended)
+OQ-AO-01	Automatic_Order_v1_2.xlsx/Order rows!BC3, AR16; Prototype!P18	Does CANCEL cancel the whole order or one product line?	Status model granularity	A) line-level with order-level bulk action (recommended) · B) whole order
+OQ-AO-02	Order rows!BE3, AR18, AV25	Does REJECT reject the order or one line? (AV25 says 'one row is rejected')	Same	A) line-level (per AV25) (recommended)
+OQ-AO-03	Order rows!BF3, AR19; Prototype!P21	UPDATE opens the whole order or a single product?	Same	A) single line (recommended) · B) whole order
+OQ-AO-04	Order rows!T14 'SORULACAK'	Artwork box column — what must be asked?	Artwork requirement unclear	Collect from RA owner
+OQ-AO-05	Order rows!N16, R16 'BU nedir'	What are the stock status (N) and upload (R) columns?	Undefined fields	A) N = available stock per AO-06, R = order document upload · B) remove
+OQ-AO-06	Order rows!AL17, AL18 '?'	Batch release quantity / remaining — meaning of '?'	Remaining quantity rule	A) remaining = ordered − released, decrease allowed with reason (recommended)
+OQ-AO-07	Order rows!K11	Finished product code must equal material master FP code — owner to confirm ('Ali bey ile görüşülecek')	Master data identity	A) read from MOD-0290 (recommended) · B) manual entry
+OQ-AO-08	Order rows!J25	Can orders be raised for third-party production?	Scope of MOD-0197	A) yes, via co-manufacturer (recommended) · B) no
+OQ-AO-09	Order rows!AX32	If the same product is sent in different months (Nov, Dec) the lines merge — correct?	Order merging rule	A) merge only same month + same manufacturer (recommended) · B) always merge · C) never
+OQ-AO-10	Calculation!D25:G25	What is 'PENETRATION' (20 days) and why is it lead time?	Order timing	A) market launch buffer — keep as configurable buffer · B) remove
+OQ-AO-11	Calculation!D32:G32	'CWH OBLIGATORY' 30 days included in the lead-time sum — is it a stock cover, not a lead time?	Mixing stock cover with lead time shifts orders	A) model as safety time/stock separately (recommended) · B) keep
+OQ-AO-12	Calculation!C7:X7	Unlabelled monthly series — what is it (sales forecast?) and is it used?	Input of the order calculation	Confirm with owner
+OQ-AO-13	Calculation!E12 vs G34	Order placed 8 months before the shipment month although lead time = 7 months	Off-by-one in order timing	A) order month = need month − LT, rounded down to month start (recommended) · B) extra buffer month by design
+OQ-AO-14	Calculation!G21:H21	'Take higher one from MAX from all distributors limits' — which limit?	Lead-time selection per product	A) max lead time over distributors of the product (recommended)
+OQ-AO-15	Order rows!O9	Projected average inventory: averaging window of the sales forecast?	Months-of-cover KPI	A) next 3 months (recommended) · B) next 6
+OQ-AO-16	Order rows!N15	'Deduct forecast of other countries for the same product' — which countries, which horizon?	Available-to-promise across markets	A) countries sharing the same GSKU/manufacturer, same horizon as order (recommended)
+OQ-AO-17	Order rows!F26 'N/A Gelebilir'; D33	Country may be N/A on a new order line; new row status manual — allowed statuses?	Validation	A) N/A only in ORDER FORECAST status (recommended)
+OQ-AO-18	Order rows!AX26:AX30	PRODUCTION PLANNED / ONGOING statuses 'after the Production Plan system' — dependency on MOD-0192/0194?	Sequencing	A) add when MOD-0194 exists (recommended)
+OQ-AO-19	Order rows!U21	'Estimated time shown when artwork/mock-up missing' — estimated from what?	Artwork planning	A) standard artwork lead time per component (setting) (recommended)
+OQ-AO-20	Order rows!P11:Q11	Forecast 3,000 vs actual 10,000 on the same line — may actual exceed forecast; any tolerance?	Order quantity control	A) allowed with approval above tolerance (recommended)

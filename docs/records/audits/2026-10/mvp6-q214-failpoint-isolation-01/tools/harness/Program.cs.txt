@@ -1,0 +1,52 @@
+// Q214 observation harness. NOT part of the repo build. Same driver version as the service (MongoDB.Driver 2.27.0).
+// Reproduces only the driver-level sequence of LoadRepository.MutateAsync's commit (lines 26-27, 75):
+// transaction -> insert -> commitTransaction with a failCommand fail point (times:1), then the same
+// "retry while UnknownTransactionCommitResult, at most 3 commits" loop. The fail point is scoped by appName,
+// so it cannot touch any other client of the lane mongod.
+// args: <uri> <errorCode> <delaySecondsBeforeFault> <label>
+using System.Diagnostics;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
+var uri = args[0]; var code = int.Parse(args[1]); var delay = double.Parse(args[2], System.Globalization.CultureInfo.InvariantCulture); var label = args[3];
+var app = "q214-harness-" + Guid.NewGuid().ToString("N")[..8];
+var settings = MongoClientSettings.FromConnectionString(uri); settings.ApplicationName = app;
+var client = new MongoClient(settings);
+var db = client.GetDatabase("q214_harness"); var col = db.GetCollection<BsonDocument>("rows");
+var sw = Stopwatch.StartNew();
+string T() => sw.Elapsed.TotalSeconds.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture);
+string State() => string.Join(",", client.Cluster.Description.Servers.Select(s => s.Type + "/" + s.State));
+void Log(string m) => Console.WriteLine($"{label}\t{T()}\t{m}");
+await col.InsertOneAsync(new BsonDocument("warm", true));           // first use: cluster + monitor start here
+Log($"cluster-open state={State()} sst={settings.ServerSelectionTimeout.TotalMilliseconds}ms heartbeat={settings.HeartbeatInterval.TotalMilliseconds}ms");
+await Task.Delay(TimeSpan.FromSeconds(delay));
+var admin = client.GetDatabase("admin");
+await admin.RunCommandAsync<BsonDocument>(new BsonDocument {
+    { "configureFailPoint", "failCommand" }, { "mode", new BsonDocument("times", 1) },
+    { "data", new BsonDocument { { "failCommands", new BsonArray { "commitTransaction" } }, { "appName", app },
+        { "errorCode", code }, { "errorLabels", new BsonArray { "UnknownTransactionCommitResult" } } } } });
+var marker = Guid.NewGuid().ToString();
+int appVisibleExceptions = 0; string outcome = "COMMITTED";
+try
+{
+    using var session = await client.StartSessionAsync();
+    session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority, maxCommitTime: TimeSpan.FromSeconds(5)));
+    await col.InsertOneAsync(session, new BsonDocument("marker", marker));
+    Log($"fault-armed state={State()}");
+    for (var commit = 0; ; commit++)
+    {
+        var c0 = sw.Elapsed;
+        try { await session.CommitTransactionAsync(); Log($"commit#{commit} OK after {(sw.Elapsed - c0).TotalSeconds:0.000}s state={State()}"); break; }
+        catch (MongoException ex) when (ex.HasErrorLabel("UnknownTransactionCommitResult") && commit < 2)
+        { appVisibleExceptions++; Log($"commit#{commit} THREW-RETRYABLE {ex.GetType().Name} after {(sw.Elapsed - c0).TotalSeconds:0.000}s state={State()}"); }
+    }
+}
+catch (Exception ex)
+{
+    appVisibleExceptions++; outcome = "ESCAPED:" + ex.GetType().Name;
+    Log($"escaped the retry loop: {ex.GetType().Name} isMongoException={ex is MongoException} hasUnknownLabel={(ex as MongoException)?.HasErrorLabel("UnknownTransactionCommitResult")} state={State()}");
+}
+try { await admin.RunCommandAsync<BsonDocument>(new BsonDocument { { "configureFailPoint", "failCommand" }, { "mode", "off" } }); } catch (Exception ex) { Log("failpoint-off threw " + ex.GetType().Name); }
+var t1 = sw.Elapsed; long n = -1;
+try { n = await col.CountDocumentsAsync(new BsonDocument("marker", marker)); } catch (Exception ex) { Log("count threw " + ex.GetType().Name); }
+Log($"RESULT errorCode={code} delay={delay}s outcome={outcome} appVisibleExceptions={appVisibleExceptions} rowsCommitted={n} serverUsableAgainAt={T()}s (count waited {(sw.Elapsed - t1).TotalSeconds:0.000}s)");

@@ -1,0 +1,321 @@
+{
+  "phase": "o3",
+  "locale": "en",
+  "startedAt": "2026-09-30T19:52:28.858Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "O-3": {
+      "result": "PASS",
+      "out": {
+        "create": {
+          "focus": {
+            "id": "sandopPlansTitle",
+            "tag": "H5",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "ctaCount": 0,
+          "titleVisible": true,
+          "title": "S&OP Plans",
+          "rawErrorInPage": false,
+          "toasts": [
+            "You do not have permission for this action. Support reference: e4b671bb-44aa-4075-862f-3a976ef083c1"
+          ]
+        },
+        "capture": {
+          "focus": {
+            "id": "planTitle",
+            "tag": "H4",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "openerCount": 0,
+          "titleVisible": true,
+          "workspaceVisible": true,
+          "rawErrorInPage": false,
+          "toasts": [
+            "You do not have permission for this action. Support reference: 98d7dbc8-9d07-44c0-b90c-dc58fdba7db7"
+          ]
+        },
+        "signOff": {
+          "focus": {
+            "id": "planTitle",
+            "tag": "H4",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "openerCount": 0,
+          "titleVisible": true,
+          "rawErrorInPage": false
+        },
+        "page": {
+          "focus": {
+            "id": "planAlert",
+            "tag": "DIV",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "alert": "You do not have permission for this action.\nSupport reference: 89d65f01-5817-4257-bee3-54f929e3b130",
+          "titleVisible": true,
+          "title": "S&OP Plan",
+          "workspaceHidden": true,
+          "rawErrorInPage": false
+        },
+        "readonly": {
+          "ctaCount": 0,
+          "titleVisible": true,
+          "directPostStatus": 403,
+          "directPostCode": "FORBIDDEN"
+        },
+        "noread": {
+          "entry": {
+            "entryMarkup": 0,
+            "skeletons": 0,
+            "forms": 0,
+            "rawErrorInPage": false,
+            "url": "/SupplyChain/SandopPlans"
+          },
+          "details": {
+            "entryMarkup": 0,
+            "skeletons": 0,
+            "forms": 0,
+            "rawErrorInPage": false,
+            "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719"
+          },
+          "directGet": 403
+        }
+      },
+      "parts": {
+        "create": true,
+        "capture": true,
+        "pageLevel": true,
+        "real403": true
+      },
+      "info": {
+        "signOffViaShowConfirm": true,
+        "note": "sign-off 403 recorded as information (showConfirm-reached submit, OD-F-Q145-1 exemption for focus)"
+      },
+      "evidence": [
+        "png/o3-create-403-en.png",
+        "png/o3-capture-403-en.png",
+        "png/o3-signoff-403-en.png",
+        "png/o3-page-403-en.png",
+        "png/o3-readonly-entry-en.png",
+        "png/o3-noread-entry-en.png",
+        "png/o3-noread-details-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "o3-create-403-en.png",
+      "sha256": "4f5615b15b01dc6e58fe0de2dbb69d08f549675d87b596da55b5e75d69a36fef",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:52:33.148Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-capture-403-en.png",
+      "sha256": "b4a0946e72febf4eea4620ad7e7a806ccb6be5fd6e46422ad3fa019d08591787",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:52:36.981Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-signoff-403-en.png",
+      "sha256": "f521e7012623566400cee35227bc4b94a60fb4783f10096c9069798b51df02f6",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:52:41.149Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-page-403-en.png",
+      "sha256": "b98b13c7ed558752cb5b031ff87c784af0dbc87e0962a1236028545058b6131a",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:52:44.463Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-readonly-entry-en.png",
+      "sha256": "e1e1c042feeaa8ed249a57f0e78170021c0fbdeb27b95ae206aef2483483742e",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:52:46.372Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-entry-en.png",
+      "sha256": "663d82a26ec6e7fd64c8cebafa9328e7803ce9f767ce711ac38ac81f14fd1b7a",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:52:48.356Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-details-en.png",
+      "sha256": "d6b9dfed14d7a1347d52954cd119398263a5934f29e685dcfc4a62c6ec96e1a4",
+      "url": "/SupplyChain/SandopPlans/Details/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "capturedAt": "2026-09-30T19:52:49.639Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "o3-en-create403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-en-capture403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-en-signoff403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-en-page403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "o3-en-create403",
+      "text": "You do not have permission for this action. Support reference: e4b671bb-44aa-4075-862f-3a976ef083c1",
+      "type": "warning",
+      "at": "2026-09-30T19:52:32.017Z"
+    },
+    {
+      "tag": "o3-en-capture403",
+      "text": "You do not have permission for this action. Support reference: 98d7dbc8-9d07-44c0-b90c-dc58fdba7db7",
+      "type": "warning",
+      "at": "2026-09-30T19:52:35.747Z"
+    },
+    {
+      "tag": "o3-en-signoff403",
+      "text": "You do not have permission for this action. Support reference: 954fbcbf-9274-4bbd-9d39-391d4d2d590a",
+      "type": "warning",
+      "at": "2026-09-30T19:52:39.632Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "o3-en-create403",
+      "at": "2026-09-30T19:52:32.015Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-en-capture403",
+      "at": "2026-09-30T19:52:34.049Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-capture403",
+      "at": "2026-09-30T19:52:34.049Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-capture403",
+      "at": "2026-09-30T19:52:34.049Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-capture403",
+      "at": "2026-09-30T19:52:35.746Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-en-signoff403",
+      "at": "2026-09-30T19:52:37.839Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-signoff403",
+      "at": "2026-09-30T19:52:37.840Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-signoff403",
+      "at": "2026-09-30T19:52:37.840Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-signoff403",
+      "at": "2026-09-30T19:52:39.631Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-en-page403",
+      "at": "2026-09-30T19:52:43.260Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-page403",
+      "at": "2026-09-30T19:52:43.270Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-page403",
+      "at": "2026-09-30T19:52:43.270Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/5d3e6d68-0d36-4f1d-9032-090d6ee27719/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 14,
+  "endedAt": "2026-09-30T19:52:49.669Z"
+}

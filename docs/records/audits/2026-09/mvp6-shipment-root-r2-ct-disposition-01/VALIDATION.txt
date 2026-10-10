@@ -1,0 +1,7 @@
+PASS input checksum manifests: rework=11, exec=11, ver=6, effort=9
+PASS owner decision and candidate/production/test patch hashes
+PASS writer/verifier final source identity: 354/354; manifest 7b6d2f...
+PASS applied delta: 3/3 target hashes bound to final source
+PASS independent runtime acceptance rows: 12/12
+PASS CT matrix: browser, PNG and full-module gates remain OPEN
+PASS effort mapping: application+VER closed; browser 2/4/8 OPEN; net new 0/0/0

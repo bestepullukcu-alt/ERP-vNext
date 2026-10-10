@@ -1,0 +1,8 @@
+operation	command_class	exit	result	evidence
+UI focused tests	dotnet test Diten.Web.Tests, four Shipment classes	0	14/14 PASS	raw/frontend-focused-tests.log
+Gateway focused route tests	dotnet test Diten.ApiGateway.Tests, Shipment+Carrier	1	Shipment PASS; Carrier FAIL 5061 expected/5065 actual	raw/gateway-route-tests.log
+SupplyChain build	dotnet build Diten.SupplyChainService.Api, native .NET 8	1	23 CS0234 errors	raw/supplychain-build.log
+UI source archive	tar exact UI-SOURCE-MANIFEST paths	0	28 entries	shipment-ui-source.tar.gz
+UI archive revalidation	shasum -a 256 -c UI-SOURCE-MANIFEST.tsv after extraction	0	28/28 OK	UI-SOURCE-MANIFEST.tsv
+Runtime launch	N/A	N/A	NOT RUN	Blocked before process start
+Independent VER	N/A	N/A	NOT DISPATCHED	Writer-complete gate not reached

@@ -1,0 +1,11 @@
+#!/bin/zsh
+# usage: run.sh <check> <outfile-rel-to-O/raw> <command...>
+cd /Users/natig/Projects/ERP-vNext-recovery
+export GIT_OPTIONAL_LOCKS=0
+O=docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01
+chk=$1; out=$2; shift 2
+t=$(TZ=Europe/Istanbul date +%H:%M:%S)
+zsh -c "$*" > $O/raw/$out 2>&1
+rc=$?
+printf '%s\t%s\t%s\t%s\t%s\n' "$t" "$chk" "$*" "$rc" "raw/$out" >> $O/COMMANDS.tsv
+echo "rc=$rc"; cat $O/raw/$out

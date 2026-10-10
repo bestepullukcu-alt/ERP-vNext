@@ -1,0 +1,8 @@
+change_class	delivered_most_likely_delta_hours	remaining_most_likely_delta_hours	total_estimate_delta_hours	interpretation
+completed_carrier_frontend	12	-12	0	Existing final UI-flow reserve transferred using only fresh browser rows.
+completed_carrier_integration	8	-8	0	Existing composed module integration reserve transferred using runtime/infrastructure rows; shared Auth work is excluded.
+carrier_test_ver_evidence	0	0	0	Bounded E2E is qualitative evidence, but PNG is OPEN and CT is PENDING; the co-mingled reserve is retained without invented allocation.
+shipment_rework	0	0	0	Still unapplied; Update-04 reserve allocation and status are preserved.
+estimate_correction	0	0	0	No estimate weights changed.
+scope_change	0	0	0	No scope was added or removed.
+total_progress	20	-20	0	Only Carrier Frontend and module Integration move to delivered.

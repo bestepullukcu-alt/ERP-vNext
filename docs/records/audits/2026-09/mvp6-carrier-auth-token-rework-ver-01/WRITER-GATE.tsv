@@ -1,0 +1,8 @@
+gate	observed	verdict
+exact owner decision	OWNER-DECISION-TEXT.md status UNAPPROVED	OPEN
+package status	BLOCKED ON EXACT OWNER AUTHORITY	OPEN
+successor application writer-complete	not found	OPEN
+immutable applied final writer source	not found	OPEN
+independent prompt status	HELD until approval and writer-complete	OPEN
+Phase 2 native build/runtime	prohibited while gates open	NOT RUN
+

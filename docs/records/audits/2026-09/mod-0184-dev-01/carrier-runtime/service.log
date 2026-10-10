@@ -1,0 +1,289 @@
+[01:17:00 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[01:17:01 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[01:17:01 INF] Now listening on: http://127.0.0.1:5061
+[01:17:01 INF] Application started. Press Ctrl+C to shut down.
+[01:17:01 INF] Hosting environment: Production
+[01:17:01 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[01:17:01 INF] Executing endpoint 'HTTP: GET /health'
+[01:17:01 INF] Setting HTTP status code 200.
+[01:17:01 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[01:17:01 INF] Executed endpoint 'HTTP: GET /health'
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 51.0049ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 105
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling CreateCarrierCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 00000000-0000-0000-0000-000000000000 201 null False
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 136.0214ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 201 00000000-0000-0000-0000-000000000000
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 201 null application/json; charset=utf-8 191.2115ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "List", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling GetCarrierListQuery
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 df489148-b3b1-44f4-a279-93f2a13df2b2 200 null False
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierListResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api) in 26.7755ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 200 df489148-b3b1-44f4-a279-93f2a13df2b2
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 200 null application/json; charset=utf-8 32.8124ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - application/json 47
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Status", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Status(System.String, Diten.SupplyChainService.Application.Features.Carriers.ChangeCarrierStatusRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling ChangeCarrierStatusCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 a2ea9fe0-d903-4894-b5bc-7c65c6ecdde7 200 null False
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api) in 25.5759ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 200 a2ea9fe0-d903-4894-b5bc-7c65c6ecdde7
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - 200 null application/json; charset=utf-8 29.2806ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 105
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling CreateCarrierCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 16c2f1a9-953e-445d-bbbe-9b97b5c97a66 201 null True
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 2.686ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 201 16c2f1a9-953e-445d-bbbe-9b97b5c97a66
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 201 null application/json; charset=utf-8 3.3212ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 109
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling CreateCarrierCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 06d58806-c6eb-488b-b004-0c5be75d1dd0 409 IDEMPOTENCY_KEY_REUSED False
+[01:17:01 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 5.2818ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 409 06d58806-c6eb-488b-b004-0c5be75d1dd0
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 409 null application/json; charset=utf-8 5.8113ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - application/json 48
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Status", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Status(System.String, Diten.SupplyChainService.Application.Features.Carriers.ChangeCarrierStatusRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling ChangeCarrierStatusCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 877950b8-e603-45b2-a292-8493c594d0ac 200 null False
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api) in 9.0992ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 200 877950b8-e603-45b2-a292-8493c594d0ac
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - 200 null application/json; charset=utf-8 9.605ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - application/json 47
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Status", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Status(System.String, Diten.SupplyChainService.Application.Features.Carriers.ChangeCarrierStatusRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling ChangeCarrierStatusCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 4220b4a1-7c7e-47d4-b759-31c5c6088138 200 null True
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api) in 2.613ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 200 4220b4a1-7c7e-47d4-b759-31c5c6088138
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - 200 null application/json; charset=utf-8 3.1455ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - application/json 44
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Status", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Status(System.String, Diten.SupplyChainService.Application.Features.Carriers.ChangeCarrierStatusRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling ChangeCarrierStatusCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 134b3260-6fa4-45e9-9a4c-a06ab5e0db83 422 INVALID_CARRIER_TRANSITION False
+[01:17:01 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api) in 1.7633ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 422 134b3260-6fa4-45e9-9a4c-a06ab5e0db83
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - 422 null application/json; charset=utf-8 2.232ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 105
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling CreateCarrierCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 d2f1ddab-2bd3-4714-9cb5-e1793120991c 409 CARRIER_CODE_CONFLICT False
+[01:17:01 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 1.8792ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 409 d2f1ddab-2bd3-4714-9cb5-e1793120991c
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 409 null application/json; charset=utf-8 2.3376ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "List", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling GetCarrierListQuery
+[01:17:01 INF] Carrier outcome 486952ae-db07-44b5-9714-c2e79087d674 bb6c6ec1-9def-4c78-bed8-e42b3f604616 c1201702-ef75-45b8-b5fd-388137183ea1 200 null False
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierListResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api) in 1.7853ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 200 c1201702-ef75-45b8-b5fd-388137183ea1
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 200 null application/json; charset=utf-8 2.2695ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - application/json 47
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Status", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Status(System.String, Diten.SupplyChainService.Application.Features.Carriers.ChangeCarrierStatusRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling ChangeCarrierStatusCommand
+[01:17:01 INF] Carrier outcome 486952ae-db07-44b5-9714-c2e79087d674 bb6c6ec1-9def-4c78-bed8-e42b3f604616 389255cb-6cfc-48ea-9df4-0161195a0b26 404 CARRIER_NOT_FOUND False
+[01:17:01 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api) in 2.002ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 404 389255cb-6cfc-48ea-9df4-0161195a0b26
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - 404 null application/json; charset=utf-8 2.4667ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "List", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling GetCarrierListQuery
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 fc3a88b2-4fa0-464c-a171-f5291dd55b42 00837bda-2c54-4c36-a7e7-93ff44d15d3b 200 null False
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierListResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api) in 2.2781ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 200 00837bda-2c54-4c36-a7e7-93ff44d15d3b
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 200 null application/json; charset=utf-8 2.7742ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - application/json 47
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Status", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Status(System.String, Diten.SupplyChainService.Application.Features.Carriers.ChangeCarrierStatusRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling ChangeCarrierStatusCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 fc3a88b2-4fa0-464c-a171-f5291dd55b42 6ddf4602-c199-4c5a-8090-0037382bd4d6 404 CARRIER_NOT_FOUND False
+[01:17:01 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api) in 1.72ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 404 6ddf4602-c199-4c5a-8090-0037382bd4d6
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - 404 null application/json; charset=utf-8 2.1499ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:17:01 INF] Carrier request rejected 401 INVALID_REQUEST 49b8c9c2-35ab-40b0-aa15-73101e58a988
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 401 null application/json; charset=utf-8 1.6486ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:17:01 INF] Carrier request rejected 403 INVALID_REQUEST 153ffb35-9fa9-403b-9551-9739529b2def
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 403 null application/json; charset=utf-8 0.3458ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:17:01 INF] Carrier request rejected 400 INVALID_REQUEST c30aaac0-95f3-45a1-bb48-e88aa0679c37
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 0.2592ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers?status=bad - application/json null
+[01:17:01 INF] Carrier request rejected 400 INVALID_REQUEST 3b02c1b2-718b-449a-a06f-58ee0062de15
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers?status=bad - 400 null application/json; charset=utf-8 2.3517ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers?tenantId=bad - application/json null
+[01:17:01 INF] Carrier request rejected 400 INVALID_REQUEST a060e30a-ee5e-4d2e-a6ed-3c1b8bfc19fb
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers?tenantId=bad - 400 null application/json; charset=utf-8 0.2944ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers?status=Retired - application/json null
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "List", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling GetCarrierListQuery
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 5229ef4c-964e-49af-b247-4d2b6109e713 200 null False
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierListResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api) in 2.5714ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 200 5229ef4c-964e-49af-b247-4d2b6109e713
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers?status=Retired - 200 null application/json; charset=utf-8 2.9787ms
+[01:17:01 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:17:01 INF] Carrier request rejected 404 CARRIER_NOT_FOUND 00c562b7-dea3-4e3e-b1a3-38e853f88dcf
+[01:17:01 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 404 null application/json; charset=utf-8 0.3123ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 105
+[01:17:01 INF] Carrier request rejected 400 INVALID_REQUEST 516a9ada-4c75-420e-8866-ce9e6ae24aaf
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 0.3053ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/bad/status - application/json 44
+[01:17:01 INF] Carrier request rejected 400 INVALID_REQUEST 4c78f044-0114-4433-ab00-29b77c8cd570
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/bad/status - 400 null application/json; charset=utf-8 0.2698ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 83
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Executing BadRequestObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 1.9943ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 400 9d56ff15-4a2e-42b8-a895-ced90356e21a
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 2.4318ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 104
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 888eb3d0-aa6c-43a1-b656-524cc8b8993f 400 INVALID_REQUEST False
+[01:17:01 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 11.8438ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 400 888eb3d0-aa6c-43a1-b656-524cc8b8993f
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 12.3422ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 85
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Executing BadRequestObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 0.5155ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 400 2af144ce-fef8-41ce-8183-96a7d9b8b489
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 1.0149ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 106
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 547dbe36-1481-4b0e-bea2-b58188444989 400 INVALID_REQUEST False
+[01:17:01 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 0.3359ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 400 547dbe36-1481-4b0e-bea2-b58188444989
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 0.7049ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 69
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Executing BadRequestObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 0.3856ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 400 b91313b2-85ae-44da-91b8-64fa91e3bda0
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 0.7152ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 93
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 8e2d778f-be74-41f3-b9fd-2ee1d0153093 400 INVALID_REQUEST False
+[01:17:01 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 0.5628ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 400 8e2d778f-be74-41f3-b9fd-2ee1d0153093
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 1.5954ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 127
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Executing BadRequestObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 0.9474ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 400 acecd652-f24e-471d-ad4f-947f50f248a6
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 400 null application/json; charset=utf-8 1.5105ms
+[01:17:01 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 111
+[01:17:01 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:01 INF] Handling CreateCarrierCommand
+[01:17:01 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 8c2db108-0d1c-415f-9479-e6a427aa2dc9 201 null False
+[01:17:01 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:17:01 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 8.9822ms
+[01:17:01 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:01 INF] Carrier request completed 201 8c2db108-0d1c-415f-9479-e6a427aa2dc9
+[01:17:01 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 201 null application/json; charset=utf-8 9.5513ms
+[01:17:03 INF] Application is shutting down...
+[01:17:03 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[01:17:03 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[01:17:03 INF] Now listening on: http://127.0.0.1:5061
+[01:17:03 INF] Application started. Press Ctrl+C to shut down.
+[01:17:03 INF] Hosting environment: Production
+[01:17:03 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery
+[01:17:03 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[01:17:04 INF] Executing endpoint 'HTTP: GET /health'
+[01:17:04 INF] Setting HTTP status code 200.
+[01:17:04 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[01:17:04 INF] Executed endpoint 'HTTP: GET /health'
+[01:17:04 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 43.0659ms
+[01:17:04 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:17:04 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:04 INF] Route matched with {action = "List", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:04 INF] Handling GetCarrierListQuery
+[01:17:04 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 f9e51c0b-929e-479f-8214-ab4e106788f9 200 null False
+[01:17:04 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierListResponse'.
+[01:17:04 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api) in 87.4304ms
+[01:17:04 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:17:04 INF] Carrier request completed 200 f9e51c0b-929e-479f-8214-ab4e106788f9
+[01:17:04 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 200 null application/json; charset=utf-8 143.1822ms
+[01:17:04 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 105
+[01:17:04 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:04 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:04 INF] Handling CreateCarrierCommand
+[01:17:04 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 22fffe07-88c7-4e2f-b105-e7c84a4e88b6 201 null True
+[01:17:04 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:17:05 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 26.9393ms
+[01:17:05 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:17:05 INF] Carrier request completed 201 22fffe07-88c7-4e2f-b105-e7c84a4e88b6
+[01:17:05 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 201 null application/json; charset=utf-8 34.0517ms
+[01:17:05 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - application/json 48
+[01:17:05 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:05 INF] Route matched with {action = "Status", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Status(System.String, Diten.SupplyChainService.Application.Features.Carriers.ChangeCarrierStatusRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:17:05 INF] Handling ChangeCarrierStatusCommand
+[01:17:05 INF] Carrier outcome 6d4901a7-916b-4d76-bb4d-b0627792cad4 bb6c6ec1-9def-4c78-bed8-e42b3f604616 3e3c307f-96c9-41c1-82df-26e5375e0cf9 200 null True
+[01:17:05 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:17:05 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api) in 7.5632ms
+[01:17:05 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:17:05 INF] Carrier request completed 200 3e3c307f-96c9-41c1-82df-26e5375e0cf9
+[01:17:05 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status - 200 null application/json; charset=utf-8 11.6596ms
+[01:17:05 INF] Application is shutting down...

@@ -1,0 +1,3 @@
+kind	url_or_path	source_path	http	observed	expected	result
+served-asset	/assets/js/SupplyChain/SandopPlans/details.l10n.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/details.l10n.js	200	3454e57b879213262bd1a474bff9f909a4b44f647cfc16caa72f24b07721b2d8	3454e57b879213262bd1a474bff9f909a4b44f647cfc16caa72f24b07721b2d8	match
+browser-url	http://127.0.0.1:5801/SupplyChain/SandopPlans	-	-	127.0.0.1:5801	127.0.0.1:5801	match

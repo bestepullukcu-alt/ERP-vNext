@@ -1,0 +1,16 @@
+Q122 static checks on ~/mvp6-env/q122/src (composed tree = K01 tree b1e10bfc…)
+1 resx keys: en=95, tr=95, fr=95, es=95, zh=95, ar=95, ru=95; parity=PASS
+  empty values: 0 []
+  values identical to English (review list): {"tr": [], "fr": ["ActionsHeader"], "es": [], "zh": [], "ar": [], "ru": []}
+  mandatory keys ClaimsTitle/PageDescription/AddNewClaims: present in 7/7
+2 UI error codes 18; pack §32.8 codes 18; missing in UI []; extra in UI []
+  Err* resx keys used 18; missing in en resx []
+3 greps over 18 module files (views, controller, model, js, resx):
+  native dialog alert/confirm/prompt(: 0 []
+  manual Swal.fire: 0 []
+  inline handler on*=: 0 []
+  localStorage/sessionStorage/indexedDB: 0 []
+  ports 5000/5061: 0 []
+  'Permission denied'/'Forbidden' text: 0 []
+  Authorization header in JS: 6 ['frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs:6', 'frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs:18', 'frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs:21', 'frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs:163', 'frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs:221', 'frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs:265']
+  hard-coded English UI strings in JS sinks (textContent = '...'): 0 []

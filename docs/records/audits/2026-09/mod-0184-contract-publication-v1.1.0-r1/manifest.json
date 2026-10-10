@@ -1,0 +1,78 @@
+{
+  "wp": "MVP6-184-CANDIDATE-R1",
+  "selfExcluded": true,
+  "files": [
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/README.md",
+      "sha256": "032b9e83ba5e8eece90eb71d967e89abf8f87f5a3e2d1cf144a3805e68fffb06"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/after/results.json",
+      "sha256": "7741fa239556ab0d0447ae38ab8516e9c35068b99382c6c90471c44a1081c2f8"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/baseline.json",
+      "sha256": "d0a26a4736cbf2abe1f4df066ad60ee100ed76f4cc27f049a366319be612a29e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/before/results.json",
+      "sha256": "2c0453649a247e7fbc11afe9df4e669fc9a75938ef5e5dab8816609b67dd3560"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/carrier-semantics-v1.1.0.md",
+      "sha256": "87557ef9f5b5a4427862effbece2bb528ebc1b95361c29416373709223021fee"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_consumer.py",
+      "sha256": "48f17177bf5116bcfc84880113c4cfb9e89ea64df6136cd4ebf569e50886bb70"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_revision.py",
+      "sha256": "ab92073204d7bc7eeeda2b9b11c4a8e8e279e3f0ecd2388b705fff1278a8f0d8"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/error-matrix.json",
+      "sha256": "af3fc12b4414ec096c623001805d7e8c7bfe36249fde232e2155a0c359401886"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/examples.json",
+      "sha256": "fc4084e1c69910a640711bef105e8fd07763f90e9087c759d0ff1c0be94dd051"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/preservation-results.json",
+      "sha256": "62a5fc34eefc4582b4cec62ecb433393bf804d3702ed5f497d6e1a79b555b1c7"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/proposed-publication-hashes.json",
+      "sha256": "c886e515f36485522aea2622ba697470bfc39095873cea68038c2f946c3a6616"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/publication-after-approval.patch",
+      "sha256": "9f96389b08758ee4fb5d12fe9d6381a7cadaff058deeb8d46b36f89466e4cd88"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/r1-only.diff",
+      "sha256": "5b563724a93e15cd8e9870d69f1745e1cc2aa8ce472d490d44a474d225794c5f"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/revision-results.json",
+      "sha256": "2c9374f52dc082460662c485efbcb57140ac5294d90dd763eda5f2273be1bfd7"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/shipment-bundle-1.0.0-to-1.1.0.candidate.diff",
+      "sha256": "1b5c04959a1b79734369d99bae356081d774a3d0bd425cc308f1921fd925d0fe"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/shipment-bundle.openapi.candidate.yaml",
+      "sha256": "05a7ad0c8e26f46983a712e475f39fa5288164f0385f351e3d3a04860d9d8034"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py",
+      "sha256": "145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validation-results.json",
+      "sha256": "7d1b1f953986a4d66c731890db8096c502def79a43c226174719e4ceffe0dbaa"
+    }
+  ]
+}

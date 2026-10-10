@@ -1,0 +1,16 @@
+row	version	result	observed	evidence
+CU-05	v2 (served, hashed)	FAIL	skeleton computed display none during a 2.5 s first load (neither skeleton nor table visible); empty and 503 states OK	runtime-kit-final/browser/cu05-v2-a1.json; png/cu05-skeleton-v2.png
+CU-05	v3-rc1 (native)	FAIL	skeleton shown at 811 ms, then faded out by the shared DtDefaults drawCallback on DataTables' empty first draw (1098 ms) while data arrived at 3586 ms — second D1 cause	runtime-kit/browser/cu05-v3-a1.json, diag-v3-a1.json (sealed rc1 lane)
+CU-05	v3 final (native)	PASS	skeleton visible (display block) for the whole delayed load, hidden when data arrives; table hidden meanwhile; empty = table state with shared localized DtEmptyTable text; 503 = error state + message + support reference + Retry, table and skeleton hidden	runtime-kit-final/browser/cu05-v3-a1.json, diag-v3-a1.json; png/cu05-*-v3.png
+CU-25a	v3 final	PASS	no horizontal overflow: en and ar at 390/768/1024/1280/1440, tr/fr/es/zh/ru at 1280; ar dir=rtl	runtime-kit-final/browser/cu25-v3-a1.json; png/cu25-*
+CU-25b	v2	FAIL	create: Enter no (D3), Space opens, focus inside, Escape closes, inert — focus after close = BODY (D4)	runtime-kit-final/browser/cu25-v2-a1.json
+CU-25b	v3 final	PASS (D3 open)	create: Enter no (D3, template owner, unchanged), Space opens, focus inside, Escape closes, inert, focus returned to Add (D4 fixed); evidence ids unique	runtime-kit-final/browser/cu25-v3-a1.json
+CU-25c	v2	FAIL	transition surface: immediately (50 ms) focus on BODY and Escape ignored; settled (900 ms) focus on the container and Escape closes — D2 is the slide-in window + no field focus (Q64d overstated it as 'Escape does not close')	runtime-kit-final/browser/cu25-v2-a1.json
+CU-25c	v3 final	PASS	immediately and settled: focus on #transitionTarget, Escape closes	runtime-kit-final/browser/cu25-v3-a1.json; png/cu25-transition-open-v3.png
+REG-D-02	v3 final	PASS	one shell: 1 layout wrapper, 1 main.js, 1 footer	runtime-kit-final/browser/regression-a1.json
+REG-D1	v3 final	PASS	skeleton hidden and table visible after load	runtime-kit-final/browser/regression-a1.json
+REG-filter-saveview	v3 final	PASS	Apply → ?shipmentId + Save View visible; Reset → empty query + hidden	runtime-kit-final/browser/regression-a1.json
+REG-quickview	v3 final	PASS	0 by-ID adapter calls	runtime-kit-final/browser/regression-a1.json
+REG-D-01+D4	v3 final	PASS	create 201 → list reload shows 264.00; surface closed; focus returned to Add; 0 JS errors; K10 +1 claim	runtime-kit-final/browser/regression-a1.json; K10 regression
+REG-D2-flow	v3 final	PASS	Open → Investigating through the transition surface: focus on #transitionTarget, confirm, 200, reload, 0 JS errors; K10 +1 receipt/audit/outbox	runtime-kit-final/browser/regression-a1.json
+GLOBAL	final lane	PASS	7 phase files: 0 root leaks, 0 native dialogs, 0 page errors; K09 PASS (served index.js c8ef218e… = v3; v2 overrides hashed and matched); K10 pairs 7/7 PASS	runtime-kit-final/SOURCE-BINARY-PROCESS.tsv, raw/browser-binding.tsv, raw/served-overrides.tsv, raw/db

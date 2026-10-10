@@ -1,0 +1,348 @@
+diff --git a/frontend/Diten.Web/Program.cs b/frontend/Diten.Web/Program.cs
+index 51229a09..c14f79cc 100644
+--- a/frontend/Diten.Web/Program.cs
++++ b/frontend/Diten.Web/Program.cs
+@@ -1,6 +1,7 @@
+ using Diten.Web;
+ using Diten.BuildingBlocks.Security.Secrets;
+ using Diten.Web.Filters;
++using Diten.Web.Security;
+ using Diten.Web.Services.Auth;
+ using Diten.Web.Services.EnterpriseStrategy;
+ using Diten.Web.Services.ManagementGovernance;
+@@ -75,6 +76,31 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
+         options.Cookie.Name = "auth_ticket"; // Use a separate cookie for ASP.NET state if needed
+         options.LoginPath = "/account/login";
+         options.LogoutPath = "/account/logout";
++        options.Events.OnRedirectToLogin = async context =>
++        {
++            if (context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<JsonAdapterEndpointAttribute>() is null)
++            {
++                context.Response.Redirect(context.RedirectUri);
++                return;
++            }
++
++            var correlationId = context.Request.Headers.TryGetValue("X-Correlation-Id", out var values)
++                && values.Count == 1 && Guid.TryParse(values[0], out var parsed)
++                    ? parsed
++                    : Guid.NewGuid();
++            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
++            context.Response.Headers["X-Correlation-Id"] = correlationId.ToString("D");
++            await context.Response.WriteAsJsonAsync(new
++            {
++                error = new
++                {
++                    code = "INVALID_REQUEST",
++                    message = "Authentication required.",
++                    correlationId
++                },
++                contractVersion = "v1"
++            });
++        };
+     });
+ 
+ var authServiceUrl = builder.Configuration["GatewayUrl"] ?? "http://localhost:5000";
+diff --git ab/frontend/Diten.Web/Security/JsonAdapterEndpointAttribute.cs b/frontend/Diten.Web/Security/JsonAdapterEndpointAttribute.cs
+new file mode 100644
+index 00000000..015d3d40
+--- /dev/null
++++ b/frontend/Diten.Web/Security/JsonAdapterEndpointAttribute.cs
+@@ -0,0 +1,9 @@
++namespace Diten.Web.Security;
++
++/// <summary>
++/// Marks same-origin MVC adapter endpoints whose authentication challenge is JSON.
++/// The marker changes only the cookie challenge representation; authorization still
++/// runs through the normal ASP.NET Core pipeline.
++/// </summary>
++[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
++public sealed class JsonAdapterEndpointAttribute : Attribute;
+diff --git a/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs b/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs
+index de836a20..4f7a26ab 100644
+--- a/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs
++++ b/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs
+@@ -50,6 +50,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpGet("api")]
++    [JsonAdapterEndpoint]
+     public Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? sourceDocumentId,
+         [FromQuery] int page = 1, [FromQuery] int pageSize = 50, CancellationToken cancellationToken = default)
+     {
+@@ -64,6 +65,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpGet("api/{shipmentId:guid}")]
++    [JsonAdapterEndpoint]
+     public Task<IActionResult> Detail(Guid shipmentId, CancellationToken cancellationToken)
+     {
+         if (!HasPermission(ReadPermission)) return Task.FromResult(ContractFailure(StatusCodes.Status403Forbidden));
+@@ -71,6 +73,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpPost("api")]
++    [JsonAdapterEndpoint]
+     [ValidateAntiForgeryToken]
+     public Task<IActionResult> Create([FromBody] CreateShipmentViewModel model, CancellationToken cancellationToken)
+     {
+@@ -81,6 +84,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpPost("api/{shipmentId:guid}/transition")]
++    [JsonAdapterEndpoint]
+     [ValidateAntiForgeryToken]
+     public Task<IActionResult> Transition(Guid shipmentId, [FromBody] TransitionShipmentViewModel model,
+         CancellationToken cancellationToken)
+@@ -94,6 +98,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpPost("api/{shipmentId:guid}/pod")]
++    [JsonAdapterEndpoint]
+     [ValidateAntiForgeryToken]
+     public Task<IActionResult> CapturePod(Guid shipmentId, [FromBody] CaptureShipmentPodViewModel model,
+         CancellationToken cancellationToken)
+diff --git ab/frontend/Diten.Web.Tests/Controllers/ShipmentJsonAdapterChallengeTests.cs b/frontend/Diten.Web.Tests/Controllers/ShipmentJsonAdapterChallengeTests.cs
+new file mode 100644
+index 00000000..49f567a3
+--- /dev/null
++++ b/frontend/Diten.Web.Tests/Controllers/ShipmentJsonAdapterChallengeTests.cs
+@@ -0,0 +1,51 @@
++using System.Net;
++using System.Text.Json;
++using Microsoft.AspNetCore.Mvc.Testing;
++using Xunit;
++
++namespace Diten.Web.Tests.Controllers;
++
++public sealed class ShipmentJsonAdapterChallengeTests : IClassFixture<WebApplicationFactory<Program>>
++{
++    private readonly WebApplicationFactory<Program> _factory;
++
++    public ShipmentJsonAdapterChallengeTests(WebApplicationFactory<Program> factory) => _factory = factory;
++
++    [Fact]
++    public async Task Unauthenticated_adapter_uses_json_401_while_page_keeps_login_redirect()
++    {
++        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
++        var id = "44444444-4444-4444-8444-444444444444";
++        var adapters = new[]
++        {
++            new HttpRequestMessage(HttpMethod.Get, "/SupplyChain/Shipments/api"),
++            new HttpRequestMessage(HttpMethod.Get, $"/SupplyChain/Shipments/api/{id}"),
++            JsonPost("/SupplyChain/Shipments/api"),
++            JsonPost($"/SupplyChain/Shipments/api/{id}/transition"),
++            JsonPost($"/SupplyChain/Shipments/api/{id}/pod")
++        };
++
++        foreach (var request in adapters)
++        {
++            using (request)
++            using (var adapter = await client.SendAsync(request))
++            {
++                Assert.Equal(HttpStatusCode.Unauthorized, adapter.StatusCode);
++                Assert.Null(adapter.Headers.Location);
++                Assert.True(adapter.Headers.Contains("X-Correlation-Id"));
++                using var body = JsonDocument.Parse(await adapter.Content.ReadAsStringAsync());
++                Assert.Equal("INVALID_REQUEST", body.RootElement.GetProperty("error").GetProperty("code").GetString());
++                Assert.Equal("v1", body.RootElement.GetProperty("contractVersion").GetString());
++            }
++        }
++
++        var page = await client.GetAsync("/SupplyChain/Shipments");
++        Assert.Equal(HttpStatusCode.Found, page.StatusCode);
++        Assert.Equal("/account/login", page.Headers.Location?.AbsolutePath);
++    }
++
++    private static HttpRequestMessage JsonPost(string path) => new(HttpMethod.Post, path)
++    {
++        Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
++    };
++}
+diff --git a/frontend/Diten.Web/Views/Shared/_DataTableL10n.cshtml b/frontend/Diten.Web/Views/Shared/_DataTableL10n.cshtml
+index 492dc662..503e5c52 100644
+--- a/frontend/Diten.Web/Views/Shared/_DataTableL10n.cshtml
++++ b/frontend/Diten.Web/Views/Shared/_DataTableL10n.cshtml
+@@ -15,7 +15,7 @@
+     A page that wants its OWN wording still wins — dt-defaults reads `window.L10n` first, key by key.
+ *@
+ @{
+-    string[] dtKeys = ["DtInfo", "DtInfoEmpty", "DtInfoFiltered", "DtEmptyTable", "DtNoRecords", "DtZeroRecords"];
++    string[] dtKeys = ["DtInfo", "DtInfoEmpty", "DtInfoFiltered", "DtEmptyTable", "DtNoRecords", "DtZeroRecords", "Details", "Close"];
+     var dtPayload = new Dictionary<string, string>();
+     foreach (var key in dtKeys)
+     {
+diff --git a/frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js b/frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js
+index e8479e22..6fc95fb6 100644
+--- a/frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js
++++ b/frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js
+@@ -225,6 +225,10 @@ window.DtDefaults = (function () {
+ 
+             title.replaceWith(replacement);
+         });
++
++        modal.querySelectorAll('.btn-close[data-bs-dismiss="modal"]').forEach(function (closeButton) {
++            closeButton.setAttribute('aria-label', dtText('Close') || 'Close');
++        });
+     }
+ 
+     function bindResponsiveModalTitleFix() {
+@@ -305,7 +309,7 @@ window.DtDefaults = (function () {
+             details: {
+                 display: DataTable.Responsive.display.modal({
+                     header: function (row) {
+-                        return L().Details || 'Details';
++                        return dtText('Details') || 'Details';
+                     }
+                 }),
+                 type: 'column',
+diff --git a/frontend/Diten.Web/Resources/SharedResource.fr.resx b/frontend/Diten.Web/Resources/SharedResource.fr.resx
+index 041ce0d0..2fcb22d9 100644
+--- a/frontend/Diten.Web/Resources/SharedResource.fr.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.fr.resx
+@@ -273,6 +273,9 @@
+   <data name="Details" xml:space="preserve">
+     <value>Détails</value>
+   </data>
++  <data name="Close" xml:space="preserve">
++    <value>Fermer</value>
++  </data>
+   <data name="BackToList" xml:space="preserve">
+     <value>Retour à la liste</value>
+   </data>
+@@ -805,4 +808,4 @@
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>
+   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Suivi des expéditions et preuve de livraison</value></data>
+   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Expéditions</value></data>
+-</root>
+\ No newline at end of file
++</root>
+diff --git a/frontend/Diten.Web/Resources/SharedResource.es.resx b/frontend/Diten.Web/Resources/SharedResource.es.resx
+index 4ab9a75b..5ad5f19a 100644
+--- a/frontend/Diten.Web/Resources/SharedResource.es.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.es.resx
+@@ -273,6 +273,9 @@
+   <data name="Details" xml:space="preserve">
+     <value>Detalles</value>
+   </data>
++  <data name="Close" xml:space="preserve">
++    <value>Cerrar</value>
++  </data>
+   <data name="BackToList" xml:space="preserve">
+     <value>Volver a la lista</value>
+   </data>
+@@ -805,4 +808,4 @@
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transportistas</value></data>
+   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Seguimiento de envíos y comprobante de entrega</value></data>
+   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Envíos</value></data>
+-</root>
+\ No newline at end of file
++</root>
+diff --git a/frontend/Diten.Web/Resources/SharedResource.zh.resx b/frontend/Diten.Web/Resources/SharedResource.zh.resx
+index a1a00a3c..bbc8e835 100644
+--- a/frontend/Diten.Web/Resources/SharedResource.zh.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.zh.resx
+@@ -273,6 +273,9 @@
+   <data name="Details" xml:space="preserve">
+     <value>详情</value>
+   </data>
++  <data name="Close" xml:space="preserve">
++    <value>关闭</value>
++  </data>
+   <data name="BackToList" xml:space="preserve">
+     <value>返回列表</value>
+   </data>
+@@ -804,4 +807,4 @@
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>
+   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>货运跟踪与交付证明</value></data>
+   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>货运</value></data>
+-</root>
+\ No newline at end of file
++</root>
+diff --git a/frontend/Diten.Web/Resources/SharedResource.ar.resx b/frontend/Diten.Web/Resources/SharedResource.ar.resx
+index 07bc9eba..cdc59d0c 100644
+--- a/frontend/Diten.Web/Resources/SharedResource.ar.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.ar.resx
+@@ -273,6 +273,9 @@
+   <data name="Details" xml:space="preserve">
+     <value>التفاصيل</value>
+   </data>
++  <data name="Close" xml:space="preserve">
++    <value>إغلاق</value>
++  </data>
+   <data name="BackToList" xml:space="preserve">
+     <value>العودة إلى القائمة</value>
+   </data>
+@@ -804,4 +807,4 @@
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>
+   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>تتبع الشحنات وإثبات التسليم</value></data>
+   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>الشحنات</value></data>
+-</root>
+\ No newline at end of file
++</root>
+diff --git a/frontend/Diten.Web/Resources/SharedResource.ru.resx b/frontend/Diten.Web/Resources/SharedResource.ru.resx
+index f21b57af..36de1052 100644
+--- a/frontend/Diten.Web/Resources/SharedResource.ru.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.ru.resx
+@@ -273,6 +273,9 @@
+   <data name="Details" xml:space="preserve">
+     <value>Детали</value>
+   </data>
++  <data name="Close" xml:space="preserve">
++    <value>Закрыть</value>
++  </data>
+   <data name="BackToList" xml:space="preserve">
+     <value>Назад к списку</value>
+   </data>
+@@ -804,4 +807,4 @@
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Перевозчики</value></data>
+   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Отслеживание отгрузок и подтверждение доставки</value></data>
+   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Отгрузки</value></data>
+-</root>
+\ No newline at end of file
++</root>
+diff --git ab/frontend/Diten.Web.Tests/JavaScript/DataTableResponsiveLocalizationTests.cs b/frontend/Diten.Web.Tests/JavaScript/DataTableResponsiveLocalizationTests.cs
+new file mode 100644
+index 00000000..cbb237b3
+--- /dev/null
++++ b/frontend/Diten.Web.Tests/JavaScript/DataTableResponsiveLocalizationTests.cs
+@@ -0,0 +1,40 @@
++using System.Xml.Linq;
++using Xunit;
++
++namespace Diten.Web.Tests.JavaScript;
++
++public sealed class DataTableResponsiveLocalizationTests
++{
++    [Fact]
++    public void Responsive_modal_chrome_is_shared_and_complete_in_all_tenant_languages()
++    {
++        var root = Root();
++        var partial = File.ReadAllText(Path.Combine(root, "frontend/Diten.Web/Views/Shared/_DataTableL10n.cshtml"));
++        var script = File.ReadAllText(Path.Combine(root, "frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js"));
++
++        Assert.Contains("\"Details\", \"Close\"", partial);
++        Assert.Contains("dtText('Details')", script);
++        Assert.Contains("dtText('Close')", script);
++        Assert.Contains(".btn-close[data-bs-dismiss=\"modal\"]", script);
++
++        foreach (var culture in new[] { "en", "tr", "fr", "es", "zh", "ar", "ru" })
++        {
++            var resource = XDocument.Load(Path.Combine(root, $"frontend/Diten.Web/Resources/SharedResource.{culture}.resx"));
++            foreach (var key in new[] { "Details", "Close" })
++            {
++                var value = resource.Root?.Elements("data")
++                    .SingleOrDefault(node => string.Equals((string?)node.Attribute("name"), key, StringComparison.Ordinal))
++                    ?.Element("value")?.Value;
++                Assert.False(string.IsNullOrWhiteSpace(value), $"{culture}:{key} must be present and non-empty");
++            }
++        }
++    }
++
++    private static string Root()
++    {
++        var directory = new DirectoryInfo(AppContext.BaseDirectory);
++        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AGENTS.md")))
++            directory = directory.Parent;
++        return directory?.FullName ?? throw new DirectoryNotFoundException("Repository root was not found.");
++    }
++}

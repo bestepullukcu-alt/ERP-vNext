@@ -1,0 +1,3 @@
+path	change	sha256
+docs/reference/architecture/docs-path-authority.json	approved authority: append one exact historical-data seal and bind decision	6d3865f80707ff0e9ca7c9cf2e2343f34d2961be2916a3eceb37168d1b0a8167
+docs/records/decisions/2026-09/mvp6-capacity-guard-single-disposition-owner-decision-01.json	new real owner decision	877c3878d9b38446fc437a384d5e61630ccbec601dc5dd025a536ea21aa20ae2

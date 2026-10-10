@@ -1,0 +1,8 @@
+PASS input manifests: policy=13; presentation=30
+PASS DataTable classification: raw=35; out-of-scope=23; evidence-gap=8; owner-conflict=4; bounded-defect=0
+PASS owner-review map: PC-02/03/04/28 enriched; 23 out-of-scope and 8 evidence-gap rows remain separate
+PASS owner proposal: four exact conflicts, owners, rulings, alternatives and verifier effects; profile inactive
+PASS acceptance-gap matrix: UI183-A01–A16 exactly once
+PASS execution plan markers: A08, A09-409, A09-422, A12, A10
+PASS exact decisions: evidence-only fault control and bounded DataTable profile
+PASS single independent handoff bound to future A+B successor source

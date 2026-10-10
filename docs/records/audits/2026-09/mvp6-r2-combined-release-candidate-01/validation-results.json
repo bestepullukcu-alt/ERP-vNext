@@ -1,0 +1,284 @@
+{
+  "checks": [
+    {
+      "id": "owned-exact-/returns",
+      "pass": true
+    },
+    {
+      "id": "owned-changed-/returns",
+      "pass": true
+    },
+    {
+      "id": "owned-exact-/returns/{returnId}/transition",
+      "pass": true
+    },
+    {
+      "id": "owned-changed-/returns/{returnId}/transition",
+      "pass": true
+    },
+    {
+      "id": "owned-exact-/claims",
+      "pass": true
+    },
+    {
+      "id": "owned-changed-/claims",
+      "pass": true
+    },
+    {
+      "id": "owned-exact-/claims/{claimId}/transition",
+      "pass": true
+    },
+    {
+      "id": "owned-changed-/claims/{claimId}/transition",
+      "pass": true
+    },
+    {
+      "id": "exact-union-no-extra-business",
+      "pass": true
+    },
+    {
+      "id": "orders-byte-identical",
+      "pass": true
+    },
+    {
+      "id": "shared-root-only",
+      "pass": true
+    },
+    {
+      "id": "not-FROZEN",
+      "pass": true
+    },
+    {
+      "id": "wire-v1",
+      "pass": true
+    },
+    {
+      "id": "all-examples",
+      "pass": true
+    },
+    {
+      "id": "nullable-uuid",
+      "pass": true
+    },
+    {
+      "id": "root-optional",
+      "pass": true
+    },
+    {
+      "id": "claims-withdrawn",
+      "pass": true
+    },
+    {
+      "id": "claims-errors",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Open-Open",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Open-Investigating",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Open-Approved",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Open-Rejected",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Open-Settled",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Open-Closed",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Open-Withdrawn",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Investigating-Open",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Investigating-Investigating",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Investigating-Approved",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Investigating-Rejected",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Investigating-Settled",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Investigating-Closed",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Investigating-Withdrawn",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Approved-Open",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Approved-Investigating",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Approved-Approved",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Approved-Rejected",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Approved-Settled",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Approved-Closed",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Approved-Withdrawn",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Rejected-Open",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Rejected-Investigating",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Rejected-Approved",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Rejected-Rejected",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Rejected-Settled",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Rejected-Closed",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Rejected-Withdrawn",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Settled-Open",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Settled-Investigating",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Settled-Approved",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Settled-Rejected",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Settled-Settled",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Settled-Closed",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Settled-Withdrawn",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Closed-Open",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Closed-Investigating",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Closed-Approved",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Closed-Rejected",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Closed-Settled",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Closed-Closed",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Closed-Withdrawn",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Withdrawn-Open",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Withdrawn-Investigating",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Withdrawn-Approved",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Withdrawn-Rejected",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Withdrawn-Settled",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Withdrawn-Closed",
+      "pass": true
+    },
+    {
+      "id": "combined-claims-edge-Withdrawn-Withdrawn",
+      "pass": true
+    },
+    {
+      "id": "returns-lifecycle-owned-preserved",
+      "pass": true
+    }
+  ],
+  "counts": {
+    "refs": 298,
+    "examples": 236
+  },
+  "exampleErrors": [],
+  "passed": 68,
+  "failed": 0,
+  "scope": "fresh combined contract checks; not full OpenAPI meta-schema validator or runtime"
+}

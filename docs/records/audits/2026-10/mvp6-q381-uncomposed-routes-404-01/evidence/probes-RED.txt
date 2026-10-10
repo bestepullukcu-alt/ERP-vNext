@@ -1,0 +1,10 @@
+cap-get-noauth         GET  /api/supply-chain/capacity-plans/e53d6998-a7d1-4313-b3e4-9ddf301655b7 401 
+cap-get-auth           GET  /api/supply-chain/capacity-plans/e53d6998-a7d1-4313-b3e4-9ddf301655b7 500 System.InvalidOperationException: Unable to resolve service for type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityRequestContext' while 
+cap-post-noauth        POST /api/supply-chain/capacity-plans                     401 
+cap-post-auth          POST /api/supply-chain/capacity-plans                     500 System.InvalidOperationException: Unable to resolve service for type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityRequestContext' while 
+sop-get-noauth         GET  /api/supply-chain/sandop-plans/e53d6998-a7d1-4313-b3e4-9ddf301655b7 401 
+sop-get-auth           GET  /api/supply-chain/sandop-plans/e53d6998-a7d1-4313-b3e4-9ddf301655b7 500 System.InvalidOperationException: No service for type 'MediatR.IRequestHandler`2[Diten.SupplyChainService.Application.Features.SandopPlans.Queries.GetSandopPlan
+sop-post-noauth        POST /api/supply-chain/sandop-plans                       401 
+sop-post-auth          POST /api/supply-chain/sandop-plans                       500 System.InvalidOperationException: No service for type 'MediatR.IRequestHandler`2[Diten.SupplyChainService.Application.Features.SandopPlans.Commands.CreateSandop
+ship-list-auth         GET  /api/shipment-bundle/shipments                       200 {"items":[],"page":1,"pageSize":50,"total":0,"contractVersion":"v1"}
+ship-list-noauth       GET  /api/shipment-bundle/shipments                       401 {"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"b27bb6f1-8a09-49b6-b320-5cc291d4f776"},"contractVersion":"v1"}

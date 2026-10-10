@@ -1,0 +1,3 @@
+normal 341/341 archive-member/manifest/target hashes MATCH
+sandop 38/38 archive-member/manifest/target hashes MATCH
+normal∩sandop paths=0

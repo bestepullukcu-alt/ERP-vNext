@@ -1,0 +1,204 @@
+{
+  "records": [
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "tenantId": "1bf9c75b-6680-49e7-b398-c10639c568a5",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "7d6874ed-e057-4c97-845f-0d784f60e2ea",
+      "status": 200,
+      "response": {
+        "items": [],
+        "total": 0,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "tenantId": "1bf9c75b-6680-49e7-b398-c10639c568a5",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "7e6ae421-fc96-480a-ab02-e8b9d692c32d",
+      "status": 503,
+      "response": {
+        "error": {
+          "code": "PERSISTENCE_UNAVAILABLE",
+          "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable.",
+          "correlationId": "7e6ae421-fc96-480a-ab02-e8b9d692c32d"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": "outage",
+        "displayName": "Outage",
+        "supportedModes": [
+          "Road"
+        ]
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJvdXRhZ2UiLCAiZGlzcGxheU5hbWUiOiAiT3V0YWdlIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIl19",
+      "tenantId": "1bf9c75b-6680-49e7-b398-c10639c568a5",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "76d5ab69-c5ac-4d6c-82ca-da1bc30050ce",
+      "status": 503,
+      "response": {
+        "error": {
+          "code": "PERSISTENCE_UNAVAILABLE",
+          "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable.",
+          "correlationId": "76d5ab69-c5ac-4d6c-82ca-da1bc30050ce"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/3788eb9c-ba04-4bdf-b725-bd71a98178a8/status",
+      "request": {
+        "targetStatus": "Suspended",
+        "reasonCode": ""
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiU3VzcGVuZGVkIiwgInJlYXNvbkNvZGUiOiAiIn0=",
+      "tenantId": "1bf9c75b-6680-49e7-b398-c10639c568a5",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "c123bf38-773a-4277-919c-576fb855a69e",
+      "status": 503,
+      "response": {
+        "error": {
+          "code": "PERSISTENCE_UNAVAILABLE",
+          "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable.",
+          "correlationId": "c123bf38-773a-4277-919c-576fb855a69e"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": "outage",
+        "displayName": "Outage",
+        "supportedModes": [
+          "Road"
+        ]
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJvdXRhZ2UiLCAiZGlzcGxheU5hbWUiOiAiT3V0YWdlIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIl19",
+      "tenantId": "1bf9c75b-6680-49e7-b398-c10639c568a5",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "e1c513f4-d7e1-4269-8623-754653758c3c",
+      "status": 201,
+      "response": {
+        "carrierId": "7a6e412b-3742-42f6-804a-68b1b3210299",
+        "carrierCode": "outage",
+        "status": "Active",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": "outage",
+        "displayName": "Outage",
+        "supportedModes": [
+          "Road"
+        ]
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJvdXRhZ2UiLCAiZGlzcGxheU5hbWUiOiAiT3V0YWdlIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIl19",
+      "tenantId": "1bf9c75b-6680-49e7-b398-c10639c568a5",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "59705bb0-e371-4119-8fd1-8c53b645955b",
+      "status": 201,
+      "response": {
+        "carrierId": "7a6e412b-3742-42f6-804a-68b1b3210299",
+        "carrierCode": "outage",
+        "status": "Active",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": "commit-retry",
+        "displayName": "Outage",
+        "supportedModes": [
+          "Road"
+        ]
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJjb21taXQtcmV0cnkiLCAiZGlzcGxheU5hbWUiOiAiT3V0YWdlIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIl19",
+      "tenantId": "b74821d9-1c8f-493f-94ff-a1f0368227d9",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "576144d8-12a9-44db-aa84-759b80d70aaa",
+      "status": 201,
+      "response": {
+        "carrierId": "975eda12-f16d-49a4-ac53-d69d512a545e",
+        "carrierCode": "commit-retry",
+        "status": "Active",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": "commit-unknown",
+        "displayName": "Outage",
+        "supportedModes": [
+          "Road"
+        ]
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJjb21taXQtdW5rbm93biIsICJkaXNwbGF5TmFtZSI6ICJPdXRhZ2UiLCAic3VwcG9ydGVkTW9kZXMiOiBbIlJvYWQiXX0=",
+      "tenantId": "5aac877a-9a22-4936-af53-565ae241e9b6",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "2ba73a5a-8a9e-45ca-9476-98f6c6bef155",
+      "status": 503,
+      "response": {
+        "error": {
+          "code": "PERSISTENCE_UNAVAILABLE",
+          "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable.",
+          "correlationId": "2ba73a5a-8a9e-45ca-9476-98f6c6bef155"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": "commit-unknown",
+        "displayName": "Outage",
+        "supportedModes": [
+          "Road"
+        ]
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJjb21taXQtdW5rbm93biIsICJkaXNwbGF5TmFtZSI6ICJPdXRhZ2UiLCAic3VwcG9ydGVkTW9kZXMiOiBbIlJvYWQiXX0=",
+      "tenantId": "5aac877a-9a22-4936-af53-565ae241e9b6",
+      "legalEntityId": "5818d40b-40e0-467c-8ac6-620454a2a1c8",
+      "correlationId": "14f90575-92e9-4c3d-9a37-54b6322b1a44",
+      "status": 201,
+      "response": {
+        "carrierId": "43a70b7a-2b43-43c4-a7ec-27719d1b0d01",
+        "carrierCode": "commit-unknown",
+        "status": "Active",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    }
+  ],
+  "startupUnavailable": {
+    "exitCode": -6,
+    "listener": false
+  },
+  "recovered": true,
+  "binarySha256": "a285878cd60d10532e3db27b93589df48d463cb75a59d0abe0744daacdd2e360"
+}

@@ -1,0 +1,39 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs
+@@ -108,10 +108,7 @@
+         }
+         catch(MongoException ex) when(ex.HasErrorLabel("UnknownTransactionCommitResult"))
+         {
+-            var persisted=await evaluations.Find(Scope(scope)&Builders<CapacityEvaluation>.Filter.Eq(x=>x.Id,id)).FirstOrDefaultAsync(ct);
+-            var eventFilter=new BsonDocument{{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
+-                {"AggregateId",id.ToString()},{"EventType","capacity.evaluation.completed.v1"}};
+-            return persisted is {Status:"Completed" or "Failed"} && await outbox.Find(eventFilter).AnyAsync(ct);
++            return await ReconcileTerminalAsync(scope,id,status,ct);
+         }
+         finally
+         {
+@@ -119,4 +116,24 @@
+                 try {await session.AbortTransactionAsync(CancellationToken.None);} catch(MongoException) { }
+         }
+     }
++    private async Task<bool> ReconcileTerminalAsync(CapacityScope scope,Guid id,string status,CancellationToken ct)
++    {
++        try
++        {
++            var persisted=await evaluations.Find(Scope(scope)&Builders<CapacityEvaluation>.Filter.Eq(x=>x.Id,id)).FirstOrDefaultAsync(ct);
++            if(persisted is null || persisted.Status!=status || persisted.CompletedAt is null) return false;
++            var eventFilter=new BsonDocument{{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
++                {"AggregateId",id.ToString()},{"EventType","capacity.evaluation.completed.v1"},{"EvaluationStatus",status},
++                {"Status","Pending"},{"CorrelationId",persisted.CorrelationId.ToString()}};
++            var auditFilter=new BsonDocument{{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
++                {"TargetId",id.ToString()},{"Operation","terminalCapacityEvaluation"},{"Status",status},
++                {"CorrelationId",persisted.CorrelationId.ToString()}};
++            return await outbox.CountDocumentsAsync(eventFilter,cancellationToken:ct)==1 &&
++                await audit.CountDocumentsAsync(auditFilter,cancellationToken:ct)==1;
++        }
++        catch(Exception ex) when(ex is MongoException or TimeoutException)
++        {
++            throw new InvalidOperationException("Terminal commit outcome unresolved: scoped reconciliation read failed.",ex);
++        }
++    }
+ }

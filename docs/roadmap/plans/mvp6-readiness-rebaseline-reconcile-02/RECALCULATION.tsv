@@ -1,0 +1,15 @@
+scope	denominator	r0_numerator	r0_percent	r1_numerator	r1_percent	delta_numerator	interpretation
+development	63	42.00	66.7	44.00	69.8	2.00	evidence reconciliation; not effort or schedule progress
+release	45	13	28.9	14	31.1	1	newly proven bounded release gate; not full-module readiness
+D1	9	7.5	83.3	7.5	83.3	0	fixed nine-module part denominator
+D2	9	7.5	83.3	7.5	83.3	0	fixed nine-module part denominator
+D3	9	7.5	83.3	7.5	83.3	0	fixed nine-module part denominator
+D4	9	6.75	75.0	7	77.8	0.25	fixed nine-module part denominator
+D5	9	6.75	75.0	7	77.8	0.25	fixed nine-module part denominator
+D6	9	0.75	8.3	0.75	8.3	0	fixed nine-module part denominator
+D7	9	5.25	58.3	6.75	75.0	1.5	fixed nine-module part denominator
+R1	9	6	66.7	7	77.8	1	fixed nine-module part denominator
+R2	9	7	77.8	7	77.8	0	fixed nine-module part denominator
+R3	9	0	0.0	0	0.0	0	fixed nine-module part denominator
+R4	9	0	0.0	0	0.0	0	fixed nine-module part denominator
+R5	9	0	0.0	0	0.0	0	fixed nine-module part denominator

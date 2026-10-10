@@ -1,0 +1,131 @@
+{
+  "phase": "checks-mut",
+  "startedAt": "2026-09-26T19:42:05.325Z",
+  "web": "http://127.0.0.1:5501",
+  "cases": {
+    "CU-10-carrier-linked": {
+      "result": "FAIL",
+      "resolveBody": {
+        "shipmentNumber": "SHP-59be715049504b36a1188ec1a98e60aa",
+        "status": "Dispatched",
+        "carrierId": "ee8177a1-3a75-4dd6-a4c9-a82bf3c46795"
+      },
+      "checkboxEnabled": true,
+      "sentBody": "{\"shipmentId\":\"59be7150-4950-4b36-a118-8ec1a98e60aa\",\"carrierId\":\"ee8177a1-3a75-4dd6-a4c9-a82bf3c46795\",\"reasonCode\":\"CARRIER-DAMAGE\",\"claimedAmount\":\"40.00\",\"currency\":\"EUR\"}",
+      "createStatus": 503,
+      "createBody": {
+        "error": {
+          "code": "CLAIM_REFERENCE_UNAVAILABLE",
+          "message": "Reference service is unavailable.",
+          "correlationId": "6d57878f-10f5-4063-badd-e4bd7d1be936"
+        },
+        "contractVersion": "v1"
+      },
+      "network": [
+        {
+          "foreignRequest": "https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+        },
+        {
+          "at": "2026-09-26T19:42:06.088Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims",
+          "status": 200,
+          "host": "127.0.0.1:5501",
+          "requestCorrelation": null,
+          "idempotencyKeyPresent": false,
+          "requestBodyText": null,
+          "responseCorrelation": null,
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": null,
+          "itemCount": null,
+          "claimNumbers": null,
+          "status_": null
+        },
+        {
+          "foreignRequest": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+        },
+        {
+          "at": "2026-09-26T19:42:07.317Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims/api",
+          "status": 200,
+          "host": "127.0.0.1:5501",
+          "requestCorrelation": "dd4b2a00-25a8-4e07-a230-443c0d691be3",
+          "idempotencyKeyPresent": false,
+          "requestBodyText": null,
+          "responseCorrelation": "dd4b2a00-25a8-4e07-a230-443c0d691be3",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "contractVersion",
+            "items",
+            "total"
+          ],
+          "itemCount": 4,
+          "claimNumbers": [
+            "CLM-b1cdd636826e408489cee767654d773a",
+            "CLM-5633ed4928e04379a98426bf90b35a46",
+            "CLM-1ddd7265cb084a26b7f8922a6cf8b3af",
+            "CLM-3a090ac1440147e880739be79c1530c5"
+          ],
+          "status_": null
+        },
+        {
+          "at": "2026-09-26T19:42:07.748Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims/api/shipments/59be7150-4950-4b36-a118-8ec1a98e60aa",
+          "status": 200,
+          "host": "127.0.0.1:5501",
+          "requestCorrelation": "4b9c884a-a10f-4a15-a4be-8e22584a0a15",
+          "idempotencyKeyPresent": false,
+          "requestBodyText": null,
+          "responseCorrelation": "4b9c884a-a10f-4a15-a4be-8e22584a0a15",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "carrierId",
+            "shipmentNumber",
+            "status"
+          ],
+          "itemCount": null,
+          "claimNumbers": null,
+          "status_": "Dispatched"
+        },
+        {
+          "at": "2026-09-26T19:42:07.879Z",
+          "method": "POST",
+          "path": "/SupplyChain/Claims/api",
+          "status": 503,
+          "host": "127.0.0.1:5501",
+          "requestCorrelation": "6d57878f-10f5-4063-badd-e4bd7d1be936",
+          "idempotencyKeyPresent": true,
+          "requestBodyText": "{\"shipmentId\":\"59be7150-4950-4b36-a118-8ec1a98e60aa\",\"carrierId\":\"ee8177a1-3a75-4dd6-a4c9-a82bf3c46795\",\"reasonCode\":\"CARRIER-DAMAGE\",\"claimedAmount\":\"40.00\",\"currency\":\"EUR\"}",
+          "responseCorrelation": "6d57878f-10f5-4063-badd-e4bd7d1be936",
+          "errorCode": "CLAIM_REFERENCE_UNAVAILABLE",
+          "errorCorrelation": "6d57878f-10f5-4063-badd-e4bd7d1be936",
+          "okKeys": null,
+          "itemCount": null,
+          "claimNumbers": null,
+          "status_": null
+        }
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "cu10-carrier-linked-create-en.png",
+      "sha256": "a6eb21d48ac40a811615c65a236b0aba004d6284c718a37f7232c6bb02f69ef0",
+      "url": "http://127.0.0.1:5501/SupplyChain/Claims"
+    }
+  ],
+  "console": [
+    {
+      "tag": "cu10",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T19:42:09.038Z"
+}

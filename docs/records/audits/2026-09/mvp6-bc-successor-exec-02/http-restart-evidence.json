@@ -1,0 +1,342 @@
+{
+  "verdict": "PASS",
+  "database": "DitenSupplyChain_BC_Successor_Exec02",
+  "apiUrl": "http://127.0.0.1:56932",
+  "binary": "/private/tmp/mvp6-integration-baseline-422-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+  "binarySha256": "df77341766fa88e5d42542168072402ba19a961d3ba625228be7f352f24c6fbb",
+  "processes": [
+    43418,
+    43428
+  ],
+  "sameBinaryRestart": true,
+  "planId": "99a3e12c-8e24-4645-a9bf-d4a701ecda34",
+  "scenarioId": "1e2a6b99-4219-472a-821e-0e44dd1efabe",
+  "records": [
+    {
+      "label": "create-plan",
+      "method": "POST",
+      "path": "/api/supply-chain/capacity-plans",
+      "requestBody": {
+        "name": "BC successor plan",
+        "horizonStart": "2027-01-01",
+        "horizonEnd": "2027-12-31",
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3",
+        "sourceCapturedAt": "2026-09-23T12:00:00Z",
+        "sourceChecksum": "sha256:ee56d4f9a3c8"
+      },
+      "requestBytes": 212,
+      "idempotencyKey": "plan-key",
+      "correlationId": "211deb04-dcee-47ca-9dd2-2c81f7000c43",
+      "status": 201,
+      "responseCorrelation": "211deb04-dcee-47ca-9dd2-2c81f7000c43",
+      "response": {
+        "capacityPlanId": "99a3e12c-8e24-4645-a9bf-d4a701ecda34",
+        "name": "BC successor plan",
+        "horizonStart": "2027-01-01",
+        "horizonEnd": "2027-12-31",
+        "provenance": {
+          "demandPlanId": "dp-2027",
+          "demandPlanVersion": "3",
+          "sourceContract": "DEMAND",
+          "sourceContractVersion": "v1",
+          "sourceCapturedAt": "2026-09-23T12:00:00+00:00",
+          "sourceChecksum": "sha256:ee56d4f9a3c8"
+        },
+        "status": "Draft",
+        "createdAt": "2026-09-23T12:12:44.456772+00:00",
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "label": "create-scenario",
+      "method": "POST",
+      "path": "/api/supply-chain/capacity-plans/99a3e12c-8e24-4645-a9bf-d4a701ecda34/scenarios",
+      "requestBody": {
+        "name": "Exact name",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ]
+      },
+      "requestBytes": 232,
+      "idempotencyKey": "scenario-key",
+      "correlationId": "b683273f-506b-4b30-857f-ff9e71ac957e",
+      "status": 201,
+      "responseCorrelation": "b683273f-506b-4b30-857f-ff9e71ac957e",
+      "response": {
+        "scenarioId": "1e2a6b99-4219-472a-821e-0e44dd1efabe",
+        "capacityPlanId": "99a3e12c-8e24-4645-a9bf-d4a701ecda34",
+        "name": "Exact name",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ],
+        "status": "Draft",
+        "createdAt": "2026-09-23T12:12:44.579671+00:00",
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "label": "replay",
+      "method": "POST",
+      "path": "/api/supply-chain/capacity-plans/99a3e12c-8e24-4645-a9bf-d4a701ecda34/scenarios",
+      "requestBody": {
+        "name": "Exact name",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ]
+      },
+      "requestBytes": 232,
+      "idempotencyKey": "scenario-key",
+      "correlationId": "2a0c8414-1050-4f79-b4bd-cd9a84724fc7",
+      "status": 201,
+      "responseCorrelation": "2a0c8414-1050-4f79-b4bd-cd9a84724fc7",
+      "response": {
+        "scenarioId": "1e2a6b99-4219-472a-821e-0e44dd1efabe",
+        "capacityPlanId": "99a3e12c-8e24-4645-a9bf-d4a701ecda34",
+        "name": "Exact name",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ],
+        "status": "Draft",
+        "createdAt": "2026-09-23T12:12:44.579671+00:00",
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "label": "changed-payload",
+      "method": "POST",
+      "path": "/api/supply-chain/capacity-plans/99a3e12c-8e24-4645-a9bf-d4a701ecda34/scenarios",
+      "requestBody": {
+        "name": "Changed payload",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ]
+      },
+      "requestBytes": 237,
+      "idempotencyKey": "scenario-key",
+      "correlationId": "94085236-4ba6-4982-b5b7-5590d586393d",
+      "status": 409,
+      "responseCorrelation": "94085236-4ba6-4982-b5b7-5590d586393d",
+      "response": {
+        "error": {
+          "code": "IDEMPOTENCY_KEY_REUSED",
+          "message": "Idempotency key was used with a different valid payload",
+          "correlationId": "94085236-4ba6-4982-b5b7-5590d586393d"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "label": "duplicate-name",
+      "method": "POST",
+      "path": "/api/supply-chain/capacity-plans/99a3e12c-8e24-4645-a9bf-d4a701ecda34/scenarios",
+      "requestBody": {
+        "name": "Exact name",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ]
+      },
+      "requestBytes": 232,
+      "idempotencyKey": "duplicate-key",
+      "correlationId": "8f686d54-c1bf-4df0-8da8-a2383761bf23",
+      "status": 409,
+      "responseCorrelation": "8f686d54-c1bf-4df0-8da8-a2383761bf23",
+      "response": {
+        "error": {
+          "code": "CAPACITY_SCENARIO_NAME_CONFLICT",
+          "message": "Capacity scenario name already exists in this plan",
+          "correlationId": "8f686d54-c1bf-4df0-8da8-a2383761bf23"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "label": "get-after-restart",
+      "method": "GET",
+      "path": "/api/supply-chain/capacity-plans/99a3e12c-8e24-4645-a9bf-d4a701ecda34",
+      "requestBody": null,
+      "requestBytes": 0,
+      "idempotencyKey": null,
+      "correlationId": "514ae474-3262-4e3e-8b12-7d62e902407d",
+      "status": 200,
+      "responseCorrelation": "514ae474-3262-4e3e-8b12-7d62e902407d",
+      "response": {
+        "capacityPlanId": "99a3e12c-8e24-4645-a9bf-d4a701ecda34",
+        "name": "BC successor plan",
+        "horizonStart": "2027-01-01",
+        "horizonEnd": "2027-12-31",
+        "provenance": {
+          "demandPlanId": "dp-2027",
+          "demandPlanVersion": "3",
+          "sourceContract": "DEMAND",
+          "sourceContractVersion": "v1",
+          "sourceCapturedAt": "2026-09-23T12:00:00+00:00",
+          "sourceChecksum": "sha256:ee56d4f9a3c8"
+        },
+        "status": "Draft",
+        "createdAt": "2026-09-23T12:12:44.456772+00:00",
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "label": "replay-after-restart",
+      "method": "POST",
+      "path": "/api/supply-chain/capacity-plans/99a3e12c-8e24-4645-a9bf-d4a701ecda34/scenarios",
+      "requestBody": {
+        "name": "Exact name",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ]
+      },
+      "requestBytes": 232,
+      "idempotencyKey": "scenario-key",
+      "correlationId": "1f00572e-eaa7-4d52-b2c7-94ff53a6cc34",
+      "status": 201,
+      "responseCorrelation": "1f00572e-eaa7-4d52-b2c7-94ff53a6cc34",
+      "response": {
+        "scenarioId": "1e2a6b99-4219-472a-821e-0e44dd1efabe",
+        "capacityPlanId": "99a3e12c-8e24-4645-a9bf-d4a701ecda34",
+        "name": "Exact name",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ],
+        "status": "Draft",
+        "createdAt": "2026-09-23T12:12:44.579671+00:00",
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "label": "duplicate-after-restart",
+      "method": "POST",
+      "path": "/api/supply-chain/capacity-plans/99a3e12c-8e24-4645-a9bf-d4a701ecda34/scenarios",
+      "requestBody": {
+        "name": "Exact name",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ]
+      },
+      "requestBytes": 232,
+      "idempotencyKey": "duplicate-key-2",
+      "correlationId": "6247eec9-3c9e-44f1-afc2-de5f93cf9b0b",
+      "status": 409,
+      "responseCorrelation": "6247eec9-3c9e-44f1-afc2-de5f93cf9b0b",
+      "response": {
+        "error": {
+          "code": "CAPACITY_SCENARIO_NAME_CONFLICT",
+          "message": "Capacity scenario name already exists in this plan",
+          "correlationId": "6247eec9-3c9e-44f1-afc2-de5f93cf9b0b"
+        },
+        "contractVersion": "v1"
+      }
+    }
+  ],
+  "secretsRecorded": false
+}

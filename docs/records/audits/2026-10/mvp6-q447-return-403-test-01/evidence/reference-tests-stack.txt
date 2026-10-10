@@ -1,0 +1,2 @@
+# filter ReturnReferenceTests|ClaimReferenceTests, RETURNS_MONGO_URI and CLAIMS_TEST_MONGO on 57447 — copy: stack
+Passed!  - Failed:     0, Passed:    66, Skipped:     0, Total:    66, Duration: 392 ms - Diten.SupplyChainService.Tests.dll (net8.0)

@@ -1,0 +1,28 @@
+{
+  "createStatus": 404,
+  "detailStatus": 404,
+  "expected": 404,
+  "before": {
+    "sce_shipments": 1,
+    "sce_shipment_history": 4,
+    "sce_shipment_audit": 4,
+    "sce_shipment_outbox": 5,
+    "sce_shipment_receipts": 4
+  },
+  "afterCreate": {
+    "sce_shipments": 1,
+    "sce_shipment_history": 4,
+    "sce_shipment_audit": 4,
+    "sce_shipment_outbox": 5,
+    "sce_shipment_receipts": 4
+  },
+  "afterDetail": {
+    "sce_shipments": 1,
+    "sce_shipment_history": 4,
+    "sce_shipment_audit": 4,
+    "sce_shipment_outbox": 5,
+    "sce_shipment_receipts": 4
+  },
+  "zeroWrite": true,
+  "pass": true
+}

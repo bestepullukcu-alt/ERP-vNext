@@ -1,0 +1,20 @@
+{
+  "name": "client-response-body-loss",
+  "request": {
+    "method": "POST",
+    "path": "/api/shipment-bundle/returns",
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Correlation-Id": "bdb10360-7f81-49d4-9a6f-acd94d743f61",
+      "Idempotency-Key": "response-loss-1",
+      "Content-Type": "application/json"
+    },
+    "bodyUtf8": "{\"shipmentId\":\"ba6c069f-3a9d-487f-ac52-a0869e227ec8\",\"reasonCode\":\"DAMAGED\",\"lines\":[{\"shipmentLineNumber\":\"1\",\"quantity\":\"1\",\"uomId\":\"EA\"}]}"
+  },
+  "response": {
+    "statusObservedBeforeBodyDiscard": 201,
+    "body": "<discarded>"
+  }
+}

@@ -1,0 +1,7 @@
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c feature/mvp6-logistics
+index.lock absent: 1
+diff paths: 19
+git diff sha256: 95a5a1e04f7cbf750be2e829692b6e683878fb4c28591a145318195e9f51efa1 (preflight 95a5a1e0…efa1)
+untracked: 477 (preflight 475)
+  new/changed since 15:57: 16:02:48 docs/records/audits/2026-09/mvp6-claims-ui-draft-04/
+  new/changed since 15:57: 16:00:49 docs/records/audits/2026-09/mvp6-ct-verdicts-q126-q128-q122-q121b-2026-09-27.md

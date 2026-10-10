@@ -1,0 +1,16 @@
+# filter ReturnReferenceTests|ClaimReferenceTests, RETURNS_MONGO_URI and CLAIMS_TEST_MONGO on 57447 — copy: overmap
+[xUnit.net 00:00:00.59]     Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 401, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [FAIL]
+  Failed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 401, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 503
+[xUnit.net 00:00:00.63]     Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "shipment", refusal: Unauthorized, status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE", reads: 1) [FA
+[xUnit.net 00:00:00.63]     Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "carrier", refusal: Unauthorized, status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE", reads: 2) [FAI
+  Failed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "shipment", refusal: Unauthorized, status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE", reads: 1) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 503
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 503
+Failed!  - Failed:     3, Passed:    63, Skipped:     0, Total:    66, Duration: 372 ms - Diten.SupplyChainService.Tests.dll (net8.0)

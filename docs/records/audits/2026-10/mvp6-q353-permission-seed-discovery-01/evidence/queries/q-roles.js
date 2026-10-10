@@ -1,0 +1,14 @@
+const a = db.getSiblingDB("q353_auth");
+const one = a.rolePermissions.findOne(); print("rolePermissions sample fields: " + Object.keys(one||{}).join(","));
+const r1 = a.roles.findOne(); print("roles sample fields: " + Object.keys(r1||{}).join(","));
+const perms = a.permissions.find({ Key: /^supplychain\./ }).toArray();
+const byId = {}; perms.forEach(p => byId[String(p._id)] = p.Key);
+const roles = a.roles.find({}).toArray();
+print("roles total: " + roles.length + " ; by name: " + JSON.stringify(roles.reduce((m,r)=>{m[r.Name]=(m[r.Name]||0)+1;return m;},{})));
+const rp = a.rolePermissions.find({ PermissionId: { $in: perms.map(p => p._id) } }).toArray();
+print("rolePermissions rows for supplychain.*: " + rp.length);
+const roleById = {}; roles.forEach(r => roleById[String(r._id)] = r);
+const table = {};
+rp.forEach(x => { const r = roleById[String(x.RoleId)]; const k = (r ? r.Name : "?") + " @tenant " + (r ? String(r.TenantId) : "?"); (table[k] = table[k] || []).push(byId[String(x.PermissionId)]); });
+Object.keys(table).sort().forEach(k => print(k + " -> " + table[k].sort().join(", ")));
+["SuperAdmin","Admin","Viewer"].forEach(n => { const ids = roles.filter(r => r.Name === n).map(r => r._id); const c = a.rolePermissions.countDocuments({ RoleId: { $in: ids }, PermissionId: { $in: perms.map(p => p._id) } }); print(n + ": roles=" + ids.length + " supplychain grants=" + c); });

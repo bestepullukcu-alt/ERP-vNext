@@ -1,0 +1,52 @@
+{
+  "phase": "login",
+  "extra": "readonly",
+  "startedAt": "2026-09-27T12:27:51.951Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "login-readonly": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.qyhJKYoBOds",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "login-readonly",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-readonly",
+      "url": "https://fonts.gstatic.com/l/font"
+    },
+    {
+      "tag": "login-readonly",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-readonly",
+      "url": "https://fonts.gstatic.com/l/font"
+    }
+  ],
+  "endedAt": "2026-09-27T12:27:54.628Z"
+}

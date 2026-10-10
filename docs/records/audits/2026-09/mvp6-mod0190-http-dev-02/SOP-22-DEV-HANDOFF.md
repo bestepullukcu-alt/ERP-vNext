@@ -1,0 +1,30 @@
+# MVP6-MOD0190-HTTP-DEV-02 — SOP §22
+
+**Developer verdict: bounded HTTP evidence produced; independent VER required.** This is not CT acceptance or E5/G5. The earlier [DEV-01-R1](../mvp6-mod0190-http-dev-01-r1/SOP-22.md) 500 is preserved. The user subsequently approved the exact Testing-only DI candidate patch `fb1f8a7e0da23971424e5e5386d832081b2bdc28000f86ea290dc083e6e53eaf` by replying “Evet, exact aday diff’i onaylıyorum.” It was applied by the single integration writer to the registered isolated worktree after the original approved patch. `Program.cs` changed from `0f6bf84e1c7ddff79868d32a23099e8934a33e3ac80ccecbe8b16f5e0a6c5cc2` to `a2a216be15d07fa656f5fd7da43711aa989c4a8d52cd51c58e8ded48d5d735e5`. No other source was edited in this work package.
+
+## Exact inputs and output
+
+- Worktree: `/private/tmp/mvp6-mod0190-http-integration-01`, detached HEAD `4a8d4d4b339528a88e6220fb8402e5a2c771136c`. The 341-entry normal integration source archive `edb759a07475184e11ae7ef94698f6300572b72aaeb2a39c7e2be13b74795a21` and 38-entry MOD-0190 source archive `09bfb801490e3a7aefdb6925b66c0187062f4f3f52a4efb0f0b1e70aa0fd2bcd` had disjoint paths. The transfer manifest was `b55e7b2128df259604e4a318cc9194bfeff24610b1dba1790f333ef20d74a824`.
+- Original approved composition patch `bd972051be35971465b008d783afe9eabf529d90b3e12ccfe6369f2c9c12a074` produced the approved intermediate Program target `0f6bf...`. The additional exact approved DI patch and its pre-approval technical validation are in [mvp6-mod0190-http-di-gap-01](../mvp6-mod0190-http-di-gap-01/SOP-22.md). This binds `IDemandFixtureReader` to exact test-only DEMAND fixtures in `Testing`; other environments receive an empty fixture set. It does not create a DEMAND endpoint or producer.
+- Final 379-entry [source manifest](source-manifest.tsv) SHA-256 `83966e5e641546ba094e47f8585d7e2ce7affb7001b1e909fe220e7811fdac14`; [source archive](source.tar.gz) SHA-256 `f4d1b79d7aa74f8db86f782ac638cc6d606c8cbfcf0c183e50d5ace1ff02c3e5`. Manifest paths were rehashed from the final worktree. The only source difference from DEV-01-R1 is `Program.cs`.
+- Fresh .NET 8 build: exit 0, 0 errors, 5 `NU1900` warnings from the unavailable vulnerability feed; [build.log](build.log). API DLL SHA-256 `e44fe92a934f41c1e085f5c1e590d9ad214400ab4bac11469ecc1d0ae741e9c8`.
+- The binary ran on `127.0.0.1:57691` against the lane-owned `rs190http2` PRIMARY at `127.0.0.1:57591`, database `DitenSupplyChain_Mod0190_Test`, with real JWT middleware and ephemeral Testing credentials. Same DLL and DB were used across restart, process PIDs `44285` then `44506`. Secrets and usable bearer tokens were excluded from the [raw evidence archive](raw-evidence.tar.gz), SHA-256 `083a32738aff2a85cfb3dc0ec0b237e5b8509969ede9fcf31cdab5734a3acaf4`. The later fault-probe process was stopped; both lane ports had no listeners after cleanup. Operational 27017 was untouched.
+
+## Runtime acceptance evidence
+
+The raw archive includes 27 token-redacted HTTP request/response records with safe headers, actual body and byte length, scoped independent Mongo before/after queries, failpoint on/off results, replica-set readiness, and probe scripts. The status, replay body, correlation and state-delta cross-check completed with zero mismatches. Invalid request correlation correctly generated a new UUID instead of echoing `bad`. The unauthenticated 401 is a framework challenge without application envelope; the published annex allows parser-level challenges without an application correlation header.
+
+| Area | Observed result |
+|---|---|
+| Six operations | Create 201, get 200, capture 201, list snapshots 200, sign-off 201, list sign-offs 200 through authenticated direct-service HTTP. |
+| Replay and conflicts | Same-key create/capture/sign-off returned original 201 bodies with current response correlation; changed payload returned 409 `IDEMPOTENCY_KEY_REUSED`; different-key duplicate returned 409 `SANDOP_PLAN_ALREADY_EXISTS`. Receipt/audit/outbox retained the original correlation. |
+| JWT and scope | Missing permission 403, other tenant 404, other legal entity 404, unauthenticated 401; invalid DEMAND fixture 422, invalid correlation 400. Negative requests produced no scoped writes. |
+| Concurrency | Two simultaneous same-key create requests returned 201/201 with identical bodies and one plan/receipt/audit/Pending outbox effect set. |
+| Transaction recovery | Receipt-insert failpoint produced 503 `DEPENDENCY_UNAVAILABLE` and zero change across `sandop_plans`, `sandop_snapshots`, `sandop_sign_offs`, `sandop_receipts`, `sandop_audit`, `sandop_outbox`; same-key retry after removing the failpoint succeeded once. |
+| Restart | Same DB/fixture/binary after process restart: get, create replay, both lists remained correct. Scoped counts unchanged, and all outbox records remained `Pending`. |
+
+## Test results and limitations
+
+The final isolated Mongo had `enableTestCommands=1` and a measured PRIMARY. [Sandop TRX](sandop-final.trx): **19/19 PASS**; [Shipment exact TRX](shipment-exact.trx): **12/12 PASS**. The first Sandop run was **16/19**, because the failpoint command was unavailable; the failure TRX is preserved. Broad same-host [TRX](same-host.trx): **271/276**, not PASS. Four failures depend on filter/environment setup (one SourceIntake lacking `MOD0183_TEST_MONGO`, two Sandop lacking `MVP6_MOD0190_MONGO_URI`, one Claims restart-mode test). The fifth, Loads `UnknownCommitResultRetriesAndCommitsExactlyOnce`, also failed alone [1/1](loads-unknowncommit.trx); it remains a real, unrelated non-PASS, not a waiver. The 19, 12 and 276 sets overlap and must not be added.
+
+Only isolated direct-service HTTP and frozen/test fixture dependencies were exercised. No live DEMAND or Workflow producer, Event Bus publisher, gateway, UI, operational migration/rollout, E5/G5 or full-module acceptance is claimed. The independent verifier must reproduce the evidence from this exact source archive, assess the broad-suite limitation, and return its own verdict. No commit, push or stash. The source writer is complete.

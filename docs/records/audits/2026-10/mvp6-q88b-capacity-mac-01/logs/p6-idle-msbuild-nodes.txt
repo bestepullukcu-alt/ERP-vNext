@@ -1,0 +1,8 @@
+  PID STARTED                      COMMAND
+87893 Thu Oct  1 13:44:02 2026     /Users/natig/.dotnet/dotnet /Users/natig/.dotnet/sdk/8.0.417/MSBuild.dll /nologo /nodemode:1 /nodeReuse:true /low:false
+87927 Thu Oct  1 13:44:05 2026     /Users/natig/.dotnet/dotnet /Users/natig/.dotnet/sdk/8.0.417/MSBuild.dll /nologo /nodemode:1 /nodeReuse:true /low:false
+87928 Thu Oct  1 13:44:05 2026     /Users/natig/.dotnet/dotnet /Users/natig/.dotnet/sdk/8.0.417/MSBuild.dll /nologo /nodemode:1 /nodeReuse:true /low:false
+87929 Thu Oct  1 13:44:05 2026     /Users/natig/.dotnet/dotnet /Users/natig/.dotnet/sdk/8.0.417/MSBuild.dll /nologo /nodemode:1 /nodeReuse:true /low:false
+87930 Thu Oct  1 13:44:05 2026     /Users/natig/.dotnet/dotnet /Users/natig/.dotnet/sdk/8.0.417/MSBuild.dll /nologo /nodemode:1 /nodeReuse:true /low:false
+87931 Thu Oct  1 13:44:05 2026     /Users/natig/.dotnet/dotnet /Users/natig/.dotnet/sdk/8.0.417/MSBuild.dll /nologo /nodemode:1 /nodeReuse:true /low:false
+88140 Thu Oct  1 13:44:31 2026     /Users/natig/.dotnet/dotnet /Users/natig/.dotnet/sdk/8.0.417/MSBuild.dll /nologo /nodemode:1 /nodeReuse:true /low:false

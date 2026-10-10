@@ -1,0 +1,1 @@
+{"phase":"login","file":"login-a2.json","verdicts":{"login-full":"PASS","login-readonly":"PASS","login-noread":"PASS","login-leb":"PASS","login-t2user":"PASS"},"rootLeak":0}

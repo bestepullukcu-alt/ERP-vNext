@@ -1,0 +1,13 @@
+level	message
+warning	[L10N WARNING] Missing localization key: Active
+warning	[L10N WARNING] Missing localization key: Actions
+warning	[L10N WARNING] Missing localization key: Apply
+warning	[L10N WARNING] Missing localization key: Cancel
+warning	[L10N WARNING] Missing localization key: Filter
+warning	[L10N WARNING] Missing localization key: Passive
+warning	[L10N WARNING] Missing localization key: Reset
+warning	[L10N WARNING] Missing localization key: Save
+warning	[L10N WARNING] Missing localization key: Status
+warning	[L10N WARNING] Missing localization key: Unknown
+summary	JavaScript error count: 0
+

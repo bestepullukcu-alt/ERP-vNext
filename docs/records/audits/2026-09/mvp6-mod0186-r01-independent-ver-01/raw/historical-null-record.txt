@@ -1,0 +1,14 @@
+historical_path_status:
+?? docs/records/audits/2026-09/mvp6-mod0186-http-01/
+historical_worktree_hashes:
+0abd8eac78ef5454081c1ac05c204931d7012b0f9f7e6fd2d067f12130497726  docs/records/audits/2026-09/mvp6-mod0186-http-01/SOP-22.md
+9c3710144148e03ef22e754ad88e0bcfb30a9046d34ffb84885e1ecda11827a0  docs/records/audits/2026-09/mvp6-mod0186-http-01/ACCEPTANCE-MATRIX.md
+3b18c085aa5bc68322dc43af9d996dafa7f955f8154ee3c4ecdbc7e839228d30  docs/records/audits/2026-09/mvp6-mod0186-http-01/writer-complete.json
+historical_text:
+docs/records/audits/2026-09/mvp6-mod0186-http-01/writer-complete.json:7:  "rework": "Malformed persisted Shipment root is exposed by producer as 500 SHIPMENT_ROOT_INVALID and mapped by Returns to 503 DEPENDENCY_UNAVAILABLE; approved consumer malformed-root oracle is 502 RETURN_SHIPMENT_ROOT_INVALID when malformed wire data is observable.",
+docs/records/audits/2026-09/mvp6-mod0186-http-01/ACCEPTANCE-MATRIX.md:5:| R01 producer/root | **REWORK** | Required root missing/null returned 503. Real valid Shipment detail supplied exact persisted UUID. Malformed persisted root produced Shipment 500 then Returns 503; expected consumer malformed classification is 502 when malformed wire value is observable. |
+docs/records/audits/2026-09/mvp6-mod0186-http-01/ACCEPTANCE-MATRIX.md:10:| R06 opaque reference/no external writes | PASS | Empty/null optional references accepted in applicable transitions; 0 Inventory/Warehouse HTTP; no Inventory/Warehouse/stock collection. |
+docs/records/audits/2026-09/mvp6-mod0186-http-01/SOP-22.md:51:returns `500 SHIPMENT_ROOT_INVALID`. `ReturnReferenceReader` maps every dependency 5xx response to
+docs/records/audits/2026-09/mvp6-mod0186-http-01/SOP-22.md:53:`502 RETURN_SHIPMENT_ROOT_INVALID` when a malformed root reaches the wire.
+docs/records/audits/2026-09/mvp6-mod0186-http-01/SOP-22.md:57:`malformed persisted root → Shipment 500 SHIPMENT_ROOT_INVALID → Returns 503 DEPENDENCY_UNAVAILABLE`
+docs/records/audits/2026-09/mvp6-mod0186-http-01/SOP-22.md:61:`malformed wire root → Returns 502 RETURN_SHIPMENT_ROOT_INVALID`

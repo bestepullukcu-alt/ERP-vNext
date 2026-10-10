@@ -1,0 +1,24 @@
+# Q220 v2 mvp6-q220-sandop-registration-01 — ARTIFACTS.sha256 (last write)
+# start 2026-10-02 22:20:23 +03 · end 2026-10-02 22:26:32 +03 (Europe/Istanbul)
+# branch feature/mvp6-logistics · HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+# repo unchanged: git status --porcelain before = after, byte-identical (sha256 01ef1f7fe7d9b0e91795cef4a4bdf728669428b5dee4fccb3f80c8144f2f9d5e); 665 lines = 89 M + 576 ?? + 0 staged; no file under services/ was written; git diff not run
+# written by this lane: this folder + a scratch copy in the session scratchpad (outside the repo)
+# verify: cd docs/records/audits/2026-10/mvp6-q220-sandop-registration-01 && grep -v '^#' ARTIFACTS.sha256 | shasum -a 256 -c
+24189806b0179f4d05408663862f0fd1c9b95adc321b23cddca99f1796767cd8  BEFORE-AFTER.md
+e96321b093864ef5993ef7d7b0fc78a72f2d6a9bb7d5a4b664bbd86d5533ddc4  BUILD-AND-TEST.tsv
+bc78c234b042b8a5b4bb0a07b68c5db4c1d168b0b5822d33ac9d847b3d73cefd  PEER-SHAPE-COMPARISON.tsv
+7e432d52ad255d513ac88899354981b43d57fd5f6fcbe648bde82ed217a411aa  SOP-22.md
+0e74fec0687634d94c61e7c2965f495545b716f446f42fc6c45f1e1bf590961a  before/SandopPersistenceRegistration.cs.txt
+49f87409f29534c835a2aed82e349a22ba383bf5ef9ae4c4a3c17cbc0ae90bad  before/SandopSchema.cs.txt
+dc7f0f697fdc0b8032342e7187e784be233478601385fcaf8b4f46eaf3636122  evidence/build-restored.log
+db223d6573aa00bad7132e1007445326b419a75a424daccce6bca0ea9d77a424  evidence/build-sabotage.log
+56ac5f80e868530fb1bf1c96e6a7d1b941241ddda18de48f15295943ab3507d3  evidence/build.log
+abd2b08d4c0e6a1eb80e4b4adcbeed4702df73e2d1ed48766f0cba9a7efaa63e  evidence/t1-sandop-after.log
+9e34c0141b0ac5098ce745ae638ef6603703d849fecc9a1cc4d92e680e4dbc15  evidence/t2-sabotage-registration-only.log
+aaccae89faab64abc2e533274580213ebad87f6d5e0f3c570418028b839a4735  evidence/t3-sabotage-other19.log
+282776ef627493393ecfae7fb1a85cbf12b445b9a7b9b033baced521db544f23  evidence/t4-sandop-after-restored.log
+be83a6016c4da601e8bc14e361ca081376c7f9454465bb8d791e157741d926a2  evidence/t5-sandop-after-repeat.log
+d78aa532715af3d4b59c4281e316e4246102067d2dafd92591403393656abc11  evidence/trx-sha256.txt
+18d180638bd9b4b1cd9cf612f7f1048f7b0eedbb0b0416ca4e206197e11ac12d  proposed/SandopPersistenceRegistration.cs.txt
+e3a4292c3d4da4e2b1f02dd3c238b6d893b32d67838753cf45987e4b39e89a83  proposed/SandopRegistrationTests.cs.txt
+9fd754a4eda154c2e0497f9e75802904090ac2cb00e5f2c393570e9d95911450  proposed/SandopSchema.cs.txt

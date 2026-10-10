@@ -1,0 +1,11 @@
+{
+  "task": "MVP6-MOD0186-HTTP-01",
+  "writerComplete": true,
+  "verdict": "PARTIAL_REWORK",
+  "mainHttpChecks": { "passed": 50, "failed": 1, "total": 51 },
+  "restartChecks": { "passed": 4, "failed": 0, "total": 4 },
+  "rework": "Malformed persisted Shipment root is exposed by producer as 500 SHIPMENT_ROOT_INVALID and mapped by Returns to 503 DEPENDENCY_UNAVAILABLE; approved consumer malformed-root oracle is 502 RETURN_SHIPMENT_ROOT_INVALID when malformed wire data is observable.",
+  "sourceChanged": false,
+  "commit": false,
+  "push": false
+}

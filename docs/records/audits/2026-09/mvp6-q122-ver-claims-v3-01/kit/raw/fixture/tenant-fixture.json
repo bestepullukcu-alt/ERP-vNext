@@ -1,0 +1,20 @@
+{
+  "port": 39994,
+  "db": "DitenPlatform_ClaimsQ122Ver01",
+  "seededTenantCount": 1,
+  "tenants": {
+    "T1": {
+      "id": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+      "created": true,
+      "status": 1,
+      "tenantType": 0,
+      "isDeleted": false
+    },
+    "T2": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "created": false,
+      "status": 1,
+      "isDeleted": false
+    }
+  }
+}

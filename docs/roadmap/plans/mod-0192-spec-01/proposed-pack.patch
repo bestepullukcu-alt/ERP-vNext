@@ -1,0 +1,77 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
+@@ -29,9 +29,9 @@
+ 
+ ## 1. Module Summary
+ 
+-MOD-0192 owns capacity plans, alternative capacity scenarios and their evaluations/bottleneck results. A plan binds
+-to immutable provenance for one frozen DEMAND plan version; scenarios express capacity constraints and adjustments,
+-then evaluation reports gaps without copying or changing DEMAND facts.
++MOD-0192 owns capacity plans, alternative capacity scenarios and their evaluations/bottleneck results. A plan records requested immutable provenance for one frozen DEMAND plan version; scenarios express opaque
++constraint references and owned adjustments. Authoritative DEMAND version/checksum verification and evaluation
++calculation/execution remain consumed-seam and owner-decision gates; no DEMAND facts are copied or changed.
+ 
+ The planned initial slice is backend/contract only. It may be dispatched after the MVP-6 shipment lane is verified,
+ in parallel with MOD-0190, subject to this pack reaching `ready-for-dev`.
+@@ -52,7 +52,7 @@
+ |---|---|
+ | `CapacityPlan` | Horizon and immutable frozen-DEMAND provenance |
+ | `CapacityScenario` | Named constraint-reference and capacity-adjustment alternative |
+-| `CapacityEvaluation` | Asynchronous finite/infinite evaluation and bottleneck result |
++| `CapacityEvaluation` | Durable Accepted/Running/Completed/Failed state and bottleneck result, subject to an approved execution/calculation policy |
+ | Commands | Create capacity plan, create scenario, submit evaluation |
+ | Queries | Get capacity plan, get scenario, get evaluation |
+ | API | `/api/supply-chain/capacity-plans/**` from `SANDOP-CAPACITY` v1 |
+@@ -157,14 +157,14 @@
+ | `X-Correlation-Id` | All contract operations | UUID | Persist/echo through audit and events |
+ | `Name` | Plan/scenario create | Trimmed, 1..200 | Unique in declared scope |
+ | Horizon | Plan create | Valid dates; end >= start | — |
+-| Demand provenance | Plan create | Non-empty ID/version/checksum; UTC capture | Frozen DEMAND mock returns Published |
++| Demand provenance | Plan create | Non-empty ID/version/checksum; UTC capture | Declared fixture can check exact tuple; DEMAND v1 cannot verify live ID+version+checksum |
+ | Constraint refs | Scenario | Source, ID and version required | Frozen adapter when source is available |
+ | Adjustments | Scenario | Valid period, UoM, decimal-string delta | Resource belongs to resolved scope |
+ | Evaluation mode/resources | Evaluate | Frozen enum; at least one resource | Scenario belongs to plan and is evaluable |
+ 
+ ## 13. Failure Path to Verify
+ 
+-- Unknown or unpublished DEMAND version returns 422 `INVALID_DEMAND_REFERENCE` and creates no plan.
++- Unknown or unpublished DEMAND version returns 422 `INVALID_DEMAND_REFERENCE` and creates no plan **only when an approved exact-version authority/fixture resolves it**; DEMAND v1 live GET alone cannot prove this.
+ - Cross-tenant or cross-legal-entity plan/scenario/evaluation returns 404 without leakage.
+ - Duplicate plan horizon+demand version returns 409 and no duplicate aggregate.
+ - Scenario creation in a disallowed plan state returns 409 `CAPACITY_PLAN_STATE_CONFLICT`.
+@@ -193,11 +193,11 @@
+ 
+ ## 16. Acceptance Criteria
+ 
+-- [ ] Capacity plan stores one tenant/legal-entity aggregate with immutable Published-DEMAND provenance.
++- [ ] Capacity plan stores one tenant/legal-entity aggregate with immutable DEMAND reference provenance; Published/exact-version authority is identified and mock-only proof is labeled.
+ - [ ] No demand quantity, confidence or forecast series is persisted as a competing source of truth.
+ - [ ] Scenario creation stores only owned adjustments and opaque versioned constraint references.
+-- [ ] Evaluation runs idempotently and exposes accepted/running/completed/failed state without duplicate jobs.
+-- [ ] Completed evaluation returns decimal-string bottleneck measures and emits the frozen event once.
++- [ ] Evaluation acceptance persists once and exposes accepted/running/completed/failed state; terminal execution, finite/infinite oracle and restart policy require exact owner decisions before acceptance.
++- [ ] Completed evaluation returns decimal-string bottleneck measures from an approved oracle and emits `capacity.evaluation.completed.v1` once; no optimizer/scheduler is inferred from examples.
+ - [ ] UUID correlation is preserved from HTTP request through response, audit and lifecycle event.
+ - [ ] Cross-scope access returns 404; missing permission returns 403.
+ - [ ] Success and error payloads match `SANDOP-CAPACITY` v1 examples and `contractVersion: v1`.
+@@ -222,7 +222,10 @@
+ - [x] Owned objects, paths, validation, failures and acceptance are specified.
+ - [x] `SANDOP-CAPACITY` v1 is frozen and DEMAND v1 consumption is reference-only.
+ - [ ] Shipment lane freeze and independent verification evidence is recorded.
++- [ ] DEMAND exact-version/checksum seam has one shared 0190/0192 owner disposition; fixture-only proof and live producer proof are separated.
+ - [ ] Supply-constraint and Event Bus consumed adapter boundaries are confirmed for implementation.
++- [ ] Evaluation execution/restart and Finite/Infinite calculation oracle are approved for the selected DEV slice.
++- [ ] CT records the exact bounded shipment-lane sequence disposition; shared Program.cs/permission/gateway writes have one integration owner.
+ - [ ] Runtime allowed/protected paths are checked against current repository state.
+ - [ ] User/owner approves this pack for `ready-for-dev`.
+ 
+@@ -233,7 +236,8 @@
+ - **ASSUMPTION:** runtime feature root will be `CapacityPlans`, derived from the frozen route and owned aggregate.
+ - **ASSUMPTION:** capacity adjustment is an owned scenario assumption; referenced base constraint remains in its
+   source SoR and is retained only as source/resource/version provenance.
+-- **ASSUMPTION:** `demandPlanVersion` is an opaque string because DEMAND v1 does not publish a stronger version type.
++- **ASSUMPTION:** `demandPlanVersion` is an opaque string because DEMAND v1 does not publish a stronger version type. DEMAND v1 GET `/plan` is keyed by item/period and returns no version, checksum or capture time, so the pack cannot claim live exact-version verification.
++- **OPEN:** frozen six-operation Capacity surface has no approval/archive commands, evaluation dispatcher, algorithm or scheduler; status enums and examples do not supply those rules.
+ - MOD-0192 and MOD-0190 are parallel peers only after the shipment lane gate; neither may write the other's data.
+ 
+ ## 20. Follow-up Items

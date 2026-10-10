@@ -1,0 +1,9 @@
+--- a/services/Diten.SupplyChainService/tests/loads/runtime_probe.py
++++ b/services/Diten.SupplyChainService/tests/loads/runtime_probe.py
+@@ -81,3 +81,5 @@
+         status_list,list_headers,raw_list,sent_list=request(a.api_base+"/api/shipment-bundle/loads?status=Draft&carrierId="+carrier,"GET",None,auth); listed=json.loads(raw_list)
+-        assert status_list==200 and listed["total"]>=1 and any(x["loadId"]==created["loadId"] for x in listed["items"])
++        mine=[x for x in listed["items"] if x["loadId"]==created["loadId"]]
++        assert status_list==200 and listed["total"]>=1 and len(mine)==1 and all("lifecycleCorrelationId" in x for x in listed["items"])
++        assert mine[0]["lifecycleCorrelationId"] is not None and uuid.UUID(mine[0]["lifecycleCorrelationId"])==uuid.UUID(correlation)
+         status_replay,replay_headers,raw_replay,sent_replay=request(a.api_base+"/api/shipment-bundle/loads","POST",body,{**auth,"Idempotency-Key":"runtime-probe"}); replay=json.loads(raw_replay)

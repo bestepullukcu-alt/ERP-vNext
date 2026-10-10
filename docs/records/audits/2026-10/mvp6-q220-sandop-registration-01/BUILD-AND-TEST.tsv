@@ -1,0 +1,13 @@
+step	where	command	result	detail	evidence
+preflight	repo	pgrep dotnet|MSBuild|testhost|vstest	0 processes	no build in flight	-
+edit-attempt	repo	Edit SandopSchema.cs; Edit SandopPersistenceRegistration.cs; Write SandopRegistrationTests.cs	REFUSED x3	'File is in a directory that is denied by your permission settings.' — .claude/settings.local.json permissions.deny: Edit(services/**), Write(services/**)	-
+build	repo	dotnet build	NOT RUN	nothing changed in the repo; no build was started there	-
+test	repo	dotnet test (SandopPlans)	NOT RUN	nothing changed in the repo	-
+build	SCRATCH COPY (session scratchpad, not the repo)	dotnet build services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests -c Debug	0 errors, 0 warnings	copy of services/Diten.SupplyChainService + services/Diten.Building.Blocks (no bin/obj) with the three proposed files applied	evidence/build.log
+t1	SCRATCH COPY	dotnet test --no-build --filter FullyQualifiedName~Diten.SupplyChainService.Tests.SandopPlans	20 passed / 20	19 existing + the 1 new test	evidence/t1-sandop-after.log
+sabotage-build	SCRATCH COPY	remove 'services.AddHostedService<SandopSchema>();' from the scratch registration file; dotnet build	0 errors	sabotage proof setup	evidence/build-sabotage.log
+t2	SCRATCH COPY (sabotaged)	dotnet test --filter FullyQualifiedName~SandopRegistrationTests	0 passed / 1 — FAILED as required	Assert.Single() Failure: The collection was empty (no SandopSchema hosted service is registered)	evidence/t2-sabotage-registration-only.log
+t3	SCRATCH COPY (sabotaged)	dotnet test --filter SandopPlans except SandopRegistrationTests	19 passed / 19	the 19 existing tests do not notice the missing hosted service — which is the defect F-Q212-4 described	evidence/t3-sabotage-other19.log
+restore-build	SCRATCH COPY	restore the proposed registration file; dotnet build	0 errors, 0 warnings		evidence/build-restored.log
+t4	SCRATCH COPY	dotnet test --filter SandopPlans	20 passed / 20		evidence/t4-sandop-after-restored.log
+t5	SCRATCH COPY	dotnet test --filter SandopPlans (repeat)	20 passed / 20	the new test drops and re-creates its own collections each run; repeatable	evidence/t5-sandop-after-repeat.log

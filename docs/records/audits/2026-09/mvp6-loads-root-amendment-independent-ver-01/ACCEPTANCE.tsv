@@ -1,0 +1,17 @@
+id	requirement	result	evidence	boundary
+V01	Exact YAML/annex/patch hashes	PASS	raw/raw-results.json	Matches user-provided hashes
+V02	Canonical preimage hashes	PASS	raw/raw-results.json	YAML 5dfe7c…; annex a2187c…
+V03	Patch check and disposable apply	PASS	raw/raw-results.json	No canonical write
+V04	Applied targets byte-equal candidate	PASS	raw/raw-results.json	Both true
+V05	Full OpenAPI 3.1 packaged meta-schema	PASS	raw/raw-results.json	0 errors; schema e7cb61…
+V06	OpenAPIV31SpecValidator semantic validation	PASS	raw/raw-results.json	0 errors; version 0.7.2
+V07	Local refs and schema-bound examples	PASS	raw/refs.json; raw/examples.json	298 refs; 236 examples
+V08	Negative document controls	PASS	raw/raw-results.json	Bad version and missing title rejected by both validators
+V09	Missing/null/valid/nil/malformed fixtures	PASS	raw/raw-results.json	Missing/null/valid/nil accepted; malformed UUID rejected
+V10	Negative semantic mutants	PASS	raw/raw-results.json	Six mutants detected
+V11	Only approved YAML surfaces changed	PASS	DIFFERENCE.tsv	Ten expected parsed-document differences
+V12	Non-Loads operations/shared schemas preserved	PASS	raw/raw-results.json	All non-Loads paths and schemas except LoadSummary unchanged
+V13	Persisted-root authority and fail-closed annex policy	PASS	raw/raw-results.json	All eleven policy checks true
+V14	Annex internal version consistency	FAIL	FINDINGS.tsv	Line 192 names stale info.version2.0.0
+V15	Compatibility and final-version decision	OPEN	COMPATIBILITY.md	Corrected final bytes, inventory and exact consent required
+V16	Runtime/producer/consumer uptake	NOT_RUN	SOP-22.md	Outside static candidate VER

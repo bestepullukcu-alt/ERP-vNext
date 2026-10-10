@@ -1,0 +1,7 @@
+== p3c pid=65791 now_listening=yes after_s=1
+== p3c GET /health -> 200
+== p3c alive_before_stop=yes
+== p3c stopped; 58339 free
+--- requests received by stand-in Platform on 58340: 0
+[19:22:23 WRN] Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured. CorrelationId= TenantId= LegalEntityId=
+[19:22:23 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=

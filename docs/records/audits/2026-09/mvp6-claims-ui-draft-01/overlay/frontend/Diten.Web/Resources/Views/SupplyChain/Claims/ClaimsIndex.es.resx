@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Reclamaciones</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Registre, investigue y resuelva las reclamaciones al transportista relacionadas con los envíos.</value></data>
+  <data name="AddNewClaims" xml:space="preserve"><value>Añadir reclamación</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>Acciones</value></data>
+  <data name="ClaimNumber" xml:space="preserve"><value>Número de reclamación</value></data>
+  <data name="ClaimId" xml:space="preserve"><value>ID de reclamación</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>ID de envío</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>Introduzca el UUID del envío.</value></data>
+  <data name="ClaimedAmount" xml:space="preserve"><value>Importe reclamado</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>Moneda</value></data>
+  <data name="ClaimSummary" xml:space="preserve"><value>Resumen de la reclamación</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Ninguna reclamación coincide con el filtro actual.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>No se pudieron cargar las reclamaciones.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>No indicado</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Referencia de soporte</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Copiado al portapapeles.</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Reclamaciones devueltas</value></data>
+  <data name="ApprovedAmountNotListed" xml:space="preserve"><value>El importe aprobado no forma parte de los datos de la lista; se muestra en la confirmación tras una aprobación.</value></data>
+  <data name="StatusOpen" xml:space="preserve"><value>Abierta</value></data>
+  <data name="StatusInvestigating" xml:space="preserve"><value>En investigación</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="StatusSettled" xml:space="preserve"><value>Liquidada</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="StatusWithdrawn" xml:space="preserve"><value>Retirada</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>Planificado</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Despachado</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>En tránsito</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Entregado</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Incidencia</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nueva reclamación</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Consultar</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>Consulte el envío antes de crear la reclamación.</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>Número de envío</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>Estado del envío</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>Se puede crear una reclamación para envíos en estado Despachado, En tránsito, Entregado, Incidencia o Cerrado.</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>El estado de este envío no permite una reclamación.</value></data>
+  <data name="LinkShipmentCarrier" xml:space="preserve"><value>Vincular el transportista del envío</value></data>
+  <data name="NoShipmentCarrier" xml:space="preserve"><value>Disponible solo si el envío consultado tiene transportista.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Código de motivo</value></data>
+  <data name="AmountHelp" xml:space="preserve"><value>Se envía tal como se escribe, por ejemplo 250.00.</value></data>
+  <data name="CurrencyHelp" xml:space="preserve"><value>Código de tres letras enviado tal como se escribe, por ejemplo EUR.</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>Referencias de evidencia</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Referencia de evidencia</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>Añadir referencia</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>Quitar referencia</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>Opcional. Las referencias se envían en el orden mostrado.</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>Crear reclamación</value></data>
+  <data name="ClaimCreated" xml:space="preserve"><value>Reclamación creada.</value></data>
+  <data name="ClaimCreateReplayed" xml:space="preserve"><value>Esta reclamación ya se creó con la misma solicitud; se muestra como completada.</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>Cambiar el estado de la reclamación</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>Nuevo estado</value></data>
+  <data name="ActionInvestigate" xml:space="preserve"><value>Investigar</value></data>
+  <data name="ActionWithdraw" xml:space="preserve"><value>Retirar</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="ActionSettle" xml:space="preserve"><value>Liquidar (sin registrar pago)</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="TargetSettledLabel" xml:space="preserve"><value>Liquidada (estado operativo, sin registrar pago)</value></data>
+  <data name="SettledNoPaymentNote" xml:space="preserve"><value>La liquidación solo cambia el estado de la reclamación. No se registra ningún pago, cuenta por pagar ni cuenta por cobrar.</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>Ocurrido el</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>Fecha y hora con desfase, por ejemplo 2026-09-26T14:30:00+03:00.</value></data>
+  <data name="ApprovedAmount" xml:space="preserve"><value>Importe aprobado</value></data>
+  <data name="ApprovedAmountHelp" xml:space="preserve"><value>Obligatorio para aprobar; desde cero hasta el importe reclamado.</value></data>
+  <data name="ResolutionCode" xml:space="preserve"><value>Código de resolución</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Nota</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>Aplicar estado</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>¿Cambiar el estado de la reclamación al valor seleccionado?</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>Estado de la reclamación actualizado.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>Este cambio de estado ya se aplicó con la misma solicitud; se muestra como completado.</value></data>
+  <data name="ApprovedAmountResult" xml:space="preserve"><value>Importe aprobado</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Todavía hay una solicitud en curso para esta acción.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La solicitud no es válida. Revise los valores introducidos.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Su sesión ha finalizado. Vuelva a iniciar sesión.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>No está autorizado para esta acción.</value></data>
+  <data name="ErrClaimNotFound" xml:space="preserve"><value>El registro no se encontró o no está disponible para usted.</value></data>
+  <data name="ErrUnsupportedMediaType" xml:space="preserve"><value>El formato de la solicitud no es compatible.</value></data>
+  <data name="ErrClaimShipmentIneligible" xml:space="preserve"><value>El estado del envío no permite una reclamación.</value></data>
+  <data name="ErrClaimCarrierMismatch" xml:space="preserve"><value>El transportista no coincide con el del envío o no se puede usar.</value></data>
+  <data name="ErrClaimAmountInvalid" xml:space="preserve"><value>El importe reclamado debe ser mayor que cero.</value></data>
+  <data name="ErrClaimApprovalAmountInvalid" xml:space="preserve"><value>El importe aprobado debe estar entre cero y el importe reclamado.</value></data>
+  <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>Solo se puede enviar un importe aprobado al aprobar.</value></data>
+  <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>La reclamación cambió mientras tanto y este cambio de estado ya no es posible. Se ha recargado la lista.</value></data>
+  <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>La solicitud ya no coincide con el registro del envío.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Esta solicitud ya se usó con otros valores. Inicie una nueva acción.</value></data>
+  <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>Los datos de referencia del envío no son válidos. Póngase en contacto con soporte.</value></data>
+  <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>Los datos de referencia del envío están incompletos. Vuelva a intentar la misma solicitud más tarde.</value></data>
+  <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>Los datos de referencia del envío no están disponibles temporalmente. Vuelva a intentar la misma solicitud.</value></data>
+  <data name="ErrClaimStorageUnavailable" xml:space="preserve"><value>Las reclamaciones no están disponibles temporalmente. El resultado no está confirmado; vuelva a intentar la misma solicitud.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Se produjo un error inesperado. Puede reintentar la misma acción.</value></data>
+</root>

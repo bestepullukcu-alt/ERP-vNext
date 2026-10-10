@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Returns / MOD-0186 and Claims / MOD-0187 (part c)
+
+15 folders/items, first 'mvp6-mod0187-http-composition-01', last 'mvp6-returns-ui-draft-02'.
+Work packages: as named in each folder.
+281 files from pathspec/R4c.txt (Q230 commit plan).

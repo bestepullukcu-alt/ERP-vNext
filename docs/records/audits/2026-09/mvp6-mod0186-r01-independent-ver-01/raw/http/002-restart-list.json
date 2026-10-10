@@ -1,0 +1,42 @@
+{
+  "name": "restart-list",
+  "request": {
+    "bodyUtf8": null,
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "X-Correlation-Id": "ed4fb9a2-2008-4a6f-9dbf-b3c2e57975f0",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111"
+    },
+    "method": "GET",
+    "path": "/api/shipment-bundle/returns?shipmentId=0490d9b6-d865-4c42-8e42-11b4844fc7dd"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "items": [
+        {
+          "returnId": "eaec922e-70b7-4779-b2c0-c6ba00ede8ca",
+          "rmaNumber": "RMA-EAEC922E70B74779B2C0C6BA00EDE8CA",
+          "shipmentId": "0490d9b6-d865-4c42-8e42-11b4844fc7dd",
+          "status": "Requested"
+        },
+        {
+          "returnId": "739fdb50-4c59-47fe-915f-abe3588af959",
+          "rmaNumber": "RMA-739FDB504C5947FE915FABE3588AF959",
+          "shipmentId": "0490d9b6-d865-4c42-8e42-11b4844fc7dd",
+          "status": "Requested"
+        }
+      ],
+      "total": 2
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 17:08:35 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "ed4fb9a2-2008-4a6f-9dbf-b3c2e57975f0"
+    },
+    "status": 200
+  }
+}

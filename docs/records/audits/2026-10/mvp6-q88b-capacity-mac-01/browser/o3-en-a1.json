@@ -1,0 +1,318 @@
+{
+  "phase": "o3",
+  "locale": "en",
+  "startedAt": "2026-10-01T13:16:47.440Z",
+  "web": "http://127.0.0.1:5501",
+  "playwright": "1.59.1",
+  "cases": {
+    "O-3": {
+      "result": "FAIL",
+      "parts": {
+        "scenarioFocusOnPageTitle": false,
+        "evaluateFocusOnPageTitle": false,
+        "notBody": false,
+        "noRawError": true,
+        "pageLevel": true,
+        "real403": true
+      },
+      "out": {
+        "createPlan": {
+          "activeId": null,
+          "activeTag": "BODY",
+          "activeText": "Search [CTRL + K]\nCapacity Plans\n\nCreate a capacit",
+          "activeIsFirstPageHeading": false,
+          "firstHeading": {
+            "tag": "H5",
+            "id": null,
+            "tabindex": null,
+            "text": "Capacity Plans"
+          },
+          "ctaCount": 0,
+          "rawErrorInPage": false,
+          "toasts": [
+            "You do not have permission for this action. Support reference: dd1bfc03-ca7c-4e9d-a4c4-f1b7042a237b"
+          ]
+        },
+        "scenario": {
+          "activeId": "scenarioTitle",
+          "activeTag": "H5",
+          "activeText": "Capacity Scenario",
+          "activeIsFirstPageHeading": false,
+          "firstHeading": {
+            "tag": "H4",
+            "id": "planTitle",
+            "tabindex": null,
+            "text": "Q88b en plan 4eaf676d"
+          },
+          "openerCount": 0,
+          "planTitleVisible": true,
+          "workspaceVisible": true,
+          "rawErrorInPage": false,
+          "toasts": [
+            "You do not have permission for this action. Support reference: 9e1a51a7-f7c6-4fff-9f5e-fc76e31f89b4"
+          ]
+        },
+        "evaluate": {
+          "activeId": "scenarioTitle",
+          "activeTag": "H5",
+          "activeText": "Capacity Scenario",
+          "activeIsFirstPageHeading": false,
+          "firstHeading": {
+            "tag": "H4",
+            "id": "planTitle",
+            "tabindex": null,
+            "text": "Q88b en plan 4eaf676d"
+          },
+          "openerCount": 0,
+          "planTitleVisible": true,
+          "workspaceVisible": true,
+          "rawErrorInPage": false,
+          "toasts": [
+            "You do not have permission for this action. Support reference: 462cda85-01bf-4feb-9fd8-509f2d9d311e"
+          ]
+        },
+        "page": {
+          "activeId": "planAlert",
+          "activeTag": "DIV",
+          "activeText": "You do not have permission for this action.\nSuppor",
+          "activeIsFirstPageHeading": false,
+          "firstHeading": {
+            "tag": "H4",
+            "id": "planTitle",
+            "tabindex": null,
+            "text": "Capacity Plan"
+          },
+          "alert": "You do not have permission for this action. Support reference: 8f0a5836-8458-4970-87f7-b071f7d8c730",
+          "planTitleVisible": true,
+          "planTitle": "Capacity Plan",
+          "workspaceHidden": true,
+          "rawErrorInPage": false
+        },
+        "readonly": {
+          "entryCta": 0,
+          "directPostStatus": 403,
+          "directPostCode": "FORBIDDEN",
+          "detailsLoads": true,
+          "scenarioCta": 0,
+          "evaluateCta": 0
+        },
+        "noread": {
+          "entry": {
+            "markup": 0,
+            "skeletons": 0,
+            "forms": 0,
+            "rawErrorInPage": false,
+            "url": "/SupplyChain/CapacityPlans"
+          },
+          "details": {
+            "markup": 0,
+            "skeletons": 0,
+            "forms": 0,
+            "rawErrorInPage": false,
+            "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9"
+          },
+          "directGet": 403
+        }
+      },
+      "faked": "403 on create plan / create scenario / evaluate / plan GET via route.fulfill; read-only and no-read 403s are real",
+      "evidence": [
+        "png/o3-create-plan-403-en.png",
+        "png/o3-scenario-403-en.png",
+        "png/o3-evaluate-403-en.png",
+        "png/o3-page-403-en.png",
+        "png/o3-readonly-entry-en.png",
+        "png/o3-noread-entry-en.png",
+        "png/o3-noread-details-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "o3-create-plan-403-en.png",
+      "sha256": "a6c68779858d8b38d3eebff2f6c9e046b44f6cae3243fc534336f87286ebaa4c",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:16:52.276Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-scenario-403-en.png",
+      "sha256": "d9e41bf6474430ee3b02002cc4ae8e6908c44b2c109064521ea54c044327cc63",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:57.397Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-evaluate-403-en.png",
+      "sha256": "8ec3201fd32b9825bf6d6194a407d5a8a7e8a32974cb691ac4e04b44f310a17e",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:17:02.034Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-page-403-en.png",
+      "sha256": "7b76302b638bd6c78bc4a244e00e8d0a5d3017ebd8fff616c809e00c288a7421",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:17:04.410Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-readonly-entry-en.png",
+      "sha256": "c512a291cf74e977bfb1f177651e0883f5fc63e0e05183c6003dd71ddc5e4594",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:17:09.298Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-entry-en.png",
+      "sha256": "38d2994149f43822974afa403e2176d815e937dba157304db30cce32712e94d8",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:17:11.777Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-details-en.png",
+      "sha256": "22e3bdf4f6f1191ddbc56a7eb7557dfbd68bfc35777310aae9a4f30eae76aff4",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:17:13.043Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "o3-en-plan403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-en-scenario403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-en-evaluate403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-en-page403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "o3-en-plan403",
+      "text": "You do not have permission for this action. Support reference: dd1bfc03-ca7c-4e9d-a4c4-f1b7042a237b",
+      "type": "warning",
+      "at": "2026-10-01T13:16:50.841Z"
+    },
+    {
+      "tag": "o3-en-scenario403",
+      "text": "You do not have permission for this action. Support reference: 9e1a51a7-f7c6-4fff-9f5e-fc76e31f89b4",
+      "type": "warning",
+      "at": "2026-10-01T13:16:55.890Z"
+    },
+    {
+      "tag": "o3-en-evaluate403",
+      "text": "You do not have permission for this action. Support reference: 462cda85-01bf-4feb-9fd8-509f2d9d311e",
+      "type": "warning",
+      "at": "2026-10-01T13:17:00.523Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "o3-en-plan403",
+      "at": "2026-10-01T13:16:50.840Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-en-scenario403",
+      "at": "2026-10-01T13:16:53.664Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-scenario403",
+      "at": "2026-10-01T13:16:53.665Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-scenario403",
+      "at": "2026-10-01T13:16:55.889Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-en-evaluate403",
+      "at": "2026-10-01T13:16:58.448Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-evaluate403",
+      "at": "2026-10-01T13:16:58.448Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-evaluate403",
+      "at": "2026-10-01T13:17:00.521Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f/evaluations",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-en-page403",
+      "at": "2026-10-01T13:17:03.191Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-readonly",
+      "at": "2026-10-01T13:17:06.848Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-readonly",
+      "at": "2026-10-01T13:17:06.848Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 18,
+  "endedAt": "2026-10-01T13:17:13.098Z"
+}

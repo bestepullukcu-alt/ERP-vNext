@@ -1,0 +1,15 @@
+[12:52:26 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[12:52:27 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[12:52:27 INF] Now listening on: http://localhost:5061
+[12:52:27 INF] Application started. Press Ctrl+C to shut down.
+[12:52:27 INF] Hosting environment: Development
+[12:52:27 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api
+[12:52:27 INF] Request starting HTTP/1.1 GET http://localhost:5061/health - null null
+[12:52:27 INF] Executing endpoint 'HTTP: GET /health'
+[12:52:27 INF] Setting HTTP status code 200.
+[12:52:27 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[12:52:27 INF] Executed endpoint 'HTTP: GET /health'
+[12:52:27 INF] Request finished HTTP/1.1 GET http://localhost:5061/health - 200 null application/json; charset=utf-8 53.1565ms
+[12:55:30 INF] Request starting HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/shipments - null null
+[12:55:30 INF] Request finished HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/shipments - 401 null application/json; charset=utf-8 15.8074ms
+[12:56:12 INF] Application is shutting down...

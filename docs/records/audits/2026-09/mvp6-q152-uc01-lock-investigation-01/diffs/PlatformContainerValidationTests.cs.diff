@@ -1,0 +1,51 @@
+--- HEAD:services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/PlatformContainerValidationTests.cs
++++ WORKTREE:services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/PlatformContainerValidationTests.cs
+@@ -5,6 +5,7 @@
+ using Microsoft.Extensions.DependencyInjection;
+ using Microsoft.Extensions.FileProviders;
+ using Microsoft.Extensions.Hosting;
++using MongoDB.Driver;
+ using Xunit;
+ 
+ namespace Diten.Platform.BackgroundJobs.Tests;
+@@ -163,7 +164,7 @@
+                 // A database of this test's own, under a FIXED name so it is reused and cannot pile up —
+                 // MongoIntegrationHarness.CreateIsolatedAsync's rule, for the same reason: what
+                 // AddInfrastructure seeds is database-global, not tenant-scoped.
+-                ["MongoDbSettings:ConnectionString"] = "mongodb://localhost:27017",
++                ["MongoDbSettings:ConnectionString"] = RequireLaneMongoConnectionString(),
+                 ["MongoDbSettings:DatabaseName"] = "diten_platform_itest_container_validation",
+                 ["MongoDbSettings:AllowStartupWithoutDatabase"] = "true",
+ 
+@@ -186,6 +187,31 @@
+             })
+             .Build();
+ 
++    private static string RequireLaneMongoConnectionString()
++    {
++        const string key = "DITEN_PLATFORM_TEST_MONGO_URI";
++        var connectionString = Environment.GetEnvironmentVariable(key);
++        if (string.IsNullOrWhiteSpace(connectionString))
++        {
++            throw new InvalidOperationException(
++                $"{key} must point at a lane-owned MongoDB instance. "
++                + "Platform Mongo tests fail closed instead of falling back to operational 27017.");
++        }
++
++        var url = new MongoUrl(connectionString);
++        foreach (var server in url.Servers ?? [])
++        {
++            if (server.Port is 27017 or 27018 or 27019 or 27020 or 27021)
++            {
++                throw new InvalidOperationException(
++                    $"{key} points at protected MongoDB port {server.Port}. "
++                    + "Use a lane-owned isolated MongoDB URI.");
++            }
++        }
++
++        return connectionString;
++    }
++
+     /// <summary>
+     /// A settings file inside Diten.Platform.API, found by WALKING UP to the AGENTS.md marker rather than by
+     /// counting directories out of the build output. Same reasoning as

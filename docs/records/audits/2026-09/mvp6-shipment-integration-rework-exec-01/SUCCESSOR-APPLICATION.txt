@@ -1,0 +1,6 @@
+PASS
+258/258 absent sources transferred
+161/161 identical sources preserved
+3/3 Shipment successor sources preserved
+28/28 UI sources preserved
+2/2 successor patch targets exact

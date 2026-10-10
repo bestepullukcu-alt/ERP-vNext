@@ -1,0 +1,4 @@
+component	path	sha256
+Auth	/private/tmp/mvp6-carrier-auth-token-rework-ver02-yvxf17/source/services/Diten.AuthService/src/Diten.AuthService.Api/bin/Debug/net8.0/Diten.AuthService.Api.dll	5404197b88e58ddf6b895e78d2a2d9b5a19b0fe38788ccf87490b9801eb2b2b1
+Platform	/private/tmp/mvp6-carrier-auth-token-rework-ver02-yvxf17/source/services/Diten.Platform/src/Diten.Platform.API/bin/Debug/net8.0/Diten.Platform.API.dll	8621e166255c2fc645fc963117c4ea112b6609cce52a71b7586cd996bb388c16
+MDM	/private/tmp/mvp6-carrier-auth-token-rework-ver02-yvxf17/source/services/Diten.MdmService/src/Diten.MdmService.Api/bin/Debug/net8.0/Diten.MdmService.Api.dll	07ae45a3e1c2cdfc1bd31f22aa4608439c25ffa9975bb36cac24ea399621bf7d

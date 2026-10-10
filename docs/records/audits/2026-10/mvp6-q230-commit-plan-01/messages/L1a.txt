@@ -1,0 +1,5 @@
+docs(plans): add MVP6 plans, backlog and guides (part a)
+
+37 folders/items, first '(single files)', last 'operations'.
+Work packages: as named in each folder.
+450 files from pathspec/L1a.txt (Q230 commit plan).

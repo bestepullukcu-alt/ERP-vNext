@@ -1,0 +1,31 @@
+STATIC CHECKS — Q77a MOD-0185 producer uptake + F-1 (DRAFT overlay). Linux VM chat lane, 2026-09-26 (Europe/Istanbul).
+Nothing here compiles or runs C#. "OK" below means the static check passed, not that the code builds or the tests pass.
+
+SC-01 Preflight: HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c, branch feature/mvp6-logistics, no .git/index.lock; prep folder mvp6-loads-uptake-prep-01 SHA256SUMS 8/8 OK; contracts YAML 6dc1dd48… and annex 9d8a3706… match ISOLATED-ENV.md.
+SC-02 FILE-PLAN ↔ SOURCE-MANIFEST ↔ overlay: plan rows NEW/CHANGE=12 manifest rows=12 overlay files=12 match=YES
+SC-03 Preimages of the 7 changed files = OWNED-PATHS.md preimages (6a7cce0e, 1f50f47a, edb0b15e, 9b2f43a8, 01bf7087, bb1a8c9f, e5ee0aed): 7/7 OK.
+PY-01 python3 ast.parse: overlay verify_evidence.py and patched runtime_probe.py → 2/2 OK.
+PY-02 runtime_probe.py.patch: git apply --check + git apply in a throwaway /tmp repo on preimage e5ee0aed… → applies; result d0a00360a4457be624865adaaee59101260ede3a3cba01a4628f089b8ef611de = SOURCE-MANIFEST result_sha256 (cmp identical).
+PY-03 verify_evidence.py self-test on synthetic evidence (6 cases; "expected" column = intended outcome):
+      good	rc=0	expected=PASS	{"result": "PASS", "checks": 20, "evidence": "/tmp/q77/ev-good.json"}
+      old-pins	rc=1	expected=FAIL	AssertionError
+      field-missing	rc=1	expected=FAIL	AssertionError
+      field-null	rc=1	expected=FAIL	AssertionError
+      wrong-root	rc=1	expected=FAIL	AssertionError
+      uppercase-same-root	rc=0	expected=PASS	{"result": "PASS", "checks": 20, "evidence": "/tmp/q77/ev-uppercase-same-root.json"}
+      SELFTEST PASS
+C#-01 Syntax parse with tree-sitter-c-sharp 0.23.5 (VM /tmp, not .NET): overlay 10/10 .cs files with 0 ERROR/MISSING nodes; baseline preimages 5/5 with 0. Syntax only — no type binding, overload resolution or nullable analysis.
+C#-02 New routes/permissions/config/DI (pattern \[Http|Route(|.Map*(|"supplychain.|LoadPermission|configuration[|GetSection(|GetEnvironmentVariable|AddScoped|AddSingleton|AddHostedService|CreateIndex), preimage → overlay per product file: 0→0 for all 6 files. Overlay contains no Program.cs, .csproj, appsettings, controller, middleware, gateway or contract file (0).
+C#-03 No write on the read path: QueryAsync line and LoadRootMaterializer contain 0 Insert/Update/Replace/Delete; 0 '$set'/'$unset' in src overlay (they appear only as test-fixture writes in LoadRootQueryTests.LoadRootSeed).
+C#-04 Scope of the LoadRepository diff: +1 accessor (RawLoads), QueryAsync (2 lines), transition read (preimage lines 43-44 → 4 lines). Create branch (preimage 32-41) byte-identical; rest of MutateAsync (preimage 45-97) byte-identical.
+C#-05 Review checklist (manual reading):
+  [x] List projection uses only RootState/LifecycleCorrelationId from the stored field; no GET trace, Load ID, Shipment, session or audit input (CD-05).
+  [x] Missing / ExplicitNull / InvalidStoredValue → null; PresentStoredUuid incl. nil → value (CD-03, CD-04). Raw document deep-cloned; original never mutated or written.
+  [x] Same filter (Visible + Status + CarrierId), same collection, same default read concern, same 503 mapping in QueryAsync.
+  [x] F-1 check runs inside the existing transaction after the receipt/replay check and BEFORE lifecycle, observe (dependency reads) and any write; LoadFailureException → existing abort path → LoadMutationResult.Error(409,"CORRELATION_ROOT_MISMATCH"); no receipt, audit or outbox row on rejection.
+  [x] Error code is an existing transitionLoad code (YAML '409' at line 1216, example at 1231; annex line 215). No contract, route or error-body change.
+  [x] Present root copied back onto the typed Load before ReplaceOne, so a successful transition keeps the stored root (no Guid.Empty write-back from the detached copy).
+  [x] Lexical rule for "present" = LoadWire.Uuid + Guid.TryParseExact("D"), the same rule LoadContextMiddleware applies to X-Correlation-Id.
+  [x] LoadSummary field added last; JSON name lifecycleCorrelationId via existing camelCase policy; Guid? → string or null.
+  [ ] Compile/type check — NOT done here (NOT-VERIFIED.md).
+SEC-01 Secret scan of this folder (password/secret/Jwt secret/api key/bearer/JWT/private key/mongodb URI/AKIA/ghp_/sk-/27017): 1 hit — LoadContractTests.cs:53 'Secret = Convert.ToHexString(RandomNumberGenerator.GetBytes(32))', an unchanged line of the existing test that generates a random value at run time; no literal secret. runtime_probe.py (pre-existing literal test constant) is not copied (patch form).

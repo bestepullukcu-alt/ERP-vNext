@@ -1,0 +1,6 @@
+label	email	tenant_id	expected_legal_entity_id	note
+full	john.doe.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	Returns full actor (all Returns keys + shipments.read, LE-A)
+readonly	jane.smith.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	Returns read-only (LE-A)
+noread	charlie.brown.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	no Returns read (LE-A)
+leb	bob.johnson.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	Returns full actor in LE-B
+fixadmin	alice.williams.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	fixture admin T1 (org setup)

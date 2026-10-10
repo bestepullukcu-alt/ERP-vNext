@@ -1,0 +1,15 @@
+diff --git a/services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.example.json b/services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.example.json
+index e8078cb30..0c8dd5126 100644
+--- a/services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.example.json
++++ b/services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.example.json
+@@ -168,5 +168,10 @@
+       "Identifier": "ditenmdmservice",
+       "ActiveSecret": ""
+     }
++  },
++  "MdmServiceIdentity": {
++    "Enabled": true,
++    "KeyId": "local-dev",
++    "Secret": ""
+   }
+ }

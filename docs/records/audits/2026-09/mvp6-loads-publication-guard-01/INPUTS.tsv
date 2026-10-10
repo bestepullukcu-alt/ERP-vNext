@@ -1,0 +1,21 @@
+item	path	sha256	expected	result
+decision-B	docs/records/decisions/2026-09/mvp6-loads-root-amendment-owner-decision-b-01.md	36fe774a11a31c2b6e4f3c623f76cf22b4f2fe272474a8780f1b701753e5f35f	36fe774a11a31c2b6e4f3c623f76cf22b4f2fe272474a8780f1b701753e5f35f	MATCH
+guard-decision-human-record	docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.md	0ce587a1749bbbe44b41ef4bf1812de0edf971ec2daef963fee71301f1d62744	(read and recorded; binds OWNER-DECISION-TEXT 8cd55b82…990d, payload a77538b4…11e0, approvedBy current-role-user-message-2026-09-26)	RECORDED
+owner-decision-text	docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/OWNER-DECISION-TEXT.md	8cd55b8200f648a114df51b4a44e1ea56f011f3c2de2d9f396d493707184990d	8cd55b8200f648a114df51b4a44e1ea56f011f3c2de2d9f396d493707184990d	MATCH
+execution-order	docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/EXECUTION-ORDER.md	48e1e92fdf2ec0046f7cd068c0d5981a4931511a5df2af84dd4362861015b277	48e1e92fdf2ec0046f7cd068c0d5981a4931511a5df2af84dd4362861015b277	MATCH
+prep-SHA256SUMS	docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/SHA256SUMS	fe808bb979b42a340f0cabf3472c88019f38103c1de3872c11ce4e68223471f0	fe808bb979b42a340f0cabf3472c88019f38103c1de3872c11ce4e68223471f0; verify 16/16	MATCH; 16/16 OK
+release-prep-SHA256SUMS	docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/SHA256SUMS	61ddf10962d51f52f73c155c6e5c52c8dc753344ad115e9ae7905b31d0b36de9	61ddf10962d51f52f73c155c6e5c52c8dc753344ad115e9ae7905b31d0b36de9; verify 21/21	MATCH; 21/21 OK
+publication-patch	docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/publication.patch	dc0ad05bbb47b05c3c62dadf138faab847337ddc9f387bb9f764e84e02fdbed5	dc0ad05bbb47b05c3c62dadf138faab847337ddc9f387bb9f764e84e02fdbed5; headers touch only the YAML and loads-semantics-v3.1.0.md	MATCH
+dispatch-v1.1	docs/roadmap/plans/mvp6-loads-publication-dispatch-01/DISPATCH-v1.1.md	cae0f88522d4c9c93869ff9fd633db49fba894c4208171a54dab9e395889755b	(recorded)	RECORDED
+lane-prompt	docs/roadmap/plans/mvp6-process-pilot-01/TERMINAL-Q25-PROMPT.md	2d82419040fb11b270d4a5b040b3d509043e96fbf0d1dc6a629a6673acbab253	(recorded)	RECORDED
+authority-preimage	docs/reference/architecture/docs-path-authority.json	6d3865f80707ff0e9ca7c9cf2e2343f34d2961be2916a3eceb37168d1b0a8167	6d3865f80707ff0e9ca7c9cf2e2343f34d2961be2916a3eceb37168d1b0a8167	MATCH
+yaml-preimage	docs/analysis/contracts/shipment-bundle.openapi.yaml	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	MATCH
+v2-annex	docs/analysis/contracts/loads-semantics-v2.0.0.md	a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1	a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1 (before and after)	MATCH
+docs-path-guard-test	tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs	da5ec0cc0f180d7237bdf599c7d71eb1fb96962ed14496427a1ea789b18c5050	da5ec0cc0f180d7237bdf599c7d71eb1fb96962ed14496427a1ea789b18c5050	MATCH
+provenance-source	docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/PROVENANCE.md.txt	84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a	84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a	MATCH
+decision-candidate	docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/owner-decision.candidate.json.txt	825f0853d0f1ef50c6ba5bed732ee964cece6585327eff2c6277d13207b84e5e	825f0853d0f1ef50c6ba5bed732ee964cece6585327eff2c6277d13207b84e5e	MATCH
+authority-candidate	docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/docs-path-authority.candidate.json.txt	36013649effa878319db150dca5a942bfac592fe012fc4c71526f0a3010ca825	36013649effa878319db150dca5a942bfac592fe012fc4c71526f0a3010ca825	MATCH
+authority-payload	docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/authority-payload.txt	a77538b4784e1749b7ebe2e7d38d2e8400803c63ec8e6f49d3382929d7d611e0	a77538b4784e1749b7ebe2e7d38d2e8400803c63ec8e6f49d3382929d7d611e0	MATCH
+seal-inputs	8 files, ANALYSIS.md §3	see raw/seals-expected.txt	8/8	MATCH (raw/step0-seals-patch.txt)
+absent-before	W2, W3, W4 and the evidence folder	-	absent	MATCH (raw/step0-hashes.txt)
+environment	Darwin; /Users/natig/.dotnet/dotnet SDK 8.0.417, runtimes 8.0.23; 24 GB free	-	Darwin; 8.0.417/8.0.23; ≥3 GB	MATCH (raw/step0-environment.txt)

@@ -1,0 +1,10 @@
+id	result	evidence	disposition
+F01 exact-cardinality	CLOSED	evidence.tar.gz::runtime/independent-token-results.json	All duplicate/missing/audience/invalid-signature cases returned 401 with zero mdm_legal_entities reads; valid tuple returned 200 with one read.
+F02 NumericDate type	OPEN	evidence.tar.gz::runtime/independent-token-results.json	Digit-only JSON strings for iat, nbf, and exp each returned 200 with one repository read; policy requires JSON numeric values and 401 before repository.
+F02 temporal boundaries	PASS	evidence.tar.gz::runtime/independent-token-results.json	Configured skew, equality, expiration and maximum-lifetime boundaries passed independently.
+MDM validator regression	PASS	evidence.tar.gz::tests/mdm.trx	28/28 passed under native .NET 8.
+Platform successor regression	PASS	evidence.tar.gz::tests/platform.trx	8/8 passed under native .NET 8.
+Fresh compile	PASS	evidence.tar.gz::build/*-rebuild.log	Auth, Platform, and MDM rebuilt independently with zero errors; restore metadata was provenance-bound reuse after native restore stalled.
+Auth login/refresh	NOT REPRODUCED	SOP-22-VER.md	Phase 2 stopped after independently reproducing F-02; no login/refresh PASS is claimed.
+Carrier E2E handoff	HELD	SOP-22-VER.md	Blocked by open F-02 and absent independent login/refresh reproduction.
+Historical port 27017 attempt	EXCLUDED	DEV ATTEMPT-DISPOSITION.md	Read-only assessment only; verifier did not probe, query, or clean port 27017.

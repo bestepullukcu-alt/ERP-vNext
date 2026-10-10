@@ -11,7 +11,7 @@
   Optional:
       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
 
-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
+  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
   every record is closed with ARCHIVE. The script asserts the load-bearing FU04 promises:
     * a template BINDS and never produces: /apply, /generate and /resolve do NOT exist (404), and the contract says so
     * a bound segment must exist, be non-archived and share the template's SubjectType
@@ -23,7 +23,7 @@
     * there is no DELETE and no PATCH surface anywhere
 
   PREREQUISITES (data, not code):
-    * The Gateway must route /api/crm/strategy-templates to 5061 (follow-up F-GATEWAY-STRATEGY). Without that route
+    * The Gateway must route /api/crm/strategy-templates to 5065 (follow-up F-GATEWAY-STRATEGY). Without that route
       EVERY call answers 404 with an empty {} body — that is a missing route, not a code defect.
     * The fleet must be running the FU04 build.
     * The tenant needs at least one ACTIVE contact segment (MOD-0167 FU02). Without it the script reports the data gap
@@ -38,7 +38,7 @@
 param(
     [string]$BaseUrl   = "http://localhost:5000",
     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
-    [string]$CrmDirect = "http://localhost:5061"
+    [string]$CrmDirect = "http://localhost:5065"
 )
 
 $ErrorActionPreference = "Stop"
@@ -68,7 +68,7 @@ $fromIso = (Get-Date).ToUniversalTime().AddDays(-1).ToString("yyyy-MM-ddTHH:mm:s
 
 Write-Host "== MOD-0167-FU04 authenticated strategy template smoke ($run) ==" -ForegroundColor Cyan
 
-foreach ($p in @(5000, 5061)) {
+foreach ($p in @(5000, 5065)) {
     $code = Status "http://localhost:$p/"
     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
 }

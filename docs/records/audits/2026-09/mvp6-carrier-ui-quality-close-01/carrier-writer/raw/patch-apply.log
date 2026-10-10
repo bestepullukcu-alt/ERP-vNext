@@ -1,0 +1,2 @@
+patching file 'frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js'
+patching file 'frontend/Diten.Web.Tests/JavaScript/CarrierIndexBehaviorTests.cs'

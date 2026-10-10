@@ -1,0 +1,72 @@
+# Architecture baseline divergence
+
+Fresh result: 14 PASS / 4 FAIL, not the dispatch assumption of 15/3.
+
+The fourth failure is DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders. Every final offender below existed at dispatch and is byte-identical. No exception or protected-file edit made.
+
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:55`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:56`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:78`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:79`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:80`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:81`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:82`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:83`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:84`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:85`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:86`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:87`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:88`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:89`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:90`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:91`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:104`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:105`; baseline SHA256 `bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/no-change.json:14`; baseline SHA256 `b1ca8c4ad2d7f236a282fd7cf4dfe90c7ed7c69f1c5712def6b315c442f47b10`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/no-change.json:14`; baseline SHA256 `b1ca8c4ad2d7f236a282fd7cf4dfe90c7ed7c69f1c5712def6b315c442f47b10`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/no-change.json:16`; baseline SHA256 `b1ca8c4ad2d7f236a282fd7cf4dfe90c7ed7c69f1c5712def6b315c442f47b10`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:25`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:26`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:77`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:78`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:79`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:80`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:81`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:82`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:83`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:84`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:85`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:86`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:87`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:88`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:89`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:90`; baseline SHA256 `872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:8`; baseline SHA256 `fae8cf70d5a4b2e0e8113bd0b1721b2cc601605bc890b0d9e8bd1147b184b971`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:9`; baseline SHA256 `fae8cf70d5a4b2e0e8113bd0b1721b2cc601605bc890b0d9e8bd1147b184b971`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:16`; baseline SHA256 `fae8cf70d5a4b2e0e8113bd0b1721b2cc601605bc890b0d9e8bd1147b184b971`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:17`; baseline SHA256 `fae8cf70d5a4b2e0e8113bd0b1721b2cc601605bc890b0d9e8bd1147b184b971`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:17`; baseline SHA256 `fae8cf70d5a4b2e0e8113bd0b1721b2cc601605bc890b0d9e8bd1147b184b971`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/results.json:423`; baseline SHA256 `00d17972bdb152e7bcd8917da5d1fcfd88b0d43a22580baf6abeb0ba5e316359`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/results.json:424`; baseline SHA256 `00d17972bdb152e7bcd8917da5d1fcfd88b0d43a22580baf6abeb0ba5e316359`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/results.json:439`; baseline SHA256 `00d17972bdb152e7bcd8917da5d1fcfd88b0d43a22580baf6abeb0ba5e316359`
+- `docs/records/audits/2026-09/mod-0184-published-uptake/results.json:440`; baseline SHA256 `00d17972bdb152e7bcd8917da5d1fcfd88b0d43a22580baf6abeb0ba5e316359`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/proposed-publication-hashes.json:3`; baseline SHA256 `c886e515f36485522aea2622ba697470bfc39095873cea68038c2f946c3a6616`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/proposed-publication-hashes.json:4`; baseline SHA256 `c886e515f36485522aea2622ba697470bfc39095873cea68038c2f946c3a6616`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_consumer.py:98`; baseline SHA256 `48f17177bf5116bcfc84880113c4cfb9e89ea64df6136cd4ebf569e50886bb70`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py:9`; baseline SHA256 `145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py:99`; baseline SHA256 `145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py:100`; baseline SHA256 `145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/proposed-publication-hashes.json:3`; baseline SHA256 `62db411da5bfd1587a72b853ab03d89b9f85cdf5bfdce9f16960bc840b312e7c`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/proposed-publication-hashes.json:4`; baseline SHA256 `62db411da5bfd1587a72b853ab03d89b9f85cdf5bfdce9f16960bc840b312e7c`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py:9`; baseline SHA256 `145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py:99`; baseline SHA256 `145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py:100`; baseline SHA256 `145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439`
+- `docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/results.json:5`; baseline SHA256 `08266336bb1828649f3b07ccd90835518457728bfc2b27395c6291f8aea396be`
+- `docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/results.json:98`; baseline SHA256 `08266336bb1828649f3b07ccd90835518457728bfc2b27395c6291f8aea396be`
+- `docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/verify.py:10`; baseline SHA256 `f0e7846f54a4ad64035600bfb1da8cf757f54dde4698be763c0d2797bc7deb82`
+- `docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/results.json:500`; baseline SHA256 `2c0453649a247e7fbc11afe9df4e669fc9a75938ef5e5dab8816609b67dd3560`
+- `docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/check_consumer.py:95`; baseline SHA256 `7eec131cf04d54b8d10b77a845e921cfdd362142de62fec69fe103ff25431bf4`
+- `docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/results.json:58`; baseline SHA256 `bb86c17af70d8a155d16c5d163efe529436c0aea176771f94c88889c307c8f90`
+- `docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/results.json:62`; baseline SHA256 `bb86c17af70d8a155d16c5d163efe529436c0aea176771f94c88889c307c8f90`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/before/results.json:500`; baseline SHA256 `2c0453649a247e7fbc11afe9df4e669fc9a75938ef5e5dab8816609b67dd3560`
+- `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/after/results.json:427`; baseline SHA256 `7741fa239556ab0d0447ae38ab8516e9c35068b99382c6c90471c44a1081c2f8`

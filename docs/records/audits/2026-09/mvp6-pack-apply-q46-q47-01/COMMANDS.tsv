@@ -1,0 +1,15 @@
+step	command	result
+0	git rev-parse HEAD; git branch --show-current	4a8d4d4b339528a88e6220fb8402e5a2c771136c; feature/mvp6-logistics
+0	sha256sum decision records A, B	649269c3…4611; 7707329e…3e58
+0	(cd mvp6-pack-alignment-03-returns && sha256sum -c SHA256SUMS)	5/5 OK; SHA256SUMS file 64620aa1…506 = A
+0	(cd mvp6-self-registration-patches-01 && sha256sum -c SHA256SUMS)	11/11 OK; SHA256SUMS file 2acd3241…2230 = B
+0	sha256sum of 7 patches and 6 targets vs A/B	all patch hashes OK; all target before-hashes OK (A2 chained on A1)
+1	rehearsal in scratch git repo outside the repository: git apply --check + git apply A1,A2,B01,B02,B03,B04,B06 in order	every after-hash reproduced
+1	rehearsal: git apply --check original 05 on 6c8fbe28	FAILS at :556 (expected; base superseded)
+2	pre-copy of the 6 targets and git status --porcelain snapshot (outside the repository)	taken
+2	for each id: sha256 before; git apply --check --include=<target> <patch>; git apply --include=<target> <patch>; sha256 after	all 7 PASS at 09:25:55 +03:00 (see HASHES.tsv); git printed "unable to unlink" per write (folder deletes not permitted; file rewritten in place; bytes verified)
+2	git status --porcelain diff vs snapshot	new " M": MOD-0183 pack, DCP-009 (other four targets were already " M"); no .orig/.rej; no .git/index.lock
+2	status lines	MOD-0186 draft -> ready-for-dev (as approved in A); all others unchanged
+3	build rebase in scratch repo: added lines of original 05, heading "## 30." -> "## 33.", appended to 6c8fbe28 copy; git diff	rebased patch; scratch result a762305e…d552
+3	git apply --check --include=<MOD-0186> rebased patch (live file)	exit 0; live file still 6c8fbe28 (not applied)
+4	write evidence folders; sha256sum -c	see ARTIFACTS.sha256 and plan-folder SHA256SUMS

@@ -1,0 +1,7 @@
+export MVP6_MOD0192_MONGO_URI=<lane URI, see ENV-SURFACE.tsv>
+export MOD0183_TEST_MONGO=<lane URI, see ENV-SURFACE.tsv>
+export MOD0184_TEST_MONGO=<lane URI, see ENV-SURFACE.tsv>
+export MOD0185_TEST_MONGO=<lane URI, see ENV-SURFACE.tsv>
+export MVP6_MOD0190_MONGO_URI=<lane URI, see ENV-SURFACE.tsv>
+export RETURNS_MONGO_URI=<lane URI, see ENV-SURFACE.tsv>
+export CLAIMS_TEST_MONGO=<lane URI, see ENV-SURFACE.tsv>

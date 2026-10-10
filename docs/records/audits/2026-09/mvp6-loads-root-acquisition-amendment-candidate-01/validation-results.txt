@@ -1,0 +1,287 @@
+{
+  "checks": {
+    "annex_policy_present": {
+      "detail": null,
+      "pass": true
+    },
+    "candidate_metadata": {
+      "detail": null,
+      "pass": true
+    },
+    "canonical_unchanged": {
+      "detail": null,
+      "pass": true
+    },
+    "list_example_has_root": {
+      "detail": null,
+      "pass": true
+    },
+    "loads_requests_unchanged": {
+      "detail": null,
+      "pass": true
+    },
+    "local_refs_resolve": {
+      "detail": {
+        "missing": [],
+        "refs": 298
+      },
+      "pass": true
+    },
+    "malformed_root_rejected": {
+      "detail": null,
+      "pass": true
+    },
+    "missing_root_allowed": {
+      "detail": null,
+      "pass": true
+    },
+    "null_root_allowed": {
+      "detail": null,
+      "pass": true
+    },
+    "openapi_3_1": {
+      "detail": null,
+      "pass": true
+    },
+    "path_preserved_1004c3d290ff": {
+      "detail": "/returns/{returnId}/transition",
+      "pass": true
+    },
+    "path_preserved_1115e33eef5b": {
+      "detail": "/carriers",
+      "pass": true
+    },
+    "path_preserved_14638f4fbbab": {
+      "detail": "/claims",
+      "pass": true
+    },
+    "path_preserved_193a9750ae85": {
+      "detail": "/returns",
+      "pass": true
+    },
+    "path_preserved_5add31309e5f": {
+      "detail": "/shipments/{shipmentId}/transition",
+      "pass": true
+    },
+    "path_preserved_848cf5ff5bdd": {
+      "detail": "/shipments/{shipmentId}/pod",
+      "pass": true
+    },
+    "path_preserved_a8a1b40f1342": {
+      "detail": "/shipments/{shipmentId}",
+      "pass": true
+    },
+    "path_preserved_adde204bfe24": {
+      "detail": "/carriers/{carrierId}/status",
+      "pass": true
+    },
+    "path_preserved_b9c582b2931d": {
+      "detail": "/claims/{claimId}/transition",
+      "pass": true
+    },
+    "path_preserved_d79f8f29839b": {
+      "detail": "/shipments",
+      "pass": true
+    },
+    "schema_preserved_CapturePodCommand": {
+      "detail": "CapturePodCommand",
+      "pass": true
+    },
+    "schema_preserved_CarrierListResponse": {
+      "detail": "CarrierListResponse",
+      "pass": true
+    },
+    "schema_preserved_CarrierResponse": {
+      "detail": "CarrierResponse",
+      "pass": true
+    },
+    "schema_preserved_CarrierStatus": {
+      "detail": "CarrierStatus",
+      "pass": true
+    },
+    "schema_preserved_CarrierSummary": {
+      "detail": "CarrierSummary",
+      "pass": true
+    },
+    "schema_preserved_ChangeCarrierStatusCommand": {
+      "detail": "ChangeCarrierStatusCommand",
+      "pass": true
+    },
+    "schema_preserved_ClaimEventPayload": {
+      "detail": "ClaimEventPayload",
+      "pass": true
+    },
+    "schema_preserved_ClaimListResponse": {
+      "detail": "ClaimListResponse",
+      "pass": true
+    },
+    "schema_preserved_ClaimResponse": {
+      "detail": "ClaimResponse",
+      "pass": true
+    },
+    "schema_preserved_ClaimStatus": {
+      "detail": "ClaimStatus",
+      "pass": true
+    },
+    "schema_preserved_ClaimSummary": {
+      "detail": "ClaimSummary",
+      "pass": true
+    },
+    "schema_preserved_ContractVersion": {
+      "detail": "ContractVersion",
+      "pass": true
+    },
+    "schema_preserved_CreateCarrierCommand": {
+      "detail": "CreateCarrierCommand",
+      "pass": true
+    },
+    "schema_preserved_CreateClaimCommand": {
+      "detail": "CreateClaimCommand",
+      "pass": true
+    },
+    "schema_preserved_CreateLoadCommand": {
+      "detail": "CreateLoadCommand",
+      "pass": true
+    },
+    "schema_preserved_CreateReturnCommand": {
+      "detail": "CreateReturnCommand",
+      "pass": true
+    },
+    "schema_preserved_CreateShipmentCommand": {
+      "detail": "CreateShipmentCommand",
+      "pass": true
+    },
+    "schema_preserved_Decimal": {
+      "detail": "Decimal",
+      "pass": true
+    },
+    "schema_preserved_Error": {
+      "detail": "Error",
+      "pass": true
+    },
+    "schema_preserved_EventAcceptedResponse": {
+      "detail": "EventAcceptedResponse",
+      "pass": true
+    },
+    "schema_preserved_LifecycleEventEnvelope": {
+      "detail": "LifecycleEventEnvelope",
+      "pass": true
+    },
+    "schema_preserved_LoadEventPayload": {
+      "detail": "LoadEventPayload",
+      "pass": true
+    },
+    "schema_preserved_LoadListResponse": {
+      "detail": "LoadListResponse",
+      "pass": true
+    },
+    "schema_preserved_LoadResponse": {
+      "detail": "LoadResponse",
+      "pass": true
+    },
+    "schema_preserved_LoadStatus": {
+      "detail": "LoadStatus",
+      "pass": true
+    },
+    "schema_preserved_LoadStop": {
+      "detail": "LoadStop",
+      "pass": true
+    },
+    "schema_preserved_PodResponse": {
+      "detail": "PodResponse",
+      "pass": true
+    },
+    "schema_preserved_PodView": {
+      "detail": "PodView",
+      "pass": true
+    },
+    "schema_preserved_ReturnEventPayload": {
+      "detail": "ReturnEventPayload",
+      "pass": true
+    },
+    "schema_preserved_ReturnLine": {
+      "detail": "ReturnLine",
+      "pass": true
+    },
+    "schema_preserved_ReturnListResponse": {
+      "detail": "ReturnListResponse",
+      "pass": true
+    },
+    "schema_preserved_ReturnResponse": {
+      "detail": "ReturnResponse",
+      "pass": true
+    },
+    "schema_preserved_ReturnStatus": {
+      "detail": "ReturnStatus",
+      "pass": true
+    },
+    "schema_preserved_ReturnSummary": {
+      "detail": "ReturnSummary",
+      "pass": true
+    },
+    "schema_preserved_ShipmentDetail": {
+      "detail": "ShipmentDetail",
+      "pass": true
+    },
+    "schema_preserved_ShipmentEventPayload": {
+      "detail": "ShipmentEventPayload",
+      "pass": true
+    },
+    "schema_preserved_ShipmentLine": {
+      "detail": "ShipmentLine",
+      "pass": true
+    },
+    "schema_preserved_ShipmentListResponse": {
+      "detail": "ShipmentListResponse",
+      "pass": true
+    },
+    "schema_preserved_ShipmentResponse": {
+      "detail": "ShipmentResponse",
+      "pass": true
+    },
+    "schema_preserved_ShipmentStatus": {
+      "detail": "ShipmentStatus",
+      "pass": true
+    },
+    "schema_preserved_ShipmentSummary": {
+      "detail": "ShipmentSummary",
+      "pass": true
+    },
+    "schema_preserved_TransitionClaimCommand": {
+      "detail": "TransitionClaimCommand",
+      "pass": true
+    },
+    "schema_preserved_TransitionLoadCommand": {
+      "detail": "TransitionLoadCommand",
+      "pass": true
+    },
+    "schema_preserved_TransitionReturnCommand": {
+      "detail": "TransitionReturnCommand",
+      "pass": true
+    },
+    "schema_preserved_TransitionShipmentCommand": {
+      "detail": "TransitionShipmentCommand",
+      "pass": true
+    },
+    "schema_preserved_TransportMode": {
+      "detail": "TransportMode",
+      "pass": true
+    },
+    "success_event_shared_preserved": {
+      "detail": null,
+      "pass": true
+    },
+    "uuid_root_allowed": {
+      "detail": null,
+      "pass": true
+    },
+    "wire_v1_preserved": {
+      "detail": null,
+      "pass": true
+    }
+  },
+  "checks_passed": 69,
+  "checks_total": 69,
+  "full_openapi_validator": "NOT_RUN_tool_unavailable",
+  "verdict": "PASS_STATIC_E1_E2"
+}

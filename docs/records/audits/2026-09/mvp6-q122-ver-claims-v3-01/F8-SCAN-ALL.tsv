@@ -1,0 +1,68 @@
+file	phase	extra	rootLeak	nativeDialogs	pageErrors	consoleErrors	foreignHosts	png	error
+checks-mut-grant-a1.json	checks-mut	grant	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+checks-mut-nogrant-a1.json	checks-mut	nogrant	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	1	-
+checks-neg-a1.json	checks-neg	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	4	-
+crafted-a1.json	crafted	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	4	-
+cu05-a1.json	cu05	-	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	4	-
+cu12-a1.json	cu12	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+cu18-a1.json	cu18	-	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	2	-
+cu18ui-a1.json	cu18ui	-	0	0	0	2	fonts.googleapis.com,fonts.gstatic.com	1	-
+cu19-a1.json	cu19	-	0	0	0	7	fonts.googleapis.com,fonts.gstatic.com	2	-
+cu20-a1.json	cu20	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+cu22-a1.json	cu22	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	2	-
+cu26-a1.json	cu26	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+extra-a1.json	extra	-	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	1	locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('.add
+extra2-a1.json	extra2	-	0	0	0	2	fonts.googleapis.com,fonts.gstatic.com	4	-
+kbd-a1.json	kbd	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	2	-
+kbd2-a1.json	kbd2	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	page.waitForResponse: Timeout 30000ms exceeded while waiting for event "response
+kbd2-a2.json	kbd2	-	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	1	-
+l10n-a1.json	l10n	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	15	-
+login-a1.json	login	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-full-a1.json	login	full	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a1.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a10.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a11.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a12.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a13.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a2.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a3.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a4.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a5.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a6.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a7.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a8.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-readonly-a9.json	login	readonly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+matrix-createNoShipRead-a1.json	matrix	createNoShipRead	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrix-createOnly-a1.json	matrix	createOnly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrix-decide-a1.json	matrix	decide	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrix-investigate-a1.json	matrix	investigate	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrix-settle-a1.json	matrix	settle	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrixdom-createNoShipRead-a1.json	matrixdom	createNoShipRead	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#d
+matrixdom-createNoShipRead-a2.json	matrixdom	createNoShipRead	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrixdom-createOnly-a1.json	matrixdom	createOnly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#d
+matrixdom-createOnly-a2.json	matrixdom	createOnly	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrixdom-decide-a1.json	matrixdom	decide	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#d
+matrixdom-decide-a2.json	matrixdom	decide	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrixdom-full-a1.json	matrixdom	full	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrixdom-investigate-a1.json	matrixdom	investigate	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#d
+matrixdom-investigate-a2.json	matrixdom	investigate	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+matrixdom-settle-a1.json	matrixdom	settle	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+nf-ui-a1.json	nf-ui	-	0	0	0	7	fonts.googleapis.com,fonts.gstatic.com	7	-
+regd01-a1.json	regd01	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+regression-a1.json	regression	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	2	-
+saveview-a1.json	saveview	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	4	-
+spec-a1.json	spec	-	0	0	0	0	-	13	-
+ui-flows-a1.json	ui-flows	-	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	6	-
+vs1-a1.json	vs1	-	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+TOTAL	55 files	-	0	0	0	24	fonts.googleapis.com,fonts.gstatic.com	91	-
+# roots scanned: 9 Shipment lifecycle roots (org-fixture); every same-origin response body+headers per phase

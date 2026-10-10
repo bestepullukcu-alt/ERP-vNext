@@ -1,0 +1,33 @@
+[01:56:39 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[01:56:39 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[01:56:39 INF] Now listening on: http://127.0.0.1:5061
+[01:56:39 INF] Application started. Press Ctrl+C to shut down.
+[01:56:39 INF] Hosting environment: Development
+[01:56:39 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api
+[01:56:41 INF] Request starting HTTP/1.1 GET http://localhost:5061/health - null null
+[01:56:41 INF] Executing endpoint 'HTTP: GET /health'
+[01:56:41 INF] Setting HTTP status code 200.
+[01:56:41 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[01:56:41 INF] Executed endpoint 'HTTP: GET /health'
+[01:56:41 INF] Request finished HTTP/1.1 GET http://localhost:5061/health - 200 null application/json; charset=utf-8 51.1236ms
+[01:56:42 INF] Request starting HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/shipments - null null
+[01:56:42 INF] Request finished HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/shipments - 401 null application/json; charset=utf-8 7.9084ms
+[01:56:42 INF] Request starting HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/shipments?page=1&pageSize=5 - null null
+[01:56:42 INF] Failed to validate the token.
+Microsoft.IdentityModel.Tokens.SecurityTokenSignatureKeyNotFoundException: IDX10517: Signature validation failed. The token's kid is missing. Keys tried: 'Microsoft.IdentityModel.Tokens.SymmetricSecurityKey, KeyId: '', InternalId: 'mfXHQC6K15FpAVRmiPFqcYTBy3BFeL9jkYm7BwqLjk8'. , KeyId: \n'.
+Number of keys in TokenValidationParameters: '1'. 
+Number of keys in Configuration: '0'.
+Exceptions caught:
+ '[PII of type 'System.String' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+token: '[PII of type 'Microsoft.IdentityModel.JsonWebTokens.JsonWebToken' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'. See https://aka.ms/IDX10503 for details.
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateSignature(JsonWebToken jwtToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateSignatureAndIssuerSecurityKey(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+[01:56:42 INF] Bearer was not authenticated. Failure message: IDX10517: Signature validation failed. The token's kid is missing. Keys tried: 'Microsoft.IdentityModel.Tokens.SymmetricSecurityKey, KeyId: '', InternalId: 'mfXHQC6K15FpAVRmiPFqcYTBy3BFeL9jkYm7BwqLjk8'. , KeyId: \n'.
+Number of keys in TokenValidationParameters: '1'. 
+Number of keys in Configuration: '0'.
+Exceptions caught:
+ '[PII of type 'System.String' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+token: '[PII of type 'Microsoft.IdentityModel.JsonWebTokens.JsonWebToken' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'. See https://aka.ms/IDX10503 for details.
+[01:56:42 INF] Request finished HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/shipments?page=1&pageSize=5 - 401 null application/json; charset=utf-8 37.5517ms
+[01:56:42 INF] Application is shutting down...

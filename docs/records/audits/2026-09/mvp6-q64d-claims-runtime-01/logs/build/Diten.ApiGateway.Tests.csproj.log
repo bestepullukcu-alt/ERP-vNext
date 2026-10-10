@@ -1,0 +1,26 @@
+  Determining projects to restore...
+  Restored /Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj (in 330 ms).
+  Restored /Users/natig/mvp6-env/q64d/src/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj (in 330 ms).
+  Restored /Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway/Diten.ApiGateway.csproj (in 330 ms).
+  1 of 4 projects are up-to-date for restore.
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/mvp6-env/q64d/src/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Platform.Common -> /Users/natig/mvp6-env/q64d/src/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Debug/net8.0/Diten.Platform.Common.dll
+  Diten.ApiGateway -> /Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(66,37): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(79,34): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(96,47): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(206,37): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(284,34): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+  Diten.ApiGateway.Tests -> /Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/bin/Debug/net8.0/Diten.ApiGateway.Tests.dll
+
+Build succeeded.
+
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(66,37): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(79,34): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(96,47): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(206,37): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(284,34): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/Users/natig/mvp6-env/q64d/src/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+    5 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:08.56

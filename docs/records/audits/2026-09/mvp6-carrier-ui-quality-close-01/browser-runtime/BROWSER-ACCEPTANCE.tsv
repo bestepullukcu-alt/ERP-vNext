@@ -1,0 +1,16 @@
+check	status	evidence
+v3 source manifest	PASS	raw/source-manifest-check.tsv and raw/source-manifest-check-post.tsv: 21/21
+Carrier patch binding	PASS	57f90dadedd6e2304e3775fd1ea0bd7def29ad9d265ccbbeb892afdc04ba1adb
+fresh Web build	PASS	raw/frontend-build.exit=0; 0 errors, 16 warnings
+isolated ports and DBs	PASS	PROCESS-START.tsv and raw/listeners-before-cleanup.tsv
+runtime Ocelot remap	PASS	raw/gateway-route-counts.tsv: 7/64/37 routes
+service health	PASS_WITH_NOTE	raw/health-p53.tsv; Platform 503 from unavailable optional RabbitMQ while API remained live
+admin HTTP surface	PASS	raw/admin-live-preflight.txt
+admin real browser	PASS	root browser observation: 768/390, console 0 warnings, Arabic RTL, table/toolbar/filter/add/offcanvas
+UAS HTTP surface	PASS	raw/uas-live-preflight.txt; denial-only server render
+UAS fresh browser	OPEN	fresh no-role browser login after logout did not complete; no fresh browser PASS claimed
+persistent PNG export	OPEN	root browser lane did not provide a persistent PNG to this runtime directory
+same-origin topology	PASS	Web 5301 -> Gateway 5300 -> SupplyChain 5361 runtime binding
+source no-change	PASS	post-runtime 21/21 manifest verification
+listener cleanup	PASS	raw/listeners-after-cleanup.tsv
+

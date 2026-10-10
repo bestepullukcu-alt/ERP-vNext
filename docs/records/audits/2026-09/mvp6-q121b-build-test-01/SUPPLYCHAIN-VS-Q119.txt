@@ -1,0 +1,9 @@
+Q119 build-fix tests 407 failed 1
+Q121b build-after tests 407 failed 33
+same test-name set (GUIDs normalised): True
+pass in Q119, fail in Q121b: 32
+  all CapacityPlans: True
+  all TimeoutException on 127.0.0.1:57192: True
+fail in Q119, pass in Q121b: []
+failed in both: ['Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery']
+CapacityPlans tests 39 passed in Q121b 7

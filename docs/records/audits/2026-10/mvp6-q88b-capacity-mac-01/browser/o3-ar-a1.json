@@ -1,0 +1,318 @@
+{
+  "phase": "o3",
+  "locale": "ar",
+  "startedAt": "2026-10-01T13:19:19.311Z",
+  "web": "http://127.0.0.1:5501",
+  "playwright": "1.59.1",
+  "cases": {
+    "O-3": {
+      "result": "FAIL",
+      "parts": {
+        "scenarioFocusOnPageTitle": false,
+        "evaluateFocusOnPageTitle": false,
+        "notBody": false,
+        "noRawError": true,
+        "pageLevel": true,
+        "real403": true
+      },
+      "out": {
+        "createPlan": {
+          "activeId": null,
+          "activeTag": "BODY",
+          "activeText": "Search [CTRL + K]\nخطط السعة\n\nأنشئ خطة سعة أو افتح ",
+          "activeIsFirstPageHeading": false,
+          "firstHeading": {
+            "tag": "H5",
+            "id": null,
+            "tabindex": null,
+            "text": "خطط السعة"
+          },
+          "ctaCount": 0,
+          "rawErrorInPage": false,
+          "toasts": [
+            "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: 4775a2a3-6100-459c-aa14-a6c7a0aa6918"
+          ]
+        },
+        "scenario": {
+          "activeId": "scenarioTitle",
+          "activeTag": "H5",
+          "activeText": "سيناريو السعة",
+          "activeIsFirstPageHeading": false,
+          "firstHeading": {
+            "tag": "H4",
+            "id": "planTitle",
+            "tabindex": null,
+            "text": "Q88b ar plan 17115b03"
+          },
+          "openerCount": 0,
+          "planTitleVisible": true,
+          "workspaceVisible": true,
+          "rawErrorInPage": false,
+          "toasts": [
+            "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: fa8103c8-6af2-4ee1-b885-2b8863d32170"
+          ]
+        },
+        "evaluate": {
+          "activeId": "scenarioTitle",
+          "activeTag": "H5",
+          "activeText": "سيناريو السعة",
+          "activeIsFirstPageHeading": false,
+          "firstHeading": {
+            "tag": "H4",
+            "id": "planTitle",
+            "tabindex": null,
+            "text": "Q88b ar plan 17115b03"
+          },
+          "openerCount": 0,
+          "planTitleVisible": true,
+          "workspaceVisible": true,
+          "rawErrorInPage": false,
+          "toasts": [
+            "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: daf68f7c-1f39-4048-941a-dd0004b202be"
+          ]
+        },
+        "page": {
+          "activeId": "planAlert",
+          "activeTag": "DIV",
+          "activeText": "ليست لديك صلاحية لتنفيذ هذا الإجراء.\nمرجع الدعم: 6",
+          "activeIsFirstPageHeading": false,
+          "firstHeading": {
+            "tag": "H4",
+            "id": "planTitle",
+            "tabindex": null,
+            "text": "خطة السعة"
+          },
+          "alert": "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: 6fb23304-795f-4004-9927-8b7cbbabca05",
+          "planTitleVisible": true,
+          "planTitle": "خطة السعة",
+          "workspaceHidden": true,
+          "rawErrorInPage": false
+        },
+        "readonly": {
+          "entryCta": 0,
+          "directPostStatus": 403,
+          "directPostCode": "FORBIDDEN",
+          "detailsLoads": true,
+          "scenarioCta": 0,
+          "evaluateCta": 0
+        },
+        "noread": {
+          "entry": {
+            "markup": 0,
+            "skeletons": 0,
+            "forms": 0,
+            "rawErrorInPage": false,
+            "url": "/SupplyChain/CapacityPlans"
+          },
+          "details": {
+            "markup": 0,
+            "skeletons": 0,
+            "forms": 0,
+            "rawErrorInPage": false,
+            "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87"
+          },
+          "directGet": 403
+        }
+      },
+      "faked": "403 on create plan / create scenario / evaluate / plan GET via route.fulfill; read-only and no-read 403s are real",
+      "evidence": [
+        "png/o3-create-plan-403-ar.png",
+        "png/o3-scenario-403-ar.png",
+        "png/o3-evaluate-403-ar.png",
+        "png/o3-page-403-ar.png",
+        "png/o3-readonly-entry-ar.png",
+        "png/o3-noread-entry-ar.png",
+        "png/o3-noread-details-ar.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "o3-create-plan-403-ar.png",
+      "sha256": "fb30b9cb4f2185e5a39eae54e1eb87a5ef0b1634b24cada80cbb043ca61bd8ac",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:19:24.093Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-scenario-403-ar.png",
+      "sha256": "50567f3b9d9e683721e8e5e0657e1c6e33ba3d555221f5c99d949f601e36771c",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:19:29.198Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-evaluate-403-ar.png",
+      "sha256": "5852bea020e2aee56e0c4042f5a168d205a2e0971467e3006e65fd9f47993599",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:19:34.216Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-page-403-ar.png",
+      "sha256": "2918607efbf13a716e7304fe3f026238057f2a9eab517374c1eceb3a4ad73cb3",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:19:36.496Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-readonly-entry-ar.png",
+      "sha256": "3da5298898aa926573ad6febfbad75f14c3ef5f584738dcff1082a0a7a3dd5c2",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:19:41.299Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-entry-ar.png",
+      "sha256": "20862458bbd56cca3c9b233d002d303b419c066c591fb540280a958c3c9fd3df",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:19:43.559Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-details-ar.png",
+      "sha256": "ccd62a0ad2058f3be48d2f74210ef38b23162d077613440ea0b2a2a9d5868cb3",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:19:44.874Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "o3-ar-plan403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-ar-scenario403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-ar-evaluate403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-ar-page403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "o3-ar-plan403",
+      "text": "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: 4775a2a3-6100-459c-aa14-a6c7a0aa6918",
+      "type": "warning",
+      "at": "2026-10-01T13:19:22.657Z"
+    },
+    {
+      "tag": "o3-ar-scenario403",
+      "text": "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: fa8103c8-6af2-4ee1-b885-2b8863d32170",
+      "type": "warning",
+      "at": "2026-10-01T13:19:27.686Z"
+    },
+    {
+      "tag": "o3-ar-evaluate403",
+      "text": "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: daf68f7c-1f39-4048-941a-dd0004b202be",
+      "type": "warning",
+      "at": "2026-10-01T13:19:32.703Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "o3-ar-plan403",
+      "at": "2026-10-01T13:19:22.657Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-ar-scenario403",
+      "at": "2026-10-01T13:19:25.276Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios/ed7e57be-06ec-4d84-a189-0c5634be6046",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-scenario403",
+      "at": "2026-10-01T13:19:25.277Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-scenario403",
+      "at": "2026-10-01T13:19:27.685Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-ar-evaluate403",
+      "at": "2026-10-01T13:19:30.383Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios/ed7e57be-06ec-4d84-a189-0c5634be6046",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-evaluate403",
+      "at": "2026-10-01T13:19:30.384Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-evaluate403",
+      "at": "2026-10-01T13:19:32.702Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios/ed7e57be-06ec-4d84-a189-0c5634be6046/evaluations",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-ar-page403",
+      "at": "2026-10-01T13:19:35.313Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-readonly",
+      "at": "2026-10-01T13:19:38.807Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios/ed7e57be-06ec-4d84-a189-0c5634be6046",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-readonly",
+      "at": "2026-10-01T13:19:38.807Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 18,
+  "endedAt": "2026-10-01T13:19:44.916Z"
+}

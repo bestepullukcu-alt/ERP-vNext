@@ -1,0 +1,15 @@
+{
+  "evaluation": {
+    "_id": "92eb4de2-dbaa-45a0-8758-7f0a08713b4a",
+    "TenantId": "19200000-0000-4000-8000-000000000001",
+    "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+    "Status": "Completed",
+    "Attempt": 2,
+    "Fence": 2,
+    "Version": 4
+  },
+  "outbox": {
+    "Status": "Pending",
+    "EventType": "capacity.evaluation.completed.v1"
+  }
+}

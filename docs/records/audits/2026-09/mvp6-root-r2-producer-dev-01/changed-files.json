@@ -1,0 +1,21 @@
+{
+  "workPackage": "MVP6-ROOT-R2-PRODUCER-DEV-01",
+  "writerComplete": true,
+  "candidateYamlSha256": "dab5a2f9974283e2404a29a7fb8ed07a77ae8ed843929b1c7b4546c5615dd7cb",
+  "ownedPaths": [
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentDetailReadResult.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentDetailMaterializer.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentRootStorageTests.cs",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentRootHttpTests.cs",
+    "services/Diten.SupplyChainService/tests/root_uptake/runtime_probe.py",
+    "services/Diten.SupplyChainService/tests/root_uptake/restart_probe.py",
+    "services/Diten.SupplyChainService/tests/root_uptake/verify_evidence.py"
+  ],
+  "evidenceArchive": "docs/records/audits/2026-09/mvp6-root-r2-producer-dev-01/evidence.tar.gz",
+  "runtimeStatus": "BLOCKED_ISOLATED_MONGO_UNAVAILABLE",
+  "independentVerification": "REQUIRED"
+}

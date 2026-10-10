@@ -1,0 +1,6 @@
+outbox fields: _id,EventId,EventName,EventVersion,CorrelationId,CausationId,TenantId,Producer,PayloadJson,TransportHeaders,Status,AttemptCount,NextAttemptAtUtc,LastError,OccurredAtUtc,CreatedAt,UpdatedAt
+{"_id":{"n":"tenant.created.v1","s":0},"c":1}
+{"_id":{"n":"platform.globalapplicability.changed.v1","s":0},"c":18}
+{"_id":{"n":"tenant.subscription.changed.v1","s":0},"c":1}
+{"_id":{"n":"tenant.entitlement.added.v1","s":0},"c":1}
+{"_id":{"n":"platform.globalapplicability.changed.v1","s":1},"c":1}

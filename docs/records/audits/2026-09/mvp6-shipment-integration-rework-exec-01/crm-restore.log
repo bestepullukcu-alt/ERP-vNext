@@ -1,0 +1,7 @@
+  Determining projects to restore...
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Application/Diten.CrmService.Application.csproj (in 666 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Api/Diten.CrmService.Api.csproj (in 461 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Persistence/Diten.CrmService.Persistence.csproj (in 94 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Infrastructure/Diten.CrmService.Infrastructure.csproj (in 44 ms).
+  Restored /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Domain/Diten.CrmService.Domain.csproj (in 4 ms).
+  1 of 6 projects are up-to-date for restore.

@@ -1,0 +1,2 @@
+tree	suite	exit	summary
+q121b/build-after	supplychain-single-57192	1	Failed!  - Failed:     1, Passed:   407, Skipped:     0, Total:   408, Duration: 4 m 46 s - Diten.SupplyChainService.Tests.dll (net8.0)

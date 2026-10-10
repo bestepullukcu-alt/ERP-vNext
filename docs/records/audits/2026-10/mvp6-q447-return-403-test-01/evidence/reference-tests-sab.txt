@@ -1,0 +1,24 @@
+# filter ReturnReferenceTests|ClaimReferenceTests, RETURNS_MONGO_URI and CLAIMS_TEST_MONGO on 57447 — copy: sab
+[xUnit.net 00:00:00.61]     Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerDenial403_IsReportedAsContextDenialNotOutage(body: "") [FAIL]
+[xUnit.net 00:00:00.61]     Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerDenial403_IsReportedAsContextDenialNotOutage(body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [FAIL]
+[xUnit.net 00:00:00.61]     Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerDenial403_IsReportedAsContextDenialNotOutage(body: "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"R"···) [FAIL]
+  Failed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerDenial403_IsReportedAsContextDenialNotOutage(body: "") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 403
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 403
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 403
+[xUnit.net 00:00:00.65]     Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "shipment", refusal: Forbidden, status: 403, code: "FORBIDDEN", reads: 1) [FAIL]
+[xUnit.net 00:00:00.65]     Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "carrier", refusal: Forbidden, status: 403, code: "FORBIDDEN", reads: 2) [FAIL]
+  Failed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "shipment", refusal: Forbidden, status: 403, code: "FORBIDDEN", reads: 1) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 403
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 403
+Failed!  - Failed:     5, Passed:    61, Skipped:     0, Total:    66, Duration: 386 ms - Diten.SupplyChainService.Tests.dll (net8.0)

@@ -1,0 +1,127 @@
+diff --git a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarriersController.cs b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarriersController.cs
+index a60046244..1b10fc772 100644
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarriersController.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarriersController.cs
+@@ -1,3 +1,4 @@
++using System.Diagnostics;
+ using Microsoft.AspNetCore.Mvc;
+ using Microsoft.AspNetCore.Authorization;
+ using MediatR;
+@@ -13,17 +14,20 @@ namespace Diten.SupplyChainService.Api.Features.Carriers;
+ public sealed class CarriersController(ISender sender, CarrierRequestContext context, ILogger<CarriersController> logger) : CustomBaseController
+ {
+     [HttpGet, CarrierPermission(CarrierPermissions.Read)]
+-    public async Task<IActionResult> List([FromQuery] string? status, CancellationToken ct) => CarrierWire(await sender.Send(new GetCarrierListQuery(status), ct));
++    public async Task<IActionResult> List([FromQuery] string? status, CancellationToken ct) => CarrierWire("queryCarriers", Stopwatch.GetTimestamp(), await sender.Send(new GetCarrierListQuery(status), ct));
+     [HttpPost, CarrierPermission(CarrierPermissions.Create)]
+-    public async Task<IActionResult> Create([FromBody] CreateCarrierRequest body, CancellationToken ct) => CarrierWire(await sender.Send(new CreateCarrierCommand(body), ct));
++    public async Task<IActionResult> Create([FromBody] CreateCarrierRequest body, CancellationToken ct) => CarrierWire("createCarrier", Stopwatch.GetTimestamp(), await sender.Send(new CreateCarrierCommand(body), ct));
+     [HttpPost("{carrierId}/status"), CarrierPermission(CarrierPermissions.ChangeStatus)]
+     public async Task<IActionResult> Status(string carrierId, [FromBody] ChangeCarrierStatusRequest body, CancellationToken ct) =>
+-        CarrierWire(await sender.Send(new ChangeCarrierStatusCommand(Guid.Parse(carrierId), body), ct));
+-    private IActionResult CarrierWire<T>(Response<T> result)
++        CarrierWire("changeCarrierStatus", Stopwatch.GetTimestamp(), await sender.Send(new ChangeCarrierStatusCommand(Guid.Parse(carrierId), body), ct));
++    // MOD-0184 observability (pack :300-302): scoped operation, outcome, correlation, replay, and — for this module only —
++    // list size and timings. The started timestamp is taken before the handler runs (arguments evaluate left to right).
++    private IActionResult CarrierWire<T>(string operation, long started, Response<T> result)
+     {
+-        logger.LogInformation("Carrier outcome {TenantId} {LegalEntityId} {CorrelationId} {Status} {ErrorCode} {IdempotentReplay}",
+-            context.Scope.TenantId, context.Scope.LegalEntityId, context.CorrelationId, result.StatusCode, result.ErrorCode,
+-            result.Data is CarrierResponse carrier && carrier.IdempotentReplay);
++        logger.LogInformation("Carrier outcome {Operation} {TenantId} {LegalEntityId} {CorrelationId} {Status} {ErrorCode} {IdempotentReplay} {ListSize} {ElapsedMs}",
++            operation, context.Scope.TenantId, context.Scope.LegalEntityId, context.CorrelationId, result.StatusCode, result.ErrorCode,
++            result.Data is CarrierResponse carrier && carrier.IdempotentReplay, result.Data is CarrierListResponse list ? list.Items.Count : (int?)null,
++            Math.Round(Stopwatch.GetElapsedTime(started).TotalMilliseconds, 1));
+         var code = result.StatusCode == 500 ? "INTERNAL_ERROR" : result.ErrorCode;
+         return StatusCode(result.StatusCode, code is null ? result.Data : CarrierContractError.Create(code, result.StatusCode, context.CorrelationId));
+     }
+diff --git a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimsController.cs b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimsController.cs
+index 24c93393a..756bea08c 100644
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimsController.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimsController.cs
+@@ -10,17 +10,24 @@ using Diten.SupplyChainService.Application.Features.Claims.Queries;
+ using Diten.SupplyChainService.Infrastructure.Features.Claims;
+ namespace Diten.SupplyChainService.Api.Features.Claims;
+ [Authorize, Route("api/shipment-bundle/claims")]
+-public sealed class ClaimsController(ISender sender, ClaimRequestContext context) : CustomBaseController
++public sealed class ClaimsController(ISender sender, ClaimRequestContext context, ILogger<ClaimsController> logger) : CustomBaseController
+ {
+     [HttpGet, ClaimPermission(ClaimPermissions.Read)]
+     public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? shipmentId, CancellationToken ct)
+-        => ClaimWireResponse(await sender.Send(new GetClaimListQuery(status, shipmentId), ct));
++        => ClaimWireResponse("queryClaims", await sender.Send(new GetClaimListQuery(status, shipmentId), ct));
+     [HttpPost, ClaimPermission(ClaimPermissions.Create)]
+     public async Task<IActionResult> Create([FromBody] JsonElement body, CancellationToken ct)
+-        => ClaimWireResponse(await sender.Send(new CreateClaimCommand(body), ct));
++        => ClaimWireResponse("createClaim", await sender.Send(new CreateClaimCommand(body), ct));
+     [HttpPost("{claimId}/transition"), ClaimPermission(ClaimPermissions.Create, ClaimPermissions.Investigate, ClaimPermissions.Decide, ClaimPermissions.Settle)]
+     public async Task<IActionResult> Transition(string claimId, [FromBody] JsonElement body, CancellationToken ct)
+-        => ClaimWireResponse(await sender.Send(new TransitionClaimCommand(Guid.Parse(claimId), body), ct));
+-    private IActionResult ClaimWireResponse<T>(Response<T> result) => StatusCode(result.StatusCode,
+-        result.ErrorCode is null ? result.Data : ClaimContractError.Create(result.StatusCode == 500 ? "INTERNAL_ERROR" : result.ErrorCode, result.StatusCode, context.CorrelationId));
++        => ClaimWireResponse("transitionClaim", await sender.Send(new TransitionClaimCommand(Guid.Parse(claimId), body), ct));
++    // Pack :426: logs carry operation/result/correlation/replay. Claims had no result line at all (Q446). The correlation (the
++    // Shipment root on mutations) is added by CorrelationIdEnricher (Program.cs).
++    private IActionResult ClaimWireResponse<T>(string operation, Response<T> result)
++    {
++        logger.LogInformation("Claim outcome {Operation} {Status} {ErrorCode} {IdempotentReplay}",
++            operation, result.StatusCode, result.ErrorCode, result.Data is ClaimResponse claim && claim.IdempotentReplay);
++        return StatusCode(result.StatusCode,
++            result.ErrorCode is null ? result.Data : ClaimContractError.Create(result.StatusCode == 500 ? "INTERNAL_ERROR" : result.ErrorCode, result.StatusCode, context.CorrelationId));
++    }
+ }
+diff --git a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadsController.cs b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadsController.cs
+index 927594051..aa6b9c272 100644
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadsController.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadsController.cs
+@@ -10,10 +10,15 @@ using Diten.SupplyChainService.Application.Features.Loads.Queries;
+ using Diten.SupplyChainService.Infrastructure.Features.Loads;
+ namespace Diten.SupplyChainService.Api.Features.Loads;
+ [Authorize,Route("api/shipment-bundle/loads")]
+-public sealed class LoadsController(ISender sender,LoadRequestContext context):CustomBaseController
++public sealed class LoadsController(ISender sender,LoadRequestContext context,ILogger<LoadsController> logger):CustomBaseController
+ {
+- [HttpGet,LoadPermission(LoadPermissions.Read)] public async Task<IActionResult> List([FromQuery]string? status,[FromQuery]string? carrierId,CancellationToken ct)=>LoadWireResponse(await sender.Send(new GetLoadListQuery(status,carrierId),ct));
+- [HttpPost,LoadPermission(LoadPermissions.Create)] public async Task<IActionResult> Create([FromBody]JsonElement body,CancellationToken ct)=>LoadWireResponse(await sender.Send(new CreateLoadCommand(body),ct));
+- [HttpPost("{loadId}/transition"),LoadPermission(LoadPermissions.Transition)] public async Task<IActionResult> Transition(string loadId,[FromBody]JsonElement body,CancellationToken ct)=>LoadWireResponse(await sender.Send(new TransitionLoadCommand(Guid.Parse(loadId),body),ct));
+- private IActionResult LoadWireResponse<T>(Response<T> r)=>StatusCode(r.StatusCode,r.ErrorCode is null?r.Data:LoadContractError.Create(r.StatusCode==500?"INTERNAL_ERROR":r.ErrorCode,r.StatusCode,context.CorrelationId));
++ [HttpGet,LoadPermission(LoadPermissions.Read)] public async Task<IActionResult> List([FromQuery]string? status,[FromQuery]string? carrierId,CancellationToken ct)=>LoadWireResponse("queryLoads",await sender.Send(new GetLoadListQuery(status,carrierId),ct));
++ [HttpPost,LoadPermission(LoadPermissions.Create)] public async Task<IActionResult> Create([FromBody]JsonElement body,CancellationToken ct)=>LoadWireResponse("createLoadPlan",await sender.Send(new CreateLoadCommand(body),ct));
++ [HttpPost("{loadId}/transition"),LoadPermission(LoadPermissions.Transition)] public async Task<IActionResult> Transition(string loadId,[FromBody]JsonElement body,CancellationToken ct)=>LoadWireResponse("transitionLoad",await sender.Send(new TransitionLoadCommand(Guid.Parse(loadId),body),ct));
++ // Pack :432: logs carry operation/result/correlation/replay. The correlation is added by CorrelationIdEnricher (Program.cs).
++ private IActionResult LoadWireResponse<T>(string operation,Response<T> r)
++ {
++  logger.LogInformation("Load outcome {Operation} {Status} {ErrorCode} {IdempotentReplay}",operation,r.StatusCode,r.ErrorCode,r.Data is LoadResponse load&&load.IdempotentReplay);
++  return StatusCode(r.StatusCode,r.ErrorCode is null?r.Data:LoadContractError.Create(r.StatusCode==500?"INTERNAL_ERROR":r.ErrorCode,r.StatusCode,context.CorrelationId));
++ }
+ }
+diff --git a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnsController.cs b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnsController.cs
+index 2349cb972..785f8300e 100644
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnsController.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnsController.cs
+@@ -11,13 +11,20 @@ using Diten.SupplyChainService.Domain.Features.Returns;
+ using Diten.SupplyChainService.Infrastructure.Features.Returns;
+ namespace Diten.SupplyChainService.Api.Features.Returns;
+ [Authorize, Route("api/shipment-bundle/returns")]
+-public sealed class ReturnsController(ISender sender, ReturnRequestContext context) : CustomBaseController
++public sealed class ReturnsController(ISender sender, ReturnRequestContext context, ILogger<ReturnsController> logger) : CustomBaseController
+ {
+     [HttpGet, ReturnPermission(ReturnPermissions.Read)]
+-    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? shipmentId, CancellationToken ct) => ReturnWireResponse(await sender.Send(new GetReturnListQuery(status is null ? null : Enum.Parse<ReturnStatus>(status), shipmentId is null ? null : Guid.Parse(shipmentId)), ct));
++    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? shipmentId, CancellationToken ct) => ReturnWireResponse("queryReturns", await sender.Send(new GetReturnListQuery(status is null ? null : Enum.Parse<ReturnStatus>(status), shipmentId is null ? null : Guid.Parse(shipmentId)), ct));
+     [HttpPost, ReturnPermission(ReturnPermissions.Create)]
+-    public async Task<IActionResult> Create([FromBody] JsonElement body, CancellationToken ct) => ReturnWireResponse(await sender.Send(new CreateReturnCommand(body), ct));
++    public async Task<IActionResult> Create([FromBody] JsonElement body, CancellationToken ct) => ReturnWireResponse("createReturn", await sender.Send(new CreateReturnCommand(body), ct));
+     [HttpPost("{returnId}/transition"), ReturnPermission(ReturnPermissions.Transition)]
+-    public async Task<IActionResult> Transition(string returnId, [FromBody] JsonElement body, CancellationToken ct) => ReturnWireResponse(await sender.Send(new TransitionReturnCommand(Guid.Parse(returnId), body), ct));
+-    private IActionResult ReturnWireResponse<T>(Response<T> response) => StatusCode(response.StatusCode, response.ErrorCode is null ? response.Data : ReturnContractError.Create(response.StatusCode == 500 ? "INTERNAL_ERROR" : response.ErrorCode, response.StatusCode, context.CorrelationId));
++    public async Task<IActionResult> Transition(string returnId, [FromBody] JsonElement body, CancellationToken ct) => ReturnWireResponse("transitionReturn", await sender.Send(new TransitionReturnCommand(Guid.Parse(returnId), body), ct));
++    // Pack :437: logs carry operation/result/correlation/replay. The correlation (the Shipment root on mutations) is added by
++    // CorrelationIdEnricher (Program.cs).
++    private IActionResult ReturnWireResponse<T>(string operation, Response<T> response)
++    {
++        logger.LogInformation("Return outcome {Operation} {Status} {ErrorCode} {IdempotentReplay}",
++            operation, response.StatusCode, response.ErrorCode, response.Data is ReturnResponse result && result.IdempotentReplay);
++        return StatusCode(response.StatusCode, response.ErrorCode is null ? response.Data : ReturnContractError.Create(response.StatusCode == 500 ? "INTERNAL_ERROR" : response.ErrorCode, response.StatusCode, context.CorrelationId));
++    }
+ }

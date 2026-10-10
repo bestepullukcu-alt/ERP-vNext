@@ -1,0 +1,11 @@
+step	result	observation
+Real Auth login/session	PASS	Local Web login succeeded and redirected to WorkCenter; browser session was issued by Auth and no bearer/cookie was manually created or extracted
+Authorized list	PASS	/SupplyChain/Carriers rendered the authorized DataTable through Gateway; initial list was empty
+Create	PASS	UI created E2E-CARRIER-01 / Real Auth Carrier / Road / E2E-EXEC-01 and displayed a localized success toast
+Reload persistence	PASS	Reload displayed the persisted E2E-CARRIER-01 row with Active status
+Row-driven status offcanvas	PASS	Status offcanvas opened from the persisted row; Suspended with reason E2E-VERIFY was confirmed and localized success displayed
+Status reload persistence	PASS	Reload displayed E2E-CARRIER-01 as Suspended
+UAS-001	PASS	After logout and real login as charlie.brown.def@diten.com, direct Carrier navigation showed only Arabic denial/remediation; no heading card, DataTable, create control or status action rendered
+Frontend routing	PASS	Browser used Web origin and Gateway-backed service path; no direct browser call to a service port was introduced
+Durable PNG	OPEN	The active CUA surface returned screenshot bytes but offered no supported durable save/export operation
+

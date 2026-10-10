@@ -1,9 +1,9 @@
 # Diten ERP - All-in-One Start Script for Windows with Watch (Hot Reload)
 Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload) on Windows..." -ForegroundColor Cyan
 
-# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061)
-Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061..." -ForegroundColor Yellow
-Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5061 -ErrorAction SilentlyContinue | 
+# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061, 5066)
+Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061, 5066..." -ForegroundColor Yellow
+Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5061,5066 -ErrorAction SilentlyContinue | 
     Select-Object -ExpandProperty OwningProcess | 
     Unique | 
     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }

@@ -1,0 +1,4 @@
+artifact	change	old_sha256	new_sha256	semantic_effect
+shipment-bundle-v3.1.0-rc.1.openapi.yaml	NONE	aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744	aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744	None; prior full OAS/ref/example evidence remains hash-bound
+loads-semantics-v3.1.0-rc.1.md	One release-boundary token: info.version2.0.0 -> info.version3.1.0-rc.1	620038c8d53af260ef03238db9dddebe74fd368ccbed6e04b47d032a44a15ac1	e2107301e3c6cfae5e6768de77c19f5b4fa5ea7ff42f1a4023650bd3fb7750cd	Removes internal metadata contradiction; no final-version choice or business change
+amendment.patch	Regenerated against same canonical preimages	6a87af9fb006a2583b0f734fe7a374ebdd383a15459c4bd76e0d7a58c2ac568a	27cc3a8f6c5000b9d06b80b2b0037e84750cd7bc40611da4b5f6fa33582e11cc	Carries the corrected annex byte target

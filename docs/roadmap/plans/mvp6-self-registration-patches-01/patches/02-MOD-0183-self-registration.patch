@@ -1,0 +1,81 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md b/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+index cdcbd96..16114dc 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+@@ -318,3 +318,76 @@ intake and does not authorize a new public Shipment event-ingest endpoint.
+ 
+ **Status:** core planning/approval recorded; automatic Warehouse intake NOT READY; runtime acceptance NOT READY.
+ All §16 implementation acceptance boxes remain open. MOD-0184 remains draft and sequence-gated.
++
++## 22. Self-registration (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++
++**Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
++**Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).
++This section specifies; it authorizes no code, `Program.cs`, `.csproj`, appsettings, `SharedResource`, Platform or gateway change, no new permission key or ID, and no commit, push or stash.
++
++### Identity (D3 = A)
++
++| Field | Value |
++|---|---|
++| ModuleCode / ModuleName / DisplayName | `shipment-tracking-pod` / `ShipmentTrackingPod` / `Shipment Tracking & POD` |
++| Domain / Service | `SupplyChainExecution` / `DitenSupplyChainService` |
++| ModuleVersion / IsTenantAssignable / IsBaseline | `1.0.0` / true / false |
++| SortOrder / Icon (SOFT, seed-once) | 390 / `bx-package` |
++| Provider / tests (proposed paths) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ShipmentTrackingPodManifestProvider.cs` / `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ShipmentTrackingPodManifestProviderTests.cs` |
++| Scope | every RoutePath starts with `/SupplyChain/`, none with `/Platform/` → Tenant |
++
++### Pages
++
++| PageCode | DisplayName | RoutePath (verbatim) | RequiredPermission | Parent | Nav | PageType | Sort |
++|---|---|---|---|---|---|---|---|
++| `SHIPMENTS` | Shipments | `/SupplyChain/Shipments` | `supplychain.shipments.read` | — | **true** | List | 10 |
++| `SHIPMENT_CREATE` | Create Shipment | `/SupplyChain/Shipments/Create` | `supplychain.shipments.create` | `SHIPMENTS` | false | Detail | 11 |
++| `SHIPMENT_DETAILS` | Shipment Details | `/SupplyChain/Shipments/Details/{shipmentId:guid}` | `supplychain.shipments.read` | `SHIPMENTS` | false | Detail | 12 |
++
++### Actions
++
++| Page | ActionCode | DisplayName | PermissionKey | Placement | Dangerous |
++|---|---|---|---|---|---|
++| `SHIPMENT_CREATE` | `SAVE` | Save | `supplychain.shipments.create` | Toolbar | no |
++| `SHIPMENT_DETAILS` | `CHANGE_STATUS` | Change Status | `supplychain.shipments.dispatch` | Toolbar | no |
++| `SHIPMENT_DETAILS` | `CANCEL` | Cancel Shipment | `supplychain.shipments.cancel` | Toolbar | **yes** |
++| `SHIPMENT_DETAILS` | `CAPTURE_POD` | Capture POD | `supplychain.shipments.pod.capture` | Toolbar | no |
++
++All keys are existing constants in `Diten.SupplyChainService.Infrastructure/Authorization/ShipmentPermissions.cs`. Not modeled: the list row's details link (navigation) and `supplychain.shipments.reconcile` (API-only, no UI route or button). Route truth today: `SupplyChainShipmentsController` (`[Route("SupplyChain/Shipments")]`) in the A12 successor archive `docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/successor-source.tar.gz` (`7b6a0d1a…`).
++
++### Navigation keys (NAV-L10N-KEYS.tsv; 0/7 present today)
++
++| Key | Required languages | Ships with |
++|---|---|---|
++| `Nav.Domain.SUPPLYCHAINEXECUTION` | en, tr, fr, es, zh, ar, ru | first SupplyChain provider to ship (with the DCP-009 §21 foundation) |
++| `Nav.Module.SHIPMENTTRACKINGPOD` | en, tr, fr, es, zh, ar, ru | this provider |
++| `Nav.Page.SHIPMENTS` | en, tr, fr, es, zh, ar, ru | this provider |
++
++Values are added to `frontend/Diten.Web/Resources/SharedResource.{lang}.resx` by the integration owner and reviewed by the l10n agent (no empty value, no English placeholder, no key echoing its own name). This pack does not supply or approve values.
++
++### Tests (TEST-PLAN.md §2; all required before the module counts as closed)
++
++| ID | Pass condition |
++|---|---|
++| M-01 | Identity exactly as above; `IsTenantAssignable` true |
++| M-02 | Every manifest `RequiredPermission` / `PermissionKey` is in the reflected `public const string` fields of `ShipmentPermissions` |
++| M-03 | Every reflected key is in the manifest or on the API-only allow-list with a reason: `supplychain.shipments.reconcile` (API-only) |
++| M-04 | Manifest RoutePaths = the frontend view-route set of `SupplyChainShipmentsController`, counts equal (cross-checked by W-01) |
++| M-05 | The action table above equals the manifest actions per page (code, key, placement, dangerous flag) |
++| M-06 | PageCodes, RoutePaths and ActionCodes (per page) unique, case-insensitive |
++| M-07 | Exactly one `IsNavigationVisible` page, with a null parent; every other page has a parent |
++| M-08 | No RoutePath starts with `/Platform/` |
++
++Shared guards W-01…W-04 and reconcile-state R-01…R-04 (DCP-009 §21.3) must also be green for this module.
++
++### Ship rule (D4 = A)
++
++The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navigation keys ship **together with this module's UI** in the integrated target (Q14/Q15), never ahead of it. If Shipment is the first SupplyChain module to ship, the DCP-009 §21 foundation and `Nav.Domain.SUPPLYCHAINEXECUTION` ship with it.
++
++### Open gaps (carried, not solved)
++
++1. The Shipment UI is not in the common checkout; route truth is the archived A12 successor source until integration.
++2. The RoutePath keeps the `:guid` constraint verbatim (other manifests use `{id}`); the platform normalizer's handling is confirmed by R-01.
++3. The details action bar is a page-level bar; `Toolbar` is the nearest supported placement.
++4. `supplychain.shipments.read` is also a UI prerequisite of Returns/Claims create and transition (G-SHIPREAD); the single-key action model cannot express that conjunction.
++5. Runtime tests R-02…R-04 need a native executor and the integrated target.

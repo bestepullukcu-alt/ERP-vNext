@@ -1,0 +1,27 @@
+  Determining projects to restore...
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/Diten.BuildingBlocks.Eventing.csproj (in 173 ms).
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj (in 173 ms).
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj (in 173 ms).
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj (in 289 ms).
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj (in 566 ms).
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj (in 579 ms).
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj (in 613 ms).
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj (in 613 ms).
+  Restored /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj (in 653 ms).
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/bin/Release/net8.0/Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.SupplyChainService.Domain -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Release/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Application -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Release/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Release/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Release/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Api -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+  Diten.SupplyChainService.Tests -> /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Release/net8.0/Diten.SupplyChainService.Tests.dll
+Test run for /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Release/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /private/tmp/mvp6-shipment-root-r2-emission-rework-01/evidence/green/green.trx
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: < 1 ms - Diten.SupplyChainService.Tests.dll (net8.0)

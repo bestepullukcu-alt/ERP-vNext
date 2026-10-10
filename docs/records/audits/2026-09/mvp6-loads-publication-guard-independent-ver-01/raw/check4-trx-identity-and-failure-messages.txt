@@ -1,0 +1,19 @@
+docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/VER-ARCHITECTURE-FULL-attempt1.trx <TestRun id="4cda6150-49f1-4396-8db5-7535d7277a5b" start="2026-09-26T11:34:45.5381570+03:00"
+docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/VER-DOCS-PATH-GUARD-attempt1.trx <TestRun id="fa457a9a-0d64-4828-8f75-05e9add3c4c8" start="2026-09-26T11:34:31.0874040+03:00"
+docs/records/audits/2026-09/mvp6-loads-publication-guard-01/ARCHITECTURE-FULL-attempt1.trx <TestRun id="f491c885-21c6-4208-9311-50308285cf7c" start="2026-09-26T11:22:09.6503770+03:00"
+docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PRODUCTION-DOCS-PATH-GUARD-attempt1.trx <TestRun id="e9edaabd-49aa-468f-b88c-5dd2177281a8" start="2026-09-26T11:22:03.2284410+03:00"
+## failure messages (VER full run)
+TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun
+    a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+    services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+    services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew
+    this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+    services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+    services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew
+    a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+    services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+    services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+## porcelain after tests vs before tests
+IDENTICAL

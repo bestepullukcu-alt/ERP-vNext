@@ -1,0 +1,15 @@
+{"step": "replay", "at": "14:08:35", "first": 201, "firstId": "45a99f70-8a2c-46c9-9c38-c3a8f000a0b6", "second": 400, "secondId": null, "sameId": false}
+{"step": "replay", "at": "14:11:31", "first": 201, "firstId": "99c9f876-2e96-4487-ae8d-b067b7a6a70e", "second": 200, "secondId": "99c9f876-2e96-4487-ae8d-b067b7a6a70e", "sameId": true}
+{"step": "scope", "at": "14:11:42", "status": 404, "code": "SHIPMENT_NOT_FOUND", "correlationId": "35bd3b54-2b9d-4cb8-9f4a-d0875cdfb3e0"}
+{"step": "load", "at": "14:11:55", "requests": 40, "statuses": {"201": 10, "200": 30}, "clientP95ms_roundtrip_via_gateway": 19.5}
+{"step": "replay", "at": "14:11:56", "first": 201, "firstId": "fbe7e973-313b-407b-8d08-8fe0248dbf8b", "second": 200, "secondId": "fbe7e973-313b-407b-8d08-8fe0248dbf8b", "sameId": true}
+{"step": "replay", "at": "14:13:03", "first": 201, "firstId": "2808dec4-9bf2-430d-a332-b50905ae027f", "second": 200, "secondId": "2808dec4-9bf2-430d-a332-b50905ae027f", "sameId": true}
+{"step": "scope", "at": "14:13:07", "status": 404, "code": "SHIPMENT_NOT_FOUND", "correlationId": "aabf4190-e652-4fdc-89ad-0bc3ef3b2deb"}
+{"step": "transition", "at": "14:13:10", "create": 201, "shipmentId": "be0631e6-7a8b-40d2-aa15-3425f22dbbfd", "transition": 400, "error": "INVALID_REQUEST"}
+{"step": "load", "at": "14:13:14", "requests": 80, "statuses": {"201": 20, "200": 60}, "clientP95ms_roundtrip_via_gateway": 11.8}
+{"step": "replay", "at": "14:24:35", "first": 201, "firstId": "1b94bc2a-e065-4fdb-a91e-c6defec01d38", "second": 200, "secondId": "1b94bc2a-e065-4fdb-a91e-c6defec01d38", "sameId": true}
+{"step": "scope", "at": "14:24:39", "status": 404, "code": "SHIPMENT_NOT_FOUND", "correlationId": "915e388d-3748-4419-990c-4e7cec9c2657"}
+{"step": "transition", "at": "14:24:43", "create": 201, "shipmentId": "244620e7-d0f8-46b6-a738-db9ce15639cd", "transition": 200, "error": null}
+{"step": "load", "at": "14:24:47", "requests": 80, "statuses": {"201": 20, "200": 60}, "clientP95ms_roundtrip_via_gateway": 14.1}
+{"step": "transition", "at": "15:46:24", "create": 201, "shipmentId": "efb74dff-72df-437b-905e-8026ddde0f12", "transition": 200, "error": null}
+{"step": "load", "at": "15:46:36", "requests": 120, "statuses": {"201": 30, "200": 90}, "clientP95ms_roundtrip_via_gateway": 15.2}

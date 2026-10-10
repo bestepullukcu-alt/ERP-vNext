@@ -1,0 +1,146 @@
+{
+  "verdict": "REWORK",
+  "hashes": {
+    "baseline_yaml": {
+      "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+      "expected": "5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c",
+      "actual": "5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c",
+      "match": true
+    },
+    "baseline_annex": {
+      "path": "docs/analysis/contracts/loads-semantics-v2.0.0.md",
+      "expected": "a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1",
+      "actual": "a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1",
+      "match": true
+    },
+    "candidate_yaml": {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-01/shipment-bundle-v3.1.0-rc.1.openapi.yaml",
+      "expected": "aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744",
+      "actual": "aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744",
+      "match": true
+    },
+    "candidate_annex": {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-01/loads-semantics-v3.1.0-rc.1.md",
+      "expected": "620038c8d53af260ef03238db9dddebe74fd368ccbed6e04b47d032a44a15ac1",
+      "actual": "620038c8d53af260ef03238db9dddebe74fd368ccbed6e04b47d032a44a15ac1",
+      "match": true
+    },
+    "patch": {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-01/amendment.patch",
+      "expected": "6a87af9fb006a2583b0f734fe7a374ebdd383a15459c4bd76e0d7a58c2ac568a",
+      "actual": "6a87af9fb006a2583b0f734fe7a374ebdd383a15459c4bd76e0d7a58c2ac568a",
+      "match": true
+    }
+  },
+  "patch": {
+    "checkExit": 0,
+    "applyExit": 0,
+    "checkStdout": "",
+    "checkStderr": "",
+    "applyStdout": "",
+    "applyStderr": "",
+    "byteEquality": {
+      "yaml": true,
+      "annex": true
+    },
+    "appliedYamlSha256": "aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744",
+    "appliedAnnexSha256": "620038c8d53af260ef03238db9dddebe74fd368ccbed6e04b47d032a44a15ac1"
+  },
+  "validator": {
+    "python": "3.9.6 (default, Dec  2 2025, 07:27:58) \n[Clang 17.0.0 (clang-1700.6.3.2)]",
+    "openapiSpecValidator": "0.7.2",
+    "jsonschema": "4.25.1",
+    "pyyaml": "6.0.3",
+    "schemaPath": "/private/tmp/mvp6-loads-root-ver-tooldeps/openapi_spec_validator/resources/schemas/v3.1/schema.json",
+    "schemaSha256": "e7cb616a2a10849a166c4e4a93c62c56cfea02cc00eadf287e2fb875e7124098",
+    "metaSchemaErrors": [],
+    "semanticErrors": [],
+    "localRefs": 298,
+    "schemaBoundExamples": 236,
+    "negativeControls": {
+      "bad_openapi_version_meta_errors": 1,
+      "bad_openapi_version_semantic_errors": 1,
+      "missing_info_title_meta_errors": 1,
+      "missing_info_title_semantic_errors": 1
+    }
+  },
+  "scope": {
+    "diffPaths": [
+      "$/components/schemas/LoadSummary/properties/lifecycleCorrelationId",
+      "$/info/version",
+      "$/info/x-status",
+      "$/paths//loads/get/description",
+      "$/paths//loads/get/responses/200/content/application/json/example/items/0/lifecycleCorrelationId",
+      "$/paths//loads/get/x-loads-semantics",
+      "$/paths//loads/post/description",
+      "$/paths//loads/post/x-loads-semantics",
+      "$/paths//loads/{loadId}/transition/post/description",
+      "$/paths//loads/{loadId}/transition/post/x-loads-semantics"
+    ],
+    "unexpectedDiffPaths": [],
+    "missingExpectedDiffPaths": [],
+    "nonLoadsPathsUnchanged": 10,
+    "allSchemasExceptLoadSummaryUnchanged": true,
+    "loadSummaryOnlyAddsRoot": true
+  },
+  "fixtures": {
+    "missing": {
+      "expectedValid": true,
+      "errors": [],
+      "pass": true
+    },
+    "null": {
+      "expectedValid": true,
+      "errors": [],
+      "pass": true
+    },
+    "valid": {
+      "expectedValid": true,
+      "errors": [],
+      "pass": true
+    },
+    "nil": {
+      "expectedValid": true,
+      "errors": [],
+      "pass": true
+    },
+    "malformed": {
+      "expectedValid": false,
+      "errors": [
+        "'not-a-uuid' is not a 'uuid'"
+      ],
+      "pass": true
+    }
+  },
+  "annexChecks": {
+    "authority": true,
+    "emit_when_present": true,
+    "no_derivation": true,
+    "no_backfill": true,
+    "nil_preserved": true,
+    "fail_closed": true,
+    "read_permission": true,
+    "transition_permission": true,
+    "replay_preserved": true,
+    "multi_shipment_deferred": true,
+    "no_detail_lookup": true
+  },
+  "mutantsKilled": {
+    "required_presence": true,
+    "non_nullable": true,
+    "missing_uuid_format": true,
+    "load_response_changed": true,
+    "non_load_path_changed": true,
+    "authority_changed": true
+  },
+  "findings": {
+    "staleVersionClaims": [
+      {
+        "line": 192,
+        "text": "info.version2.0.0 is candidate metadata only; wire contractVersion v1 remains unchanged."
+      }
+    ],
+    "compatibility": "Optional nullable response property is additive only for tolerant consumers; strict unknown-property parsers require inventory and exact-hash consent.",
+    "runtimeBoundary": "Static schema/annex verification does not prove producer emission, persistence provenance, consumer uptake, HTTP/JWT/Mongo behavior, publication, or rollout."
+  }
+}

@@ -1,0 +1,24 @@
+  Determining projects to restore...
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json. [/Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj]
+  All projects are up-to-date for restore.
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  Diten.AuthService.Domain -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Domain/bin/Debug/net8.0/Diten.AuthService.Domain.dll
+  Diten.Platform.Common -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Debug/net8.0/Diten.Platform.Common.dll
+  Diten.BuildingBlocks.Eventing -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Debug/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Platform.Contracts -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Contracts/bin/Debug/net8.0/Diten.Platform.Contracts.dll
+  Diten.AuthService.Application -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Application/bin/Debug/net8.0/Diten.AuthService.Application.dll
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs(61,9): warning CS0618: 'MongoClientSettings.GuidRepresentation' is obsolete: 'Configure serializers instead.' [/Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Persistence/Diten.AuthService.Persistence.csproj]
+  Diten.AuthService.Persistence -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Persistence/bin/Debug/net8.0/Diten.AuthService.Persistence.dll
+  Diten.AuthService.Infrastructure -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/bin/Debug/net8.0/Diten.AuthService.Infrastructure.dll
+  Diten.AuthService.Api -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Api/bin/Debug/net8.0/Diten.AuthService.Api.dll
+
+Build succeeded.
+
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json. [/Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj]
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs(61,9): warning CS0618: 'MongoClientSettings.GuidRepresentation' is obsolete: 'Configure serializers instead.' [/Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Persistence/Diten.AuthService.Persistence.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:16.78

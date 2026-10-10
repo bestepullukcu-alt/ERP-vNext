@@ -1,0 +1,4 @@
+auth permissions total=416 supplychain.*=5 [supplychain.shipments.cancel, supplychain.shipments.create, supplychain.shipments.dispatch, supplychain.shipments.pod.capture, supplychain.shipments.read]
+tenant 000000000001 Admin      holds 5/5  cancel(0) create(0) dispatch(0) pod.capture(0) read(0)
+tenant 000000000001 SuperAdmin holds 5/5  cancel(0) create(0) dispatch(0) pod.capture(0) read(0)
+tenant 000000000001 Viewer     holds 1/5  read(0)

@@ -1,0 +1,43 @@
+{
+  "checks": {
+    "candidateReverseExact": true,
+    "yamlSemanticTreeEqualAfterThreeMetadataFields": true,
+    "operationCount": 12,
+    "metaErrors": [],
+    "fullDocumentErrors": [],
+    "annexPointer": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+    "validatorVersion": "0.7.2",
+    "disposablePatchOutputExact": true
+  },
+  "commands": [
+    {
+      "command": [
+        "git",
+        "apply",
+        "--check",
+        "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/publication.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "apply",
+        "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/publication.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "hashes": {
+    "baseline": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+    "r2Yaml": "5dc5e9750797ea687fce2e959b17d9b3312231b5701238815cab48e7ca3b661c",
+    "r2Annex": "9f7d87fc72934dc204fb6dffba1a6646ef583dea3c24d996974e716a9add9b20",
+    "finalYaml": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+    "finalAnnex": "78113fa0e4c220b011f6c6334c80a8e2b638acc831e760171d0f0011f4e63d64",
+    "patch": "03a4df276e29f3b33a54fb6900eacd9f8a56855318a5e97502312571c6a91822"
+  }
+}

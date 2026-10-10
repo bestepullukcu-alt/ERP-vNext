@@ -1,0 +1,14 @@
+# P1 input hashes — 2026-09-26T10:13:25+0300
+b3c7dcbb68636b123f3ea3ad7c3c902709fef6a9775c66cc3d464073653ecefb  docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/shipment-a12-safe404.patch
+7b6a0d1abea649d920040a039972c5d4928825e9cf2cc185487b1fe5f0f3314d  docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/successor-source.tar.gz
+8ffa6c96d29f8004940f310ed704a2c05eaa38ffa501d6114a5f9251e6e00d36  docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/SUCCESSOR-360-SOURCE-MANIFEST.tsv
+f50350b8e541a4c1cbc640926c581cf510b4c2dbb57b31ef4193bf4c25c9e2cd  docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/final-source.tar.gz
+b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731  docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/FINAL-22-SOURCE-MANIFEST.tsv
+# package ARTIFACTS.sha256 check
+CHANGED-FILES.tsv: OK
+VALIDATION.txt: OK
+SOP-22.md: OK
+INDEPENDENT-VER-HANDOFF.md: OK
+shipment-a12-safe404.patch: OK
+SUCCESSOR-360-SOURCE-MANIFEST.tsv: OK
+successor-source.tar.gz: OK

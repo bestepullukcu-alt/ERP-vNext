@@ -1,0 +1,1 @@
+{"phase":"negctl","summary":{"login-actor-le-b":"info","login-actor-a":"info","sabotage-baseline-detailsjs-cross-le":"FAIL","sabotage-baseline-late-async":"PASS (baseline re-exposes stale data; detector sensitive)"},"db":["sabotage-baseline-detailsjs-cross-le:PASS"],"png":1,"consoleErrors":2}

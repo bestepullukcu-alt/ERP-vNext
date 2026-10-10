@@ -1,0 +1,180 @@
+[01:16:18 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[01:16:18 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[01:16:18 INF] Now listening on: http://127.0.0.1:5061
+[01:16:18 INF] Application started. Press Ctrl+C to shut down.
+[01:16:18 INF] Hosting environment: Production
+[01:16:18 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery
+[01:16:18 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[01:16:18 INF] Executing endpoint 'HTTP: GET /health'
+[01:16:18 INF] Setting HTTP status code 200.
+[01:16:18 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[01:16:18 INF] Executed endpoint 'HTTP: GET /health'
+[01:16:18 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 48.8005ms
+[01:16:18 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:16:18 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:16:18 INF] Route matched with {action = "List", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:18 INF] Handling GetCarrierListQuery
+[01:16:18 INF] Carrier outcome dc68b9ed-ade7-4e70-94cf-52f2b6a11202 247263cb-1a10-429d-9817-f29e2ce5a52b 4b8fa84a-38fb-4074-9b46-fec6dfa62dc3 200 null False
+[01:16:18 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierListResponse'.
+[01:16:18 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api) in 74.3855ms
+[01:16:18 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:16:18 INF] Carrier request completed 200 4b8fa84a-38fb-4074-9b46-fec6dfa62dc3
+[01:16:18 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 200 null application/json; charset=utf-8 128.0674ms
+[01:16:18 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json null
+[01:16:18 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:16:18 INF] Route matched with {action = "List", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:18 INF] Handling GetCarrierListQuery
+[01:16:19 WRN] Slow GetCarrierListQuery: 520ms
+[01:16:19 INF] Carrier outcome dc68b9ed-ade7-4e70-94cf-52f2b6a11202 247263cb-1a10-429d-9817-f29e2ce5a52b 186fc87d-9101-4631-8858-2f009679f456 503 PERSISTENCE_UNAVAILABLE False
+[01:16:19 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:16:19 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api) in 526.6057ms
+[01:16:19 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.List (Diten.SupplyChainService.Api)'
+[01:16:19 INF] Carrier request completed 503 186fc87d-9101-4631-8858-2f009679f456
+[01:16:19 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 503 null application/json; charset=utf-8 530.6638ms
+[01:16:19 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 78
+[01:16:19 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:19 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:19 INF] Handling CreateCarrierCommand
+[01:16:20 WRN] Slow CreateCarrierCommand: 509ms
+[01:16:20 INF] Carrier outcome dc68b9ed-ade7-4e70-94cf-52f2b6a11202 247263cb-1a10-429d-9817-f29e2ce5a52b 19099041-2d2b-4617-ad86-37c342ed724a 503 PERSISTENCE_UNAVAILABLE False
+[01:16:20 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:16:20 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 523.6923ms
+[01:16:20 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:20 INF] Carrier request completed 503 19099041-2d2b-4617-ad86-37c342ed724a
+[01:16:20 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 503 null application/json; charset=utf-8 530.484ms
+[01:16:20 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/66d5d07d-55d2-4490-b818-46596a3d29d4/status - application/json 47
+[01:16:20 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:16:20 INF] Route matched with {action = "Status", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Status(System.String, Diten.SupplyChainService.Application.Features.Carriers.ChangeCarrierStatusRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:20 INF] Handling ChangeCarrierStatusCommand
+[01:16:20 WRN] Slow ChangeCarrierStatusCommand: 506ms
+[01:16:20 INF] Carrier outcome dc68b9ed-ade7-4e70-94cf-52f2b6a11202 247263cb-1a10-429d-9817-f29e2ce5a52b 08a5071c-1838-48a3-b362-093ac6045202 503 PERSISTENCE_UNAVAILABLE False
+[01:16:20 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:16:20 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api) in 513.138ms
+[01:16:20 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Status (Diten.SupplyChainService.Api)'
+[01:16:20 INF] Carrier request completed 503 08a5071c-1838-48a3-b362-093ac6045202
+[01:16:20 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers/66d5d07d-55d2-4490-b818-46596a3d29d4/status - 503 null application/json; charset=utf-8 518.0005ms
+[01:16:20 INF] Application is shutting down...
+[01:16:20 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[01:16:21 ERR] Hosting failed to start
+System.TimeoutException: A timeout occurred after 500ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", DirectConnection : "True", Type : "Standalone", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "127.0.0.1:27686" }", EndPoint: "127.0.0.1:27686", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:27686
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-16T20:16:20.9471170Z", LastUpdateTimestamp: "2026-09-16T20:16:20.9471200Z" }] }.
+   at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Persistence.ShipmentSchema.StartAsync(CancellationToken ct) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/ShipmentSchema.cs:line 9
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+Unhandled exception. System.TimeoutException: A timeout occurred after 500ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", DirectConnection : "True", Type : "Standalone", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "127.0.0.1:27686" }", EndPoint: "127.0.0.1:27686", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:27686
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-16T20:16:20.9471170Z", LastUpdateTimestamp: "2026-09-16T20:16:20.9471200Z" }] }.
+   at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Persistence.ShipmentSchema.StartAsync(CancellationToken ct) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/ShipmentSchema.cs:line 9
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
+   at Program.<Main>$(String[] args) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs:line 63
+[01:16:21 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[01:16:22 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[01:16:22 INF] Now listening on: http://127.0.0.1:5061
+[01:16:22 INF] Application started. Press Ctrl+C to shut down.
+[01:16:22 INF] Hosting environment: Production
+[01:16:22 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery
+[01:16:22 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[01:16:22 INF] Executing endpoint 'HTTP: GET /health'
+[01:16:22 INF] Setting HTTP status code 200.
+[01:16:22 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[01:16:22 INF] Executed endpoint 'HTTP: GET /health'
+[01:16:22 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 41.5502ms
+[01:16:22 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 78
+[01:16:22 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:22 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:22 INF] Handling CreateCarrierCommand
+[01:16:22 INF] Carrier outcome dc68b9ed-ade7-4e70-94cf-52f2b6a11202 247263cb-1a10-429d-9817-f29e2ce5a52b b09f6983-2a4e-474f-9ed1-4f5ddefb4c48 201 null False
+[01:16:22 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:16:22 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 145.7336ms
+[01:16:22 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:22 INF] Carrier request completed 201 b09f6983-2a4e-474f-9ed1-4f5ddefb4c48
+[01:16:22 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 201 null application/json; charset=utf-8 203.3513ms
+[01:16:22 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 78
+[01:16:22 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:22 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:22 INF] Handling CreateCarrierCommand
+[01:16:22 INF] Carrier outcome dc68b9ed-ade7-4e70-94cf-52f2b6a11202 247263cb-1a10-429d-9817-f29e2ce5a52b c2afffb7-813a-414e-8b42-d3516a6b1ec6 201 null True
+[01:16:22 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:16:22 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 3.7737ms
+[01:16:22 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:22 INF] Carrier request completed 201 c2afffb7-813a-414e-8b42-d3516a6b1ec6
+[01:16:22 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 201 null application/json; charset=utf-8 7.4547ms
+[01:16:23 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 84
+[01:16:23 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:23 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:23 INF] Handling CreateCarrierCommand
+[01:16:23 INF] Carrier outcome 9fd17489-a32b-411d-8ce8-55a55b9706f8 247263cb-1a10-429d-9817-f29e2ce5a52b 9cff50f3-cb2e-46a1-acd9-38b3ef3cadaf 201 null False
+[01:16:23 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:16:23 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 22.8279ms
+[01:16:23 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:23 INF] Carrier request completed 201 9cff50f3-cb2e-46a1-acd9-38b3ef3cadaf
+[01:16:23 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 201 null application/json; charset=utf-8 24.7925ms
+[01:16:27 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 86
+[01:16:27 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:27 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:27 INF] Handling CreateCarrierCommand
+[01:16:27 INF] Carrier outcome 933984fd-e8bd-4a7f-89b6-1b234638d23c 247263cb-1a10-429d-9817-f29e2ce5a52b 3708efb7-c1c8-439d-8f3a-ff32a855fb4d 503 PERSISTENCE_UNAVAILABLE False
+[01:16:27 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[01:16:27 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 12.7071ms
+[01:16:27 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:27 INF] Carrier request completed 503 3708efb7-c1c8-439d-8f3a-ff32a855fb4d
+[01:16:27 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 503 null application/json; charset=utf-8 13.8592ms
+[01:16:28 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - application/json 86
+[01:16:28 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:28 INF] Route matched with {action = "Create", controller = "Carriers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.Carriers.CreateCarrierRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Carriers.CarriersController (Diten.SupplyChainService.Api).
+[01:16:28 INF] Handling CreateCarrierCommand
+[01:16:28 INF] Carrier outcome 933984fd-e8bd-4a7f-89b6-1b234638d23c 247263cb-1a10-429d-9817-f29e2ce5a52b db91bd3f-6f94-4c13-9724-e78dd1ba5e13 201 null False
+[01:16:28 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Carriers.CarrierResponse'.
+[01:16:28 INF] Executed action Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api) in 12.3453ms
+[01:16:28 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Carriers.CarriersController.Create (Diten.SupplyChainService.Api)'
+[01:16:28 INF] Carrier request completed 201 db91bd3f-6f94-4c13-9724-e78dd1ba5e13
+[01:16:28 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5061/api/shipment-bundle/carriers - 201 null application/json; charset=utf-8 13.2876ms
+[01:16:30 INF] Application is shutting down...

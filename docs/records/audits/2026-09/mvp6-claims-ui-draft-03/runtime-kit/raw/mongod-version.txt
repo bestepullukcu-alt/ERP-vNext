@@ -1,0 +1,11 @@
+db version v8.0.18
+Build Info: {
+    "version": "8.0.18",
+    "gitVersion": "5d1557a9ac6f1cd358cef85fd11c0fabfcfc4e2e",
+    "modules": [],
+    "allocator": "system",
+    "environment": {
+        "distarch": "arm64",
+        "target_arch": "arm64"
+    }
+}

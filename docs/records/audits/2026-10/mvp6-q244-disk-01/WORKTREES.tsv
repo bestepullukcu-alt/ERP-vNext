@@ -1,0 +1,18 @@
+n	path	directory_exists	branch_or_detached	head	size_gib	prunable	uncommitted_entries	note
+1	~/Projects/ERP-vNext-recovery	yes	feature/mvp6-logistics	4a8d4d4b3	3.02	no	665	main working tree
+2	/private/tmp/mvp6-integration-baseline-422-01	NO	(detached HEAD)	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+3	/private/tmp/mvp6-mod0186-http-integration-01	NO	(detached HEAD)	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+4	/private/tmp/mvp6-mod0186-r01-rework-01	NO	codex/mod-0186-r01-rework-01	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+5	/private/tmp/mvp6-mod0187-malformed-map-rework-01	NO	(detached HEAD)	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+6	/private/tmp/mvp6-mod0190-http-integration-01	NO	(detached HEAD)	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+7	/private/tmp/mvp6-mod0190-http-integration-02	NO	(detached HEAD)	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+8	/private/tmp/mvp6-mod0192-capacity-uptake-01	NO	(detached HEAD)	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+9	/private/tmp/mvp6-mod0192-core-dev-01	NO	codex/mod-0192-core-dev-01	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+10	/private/tmp/mvp6-mod0192-http-integration-01	NO	(detached HEAD)	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+11	/private/tmp/mvp6-shipment-pod-ui-exec-01	NO	(detached HEAD)	4a8d4d4b3	-	yes — "gitdir file points to non-existent location"	-	directory gone (was under /private/tmp, cleared at restart or earlier); only the 2 MiB registration in .git/worktrees remains
+12	~/.codex/worktrees/claims-dev-start-01/ERP-vNext-recovery	yes	codex/mod-0187-claims-dev-start-01	4a8d4d4b3	0.88	no	54	Codex worktree, last modified 2026-09-20
+13	~/.codex/worktrees/mod-0190-isolated-dev-01/ERP-vNext-recovery	yes	(detached HEAD)	4a8d4d4b3	0.82	no	33	Codex worktree, last modified 2026-09-22
+14	~/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery	yes	(detached HEAD)	4a8d4d4b3	1.13	no	64	Codex worktree, last modified 2026-09-23
+15	~/.codex/worktrees/mvp6-mod0190-core/ERP-vNext-recovery	yes	(detached HEAD)	4a8d4d4b3	0.91	no	36	Codex worktree, last modified 2026-09-22
+16	~/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery	yes	codex/mod-0186-phase15-core-dev-01	4a8d4d4b3	0.92	no	55	Codex worktree, last modified 2026-09-21
+17	~/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery	yes	(detached HEAD)	4a8d4d4b3	1.01	no	99	Codex worktree, last modified 2026-09-24

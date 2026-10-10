@@ -1,0 +1,745 @@
+{
+  "run": "92e9df",
+  "tenants": {
+    "T1": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+    "T2": "00000000-0000-0000-0000-000000000001"
+  },
+  "steps": [
+    {
+      "step": "mdm-create-le-A",
+      "status": 201,
+      "ok": true,
+      "id": "824b4fa6-2441-4545-b91b-f1aa574c557a"
+    },
+    {
+      "step": "mdm-activate-le-A",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "platform-create-ou-A",
+      "status": 201,
+      "ok": true,
+      "id": "f6b7b9f5-7394-4925-9d1e-fa782bb4c8cb"
+    },
+    {
+      "step": "platform-create-position-full",
+      "status": 201,
+      "ok": true,
+      "id": "f602b7d1-d1ee-49a2-9176-6a4b5f666742"
+    },
+    {
+      "step": "platform-assign-full-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "4497c9c1-855d-4a9b-845f-31c12c3f3c31"
+    },
+    {
+      "step": "platform-create-position-readonly",
+      "status": 201,
+      "ok": true,
+      "id": "c9613eab-f20b-4324-8e13-335d226219cf"
+    },
+    {
+      "step": "platform-assign-readonly-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "0343f453-a04c-44f0-9f67-c7add7a6a52c"
+    },
+    {
+      "step": "platform-create-position-noread",
+      "status": 201,
+      "ok": true,
+      "id": "ab7487ea-beea-4458-85a2-6aafc20fa56b"
+    },
+    {
+      "step": "platform-assign-noread-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "65eb86c2-0c11-42f7-a69d-0b99a87a7f5c"
+    },
+    {
+      "step": "platform-create-position-fixadmin",
+      "status": 201,
+      "ok": true,
+      "id": "3dabbdb2-3e26-4f8f-abb5-bae84ff3836f"
+    },
+    {
+      "step": "platform-assign-fixadmin-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "1ec7c34e-d144-46d9-9a97-16c40e337c30"
+    },
+    {
+      "step": "mdm-create-le-B",
+      "status": 201,
+      "ok": true,
+      "id": "f3d57792-fff7-4067-bc45-b80f69d5a4bb"
+    },
+    {
+      "step": "mdm-activate-le-B",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "platform-create-ou-B",
+      "status": 201,
+      "ok": true,
+      "id": "557ebd87-269d-4b1e-8cd1-687c5efeb367"
+    },
+    {
+      "step": "platform-create-position-leb",
+      "status": 201,
+      "ok": true,
+      "id": "81bd6ed6-9eb1-4af6-a108-32dd469f6135"
+    },
+    {
+      "step": "platform-assign-leb-to-LE-B",
+      "status": 201,
+      "ok": true,
+      "id": "a73f51b8-8e40-4a5f-b855-890d9d7e6333"
+    },
+    {
+      "step": "mdm-create-le-T2",
+      "status": 201,
+      "ok": true,
+      "id": "aa331f2f-e9fc-4d4e-8a02-cdea4831ca69"
+    },
+    {
+      "step": "mdm-activate-le-T2",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "platform-create-ou-T2",
+      "status": 201,
+      "ok": true,
+      "id": "5c2829b8-6df5-4501-a04f-e7a52b8a6956"
+    },
+    {
+      "step": "platform-create-position-t2user",
+      "status": 201,
+      "ok": true,
+      "id": "63d1b048-4070-46da-a676-f85e673bffe4"
+    },
+    {
+      "step": "platform-assign-t2user-to-LE-T2",
+      "status": 201,
+      "ok": true,
+      "id": "9bbfd223-22a4-4f12-bdf2-7ed7078fe6f1"
+    },
+    {
+      "step": "platform-create-position-t2admin",
+      "status": 201,
+      "ok": true,
+      "id": "700c4a1c-6624-4256-b851-6bfc1269135b"
+    },
+    {
+      "step": "platform-assign-t2admin-to-LE-T2",
+      "status": 201,
+      "ok": true,
+      "id": "eda5b0fd-5380-45aa-92b4-679254114ab0"
+    },
+    {
+      "step": "carrier-create",
+      "status": "Active",
+      "ok": true,
+      "id": null,
+      "carrierId": "f0ca19c9-11e4-4cf1-8817-4d2b77bb79e0"
+    },
+    {
+      "step": "shipment-create-DISPATCHED",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "2922103b-05e7-4fd0-89d2-487da7bb3abd"
+    },
+    {
+      "step": "shipment-DISPATCHED-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "2922103b-05e7-4fd0-89d2-487da7bb3abd"
+    },
+    {
+      "step": "shipment-DISPATCHED-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "2922103b-05e7-4fd0-89d2-487da7bb3abd"
+    },
+    {
+      "step": "shipment-get-DISPATCHED",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "2922103b-05e7-4fd0-89d2-487da7bb3abd",
+      "carrierId": null
+    },
+    {
+      "step": "shipment-create-CARRIER",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "422ecf1a-3610-4564-a262-7050a2346e1a"
+    },
+    {
+      "step": "shipment-CARRIER-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "422ecf1a-3610-4564-a262-7050a2346e1a"
+    },
+    {
+      "step": "shipment-CARRIER-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "422ecf1a-3610-4564-a262-7050a2346e1a"
+    },
+    {
+      "step": "shipment-get-CARRIER",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "422ecf1a-3610-4564-a262-7050a2346e1a",
+      "carrierId": null
+    },
+    {
+      "step": "shipment-create-DRAFT",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "ead3bf4e-97d5-4055-b4f6-3e4b107b189b"
+    },
+    {
+      "step": "shipment-get-DRAFT",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "ead3bf4e-97d5-4055-b4f6-3e4b107b189b",
+      "carrierId": null
+    },
+    {
+      "step": "shipment-create-SEED",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300"
+    },
+    {
+      "step": "shipment-SEED-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300"
+    },
+    {
+      "step": "shipment-SEED-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300"
+    },
+    {
+      "step": "shipment-get-SEED",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+      "carrierId": null
+    },
+    {
+      "step": "shipment-create-SOFTDEL",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "2d35b9a2-3e34-4379-a75b-862676bcf56d"
+    },
+    {
+      "step": "shipment-SOFTDEL-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "2d35b9a2-3e34-4379-a75b-862676bcf56d"
+    },
+    {
+      "step": "shipment-SOFTDEL-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "2d35b9a2-3e34-4379-a75b-862676bcf56d"
+    },
+    {
+      "step": "shipment-get-SOFTDEL",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "2d35b9a2-3e34-4379-a75b-862676bcf56d",
+      "carrierId": null
+    },
+    {
+      "step": "claim-create-OPEN1",
+      "status": "Open",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+      "claimId": "7605f404-363d-4de9-aebe-d967a33357cc",
+      "claimNumber": "CLM-7605f404363d4de9aebed967a33357cc"
+    },
+    {
+      "step": "claim-create-INV1",
+      "status": "Open",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+      "claimId": "5f88cf84-e007-41d0-95d3-eb9afb1b7972",
+      "claimNumber": "CLM-5f88cf84e00741d095d3eb9afb1b7972"
+    },
+    {
+      "step": "claim-INV1-Investigating",
+      "status": "Investigating",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+      "claimId": "5f88cf84-e007-41d0-95d3-eb9afb1b7972",
+      "claimNumber": "CLM-5f88cf84e00741d095d3eb9afb1b7972"
+    },
+    {
+      "step": "claim-create-SOFTDEL1",
+      "status": "Open",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+      "claimId": "6bd76ff7-de17-4f3c-82ec-299718b56d59",
+      "claimNumber": "CLM-6bd76ff7de174f3c82ec299718b56d59"
+    },
+    {
+      "step": "claim-create-OPEN2",
+      "status": "Open",
+      "ok": true,
+      "id": null,
+      "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+      "claimId": "669543a4-bfda-4722-8df2-2c683ad4bb45",
+      "claimNumber": "CLM-669543a4bfda47228df22c683ad4bb45"
+    },
+    {
+      "step": "shipment-create-T2SHIP",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "7f185d8f-b8e1-49d0-a99b-718adcb430c1"
+    },
+    {
+      "step": "shipment-T2SHIP-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "7f185d8f-b8e1-49d0-a99b-718adcb430c1"
+    },
+    {
+      "step": "shipment-T2SHIP-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "7f185d8f-b8e1-49d0-a99b-718adcb430c1"
+    },
+    {
+      "step": "shipment-get-T2SHIP",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "7f185d8f-b8e1-49d0-a99b-718adcb430c1",
+      "carrierId": null
+    },
+    {
+      "step": "claim-create-T2CLAIM",
+      "status": "Open",
+      "ok": true,
+      "id": null,
+      "shipmentId": "7f185d8f-b8e1-49d0-a99b-718adcb430c1",
+      "claimId": "ece757d1-ddd5-4b39-a46d-feaa062add9e",
+      "claimNumber": "CLM-ece757d1ddd54b39a46dfeaa062add9e"
+    }
+  ],
+  "catalogWaitSeconds": 0.8,
+  "catalogMissing": [],
+  "authRoles": {
+    "Q64eClaimsFull@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.claims.read",
+        "supplychain.claims.create",
+        "supplychain.claims.investigate",
+        "supplychain.claims.decide",
+        "supplychain.claims.settle",
+        "supplychain.shipments.read"
+      ],
+      "grantsAdded": 6,
+      "members": [
+        "full",
+        "leb"
+      ]
+    },
+    "Q64eClaimsReadOnly@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.claims.read"
+      ],
+      "grantsAdded": 1,
+      "members": [
+        "readonly"
+      ]
+    },
+    "Q64eShipmentsReadOnly@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.shipments.read"
+      ],
+      "grantsAdded": 1,
+      "members": [
+        "noread"
+      ]
+    },
+    "Q64eFixtureAdmin@97c59330": {
+      "reused": false,
+      "keys": [
+        "mdm.legal-entities.create",
+        "mdm.legal-entities.read",
+        "mdm.legal-entities.update",
+        "platform.organization-units.create",
+        "platform.organization-units.read",
+        "platform.positions.create",
+        "platform.positions.read",
+        "platform.position-assignments.create",
+        "platform.position-assignments.read",
+        "auth.users.lookup-validation",
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.carriers.read",
+        "supplychain.carriers.create",
+        "supplychain.claims.read",
+        "supplychain.claims.create",
+        "supplychain.claims.investigate",
+        "supplychain.claims.decide"
+      ],
+      "grantsAdded": 19,
+      "members": [
+        "fixadmin"
+      ]
+    },
+    "Q64eClaimsFull@00000000": {
+      "reused": false,
+      "keys": [
+        "supplychain.claims.read",
+        "supplychain.claims.create",
+        "supplychain.claims.investigate",
+        "supplychain.claims.decide",
+        "supplychain.claims.settle",
+        "supplychain.shipments.read"
+      ],
+      "grantsAdded": 6,
+      "members": [
+        "t2user"
+      ]
+    },
+    "Q64eFixtureAdmin@00000000": {
+      "reused": false,
+      "keys": [
+        "mdm.legal-entities.create",
+        "mdm.legal-entities.read",
+        "mdm.legal-entities.update",
+        "platform.organization-units.create",
+        "platform.organization-units.read",
+        "platform.positions.create",
+        "platform.positions.read",
+        "platform.position-assignments.create",
+        "platform.position-assignments.read",
+        "auth.users.lookup-validation",
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.carriers.read",
+        "supplychain.carriers.create",
+        "supplychain.claims.read",
+        "supplychain.claims.create",
+        "supplychain.claims.investigate",
+        "supplychain.claims.decide"
+      ],
+      "grantsAdded": 19,
+      "members": [
+        "t2admin"
+      ]
+    }
+  },
+  "userIds": {
+    "full": "bbe315de-42ac-4cd3-9e60-5ab930c7d49f",
+    "readonly": "6cb145ac-7886-4242-867e-78d1bd1a5cd5",
+    "noread": "a3a2d27a-7a82-4255-8340-2133a2830cdd",
+    "leb": "c75bca95-08a0-441a-9bc9-2a711e4418f9",
+    "fixadmin": "0b65dc4e-b7bf-4464-a1fb-ccf5818896b7",
+    "t2user": "ce27d4f6-2b9b-484d-adf8-f70ab5c9e4d0",
+    "t2admin": "7721c9cd-14d3-42e0-b532-58f71c38926a"
+  },
+  "adminLoginsBeforeOrg": [
+    {
+      "actor": "fixadmin",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "claimsPermissions": [
+        "supplychain.claims.create",
+        "supplychain.claims.decide",
+        "supplychain.claims.investigate",
+        "supplychain.claims.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 19
+    },
+    {
+      "actor": "t2admin",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "claimsPermissions": [
+        "supplychain.claims.create",
+        "supplychain.claims.decide",
+        "supplychain.claims.investigate",
+        "supplychain.claims.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 19
+    }
+  ],
+  "organization": {
+    "legalEntities": {
+      "A": "824b4fa6-2441-4545-b91b-f1aa574c557a",
+      "B": "f3d57792-fff7-4067-bc45-b80f69d5a4bb",
+      "T2": "aa331f2f-e9fc-4d4e-8a02-cdea4831ca69"
+    },
+    "orgUnits": {
+      "A": "f6b7b9f5-7394-4925-9d1e-fa782bb4c8cb",
+      "B": "557ebd87-269d-4b1e-8cd1-687c5efeb367",
+      "T2": "5c2829b8-6df5-4501-a04f-e7a52b8a6956"
+    },
+    "positions": {
+      "full": "f602b7d1-d1ee-49a2-9176-6a4b5f666742",
+      "readonly": "c9613eab-f20b-4324-8e13-335d226219cf",
+      "noread": "ab7487ea-beea-4458-85a2-6aafc20fa56b",
+      "fixadmin": "3dabbdb2-3e26-4f8f-abb5-bae84ff3836f",
+      "leb": "81bd6ed6-9eb1-4af6-a108-32dd469f6135",
+      "t2user": "63d1b048-4070-46da-a676-f85e673bffe4",
+      "t2admin": "700c4a1c-6624-4256-b851-6bfc1269135b"
+    }
+  },
+  "actorLogins": {
+    "full": {
+      "actor": "full",
+      "tenantMatches": true,
+      "legalEntityId": "824b4fa6-2441-4545-b91b-f1aa574c557a",
+      "claimsPermissions": [
+        "supplychain.claims.create",
+        "supplychain.claims.decide",
+        "supplychain.claims.investigate",
+        "supplychain.claims.read",
+        "supplychain.claims.settle"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 6
+    },
+    "readonly": {
+      "actor": "readonly",
+      "tenantMatches": true,
+      "legalEntityId": "824b4fa6-2441-4545-b91b-f1aa574c557a",
+      "claimsPermissions": [
+        "supplychain.claims.read"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 1
+    },
+    "noread": {
+      "actor": "noread",
+      "tenantMatches": true,
+      "legalEntityId": "824b4fa6-2441-4545-b91b-f1aa574c557a",
+      "claimsPermissions": [],
+      "shipmentsRead": true,
+      "permissionCount": 1
+    },
+    "leb": {
+      "actor": "leb",
+      "tenantMatches": true,
+      "legalEntityId": "f3d57792-fff7-4067-bc45-b80f69d5a4bb",
+      "claimsPermissions": [
+        "supplychain.claims.create",
+        "supplychain.claims.decide",
+        "supplychain.claims.investigate",
+        "supplychain.claims.read",
+        "supplychain.claims.settle"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 6
+    },
+    "fixadmin": {
+      "actor": "fixadmin",
+      "tenantMatches": true,
+      "legalEntityId": "824b4fa6-2441-4545-b91b-f1aa574c557a",
+      "claimsPermissions": [
+        "supplychain.claims.create",
+        "supplychain.claims.decide",
+        "supplychain.claims.investigate",
+        "supplychain.claims.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 19
+    },
+    "t2user": {
+      "actor": "t2user",
+      "tenantMatches": true,
+      "legalEntityId": "aa331f2f-e9fc-4d4e-8a02-cdea4831ca69",
+      "claimsPermissions": [
+        "supplychain.claims.create",
+        "supplychain.claims.decide",
+        "supplychain.claims.investigate",
+        "supplychain.claims.read",
+        "supplychain.claims.settle"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 6
+    },
+    "t2admin": {
+      "actor": "t2admin",
+      "tenantMatches": true,
+      "legalEntityId": "aa331f2f-e9fc-4d4e-8a02-cdea4831ca69",
+      "claimsPermissions": [
+        "supplychain.claims.create",
+        "supplychain.claims.decide",
+        "supplychain.claims.investigate",
+        "supplychain.claims.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 19
+    }
+  },
+  "laneDbSetup": {
+    "carrierLink": {
+      "shipmentId": "422ecf1a-3610-4564-a262-7050a2346e1a",
+      "before": null,
+      "modified": 1,
+      "after": "f0ca19c9-11e4-4cf1-8817-4d2b77bb79e0"
+    },
+    "softDelete": {
+      "shipmentId": "2d35b9a2-3e34-4379-a75b-862676bcf56d",
+      "before": {
+        "IsDeleted": false
+      },
+      "modified": 1,
+      "after": {
+        "IsDeleted": true,
+        "DeletedAtSet": true
+      }
+    },
+    "claimSoftDelete": {
+      "claimId": "6bd76ff7-de17-4f3c-82ec-299718b56d59",
+      "before": {
+        "IsDeleted": false
+      },
+      "modified": 1,
+      "after": {
+        "IsDeleted": true
+      }
+    }
+  },
+  "fixtures": {
+    "shipments": {
+      "DISPATCHED": {
+        "shipmentId": "2922103b-05e7-4fd0-89d2-487da7bb3abd",
+        "requestRoot": "717f99e4-c1b3-4575-8f90-cefad623f11b",
+        "lifecycleCorrelationId": "717f99e4-c1b3-4575-8f90-cefad623f11b",
+        "status": "Dispatched",
+        "carrierId": null,
+        "legalEntity": "A"
+      },
+      "CARRIER": {
+        "shipmentId": "422ecf1a-3610-4564-a262-7050a2346e1a",
+        "requestRoot": "e9d607c5-4723-4e95-9f6e-2403c0e55937",
+        "lifecycleCorrelationId": "e9d607c5-4723-4e95-9f6e-2403c0e55937",
+        "status": "Dispatched",
+        "carrierId": "f0ca19c9-11e4-4cf1-8817-4d2b77bb79e0",
+        "legalEntity": "A",
+        "getAfterLink": 200
+      },
+      "DRAFT": {
+        "shipmentId": "ead3bf4e-97d5-4055-b4f6-3e4b107b189b",
+        "requestRoot": "1095afae-af10-4167-873a-e99a6edeff2b",
+        "lifecycleCorrelationId": "1095afae-af10-4167-873a-e99a6edeff2b",
+        "status": "Draft",
+        "carrierId": null,
+        "legalEntity": "A"
+      },
+      "SEED": {
+        "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+        "requestRoot": "08494c82-5f6e-4fb8-ba9e-fe3e6f72e56e",
+        "lifecycleCorrelationId": "08494c82-5f6e-4fb8-ba9e-fe3e6f72e56e",
+        "status": "Dispatched",
+        "carrierId": null,
+        "legalEntity": "A"
+      },
+      "SOFTDEL": {
+        "shipmentId": "2d35b9a2-3e34-4379-a75b-862676bcf56d",
+        "requestRoot": "3f4a4fdb-7330-47ae-85fe-1851bb160b65",
+        "lifecycleCorrelationId": "3f4a4fdb-7330-47ae-85fe-1851bb160b65",
+        "status": "Dispatched",
+        "carrierId": null,
+        "legalEntity": "A",
+        "getAfterSoftDelete": 404,
+        "errorCode": "SHIPMENT_NOT_FOUND"
+      },
+      "T2SHIP": {
+        "shipmentId": "7f185d8f-b8e1-49d0-a99b-718adcb430c1",
+        "requestRoot": "f9527bbf-068b-4007-a116-7d755429b8b7",
+        "lifecycleCorrelationId": "f9527bbf-068b-4007-a116-7d755429b8b7",
+        "status": "Dispatched",
+        "carrierId": null,
+        "legalEntity": "T2"
+      }
+    },
+    "claims": {
+      "OPEN1": {
+        "claimId": "7605f404-363d-4de9-aebe-d967a33357cc",
+        "claimNumber": "CLM-7605f404363d4de9aebed967a33357cc",
+        "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+        "status": "Open",
+        "claimedAmount": "120.00"
+      },
+      "INV1": {
+        "claimId": "5f88cf84-e007-41d0-95d3-eb9afb1b7972",
+        "claimNumber": "CLM-5f88cf84e00741d095d3eb9afb1b7972",
+        "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+        "status": "Investigating",
+        "claimedAmount": "300.00"
+      },
+      "SOFTDEL1": {
+        "claimId": "6bd76ff7-de17-4f3c-82ec-299718b56d59",
+        "claimNumber": "CLM-6bd76ff7de174f3c82ec299718b56d59",
+        "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+        "status": "Open",
+        "claimedAmount": "75.00"
+      },
+      "OPEN2": {
+        "claimId": "669543a4-bfda-4722-8df2-2c683ad4bb45",
+        "claimNumber": "CLM-669543a4bfda47228df22c683ad4bb45",
+        "shipmentId": "0e1d2561-a6db-4125-9e5f-09b41beac300",
+        "status": "Open",
+        "claimedAmount": "130.00"
+      },
+      "T2CLAIM": {
+        "claimId": "ece757d1-ddd5-4b39-a46d-feaa062add9e",
+        "claimNumber": "CLM-ece757d1ddd54b39a46dfeaa062add9e",
+        "shipmentId": "7f185d8f-b8e1-49d0-a99b-718adcb430c1",
+        "status": "Open",
+        "claimedAmount": "999.00"
+      }
+    },
+    "carrier": "f0ca19c9-11e4-4cf1-8817-4d2b77bb79e0"
+  },
+  "result": "PASS"
+}

@@ -1,0 +1,13 @@
+sha256	path_or_artifact
+106d8f19eecfe00ec72eaa3ebc4959cd576056d992d2e856a9413b0385057923	docs/records/audits/2026-09/mvp6-carrier-ver-environment-close-01/ARTIFACTS.sha256
+b970b89eb3315b2c80bf806f04c86cc08fe1dc7eba002f649f368f3ef0dc6cb8	docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/ARTIFACTS.sha256
+589712a5becdd196d883b2ecc3561c72a2decc32488707d085e85a6a9d8c3fa0	docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-02/ARTIFACTS.sha256
+613e67d1083278776c12cd84168197dc6b1da69fe46a0e6e68148552862abce2	docs/records/audits/2026-09/mvp6-carrier-numericdate-rework-01/ARTIFACTS.sha256
+3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c	docs/records/audits/2026-09/mvp6-carrier-ver-environment-close-01/FINAL-UI-SOURCE.tsv
+c93a70b60bfe02a7f1e912d3febf971f719ba25c79089ec7fe9505e646ed709c	docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/RESPONSIVE.tsv
+700e37a3936f30dd0c3aad3a156c9f757503e49a95647b149be750d17f9cca94	docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/BROWSER-ACCEPTANCE.tsv
+81372008d538a19c6a5d5d1bd41b9dd5f7ee00e4f8f04d90f4c7eac84b2657e2	docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-02/SOP-22-VER.md
+b4157141922de04d3f09d1a105ea7888ce5358cdfeca969957bc183c91038363	docs/records/audits/2026-09/mvp6-carrier-numericdate-rework-01/SOP-22-CANDIDATE-HANDOFF.md
+395c3746db4c88aac94964b447c112181c2508573fde04d895bb412cbb19f923	docs/records/audits/2026-09/mvp6-carrier-numericdate-rework-01/OWNER-DECISION-TEXT.md
+180143bccc08ad3316eb89f79a3e9386da2ce881b9a4b02f00a725b0be27ef4b	NumericDate candidate patch
+b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731	NumericDate candidate final 22-path manifest

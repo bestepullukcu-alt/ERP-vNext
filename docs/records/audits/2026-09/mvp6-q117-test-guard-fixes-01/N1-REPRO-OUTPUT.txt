@@ -1,0 +1,3 @@
+persistence-first: OK, Guid serializer = GuidSerializer
+lookup-first: BsonSerializationException: There is already a serializer registered for type Guid.
+init-then-lookup: OK, Guid serializer = GuidSerializer

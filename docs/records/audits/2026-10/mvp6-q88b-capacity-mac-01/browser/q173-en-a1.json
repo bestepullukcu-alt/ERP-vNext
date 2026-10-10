@@ -1,0 +1,343 @@
+{
+  "phase": "q173",
+  "locale": "en",
+  "startedAt": "2026-10-01T13:17:30.141Z",
+  "web": "http://127.0.0.1:5501",
+  "playwright": "1.59.1",
+  "cases": {
+    "Q173-O-2": {
+      "result": "FAIL",
+      "parts": {
+        "a_queueNotAppliedAfterFailedScenarioLoad": false,
+        "b_evaluationNotShownUnderForeignScenario": false
+      },
+      "S1": "4aadf74c-684b-463f-b624-096ca493569f",
+      "S2": "e21f314e-3956-4771-8248-e8c932c0804a",
+      "E1": "09433fde-9d74-4493-826c-fd6090d3c335",
+      "unknownScenarioId": "3a84e556-9c6d-48d9-9ea3-e6a324a1d1f5",
+      "a": {
+        "afterUnknownScenario": {
+          "scenario": {
+            "empty": false,
+            "skeleton": false,
+            "error": true,
+            "content": false
+          },
+          "evaluation": {
+            "empty": true,
+            "skeleton": false,
+            "error": false,
+            "content": false
+          },
+          "address": {
+            "scenarioId": "3a84e556-9c6d-48d9-9ea3-e6a324a1d1f5",
+            "evaluationId": "09433fde-9d74-4493-826c-fd6090d3c335"
+          },
+          "evalGets": []
+        },
+        "afterOpeningS2ById": {
+          "scenario": {
+            "empty": false,
+            "skeleton": false,
+            "error": false,
+            "content": true
+          },
+          "scenarioIdShown": "e21f314e-3956-4771-8248-e8c932c0804a",
+          "evaluation": {
+            "empty": false,
+            "skeleton": false,
+            "error": false,
+            "content": true
+          },
+          "evaluationIdShown": "09433fde-9d74-4493-826c-fd6090d3c335",
+          "evaluationScenarioShown": "4aadf74c-684b-463f-b624-096ca493569f",
+          "address": {
+            "scenarioId": "e21f314e-3956-4771-8248-e8c932c0804a",
+            "evaluationId": "09433fde-9d74-4493-826c-fd6090d3c335"
+          },
+          "evalGets": [
+            "09433fde-9d74-4493-826c-fd6090d3c335"
+          ]
+        }
+      },
+      "b": {
+        "scenarioIdShown": "e21f314e-3956-4771-8248-e8c932c0804a",
+        "evaluation": {
+          "empty": false,
+          "skeleton": false,
+          "error": false,
+          "content": true
+        },
+        "evaluationIdShown": "09433fde-9d74-4493-826c-fd6090d3c335",
+        "evaluationScenarioShown": "4aadf74c-684b-463f-b624-096ca493569f",
+        "address": {
+          "scenarioId": "e21f314e-3956-4771-8248-e8c932c0804a",
+          "evaluationId": "09433fde-9d74-4493-826c-fd6090d3c335"
+        },
+        "evalGets": [
+          "09433fde-9d74-4493-826c-fd6090d3c335"
+        ]
+      },
+      "note": "all responses real (unknown scenario id → real safe-not-found; S2 and E1 are real records of the same plan)",
+      "evidence": [
+        "png/q173-o2a-1-unknown-scenario-en.png",
+        "png/q173-o2a-2-after-opening-S2-en.png",
+        "png/q173-o2b-cross-scenario-address-en.png"
+      ]
+    },
+    "Q173-O-1": {
+      "result": "PASS",
+      "submitStatus": 202,
+      "E2": "e018b02b-22eb-4fee-9e6e-beacf6b74f22",
+      "addressBeforeSubmit": {
+        "scenarioId": "e21f314e-3956-4771-8248-e8c932c0804a",
+        "evaluationId": null
+      },
+      "afterFailedReadBack": {
+        "address": {
+          "scenarioId": "e21f314e-3956-4771-8248-e8c932c0804a",
+          "evaluationId": null
+        },
+        "evaluation": {
+          "empty": false,
+          "skeleton": false,
+          "error": true,
+          "content": false
+        },
+        "readBackGets": [
+          "e018b02b-22eb-4fee-9e6e-beacf6b74f22"
+        ]
+      },
+      "afterSuccessfulReadBack": {
+        "address": {
+          "scenarioId": "e21f314e-3956-4771-8248-e8c932c0804a",
+          "evaluationId": "e018b02b-22eb-4fee-9e6e-beacf6b74f22"
+        },
+        "evaluation": {
+          "empty": false,
+          "skeleton": false,
+          "error": false,
+          "content": true
+        },
+        "retryStatus": 200,
+        "evaluationIdShown": "e018b02b-22eb-4fee-9e6e-beacf6b74f22"
+      },
+      "completed": {
+        "completed": true,
+        "statuses": [
+          "Completed"
+        ],
+        "refreshClicks": 0
+      },
+      "faked": "the evaluation read-back GET is answered 503 in the browser until the retry; the POST (202) and the later GET are real",
+      "evidence": [
+        "png/q173-o1-1-readback-failed-en.png",
+        "png/q173-o1-2-readback-ok-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "q173-o2a-1-unknown-scenario-en.png",
+      "sha256": "b158aaaf2319122f0626b09380c87c2ad0653aacab896fb028f0e18c6963ae62",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:17:36.988Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "q173-o2a-2-after-opening-S2-en.png",
+      "sha256": "3a7f3fc2457d2efe83ecff1189dc5b52e6141db49f9caad82ef98da1058d770e",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:17:38.848Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "q173-o2b-cross-scenario-address-en.png",
+      "sha256": "f13d0932187dd0d18c7dfabf1814e8cabbe1c9289fe56e8b901bf55d1c93aed3",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:17:41.817Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "q173-o1-1-readback-failed-en.png",
+      "sha256": "c0777c73fbfce0c9875b2f5c1a18f657bb1e84e5380984152f83f753bff46bbe",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:17:45.998Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "q173-o1-2-readback-ok-en.png",
+      "sha256": "ee4a313d4696183493b959b3391642201321d9b41dafdc417739b31d4f3ecbab",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:17:46.836Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "q173-en",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "tag": "q173-en",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "q173-en",
+      "text": "Scenario created.",
+      "type": "success",
+      "at": "2026-10-01T13:17:33.792Z"
+    },
+    {
+      "tag": "q173-en",
+      "text": "Evaluation submitted.",
+      "type": "success",
+      "at": "2026-10-01T13:17:44.688Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:32.110Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:33.793Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios",
+      "status": 201,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:33.811Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/e21f314e-3956-4771-8248-e8c932c0804a",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:35.154Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:35.154Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/3a84e556-9c6d-48d9-9ea3-e6a324a1d1f5",
+      "status": 404,
+      "errorCode": "UNKNOWN_CAPACITY_SCENARIO",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:37.069Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/e21f314e-3956-4771-8248-e8c932c0804a",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:37.140Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/09433fde-9d74-4493-826c-fd6090d3c335",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:39.007Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/e21f314e-3956-4771-8248-e8c932c0804a",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:39.007Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:39.053Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/09433fde-9d74-4493-826c-fd6090d3c335",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:42.359Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/e21f314e-3956-4771-8248-e8c932c0804a",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:42.360Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:44.689Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/e21f314e-3956-4771-8248-e8c932c0804a/evaluations",
+      "status": 202,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:44.706Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/e018b02b-22eb-4fee-9e6e-beacf6b74f22",
+      "status": 503,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "q173-en",
+      "at": "2026-10-01T13:17:46.080Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/e018b02b-22eb-4fee-9e6e-beacf6b74f22",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 8,
+  "endedAt": "2026-10-01T13:17:46.893Z"
+}

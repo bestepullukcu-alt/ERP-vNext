@@ -1,0 +1,31 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+@@ -559,7 +559,8 @@
+ 
+ ### 32.2 Layout and shell contract
+ 
+-- `shell: tenant` → every Claims `.cshtml` states `Layout = "_LayoutTenantShell";` explicitly; `_ViewStart.cshtml` unchanged.
++- `shell: tenant` → the Claims page view (`Index.cshtml`) states `Layout = "_LayoutTenantShell";` explicitly; partial views (`_*.cshtml`)
++  set no `Layout`, because an explicit Layout on a partial renders a second shell (Q64b D-02); `_ViewStart.cshtml` unchanged.
+ - View folder `frontend/Diten.Web/Views/SupplyChain/Claims/`; route `/SupplyChain/Claims`; no `/Platform` prefix; no `Areas/`.
+ - Skeleton, empty and error are three distinct states (VIEW-001 §3.1); no spinner or "Loading" text.
+ 
+@@ -585,6 +586,9 @@
+ 
+ Permission keys stay exactly as published and approved: `supplychain.claims.read`, `.create`, `.investigate`, `.decide`, `.settle`
+ (annex D187-04 target map), plus the approved UI prerequisite **`supplychain.shipments.read`** for create and transition actors (G-SHIPREAD).
++A create that links a carrier (`carrierId` sent) also needs **`supplychain.carriers.read`** on the actor (F-CU10): the backend forwards the
++user's token to the carrier list, and a 403 there returns 503 `CLAIM_REFERENCE_UNAVAILABLE` with zero write. Transitions do not need it.
++This is a role prerequisite only: no new key, no code change, and the UI still makes no carrier lookup (§32.3).
+ The UI check is a display decision (UAS-001 §4); `[HasPermission]` on the backend stays the authority.
+ 
+ Adapter headers: `Authorization` server-side only; `X-Correlation-Id` = fresh UUID trace for GET, **the Shipment's
+@@ -698,7 +702,7 @@
+ | CU-01…CU-03 | Same-origin chain; list query parity; envelope/absent fields | BLOCKED (gateway) / READY |
+ | CU-04…CU-06 | Exact amount text; skeleton/empty/error; UAS-001 no read | READY |
+ | CU-07, CU-08 | Create CTA gating (BLOCKED G-SHIPREAD); action gating matrix with 403 zero-write | BLOCKED / READY |
+-| CU-09…CU-13 | Create body parity; carrier link; amount/currency lexical; presence ≠ nonempty; resolve stale-response guard | READY |
++| CU-09…CU-13 | Create body parity; carrier link (CU-10 precondition: the actor also holds `supplychain.carriers.read`, §32.4); amount/currency lexical; presence ≠ nonempty; resolve stale-response guard | READY |
+ | CU-14…CU-17 | Safe-not-found (create, transition); cross-LE list; eligibility display vs server 422 | READY |
+ | CU-18, CU-19 | Root seam (BLOCKED producer uptake); idempotency (BLOCKED DN-01) | BLOCKED |
+ | CU-20…CU-26 | Approval amount; stale transition; Settled wording; support ref vs root; 7 languages + RTL; responsive + keyboard; premium dialogs/no secrets | READY |

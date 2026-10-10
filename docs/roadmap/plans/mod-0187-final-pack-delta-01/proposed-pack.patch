@@ -1,0 +1,42 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+@@ -7,7 +7,7 @@
+ golden_reference: none
+ entity_base: EntityBase
+ status: draft
+-status_note: "MVP6-MOD0187-PREP-02 v1.0: six exact UNAPPROVED owner decisions prepared; Phase 1.5 BLOCKED; draft; DEV/VER HELD."
++status_note: "FINAL-PACK-DELTA-01 proposed: D187 design/candidate approval reconciled; final release unapproved; Phase1.5/runtime scope pending; draft; DEV/VER HELD."
+ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+@@ -53,8 +53,7 @@
+ 
+ ## 5. Repo Scope
+ 
+-The current exact prospective file allowlist is §28 / PREP-02; §25 is the preceding draft. No broad service/features wildcard, generated documentation
+-or shared composition edit is authorized. This PREP lane edits this pack and only the two user-owned MOD-0187 PREP-02 documentation directories.
++The current proposed future file allowlist is §29 / FINAL-PACK-DELTA-01 (47 paths, no worker). §§25–28 are historical proposals where superseded. No broad wildcard or shared composition edit is authorized. This INS lane prepares a patch only under docs/roadmap/plans/mod-0187-final-pack-delta-01/; it does not apply this pack change.
+ Frozen contracts remain read-only. Future DEV requires explicit pack and shared-file release.
+ 
+ ## 6. Protected Paths
+@@ -492,3 +491,20 @@
+ [SOP§22 evidence report](../../../../docs/records/audits/2026-09/mod-0187-prep-02/report.md) distinguishes static
+ preparation checks from unperformed runtime tests. Existing Shipment/Carrier/**Loads** regressions are mandatory;
+ historical architecture test totals are not a future waiver.
++
++
++## 29. FINAL-PACK-DELTA-01 — proposed final-release binding (2026-09-20)
++
++This section supersedes contrary current-readiness statements in §§12,23–28 **only when this proposed pack patch is separately accepted/applied**. Earlier proposals remain historical. Status stays draft. Source package: `docs/roadmap/plans/mod-0187-final-pack-delta-01/`; authority-and-contract.md binds the actual user approval, runtime-acceptance-R01-R30.md covers every partial/declaration row, prospective-owned-paths.txt is the closed47-file proposal, phase-1.5-and-integration.md lists pending architectural grants; DEV-v1.0-HELD.md and VER-v1.0-HELD.md are not dispatches.
++
++D18701–06 reconciled design is already approved for consumer amendment preparation, not runtime execution; do not re-open those business choices. Current canonical remains2.0.0/wirev1 hash93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571. Proposed final target3.0.0/wirev1 YAML5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c, Claims annex16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63, root annex7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af. Final release/VER technical PASS is not publication/consent. Publication→approved pack/Phase1.5→runtime DEV remains the integration order.
++
++Exactly GET/POST /claims and POST /claims/{claimId}/transition. Reference eligibility and all wire/error/header rules follow the final Claims annex, not old Carrier/Returns policy. Withdrawn=investigate; Closed=decide; granted self-approval permitted; zero approved amount valid; distinct-key duplicate claims and no cross-claim total cap; exact BSON decimal strings, lexical amount/time fingerprint; no ISO/precision/scale restriction added. Lifecycle422 INVALID_CLAIM_TRANSITION; payload409 IDEMPOTENCY_KEY_REUSED; root409 CLAIM_CORRELATION_MISMATCH.
++
++Authentication and current grant precede receipt access. Receipt key=(tenant,LE,operation,target-or-create,key); actor/root excluded. Found receipt: saved-root check before fingerprint; wrongroot+changedpayload returns root409. Identicalrequest returns original201/200 plus replay flag without reread/newwrite even after state change. Fresh create inherits authoritative Shipment root only; missing/null/empty503 CLAIM_REFERENCE_INCOMPLETE; malformed502 CLAIM_REFERENCE_INVALID; differing validroot409; authoritative nil preserved. No trace/ID derivation or internalDB. Final schema seam availability does not imply producer uptake. Direct dependency Shipment; optionalCarrier, no MOD0185/0186 acceptance gate invented.
++
++Successful persistence is exactly four owned collections: claims,claims_receipts,claims_audit,claims_outbox. No assignment/entitlement collection. Unique scoped number/receipt/event IDs; CLM-lowercaseUUIDN number, known collision503 atomically, no automatic renumber. Separate aggregate→receipt→audit→outbox stage failpoints prove reachedstage and rollback on known precommit faults. Unknowncommit/postcommitresponse loss is not zero-write: resolve durable receipt/samekey recovery. InternalCAS/reread;49lifecycle pairs and20way races require real Mongo evidence. Original approved amount retained; createevent serverUTC, transition original validateddate-time, inheritedroot, stableeventID, causationnull. No worker/publisher/fake transport; outbox Pending throughrestart. Settled is not finance posting.
++
++Exact prospective scope removes ClaimOutboxWorker.cs from PREP02's48paths; remaining47paths only. Program.cs is NOT Claims-owned: separate integration-owner proposal limited to Claims DI/family middleware/error adapter and exact exclusion from generic Shipment branch, no worker/sharedoutbox/globalJWT changes. Every other source/test/contract/pack/registry/guard path protected. R01–R30 model declarations/partial proofs remain runtime-unverified until explicit RT-Rxx acceptance. No new source files are authorized by this proposed patch.
++
++Remaining activation gates: exact canonical release disposition/publication; separate pack/47path/Phase1.5 exceptions approval and explicit runtime grant; fresh isolated execution checkout with current baseline and separate Program.cs lease; writer-complete then independent VER/CT. Contract-faithful mocks can support bounded isolated DEV after those grants; real consumer create/rollout requires separately verified producer seam. No repeated PREP or reapproval of D187 business defaults is requested. No runtime/canonical/guard/pack promotion occurs in this preparation.

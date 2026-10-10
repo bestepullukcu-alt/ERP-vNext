@@ -55,7 +55,7 @@ dependencies:
 >
 > **✅ READY-FOR-DEV (2026-08-09) — her iki blocker kapandı; pack `@orchestrator` implementasyonuna AÇIK.**
 > **F-BND** resolved (MOD-0162-FU01 approved) + **F-GW** resolved (Gateway `/api/crm/knowledge` + `/api/crm/knowledge/{everything}`
-> route'ları eklendi → downstream `Diten.CrmService:5061`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok;
+> route'ları eklendi → downstream `Diten.CrmService:5065`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok;
 > [F-GW audit](../../../../docs/records/audits/2026-08/mod-0162-fu02-f-gw-knowledge-gateway-route-authorization-2026-08-09.md)).
 > `status: draft → ready-for-dev`.
 >
@@ -80,7 +80,7 @@ dependencies:
 >    ([boundary approval review](../../../../docs/records/audits/2026-08/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)).
 >    FU01A/FU01C de `approved`; FU01B `draft` kaldı ama **FU02 EngagementJourney runtime açmadığı için blocker değil**.
 > 2. **✅ F-GW RESOLVED (2026-08-09):** Gateway `/api/crm/knowledge` + `/api/crm/knowledge/{everything}` route'ları
->    `ocelot.json`'a eklendi (downstream `5061`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok; mevcut CRM/MDM/legal-entities
+>    `ocelot.json`'a eklendi (downstream `5065`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok; mevcut CRM/MDM/legal-entities
 >    route'ları korundu; toplam 114 → 116). Bkz. §11.
 >
 > Otorite sırası: **Blueprint Excel** > Module Pack > [Domain Config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`.
@@ -271,7 +271,7 @@ bir kaydı). Profil ↔ contact/segment/pozisyon eşleştirme kuralı bu FU'da *
 
 ## 10. API Contract
 
-Route sözleşmesi (Gateway `5000` üzerinden; downstream `Diten.CrmService` port `5061`):
+Route sözleşmesi (Gateway `5000` üzerinden; downstream `Diten.CrmService` port `5065`):
 
 ```text
 GET    /api/crm/knowledge/contents
@@ -304,7 +304,7 @@ GET    /api/crm/knowledge/contract
 Kurallar:
 - **DELETE yok** (hiçbir kaynakta). Lifecycle yalnız `archive` POST.
 - **TenantId payload yok**; JWT claim'inden çözülür.
-- Direct `5061` frontend call yok; same-origin MVC proxy / Gateway.
+- Direct `5065` frontend call yok; same-origin MVC proxy / Gateway.
 - Response / `reasonCode` / `correlationId` zarfı (`Response<T>`) korunur.
 - Archived kayıt **okunabilir**; archived kayıt **update → 409**; archive **idempotent** (already-archived düzgün cevap).
 - Contract endpoint capability flags + vocabulary + permissions + limitations yayınlar.
@@ -440,7 +440,7 @@ Ortak helper'lar tüketilebilir ama değiştirilemez; zorunlu görünürse orche
 ## Runtime Constraints
 
 - Persistence: MongoDB, multi-tenant logical isolation, `TenantId` **zorunlu** (JWT), cross-tenant **404**.
-- Tüm frontend/business çağrıları Gateway `5000`; direct `:5061` yasak.
+- Tüm frontend/business çağrıları Gateway `5000`; direct `:5065` yasak.
 - Payload'da `TenantId` yok; archive-only lifecycle, `DELETE` yok.
 - Contract okunamazsa fail-closed; unknown/future response alanları sessizce ignore.
 - Backend'in desteklemediği filtre client-side fake filter olarak uygulanmaz; disabled/omitted + evidence limitation.
@@ -586,7 +586,7 @@ supportsBrandProductMasterOwnership · supportsFileStorage · supportsHardDelete
 6. Content archive **POST**, not DELETE.
 7. Subject/Topic/AudienceProfile list loads.
 8. Brand/Product selector **Gateway-only** (`/api/mdm/*`); çözülemezse raw ID.
-9. No direct `5061`.
+9. No direct `5065`.
 10. No `TenantId` payload.
 11. No `DELETE`.
 12. 7 language RESX parity.
@@ -606,7 +606,7 @@ recommendation engine · visit planning · route planning · MOD-0155 (herhangi 
 Campaign runtime/UI mutation · Consent runtime/UI · Brand/Product runtime & ownership · workflow/approval (MOD-0023) ·
 e-signature · file/binary storage · içerik render/preview · arama indeksi · import/export engine · patient data ·
 Account/Contact/Territory mutation · hard delete · HTTP DELETE · Mongo hand-edit · RBAC seed/grant · MOD-0048 publish ·
-registry write · `TenantId` payload · direct `:5061` business call · fake Brand/Product name resolution.
+registry write · `TenantId` payload · direct `:5065` business call · fake Brand/Product name resolution.
 
 > Golden Reference'ın `Delete`/`BulkDelete` command'ları ve DataTable bulk-delete kolonu bu modülde **kasıtlı yoktur**
 > (hard delete yasağı). Bu, Golden'dan gerekçeli tek yapısal sapmadır.
@@ -624,7 +624,7 @@ registry write · `TenantId` payload · direct `:5061` business call · fake Bra
 - [ ] Contract yedi flag'i döner; dokuz yasak flag response'ta **yok**.
 - [ ] Content list DataTable v2 / Golden Compact-Slim state contractına uyar; Create/Edit full-page Compact + `_Form`.
 - [ ] Tüm yeni görünür metin 7 dil RESX/L10n parity; hardcoded metin yok.
-- [ ] Frontend'de direct `5061`, `DELETE`, `TenantId` payload veya yasak response alanı **yok**.
+- [ ] Frontend'de direct `5065`, `DELETE`, `TenantId` payload veya yasak response alanı **yok**.
 - [ ] CrmService + Diten.Web build, backend/UI tests, DataTable verifier, RESX parity PASS; mümkünse authenticated smoke PASS.
 - [ ] Campaign, Consent, Brand/Product, Gateway config, registry, seed/grant, Mongo **değişmemiştir**; MOD-0155 açılmamıştır.
 
@@ -648,11 +648,11 @@ Karar: **✅ Gateway route EKLENDİ (F-GW resolved, 2026-08-09).** Route authori
 Campaigns precedent'i birebir iki blok eklendi (toplam route 114 → 116):
 
 ```text
-/api/crm/knowledge                 ↔  downstream /api/crm/knowledge              (localhost:5061, GET/POST/PUT/OPTIONS)
-/api/crm/knowledge/{everything}    ↔  downstream /api/crm/knowledge/{everything} (localhost:5061, GET/POST/PUT/OPTIONS)
+/api/crm/knowledge                 ↔  downstream /api/crm/knowledge              (localhost:5065, GET/POST/PUT/OPTIONS)
+/api/crm/knowledge/{everything}    ↔  downstream /api/crm/knowledge/{everything} (localhost:5065, GET/POST/PUT/OPTIONS)
 ```
 
-- **DELETE / PATCH eklenmedi.** Downstream `Diten.CrmService:5061`.
+- **DELETE / PATCH eklenmedi.** Downstream `Diten.CrmService:5065`.
 - Mevcut `/api/crm/{campaigns,consents,preferences,...}`, `/api/mdm/brands`, `/api/legal-entities` route'ları **korundu** (doğrulandı).
 - Brand/Product için `/api/mdm/*` route'u değişmedi; Knowledge için `/api/mdm/*` **kullanılmaz**.
 - Runtime henüz yok olduğundan canlıda `/api/crm/knowledge` 404/502 dönebilir; bu route authorization için FAIL değildir
@@ -684,7 +684,7 @@ Campaigns precedent'i birebir iki blok eklendi (toplam route 114 → 116):
 | # | Follow-up | Owner | Neden |
 |---|---|---|---|
 | F-BND | ✅ **RESOLVED 2026-08-09** — MOD-0162-FU01 `approved` (FU02'nin tek zorunlu SoT'u); FU01A/01C de `approved`; FU01B held (MOD-0166 adlandırma, FU02 için non-blocking) | Reviewer / EA | SoT sözleşmesi onaylandı |
-| F-GW | ✅ **RESOLVED 2026-08-09** — `/api/crm/knowledge` + `/api/crm/knowledge/{everything}` eklendi (5061, GET/POST/PUT/OPTIONS, DELETE/PATCH yok) | integration-agent | Route authorization tamamlandı; §11 |
+| F-GW | ✅ **RESOLVED 2026-08-09** — `/api/crm/knowledge` + `/api/crm/knowledge/{everything}` eklendi (5065, GET/POST/PUT/OPTIONS, DELETE/PATCH yok) | integration-agent | Route authorization tamamlandı; §11 |
 | F-RD | **MOD-0048 knowledge reference set publish** (`knowledge-content-type`/`-status`/`-source`/`audience-profile-type`) | MOD-0048 operator | Hardcoded enum yasağı; runtime prereq |
 | F-RBAC | **MOD-0162-FU02-RBAC — `crm.knowledge.*` katalog + grant** | MOD-0018 / commercial-suite | RBAC en sona (§15) |
 | F-DOC | **Content ↔ Document Management linkage sözleşmesi** (`FileRef` = documentId+versionId) | MOD-0028/0029 | Çift kopya yasağı sözleşmeye bağlanmalı |

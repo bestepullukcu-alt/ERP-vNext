@@ -1,0 +1,128 @@
+@model Diten.Web.Models.SupplyChain.Claims.ClaimCreateFormViewModel
+@using Diten.Web.Views.SupplyChain.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+}
+
+@* Create-only offcanvas (pack §32.6, form_field_count 6). No edit mode (CU-SCR-02).
+   No client tightening (no HTML validation attributes, no trim, no auto-uppercase) — the backend is authoritative
+   (ClaimModels.cs:29-33). Values are sent exactly as typed by index.js. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["FormTitleCreate"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formClaimAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+
+        <form id="formClaim" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+
+                @* R-2 — company: chosen here but never a body field; the service refuses scope in a mutation
+                   payload, so the value rides the query and this select is not model-bound. It also scopes the
+                   shipment resolve below. No `required` attribute: this page adds no client tightening
+                   (Create_form_adds_no_client_tightening) and the script refuses an empty selection first. *@
+                <div class="col-12">
+                    <label for="formLegalEntity" class="form-label fw-medium">
+                        @SharedLocalizer["LegalEntity"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="formLegalEntity" class="form-select"></select>
+                </div>
+                @* 1 — shipmentId (required): UUID text + Resolve; stale-response guard in index.js (CU-13) *@
+                <div class="col-12">
+                    <label for="claimShipmentId" class="form-label fw-medium">@Localizer["ShipmentId"] <span class="text-danger">*</span></label>
+                    <div class="d-flex gap-2">
+                        <div class="diten-field flex-grow-1">
+                            <i class="bx bx-package diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" id="claimShipmentId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false"
+                                   aria-describedby="claimShipmentIdHelp" />
+                        </div>
+                        <button type="button" class="btn btn-label-primary" id="btnResolveShipment">@Localizer["Resolve"]</button>
+                    </div>
+                    <div id="claimShipmentIdHelp" class="form-text">@Localizer["ShipmentIdHelp"]</div>
+
+                    <div id="claimShipmentResolved" class="border rounded p-3 mt-2 d-none" aria-live="polite">
+                        <div class="small"><span class="text-muted">@Localizer["ShipmentNumber"]:</span> <bdi dir="ltr" id="claimShipmentNumber"></bdi></div>
+                        <div class="small"><span class="text-muted">@Localizer["ShipmentStatus"]:</span> <span id="claimShipmentStatus"></span></div>
+                    </div>
+                    <div id="claimEligibilityNote" class="form-text">@Localizer["EligibilityNote"]</div>
+                    <div id="claimIneligibleNote" class="form-text text-danger d-none">@Localizer["ShipmentIneligible"]</div>
+                </div>
+
+                @* 2 — carrierId (optional): checkbox enabled only when the resolved Shipment has a carrier; never a lookup *@
+                <div class="col-12">
+                    <div class="form-check">
+                        <input type="checkbox" id="claimLinkCarrier" class="form-check-input" disabled aria-describedby="claimLinkCarrierHelp" />
+                        <label for="claimLinkCarrier" class="form-check-label ms-1">@Localizer["LinkShipmentCarrier"]</label>
+                    </div>
+                    <div id="claimLinkCarrierHelp" class="form-text">@Localizer["NoShipmentCarrier"]</div>
+                </div>
+
+                @* 3 — reasonCode (presence required; empty text allowed) *@
+                <div class="col-12">
+                    <label for="claimReasonCode" class="form-label fw-medium">@Localizer["ReasonCode"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="claimReasonCode" class="form-control" autocomplete="off" />
+                    </div>
+                </div>
+
+                @* 4 — claimedAmount (required): JSON string exactly as typed *@
+                <div class="col-12">
+                    <label for="claimClaimedAmount" class="form-label fw-medium">@Localizer["ClaimedAmount"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-money diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="claimClaimedAmount" class="form-control" inputmode="decimal" dir="ltr" autocomplete="off"
+                               aria-describedby="claimClaimedAmountHelp" />
+                    </div>
+                    <div id="claimClaimedAmountHelp" class="form-text">@Localizer["AmountHelp"]</div>
+                </div>
+
+                @* 5 — currency (required): text as typed; no ISO list, no auto-uppercase *@
+                <div class="col-12">
+                    <label for="claimCurrency" class="form-label fw-medium">@Localizer["CurrencyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-coin diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="claimCurrency" class="form-control" dir="ltr" autocomplete="off" spellcheck="false"
+                               aria-describedby="claimCurrencyHelp" />
+                    </div>
+                    <div id="claimCurrencyHelp" class="form-text">@Localizer["CurrencyHelp"]</div>
+                </div>
+
+                @* 6 — evidenceReferenceIds (optional, repeatable): omitted when no row; order, duplicates and empty strings kept *@
+                <div class="col-12">
+                    <fieldset>
+                        <legend class="form-label fw-medium fs-6 mb-2">@Localizer["EvidenceReferenceIds"]</legend>
+                        <div id="claimEvidenceList" class="d-flex flex-column gap-2"></div>
+                        <button type="button" class="btn btn-sm btn-label-secondary mt-2" id="btnAddEvidence">
+                            <i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddEvidenceReference"]
+                        </button>
+                        <div class="form-text">@Localizer["EvidenceHelp"]</div>
+                    </fieldset>
+                    <template id="claimEvidenceRowTemplate">
+                        <div class="d-flex gap-2 claim-evidence-row">
+                            <div class="diten-field flex-grow-1">
+                                <i class="bx bx-paperclip diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control claim-evidence-input" dir="ltr" autocomplete="off"
+                                       aria-label="@Localizer["EvidenceReference"]" />
+                            </div>
+                            <button type="button" class="btn btn-icon btn-label-danger js-remove-evidence" aria-label="@Localizer["RemoveEvidenceReference"]">
+                                <i class="bx bx-x" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveClaim" class="btn btn-primary" disabled>@Localizer["CreateClaim"]</button>
+    </div>
+</div>

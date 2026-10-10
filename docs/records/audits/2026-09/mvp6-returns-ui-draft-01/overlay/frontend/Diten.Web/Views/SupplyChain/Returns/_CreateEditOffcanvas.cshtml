@@ -1,0 +1,129 @@
+@using Diten.Web.Views.SupplyChain.Returns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReturnsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Pack §32.2: every Returns .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+    Layout = "_LayoutTenantShell";
+}
+
+@* Create-only offcanvas (pack §32.6, form_field_count 6 → GoldenReferenceSlim). No edit mode (RU-SCR-02).
+   No client tightening (no HTML validation attributes, no trim, no number conversion) — the backend is authoritative
+   (ReturnModels.cs:15-21). Values are sent exactly as typed by index.js. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["FormTitleCreate"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formReturnAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+
+        <form id="formReturn" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+
+                @* 1 — shipmentId (mandatory): UUID text + Resolve; stale-response guard in index.js (RU-10) *@
+                <div class="col-12">
+                    <label for="returnShipmentId" class="form-label fw-medium">@Localizer["ShipmentId"] <span class="text-danger">*</span></label>
+                    <div class="d-flex gap-2">
+                        <div class="diten-field flex-grow-1">
+                            <i class="bx bx-package diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" id="returnShipmentId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false"
+                                   aria-describedby="returnShipmentIdHelp" />
+                        </div>
+                        <button type="button" class="btn btn-label-primary" id="btnResolveShipment">@Localizer["Resolve"]</button>
+                    </div>
+                    <div id="returnShipmentIdHelp" class="form-text">@Localizer["ShipmentIdHelp"]</div>
+
+                    <div id="returnShipmentResolved" class="border rounded p-3 mt-2 d-none" aria-live="polite">
+                        <div class="small"><span class="text-muted">@Localizer["ShipmentNumber"]:</span> <bdi dir="ltr" id="returnShipmentNumber"></bdi></div>
+                        <div class="small"><span class="text-muted">@Localizer["ShipmentStatus"]:</span> <span id="returnShipmentStatus"></span></div>
+                    </div>
+                    <div id="returnEligibilityNote" class="form-text">@Localizer["EligibilityNote"]</div>
+                    <div id="returnIneligibleNote" class="form-text text-danger d-none">@Localizer["ShipmentIneligible"]</div>
+                </div>
+
+                @* 2–4 — lines[].shipmentLineNumber / quantity / uomId: one row per resolved source line (no duplicates from the UI).
+                   The line number and UoM are read-only wire text; the return quantity is text sent as typed. The
+                   table host is emptied whenever the shipment ID changes or the lookup fails (no shipment data left in the DOM). *@
+                <div class="col-12">
+                    <fieldset aria-describedby="returnLinesHelp">
+                        <legend class="form-label fw-medium fs-6 mb-1">@Localizer["ReturnLines"] <span class="text-danger">*</span></legend>
+                        <div id="returnLinesHelp" class="form-text mt-0 mb-2">@Localizer["ReturnLinesHelp"]</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm border-top mb-0 d-none" id="returnLinesTable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="cell-fit"><span class="visually-hidden">@Localizer["SelectLine"]</span></th>
+                                        <th scope="col">@Localizer["LineNumber"]</th>
+                                        <th scope="col" class="text-end">@Localizer["ShippedQuantity"]</th>
+                                        <th scope="col">@Localizer["UomId"]</th>
+                                        <th scope="col">@Localizer["ReturnQuantity"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="returnLinesBody"></tbody>
+                            </table>
+                        </div>
+                        <p id="returnNoLines" class="small text-muted mb-0 d-none">@Localizer["NoShipmentLines"]</p>
+                        <div class="form-text">@Localizer["ReturnQuantityHelp"]</div>
+                    </fieldset>
+                    <template id="returnLineRowTemplate">
+                        <tr class="return-line-row">
+                            <td class="cell-fit">
+                                <input type="checkbox" class="form-check-input js-line-select" />
+                            </td>
+                            <td><bdi dir="ltr" class="js-line-number"></bdi></td>
+                            <td class="text-end"><bdi dir="ltr" class="js-line-shipped"></bdi></td>
+                            <td><bdi dir="ltr" class="js-line-uom"></bdi></td>
+                            <td>
+                                <div class="diten-field">
+                                    <i class="bx bx-undo diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" class="form-control form-control-sm js-line-quantity" inputmode="decimal" dir="ltr" autocomplete="off" disabled />
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </div>
+
+                @* 5 — reasonCode (presence required; empty text allowed; no catalogue) *@
+                <div class="col-12">
+                    <label for="returnReasonCode" class="form-label fw-medium">@Localizer["ReasonCode"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="returnReasonCode" class="form-control" autocomplete="off" />
+                    </div>
+                </div>
+
+                @* 6 — evidenceReferenceIds (optional, repeatable): omitted when no row; order, duplicates and empty strings kept *@
+                <div class="col-12">
+                    <fieldset>
+                        <legend class="form-label fw-medium fs-6 mb-2">@Localizer["EvidenceReferenceIds"]</legend>
+                        <div id="returnEvidenceList" class="d-flex flex-column gap-2"></div>
+                        <button type="button" class="btn btn-sm btn-label-secondary mt-2" id="btnAddEvidence">
+                            <i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddEvidenceReference"]
+                        </button>
+                        <div class="form-text">@Localizer["EvidenceHelp"]</div>
+                    </fieldset>
+                    <template id="returnEvidenceRowTemplate">
+                        <div class="d-flex gap-2 return-evidence-row">
+                            <div class="diten-field flex-grow-1">
+                                <i class="bx bx-paperclip diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control return-evidence-input" dir="ltr" autocomplete="off"
+                                       aria-label="@Localizer["EvidenceReference"]" />
+                            </div>
+                            <button type="button" class="btn btn-icon btn-label-danger js-remove-evidence" aria-label="@Localizer["RemoveEvidenceReference"]">
+                                <i class="bx bx-x" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveReturn" class="btn btn-primary" disabled>@Localizer["CreateReturn"]</button>
+    </div>
+</div>

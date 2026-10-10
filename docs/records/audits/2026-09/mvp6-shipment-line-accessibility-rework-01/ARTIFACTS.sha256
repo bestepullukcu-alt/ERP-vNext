@@ -1,0 +1,16 @@
+e79b2408eb35f96573caa32383e8485c0864b9a0c40b594514cfc81dc95dd814  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/ACCEPTANCE.tsv
+52ba260e00ff1c70d5205694426b9aa420a00a3519e939d8deb6a21d875f72ed  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/CHANGED-FILES.tsv
+dcc6662696db5e689d2d4f6facbb5106ca53d06a957caf21c5fabc912a0c7c88  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/FINAL-354-SUCCESSOR-SOURCE-MANIFEST.tsv
+ee146cbc2f3c291c75fe4b4d06311237834a2f2d56ca332bf19c0ac78d7527b3  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/SOP-22-DEV-HANDOFF.md
+3d0785ce1bca76dacca18c1f200c17c48f3989b5ced9cc8a8fbb0d907b3f48a9  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/SOURCES.sha256
+cd4d11f5ca8fea62332d500b809320d48ffb521eff8656ccd2a88a3304916336  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/WRITER-COMPLETE
+5e8513c3a2a3c3168cc8ac991a6be373d0c4e63373714f257e19e94bd595bb87  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/raw/browser-accessibility.json
+d7f61e2a14f9a405c6704163c084dc5df0ceaf8b86617ed8a2a372f00fc65427  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/raw/cleanup.txt
+79a5e21a7dfc5c8c582a726d0e7272122b1a88a6a8f6566369e9bd5caeeffe57  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/raw/green-focused.trx
+f0ac1ca3162bcf80c9d6f4f09c28ff670fc45f11855bd534da08ce0ac3d8efe4  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/raw/preimage-manifest-check.json
+425269dcf43585c25387d2c93a8331949d9ff51f940857104066926112f0a390  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/raw/red.trx
+ce6c65d7019e749692e3f2f2e3e7bacf0ecdd27bda4f4aeb99c70ff4d3341d5a  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/raw/root-r2-regression.trx
+fa40fa91ea8e8620d56b76c63d88798312cd62e0e93a738fea7d8a92d1465e73  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/raw/shipment-regression.trx
+fa44dc9bde4de8291beabde6ae62ea34143bd3e5c6db7c5ebcbecd189fdef96a  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/raw/web-build.log
+4c153b42890f10e289e421c0428ff1c1eff252f39892505ed0556cfa4efe5055  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/shipment-line-accessibility.patch
+96eae3e4c3af6679a7a48082c2becf758ca32f69b6a933e8d3029b52a8ee233c  docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01/successor-source.tar.gz

@@ -1,0 +1,13 @@
+scope	name	readiness_status	delivered_ml	remaining_ml	total_ml	estimated_scope_index_percent	boundary
+0183	Shipment/POD	PARTIAL_ROOT_R2_AND_B01_B02_ACCEPTED_PNG_OPEN	248	46	294	84.4	Root R2 application/runtime and B01/B02 functional closure accepted; broader UI browser matrix, durable PNG, common target and full-module gates remain
+0184	Carrier	PARTIAL_CT_DECIDED_PNG_OPEN	180	28	208	86.5	Unchanged; durable PNG remains open
+0185	Loads	PARTIAL_TRANSITION_ESTIMATED_ROOT_DETAIL_LOOKUP_UNESTIMATED	136	172	308	44.2	Transition UI estimate included; producer root implementation, detail and lookup remain outside numeric denominator
+0186	Returns	PARTIAL_UNCHANGED	172	106	278	61.9	No new evidence
+0187	Claims	PARTIAL_UNCHANGED	200	114	314	63.7	No new evidence
+0190	S&OP	PARTIAL_UNCHANGED	148	136	284	52.1	No new evidence
+0192	Capacity	PARTIAL_UNCHANGED	220	144	364	60.4	No new evidence
+0147	Supplier Performance	PRE_DEV_PARTIAL	20	248	268	7.5	No new evidence
+0148	Supplier Portal	PRE_DEV_PARTIAL	20	232	252	7.9	No new evidence
+SHARED	Shared work	PARTIAL_UNCHANGED	108	164	272	39.7	No duplicate Shipment/Auth credit
+portfolio	MVP6	PARTIAL_ESTIMATED_SCOPE_WITH_UNESTIMATED_LOADS	1452	1390	2842	51.1	Management estimate only; PNG and unestimated Loads scope remain open
+

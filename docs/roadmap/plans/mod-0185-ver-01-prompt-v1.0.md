@@ -1,0 +1,13 @@
+# MVP6-MOD0185-VERIFY-P01 v1.0 — VER HELD pending DEV handoff
+
+WP MVP6-MOD0185-VER-01;lane AL-MVP6-MOD0185-VER01;Type VER;read-only-auditor /read-only-audit;Profile C strict repository-read-only;HIGH; evidence target E2/E3/E4. Repo /Users/natig/Projects/ERP-vNext-recovery;branch feature/mvp6-logistics;HEAD4a8d4d4b339528a88e6220fb8402e5a2c771136c.
+
+Precondition: sole DEV writer finished, immutable SOP22 handoff + exact changed-file/source/binary manifest + real runtime evidence in docs/records/audits/2026-09/mod-0185-dev-01/. Reconcile actual tree before any tests. Missing report/evidence or active source writer blocks VER. Never accept developer verdict without independent checks.
+
+Read AGENTS,read-only agent/workflow,CT SOP,domain,ready-for-dev MOD0185pack§25/28/A01–A12,DEV prompt docs/roadmap/plans/mod-0185-dev-01-prompt-v1.0.md, published SHIPMENT-BUNDLE2.0.0 and Loads annex, publication record and DEV report. Exact contracts remain read-only.
+
+NE: Independently verify bounded three-operation Loads runtime against frozen mocks and isolated replica-set Mongo. NEDEN: tests/mocks alone and DEV PASS are not acceptance. NASIL: fresh baseline, byte-identical disposable copy, independent rebuild and meaningful service/runtime reproduction with isolated test-owned database/ports/processes; validate original inputs and actual sent-byte/persisted snapshot evidence. Cover every DEV A01–A12 requirement, especially full source-profile schema, root-before-fingerprint, no dependency reread on replay, assignment release races, atomic receipt/audit/Pending-event, retry rereads, outage/unknown commit and restart. Confirm no worker/publisher, no Operational DB27017, no other source writes. Reproduce affected evidence rather than only reading claimed PASS. Inspect actual tests for behavioral assertions and vacuity.
+
+YAPMA: no repository writes/fixes, contract/policy/fixture edit, historical scripts in place, operational data/migration, pack/status/CT acceptance, E5/G5 or downstream GO; no git mutation. Outputs unique /private/tmp/mod0185-ver-* only. Real source no-change hashes before/after. Scope is this VER plus frozen regressions; unrelated Platform/HumanCapital/Talent failures retain separate status, no new waiver.
+
+DOĞRULA/output: SOP22 agent vs independent verdict, branch/HEAD/current inventory, commands/exits/TRX/runtime artifacts, A01–A12 matrix with path:line findings, evidence levels/exclusions, exact no-change proof. Any defect requires a separate DEV rework WP; do not repair it yourself. CT acceptance remains separate. This prompt becomes executable only when DEV handoff is complete; current HELD status is not a new user-approval requirement.

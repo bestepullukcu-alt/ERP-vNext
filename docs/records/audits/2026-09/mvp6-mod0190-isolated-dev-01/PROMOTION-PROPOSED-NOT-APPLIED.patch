@@ -1,0 +1,13 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+@@ -6,8 +6,8 @@
+ shell: none
+ golden_reference: none
+ entity_base: EntityBase
+-status: draft
+-status_note: "Published SANDOP-CAPACITY 2.0.0 bound to fixture-only proposed scope; Phase 1.5 owner approval, pack promotion and isolated runtime authority remain open."
++status: ready-for-dev
++status_note: "Published SANDOP-CAPACITY 2.0.0 / wire v1; bounded Phase 1.5 and isolated 38-path core DEV authorized by exact owner decision; shared composition and independent VER separate."
+ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15

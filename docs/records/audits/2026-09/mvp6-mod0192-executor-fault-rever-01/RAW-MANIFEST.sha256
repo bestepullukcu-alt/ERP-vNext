@@ -1,0 +1,11 @@
+dcb135d2fb579cdb41144f391cd05507fd8d5f03517443da161bee064e29275e  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/capacity-rever.trx
+75b59a105dbc3c1795a47fc32225206b7cf3c4e47ab4c448c7bff29199fa4c2c  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/capacity-tests.log
+9484b66a9f562293e4caf1b93df99a650e02d73db4e110918d0536ee67a25fd2  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/fault-rever.trx
+ec05bbea69e26f7b6a898bf16a69c62ec1f797f82cdf71fd3bece86ad79f639e  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/fault-tests.log
+93f2a8e5cadd44ba3da8a4107afc9c32f8ceadbaa0349ab01908da11c33f178d  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/fresh-build.log
+3c5137c0d4c5b0a37ff201db4e71833f5017534940f63b4264f1c128fffe470f  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/mongo.log
+114a6917d7fb65037812f335c9bd355f8f9fb6243c00fccae0fa5849e332ea1a  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/negative-audit-rever.trx
+53a1cf4a37971f5dab7e1d0ec8ffcbafb6d4ce36ae7f174bd9b1cc7506eccbfd  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/negative-audit.log
+1326fe5d3dab22d1db903399711aa4e8604b0902d7632012e8b37c440afc3fad  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/rebuild-exact.log
+3e58bed5274d75e4ac6ac58bedf201328dba67a11b362ee4c28f944bca3f9230  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/repo-status-baseline.txt
+5d95886524445d10977912ffd1c3d2240a4e36a73a62dff09e8b9d43b3f964bb  docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01/raw/repo-status-final-before-audit-output.txt

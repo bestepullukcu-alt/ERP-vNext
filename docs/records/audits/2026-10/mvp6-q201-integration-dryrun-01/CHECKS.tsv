@@ -1,0 +1,16 @@
+check	result	detail
+artifact sha256 BASE	PASS	docs/records/audits/2026-09/mvp6-q103-accepted-base-01/BASE-MANIFEST.tsv
+artifact sha256 Q117	PASS	docs/records/audits/2026-09/mvp6-q117-test-guard-fixes-01/q117-fixes-overlay.tar.gz
+artifact sha256 Q121	PASS	docs/records/audits/2026-09/mvp6-q121-mongo-guard-fixes-01/q121-mongo-guard-fixes-overlay.tar.gz
+artifact sha256 Q131	PASS	docs/records/audits/2026-09/mvp6-q131a-port-uri-overlay-01/overlay-q131a.tar
+BASE-MANIFEST rows	PASS	14566
+Q117: members = manifest rows, member sha = postimage, preimage = stack below	PASS	11 rows / 11 members
+Q121: members = manifest rows, member sha = postimage, preimage = stack below	PASS	2 rows / 2 members
+Q131: members = manifest rows, member sha = postimage, preimage = stack below	PASS	20 rows / 20 members
+v2 tree size	PASS	14572
+module archive in its SHA256SUMS: sop-ui-v3	PASS	docs/records/audits/2026-09/mvp6-sop-ui-draft-03/sop-ui-draft-overlay-v3.tar.gz sha256 716e7c4c6325d26e8711c9b401d12fb61594f3eb310d59c280f3307d64904332 files 47 non-file/non-dir members 0
+module archive in its SHA256SUMS: capacity-ui-v3	PASS	docs/records/audits/2026-09/mvp6-capacity-ui-draft-03/capacity-ui-draft-overlay-v3.tar.gz sha256 5c0a3b618d27607eecc62e3a7b33b99f1df11e4f48f19d5c819a426c6a8d96d5 files 47 non-file/non-dir members 0
+module archive in its SHA256SUMS: returns-guard	PASS	docs/records/audits/2026-10/mvp6-returns-guard-01/overlay-returns-guard.tar.gz sha256 058a7b95c5eacd3e59f3c2918f41f185564d038df620c38ad292650535e43665 files 5 non-file/non-dir members 0
+module archive in its SHA256SUMS: returns-ui-v3	PASS	docs/records/audits/2026-10/mvp6-returns-ui-draft-03/returns-ui-draft-overlay-v3.tar.gz sha256 50724097298a1c00e4570eb70cb1f1af6547e94905c7cf0166c9a6aa8fd514a9 files 36 non-file/non-dir members 0
+module archive in its SHA256SUMS: claims-ui-v4	PASS	docs/records/audits/2026-09/mvp6-claims-ui-draft-04/claims-ui-draft-overlay-v4.tar.gz sha256 2b34741af91dc640862cd6e460809e860040e21747a66849aa5b61bfa099293f files 39 non-file/non-dir members 0
+module archive in its SHA256SUMS: loads-uptake-01	PASS	docs/records/audits/2026-09/mvp6-loads-uptake-draft-01/overlay.tar.gz sha256 e0583eef83beee812ab2b4e6ac7a54dfe9c94e5c7f455a400163ef339cb9fd2d files 12 non-file/non-dir members 0

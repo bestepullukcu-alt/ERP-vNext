@@ -1,0 +1,6 @@
+# service	key	value    — lane overrides; every explicit_keys entry of service-map.tsv MUST appear with a real value
+service	key	value
+auth	TenantResolution__DevBypassEnabled	<LANE-DECISION true|false>
+platform	TenantResolution__DevBypassEnabled	<LANE-DECISION true|false>
+platform	DocumentRegisterSeed__Enabled	<LANE-DECISION true|false>
+platform	BusinessReferenceData__CatalogLoad__Enabled	<LANE-DECISION true|false>

@@ -1,0 +1,745 @@
+{
+  "result": "PASS",
+  "database": "diten_mod0183_runtime_tests",
+  "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+  "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+  "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+  "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+  "realProcessRestart": true,
+  "schemaValidation": "Draft202012 + format checker; frozen request example, responses and all six events",
+  "records": [
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "sourceModule": "MOD-0141",
+        "sourceType": "SALES_ORDER",
+        "sourceDocumentId": "SO-900",
+        "warehouseReferenceId": "wh-01",
+        "shipToReference": "CUST-100/ADDR-2",
+        "plannedShipAt": "2026-09-20T08:00:00Z",
+        "plannedDeliverAt": "2026-09-21T16:00:00Z",
+        "lines": [
+          {
+            "lineNumber": "1",
+            "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+            "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+            "quantity": "30.000",
+            "uomId": "EA",
+            "inventoryReferenceId": "rsv-4001"
+          }
+        ]
+      },
+      "idempotencyKey": "create",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 201,
+      "response": {
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+        "status": "Draft",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 200,
+      "response": {
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+        "sourceDocumentId": "SO-900",
+        "status": "Draft",
+        "carrierId": null,
+        "loadId": null,
+        "plannedShipAt": "2026-09-20T08:00:00+00:00",
+        "plannedDeliverAt": "2026-09-21T16:00:00+00:00",
+        "actualDeliverAt": null,
+        "sourceModule": "MOD-0141",
+        "sourceType": "SALES_ORDER",
+        "warehouseReferenceId": "wh-01",
+        "shipToReference": "CUST-100/ADDR-2",
+        "lines": [
+          {
+            "lineNumber": "1",
+            "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+            "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+            "quantity": "30.000",
+            "uomId": "EA",
+            "inventoryReferenceId": "rsv-4001"
+          }
+        ],
+        "pod": null,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7/transition",
+      "request": {
+        "targetStatus": "Planned",
+        "occurredAt": "2026-09-20T08:15:00Z"
+      },
+      "idempotencyKey": "plan",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 200,
+      "response": {
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+        "status": "Planned",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7/transition",
+      "request": {
+        "targetStatus": "Dispatched",
+        "occurredAt": "2026-09-20T08:15:00Z"
+      },
+      "idempotencyKey": "dispatch",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 200,
+      "response": {
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+        "status": "Dispatched",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7/pod",
+      "request": {
+        "recipientName": "Runtime Test Recipient",
+        "receivedAt": "2026-09-21T15:42:00Z",
+        "evidenceReferenceIds": [
+          "test-only-evidence"
+        ],
+        "note": "Isolated verification"
+      },
+      "idempotencyKey": "pod",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 201,
+      "response": {
+        "podId": "873e65c2-954c-4f69-8667-8fc09d361ad9",
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentStatus": "Delivered",
+        "receivedAt": "2026-09-21T15:42:00+00:00",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 200,
+      "response": {
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+        "sourceDocumentId": "SO-900",
+        "status": "Delivered",
+        "carrierId": null,
+        "loadId": null,
+        "plannedShipAt": "2026-09-20T08:00:00+00:00",
+        "plannedDeliverAt": "2026-09-21T16:00:00+00:00",
+        "actualDeliverAt": "2026-09-21T15:42:00+00:00",
+        "sourceModule": "MOD-0141",
+        "sourceType": "SALES_ORDER",
+        "warehouseReferenceId": "wh-01",
+        "shipToReference": "CUST-100/ADDR-2",
+        "lines": [
+          {
+            "lineNumber": "1",
+            "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+            "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+            "quantity": "30.000",
+            "uomId": "EA",
+            "inventoryReferenceId": "rsv-4001"
+          }
+        ],
+        "pod": {
+          "recipientName": "Runtime Test Recipient",
+          "receivedAt": "2026-09-21T15:42:00+00:00",
+          "evidenceReferenceIds": [
+            "test-only-evidence"
+          ],
+          "note": "Isolated verification"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7/pod",
+      "request": {
+        "recipientName": "Runtime Test Recipient",
+        "receivedAt": "2026-09-21T15:42:00Z",
+        "evidenceReferenceIds": [
+          "test-only-evidence"
+        ],
+        "note": "Isolated verification"
+      },
+      "idempotencyKey": "pod",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 201,
+      "response": {
+        "podId": "873e65c2-954c-4f69-8667-8fc09d361ad9",
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentStatus": "Delivered",
+        "receivedAt": "2026-09-21T15:42:00+00:00",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7/pod",
+      "request": {
+        "recipientName": "Runtime Test Recipient",
+        "receivedAt": "2026-09-21T15:42:00Z",
+        "evidenceReferenceIds": [
+          "test-only-evidence"
+        ],
+        "note": "Isolated verification"
+      },
+      "idempotencyKey": "duplicate",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "POD_ALREADY_CAPTURED",
+          "message": "POD_ALREADY_CAPTURED",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7/transition",
+      "request": {
+        "targetStatus": "Closed",
+        "occurredAt": "2026-09-21T16:00:00Z"
+      },
+      "idempotencyKey": "close",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 200,
+      "response": {
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+        "status": "Closed",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+            "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+            "sourceDocumentId": "SO-900",
+            "status": "Closed",
+            "carrierId": null,
+            "loadId": null,
+            "plannedShipAt": "2026-09-20T08:00:00+00:00",
+            "plannedDeliverAt": "2026-09-21T16:00:00+00:00",
+            "actualDeliverAt": "2026-09-21T15:42:00+00:00"
+          }
+        ],
+        "page": 1,
+        "pageSize": 50,
+        "total": 1,
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "3d88e0c9-55ee-4d23-a834-11ded465a28d",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "message": "SHIPMENT_NOT_FOUND",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "88febeb4-32f6-4b0c-a116-fd80596dcaa2",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "message": "SHIPMENT_NOT_FOUND",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7/pod",
+      "request": {
+        "recipientName": "Runtime Test Recipient",
+        "receivedAt": "2026-09-21T15:42:00Z",
+        "evidenceReferenceIds": [
+          "test-only-evidence"
+        ],
+        "note": "Isolated verification"
+      },
+      "idempotencyKey": "cross-tenant",
+      "tenantId": "aa2688ec-2825-42d3-ad21-23b5fe47b375",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "message": "SHIPMENT_NOT_FOUND",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7/transition",
+      "request": {
+        "targetStatus": "Closed",
+        "occurredAt": "2026-09-21T16:00:00Z"
+      },
+      "idempotencyKey": "cross-le",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "253aa933-1daf-4e09-8af8-549c716e7913",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "message": "SHIPMENT_NOT_FOUND",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/a23d687f-4b55-4706-9728-a0225da5f96b",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "message": "SHIPMENT_NOT_FOUND",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 403,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Required shipment permission is missing.",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": null,
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "A non-empty UUID X-Correlation-Id is required.",
+          "correlationId": "6c132485-ab66-4684-8355-c8c9e0416fb0"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "invalid",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "A non-empty UUID X-Correlation-Id is required.",
+          "correlationId": "5e7dad8e-3961-4c85-b26e-78682b530d30"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": null,
+      "permissions": [],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 401,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Authentication required.",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 401,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Authentication required.",
+          "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/460dd064-0c75-4402-b28f-aab68d3154f7",
+      "request": null,
+      "idempotencyKey": null,
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 200,
+      "response": {
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+        "sourceDocumentId": "SO-900",
+        "status": "Closed",
+        "carrierId": null,
+        "loadId": null,
+        "plannedShipAt": "2026-09-20T08:00:00+00:00",
+        "plannedDeliverAt": "2026-09-21T16:00:00+00:00",
+        "actualDeliverAt": "2026-09-21T15:42:00+00:00",
+        "sourceModule": "MOD-0141",
+        "sourceType": "SALES_ORDER",
+        "warehouseReferenceId": "wh-01",
+        "shipToReference": "CUST-100/ADDR-2",
+        "lines": [
+          {
+            "lineNumber": "1",
+            "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+            "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+            "quantity": "30.000",
+            "uomId": "EA",
+            "inventoryReferenceId": "rsv-4001"
+          }
+        ],
+        "pod": {
+          "recipientName": "Runtime Test Recipient",
+          "receivedAt": "2026-09-21T15:42:00+00:00",
+          "evidenceReferenceIds": [
+            "test-only-evidence"
+          ],
+          "note": "Isolated verification"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "sourceModule": "MOD-0141",
+        "sourceType": "SALES_ORDER",
+        "sourceDocumentId": "SO-900",
+        "warehouseReferenceId": "wh-01",
+        "shipToReference": "CUST-100/ADDR-2",
+        "plannedShipAt": "2026-09-20T08:00:00Z",
+        "plannedDeliverAt": "2026-09-21T16:00:00Z",
+        "lines": [
+          {
+            "lineNumber": "1",
+            "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+            "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+            "quantity": "30.000",
+            "uomId": "EA",
+            "inventoryReferenceId": "rsv-4001"
+          }
+        ]
+      },
+      "idempotencyKey": "create",
+      "tenantId": "f9e17ef8-a71a-499c-ac83-cfd022fabb28",
+      "legalEntityId": "3fad9992-8642-4cd9-861d-3825836ab6a6",
+      "actorId": "807a1ef0-6e8f-4bd9-898a-8b224a0cc6bc",
+      "permissions": [
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch",
+        "supplychain.shipments.pod.capture",
+        "supplychain.shipments.cancel",
+        "supplychain.shipments.reconcile"
+      ],
+      "correlationId": "e38b6a97-a7fc-4c6a-ae65-5fef820764b1",
+      "status": 200,
+      "response": {
+        "shipmentId": "460dd064-0c75-4402-b28f-aab68d3154f7",
+        "shipmentNumber": "SHP-460dd0640c754402b28faab68d3154f7",
+        "status": "Draft",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      }
+    }
+  ]
+}

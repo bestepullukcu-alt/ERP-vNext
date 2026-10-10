@@ -1,0 +1,114 @@
+[
+  {
+    "path": "/api/shipment-bundle/shipments/55555555-5555-4555-8555-555555555555",
+    "xCorrelationId": "b8ac9b97-cb7a-45ad-9e49-1f0654d5ade8",
+    "xTenantId": "11111111-1111-4111-8111-111111111111",
+    "xLegalEntityId": "22222222-2222-4222-8222-222222222222",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/55555555-5555-4555-8555-555555555555",
+    "xCorrelationId": "cbad1bd1-28dd-45d6-b9e6-680c98990ff2",
+    "xTenantId": "11111111-1111-4111-8111-111111111111",
+    "xLegalEntityId": "22222222-2222-4222-8222-222222222222",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/55555555-5555-4555-8555-555555555555",
+    "xCorrelationId": "4b6dd96e-7aea-4c9c-82e6-1c103ae7d8c9",
+    "xTenantId": "11111111-1111-4111-8111-111111111111",
+    "xLegalEntityId": "22222222-2222-4222-8222-222222222222",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/55555555-5555-4555-8555-555555555555",
+    "xCorrelationId": "bf14258a-ad92-4f13-b338-c43a62653abf",
+    "xTenantId": "11111111-1111-4111-8111-111111111111",
+    "xLegalEntityId": "22222222-2222-4222-8222-222222222222",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/55555555-5555-4555-8555-555555555555",
+    "xCorrelationId": "d7838b1d-1319-4cab-acf1-c730156632a1",
+    "xTenantId": "11111111-1111-4111-8111-111111111111",
+    "xLegalEntityId": "22222222-2222-4222-8222-222222222222",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/55555555-5555-4555-8555-555555555555",
+    "xCorrelationId": "e450b4fd-f945-487e-ab6b-8055189614b5",
+    "xTenantId": "11111111-1111-4111-8111-111111111111",
+    "xLegalEntityId": "22222222-2222-4222-8222-222222222222",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/a65c181e-c439-4b1c-9258-a9e7e2cb1d6a",
+    "xCorrelationId": "637da763-d555-439b-9794-4863daedf327",
+    "xTenantId": "d4e9e800-8d33-4488-93c3-c8f8ed1242d4",
+    "xLegalEntityId": "29d74577-f260-4dd8-8830-8f916b48d289",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/4a3d5005-830f-4d23-807d-38e8a14b9817",
+    "xCorrelationId": "9bf566b3-375c-4999-a99b-a9e5c216d516",
+    "xTenantId": "5770a5f5-187c-4a5b-bc9d-45abcfffb2c0",
+    "xLegalEntityId": "e79442be-65d3-475d-94cc-56a16bd4732e",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/bb66343e-099e-4d2e-a042-99c01b61eca3",
+    "xCorrelationId": "8e4c7d46-bd3c-411b-b44d-e3b9572fc0e0",
+    "xTenantId": "2128394e-3b17-4de0-9147-24d6cccb6078",
+    "xLegalEntityId": "6d1ea24d-3420-4ae2-91f7-2fbcc0518b0e",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/f7351bdf-0880-4dea-968f-3394601b94d9",
+    "xCorrelationId": "4a29193e-7df8-46ae-b869-042ab6244f56",
+    "xTenantId": "48a515db-75c1-4550-9cc9-f6876ce6d80e",
+    "xLegalEntityId": "840ef14d-5029-4787-8299-e4d1d91e51b2",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/344c6804-b9ca-452d-b0c3-b588898f670c",
+    "xCorrelationId": "b9d34877-3178-4509-b313-820c40fb9d95",
+    "xTenantId": "a013781f-b91a-4b95-9f8d-c3ef97ab2972",
+    "xLegalEntityId": "92910a3f-9b3f-4efb-9864-2f97ee0511d0",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/cbc1efd6-4674-49dc-adc3-b9b286f40bb6",
+    "xCorrelationId": "e53c804c-1032-4e07-aff0-af9750a53f1a",
+    "xTenantId": "2fdb31a5-4b42-4187-8228-d20fb5471e9a",
+    "xLegalEntityId": "4d84955d-506a-4219-bd50-8796e561ab2c",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/5dbdec21-dbb8-4c8e-9d01-c0d85929f729",
+    "xCorrelationId": "6669f547-270a-451a-8162-c0045e989a27",
+    "xTenantId": "643a143b-5c92-4a03-8e22-8a0ca1b6bf5a",
+    "xLegalEntityId": "26807414-c395-4dc0-ba67-0f5dda842ca9",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/29112dba-cd03-4b0b-9073-d54410aec2a9",
+    "xCorrelationId": "4647eeb9-fffa-404b-8ca6-d42cfa815d40",
+    "xTenantId": "0ce20101-eea3-4ea1-acb5-e1ed47bef99a",
+    "xLegalEntityId": "0baf4a3d-d10c-4e6a-8af5-90135b14988c",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/08664ff9-4b49-4252-8173-44f0d79c39f4",
+    "xCorrelationId": "9cf8b4a5-15cb-40db-a755-72d07ea4a5b6",
+    "xTenantId": "6a913bee-8b9b-44c4-8c6d-da1e4ef1b4a0",
+    "xLegalEntityId": "073fa425-e6fc-4485-b35a-0bea8d1b195d",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/3199bc12-8b1f-418b-a7f8-53fe138aa236",
+    "xCorrelationId": "7877c0b7-5a56-4178-827f-d8ad8188fe54",
+    "xTenantId": "1d1f6789-fa8b-40e8-809a-2f80a789981f",
+    "xLegalEntityId": "8aa43ae4-74ea-4211-966a-e5b31994688e",
+    "authorizationPresent": true
+  }
+]

@@ -1,0 +1,77 @@
+--- a/frontend/Diten.Web/Resources/SharedResource.en.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.en.resx
+@@ -860,4 +860,7 @@
+   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Meeting Types</value></data>
+   <data name="AccessDeniedTitle" xml:space="preserve"><value>You don't have access to {0}</value></data>
+   <data name="AccessDeniedMessage" xml:space="preserve"><value>Ask your administrator to grant you permission for this page.</value></data>
++  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Supply Chain Execution</value></data>
++  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Carrier Management</value></data>
++  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Carriers</value></data>
+ </root>
+\ No newline at end of file
+--- a/frontend/Diten.Web/Resources/SharedResource.tr.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.tr.resx
+@@ -860,4 +860,7 @@
+   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Toplantı Türleri</value></data>
+   <data name="AccessDeniedTitle" xml:space="preserve"><value>{0} için erişim yetkiniz yok</value></data>
+   <data name="AccessDeniedMessage" xml:space="preserve"><value>Bu sayfaya erişim için yöneticinizden yetki isteyin.</value></data>
++  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Tedarik Zinciri Yürütme</value></data>
++  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Taşıyıcı Yönetimi</value></data>
++  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Taşıyıcılar</value></data>
+ </root>
+\ No newline at end of file
+--- a/frontend/Diten.Web/Resources/SharedResource.fr.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.fr.resx
+@@ -800,4 +800,7 @@
+   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Types de réunion</value></data>
+   <data name="AccessDeniedTitle" xml:space="preserve"><value>Vous n'avez pas accès à {0}</value></data>
+   <data name="AccessDeniedMessage" xml:space="preserve"><value>Demandez à votre administrateur de vous accorder l'accès à cette page.</value></data>
++  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
++  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
++  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>
+ </root>
+\ No newline at end of file
+--- a/frontend/Diten.Web/Resources/SharedResource.es.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.es.resx
+@@ -800,4 +800,7 @@
+   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Tipos de reunión</value></data>
+   <data name="AccessDeniedTitle" xml:space="preserve"><value>No tienes acceso a {0}</value></data>
+   <data name="AccessDeniedMessage" xml:space="preserve"><value>Solicita a tu administrador que te conceda acceso a esta página.</value></data>
++  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Ejecución de la cadena de suministro</value></data>
++  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestión de transportistas</value></data>
++  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transportistas</value></data>
+ </root>
+\ No newline at end of file
+--- a/frontend/Diten.Web/Resources/SharedResource.zh.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.zh.resx
+@@ -799,4 +799,7 @@
+   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>会议类型</value></data>
+   <data name="AccessDeniedTitle" xml:space="preserve"><value>您无权访问{0}</value></data>
+   <data name="AccessDeniedMessage" xml:space="preserve"><value>请联系管理员为您授予此页面的访问权限。</value></data>
++  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
++  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
++  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>
+ </root>
+\ No newline at end of file
+--- a/frontend/Diten.Web/Resources/SharedResource.ar.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.ar.resx
+@@ -799,4 +799,7 @@
+   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
+   <data name="AccessDeniedTitle" xml:space="preserve"><value>ليس لديك حق الوصول إلى {0}</value></data>
+   <data name="AccessDeniedMessage" xml:space="preserve"><value>اطلب من المسؤول منحك صلاحية الوصول إلى هذه الصفحة.</value></data>
++  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
++  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
++  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>
+ </root>
+\ No newline at end of file
+--- a/frontend/Diten.Web/Resources/SharedResource.ru.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.ru.resx
+@@ -799,4 +799,7 @@
+   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Типы совещаний</value></data>
+   <data name="AccessDeniedTitle" xml:space="preserve"><value>У вас нет доступа к разделу «{0}»</value></data>
+   <data name="AccessDeniedMessage" xml:space="preserve"><value>Попросите администратора предоставить вам доступ к этой странице.</value></data>
++  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Исполнение цепочки поставок</value></data>
++  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Управление перевозчиками</value></data>
++  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Перевозчики</value></data>
+ </root>
+\ No newline at end of file

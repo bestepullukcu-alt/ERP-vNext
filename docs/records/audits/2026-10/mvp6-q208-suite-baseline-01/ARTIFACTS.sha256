@@ -1,0 +1,19 @@
+# Q208 mvp6-q208-suite-baseline-01 — ARTIFACTS.sha256
+# start 2026-10-02 19:39:19 +03 · end 2026-10-02 19:49:26 +03 (Europe/Istanbul)
+# branch feature/mvp6-logistics · HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c · porcelain 665 -> 665
+b179c3bad354ca326d0cd2fcb0393e16bdef538fe89786970f22858f5bb8b7f5  DISK-BEFORE-AFTER.md
+73b2fe1bbe382455b48d40519f1854ebd70b2e80c27e06a5a5e2ed807524228f  ENV-SURFACE.tsv
+8b1fa45581f156f9a6c27428a7d2a42664ffbcd1e1f7c6b163117e9898060acc  FAILURE-CLASSIFICATION.tsv
+2392e06a328f96d555e5f0e583b0f0d1e11dbf75e164f20da5d02e498d409873  NEW-BASELINE.tsv
+ae5b69c7ef2d9240dd81042d44c7af20c8db3df4810885f22266b75e524dbf9e  PROVISIONING-STEPS.md
+0a561c9d6fc40be494970cc505f22df73d92a07d3a38728f079153387746f8c8  SOP-22.md
+5c037aebe16986eb851db85d665a8388557af7c59288e69476c2bd70b4465d03  evidence/build-Diten.Platform.Application.Tests.log
+1b9310d915c9296d54306f448a7f78313d3b8ddf74d637c734731438d72c5fce  evidence/build-Diten.Platform.BackgroundJobs.Tests.log
+23b2a4718f638440f3bfa87fe414c838cbe56307ad11f6fed924245af3d343ce  evidence/build-Diten.Platform.Eventing.Tests.log
+9c2bab1ff5657257349c19e1bd9c86217a681357e12329accb3b26e519f78273  evidence/build-supplychain.log
+a4e59f31ab4ae1bd2e4de3196b3bca4702684901e8dc8f9dec048380370bbe92  evidence/env-seven-names.txt
+fa0663a143a87e1a6c92f0c1966cfa3548fa1abb1afe858c20c4bf4a7438fc4f  evidence/full.trx
+5e703c2a35e9e46847acadeb808b88b468c98dca8456394be76a03c021380696  evidence/loads-folder.log
+31c3b825b0991bff036ecd04f9f90a44e6823aed6235fc570abb589238033e54  evidence/loads-isolated.log
+c0abbe602f8834a798b8482a818819800e2ef3f9bc86aa0611ad88e355264502  evidence/run-times.txt
+f5ee04964d93f27aa33e7df046c2eef071888c6ac88516f2defdc65cb512afa1  evidence/test-full.log

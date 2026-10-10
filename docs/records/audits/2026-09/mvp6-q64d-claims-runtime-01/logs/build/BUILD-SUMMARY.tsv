@@ -1,0 +1,5 @@
+Diten.SupplyChainService.sln	exit=0	0 Warning(s)	0 Error(s)
+MISSING frontend/Diten.Web.sln
+Diten.Web.Tests.csproj	exit=0	18 Warning(s)	0 Error(s)
+Diten.ApiGateway.Tests.csproj	exit=0	5 Warning(s)	0 Error(s)
+TenantArchitecture.ArchitectureTests.csproj	exit=0	0 Warning(s)	0 Error(s)

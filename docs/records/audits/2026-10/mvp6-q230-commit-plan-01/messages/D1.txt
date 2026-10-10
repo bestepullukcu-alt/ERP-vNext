@@ -1,0 +1,5 @@
+docs(records): add MVP6 owner decision records (2026-09)
+
+Owner decision records.
+Work packages: as named in each file.
+49 files from pathspec/D1.txt (Q230 commit plan).

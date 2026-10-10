@@ -1,0 +1,41 @@
+using MongoDB.Driver;
+
+namespace Diten.Platform.Application.Tests.Persistence;
+
+internal static class PlatformMongoTestConnection
+{
+    public const string EnvironmentVariableName = "DITEN_PLATFORM_TEST_MONGO_URI";
+
+    private static readonly HashSet<int> ProtectedPorts = [27017, 27018, 27019, 27020, 27021];
+
+    public static string RequireConnectionString()
+    {
+        var connectionString = Environment.GetEnvironmentVariable(EnvironmentVariableName);
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                $"{EnvironmentVariableName} must point at a lane-owned MongoDB instance. "
+                + "Platform Mongo tests fail closed instead of falling back to operational 27017.");
+        }
+
+        var url = new MongoUrl(connectionString);
+        var servers = url.Servers?.ToArray() ?? [];
+        if (servers.Length == 0)
+        {
+            throw new InvalidOperationException(
+                $"{EnvironmentVariableName} must include an explicit MongoDB host and lane-owned port.");
+        }
+
+        foreach (var server in servers)
+        {
+            if (ProtectedPorts.Contains(server.Port))
+            {
+                throw new InvalidOperationException(
+                    $"{EnvironmentVariableName} points at protected MongoDB port {server.Port}. "
+                    + "Use a lane-owned isolated MongoDB URI.");
+            }
+        }
+
+        return connectionString;
+    }
+}

@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: S&OP / Capacity (MOD-0190/0192) and BC successor (part b)
+
+26 folders/items, first 'mvp6-mod0192-http-process-dev-01', last 'mvp6-sandop-publication-guard-disposition-01'.
+Work packages: as named in each folder.
+237 files from pathspec/R5b.txt (Q230 commit plan).

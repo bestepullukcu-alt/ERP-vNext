@@ -1,0 +1,7 @@
+subject	baseline	final	result
+branch	feature/mvp6-logistics	feature/mvp6-logistics	PASS
+HEAD	4a8d4d4b339528a88e6220fb8402e5a2c771136c	4a8d4d4b339528a88e6220fb8402e5a2c771136c	PASS
+owned output	absent/new successor	docs/roadmap/plans/mvp6-effort-shipment-ct-update-07 only	PASS
+product/pack/contract/board	pre-existing state	unchanged by reporting task	PASS
+git operations	no commit/push/stash requested	no commit/push/stash performed	PASS
+

@@ -1,0 +1,243 @@
+{
+  "phase": "cu19",
+  "extra": null,
+  "startedAt": "2026-09-27T12:12:07.972Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-19a-http-replay-and-409": {
+      "result": "PASS",
+      "first": {
+        "status": 201,
+        "requestCorrelation": "1c06ad24-c25c-4aec-a07c-adeb071cbe33",
+        "idempotencyKey": "eb769e71-137e-420a-b0e5-ceb2d4e12dd6",
+        "responseCorrelation": "1c06ad24-c25c-4aec-a07c-adeb071cbe33",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": true,
+        "errorCode": null,
+        "errorCorrelation": null,
+        "errorMessage": null,
+        "okKeys": [
+          "approvedAmount",
+          "claimId",
+          "claimNumber",
+          "contractVersion",
+          "idempotentReplay",
+          "shipmentId",
+          "status"
+        ],
+        "claimId": "17f81c72-f77a-4002-a162-973b0bb87271",
+        "claimStatus": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": false,
+        "items": null,
+        "rootLeak": []
+      },
+      "replay": {
+        "status": 201,
+        "requestCorrelation": "2b8185df-47a4-4a32-a2ad-11c4b76e1642",
+        "idempotencyKey": "eb769e71-137e-420a-b0e5-ceb2d4e12dd6",
+        "responseCorrelation": "2b8185df-47a4-4a32-a2ad-11c4b76e1642",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": true,
+        "errorCode": null,
+        "errorCorrelation": null,
+        "errorMessage": null,
+        "okKeys": [
+          "approvedAmount",
+          "claimId",
+          "claimNumber",
+          "contractVersion",
+          "idempotentReplay",
+          "shipmentId",
+          "status"
+        ],
+        "claimId": "17f81c72-f77a-4002-a162-973b0bb87271",
+        "claimStatus": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": true,
+        "items": null,
+        "rootLeak": []
+      },
+      "changedBodySameKey": {
+        "status": 409,
+        "requestCorrelation": "037ced8a-02ee-4c74-86e6-df6e806afe75",
+        "idempotencyKey": "eb769e71-137e-420a-b0e5-ceb2d4e12dd6",
+        "responseCorrelation": "037ced8a-02ee-4c74-86e6-df6e806afe75",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": true,
+        "errorCode": "IDEMPOTENCY_KEY_REUSED",
+        "errorCorrelation": "037ced8a-02ee-4c74-86e6-df6e806afe75",
+        "errorMessage": "Idempotency key was used for a different request.",
+        "okKeys": null,
+        "claimId": null,
+        "claimStatus": null,
+        "approvedAmount": null,
+        "idempotentReplay": null,
+        "items": null,
+        "rootLeak": []
+      }
+    },
+    "CU-19b-browser-retry-replay": {
+      "result": "PASS",
+      "attempts": [
+        {
+          "k": 1,
+          "key": "a88dbbe7-896d-4c1a-90f3-bc68448a5840",
+          "body": "{\"shipmentId\":\"c8312c99-24be-4b2f-a683-a417a0ae4a25\",\"reasonCode\":\"IDEM-UI\",\"claimedAmount\":\"19.00\",\"currency\":\"EUR\"}",
+          "serverStatus": 201
+        },
+        {
+          "k": 2,
+          "key": "a88dbbe7-896d-4c1a-90f3-bc68448a5840",
+          "body": "{\"shipmentId\":\"c8312c99-24be-4b2f-a683-a417a0ae4a25\",\"reasonCode\":\"IDEM-UI\",\"claimedAmount\":\"19.00\",\"currency\":\"EUR\"}"
+        }
+      ],
+      "messageAfterLostResponse": "Claims are temporarily unavailable. The outcome is not confirmed; try the same request again.",
+      "retryStatus": 201,
+      "retryIdempotentReplay": true,
+      "reloaded": true,
+      "toasts": [
+        "This claim was already created by the same request and is shown as completed."
+      ]
+    },
+    "CU-19c-browser-409-stops-retry": {
+      "result": "PASS",
+      "attempts": [
+        {
+          "k": 1,
+          "key": "af30ade6-700d-471b-965b-772e68852a0d",
+          "serverStatus": 201
+        },
+        {
+          "k": 2,
+          "key": "af30ade6-700d-471b-965b-772e68852a0d"
+        }
+      ],
+      "status409": 409,
+      "code": "IDEMPOTENCY_KEY_REUSED",
+      "alertText": "This request was already used with different values. Start a new action.\nSupport reference: a7b67fde-52f3-41b9-bbda-3623f05920ab",
+      "requestsAfterThirdClick": 2
+    },
+    "CU-19d-transition-retry-exact-occurredAt": {
+      "result": "PASS",
+      "claimId": "11fb3a75-d307-4cc7-92f3-279e7baf3034",
+      "attempts": [
+        {
+          "k": 1,
+          "key": "a3c31fdf-2b91-492d-af67-949ecc9189c3",
+          "body": "{\"targetStatus\":\"Rejected\",\"occurredAt\":\"2026-09-27T12:12:20+00:00\"}",
+          "serverStatus": 200
+        },
+        {
+          "k": 2,
+          "key": "a3c31fdf-2b91-492d-af67-949ecc9189c3",
+          "body": "{\"targetStatus\":\"Rejected\",\"occurredAt\":\"2026-09-27T12:12:20+00:00\"}"
+        }
+      ],
+      "retryStatus": 200,
+      "idempotentReplay": true
+    }
+  },
+  "png": [
+    {
+      "name": "cu19-retry-replay-completed-en.png",
+      "sha256": "fe74d02a14be49644b2824138219975a47d103c797b2ae49b094b6bf2dd7b454",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:12:12.874Z",
+      "phase": "cu19",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu19-retry-409-blocked-en.png",
+      "sha256": "de661ef069e874ab7a1c6117e3c47fe6f629096feeadfe70fc7583803bfb5bb9",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:12:18.661Z",
+      "phase": "cu19",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "cu19",
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "tag": "cu19",
+      "type": "error",
+      "text": "[Claims] Create request failed. TypeError: Failed to fetch\n    at submitCreate (http://127.0.0.1:5901/assets/js/SupplyChain/Claims/index.js?v=yO8hjnwTakAKhqmV0V7Rb8QXQAHJOAOnnmhyZLG7UFg:539:36)\n    at HTMLButtonElement.<anonymous> (http://127.0.0.1:5901/assets/js/SupplyChain/Claims/index.js?v=yO8hjn"
+    },
+    {
+      "tag": "cu19c",
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "tag": "cu19c",
+      "type": "error",
+      "text": "[Claims] Create request failed. TypeError: Failed to fetch\n    at submitCreate (http://127.0.0.1:5901/assets/js/SupplyChain/Claims/index.js?v=yO8hjnwTakAKhqmV0V7Rb8QXQAHJOAOnnmhyZLG7UFg:539:36)\n    at HTMLButtonElement.<anonymous> (http://127.0.0.1:5901/assets/js/SupplyChain/Claims/index.js?v=yO8hjn"
+    },
+    {
+      "tag": "cu19c",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "tag": "cu19d",
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "tag": "cu19d",
+      "type": "error",
+      "text": "[Claims] Transition request failed. TypeError: Failed to fetch\n    at submitTransition (http://127.0.0.1:5901/assets/js/SupplyChain/Claims/index.js?v=yO8hjnwTakAKhqmV0V7Rb8QXQAHJOAOnnmhyZLG7UFg:677:36)\n    at window.showConfirm.subtext.subtext (http://127.0.0.1:5901/assets/js/SupplyChain/Claims/inde"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "cu19",
+      "text": "This claim was already created by the same request and is shown as completed.",
+      "type": "success",
+      "at": "2026-09-27T12:12:11.923Z"
+    },
+    {
+      "tag": "cu19d",
+      "text": "This status change was already applied by the same request and is shown as completed.",
+      "type": "success",
+      "at": "2026-09-27T12:12:23.400Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "cu19",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu19",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu19c",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu19c",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu19d",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu19d",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T12:12:24.033Z"
+}

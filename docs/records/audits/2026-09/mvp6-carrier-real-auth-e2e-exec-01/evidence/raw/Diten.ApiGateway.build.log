@@ -1,0 +1,12 @@
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+/private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  Diten.Platform.Common -> /private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Release/net8.0/Diten.Platform.Common.dll
+  Diten.ApiGateway -> /private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/gateway/Diten.ApiGateway/bin/Release/net8.0/Diten.ApiGateway.dll
+
+Build succeeded.
+
+/private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.03

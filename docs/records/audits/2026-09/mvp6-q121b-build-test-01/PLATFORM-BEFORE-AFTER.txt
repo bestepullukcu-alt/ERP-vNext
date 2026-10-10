@@ -1,0 +1,27 @@
+tests before 4397 after 4397 same names False
+failed before 64 after 64 identical set True
+only-before []
+only-after []
+TOUCHED Diten.Platform.Application.Tests.Audit.PpmAuditRetentionPolicySeedMongoTests.Inserts_only_missing_portfolio_delivery_policy_and_is_idempotent before Passed after Passed
+TOUCHED Diten.Platform.Application.Tests.Persistence.StandaloneMongoTransactionFailClosedTests.StandaloneMongo_ReturnsTyped503_WithAllParticipantResidueZero before Passed after Passed
+TOUCHED Diten.Platform.Application.Tests.Persistence.SubscriptionSessionAndStandaloneFailureTests.StandaloneMongo_ProductionSubscriptionWriter_IsTyped503AndAllParticipantsZero before Passed after Passed
+FAILING BY CLASS
+  BusinessReferenceDataVerifiedPublishMongoTests	10
+  BusinessReferenceDataPublishOperationMongoTests	10
+  BusinessReferenceDataGskuCatalogLoadMongoTests	9
+  DocumentLifecycleStatusTests	6
+  BusinessReferenceDataVerifiedMarketPublishMongoTests	5
+  BusinessReferenceDataVerifiedMarketCatalogLoadMongoTests	5
+  DocumentTrainingMatrixTests	4
+  DocumentReleaseGateTests	4
+  BusinessReferenceDataVerifiedMarketOperationalMongoTests	4
+  BusinessReferenceDataTenantAssignmentMongoTests	3
+  BusinessReferenceDataGovernanceModeTests	2
+  CorporateCollectionInstanceFoundationTests	1
+  BusinessReferenceDataVerifiedMarketResolveMongoTests	1
+FIRST-LINE MESSAGES
+  43	System.FormatException : ObjectSerializer does not support BSON type 'Timestamp'.
+  10	Assert.True() Failure
+  6	MongoDB.Driver.MongoCommandException : Command dropDatabase failed: The database is currently being dropped. Database: diten_platform_brd_it
+  4	Assert.Equal() Failure: Strings differ
+  1	Assert.Equal() Failure: Values differ

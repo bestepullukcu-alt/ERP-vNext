@@ -1,0 +1,17 @@
+Q154 FINAL-CHECK 2026-09-27T20:29:29+0300
+uname: Darwin
+branch: feature/mvp6-logistics  HEAD: 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+index.lock: absent
+tracked ' M': 29 (start 29); status hash a33f7e010e674b51 (start a33f7e010e674b51)
+UC-01 untracked still present, untouched: 2/2; sha256 826d24fc46ef (Q152: 826d24fc46ef)
+untracked: 497 (start 494); new items since preflight 19:58:11:
+  20:03:26 docs/records/audits/2026-09/mvp6-q141-sop-v25-patch-01/
+  20:04:49 docs/records/audits/2026-09/mvp6-q144-ui-checklist-01/
+  20:29:14 docs/records/audits/2026-09/mvp6-q154-q131-mac-ver-01/
+overlay folder SHA256SUMS: 5/5; overlay tar 4a4a0860954f
+BASE-STACK v1 SHA256SUMS: 2/2
+BASE: BASE-MANIFEST rows 14566 mismatch 0 files on disk 14566 writable 0 []
+lane ports listening (36994 37994): (none = empty)
+lane processes (Q154_LANE / mvp6-env/q154 / sampler): 0
+mongod processes:   841 /opt/homebrew/opt/mongodb-community@8.0/bin/mongod --config /opt/homebrew/;
+~/mvp6-env/q154 kept (evidence): 5.6G

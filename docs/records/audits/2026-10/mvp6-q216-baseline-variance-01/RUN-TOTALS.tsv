@@ -1,0 +1,11 @@
+run	start_local	end_local	wall_seconds	total	passed	failed	not_executed	hang_or_abort_seen	run_capped	dotnet_exit	non_green_tests
+run01	2026-10-02 21:01:22	2026-10-02 21:05:56	273	417	415	2	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery,Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+run02	2026-10-02 21:05:56	2026-10-02 21:09:50	234	417	416	1	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery
+run03	2026-10-02 21:09:50	2026-10-02 21:13:53	244	417	415	2	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery,Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+run04	2026-10-02 21:13:53	2026-10-02 21:18:24	270	417	415	2	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery,Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+run05	2026-10-02 21:18:24	2026-10-02 21:22:54	270	417	415	2	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery,Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+run06	2026-10-02 21:22:54	2026-10-02 21:26:59	245	417	415	2	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery,Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+run07	2026-10-02 21:26:59	2026-10-02 21:31:18	259	417	416	1	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery
+run08	2026-10-02 21:31:18	2026-10-02 21:35:26	248	417	416	1	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery
+run09	2026-10-02 21:35:26	2026-10-02 21:39:26	240	417	415	2	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery,Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+run10	2026-10-02 21:39:26	2026-10-02 21:43:28	242	417	415	2	0	no	no	1	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery,Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce

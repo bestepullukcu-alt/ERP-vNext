@@ -1,0 +1,7 @@
+== p3a pid=65685 now_listening=yes after_s=1
+== p3a GET /health -> 200
+== p3a alive_before_stop=yes
+== p3a stopped; 58339 free
+--- requests received by stand-in Platform on 58340: 0
+--- service log, registration lines: 0
+[19:21:25 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=

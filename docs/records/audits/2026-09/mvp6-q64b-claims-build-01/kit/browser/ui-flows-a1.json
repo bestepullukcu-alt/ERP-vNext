@@ -1,0 +1,52 @@
+{
+  "phase": "ui-flows",
+  "startedAt": "2026-09-26T19:45:52.743Z",
+  "web": "http://127.0.0.1:5501",
+  "cases": {
+    "create-then-reload": {
+      "result": "FAIL",
+      "createStatus": 201,
+      "reloadRequestAfterCreate": false,
+      "rowShowsAmount": false,
+      "amount": "261.00",
+      "newJsErrors": 1
+    },
+    "CU-02-filter": {
+      "result": "FAIL",
+      "applyRequestSent": false,
+      "queryKeys": null,
+      "resetReloaded": false
+    },
+    "CU-31-quickview": {
+      "result": "PASS",
+      "adapterCallsDuringQuickView": 0
+    }
+  },
+  "png": [
+    {
+      "name": "delivered-create-reload-en.png",
+      "sha256": "cb0a6d97eded079ed7e4656be6a744c3777c139e9412d5857e6b1007477c3f06",
+      "url": "http://127.0.0.1:5501/SupplyChain/Claims"
+    },
+    {
+      "name": "delivered-quickview-en.png",
+      "sha256": "71e84b45d36cba10c5372536aa1b1b6ee0d05b8ac220aa1ce708e9dde0060653",
+      "url": "http://127.0.0.1:5501/SupplyChain/Claims"
+    }
+  ],
+  "console": [
+    {
+      "tag": "delivered-create",
+      "type": "error",
+      "text": "[Claims] Create request failed. TypeError: xhr.abort is not a function\n    at __reload (webpack://Sneat/./node_modules/datatables.net/js/dataTables.mjs?:7463:8)\n    at _Api.eval (webpack://Sneat/./node_modules/datatables.net/js/dataTables.mjs?:7526:3)\n    at _Api.iterator (webpack://Sneat/./node_mod"
+    }
+  ],
+  "rootLeak": [],
+  "mode": "delivered",
+  "targets": {
+    "open": "b1cdd636-826e-4084-89ce-e767654d773a",
+    "investigating": "5633ed49-28e0-4379-a984-26bf90b35a46"
+  },
+  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('#dt-claims tbody tr:has(.js-quick-view[data-claim-id=\"b1cdd636-826e-4084-89ce-e767654d773a\"])').locator('.js-transition[data-target-status=\"Investigating\"]')\n    - locator resolved to <button type=\"button\" data-target-status=\"Investigating\" class=\"dropdown-item js-transition\" data-claim-id=\"b1cdd636-826e-4084-89ce-e767654d773a\">Investigate</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying click action\n    - waiting 20ms\n    2 × waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying click action\n      - waiting 100ms\n    57 × waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying click action\n       - waiting 500ms\n",
+  "endedAt": "2026-09-26T19:47:03.752Z"
+}

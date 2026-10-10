@@ -1,0 +1,113 @@
+path	kib	lane_of_origin	kind	state
+/private/tmp/claude-501/…/scratchpad (Q220)	0	Q220	stopped before any copy was made (Q216 in flight)	ABSENT — /private/tmp was wiped by the restart at 00:30:18
+/private/tmp/claude-501/…/scratchpad (Q232)	0	Q232	scratch copy of services/Diten.SupplyChainService + Diten.Building.Blocks in the session scratchpad	ABSENT — /private/tmp was wiped by the restart at 00:30:18
+/private/tmp/claude-501/…/scratchpad (Q236)	0	Q236	scratch copy in the session scratchpad (…/scratchpad/q236/services)	ABSENT — /private/tmp was wiped by the restart at 00:30:18
+~/mvp6-env/base/attempts/src-attempt1-stopped-appledouble/services/Diten.SupplyChainService	1784	base	source tree / evidence copy	present
+~/mvp6-env/base/attempts/src-attempt2-manifest-header/services/Diten.SupplyChainService	1824	base	source tree / evidence copy	present
+~/mvp6-env/base/baseline-head/services/Diten.SupplyChainService	404	base	source tree / evidence copy	present
+~/mvp6-env/base/build-tree/services/Diten.SupplyChainService	96896	base	build clone	present
+~/mvp6-env/base/src/services/Diten.SupplyChainService	1824	base	source tree / evidence copy	present
+~/mvp6-env/claims-fixes/services/Diten.SupplyChainService	96924	claims-fixes	source tree / evidence copy	present
+~/mvp6-env/claims/services/Diten.SupplyChainService	96924	claims	source tree / evidence copy	present
+~/mvp6-env/q117/build-A/services/Diten.SupplyChainService	96892	q117	build clone	present
+~/mvp6-env/q117/build-B/services/Diten.SupplyChainService	96904	q117	build clone	present
+~/mvp6-env/q117/build-base/services/Diten.SupplyChainService	96896	q117	build clone	present
+~/mvp6-env/q117/patchcheck-1/services/Diten.SupplyChainService	40	q117	source tree / evidence copy	present
+~/mvp6-env/q117/src/services/Diten.SupplyChainService	1828	q117	source tree / evidence copy	present
+~/mvp6-env/q119/build-base-ordered/services/Diten.SupplyChainService	96884	q119	build clone	present
+~/mvp6-env/q119/build-fix-ordered/services/Diten.SupplyChainService	96916	q119	build clone	present
+~/mvp6-env/q119/build-fix/services/Diten.SupplyChainService	96904	q119	build clone	present
+~/mvp6-env/q119/src/services/Diten.SupplyChainService	1828	q119	source tree / evidence copy	present
+~/mvp6-env/q121b/before/services/Diten.SupplyChainService	1828	q121b	source tree / evidence copy	present
+~/mvp6-env/q121b/build-after/services/Diten.SupplyChainService	96912	q121b	build clone	present
+~/mvp6-env/q121b/build-before/services/Diten.SupplyChainService	1828	q121b	build clone	present
+~/mvp6-env/q121b/src/services/Diten.SupplyChainService	1828	q121b	source tree / evidence copy	present
+~/mvp6-env/q121b/stage/q117/services/Diten.SupplyChainService	40	q121b	overlay stage	present
+~/mvp6-env/q122/build/services/Diten.SupplyChainService	96932	q122	build clone	present
+~/mvp6-env/q122/q117x/services/Diten.SupplyChainService	40	q122	source tree / evidence copy	present
+~/mvp6-env/q122/src/services/Diten.SupplyChainService	1840	q122	source tree / evidence copy	present
+~/mvp6-env/q122/v3x/overlay/services/Diten.SupplyChainService	12	q122	overlay stage	present
+~/mvp6-env/q129/q117x/services/Diten.SupplyChainService	40	q129	source tree / evidence copy	present
+~/mvp6-env/q129/v3/sab/services/Diten.SupplyChainService	1840	q129	source tree / evidence copy	present
+~/mvp6-env/q129/v3/src/services/Diten.SupplyChainService	1840	q129	source tree / evidence copy	present
+~/mvp6-env/q129/v3x/overlay/services/Diten.SupplyChainService	12	q129	overlay stage	present
+~/mvp6-env/q129/v4/build/services/Diten.SupplyChainService	96932	q129	build clone	present
+~/mvp6-env/q129/v4/src/services/Diten.SupplyChainService	1840	q129	source tree / evidence copy	present
+~/mvp6-env/q129/v4x/overlay/services/Diten.SupplyChainService	12	q129	overlay stage	present
+~/mvp6-env/q154/A/build/services/Diten.SupplyChainService	96904	q154	build clone	present
+~/mvp6-env/q154/A/src/services/Diten.SupplyChainService	1828	q154	source tree / evidence copy	present
+~/mvp6-env/q154/B/build-s7/services/Diten.SupplyChainService	96924	q154	build clone	present
+~/mvp6-env/q154/B/build/services/Diten.SupplyChainService	96924	q154	build clone	present
+~/mvp6-env/q154/B/src/services/Diten.SupplyChainService	1840	q154	source tree / evidence copy	present
+~/mvp6-env/q154/stage/q117/services/Diten.SupplyChainService	40	q154	overlay stage	present
+~/mvp6-env/q154/stage/q131a/services/Diten.SupplyChainService	72	q154	overlay stage	present
+~/mvp6-env/q185/ek-work-a1/source/services/Diten.SupplyChainService	41880	q185	source tree / evidence copy	present
+~/mvp6-env/q185/stage/q117/services/Diten.SupplyChainService	40	q185	overlay stage	present
+~/mvp6-env/q185/stage/q131/services/Diten.SupplyChainService	72	q185	overlay stage	present
+~/mvp6-env/q185/stage/sop-v1/overlay/services/Diten.SupplyChainService	12	q185	overlay stage	present
+~/mvp6-env/q185/stage/sop-v2/overlay/services/Diten.SupplyChainService	12	q185	overlay stage	present
+~/mvp6-env/q185/stage/sop-v3/overlay/services/Diten.SupplyChainService	12	q185	overlay stage	present
+~/mvp6-env/q185/treeA/build/services/Diten.SupplyChainService	96928	q185	build clone	present
+~/mvp6-env/q185/treeA/src/services/Diten.SupplyChainService	1840	q185	source tree / evidence copy	present
+~/mvp6-env/q185/treeB/build/services/Diten.SupplyChainService	96972	q185	build clone	present
+~/mvp6-env/q185/treeB/src/services/Diten.SupplyChainService	1852	q185	source tree / evidence copy	present
+~/mvp6-env/q64c/diff-232549/v1/overlay/services/Diten.SupplyChainService	12	q64c	overlay stage	present
+~/mvp6-env/q64c/diff-232549/v2/overlay/services/Diten.SupplyChainService	12	q64c	overlay stage	present
+~/mvp6-env/q64c/pack-232603/src/overlay/services/Diten.SupplyChainService	12	q64c	overlay stage	present
+~/mvp6-env/q64c/tree/services/Diten.SupplyChainService	96924	q64c	source tree / evidence copy	present
+~/mvp6-env/q64c/v1/overlay/services/Diten.SupplyChainService	12	q64c	overlay stage	present
+~/mvp6-env/q64c/v2/overlay/services/Diten.SupplyChainService	12	q64c	overlay stage	present
+~/mvp6-env/q64d/src/services/Diten.SupplyChainService	96928	q64d	source tree / evidence copy	present
+~/mvp6-env/q64d/v2x/overlay/services/Diten.SupplyChainService	12	q64d	overlay stage	present
+~/mvp6-env/q64e/diff-125140/v2/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q64e/diff-125140/v3/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q64e/diff-final-130134/v2/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q64e/diff-final-130134/v3/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q64e/pack-125140/src/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q64e/pack-final-130133/src/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q64e/src/services/Diten.SupplyChainService	1836	q64e	source tree / evidence copy	present
+~/mvp6-env/q64e/v2x/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q64e/v3-rc1/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q64e/v3/overlay/services/Diten.SupplyChainService	12	q64e	overlay stage	present
+~/mvp6-env/q65b/ek-work-a1/source/services/Diten.SupplyChainService	41884	q65b	source tree / evidence copy	present
+~/mvp6-env/q65b/stage/q117/services/Diten.SupplyChainService	40	q65b	overlay stage	present
+~/mvp6-env/q65b/stage/q131/services/Diten.SupplyChainService	72	q65b	overlay stage	present
+~/mvp6-env/q65b/stage/ret-v1/overlay/services/Diten.SupplyChainService	16	q65b	overlay stage	present
+~/mvp6-env/q65b/stage/ret-v2/overlay/services/Diten.SupplyChainService	16	q65b	overlay stage	present
+~/mvp6-env/q65b/treeA/build/services/Diten.SupplyChainService	96928	q65b	build clone	present
+~/mvp6-env/q65b/treeA/src/services/Diten.SupplyChainService	1840	q65b	source tree / evidence copy	present
+~/mvp6-env/q65b/treeB/build/services/Diten.SupplyChainService	96976	q65b	build clone	present
+~/mvp6-env/q65b/treeB/src/services/Diten.SupplyChainService	1856	q65b	source tree / evidence copy	present
+~/mvp6-env/q84b/A/src/services/Diten.SupplyChainService	1840	q84b	source tree / evidence copy	present
+~/mvp6-env/q84b/B/src/services/Diten.SupplyChainService	1852	q84b	source tree / evidence copy	present
+~/mvp6-env/q84b/c2/A/build/services/Diten.SupplyChainService	96944	q84b	build clone	present
+~/mvp6-env/q84b/c2/A/src/services/Diten.SupplyChainService	1840	q84b	source tree / evidence copy	present
+~/mvp6-env/q84b/c2/B/build/services/Diten.SupplyChainService	96988	q84b	build clone	present
+~/mvp6-env/q84b/c2/B/src/services/Diten.SupplyChainService	1852	q84b	source tree / evidence copy	present
+~/mvp6-env/q84b/ek-work-a2/source/services/Diten.SupplyChainService	1852	q84b	source tree / evidence copy	present
+~/mvp6-env/q84b/ek-work-a3/source/services/Diten.SupplyChainService	41880	q84b	source tree / evidence copy	present
+~/mvp6-env/q84b/ek-work/source/services/Diten.SupplyChainService	41880	q84b	source tree / evidence copy	present
+~/mvp6-env/q84b/stage/q117/services/Diten.SupplyChainService	40	q84b	overlay stage	present
+~/mvp6-env/q84b/stage/q131/services/Diten.SupplyChainService	72	q84b	overlay stage	present
+~/mvp6-env/q84b/stage/sop-v1/overlay/services/Diten.SupplyChainService	12	q84b	overlay stage	present
+~/mvp6-env/q84b/stage/sop-v2/overlay/services/Diten.SupplyChainService	12	q84b	overlay stage	present
+~/mvp6-env/q88b/ek-work-a1/source/services/Diten.SupplyChainService	41880	q88b	source tree / evidence copy	present
+~/mvp6-env/q88b/peek/overlay/services/Diten.SupplyChainService	12	q88b	overlay stage	present
+~/mvp6-env/q88b/stage/cap-v1/overlay/services/Diten.SupplyChainService	12	q88b	overlay stage	present
+~/mvp6-env/q88b/stage/cap-v2/overlay/services/Diten.SupplyChainService	12	q88b	overlay stage	present
+~/mvp6-env/q88b/stage/cap-v3/overlay/services/Diten.SupplyChainService	12	q88b	overlay stage	present
+~/mvp6-env/q88b/stage/q117/services/Diten.SupplyChainService	40	q88b	overlay stage	present
+~/mvp6-env/q88b/stage/q131/services/Diten.SupplyChainService	72	q88b	overlay stage	present
+~/mvp6-env/q88b/treeA/build/services/Diten.SupplyChainService	96928	q88b	build clone	present
+~/mvp6-env/q88b/treeA/src/services/Diten.SupplyChainService	1840	q88b	source tree / evidence copy	present
+~/mvp6-env/q88b/treeB/build/services/Diten.SupplyChainService	96972	q88b	build clone	present
+~/mvp6-env/q88b/treeB/src/services/Diten.SupplyChainService	1852	q88b	source tree / evidence copy	present
+~/.codex/worktrees/claims-dev-start-01/ERP-vNext-recovery/evidence/claims-dev/patch-check/services/Diten.SupplyChainService	236	Codex worktree claims-dev-start-01	source tree / evidence copy	present
+~/.codex/worktrees/claims-dev-start-01/ERP-vNext-recovery/services/Diten.SupplyChainService	61976	Codex worktree claims-dev-start-01	worktree checkout	present
+~/.codex/worktrees/mod-0190-isolated-dev-01/ERP-vNext-recovery/services/Diten.SupplyChainService	5104	Codex worktree mod-0190-isolated-dev-01	worktree checkout	present
+~/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/services/Diten.SupplyChainService	96940	Codex worktree mvp6-carrier-ui-dev	worktree checkout	present
+~/.codex/worktrees/mvp6-mod0190-core/ERP-vNext-recovery/services/Diten.SupplyChainService	97520	Codex worktree mvp6-mod0190-core	worktree checkout	present
+~/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery/evidence/returns-ver-01/verified-source/services/Diten.SupplyChainService	232	Codex worktree returns-phase15-close-01	source tree / evidence copy	present
+~/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery/services/Diten.SupplyChainService	97484	Codex worktree returns-phase15-close-01	worktree checkout	present
+~/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.SupplyChainService	41896	Codex worktree shipment-integration-rework-exec-01	worktree checkout	present
+~/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService	101224	(the working tree itself)	original	present

@@ -1,0 +1,6 @@
+for f in "$@"; do
+  echo "## $f"
+  grep -o '<Counters [^>]*>' "$f"
+  echo "failed:"; grep -oE '<UnitTestResult [^>]*outcome="Failed"' "$f" | grep -oE 'testName="[^"]*"' | sort
+  echo "DocsPathGuard results: $(grep -oE '<UnitTestResult [^>]*testName="[^"]*DocsPathGuard[^"]*"[^>]*' "$f" | grep -oE 'outcome="[A-Za-z]+"' | sort | uniq -c | tr '\n' ' ')"
+done

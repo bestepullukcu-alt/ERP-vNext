@@ -1,0 +1,20 @@
+[
+  {
+    "contract": "warehouse-outbound",
+    "path": "/outbound-shipments",
+    "originalExampleErrors": [
+      "None is not of type 'string'"
+    ],
+    "compatibleExampleOmittingOptionalCursor": "PASS"
+  },
+  {
+    "contract": "inventory-bundle",
+    "path": "/availability",
+    "originalExampleErrors": []
+  },
+  {
+    "contract": "inventory-bundle",
+    "path": "/balance",
+    "originalExampleErrors": []
+  }
+]

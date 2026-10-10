@@ -1,0 +1,134 @@
+@using Diten.Web.Views.SupplyChain.CapacityPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CapacityPlanDetails> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Pack §23.2: every Capacity .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+    Layout = "_LayoutTenantShell";
+}
+
+@* Create-scenario offcanvas (pack §23.6, CreateCapacityScenarioRequest). No edit mode, no HTML validation attributes and
+   no trim: details.js mirrors the schema only (name non-empty; each repeater row complete; availableCapacityDelta
+   matches the published decimal string form) and sends both arrays always, [] when there is no row. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateScenario" aria-labelledby="offcanvasCreateScenarioLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateScenarioLabel" class="offcanvas-title mb-0">@Localizer["CreateScenarioTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formCreateScenarioAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+
+        <form id="formCreateScenario" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="scenarioName" class="form-label fw-medium">@Localizer["ScenarioName"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-git-branch diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="scenarioName" class="form-control" autocomplete="off" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <fieldset aria-describedby="scenarioConstraintRefsHelp">
+                        <legend class="form-label fw-medium fs-6 mb-1">@Localizer["ConstraintRefs"]</legend>
+                        <div id="scenarioConstraintRefsHelp" class="form-text mt-0 mb-2">@Localizer["ConstraintRefsHelp"]</div>
+                        <div id="scenarioConstraintRefRows" class="d-flex flex-column gap-3"></div>
+                        <button type="button" class="btn btn-sm btn-label-secondary mt-3" id="btnAddConstraintRef">
+                            <i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddRow"]
+                        </button>
+                    </fieldset>
+                </div>
+                <div class="col-12">
+                    <fieldset aria-describedby="scenarioAdjustmentsHelp">
+                        <legend class="form-label fw-medium fs-6 mb-1">@Localizer["Adjustments"]</legend>
+                        <div id="scenarioAdjustmentsHelp" class="form-text mt-0 mb-2">@Localizer["AdjustmentsHelp"]</div>
+                        <div id="scenarioAdjustmentRows" class="d-flex flex-column gap-3"></div>
+                        <button type="button" class="btn btn-sm btn-label-secondary mt-3" id="btnAddAdjustment">
+                            <i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddRow"]
+                        </button>
+                    </fieldset>
+                </div>
+            </div>
+        </form>
+
+        @* Row templates: cloned by details.js (no inline handler, no string-built user text). *@
+        <template id="constraintRefRowTemplate">
+            <div class="border rounded p-3 capacity-constraint-ref-row">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small mb-1 js-label-constraint-id">@Localizer["ConstraintId"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-lock-alt diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-constraint-id" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small mb-1 js-label-constraint-source">@Localizer["Source"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-server diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-constraint-source" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-10 col-md-3">
+                        <label class="form-label small mb-1 js-label-constraint-version">@Localizer["SourceVersion"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-git-commit diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-constraint-version" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-2 col-md-1 d-flex align-items-end justify-content-end">
+                        <button type="button" class="btn btn-icon btn-text-danger js-remove-row" aria-label="@Localizer["RemoveRow"]">
+                            <i class="bx bx-trash" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template id="adjustmentRowTemplate">
+            <div class="border rounded p-3 capacity-adjustment-row">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small mb-1 js-label-resource-ref">@Localizer["ResourceRef"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-cube diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-resource-ref" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small mb-1 js-label-period">@Localizer["Period"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-period" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small mb-1 js-label-delta">@Localizer["AvailableCapacityDelta"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-transfer-alt diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" inputmode="decimal" class="form-control text-end js-delta" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                        <div class="form-text js-delta-help">@Localizer["AvailableCapacityDeltaHelp"]</div>
+                    </div>
+                    <div class="col-10 col-md-5">
+                        <label class="form-label small mb-1 js-label-uom">@Localizer["UomId"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-ruler diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-uom" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-2 col-md-1 d-flex align-items-end justify-content-end">
+                        <button type="button" class="btn btn-icon btn-text-danger js-remove-row" aria-label="@Localizer["RemoveRow"]">
+                            <i class="bx bx-trash" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSubmitCreateScenario" class="btn btn-primary">@Localizer["CreateScenario"]</button>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+  Determining projects to restore...
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/Diten.BuildingBlocks.Eventing.csproj (in 97 ms).
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.Platform.Contracts/Diten.Platform.Contracts.csproj (in 106 ms).
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.AuthService/src/Diten.AuthService.Domain/Diten.AuthService.Domain.csproj (in 96 ms).
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.AuthService/src/Diten.AuthService.Application/Diten.AuthService.Application.csproj (in 576 ms).
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj (in 423 ms).
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.AuthService/src/Diten.AuthService.Persistence/Diten.AuthService.Persistence.csproj (in 609 ms).
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj (in 609 ms).
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Diten.AuthService.Infrastructure.csproj (in 609 ms).
+  Restored /Users/natig/mvp6-env/q88b/ek-work-a1/source/services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj (in 611 ms).

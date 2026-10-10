@@ -1,0 +1,27 @@
+  Determining projects to restore...
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json. [/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj]
+  Restored /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj (in 447 ms).
+  12 of 13 projects are up-to-date for restore.
+  Diten.BuildingBlocks.Eventing -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Debug/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.BuildingBlocks.InterfaceRegistry.Abstractions -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/bin/Debug/net8.0/Diten.BuildingBlocks.InterfaceRegistry.Abstractions.dll
+  Diten.BuildingBlocks.BackgroundJobs -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/bin/Debug/net8.0/Diten.BuildingBlocks.BackgroundJobs.dll
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.PpmService.Contracts -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.PpmService/src/Diten.PpmService.Contracts/bin/Debug/net8.0/Diten.PpmService.Contracts.dll
+  Diten.Platform.Common -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Debug/net8.0/Diten.Platform.Common.dll
+  Diten.Platform.Contracts -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Contracts/bin/Debug/net8.0/Diten.Platform.Contracts.dll
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/bin/Debug/net8.0/Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.Platform.Domain -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/src/Diten.Platform.Domain/bin/Debug/net8.0/Diten.Platform.Domain.dll
+  Diten.Platform.Application -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/src/Diten.Platform.Application/bin/Debug/net8.0/Diten.Platform.Application.dll
+  Diten.Platform.Infrastructure -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/src/Diten.Platform.Infrastructure/bin/Debug/net8.0/Diten.Platform.Infrastructure.dll
+  Diten.Platform.API -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/src/Diten.Platform.API/bin/Debug/net8.0/Diten.Platform.API.dll
+  Diten.Platform.Eventing.Tests -> /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/bin/Debug/net8.0/Diten.Platform.Eventing.Tests.dll
+
+Build succeeded.
+
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json. [/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj]
+/Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.22

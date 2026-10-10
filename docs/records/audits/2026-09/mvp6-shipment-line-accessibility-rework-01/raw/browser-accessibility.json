@@ -1,0 +1,120 @@
+{
+  "sourceManifestPreimageSha256": "e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3",
+  "ports": {
+    "fixture": 6040,
+    "web": 6041
+  },
+  "runtime": {
+    "sdk": "8.0.417",
+    "host": "8.0.23",
+    "webPid": 79324,
+    "fixturePid": 79044
+  },
+  "viewport390": {
+    "initial": {
+      "inputCount": 6,
+      "uniqueIds": 6,
+      "labelMismatch": [],
+      "innerWidth": 390,
+      "scrollWidth": 390
+    },
+    "afterKeyboardAdd1": {
+      "inputCount": 12,
+      "uniqueIds": 12,
+      "labelMismatch": [],
+      "activeId": "shipmentLine_1_lineNumber"
+    },
+    "afterKeyboardAdd2": {
+      "inputCount": 18,
+      "uniqueIds": 18,
+      "labelMismatch": [],
+      "activeId": "shipmentLine_2_lineNumber"
+    },
+    "afterRemoveMiddle": {
+      "inputCount": 12,
+      "uniqueIds": 12,
+      "labelMismatch": [],
+      "activeId": "shipmentLine_1_lineNumber"
+    },
+    "labelActivation": {
+      "activeId": "shipmentLine_0_lineNumber"
+    },
+    "tabOrder": [
+      "btnAddLine",
+      "shipmentLine_0_lineNumber"
+    ],
+    "invalidSubmit": {
+      "activeId": "formShipmentAlert",
+      "role": "alert",
+      "visible": true
+    }
+  },
+  "viewport768": {
+    "inputCount": 12,
+    "uniqueIds": 12,
+    "labelMismatch": [],
+    "activeId": "shipmentLine_1_lineNumber",
+    "innerWidth": 768,
+    "scrollWidth": 768,
+    "accessibleNames": [
+      "Line Number *",
+      "Item ID *",
+      "SKU ID *",
+      "Quantity *",
+      "Unit of Measure *",
+      "Inventory Reference",
+      "Line Number *",
+      "Item ID *",
+      "SKU ID *",
+      "Quantity *",
+      "Unit of Measure *",
+      "Inventory Reference"
+    ]
+  },
+  "payloadSemantics": {
+    "nameAttributes": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "lineOrder": [
+      "lineNumber",
+      "itemId",
+      "skuId",
+      "quantity",
+      "uomId",
+      "inventoryReferenceId"
+    ],
+    "values": [
+      {
+        "lineNumber": "1",
+        "itemId": "11111111-1111-1111-1111-111111111111",
+        "skuId": "22222222-2222-2222-2222-222222222222",
+        "quantity": "2.5",
+        "uomId": "EA",
+        "inventoryReferenceId": "INV-1"
+      },
+      {
+        "lineNumber": "2",
+        "itemId": "33333333-3333-3333-3333-333333333333",
+        "skuId": "44444444-4444-4444-4444-444444444444",
+        "quantity": "3",
+        "uomId": "KG",
+        "inventoryReferenceId": "INV-2"
+      }
+    ]
+  },
+  "png": {
+    "status": "OPEN",
+    "reason": "No documented supported durable PNG save/export capability; no workaround attempted"
+  }
+}

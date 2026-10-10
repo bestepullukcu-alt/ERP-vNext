@@ -1,0 +1,9 @@
+culture	html_lang	dir	heading	add_action	empty_state
+en	en	ltr	Carriers	Add Carrier	No data available in table
+tr	tr	ltr	Taşıyıcılar	Taşıyıcı Ekle	Tabloda veri bulunmuyor
+fr	fr	ltr	Transporteurs	Ajouter un transporteur	Aucune donnée disponible dans le tableau
+es	es	ltr	Transportistas	Añadir transportista	Ningún dato disponible en esta tabla
+zh	zh	ltr	承运商	添加承运商	表中没有可用数据
+ar	ar	rtl	شركات النقل	إضافة شركة نقل	لا توجد بيانات متاحة في الجدول
+ru	ru	ltr	Перевозчики	Добавить перевозчика	В таблице нет данных
+

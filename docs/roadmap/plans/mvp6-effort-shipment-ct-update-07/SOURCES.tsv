@@ -1,0 +1,12 @@
+path	sha256	use
+docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/ARTIFACTS.sha256	6f02cc694113d07e0af1951c33078226c4cc24c5755e80a773b3608704564d7d	Full 105-row predecessor ledger
+docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/ARTIFACTS.sha256	81e08bfd7203cca434fdc6b0e49be8440e0dcf7b72e75fbac354122b99b00377	Latest numeric denominator and transition estimate
+docs/roadmap/plans/mvp6-shipment-r2-effort-disposition-01/ARTIFACTS.sha256	4bfeaf971540cfcfc69058eec2f13e98599f1e60fe18188681e140a35bd399cd	Root R2 reserve allocation predecessor
+docs/records/audits/2026-09/mvp6-shipment-root-r2-ct-disposition-01/ARTIFACTS.sha256	95580a1593781cc7f8e77248c7a49871faf492ced1e98b448c3794ecc59002a7	Root R2 bounded CT acceptance
+docs/records/audits/2026-09/mvp6-shipment-root-r2-ct-disposition-01/EFFORT-ROW-MAPPING.tsv	9d0eba9a289423259efc9c00397aa3f8094b0cd95fba3d451847c694b36b6b5e	Exact numeric closure mapping
+docs/records/audits/2026-09/mvp6-shipment-ui-functional-ct-consolidation-01/ARTIFACTS.sha256	d16959c702db29456c2d1636d7f1aa2b96f8ef6a16cf039e52814cc443126395	New UI CT disposition
+docs/records/audits/2026-09/mvp6-shipment-ui-functional-ct-consolidation-01/EFFORT-DISPOSITION.tsv	4094c8064a74764346650eb4f8561afa8acb19b7be358cc87af5eaa7696ca4ac	B01/B02 and Root browser effort boundary
+docs/records/audits/2026-09/mvp6-shipment-ui-b01-b02-rework-01/ARTIFACTS.sha256	2fb737d4a88f961c687364b19f43cc212005cfb345f7b6161b33b0fe68560713	Writer evidence integrity
+docs/records/audits/2026-09/mvp6-shipment-ui-b01-b02-independent-ver-01/ARTIFACTS.sha256	33528837d3a8a5fd89bbbed9497c5f1a4eeabcafbe14cfd97840b200d060fcca	Independent B01/B02 evidence integrity
+docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/SHA256SUMS	61ddf10962d51f52f73c155c6e5c52c8dc753344ad115e9ae7905b31d0b36de9	Confirms Loads producer uptake remains a separate unopened gate
+

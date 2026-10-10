@@ -1,0 +1,16 @@
+classification	path	condition_or_exclusion
+module-owned-future	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/SupplierPortal/**	Only after pack promotion and exact runtime authority; endpoints/controllers for the five frozen portal operations only
+module-owned-future	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SupplierPortal/**	Commands, queries, handlers, validators, models, module ports; no shared producer implementation
+module-owned-future	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/SupplierPortal/**	Portal submission aggregate/value objects and module invariants only
+module-owned-future	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/SupplierPortal/**	Submission, receipt, audit/outbox persistence and module indexes after authority; no actor-binding or Supplier master store
+module-owned-future	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/SupplierPortal/**	Consumer adapters behind approved published seams only; no invented endpoint/claim or shared DI composition
+module-owned-future	services/Diten.SupplyChainService/tests/**/SupplierPortal/**	Module-isolated tests and test-only fixtures clearly labeled SIMULATED
+planning-owned-current	docs/roadmap/plans/mvp6-mod0148-spec-split-01/**	This spec-only output
+shared-single-writer-held	docs/analysis/contracts/supplier.openapi.yaml	MOD-0140/CT seam owner; byte unchanged
+shared-single-writer-held	docs/analysis/contracts/supplier-performance.openapi.yaml	CT contract single writer; byte unchanged
+shared-single-writer-held	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs	Integration owner only; not MOD-0148 scope
+shared-single-writer-held	services/Diten.AuthService/**	Security owner; mapping, issuer/subject/LE carrier and revocation are not MOD-0148-owned
+shared-single-writer-held	gateway/Diten.ApiGateway/**	Gateway/integration owner only
+shared-single-writer-held	execution/**	Pack/domain/DCP/registry unchanged by this work package
+excluded	services/Diten.SupplyChainService/src/**/Features/SupplierPerformance/**	MOD-0147-owned
+excluded	frontend/**	No UI in bounded slice

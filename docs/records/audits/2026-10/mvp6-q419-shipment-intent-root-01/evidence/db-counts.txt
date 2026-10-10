@@ -1,0 +1,6 @@
+# mongosh --port 57419, db q419_sc, collection sce_shipments, filter {SourceDocumentId: <run>} (dbcount.sh), read after each run
+Q419-RED-A-muu9cwfm       shipments=1 id=1a579bf9-12a7-44ee-8045-da861f7577ba root=79e7f33b-12a2-4ee0-a8fd-37c83b0220a1 receipts(key e6dd42f7…)=1
+Q419-GREEN-A-muu9fnir     shipments=1 id=913a1f8e-614f-4264-87e2-16d6cea0f8cc root=87b6083f-9b2c-499f-a61e-4c4ce310e312
+Q419-GREEN-B-muu9ge1h     shipments=1 id=4d0740d9-a250-4459-97bb-ca49c39a36c3 root=ce133be4-3744-48b8-b27b-3585b90caa7f ; ShipToReference "CUST-Q419-EDITED" stored: 0
+Q419-SAB-A-muu9helk       shipments=1 id=b120fbbf-078b-409e-b286-8640f1e85c46 root=657778b0-4088-40cf-bf9b-feb928de81ae
+Q419-RESTORED-A-muu9i4a4  shipments=1 id=8048d94f-f470-4465-b8d5-b4c6a2e25811 root=95b89776-7bce-4b04-8ca4-4155ca5c1035

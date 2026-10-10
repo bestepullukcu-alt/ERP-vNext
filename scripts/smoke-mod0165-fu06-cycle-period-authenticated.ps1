@@ -11,7 +11,7 @@
   Optional:
       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
 
-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
+  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
   every record created here is ended with CLOSE. The script asserts the load-bearing FU06 promises:
     * a period is born DRAFT and TenantId is claim-only
     * EndDate is INCLUSIVE and must be after StartDate
@@ -24,7 +24,7 @@
     * there is no DELETE, no PATCH, no bulk and no reopen surface anywhere
 
   PREREQUISITES (data, not code):
-    * The Gateway must route /api/crm/cycle-periods to 5061. Without that route EVERY call answers 404 with an empty {}
+    * The Gateway must route /api/crm/cycle-periods to 5065. Without that route EVERY call answers 404 with an empty {}
       body — that is a missing route, not a code defect.
     * The fleet must be running the FU06 build (a restart is required after deploying it).
 
@@ -34,7 +34,7 @@
 param(
     [string]$BaseUrl   = "http://localhost:5000",
     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
-    [string]$CrmDirect = "http://localhost:5061"
+    [string]$CrmDirect = "http://localhost:5065"
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,7 +65,7 @@ $suffix = $run.Substring($run.Length - 6)
 
 Write-Host "== MOD-0165-FU06 authenticated cycle period smoke ($run) ==" -ForegroundColor Cyan
 
-foreach ($p in @(5000, 5061)) {
+foreach ($p in @(5000, 5065)) {
     $code = Status "http://localhost:$p/"
     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
 }

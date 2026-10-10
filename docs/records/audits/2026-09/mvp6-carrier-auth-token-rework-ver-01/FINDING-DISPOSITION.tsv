@@ -1,0 +1,7 @@
+finding	phase1_artifact_verdict	phase1_behavior_verdict	phase2_verdict	final_disposition
+F-01 exact token cardinality	PASS exact patch/delta/final manifest	Candidate source structurally implements exact-one checks; 28-case suite is incomplete	NOT RUN	OPEN pending owner authorization writer-complete and independent scenarios
+F-02 temporal boundary	PASS exact patch/delta/final manifest	Candidate source expresses iat=nbf/skew/lifetime checks but JSON NumericDate type enforcement is unproven; tests mix some rejection causes	NOT RUN	OPEN pending explicit policy approval raw-payload probe and independent boundaries
+F-03 trust-boundary ordering	20 unchanged paths hash-bound	Inherited ordering only; no fresh zero-read observation	NOT RUN	OPEN for this VER
+Login refresh re-resolution	Unchanged Auth paths hash-bound	Prior writer evidence is content-bound input only	NOT RUN	OPEN
+MFA forced-password fail-closed	Unchanged Auth paths hash-bound	Prior writer evidence is content-bound input only	NOT RUN	OPEN
+Broad Auth suite	No valid prior TRX/output	NOT ESTABLISHED	NOT RUN	OPEN

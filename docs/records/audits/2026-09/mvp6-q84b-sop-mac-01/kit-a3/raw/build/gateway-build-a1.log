@@ -1,0 +1,9 @@
+  Diten.Platform.Common -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Release/net8.0/Diten.Platform.Common.dll
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.ApiGateway -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/gateway/Diten.ApiGateway/bin/Release/net8.0/Diten.ApiGateway.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.61

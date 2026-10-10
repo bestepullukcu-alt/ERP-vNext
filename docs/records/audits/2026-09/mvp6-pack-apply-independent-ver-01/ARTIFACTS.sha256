@@ -1,0 +1,15 @@
+26af6011d17168a4747b949f596d5e2f6913768a4f2feb0e06e6748b61f55c13  docs/records/audits/2026-09/mvp6-pack-apply-independent-ver-01/SOP-22-VER.md
+d353f0604a6e6f639012f24d6d56572d100ce0a3e3cce8c81d0abaa985256872  docs/records/audits/2026-09/mvp6-pack-apply-independent-ver-01/COMMANDS.tsv
+8e269efa44b47bef41a81745a946ccef9d30a26d8ddf175000e80aad2242eadf  execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+346288abaf9c26c9bfeebf1c923c8201166bb5c930f2389b57528014c1bffd1e  execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+45b5dd3325b4c917eeaa9cb6b5268008173579e4525f4c90f25c43630c27caa5  execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+6c8fbe28f0b058cacf08aaf3941e82845b0842db3f8b8f295a753e746a65a5a0  execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+31cb35c38fd97c91172884156a32b69ec219e3cf4f96ad5f9124dc3c8ad06626  execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+e346043dd6d8163be561353fb393ee7b2b7f424c10239c282538c4f47020cec6  execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
+7adf06ad844c85345895c95a2a0a418344b53b2dea61517f2343914ad4e9c6fd  docs/roadmap/plans/mvp6-self-registration-patch05-rebase-01/05-MOD-0186-self-registration-rebased.patch
+4117f7004b56b00ef25138ddd420692fefddfaa72b2872a86c44473a8b3923ac  docs/roadmap/plans/mvp6-self-registration-patches-01/patches/05-MOD-0186-self-registration.patch
+649269c3bc9bed88fa3c5eb019c18849367f47cdc6bbdc771c7cfbbf45a54611  docs/records/decisions/2026-09/mvp6-returns-pack-signoff-owner-decision-01.md
+7707329eec22aaf1d1f71b0b8d9680c555b08f906328e2dcf54dc38542023e58  docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff-owner-decision-01.md
+365de5be6fc670a8522dd173f4fbc4d15d72324ece4856519ac9e0424928827b  docs/records/decisions/2026-09/mvp6-claims-pack-signoff-owner-decision-01.md
+16af54c8a5bde4e5e8cb37300276aa5b3ed2aa28d68e00c14e0e45d2803d4a4d  docs/records/audits/2026-09/mvp6-pack-apply-q46-q47-01/ARTIFACTS.sha256
+a20a57cfc298ee0e63ff48e136fba2c4c437a4d248b1abc5f9572bcb895147a0  docs/records/audits/2026-09/mvp6-claims-pack-apply-01/ARTIFACTS.sha256

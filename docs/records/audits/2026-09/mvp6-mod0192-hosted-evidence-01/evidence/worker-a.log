@@ -1,0 +1,14 @@
+[00:53:22 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[00:53:22 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[00:53:22 INF] Now listening on: http://127.0.0.1:56392
+[00:53:22 INF] Application started. Press Ctrl+C to shut down.
+[00:53:22 INF] Hosting environment: Testing
+[00:53:22 INF] Content root path: /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923
+[00:53:22 INF] Request starting HTTP/1.1 GET http://127.0.0.1:56392/health - null null
+[00:53:22 INF] Executing endpoint 'HTTP: GET /health'
+[00:53:22 INF] Setting HTTP status code 200.
+[00:53:22 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[00:53:22 INF] Executed endpoint 'HTTP: GET /health'
+[00:53:22 INF] Request finished HTTP/1.1 GET http://127.0.0.1:56392/health - 200 null application/json; charset=utf-8 42.7388ms
+[00:54:07 WRN] Capacity lease lost for evaluation 2a1bed52-76a9-4a0d-b168-c58a8c3ab97c
+[00:54:13 INF] Application is shutting down...

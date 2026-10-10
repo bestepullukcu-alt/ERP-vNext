@@ -1,0 +1,210 @@
+{
+  "phase": "o3",
+  "locale": "ar",
+  "startedAt": "2026-09-30T20:39:24.903Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "O-3": {
+      "result": "FAIL",
+      "out": {
+        "create": {
+          "focus": {
+            "id": null,
+            "tag": "BODY",
+            "inCreate": false,
+            "inTransition": false,
+            "classes": "",
+            "text": "Search [CTRL + K]\nالمرتجعات\n\nاطلب مرتجعات البضائع المشحونة و"
+          },
+          "titleVisible": true,
+          "title": "المرتجعات",
+          "titleFocusable": false,
+          "addCount": 1,
+          "addDisabled": true,
+          "rawErrorInPage": false,
+          "toasts": [
+            "ليس لديك تفويض لتنفيذ هذا الإجراء. مرجع الدعم: e13dd7d0-005b-432e-87c7-5512b12d4726"
+          ]
+        },
+        "o1": {
+          "addDisabledAfter3s": true,
+          "addHasDisabledClass": true
+        },
+        "transition": {
+          "target": "InTransit",
+          "focus": {
+            "id": null,
+            "tag": "BODY",
+            "inCreate": false,
+            "inTransition": false,
+            "classes": "",
+            "text": "Search [CTRL + K]\nالمرتجعات\n\nاطلب مرتجعات البضائع المشحونة و"
+          },
+          "rawErrorInPage": false,
+          "titleVisible": true
+        },
+        "readonly": {
+          "addCount": 0,
+          "rows": 2,
+          "directPostStatus": 403,
+          "directPostCode": "INVALID_REQUEST"
+        },
+        "noread": {
+          "table": 0,
+          "skeletons": 0,
+          "filter": 0,
+          "url": "/SupplyChain/Returns",
+          "rawErrorInPage": false,
+          "directGet": 403
+        }
+      },
+      "parts": {
+        "createFocusOnPageTitle": false,
+        "noRawError": true,
+        "real403": true
+      },
+      "faked": "create 403 and transition 403 via route.fulfill; real 403s for read-only and no-read",
+      "evidence": [
+        "png/o3-create-403-ar.png",
+        "png/o3-transition-403-ar.png",
+        "png/o3-readonly-list-ar.png",
+        "png/o3-noread-list-ar.png"
+      ]
+    },
+    "Q174-O-1 (informational)": {
+      "result": "PASS",
+      "observed": {
+        "addDisabledRightAfter403": true,
+        "addDisabledAfter3s": true,
+        "addHasDisabledClass": true
+      },
+      "note": "informational only: records whether Add stays disabled after a 403 on create"
+    }
+  },
+  "png": [
+    {
+      "name": "o3-create-403-ar.png",
+      "sha256": "65d1784848d30f3c2fd6239d78e23a730c6528ea8d64ea8cfd7d0d0214b94f1a",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:39:29.910Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-transition-403-ar.png",
+      "sha256": "0e5d3729a5f7fe6d67725885c101bff7b642b7df76088b38bd3dc48ea9172996",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:39:37.772Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-readonly-list-ar.png",
+      "sha256": "7d8e3058760b2c31ea85712b1bdb6bfa97147dcdfaf4c5ce2703213e66ee99f3",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:39:39.916Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-list-ar.png",
+      "sha256": "a8433310bfeba3ccd0dae8da96d87f73fcca2564e8122118764fe365180c0ca9",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:39:41.925Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "o3-ar-create403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-ar-transition403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "o3-ar-create403",
+      "text": "ليس لديك تفويض لتنفيذ هذا الإجراء. مرجع الدعم: e13dd7d0-005b-432e-87c7-5512b12d4726",
+      "type": "warning",
+      "at": "2026-09-30T20:39:28.456Z"
+    },
+    {
+      "tag": "o3-ar-transition403",
+      "text": "ليس لديك تفويض لتنفيذ هذا الإجراء. مرجع الدعم: b95da878-eabe-45d5-819d-60c129d8365c",
+      "type": "warning",
+      "at": "2026-09-30T20:39:36.138Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "o3-ar-create403",
+      "at": "2026-09-30T20:39:26.501Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-create403",
+      "at": "2026-09-30T20:39:28.340Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api/shipments/489b040d-5181-49d3-ae0d-540b41939827",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-create403",
+      "at": "2026-09-30T20:39:28.454Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-ar-transition403",
+      "at": "2026-09-30T20:39:33.922Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-transition403",
+      "at": "2026-09-30T20:39:36.138Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api/d4bacf4b-ed51-4809-84e4-f46d6af36aa6/transition",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-ar-transition403",
+      "at": "2026-09-30T20:39:36.175Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-readonly",
+      "at": "2026-09-30T20:39:38.680Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 8,
+  "endedAt": "2026-09-30T20:39:41.952Z"
+}

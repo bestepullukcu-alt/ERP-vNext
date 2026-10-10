@@ -1,0 +1,6 @@
+v3/sab = v3/src + v4 test file:
+16a5ef854e529c8174c4bcd522e68f317348a1833d0f5c4072f254affb3769de  v3/src/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs
+b802ca250d4c2a2f1623fc2a51ace35197cc37b19723642790471d065394eff5  v4/src/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs
+b802ca250d4c2a2f1623fc2a51ace35197cc37b19723642790471d065394eff5  v3/sab/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs
+Files v3/src/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs and v3/sab/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs differ
+Files v4/src/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js and v3/sab/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js differ

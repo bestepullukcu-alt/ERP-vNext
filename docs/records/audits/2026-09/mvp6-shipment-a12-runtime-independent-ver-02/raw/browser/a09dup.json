@@ -1,0 +1,136 @@
+{
+  "phase": "a09dup",
+  "startedAt": "2026-09-26T07:45:28.921Z",
+  "cases": {
+    "login-actor-a": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "login-actor-b": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "A09-stale-POD-409": {
+      "verdict": "PASS",
+      "checks": {
+        "bothRenderedDispatched": true,
+        "actorACommitted": true,
+        "actorBExactError": true,
+        "actorBRootReference": true,
+        "actorBRefreshed": true,
+        "actorBPodActionGone": true,
+        "authoritativePod": true,
+        "db": true
+      },
+      "initial": {
+        "a": "Dispatched",
+        "b": "Dispatched"
+      },
+      "actorBAlert": "Proof of delivery was already captured. Support reference: e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+      "actorBRequest": {
+        "at": "2026-09-26T07:45:35.794Z",
+        "method": "POST",
+        "path": "/SupplyChain/Shipments/api/362aa0ca-f884-4024-9a74-451598694975/pod",
+        "status": 409,
+        "requestCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+        "idempotencyKey": "a495ddfc-243b-4d22-bb2c-2790188a129e",
+        "responseCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+        "errorCode": "POD_ALREADY_CAPTURED",
+        "bodyCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+        "okShape": null
+      },
+      "actorAStatus": 201,
+      "actorBActionsAfter": [
+        "Change Status"
+      ],
+      "db": {
+        "s0": {
+          "status": "Dispatched",
+          "version": 3,
+          "isDeleted": false,
+          "legalEntityId": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+          "lifecycleCorrelationId": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+          "pod": null,
+          "updatedAt": "2026-09-26T07:37:30.263238+00:00"
+        },
+        "s1": {
+          "status": "Delivered",
+          "version": 4,
+          "isDeleted": false,
+          "legalEntityId": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+          "lifecycleCorrelationId": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+          "pod": {
+            "recipientName": "Recipient A",
+            "evidenceReferenceIds": [
+              "EVID-a09dup-A"
+            ]
+          },
+          "updatedAt": "2026-09-26T07:45:34.031242+00:00"
+        },
+        "s2": {
+          "status": "Delivered",
+          "version": 4,
+          "isDeleted": false,
+          "legalEntityId": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+          "lifecycleCorrelationId": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+          "pod": {
+            "recipientName": "Recipient A",
+            "evidenceReferenceIds": [
+              "EVID-a09dup-A"
+            ]
+          },
+          "updatedAt": "2026-09-26T07:45:34.031242+00:00"
+        }
+      }
+    }
+  },
+  "db": [
+    {
+      "name": "a09dup-actor-a-commit",
+      "before": "a09dup-before-actor-a",
+      "after": "a09dup-after-actor-a",
+      "expect": "{\"counts\":{\"sce_shipment_history\":1,\"sce_shipment_receipts\":1,\"sce_shipment_audit\":1},\"state\":{\"status\":\"Delivered\"}}",
+      "result": "PASS",
+      "detail": "{\"counts\":{\"sce_shipment_history\":1,\"sce_shipment_receipts\":1,\"sce_shipment_audit\":1},\"state\":{\"status\":\"Delivered\"}}"
+    },
+    {
+      "name": "a09dup-actor-b-stale-zero-write",
+      "before": "a09dup-after-actor-a",
+      "after": "a09dup-after-actor-b",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    }
+  ],
+  "png": [
+    {
+      "file": "png/a09dup-actor-b-after-stale-pod.png",
+      "sha256": "5a8edf6d0c32f0a407ad8fd41720d2015c481e1b61d9497cdb5ea4783cdfe882",
+      "bytes": 153813,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/362aa0ca-f884-4024-9a74-451598694975",
+      "capturedAt": "2026-09-26T07:45:36.630Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    }
+  ],
+  "console": [
+    {
+      "actor": "actor-b",
+      "tag": "a09dup-b",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    }
+  ],
+  "finishedAt": "2026-09-26T07:45:37.466Z"
+}

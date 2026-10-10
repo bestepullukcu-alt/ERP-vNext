@@ -1,0 +1,5 @@
+scope	agent_and_ver_evidence	technical_disposition	ct_disposition	boundary
+B integration	B-WRITER-EVIDENCE.tar.gz 765ea3cb3677ddd6c167bfce917ffd2c812308ef363bbe7b3d91371e41b06641; B-VER-RECOVERY-EVIDENCE.tar.gz b1eed8f00104c1dabb175ed26323606cb23d33c342de6df57e39dad5699a2fdf	PASS (content-bound inherited evidence)	NOT DECIDED HERE	422-row isolated integration; 36 Capacity and 34 C tests are not combined
+C uptake	C-WRITER-EVIDENCE.tar.gz 2e0b6e05a0d377b0eaa99bc71e8f5e64c4c07df2022c6ab23ee303e378e42093; C-VER-EVIDENCE.tar.gz a20f981ca0720c3c9078b6155aaeeccefea29d20122b8b9e2c4f32b0f45beeac	PASS (content-bound inherited evidence)	NOT DECIDED HERE	Three-file isolated uptake only
+BC successor	BC-SUCCESSOR-MANIFEST.tsv dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634	STATIC COMPOSITION PASS	HELD	Runtime/build/regression evidence has not been produced for the combined source set
+

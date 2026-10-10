@@ -1,0 +1,16 @@
+stage	command_or_disposition	exit
+artifact-check	shasum -a 256 -c writer/ARTIFACTS.sha256 from repository root	0
+manifest-354	custom TSV to shasum verification	0
+manifest-22	custom TSV target hash verification	0
+manifest-3333	custom TSV to shasum verification	0
+patch-roundtrip	git apply --reverse --check/apply; git apply --check/apply; final hash recheck	0
+auth-build	dotnet build Release --no-restore -m:1 /nr:false	0
+platform-build	dotnet build Release --no-restore -m:1 /nr:false	0
+mdm-build	dotnet build Release --no-restore -m:1 /nr:false	0
+supply-build	dotnet build Release --no-restore -m:1 /nr:false	0
+gateway-build	dotnet build Release --no-restore -m:1 /nr:false	0
+web-build	dotnet build Release --no-restore -m:1 /nr:false	0
+focused-tests	dotnet test Release --no-build; two controlling test classes	0
+runtime-smoke	isolated Mongo PRIMARY and service health probes	0
+browser-acceptance	not completed	NOT RUN
+

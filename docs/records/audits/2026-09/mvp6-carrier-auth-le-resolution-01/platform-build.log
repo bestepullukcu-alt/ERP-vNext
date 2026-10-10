@@ -1,0 +1,18 @@
+  Diten.Platform.Common -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Debug/net8.0/Diten.Platform.Common.dll
+  Diten.BuildingBlocks.InterfaceRegistry.Abstractions -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/bin/Debug/net8.0/Diten.BuildingBlocks.InterfaceRegistry.Abstractions.dll
+  Diten.Platform.Domain -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Platform/src/Diten.Platform.Domain/bin/Debug/net8.0/Diten.Platform.Domain.dll
+  Diten.BuildingBlocks.BackgroundJobs -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/bin/Debug/net8.0/Diten.BuildingBlocks.BackgroundJobs.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Debug/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.Platform.Contracts -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Platform.Contracts/bin/Debug/net8.0/Diten.Platform.Contracts.dll
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/bin/Debug/net8.0/Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.Platform.Application -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Platform/src/Diten.Platform.Application/bin/Debug/net8.0/Diten.Platform.Application.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.PpmService.Contracts -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.PpmService/src/Diten.PpmService.Contracts/bin/Debug/net8.0/Diten.PpmService.Contracts.dll
+  Diten.Platform.Infrastructure -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Platform/src/Diten.Platform.Infrastructure/bin/Debug/net8.0/Diten.Platform.Infrastructure.dll
+  Diten.Platform.API -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Platform/src/Diten.Platform.API/bin/Debug/net8.0/Diten.Platform.API.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.73

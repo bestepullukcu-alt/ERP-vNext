@@ -1,0 +1,15 @@
+decoded claim set (token not printed; exp/iat/nbf/jti dropped):
+{
+ "sub": "b8422d6c-10c8-4e01-82a2-aa461285849e",
+ "email": "q366-admin@example.test",
+ "given_name": "Q366",
+ "family_name": "admin",
+ "actor_type": "tenant_user",
+ "tenant_id": "00000000-0000-0000-0000-000000000001",
+ "pwd_change_required": "false",
+ "legal_entity_id": "477b0f55-1d38-4459-a280-96e645332355",
+ "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "Admin",
+ "iss": "diten-auth-service",
+ "aud": "diten-erp"
+}
+permission claims: 81 | supplychain.shipments.*: ['supplychain.shipments.cancel', 'supplychain.shipments.create', 'supplychain.shipments.dispatch', 'supplychain.shipments.pod.capture', 'supplychain.shipments.read']

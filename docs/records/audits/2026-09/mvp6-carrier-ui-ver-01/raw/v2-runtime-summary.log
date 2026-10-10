@@ -1,0 +1,20 @@
+v2_manifest=e96578d0e874e8796469ee763aa9b6e723c7f0c9a966b5fe8a46b535279b26cb
+v2_index=da254157aa3edc3a32434281e71303c1fd7a2bf9bc8863afe4b21884b37ddd0a
+v2_build=PASS 0 errors 16 warnings
+admin_login=200
+authorized_page=200
+authorized_dt_carriers=true
+authorized_add_new_carrier=false
+real_admin_legal_entity_claim=absent
+real_admin_adapter=403 fail-closed
+uas_login=200
+uas_page=200
+uas_access_denied=true
+uas_dt_carriers=false
+uas_add_new_carrier=false
+diagnostic_scoped_list_empty=200
+diagnostic_scoped_create=201
+diagnostic_scoped_create_replay=201 idempotentReplay=true
+diagnostic_scoped_status=200 Suspended
+diagnostic_scope_token=NOT Auth-issued; never count as real JWT E2E PASS
+screenshots=none; browser surface unavailable to subagent

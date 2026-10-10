@@ -1,0 +1,27 @@
+{
+  "workPackage": "MVP6-MOD0187-E4-REWORK-SCOPE-01",
+  "branch": "feature/mvp6-logistics",
+  "head": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "inputCombinedManifestSha256": "4ae0f286479761512f50216e5bd8be721e48ae4839c062b57cfdd29696e2daa8",
+  "inputEntries": 97,
+  "inputEntriesMatched": 97,
+  "programBaselineSha256": "a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c",
+  "patches": {
+    "R14": "3423940b958c8a66c8300f71ecd5d3b9525103ab645662545fca8811905259f0",
+    "R21": "53aeccd053c33eb37deabc3d2be6ae3f1b7208c97b5e868e95385e3f284e90a7",
+    "R22_R25": "d0844d8c8e4b28dc3ab1f1559b6f49c45005567f6f1ea252fca6c51f84f75eca"
+  },
+  "patchApplyChecks": {"R14": "PASS", "R21": "PASS", "R22_R25": "PASS"},
+  "r21Evidence": {
+    "red": {"failed": 1, "expectedFailure": true},
+    "green": {"passed": 1, "failed": 0},
+    "claimReferenceRegression": {"passed": 28, "failed": 0}
+  },
+  "applicationState": {
+    "R14": "UNAPPLIED_PENDING_SHARED_AUTHORITY",
+    "R21": "APPLICABLE_CLAIMS_OWNED_PATCH_NOT_APPLIED_TO_IMMUTABLE_INPUT",
+    "R22_R25": "UNAPPLIED_PENDING_EVIDENCE_INJECTION_AUTHORITY"
+  },
+  "repositoryProductSourceChanges": [],
+  "writerComplete": true
+}

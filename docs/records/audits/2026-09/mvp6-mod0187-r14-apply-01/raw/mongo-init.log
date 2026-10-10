@@ -1,0 +1,2 @@
+Warning: Could not access fileat /Users/natig/.mongodb/mongosh/6ab17f5ad5b5b3f7f61efa5c_log: EPERM: operation not permitted, open '/Users/natig/.mongodb/mongosh/6ab17f5ad5b5b3f7f61efa5c_log'
+MongoServerSelectionError: connect EPERM 127.0.0.1:27314 - Local (0.0.0.0:0)

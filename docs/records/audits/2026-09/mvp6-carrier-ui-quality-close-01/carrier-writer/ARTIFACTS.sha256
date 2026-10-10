@@ -1,0 +1,15 @@
+57f90dadedd6e2304e3775fd1ea0bd7def29ad9d265ccbbeb892afdc04ba1adb  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/CARRIER-OWNED.patch
+b23b81400248e77a7b0af3a1d936b921f28ea44481b56dbb7e1078f2dec874fa  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/DISCARDED-ATTEMPTS.tsv
+33ab50d9764c04e4de3a3386308934216d7e032182009b359c28944cec7021d1  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/SOP-22.md
+3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/UI-SOURCE-MANIFEST-v3.tsv
+cb64d33e939a6212336d70f91f9ae1da9a36a3bf9381719859024378cc51c655  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/WARNING-DISPOSITION.tsv
+fbc83bfa5c9f4396c18abca42a4b997c2fea1fe1a039467e55b181618cb61f27  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/raw/L10N-RESOURCE-MATRIX.tsv
+39be1a21e69c8853d5ece2d703f047096a7e58080b176cc7a34f4837e718f724  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/raw/carrier-ui-quality-close.trx
+cfe34a611a787faec27d733372b847c5d61d443bfb91f77f3f459eba4d58cc42  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/raw/frontend-build.log
+50ebc2c02de3380ac60ee0f82df5b2fc0301dccb8e8dab1f13b1cf874790434d  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/raw/l10n-warning-probe.js
+fba6d8bae709092c2338ab2d162529160ab31c3f996a138d6a2475de78ee1fae  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/raw/l10n-warning-probe.log
+8dae95f04e8bb4de9bb7cdef832f801b1f24aeb5e53a71429e7f5bd17842c7f2  docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/raw/patch-apply.log
+8a62578a0f5652a12eed8cd5d4bd8824b8a079f50cc018848f001768aa76ab8d  frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js
+5393232f80bf7a24e468e7d49fbc2efcc7b564b1fa5c9daa2fcecc655760e79b  frontend/Diten.Web.Tests/JavaScript/CarrierIndexBehaviorTests.cs
+2b5406181d133dd9dce55c30f75f67ca3355b2648969280906b9abac308ff365  frontend/Diten.Web/bin/Debug/net8.0/Diten.Web.dll
+001fdfeca4dbe84291358d87ba2d869719230b739739e8cdd7450bd693e95834  frontend/Diten.Web.Tests/bin/Debug/net8.0/Diten.Web.Tests.dll

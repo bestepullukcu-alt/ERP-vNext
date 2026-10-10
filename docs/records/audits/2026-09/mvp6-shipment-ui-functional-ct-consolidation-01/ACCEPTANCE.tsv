@@ -1,0 +1,29 @@
+id	result	evidence_class	controlling_evidence	boundary
+ROOT-R2-CREATE	ACCEPTED	Inherited independent runtime	root-r2-ct-disposition CT-R2-03/04	Backend bytes unchanged in e6551f successor
+ROOT-R2-REPLAY-CONCURRENCY	ACCEPTED	Inherited independent runtime	root-r2-ct-disposition CT-R2-05	No UI patch impact
+ROOT-R2-ROLLBACK-RETRY	ACCEPTED	Inherited independent runtime	root-r2-ct-disposition CT-R2-06	No UI patch impact
+ROOT-R2-LEGACY-ISOLATION	ACCEPTED	Inherited independent runtime	root-r2-ct-disposition CT-R2-07/08	No derivation/backfill; browser-safe presentation not fully rerun
+ROOT-R2-AUDIT-OUTBOX-RESTART	ACCEPTED	Inherited plus successor runtime	root-r2 CT-R2-09/10; independent final restart/outbox	Pending-only; no publisher claim
+SHIP-UI-B01-RED	PRESERVED	Historical RED	rework evidence red.trx	Baseline failure retained
+SHIP-UI-B01-GREEN	ACCEPTED	Focused tests plus successor browser	rework GREEN; independent list 200/filter/DataTable	Exact nested partial fix only
+SHIP-UI-B02-RED	PRESERVED	Historical RED	rework evidence red.trx	Baseline fresh-UUID behavior retained as failing proof
+SHIP-UI-B02-GREEN	ACCEPTED	Focused tests plus successor runtime	independent transition/POD/root/replay/conflict/zero-write/restart	Exact authoritative persisted root only
+UI183-A01	PASS	Successor browser	independent final B01 runtime	Root-assisted browser operation disclosed
+UI183-A02	PASS	Inherited static plus successor browser	unchanged list adapter tests; valid empty 200/filter/DataTable	No claim of populated-row browser run
+UI183-A03	PARTIAL	Prior browser plus unchanged source	prior read-only create UAS-001	Unauthenticated/direct-adapter and missing-read list/detail not all fresh on successor
+UI183-A04	PASS	Prior and successor browser	create body contract; fresh successor create	Create files unchanged
+UI183-A05	PASS	Prior and successor browser	13-input Compact create	Create files unchanged
+UI183-A06	PASS	Successor browser/runtime	fresh create/detail/root/POD/restart	Root displayed and retained
+UI183-A07	PARTIAL	Prior denial plus positive mutations	read-only create denial; successor transition/POD success	Exact missing dispatch/cancel/POD permission combinations not freshly executed
+UI183-A08	PARTIAL	Successor allowed lifecycle	Draft→Planned→Dispatched PASS	Stale/race 422 INVALID_SHIPMENT_TRANSITION browser path remains open
+UI183-A09	PARTIAL	Successor POD success	Dispatched POD→Delivered PASS	POD_ALREADY_CAPTURED 409 and POD 422 browser handling remain open
+UI183-A10	PARTIAL	Successor replay/conflict	201 replay; changed-payload 409; zero-write	Unknown-response/500/503 stable retry and all create/transition replay variants remain open
+UI183-A11	PARTIAL	Successor root/correlation evidence	persisted root used for transition/POD; conflict correlation preserved	Support-trace display/copy and broader error precedence not fully browser-verified
+UI183-A12	INHERITED_HTTP	Independent backend runtime	root-r2 CT-R2-08	Cross-tenant/LE/deleted/unknown browser presentation not freshly run
+UI183-A13	PARTIAL	Prior/final English desktop browser	English surfaces and messages	Seven-language browser, RTL, 390/768, keyboard, accessible summary and PNG remain open
+UI183-A14	PARTIAL	Static plus successor browser	DataTable surface rendered; focused source tests pass	Full responsive/action-column browser matrix remains open
+UI183-A15	PASS	Prior and successor browser	SweetAlert2 confirmation; no native dialog observed	No secret/bearer retained
+UI183-A16	PARTIAL	Exact immutable source/build/runtime	e6551f manifest; native .NET 8; composed B01/B02 flow	A03/A07-A14 open portions prevent full UI baseline acceptance
+PNG	OPEN	No supported export	both browser VER dispositions	No waiver or criterion deletion
+PLATFORM-HEALTH	OBSERVED-503	Runtime observation	both browser lanes	Consumer success is not Platform aggregate health PASS
+FULL-MODULE-G5-ROLLOUT	OPEN	Out of scope	owner/CT boundaries	No acceptance expansion

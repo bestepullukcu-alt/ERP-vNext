@@ -1,0 +1,24 @@
+module	file	status	expected_sha256	actual_sha256	method
+claims	rework-model.py	recovered / hash-match	c8b3c3bbd2a0f17558f1b1811a65aae9823f760a9cd17ac662a2aa75d4f10e57	c8b3c3bbd2a0f17558f1b1811a65aae9823f760a9cd17ac662a2aa75d4f10e57	archived literal + four recorded textual patches; never executed
+claims	r01-r30-crosswalk.json	recovered / hash-match	a106db543b793842e9bd4fac2badcd2cf62dddc5b12b9a6d87feec77f99e8fe7	a106db543b793842e9bd4fac2badcd2cf62dddc5b12b9a6d87feec77f99e8fe7	archived literal
+claims	SOP-22-REWORK-HANDOFF.md	recovered / hash-match	6da9ee813aa5c970e8f70fa6606a5f62a068fec2be2f34e314a37bc14286c4bf	6da9ee813aa5c970e8f70fa6606a5f62a068fec2be2f34e314a37bc14286c4bf	archived literal
+claims	manifest.json	recovered / hash-match	51c102bb9275f61b93fcb0ad1698fc761049b533601c184b165c334ca7dcf55a	51c102bb9275f61b93fcb0ad1698fc761049b533601c184b165c334ca7dcf55a	archived literal + recorded manifest serialization/hash binding
+claims	SOP-22-VER-REPORT.md	recovered / hash-match	e8f50d9554fe02f14db34f88db3f0cf9a457dd25d8c9ed1e1d50781f9294eadb	e8f50d9554fe02f14db34f88db3f0cf9a457dd25d8c9ed1e1d50781f9294eadb	archived literal
+returns	verify-candidates.py	recovered literal / historical hash unavailable	not recorded in recovered CT manifest	2614f77ec2c91f6380b085f64288353bd5de75ef6d711559aeff52df4e2ff917	archived literal
+returns	SOP-22-VER-REPORT.md	recovered / hash-match	b76974a868e78ca9068ea7570dd091a8f6016a129090251c23c41a8877a24cf8	b76974a868e78ca9068ea7570dd091a8f6016a129090251c23c41a8877a24cf8	archived literal
+returns	baseline.openapi.yaml	recovered / hash-match	93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571	93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571	current file matches historical baseline exactly
+claims	baseline.openapi.yaml	recovered / hash-match	93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571	93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571	current file matches historical baseline exactly
+returns	candidate.patch	missing	9c9859bfa87114e4b9480ea81405e926c7d9cd4868cb70f4ceed83f29344436c	—	No exact bytes reconstructed
+returns	shipment-bundle.consumer-candidate.yaml	missing	d411edb3bb978875aede9b8946335acea47f31d1ada55abaacb0dc56dbf1f482	—	No exact bytes reconstructed
+returns	manifest.json	missing	20235f7577e1eba9f0debeb347ca534a5f98df24e17f6b1ba1a213a568b7c6bc	—	No exact bytes reconstructed
+returns	semantics-candidate.md	missing	not recovered	—	No exact bytes reconstructed
+returns	lifecycle-fixtures.json	missing	not recovered	—	No exact bytes reconstructed
+returns	tests.json	missing	not recovered	—	No exact bytes reconstructed
+claims	candidate.patch	missing	d503b149806492f583943c19a229135c535175ba8c02c9746db3503aec0d56c6	—	No exact bytes reconstructed
+claims	shipment-bundle.consumer-candidate.yaml	missing	412b6cd7119be0ecf4aa3cbf8267abd4ac560f978838187556313cb342d866e0	—	No exact bytes reconstructed
+claims	rework-results.json	missing	c3ad6156385ec7d4a9526ffb4c35d50b112245bea8bd767e3b0406c219053d5d	—	No exact bytes reconstructed
+claims	r01-r30-crosswalk.md	missing	86d42e0b5a54eab56a1b023ad1e1658edaa8f51212a5c4a27cf91c8e11dbf932	—	No exact bytes reconstructed
+claims	semantics-candidate.md	missing	not recovered	—	No exact bytes reconstructed
+claims	lifecycle-fixtures.json	missing	not recovered	—	No exact bytes reconstructed
+claims	tests.json	missing	not recovered	—	No exact bytes reconstructed
+claims	verify-candidates.py	missing	not recovered	—	No exact bytes reconstructed

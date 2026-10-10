@@ -1,0 +1,4 @@
+# CT verdict + owner decision — evidence kit v1.1 (2026-09-26); recorded by AL-MVP6-KIT-V12-01 at 2026-09-26T12:29+03:00 on CT instruction
+CT verdict: Q63 independent review (docs/records/audits/2026-09/mvp6-evidence-kit-v1-1-independent-review-01/, ARTIFACTS 2/2) CT ACCEPTED; CT confirmed F1 in source (MDM PlatformRegistrationOptions.ModuleRegistrationCredentialSecret vs kit k04_config.py pairing to MDM PlatformRegistration:InternalApiKey). Kit v1.1 not approvable as is.
+Owner decision (CT conversation, question tool, ~12:30): V2 — revise to proposal-03 (F1 required; F2–F5 fixed; F6–F14 fixed or accepted with reason); then a narrow independent re-check of changed files; then owner approval; then Q24 validation on the Mac.
+Ledger lines pending for the ledger writer: Q57 → DONE (v1.1 superseded by v1.2); Q63 → DONE (CT ACCEPTED; recommendation V2); new Q66 kit v1.2 proposal IN-PROGRESS; Q58 → HELD (awaits v1.2 + re-check).

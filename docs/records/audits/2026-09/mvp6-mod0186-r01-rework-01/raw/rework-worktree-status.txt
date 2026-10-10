@@ -1,0 +1,37 @@
+## codex/mod-0186-r01-rework-01
+ M docs/analysis/contracts/shipment-bundle.openapi.yaml
+ M services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+ M services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs
+ M services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs
+ M services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs
+ M services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs
+?? docs/analysis/contracts/claims-semantics-v3.0.0.md
+?? docs/analysis/contracts/returns-semantics-v3.0.0.md
+?? evidence/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Claims/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Returns/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Claims/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Returns/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentDetailReadResult.cs
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Claims/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/
+?? services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentDetailMaterializer.cs
+?? services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Carriers/
+?? services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/
+?? services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/
+?? services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/
+?? services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentRootHttpTests.cs
+?? services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentRootStorageTests.cs
+?? services/Diten.SupplyChainService/tests/carriers/
+?? services/Diten.SupplyChainService/tests/claims/
+?? services/Diten.SupplyChainService/tests/loads/
+?? services/Diten.SupplyChainService/tests/returns/
+?? services/Diten.SupplyChainService/tests/root_uptake/

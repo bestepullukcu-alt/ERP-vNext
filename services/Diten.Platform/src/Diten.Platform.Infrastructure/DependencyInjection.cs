@@ -11,6 +11,7 @@ using Diten.Platform.Application.Features.WorkingCalendar.Services;
 using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Contracts.Eventing;
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Services;
 using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Domain.Repositories;
@@ -203,6 +204,11 @@ public static class DependencyInjection
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        // R-2b (PR #134): the internal legal-entity path is retired outright. R-2 had already left it with no
+        // production caller — InternalTenantLegalEntityScopeController held the only call to Bind, so IsBound was
+        // never true and the service token was never minted; Q481 measured that a deliberately wrong
+        // MdmServiceIdentity secret changed nothing. The context, the token provider, their options and MDM's
+        // internal reference-validation endpoint are gone, so there is nothing left to register here.
         services.AddTenantAuthorizationContext();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddSingleton<EntitlementCacheService>();

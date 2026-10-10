@@ -1,0 +1,5 @@
+v3 index.js + v4 test (fix absent): Create_surface_keeps_keyboard_focus_after_a_rejected_submit = Failed; others: Counter({'Passed': 15})
+   message: const restoreCreateFocus
+v4 (fix present): Create_surface_keeps_keyboard_focus_after_a_rejected_submit = Passed; others: Counter({'Passed': 15})
+v4 web-all Claims classes: {'ClaimFormContractTests': 31, 'ClaimIndexBehaviorTests': 16, 'SupplyChainClaimsControllerTests': 19} total 66 all passed: True
+v4 web-all Claims result rows: {('ClaimFormContractTests', 'Passed'): 40, ('ClaimIndexBehaviorTests', 'Passed'): 16, ('SupplyChainClaimsControllerTests', 'Passed'): 32} total 88

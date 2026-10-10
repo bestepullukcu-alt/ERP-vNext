@@ -1,0 +1,48 @@
+@using Diten.Web.Views.SupplyChain.Loads
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LoadsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    // MOD-0185 Loads tenant list (pack §30, scope mvp6-loads-ui-scope-01). Built by R-4b. List and create only; no transition.
+    ViewData["Title"] = Localizer["LoadsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@if (!Perms.Has("supplychain.loads.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["LoadsTitle"].Value" />
+    return;
+}
+
+@* MODULE-RECIPE 3.6/4.1: skeleton while the first load runs, the table, and a failed load shown as an alert in place of the
+   table (a 403 shows the denied card instead) — never an empty table under a toast. *@
+<div id="loadsListSurface">
+    @* Contract marker: <partial name="_Filter" /> *@
+    <partial name="~/Views/SupplyChain/Loads/_Filter.cshtml" />
+
+    <div class="mb-3">
+        <h5 class="mb-0">@Localizer["LoadsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+
+    <div id="loadsLoadError" class="alert alert-danger d-none" role="alert"></div>
+    <partial name="~/Views/SupplyChain/Loads/_DataTable.cshtml" />
+</div>
+<div id="loadsListDenied" hidden><partial name="_AccessDenied" model="@Localizer["LoadsTitle"].Value" /></div>
+
+@if (Perms.Has("supplychain.loads.create"))
+{
+    <partial name="~/Views/SupplyChain/Loads/_CreateEditOffcanvas.cshtml" />
+}
+
+<script id="load-permissions" type="application/json">
+    @Json.Serialize(new Dictionary<string, bool> { ["canCreate"] = Perms.Has("supplychain.loads.create") })
+</script>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/SupplyChain/Loads/_IndexL10n.cshtml" />
+    <script src="~/assets/js/SupplyChain/Loads/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/SupplyChain/Loads/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,23 @@
+acceptance	module_scope	prospective_test_level	exact_oracle	current_status
+AC-01	Shared placement	Static governance	SCE/Diten.SupplyChainService remains a selected spec target; governance and pack bytes unchanged; no ready-for-dev	SPEC-ONLY PASS; durable owner concurrence open
+AC-02	Shared base dependency	Static contract/hash	SUPPLIER v1 exact hash consumed; no Supplier master/profile replica or new approved API	SPEC-ONLY PASS; producer proof open
+AC-03	Portal status policy	Module contract+handler fixture	Active→ACTIVE and operations allowed; OnHold/Blocked/Inactive→SUSPENDED and content operations403; affirmative LE eligibility required	PROSPECTIVE; LE authority open
+AC-04	Base/LE failure	Module dependency-negative fixture	Missing LE evidence or base timeout/malformed/mismatched response→503; writes/receipts/events0	PROSPECTIVE; live seam open
+AC-05	Suspended portal	HTTP/handler fixture	SUSPENDED count0 and no lastSubmissionAt; list/get/create/submit403; receipt0	PROSPECTIVE
+AC-06	Future bulk validation	Shared seam contract fixture	ID-keyed order-independent exact set; missing/duplicate/extra/unknown enum→503	OUT OF BOUNDED OPERATIONS; seam owner only
+AC-07	Frozen bytes	Hash check	SUPPLIER and SUPPLIER-PERFORMANCE hashes unchanged	PASS for this spec output
+AC-08	Binding cardinality	Security adapter fixture	Zero/many active bindings403; one binding yields trusted S1; separate explicitly trusted LE may resolve separately	PROSPECTIVE; security provider open
+AC-09	Auth precedence	HTTP/JWT integration	Expired JWT+bad body→401; authenticated missing grant+foreign target→403; no mapping/target call	PROSPECTIVE; auth concurrence/open runtime
+AC-10	Own-record isolation	Repository+HTTP integration	Exact Tenant+LE+mappedSupplier+Id+notDeleted predicate; all foreign/deleted variants404; own target200	PROSPECTIVE
+AC-11	Revocation and outage	Process/concurrency integration	Revoke-before-commit→403 and write/event0; mapping timeout→503 PORTAL_IDENTITY_UNAVAILABLE; revoked receipt inaccessible	PROSPECTIVE; atomic security fence open
+AC-12	Identity override	HTTP schema/handler	Authenticated scoped request with body/query supplier/tenant/LE override→400; trusted identity unchanged	PROSPECTIVE; body schema partially frozen
+AC-13	Create replay	Persistence concurrency	First create201; exact replay200 same id/version; total business write/receipt1 and event≤1; object-key order stable	PROSPECTIVE
+AC-14	Submit replay/precedence	Persistence+HTTP	Exact successful retry200 despite current SUBMITTED/version2; new stale key409; new current key on SUBMITTED422	PROSPECTIVE
+AC-15	Fingerprint/key validation	Handler+persistence	Different body/If-Match same tuple/key→409 and old receipt unchanged; edge whitespace key400, no trim alias	PROSPECTIVE; 409 wire open
+AC-16	Remap/actor/LE isolation	Persistence+security fixture	S2 namespace new; S1 target404; actor V and LE L2 cannot read U/L1 receipt; same actor+Supplier new revision only after current gates	PROSPECTIVE; security binding open
+AC-17	Replay race/retention	Mongo concurrency	Identical race one commit+outbox and loser replay; different fingerprint loser409; record-lifetime retention prevents duplicate create	PROSPECTIVE
+AC-18..AC-22	MOD-0147 scoring	None	No MOD-0148 assertion	NOT APPLICABLE
+AC-23..AC-24	MOD-0147 risk lifecycle	None	No MOD-0148 assertion	NOT APPLICABLE
+AC-25	Portal source visibility contribution	Cross-module contract fixture	MOD-0148 exposes only scoped records; draft must not be treated as eligible source by MOD-0147	PROSPECTIVE; source-resolution seam open
+AC-26	MOD-0147 taxonomy/remediation	None	No MOD-0148 assertion	NOT APPLICABLE
+AC-27	Test-only fixture boundary	Evidence classification	All fixture results marked SIMULATED; cannot prove live producer/security uptake, G5, or runtime readiness	SPEC REQUIREMENT

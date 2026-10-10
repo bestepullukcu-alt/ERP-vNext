@@ -1,0 +1,47 @@
+{
+  "antiForgeryPresent": true,
+  "loginStatus": 200,
+  "pod": {
+    "kind": "pod",
+    "request": {
+      "idempotencyKey": "c2000000-0000-4000-8000-000000000012",
+      "payloadSha256": "9283a67d8a6c59f22ad20eeef13d2819aed2bf64d61c49b05bdfd7ce26960507",
+      "root": "cca9a611-b53d-4ed9-8484-99528d903381",
+      "shipmentId": "194c6d7b-a529-4bbf-83ce-f9263d38bb75"
+    },
+    "response": {
+      "body": {
+        "contractVersion": "v1",
+        "error": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "correlationId": "cca9a611-b53d-4ed9-8484-99528d903381",
+          "message": "SHIPMENT_NOT_FOUND"
+        }
+      },
+      "correlationHeader": "cca9a611-b53d-4ed9-8484-99528d903381",
+      "status": 404
+    }
+  },
+  "profile": "real-auth-t1-le-b",
+  "transition": {
+    "kind": "transition",
+    "request": {
+      "idempotencyKey": "c1000000-0000-4000-8000-000000000012",
+      "payloadSha256": "640fd3dfba44a2c4da4897eea6caa869024f421a639b90f4d027da3548cba090",
+      "root": "cca9a611-b53d-4ed9-8484-99528d903381",
+      "shipmentId": "194c6d7b-a529-4bbf-83ce-f9263d38bb75"
+    },
+    "response": {
+      "body": {
+        "contractVersion": "v1",
+        "error": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "correlationId": "cca9a611-b53d-4ed9-8484-99528d903381",
+          "message": "SHIPMENT_NOT_FOUND"
+        }
+      },
+      "correlationHeader": "cca9a611-b53d-4ed9-8484-99528d903381",
+      "status": 404
+    }
+  }
+}

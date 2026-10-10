@@ -1,0 +1,69 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Debug/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Domain -> /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Debug/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Debug/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Debug/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Debug/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Api -> /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll
+  Diten.SupplyChainService.Tests -> /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll
+Test run for /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.71]     Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Receipt_insert_failure_after_plan_write_rolls_back_and_same_key_retries [FAIL]
+[xUnit.net 00:00:02.72]     Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Committed_write_concern_uncertainty_resolves_original_receipt [FAIL]
+[xUnit.net 00:00:02.73]     Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Unknown_commit_without_receipt_returns_unresolved_then_exact_key_recovers [FAIL]
+  Failed Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Receipt_insert_failure_after_plan_write_rolls_back_and_same_key_retries [17 ms]
+  Error Message:
+   MongoDB.Driver.MongoCommandException : Command configureFailPoint failed: no such command: 'configureFailPoint'.
+  Stack Trace:
+     at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ProcessResponse(ConnectionId connectionId, CommandMessage responseMessage)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.SendMessageAndProcessResponseAsync(CommandRequestMessage message, Int32 responseTo, IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ExecuteAsync(IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.Server.ServerChannel.ExecuteProtocolAsync[TResult](IWireProtocol`1 protocol, ICoreSession session, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadOperationExecutor.ExecuteAsync[TResult](IRetryableReadOperation`1 operation, RetryableReadContext context, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(RetryableReadContext context, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Receipt_insert_failure_after_plan_write_rolls_back_and_same_key_retries() in /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs:line 36
+--- End of stack trace from previous location ---
+  Failed Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Committed_write_concern_uncertainty_resolves_original_receipt [7 ms]
+  Error Message:
+   MongoDB.Driver.MongoCommandException : Command configureFailPoint failed: no such command: 'configureFailPoint'.
+  Stack Trace:
+     at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ProcessResponse(ConnectionId connectionId, CommandMessage responseMessage)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.SendMessageAndProcessResponseAsync(CommandRequestMessage message, Int32 responseTo, IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ExecuteAsync(IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.Server.ServerChannel.ExecuteProtocolAsync[TResult](IWireProtocol`1 protocol, ICoreSession session, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadOperationExecutor.ExecuteAsync[TResult](IRetryableReadOperation`1 operation, RetryableReadContext context, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(RetryableReadContext context, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Committed_write_concern_uncertainty_resolves_original_receipt() in /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs:line 73
+--- End of stack trace from previous location ---
+  Failed Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Unknown_commit_without_receipt_returns_unresolved_then_exact_key_recovers [8 ms]
+  Error Message:
+   MongoDB.Driver.MongoCommandException : Command configureFailPoint failed: no such command: 'configureFailPoint'.
+  Stack Trace:
+     at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ProcessResponse(ConnectionId connectionId, CommandMessage responseMessage)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.SendMessageAndProcessResponseAsync(CommandRequestMessage message, Int32 responseTo, IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ExecuteAsync(IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.Server.ServerChannel.ExecuteProtocolAsync[TResult](IWireProtocol`1 protocol, ICoreSession session, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadOperationExecutor.ExecuteAsync[TResult](IRetryableReadOperation`1 operation, RetryableReadContext context, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(RetryableReadContext context, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Unknown_commit_without_receipt_returns_unresolved_then_exact_key_recovers() in /private/tmp/mvp6-mod0190-http-integration-02/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs:line 56
+--- End of stack trace from previous location ---
+Results File: /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0190-http-dev-01/mod0190-targeted-r3.trx
+
+Failed!  - Failed:     3, Passed:    16, Skipped:     0, Total:    19, Duration: 2 s - Diten.SupplyChainService.Tests.dll (net8.0)

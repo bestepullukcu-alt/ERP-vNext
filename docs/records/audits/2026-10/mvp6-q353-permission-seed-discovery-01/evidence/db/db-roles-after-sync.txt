@@ -1,0 +1,8 @@
+rolePermissions sample fields: _id,CreatedAt,CreatedBy,UpdatedAt,UpdatedBy,IsDeleted,TenantId,RoleId,PermissionId,AssignedAt,AssignedBy,GrantSource,SourceModuleCode
+roles sample fields: _id,CreatedAt,CreatedBy,UpdatedAt,UpdatedBy,IsDeleted,TenantId,Name,DisplayName,Description,IsSystem
+roles total: 5 ; by name: {"SuperAdmin":1,"Admin":1,"Viewer":1,"GQD":1,"QADocumentation":1}
+rolePermissions rows for supplychain.*: 5
+SuperAdmin @tenant 00000000-0000-0000-0000-000000000001 -> supplychain.shipments.cancel, supplychain.shipments.create, supplychain.shipments.dispatch, supplychain.shipments.pod.capture, supplychain.shipments.read
+SuperAdmin: roles=1 supplychain grants=5
+Admin: roles=1 supplychain grants=0
+Viewer: roles=1 supplychain grants=0

@@ -1,0 +1,15 @@
+id	requirement	result	evidence	note
+V01	Writer-complete, archive and artifact integrity	PASS	SOP-22-VER-REPORT.md; evidence.tar.gz::dev-artifact-manifest-check.json	16/16 DEV artifacts and 354/354 successor rows hash-match
+V02	Only three approved Shipment UI/test paths changed	PASS	DEV shipment-line-accessibility.patch; CHANGED-FILES.tsv	No shared layout, DataTable, Auth, Gateway, contract, backend or Git path in diff
+V03	Native .NET 8 focused accessibility contract	PASS	evidence.tar.gz::focused.trx	1/1 PASS on SDK 8.0.417 / runtime 8.0.23
+V04	One-line unique IDs, label/control links and accessible names	PASS	evidence.tar.gz::browser-accessibility.json	6 inputs, 6 unique IDs, 6 matching labels; all name attributes absent
+V05	Keyboard add preserves uniqueness and focuses new line	PASS	evidence.tar.gz::browser-accessibility.json	2-line and 3-line Enter activation; 12/18 unique IDs; new lineNumber focused
+V06	Middle removal reindexes and restores focus	PASS	evidence.tar.gz::browser-accessibility.json	18→12 inputs; values A/C retained; focus shipmentLine_1_lineNumber
+V07	Label activation, logical Tab order and validation focus	PASS	evidence.tar.gz::browser-accessibility.json	Label focused matching input; plannedDeliverAt→btnAddLine→lineNumber; invalid submit focused alert
+V08	390px and 768px responsive behavior	PASS	evidence.tar.gz::browser-accessibility.json	No document overflow; one/multiple lines retained correct bindings
+V09	Model-binding and payload semantics preserved	PASS	create.js:6,44-50; bounded tests; browser evidence	Six data-field keys/order unchanged; no input.name introduced; A/C values retained after reindex
+V10	B01/B02 narrow UI/controller regression	PASS	evidence.tar.gz::shipment-bounded.trx	17/17 PASS; includes partial resolution, authoritative-root mutation and controller wire tests
+V11	Root R2 narrow regression	PASS	evidence.tar.gz::root-r2.trx	7/7 PASS; missing/null/malformed/valid/nil plus no-write materialization
+V12	Durable PNG	OPEN	evidence.tar.gz::browser-accessibility.json	No documented supported durable export capability; no bypass attempted
+V13	Auth/backend acceptance provenance	INHERITED	SOP-22-VER-REPORT.md	Stateless fixture is presentation evidence only and was not relabeled as fresh Auth/backend evidence
+V14	Process cleanup and product-source no-change	PASS	evidence.tar.gz::cleanup.txt; repo-final.txt	Ports 6042/6043 released; only this owned VER output was written

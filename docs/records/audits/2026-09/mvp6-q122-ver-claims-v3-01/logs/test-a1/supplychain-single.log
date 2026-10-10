@@ -1,0 +1,968 @@
+Test run for /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:01:06.60]     Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [FAIL]
+  Failed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [1 ms]
+  Error Message:
+   System.InvalidOperationException : Explicit write/read restart mode required; exclude from ordinary suite.
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReplayTests.cs:line 46
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:07.62]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "5", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 5, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:46:41.7651970Z", LastUpdateTimestamp: "2026-09-27T11:46:41.7651980Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 18
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:12.63]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-time") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-time") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "6", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 6, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:46:46.7690670Z", LastUpdateTimestamp: "2026-09-27T11:46:46.7690700Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:17.64]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-status") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-status") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "7", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 7, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:46:51.8735310Z", LastUpdateTimestamp: "2026-09-27T11:46:51.8735320Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:22.65]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-causation") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-causation") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "8", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 8, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:46:56.7767130Z", LastUpdateTimestamp: "2026-09-27T11:46:56.7767140Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:27.66]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-duplicate") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-duplicate") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "9", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 9, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:01.7924510Z", LastUpdateTimestamp: "2026-09-27T11:47:01.7924520Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:32.66]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-missing") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-missing") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "10", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 10, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:06.7912730Z", LastUpdateTimestamp: "2026-09-27T11:47:06.7912730Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:37.67]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-correlation") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-correlation") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "11", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 11, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:11.8043100Z", LastUpdateTimestamp: "2026-09-27T11:47:11.8043100Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:42.68]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-duplicate") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-duplicate") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "12", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 12, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:16.8049830Z", LastUpdateTimestamp: "2026-09-27T11:47:16.8049830Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:47.69]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-correlation") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-correlation") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "13", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 13, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:21.8073760Z", LastUpdateTimestamp: "2026-09-27T11:47:21.8073760Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:52.70]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-time") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-time") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "14", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 14, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:26.8317960Z", LastUpdateTimestamp: "2026-09-27T11:47:26.8317970Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:03:57.71]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "slot-not-released") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "slot-not-released") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "15", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 15, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:31.8410370Z", LastUpdateTimestamp: "2026-09-27T11:47:31.8410370Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:02.72]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-payload") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-payload") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "16", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 16, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:36.8491190Z", LastUpdateTimestamp: "2026-09-27T11:47:36.8491200Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:07.72]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-status") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-status") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "17", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 17, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:41.8502660Z", LastUpdateTimestamp: "2026-09-27T11:47:41.8502660Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:12.72]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-missing") [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-missing") [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "18", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 18, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:46.8626210Z", LastUpdateTimestamp: "2026-09-27T11:47:46.8626210Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(String mutant) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 182
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:17.74]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-exact", aggregateSkip: 1) [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-exact", aggregateSkip: 1) [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "19", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 19, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:51.8587640Z", LastUpdateTimestamp: "2026-09-27T11:47:51.8587640Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(String boundary, Int32 aggregateSkip) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 233
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:22.74]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-broad", aggregateSkip: 2) [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-broad", aggregateSkip: 2) [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "20", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 20, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:47:56.8672620Z", LastUpdateTimestamp: "2026-09-27T11:47:56.8672620Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(String boundary, Int32 aggregateSkip) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 233
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:27.77]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "active-slot", aggregateSkip: 4) [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "active-slot", aggregateSkip: 4) [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "21", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 21, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:01.8972990Z", LastUpdateTimestamp: "2026-09-27T11:48:01.8973000Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(String boundary, Int32 aggregateSkip) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 233
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:32.78]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-broad", aggregateSkip: 0) [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-broad", aggregateSkip: 0) [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "22", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 22, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:06.9025950Z", LastUpdateTimestamp: "2026-09-27T11:48:06.9025950Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(String boundary, Int32 aggregateSkip) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 233
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:37.79]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-exact", aggregateSkip: 3) [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-exact", aggregateSkip: 3) [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "23", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 23, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:11.9127680Z", LastUpdateTimestamp: "2026-09-27T11:48:11.9127680Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(String boundary, Int32 aggregateSkip) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 233
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:42.80]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_commit_ack_loss_recovers_original_scoped_receipt [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_commit_ack_loss_recovers_original_scoped_receipt [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "24", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 24, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:16.9275240Z", LastUpdateTimestamp: "2026-09-27T11:48:16.9275240Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_commit_ack_loss_recovers_original_scoped_receipt() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 296
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:47.81]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_reconciliation_read_failure_is_not_success [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_reconciliation_read_failure_is_not_success [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "25", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 25, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:21.9347080Z", LastUpdateTimestamp: "2026-09-27T11:48:21.9347080Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_reconciliation_read_failure_is_not_success() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 217
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:52.82]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "26", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 26, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:26.9472670Z", LastUpdateTimestamp: "2026-09-27T11:48:26.9472680Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 315
+--- End of stack trace from previous location ---
+[xUnit.net 00:04:57.83]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "27", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 27, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:31.9583020Z", LastUpdateTimestamp: "2026-09-27T11:48:31.9583020Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 273
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:02.84]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "28", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 28, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:36.9722610Z", LastUpdateTimestamp: "2026-09-27T11:48:36.9722610Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 335
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:07.86]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Unknown_commit_without_receipt_stays_unresolved [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Unknown_commit_without_receipt_stays_unresolved [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "29", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 29, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:41.9870980Z", LastUpdateTimestamp: "2026-09-27T11:48:41.9870980Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Unknown_commit_without_receipt_stays_unresolved() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 259
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:12.87]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_ack_loss_keeps_one_scoped_terminal_effect [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_ack_loss_keeps_one_scoped_terminal_effect [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "30", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 30, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:46.9971560Z", LastUpdateTimestamp: "2026-09-27T11:48:46.9971560Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.Reset(String appName) in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 104
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_ack_loss_keeps_one_scoped_terminal_effect() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 352
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:17.88]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Duplicate_policy_preserves_replay_precedence_scope_and_non_name_duplicate_failures [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Duplicate_policy_preserves_replay_precedence_scope_and_non_name_duplicate_failures [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "5", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 5, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:52.2350960Z", LastUpdateTimestamp: "2026-09-27T11:48:52.2350960Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Duplicate_policy_preserves_replay_precedence_scope_and_non_name_duplicate_failures() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityConcurrencyTests.cs:line 64
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:22.88]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "5", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 5, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:48:57.2069700Z", LastUpdateTimestamp: "2026-09-27T11:48:57.2069700Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityConcurrencyTests.cs:line 21
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:27.90]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "5", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 5, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:49:02.2258990Z", LastUpdateTimestamp: "2026-09-27T11:49:02.2258990Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityConcurrencyTests.cs:line 104
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:32.91]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityIsolationTests.Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityIsolationTests.Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "5", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 5, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:49:07.2062260Z", LastUpdateTimestamp: "2026-09-27T11:49:07.2062260Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityIsolationTests.Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityIsolationTests.cs:line 17
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:37.92]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "5", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 5, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:49:12.2345600Z", LastUpdateTimestamp: "2026-09-27T11:49:12.2345600Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityLeaseTests.cs:line 17
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:42.93]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry [FAIL]
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry [5 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = WritableServerSelector, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "5", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 5, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:57192
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-27T11:49:17.2068200Z", LastUpdateTimestamp: "2026-09-27T11:49:17.2068200Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.WritableServerBinding.GetWriteChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.DropCollectionOperation.ExecuteAsync(IWriteBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteWriteOperationAsync[TResult](IWriteBinding binding, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteWriteOperationAsync[T](IClientSessionHandle session, IWriteOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.DropCollectionAsync(IClientSessionHandle session, String name, DropCollectionOptions options, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync(Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry() in /Users/natig/mvp6-env/q122/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs:line 80
+--- End of stack trace from previous location ---
+Results File: /Users/natig/mvp6-env/q122/logs/test/supplychain-single.trx
+
+Failed!  - Failed:    33, Passed:   384, Skipped:     0, Total:   417, Duration: 5 m 39 s - Diten.SupplyChainService.Tests.dll (net8.0)

@@ -1,0 +1,154 @@
+Build started 22/09/2026 19:15:02.
+Test run for /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.16]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.24]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.25]   Starting:    Diten.SupplyChainService.Tests
+[xUnit.net 00:00:10.69]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers [FAIL]
+[xUnit.net 00:00:10.69]       Assert.ThrowsAny() Failure: Exception type was not compatible
+[xUnit.net 00:00:10.69]       Expected: typeof(MongoDB.Driver.MongoException)
+[xUnit.net 00:00:10.69]       Actual:   typeof(System.TimeoutException)
+[xUnit.net 00:00:10.69]       ---- System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "InvalidatedBecause:ChannelException:MongoDB.Driver.MongoNodeIsRecoveringException: Server returned node is recovering error (code = 91, codeName = "ShutdownInProgress").
+[xUnit.net 00:00:10.69]          at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ProcessResponse(ConnectionId connectionId, CommandMessage responseMessage)
+[xUnit.net 00:00:10.69]          at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.SendMessageAndProcessResponseAsync(CommandRequestMessage message, Int32 responseTo, IConnection connection, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.69]          at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ExecuteAsync(IConnection connection, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.69]          at MongoDB.Driver.Core.Servers.Server.ServerChannel.ExecuteProtocolAsync[TResult](IWireProtocol`1 protocol, ICoreSession session, CancellationToken cancellationToken)", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", LastHeartbeatTimestamp: null, LastUpdateTimestamp: "2026-09-22T16:15:05.9921280Z" }] }.
+[xUnit.net 00:00:10.70]       Stack Trace:
+[xUnit.net 00:00:10.70]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs(180,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers()
+[xUnit.net 00:00:10.70]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs(181,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers()
+[xUnit.net 00:00:10.70]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:10.70]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.Core.Operations.FindOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.MongoCollectionImpl`1.ExecuteReadOperationAsync[TResult](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.MongoCollectionImpl`1.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]            at MongoDB.Driver.IAsyncCursorSourceExtensions.FirstOrDefaultAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+[xUnit.net 00:00:10.70]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs(111,0): at Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityLeaseStore.TerminalAsync(CapacityScope scope, Guid id, Int32 version, Int64 fence, String status, IReadOnlyList`1 bottlenecks, Boolean expired, CancellationToken ct)
+[xUnit.net 00:00:10.70]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs(120,0): at Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityLeaseStore.TerminalAsync(CapacityScope scope, Guid id, Int32 version, Int64 fence, String status, IReadOnlyList`1 bottlenecks, Boolean expired, CancellationToken ct)
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers [10 s]
+  Error Message:
+   Assert.ThrowsAny() Failure: Exception type was not compatible
+Expected: typeof(MongoDB.Driver.MongoException)
+Actual:   typeof(System.TimeoutException)
+---- System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "InvalidatedBecause:ChannelException:MongoDB.Driver.MongoNodeIsRecoveringException: Server returned node is recovering error (code = 91, codeName = "ShutdownInProgress").
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ProcessResponse(ConnectionId connectionId, CommandMessage responseMessage)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.SendMessageAndProcessResponseAsync(CommandRequestMessage message, Int32 responseTo, IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ExecuteAsync(IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.Server.ServerChannel.ExecuteProtocolAsync[TResult](IWireProtocol`1 protocol, ICoreSession session, CancellationToken cancellationToken)", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", LastHeartbeatTimestamp: null, LastUpdateTimestamp: "2026-09-22T16:15:05.9921280Z" }] }.
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 180
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 181
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.FindOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoCollectionImpl`1.ExecuteReadOperationAsync[TResult](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoCollectionImpl`1.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at MongoDB.Driver.IAsyncCursorSourceExtensions.FirstOrDefaultAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityLeaseStore.TerminalAsync(CapacityScope scope, Guid id, Int32 version, Int64 fence, String status, IReadOnlyList`1 bottlenecks, Boolean expired, CancellationToken ct) in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs:line 111
+   at Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityLeaseStore.TerminalAsync(CapacityScope scope, Guid id, Int32 version, Int64 fence, String status, IReadOnlyList`1 bottlenecks, Boolean expired, CancellationToken ct) in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs:line 120
+[xUnit.net 00:00:20.99]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers [FAIL]
+[xUnit.net 00:00:20.99]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:20.99]       Expected: 202
+[xUnit.net 00:00:20.99]       Actual:   503
+[xUnit.net 00:00:20.99]       Stack Trace:
+[xUnit.net 00:00:20.99]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs(166,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers()
+[xUnit.net 00:00:20.99]         --- End of stack trace from previous location ---
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers [10 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 202
+Actual:   503
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 166
+--- End of stack trace from previous location ---
+[xUnit.net 00:01:47.33]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry [FAIL]
+[xUnit.net 00:01:47.33]       System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "4", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 4, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "InvalidatedBecause:ChannelException:MongoDB.Driver.MongoNodeIsRecoveringException: Server returned node is recovering error (code = 91, codeName = "ShutdownInProgress").
+[xUnit.net 00:01:47.33]          at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ProcessResponse(ConnectionId connectionId, CommandMessage responseMessage)
+[xUnit.net 00:01:47.33]          at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.SendMessageAndProcessResponseAsync(CommandRequestMessage message, Int32 responseTo, IConnection connection, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.33]          at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ExecuteAsync(IConnection connection, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.33]          at MongoDB.Driver.Core.Servers.Server.ServerChannel.ExecuteProtocolAsync[TResult](IWireProtocol`1 protocol, ICoreSession session, CancellationToken cancellationToken)", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", LastHeartbeatTimestamp: null, LastUpdateTimestamp: "2026-09-22T16:16:46.7773710Z" }] }.
+[xUnit.net 00:01:47.33]       Stack Trace:
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.Core.Operations.FindOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.MongoCollectionImpl`1.ExecuteReadOperationAsync[TResult](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.MongoCollectionImpl`1.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]            at MongoDB.Driver.IAsyncCursorSourceExtensions.FirstOrDefaultAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+[xUnit.net 00:01:47.34]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs(111,0): at Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityLeaseStore.TerminalAsync(CapacityScope scope, Guid id, Int32 version, Int64 fence, String status, IReadOnlyList`1 bottlenecks, Boolean expired, CancellationToken ct)
+[xUnit.net 00:01:47.34]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs(120,0): at Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityLeaseStore.TerminalAsync(CapacityScope scope, Guid id, Int32 version, Int64 fence, String status, IReadOnlyList`1 bottlenecks, Boolean expired, CancellationToken ct)
+[xUnit.net 00:01:47.34]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs(201,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry()
+[xUnit.net 00:01:47.34]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs(202,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry()
+[xUnit.net 00:01:47.34]         --- End of stack trace from previous location ---
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry [1 m 26 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 5000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "4", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 4, EndPoint : "127.0.0.1:57192" }", EndPoint: "127.0.0.1:57192", ReasonChanged: "InvalidatedBecause:ChannelException:MongoDB.Driver.MongoNodeIsRecoveringException: Server returned node is recovering error (code = 91, codeName = "ShutdownInProgress").
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ProcessResponse(ConnectionId connectionId, CommandMessage responseMessage)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.SendMessageAndProcessResponseAsync(CommandRequestMessage message, Int32 responseTo, IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.WireProtocol.CommandUsingCommandMessageWireProtocol`1.ExecuteAsync(IConnection connection, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.Server.ServerChannel.ExecuteProtocolAsync[TResult](IWireProtocol`1 protocol, ICoreSession session, CancellationToken cancellationToken)", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", LastHeartbeatTimestamp: null, LastUpdateTimestamp: "2026-09-22T16:16:46.7773710Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedHelper.HandleCompletedTask(Task completedTask)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.FindOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoCollectionImpl`1.ExecuteReadOperationAsync[TResult](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoCollectionImpl`1.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at MongoDB.Driver.IAsyncCursorSourceExtensions.FirstOrDefaultAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityLeaseStore.TerminalAsync(CapacityScope scope, Guid id, Int32 version, Int64 fence, String status, IReadOnlyList`1 bottlenecks, Boolean expired, CancellationToken ct) in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs:line 111
+   at Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityLeaseStore.TerminalAsync(CapacityScope scope, Guid id, Int32 version, Int64 fence, String status, IReadOnlyList`1 bottlenecks, Boolean expired, CancellationToken ct) in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs:line 120
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 201
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs:line 202
+--- End of stack trace from previous location ---
+[xUnit.net 00:02:46.56]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_ack_loss_keeps_one_scoped_terminal_effect [59 s]
+Results File: /private/tmp/mvp6-mod0192-core-dev-01/docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rework-01/raw/fault-initial.trx
+
+Test Run Failed.
+Total tests: 4
+     Passed: 1
+     Failed: 3
+ Total time: 2.7959 Minutes
+     1>Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" on node 1 (VSTest target(s)).
+     1>_VSTestConsole:
+         MSB4181: The "VSTestTask" task returned false but did not log an error.
+     1>Done Building Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" (VSTest target(s)) -- FAILED.
+
+Build FAILED.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:02:48.93

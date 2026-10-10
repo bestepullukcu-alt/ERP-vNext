@@ -1,0 +1,6 @@
+path	baseline_sha256	final_sha256	acceptance_impact
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml	a8634dd16270325325f26d654c762838fd47a3b0c6d29b9821359de63b6264d3	7a5f467fbaefc515d45bf084aa1250cbc4a7ed5fceb52e5363c323c66d101fad	B01 list partial resolution; A01/A02/A14
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js	419998d5d67069c9d705cbec15acb2561090301a7b863f0a414c72952456b954	1f7b36fc63719a1f54597812879f7576ee4c220ec23c7cc66ed0e7b158fab0bd	B02 authoritative mutation root; A08/A09/A10/A11
+frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs	8c1a40775693e05636dd5fae5ccb41017581a75bc3f1649d46592c4c372615a6	3ae19312695a7ae9c4f93c9f54f685f955b056ae07fc681a6a518714851189c3	B01 executable regression only
+frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs	657c002848d16115429663a5dca0e3f5f672592d2de2d5e865a9919a60a2352b	69c37a6ff8a1c510909fe4537b4346d2691d29273bb4f2aa1fd81d08d78998a9	B02 executable regression only
+all backend/Auth/Gateway/other UI paths	7b6d2f source-bound	byte-identical in successor	Prior Root R2, create, Auth, persistence evidence remains content-bound; fresh successor browser also repeated create/detail/restart

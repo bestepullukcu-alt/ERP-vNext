@@ -1,0 +1,16 @@
+{
+  "kind": "CT archival copy of completed independent VER; no verifier output edited",
+  "source": "/private/tmp/mvp6-184-candidate-ver-01-znwvivxt",
+  "verifier_task": "01a0ab32-c980-7dd0-8872-e597eb94e6f9",
+  "verifier_turn": "01a0abb2-7beb-76d1-bb16-0689eff6f92d",
+  "verified_original_manifest_entries": 87,
+  "archive_is_selected_subset": true,
+  "files": {
+    "VERIFICATION-REPORT.md": "47e2ce2eba89fd7fa26014900f35d0b41a566b9769a4f577808528d65877cd8a",
+    "independent-results.json": "bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0",
+    "commands.json": "ab5f8511c21fbecf146d17cf7b97f231770dc4c8976d90ff364e5f527825c96c",
+    "execution-gate.json": "cdaa659f277719a82cb1ffd2311025fe27dbada1a5681f603e2ac42bcfa4ac42",
+    "no-change.json": "b1ca8c4ad2d7f236a282fd7cf4dfe90c7ed7c69f1c5712def6b315c442f47b10",
+    "VERIFIER-MANIFEST.json": "872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1"
+  }
+}

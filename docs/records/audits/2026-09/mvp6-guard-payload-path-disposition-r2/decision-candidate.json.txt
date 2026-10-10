@@ -1,0 +1,7 @@
+{
+  "kind": "DOCS_PATH_OWNER_DECISION",
+  "status": "UNAPPROVED",
+  "decisionId": "MVP6-GUARD-PAYLOAD-PATH-DISPOSITION-R2",
+  "approvedBy": "PENDING-EXPLICIT-OWNER-CONSENT",
+  "payloadSha256": "b1dd34f588e360b92041275f12b6f5b1f996b7fb1ef3a207cb3f3c91e30364c1"
+}

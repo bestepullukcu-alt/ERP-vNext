@@ -1,0 +1,2817 @@
+{
+  "phase": "a12",
+  "startedAt": "2026-09-26T07:41:56.274Z",
+  "cases": {
+    "login-actor-a": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "login-actor-le-b": {
+      "loggedInNow": true,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [
+        {
+          "status": 200,
+          "path": "/account/login?ReturnUrl=%2FSupplyChain%2FShipments"
+        },
+        {
+          "status": 200,
+          "path": "/account/login?tenantId=97c59330-dbc4-4665-b29c-0c26dbb5cc93&returnUrl=%2FSupplyChain%2FShipments"
+        },
+        {
+          "status": 200,
+          "path": "/account/login"
+        }
+      ],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "normal-detail-draft": {
+      "actor": "actor-a",
+      "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "shellStatus": 200,
+      "verdict": "PASS",
+      "checks": {
+        "http200": true,
+        "correlationEchoed": true,
+        "heading": true,
+        "summary": true,
+        "lines": true,
+        "pod": true,
+        "actions": true,
+        "surfacesVisible": true,
+        "alertHidden": true,
+        "keyboardReachesActions": true
+      },
+      "probe": {
+        "lang": "en",
+        "dir": "ltr",
+        "shipmentNumber": "SHP-eacd617a0575424697361acd0c25ed6b",
+        "alertVisible": false,
+        "alertText": "",
+        "row": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 1,
+          "buttons": [
+            "Change Status"
+          ]
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "Draft",
+          "source": "S-NORMAL-1fe655fb",
+          "warehouse": "WH-A12V02",
+          "root": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+          "lineRows": 2,
+          "podEmptyVisible": true,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "The shipment could not be found.",
+          "supportReference": "Support reference"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "SHP-eacd617a0575424697361acd0c25ed6b\nShipments\nShipment Details\nBack to List\nShipment Summary\nStatus\nDraft\nSource Document\nS-NORMAL-1fe655fb\nWarehouse Reference\nWH-A12V02\nShip-to Reference\nSHIP-TO-NORMAL\nLifecycle Root\na8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb\nSchedule and Assignment\nPlanned Ship Time\nSep 26, 2026, 8:37 AM\nPlanned Delivery Time\nSep 27, 2026, 7:37 AM\nCarrier\nUnavailable\nLoad\nUnavailable\nShipment Lines\nLINE NUMBER\tITEM ID\tSKU ID\tQUANTITY\tUNIT OF MEASURE\tINVENTORY REFERENCE\n1\t53316fe9-ff8b-42fc-a368-ea73ab304b47\taa54cde3-2366-4ced-bee0-662596a9b847\t2\tEA\tUnavailable\n2\t64de1e16-703c-4e60-b92a-2fb1df452c05\t418c23f5-c288-4458-90b3-8c075c30bc1b\t1\tEA\tUnavailable\nProof of Delivery\nUnavailable\nChange Status"
+      },
+      "keyboard": {
+        "reachedDetailSurface": 2
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:00.849Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/eacd617a-0575-4246-9736-1acd0c25ed6b",
+          "status": 200,
+          "requestCorrelation": "7a358147-f6bf-4167-8ecf-99ddf7acca33",
+          "idempotencyKey": null,
+          "responseCorrelation": "7a358147-f6bf-4167-8ecf-99ddf7acca33",
+          "errorCode": null,
+          "bodyCorrelation": null,
+          "okShape": {
+            "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+            "status": "Draft",
+            "lifecycleCorrelationId": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+            "idempotentReplay": null
+          }
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "normal-detail-delivered-pod": {
+      "actor": "actor-a",
+      "shipmentId": "41713e0d-77b1-4df1-a042-94b11facd592",
+      "shellStatus": 200,
+      "verdict": "PASS",
+      "checks": {
+        "http200": true,
+        "correlationEchoed": true,
+        "heading": true,
+        "summary": true,
+        "lines": true,
+        "pod": true,
+        "actions": true,
+        "surfacesVisible": true,
+        "alertHidden": true,
+        "keyboardReachesActions": true
+      },
+      "probe": {
+        "lang": "en",
+        "dir": "ltr",
+        "shipmentNumber": "SHP-41713e0d77b14df1a04294b11facd592",
+        "alertVisible": false,
+        "alertText": "",
+        "row": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 1,
+          "buttons": [
+            "Change Status"
+          ]
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "Delivered",
+          "source": "S-PODVIEW-1fe655fb",
+          "warehouse": "WH-A12V02",
+          "root": "fe59568a-6d36-49ef-bb00-7726922b282c",
+          "lineRows": 2,
+          "podEmptyVisible": false,
+          "podDetailsVisible": true,
+          "podRecipient": "Recipient PODVIEW",
+          "podEvidence": "EVID-PODVIEW-1, EVID-PODVIEW-2"
+        },
+        "l10n": {
+          "notFound": "The shipment could not be found.",
+          "supportReference": "Support reference"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "SHP-41713e0d77b14df1a04294b11facd592\nShipments\nShipment Details\nBack to List\nShipment Summary\nStatus\nDelivered\nSource Document\nS-PODVIEW-1fe655fb\nWarehouse Reference\nWH-A12V02\nShip-to Reference\nSHIP-TO-PODVIEW\nLifecycle Root\nfe59568a-6d36-49ef-bb00-7726922b282c\nSchedule and Assignment\nPlanned Ship Time\nSep 26, 2026, 8:37 AM\nPlanned Delivery Time\nSep 27, 2026, 7:37 AM\nCarrier\nUnavailable\nLoad\nUnavailable\nShipment Lines\nLINE NUMBER\tITEM ID\tSKU ID\tQUANTITY\tUNIT OF MEASURE\tINVENTORY REFERENCE\n1\t9e56e3ff-cbe1-4892-a5d3-5a556c4ac39f\t458ecbe5-e5da-4a87-a6ad-72116f3492f4\t2\tEA\tUnavailable\n2\t433ff48c-8cd6-491e-8628-2d99c850951f\teec3ac01-577e-4a39-aecb-0609a942f9fb\t1\tEA\tUnavailable\nProof of Delivery\nRecipient Name\nRecipient PODVIEW\nReceived At\nSep 26, 2026, 7:52 AM\nEvidence References\nEVID-PODVIEW-1, EVID-PODVIEW-2\nNote\nfixture pod\nChange Status"
+      },
+      "keyboard": {
+        "reachedDetailSurface": 2
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:03.533Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/41713e0d-77b1-4df1-a042-94b11facd592",
+          "status": 200,
+          "requestCorrelation": "5303eb98-8a1d-4ead-b250-c1616c22ed88",
+          "idempotencyKey": null,
+          "responseCorrelation": "5303eb98-8a1d-4ead-b250-c1616c22ed88",
+          "errorCode": null,
+          "bodyCorrelation": null,
+          "okShape": {
+            "shipmentId": "41713e0d-77b1-4df1-a042-94b11facd592",
+            "status": "Delivered",
+            "lifecycleCorrelationId": "fe59568a-6d36-49ef-bb00-7726922b282c",
+            "idempotentReplay": null
+          }
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "cross-le-en": {
+      "actor": "actor-le-b",
+      "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "culture": "en",
+      "shellStatus": 200,
+      "loadingText": "Loading…",
+      "verdict": "PASS",
+      "checks": {
+        "http404": true,
+        "code": true,
+        "correlationEchoed": true,
+        "headingIsLocalizedNotFound": true,
+        "alertExactSupportReference": true,
+        "noLoadingText": true,
+        "summaryLinesPodHidden": true,
+        "actionsHiddenEmpty": true,
+        "offcanvasesHiddenInert": true,
+        "noShipmentValues": true,
+        "keyboardNeverReachesHiddenSurfaces": true,
+        "hiddenSurfacesHaveFocusables": true
+      },
+      "expectedAlert": "The shipment could not be found. Support reference: c482958d-d5e6-4546-902b-077e1474ed43",
+      "probe": {
+        "lang": "en",
+        "dir": "ltr",
+        "shipmentNumber": "The shipment could not be found.",
+        "alertVisible": true,
+        "alertText": "The shipment could not be found. Support reference: c482958d-d5e6-4546-902b-077e1474ed43",
+        "row": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0,
+          "buttons": []
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "",
+          "source": "",
+          "warehouse": "",
+          "root": "",
+          "lineRows": 0,
+          "podEmptyVisible": false,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "The shipment could not be found.",
+          "supportReference": "Support reference"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "The shipment could not be found.\nShipments\nShipment Details\nBack to List\nThe shipment could not be found. Support reference: c482958d-d5e6-4546-902b-077e1474ed43"
+      },
+      "keyboard": {
+        "presses": 45,
+        "reachedDetailSurface": 0,
+        "sequence": [
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          }
+        ],
+        "programmaticFocusIntoHidden": {
+          "attempted": "offcanvasTransition",
+          "focusMoved": false
+        }
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:06.306Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/eacd617a-0575-4246-9736-1acd0c25ed6b",
+          "status": 404,
+          "requestCorrelation": "c482958d-d5e6-4546-902b-077e1474ed43",
+          "idempotencyKey": null,
+          "responseCorrelation": "c482958d-d5e6-4546-902b-077e1474ed43",
+          "errorCode": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "c482958d-d5e6-4546-902b-077e1474ed43",
+          "okShape": null
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "cross-le-tr": {
+      "actor": "actor-le-b",
+      "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "culture": "tr",
+      "shellStatus": 200,
+      "loadingText": "Yükleniyor…",
+      "verdict": "PASS",
+      "checks": {
+        "http404": true,
+        "code": true,
+        "correlationEchoed": true,
+        "headingIsLocalizedNotFound": true,
+        "alertExactSupportReference": true,
+        "noLoadingText": true,
+        "summaryLinesPodHidden": true,
+        "actionsHiddenEmpty": true,
+        "offcanvasesHiddenInert": true,
+        "noShipmentValues": true,
+        "keyboardNeverReachesHiddenSurfaces": true,
+        "hiddenSurfacesHaveFocusables": true
+      },
+      "expectedAlert": "Sevkiyat bulunamadı. Destek referansı: 6278a743-2570-419a-b054-533cbd34b2cb",
+      "probe": {
+        "lang": "tr",
+        "dir": "ltr",
+        "shipmentNumber": "Sevkiyat bulunamadı.",
+        "alertVisible": true,
+        "alertText": "Sevkiyat bulunamadı. Destek referansı: 6278a743-2570-419a-b054-533cbd34b2cb",
+        "row": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0,
+          "buttons": []
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "",
+          "source": "",
+          "warehouse": "",
+          "root": "",
+          "lineRows": 0,
+          "podEmptyVisible": false,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "Sevkiyat bulunamadı.",
+          "supportReference": "Destek referansı"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "Sevkiyat bulunamadı.\nSevkiyatlar\nSevkiyat Ayrıntıları\nListeye Dön\nSevkiyat bulunamadı. Destek referansı: 6278a743-2570-419a-b054-533cbd34b2cb"
+      },
+      "keyboard": {
+        "presses": 45,
+        "reachedDetailSurface": 0,
+        "sequence": [
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nSevkiyat bul",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Sevkiyatlar",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Listeye Dön",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nSevkiyat bul",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Sevkiyatlar",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Listeye Dön",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nSevkiyat bul",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Sevkiyatlar",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Listeye Dön",
+            "inDetailSurface": false
+          }
+        ],
+        "programmaticFocusIntoHidden": {
+          "attempted": "offcanvasTransition",
+          "focusMoved": false
+        }
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:08.941Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/eacd617a-0575-4246-9736-1acd0c25ed6b",
+          "status": 404,
+          "requestCorrelation": "6278a743-2570-419a-b054-533cbd34b2cb",
+          "idempotencyKey": null,
+          "responseCorrelation": "6278a743-2570-419a-b054-533cbd34b2cb",
+          "errorCode": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "6278a743-2570-419a-b054-533cbd34b2cb",
+          "okShape": null
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "cross-le-ar": {
+      "actor": "actor-le-b",
+      "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "culture": "ar",
+      "shellStatus": 200,
+      "loadingText": "جارٍ التحميل…",
+      "verdict": "PASS",
+      "checks": {
+        "http404": true,
+        "code": true,
+        "correlationEchoed": true,
+        "headingIsLocalizedNotFound": true,
+        "alertExactSupportReference": true,
+        "noLoadingText": true,
+        "summaryLinesPodHidden": true,
+        "actionsHiddenEmpty": true,
+        "offcanvasesHiddenInert": true,
+        "noShipmentValues": true,
+        "keyboardNeverReachesHiddenSurfaces": true,
+        "hiddenSurfacesHaveFocusables": true
+      },
+      "expectedAlert": "تعذر العثور على الشحنة. مرجع الدعم: 0787dff7-8c96-4843-94d9-8d91ed3a5d2d",
+      "probe": {
+        "lang": "ar",
+        "dir": "rtl",
+        "shipmentNumber": "تعذر العثور على الشحنة.",
+        "alertVisible": true,
+        "alertText": "تعذر العثور على الشحنة. مرجع الدعم: 0787dff7-8c96-4843-94d9-8d91ed3a5d2d",
+        "row": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0,
+          "buttons": []
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "",
+          "source": "",
+          "warehouse": "",
+          "root": "",
+          "lineRows": 0,
+          "podEmptyVisible": false,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "تعذر العثور على الشحنة.",
+          "supportReference": "مرجع الدعم"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "تعذر العثور على الشحنة.\nالشحنات\nتفاصيل الشحنة\nالعودة إلى القائمة\nتعذر العثور على الشحنة. مرجع الدعم: 0787dff7-8c96-4843-94d9-8d91ed3a5d2d"
+      },
+      "keyboard": {
+        "presses": 45,
+        "reachedDetailSurface": 0,
+        "sequence": [
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nتعذر العثور ",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nتعذر العثور ",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nتعذر العثور ",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          }
+        ],
+        "programmaticFocusIntoHidden": {
+          "attempted": "offcanvasTransition",
+          "focusMoved": false
+        }
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:11.620Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/eacd617a-0575-4246-9736-1acd0c25ed6b",
+          "status": 404,
+          "requestCorrelation": "0787dff7-8c96-4843-94d9-8d91ed3a5d2d",
+          "idempotencyKey": null,
+          "responseCorrelation": "0787dff7-8c96-4843-94d9-8d91ed3a5d2d",
+          "errorCode": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "0787dff7-8c96-4843-94d9-8d91ed3a5d2d",
+          "okShape": null
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "unknown-actor-le-b": {
+      "actor": "actor-le-b",
+      "shipmentId": "779224db-ac39-43ad-a6af-ea863e8025d0",
+      "culture": "en",
+      "shellStatus": 200,
+      "loadingText": "جارٍ التحميل…",
+      "verdict": "PASS",
+      "checks": {
+        "http404": true,
+        "code": true,
+        "correlationEchoed": true,
+        "headingIsLocalizedNotFound": true,
+        "alertExactSupportReference": true,
+        "noLoadingText": true,
+        "summaryLinesPodHidden": true,
+        "actionsHiddenEmpty": true,
+        "offcanvasesHiddenInert": true,
+        "noShipmentValues": true,
+        "keyboardNeverReachesHiddenSurfaces": true,
+        "hiddenSurfacesHaveFocusables": true
+      },
+      "expectedAlert": "تعذر العثور على الشحنة. مرجع الدعم: fdf85d3e-cd3c-4711-81d8-aee341b7ab7e",
+      "probe": {
+        "lang": "ar",
+        "dir": "rtl",
+        "shipmentNumber": "تعذر العثور على الشحنة.",
+        "alertVisible": true,
+        "alertText": "تعذر العثور على الشحنة. مرجع الدعم: fdf85d3e-cd3c-4711-81d8-aee341b7ab7e",
+        "row": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0,
+          "buttons": []
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "",
+          "source": "",
+          "warehouse": "",
+          "root": "",
+          "lineRows": 0,
+          "podEmptyVisible": false,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "تعذر العثور على الشحنة.",
+          "supportReference": "مرجع الدعم"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "تعذر العثور على الشحنة.\nالشحنات\nتفاصيل الشحنة\nالعودة إلى القائمة\nتعذر العثور على الشحنة. مرجع الدعم: fdf85d3e-cd3c-4711-81d8-aee341b7ab7e"
+      },
+      "keyboard": {
+        "presses": 45,
+        "reachedDetailSurface": 0,
+        "sequence": [
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nتعذر العثور ",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nتعذر العثور ",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nتعذر العثور ",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          }
+        ],
+        "programmaticFocusIntoHidden": {
+          "attempted": "offcanvasTransition",
+          "focusMoved": false
+        }
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:14.245Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/779224db-ac39-43ad-a6af-ea863e8025d0",
+          "status": 404,
+          "requestCorrelation": "fdf85d3e-cd3c-4711-81d8-aee341b7ab7e",
+          "idempotencyKey": null,
+          "responseCorrelation": "fdf85d3e-cd3c-4711-81d8-aee341b7ab7e",
+          "errorCode": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "fdf85d3e-cd3c-4711-81d8-aee341b7ab7e",
+          "okShape": null
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "unknown-actor-a": {
+      "actor": "actor-a",
+      "shipmentId": "11cd2692-0987-4ed9-8585-6aa64db7ca78",
+      "culture": "en",
+      "shellStatus": 200,
+      "loadingText": "Loading…",
+      "verdict": "PASS",
+      "checks": {
+        "http404": true,
+        "code": true,
+        "correlationEchoed": true,
+        "headingIsLocalizedNotFound": true,
+        "alertExactSupportReference": true,
+        "noLoadingText": true,
+        "summaryLinesPodHidden": true,
+        "actionsHiddenEmpty": true,
+        "offcanvasesHiddenInert": true,
+        "noShipmentValues": true,
+        "keyboardNeverReachesHiddenSurfaces": true,
+        "hiddenSurfacesHaveFocusables": true
+      },
+      "expectedAlert": "The shipment could not be found. Support reference: e5a47682-0657-4890-9d1a-d4b726252932",
+      "probe": {
+        "lang": "en",
+        "dir": "ltr",
+        "shipmentNumber": "The shipment could not be found.",
+        "alertVisible": true,
+        "alertText": "The shipment could not be found. Support reference: e5a47682-0657-4890-9d1a-d4b726252932",
+        "row": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0,
+          "buttons": []
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "",
+          "source": "",
+          "warehouse": "",
+          "root": "",
+          "lineRows": 0,
+          "podEmptyVisible": false,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "The shipment could not be found.",
+          "supportReference": "Support reference"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "The shipment could not be found.\nShipments\nShipment Details\nBack to List\nThe shipment could not be found. Support reference: e5a47682-0657-4890-9d1a-d4b726252932"
+      },
+      "keyboard": {
+        "presses": 45,
+        "reachedDetailSurface": 0,
+        "sequence": [
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          }
+        ],
+        "programmaticFocusIntoHidden": {
+          "attempted": "offcanvasTransition",
+          "focusMoved": false
+        }
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:16.823Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/11cd2692-0987-4ed9-8585-6aa64db7ca78",
+          "status": 404,
+          "requestCorrelation": "e5a47682-0657-4890-9d1a-d4b726252932",
+          "idempotencyKey": null,
+          "responseCorrelation": "e5a47682-0657-4890-9d1a-d4b726252932",
+          "errorCode": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "e5a47682-0657-4890-9d1a-d4b726252932",
+          "okShape": null
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "deleted-fixture-visible-before-delete": {
+      "actor": "actor-a",
+      "shipmentId": "d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+      "shellStatus": 200,
+      "verdict": "PASS",
+      "checks": {
+        "http200": true,
+        "correlationEchoed": true,
+        "heading": true,
+        "summary": true,
+        "lines": true,
+        "pod": true,
+        "actions": true,
+        "surfacesVisible": true,
+        "alertHidden": true,
+        "keyboardReachesActions": true
+      },
+      "probe": {
+        "lang": "en",
+        "dir": "ltr",
+        "shipmentNumber": "SHP-d99987f985b24cf3b360fefe2ff6fee2",
+        "alertVisible": false,
+        "alertText": "",
+        "row": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 1,
+          "buttons": [
+            "Change Status"
+          ]
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "Draft",
+          "source": "S-DELETED-1fe655fb",
+          "warehouse": "WH-A12V02",
+          "root": "e364281a-9c35-481a-bd4f-f3673b4b17ab",
+          "lineRows": 2,
+          "podEmptyVisible": true,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "The shipment could not be found.",
+          "supportReference": "Support reference"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "SHP-d99987f985b24cf3b360fefe2ff6fee2\nShipments\nShipment Details\nBack to List\nShipment Summary\nStatus\nDraft\nSource Document\nS-DELETED-1fe655fb\nWarehouse Reference\nWH-A12V02\nShip-to Reference\nSHIP-TO-DELETED\nLifecycle Root\ne364281a-9c35-481a-bd4f-f3673b4b17ab\nSchedule and Assignment\nPlanned Ship Time\nSep 26, 2026, 8:37 AM\nPlanned Delivery Time\nSep 27, 2026, 7:37 AM\nCarrier\nUnavailable\nLoad\nUnavailable\nShipment Lines\nLINE NUMBER\tITEM ID\tSKU ID\tQUANTITY\tUNIT OF MEASURE\tINVENTORY REFERENCE\n1\t64115487-36df-4263-8a3d-57a3787301bd\tacdc515b-b616-4910-ab33-bab2ff284e4e\t2\tEA\tUnavailable\n2\ta4867c96-7833-4318-9b62-06ecd1d500f8\tcf2885e3-8308-4cab-bc73-f882fbbe2fdd\t1\tEA\tUnavailable\nProof of Delivery\nUnavailable\nChange Status"
+      },
+      "keyboard": {
+        "reachedDetailSurface": 2
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:19.410Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+          "status": 200,
+          "requestCorrelation": "cfbeba59-457c-4fab-93d6-6af7a946d3c5",
+          "idempotencyKey": null,
+          "responseCorrelation": "cfbeba59-457c-4fab-93d6-6af7a946d3c5",
+          "errorCode": null,
+          "bodyCorrelation": null,
+          "okShape": {
+            "shipmentId": "d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+            "status": "Draft",
+            "lifecycleCorrelationId": "e364281a-9c35-481a-bd4f-f3673b4b17ab",
+            "idempotentReplay": null
+          }
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "soft-delete-fixture-step": {
+      "lane_db_update": {
+        "matched": 1,
+        "modified": 1,
+        "createdAtType": "string"
+      }
+    },
+    "soft-deleted-actor-a": {
+      "actor": "actor-a",
+      "shipmentId": "d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+      "culture": "en",
+      "shellStatus": 200,
+      "loadingText": "Loading…",
+      "verdict": "PASS",
+      "checks": {
+        "http404": true,
+        "code": true,
+        "correlationEchoed": true,
+        "headingIsLocalizedNotFound": true,
+        "alertExactSupportReference": true,
+        "noLoadingText": true,
+        "summaryLinesPodHidden": true,
+        "actionsHiddenEmpty": true,
+        "offcanvasesHiddenInert": true,
+        "noShipmentValues": true,
+        "keyboardNeverReachesHiddenSurfaces": true,
+        "hiddenSurfacesHaveFocusables": true
+      },
+      "expectedAlert": "The shipment could not be found. Support reference: 18a416b9-317c-4add-978d-5705f77cc251",
+      "probe": {
+        "lang": "en",
+        "dir": "ltr",
+        "shipmentNumber": "The shipment could not be found.",
+        "alertVisible": true,
+        "alertText": "The shipment could not be found. Support reference: 18a416b9-317c-4add-978d-5705f77cc251",
+        "row": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 0,
+          "buttons": []
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": true,
+          "inert": true,
+          "ariaHidden": "true",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "",
+          "source": "",
+          "warehouse": "",
+          "root": "",
+          "lineRows": 0,
+          "podEmptyVisible": false,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "The shipment could not be found.",
+          "supportReference": "Support reference"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "The shipment could not be found.\nShipments\nShipment Details\nBack to List\nThe shipment could not be found. Support reference: 18a416b9-317c-4add-978d-5705f77cc251"
+      },
+      "keyboard": {
+        "presses": 45,
+        "reachedDetailSurface": 0,
+        "sequence": [
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nThe shipment",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Shipments",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Back to List",
+            "inDetailSurface": false
+          }
+        ],
+        "programmaticFocusIntoHidden": {
+          "attempted": "offcanvasTransition",
+          "focusMoved": false
+        }
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:42:24.344Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+          "status": 404,
+          "requestCorrelation": "18a416b9-317c-4add-978d-5705f77cc251",
+          "idempotencyKey": null,
+          "responseCorrelation": "18a416b9-317c-4add-978d-5705f77cc251",
+          "errorCode": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "18a416b9-317c-4add-978d-5705f77cc251",
+          "okShape": null
+        }
+      ],
+      "dbZeroWrite": true
+    },
+    "cross-le-mutation-isolation": {
+      "actor": "actor-le-b",
+      "verdict": "PASS",
+      "mutations": {
+        "antiForgeryPresent": true,
+        "transition": {
+          "status": 404,
+          "code": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+          "headerCorrelation": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+          "key": "c1000000-0000-4000-8000-0000000a1202"
+        },
+        "pod": {
+          "status": 404,
+          "code": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+          "headerCorrelation": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+          "key": "c2000000-0000-4000-8000-0000000a1202"
+        }
+      },
+      "dbZeroWrite": true
+    },
+    "list-isolation": {
+      "verdict": "FAIL",
+      "actorA": {
+        "status": 400,
+        "count": 0,
+        "containsAllLiveFixtures": false,
+        "containsDeleted": false
+      },
+      "actorLeB": {
+        "status": 400,
+        "count": 0,
+        "leAFixturesVisible": 0
+      }
+    }
+  },
+  "db": [
+    {
+      "name": "normal-detail-draft",
+      "before": "a12-normal-detail-draft-before",
+      "after": "a12-normal-detail-draft-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "normal-detail-delivered-pod",
+      "before": "a12-normal-detail-delivered-pod-before",
+      "after": "a12-normal-detail-delivered-pod-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "cross-le-en",
+      "before": "a12-cross-le-en-before",
+      "after": "a12-cross-le-en-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "cross-le-tr",
+      "before": "a12-cross-le-tr-before",
+      "after": "a12-cross-le-tr-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "cross-le-ar",
+      "before": "a12-cross-le-ar-before",
+      "after": "a12-cross-le-ar-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "unknown-actor-le-b",
+      "before": "a12-unknown-actor-le-b-before",
+      "after": "a12-unknown-actor-le-b-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "unknown-actor-a",
+      "before": "a12-unknown-actor-a-before",
+      "after": "a12-unknown-actor-a-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "deleted-fixture-visible-before-delete",
+      "before": "a12-deleted-fixture-visible-before-delete-before",
+      "after": "a12-deleted-fixture-visible-before-delete-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "soft-delete-fixture-step",
+      "before": "a12-softdelete-before",
+      "after": "a12-softdelete-after",
+      "expect": "{\"counts\":{},\"state\":{\"isDeleted\":true}}",
+      "result": "PASS",
+      "detail": "{\"counts\":{},\"state\":{\"isDeleted\":true}}"
+    },
+    {
+      "name": "soft-deleted-actor-a",
+      "before": "a12-soft-deleted-actor-a-before",
+      "after": "a12-soft-deleted-actor-a-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    },
+    {
+      "name": "leb-cross-le-mutations",
+      "before": "a12-leb-mutation-before",
+      "after": "a12-leb-mutation-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    }
+  ],
+  "png": [
+    {
+      "file": "png/a12-normal-detail-draft.png",
+      "sha256": "e0e23629cd64ecfa1e7566fd174437e0528c0ba6bb9ec9892955eb71af13aebb",
+      "bytes": 135994,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "capturedAt": "2026-09-26T07:42:01.445Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    },
+    {
+      "file": "png/a12-normal-detail-delivered-pod.png",
+      "sha256": "4a7d121c0fa1facae5aaa475e9c31fea631243f683ef29b7f41e8f35c56087aa",
+      "bytes": 151382,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/41713e0d-77b1-4df1-a042-94b11facd592",
+      "capturedAt": "2026-09-26T07:42:04.108Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    },
+    {
+      "file": "png/a12-cross-le-en.png",
+      "sha256": "0d73d448169ac07c27da141109f13191c388d4f128273e2a638325397df344a4",
+      "bytes": 50698,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "capturedAt": "2026-09-26T07:42:06.851Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    },
+    {
+      "file": "png/a12-cross-le-tr.png",
+      "sha256": "4409b9a117e33510dc9f30621aebb2209b7fe8e52ce7c7ca073a7b2bf6510b51",
+      "bytes": 49753,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/eacd617a-0575-4246-9736-1acd0c25ed6b?culture=tr",
+      "capturedAt": "2026-09-26T07:42:09.483Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    },
+    {
+      "file": "png/a12-cross-le-ar.png",
+      "sha256": "6691900c54213f9a23b3f113a7000a4c851ca74f5f61e798081160a97aff0fb2",
+      "bytes": 48492,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/eacd617a-0575-4246-9736-1acd0c25ed6b?culture=ar",
+      "capturedAt": "2026-09-26T07:42:12.149Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    },
+    {
+      "file": "png/a12-unknown-actor-le-b.png",
+      "sha256": "d8745a77af47107ba4bd0e438e119d488ee5da4922201ca25fb5dd1839236d91",
+      "bytes": 47654,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/779224db-ac39-43ad-a6af-ea863e8025d0",
+      "capturedAt": "2026-09-26T07:42:14.783Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    },
+    {
+      "file": "png/a12-unknown-actor-a.png",
+      "sha256": "560c7e67dd9508dc9bd032b13fbc663765808e80e67742868851e81ca5aecca4",
+      "bytes": 51183,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/11cd2692-0987-4ed9-8585-6aa64db7ca78",
+      "capturedAt": "2026-09-26T07:42:17.366Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    },
+    {
+      "file": "png/a12-deleted-fixture-visible-before-delete.png",
+      "sha256": "fa4ef7319a0cdd7a28149c03d79ab833b08cc9c6876076cb1daff90f47230bd8",
+      "bytes": 133864,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+      "capturedAt": "2026-09-26T07:42:20.005Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    },
+    {
+      "file": "png/a12-soft-deleted-actor-a.png",
+      "sha256": "7cfcc448b72536f4a7aac6afe293c9ccd585ac25e61661b22af733a3129ce721",
+      "bytes": 50338,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+      "capturedAt": "2026-09-26T07:42:24.866Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    }
+  ],
+  "console": [
+    {
+      "actor": "actor-le-b",
+      "tag": "detail",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-le-b",
+      "tag": "detail",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-le-b",
+      "tag": "detail",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-le-b",
+      "tag": "detail",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-a",
+      "tag": "detail",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-a",
+      "tag": "detail",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-le-b",
+      "tag": "leb-mutation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-le-b",
+      "tag": "leb-mutation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-le-b",
+      "tag": "leb-mutation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "finishedAt": "2026-09-26T07:42:29.314Z"
+}

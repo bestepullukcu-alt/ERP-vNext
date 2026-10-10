@@ -1,0 +1,13 @@
+snapshot_ui_rows=21 snapshot_ui_mismatch=0
+registered_source_ui_mismatch=0
+0363ea272056e757c3bbbab9228ef5a91a157e549ec16d2f036b39b83b048a43  frontend/Diten.Web/bin/Debug/net8.0/Diten.Web.dll
+f679a6c89ee631b7df42d830719ad105f4fbdc7bef2472da23a6c65fe4763579  frontend/Diten.Web.Tests/bin/Debug/net8.0/Diten.Web.Tests.dll
+d4c56f42c6af13a801047f45eb03ac036e73435ea3ffad35c0916ee54be2fc43  gateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll
+189bb1928c74cb1f3d49922bd90d3eb0b05b73d99895e1a9f39fe71e5100fbb9  gateway/Diten.ApiGateway.Tests/bin/Debug/net8.0/Diten.ApiGateway.Tests.dll
+2c36a3402011cb737f81f3f5f1215d372ee2cde2ba4491dbc84bd59799c21eb9  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll
+97b62fd9f1bc5787c07e6cd71212761fd60c388479ad356fe72c5f0e91b97418  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll
+processes:
+mongo:
+COMMAND PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+mongod  803 natig    9u  IPv4 0x77da13d9a37b0ea5      0t0  TCP 127.0.0.1:27017 (LISTEN)
+mongod  803 natig   10u  IPv6 0x5c04612275381de5      0t0  TCP [::1]:27017 (LISTEN)

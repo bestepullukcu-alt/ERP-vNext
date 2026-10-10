@@ -1,0 +1,26 @@
+{
+  "case": "tenant-mismatch-detail",
+  "method": "GET",
+  "path": "/api/shipment-bundle/shipments/0857dd87-b133-4b2e-8d90-92ed4aa0bcbd",
+  "requestHeaders": {
+    "X-Tenant-Id": "00000000-0000-0000-0000-000000000099",
+    "X-Legal-Entity-Id": "10000000-0000-0000-0000-000000000001",
+    "X-Correlation-Id": "56861e11-84ee-404b-852a-c15006bcdea8"
+  },
+  "requestBody": null,
+  "requestBytes": 0,
+  "status": 404,
+  "responseHeaders": {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Correlation-Id": "56861e11-84ee-404b-852a-c15006bcdea8"
+  },
+  "responseBody": {
+    "error": {
+      "code": "SHIPMENT_NOT_FOUND",
+      "message": "Shipment not found.",
+      "correlationId": "56861e11-84ee-404b-852a-c15006bcdea8"
+    },
+    "contractVersion": "v1"
+  },
+  "responseBytes": 149
+}

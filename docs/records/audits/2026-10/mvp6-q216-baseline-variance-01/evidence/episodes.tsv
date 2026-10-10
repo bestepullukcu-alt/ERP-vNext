@@ -1,0 +1,181 @@
+run	armed_local	off_local	failCommands	errorCode	scope	times_fired	first_hit_local	seconds_from_first_hit_to_off
+run01	21:01:27.404	21:01:34.530	commitTransaction	91	NONE (server-global)	1	21:01:27.422	7.108
+run01	21:01:34.876	21:01:44.525	commitTransaction	91	NONE (server-global)	1	21:01:34.903	9.622
+run01	21:01:46.532	21:01:46.537	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:01:46.535	0.002
+run01	21:01:46.553	21:01:54.519	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run01	21:01:54.551	21:02:04.529	commitTransaction	91	NONE (server-global)	1	21:01:54.556	9.973
+run01	21:02:13.579	21:02:13.586	aggregate	8	appName=mod192-x07-later-event-exact	1	21:02:13.582	0.004
+run01	21:02:14.076	21:02:14.081	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:02:14.079	0.002
+run01	21:02:14.568	21:02:14.577	aggregate	8	appName=mod192-x07-later-active-slot	1	21:02:14.576	0.001
+run01	21:02:15.100	21:02:15.103	aggregate	8	appName=mod192-x07-later-event-broad	1	21:02:15.101	0.002
+run01	21:02:15.620	21:02:15.630	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:02:15.628	0.002
+run01	21:02:16.133	21:02:16.148	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run01	21:02:16.606	21:02:16.609	find	8	appName=mod192-x07-read-failure	1	21:02:16.607	0.002
+run01	21:02:17.067	21:02:17.072	insert	8	appName=mod192-x06-insert	1	21:02:17.070	0.002
+run01	21:02:17.584	21:02:17.592	commitTransaction	8	appName=mod192-x01-before	1	21:02:17.589	0.003
+run01	21:02:18.084	21:02:18.088	commitTransaction	8	appName=mod192-x07-before	1	21:02:18.087	0.001
+run01	21:02:18.563	21:02:18.571	commitTransaction	8	appName=mod192-x01-unknown	1	21:02:18.568	0.003
+run01	21:03:45.025	21:03:45.036	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run01	21:04:26.950	21:04:34.588	commitTransaction	91	NONE (server-global)	1	21:04:26.953	7.635
+run02	21:06:04.022	21:06:17.944	commitTransaction	91	NONE (server-global)	2	21:06:04.027	13.917
+run02	21:07:17.851	21:07:17.971	commitTransaction	91	NONE (server-global)	1	21:07:17.862	0.109
+run02	21:07:18.194	21:07:27.972	commitTransaction	91	NONE (server-global)	1	21:07:18.204	9.768
+run02	21:07:39.029	21:07:39.037	aggregate	8	appName=mod192-x07-later-event-exact	1	21:07:39.033	0.004
+run02	21:07:39.592	21:07:39.600	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:07:39.598	0.002
+run02	21:07:40.153	21:07:40.166	aggregate	8	appName=mod192-x07-later-active-slot	1	21:07:40.163	0.003
+run02	21:07:40.676	21:07:40.680	aggregate	8	appName=mod192-x07-later-event-broad	1	21:07:40.678	0.002
+run02	21:07:41.195	21:07:41.207	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:07:41.205	0.002
+run02	21:07:41.675	21:07:41.683	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run02	21:07:42.184	21:07:42.189	find	8	appName=mod192-x07-read-failure	1	21:07:42.186	0.003
+run02	21:07:42.703	21:07:42.710	insert	8	appName=mod192-x06-insert	1	21:07:42.707	0.003
+run02	21:07:43.227	21:07:43.236	commitTransaction	8	appName=mod192-x01-before	1	21:07:43.233	0.003
+run02	21:07:43.773	21:07:43.781	commitTransaction	8	appName=mod192-x07-before	1	21:07:43.778	0.003
+run02	21:07:44.311	21:07:44.320	commitTransaction	8	appName=mod192-x01-unknown	1	21:07:44.317	0.003
+run02	21:08:45.144	21:08:45.164	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run02	21:09:30.572	21:09:30.576	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:09:30.574	0.002
+run02	21:09:30.588	21:09:38.056	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run02	21:09:38.083	21:09:48.070	commitTransaction	91	NONE (server-global)	1	21:09:38.088	9.982
+run03	21:09:59.120	21:09:59.130	aggregate	8	appName=mod192-x07-later-event-exact	1	21:09:59.124	0.006
+run03	21:09:59.573	21:09:59.579	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:09:59.578	0.001
+run03	21:10:00.074	21:10:00.081	aggregate	8	appName=mod192-x07-later-active-slot	1	21:10:00.080	0.001
+run03	21:10:00.540	21:10:00.543	aggregate	8	appName=mod192-x07-later-event-broad	1	21:10:00.542	0.001
+run03	21:10:01.061	21:10:01.071	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:10:01.069	0.002
+run03	21:10:01.523	21:10:01.532	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run03	21:10:01.983	21:10:01.986	find	8	appName=mod192-x07-read-failure	1	21:10:01.984	0.002
+run03	21:10:02.415	21:10:02.421	insert	8	appName=mod192-x06-insert	1	21:10:02.419	0.002
+run03	21:10:02.888	21:10:02.897	commitTransaction	8	appName=mod192-x01-before	1	21:10:02.894	0.003
+run03	21:10:03.418	21:10:03.424	commitTransaction	8	appName=mod192-x07-before	1	21:10:03.422	0.002
+run03	21:10:03.917	21:10:03.926	commitTransaction	8	appName=mod192-x01-unknown	1	21:10:03.923	0.003
+run03	21:11:15.111	21:11:15.124	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run03	21:11:54.766	21:11:54.780	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:11:54.778	0.002
+run03	21:11:54.796	21:12:01.841	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run03	21:12:01.870	21:12:11.857	commitTransaction	91	NONE (server-global)	1	21:12:01.874	9.983
+run03	21:12:15.115	21:12:21.865	commitTransaction	91	NONE (server-global)	1	21:12:15.133	6.732
+run03	21:12:22.109	21:12:31.872	commitTransaction	91	NONE (server-global)	1	21:12:22.120	9.752
+run03	21:12:38.914	21:12:51.882	commitTransaction	91	NONE (server-global)	2	21:12:38.917	12.965
+run04	21:13:55.671	21:13:55.731	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:13:55.721	0.010
+run04	21:13:55.765	21:14:05.393	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run04	21:14:05.426	21:14:15.402	commitTransaction	91	NONE (server-global)	1	21:14:05.432	9.970
+run04	21:14:15.787	21:14:25.406	commitTransaction	91	NONE (server-global)	1	21:14:15.795	9.611
+run04	21:15:49.519	21:15:55.452	commitTransaction	91	NONE (server-global)	1	21:15:49.532	5.920
+run04	21:15:55.693	21:16:05.453	commitTransaction	91	NONE (server-global)	1	21:15:55.709	9.744
+run04	21:16:28.391	21:16:28.399	aggregate	8	appName=mod192-x07-later-event-exact	1	21:16:28.395	0.004
+run04	21:16:28.938	21:16:28.950	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:16:28.943	0.007
+run04	21:16:29.477	21:16:29.488	aggregate	8	appName=mod192-x07-later-active-slot	1	21:16:29.486	0.002
+run04	21:16:30.039	21:16:30.042	aggregate	8	appName=mod192-x07-later-event-broad	1	21:16:30.040	0.002
+run04	21:16:30.582	21:16:30.592	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:16:30.591	0.001
+run04	21:16:31.063	21:16:31.078	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run04	21:16:31.605	21:16:31.610	find	8	appName=mod192-x07-read-failure	1	21:16:31.607	0.003
+run04	21:16:32.104	21:16:32.111	insert	8	appName=mod192-x06-insert	1	21:16:32.109	0.002
+run04	21:16:32.661	21:16:32.670	commitTransaction	8	appName=mod192-x01-before	1	21:16:32.667	0.003
+run04	21:16:33.234	21:16:33.242	commitTransaction	8	appName=mod192-x07-before	1	21:16:33.239	0.003
+run04	21:16:33.763	21:16:33.772	commitTransaction	8	appName=mod192-x01-unknown	1	21:16:33.769	0.003
+run04	21:17:45.176	21:17:45.189	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run05	21:18:27.297	21:18:36.078	commitTransaction	91	NONE (server-global)	1	21:18:27.302	8.776
+run05	21:19:51.180	21:19:51.184	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:19:51.182	0.002
+run05	21:19:51.197	21:19:56.106	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run05	21:19:56.131	21:20:06.125	commitTransaction	91	NONE (server-global)	1	21:19:56.135	9.990
+run05	21:20:09.704	21:20:16.136	commitTransaction	91	NONE (server-global)	1	21:20:09.719	6.417
+run05	21:20:16.351	21:20:26.141	commitTransaction	91	NONE (server-global)	1	21:20:16.360	9.781
+run05	21:20:42.050	21:20:42.057	aggregate	8	appName=mod192-x07-later-event-exact	1	21:20:42.054	0.003
+run05	21:20:42.565	21:20:42.573	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:20:42.571	0.002
+run05	21:20:43.104	21:20:43.114	aggregate	8	appName=mod192-x07-later-active-slot	1	21:20:43.112	0.002
+run05	21:20:43.649	21:20:43.652	aggregate	8	appName=mod192-x07-later-event-broad	1	21:20:43.651	0.001
+run05	21:20:44.197	21:20:44.207	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:20:44.205	0.002
+run05	21:20:44.720	21:20:44.737	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run05	21:20:45.308	21:20:45.313	find	8	appName=mod192-x07-read-failure	1	21:20:45.311	0.002
+run05	21:20:45.818	21:20:45.824	insert	8	appName=mod192-x06-insert	1	21:20:45.822	0.002
+run05	21:20:46.378	21:20:46.385	commitTransaction	8	appName=mod192-x01-before	1	21:20:46.383	0.002
+run05	21:20:46.902	21:20:46.909	commitTransaction	8	appName=mod192-x07-before	1	21:20:46.906	0.003
+run05	21:20:47.415	21:20:47.422	commitTransaction	8	appName=mod192-x01-unknown	1	21:20:47.420	0.002
+run05	21:22:15.219	21:22:15.230	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run06	21:23:00.578	21:23:06.311	commitTransaction	91	NONE (server-global)	1	21:23:00.592	5.719
+run06	21:23:06.587	21:23:16.309	commitTransaction	91	NONE (server-global)	1	21:23:06.600	9.709
+run06	21:23:23.215	21:23:23.220	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:23:23.218	0.002
+run06	21:23:23.242	21:23:26.305	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run06	21:23:26.333	21:23:36.309	commitTransaction	91	NONE (server-global)	1	21:23:26.338	9.971
+run06	21:23:36.636	21:23:46.312	commitTransaction	91	NONE (server-global)	1	21:23:36.640	9.672
+run06	21:24:57.147	21:24:57.154	aggregate	8	appName=mod192-x07-later-event-exact	1	21:24:57.151	0.003
+run06	21:24:57.751	21:24:57.757	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:24:57.756	0.001
+run06	21:24:58.245	21:24:58.255	aggregate	8	appName=mod192-x07-later-active-slot	1	21:24:58.253	0.002
+run06	21:24:58.765	21:24:58.770	aggregate	8	appName=mod192-x07-later-event-broad	1	21:24:58.767	0.003
+run06	21:24:59.287	21:24:59.296	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:24:59.294	0.002
+run06	21:24:59.792	21:24:59.805	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run06	21:25:00.290	21:25:00.295	find	8	appName=mod192-x07-read-failure	1	21:25:00.292	0.003
+run06	21:25:00.771	21:25:00.779	insert	8	appName=mod192-x06-insert	1	21:25:00.775	0.004
+run06	21:25:01.257	21:25:01.265	commitTransaction	8	appName=mod192-x01-before	1	21:25:01.262	0.003
+run06	21:25:01.767	21:25:01.775	commitTransaction	8	appName=mod192-x07-before	1	21:25:01.772	0.003
+run06	21:25:02.268	21:25:02.283	commitTransaction	8	appName=mod192-x01-unknown	1	21:25:02.280	0.003
+run06	21:26:15.222	21:26:15.235	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run07	21:27:09.944	21:27:09.951	aggregate	8	appName=mod192-x07-later-event-exact	1	21:27:09.947	0.004
+run07	21:27:10.405	21:27:10.410	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:27:10.408	0.002
+run07	21:27:10.897	21:27:10.908	aggregate	8	appName=mod192-x07-later-active-slot	1	21:27:10.905	0.003
+run07	21:27:11.387	21:27:11.396	aggregate	8	appName=mod192-x07-later-event-broad	1	21:27:11.389	0.007
+run07	21:27:11.905	21:27:11.914	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:27:11.912	0.002
+run07	21:27:12.410	21:27:12.424	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run07	21:27:12.892	21:27:12.894	find	8	appName=mod192-x07-read-failure	1	21:27:12.893	0.001
+run07	21:27:13.366	21:27:13.374	insert	8	appName=mod192-x06-insert	1	21:27:13.371	0.003
+run07	21:27:13.869	21:27:13.878	commitTransaction	8	appName=mod192-x01-before	1	21:27:13.875	0.003
+run07	21:27:14.398	21:27:14.406	commitTransaction	8	appName=mod192-x07-before	1	21:27:14.404	0.002
+run07	21:27:14.920	21:27:14.937	commitTransaction	8	appName=mod192-x01-unknown	1	21:27:14.935	0.002
+run07	21:28:45.233	21:28:45.244	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run07	21:29:24.378	21:29:24.384	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:29:24.381	0.003
+run07	21:29:24.399	21:29:31.659	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run07	21:29:31.688	21:29:41.670	commitTransaction	91	NONE (server-global)	1	21:29:31.693	9.977
+run07	21:29:57.728	21:30:01.700	commitTransaction	91	NONE (server-global)	1	21:29:57.743	3.957
+run07	21:30:01.904	21:30:11.693	commitTransaction	91	NONE (server-global)	1	21:30:01.914	9.779
+run07	21:30:11.868	21:30:21.704	commitTransaction	91	NONE (server-global)	1	21:30:11.871	9.833
+run08	21:31:27.645	21:31:27.655	aggregate	8	appName=mod192-x07-later-event-exact	1	21:31:27.648	0.007
+run08	21:31:28.095	21:31:28.100	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:31:28.098	0.002
+run08	21:31:28.583	21:31:28.595	aggregate	8	appName=mod192-x07-later-active-slot	1	21:31:28.593	0.002
+run08	21:31:29.052	21:31:29.056	aggregate	8	appName=mod192-x07-later-event-broad	1	21:31:29.054	0.002
+run08	21:31:29.491	21:31:29.497	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:31:29.495	0.002
+run08	21:31:29.959	21:31:29.974	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run08	21:31:30.446	21:31:30.449	find	8	appName=mod192-x07-read-failure	1	21:31:30.447	0.002
+run08	21:31:30.881	21:31:30.890	insert	8	appName=mod192-x06-insert	1	21:31:30.887	0.003
+run08	21:31:31.351	21:31:31.356	commitTransaction	8	appName=mod192-x01-before	1	21:31:31.354	0.002
+run08	21:31:31.816	21:31:31.825	commitTransaction	8	appName=mod192-x07-before	1	21:31:31.821	0.004
+run08	21:31:32.318	21:31:32.328	commitTransaction	8	appName=mod192-x01-unknown	1	21:31:32.325	0.003
+run08	21:32:45.280	21:32:45.292	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run08	21:33:35.167	21:33:40.222	commitTransaction	91	NONE (server-global)	1	21:33:35.171	5.051
+run08	21:34:48.419	21:34:50.267	commitTransaction	91	NONE (server-global)	1	21:34:48.429	1.838
+run08	21:34:50.473	21:35:00.262	commitTransaction	91	NONE (server-global)	1	21:34:50.490	9.772
+run08	21:35:00.577	21:35:00.583	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:35:00.580	0.003
+run08	21:35:00.603	21:35:10.261	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run08	21:35:10.290	21:35:20.276	commitTransaction	91	NONE (server-global)	1	21:35:10.294	9.982
+run09	21:35:35.399	21:35:35.407	aggregate	8	appName=mod192-x07-later-event-exact	1	21:35:35.403	0.004
+run09	21:35:35.843	21:35:35.848	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:35:35.847	0.001
+run09	21:35:36.329	21:35:36.340	aggregate	8	appName=mod192-x07-later-active-slot	1	21:35:36.338	0.002
+run09	21:35:36.790	21:35:36.794	aggregate	8	appName=mod192-x07-later-event-broad	1	21:35:36.792	0.002
+run09	21:35:37.271	21:35:37.280	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:35:37.278	0.002
+run09	21:35:37.774	21:35:37.788	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run09	21:35:38.241	21:35:38.243	find	8	appName=mod192-x07-read-failure	1	21:35:38.242	0.001
+run09	21:35:38.713	21:35:38.722	insert	8	appName=mod192-x06-insert	1	21:35:38.718	0.004
+run09	21:35:39.196	21:35:39.207	commitTransaction	8	appName=mod192-x01-before	1	21:35:39.203	0.004
+run09	21:35:39.707	21:35:39.715	commitTransaction	8	appName=mod192-x07-before	1	21:35:39.712	0.003
+run09	21:35:40.194	21:35:40.203	commitTransaction	8	appName=mod192-x01-unknown	1	21:35:40.200	0.003
+run09	21:36:45.323	21:36:45.335	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run09	21:37:32.307	21:37:37.904	commitTransaction	91	NONE (server-global)	1	21:37:32.326	5.578
+run09	21:37:38.123	21:37:47.911	commitTransaction	91	NONE (server-global)	1	21:37:38.133	9.778
+run09	21:37:48.152	21:37:48.163	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:37:48.162	0.001
+run09	21:37:48.204	21:37:57.903	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run09	21:37:57.937	21:38:07.917	commitTransaction	91	NONE (server-global)	1	21:37:57.942	9.975
+run09	21:38:08.837	21:38:17.929	commitTransaction	91	NONE (server-global)	1	21:38:08.840	9.089
+run10	21:39:39.335	21:39:39.344	aggregate	8	appName=mod192-x07-later-event-exact	1	21:39:39.340	0.004
+run10	21:39:39.837	21:39:39.845	aggregate	8	appName=mod192-x07-later-audit-broad	1	21:39:39.842	0.003
+run10	21:39:40.333	21:39:40.343	aggregate	8	appName=mod192-x07-later-active-slot	1	21:39:40.341	0.002
+run10	21:39:40.830	21:39:40.835	aggregate	8	appName=mod192-x07-later-event-broad	1	21:39:40.833	0.002
+run10	21:39:41.348	21:39:41.356	aggregate	8	appName=mod192-x07-later-audit-exact	1	21:39:41.355	0.001
+run10	21:39:41.832	21:39:41.846	commitTransaction	writeConcernError 64	appName=mod192-x01-after	1		
+run10	21:39:42.334	21:39:42.339	find	8	appName=mod192-x07-read-failure	1	21:39:42.336	0.003
+run10	21:39:42.816	21:39:42.824	insert	8	appName=mod192-x06-insert	1	21:39:42.821	0.003
+run10	21:39:43.291	21:39:43.296	commitTransaction	8	appName=mod192-x01-before	1	21:39:43.294	0.002
+run10	21:39:43.757	21:39:43.766	commitTransaction	8	appName=mod192-x07-before	1	21:39:43.762	0.004
+run10	21:39:44.236	21:39:44.245	commitTransaction	8	appName=mod192-x01-unknown	1	21:39:44.242	0.003
+run10	21:40:45.394	21:40:45.408	commitTransaction	writeConcernError 64	appName=mod192-x07-after	1		
+run10	21:41:24.110	21:41:38.049	commitTransaction	91	NONE (server-global)	2	21:41:24.114	13.935
+run10	21:42:57.884	21:42:57.889	insert	2	namespace=DitenSupplyChain_Mod0190_Test.sandop_receipts	1	21:42:57.887	0.002
+run10	21:42:57.903	21:42:58.094	commitTransaction	writeConcernError 91	NONE (server-global)	1		
+run10	21:42:58.113	21:43:08.106	commitTransaction	91	NONE (server-global)	1	21:42:58.117	9.989
+run10	21:43:11.815	21:43:18.121	commitTransaction	91	NONE (server-global)	1	21:43:11.826	6.295
+run10	21:43:18.341	21:43:28.124	commitTransaction	91	NONE (server-global)	1	21:43:18.351	9.773

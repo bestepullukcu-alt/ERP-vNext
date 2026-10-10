@@ -1,0 +1,7 @@
+forms_checked 9 (raw, url-encoded x2, base64 and base64url at 3 alignments)
+scanned_units 4
+hits 3
+HIT raw …/runtime_probe.py
+HIT raw …/restart_probe.py
+HIT raw …/failure_probe.py
+result FAIL

@@ -1,0 +1,5 @@
+slot7 (37994) test DBs created by this run: 2
+  DitenSupplyChain_Mod0192_Test
+  diten_platform_itest_task_comment_order
+slot7 remaining: admin config local
+slot7 mongod 75913: stopped; listeners 0

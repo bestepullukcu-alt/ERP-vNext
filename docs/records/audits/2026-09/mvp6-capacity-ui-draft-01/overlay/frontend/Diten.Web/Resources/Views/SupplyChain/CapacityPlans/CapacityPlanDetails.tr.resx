@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CapacityPlansTitle" xml:space="preserve"><value>Kapasite Planları</value></data>
+  <data name="PlanId" xml:space="preserve"><value>Plan Kimliği</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Plan Adı</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Ufuk Başlangıcı</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Ufuk Bitişi</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>Talep Planı Kimliği</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Talep Planı Sürümü</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Kaynak Alınma Zamanı</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Kaynak Sağlama Toplamı</value></data>
+  <data name="Status" xml:space="preserve"><value>Plan Durumu</value></data>
+  <data name="PlanStatus.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="PlanStatus.Evaluating" xml:space="preserve"><value>Değerlendiriliyor</value></data>
+  <data name="PlanStatus.Ready" xml:space="preserve"><value>Hazır</value></data>
+  <data name="PlanStatus.Approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="PlanStatus.Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Belirtilmemiş</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Panoya kopyalandı.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Önceki istek hâlâ işleniyor.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Tüm zorunlu alanları doldurun.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>İstek geçerli değil. Girdileri kontrol edip yeniden deneyin.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>İstek izlenemedi. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden oturum açın.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ErrUnknownCapacityPlan" xml:space="preserve"><value>Bu kapasite planı bulunamadı veya size açık değil.</value></data>
+  <data name="ErrUnknownCapacityScenario" xml:space="preserve"><value>Bu senaryo bulunamadı veya size açık değil.</value></data>
+  <data name="ErrUnknownCapacityEvaluation" xml:space="preserve"><value>Bu değerlendirme bulunamadı veya size açık değil.</value></data>
+  <data name="ErrCapacityPlanAlreadyExists" xml:space="preserve"><value>Bu ufuk ve talep planı sürümü için zaten bir kapasite planı var.</value></data>
+  <data name="ErrCapacityScenarioNameConflict" xml:space="preserve"><value>Bu planda aynı adda bir senaryo zaten var.</value></data>
+  <data name="ErrCapacityPlanStateConflict" xml:space="preserve"><value>Planın durumu artık yeni bir senaryoya izin vermiyor. Plan yeniden yüklendi.</value></data>
+  <data name="ErrEvaluationAlreadyActive" xml:space="preserve"><value>Bu senaryonun bir değerlendirmesi zaten çalışıyor.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten kullanıldı. Yeni bir istek göndermek için girdileri değiştirin.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>Talep planı referansı bilinmiyor veya yayımlanmamış.</value></data>
+  <data name="ErrInvalidConstraintReference" xml:space="preserve"><value>Bir kısıt referansı bilinmiyor veya geçersiz.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Hizmet geçici olarak kullanılamıyor. Yeniden deneyin; aynı istek gönderilecek.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Sonuç doğrulanamadı. Yeniden deneyin; aynı istek gönderileceği için hiçbir şey iki kez kaydedilmez.</value></data>
+  <data name="PlanDetailsTitle" xml:space="preserve"><value>Kapasite Planı</value></data>
+  <data name="BackToPlans" xml:space="preserve"><value>Kapasite Planlarına dön</value></data>
+  <data name="PlanSummary" xml:space="preserve"><value>Plan Özeti</value></data>
+  <data name="Horizon" xml:space="preserve"><value>Planlama Ufku</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Talep Kaynağı Bilgisi</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma Zamanı</value></data>
+  <data name="SummaryErrorState" xml:space="preserve"><value>Plan yüklenemedi.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Yeniden Dene</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Bir seçenek belirleyin</value></data>
+  <data name="Scenarios" xml:space="preserve"><value>Kapasite Senaryosu</value></data>
+  <data name="CreateScenario" xml:space="preserve"><value>Senaryo Oluştur</value></data>
+  <data name="CreateScenarioTitle" xml:space="preserve"><value>Yeni Kapasite Senaryosu</value></data>
+  <data name="OpenScenario" xml:space="preserve"><value>Senaryoyu Aç</value></data>
+  <data name="ScenarioId" xml:space="preserve"><value>Senaryo Kimliği</value></data>
+  <data name="ScenarioIdHelp" xml:space="preserve"><value>Senaryonun UUID değerini oluşturma sonrasında gösterildiği gibi girin.</value></data>
+  <data name="ScenarioIdInvalid" xml:space="preserve"><value>Geçerli bir senaryo kimliği (UUID) girin.</value></data>
+  <data name="ScenarioName" xml:space="preserve"><value>Senaryo Adı</value></data>
+  <data name="ScenarioStatusLabel" xml:space="preserve"><value>Senaryo Durumu</value></data>
+  <data name="ScenarioStatus.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="ScenarioStatus.Evaluating" xml:space="preserve"><value>Değerlendiriliyor</value></data>
+  <data name="ScenarioStatus.Evaluated" xml:space="preserve"><value>Değerlendirildi</value></data>
+  <data name="ScenarioStatus.Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="ScenarioEmptyState" xml:space="preserve"><value>Açık senaryo yok. Bir senaryo oluşturun veya kimliğiyle açın.</value></data>
+  <data name="ScenarioErrorState" xml:space="preserve"><value>Senaryo yüklenemedi.</value></data>
+  <data name="ScenarioCreated" xml:space="preserve"><value>Senaryo oluşturuldu.</value></data>
+  <data name="SessionIdNote" xml:space="preserve"><value>Senaryolar ve değerlendirmeler listelenmez. Daha sonra yeniden açmak için kimliklerini kopyalayın.</value></data>
+  <data name="ConstraintRefs" xml:space="preserve"><value>Kısıt Referansları</value></data>
+  <data name="ConstraintRefsHelp" xml:space="preserve"><value>Satırlar gösterilen sırayla gönderilir; her satırda üç değerin tümü gerekir. Satır yoksa boş liste gönderilir.</value></data>
+  <data name="ConstraintId" xml:space="preserve"><value>Kısıt Kimliği</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="SourceVersion" xml:space="preserve"><value>Kaynak Sürümü</value></data>
+  <data name="Adjustments" xml:space="preserve"><value>Kapasite Düzeltmeleri</value></data>
+  <data name="AdjustmentsHelp" xml:space="preserve"><value>Satırlar gösterilen sırayla gönderilir; her satırda dört değerin tümü gerekir. Satır yoksa boş liste gönderilir.</value></data>
+  <data name="ResourceRef" xml:space="preserve"><value>Kaynak Öğe Referansı</value></data>
+  <data name="Period" xml:space="preserve"><value>Planlama Dönemi</value></data>
+  <data name="AvailableCapacityDelta" xml:space="preserve"><value>Kullanılabilir Kapasite Değişimi</value></data>
+  <data name="AvailableCapacityDeltaHelp" xml:space="preserve"><value>Yazıldığı gibi gönderilen ondalık sayı, örneğin 10.5 veya -2.</value></data>
+  <data name="DecimalInvalid" xml:space="preserve"><value>Örneğin 10.5 veya -2 gibi bir ondalık sayı girin (rakamlar, isteğe bağlı eksi işareti ve ondalık nokta).</value></data>
+  <data name="UomId" xml:space="preserve"><value>Ölçü Birimi</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Satır Ekle</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Satırı kaldır</value></data>
+  <data name="RowIncomplete" xml:space="preserve"><value>Eksik her satırı tamamlayın veya kaldırın.</value></data>
+  <data name="NoneListed" xml:space="preserve"><value>Yok</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Değerlendirmeyi Başlat</value></data>
+  <data name="EvaluateTitle" xml:space="preserve"><value>Senaryo Kapasitesini Değerlendir</value></data>
+  <data name="EvaluationMode" xml:space="preserve"><value>Değerlendirme Modu</value></data>
+  <data name="EvaluationMode.Finite" xml:space="preserve"><value>Sonlu</value></data>
+  <data name="EvaluationMode.Infinite" xml:space="preserve"><value>Sonsuz</value></data>
+  <data name="ResourceRefs" xml:space="preserve"><value>Kaynak Öğe Referansları</value></data>
+  <data name="ResourceRefsHelp" xml:space="preserve"><value>En az bir kaynak öğe; değerler gösterilen sırayla gönderilir.</value></data>
+  <data name="ResourceRefsMissing" xml:space="preserve"><value>En az bir kaynak öğe referansı ekleyin ve her satırı doldurun.</value></data>
+  <data name="Evaluation" xml:space="preserve"><value>Kapasite Değerlendirmesi</value></data>
+  <data name="EvaluationId" xml:space="preserve"><value>Değerlendirme Kimliği</value></data>
+  <data name="EvaluationStatusLabel" xml:space="preserve"><value>Değerlendirme Durumu</value></data>
+  <data name="EvaluationStatus.Accepted" xml:space="preserve"><value>Kabul edildi</value></data>
+  <data name="EvaluationStatus.Running" xml:space="preserve"><value>Çalışıyor</value></data>
+  <data name="EvaluationStatus.Completed" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="EvaluationStatus.Failed" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="SubmittedAt" xml:space="preserve"><value>Gönderilme Zamanı</value></data>
+  <data name="CompletedAt" xml:space="preserve"><value>Tamamlanma Zamanı</value></data>
+  <data name="EvaluationEmptyState" xml:space="preserve"><value>Bu oturumda bu senaryo için değerlendirme gönderilmedi.</value></data>
+  <data name="EvaluationErrorState" xml:space="preserve"><value>Değerlendirme yüklenemedi.</value></data>
+  <data name="EvaluationSubmitted" xml:space="preserve"><value>Değerlendirme gönderildi.</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Durumu Yenile</value></data>
+  <data name="RefreshNote" xml:space="preserve"><value>Durum yalnızca Durumu Yenile'ye bastığınızda güncellenir; hiçbir şey otomatik güncellenmez.</value></data>
+  <data name="Bottlenecks" xml:space="preserve"><value>Kapasite Darboğazları</value></data>
+  <data name="RequiredCapacity" xml:space="preserve"><value>Gereken Kapasite</value></data>
+  <data name="AvailableCapacity" xml:space="preserve"><value>Kullanılabilir Kapasite</value></data>
+  <data name="Shortfall" xml:space="preserve"><value>Kapasite Açığı</value></data>
+  <data name="EmptyBottlenecks" xml:space="preserve"><value>Bu değerlendirme için darboğaz bildirilmedi.</value></data>
+</root>

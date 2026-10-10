@@ -1,0 +1,10 @@
+Q154 NETCHECK 27017 — whole run window 2026-09-27 20:04:58 → 20:27:23 +03:00 (main, reruns, negative control, sabotage, parallel trial)
+
+1. Dev mongod log /opt/homebrew/var/log/mongodb/mongo.log, READ AS A FILE (the dev mongod was never contacted):
+   28 entries in the window; "Connection accepted": 0; client metadata: 0.
+   Positive control (same parser): 44 "Connection accepted" in the Q121b Platform window 14:34–14:43 today → the method sees connections.
+2. lsof sampler, 1 s interval, bash with quoted arguments (the Q121c zsh-glob defect fixed): 1,256 samples.
+   Positive control PASS (identical lsof form sees live sessions on the lane port 36994).
+   Only pid 841 (the dev mongod itself) appears, with the same 11 pre-existing loopback self-connections as in the first sample; NEW sockets: 0.
+3. No command of this lane addressed 27017; all lane URIs came from the overlay script (slots 6/7: 36994/37994); tree A's 27017-bound tests were not run live.
+RESULT: 0 new connections to 27017.

@@ -1,0 +1,158 @@
+[
+  {
+    "id": "E02 authentication",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "401",
+    "code": "INVALID_REQUEST",
+    "message": "Authentication required."
+  },
+  {
+    "id": "E03 unusable claims veya missing permission",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "403",
+    "code": "INVALID_REQUEST",
+    "message": "Required authorization context or permission is missing."
+  },
+  {
+    "id": "E04 correlation header",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "400",
+    "code": "INVALID_REQUEST",
+    "message": "X-Correlation-Id must contain exactly one UUID value."
+  },
+  {
+    "id": "E04 tenant header",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "400",
+    "code": "INVALID_REQUEST",
+    "message": "X-Tenant-Id must contain exactly one UUID value."
+  },
+  {
+    "id": "E04 LE header",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "400",
+    "code": "INVALID_REQUEST",
+    "message": "X-Legal-Entity-Id must contain exactly one UUID value."
+  },
+  {
+    "id": "E04 key header",
+    "ops": [
+      "C",
+      "S"
+    ],
+    "status": "400",
+    "code": "INVALID_REQUEST",
+    "message": "Idempotency-Key must contain exactly one string value of length 1 to 128."
+  },
+  {
+    "id": "E05 header/claim mismatch",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "404",
+    "code": "CARRIER_NOT_FOUND",
+    "message": "Carrier not found."
+  },
+  {
+    "id": "E06 malformed path/query/JSON/schema",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "400",
+    "code": "INVALID_REQUEST",
+    "message": "Request schema validation failed."
+  },
+  {
+    "id": "E07 unsupported request media type",
+    "ops": [
+      "C",
+      "S"
+    ],
+    "status": "415",
+    "code": "INVALID_REQUEST",
+    "message": "Request content type is not supported."
+  },
+  {
+    "id": "E08 target unavailable in scope",
+    "ops": [
+      "S"
+    ],
+    "status": "404",
+    "code": "CARRIER_NOT_FOUND",
+    "message": "Carrier not found."
+  },
+  {
+    "id": "E09 committed scoped key / different validated payload",
+    "ops": [
+      "C",
+      "S"
+    ],
+    "status": "409",
+    "code": "IDEMPOTENCY_KEY_REUSED",
+    "message": "Idempotency-Key was used with a different payload."
+  },
+  {
+    "id": "E10 reserved same-scope code",
+    "ops": [
+      "C"
+    ],
+    "status": "409",
+    "code": "CARRIER_CODE_CONFLICT",
+    "message": "Carrier code is already reserved."
+  },
+  {
+    "id": "E11 invalid lifecycle / new-key same-state",
+    "ops": [
+      "S"
+    ],
+    "status": "422",
+    "code": "INVALID_CARRIER_TRANSITION",
+    "message": "Carrier lifecycle transition is invalid."
+  },
+  {
+    "id": "E12 unavailable persistence / exhausted safe retry / unresolved commit",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "503",
+    "code": "PERSISTENCE_UNAVAILABLE",
+    "message": "Persistence outcome is unavailable; retry the request using the same idempotency key when applicable."
+  },
+  {
+    "id": "E13 unexpected internal error",
+    "ops": [
+      "Q",
+      "C",
+      "S"
+    ],
+    "status": "500",
+    "code": "INTERNAL_ERROR",
+    "message": "An unexpected internal error occurred."
+  }
+]

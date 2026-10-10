@@ -1,0 +1,20 @@
+=== B0 baseline (3 browser creates + 2 browser detail loads + fixture done before the monitor attached) 2026-10-04T11:08:29Z
+    Status: Waiting for initial payload...
+-- outbox rows by Status (q372_supplychain.sce_shipment_outbox):
+[
+  {
+    _id: 'Pending',
+    n: 3
+  }
+]
+=== B1 after idempotent replay (1 create + 1 same-key re-POST) 2026-10-04T11:08:40Z
+    Status: Waiting for initial payload...
+    Status: Waiting for initial payload...                                        
+    Status: Paused
+-- outbox rows by Status (q372_supplychain.sce_shipment_outbox):
+[
+  {
+    _id: 'Pending',
+    n: 4
+  }
+]

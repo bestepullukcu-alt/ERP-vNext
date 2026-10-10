@@ -1,0 +1,1187 @@
+{
+  "records": [
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAiICIsICJzdXBwb3J0ZWRNb2RlcyI6IFsiUm9hZCIsICJSb2FkIl0sICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGx9",
+      "status": 201,
+      "response": {
+        "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "carrierCode": " C ",
+        "status": "Active",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      },
+      "correlationId": "00000000-0000-0000-0000-000000000000",
+      "responseCorrelationId": "00000000-0000-0000-0000-000000000000",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+            "carrierCode": " C ",
+            "displayName": " ",
+            "status": "Active",
+            "supportedModes": [
+              "Road",
+              "Road"
+            ]
+          }
+        ],
+        "total": 1,
+        "contractVersion": "v1"
+      },
+      "correlationId": "df489148-b3b1-44f4-a279-93f2a13df2b2",
+      "responseCorrelationId": "df489148-b3b1-44f4-a279-93f2a13df2b2",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status",
+      "request": {
+        "targetStatus": "Suspended",
+        "reasonCode": ""
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiU3VzcGVuZGVkIiwgInJlYXNvbkNvZGUiOiAiIn0=",
+      "status": 200,
+      "response": {
+        "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "carrierCode": " C ",
+        "status": "Suspended",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      },
+      "correlationId": "a2ea9fe0-d903-4894-b5bc-7c65c6ecdde7",
+      "responseCorrelationId": "a2ea9fe0-d903-4894-b5bc-7c65c6ecdde7",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "suspend"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAiICIsICJzdXBwb3J0ZWRNb2RlcyI6IFsiUm9hZCIsICJSb2FkIl0sICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGx9",
+      "status": 201,
+      "response": {
+        "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "carrierCode": " C ",
+        "status": "Active",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "correlationId": "16c2f1a9-953e-445d-bbbe-9b97b5c97a66",
+      "responseCorrelationId": "16c2f1a9-953e-445d-bbbe-9b97b5c97a66",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": "other",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAib3RoZXIiLCAic3VwcG9ydGVkTW9kZXMiOiBbIlJvYWQiLCAiUm9hZCJdLCAiZXh0ZXJuYWxSZWZlcmVuY2UiOiBudWxsfQ==",
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "IDEMPOTENCY_KEY_REUSED",
+          "message": "Idempotency-Key was used with a different payload.",
+          "correlationId": "06d58806-c6eb-488b-b004-0c5be75d1dd0"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "06d58806-c6eb-488b-b004-0c5be75d1dd0",
+      "responseCorrelationId": "06d58806-c6eb-488b-b004-0c5be75d1dd0",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status",
+      "request": {
+        "targetStatus": "Retired",
+        "reasonCode": "RET"
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiUmV0aXJlZCIsICJyZWFzb25Db2RlIjogIlJFVCJ9",
+      "status": 200,
+      "response": {
+        "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "carrierCode": " C ",
+        "status": "Retired",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      },
+      "correlationId": "877950b8-e603-45b2-a292-8493c594d0ac",
+      "responseCorrelationId": "877950b8-e603-45b2-a292-8493c594d0ac",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "retire"
+    },
+    {
+      "method": "POST",
+      "path": "/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status",
+      "request": {
+        "targetStatus": "Suspended",
+        "reasonCode": ""
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiU3VzcGVuZGVkIiwgInJlYXNvbkNvZGUiOiAiIn0=",
+      "status": 200,
+      "response": {
+        "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "carrierCode": " C ",
+        "status": "Suspended",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "correlationId": "4220b4a1-7c7e-47d4-b759-31c5c6088138",
+      "responseCorrelationId": "4220b4a1-7c7e-47d4-b759-31c5c6088138",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "suspend"
+    },
+    {
+      "method": "POST",
+      "path": "/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status",
+      "request": {
+        "targetStatus": "Active",
+        "reasonCode": ""
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiQWN0aXZlIiwgInJlYXNvbkNvZGUiOiAiIn0=",
+      "status": 422,
+      "response": {
+        "error": {
+          "code": "INVALID_CARRIER_TRANSITION",
+          "message": "Carrier lifecycle transition is invalid.",
+          "correlationId": "134b3260-6fa4-45e9-9a4c-a06ab5e0db83"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "134b3260-6fa4-45e9-9a4c-a06ab5e0db83",
+      "responseCorrelationId": "134b3260-6fa4-45e9-9a4c-a06ab5e0db83",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "reopen"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAiICIsICJzdXBwb3J0ZWRNb2RlcyI6IFsiUm9hZCIsICJSb2FkIl0sICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGx9",
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "CARRIER_CODE_CONFLICT",
+          "message": "Carrier code is already reserved.",
+          "correlationId": "d2f1ddab-2bd3-4714-9cb5-e1793120991c"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "d2f1ddab-2bd3-4714-9cb5-e1793120991c",
+      "responseCorrelationId": "d2f1ddab-2bd3-4714-9cb5-e1793120991c",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "new"
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 200,
+      "response": {
+        "items": [],
+        "total": 0,
+        "contractVersion": "v1"
+      },
+      "correlationId": "c1201702-ef75-45b8-b5fd-388137183ea1",
+      "responseCorrelationId": "c1201702-ef75-45b8-b5fd-388137183ea1",
+      "tenantId": "486952ae-db07-44b5-9714-c2e79087d674",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status",
+      "request": {
+        "targetStatus": "Suspended",
+        "reasonCode": ""
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiU3VzcGVuZGVkIiwgInJlYXNvbkNvZGUiOiAiIn0=",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "CARRIER_NOT_FOUND",
+          "message": "Carrier not found.",
+          "correlationId": "389255cb-6cfc-48ea-9df4-0161195a0b26"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "389255cb-6cfc-48ea-9df4-0161195a0b26",
+      "responseCorrelationId": "389255cb-6cfc-48ea-9df4-0161195a0b26",
+      "tenantId": "486952ae-db07-44b5-9714-c2e79087d674",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "cross"
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 200,
+      "response": {
+        "items": [],
+        "total": 0,
+        "contractVersion": "v1"
+      },
+      "correlationId": "00837bda-2c54-4c36-a7e7-93ff44d15d3b",
+      "responseCorrelationId": "00837bda-2c54-4c36-a7e7-93ff44d15d3b",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "fc3a88b2-4fa0-464c-a171-f5291dd55b42",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status",
+      "request": {
+        "targetStatus": "Suspended",
+        "reasonCode": ""
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiU3VzcGVuZGVkIiwgInJlYXNvbkNvZGUiOiAiIn0=",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "CARRIER_NOT_FOUND",
+          "message": "Carrier not found.",
+          "correlationId": "6ddf4602-c199-4c5a-8090-0037382bd4d6"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "6ddf4602-c199-4c5a-8090-0037382bd4d6",
+      "responseCorrelationId": "6ddf4602-c199-4c5a-8090-0037382bd4d6",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "fc3a88b2-4fa0-464c-a171-f5291dd55b42",
+      "idempotencyKey": "cross"
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 401,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Authentication required.",
+          "correlationId": "49b8c9c2-35ab-40b0-aa15-73101e58a988"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "invalid",
+      "responseCorrelationId": "49b8c9c2-35ab-40b0-aa15-73101e58a988",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 403,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Required authorization context or permission is missing.",
+          "correlationId": "153ffb35-9fa9-403b-9551-9739529b2def"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "invalid",
+      "responseCorrelationId": "153ffb35-9fa9-403b-9551-9739529b2def",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "X-Correlation-Id must contain exactly one UUID value.",
+          "correlationId": "c30aaac0-95f3-45a1-bb48-e88aa0679c37"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "invalid",
+      "responseCorrelationId": "c30aaac0-95f3-45a1-bb48-e88aa0679c37",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "GET",
+      "path": "?status=bad",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "3b02c1b2-718b-449a-a06f-58ee0062de15"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "3b02c1b2-718b-449a-a06f-58ee0062de15",
+      "responseCorrelationId": "3b02c1b2-718b-449a-a06f-58ee0062de15",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "GET",
+      "path": "?tenantId=bad",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "a060e30a-ee5e-4d2e-a6ed-3c1b8bfc19fb"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "a060e30a-ee5e-4d2e-a6ed-3c1b8bfc19fb",
+      "responseCorrelationId": "a060e30a-ee5e-4d2e-a6ed-3c1b8bfc19fb",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "GET",
+      "path": "?status=Retired",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+            "carrierCode": " C ",
+            "displayName": " ",
+            "status": "Retired",
+            "supportedModes": [
+              "Road",
+              "Road"
+            ]
+          }
+        ],
+        "total": 1,
+        "contractVersion": "v1"
+      },
+      "correlationId": "5229ef4c-964e-49af-b247-4d2b6109e713",
+      "responseCorrelationId": "5229ef4c-964e-49af-b247-4d2b6109e713",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "CARRIER_NOT_FOUND",
+          "message": "Carrier not found.",
+          "correlationId": "00c562b7-dea3-4e3e-b1a3-38e853f88dcf"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "00c562b7-dea3-4e3e-b1a3-38e853f88dcf",
+      "responseCorrelationId": "00c562b7-dea3-4e3e-b1a3-38e853f88dcf",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAiICIsICJzdXBwb3J0ZWRNb2RlcyI6IFsiUm9hZCIsICJSb2FkIl0sICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGx9",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Idempotency-Key must contain exactly one string value of length 1 to 128.",
+          "correlationId": "516a9ada-4c75-420e-8866-ce9e6ae24aaf"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "516a9ada-4c75-420e-8866-ce9e6ae24aaf",
+      "responseCorrelationId": "516a9ada-4c75-420e-8866-ce9e6ae24aaf",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    {
+      "method": "POST",
+      "path": "/bad/status",
+      "request": {
+        "targetStatus": "Active",
+        "reasonCode": ""
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiQWN0aXZlIiwgInJlYXNvbkNvZGUiOiAiIn0=",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "4c78f044-0114-4433-ab00-29b77c8cd570"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "4c78f044-0114-4433-ab00-29b77c8cd570",
+      "responseCorrelationId": "4c78f044-0114-4433-ab00-29b77c8cd570",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJkaXNwbGF5TmFtZSI6ICIgIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIiwgIlJvYWQiXSwgImV4dGVybmFsUmVmZXJlbmNlIjogbnVsbH0=",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "9d56ff15-4a2e-42b8-a895-ced90356e21a"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "9d56ff15-4a2e-42b8-a895-ced90356e21a",
+      "responseCorrelationId": "9d56ff15-4a2e-42b8-a895-ced90356e21a",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": null,
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6IG51bGwsICJkaXNwbGF5TmFtZSI6ICIgIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIiwgIlJvYWQiXSwgImV4dGVybmFsUmVmZXJlbmNlIjogbnVsbH0=",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "888eb3d0-aa6c-43a1-b656-524cc8b8993f"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "888eb3d0-aa6c-43a1-b656-524cc8b8993f",
+      "responseCorrelationId": "888eb3d0-aa6c-43a1-b656-524cc8b8993f",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAic3VwcG9ydGVkTW9kZXMiOiBbIlJvYWQiLCAiUm9hZCJdLCAiZXh0ZXJuYWxSZWZlcmVuY2UiOiBudWxsfQ==",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "2af144ce-fef8-41ce-8183-96a7d9b8b489"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "2af144ce-fef8-41ce-8183-96a7d9b8b489",
+      "responseCorrelationId": "2af144ce-fef8-41ce-8183-96a7d9b8b489",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": null,
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiBudWxsLCAic3VwcG9ydGVkTW9kZXMiOiBbIlJvYWQiLCAiUm9hZCJdLCAiZXh0ZXJuYWxSZWZlcmVuY2UiOiBudWxsfQ==",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "547dbe36-1481-4b0e-bea2-b58188444989"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "547dbe36-1481-4b0e-bea2-b58188444989",
+      "responseCorrelationId": "547dbe36-1481-4b0e-bea2-b58188444989",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": " ",
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAiICIsICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGx9",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "b91313b2-85ae-44da-91b8-64fa91e3bda0"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "b91313b2-85ae-44da-91b8-64fa91e3bda0",
+      "responseCorrelationId": "b91313b2-85ae-44da-91b8-64fa91e3bda0",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": " ",
+        "supportedModes": null,
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAiICIsICJzdXBwb3J0ZWRNb2RlcyI6IG51bGwsICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGx9",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "8e2d778f-be74-41f3-b9fd-2ee1d0153093"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "8e2d778f-be74-41f3-b9fd-2ee1d0153093",
+      "responseCorrelationId": "8e2d778f-be74-41f3-b9fd-2ee1d0153093",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null,
+        "extra": "forbidden"
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAiICIsICJzdXBwb3J0ZWRNb2RlcyI6IFsiUm9hZCIsICJSb2FkIl0sICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGwsICJleHRyYSI6ICJmb3JiaWRkZW4ifQ==",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Request schema validation failed.",
+          "correlationId": "acecd652-f24e-471d-ad4f-947f50f248a6"
+        },
+        "contractVersion": "v1"
+      },
+      "correlationId": "acecd652-f24e-471d-ad4f-947f50f248a6",
+      "responseCorrelationId": "acecd652-f24e-471d-ad4f-947f50f248a6",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": "lowercase",
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJsb3dlcmNhc2UiLCAiZGlzcGxheU5hbWUiOiAiICIsICJzdXBwb3J0ZWRNb2RlcyI6IFsiUm9hZCIsICJSb2FkIl0sICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGx9",
+      "status": 201,
+      "response": {
+        "carrierId": "7758d74c-6872-4234-8d8f-1a9f1e673f0b",
+        "carrierCode": "lowercase",
+        "status": "Active",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      },
+      "correlationId": "8c2db108-0d1c-415f-9479-e6a427aa2dc9",
+      "responseCorrelationId": "8c2db108-0d1c-415f-9479-e6a427aa2dc9",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    {
+      "method": "GET",
+      "path": "",
+      "request": null,
+      "sentBodyBase64": "",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+            "carrierCode": " C ",
+            "displayName": " ",
+            "status": "Retired",
+            "supportedModes": [
+              "Road",
+              "Road"
+            ]
+          },
+          {
+            "carrierId": "7758d74c-6872-4234-8d8f-1a9f1e673f0b",
+            "carrierCode": "lowercase",
+            "displayName": " ",
+            "status": "Active",
+            "supportedModes": [
+              "Road",
+              "Road"
+            ]
+          }
+        ],
+        "total": 2,
+        "contractVersion": "v1"
+      },
+      "correlationId": "f9e51c0b-929e-479f-8214-ab4e106788f9",
+      "responseCorrelationId": "f9e51c0b-929e-479f-8214-ab4e106788f9",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "",
+      "request": {
+        "carrierCode": " C ",
+        "displayName": " ",
+        "supportedModes": [
+          "Road",
+          "Road"
+        ],
+        "externalReference": null
+      },
+      "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICIgQyAiLCAiZGlzcGxheU5hbWUiOiAiICIsICJzdXBwb3J0ZWRNb2RlcyI6IFsiUm9hZCIsICJSb2FkIl0sICJleHRlcm5hbFJlZmVyZW5jZSI6IG51bGx9",
+      "status": 201,
+      "response": {
+        "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "carrierCode": " C ",
+        "status": "Active",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "correlationId": "22fffe07-88c7-4e2f-b105-e7c84a4e88b6",
+      "responseCorrelationId": "22fffe07-88c7-4e2f-b105-e7c84a4e88b6",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "key"
+    },
+    {
+      "method": "POST",
+      "path": "/e8d3c5af-bb17-4700-a8a2-1d42e084ec85/status",
+      "request": {
+        "targetStatus": "Retired",
+        "reasonCode": "RET"
+      },
+      "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiUmV0aXJlZCIsICJyZWFzb25Db2RlIjogIlJFVCJ9",
+      "status": 200,
+      "response": {
+        "carrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "carrierCode": " C ",
+        "status": "Retired",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "correlationId": "3e3c307f-96c9-41c1-82df-26e5375e0cf9",
+      "responseCorrelationId": "3e3c307f-96c9-41c1-82df-26e5375e0cf9",
+      "tenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+      "legalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+      "idempotencyKey": "retire"
+    }
+  ],
+  "beforeRestart": {
+    "carriers": [
+      {
+        "_id": "7758d74c-6872-4234-8d8f-1a9f1e673f0b",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "CreatedAt": "2026-09-16T20:17:01.642255+00:00",
+        "UpdatedAt": null,
+        "Version": 1,
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierCode": "lowercase",
+        "DisplayName": " ",
+        "SupportedModes": [
+          "Road",
+          "Road"
+        ],
+        "ExternalReference": null,
+        "Status": "Active",
+        "CreatedBy": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "UpdatedBy": null
+      },
+      {
+        "_id": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "CreatedAt": "2026-09-16T20:17:01.423697+00:00",
+        "UpdatedAt": "2026-09-16T20:17:01.565682+00:00",
+        "Version": 3,
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierCode": " C ",
+        "DisplayName": " ",
+        "SupportedModes": [
+          "Road",
+          "Road"
+        ],
+        "ExternalReference": null,
+        "Status": "Retired",
+        "CreatedBy": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "UpdatedBy": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      }
+    ],
+    "carrier_idempotency": [
+      {
+        "_id": "22f2c3cc-ff6f-4b4e-a778-e23216b05d0e",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "Operation": "createCarrier",
+        "TargetId": "create",
+        "IdempotencyKey": "key",
+        "Fingerprint": "v1:{\"CarrierCode\":\" C \",\"DisplayName\":\" \",\"SupportedModes\":[\"Road\",\"Road\"],\"ExternalReference\":null}",
+        "FormatVersion": 1,
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "CarrierCode": " C ",
+        "ResultingStatus": "Active",
+        "StatusCode": 201,
+        "ContractVersion": "v1",
+        "CorrelationId": "00000000-0000-0000-0000-000000000000",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      },
+      {
+        "_id": "532766d1-2a0a-4db2-8780-42e852b50746",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "Operation": "changeCarrierStatus",
+        "TargetId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "IdempotencyKey": "suspend",
+        "Fingerprint": "v1:{\"TargetStatus\":\"Suspended\",\"ReasonCode\":\"\"}",
+        "FormatVersion": 1,
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "CarrierCode": " C ",
+        "ResultingStatus": "Suspended",
+        "StatusCode": 200,
+        "ContractVersion": "v1",
+        "CorrelationId": "a2ea9fe0-d903-4894-b5bc-7c65c6ecdde7",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      },
+      {
+        "_id": "ef1dfe53-ec76-49e5-b0dd-efc621f3a905",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "Operation": "changeCarrierStatus",
+        "TargetId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "IdempotencyKey": "retire",
+        "Fingerprint": "v1:{\"TargetStatus\":\"Retired\",\"ReasonCode\":\"RET\"}",
+        "FormatVersion": 1,
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "CarrierCode": " C ",
+        "ResultingStatus": "Retired",
+        "StatusCode": 200,
+        "ContractVersion": "v1",
+        "CorrelationId": "877950b8-e603-45b2-a292-8493c594d0ac",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      },
+      {
+        "_id": "f4daeba4-897c-4701-a3e3-2c1bc8458994",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "Operation": "createCarrier",
+        "TargetId": "create",
+        "IdempotencyKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "Fingerprint": "v1:{\"CarrierCode\":\"lowercase\",\"DisplayName\":\" \",\"SupportedModes\":[\"Road\",\"Road\"],\"ExternalReference\":null}",
+        "FormatVersion": 1,
+        "CarrierId": "7758d74c-6872-4234-8d8f-1a9f1e673f0b",
+        "CarrierCode": "lowercase",
+        "ResultingStatus": "Active",
+        "StatusCode": 201,
+        "ContractVersion": "v1",
+        "CorrelationId": "8c2db108-0d1c-415f-9479-e6a427aa2dc9",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      }
+    ],
+    "carrier_audit": [
+      {
+        "_id": "2abacf0d-d662-4127-b4c5-12308f8ebb84",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "Operation": "createCarrier",
+        "Version": 1,
+        "FromStatus": null,
+        "ToStatus": "Active",
+        "ReasonCode": null,
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "CorrelationId": "00000000-0000-0000-0000-000000000000",
+        "OccurredAt": {
+          "$date": "2026-09-16T20:17:01.461Z"
+        }
+      },
+      {
+        "_id": "869dfdc2-0c6e-413f-9d79-d6201fe8dd81",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "Operation": "changeCarrierStatus",
+        "Version": 3,
+        "FromStatus": "Suspended",
+        "ToStatus": "Retired",
+        "ReasonCode": "RET",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "CorrelationId": "877950b8-e603-45b2-a292-8493c594d0ac",
+        "OccurredAt": {
+          "$date": "2026-09-16T20:17:01.566Z"
+        }
+      },
+      {
+        "_id": "a7f1c0bc-7a74-4048-b773-97324191bd30",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierId": "7758d74c-6872-4234-8d8f-1a9f1e673f0b",
+        "Operation": "createCarrier",
+        "Version": 1,
+        "FromStatus": null,
+        "ToStatus": "Active",
+        "ReasonCode": null,
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "CorrelationId": "8c2db108-0d1c-415f-9479-e6a427aa2dc9",
+        "OccurredAt": {
+          "$date": "2026-09-16T20:17:01.644Z"
+        }
+      },
+      {
+        "_id": "f9228748-0ea7-4512-82eb-d9c60a00bab8",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "Operation": "changeCarrierStatus",
+        "Version": 2,
+        "FromStatus": "Active",
+        "ToStatus": "Suspended",
+        "ReasonCode": "",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "CorrelationId": "a2ea9fe0-d903-4894-b5bc-7c65c6ecdde7",
+        "OccurredAt": {
+          "$date": "2026-09-16T20:17:01.543Z"
+        }
+      }
+    ]
+  },
+  "afterRestart": {
+    "carriers": [
+      {
+        "_id": "7758d74c-6872-4234-8d8f-1a9f1e673f0b",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "CreatedAt": "2026-09-16T20:17:01.642255+00:00",
+        "UpdatedAt": null,
+        "Version": 1,
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierCode": "lowercase",
+        "DisplayName": " ",
+        "SupportedModes": [
+          "Road",
+          "Road"
+        ],
+        "ExternalReference": null,
+        "Status": "Active",
+        "CreatedBy": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "UpdatedBy": null
+      },
+      {
+        "_id": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "CreatedAt": "2026-09-16T20:17:01.423697+00:00",
+        "UpdatedAt": "2026-09-16T20:17:01.565682+00:00",
+        "Version": 3,
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierCode": " C ",
+        "DisplayName": " ",
+        "SupportedModes": [
+          "Road",
+          "Road"
+        ],
+        "ExternalReference": null,
+        "Status": "Retired",
+        "CreatedBy": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "UpdatedBy": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      }
+    ],
+    "carrier_idempotency": [
+      {
+        "_id": "22f2c3cc-ff6f-4b4e-a778-e23216b05d0e",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "Operation": "createCarrier",
+        "TargetId": "create",
+        "IdempotencyKey": "key",
+        "Fingerprint": "v1:{\"CarrierCode\":\" C \",\"DisplayName\":\" \",\"SupportedModes\":[\"Road\",\"Road\"],\"ExternalReference\":null}",
+        "FormatVersion": 1,
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "CarrierCode": " C ",
+        "ResultingStatus": "Active",
+        "StatusCode": 201,
+        "ContractVersion": "v1",
+        "CorrelationId": "00000000-0000-0000-0000-000000000000",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      },
+      {
+        "_id": "532766d1-2a0a-4db2-8780-42e852b50746",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "Operation": "changeCarrierStatus",
+        "TargetId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "IdempotencyKey": "suspend",
+        "Fingerprint": "v1:{\"TargetStatus\":\"Suspended\",\"ReasonCode\":\"\"}",
+        "FormatVersion": 1,
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "CarrierCode": " C ",
+        "ResultingStatus": "Suspended",
+        "StatusCode": 200,
+        "ContractVersion": "v1",
+        "CorrelationId": "a2ea9fe0-d903-4894-b5bc-7c65c6ecdde7",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      },
+      {
+        "_id": "ef1dfe53-ec76-49e5-b0dd-efc621f3a905",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "Operation": "changeCarrierStatus",
+        "TargetId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "IdempotencyKey": "retire",
+        "Fingerprint": "v1:{\"TargetStatus\":\"Retired\",\"ReasonCode\":\"RET\"}",
+        "FormatVersion": 1,
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "CarrierCode": " C ",
+        "ResultingStatus": "Retired",
+        "StatusCode": 200,
+        "ContractVersion": "v1",
+        "CorrelationId": "877950b8-e603-45b2-a292-8493c594d0ac",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      },
+      {
+        "_id": "f4daeba4-897c-4701-a3e3-2c1bc8458994",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "Operation": "createCarrier",
+        "TargetId": "create",
+        "IdempotencyKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "Fingerprint": "v1:{\"CarrierCode\":\"lowercase\",\"DisplayName\":\" \",\"SupportedModes\":[\"Road\",\"Road\"],\"ExternalReference\":null}",
+        "FormatVersion": 1,
+        "CarrierId": "7758d74c-6872-4234-8d8f-1a9f1e673f0b",
+        "CarrierCode": "lowercase",
+        "ResultingStatus": "Active",
+        "StatusCode": 201,
+        "ContractVersion": "v1",
+        "CorrelationId": "8c2db108-0d1c-415f-9479-e6a427aa2dc9",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a"
+      }
+    ],
+    "carrier_audit": [
+      {
+        "_id": "2abacf0d-d662-4127-b4c5-12308f8ebb84",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "Operation": "createCarrier",
+        "Version": 1,
+        "FromStatus": null,
+        "ToStatus": "Active",
+        "ReasonCode": null,
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "CorrelationId": "00000000-0000-0000-0000-000000000000",
+        "OccurredAt": {
+          "$date": "2026-09-16T20:17:01.461Z"
+        }
+      },
+      {
+        "_id": "869dfdc2-0c6e-413f-9d79-d6201fe8dd81",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "Operation": "changeCarrierStatus",
+        "Version": 3,
+        "FromStatus": "Suspended",
+        "ToStatus": "Retired",
+        "ReasonCode": "RET",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "CorrelationId": "877950b8-e603-45b2-a292-8493c594d0ac",
+        "OccurredAt": {
+          "$date": "2026-09-16T20:17:01.566Z"
+        }
+      },
+      {
+        "_id": "a7f1c0bc-7a74-4048-b773-97324191bd30",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierId": "7758d74c-6872-4234-8d8f-1a9f1e673f0b",
+        "Operation": "createCarrier",
+        "Version": 1,
+        "FromStatus": null,
+        "ToStatus": "Active",
+        "ReasonCode": null,
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "CorrelationId": "8c2db108-0d1c-415f-9479-e6a427aa2dc9",
+        "OccurredAt": {
+          "$date": "2026-09-16T20:17:01.644Z"
+        }
+      },
+      {
+        "_id": "f9228748-0ea7-4512-82eb-d9c60a00bab8",
+        "TenantId": "6d4901a7-916b-4d76-bb4d-b0627792cad4",
+        "LegalEntityId": "bb6c6ec1-9def-4c78-bed8-e42b3f604616",
+        "CarrierId": "e8d3c5af-bb17-4700-a8a2-1d42e084ec85",
+        "Operation": "changeCarrierStatus",
+        "Version": 2,
+        "FromStatus": "Active",
+        "ToStatus": "Suspended",
+        "ReasonCode": "",
+        "ActorId": "9299ab25-3eee-4cea-bbf8-be8b2b1cee5a",
+        "CorrelationId": "a2ea9fe0-d903-4894-b5bc-7c65c6ecdde7",
+        "OccurredAt": {
+          "$date": "2026-09-16T20:17:01.543Z"
+        }
+      }
+    ]
+  },
+  "processes": [
+    {
+      "pid": 7250,
+      "binarySha256": "a285878cd60d10532e3db27b93589df48d463cb75a59d0abe0744daacdd2e360",
+      "startedAt": 1789589820.551716
+    },
+    {
+      "pid": 7252,
+      "binarySha256": "a285878cd60d10532e3db27b93589df48d463cb75a59d0abe0744daacdd2e360",
+      "startedAt": 1789589823.3224058
+    }
+  ],
+  "contractSha256": "ba9d85f086dd2bfc150c1818843fa22c5b00b0dba1948a57a3672e2529d9880f",
+  "create422": "N/A",
+  "passed": 33
+}

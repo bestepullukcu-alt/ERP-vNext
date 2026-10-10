@@ -1,0 +1,12 @@
+Diten.AuthService.Api restore=0
+Diten.AuthService.Api build=0
+Diten.Platform.API restore=0
+Diten.Platform.API build=0
+Diten.MdmService.Api restore=0
+Diten.MdmService.Api build=0
+Diten.SupplyChainService.Api restore=0
+Diten.SupplyChainService.Api build=0
+Diten.ApiGateway restore=0
+Diten.ApiGateway build=0
+Diten.Web restore=0
+Diten.Web build=0

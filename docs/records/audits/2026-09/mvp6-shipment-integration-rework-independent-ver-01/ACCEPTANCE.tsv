@@ -1,0 +1,18 @@
+id	status	evidence	boundary_or_remaining
+UI183-A01	PARTIAL	raw/web-shipment-anon.headers; raw/route-ownership.tsv	Exact Web/Gateway composition ran; authenticated DataTable flow OPEN
+UI183-A02	PARTIAL	raw/frontend-focused-final.trx	Query/form behavior covered by focused tests; live valid empty-list flow OPEN
+UI183-A03	PARTIAL	raw/web-shipment-anon.headers; raw/gateway-shipment-anon.body.json	Unauthenticated redirect and contract 401 PASS; authenticated missing-read UAS-001 browser flow OPEN
+UI183-A04	PASS_STATIC	raw/frontend-focused-final.trx	Create serialization verified by exact-source tests; live create OPEN
+UI183-A05	PASS_STATIC	raw/frontend-focused-final.trx	Compact 13-input contract verified; browser interaction OPEN
+UI183-A06	PARTIAL	raw/frontend-focused-final.trx	Detail model/actions verified statically; real-row detail/root rendering OPEN
+UI183-A07	OPEN	Carrier Auth handoff is a distinct module boundary	Shipment read/create/dispatch/cancel/POD permission split not executed with fresh Auth
+UI183-A08	OPEN	No authenticated mutation executed	Lifecycle 422 and stale/race browser behavior OPEN
+UI183-A09	OPEN	No authenticated mutation executed	POD success/409/422 browser behavior OPEN
+UI183-A10	OPEN	No authenticated mutation executed	Create/transition/POD replay and changed-payload conflict OPEN
+UI183-A11	PARTIAL	raw/gateway-shipment-anon.body.json	401 correlation shape observed; authenticated trace/root presentation OPEN
+UI183-A12	OPEN	No fresh scoped Shipment identities	Tenant/LE/deleted/unknown safe-404 behavior OPEN
+UI183-A13	PARTIAL	351/351 source match; exact seven-language files retained	No fresh RTL/390/768/desktop/keyboard browser execution; PNG OPEN
+UI183-A14	PASS_STATIC	raw/frontend-focused-final.trx	Exact-source DataTable/unsupported-action tests pass; browser DataTable behavior OPEN
+UI183-A15	PASS_STATIC	raw/frontend-focused-final.trx	Exact-source JS behavior tests pass; browser SweetAlert2 flow OPEN
+UI183-A16	PARTIAL	raw/*-build-final.log; raw/route-tests-recorded.trx; raw/frontend-focused-final.trx	Build/tests and bounded runtime pass; composed real-Auth browser acceptance OPEN
+

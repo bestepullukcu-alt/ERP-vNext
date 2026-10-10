@@ -1,0 +1,1194 @@
+[
+  {
+    "at": "$/paths//shipments/get/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//shipments/get/parameters/1/schema",
+    "ref": "#/components/schemas/ShipmentStatus"
+  },
+  {
+    "at": "$/paths//shipments/get/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/ShipmentListResponse"
+  },
+  {
+    "at": "$/paths//shipments/get/responses/400",
+    "ref": "#/components/responses/BadRequest"
+  },
+  {
+    "at": "$/paths//shipments/post/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//shipments/post/parameters/1",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//shipments/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/CreateShipmentCommand"
+  },
+  {
+    "at": "$/paths//shipments/post/responses/201/content/application/json/schema",
+    "ref": "#/components/schemas/ShipmentResponse"
+  },
+  {
+    "at": "$/paths//shipments/post/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/ShipmentResponse"
+  },
+  {
+    "at": "$/paths//shipments/post/responses/400",
+    "ref": "#/components/responses/BadRequest"
+  },
+  {
+    "at": "$/paths//shipments/post/responses/409",
+    "ref": "#/components/responses/Conflict"
+  },
+  {
+    "at": "$/paths//shipments/post/responses/422",
+    "ref": "#/components/responses/Unprocessable"
+  },
+  {
+    "at": "$/paths//shipments/post/responses/503",
+    "ref": "#/components/responses/DependencyUnavailable"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/get/parameters/0",
+    "ref": "#/components/parameters/ShipmentId"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/get/parameters/1",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/get/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/ShipmentDetail"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/get/responses/404",
+    "ref": "#/components/responses/NotFound"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/parameters/0",
+    "ref": "#/components/parameters/ShipmentId"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/parameters/1",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/parameters/2",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/TransitionShipmentCommand"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/ShipmentResponse"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/responses/404",
+    "ref": "#/components/responses/NotFound"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/responses/409",
+    "ref": "#/components/responses/Conflict"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/responses/422",
+    "ref": "#/components/responses/Unprocessable"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/parameters/0",
+    "ref": "#/components/parameters/ShipmentId"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/parameters/1",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/parameters/2",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/CapturePodCommand"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/responses/201/content/application/json/schema",
+    "ref": "#/components/schemas/PodResponse"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/responses/404",
+    "ref": "#/components/responses/NotFound"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/responses/409",
+    "ref": "#/components/responses/Conflict"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/responses/422",
+    "ref": "#/components/responses/Unprocessable"
+  },
+  {
+    "at": "$/paths//carriers/get/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//carriers/get/parameters/1/schema",
+    "ref": "#/components/schemas/CarrierStatus"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/CarrierListResponse"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/200/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/400",
+    "ref": "#/components/responses/CarrierQError400"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/401",
+    "ref": "#/components/responses/CarrierQError401"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/403",
+    "ref": "#/components/responses/CarrierQError403"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/404",
+    "ref": "#/components/responses/CarrierQError404"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/500",
+    "ref": "#/components/responses/CarrierQError500"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/503",
+    "ref": "#/components/responses/CarrierQError503"
+  },
+  {
+    "at": "$/paths//carriers/post/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//carriers/post/parameters/1",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//carriers/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/CreateCarrierCommand"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/201/content/application/json/schema",
+    "ref": "#/components/schemas/CarrierResponse"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/201/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/409",
+    "ref": "#/components/responses/CarrierCError409"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/422",
+    "ref": "#/components/responses/CarrierCreateUnprocessable"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/400",
+    "ref": "#/components/responses/CarrierCError400"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/401",
+    "ref": "#/components/responses/CarrierCError401"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/403",
+    "ref": "#/components/responses/CarrierCError403"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/404",
+    "ref": "#/components/responses/CarrierCError404"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/415",
+    "ref": "#/components/responses/CarrierCError415"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/500",
+    "ref": "#/components/responses/CarrierCError500"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/503",
+    "ref": "#/components/responses/CarrierCError503"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/parameters/1",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/parameters/2",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/ChangeCarrierStatusCommand"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/CarrierResponse"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/200/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/404",
+    "ref": "#/components/responses/CarrierSError404"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/422",
+    "ref": "#/components/responses/CarrierSError422"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/400",
+    "ref": "#/components/responses/CarrierSError400"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/401",
+    "ref": "#/components/responses/CarrierSError401"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/403",
+    "ref": "#/components/responses/CarrierSError403"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/409",
+    "ref": "#/components/responses/CarrierSError409"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/415",
+    "ref": "#/components/responses/CarrierSError415"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/500",
+    "ref": "#/components/responses/CarrierSError500"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/503",
+    "ref": "#/components/responses/CarrierSError503"
+  },
+  {
+    "at": "$/paths//loads/get/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//loads/get/parameters/1/schema",
+    "ref": "#/components/schemas/LoadStatus"
+  },
+  {
+    "at": "$/paths//loads/get/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/LoadListResponse"
+  },
+  {
+    "at": "$/paths//loads/get/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/get/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/get/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/get/responses/404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/get/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/get/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//loads/post/parameters/1",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//loads/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/CreateLoadCommand"
+  },
+  {
+    "at": "$/paths//loads/post/responses/201/content/application/json/schema",
+    "ref": "#/components/schemas/LoadResponse"
+  },
+  {
+    "at": "$/paths//loads/post/responses/404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/409/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/422/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/415/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/502/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/post/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/parameters/1",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/parameters/2",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/TransitionLoadCommand"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/LoadResponse"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/422/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/409/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/415/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/502/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/get/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//returns/get/parameters/2/schema",
+    "ref": "#/components/schemas/ReturnStatus"
+  },
+  {
+    "at": "$/paths//returns/get/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/ReturnListResponse"
+  },
+  {
+    "at": "$/paths//returns/get/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/get/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/get/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/get/responses/404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/get/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/get/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//returns/post/parameters/1",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//returns/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/CreateReturnCommand"
+  },
+  {
+    "at": "$/paths//returns/post/responses/201/content/application/json/schema",
+    "ref": "#/components/schemas/ReturnResponse"
+  },
+  {
+    "at": "$/paths//returns/post/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/409/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/415/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/422/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/502/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/post/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/parameters/1",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/parameters/2",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/TransitionReturnCommand"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/ReturnResponse"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/409/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/415/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/422/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/get/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//claims/get/parameters/2/schema",
+    "ref": "#/components/schemas/ClaimStatus"
+  },
+  {
+    "at": "$/paths//claims/get/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/ClaimListResponse"
+  },
+  {
+    "at": "$/paths//claims/get/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/get/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/get/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/get/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/get/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//claims/post/parameters/1",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//claims/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/CreateClaimCommand"
+  },
+  {
+    "at": "$/paths//claims/post/responses/201/content/application/json/schema",
+    "ref": "#/components/schemas/ClaimResponse"
+  },
+  {
+    "at": "$/paths//claims/post/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/409/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/415/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/422/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/502/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/post/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/parameters/1",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/parameters/2",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/TransitionClaimCommand"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/200/content/application/json/schema",
+    "ref": "#/components/schemas/ClaimResponse"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/409/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/415/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/422/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/webhooks/shipmentLifecycleEvent/post/parameters/0",
+    "ref": "#/components/parameters/CorrelationId"
+  },
+  {
+    "at": "$/webhooks/shipmentLifecycleEvent/post/parameters/1",
+    "ref": "#/components/parameters/IdempotencyKey"
+  },
+  {
+    "at": "$/webhooks/shipmentLifecycleEvent/post/requestBody/content/application/json/schema",
+    "ref": "#/components/schemas/LifecycleEventEnvelope"
+  },
+  {
+    "at": "$/webhooks/shipmentLifecycleEvent/post/responses/202/content/application/json/schema",
+    "ref": "#/components/schemas/EventAcceptedResponse"
+  },
+  {
+    "at": "$/webhooks/shipmentLifecycleEvent/post/responses/400",
+    "ref": "#/components/responses/BadRequest"
+  },
+  {
+    "at": "$/webhooks/shipmentLifecycleEvent/post/responses/409",
+    "ref": "#/components/responses/Conflict"
+  },
+  {
+    "at": "$/components/schemas/ShipmentLine/properties/quantity",
+    "ref": "#/components/schemas/Decimal"
+  },
+  {
+    "at": "$/components/schemas/CreateShipmentCommand/properties/lines/items",
+    "ref": "#/components/schemas/ShipmentLine"
+  },
+  {
+    "at": "$/components/schemas/TransitionShipmentCommand/properties/targetStatus",
+    "ref": "#/components/schemas/ShipmentStatus"
+  },
+  {
+    "at": "$/components/schemas/ShipmentResponse/properties/status",
+    "ref": "#/components/schemas/ShipmentStatus"
+  },
+  {
+    "at": "$/components/schemas/ShipmentResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/ShipmentSummary/properties/status",
+    "ref": "#/components/schemas/ShipmentStatus"
+  },
+  {
+    "at": "$/components/schemas/ShipmentDetail/allOf/0",
+    "ref": "#/components/schemas/ShipmentSummary"
+  },
+  {
+    "at": "$/components/schemas/ShipmentDetail/allOf/1/properties/lines/items",
+    "ref": "#/components/schemas/ShipmentLine"
+  },
+  {
+    "at": "$/components/schemas/ShipmentDetail/allOf/1/properties/pod/anyOf/0",
+    "ref": "#/components/schemas/PodView"
+  },
+  {
+    "at": "$/components/schemas/ShipmentDetail/allOf/1/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/ShipmentListResponse/properties/items/items",
+    "ref": "#/components/schemas/ShipmentSummary"
+  },
+  {
+    "at": "$/components/schemas/ShipmentListResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/PodResponse/properties/shipmentStatus",
+    "ref": "#/components/schemas/ShipmentStatus"
+  },
+  {
+    "at": "$/components/schemas/PodResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/CreateCarrierCommand/properties/supportedModes/items",
+    "ref": "#/components/schemas/TransportMode"
+  },
+  {
+    "at": "$/components/schemas/ChangeCarrierStatusCommand/properties/targetStatus",
+    "ref": "#/components/schemas/CarrierStatus"
+  },
+  {
+    "at": "$/components/schemas/CarrierSummary/properties/status",
+    "ref": "#/components/schemas/CarrierStatus"
+  },
+  {
+    "at": "$/components/schemas/CarrierSummary/properties/supportedModes/items",
+    "ref": "#/components/schemas/TransportMode"
+  },
+  {
+    "at": "$/components/schemas/CarrierResponse/properties/status",
+    "ref": "#/components/schemas/CarrierStatus"
+  },
+  {
+    "at": "$/components/schemas/CarrierResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/CarrierListResponse/properties/items/items",
+    "ref": "#/components/schemas/CarrierSummary"
+  },
+  {
+    "at": "$/components/schemas/CarrierListResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/CreateLoadCommand/properties/mode",
+    "ref": "#/components/schemas/TransportMode"
+  },
+  {
+    "at": "$/components/schemas/CreateLoadCommand/properties/stops/items",
+    "ref": "#/components/schemas/LoadStop"
+  },
+  {
+    "at": "$/components/schemas/TransitionLoadCommand/properties/targetStatus",
+    "ref": "#/components/schemas/LoadStatus"
+  },
+  {
+    "at": "$/components/schemas/LoadSummary/properties/status",
+    "ref": "#/components/schemas/LoadStatus"
+  },
+  {
+    "at": "$/components/schemas/LoadResponse/properties/status",
+    "ref": "#/components/schemas/LoadStatus"
+  },
+  {
+    "at": "$/components/schemas/LoadResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/LoadListResponse/properties/items/items",
+    "ref": "#/components/schemas/LoadSummary"
+  },
+  {
+    "at": "$/components/schemas/LoadListResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/ReturnLine/properties/quantity",
+    "ref": "#/components/schemas/Decimal"
+  },
+  {
+    "at": "$/components/schemas/CreateReturnCommand/properties/lines/items",
+    "ref": "#/components/schemas/ReturnLine"
+  },
+  {
+    "at": "$/components/schemas/TransitionReturnCommand/properties/targetStatus",
+    "ref": "#/components/schemas/ReturnStatus"
+  },
+  {
+    "at": "$/components/schemas/ReturnSummary/properties/status",
+    "ref": "#/components/schemas/ReturnStatus"
+  },
+  {
+    "at": "$/components/schemas/ReturnResponse/allOf/0",
+    "ref": "#/components/schemas/ReturnSummary"
+  },
+  {
+    "at": "$/components/schemas/ReturnResponse/allOf/1/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/ReturnListResponse/properties/items/items",
+    "ref": "#/components/schemas/ReturnSummary"
+  },
+  {
+    "at": "$/components/schemas/ReturnListResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/CreateClaimCommand/properties/claimedAmount",
+    "ref": "#/components/schemas/Decimal"
+  },
+  {
+    "at": "$/components/schemas/TransitionClaimCommand/properties/targetStatus",
+    "ref": "#/components/schemas/ClaimStatus"
+  },
+  {
+    "at": "$/components/schemas/TransitionClaimCommand/properties/approvedAmount/anyOf/0",
+    "ref": "#/components/schemas/Decimal"
+  },
+  {
+    "at": "$/components/schemas/ClaimSummary/properties/status",
+    "ref": "#/components/schemas/ClaimStatus"
+  },
+  {
+    "at": "$/components/schemas/ClaimSummary/properties/claimedAmount",
+    "ref": "#/components/schemas/Decimal"
+  },
+  {
+    "at": "$/components/schemas/ClaimResponse/properties/status",
+    "ref": "#/components/schemas/ClaimStatus"
+  },
+  {
+    "at": "$/components/schemas/ClaimResponse/properties/approvedAmount/anyOf/0",
+    "ref": "#/components/schemas/Decimal"
+  },
+  {
+    "at": "$/components/schemas/ClaimResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/ClaimListResponse/properties/items/items",
+    "ref": "#/components/schemas/ClaimSummary"
+  },
+  {
+    "at": "$/components/schemas/ClaimListResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/ShipmentEventPayload/properties/status",
+    "ref": "#/components/schemas/ShipmentStatus"
+  },
+  {
+    "at": "$/components/schemas/LoadEventPayload/properties/status",
+    "ref": "#/components/schemas/LoadStatus"
+  },
+  {
+    "at": "$/components/schemas/ReturnEventPayload/properties/status",
+    "ref": "#/components/schemas/ReturnStatus"
+  },
+  {
+    "at": "$/components/schemas/ClaimEventPayload/properties/status",
+    "ref": "#/components/schemas/ClaimStatus"
+  },
+  {
+    "at": "$/components/schemas/ClaimEventPayload/properties/approvedAmount/anyOf/0",
+    "ref": "#/components/schemas/Decimal"
+  },
+  {
+    "at": "$/components/schemas/LifecycleEventEnvelope/properties/payload/oneOf/0",
+    "ref": "#/components/schemas/ShipmentEventPayload"
+  },
+  {
+    "at": "$/components/schemas/LifecycleEventEnvelope/properties/payload/oneOf/1",
+    "ref": "#/components/schemas/LoadEventPayload"
+  },
+  {
+    "at": "$/components/schemas/LifecycleEventEnvelope/properties/payload/oneOf/2",
+    "ref": "#/components/schemas/ReturnEventPayload"
+  },
+  {
+    "at": "$/components/schemas/LifecycleEventEnvelope/properties/payload/oneOf/3",
+    "ref": "#/components/schemas/ClaimEventPayload"
+  },
+  {
+    "at": "$/components/schemas/LifecycleEventEnvelope/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/EventAcceptedResponse/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/schemas/Error/properties/contractVersion",
+    "ref": "#/components/schemas/ContractVersion"
+  },
+  {
+    "at": "$/components/responses/BadRequest/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/NotFound/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/Conflict/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/Unprocessable/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/DependencyUnavailable/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierQError400/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierQError400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierQError401/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierQError401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierQError403/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierQError403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierQError404/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierQError404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierQError500/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierQError500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierQError503/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierQError503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCError400/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierCError400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCError401/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierCError401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCError403/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierCError403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCError404/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierCError404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCError409/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierCError409/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCError415/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierCError415/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCError500/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierCError500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCError503/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierCError503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCreateUnprocessable/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierCreateUnprocessable/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError400/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError400/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierSError401/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError401/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierSError403/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError403/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierSError404/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError404/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierSError409/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError409/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierSError415/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError415/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierSError422/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError422/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierSError500/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError500/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  },
+  {
+    "at": "$/components/responses/CarrierSError503/headers/X-Correlation-Id",
+    "ref": "#/components/headers/CarrierResponseCorrelation"
+  },
+  {
+    "at": "$/components/responses/CarrierSError503/content/application/json/schema",
+    "ref": "#/components/schemas/Error"
+  }
+]

@@ -1,0 +1,9 @@
+a03f9d593e97c6d37052f540bbf25a08bfe0de004227502359454924f0998ac3  docs/records/audits/2026-09/mvp6-mod0186-http-composition-01/source-snapshot.tar.gz
+eaf786e647ef019f862c7dcc4f0b2ab29b2b5a36ff1bee98d2cca8d2863cc766  docs/records/audits/2026-09/mvp6-mod0186-http-01/manifests/integration-source-baseline.tar.gz
+5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c  docs/analysis/contracts/shipment-bundle.openapi.yaml
+00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11  docs/analysis/contracts/returns-semantics-v3.0.0.md
+7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af  docs/analysis/contracts/shipment-root-semantics-v3.0.0.md
+1c80cca70ef774d18f5d30174566e68c9b6332b61dd1f564d54de3429886482f  docs/records/audits/2026-09/mvp6-mod0186-http-01/authority/MOD-0186-reverse-logistics.md
+c921c423e6c354753b550e4520940479d260d8705b7f937210abc91f228ef0a7  docs/records/audits/2026-09/mvp6-mod0186-http-01/authority/PHASE15.md
+2da816e7f5341595a736b1643e7aa6892fd75d0835d85620e3bf400a04f162dc  docs/records/audits/2026-09/mvp6-mod0186-http-01/authority/error-matrix.tsv
+96f43bd7fa66256ee55e5aea2c4c412887238ea586fd96ceb05f8adb69485969  docs/records/audits/2026-09/mvp6-mod0186-http-composition-01/returns46.json

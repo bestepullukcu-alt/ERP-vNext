@@ -1,0 +1,22 @@
+--- /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs	2026-10-04 23:00:24
++++ SCRATCH-SABOTAGE:services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs	2026-10-05 01:19:50
+@@ -83,7 +83,7 @@
+             // Q420: a 403 from the Shipment read means the caller lacks supplychain.shipments.read. That is an authorization
+             // outcome and is reported as one, with the annex's context-403 code (returns-semantics-v3.0.0.md:62), not as an
+             // outage. A 401 or any 5xx is still the dependency failing and stays 503.
+-            if (response.StatusCode == HttpStatusCode.Forbidden) throw new ReturnFailureException(403, "INVALID_REQUEST");
++            if (response.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized) throw new ReturnFailureException(403, "INVALID_REQUEST");
+             if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized) throw new ReturnFailureException(503, "DEPENDENCY_UNAVAILABLE");
+             if (response.StatusCode != HttpStatusCode.OK) Invalid();
+             using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+--- /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs	2026-10-04 23:01:33
++++ SCRATCH-SABOTAGE:services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs	2026-10-05 01:19:50
+@@ -104,7 +104,7 @@
+             // supplychain.carriers.read. That is an authorization outcome, reported with the annex's 403 code
+             // (claims-semantics-v3.0.0.md: "403 FORBIDDEN includes scope/identity/action failures"), not as an outage.
+             // A 401 or any 5xx is still the dependency failing and stays 503.
+-            if (response.StatusCode == HttpStatusCode.Forbidden) throw new ClaimFailureException(403, "FORBIDDEN");
++            if (response.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized) throw new ClaimFailureException(403, "FORBIDDEN");
+             if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized)
+                 throw new ClaimFailureException(503, "CLAIM_REFERENCE_UNAVAILABLE");
+             if (response.StatusCode != HttpStatusCode.OK) Invalid();

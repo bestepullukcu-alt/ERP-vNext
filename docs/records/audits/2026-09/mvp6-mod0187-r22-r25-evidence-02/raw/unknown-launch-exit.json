@@ -1,0 +1,58 @@
+[
+  {
+    "label": "r25-unknown-committed-first",
+    "mode": "ClaimsEvidence",
+    "pid": 11777,
+    "port": 5066,
+    "fixedIdConfigured": true,
+    "faultStage": null,
+    "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+    "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-unknown-committed-first.log",
+    "health": "health=200",
+    "startedAt": "2026-09-21T19:10:25Z",
+    "exitCode": 0,
+    "stoppedAt": "2026-09-21T19:10:32Z"
+  },
+  {
+    "label": "r25-unknown-committed-restart",
+    "mode": "ClaimsEvidence",
+    "pid": 11825,
+    "port": 5066,
+    "fixedIdConfigured": true,
+    "faultStage": null,
+    "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+    "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-unknown-committed-restart.log",
+    "health": "health=200",
+    "startedAt": "2026-09-21T19:10:33Z",
+    "exitCode": 0,
+    "stoppedAt": "2026-09-21T19:10:34Z"
+  },
+  {
+    "label": "r25-unknown-not-committed-first",
+    "mode": "ClaimsEvidence",
+    "pid": 11827,
+    "port": 5066,
+    "fixedIdConfigured": true,
+    "faultStage": null,
+    "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+    "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-unknown-not-committed-first.log",
+    "health": "health=200",
+    "startedAt": "2026-09-21T19:10:35Z",
+    "exitCode": 0,
+    "stoppedAt": "2026-09-21T19:11:08Z"
+  },
+  {
+    "label": "r25-unknown-not-committed-restart",
+    "mode": "ClaimsEvidence",
+    "pid": 11857,
+    "port": 5066,
+    "fixedIdConfigured": true,
+    "faultStage": null,
+    "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+    "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-unknown-not-committed-restart.log",
+    "health": "health=200",
+    "startedAt": "2026-09-21T19:11:09Z",
+    "exitCode": 0,
+    "stoppedAt": "2026-09-21T19:11:18Z"
+  }
+]

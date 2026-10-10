@@ -1,0 +1,40 @@
+# Q372-R2 part B, phase 1: dotnet-counters 10.0.745401 monitor, verbatim screen text as returned by the terminal reader
+# command: /Users/natig/.dotnet/tools/dotnet-counters monitor --process-id 11090 --refresh-interval 2 --counters Diten.SupplyChainService.Shipments
+# pid 11090 = SupplyChain (dotnet bin/Debug/net8.0/Diten.SupplyChainService.Api.dll), attached 14:10 local, after the part-A browser creates.
+# behaviours driven while attached (results/b-drive.jsonl): 14:11:31 replay (201 then same-key same-correlation 200, same id),
+# 14:11:42 scope (404 SHIPMENT_NOT_FOUND, foreign X-Legal-Entity-Id), 14:11:55 load (10 creates 201 + 30 lists 200), 14:11:56 replay.
+# Reader note: the TUI rewrites value cells in place; the reader appends those rewrites to the last line, so the final line is
+# the stream of updated cells, not a table row. Its repeating tail "2 12 1" = replays 2, outbox.pending 12, scope.denials 1.
+
+--- first frame after the first replay ---
+Name                                         Current Value
+[Diten.SupplyChainService.Shipments]
+    shipment.idempotency.replays ({request           1
+    shipment.operation.duration (ms)
+        operation             Percentile
+        --------------------- ----------
+        CreateShipmentCommand 50                   105.125
+        CreateShipmentCommand 95                   105.125
+        CreateShipmentCommand 99                   105.125
+    shipment.outbox.pending ({event})                1
+
+--- after the scope denial ---
+    shipment.outbox.pending ({event})                1
+    shipment.scope.denials ({request})               1
+
+--- last full frame (load started) and the appended in-place updates ---
+Name                                         Current Value
+[Diten.SupplyChainService.Shipments]
+    shipment.idempotency.replays ({request           1
+    shipment.operation.duration (ms)
+        operation             Percentile
+        --------------------- ----------
+        CreateShipmentCommand 50                   105.125
+        CreateShipmentCommand 95                   105.125
+        CreateShipmentCommand 99                   105.125
+        GetShipmentListQuery  50                     2.629
+        GetShipmentListQuery  95                    11.672
+        GetShipmentListQuery  99                    27.719
+    shipment.outbox.pending ({event})                1
+    shipment.scope.denials ({request})               1
+          7.898         10.344         10.344          1              9              1              2.465          2.82           2.82           7.578          7.773          7.773          2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1              2             12              1

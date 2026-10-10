@@ -1,0 +1,8 @@
+2026-09-25 cleanup result
+
+- Closed three lane-owned IAB profiles/tabs.
+- Gracefully stopped Auth, Platform, MDM, SupplyChain, Gateway, Web and Mongo sessions.
+- Verified no listener remained on 5956, 5957, 5959, 5961, 5900, 5901 or 42994.
+- Removed the lane-owned disposable workspace, including its secret environment file, password hash and isolated fixture database.
+- No process connected to operational Mongo 27017 during this run.
+- Permanent evidence secret scan found no literal password, bearer token, access-token value, refresh-token value or temporary JWT environment variable.

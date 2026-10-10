@@ -1,0 +1,8 @@
+sha256	path	purpose
+028e2dc0d35dba692efcfd5ffc9c223ef90c5315f3329bf605c9b5e6d5f9e9fd	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/SOP-22.md	Root R2 candidate/application disposition
+7d83cf3ff4a039d02ec0a9133fd86ef4614236b0a3cadccca8543924134670e1	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/ACCEPTANCE.tsv	Application and independent VER state
+b39d00079306f87500f280f4e9e2c5c6c270827503e5bb85992571c7b847cb5d	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/TARGET-MANIFEST.tsv	Exact preimage/target source binding
+33dabd9e3f36289d6b00f6634a38bee4b8f7e2efec1e079ac327894be1d5b204	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/OWNER-DECISION-TEXT.md	Proposed decision; not execution evidence
+be7f371ba635ee62f066649b844d3b52e064b29f9333b777bd027b9e039ea977	docs/records/audits/2026-09/mvp6-shipment-real-auth-http-recovery-01/FIXTURE-LAUNCH-HANDOFF.md	Secret-free future launch handoff
+6c61038722f12353a02a369a721dee901851009bbdd1e333f4a4e677f8c756cd	docs/records/audits/2026-09/mvp6-browser-evidence-environment-recovery-01/SOP-22.md	Historical browser environment result
+573160a34e6c21251c25c58cf48a616f07e9539331d780ddf5db13f135d9a3bc	docs/records/audits/2026-09/mvp6-browser-evidence-environment-recovery-01/ENVIRONMENT-HANDOFF.md	Historical IAB/PNG capability boundary

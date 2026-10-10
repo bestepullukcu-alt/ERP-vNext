@@ -1,0 +1,1 @@
+{"title":"Missing Tenant","status":400,"detail":"'X-Tenant-Id' header or JWT tenant_id claim is required.","traceId":"0HNOS10MHQ417:00000001"}

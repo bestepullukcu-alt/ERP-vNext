@@ -14,7 +14,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
 /// MOD-0164 FU02 — Consent authoring + read-only evaluation provider.
 /// <para>
 /// <b>Routing:</b> canonical under <c>/api/crm/consents</c>. The Gateway exposes the same paths through the dedicated
-/// <c>consents</c> ocelot routes; there is no direct-to-5061 business surface.
+/// <c>consents</c> ocelot routes; there is no direct-to-5065 business surface.
 /// </para>
 /// <para>
 /// <b>Permissions:</b> canonical keys are <c>crm.consent.read</c> / <c>.manage</c> / <c>.evaluate</c>

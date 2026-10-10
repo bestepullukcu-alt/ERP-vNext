@@ -1,0 +1,8 @@
+step\tresult\texact_observable\tevidence
+safe-page-created\tPASS\tNo product/auth/secret/external request; SHA256 401722ab6cf4f8fd7828a34af4628ed57bd3a3871f073a539235ee66067e74d7\traw/probe-index.html
+terminal-http\tPASS\tHTTP 200 from 127.0.0.1:38765\traw/terminal.headers
+iab-navigation\tPASS\tTitle and SAFE LOCAL PAGE visible at 127.0.0.1:38765\tCUA AX state in run transcript
+iab-screenshot\tPASS_INLINE\t22179 bytes; SHA256 e3e113d6c9502079dfc8b0d3da58d3baec7488781012ea13c47b6307eb36c3d7\tCUA inline image in run transcript
+persistent-png-path\tOPEN\tNo supported API returned a local PNG artifact path\tCUA capability and documentation inspection
+content-export\tUNSUPPORTED\tIAB rejected command tab_content_export; operation is not screenshot export\tCUA run transcript
+prohibited-bypass\tNOT_ATTEMPTED\tNo data URL, base64 extraction, CDP, proxy, tunnel, native capture or alternate encoding\tScope compliance

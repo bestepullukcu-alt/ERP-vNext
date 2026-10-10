@@ -1,0 +1,25 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+@@ -567,7 +567,9 @@ Effective46pathallowlist in that package explicitly excludes ReturnOutboxWorker.
+ 
+ R01–R11 are future runtime acceptance, not currentPASS. HTTP/JWT/liveproduceruptake and APIrestart await separatelyapprovedcomposition; corework canproceed. No migration/backfill/rollout/E5G5/fullmodule acceptance. Commonpack remains unchanged.
+ 
+-## 31. Accepted bounded scope binding (PACK-ALIGNMENT-03 proposal — NOT APPROVED)
++## 31. Accepted bounded scope binding
++
++Approved: `docs/records/decisions/2026-09/mvp6-returns-pack-signoff-owner-decision-01.md`
+ 
+ This section records, without changing any business rule above, the Control Tower acceptance of the bounded Returns work package built under this pack. It is a proposal until the owner decision in `docs/roadmap/plans/mvp6-pack-alignment-03-returns/SIGN-OFF-DECISION.md` is recorded.
+ 
+@@ -786,7 +788,9 @@ frontend 32/52/88; shared integration 8/16/28; independent UI VER 14/24/40; **to
+ Not authorized by this section: UI code until an integrated target exists and a versioned UI dispatch is released; gateway, permission,
+ navigation, L10n or icon-map edits except by the single integration owner; contract changes; `done` status; commit or push.
+ 
+-## 33. Self-registration (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++## 33. Self-registration
++
++Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patch05-signoff-owner-decision-01.md`
+ 
+ **Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
+ **Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).

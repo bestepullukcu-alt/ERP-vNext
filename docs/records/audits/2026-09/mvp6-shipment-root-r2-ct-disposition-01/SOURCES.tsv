@@ -1,0 +1,6 @@
+kind	path	sha256	use
+prior_ct	docs/records/audits/2026-09/mvp6-root-r2-producer-ct-accept-01/README.md	4cca61682757ae1a3f615cfa40027fd8a4dc39fe38f6a2421a64c092b80c4102	read-only acceptance boundary
+rework_manifest	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/ARTIFACTS.sha256	5982e702afd7c7bcb28e8de23a159984afcfdcb665e7a612c6e5e1838f0ac028	exact decision and patch preparation
+exec_manifest	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-exec-01/ARTIFACTS.sha256	6461ba670041407e4577a95684487928b01098ec1cc68d2e47baa015c38d448c	writer package integrity
+ver_manifest	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-independent-ver-01/ARTIFACTS.sha256	d7dddd3784c30043477b4516ba0bbd0a7b85974de22a67ef5176631df493dc0a	independent package integrity
+effort_manifest	docs/roadmap/plans/mvp6-shipment-r2-effort-disposition-01/ARTIFACTS.sha256	4bfeaf971540cfcfc69058eec2f13e98599f1e60fe18188681e140a35bd399cd	12/24/44 reserve mapping

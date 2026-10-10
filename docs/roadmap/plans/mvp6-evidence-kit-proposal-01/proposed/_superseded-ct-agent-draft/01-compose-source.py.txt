@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""CANDIDATE — NOT APPROVED.  Step 1: exact source input.
+
+git archive <BASE_HEAD>  +  ordered immutable overlays, each verified against its manifest
+(count + sha256, no missing, no extra), pairwise zero-overlap, then re-hash of the composed tree.
+Writes two SEPARATE manifests:
+  OWNED-SOURCE-MANIFEST.tsv  path, sha256, overlay_id           (governed/owned rows only)
+  BUILD-INPUT-MANIFEST.tsv   path, sha256, bytes, provenance     (every file the build can read)
+overlays.tsv: order, overlay_id, archive, archive_sha256, manifest, manifest_sha256[, build_manifest, build_manifest_sha256]
+A build manifest is needed when an archive carries full build inputs (e.g. the NumericDate Auth archive: 22 governed
+rows, 3333 files; 3311 identical to HEAD).  Build-only files must be byte-identical to the composed tree.
+Derived from: mvp6-mod0192-hosted-evidence-01/verify_combined_source.py (overlay + zero-overlap)
+and mvp6-carrier-auth-le-successor-ver-01/raw/verify_archive.py (archive member hashing).
+Usage: 01-compose-source.py --repo R --base-head H --overlays overlays.tsv --dest W/source --out E
+"""
+import argparse, csv, hashlib, io, itertools, os, subprocess, sys, tarfile
+from pathlib import Path, PurePosixPath
+
+HASH_COLUMNS = ("sha256", "target_sha256")          # observed manifest dialects
+APPLEDOUBLE = lambda p: PurePosixPath(p).name.startswith("._")   # macOS tar resource forks: reported, never extracted
+
+def sha_bytes(b): return hashlib.sha256(b).hexdigest()
+def sha_file(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""): h.update(chunk)
+    return h.hexdigest()
+
+def safe_name(name):
+    n = name.removeprefix("./")
+    p = PurePosixPath(n)
+    if p.is_absolute() or ".." in p.parts or n == "": raise SystemExit(f"FAIL unsafe archive path: {name}")
+    return n
+
+def read_manifest(path):
+    with open(path, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f, delimiter="\t"))
+    if not rows: raise SystemExit(f"FAIL empty manifest {path}")
+    col = next((c for c in HASH_COLUMNS if c in rows[0]), None)
+    if "path" not in rows[0] or col is None: raise SystemExit(f"FAIL unknown manifest dialect {path}: {list(rows[0])}")
+    out, deleted = {}, set()
+    for r in rows:
+        if r["path"] in out or r["path"] in deleted: raise SystemExit(f"FAIL duplicate manifest path {r['path']}")
+        if (r.get("disposition") or "").lower() == "deleted" or r[col] in ("-", ""):
+            deleted.add(r["path"])
+        else:
+            out[r["path"]] = r[col].lower()
+    return out, deleted, col
+
+def tar_files(archive):
+    files, ignored = {}, []
+    with tarfile.open(archive, "r:*") as t:
+        for m in t.getmembers():
+            if m.isdir(): continue
+            name = safe_name(m.name)
+            if APPLEDOUBLE(name): ignored.append(name); continue
+            if not m.isfile(): raise SystemExit(f"FAIL non-regular member (link/device) {name} in {archive}")
+            files[name] = t.extractfile(m).read()
+    return files, ignored
+
+def main():
+    a = argparse.ArgumentParser()
+    a.add_argument("--repo"); a.add_argument("--base-head"); a.add_argument("--overlays")
+    a.add_argument("--dest", required=True); a.add_argument("--out", required=True)
+    a.add_argument("--verify-only", action="store_true", help="after build: re-hash owned rows, prove the build changed no source")
+    o = a.parse_args()
+    dest, out = Path(o.dest), Path(o.out)
+    if o.verify_only:
+        with open(out / "OWNED-SOURCE-MANIFEST.tsv", newline="") as f:
+            rows = list(csv.DictReader(f, delimiter="\t"))
+        bad = [r["path"] for r in rows if (r["sha256"] == "DELETED") != (not (dest / r["path"]).exists())
+               or (r["sha256"] != "DELETED" and sha_file(dest / r["path"]) != r["sha256"])]
+        with open(out / "SOURCE-VERIFICATION.txt", "a") as f:
+            f.write(f"post_build_rehash\t{len(rows) - len(bad)}/{len(rows)}\tRESULT\t{'PASS' if not bad else 'FAIL'}\n")
+        sys.exit(1 if bad else 0)
+    if not (o.repo and o.base_head and o.overlays): raise SystemExit("FAIL --repo, --base-head and --overlays are required")
+    if dest.exists() and any(dest.iterdir()): raise SystemExit("FAIL destination not empty")
+    dest.mkdir(parents=True, exist_ok=True); out.mkdir(parents=True, exist_ok=True)
+    report = []
+
+    # --- base: read-only git archive of the exact HEAD (never the dirty working tree)
+    head = subprocess.check_output(["git", "-C", o.repo, "rev-parse", "--verify", o.base_head + "^{commit}"], text=True).strip()
+    if head != o.base_head: raise SystemExit(f"FAIL base head resolves to {head}")
+    tree = subprocess.check_output(["git", "-C", o.repo, "rev-parse", head + "^{tree}"], text=True).strip()
+    tar_bytes = subprocess.check_output(["git", "-C", o.repo, "archive", "--format=tar", head])
+    gitver = subprocess.check_output(["git", "--version"], text=True).strip()
+    base_files = {}
+    with tarfile.open(fileobj=io.BytesIO(tar_bytes)) as t:
+        for m in t.getmembers():
+            if m.isdir() or m.type == tarfile.XGLTYPE: continue
+            name = safe_name(m.name)
+            if m.issym():                 # symlinks from HEAD are recorded, not followed
+                base_files[name] = ("symlink", m.linkname); continue
+            base_files[name] = ("file", t.extractfile(m).read())
+    for name, (kind, data) in base_files.items():
+        p = dest / name; p.parent.mkdir(parents=True, exist_ok=True)
+        if kind == "symlink": os.symlink(data, p)
+        else: p.write_bytes(data)
+    provenance = {n: "HEAD" for n in base_files}
+    report += [f"base_head\t{head}", f"base_tree\t{tree}", f"git_archive_sha256\t{sha_bytes(tar_bytes)}",
+               f"git_version\t{gitver}", f"base_files\t{len(base_files)}"]
+
+    # --- overlays, in declared order
+    with open(o.overlays, newline="", encoding="utf-8") as f:
+        overlays = sorted(csv.DictReader(f, delimiter="\t"), key=lambda r: int(r["order"]))
+    owned, path_sets, fail = {}, {}, []
+    for ov in overlays:
+        oid = ov["overlay_id"]
+        keys = ("archive", "manifest") + (("build_manifest",) if ov.get("build_manifest") else ())
+        for key in keys:
+            got = sha_file(ov[key])
+            if got != ov[key + "_sha256"].lower(): fail.append(f"{oid} {key} sha256 {got} != {ov[key + '_sha256']}")
+        manifest, deleted, col = read_manifest(ov["manifest"])
+        build = read_manifest(ov["build_manifest"])[0] if ov.get("build_manifest") else {}
+        files, ignored = tar_files(ov["archive"])
+        missing = sorted((set(manifest) | set(build)) - set(files))
+        extra = sorted(set(files) - set(manifest) - set(build))          # neither governed nor declared build input
+        mismatch = sorted(p for p in set(files) & (set(manifest) | set(build))
+                          if sha_bytes(files[p]) != manifest.get(p, build.get(p)))
+        disagree = sorted(p for p in set(manifest) & set(build) if manifest[p] != build[p])
+        # a build-only file must be byte-identical to what is already composed (HEAD or an earlier overlay);
+        # otherwise the archive would carry an UNGOVERNED source change
+        ungoverned = sorted(p for p in set(files) & set(build) - set(manifest)
+                            if not (dest / p).is_file() or sha_file(dest / p) != build[p])
+        report += [f"overlay\t{oid}\tmanifest_rows={len(manifest)}\tdeleted_rows={len(deleted)}\thash_column={col}"
+                   f"\tbuild_manifest_rows={len(build)}\tarchive_files={len(files)}\tmissing={len(missing)}\textra={len(extra)}"
+                   f"\tmismatch={len(mismatch)}\tungoverned_change={len(ungoverned)}\tappledouble_ignored={len(ignored)}"]
+        fail += ([f"{oid} missing {p}" for p in missing] + [f"{oid} extra {p}" for p in extra]
+                 + [f"{oid} mismatch {p}" for p in mismatch] + [f"{oid} governed/build disagree {p}" for p in disagree]
+                 + [f"{oid} ungoverned change {p}" for p in ungoverned])
+        path_sets[oid] = set(manifest) | deleted
+        for p in manifest:                                   # only governed rows are written
+            if p not in files: continue
+            q = dest / p; q.parent.mkdir(parents=True, exist_ok=True)
+            if q.is_symlink(): q.unlink()
+            q.write_bytes(files[p]); provenance[p] = oid; owned[p] = (manifest[p], oid)
+        for p in deleted:
+            q = dest / p
+            if q.exists() or q.is_symlink(): q.unlink()
+            provenance.pop(p, None); owned[p] = ("DELETED", oid)
+    for (x, sx), (y, sy) in itertools.combinations(path_sets.items(), 2):
+        both = sorted(sx & sy)
+        report.append(f"overlap\t{x}\t{y}\t{len(both)}")
+        fail += [f"overlap {x}/{y} {p}" for p in both]
+    if fail:
+        (out / "SOURCE-COMPOSE-FAILURES.txt").write_text("\n".join(fail) + "\n")
+        print("\n".join(report + ["RESULT\tFAIL"])); sys.exit(1)
+
+    # --- re-hash composed tree against every owned row (proves extraction order/overwrites)
+    rehash_fail = [p for p, (h, _) in owned.items()
+                   if (h == "DELETED" and (dest / p).exists()) or (h != "DELETED" and sha_file(dest / p) != h)]
+    with open(out / "OWNED-SOURCE-MANIFEST.tsv", "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t", lineterminator="\n"); w.writerow(["path", "sha256", "overlay_id"])
+        for p in sorted(owned): w.writerow([p, owned[p][0], owned[p][1]])
+    with open(out / "BUILD-INPUT-MANIFEST.tsv", "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t", lineterminator="\n"); w.writerow(["path", "sha256", "bytes", "provenance"])
+        for p in sorted(provenance):
+            q = dest / p
+            if q.is_symlink(): w.writerow([p, "symlink:" + os.readlink(q), 0, provenance[p]])
+            else: w.writerow([p, sha_file(q), q.stat().st_size, provenance[p]])
+    report += [f"owned_rows\t{len(owned)}", f"build_input_rows\t{len(provenance)}", f"rehash_failures\t{len(rehash_fail)}",
+               f"RESULT\t{'PASS' if not rehash_fail else 'FAIL'}"]
+    (out / "SOURCE-VERIFICATION.txt").write_text("\n".join(report) + "\n")
+    print("\n".join(report)); sys.exit(0 if not rehash_fail else 1)
+
+if __name__ == "__main__": main()

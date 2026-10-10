@@ -487,6 +487,10 @@
   <data name="PositionAssignments" xml:space="preserve"><value>تعيينات المناصب</value></data>
   <data name="MasterData" xml:space="preserve"><value>البيانات الرئيسية</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>الكيانات القانونية</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>يجب اختيار كيان قانوني.</value></data>
+  <data name="LegalEntityUnavailable" xml:space="preserve"><value>قائمة الكيانات القانونية غير متاحة.</value></data>
+  <data name="LegalEntityNone" xml:space="preserve"><value>لا يوجد كيان قانوني نشط لهذا المستأجر.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>اعتمادات سير العمل</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>هياكل التوثيق</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>المستندات المُدارة</value></data>
@@ -1048,4 +1052,15 @@
   <data name="Loading" xml:space="preserve">
     <value>جارٍ التحميل...</value>
   </data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>تتبع الشحنات وإثبات التسليم</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>الشحنات</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>الخدمات اللوجستية العكسية</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>المرتجعات</value></data>
+  <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>التوجيه وتخطيط الحمولات</value></data>
+  <data name="Nav.Page.LOADS" xml:space="preserve"><value>الحمولات</value></data>
+  <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>إدارة المطالبات</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>مطالبات الشحن</value></data>
 </root>

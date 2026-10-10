@@ -1,0 +1,2 @@
+id	patch	patch_sha256	target	before	after	verified
+Q53	docs/roadmap/plans/mvp6-self-registration-patch05-rebase-01/05-MOD-0186-self-registration-rebased.patch	7adf06ad844c85345895c95a2a0a418344b53b2dea61517f2343914ad4e9c6fd	execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md	6c8fbe28f0b058cacf08aaf3941e82845b0842db3f8b8f295a753e746a65a5a0	a762305ec789f0b2547d5205135a0ff70b64e83f4a63b839a985432a46d8a552	PASS

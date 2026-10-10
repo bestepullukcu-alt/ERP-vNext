@@ -1,0 +1,12 @@
+--- a/docs/reference/architecture/docs-path-authority.json
++++ b/docs/reference/architecture/docs-path-authority.json
+@@ -1,7 +1,7 @@
+ {
+   "schemaVersion": 1,
+-  "status": "UNAPPROVED",
+-  "decision": null,
++  "status": "APPROVED",
++  "decision": {"path": "docs/records/decisions/2026-09/mvp6-docs-path-owner-approval-01.json", "sha256": "f2cc8213583f10ba6e7c69e86e5d478ad88fe825ca3bcee8ac2c78c1cb1ca607"},
+   "canonicalTargets": [
+     {
+       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",

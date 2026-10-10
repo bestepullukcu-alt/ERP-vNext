@@ -1,0 +1,24 @@
+phase	name	before	after	expect	result	detail
+vs	vertical-slice-normal-detail	vs-vertical-slice-normal-detail-before	vs-vertical-slice-normal-detail-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	normal-detail-draft	a12-normal-detail-draft-before	a12-normal-detail-draft-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	normal-detail-delivered-pod	a12-normal-detail-delivered-pod-before	a12-normal-detail-delivered-pod-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	cross-le-en	a12-cross-le-en-before	a12-cross-le-en-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	cross-le-tr	a12-cross-le-tr-before	a12-cross-le-tr-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	cross-le-ar	a12-cross-le-ar-before	a12-cross-le-ar-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	unknown-actor-le-b	a12-unknown-actor-le-b-before	a12-unknown-actor-le-b-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	unknown-actor-a	a12-unknown-actor-a-before	a12-unknown-actor-a-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	deleted-fixture-visible-before-delete	a12-deleted-fixture-visible-before-delete-before	a12-deleted-fixture-visible-before-delete-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	soft-delete-fixture-step	a12-softdelete-before	a12-softdelete-after	{"counts":{},"state":{"isDeleted":true}}	PASS	{"counts":{},"state":{"isDeleted":true}}
+a12	soft-deleted-actor-a	a12-soft-deleted-actor-a-before	a12-soft-deleted-actor-a-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a12	leb-cross-le-mutations	a12-leb-mutation-before	a12-leb-mutation-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+late	late-softdelete-fixture	late-before	late-after-softdelete	{"counts":{},"state":{"isDeleted":true}}	PASS	{"counts":{},"state":{"isDeleted":true}}
+late	late-browser-zero-write	late-after-softdelete	late-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+late	late-softdelete-fixture	late-before	late-after-softdelete	{"counts":{},"state":{"isDeleted":true}}	PASS	{"counts":{},"state":{"isDeleted":true}}
+late	late-browser-zero-write	late-after-softdelete	late-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+negctl	sabotage-baseline-detailsjs-cross-le	negctl-sabotage-baseline-detailsjs-cross-le-before	negctl-sabotage-baseline-detailsjs-cross-le-after	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a08	a08-actor-a-commit	a08-before-actor-a	a08-after-actor-a	{"counts":{"sce_shipment_history":1,"sce_shipment_receipts":1,"sce_shipment_audit":1,"sce_shipment_outbox":1},"state":{"status":"Planned"}}	PASS	{"counts":{"sce_shipment_history":1,"sce_shipment_receipts":1,"sce_shipment_audit":1,"sce_shipment_outbox":1},"state":{"status":"Planned"}}
+a08	a08-actor-b-stale-zero-write	a08-after-actor-a	a08-after-actor-b	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a09dup	a09dup-actor-a-commit	a09dup-before-actor-a	a09dup-after-actor-a	{"counts":{"sce_shipment_history":1,"sce_shipment_receipts":1,"sce_shipment_audit":1},"state":{"status":"Delivered"}}	PASS	{"counts":{"sce_shipment_history":1,"sce_shipment_receipts":1,"sce_shipment_audit":1},"state":{"status":"Delivered"}}
+a09dup	a09dup-actor-b-stale-zero-write	a09dup-after-actor-a	a09dup-after-actor-b	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged
+a09state	a09state-actor-a-commit	a09state-before-actor-a	a09state-after-actor-a	{"counts":{"sce_shipment_history":1,"sce_shipment_receipts":1,"sce_shipment_audit":1,"sce_shipment_outbox":1},"state":{"status":"Exception"}}	PASS	{"counts":{"sce_shipment_history":1,"sce_shipment_receipts":1,"sce_shipment_audit":1,"sce_shipment_outbox":1},"state":{"status":"Exception"}}
+a09state	a09state-actor-b-stale-zero-write	a09state-after-actor-a	a09state-after-actor-b	zero	PASS	entire SupplyChain DB fingerprint, shipment counts and state unchanged

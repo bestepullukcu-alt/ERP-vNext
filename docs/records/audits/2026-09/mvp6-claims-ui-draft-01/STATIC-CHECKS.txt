@@ -1,0 +1,106 @@
+# Q64a STATIC-CHECKS — MOD-0187 Claims UI draft overlay
+# Run at 2026-09-26 16:46:45 +03:00 (Istanbul) on Linux 6.18.44-fc-v37 (chat-lane Linux workspace, scratch /tmp/q64a-checks); node v22.22.2, xmllint 20914, python 3.11.15, tree-sitter-c-sharp (pip)
+# These are STATIC checks only. No dotnet build/test, no analyzers, no browser run (see NOT-VERIFIED.md).
+
+status	check	detail
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js	
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js	
+PASS	node --check runtime-scenarios/claims-ui.spec.mjs	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ar.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.en.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.es.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.fr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ru.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.tr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.zh.resx	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ar.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.en.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.es.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.fr.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ru.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.tr.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.zh.resx.fragment.xml	
+PASS	json.load overlay/_shared-integration/gateway-claims-routes.ocelot-fragment.json	
+PASS	_IndexL10n bridge property names unique	109 properties
+PASS	resx key parity ClaimsIndex.{7 langs}	en=95, tr=95, fr=95, es=95, zh=95, ar=95, ru=95
+PASS	resx no empty value / no key echo	[]
+PASS	resx no placeholder text	[]
+PASS	resx non-en values identical to en (review list; fr ActionsHeader = 'Actions' is the same French word)	[('fr', 'ActionsHeader')]
+PASS	resx zh/ar/ru contain no English words (≥4 Latin letters, codes/examples excluded)	[]
+PASS	resx localizes all 18 annex error codes	18
+PASS	nav keys 2 × 7 languages, non-empty	en:2; tr:2; fr:2; es:2; zh:2; ar:2; ru:2
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/Controllers/SupplyChainClaimsControllerTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/Forms/ClaimFormContractTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Models/SupplyChain/Claims/ClaimViewModels.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Views/SupplyChain/Claims/ClaimsIndex.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ClaimsManagementManifestProvider.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ClaimsManagementManifestProviderTests.cs	[]
+PASS	razor sanity overlay/frontend/Diten.Web/Views/SupplyChain/Claims/Index.cshtml	comments balanced=True div 21/21 tenantShell=True
+PASS	razor sanity overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_CreateEditOffcanvas.cshtml	comments balanced=True div 31/31 tenantShell=True
+PASS	razor sanity overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_DataTable.cshtml	comments balanced=True div 9/9 tenantShell=True
+PASS	razor sanity overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_DetailsQuickView.cshtml	comments balanced=True div 27/27 tenantShell=True
+PASS	razor sanity overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_Filter.cshtml	comments balanced=True div 7/7 tenantShell=True
+PASS	razor sanity overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml	comments balanced=True div 0/0 tenantShell=True
+PASS	index.js no hard-coded user-visible English	[]
+PASS	no literal text nodes in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/Index.cshtml	[]
+PASS	no literal a11y/placeholder attrs in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/Index.cshtml	[]
+PASS	no literal text nodes in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_CreateEditOffcanvas.cshtml	[]
+PASS	no literal a11y/placeholder attrs in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_CreateEditOffcanvas.cshtml	[]
+PASS	no literal text nodes in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_DataTable.cshtml	[]
+PASS	no literal a11y/placeholder attrs in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_DataTable.cshtml	[]
+PASS	no literal text nodes in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_DetailsQuickView.cshtml	[]
+PASS	no literal a11y/placeholder attrs in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_DetailsQuickView.cshtml	[]
+PASS	no literal text nodes in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_Filter.cshtml	[]
+PASS	no literal a11y/placeholder attrs in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_Filter.cshtml	[]
+PASS	no literal text nodes in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml	[]
+PASS	no literal a11y/placeholder attrs in overlay/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml	[]
+PASS	no TODO/FIXME/TBD/NotImplemented placeholders in overlay product code (test files excluded: they hold the detection regex)	[]
+PASS	grep: no native dialogs	[]
+PASS	grep: no manual Swal	[]
+PASS	grep: no inline handler	[]
+PASS	grep: no browser storage	[]
+PASS	grep: no gateway ports	[]
+PASS	grep: no scope headers in JS	[]
+PASS	grep: no 'Permission denied'/'Forbidden' UI text	[]
+PASS	only existing permission keys referenced	supplychain.claims, supplychain.claims.create, supplychain.claims.decide, supplychain.claims.investigate, supplychain.claims.read, supplychain.claims.settle, supplychain.shipments.read
+PASS	only published downstream routes referenced (product files; claimsXYZ appears only as the must-not-match note)	/api/shipment-bundle/claims, /api/shipment-bundle/claims/{claimId}/transition, /api/shipment-bundle/claimsXYZ, /api/shipment-bundle/shipments, /api/shipment-bundle/shipments/{shipmentId}
+
+# totals: PASS=63
+
+# ── Dry-run of FILE-BASED assertions in ClaimFormContractTests.cs + ClaimIndexBehaviorTests.cs (Python re-expression; not dotnet test) ──
+PASS	Form: six inputs once
+PASS	Form: evidence input class once
+PASS	Form: no scope fields
+PASS	Form: no required attr
+PASS	Form: no maxlength/pattern/number/text-transform
+PASS	Form: inputmode decimal + carrier disabled
+PASS	Transition inputs once
+PASS	Every view states tenant shell
+PASS	UAS gate first
+PASS	Explicit partial paths
+PASS	No bulk/details/checkbox/edit
+PASS	Resx parity/non-empty/non-echo/no TODO
+PASS	Resx same-word allow-list
+PASS	Mandatory keys + 18 Err
+PASS	Settled wording
+PASS	Bridge exposes every key
+PASS	JS same-origin only
+PASS	JS query keys
+PASS	JS DT v2 bounded
+PASS	JS no unsupported surfaces
+PASS	JS QuickView no fetch
+PASS	JS create body exact/order
+PASS	JS stale guard
+PASS	JS intents
+PASS	JS transition
+PASS	JS exact amount
+PASS	JS 18 codes mapped
+PASS	JS no hard-coded text
+PASS	JS L10n keys all defined (missing=[])
+# totals: PASS=29 FAIL=0
+
+# ── verify_datatable_page.py --area SupplyChain --module Claims --reference slim (record-only, CU-SCR-06) ──
+# NOT RUN to completion here: a partial staged tree lacks shared assets (first try: dt-defaults.js/backbone-custom.css missing;
+# second try: personalization-client.js missing → script traceback). Re-run on an applied full tree in Q64b (NOT-VERIFIED N8).

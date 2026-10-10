@@ -1,0 +1,2 @@
+['seq', 'future_repo_path', 'archive_path', 'class', 'justification', 'covers', 'v4_change', 'v4_reason', 'sha256']
+v4 archive files vs FILE-PLAN sha256: 39 OK, 0 mismatch

@@ -1,0 +1,21 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+@@ -1,5 +1,7 @@
+ using Diten.SupplyChainService.Api.Features.Returns;
+ using Diten.SupplyChainService.Persistence.Features.SandopPlans;
++using Diten.SupplyChainService.Domain.Features.SandopPlans;
++using Diten.SupplyChainService.Infrastructure.Features.SandopPlans;
+ using Diten.SupplyChainService.Application.Features.Returns;
+ using Diten.SupplyChainService.Persistence.Features.Returns;
+ using Diten.SupplyChainService.Infrastructure.Features.Returns;
+@@ -63,6 +65,10 @@
+ builder.Services.AddClaimPersistence();
+ builder.Services.AddReturnPersistence();
+ builder.Services.AddSandopPersistence();
++var sandopFixtures = builder.Environment.IsEnvironment("Testing")
++    ? builder.Configuration.GetSection("Sandop:DemandFixtures").Get<DemandFixture[]>() ?? []
++    : [];
++builder.Services.AddSingleton<IDemandFixtureReader>(new DemandFixtureReader(sandopFixtures));
+ builder.Services.AddHttpClient<IReturnReferenceReader, ReturnReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHttpClient<IClaimReferenceReader, ClaimReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHttpClient<ILoadReferenceReader, LoadReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));

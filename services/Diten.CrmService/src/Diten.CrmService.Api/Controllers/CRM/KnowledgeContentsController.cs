@@ -11,7 +11,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
 
 /// <summary>
 /// MOD-0162 FU02 — KnowledgeContent authoring. Canonical under <c>/api/crm/knowledge/contents</c>, exposed through the
-/// dedicated <c>knowledge</c> ocelot routes (no direct-to-5061 business surface). Permissions run on the documented
+/// dedicated <c>knowledge</c> ocelot routes (no direct-to-5065 business surface). Permissions run on the documented
 /// fallback (<c>crm.territory.read</c> reads, <c>crm.territory.model.manage</c> writes) until MOD-0162-FU02-RBAC lands.
 /// <b>There is no delete endpoint</b>: closing content is Archive, so content history stays readable.
 /// </summary>

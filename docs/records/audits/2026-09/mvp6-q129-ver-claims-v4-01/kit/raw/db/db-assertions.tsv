@@ -1,0 +1,13 @@
+before	after	before_file	after_file	expect	totals	state	allow_unlisted	result	detail	totals_exempt
+fixture-before	fixture-after	fixture-before-a1.json	fixture-after-a1.json	claims=+10 claims_receipts=+17 claims_audit=+17 claims_outbox=+17	carrier_audit=+1 carrier_idempotency=+1 carriers=+1 claims=+10 claims_audit=+17 claims_outbox=+17 claims_receipts=+17 sce_shipment_audit=+25 sce_shipment_history=+25 sce_shipment_outbox=+25 sce_shipment_receipts=+25 sce_shipments=+9	-	-	PASS	-	-
+login-before	login-after	login-before-a1.json	login-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+cu25-before	cu25-after	cu25-before-a1.json	cu25-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+flows-before	flows-after	flows-before-a1.json	flows-after-a1.json	claims=+1 claims_receipts=+3 claims_audit=+3 claims_outbox=+3	claims=+1 claims_receipts=+3 claims_audit=+3 claims_outbox=+3	-	-	PASS	-	-
+saveview-before	saveview-after	saveview-before-a1.json	saveview-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+cu05-before	cu05-after	cu05-before-a1.json	cu05-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+kbd-before	kbd-after	kbd-before-a1.json	kbd-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+regression-before	regression-after	regression-before-a1.json	regression-after-a1.json	claims=+1 claims_receipts=+2 claims_audit=+2 claims_outbox=+2	claims=+1 claims_receipts=+2 claims_audit=+2 claims_outbox=+2	-	-	PASS	-	-
+regd01-before	regd01-after	regd01-before-a1.json	regd01-after-a1.json	claims=+1 claims_receipts=+1 claims_audit=+1 claims_outbox=+1	claims=+1 claims_receipts=+1 claims_audit=+1 claims_outbox=+1	-	-	PASS	-	-
+cu11-before	cu11-after	cu11-before-a1.json	cu11-after-a1.json	claims=+1 claims_receipts=+1 claims_audit=+1 claims_outbox=+1	claims=+1 claims_receipts=+1 claims_audit=+1 claims_outbox=+1	-	-	PASS	-	-
+spec-before	spec-after	spec-before-a1.json	spec-after-a1.json	claims=+1 claims_receipts=+3 claims_audit=+3 claims_outbox=+3	claims=+1 claims_receipts=+3 claims_audit=+3 claims_outbox=+3	-	-	PASS	-	-
+spec2-before	spec2-after	spec2-before-a1.json	spec2-after-a1.json	claims=+1 claims_receipts=+3 claims_audit=+3 claims_outbox=+3	claims=+1 claims_receipts=+3 claims_audit=+3 claims_outbox=+3	-	-	PASS	-	-

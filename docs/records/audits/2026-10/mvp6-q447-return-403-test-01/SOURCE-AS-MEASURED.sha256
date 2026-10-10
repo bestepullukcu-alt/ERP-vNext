@@ -1,0 +1,9 @@
+# from: repository root /Users/natig/Projects/ERP-vNext-recovery — RECORD ONLY, NOT FOR VERIFICATION. Never run shasum -c on this file (docs-organization K6).
+c36c462153aadaa3774af592be3a3d9905287a0b1c388a67c718fd594c33f7c7  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnReferenceTests.cs  before (= HEAD cea01354e)
+10072d2859c945fac6545a69023ce629795d776bc6cd82caf347e65cc234775b  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnReferenceTests.cs  after (this lane)
+e03360a93509e1a8f9a1610c00aa719b8403136808911062aced7d876a46adf8  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReferenceTests.cs  before (= HEAD cea01354e)
+bb8ec3d2c3ca111f8e40ce5154a06f5c5c4d1b1b3b81e1d244d9f7f36f03c916  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReferenceTests.cs  after (this lane)
+e61122b627ada5a474a0d4434bc61e2fed05ae51d88f11805516c65bf2f0e947  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs  as measured (Q420's uncommitted edit; not touched)
+ac532a6972c6540ebd00981daba6a3ff0ca4a0ad72bdf500fc0509349e5e3f67  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs  as measured (Q420's uncommitted edit; not touched)
+00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11  docs/analysis/contracts/returns-semantics-v3.0.0.md  as read
+16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63  docs/analysis/contracts/claims-semantics-v3.0.0.md  as read

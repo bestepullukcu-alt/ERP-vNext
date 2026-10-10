@@ -1,0 +1,5 @@
+path	reason
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml	B01 explicit nested partial paths
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js	B02 authoritative persisted lifecycle root for mutations
+frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs	B01 executable regression
+frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs	B02 executable regression

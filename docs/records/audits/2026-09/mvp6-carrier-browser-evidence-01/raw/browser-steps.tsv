@@ -1,0 +1,11 @@
+step	identity	action	observable	verdict
+BR-01	no-role	Web login then GET /SupplyChain/Carriers	Denial/remediation only; no dt-carriers/create/status	PASS
+BR-02	admin	Web login then GET /SupplyChain/Carriers	Authorized Carrier page and DataTables v2 desktop shell	PASS
+BR-03	admin	Click Add Carrier	Slim offcanvas opened with four approved fields	PASS
+BR-04	admin	Navigate culture en,tr,fr,es,zh,ar,ru	Carrier-owned strings localized in all seven	PASS
+BR-05	admin	Navigate Arabic	lang=ar; dir=rtl; stable localized Carrier table	PASS
+BR-06	admin	Inspect browser console	0 errors; 10 distinct L10n warnings	PARTIAL
+BR-07	admin	Request 768 and 390 viewport overrides	window.innerWidth stayed 1280	PARTIAL tool boundary
+BR-08	admin	Attempt screenshot asset export	Browser URL policy rejected data URL; no workaround attempted	PARTIAL retention
+BR-09	admin	List request with real Auth token	Missing legal_entity_id produced permission-loss toast / fail-closed path	OPEN Lane A
+

@@ -1,0 +1,32 @@
+# Q64e static checks — v3 (2026-09-27T12:48:36+0300)
+## node --check
+PASS frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js
+PASS frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js
+PASS ../runtime-scenarios/claims-ui.spec.mjs
+## xmllint
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ar.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.en.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.es.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.fr.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ru.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.tr.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.zh.resx
+PASS (wrapped) _shared-integration/sharedresource-nav-keys/SharedResource.ar.resx.fragment.xml
+PASS (wrapped) _shared-integration/sharedresource-nav-keys/SharedResource.en.resx.fragment.xml
+PASS (wrapped) _shared-integration/sharedresource-nav-keys/SharedResource.es.resx.fragment.xml
+PASS (wrapped) _shared-integration/sharedresource-nav-keys/SharedResource.fr.resx.fragment.xml
+PASS (wrapped) _shared-integration/sharedresource-nav-keys/SharedResource.ru.resx.fragment.xml
+PASS (wrapped) _shared-integration/sharedresource-nav-keys/SharedResource.tr.resx.fragment.xml
+PASS (wrapped) _shared-integration/sharedresource-nav-keys/SharedResource.zh.resx.fragment.xml
+PASS gateway fragment JSON
+## resx parity
+languages 7 keys {'es': 95, 'ar': 95, 'fr': 95, 'ru': 95, 'en': 95, 'tr': 95, 'zh': 95} PARITY 7/7 PASS
+## error codes (ui / pack §32.8 / contract §D187-05)
+ui=18 pack=18 contract=18 ui==pack=EQUAL ui==contract=EQUAL
+## greps
+native dialogs: 0
+inline handlers: 0
+browser storage: 0
+token/ports: 0
+English text nodes in views: 0
+English literals in toast/confirm/textContent sinks: 0

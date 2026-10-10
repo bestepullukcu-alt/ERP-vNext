@@ -1,0 +1,76 @@
+{
+  "evaluation": {
+    "_id": "9030ce5a-45f9-48ff-b5ea-57b34a68e06a",
+    "TenantId": "19200000-0000-4000-8000-000000000001",
+    "IsDeleted": false,
+    "DeletedAt": null,
+    "CreatedAt": "2026-09-22T21:26:33.283238+00:00",
+    "UpdatedAt": null,
+    "Version": 3,
+    "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+    "CapacityPlanId": "c707b137-8279-4686-9777-44946c137a74",
+    "ScenarioId": "59638c2e-4114-4339-8a00-573df3edf9e6",
+    "EvaluationMode": "Finite",
+    "ResourceRefs": [
+      "line-4"
+    ],
+    "Status": "Completed",
+    "Bottlenecks": [
+      {
+        "ResourceRef": "line-4",
+        "Period": "2027-W03",
+        "RequiredCapacity": "520.000",
+        "AvailableCapacity": "480.000",
+        "Shortfall": "40.000",
+        "UomId": "HOUR"
+      }
+    ],
+    "SubmittedAt": "2026-09-22T21:26:33.283238+00:00",
+    "CompletedAt": {
+      "$date": "2026-09-22T21:26:36.222Z"
+    },
+    "CorrelationId": "5eed7d2f-0591-456a-a57d-1bfb2712b4dd",
+    "CausationId": "e6b3b70f-e72d-4de3-a117-53769ff0725e",
+    "Attempt": 1,
+    "Fence": 1,
+    "LeaseUntil": null
+  },
+  "terminalEvents": [
+    {
+      "_id": "d8b33494-9ac1-484e-ae95-e55d8720b747",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "AggregateId": "9030ce5a-45f9-48ff-b5ea-57b34a68e06a",
+      "EventType": "capacity.evaluation.completed.v1",
+      "Status": "Pending",
+      "EvaluationStatus": "Completed",
+      "CorrelationId": "5eed7d2f-0591-456a-a57d-1bfb2712b4dd",
+      "CausationId": "e6b3b70f-e72d-4de3-a117-53769ff0725e",
+      "OccurredAt": {
+        "$date": "2026-09-22T21:26:36.222Z"
+      },
+      "ContractVersion": "v1",
+      "Payload": {
+        "capacityPlanId": "c707b137-8279-4686-9777-44946c137a74",
+        "scenarioId": "59638c2e-4114-4339-8a00-573df3edf9e6",
+        "evaluationId": "9030ce5a-45f9-48ff-b5ea-57b34a68e06a",
+        "status": "Completed"
+      }
+    }
+  ],
+  "terminalAudits": [
+    {
+      "_id": "355e8d43-b24a-424a-9b6d-aa09fe88bbc3",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "TargetId": "9030ce5a-45f9-48ff-b5ea-57b34a68e06a",
+      "Operation": "terminalCapacityEvaluation",
+      "Status": "Completed",
+      "CorrelationId": "5eed7d2f-0591-456a-a57d-1bfb2712b4dd",
+      "OccurredAt": {
+        "$date": "2026-09-22T21:26:36.222Z"
+      }
+    }
+  ],
+  "activeSlots": 0
+}

@@ -1,0 +1,11 @@
+--- services/Diten.SupplyChainService/tests/carriers/restart_probe.py (dispatch baseline)
++++ services/Diten.SupplyChainService/tests/carriers/restart_probe.py (DEV03)
+@@ -33,7 +33,7 @@
+     try:response=urllib.request.urlopen(r,timeout=20)
+     except urllib.error.HTTPError as e:response=e
+     with response: result=json.loads(response.read());status=response.status
+-    records.append(dict(method=method,path=path,request=json.loads(r.data) if r.data else None,sentBodyBase64=base64.b64encode(r.data or b" ").decode(),tenantId=T,legalEntityId=L,correlationId=correlation,status=status,response=result));assert status==expected,(status,result)
++    records.append(dict(method=method,path=path,request=json.loads(r.data) if r.data else None,sentBodyBase64=base64.b64encode(r.data if r.data is not None else b"").decode(),tenantId=T,legalEntityId=L,correlationId=correlation,status=status,response=result));assert status==expected,(status,result)
+     if status==503:assert result['error']['code']=='PERSISTENCE_UNAVAILABLE' and result['error']['correlationId']==correlation
+     return result
+ binary=ROOT/'services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll'

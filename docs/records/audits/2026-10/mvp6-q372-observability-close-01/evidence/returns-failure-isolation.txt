@@ -1,0 +1,12 @@
+# Isolation of the extra Returns failure: ReturnReferenceTests (24) with RETURNS_MONGO_URI set, scratch copy only
+worktree reader: Failed!  - Failed:     1, Passed:    23, Skipped:     0, Total:    24, Dura
+HEAD reader:     Passed!  - Failed:     0, Passed:    24, Skipped:     0, Total:    24, Dura
+## diff HEAD -> working tree, ReturnReferenceReader.cs (another lane's uncommitted Q420 edit)
+83c83,87
+<             if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden) throw new ReturnFailureException(503, "DEPENDENCY_UNAVAILABLE");
+---
+>             // Q420: a 403 from the Shipment read means the caller lacks supplychain.shipments.read. That is an authorization
+>             // outcome and is reported as one, with the annex's context-403 code (returns-semantics-v3.0.0.md:62), not as an
+>             // outage. A 401 or any 5xx is still the dependency failing and stays 503.
+>             if (response.StatusCode == HttpStatusCode.Forbidden) throw new ReturnFailureException(403, "INVALID_REQUEST");
+>             if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized) throw new ReturnFailureException(503, "DEPENDENCY_UNAVAILABLE");

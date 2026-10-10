@@ -1,0 +1,12 @@
+service	key	value
+auth	TenantResolution__DevBypassEnabled	false
+platform	TenantResolution__DevBypassEnabled	false
+platform	DocumentRegisterSeed__Enabled	false
+platform	BusinessReferenceData__CatalogLoad__Enabled	false
+supplychain	ASPNETCORE_ENVIRONMENT	Testing
+supplychain	Sandop__DemandFixtures__0__TenantId	97c59330-dbc4-4665-b29c-0c26dbb5cc93
+supplychain	Sandop__DemandFixtures__0__LegalEntityId	134756de-5dbe-44da-bf9d-d7cf19b0ea78
+supplychain	Sandop__DemandFixtures__0__PlanId	DP-Q84B-01
+supplychain	Sandop__DemandFixtures__0__Version	1
+supplychain	Sandop__DemandFixtures__0__Checksum	sha256:q84b-demand-01
+supplychain	Sandop__DemandFixtures__0__Published	true

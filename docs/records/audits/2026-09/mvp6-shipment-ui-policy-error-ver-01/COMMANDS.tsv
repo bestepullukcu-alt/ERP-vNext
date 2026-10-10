@@ -1,0 +1,10 @@
+command	result
+native Release build Auth/Platform/MDM/SupplyChain/Gateway/Web	6/6 exit 0
+manifest verification	354/354; 3333/3333; 22/22, no mismatch
+focused dotnet test controller + shipment detail actions	9/9 PASS; fresh TRX
+real Auth policy/error probe	24 recorded cases; expected permission/stale/POD statuses except retained bad deleted fixture setup
+corrected deleted/foreign-tenant scope probe	2/2 404
+scoped Mongo before/after query	4/4 collections delta 0; query exit 0
+unauthenticated direct adapter curl	302 Found; REWORK finding
+IAB browser checks	dispatch-only action filtering and three safe-not-found presentations observed
+

@@ -1,0 +1,248 @@
+# SHIPMENT-BUNDLE 1.1.0 — Carrier normative annex
+
+Publication candidate; authoritative only after approved canonical publication.
+Source: CO-184-04-01 / CO-184-05-01, docs/records/audits/2026-09/mod-0184-contract-owner-decisions-v1.0.md.
+The following source sections 2–7 are reproduced verbatim; source-relative references to §8 denote that owner record, not a grant to publish.
+This annex changes only Carrier semantics. Other bundle operations retain their existing contract.
+
+## 2. Frozen dayanaklar / karşılaştırma
+
+Kaynak: `docs/analysis/contracts/shipment-bundle.openapi.yaml`; OpenAPI3.1.0,
+info.version **1.0.0**, x-status FROZEN, wire contractVersion **v1**.
+Aşağıdaki JSON pointer'lar bu dosyaya göredir; `/` path anahtarları JSON Pointer'da `~1` ile escape edilmiştir.
+
+| Ref | Exact kaynak | Ölçülen anlam |
+|---|---|---|
+| O-Q | `#/paths/~1carriers/get` (202–216) | queryCarriers, GET /api/shipment-bundle/carriers; yalnız200 |
+| O-C | `#/paths/~1carriers/post` (217–238) | createCarrier; 201/409/422 |
+| O-S | `#/paths/~1carriers~1{carrierId}~1status/post` (239–263) | changeCarrierStatus; 200/404/422; **409 veya default yok** |
+| H-C | `#/components/parameters/CorrelationId` (517–522) | Her üç operasyonda required UUID string; nil/nonzero kısıtı yok |
+| H-I | `#/components/parameters/IdempotencyKey` (523–528) | Her iki POST'ta required string, minLength1/maxLength128; trim/nonblank/UUID kuralı yok |
+| S-C | `#/components/schemas/CreateCarrierCommand` (649–657) | carrierCode/displayName minLength1, supportedModes minItems1, optional nullable externalReference; additionalProperties:false |
+| S-S | `#/components/schemas/ChangeCarrierStatusCommand` (658–664) | targetStatus ve reasonCode required; reasonCode string, boş string geçerli; additionalProperties:false |
+| S-R | `#/components/schemas/CarrierResponse` (674–682) | carrierId,carrierCode,status,idempotentReplay,contractVersion required; correlation alanı yok |
+| S-L | `#/components/schemas/CarrierListResponse` (683–689) | items,total,contractVersion |
+| S-E | `#/components/schemas/Error` (901–914) | error.code/message/correlationId required; details optional; contractVersion:v1 |
+| R-B | `#/components/responses/BadRequest` (916–920) | INVALID_REQUEST örneği var; Carrier operasyonlarına bağlanmamış |
+| R-N | `#/components/responses/NotFound` (921–931) | CARRIER_NOT_FOUND örneği; yalnız O-S404'e bağlı |
+| R-C | `#/components/responses/Conflict` (932–940) | Idempotency VE uniqueness; IDEMPOTENCY_KEY_REUSED örneği; yalnız O-C409'a bağlı |
+| R-U | `#/components/responses/Unprocessable` (941–949) | İş kuralı/lifecycle; Carrier code enum kısıtı yok; O-C422/O-S422 bağlı |
+| A | `#/security`, `#/components/securitySchemes/bearerAuth`, `#/info/description` | Bearer auth, server-resolved tenant/LE; auth hata statü/shape/önceliğini tanımlamaz |
+
+O-Q/C/S yanıtlarında `headers` yok. Ortak component mevcut olması, bir operation response'unu
+kendiliğinden tanımlamaz. Error.code açık string olduğu için onaylı CARRIER_CODE_CONFLICT ve
+INVALID_CARRIER_TRANSITION kodları yeni schema enum'u gerektirmez. Buna karşılık yeni HTTP response
+ve header garantileri operation sözleşmesine açık eklemedir. Eksiklikten tek başına geriye uyumsuzluk
+kanıtı çıkarılmaz; bu kayıt additive amendment seçer, yayın/consumer kontrolünü atlamaz.
+
+## 3. CO-184-04-01 — response biçimi ve correlation kaynağı
+
+Bu bölüm ve devamındaki seçilmiş davranışlar, **§8 yayını sonrası** uygulanacak normatif hedeflerdir.
+Mevcut frozen YAML'de bulunmayan satırlar şimdi uygulanmış/onaylı runtime kabul edilmez.
+
+Carrier application'ın ürettiği bütün hata yanıtları `Content-Type: application/json` ve tam şu shape'i taşır:
+
+```json
+{
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Request schema validation failed.",
+    "correlationId": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa"
+  },
+  "contractVersion": "v1"
+}
+```
+
+S-E reuse; dış `data`/Response<T>/ProblemDetails wrapper yok. Bu bounded slice error.details üretmez
+(optional alanı kullanmama kararı); tenant/actor/key/payload/stack/connection-string döndürmez.
+§5 tablosundaki message sabit İngilizce mesajdır; hata kodu client branching otoritesidir.
+
+**C_req:** inbound HTTP parser sonrası, tek X-Correlation-Id field value olarak gelen schema-valid
+UUID'nin değeri. Nil UUID geçerlidir. UUID'ye yeni sürüm/varyant/nonzero sınırlaması konmaz.
+UUID text karşılaştırması yerine UUID değeri karşılaştırılır; yanıtta standart hyphenated lowercase
+serialization kullanılır. Bu mevcut geçerli UUID girdisini reddetmez. Application ek trim uygulamaz;
+transport'un OWS normalizasyonu ayrı olgudur. Geçerli UUID'ler wire-format test corpus'uyla korunur.
+
+**C_trace:** C_req varsa C_req; yoksa request başına bir kez üretilen yeni UUID.
+Header missing, malformed, empty veya birden fazla field value ise C_req yoktur; yinelenen aynı UUID'ler de
+ambiguous kabul edilir. Virgül içeren birleşik metin UUID değildir. Generated fallback yalnız reddin
+izleme kimliğidir; business command root veya idempotency identity olamaz. Yanıtta request'in bozuk
+metni yansıtılmaz. Aynı reddin log, body ve header'ında aynı C_trace kullanılır; hiçbir durable mutation yoktur.
+
+- Tüm application hata yanıtlarında body.error.correlationId = C_trace ve response
+  `X-Correlation-Id` = aynı UUID. Auth precedence correlation doğrulamasından önce gelir; trace türetmek
+  request'i geçerli saymak veya mutation'a yetki vermek değildir.
+- Başarılı list/create/status ve başarılı replay'de response `X-Correlation-Id` = **current C_req**.
+  Başarılı body S-L/S-R olarak kalır; correlationId/originalCorrelationId eklenmez.
+- Başarılı ilk mutation'ın durable audit root'u = o çağrının C_req değeri. Replay audit root'u değiştirmez.
+- 401 ayrıca `WWW-Authenticate: Bearer` taşır; token validator iç ayrıntılarını challenge'a koymaz.
+- Carrier event yok; Shipment event-root semantics Carrier replay'e kopyalanmaz.
+- TLS/HTTP framing, request-size limit, proxy ve server başlamadan doğan transport retleri için
+  application JSON/header garantisi verilmez. Router dışı URL/method için Carrier operation uydurulmaz.
+  Carrier işlemine ulaşan malformed carrierId parametresi schema400'dür; route constraint ile sessiz404'e dönüştürülmez.
+
+**Dayanak:** H-C, S-E, S-R, S-L, A. Header/fallback açıklaması yeni normative amendment parçası.
+**Acceptance E01:** geçerli UUID, nil, missing, boş, invalid, duplicate ve birleşik header vakaları;
+body/header/log correlation eşitliği; auth hatasında da bu kural; generated fallback ile zero mutation.
+Uppercase geçerli UUID normalize edilince aynı değer olmalı; nil sırf sıfır olduğu için reddedilmemeli.
+
+## 4. Kesin doğrulama / hata önceliği
+
+Application'a ulaşan üç Carrier operasyonunda aşağıdaki sıra uygulanır. **İlk başarısız aşama kazanır**;
+alt aşama yürütülmez, DB/replay sorgusu yapılmaz. C_trace güvenli biçimde önceden türetilebilir.
+
+| Sıra | Kontrol | Kazanan hata | Dayanak / acceptance |
+|---|---|---|---|
+| 1 | Bearer yok, birden fazla/ambiguous Authorization, invalid signature/issuer/audience/expiry veya parse edilemeyen token | E02 401 | A; invalid JWT + invalid correlation + invalid key →401, generated C_trace |
+| 2a | Validated JWT'de tek ve kullanılabilir tenant_id | E03 403 | approved06; missing/duplicate/unusable →403 |
+| 2b | Aynı biçimde legal_entity_id | E03 403 | approved06; tenant valid fakat LE invalid →403 |
+| 2c | Aynı biçimde actor sub | E03 403 | approved06; actor invalid →403 |
+| 2d | İşlemin exact permission'ı | E03 403 | read/create/status.change; eksik izin + invalid header →403 |
+| 3a | X-Correlation-Id tek schema-valid UUID | E04 400 | H-C; auth/context/permission geçerli, üç header invalid → correlation hatası |
+| 3b | X-Tenant-Id tek UUID | E04 400 | approved06; correlation valid, tenant+LE malformed → tenant header hatası |
+| 3c | X-Legal-Entity-Id tek UUID | E04 400 | approved06; önceki header'lar geçerli → LE header hatası |
+| 3d | Yalnız POST: Idempotency-Key tek field value, parsed string length1..128 | E04 400 | H-I; trim/nonblank ekleme; GET'te key zorunlu değil |
+| 4a | Tenant header = signed tenant UUID değeri | E05 404 | approved06; syntactically valid mismatch, lookup yok |
+| 4b | LE header = signed LE UUID değeri | E05 404 | approved06; tenant match, LE mismatch |
+| 5a | Operation path parametresi schema | E06 400 | O-S carrierId UUID; nil UUID syntactically valid, bulunmazsa sonraki aşamada404 |
+| 5b | Query schema; scope injection guard | E06 400 | O-Q status enum; tenantId/legalEntityId query guard approved06 |
+| 5c | POST content type JSON desteği | E07 415 | Application'a ulaşan unsupported media type; versioned response eklemesi |
+| 5d | POST required body/JSON parse/command schema | E06 400 | S-C/S-S; additionalProperties:false; invalid payload key comparison'dan önce400 |
+| 6 | Scoped committed replay lookup + fingerprint compare | E09 409 veya replay success | R-C/S-R; §6; current auth geçmeden lookup yok |
+| 7a | Fresh status için same-scope, not-deleted target; fresh create için reserved code | E08 404 veya E10 409 | R-N/R-C; approved03; success receipt yoksa target404 |
+| 7b | Fresh status current-state lifecycle | E11 422 | R-U; approved02 |
+| 8 | Atomik persist/commit/recovery | E12 503 veya E13 500 | approved07; kesin commit durumuna göre §6/7 |
+
+Scope/actor claim usability approved06 güvenlik kararıdır; C_req için nil yasağı değildir.
+Bütün header syntax kontrolleri scope eşleştirmesinden önce tamamlanır. Örneğin valid tenant mismatch +
+invalid key →400 key; valid tenant mismatch + malformed body →404 scope mismatch. İki scope mismatch →
+önce tenant karşılaştırması; ikisi de aynı generic404 döndürür. Her header hatasında §5 mesajı ilgili header
+adını içerir, değerini içermez. Birden fazla body schema kusurunda tek generic E06 döner; alan sırasına göre
+farklı response üretilmez. JSON object property sırası sonucu değiştirmez.
+
+Unknown query parametreleri için yeni genel ret kuralı yok; yalnız frozen tanımlı query validation ve
+onaylı scope-injection guard. Onaylı required scope headers güvenlik bağlamı olarak korunur; payload'a
+scope eklenmez. Idempotency-Key'in parser sonrası whitespace-only fakat length>=1 değeri kabul edilir;
+HTTP parser değeri boşaltmışsa length0 ret olur. Birden fazla field value tek scalar key değildir;
+tek field içindeki virgül ise H-I string'i olarak geçerlidir, parçalanmaz.
+
+**Acceptance E14:** tablodaki her adjacent aşama çiftini birlikte boz, önceki hatanın statü/kod/mesajını
+ve sıfır DB erişimini (aşama1–5 için) doğrula. Özellikle invalid correlation + missing JWT →401;
+valid JWT/no permission + invalid correlation →403; authorized + invalid correlation + invalid scope/key
+→400 correlation; valid syntax/scope mismatch + body invalid →404; invalid body + reused key →400.
+Sınır geçerlilik corpus'u: blank code/name (minLength1), empty reasonCode, duplicate modes, absent/null
+externalReference, nil correlation, 1/128 key uzunlukları; bunlara yeni ret kuralı uygulanmaz.
+
+## 5. Exact hata matrisi
+
+Q=queryCarriers, C=createCarrier, S=changeCarrierStatus. Tüm satırlar **§3 S-E body + C_trace header/body**
+kuralını kullanır. Listedeki örnek testler gelecekte yürütülecek acceptance senaryolarıdır; runtime kanıtı değildir.
+
+| ID / koşul | Op | HTTP / error.code | Exact error.message | Frozen dayanak / yayın farkı | Acceptance |
+|---|---|---|---|---|---|
+| E02 authentication | Q/C/S | 401 INVALID_REQUEST | Authentication required. | A; üç operation401 eksik; Bearer header eklenecek | expired token + valid correlation →401, aynı correlation, zero write |
+| E03 unusable claims veya missing permission | Q/C/S | 403 INVALID_REQUEST | Required authorization context or permission is missing. | A + approved06; operation403 eksik | her claim duplicate ve her operation permission omission ayrı test |
+| E04 correlation header | Q/C/S | 400 INVALID_REQUEST | X-Correlation-Id must contain exactly one UUID value. | H-C/R-B; operation400 eksik | duplicate correlation →generated trace; nil →bu hata yok |
+| E04 tenant header | Q/C/S | 400 INVALID_REQUEST | X-Tenant-Id must contain exactly one UUID value. | approved06/R-B; operation400 eksik | malformed tenant + malformed LE →tenant mesajı |
+| E04 LE header | Q/C/S | 400 INVALID_REQUEST | X-Legal-Entity-Id must contain exactly one UUID value. | approved06/R-B; operation400 eksik | valid tenant, missing LE →LE mesajı |
+| E04 key header | C/S | 400 INVALID_REQUEST | Idempotency-Key must contain exactly one string value of length 1 to 128. | H-I/R-B; operation400 eksik | empty/129/duplicate ret; one-space parsed key kabul |
+| E05 header/claim mismatch | Q/C/S | 404 CARRIER_NOT_FOUND | Carrier not found. | approved06/R-N; Q/C404 eksik, S404 var | tenant ve LE mismatch ayrı, DB lookup yok |
+| E06 malformed path/query/JSON/schema | Q/C/S applicable | 400 INVALID_REQUEST | Request schema validation failed. | O-Q/O-S/S-C/S-S/R-B; operation400 eksik | missing reasonCode, null required, unknown body field400; empty reasonCode geçer |
+| E07 unsupported request media type | C/S | 415 INVALID_REQUEST | Request content type is not supported. | O-C/O-S requestBody application/json; operation415 eksik | text/plain POST valid auth/headers →415; no idempotency reservation |
+| E08 target unavailable in scope | S | 404 CARRIER_NOT_FOUND | Carrier not found. | O-S404/R-N mevcut | unknown/cross-tenant/cross-LE/soft-deleted target; no matching success receipt →404 |
+| E09 committed scoped key / different validated payload | C/S | 409 IDEMPOTENCY_KEY_REUSED | Idempotency-Key was used with a different payload. | O-C409/R-C mevcut; **O-S409 eksik** | reasonCode/code değişikliği; current request correlation, audit unchanged |
+| E10 reserved same-scope code | C | 409 CARRIER_CODE_CONFLICT | Carrier code is already reserved. | O-C409/R-C; approved03 mevcut uygun | farklı key aynı exact code; retired/deleted dahil409; farklı case ayrı |
+| E11 invalid lifecycle / new-key same-state | S | 422 INVALID_CARRIER_TRANSITION | Carrier lifecycle transition is invalid. | O-S422/R-U; approved02 uygun | all9 state pairs; exact replay önce değerlendirilir |
+| E12 unavailable persistence / exhausted safe retry / unresolved commit | Q/C/S | 503 PERSISTENCE_UNAVAILABLE | Persistence outcome is unavailable; retry the request using the same idempotency key when applicable. | approved07; operation503 eksik | replica unavailable/commit unknown: 503, no false rollback assertion; same key recovery |
+| E13 unexpected internal error | Q/C/S | 500 INTERNAL_ERROR | An unexpected internal error occurred. | S-E shape; operation500 eksik | inject unexpected failure; sanitized body, no stack/secret |
+
+E12/E13 için otomatik Retry-After header vaadi yok. Durumu bilinmeyen commit bilinen rollback gibi
+raporlanmaz. E13 aldıktan sonra da mutation client'ı yeni key üretmez; aynı key ile güvenli retry yapar.
+Schema hatası400 ile business hatası422 ayrılır. O-C422 mevcut kalır; bu slice için yeni create business
+kuralı uydurulmaz. Target/current-state okumaları sonrası beklenmedik failure, daha önce kesinleşmiş replay
+success'i yeniden mutation'a çeviremez. Authorization middleware body'yi bypass edip boş401/403 üretmemeli.
+Startup/index/transaction-capability probe başarısızsa Carrier readiness fail-closed; process hiç dinlemiyorsa
+HTTP503 ölçülmüş sayılmaz. Live persistence bozulması application'a ulaştığında E12 uygulanır.
+
+## 6. CO-184-05-01 — replay kimliği ve kesin işlem semantiği
+
+**Kimlik:** (validated TenantId, validated LegalEntityId, operationId, target, accepted Idempotency-Key).
+Create target internal sabit `create`; status target parsed carrierId UUID değeri. operationId sırasıyla
+createCarrier/changeCarrierStatus. UUID textual case farklılığı yeni scope/target yaratmaz.
+Key ordinal/case-sensitive ve parser sonrası olduğu gibi saklanır; trim/case/Unicode normalization yok.
+H-I uzunluğu JSON Schema string length semantiğiyle Unicode code point sayısıdır; UTF-8 byte veya
+UTF-16 code-unit sınırına dönüştürülmez. Transport'un kabul etmediği header encoding için uygulama garantisi yoktur.
+Correlation ve actor bu tuple'a dahil değildir. Aynı tenant/LE'de aynı operation permission'ı olan başka
+actor aynı key/payload ile replay alabilir; current authorization tekrar kontrol edilir; original audit actor değişmez.
+Başka tenant/LE/operation/target aynı key'i kullanabilir, başka scope'un receipt'ini göremez.
+
+**Fingerprint:** önce schema-valid typed payload; property sırası ve JSON insignificant whitespace/escape
+spelling eşdeğerliği yok sayılır. String değerleri Unicode code-point dizisi olarak korunur; trim, case-fold ve
+Unicode normalization yok. Mode array sırası ve duplicate'leri anlamlıdır. Create externalReference missing
+ve explicit null eşdeğerdir; empty string ayrı değerdir. Status targetStatus/reasonCode tam değerleri kullanılır.
+C_req, auth headers/actor, timestamp fingerprint'e dahil edilmez. Yeni default veya payload alanı yok.
+Deterministik representation/hash ve varsa stored canonical representation eşitliği collision-safe karşılaştırılır;
+hash tek başına business equality kabul edilmez. Internal formatVersion kaydı wire version alanı eklemez.
+
+**Saklama ve sıralama:** current auth/scope/schema kontrollerinden sonra scoped committed receipt aranır.
+Başarılı receipt mevcutsa fingerprint eşitse replay, farklıysa E09. Fresh request ise approved lifecycle/uniqueness
+ve atomic L3 transaction uygulanır. Tek transaction entity + success receipt + audit'i commit eder.
+Bir receipt yalnız **başarılı commit** için yazılır; 400/401/403/404/409/415/422/500/503 response'ları
+success receipt olarak cache'lenmez, key tüketmez. Failed transaction tüm business/receipt/audit yazılarını geri alır.
+Committed başka bir receipt'e çarpan başarısız istek orijinal receipt'i silemez/değiştiremez.
+TTL/expiry/otomatik key reuse yok. Bu finite-retention vaadi değildir; ileride eviction ayrı versioned karardır.
+
+Receipt, original carrierId/carrierCode/resultingStatus/HTTP status/contractVersion ve original mutation
+correlation/actor kanıtını korur. İlk response replay=false; replay response yalnız boolean'ı true yapar.
+HTTP status **create201**, **status200** kalır; replay create200 dönmez. Mevcut S-R schema'ya tam uyum.
+Original status snapshot'ı döner; current carrier state sonradan ilerlediyse rollback/update yapılmaz.
+Exact receipt lookup current lifecycle ve soft-delete target lookup'tan öncedir: yetkili aynı-scope replay
+geçmiş başarı makbuzunu döndürebilir; active-list'e veya entity detail'e dönüşmez. Fresh key ile deleted target404;
+receipt olmayan başka tenant/LE target404. Bu ayrım audit/replay ile target görünürlüğünü karıştırmaz.
+
+**Correlation ayrımı:**
+
+| Yer | İlk başarı | Aynı veya farklı correlation ile başarı replay | Payload conflict veya diğer hata |
+|---|---|---|---|
+| HTTP X-Correlation-Id | current C_req = original root | current C_req; original root ile değiştirilemez | C_trace (geçerli ise current C_req) |
+| Success body S-R | correlation alanı yok, replay=false | correlation alanı yok, replay=true; original sonucu taşır | success body yok |
+| Error body S-E | yok | yok | error.correlationId=C_trace; original root kullanma |
+| Durable business audit | original C_req ve original actor | değişmez; yeni business audit/event yazılmaz | yeni success audit yazılmaz |
+| Replay receipt | original success snapshot/root | değişmez | orijinal receipt değişmez |
+| Operational log | current trace | current trace + replay outcome; hassas içerik yok | current trace + sanitized failure |
+
+Request correlation yeni bir UUID olduğunda mevcut key'i otomatik reddetmek yok: correlation fingerprint'te değil.
+Carrier event olmadığından root-propagation olgusu Shipment ile aynı değildir. Client replay response'undaki
+header'ı orijinal mutation root'u sanmamalı; o header current HTTP attempt'i tanımlar.
+Dayanak: H-I/H-C/S-C/S-S/S-R/R-C ve approved07; tuple/fingerprint/receipt politika açıklaması schema'yı
+daraltmaz. Response-header normu ve O-S409 yine amendment gerektirir.
+
+## 7. Create/status replay acceptance matrisi
+
+Her testte authorized context, valid headers ve valid payload varsayılır; aksi halde §4 önce kazanır.
+`orig` bir committed success receipt; N başlangıç durable success audit sayısıdır.
+
+| AC | Request sequence | Create beklenen | Status beklenen | Correlation / persistence oracle | Dayanak |
+|---|---|---|---|---|---|
+| RP01 | İlk çağrı; aynı key/payload/correlation tekrar | 201 false →201 true | 200 false →200 true | header=current=orig; body'de correlation yok; tek mutation/receipt/audit | O-C201/O-S200/S-R/H-I |
+| RP02 | orig sonrası aynı key/payload, farklı valid correlation | 201 true | 200 true | header yeni C_req; original body snapshot (replay true hariç); audit root/actor değişmez, sayı N | S-R/H-C; header amendment |
+| RP03 | orig sonrası aynı scoped key, farklı schema-valid payload | 409 IDEMPOTENCY_KEY_REUSED | 409 IDEMPOTENCY_KEY_REUSED | error/body+header=current C_req; receipt/audit/entity unchanged | R-C; O-C409 var/O-S409 amendment |
+| RP04 | Aynı tuple/payload ile barrier eşzamanlı N çağrı | Bir201 false, kalanlar201 true | Bir200 false, kalanlar200 true | Sağlıklı persistence ve tamamlanan bounded contention altında tek commit/audit/receipt; her response kendi C_req; winner root audit'te | approved07 + S-R/H-I |
+| RP05 | Aynı tuple fakat farklı valid payload'lar eşzamanlı | Bir commit201 false; diğer409 | Bir commit200 false; diğer409 | İlk **başarılı commit** kazanır; wall-clock arrival'a öncelik vaat edilmez; loser audit yok | R-C + approved07; O-S409 amendment |
+| RP06 | Commit başarılı, HTTP yanıtı bağlantı kaybıyla alınamadı; aynı key/payload retry | 201 true | 200 true | Lost attempt HTTP sonucu uydurulmaz; restart dahil retry original result, audit N | S-R + approved07 |
+| RP07 | Entity/receipt/audit yazıları sonrası precommit fault, rollback, retry | İlk hata E12/E13; retry fresh201 false | İlk hata E12/E13; retry fresh200 false (current-state hâlâ uygunsa) | Failed transaction üçü de yok; yalnız retry success root audit'te | approved07; §5 errors |
+| RP08 | Commit acknowledgement belirsiz; bounded recovery sonuç veremedi | 503; retry committed ise201 true, değilse fresh201 false | 503; committed ise200 true, değilse fresh evaluation | Unknown≠rollback; retry önce durable receipt lookup; aynı key korunur, en çok bir success audit | approved07;503 amendment |
+| RP09 | orig'den sonra başka key ile state değişti; eski exact key replay | Original create Active snapshot201 true | Original resultingStatus200 true | Current state/version değişmez; yeni lifecycle validate edilip422 üretilmez | approved02, S-R |
+| RP10 | externalReference missing→null; object key reorder/JSON escape equivalent | replay201 true | key reorder/escape equivalent →200 true | aynı semantic fingerprint; mode reorder/duplicate sayısı veya text değişikliği iseRP03 | S-C/S-S/H-I |
+| RP11 | Aynı key farklı tenant/LE/operation/target | Bağımsız create; normal uniqueness uygulanır | Bağımsız status; normal404/422/success uygulanır | replay cross-scope lookup yok; aynı key tek başına global conflict değil | approved06/07 |
+| RP12 | Replay öncesi permission revoked veya scope invalid | 403/ilgili §4 ret | aynı | original receipt varlığı açığa çıkmaz; receipt lookup yok | A + approved06 |
+| RP13 | orig sonrası aynı key ama schema-invalid body veya invalid correlation | 400, replay yok | 400, replay yok | schema/header önce; fallback trace yalnız invalid correlation için | H-C/S-C/S-S/R-B amendment |
+| RP14 | Contention winner hâlâ belirsiz, retry budget doldu | 503, false success yok | 503, false success yok | no202/in-progress placeholder; aynı key retry; sonradan en çok bir committed mutation | approved07;503 amendment |
+| RP15 | İlk validation/business failure; düzeltip aynı key retry | Başarı mümkünse201 false | Geçerli current-state ise200 false | Hata key'i reserve etmez; original success yoksa farklı payload key conflict değildir | S-R/R-U; §6 politika |
+| RP16 | Scope içindeki orig target soft-deleted; exact replay / fresh key | Historical receipt201 true | Exact200 true / fresh404 | Deleted entity rehydrate/undelete yok; GET list excluded; replay yalnız old receipt | R-N/S-R, approved07 |
+
+Contention ve transient Mongo retry politikası bounded olmalı; budget tükenince RP14 geçerlidir.
+Production'a özgü timeout değeri bu wire kararında zorunlu kılınmaz; test fixture budget'ı sabitleyip
+exhaustion'ı deterministik tetikler. Sağlıklı fixture'da RP04'ü503 ile geçiştirmek PASS değildir.
+Transport sonrası response serialization failure da committed receipt'i silmez; client aynı key ile retry eder.
+

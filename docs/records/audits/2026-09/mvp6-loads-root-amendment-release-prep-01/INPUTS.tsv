@@ -1,0 +1,17 @@
+path	sha256	use
+AGENTS.md	51d92c75b761e5c7195eda102d08f2b7f472b979d9940bdf21ae72cb7cab7fcb	repository authority
+.antigravity/rules/api-conventions.md	d144e1012b582ceb6e213d37a23c46032ec1a140401467307f7d0fa2c23d7c26	contract conventions
+.antigravity/rules/docs-organization.md	0eaff863249654ff2dbe1990ebdcae0f610b0f3ee2bf31f197d5d8b5a744e2a9	document placement
+docs/guides/operations/control-tower-sop.md	e85854bd1ecb4895406d8e5a1276adbc82a2af250dc304abad796a2ae7a4de36	SOP §22
+execution/domains/supply-chain-execution/domain-config.md	c49ec37a45b492e22988fdf7225aaa90b68c7a09fa4d0491dea06fe7cd793fe3	domain boundary
+execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md	4868669307a1cd37b88320f27d7c0c2e1c1ce8ed649f48c067cbedf20307536f	module authority/current state
+docs/analysis/contracts/shipment-bundle.openapi.yaml	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	canonical YAML preimage
+docs/analysis/contracts/loads-semantics-v2.0.0.md	a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1	canonical annex preimage
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-02/shipment-bundle-v3.1.0-rc.1.openapi.yaml	aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744	controlling candidate YAML
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-02/loads-semantics-v3.1.0-rc.1.md	e2107301e3c6cfae5e6768de77c19f5b4fa5ea7ff42f1a4023650bd3fb7750cd	controlling candidate annex
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-02/amendment.patch	27cc3a8f6c5000b9d06b80b2b0037e84750cd7bc40611da4b5f6fa33582e11cc	controlling candidate patch
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/ARTIFACTS.sha256	6b0990b90b145f8140d3d4e2805b05cfc43381d7160451b84374ef8db0ed2f61	independent PASS manifest
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/LoadModels.cs	edb0b15e158d7949b1f76771b7e5618ba158a425f199a8a4d9d043fb01691b94	actual producer wire model
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Handlers/QueryHandlers/GetLoadListHandler.cs	9b2f43a8fe05d418abb73983d40a2365e32e66c3e01da741b33680136c3297cb	actual producer list projection
+docs/roadmap/plans/mvp6-loads-ui-scope-01/SCOPE.md	ce1cadef9bd0b10ecdf0a7159fbc88ac4f6d423e33fe8040d0231e567d5f7b65	design-consumer evidence
+

@@ -1,0 +1,19 @@
+criterion	result	evidence	disposition
+UI183-A01	FAIL	evidence.tar.gz::browser-observations.json	Fresh real-Auth list route returned HTTP 500 due unresolved _Filter partial
+UI183-A02	BLOCKED	SHIP-UI-B01	List adapter/rendering cannot be exercised through the broken list page
+UI183-A03	PARTIAL PASS	evidence.tar.gz::browser-observations.json	Read-only create route rendered UAS-001-only denial; missing-read list/detail not rerun
+UI183-A04	PASS	evidence.tar.gz::browser-observations.json	Browser create succeeded with approved body fields; tenant/LE absent from form/body
+UI183-A05	PASS	evidence.tar.gz::browser-observations.json	Compact create rendered 13 user inputs and submitted lexical quantity
+UI183-A06	PASS	evidence.tar.gz::browser-observations.json	Detail rendered source, line and persisted lifecycle root; restart retained same root
+UI183-A07	PARTIAL PASS	evidence.tar.gz::browser-observations.json	Read-only create denied; transition/POD exact action gates blocked by SHIP-UI-B02
+UI183-A08	FAIL	evidence.tar.gz::browser-observations.json	Allowed Draft→Planned UI attempt produced 400 because correlation/root handling is wrong
+UI183-A09	BLOCKED	SHIP-UI-B02	POD UI requires Dispatched/InTransit, which cannot be reached through transition UI
+UI183-A10	BLOCKED	SHIP-UI-B02	Accepted transition/POD mutation and browser replay cannot be established
+UI183-A11	FAIL	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js:63,75-76	UI displays root but sends a new trace UUID for root-bound mutations
+UI183-A12	INHERITED HTTP	mvp6-shipment-root-r2-emission-independent-ver-01	Tenant/LE/deleted safe behavior remains source-bound HTTP evidence, not fresh browser evidence
+UI183-A13	PARTIAL	browser observations	English desktop/create/detail/UAS observed; responsive/RTL/7-language and persistent PNG remain open
+UI183-A14	FAIL	SHIP-UI-B01	DataTable list surface cannot render
+UI183-A15	PASS	browser observations	SweetAlert2 confirmation rendered; no native confirm/alert observed
+UI183-A16	FAIL	FINAL-354-SOURCE-MANIFEST.tsv; evidence.tar.gz	Immutable build/process chain is valid, but composed browser flows do not all pass
+PNG	OPEN	PNG-DISPOSITION.md	No documented persistent export capability
+

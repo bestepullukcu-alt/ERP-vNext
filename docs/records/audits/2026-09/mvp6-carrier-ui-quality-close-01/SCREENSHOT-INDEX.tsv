@@ -1,0 +1,5 @@
+id	browser_state	retention	verdict
+QC-S01	Fresh v3 Arabic Carrier list at measured 768x900	DOM/geometry transcript only; no new screenshot artifact retained	PNG OPEN
+QC-S02	Fresh v3 Arabic Carrier create offcanvas at measured 390x844	DOM/geometry transcript only; no new screenshot artifact retained	PNG OPEN
+INPUT-S01..S04	Prior UAS/list/create/RTL browser captures	Input browser transcript only; prior PNG export policy rejection remains controlling	HISTORICAL VISIBLE / PNG OPEN
+NOTE	No data URL, CDP, encoding or alternate capture path was attempted	Prior export rejection preserved	COMPLIANT

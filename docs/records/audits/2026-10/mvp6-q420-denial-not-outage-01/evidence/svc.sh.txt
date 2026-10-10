@@ -1,0 +1,11 @@
+#!/bin/bash
+# usage: svc.sh <W> <tree> <role A|B>   -- starts one SupplyChain service from <tree>; A = consumer (58420, mongod 57420), B = provider (58421, mongod 57421)
+W=$1; T=$2; ROLE=$3; S=$(cat $W/secret/jwt.txt)
+if [ $ROLE = A ]; then PORT=58420; MONGO="mongodb://127.0.0.1:57420/?replicaSet=rsq420a"; DB=q420_a; else PORT=58421; MONGO="mongodb://127.0.0.1:57421/?replicaSet=rsq420b&serverSelectionTimeoutMS=1500&connectTimeoutMS=1000"; DB=q420_b; fi
+cd $W/$T/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api || exit 1
+ASPNETCORE_ENVIRONMENT=Development JwtSettings__Secret="$S" JwtSettings__Issuer=diten-auth-service JwtSettings__Audience=diten-erp \
+Urls=http://127.0.0.1:$PORT Mongo__ConnectionString="$MONGO" Mongo__DatabaseName=$DB PlatformRegistration__BaseUrl= PlatformRegistration__InternalApiKey= \
+Returns__ReferenceBaseUrl=http://127.0.0.1:58421/ Claims__ReferenceBaseUrl=http://127.0.0.1:58421/ \
+nohup dotnet bin/Debug/net8.0/Diten.SupplyChainService.Api.dll > $W/evidence/$T-$ROLE.log 2>&1 &
+for i in $(seq 1 60); do nc -z 127.0.0.1 $PORT 2>/dev/null && break; sleep 0.5; done
+nc -z 127.0.0.1 $PORT && echo "$T $ROLE up on $PORT pid $(lsof -nP -t -iTCP:$PORT -sTCP:LISTEN)" || { echo "$T $ROLE FAILED"; tail -5 $W/evidence/$T-$ROLE.log; }

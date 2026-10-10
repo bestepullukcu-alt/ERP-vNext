@@ -1,0 +1,5 @@
+feat(supply-chain): add MOD-0183 shipment root read, module registration and service composition
+
+Shipment root read, ModuleRegistration, Program.cs (Carrier + Load composition only), .csproj, appsettings, shared test setup.
+Work packages: MOD-0183 WPs; Q202a; Program.cs is the held pre-integration composition (Q209 open).
+24 files from pathspec/S3.txt (Q230 commit plan).

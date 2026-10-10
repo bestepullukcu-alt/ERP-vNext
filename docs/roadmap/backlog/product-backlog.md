@@ -7584,3 +7584,188 @@ birebir kopyası): toplantı dalının birleşik hali (`9f65800f`, MethodDefs 49
 (`9e1a82f6`) derlemelerinde iki okuma da çağrıyı buluyor ve testler yeşil; işlemlerin kodu ve IL boyu (786 / 429 bayt) her derlemede aynı.
 Yani gerileme yok, test kırılgan. CI tam Platform paketini koşmadığı için PR'ı engellemez. Düzeltme: `System.Reflection.Metadata` ile
 opcode uzunluğunu bilen gerçek bir IL okuyucu (ilprobe'daki döngü yeterli).
+
+**İade (MOD-0186) tekil kayıt detay sayfası yok — sözleşmede İade by-ID okuması yok**
+
+DURUM: ERTELENDİ · SAHİP: MOD-0186 pack yazarı + sözleşme sahibi (SHIPMENT-BUNDLE) · KARAR: sahip, 2026-09-26 (UI kapsamı "detay sayfası yok": `docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`; backlog kaydı: `docs/records/decisions/2026-09/mvp6-backlog-entries-owner-decision-01.md`) · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** İade için ayrı detay sayfası (tek kaydın satırları, durum geçmişi, kanıt referansları). Onaylı UI yalnız liste + oluşturma paneli + durum değiştirme; QuickView yalnız seçili satırın özetini gösterir ve by-ID istek yapmaz.
+**Neden ertelendi:** yayınlı SHIPMENT-BUNDLE 3.0.0'da İade by-ID GET yok; UI yalnız yayınlı üç işlemi kullanır (`docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/SCOPE.md` §2 "Not in the contract, therefore not in the UI", §10 "Return detail page"). Kaynak tespit: `docs/records/audits/2026-09/mvp6-antigravity-compliance-check-2026-09-26.md` AG-02.
+**Yapım tetikleyicisi:** SHIPMENT-BUNDLE'a İade by-ID okuma işleminin sözleşme değişikliği + tüketici onayı + yayın kararıyla eklenmesi; ardından MOD-0186 UI pack revizyonu.
+
+**Ölçüm komutu:**
+
+    grep -o -E 'operationId: *(get|query)Return[A-Za-z]*' docs/analysis/contracts/shipment-bundle.openapi.yaml
+
+### BL-373
+
+**Hasar/Talep (MOD-0187) tekil kayıt detay sayfası yok — sözleşmede Claim by-ID okuması yok**
+
+DURUM: ERTELENDİ · SAHİP: MOD-0187 pack yazarı + sözleşme sahibi (SHIPMENT-BUNDLE) · KARAR: sahip, 2026-09-26 (`docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`; backlog kaydı: `docs/records/decisions/2026-09/mvp6-backlog-entries-owner-decision-01.md`) · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Talep için ayrı detay sayfası (tutarlar, karar, çözüm kodu, notlar, kanıt referansları). Onaylı UI: liste + oluşturma paneli + durum değiştirme; QuickView by-ID istek yapmaz.
+**Neden ertelendi:** yayınlı sözleşmede Claim by-ID GET yok (`docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/SCOPE.md` §2 "Not in the UI", §10 "claim detail page"). Kaynak tespit: `mvp6-antigravity-compliance-check-2026-09-26.md` AG-02.
+**Yapım tetikleyicisi:** SHIPMENT-BUNDLE'a Claim by-ID okuma işleminin sözleşme değişikliği + yayın kararıyla eklenmesi; ardından MOD-0187 UI pack revizyonu.
+
+**Ölçüm komutu:**
+
+    grep -o -E 'operationId: *(get|query)Claim[A-Za-z]*' docs/analysis/contracts/shipment-bundle.openapi.yaml
+
+### BL-374
+
+**Talep listesinde onaylanan tutar (`approvedAmount`) gösterilemiyor — `ClaimSummary` alanı taşımıyor**
+
+DURUM: ERTELENDİ (kayıtlı sözleşme boşluğu) · SAHİP: sözleşme sahibi (SHIPMENT-BUNDLE) + MOD-0187 · KARAR: sahip, 2026-09-26 ("approved-amount list gap stays a recorded contract gap; no contract change is authorized" — `docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`) · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Onaylanan tutarın liste yeniden yüklendikten sonra da görünmesi. Bugün yalnız "Approved" geçişinin başarı mesajında gösterilir; türetilmez.
+**Neden ertelendi:** `ClaimSummary` şemasında `approvedAmount` yok (`docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/SCOPE.md` §5; `docs/roadmap/plans/mvp6-ui-pack-revisions-01/claims/SOP-22-PACK-REVISION.md` "Remaining gaps" 1). Sözleşme değişikliği yetkilendirilmedi.
+**Yapım tetikleyicisi:** sahibin listede gösterim istemesi → `ClaimSummary`'ye alan ekleyen sözleşme değişikliği, tüketici onayı ve yayın; ardından MOD-0187 UI liste kolonu.
+
+**Ölçüm komutu:**
+
+    awk '/^    ClaimSummary:/{f=1;next} f&&/^    [A-Z]/{exit} f' docs/analysis/contracts/shipment-bundle.openapi.yaml | grep -n approvedAmount
+
+### BL-375
+
+**Yükler (MOD-0185) bağımsız detay ekranı — kapsam kararı açık, tahmin dışı**
+
+DURUM: ERTELENDİ (OPEN_SCOPE_UNESTIMATED) · SAHİP: sahip (kapsam kararı) → MOD-0185 pack yazarı · KARAR: backlog kaydı `docs/records/decisions/2026-09/mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Liste satırından bağımsız bir Yük detay ekranı.
+**Neden ertelendi:** efor defterinde sayısal paydanın dışında, kapsamı karar bekliyor: `docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/UNESTIMATED-SCOPE.tsv` satır `0185-RS-06`.
+**Yapım tetikleyicisi:** sahibin liste satırı davranışının yeterli olup olmadığına, yoksa detay ekranının gerekli olduğuna karar vermesi (aynı satırın `next_trigger` sütunu); ardından tahmin ve pack revizyonu.
+
+**Ölçüm komutu:**
+
+    grep -P '^0185-RS-06\t' docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/UNESTIMATED-SCOPE.tsv
+
+### BL-376
+
+**Yükler (MOD-0185) aranabilir Taşıyıcı/Sevkiyat/lokasyon seçici — kapsam kararı açık, tahmin dışı**
+
+DURUM: ERTELENDİ (OPEN_SCOPE_UNESTIMATED) · SAHİP: sahip (kullanılabilirlik kapsamı) → MOD-0185 pack yazarı · KARAR: backlog kaydı `docs/records/decisions/2026-09/mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Yük oluşturma/düzenleme için aranabilir lookup UX (Taşıyıcı, Sevkiyat, lokasyon).
+**Neden ertelendi:** `docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/UNESTIMATED-SCOPE.tsv` satır `0185-RS-07` — sayısal paydanın dışında.
+**Yapım tetikleyicisi:** sahibin yayınlı üretici işlemlerine (ör. `queryCarriers`, `queryShipments`) göre kullanılabilirlik kapsamını seçmesi (aynı satırın `next_trigger` sütunu).
+
+**Ölçüm komutu:**
+
+    grep -P '^0185-RS-07\t' docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/UNESTIMATED-SCOPE.tsv
+
+### BL-377
+
+**Yükler (MOD-0185) üretici-sahipli yetkili Yük-kökü (root) okuması — zorunlu, tahmin dışı**
+
+DURUM: ERTELENDİ (MANDATORY_UNESTIMATED) · SAHİP: Loads üretici sahibi · KARAR: backlog kaydı `docs/records/decisions/2026-09/mvp6-backlog-entries-owner-decision-01.md`; önceki kapılar: Loads karar A/B (`docs/records/decisions/2026-09/mvp6-loads-root-amendment-owner-decision-a-01.md`, `…-b-01.md`) · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Üretici tarafında yetkili Load-root okuma uygulaması.
+**Neden ertelendi:** `docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/UNESTIMATED-SCOPE.tsv` satır `0185-RS-05` — zorunlu ama tahmin edilmedi; 3.1.0 sözleşme yayını HELD (CT kaydı `docs/records/audits/2026-09/mvp6-ct-disposition-q08-q17-2026-09-26.md` Q08: yayın, guard bağlama kararı (Q26) çıkana kadar bekliyor).
+**Yapım tetikleyicisi:** nihai sürüm seçimi, tüketici onayı, kanonik yayın, ardından kesin üretici uptake kapsamı (aynı satırın `next_trigger` sütunu).
+
+**Ölçüm komutu:**
+
+    grep -P '^0185-RS-05\t' docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/UNESTIMATED-SCOPE.tsv
+    sha256sum docs/analysis/contracts/shipment-bundle.openapi.yaml
+
+### BL-378
+
+**Sevkiyat (MOD-0183) UI: düzenle, sil, toplu işlem, QuickView, içe/dışa aktarım, kayıtlı görünüm, kolon görünürlüğü, ShowAll, genel Active/Passive — kapsam dışı**
+
+DURUM: ERTELENDİ · SAHİP: sahip (kapsam değişikliği) + MOD-0183 · KARAR: sınırlı kabul UI183-A14 bu yüzeylerin YOK olmasını ister; genel doğrulayıcı sonucu yalnız kayıt (`docs/records/audits/2026-09/mvp6-shipment-acceptance-reconcile-01/SCOPE-CHANGE-RECORD.tsv` SCR-00…SCR-35 OUT satırları; DN-02 `docs/records/audits/2026-09/mvp6-shipment-remaining-acceptance-disposition-01/DECISION-NEEDS.md`); backlog kaydı `mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Edit sayfası/aksiyonu, tekil ve toplu silme, seçim kutusu + BulkActionBar, QuickView, import/export, SaveView, ColumnVisibility, ShowAll ve genel Active/Passive/Unknown durumları; ayrıca UI183-A14'te adı geçen assign/reconcile/history aksiyonları. Sunucu tarafı sayfalama Sevkiyat'ta KAPSAMDA (UI183-A14 "server paging"), bu maddeye dahil değildir.
+**Neden ertelendi:** yayınlı sözleşmede güncelleme/silme/toplu/dışa aktarım işlemi yok; UI183-A14 bu yüzeylerin yokluğunu negatif iddia olarak tutar (`docs/records/audits/2026-09/mvp6-shipment-acceptance-reconcile-01/ACCEPTANCE-MATRIX.tsv` UI183-A14 ve UI183-A14-GENERIC-GATE satırları).
+**Yapım tetikleyicisi:** ilgili işlemlerin sözleşmeye eklenmesi + sahibin OUT satırlarını tersine çeviren kapsam değişikliği kaydı; o zamana kadar DN-02 sınırlı profil kararı.
+
+**Ölçüm komutu:**
+
+    grep -o -E 'operationId: *(update|delete|bulk|export|import)[A-Za-z]*' docs/analysis/contracts/shipment-bundle.openapi.yaml
+    grep -P '^SCR-' docs/records/audits/2026-09/mvp6-shipment-acceptance-reconcile-01/SCOPE-CHANGE-RECORD.tsv | grep -c 'OUT (generic positive check excluded'
+
+### BL-379
+
+**İade (MOD-0186) UI: toplu işlem, düzenle/sil, içe/dışa aktarım, sunucu sayfalama/arama/sıralama, çoklu durum filtresi — kapsam dışı**
+
+DURUM: ERTELENDİ · SAHİP: sahip (kapsam değişikliği) + MOD-0186 · KARAR: sahip, 2026-09-26 (OUT satırları onaylandı: `docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`); backlog kaydı `mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Seçim kutusu + BulkActionBar, düzenle/sil/toplu sil, import/export, sunucu tarafı sayfalama/arama/sıralama, çoklu durum filtresi; genel `verify_datatable_page.py --reference slim` sonucu kabul girdisi değil, yalnız kayıt.
+**Neden ertelendi:** `queryReturns` yalnız `shipmentId` ve tek `status` alır; güncelleme/silme/toplu/dışa aktarım işlemi yayınlı değil; dışa aktarım gözden geçirilmemiş veri çıkışı olur (`docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/ACCEPTANCE.md` RU-SCR-01…RU-SCR-06).
+**Yapım tetikleyicisi:** ilgili işlemler/parametreler sözleşmeye eklenip sahip RU-SCR satırlarını IN yaparsa; genel doğrulayıcı için DN-02 kararı.
+
+**Ölçüm komutu:**
+
+    grep -n 'RU-SCR-0' docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/ACCEPTANCE.md
+    grep -o -E 'operationId: *[a-zA-Z]*Return[A-Za-z]*' docs/analysis/contracts/shipment-bundle.openapi.yaml
+
+### BL-380
+
+**Hasar/Talep (MOD-0187) UI: toplu işlem, düzenle/sil, içe/dışa aktarım, sunucu sayfalama/arama/sıralama, çoklu durum filtresi — kapsam dışı**
+
+DURUM: ERTELENDİ · SAHİP: sahip (kapsam değişikliği) + MOD-0187 · KARAR: sahip, 2026-09-26 (`docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`); pack revizyonu uygulandı (`docs/records/audits/2026-09/mvp6-claims-pack-apply-01/SOP-22.md`); backlog kaydı `mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Seçim kutusu + BulkActionBar, düzenle/sil/toplu sil, import/export, sunucu tarafı sayfalama/arama/sıralama, çoklu durum filtresi; genel doğrulayıcı sonucu yalnız kayıt.
+**Neden ertelendi:** `queryClaims` yalnız `shipmentId` ve tek `status` alır; diğer işlemler yayınlı değil; dışa aktarım tutarların gözden geçirilmemiş çıkışı olur (`docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/ACCEPTANCE.md` CU-SCR-01…CU-SCR-06).
+**Yapım tetikleyicisi:** ilgili işlemler sözleşmeye eklenip sahip CU-SCR satırlarını IN yaparsa; genel doğrulayıcı için DN-02 kararı (`docs/roadmap/plans/mvp6-ui-pack-revisions-01/claims/SOP-22-PACK-REVISION.md` "Remaining gaps" 5).
+
+**Ölçüm komutu:**
+
+    grep -n 'CU-SCR-0' docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/ACCEPTANCE.md
+    grep -o -E 'operationId: *[a-zA-Z]*Claim[A-Za-z]*' docs/analysis/contracts/shipment-bundle.openapi.yaml
+
+### BL-381
+
+**Kalıcı PNG ekran görüntüsü kanıtı (Taşıyıcı ve Sevkiyat UI) — desteklenen kaydetme/dışa aktarım yolu yok**
+
+DURUM: ERTELENDİ (zorunlu kanıt kriteri AÇIK, feragat yok) · SAHİP: ortam sahibi · KARAR: `docs/records/audits/2026-09/mvp6-carrier-real-auth-ct-review-01/PNG-DISPOSITION.md` ("OPEN — mandatory evidence criterion, no waiver"); backlog kaydı `mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Kimliği doğrulanmış tarayıcı durumuna ve kaynak/süreç hash'lerine bağlı, kalıcı PNG kanıtı (Taşıyıcı `RA2-18`/`SUC-19`; Sevkiyat `PRES-183-04`, `docs/records/audits/2026-09/mvp6-shipment-acceptance-reconcile-01/ACCEPTANCE-MATRIX.tsv`).
+**Neden ertelendi:** onaylı otomasyon yüzeyi kalıcı PNG kaydetme/dışa aktarım sunmadı; data-URL/CDP/base64/yerel yakalama yetkili değil (PNG-DISPOSITION.md). Taşıyıcı CT kararı bu yüzden PARTIAL.
+**Yapım tetikleyicisi:** desteklenen bir ekran görüntüsü kaydetme/dışa aktarım yeteneğinin gösterilmesi (CT kuyruğu Q13 yeniden gönderim tetikleyicisi); ardından ilgili UI manifestine bağlı çekim.
+
+**Ölçüm komutu:**
+
+    grep -P '^Q13\t' docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv
+
+### BL-382
+
+**Sevkiyat UI183-A10 hata-enjeksiyonu doğrulaması (500/503 ve commit sonrası yanıt kaybı) — yalnız-kanıt proxy yetkisi yok**
+
+DURUM: ERTELENDİ (UI183-A10 AÇIK) · SAHİP: sahip (DN-01) → bağımsız doğrulayıcı · KARAR: `docs/records/audits/2026-09/mvp6-shipment-remaining-acceptance-disposition-01/DECISION-NEEDS.md` DN-01 (yetki metni hazır, onaylanmadı); backlog kaydı `mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Tek kullanımlık, loopback'e bağlı, hash'e bağlı bir test proxy'si ile: yönlendirmeden önce 500/503 ve upstream başarısı sonrası ilk istemci yanıtının düşürülmesi; aynı niyet anahtarı ve gövdeyle yeniden deneme, `idempotentReplay`, değişen gövdede 409 `IDEMPOTENCY_KEY_REUSED`, DB önce/sonra.
+**Neden ertelendi:** mevcut süreç kontrolü yalnız commit öncesi 503'ü kanıtlayabilir; deterministik 500 ve commit-sonrası yanıt kaybı için proxy gerekir ve yetkisi yok (`docs/records/audits/2026-09/mvp6-shipment-remaining-acceptance-disposition-01/SOP-22.md` "UI183-A10 fault disposition"). Ürün kaynağına hata dikişi eklenmez.
+**Yapım tetikleyicisi:** sahibin DN-01 metnini onaylaması (CT kuyruğu Q10); ardından `EXECUTION-PLAN.md` PLAN-A10.
+
+**Ölçüm komutu:**
+
+    grep -P '^Q10\t' docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv
+    ls docs/records/decisions/2026-09/ | grep -i -E 'dn-01|fault'
+
+### BL-383
+
+**İade (MOD-0186) UI: kalan iade hakkı gösterimi, iade nedeni/dispozisyon katalogları, Sevkiyat detayından bağlantı — kapsam dışı**
+
+DURUM: ERTELENDİ · SAHİP: MOD-0186 + sözleşme sahibi (hak sorgusu) / MOD-0048 referans veri kararı (kataloglar) · KARAR: sahip, 2026-09-26 (`docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`, "the rest listed as OUT"); backlog kaydı `mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Oluşturma panelinde "kalan iade edilebilir miktar"; `reasonCode`/`dispositionCode` için katalog seçimi (bugün serbest metin); Sevkiyat detay sayfasından İade'ye bağlantı.
+**Neden ertelendi:** kalan hakkı veren yayınlı sorgu yok (panel yalnız "gönderilen miktar" gösterir); kataloglar ayrı referans-veri kararı ister; Sevkiyat UI korumalı (`docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/SCOPE.md` §2, §6 adım 4, §10).
+**Yapım tetikleyicisi:** kalan-hak sorgusunun sözleşmeye eklenmesi; MOD-0048 referans verisi için ayrı sahip kararı; Sevkiyat UI sahibinin bağlantı kapsamı kararı.
+
+**Ölçüm komutu:**
+
+    grep -n -E 'remaining|catalogue|Return detail page' docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/SCOPE.md
+
+### BL-384
+
+**Hasar/Talep (MOD-0187) UI: kanıt yükleme/doğrulama, taşıyıcı seçici, onaylanan tutar geçmişi, Sevkiyat/Taşıyıcı ekranlarından bağlantı — kapsam dışı**
+
+DURUM: ERTELENDİ · SAHİP: MOD-0187 pack yazarı (kanıt yükleme gibi üç işlem dışı yetenek → `MOD-0187-FUxx`) · KARAR: sahip, 2026-09-26 (`docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`); backlog kaydı `mvp6-backlog-entries-owner-decision-01.md` · KAYIT: 2026-09-26 (Q41)
+
+**Ne:** Kanıt dosyası yükleme/doğrulama (bugün yalnız opak referans metni), taşıyıcı listesi/seçici (bugün yalnız sevkiyatın kendi taşıyıcısını bağlama onay kutusu), onaylanan tutar geçmişi görünümü, Sevkiyat/Taşıyıcı UI'larından Talep'e bağlantı.
+**Neden ertelendi:** onaylı kapsam dışı (`docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/SCOPE.md` §10); kanıt yükleme yayınlı üç işlemin dışında olduğundan kimlik kararı gereği bir `MOD-0187-FUxx` ister (aynı dosya §1); sözleşme yalnız sevkiyatın kendi taşıyıcısına izin verdiği için seçici gerekmedi (§6 adım 3). Finans/AP/AR/ödeme ve kur dönüşümü Talep modülünün kapsamı değildir ve bu maddeye alınmadı.
+**Yapım tetikleyicisi:** sahibin ilgili yeteneği istemesi → kanıt yükleme için DCP-002 ile `MOD-0187-FUxx` kimliği ve kendi pack'i; seçici, geçmiş görünümü ve bağlantılar için MOD-0187 (ve Sevkiyat/Taşıyıcı UI sahipleri) pack revizyonu.
+
+**Ölçüm komutu:**
+
+    grep -n -E 'evidence upload|carrier picker|approved amount history|FUxx' docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/SCOPE.md

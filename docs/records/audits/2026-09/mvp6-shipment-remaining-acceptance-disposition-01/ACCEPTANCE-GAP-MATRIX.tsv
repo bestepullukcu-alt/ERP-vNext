@@ -1,0 +1,17 @@
+acceptance	current_disposition	controlling_evidence	remaining_gap	successor_action
+UI183-A01	PASS_INHERITED	functional CT consolidation	None unless A/B changes list route	Hash-bind and do not rerun if unaffected
+UI183-A02	PASS_INHERITED	functional CT consolidation	None unless A/B changes list/filter	Hash-bind and do not rerun if unaffected
+UI183-A03	REWORK	policy-error VER	Unauthenticated direct adapter returns 302 instead of required 401/403	A successor source plus focused direct-adapter runtime verification
+UI183-A04	PASS_INHERITED	functional CT consolidation	None unless A/B changes create serialization	Hash-bind and do not rerun if unaffected
+UI183-A05	PASS_INHERITED	functional CT consolidation	None unless B changes create form structure	Recheck only impacted form accessibility/field-count invariants
+UI183-A06	PASS_INHERITED	functional CT plus Root R2 evidence	None unless combined source changes detail root projection	Hash-bind and do not rerun if unaffected
+UI183-A07	PASS	policy-error VER	No remaining bounded permission gap	Retain exact evidence; rerun only if A changes permission/controller behavior
+UI183-A08	PARTIAL	policy-error VER	Live two-session stale-transition browser 422/refresh path	Execute PLAN-A08 on combined source
+UI183-A09	PARTIAL	policy-error VER	Live stale duplicate and stale-eligibility POD browser handling	Execute PLAN-A09-409 and PLAN-A09-422
+UI183-A10	OPEN	policy-error VER	Runtime 500/503/unknown-response stable-intent proof	Use authorized external fault control; otherwise remain OPEN
+UI183-A11	PARTIAL	policy-error VER	Copy interaction and impacted error-precedence/browser trace behavior	Execute focused support-reference copy and A08/A09/A10 precedence assertions
+UI183-A12	PARTIAL	policy-error VER	Cross-LE safe-404 not repeated in a separate browser profile	Execute PLAN-A12 with LE-A and LE-B sessions
+UI183-A13	REWORK_PARTIAL	presentation VER	PRES-183-01, PRES-183-02 and durable PNG	Verify A/B fixes; PNG stays OPEN without supported export
+UI183-A14	OPEN_POLICY_PROFILE	presentation VER	Generic gate 35 FAIL lacks approved bounded profile	Run approved bounded profile and retain raw generic FAIL
+UI183-A15	PASS_INHERITED	functional CT consolidation	None unless A/B changes dialogs	Hash-bind and do not rerun if unaffected
+UI183-A16	PARTIAL	functional CT plus both VERs	Combined successor acceptance not yet executed	One immutable A+B source/build/process/browser handoff; aggregate after rows above

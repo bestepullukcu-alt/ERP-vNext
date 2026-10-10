@@ -1,0 +1,15 @@
+--- /Users/natig/Projects/ERP-vNext-recovery/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs	2026-09-08 21:07:08
++++ /Users/natig/mvp6-env/q185/treeB/src/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs	1970-01-01 02:00:00
+@@ -76,6 +76,12 @@
+             client.BaseAddress = new Uri(options.BaseUrl);
+             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
+         });
++        services.AddHttpClient<ITenantLegalEntityScopeClient, PlatformTenantLegalEntityScopeClient>((sp, client) =>
++        {
++            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
++            client.BaseAddress = new Uri(options.BaseUrl);
++            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
++        });
+         services.AddHttpClient<IPlatformAdministratorStatusClient, PlatformAdministratorStatusClient>((sp, client) =>
+         {
+             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;

@@ -1,0 +1,67 @@
+Build started 22/09/2026 18:53:19.
+Test run for /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.08]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.14]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.14]   Starting:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityReplayTests.Fingerprint_uses_decoded_business_body_and_exact_target [34 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect [1 s]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation [495 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityIsolationTests.Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data [441 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal [442 ms]
+[xUnit.net 00:00:05.07]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry [FAIL]
+[xUnit.net 00:00:05.07]       Child exit 1: Test run for /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+[xUnit.net 00:00:05.07]       VSTest version 17.11.1 (arm64)
+[xUnit.net 00:00:05.07]       
+[xUnit.net 00:00:05.07]       Starting test execution, please wait...
+[xUnit.net 00:00:05.07]       A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:05.07]       
+[xUnit.net 00:00:05.07]       Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: < 1 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+[xUnit.net 00:00:05.07]        [xUnit.net 00:00:00.53]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [FAIL]
+[xUnit.net 00:00:05.07]       
+[xUnit.net 00:00:05.07]       Stack Trace:
+[xUnit.net 00:00:05.07]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs(59,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.AssertSuccess(Process process)
+[xUnit.net 00:00:05.07]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs(78,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry()
+[xUnit.net 00:00:05.07]         --- End of stack trace from previous location ---
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry [2 s]
+  Error Message:
+   Child exit 1: Test run for /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: < 1 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+ [xUnit.net 00:00:00.53]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [FAIL]
+
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.AssertSuccess(Process process) in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs:line 59
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs:line 78
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:05.09]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [2 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Infinite", count: 0) [3 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Finite", count: 1) [2 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Request_does_not_accept_client_scope_or_unknown_fields [5 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Plan_projection_has_published_wire_keys_and_provenance [5 ms]
+Results File: /private/tmp/mvp6-mod0192-core-dev-01/docs/records/audits/2026-09/mvp6-mod0192-restart-harness-rework-01/raw/rework-targeted.trx
+
+Test Run Failed.
+Total tests: 11
+     Passed: 10
+     Failed: 1
+ Total time: 5.5250 Seconds
+     1>Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" on node 1 (VSTest target(s)).
+     1>_VSTestConsole:
+         MSB4181: The "VSTestTask" task returned false but did not log an error.
+     1>Done Building Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" (VSTest target(s)) -- FAILED.
+
+Build FAILED.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:06.09

@@ -1,0 +1,38 @@
+{
+  "validator": {
+    "packageVersion": "0.7.2",
+    "offlineSchemaSha256": "e7cb616a2a10849a166c4e4a93c62c56cfea02cc00eadf287e2fb875e7124098",
+    "metaErrors": [],
+    "fullErrors": [],
+    "negatives": {
+      "bad-version": {
+        "meta": 1,
+        "full": 1
+      },
+      "missing-title": {
+        "meta": 1,
+        "full": 1
+      }
+    }
+  },
+  "patch": {
+    "checkExit": 0,
+    "applyExit": 0,
+    "yamlByteEqual": true,
+    "annexByteEqual": true
+  },
+  "parity": {
+    "onlyInfoMetadataChanged": true,
+    "annexAfterLine3Identical": true,
+    "wireVersion": "v1",
+    "operationCount": 12,
+    "refEncounters": 204,
+    "uniqueRefs": 52,
+    "exampleChecks": 98,
+    "uniqueOperationStatusName": 98
+  },
+  "protected": {
+    "demandSha256": "3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d",
+    "canonicalSha256": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c"
+  }
+}

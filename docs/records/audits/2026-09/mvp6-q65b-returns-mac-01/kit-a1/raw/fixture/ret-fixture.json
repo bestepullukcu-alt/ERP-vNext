@@ -1,0 +1,13 @@
+{
+  "run": "d6bb12",
+  "tenants": {
+    "T1": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+    "T2": "00000000-0000-0000-0000-000000000001"
+  },
+  "steps": [],
+  "catalogWaitSeconds": 180.3,
+  "catalogMissing": [
+    "supplychain.returns.transition"
+  ],
+  "stopped": "permission catalog lacks ['supplychain.returns.transition'] after 180.3 s"
+}

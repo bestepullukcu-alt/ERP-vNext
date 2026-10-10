@@ -1,0 +1,15 @@
+path	purpose
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/auth-legal-entity-candidate.patch	Unapplied narrow Auth/Platform production candidate
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/SOURCE-MANIFEST.tsv	Candidate baseline/target hashes
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/ROOT-CAUSE.tsv	Path-and-line root-cause evidence
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/OWNER-DECISION-TEXT.md	Single missing owner decision
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/candidate-validation.log	Static scope and fail-closed validation
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/auth-build.log	Disposable Auth candidate build
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/auth-build.exit	Auth build exit code
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/platform-build.log	Disposable Platform candidate build
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/platform-build.exit	Platform build exit code
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/carrier-ver-artifacts-check.log	Prior independent Carrier evidence hash verification
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/carrier-ver-artifacts-check.exit	Evidence check exit code
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/source-no-change.log	Ten candidate paths remain at recorded baselines or absent
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/SOP-22.md	Control Tower handoff
+docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/SHA256SUMS	Package checksums

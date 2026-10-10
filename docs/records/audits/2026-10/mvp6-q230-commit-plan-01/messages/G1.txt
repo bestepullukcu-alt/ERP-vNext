@@ -1,0 +1,5 @@
+docs(pilot): add MVP6 process-pilot ledgers and lane prompts
+
+CT-QUEUE.tsv, MILESTONE-EVENTS.tsv and the other pilot ledger files. Commit LAST: other lanes append to these files.
+Work packages: all pilot WPs.
+10 files from pathspec/G1.txt (Q230 commit plan).

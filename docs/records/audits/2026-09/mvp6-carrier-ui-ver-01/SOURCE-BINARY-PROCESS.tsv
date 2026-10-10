@@ -1,0 +1,14 @@
+kind	path_or_port	sha256_or_state
+source_manifest	docs/records/audits/2026-09/mvp6-carrier-ui-dev-01/ui-rework/UI-SOURCE-MANIFEST-v2.tsv	e96578d0e874e8796469ee763aa9b6e723c7f0c9a966b5fe8a46b535279b26cb
+source_patch	docs/records/audits/2026-09/mvp6-carrier-ui-dev-01/ui-rework/UI-SOURCE-v2.patch	3c05dfdf5fb6005d962c1c2d0b33dc8fccd1332a52a812bcdf56af44ff19ec07
+source	frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml	da254157aa3edc3a32434281e71303c1fd7a2bf9bc8863afe4b21884b37ddd0a
+binary	frontend/Diten.Web/bin/Debug/net8.0/Diten.Web.dll	33496b3a05bf03678238897d4cfb924f8b8657ea883b51cbe9255d5fff0cb172
+binary	services/Diten.AuthService/src/Diten.AuthService.Api/bin/Debug/net8.0/Diten.AuthService.Api.dll	7bbbee1e43e16885c153c59bc444741b7ffd8fb7bdcd5eb7a57979c164b66a58
+binary	services/Diten.Platform/src/Diten.Platform.API/bin/Debug/net8.0/Diten.Platform.API.dll	64b055fc9797645b439c1d895c138c7d9b698bcc71c0993012617e28fad67d97
+binary	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll	2c36a3402011cb737f81f3f5f1215d372ee2cde2ba4491dbc84bd59799c21eb9
+binary	gateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll	d4c56f42c6af13a801047f45eb03ac036e73435ea3ffad35c0916ee54be2fc43
+process	5000 Gateway	STOPPED after PID 63986
+process	5001 Web	STOPPED after PID 64024
+process	5056 Auth	STOPPED after PID 63887
+process	5057 Platform	STOPPED after PID 63832
+process	5061 SupplyChain	STOPPED after PID 63939

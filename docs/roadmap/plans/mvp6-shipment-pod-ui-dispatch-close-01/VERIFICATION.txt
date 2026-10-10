@@ -1,0 +1,23 @@
+MVP6-SHIPMENT-POD-UI-DISPATCH-CLOSE-01 verification
+
+PASS  controlling scope ARTIFACTS.sha256: 13/13
+PASS  backend transfer manifest: 40 rows, all found in durable donor source archive
+PASS  prospective UI preimages: 28/28 ABSENT at immutable HEAD
+PASS  Carrier shared predecessor: 18/18 target bytes matched recorded hashes before reconstruction
+PASS  Shipment shared patch: git apply --check and disposable apply
+PASS  shared target hashes: 12/12
+PASS  ocelot.json JSON parse
+PASS  seven SharedResource RESX XML parses
+PASS  SupplyChain API build: 0 warnings, 0 errors
+PASS  ShipmentTrackingPodManifestProviderTests: 1/1
+PASS  ShipmentRouteCoverageTests: 1/1 (gateway project emitted 5 inherited nullability warnings)
+PASS  NavManifestL10nGuardTests: 7/7 (frontend test build emitted 3 inherited nullability warnings)
+PASS  Diten.Web build: 0 errors, 15 inherited warnings
+
+NOT RUN  runtime/API/Gateway/frontend/browser flows
+NOT RUN  live Platform module reconciliation and permission provisioning
+NOT RUN  UI implementation tests (28 UI paths remain absent)
+
+First no-restore build/test attempts failed only because disposable obj/project.assets.json did not exist; restore was run. The first sandboxed test host was denied its local coordination socket; the same exact source/test command passed with approved local socket access. These failures are not counted as product PASS or FAIL.
+
+The direct replay of the Carrier candidate patch was rejected by automatic approval review because it was not the controlling Shipment patch. The predecessor was instead reconstructed by reading and verifying the already materialized 18 Carrier target bytes; Carrier files/worktree were not modified.

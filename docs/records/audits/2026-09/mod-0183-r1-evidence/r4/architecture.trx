@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="f6f271a8-b827-49f0-846d-c3e1dd06be27" name="@Natig-Erens-MacBook-Pro 2026-09-16 17:29:12" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-16T17:29:12.7093890+05:00" queuing="2026-09-16T17:29:12.7093890+05:00" start="2026-09-16T17:29:10.4152200+05:00" finish="2026-09-16T17:29:18.0551750+05:00" />
+  <TestSettings name="default" id="200a441b-e680-45e3-82ba-6c8dc0c942de">
+    <Deployment runDeploymentRoot="_Natig-Erens-MacBook-Pro_2026-09-16_17_29_12" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c6894ee5-72e3-4c70-9e5e-17fe763b6719" testId="cb85f772-a9f8-9144-3541-8f2ba9cfc79b" testName="TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests.MongoClientInstantiation_MustStayInAllowedBootstrapFiles" computerName="Natig-Erens-MacBook-Pro" duration="00:00:02.6820011" startTime="2026-09-16T17:29:13.8414020+05:00" endTime="2026-09-16T17:29:13.8414020+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c6894ee5-72e3-4c70-9e5e-17fe763b6719" />
+    <UnitTestResult executionId="6036fe1a-a057-42c5-8ff6-fd0bf5774be2" testId="b68da2d3-c060-ab91-ac15-9328601dd1a3" testName="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.TheScanActuallySeesTheTestTree" computerName="Natig-Erens-MacBook-Pro" duration="00:00:02.1590838" startTime="2026-09-16T17:29:13.3212490+05:00" endTime="2026-09-16T17:29:13.3212500+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6036fe1a-a057-42c5-8ff6-fd0bf5774be2" />
+    <UnitTestResult executionId="64fe68d6-d270-4af5-8595-6fb8f6b2c74e" testId="16f1420e-9e2e-9d76-58be-5a4cbf4099eb" testName="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.9492209" startTime="2026-09-16T17:29:12.1388970+05:00" endTime="2026-09-16T17:29:12.1388980+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="64fe68d6-d270-4af5-8595-6fb8f6b2c74e" />
+    <UnitTestResult executionId="4c7878e0-8a2d-40ea-a4b6-e7b0a53d4e88" testId="654a1f13-aacd-ce92-7589-e666a80c749d" testName="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Ppm_audit_identity_exists_only_in_the_unregistered_default_off_foundation" computerName="Natig-Erens-MacBook-Pro" duration="00:00:01.7579125" startTime="2026-09-16T17:29:12.9173320+05:00" endTime="2026-09-16T17:29:12.9173320+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4c7878e0-8a2d-40ea-a4b6-e7b0a53d4e88" />
+    <UnitTestResult executionId="f57f7d75-5fca-4d70-9540-d0ff13582b51" testId="53ade22b-8d58-4d23-13b3-ddb88fcf407c" testName="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Compatibility_fixture_has_the_locked_six_field_shape_without_an_undocumented_aggregate_allowlist" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0374801" startTime="2026-09-16T17:29:12.9550050+05:00" endTime="2026-09-16T17:29:12.9550060+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f57f7d75-5fca-4d70-9540-d0ff13582b51" />
+    <UnitTestResult executionId="1ace80ee-e8de-4877-b2ab-cb0488d07d2b" testId="baabdac5-ae6a-55d6-8e50-dc460ae7fcd4" testName="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestBuildsThePlatformSchema" computerName="Natig-Erens-MacBook-Pro" duration="00:00:01.1460411" startTime="2026-09-16T17:29:15.7801970+05:00" endTime="2026-09-16T17:29:15.7801970+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1ace80ee-e8de-4877-b2ab-cb0488d07d2b" />
+    <UnitTestResult executionId="13403d08-c17d-45b8-87a1-27f0b68039e2" testId="99c14f81-56aa-dc77-25c7-f0d608b3136c" testName="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.TheSingleSourceStillDeclaresTheConstant" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0006597" startTime="2026-09-16T17:29:14.7390960+05:00" endTime="2026-09-16T17:29:14.7390960+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="13403d08-c17d-45b8-87a1-27f0b68039e2" />
+    <UnitTestResult executionId="1eb8d6e8-5204-4e14-8a44-7a2956fc8a08" testId="74adff16-fd8a-12fe-891a-c0325a1ebe6d" testName="TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests.TenantHeaderContract_MustExistInGatewayAndServices" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0016717" startTime="2026-09-16T17:29:13.8432170+05:00" endTime="2026-09-16T17:29:13.8432170+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1eb8d6e8-5204-4e14-8a44-7a2956fc8a08" />
+    <UnitTestResult executionId="87d1cd98-082d-48d7-b1ee-d30fc8516ce1" testId="39bb3b43-52b0-0e94-aced-88bc0d233a54" testName="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0126037" startTime="2026-09-16T17:29:15.7929960+05:00" endTime="2026-09-16T17:29:15.7929970+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="87d1cd98-082d-48d7-b1ee-d30fc8516ce1" />
+    <UnitTestResult executionId="34baf61d-8830-4e30-bcfc-d72dfe1f1a9f" testId="f8a57ff9-6219-1070-cfda-aaa6a3fa3734" testName="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun" computerName="Natig-Erens-MacBook-Pro" duration="00:00:01.2887348" startTime="2026-09-16T17:29:14.6381180+05:00" endTime="2026-09-16T17:29:14.6381190+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="34baf61d-8830-4e30-bcfc-d72dfe1f1a9f">
+      <Output>
+        <ErrorInfo>
+          <Message>a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs</Message>
+          <StackTrace>   at TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs:line 126
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5e29c2bd-7aba-4b94-bf3d-35ca9883472b" testId="66bb2d6a-191a-cd19-2837-d1cf6003b901" testName="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Both_platform_transport_message_families_are_guarded_against_ppm_consumer_wiring" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.8781757" startTime="2026-09-16T17:29:13.8335820+05:00" endTime="2026-09-16T17:29:13.8335830+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5e29c2bd-7aba-4b94-bf3d-35ca9883472b" />
+    <UnitTestResult executionId="c0d22808-baa2-474f-b2ae-0243c8e46ec4" testId="588c6681-ca86-1447-0529-b596afbfd59d" testName="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew" computerName="Natig-Erens-MacBook-Pro" duration="00:00:03.5758838" startTime="2026-09-16T17:29:14.7388700+05:00" endTime="2026-09-16T17:29:14.7388710+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c0d22808-baa2-474f-b2ae-0243c8e46ec4">
+      <Output>
+        <ErrorInfo>
+          <Message>a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs</Message>
+          <StackTrace>   at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 76
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8d61b0cf-c776-403f-8de9-2fea049d9cf0" testId="5c6e1cde-0c72-14be-47f7-96cb1fb6754a" testName="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.TheScanActuallySeesTheProductionTree" computerName="Natig-Erens-MacBook-Pro" duration="00:00:01.1512395" startTime="2026-09-16T17:29:17.9848540+05:00" endTime="2026-09-16T17:29:17.9848540+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8d61b0cf-c776-403f-8de9-2fea049d9cf0" />
+    <UnitTestResult executionId="d06cbc3b-1d20-4b78-b72b-9542742b0ee8" testId="6e53c47d-9eb7-d064-4b8c-7d6c3035f806" testName="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.SitesThatEnforceTheRule_AreExactlyTheMeasuredEight" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.6011868" startTime="2026-09-16T17:29:12.7444320+05:00" endTime="2026-09-16T17:29:12.7444330+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d06cbc3b-1d20-4b78-b72b-9542742b0ee8" />
+    <UnitTestResult executionId="7bd8c655-f8ab-4998-8c3a-d4d862de9c9d" testId="2af51f9e-3f1c-ef0b-6c6e-a7465d825235" testName="TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders" computerName="Natig-Erens-MacBook-Pro" duration="00:00:05.7316718" startTime="2026-09-16T17:29:16.8911070+05:00" endTime="2026-09-16T17:29:16.8911070+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7bd8c655-f8ab-4998-8c3a-d4d862de9c9d" />
+    <UnitTestResult executionId="ca181dd4-5547-458d-8774-60119e1fc28f" testId="c7ab1418-c5ed-1696-99d6-073d1b4f930c" testName="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew" computerName="Natig-Erens-MacBook-Pro" duration="00:00:02.0963007" startTime="2026-09-16T17:29:16.8344660+05:00" endTime="2026-09-16T17:29:16.8344670+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ca181dd4-5547-458d-8774-60119e1fc28f">
+      <Output>
+        <ErrorInfo>
+          <Message>this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs</Message>
+          <StackTrace>   at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 93
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="21c00d8d-756d-4506-8191-122b69b84733" testId="05205282-d561-3e74-3ba9-bb6601ca3f50" testName="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.SchemaBuildExceptionListStaysHonest" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0066585" startTime="2026-09-16T17:29:14.6388340+05:00" endTime="2026-09-16T17:29:14.6388340+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="21c00d8d-756d-4506-8191-122b69b84733" />
+    <UnitTestResult executionId="bab357b5-bae8-4cb5-ad2f-e521c6f2aef7" testId="90ada3bd-edf6-53b5-77d3-70c12ddb59eb" testName="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.NoSiteIsPendingADecision_BecauseAllEightEnforceTheRule" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0184007" startTime="2026-09-16T17:29:11.1904400+05:00" endTime="2026-09-16T17:29:11.1904840+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bab357b5-bae8-4cb5-ad2f-e521c6f2aef7" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.TheScanActuallySeesTheProductionTree" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="5c6e1cde-0c72-14be-47f7-96cb1fb6754a">
+      <Execution id="8d61b0cf-c776-403f-8de9-2fea049d9cf0" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests" name="TheScanActuallySeesTheProductionTree" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="c7ab1418-c5ed-1696-99d6-073d1b4f930c">
+      <Execution id="ca181dd4-5547-458d-8774-60119e1fc28f" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests" name="EveryLifetimeValidatingFileDeclaresTheSharedSkew" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Ppm_audit_identity_exists_only_in_the_unregistered_default_off_foundation" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="654a1f13-aacd-ce92-7589-e666a80c749d">
+      <Execution id="4c7878e0-8a2d-40ea-a4b6-e7b0a53d4e88" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests" name="Ppm_audit_identity_exists_only_in_the_unregistered_default_off_foundation" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests.MongoClientInstantiation_MustStayInAllowedBootstrapFiles" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="cb85f772-a9f8-9144-3541-8f2ba9cfc79b">
+      <Execution id="c6894ee5-72e3-4c70-9e5e-17fe763b6719" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests" name="MongoClientInstantiation_MustStayInAllowedBootstrapFiles" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="f8a57ff9-6219-1070-cfda-aaa6a3fa3734">
+      <Execution id="34baf61d-8830-4e30-bcfc-d72dfe1f1a9f" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests" name="NoTestCreatesItsOwnDatabasePerRun" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestBuildsThePlatformSchema" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="baabdac5-ae6a-55d6-8e50-dc460ae7fcd4">
+      <Execution id="1ace80ee-e8de-4877-b2ab-cb0488d07d2b" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests" name="NoTestBuildsThePlatformSchema" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="588c6681-ca86-1447-0529-b596afbfd59d">
+      <Execution id="c0d22808-baa2-474f-b2ae-0243c8e46ec4" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests" name="NoProductionValidatorWritesItsOwnClockSkew" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.SitesThatEnforceTheRule_AreExactlyTheMeasuredEight" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="6e53c47d-9eb7-d064-4b8c-7d6c3035f806">
+      <Execution id="d06cbc3b-1d20-4b78-b72b-9542742b0ee8" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests" name="SitesThatEnforceTheRule_AreExactlyTheMeasuredEight" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="16f1420e-9e2e-9d76-58be-5a4cbf4099eb">
+      <Execution id="64fe68d6-d270-4af5-8595-6fb8f6b2c74e" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests" name="EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.TheSingleSourceStillDeclaresTheConstant" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="99c14f81-56aa-dc77-25c7-f0d608b3136c">
+      <Execution id="13403d08-c17d-45b8-87a1-27f0b68039e2" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests" name="TheSingleSourceStillDeclaresTheConstant" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.NoSiteIsPendingADecision_BecauseAllEightEnforceTheRule" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="90ada3bd-edf6-53b5-77d3-70c12ddb59eb">
+      <Execution id="bab357b5-bae8-4cb5-ad2f-e521c6f2aef7" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests" name="NoSiteIsPendingADecision_BecauseAllEightEnforceTheRule" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.SchemaBuildExceptionListStaysHonest" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="05205282-d561-3e74-3ba9-bb6601ca3f50">
+      <Execution id="21c00d8d-756d-4506-8191-122b69b84733" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests" name="SchemaBuildExceptionListStaysHonest" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="39bb3b43-52b0-0e94-aced-88bc0d233a54">
+      <Execution id="87d1cd98-082d-48d7-b1ee-d30fc8516ce1" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests" name="PerRunDatabaseExceptionListStaysHonest" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Both_platform_transport_message_families_are_guarded_against_ppm_consumer_wiring" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="66bb2d6a-191a-cd19-2837-d1cf6003b901">
+      <Execution id="5e29c2bd-7aba-4b94-bf3d-35ca9883472b" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests" name="Both_platform_transport_message_families_are_guarded_against_ppm_consumer_wiring" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.TheScanActuallySeesTheTestTree" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="b68da2d3-c060-ab91-ac15-9328601dd1a3">
+      <Execution id="6036fe1a-a057-42c5-8ff6-fd0bf5774be2" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests" name="TheScanActuallySeesTheTestTree" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests.TenantHeaderContract_MustExistInGatewayAndServices" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="74adff16-fd8a-12fe-891a-c0325a1ebe6d">
+      <Execution id="1eb8d6e8-5204-4e14-8a44-7a2956fc8a08" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests" name="TenantHeaderContract_MustExistInGatewayAndServices" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="2af51f9e-3f1c-ef0b-6c6e-a7465d825235">
+      <Execution id="7bd8c655-f8ab-4998-8c3a-d4d862de9c9d" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.DocsPathGuardTests" name="NoCodeFilePointsIntoDocsOutsideTheFiveFolders" />
+    </UnitTest>
+    <UnitTest name="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Compatibility_fixture_has_the_locked_six_field_shape_without_an_undocumented_aggregate_allowlist" storage="/users/natig/projects/erp-vnext-recovery/tests/architecture/tenantarchitecture.architecturetests/bin/debug/net8.0/tenantarchitecture.architecturetests.dll" id="53ade22b-8d58-4d23-13b3-ddb88fcf407c">
+      <Execution id="f57f7d75-5fca-4d70-9540-d0ff13582b51" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests" name="Compatibility_fixture_has_the_locked_six_field_shape_without_an_undocumented_aggregate_allowlist" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="cb85f772-a9f8-9144-3541-8f2ba9cfc79b" executionId="c6894ee5-72e3-4c70-9e5e-17fe763b6719" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b68da2d3-c060-ab91-ac15-9328601dd1a3" executionId="6036fe1a-a057-42c5-8ff6-fd0bf5774be2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="16f1420e-9e2e-9d76-58be-5a4cbf4099eb" executionId="64fe68d6-d270-4af5-8595-6fb8f6b2c74e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="654a1f13-aacd-ce92-7589-e666a80c749d" executionId="4c7878e0-8a2d-40ea-a4b6-e7b0a53d4e88" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="53ade22b-8d58-4d23-13b3-ddb88fcf407c" executionId="f57f7d75-5fca-4d70-9540-d0ff13582b51" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="baabdac5-ae6a-55d6-8e50-dc460ae7fcd4" executionId="1ace80ee-e8de-4877-b2ab-cb0488d07d2b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="99c14f81-56aa-dc77-25c7-f0d608b3136c" executionId="13403d08-c17d-45b8-87a1-27f0b68039e2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="74adff16-fd8a-12fe-891a-c0325a1ebe6d" executionId="1eb8d6e8-5204-4e14-8a44-7a2956fc8a08" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="39bb3b43-52b0-0e94-aced-88bc0d233a54" executionId="87d1cd98-082d-48d7-b1ee-d30fc8516ce1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f8a57ff9-6219-1070-cfda-aaa6a3fa3734" executionId="34baf61d-8830-4e30-bcfc-d72dfe1f1a9f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="66bb2d6a-191a-cd19-2837-d1cf6003b901" executionId="5e29c2bd-7aba-4b94-bf3d-35ca9883472b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="588c6681-ca86-1447-0529-b596afbfd59d" executionId="c0d22808-baa2-474f-b2ae-0243c8e46ec4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5c6e1cde-0c72-14be-47f7-96cb1fb6754a" executionId="8d61b0cf-c776-403f-8de9-2fea049d9cf0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6e53c47d-9eb7-d064-4b8c-7d6c3035f806" executionId="d06cbc3b-1d20-4b78-b72b-9542742b0ee8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2af51f9e-3f1c-ef0b-6c6e-a7465d825235" executionId="7bd8c655-f8ab-4998-8c3a-d4d862de9c9d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c7ab1418-c5ed-1696-99d6-073d1b4f930c" executionId="ca181dd4-5547-458d-8774-60119e1fc28f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="05205282-d561-3e74-3ba9-bb6601ca3f50" executionId="21c00d8d-756d-4506-8191-122b69b84733" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="90ada3bd-edf6-53b5-77d3-70c12ddb59eb" executionId="bab357b5-bae8-4cb5-ad2f-e521c6f2aef7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="18" executed="18" passed="15" failed="3" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.09]   Discovering: TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.13]   Discovered:  TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.13]   Starting:    TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:03.65]       a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+[xUnit.net 00:00:03.65]       services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+[xUnit.net 00:00:03.65]       services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+[xUnit.net 00:00:03.66]       Stack Trace:
+[xUnit.net 00:00:03.66]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs(126,0): at TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun()
+[xUnit.net 00:00:03.66]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:03.66]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.76]       a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+[xUnit.net 00:00:03.76]       services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+[xUnit.net 00:00:03.76]       services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+[xUnit.net 00:00:03.76]       Stack Trace:
+[xUnit.net 00:00:03.76]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs(76,0): at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew()
+[xUnit.net 00:00:03.76]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:03.76]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.85]       this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+[xUnit.net 00:00:05.85]       services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+[xUnit.net 00:00:05.85]       services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+[xUnit.net 00:00:05.85]       Stack Trace:
+[xUnit.net 00:00:05.85]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs(93,0): at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew()
+[xUnit.net 00:00:05.85]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:05.85]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:07.01]   Finished:    TenantArchitecture.ArchitectureTests
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T17:29:14.6340830+05:00">
+        <Text>[xUnit.net 00:00:03.65]     TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T17:29:14.7364720+05:00">
+        <Text>[xUnit.net 00:00:03.76]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T17:29:16.8340830+05:00">
+        <Text>[xUnit.net 00:00:05.85]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

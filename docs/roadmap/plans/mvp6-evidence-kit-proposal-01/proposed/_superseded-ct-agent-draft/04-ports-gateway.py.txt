@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""CANDIDATE — NOT APPROVED.  Step 4: lane port allocation, conflict check, disposable Gateway route config.
+
+* Lane block: port = BASE*100 + (canonical - 5000) for Gateway, Web, Auth, Platform, MDM, SupplyChain;
+  sentinel = BASE*100 + 99 (must stay closed).  BASE 51..64 keeps clear of the canonical 5000-5064 band.
+* Every lane port, the sentinel and the Mongo port must be free (connect test + lsof) before start.
+* Route config: input is the composed source's gateway/Diten.ApiGateway/ocelot.json; it must equal the HEAD blob
+  unless an overlay manifest owns that path.  The repository file is NEVER edited: the output is written to
+  <W>/runtime/gateway/ocelot.json next to a copy of the built gateway output.
+* Downstream rewrite: 5056/5057/5059/5061 -> lane ports.  Every other downstream (e.g. 5004, 5011, 5058, 5060,
+  5062-5064 at HEAD) -> the closed sentinel, so no lane request can reach an operational service.
+"""
+import argparse, collections, csv, hashlib, json, shutil, socket, subprocess, sys
+from pathlib import Path
+
+CANON = {"gateway": 5000, "web": 5001, "auth": 5056, "platform": 5057, "mdm": 5059, "supplychain": 5061}
+OCELOT = "gateway/Diten.ApiGateway/ocelot.json"
+
+def in_use(port):
+    s = socket.socket(); s.settimeout(0.5)
+    try: return s.connect_ex(("127.0.0.1", port)) == 0
+    finally: s.close()
+
+def lsof(port):
+    r = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"], capture_output=True, text=True)
+    return r.stdout.split()
+
+def main():
+    a = argparse.ArgumentParser()
+    a.add_argument("--repo", required=True); a.add_argument("--base-head", required=True); a.add_argument("--source", required=True)
+    a.add_argument("--owned-manifest", required=True); a.add_argument("--workspace", required=True); a.add_argument("--out", required=True)
+    a.add_argument("--base", type=int, required=True); a.add_argument("--mongo-port", type=int, required=True)
+    a.add_argument("--registry", help="optional TSV of ports already assigned to other live lanes")
+    o = a.parse_args()
+    if not 51 <= o.base <= 64: sys.exit("FAIL base outside 51..64")
+    if o.mongo_port == 27017 or 27000 <= o.mongo_port <= 27099: sys.exit("FAIL Mongo port refused")
+    ports = {n: o.base * 100 + (p - 5000) for n, p in CANON.items()}
+    sentinel = o.base * 100 + 99
+    rows, fails = [], []
+    reserved = set()
+    if o.registry and Path(o.registry).exists():
+        reserved = {int(r["port"]) for r in csv.DictReader(open(o.registry), delimiter="\t")}
+    for name, port in [*ports.items(), ("sentinel", sentinel), ("mongo", o.mongo_port)]:
+        busy, pids = in_use(port), lsof(port)
+        ok = not busy and not pids and port not in reserved
+        rows.append([name, CANON.get(name, ""), port, "free" if ok else f"IN-USE pids={','.join(pids)} reserved={port in reserved}"])
+        if not ok: fails.append(f"{name} {port} not free")
+    with open(Path(o.out, "PORTS.tsv"), "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t", lineterminator="\n"); w.writerow(["service", "canonical", "lane_port", "state"]); w.writerows(rows)
+
+    head_blob = subprocess.check_output(["git", "-C", o.repo, "show", f"{o.base_head}:{OCELOT}"])
+    src = Path(o.source, OCELOT).read_bytes()
+    owned = {r["path"] for r in csv.DictReader(open(o.owned_manifest), delimiter="\t")}
+    h = lambda b: hashlib.sha256(b).hexdigest()
+    if OCELOT not in owned and src != head_blob: fails.append("ocelot.json differs from HEAD but no overlay owns it")
+    cfg = json.loads(src)
+    remap = {CANON[n]: ports[n] for n in ("auth", "platform", "mdm", "supplychain")}
+    counts = collections.Counter()
+    for route in cfg.get("Routes", []):
+        for hp in route.get("DownstreamHostAndPorts", []):
+            old = int(hp["Port"]); new = remap.get(old, sentinel)
+            counts[(hp.get("Host"), old, new)] += 1
+            hp["Host"], hp["Port"] = "127.0.0.1", new
+    cfg.setdefault("GlobalConfiguration", {})["BaseUrl"] = f"http://127.0.0.1:{ports['gateway']}"
+    gw_bin = Path(o.source, "gateway/Diten.ApiGateway/bin/Release/net8.0")
+    rt = Path(o.workspace, "runtime/gateway")
+    if rt.exists(): sys.exit("FAIL runtime gateway dir exists")
+    shutil.copytree(gw_bin, rt)
+    out_bytes = (json.dumps(cfg, indent=2) + "\n").encode()
+    (rt / "ocelot.json").write_bytes(out_bytes)
+    dll_src, dll_rt = h((gw_bin / "Diten.ApiGateway.dll").read_bytes()), h((rt / "Diten.ApiGateway.dll").read_bytes())
+    if dll_src != dll_rt: fails.append("gateway runtime copy differs from built dll")
+    with open(Path(o.out, "GATEWAY-ROUTES.tsv"), "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t", lineterminator="\n"); w.writerow(["host", "canonical_port", "lane_port", "routes"])
+        for (host, old, new), n in sorted(counts.items(), key=lambda x: x[0][1]): w.writerow([host, old, new, n])
+    Path(o.out, "GATEWAY-CONFIG.txt").write_text(
+        f"head_ocelot_sha256\t{h(head_blob)}\nsource_ocelot_sha256\t{h(src)}\nruntime_ocelot_sha256\t{h(out_bytes)}\n"
+        f"routes\t{len(cfg.get('Routes', []))}\nsentinel\t{sentinel}\ngateway_dll_sha256\t{dll_rt}\n"
+        f"repo_file_modified\tfalse\nRESULT\t{'PASS' if not fails else 'FAIL'}\n" + "".join(f"FAIL\t{x}\n" for x in fails))
+    print("PASS" if not fails else "FAIL"); sys.exit(1 if fails else 0)
+
+if __name__ == "__main__": main()

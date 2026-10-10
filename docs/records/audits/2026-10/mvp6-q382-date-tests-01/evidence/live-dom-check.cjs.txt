@@ -1,0 +1,52 @@
+// Q382 one-off evidence (NOT a repo harness): drives the real details.js in Chromium at a given zone, network stubbed,
+// and reports what the field shows and what instant the request carries for Change Status and Capture POD.
+const { chromium } = require('/Users/natig/mvp6-env/node_modules/playwright');
+const fs = require('fs');
+const [, , jsPath, zone] = process.argv;
+const html = `<!doctype html><html lang="en"><body>
+<div id="shipment-details" data-shipment-id="11111111-1111-4111-8111-111111111111">
+ <h4 id="shipmentNumber"></h4><div id="detailsAlert" class="d-none"></div>
+ <div class="row g-6"><span id="detailStatus"></span><span id="detailSource"></span><span id="detailWarehouse"></span><span id="detailShipTo"></span>
+  <span id="detailRoot"></span><span id="detailPlannedShip"></span><span id="detailPlannedDeliver"></span><span id="detailCarrier"></span><span id="detailLoad"></span>
+  <table><tbody id="detailLines"></tbody></table><div id="podEmpty"></div><dl id="podDetails"><dd id="podRecipient"></dd><dd id="podReceived"></dd><dd id="podEvidence"></dd><dd id="podNote"></dd></dl></div>
+ <div id="shipmentActions"></div>
+ <div id="offcanvasTransition"><form id="formTransition"><input type="hidden" name="__RequestVerificationToken" value="t"><div id="transitionAlert" class="d-none"></div>
+  <select id="targetStatus"></select><input id="occurredAt" type="datetime-local"><div id="occurredAtZone"></div><input id="reasonCode"><textarea id="transitionNote"></textarea></form></div>
+ <div id="offcanvasPod"><form id="formPod"><input type="hidden" name="__RequestVerificationToken" value="t"><div id="podAlert" class="d-none"></div>
+  <input id="recipientName"><input id="receivedAt" type="datetime-local"><div id="receivedAtZone"></div><textarea id="evidenceReferenceIds"></textarea><textarea id="podNoteInput"></textarea></form></div>
+</div>
+<script id="shipment-permissions" type="application/json">{"canDispatch":true,"canCancel":false,"canCapturePod":true}</script>
+<script>
+window.L10n = { transition: 'Change status', capturePod: 'Capture POD' }; window.__posts = [];
+window.bootstrap = { Offcanvas: { getOrCreateInstance: () => ({ show() {} }), getInstance: () => ({ hide() {} }) } };
+window.showConfirm = (title, run) => run();
+const shipment = { shipmentNumber: 'SHP-Q382', status: 'Dispatched', lifecycleCorrelationId: '22222222-2222-4222-8222-222222222222', lines: [], pod: null };
+window.fetch = async (url, init) => {
+  if (init && init.method === 'POST') { window.__posts.push({ url, body: JSON.parse(init.body) });
+    return { ok: true, status: 200, json: async () => ({ idempotentReplay: false }), headers: new Headers() }; }
+  return { ok: true, status: 200, json: async () => shipment, clone() { return this; }, headers: new Headers() };
+};
+</script><script src="/details.js"></script></body></html>`;
+(async () => {
+  const browser = await chromium.launch(); const page = await (await browser.newContext({ timezoneId: zone })).newPage();
+  await page.route('**/*', (route) => route.request().url().endsWith('/details.js')
+    ? route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(jsPath, 'utf8') })
+    : route.fulfill({ contentType: 'text/html', body: html }));
+  const errors = []; page.on('pageerror', (e) => errors.push(String(e))); page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  await page.goto('http://localhost/');
+  try { await page.waitForSelector('#shipmentActions .btn-primary', { timeout: 5000 }); } catch (e) { console.log(JSON.stringify({ stuck: true, errors, state: await page.evaluate(() => ({ defined: typeof ShipmentDetails, alert: document.getElementById('detailsAlert').textContent, number: document.getElementById('shipmentNumber').textContent, actions: document.getElementById('shipmentActions').innerHTML, scripts: [...document.scripts].map((s) => s.src || 'inline') })) })); await browser.close(); return; }
+  const out = { zone, browserZone: await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone) };
+  for (const [kind, button, field] of [['transition', '.btn-primary', 'occurredAt'], ['pod', '.btn-success', 'receivedAt']]) {
+    const before = Date.now(); await page.click(`#shipmentActions ${button}`);
+    out[kind] = await page.evaluate((f) => ({ field: document.getElementById(f).value, hint: document.getElementById(f + 'Zone').textContent }), field);
+    if (kind === 'pod') await page.evaluate(() => { document.getElementById('recipientName').value = 'Q382'; document.getElementById('evidenceReferenceIds').value = 'doc-1'; });
+    await page.evaluate((f) => document.getElementById(f).requestSubmit(), kind === 'pod' ? 'formPod' : 'formTransition');
+    await page.waitForFunction((n) => window.__posts.length >= n, kind === 'pod' ? 2 : 1);
+    const sent = await page.evaluate((k) => window.__posts.filter((p) => p.url.endsWith('/' + k)).pop().body, kind);
+    const sentAt = sent.occurredAt || sent.receivedAt;
+    const minutes = [before, Date.now()].map((t) => new Date(Math.floor(t / 60000) * 60000).toISOString());
+    const wall = [before, Date.now()].map((t) => new Intl.DateTimeFormat('sv-SE', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(t).replace(' ', 'T'));
+    Object.assign(out[kind], { sent: sentAt, realMinuteUtc: minutes[0], sentEqualsRealMinute: minutes.includes(sentAt), fieldEqualsLocalWallClock: wall.includes(out[kind].field) });
+  }
+  out.pageErrors = errors; console.log(JSON.stringify(out)); await browser.close();
+})().catch((e) => { console.error(e); process.exit(1); });

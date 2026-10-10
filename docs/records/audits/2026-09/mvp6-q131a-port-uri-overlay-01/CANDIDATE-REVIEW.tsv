@@ -1,0 +1,25 @@
+candidate_file	hunk	kind	decision	reason	q131a_result
+BusinessReferenceDataGskuCatalogLoadMongoTests.cs	-1,4 +1,5	import	KEEP	needed for the Persistence helper namespace	byte-identical to candidate
+BusinessReferenceDataGskuCatalogLoadMongoTests.cs	-351,7 +352,7	call-site	KEEP	27017 literal → fail-closed helper; shared BRD harness (7 classes)	byte-identical to candidate
+BusinessReferenceDataMongoResidueSweeperTests.cs	-1,4 +1,5	import	KEEP	as above	byte-identical to candidate
+BusinessReferenceDataMongoResidueSweeperTests.cs	-7,7 +8,7	call-site	KEEP	27017 literal → helper; file stays on KnownPerRunDatabase and still matches it (guard replay)	byte-identical to candidate
+BusinessReferenceDataPublishOperationMongoTests.cs	-1,4 +1,5	import	KEEP	as above	byte-identical to candidate
+BusinessReferenceDataPublishOperationMongoTests.cs	-17,7 +18,7	call-site	KEEP	27017 literal → helper	byte-identical to candidate
+BusinessReferenceDataTenantAssignmentMongoTests.cs	-1,4 +1,5	import	KEEP	as above	byte-identical to candidate
+BusinessReferenceDataTenantAssignmentMongoTests.cs	-16,7 +17,7	call-site	KEEP	27017 literal → helper	byte-identical to candidate
+MongoIntegrationHarness.cs	-8,7 +8,7	comment	KEEP	comment named the dev port	byte-identical to candidate
+MongoIntegrationHarness.cs	-31,7 +31,7	constant	KEEP	public ConnectionString constant had no other user in the BASE-STACK tree (grep); replaced by the variable-name constant	byte-identical to candidate
+MongoIntegrationHarness.cs	-116,7 +116,7	call-site	KEEP	client from the fail-closed helper	byte-identical to candidate
+PlatformContainerValidationTests.cs	-5,6 +5,7	import	KEEP	MongoUrl for the local check	kept
+PlatformContainerValidationTests.cs	-163,7 +164,7	call-site	KEEP	27017 config value → lane URI	kept
+PlatformContainerValidationTests.cs	-186,6 +187,31	new-guard-method	FIX	candidate refused only protected ports; Q131a applies the full rule set of the shared helper (loopback host, no credentials, protected band) and never echoes the URI; project cannot reference the Application.Tests helper	rewritten local helper
+PlatformSchemaContractMongoTests.cs	-28,7 +28,6	constant	KEEP	27017 constant removed (file already imports the Persistence namespace)	byte-identical to candidate
+PlatformSchemaContractMongoTests.cs	-44,7 +43,7	call-site	KEEP	client from the fail-closed helper	byte-identical to candidate
+RabbitMqEventingIntegrationTests.cs	-345,11 +345,40	new-guard-method	FIX	candidate still read Eventing__MongoDb__ConnectionString / MongoDbSettings__ConnectionString; Q131a requires DITEN_PLATFORM_TEST_MONGO_URI only (one variable for every Platform test) plus loopback / no-credential rules; call-site part kept	rewritten local helper
+TenantLifecycleRabbitMqIntegrationTests.cs	-441,11 +441,40	new-guard-method	FIX	as RabbitMqEventingIntegrationTests.cs	rewritten local helper
+WorkflowTransitionGateMongoRepositoryTests.cs	-2,6 +2,7	import	KEEP	Persistence helper namespace	byte-identical to candidate
+WorkflowTransitionGateMongoRepositoryTests.cs	-112,7 +113,7	call-site	KEEP	env fallback to 27017 → fail-closed helper (MongoDbSettings__ConnectionString no longer read)	byte-identical to candidate
+PlatformMongoTestConnection.cs (UNTRACKED, new)	whole file	new-file	FIX	kept the name and the variable; added a pure Validate() (testable without the environment), loopback-host and no-credential checks, mongodb+srv refusal, invalid-URI message; messages never repeat the URI	rewritten
+PlatformMongoTestConnectionTests.cs (UNTRACKED, new)	whole file	new-file	FIX	candidate tests set/reset DITEN_PLATFORM_TEST_MONGO_URI in the process: races with the Mongo test classes xUnit runs in parallel (a class could read null or a 27017 value mid-run); rewritten as pure Validate() tests incl. default port and non-loopback cases	rewritten
+(candidate gap)	—	Capacity half	ADD	candidate did not touch the CapacityPlans 57192/rsmod192 literals (they are in the BASE-STACK tree, from A12-360 and Q117, not in the working tree)	CapacityTestMongo(.cs, Tests.cs) + 5 files
+(candidate gap)	—	Kit/CI	ADD	no slot-based variable source existed	scripts/test-env/mvp6-test-mongo-env.sh

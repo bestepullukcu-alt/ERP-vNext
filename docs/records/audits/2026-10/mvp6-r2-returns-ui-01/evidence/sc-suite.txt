@@ -1,0 +1,26 @@
+== build rc=0 seconds=4
+    0 Warning(s)
+    0 Error(s)
+== listed tests: 445
+== Shipments start 19:21:43
+== Shipments rc=0 seconds=10
+Passed!  - Failed:     0, Passed:    90, Skipped:     0, Total:    90, Duration: 8 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== Carriers start 19:21:53
+== Carriers rc=0 seconds=7
+Passed!  - Failed:     0, Passed:    36, Skipped:     0, Total:    36, Duration: 3 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== Loads start 19:22:00
+== Loads rc=0 seconds=51
+Passed!  - Failed:     0, Passed:    33, Skipped:     0, Total:    33, Duration: 47 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== Returns start 19:22:51
+== Returns rc=0 seconds=67
+Passed!  - Failed:     0, Passed:    78, Skipped:     0, Total:    78, Duration: 1 m 5 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== Claims start 19:23:58
+== Claims rc=1 seconds=3
+Failed!  - Failed:     1, Passed:   128, Skipped:     0, Total:   129, Duration: 1 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== SandopPlans start 19:24:01
+== SandopPlans rc=0 seconds=22
+Passed!  - Failed:     0, Passed:    19, Skipped:     0, Total:    19, Duration: 20 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== CapacityPlans start 19:24:23
+== CapacityPlans rc=0 seconds=132
+Passed!  - Failed:     0, Passed:    48, Skipped:     0, Total:    48, Duration: 2 m 10 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== end 19:26:35

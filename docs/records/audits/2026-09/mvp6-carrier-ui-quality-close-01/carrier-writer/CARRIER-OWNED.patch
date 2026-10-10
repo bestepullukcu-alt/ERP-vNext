@@ -1,0 +1,42 @@
+--- a/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js
++++ b/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js
+@@ -17,8 +17,12 @@
+     ];
+ 
+     const toPascalCase = (key) => key.charAt(0).toUpperCase() + key.slice(1);
++    const hasLocalizedValue = (dictionary, key) =>
++        Object.prototype.hasOwnProperty.call(dictionary, key)
++        && typeof dictionary[key] === 'string'
++        && dictionary[key].trim().length > 0;
+     const warnMissing = (dictionary) => requiredKeys.forEach((key) => {
+-        if (!dictionary[key] || dictionary[key] === key)
++        if (!hasLocalizedValue(dictionary, key))
+             console.warn(`[L10N WARNING] Missing localization key: ${key}`);
+     });
+ 
+--- a/frontend/Diten.Web.Tests/JavaScript/CarrierIndexBehaviorTests.cs
++++ b/frontend/Diten.Web.Tests/JavaScript/CarrierIndexBehaviorTests.cs
+@@ -6,6 +6,8 @@
+ {
+     private readonly string _script = File.ReadAllText(Path.Combine(
+         FindRepoRoot(), "frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.js"));
++    private readonly string _localizationScript = File.ReadAllText(Path.Combine(
++        FindRepoRoot(), "frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js"));
+ 
+     [Fact]
+     public void UsesSameOriginProxyAndNeverBuildsBrowserBearerOrServicePortRequest()
+@@ -54,6 +56,14 @@
+         Assert.Contains("['Active', 'Retired']", _script);
+     }
+ 
++    [Fact]
++    public void LocalizationWarningsUsePresenceAndNonEmptyValueInsteadOfComparingValueToKey()
++    {
++        Assert.Contains("Object.prototype.hasOwnProperty.call(dictionary, key)", _localizationScript);
++        Assert.Contains("dictionary[key].trim().length > 0", _localizationScript);
++        Assert.DoesNotContain("dictionary[key] === key", _localizationScript);
++    }
++
+     private static string FindRepoRoot()
+     {
+         var directory = new DirectoryInfo(AppContext.BaseDirectory);

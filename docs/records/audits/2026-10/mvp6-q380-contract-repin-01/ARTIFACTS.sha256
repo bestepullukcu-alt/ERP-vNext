@@ -1,0 +1,7 @@
+# verify from: /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-10/mvp6-q380-contract-repin-01 — run: shasum -a 256 -c ARTIFACTS.sha256
+9b53f9d5013648287ca30ec24537110308788e6f457d0cf6b0ce43a3d794b35a  ./REPORT.md
+3ed8edbd6823d310f812d1fbeb4542fa19ac63206c653df9695af47b6b4f9b48  ./evidence/compare-ops.py
+60ea6ab9ac504d59327e9d22d101823ece1e4bf77771e575828451658b05b9ce  ./evidence/compare-ops.txt
+64ed26be940e263cf7a1596ef3fea89c58b3a13c158255c8a10714e29c439fed  ./evidence/counts.tsv
+46164c7f457a5d888ed7e2b6d2d9c210413636e9c3156fb885ffc0a215df3b82  ./evidence/digests.txt
+d1b271c83f7687ecb2e3b0b342cdb3e5735f0425305ae914be8998eb5cb79829  ./evidence/repin.diff

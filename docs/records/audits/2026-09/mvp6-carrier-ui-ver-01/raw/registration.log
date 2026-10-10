@@ -1,0 +1,29 @@
+  Determining projects to restore...
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json. [/private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj]
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj (in 205 ms).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/Diten.BuildingBlocks.Eventing.csproj (in 205 ms).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj (in 205 ms).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj (in 258 ms).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj (in 150 ms).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj (in 277 ms).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj (in 277 ms).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj (in 263 ms).
+  1 of 9 projects are up-to-date for restore.
+  Diten.SupplyChainService.Domain -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Debug/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Debug/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Debug/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Debug/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Debug/net8.0/Diten.SupplyChainService.Infrastructure.dll
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/bin/Debug/net8.0/Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.SupplyChainService.Api -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll
+  Diten.SupplyChainService.Tests -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll
+Test run for /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /private/tmp/mvp6-carrier-ui-ver-01/raw/registration-ver.trx
+
+Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 66 ms - Diten.SupplyChainService.Tests.dll (net8.0)
