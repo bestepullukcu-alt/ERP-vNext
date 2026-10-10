@@ -8630,6 +8630,11 @@ Kardeş canlı ön koşulu (2026-10-09, stok ekibinin R-02 hatırlatması): ağ 
 
 Kapsam genişledi (2026-10-10, FU04 S5 ön koşul ölçümü): aynı iş `mdm.items.*` izinlerini de sağlar — Auth `DefaultRolePermissionTemplate` / `EntitlementOnlyViewerPermissions`'ta `mdm.items.*` yok (`:92-130`); paket §23 #7 "S5 ön koşulu". Ayrıca GSKU / LSKU / FG "stok davranışı düzenleme" eylemi bugün mevcut anahtarlarla (`mdm.gskus.update`, `mdm.finished-goods.create`, `mdm.lskus.create`) bağlı; kendi anahtarları Auth ürün kimliği profilinin tam-küme denetimiyle birlikte bu işte. Tek iş: Auth (şablon + Viewer + profil) + Platform izin listesi + MDM manifest.
 
+CT kararı (2026-10-10, Roller ölçümü üzerine): Auth'a MDM anahtarları TOHUMLA girmez; mevcut yol manifest → Platform kataloğu → Auth `/internal/permissions/sync`. Entitlement eşitlemesi yalnız modülün BEYAN ettiği anahtarları verir. Bu yüzden iş ikiye bölündü:
+- **BL-592 (Roller, `feature/auth/mdm-perms`):** Auth profili (6 kalem anahtarı hepsi-ya-hiçbiri; `mdm.product-master.read` tekil isteğe bağlı), Viewer'ın hak gerektiren okuma kümesine `mdm.items.read` + `mdm.product-master.read`, Platform izin listesi 37 → 38 + gerçek doğrulayıcı testi + post-deploy yapılandırma satırı. `mdm.items.reactivate` yok (yeniden etkinleştirme `submit`). Tohum yok.
+- **MDM manifest adımı (S4 ve stock-gate hatta birleştikten SONRA, tek küçük iş):** (1) `mdm.product-master.read` sayfasız API eylemi olarak beyan (`ACTIVATE_ROLLOUT` deseni; "enforced" listesine `ProductMasterController`); (2) BL-573 ikinci yarısı: `mdm.{gskus,lskus,finished-goods}.edit-stock-behaviour` beyan + kontrolcülerin bağlanması. S4 / S5b'ye eklenmedi: iki dal aynı manifest dosyasını değiştirse birleştirmede çakışırdı.
+- Stok ekibine "hazır" haberi manifest adımından SONRA gider. Gelecek regresyon riski: 🟡 adım unutulursa anahtar beyan edilmez, rol verimi sessizce boş kalır, stok ekibi canlıda 403 alır.
+
 Stok ekibine söz (2026-10-09, yazılı cevapları): iki ön koşul kapanıp CT yazılı haber verene kadar canlı bağ kurulmaz; stok yerel taklitle sürer. Kapanış haberinde izni **varsayılan olarak hangi rollerin aldığı** da yazılır (stok kullanıcı rollerini buna göre planlayacak). Rol seçimi canlı rol önerisiyle (`docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`) hizalanır.
 
 ---
