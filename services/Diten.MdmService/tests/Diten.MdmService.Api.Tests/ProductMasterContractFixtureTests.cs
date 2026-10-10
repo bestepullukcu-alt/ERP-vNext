@@ -6,7 +6,7 @@ namespace Diten.MdmService.Api.Tests;
 
 /// <summary>
 /// MOD-0290-FU04 S4 — the contract file the schema tests read. v1.1 is not on this branch: the YAML is copied byte for
-/// byte from the contract line (1.1.0-draft.15, 4adaf5420; provenance in Fixtures/.../SOURCE.txt) and
+/// byte from the contract line (1.1.0-draft.16, 5169220cf; provenance in Fixtures/.../SOURCE.txt) and
 /// pinned by SHA-256; the JSON next to it is its rendering (YAML → JSON, no edit) and is tied back to the YAML by every
 /// name it carries.
 /// <para>
@@ -18,8 +18,8 @@ namespace Diten.MdmService.Api.Tests;
 /// </summary>
 public sealed class ProductMasterContractFixtureTests
 {
-    public const string V11YamlSha256 = "be58c558cdb8834d437cd923b34492e3994a18dd9b32dd83d70433267dfd5455";
-    public const string V11JsonSha256 = "ea354155e8064fc71f9fe2f34f2053ac5bd5d15c3b130bd0e03ea08eba963c2d";
+    public const string V11YamlSha256 = "4f71022f804ac05fe3e37c3b0f05b8e57408dc5a540d1b5f9b70b515ad4a7db2";
+    public const string V11JsonSha256 = "1d5431a93a367e69c41f0f401e26d76284a2e175be44e052ba2571e457a304e2";
     public const string V10JsonSha256 = "9dec887b5b124acfa8d022df155789113fded5abc06e976b41366a1950182e8d";
     // The frozen v1.0 (the contract line's product-master-bundle.v1.0.openapi.yaml; measured byte-identical to the v1.0
     // file this branch carries). Copied too, so the test never reads outside its fixtures.
@@ -59,7 +59,7 @@ public sealed class ProductMasterContractFixtureTests
     {
         var yaml = File.ReadAllText(ProductMasterContractSchema.FixturePath(ProductMasterContractSchema.V11Yaml));
         var root = ProductMasterContractSchema.V11.Root;
-        Assert.Equal("1.1.0-draft.15", root.GetProperty("info").GetProperty("version").GetString());
+        Assert.Equal("1.1.0-draft.16", root.GetProperty("info").GetProperty("version").GetString());
         var names = new List<string>();
         foreach (var path in root.GetProperty("paths").EnumerateObject())
         {

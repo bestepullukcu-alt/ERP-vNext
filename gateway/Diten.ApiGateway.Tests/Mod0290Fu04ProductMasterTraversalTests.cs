@@ -85,10 +85,12 @@ public sealed class Mod0290Fu04ProductMasterTraversalTests(Xunit.Abstractions.IT
             .Single(x => (string?)x!["UpstreamPathTemplate"] == ShippedUpstreamTemplate)!.DeepClone().AsObject();
         productMaster["DownstreamHostAndPorts"] = new System.Text.Json.Nodes.JsonArray(
             new System.Text.Json.Nodes.JsonObject { ["Host"] = "127.0.0.1", ["Port"] = downstreamPort });
+        // S4 FIX4: the shipped GlobalConfiguration too, as it is (measured: BaseUrl only today) — a global setting added
+        // there is under this test the moment it ships.
         var route = new System.Text.Json.Nodes.JsonObject
         {
             ["Routes"] = new System.Text.Json.Nodes.JsonArray(productMaster),
-            ["GlobalConfiguration"] = new System.Text.Json.Nodes.JsonObject { ["BaseUrl"] = "http://127.0.0.1" }
+            ["GlobalConfiguration"] = shipped["GlobalConfiguration"]!.DeepClone()
         }.ToJsonString();
         builder.Configuration.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(route)));
         builder.Services.AddOcelot(builder.Configuration);

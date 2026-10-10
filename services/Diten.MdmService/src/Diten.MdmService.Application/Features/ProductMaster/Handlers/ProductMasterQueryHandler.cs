@@ -203,14 +203,15 @@ public sealed class ProductMasterQueryHandler :
             // S4 FIX3 (R1): an unreadable row keeps its place in the merged order (a placeholder: kind, id, its stored code
             // when readable), so the page window is cut over readable rows AND placeholders — the same rows every
             // request sees, no readable row slides out of every page, and past the last page is 200-empty. A placeholder
-            // is never answered: those inside this page's slice are dropped and logged. Stable order: the canonical code
-            // (ordinal; codes are unique per kind; an unreadable code first, as the store sorts it), then the kind.
+            // is never answered: those inside this page's slice are dropped and logged. Stable order, the store's: the
+            // code's BSON type bracket (S4 FIX4: missing / null / number < text < any other type), then the canonical code
+            // (ordinal; codes are unique per kind), then the kind.
             var slice = found.Rows
-                .Select(row => (row.Kind, row.CanonicalCode,
+                .Select(row => (Bracket: ProductMasterCodeBracket.Text, row.Kind, row.CanonicalCode,
                     Row: (ProductMasterStockableRow?)row, Skipped: (ProductMasterUnreadableRow?)null))
-                .Concat(found.Unreadable.Select(skipped => (skipped.Kind, skipped.CanonicalCode,
+                .Concat(found.Unreadable.Select(skipped => (Bracket: skipped.CodeBracket, skipped.Kind, skipped.CanonicalCode,
                     Row: (ProductMasterStockableRow?)null, Skipped: (ProductMasterUnreadableRow?)skipped)))
-                .OrderBy(x => x.CanonicalCode, StringComparer.Ordinal).ThenBy(x => x.Kind)
+                .OrderBy(x => x.Bracket).ThenBy(x => x.CanonicalCode, StringComparer.Ordinal).ThenBy(x => x.Kind)
                 .Skip((page - 1) * pageSize).Take(pageSize)
                 .ToArray();
             var pageRows = slice.Where(x => x.Row is not null).Select(x => (JsonNode?)StockableRow(x.Row!)).ToArray();

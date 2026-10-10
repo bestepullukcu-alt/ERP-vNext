@@ -151,7 +151,8 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
                 {
                     // A row the store cannot read is skipped and named (kind + id; the caller logs it); it is never
                     // answered half-read. A window with nothing readable is the caller's 503 (S4 FIX2 R1).
-                    unreadable.Add(new(kind, IdText(row), CodeText(row)));
+                    var (bracket, code) = CodePlace(row);
+                    unreadable.Add(new(kind, IdText(row), code, bracket));
                 }
             }
         }
@@ -173,11 +174,27 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
         return new(rows, total, unreadable);
     }
 
-    // The stored code of an unreadable row when it is a string (its sort position in the store); otherwise none.
-    private static string? CodeText(BsonValue row) =>
-        row is BsonDocument document && document.TryGetValue("CanonicalCode", out var code) && code is BsonString text
-            ? text.Value
-            : null;
+    // S4 FIX4: where the store's $sort on CanonicalCode put an unreadable row — BSON's type order: missing / null and
+    // numbers before text, text (by its value), then objects, arrays of those, binary, bool, dates. An array sorts by
+    // its smallest element (ascending); that is followed best-effort: its smallest string, else a number / null /
+    // empty array before text, else after it. Inside "before text" the store's own order (null < numbers) is not
+    // reproduced — such codes are never written by MDM, only by a damaged document.
+    private static (int Bracket, string? Code) CodePlace(BsonValue row)
+    {
+        if (row is not BsonDocument document || !document.TryGetValue("CanonicalCode", out var code))
+            return (ProductMasterCodeBracket.BeforeText, null);
+        return code switch
+        {
+            BsonString text => (ProductMasterCodeBracket.Text, text.Value),
+            BsonNull or BsonInt32 or BsonInt64 or BsonDouble or BsonDecimal128 => (ProductMasterCodeBracket.BeforeText, null),
+            BsonArray array when array.Count == 0
+                || array.Any(x => x is BsonNull or BsonInt32 or BsonInt64 or BsonDouble or BsonDecimal128)
+                => (ProductMasterCodeBracket.BeforeText, null),
+            BsonArray array when array.Any(x => x.IsString) =>
+                (ProductMasterCodeBracket.Text, array.Where(x => x.IsString).Select(x => x.AsString).Min(StringComparer.Ordinal)),
+            _ => (ProductMasterCodeBracket.AfterText, null)
+        };
+    }
 
     private static string IdText(BsonValue row)
     {

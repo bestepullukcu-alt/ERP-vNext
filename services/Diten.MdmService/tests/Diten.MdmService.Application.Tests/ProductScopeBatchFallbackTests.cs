@@ -47,6 +47,43 @@ public sealed class ProductScopeBatchFallbackTests
         Assert.Contains(ids.Except(broken), id => decisions[id].Allowed);
     }
 
+    // S4 FIX4: mixed policies in every group — group-wide, none, scoped to another legal entity, scoped to the subject's —
+    // so a product decided with another product's policy answers differently from the single path.
+    // The sabotage target "the group's id → policy mapping is shifted".
+    [Fact]
+    public async Task S4_FIX4_Mixed_policies_are_decided_per_product_in_the_group_fallback()
+    {
+        var tenant = new Tenant(Guid.NewGuid());
+        var subjectLegalEntity = Guid.NewGuid();
+        var ids = Enumerable.Range(0, 60).Select(_ => Guid.NewGuid()).ToArray();
+        ProductLegalEntityScopePolicy? PolicyOf(int i) => (i % 4) switch
+        {
+            0 => Policy(tenant.TenantId, ids[i], ProductLegalEntityScopeMode.GroupWide, []),
+            1 => null,
+            2 => Policy(tenant.TenantId, ids[i], ProductLegalEntityScopeMode.Scoped, [Guid.NewGuid()]),
+            _ => Policy(tenant.TenantId, ids[i], ProductLegalEntityScopeMode.Scoped, [subjectLegalEntity])
+        };
+        var policies = Enumerable.Range(0, ids.Length).Select(i => (ids[i], PolicyOf(i)))
+            .Where(x => x.Item2 is not null).ToDictionary(x => x.Item1, x => x.Item2!);
+        var store = new CountingPolicies(policies, [ids[5]]);
+        var guard = new ProductLegalEntityScopeConsumerGuard(null!, store, null!, tenant);
+        var context = Enforced(tenant.TenantId, subjectLegalEntity);
+
+        var decisions = await guard.EvaluateManyAsync(context, ids);
+
+        foreach (var id in ids)
+        {
+            var single = await guard.EvaluateAsync(context, id);
+            Assert.Equal((id, single.Allowed, single.Reason), (id, decisions[id].Allowed, decisions[id].Reason));
+        }
+        // Every group of 20 holds both answers, so a shifted mapping cannot agree by chance.
+        foreach (var group in ids.Chunk(ProductLegalEntityScopeConsumerGuard.FallbackGroupSize))
+        {
+            Assert.Contains(group, id => decisions[id].Allowed);
+            Assert.Contains(group, id => !decisions[id].Allowed);
+        }
+    }
+
     [Fact]
     public async Task S4_FIX3_A_readable_batch_is_one_read()
     {
@@ -59,20 +96,30 @@ public sealed class ProductScopeBatchFallbackTests
         Assert.Equal((1, 0), (store.BatchReads, store.SingleReads));
     }
 
-    private static ProductLegalEntityScopeConsumerContext Enforced(Guid tenantId)
+    private static ProductLegalEntityScopePolicy Policy(Guid tenantId, Guid product, ProductLegalEntityScopeMode mode, Guid[] legalEntities) =>
+        ProductLegalEntityScopePolicy.Create(tenantId, product, Guid.NewGuid(), mode, legalEntities, Guid.NewGuid(),
+            DateTimeOffset.UtcNow.AddMinutes(-1));
+
+    private static ProductLegalEntityScopeConsumerContext Enforced(Guid tenantId, Guid? subjectLegalEntity = null)
     {
         var rollout = ProductLegalEntityScopeRolloutState.CreatePreparation(tenantId, Guid.NewGuid(), Guid.NewGuid(),
             DateTimeOffset.UtcNow.AddMinutes(-1));
         rollout.Mode = ProductLegalEntityScopeRolloutMode.Enforced;
-        return new(tenantId, ProductLegalEntityScopeRolloutMode.Enforced, rollout, DateTimeOffset.UtcNow, [Guid.NewGuid()]);
+        return new(tenantId, ProductLegalEntityScopeRolloutMode.Enforced, rollout, DateTimeOffset.UtcNow,
+            [subjectLegalEntity ?? Guid.NewGuid()]);
     }
 
     // Every product has a group-wide policy; a "broken" one cannot be read (as the strict store throws on a bad document).
-    private sealed class CountingPolicies(Guid tenantId, IEnumerable<Guid> ids, HashSet<Guid> broken) : IProductLegalEntityScopePolicyRepository
+    private sealed class CountingPolicies(Dictionary<Guid, ProductLegalEntityScopePolicy> policies, HashSet<Guid> broken)
+        : IProductLegalEntityScopePolicyRepository
     {
-        private readonly Dictionary<Guid, ProductLegalEntityScopePolicy> _policies = ids.ToDictionary(id => id,
-            id => ProductLegalEntityScopePolicy.Create(tenantId, id, Guid.NewGuid(), ProductLegalEntityScopeMode.GroupWide, [],
-                Guid.NewGuid(), DateTimeOffset.UtcNow.AddMinutes(-1)));
+        // Every product group-wide (FIX3's shape).
+        public CountingPolicies(Guid tenantId, IEnumerable<Guid> ids, HashSet<Guid> broken)
+            : this(ids.ToDictionary(id => id, id => Policy(tenantId, id, ProductLegalEntityScopeMode.GroupWide, [])), broken)
+        {
+        }
+
+        private readonly Dictionary<Guid, ProductLegalEntityScopePolicy> _policies = policies;
 
         public int BatchReads { get; private set; }
         public int SingleReads { get; private set; }
@@ -92,7 +139,7 @@ public sealed class ProductScopeBatchFallbackTests
             BatchReads++;
             if (globalProductIds.Any(broken.Contains)) throw new FormatException("unreadable policy in the batch");
             return Task.FromResult<IReadOnlyDictionary<Guid, ProductLegalEntityScopePolicy>>(
-                globalProductIds.ToDictionary(id => id, id => _policies[id]));
+                globalProductIds.Where(_policies.ContainsKey).ToDictionary(id => id, id => _policies[id]));
         }
 
         public Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(Guid creationCommandId, CancellationToken cancellationToken = default) =>

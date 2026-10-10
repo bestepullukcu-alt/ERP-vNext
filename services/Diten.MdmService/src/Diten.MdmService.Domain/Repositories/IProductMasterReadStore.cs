@@ -81,4 +81,15 @@ public sealed record ProductMasterStockablePage(
 
 // S4 FIX3 (R1): an unreadable row keeps its place in the merged order (its stored code when that much is readable), so
 // the page window counts it like any other row and no readable row slides out of every page.
-public sealed record ProductMasterUnreadableRow(ProductMasterRowKind Kind, string Id, string? CanonicalCode = null);
+// S4 FIX4: its place is where the store's sort put it — CodeBracket follows BSON's type order (0: missing / null /
+// number, 1: text — every readable row, 2: object, array of those, binary, bool, date …), then CanonicalCode inside it.
+public sealed record ProductMasterUnreadableRow(
+    ProductMasterRowKind Kind, string Id, string? CanonicalCode = null, int CodeBracket = ProductMasterCodeBracket.Text);
+
+/// <summary>S4 FIX4 — the BSON type order of a stored canonical code, as the store's $sort places it.</summary>
+public static class ProductMasterCodeBracket
+{
+    public const int BeforeText = 0;
+    public const int Text = 1;
+    public const int AfterText = 2;
+}

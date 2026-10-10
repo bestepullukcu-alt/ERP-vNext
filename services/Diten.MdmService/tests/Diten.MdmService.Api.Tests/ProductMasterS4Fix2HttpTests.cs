@@ -115,10 +115,14 @@ public sealed partial class ProductMasterS4HttpTests
     // answers EXACTLY the rows the production rules say — every stored status × every completeness branch, under every
     // status filter. The oracle is the production code itself (ProductMasterContract.Status / *Stockable, i.e.
     // StockBehaviourRules.GskuIsComplete / FinishedGoodIsComplete / LskuEffectiveStockable), read over what the store holds.
-    [Fact]
-    public async Task S4_FIX2_R5_The_search_answers_exactly_what_the_production_rules_say()
+    // S4 FIX4: the Enforced scope branch too (the table's products in the subject's scope).
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task S4_FIX2_R5_The_search_answers_exactly_what_the_production_rules_say(bool enforced)
     {
-        await SeedRuleTableAsync();
+        var product = await SeedRuleTableAsync();
+        if (enforced) await EnforceScopeAsync(product);
         var items = await host.Database.GetCollection<Item>("mdm_items").Find(x => x.TenantId == _tenant).ToListAsync();
         var gskus = await host.Database.GetCollection<Gsku>("mdm_gskus").Find(x => x.TenantId == _tenant).ToListAsync();
         var lskus = await host.Database.GetCollection<Lsku>("mdm_lskus").Find(x => x.TenantId == _tenant).ToListAsync();
@@ -176,9 +180,9 @@ public sealed partial class ProductMasterS4HttpTests
             var body = await OkAsync(await Reader().GetAsync(
                 $"{Base}/stockable-items?pageSize=100&page={page}" + (status is null ? "" : $"&status={status}")),
                 "searchStockableItems");
-            var batch = body.GetProperty("items").EnumerateArray().ToArray();
-            foreach (var row in batch) rows[row.GetProperty("skuId").GetString()!] = row;
-            if (batch.Length < 100) break;
+            foreach (var row in body.GetProperty("items").EnumerateArray()) rows[row.GetProperty("skuId").GetString()!] = row;
+            // draft.16 (S4 FIX4): a short page is not the last one (an unreadable row is counted, not shown) — totalCount is.
+            if (page * 100L >= body.GetProperty("totalCount").GetInt64()) break;
         }
         return rows;
     }
@@ -191,16 +195,16 @@ public sealed partial class ProductMasterS4HttpTests
             var body = await OkAsync(await Reader().GetAsync(
                 $"{Base}/stockable-items?pageSize=100&page={page}" + (status is null ? "" : $"&status={status}")),
                 "searchStockableItems");
-            var batch = Ids(body);
-            ids.UnionWith(batch);
-            if (batch.Length < 100) break;
+            ids.UnionWith(Ids(body));
+            // draft.16 (S4 FIX4): a short page is not the last one — totalCount is.
+            if (page * 100L >= body.GetProperty("totalCount").GetInt64()) break;
         }
         return ids;
     }
 
     // Every branch of every rule, at every stored status. Parent GSKUs are varied too, since an LSKU / FG reads its
     // GSKU's fields (O-3 / O-14 / D-2).
-    private async Task SeedRuleTableAsync()
+    private async Task<Guid> SeedRuleTableAsync()
     {
         var (product, revision) = await SeedProductAsync();
         var productStatuses = Enum.GetValues<ProductIdentityLifecycleStatus>();
@@ -279,6 +283,7 @@ public sealed partial class ProductMasterS4HttpTests
         foreach (var kind in new ItemActivationKind?[] { null, ItemActivationKind.Activation, ItemActivationKind.Reactivation })
             await SeedItemAsync($"Rule item {stockable} {status} {kind}", stockable: stockable, status: status, activationKind: kind);
         Assert.NotEqual(Guid.Empty, product.Id);
+        return product.Id;
     }
 
     private Gsku RuleGsku(Guid revisionId, int pack, ProductIdentityLifecycleStatus status) => new()
