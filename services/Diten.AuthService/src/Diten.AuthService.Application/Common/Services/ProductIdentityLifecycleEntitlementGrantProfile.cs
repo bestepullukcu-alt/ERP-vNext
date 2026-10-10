@@ -41,6 +41,16 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string GskusEditStockBehaviour = "mdm.gskus.edit-stock-behaviour";
     public const string LskusEditStockBehaviour = "mdm.lskus.edit-stock-behaviour";
     public const string FinishedGoodsEditStockBehaviour = "mdm.finished-goods.edit-stock-behaviour";
+    // BL-592 (WP-MDM-PERMS-01): the item master keys MDM's ItemsController checks (measured on the CT line, FU04 S4 and
+    // S5: the same six; reactivation is gated by .submit — there is no .reactivate key) and the stock team's read
+    // contract (S4 ProductMasterContract.ReadPermission).
+    public const string ItemsRead = "mdm.items.read";
+    public const string ItemsCreate = "mdm.items.create";
+    public const string ItemsUpdate = "mdm.items.update";
+    public const string ItemsSubmit = "mdm.items.submit";
+    public const string ItemsDeactivate = "mdm.items.deactivate";
+    public const string ItemsRetire = "mdm.items.retire";
+    public const string ProductMasterRead = "mdm.product-master.read";
     public const string ProductIdentityLifecycleOperationRecover =
         DefaultRolePermissionTemplate.ProductIdentityLifecycleRecoveryPermission;
 
@@ -103,6 +113,33 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             GskusEditStockBehaviour,
             LskusEditStockBehaviour,
             FinishedGoodsEditStockBehaviour
+        };
+
+    /// <summary>
+    /// BL-592 (CT decision, the BL-573 pattern) — the item master keys are an ALL-OR-NOTHING optional set: today's
+    /// manifest declares none, FU04 S5's declares all six; one to five of them, or any other <c>mdm.items.*</c> key, is
+    /// refused. Generic keys (not dedicated-only): with the module's entitlement the tenant Admin receives all six and the
+    /// Viewer the read action only (<see cref="DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions"/>).
+    /// </summary>
+    public static readonly IReadOnlySet<string> ItemPermissionKeys =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            ItemsRead,
+            ItemsCreate,
+            ItemsUpdate,
+            ItemsSubmit,
+            ItemsDeactivate,
+            ItemsRetire
+        };
+
+    /// <summary>
+    /// BL-592 — the product-master read contract is an optional single key: declared or not; any other
+    /// <c>mdm.product-master.*</c> key is refused. Generic: Admin and (read action) Viewer receive it with the entitlement.
+    /// </summary>
+    public static readonly IReadOnlySet<string> ProductMasterPermissionKeys =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            ProductMasterRead
         };
 
     public static readonly IReadOnlySet<string> SharedDependencyKeys =
@@ -209,6 +246,12 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         return StockBehaviourPermissionKeys.All(declared.Contains) ? StockBehaviourPermissionKeys.ToList() : [];
     }
 
+    public static bool IsItemPermissionKey(string? permissionKey)
+        => !string.IsNullOrWhiteSpace(permissionKey) && ItemPermissionKeys.Contains(permissionKey);
+
+    public static bool IsProductMasterPermissionKey(string? permissionKey)
+        => !string.IsNullOrWhiteSpace(permissionKey) && ProductMasterPermissionKeys.Contains(permissionKey);
+
     public static bool IsBasePermissionKey(string? permissionKey)
         => !string.IsNullOrWhiteSpace(permissionKey) && BasePermissionKeys.Contains(permissionKey);
 
@@ -235,6 +278,12 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         var crossModuleDependencies = supplied
             .Where(IsDeclaredCrossModuleDependencyKey)
             .ToHashSet(StringComparer.Ordinal);
+        // BL-592: every key of the two resources, so an unknown action (mdm.items.reactivate, mdm.product-master.write) is
+        // a mismatch, not a key the rule never looked at.
+        var items = supplied.Where(key => key.StartsWith("mdm.items.", StringComparison.OrdinalIgnoreCase))
+            .ToHashSet(StringComparer.Ordinal);
+        var productMaster = supplied.Where(key => key.StartsWith("mdm.product-master.", StringComparison.OrdinalIgnoreCase))
+            .ToHashSet(StringComparer.Ordinal);
         var relevantCount = supplied.Count(key =>
             IsLifecycleCandidateKey(key)
             || IsBasePermissionKey(key)
@@ -244,6 +293,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         if (!lifecycle.SetEquals(PermissionKeys)
             // BL-573 (CT decision A): none of the three, or all three — never one or two.
             || (stockBehaviour.Count != 0 && !stockBehaviour.SetEquals(StockBehaviourPermissionKeys))
+            // BL-592: none of the six item keys, or all six — and the product-master read key alone, or nothing.
+            || (items.Count != 0 && !items.SetEquals(ItemPermissionKeys))
+            || (productMaster.Count != 0 && !productMaster.SetEquals(ProductMasterPermissionKeys))
             || !basePermissions.SetEquals(BasePermissionKeys)
             || !nonHumanPermissions.SetEquals(NonHumanPermissionKeys)
             || !crossModuleDependencies.SetEquals(DeclaredCrossModuleDependencyKeys)
@@ -257,7 +309,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             || supplied.Any(IsBrandModuleKey))
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle and one non-human recovery key — either without the three stock-behaviour edit keys or with exactly all three (mdm.gskus / mdm.lskus / mdm.finished-goods .edit-stock-behaviour) — with no Brand, Revision or product approve/reject key.");
+                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle and one non-human recovery key — either without the three stock-behaviour edit keys or with exactly all three (mdm.gskus / mdm.lskus / mdm.finished-goods .edit-stock-behaviour), either without the item keys or with exactly all six (mdm.items .read / .create / .update / .submit / .deactivate / .retire), and mdm.product-master.read alone or nothing of that resource — with no Brand, Revision or product approve/reject key.");
         }
     }
 
@@ -272,6 +324,8 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                      IsBasePermissionKey(permission.Key)
                      || IsOwnedPermissionKey(permission.Key)
                      || IsStockBehaviourPermissionKey(permission.Key)
+                     || IsItemPermissionKey(permission.Key)
+                     || IsProductMasterPermissionKey(permission.Key)
                      || IsNonHumanPermissionKey(permission.Key)))
         {
             var separator = permission.Key.LastIndexOf('.');

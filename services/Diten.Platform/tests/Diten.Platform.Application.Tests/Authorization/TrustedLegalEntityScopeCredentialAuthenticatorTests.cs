@@ -128,7 +128,7 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
                      "mdm.gskus.request-correction", "mdm.gskus.request-retirement", "mdm.gskus.retire" })
             options.Mdm.AllowedPairs.Add(new() { ModuleCode = "product-item-sku-master", PermissionKey = permission });
         Assert.Equal(28, options.Mdm.AllowedPairs.Select(p => (p.ModuleCode, p.PermissionKey)).Distinct().Count());
-        Assert.Equal(37, TrustedLegalEntityScopeCredentialAuthenticator.MaxAllowedPairs);
+        Assert.Equal(38, TrustedLegalEntityScopeCredentialAuthenticator.MaxAllowedPairs);
         var authenticator = Create(options);
         Assert.All(options.Mdm.AllowedPairs, p => Assert.True(authenticator.AllowsPair(p.ModuleCode, p.PermissionKey)));
         foreach (var permission in new[] { "mdm.global-products.submit", "mdm.lskus.retire", "mdm.finished-goods.submit" })
@@ -235,12 +235,41 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
             options.Mdm.AllowedPairs.Add(new() { ModuleCode = "product-item-sku-master", PermissionKey = permission });
 
         Assert.Equal(37, options.Mdm.AllowedPairs.Select(p => (p.ModuleCode, p.PermissionKey)).Distinct().Count());
-        Assert.Equal(37, TrustedLegalEntityScopeCredentialAuthenticator.MaxAllowedPairs);
+        Assert.Equal(38, TrustedLegalEntityScopeCredentialAuthenticator.MaxAllowedPairs);
         var authenticator = Create(options);
         Assert.True(authenticator.Authenticate("mdm", "active-secret", TrustedLegalEntityScopeCredentialAuthenticator.Audience).Authenticated);
         Assert.All(options.Mdm.AllowedPairs, p => Assert.True(authenticator.AllowsPair(p.ModuleCode, p.PermissionKey)));
         foreach (var rejected in new[] { "mdm.finished-goods.retire", "mdm.finished-goods.*", "mdm.finished-goods.update" })
             Assert.False(authenticator.AllowsPair("product-item-sku-master", rejected));
+    }
+
+    // BL-592 (WP-MDM-PERMS-01): the stock team's read contract. Against the REAL authenticator: the full 38-pair union
+    // (the 37 before + mdm.product-master.read) is a valid configuration and allows the new pair; a configuration that
+    // lists it is refused nowhere else; and the key is allowed only when configured, only for this module, exactly.
+    [Fact]
+    public void Exact_38_pair_union_adds_only_the_product_master_read_contract()
+    {
+        var options = Options();
+        foreach (var permission in new[] { "mdm.gskus.update", "mdm.gskus.submit", "mdm.gskus.withdraw",
+                     "mdm.gskus.request-correction", "mdm.gskus.request-retirement", "mdm.gskus.retire",
+                     "mdm.lskus.withdraw", "mdm.lskus.request-retirement", "mdm.lskus.submit", "mdm.lskus.retire",
+                     "mdm.finished-goods.submit", "mdm.finished-goods.cancel-draft", "mdm.finished-goods.withdraw",
+                     "mdm.finished-goods.request-retirement", "mdm.finished-goods.withdraw-retirement-request",
+                     "mdm.product-master.read" })
+            options.Mdm.AllowedPairs.Add(new() { ModuleCode = "product-item-sku-master", PermissionKey = permission });
+
+        Assert.Equal(38, options.Mdm.AllowedPairs.Select(p => (p.ModuleCode, p.PermissionKey)).Distinct().Count());
+        var authenticator = Create(options);
+        Assert.True(authenticator.Authenticate("mdm", "active-secret", TrustedLegalEntityScopeCredentialAuthenticator.Audience).Authenticated);
+        Assert.True(authenticator.AllowsPair("product-item-sku-master", "mdm.product-master.read"));
+        Assert.All(options.Mdm.AllowedPairs, p => Assert.True(authenticator.AllowsPair(p.ModuleCode, p.PermissionKey)));
+        foreach (var rejected in new[] { "mdm.product-master.write", "mdm.product-master.*", "MDM.PRODUCT-MASTER.READ",
+                     "mdm.items.read" })
+            Assert.False(authenticator.AllowsPair("product-item-sku-master", rejected));
+        Assert.False(authenticator.AllowsPair("brand-product-master", "mdm.product-master.read"));
+
+        // Not configured → not allowed, even though the code allowlists it (both layers must agree).
+        Assert.False(Create().AllowsPair("product-item-sku-master", "mdm.product-master.read"));
     }
 
     private static TrustedLegalEntityScopeCredentialAuthenticator Create(TrustedLegalEntityScopeCredentialOptions? options = null) =>

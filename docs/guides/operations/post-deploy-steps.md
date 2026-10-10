@@ -294,6 +294,23 @@ verir.
 **Belirti:** (1) kiracı açılışından sonra ilk yöneticinin e-postası gelmez ve Platform günlüğünde `INVITE_LINK_ROOT_…`.
 (2) Başlangıçta `IndexOptionsConflict` ya da kısmi filtre hatası.
 
+### 7 · BL-592 — Stok ekibinin ürün okuma sözleşmesi: Platform güvenilir kapsam çiftine `mdm.product-master.read`
+
+| | |
+|---|---|
+| **Modül** | MOD-0290-FU04 S4 okuma sözleşmesi (`/api/product-master/*`, MDM) → Platform güvenilir tüzel kişi kapsamı (WP-MDM-PERMS-01) |
+| **Ne zaman** | BL-592'yi taşıyan Platform deploy'unda; MDM'nin Enforced kapsam yayılımı açık her ortamda |
+| **Ne** | Platform yapılandırması `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` listesine bir çift: `ModuleCode = product-item-sku-master`, `PermissionKey = mdm.product-master.read`. Kod izin listesi bunu tanıyor (en çok 38 çift); yapılandırma depoda değil, her ortam kendisi verir. Sır değişmez, yalnız çift eklenir. |
+| **Yapılmazsa** | Enforced kiracıda okuma sözleşmesinin her ürün satırı 403 `LEGAL_ENTITY_SCOPE_FORBIDDEN` (kapalı başarısızlık, sızıntı yok). Kalem satırları etkilenmez (kalem uçları kapsam sormaz). |
+| **Kim** | Deploy operatörü (Platform yapılandırması) |
+
+**Kontrol:** liste 38'i aşmamalı ve her çift bir kez geçmeli; aksi hâlde Platform MDM kimlik bilgisini reddeder (bütün
+güvenilir kapsam soruları 403). Yeni çiftten sonra Enforced bir kiracıda `/api/product-master/…` bir ürün satırı döndürmeli.
+
+**Ön koşul (BL-592, CT kararı A):** anahtar Auth kataloğuna ve rollere yalnız manifest → Platform kataloğu → Auth
+eşitlemesi yoluyla girer. MDM manifestinin `mdm.product-master.read`'i beyan etmesi S4 ve stock-gate hatta birleştikten
+sonraki küçük MDM adımıdır. O adım yapılmadan stok ekibine "hazır" denmez.
+
 ---
 
 ## Tamamlananlar
