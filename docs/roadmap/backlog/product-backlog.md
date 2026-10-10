@@ -8511,7 +8511,7 @@ Gelecek regresyon riski: 🟡 bu servislerde kırılan test CI'da görünmez; te
 
 **S4 okuma sözleşmesi: okunamayan satır yer tutucusunun BSON tür sırası — MinKey / Symbol kolları ve tür başına teori testi eksik (FIX4 küçükleri)**
 
-DURUM: AÇIK · SAHİP: CT (MDM, product-master) · BULAN: FU04 S4 FIX4 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (MDM, product-master) · BULAN: FU04 S4 FIX4 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
 
 Ölçüm:
 - S4 FIX4 (`75c128b33`, hatta `717775d59`) yer tutucuyu deponun BSON tür sırasına göre diziyor: eksik / null / sayı, sonra dize, sonra diğer; diziler en küçük öğeyle (en iyi çaba).
@@ -8530,7 +8530,7 @@ Gelecek regresyon riski: 🟢 yalnız bozuk (tür dışı) kod alanında sayfa k
 
 **MDM kapsam yazımı: `A_replace_under_constant_lease_traffic_on_other_products_succeeds` makine yükünde kararsız**
 
-DURUM: AÇIK · SAHİP: CT (MDM kapsam, MOD-0021-FU02 hattı) · BULAN: CT S4 FIX4 sabotaj tabanı (2026-10-10) · KAYIT: 2026-10-10
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (MDM kapsam, MOD-0021-FU02 hattı) · BULAN: CT S4 FIX4 sabotaj tabanı (2026-10-10) · KAYIT: 2026-10-10
 
 Ölçüm:
 - `ProductLegalEntityScopeWriteAdmissionMongoTests.cs:387`. S4 FIX4 (`75c128b33`) sabotaj tabanında MDM Application 336 / 337: tek kırmızı bu test. Test S4 dosyası değil; kapsam yazımı FIX3 / FIX4'ten (hat).
@@ -8628,7 +8628,7 @@ Gelecek regresyon riski: 🟡 Mongo kesintisinde tüketiciler kodsuz 500 görür
 
 **Zaman Çizelgesi onay listesi deposunun kiracı süzgeci testle sabitlenmemiş (takeover kodu, savunma katmanı)**
 
-DURUM: AÇIK · SAHİP: CT (Zaman Çizelgesi) · BULAN: hat birleşmesi CT sabotajı M5 (2026-10-10) · KAYIT: 2026-10-10
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (Zaman Çizelgesi) · BULAN: hat birleşmesi CT sabotajı M5 (2026-10-10) · KAYIT: 2026-10-10
 
 Ölçüm:
 - `TimeEntryRepositories.ListSubmittedInApprovalAsync`'ten `ExecutionFilter` (TenantId + IsDeleted) kaldırıldığında 353 Zaman Çizelgesi testinin hepsi yeşil kaldı.
