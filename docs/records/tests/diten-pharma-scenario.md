@@ -114,7 +114,8 @@ Durum anahtarı: `[x]` sahip "Tamam" dedi · `[ ]` bekliyor · ⏳ kod henüz de
 - [ ] `is-stok-cevap-2` Push'tan sonra stok ekibine ikinci cevabı gönderin (kabul edilenler, üç çekince, R-12 beklentisi, bütün MVP'ler cevabı).
 - [ ] `is-crm-mesaj` CRM ekibine Marka değişiklikleri mesajını gönderin.
 - [ ] `is-qa-pozisyon` S2 kabul + dev yeniden başlatmadan SONRA: dev'de "QA Müdürü" pozisyonu (aktif, kalemi oluşturan OLMAYAN iki kişi), `ITEM-ACTIVATION` tanımı tek onay adımıyla yayımlanır, pozisyon kimliği CT'ye (yerel ayar dosyası). Ayrıntı: `docs/guides/operations/service-trust-chain-runbook.md` §11 (S2 dalı `b2bd59538`).
-- [ ] `is-canli-kalem-isci` Canlı kararı: kalem onayı canlıda açılsın mı; canlı QA Müdürü pozisyonu; kalem işçisi canlıda çalışsın mı (kapalıysa onaylanan kalem etkinleşmez; BL-536).
+- [x] `is-canli-kalem-isci` (2026-10-10, sahip: ilke olarak EVET) Canlıda kalem onayı açılacak ve kalem işçisi çalışacak. Canlı QA Müdürü pozisyonu ve canlı yapılandırma yazımı dağıtım günü ayrıca sorulur (canlıya her yazım ayrı 'evet'; BL-536).
+- [x] `is-driverjs-indir` (2026-10-10, sahip: EVET) Driver.js 1.8.0 (MIT, npm registry, ~156 KB) indirilir; integrity karşılaştırması + SHA testi; Hazır sohbetinde (UX-COMMON).
 - [ ] `is-canli-hesap` Canlı sorusunu cevaplayın: ekibiniz canlıda kiracı ekranlarına platform hesabıyla mı giriyor? (Evetse canlıda da sıradan yönetici hesabı önceden açılmalı.)
 - [ ] `is-rol-onerisi` Canlı rol önerisini inceleyin: 13 rol, görev ayrımı kuralları (kendi üretim, fason, satış). Dosya: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`. Hangi rollerin canlıda açılacağını söyleyin.
 - [ ] `is-ik-viewer` Canlı sorusu (güvenlik): canlıda İnsan Sermayesi modülü açık mı, "Viewer" rolü kimlerde? Açıksa Viewer ücret / yan hak ekranlarını görebiliyor (BL-581).
