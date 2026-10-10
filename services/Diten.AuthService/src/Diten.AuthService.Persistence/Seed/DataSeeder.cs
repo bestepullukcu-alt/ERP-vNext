@@ -6,6 +6,19 @@ using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence.Seed;
 
+/// <summary>
+/// Start-up seed of the AuthService catalog and of the development seed tenant (<c>00000000-…-0001</c>).
+/// <para>
+/// <b>Default roles of the seed tenant — WP-0018-ROLE1 (owner decision 2026-10-10).</b> SuperAdmin / Admin / Viewer get the default
+/// role template ONCE, on the start-up that creates them (<c>DefaultRoleProvisioningRule</c>, the same rule the runtime provisioning
+/// uses; one <c>default_role_provisioned</c> audit row each). Later start-ups do NOT complete these roles any more: a permission added
+/// to the catalog or to <c>DefaultRolePermissionTemplate</c> after the seed tenant exists is <b>granted by hand</b> in a development
+/// environment (role screen, or the role-permission API), exactly as in every other existing tenant. A fresh development database
+/// still starts with the whole template.
+/// </para>
+/// Not changed by WP-0018-ROLE1 (measured in its evidence, decisions CT / owner): the Admin self-service reconcile
+/// (<see cref="ReconcileTenantAdminSelfServiceGrantsAsync"/>) and the module / tenant-97c5 / entitled-module grant seeds below.
+/// </summary>
 public static class DataSeeder
 {
     private static readonly Guid DefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -1010,17 +1023,22 @@ public static class DataSeeder
         var permCol = database.GetCollection<Permission>("permissions");
         var rpCol = database.GetCollection<RolePermission>("rolePermissions");
 
+        // WP-0018-ROLE1 (owner decision 2026-10-10): the template reaches a seed-tenant role ONCE — on the start-up that creates
+        // the role (DefaultRoleProvisioningRule). Later start-ups leave the role as it is: a permission added to the catalog or
+        // the template after that is granted by hand in a development environment, like in every other tenant.
+        var auditCol = database.GetCollection<AuthAuditLog>("authAuditLogs");
+
         // SuperAdmin
-        var superAdmin = await EnsureRole(roleCol, "SuperAdmin", "Super Administrator", "All system permissions");
-        await AssignBaselineAsync(permCol, rpCol, superAdmin);
+        var (superAdmin, superAdminCreated) = await EnsureRole(roleCol, "SuperAdmin", "Super Administrator", "All system permissions");
+        await AssignBaselineAsync(permCol, rpCol, auditCol, superAdmin, superAdminCreated);
 
         // Admin
-        var admin = await EnsureRole(roleCol, "Admin", "Administrator", "Auth and MDM administration");
-        await AssignBaselineAsync(permCol, rpCol, admin);
+        var (admin, adminCreated) = await EnsureRole(roleCol, "Admin", "Administrator", "Auth and MDM administration");
+        await AssignBaselineAsync(permCol, rpCol, auditCol, admin, adminCreated);
 
         // Viewer
-        var viewer = await EnsureRole(roleCol, "Viewer", "Viewer", "Read-only permissions");
-        await AssignBaselineAsync(permCol, rpCol, viewer);
+        var (viewer, viewerCreated) = await EnsureRole(roleCol, "Viewer", "Viewer", "Read-only permissions");
+        await AssignBaselineAsync(permCol, rpCol, auditCol, viewer, viewerCreated);
 
         await AssignMod0251ModuleGrantsAsync(permCol, rpCol, admin, viewer);
         await AssignMod0251PlatformIntegrationGrantsAsync(permCol, rpCol, admin);
@@ -1122,38 +1140,59 @@ public static class DataSeeder
         }
     }
 
-    private static async Task<Role> EnsureRole(IMongoCollection<Role> col, string name, string display, string desc)
+    // WP-0018-ROLE1 — returns the seed tenant's role and whether THIS start-up created it. The insert is the decision: a second
+    // AuthService starting at the same moment hits uq_roles_tenant_name_active and reads the role back as not created.
+    private static async Task<(Role Role, bool Created)> EnsureRole(IMongoCollection<Role> col, string name, string display, string desc)
     {
         var roles = await col.Find(r => r.Name == name).ToListAsync();
         var role = roles.FirstOrDefault(r => r.TenantId == DefaultTenantId);
-        
-        if (role == null)
+        if (role != null) return (role, false);
+
+        role = new Role(name, display, desc, DefaultTenantId);
+        role.MarkAsSystem();
+        try
         {
-            role = new Role(name, display, desc, DefaultTenantId);
-            role.MarkAsSystem();
             await col.InsertOneAsync(role);
             Console.WriteLine($"Created role {name}");
+            return (role, true);
         }
-        return role;
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            var existing = await col.Find(r => r.Name == name && r.TenantId == DefaultTenantId && !r.IsDeleted).FirstAsync();
+            return (existing, false);
+        }
     }
 
-    // Baseline grant wiring for the default tenant. Uses the same shared template as the runtime
-    // RoleProvisioningService so the default-tenant seed and per-tenant provisioning never drift
-    // (OD-FE9-03 Option B). Grants are System-sourced and idempotent (existing pairs are skipped).
-    private static async Task AssignBaselineAsync(IMongoCollection<Permission> pCol, IMongoCollection<RolePermission> rpCol, Role role)
+    // Baseline grant wiring for the default tenant: the same shared template and the same once-only rule as the runtime
+    // RoleProvisioningService (DefaultRoleProvisioningRule), so the seed tenant and every provisioned tenant never drift.
+    // A role this start-up created gets the whole template (System source) and one audit row; an existing role gets nothing.
+    private static async Task AssignBaselineAsync(
+        IMongoCollection<Permission> pCol, IMongoCollection<RolePermission> rpCol, IMongoCollection<AuthAuditLog> auditCol, Role role, bool created)
     {
         var catalog = await pCol.Find(_ => true).ToListAsync();
-        var baseline = DefaultRolePermissionTemplate.SelectFor(role.Name, catalog);
-        if (baseline.Count == 0) return;
+        var baseline = DefaultRoleProvisioningRule.GrantsFor(role.Name, catalog, created);
 
-        var currentRPs = await rpCol.Find(rp => rp.RoleId == role.Id).ToListAsync();
-
-        foreach (var p in baseline)
+        var granted = 0;
+        if (baseline.Count > 0)
         {
-            if (!currentRPs.Any(rp => rp.PermissionId == p.Id))
+            var currentRPs = await rpCol.Find(rp => rp.RoleId == role.Id).ToListAsync();
+            foreach (var p in baseline)
             {
-                await rpCol.InsertOneAsync(RolePermission.SystemGrant(role.Id, p.Id, DefaultTenantId, SystemUser));
+                if (!currentRPs.Any(rp => rp.PermissionId == p.Id))
+                {
+                    await rpCol.InsertOneAsync(RolePermission.SystemGrant(role.Id, p.Id, DefaultTenantId, SystemUser));
+                    granted++;
+                }
             }
+        }
+
+        if (created)
+        {
+            var metadata = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                roleId = role.Id, roleName = role.Name, permissionCount = granted, trigger = DefaultRoleProvisioningTriggers.Seed, actorId = (string?)null
+            });
+            await auditCol.InsertOneAsync(new AuthAuditLog(DefaultRoleProvisioningRule.AuditEvent, Guid.Empty, DefaultTenantId, metadata));
         }
     }
 

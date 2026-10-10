@@ -539,7 +539,7 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
         var rolePermissions = sp.GetRequiredService<IRolePermissionRepository>();
         var sync = sp.GetRequiredService<IEntitlementPermissionSyncService>();
 
-        await sp.GetRequiredService<IRoleProvisioningService>().EnsureDefaultRolesAsync(tenantId, CancellationToken.None);
+        await sp.GetRequiredService<IRoleProvisioningService>().EnsureDefaultRolesAsync(tenantId, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
         var adminRole = await roles.GetByNameAndTenantAsync(DefaultRolePermissionTemplate.AdminRole, tenantId, CancellationToken.None)
             ?? throw new InvalidOperationException("provisioning created no Admin role");
         var viewerRole = await roles.GetByNameAndTenantAsync(DefaultRolePermissionTemplate.ViewerRole, tenantId, CancellationToken.None)
