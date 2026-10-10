@@ -16,7 +16,7 @@ info:
     satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
     tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
     kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
-  version: 1.1.0-draft.15
+  version: 1.1.0-draft.16
   x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
@@ -95,6 +95,9 @@ info:
     - date: "2026-10-10"
       version: 1.1.0-draft.15
       note: "IU kabul edildi (WP-PLT-ITEM-LISTS-02): birim notu `CodeStandard` (`IU` LOCAL, diğerleri UNECE_REC20), `IU`'nun kendi boyutu (`BIOLOGICAL_ACTIVITY`, kütleden türetilmez) ve liste sürümü `ITEM-UNIVERSAL-V2` ile güncellendi. Şema değişmedi."
+    - date: "2026-10-10"
+      version: 1.1.0-draft.16
+      note: "S4 FIX3 incelemesi: okunamayan kayıt gösterilmediği için kısa sayfa son sayfa değildir; tüketici `totalCount`'a göre sayfalar. Şema değişmedi."
 servers:
   - url: /api/product-master
 security:
@@ -428,7 +431,7 @@ paths:
     get:
       operationId: searchStockableItems
       summary: "v1.1 — Stoklanabilir kalem / SKU araması (sayfalı)"
-      description: "Yalnız `stockable: true` kayıtlar döner; varsayılan olarak bütün seviyeler (Item, Gsku, Lsku, FinishedGood) aynı biçimde (`StockableItemRef`). `q`: kod ön eki YA DA adın içinde geçen metin; ordinal, büyük / küçük harf duyarsız, aksan katlaması yok; boş `q` serbesttir (süzme yok). `materialType` verilirse yalnız Item satırları döner. `status` verilmezse Retired dışındaki bütün durumlar döner; seçici ekranlar `status=Active` gönderir. Sıra: `canonicalCode` (ordinal, artan) — sayfalar arasında kararlı. `pageSize` > 100, `q` > 200 karakter ya da bilinmeyen enum değeri → 400. Arama penceresi (draft.12): `page × pageSize` en çok 1000; aşan istek → 400 `INVALID_PARAMETER` (daha derin sonuç için `q` / süzgeç daraltılır). Pencere içinde son sayfanın ötesi → 200 ve boş `items`. `q` baştan / sondan kırpılır; yalnız boşluk = süzgeç yok. `q` içinde kontrol karakteri (U+0000–U+001F ve U+007F–U+009F) → 400 `INVALID_PARAMETER` (draft.13 / draft.14). `totalCount` eşleşen kayıt sayısıdır (draft.14): okunamayan (bozuk) bir kayıt sayıya dahildir ama sayfada gösterilmez ve sunucu günlüğüne yazılır; bu yüzden görünen satır toplamı nadiren `totalCount`'tan az olabilir. Sayfada yalnız okunamayan kayıt varsa 503 `PRODUCT_MASTER_UNAVAILABLE`. Ürün satırları sunucunun çözdüğü tüzel kişi kapsamıyla, kalem satırları kiracı genelinde süzülür. Stoğun geçici 'Model A seçici' rotası (W-UI-01) bu uçla kalkar."
+      description: "Yalnız `stockable: true` kayıtlar döner; varsayılan olarak bütün seviyeler (Item, Gsku, Lsku, FinishedGood) aynı biçimde (`StockableItemRef`). `q`: kod ön eki YA DA adın içinde geçen metin; ordinal, büyük / küçük harf duyarsız, aksan katlaması yok; boş `q` serbesttir (süzme yok). `materialType` verilirse yalnız Item satırları döner. `status` verilmezse Retired dışındaki bütün durumlar döner; seçici ekranlar `status=Active` gönderir. Sıra: `canonicalCode` (ordinal, artan) — sayfalar arasında kararlı. `pageSize` > 100, `q` > 200 karakter ya da bilinmeyen enum değeri → 400. Arama penceresi (draft.12): `page × pageSize` en çok 1000; aşan istek → 400 `INVALID_PARAMETER` (daha derin sonuç için `q` / süzgeç daraltılır). Pencere içinde son sayfanın ötesi → 200 ve boş `items`. `q` baştan / sondan kırpılır; yalnız boşluk = süzgeç yok. `q` içinde kontrol karakteri (U+0000–U+001F ve U+007F–U+009F) → 400 `INVALID_PARAMETER` (draft.13 / draft.14). `totalCount` eşleşen kayıt sayısıdır (draft.14): okunamayan (bozuk) bir kayıt sayıya dahildir ama sayfada gösterilmez ve sunucu günlüğüne yazılır; bu yüzden görünen satır toplamı nadiren `totalCount`'tan az olabilir. Sayfada yalnız okunamayan kayıt varsa 503 `PRODUCT_MASTER_UNAVAILABLE`. Bu yüzden `pageSize`'tan kısa bir sayfa son sayfa demek DEĞİLDİR: tüketici sayfalamayı `totalCount`'a göre bitirir (draft.16). Ürün satırları sunucunun çözdüğü tüzel kişi kapsamıyla, kalem satırları kiracı genelinde süzülür. Stoğun geçici 'Model A seçici' rotası (W-UI-01) bu uçla kalkar."
       parameters:
         - { name: q, in: query, required: false, schema: { type: string, maxLength: 200 }, description: "kod ön eki ya da ad içinde geçen metin" }
         - { name: skuLevel, in: query, required: false, schema: { $ref: '#/components/schemas/SkuLevel' } }
