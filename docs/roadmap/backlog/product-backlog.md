@@ -8684,6 +8684,11 @@ Yapılacak:
 - (a) Sahip: test artığı DB'lerin silinmesine karar (dev verisi değil; ad desenleri listelenir, onaylı tek komut).
 - (b) CT kuralı: test fikstürlerinin varsayılanı `localhost:27017` OLMASIN; boş URI → test adlı atlama ya da kırmızı, ortak Mongo'ya asla bağlanmaz. Ölç ve iş aç.
 
+Ek ölçüm (2026-10-10, BL-598 + BL-604):
+- MDM Application Mongo testleri (`ProductScopeMongoScope` ve kardeşleri) varsayılan olarak ORTAK `localhost:27017` + `*_itest` veritabanlarını kullanıyor. 79 test veritabanının kaynağı bu; her yerel MDM App koşusu ortak dev Mongo'ya yazıyor.
+- HCM `EmployeeDraftSessionRepositoryMongoTests` de ortak 27017'ye bağlanıyor (BL-604).
+- Yapılacak: Auth deseni (`DITEN_TEST_MONGOD` → teste ait mongod; değişken verilmiş ama geçersizse kırmızı); CI'da mdm-app satırı aynı yolu kullanır. MDM için CT işi; HCM için sahibine (XMC-001).
+
 Gelecek regresyon riski: 🟡 bir sonraki boş URI ortak dev verisine yazabilir.
 
 ---
