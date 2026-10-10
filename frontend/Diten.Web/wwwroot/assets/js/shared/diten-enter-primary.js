@@ -23,6 +23,20 @@
  *   · focus on a button, link, checkbox, radio, file or select: those keep their own Enter;
  *   · a handler earlier in the chain already took the key (`defaultPrevented`).
  *
+ * ── CONSEQUENTIAL ACTIONS: `data-dt-primary="chord"` (UX-COMMON-FIX1, CT decision) ──────────────────────────
+ * A primary action that cannot be taken back — publish, approve, reject, submit / send, delete, end, retire,
+ * deactivate, delegate — is marked `data-dt-primary="chord"`: a bare Enter does NOTHING there (and no native form
+ * submission either); Ctrl+Enter (Cmd+Enter) runs it. Bare Enter stays for reversible work: save a draft, create,
+ * edit a record, filter, search. tests/diten-enter-primary.test.js derives which panels must be chord-marked from the
+ * primary button's label (its consequential-word list) and fails on an unmarked one.
+ *
+ * ── ONE PRESS, ONE ACTION ─────────────────────────────────────────────────────────────────────────────────
+ *   · a field with a `list` (datalist) keeps Enter — some browsers commit a suggestion with it;
+ *   · after this script clicks a primary, the same panel's primary is not clicked again for a short moment (two
+ *     quick Enters are one save, even where the page's own handler has no busy lock);
+ *   · "a picker is open" is read in the CAPTURE phase, BEFORE the field's own handlers run: an `allowInput` flatpickr
+ *     commits the typed date and closes its calendar on Enter, and reading the state afterwards saw it closed.
+ *
  * Esc is NOT handled here: Bootstrap's offcanvas already closes on Esc (keyboard: true, no panel overrides it) and
  * no panel asks about unsaved changes today — measured in the UX-COMMON report.
  */
@@ -41,6 +55,10 @@
         '.aa-Panel'
     ].join(', ');
 
+    const IN_FLIGHT_MS = 800;
+    const lastClick = new WeakMap();      // panel → time this script last clicked its primary
+    const pickerAtStart = new WeakMap();  // event → "a picker was open when the key went down" (capture phase)
+
     const isDisabled = (button) => !!(button.disabled
         || button.classList.contains('disabled')
         || button.getAttribute('aria-disabled') === 'true');
@@ -55,7 +73,9 @@
         if (marked.length === 1) { return marked[0]; }
         if (marked.length > 1) { return null; }
         if (!panel.querySelector(FIELD_SELECTOR)) { return null; }
-        const candidates = panel.querySelectorAll('button.btn-primary, input[type="submit"].btn-primary');
+        // UX-COMMON-FIX1 — an unmarked candidate hidden right now (d-none, an inactive tab, a hidden step) is not it.
+        const candidates = Array.from(panel.querySelectorAll('button.btn-primary, input[type="submit"].btn-primary'))
+            .filter(shown);
         return candidates.length === 1 ? candidates[0] : null;
     };
 
@@ -65,6 +85,7 @@
         if (target.tagName === 'TEXTAREA') { return 'multi'; }
         if (target.tagName === 'INPUT') {
             const type = (target.getAttribute('type') || 'text').toLowerCase();
+            if (target.hasAttribute('list')) { return null; } // a datalist field: Enter may commit a suggestion
             return SINGLE_LINE_TYPES.test(type) ? 'single' : null;
         }
         return null;
@@ -73,6 +94,12 @@
     const pickerOpen = (target) => {
         if (target.getAttribute('aria-expanded') === 'true') { return true; }
         return !!doc.querySelector(OPEN_PICKER_SELECTOR);
+    };
+
+    // Capture phase on window: the FIRST stop of the key, before the field's own handlers (flatpickr's included).
+    const onKeydownCapture = (event) => {
+        if (event.key !== 'Enter' || !event.target || event.target.nodeType !== 1) { return; }
+        pickerAtStart.set(event, pickerOpen(event.target));
     };
 
     const onKeydown = (event) => {
@@ -87,13 +114,17 @@
         const chord = event.ctrlKey || event.metaKey;
         if (kind === 'multi' && !chord) { return; }      // a new line in the description
         if (kind === 'single' && event.altKey) { return; }
-        if (pickerOpen(target)) { return; }
+        if (pickerAtStart.get(event) || pickerOpen(target)) { return; }
 
         const primary = primaryOf(panel);
         if (!primary) { return; }
         // From here the key is ours either way: a disabled button means "not now", never a native form submit.
         event.preventDefault();
         if (isDisabled(primary)) { return; }
+        if (primary.getAttribute('data-dt-primary') === 'chord' && !chord) { return; } // consequential: Ctrl+Enter only
+        const now = Date.now();
+        if (now - (lastClick.get(panel) || 0) < IN_FLIGHT_MS) { return; }
+        lastClick.set(panel, now);
         primary.click();
     };
 
@@ -104,10 +135,14 @@
     // (WorkCenterNext's subtask / comment inputs, CRM's qualifier inputs) handles it on the field or on `document`
     // and calls preventDefault — which this listener, running after them, respects. Registering on `document`
     // instead would put the layout's listener BEFORE every page's (layout scripts load first).
+    global.addEventListener('keydown', onKeydownCapture, true);
     global.addEventListener('keydown', onKeydown);
 
     global.DitenEnterPrimary = {
         primaryOf,
-        __uninstall: () => global.removeEventListener('keydown', onKeydown)
+        __uninstall: () => {
+            global.removeEventListener('keydown', onKeydownCapture, true);
+            global.removeEventListener('keydown', onKeydown);
+        }
     };
 })(typeof window !== 'undefined' ? window : globalThis);

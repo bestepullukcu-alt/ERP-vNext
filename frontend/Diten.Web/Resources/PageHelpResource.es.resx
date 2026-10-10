@@ -162,12 +162,6 @@
   <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
     <value>Abra una fila para leer la semana y elija Aprobar, o Devolver con un motivo para que se corrija.</value>
   </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
-    <value>Aprobar varias</value>
-  </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
-    <value>Marque las semanas que no requieren comentarios y use Aprobar seleccionadas para aprobarlas juntas.</value>
-  </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
     <value>Gestione a quienes pueden iniciar sesión en su inquilino: invítelos, edite sus datos y decida si su cuenta está activa. La usan los administradores; desactivar, eliminar o restablecer surte efecto al instante.</value>
   </data>

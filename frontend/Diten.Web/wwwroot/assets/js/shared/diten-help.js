@@ -85,6 +85,9 @@
         const panel = panelEl();
         if (!panel) { return false; }
         fillShortcuts(panel);
+        // UX-COMMON-FIX1 — the side-panel Enter hint only where the page HAS a side panel (an offcanvas other than this).
+        const hint = panel.querySelector('[data-diten-help-enter-hint]');
+        if (hint) { hint.hidden = !doc.querySelector(`.offcanvas:not(#${PANEL_ID})`); }
         const tour = panel.querySelector('[data-diten-help-tour]');
         if (tour) { tour.hidden = !tourAvailable(pageCode()); }
         const instance = offcanvasOf(panel);

@@ -162,12 +162,6 @@
   <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
     <value>Откройте строку, чтобы просмотреть неделю, затем выберите «Утвердить» или «Вернуть» с указанием причины для исправления.</value>
   </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
-    <value>Утвердить несколько</value>
-  </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
-    <value>Отметьте недели без замечаний и нажмите «Утвердить выбранные», чтобы утвердить их вместе.</value>
-  </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
     <value>Управляйте всеми, кто может входить в ваш арендатор: приглашайте пользователей, меняйте их данные, включайте и отключайте учётные записи. Для администраторов; отключение, удаление и сброс пароля действуют сразу.</value>
   </data>

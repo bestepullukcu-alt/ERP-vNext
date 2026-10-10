@@ -28,8 +28,9 @@
         WORKCENTER: { version: 1, targets: ['wcn-tabs', 'wcn-search', 'wcn-list', 'wcn-row-actions', 'wcn-new'] },
         // /TimeEntry — enter time → submit the week. Marks in Views/TimeEntry/Index.cshtml.
         MYTIMESHEET: { version: 1, targets: ['te-week', 'te-add-row', 'te-grid', 'te-submit'] },
-        // /TimeEntry/Approvals — the approver: open a week → approve / return; approve several. Marks in its Index.cshtml.
-        TIMEAPPROVALS: { version: 1, targets: ['ta-header', 'ta-list', 'ta-list'] }
+        // /TimeEntry/Approvals — the approver: open a week → approve / return. Marks in its Index.cshtml. (FIX1: two
+        // steps; a third that pointed at the same list again was dropped — one target, one step.)
+        TIMEAPPROVALS: { version: 2, targets: ['ta-header', 'ta-list'] }
     };
 
     Object.keys(CATALOG).forEach((code) => {

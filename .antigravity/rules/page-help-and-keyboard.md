@@ -13,13 +13,19 @@
 
 **Her sayfa "?" yardım panelinde kendi metnini taşır ya da borç defterinde adıyla durur.**
 
-**Her yan panelde Enter birincil işlemi çalıştırır.**
+**Her yan panelde Enter birincil işlemi çalıştırır; geri alınamaz işlem yalnız Ctrl / Cmd + Enter ile çalışır.**
+
+⚠ **İki kabukta, FROZEN `_Layout`'ta değil.** Yardım düğmesi, Enter kuralı ve kısayol katmanı
+`_LayoutTenantShell` ile `_LayoutPlatformAdmin`'dedir. `Layout =` taşımayıp dondurulmuş `_Layout`'a düşen görünümlerde
+(ölçüm 2026-10-10: 99 görünüm — ESBP 52, WorkCenter 18, MG 12, DEM 7, DemandIdeas 5, Shared 3, diğer 2) hiçbiri **yok**;
+o görünümler borç defterinde ayrı bölümde, "yardım gösterilemez" diye adıyla durur. "Her sayfada" bu iki kabuk demektir.
 
 **Klavye kısayolları ortak katmana kaydedilir; sayfa kendi `keydown` dinleyicisini yazmaz.**
 
 ## 2. "?" yardım paneli (BL-495)
 
-Üst çubukta, her sayfada aynı yerde tek bir düğme vardır (`_PageHelpButton.cshtml`). Düğme dar ekranda da görünür.
+Üst çubukta, iki kabuğun her sayfasında aynı yerde tek bir düğme vardır (`_PageHelpButton.cshtml`). Düğme dar ekranda da
+görünür.
 `?` tuşu da aynı paneli açar (`_PageHelpPanel.cshtml`, `assets/js/shared/diten-help.js`).
 
 **Panel dört şey gösterir:**
@@ -54,9 +60,13 @@ biçimindedir: büyük harf, yalnız harf ve rakam.
 `docs/roadmap/backlog/page-help-ledger.md` metni olmayan sayfaları listeler. Bekçisi
 `frontend/Diten.Web/tests/page-help-ledger.test.js`'tir.
 
+- Sayfa kümesi **üretimden türetilir**: menü / Ctrl+K kodları (`Nav.Page.*`) ∪ modül manifestlerinin sayfa kodları
+  (menüde görünmeyen alt sayfalar dahil) ∪ FROZEN `_Layout`'a düşen görünümler.
 - Metni olmayan ve defterde de olmayan sayfa = kırmızı.
 - Metni yazılmış ama defterde kalmış sayfa = kırmızı.
-- Satır sayısı tavanı aşarsa kırmızı. **Defter yalnız küçülür.**
+- Satır sayısı, **defterin kendi başlığındaki** tavanı aşarsa kırmızı. **Defter yalnız küçülür.** Tavanı yükseltmek defter
+  belgesini değiştirmek demektir ve PR farkında görünür; test bir önceki sürümün tavanını göremez (öneri: CI'da
+  `git diff` ile tavan sayıları azalmadıysa kırmızı).
 - **Yeni sayfa metniyle gelir; deftere satır eklenmez.**
 
 ## 3. Enter = birincil işlem (BL-586)
@@ -73,6 +83,14 @@ tıklamakla aynı şeydir: sayfanın kendi kaydetme işleyicisi, doğrulaması v
 
 Kaydet düğmesi `.btn-primary` değilse (ör. `btn-warning` "Sonlandır") **`data-dt-primary` zorunludur**.
 
+**Sonuçlu (geri alınamaz) işlem: `data-dt-primary="chord"`** (UX-COMMON-FIX1, CT kararı). Yayımla, onayla, reddet,
+gönder, sil, bitir / sonlandır, emekliye ayır, devre dışı bırak, devret, statü değiştir, ayır (rezerve et), kanıt kaydet.
+Böyle bir panelde **çıplak Enter hiçbir şey yapmaz** (doğal form gönderimi de olmaz); **Ctrl+Enter** (macOS'ta ⌘+Enter)
+çalıştırır. Çıplak Enter yalnız geri alınabilir işler içindir: taslak kaydet, oluştur, düzenle, süz, ara. Etiketi
+sonuçlu bir sözcük taşıyan birincil düğme `chord` işaretli olmak zorundadır (bekçi testi); etiketi yalnız "Kaydet" olan
+sonuçlu paneller (iş akışı görev işlemi, abonelik işlemi) işareti açıkça taşır. 70 panelin sınıflandırması:
+`ux-common-fix1-report.md` (2026-10-10): enter 52 · chord 13 · yok 3 · karar CT 2 (geçici `chord`).
+
 **İstisnalar:**
 
 | durum | davranış |
@@ -84,9 +102,13 @@ Kaydet düğmesi `.btn-primary` değilse (ör. `btn-warning` "Sonlandır") **`da
 | basılı tutulan tuş (`repeat`) | yok sayılır |
 | düğme, bağlantı, onay kutusu, select üzerinde Enter | o öğenin kendi davranışı |
 | sayfa Enter'a kendi anlamını vermiş (`preventDefault`) | sayfanınki geçerlidir |
+| `list` özniteliği olan alan (datalist) | alanın kendi davranışı (öneri seçimi) |
+| aynı panelde art arda iki Enter (kısa süre) | tek tıklama |
+| birincil düğme şu an gizli (`d-none`, `[hidden]`, etkin olmayan sekme / adım) | birincil sayılmaz |
 
 Dinleyici `window` üzerinde, kabarcık aşamasındadır. Bu sayede alan ya da `document` üzerindeki sayfa işleyicileri
-ondan önce çalışır.
+ondan önce çalışır. "Seçici açık mı" bilgisi ise **capture** aşamasında, alanın kendi işleyicilerinden ÖNCE alınır:
+`allowInput` bir flatpickr Enter'da tarihi işleyip takvimi kapatır; sonradan bakan, kapalı takvim görür ve kaydederdi.
 
 **Esc** Bootstrap'ın kendi davranışıdır: panel kapanır.
 
@@ -105,8 +127,9 @@ birincil düğmesi okunamayan panel ya listede gerekçesiyle durur ya da kırmı
 
 **Kütüphane.**
 
-- Driver.js (MIT) kullanılır; **tek sabit sürüm** `wwwroot/assets/vendor/libs/driverjs/` altındadır, LICENSE dosyası
-  yanında. SHA-256'sı testte kayıtlıdır.
+- Driver.js (MIT) kullanılır; **tek sabit sürüm** `wwwroot/assets/vendor/libs/driverjs/` altına, LICENSE dosyası
+  yanında konur ve SHA-256'sı testte kaydedilir — **sahip onayından sonra** (2026-10-10 itibarıyla dosya yok, indirme
+  sahip onayı bekliyor). O güne kadar ara katman her yerde "tur yok" der, hata vermez.
 - CDN ve ağ yükleme yoktur.
 - Shepherd.js (v14+, ticari) ve Intro.js (AGPL / ticari) **yasaktır**.
 
@@ -150,5 +173,6 @@ Modül turunun sahip kontrol listesine üç satır eklenir: **Enter** kaydeder, 
 ## 7. Neden
 
 - Yardım metni sayfayla birlikte yazılmazsa hiç yazılmaz. Defter bu açığı görünür tutar ve yalnız küçülmesine izin verir.
-- Enter'ı her sayfa ayrı yazarsa 64 yan panelde 64 ayrı istisna çıkar. Tek dinleyici hepsine aynı klavyeyi verir.
+- Enter'ı her sayfa ayrı yazarsa 70 yan panelde (ölçüm: form alanı olan offcanvas blokları, 2026-10-10) 70 ayrı istisna
+  çıkar. Tek dinleyici hepsine aynı klavyeyi verir.
 - Kütüphane tek dosyanın arkasındadır; değiştirmek ya da kaldırmak tek dosyalık iştir.

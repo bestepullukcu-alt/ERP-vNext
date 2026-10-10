@@ -76,6 +76,18 @@ public sealed class PageHelpShellTests(WebApplicationFactory<Program> factory) :
     }
 
     [Fact]
+    public async Task A_platform_admin_page_is_coded_by_its_view_folder_in_the_platform_shell()
+    {
+        // U2 — the platform admin layout hands the help partials ForPlatformView(ViewContext.View.Path).
+        var page = await LayoutRenderer.RenderAsync(factory, "/Views/Platform/DomainManagement/Index.cshtml",
+            "DomainManagement", "platform.domains.read");
+
+        Assert.Contains("data-shell=\"platform-admin\"", page);
+        Assert.Contains("data-page-code=\"PLATFORMDOMAINMANAGEMENT\"", page);
+        Assert.Contains("id=\"diten-help-toggle\"", page);
+    }
+
+    [Fact]
     public async Task The_unauthorized_face_draws_no_help_button_and_no_help_panel()
     {
         var denied = await LayoutRenderer.RenderAsync(factory, View, "Lskus", "mdm.lskus.create",

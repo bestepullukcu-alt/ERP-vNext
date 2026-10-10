@@ -11136,9 +11136,13 @@
         const root = event.target.closest('#wcnApp');
         if (!root && !event.target.closest('.wcn-bulkbar')) { /* still allow bulkbar inside app */ }
 
-        // The toolbar's keyboard button — the same list `?` opens (WP-UI-SHORTCUTS-01).
+        // The toolbar's keyboard button — the same panel `?` opens (UX-COMMON-FIX1: the page help panel, which carries
+        // the shortcut list; the bare list only where the shell drew no panel).
         if (event.target.closest('[data-wcn-shortcuts]')) {
-            if (global.DitenShortcuts) { global.DitenShortcuts.open(); }
+            const help = global.DitenHelp;
+            if (!(help && typeof help.open === 'function' && help.open()) && global.DitenShortcuts) {
+                global.DitenShortcuts.open();
+            }
             return;
         }
 

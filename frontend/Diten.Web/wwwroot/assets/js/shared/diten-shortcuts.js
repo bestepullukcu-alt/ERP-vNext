@@ -27,7 +27,8 @@
  *   · focus is in an input, a textarea, a select or anything contenteditable;
  *   · a Bootstrap modal or offcanvas is open, or a SweetAlert is on screen — the key belongs to that layer;
  *   · Ctrl, Cmd or Alt is held — those chords belong to the browser and the OS.
- * `?` is the one exception: it opens the list from anywhere except a form field (where it is a character). Where the
+ * `?` is the one exception to the modifier rule: it opens the list from anywhere except a form field (where it is a
+ * character) and except over an open modal / offcanvas / alert (UX-COMMON-FIX1 — it would open behind it). Where the
  * shell draws the page help panel (WP-UX-COMMON-01), `?` opens that panel instead — it carries the same list.
  *
  * ── CONFLICTS ARE LOUD ─────────────────────────────────────────────────────────────────────────────────────
@@ -167,6 +168,9 @@
         const key = normalizeKey(event.key);
         if (isFormField(event.target)) { return; }
         if (key === LIST_KEY) {
+            // UX-COMMON-FIX1 — not over an open modal, offcanvas or alert: the help panel would open BEHIND it (or stack a
+            // second offcanvas on an edit panel). The layer that is open owns the key.
+            if (overlayOpen()) { return; }
             event.preventDefault();
             // WP-UX-COMMON-01 — where the shell draws the page help panel, `?` opens THAT (it lists these same
             // shortcuts, beside what the page is for); elsewhere it still opens the list on its own.

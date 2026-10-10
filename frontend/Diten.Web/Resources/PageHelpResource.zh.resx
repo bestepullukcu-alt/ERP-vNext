@@ -162,12 +162,6 @@
   <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
     <value>打开某一行查看该周工时，然后选择批准，或填写原因后退回以便更正。</value>
   </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
-    <value>批量批准</value>
-  </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
-    <value>勾选无需备注的周，然后使用批准所选一并批准。</value>
-  </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
     <value>管理可以登录您租户的所有人员：邀请用户、编辑其信息，并决定每个账户是否启用。该页面供管理员使用，禁用、删除或重置密码会立即生效。</value>
   </data>

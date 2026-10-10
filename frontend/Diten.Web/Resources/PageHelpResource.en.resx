@@ -162,12 +162,6 @@
   <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
     <value>Open a row to read the week, then choose Approve, or Return with a reason so it can be corrected.</value>
   </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
-    <value>Approve several</value>
-  </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
-    <value>Tick the weeks that need no comment and use Approve selected to approve them together.</value>
-  </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
     <value>Manage everyone who can sign in to your tenant: invite users, edit their details and decide whether each account is active. Administrators use it; disabling, deleting or a password reset takes effect at once.</value>
   </data>

@@ -66,6 +66,12 @@ describe("the tour catalog", () => {
     expect(tours.WORKCENTER.targets.length).toBeLessThanOrEqual(8);
   });
 
+  test("within a tour every step has its own target (one target, one step)", () => {
+    Object.entries(catalog()).forEach(([code, tour]) => {
+      expect(new Set(tour.targets).size, code).toBe(tour.targets.length);
+    });
+  });
+
   test("the view that owns each code says so (the panel and the tour agree on the code even without the menu)", () => {
     expect(read("Views", "WorkCenterNext", "Index.cshtml")).toContain('ViewData["PageCode"] = "WORKCENTER"');
     expect(read(...STATIC_PAGES.MYTIMESHEET)).toContain('ViewData["PageCode"] = "MYTIMESHEET"');

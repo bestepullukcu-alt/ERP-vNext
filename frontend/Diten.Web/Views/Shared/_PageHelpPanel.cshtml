@@ -66,7 +66,8 @@
                 <h6 class="diten-help-heading">@Help["Help.Panel.ShortcutsHeading"]</h6>
                 <div data-diten-help-shortcut-list></div>
             </section>
-            <p class="diten-help-note">@Help["Help.Panel.EnterHint"]</p>
+            @* Shown only where the page has a side panel (diten-help.js measures it); elsewhere the hint is noise. *@
+            <p class="diten-help-note" data-diten-help-enter-hint>@Help["Help.Panel.EnterHint"]</p>
             <div class="diten-help-tour" data-diten-help-tour hidden>
                 <button type="button" class="btn btn-primary" data-diten-help-start-tour>@Help["Help.Panel.StartTour"]</button>
             </div>

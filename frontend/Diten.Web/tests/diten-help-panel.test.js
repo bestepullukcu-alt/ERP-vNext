@@ -70,6 +70,7 @@ const PANEL = `
   <div class="offcanvas offcanvas-end diten-help-panel" id="diten-help-panel" data-page-code="USERS">
     <div class="offcanvas-body">
       <section data-diten-help-shortcuts hidden><div data-diten-help-shortcut-list></div></section>
+      <p data-diten-help-enter-hint>Enter saves in a side panel</p>
       <div data-diten-help-tour hidden><button type="button" data-diten-help-start-tour>Start</button></div>
     </div>
   </div>`;
@@ -145,6 +146,22 @@ describe("diten-help.js", () => {
     expect(window.DitenHelp.startTour()).toBe(false);
     expect(errors).not.toHaveBeenCalled();
     errors.mockRestore();
+  });
+
+  it("the side-panel Enter hint shows only where the page has a side panel", () => {
+    boot();
+    window.DitenHelp.open();
+    expect(document.querySelector("[data-diten-help-enter-hint]").hidden, "a page with no side panel shows the hint").toBe(true);
+    document.body.insertAdjacentHTML("beforeend", '<div class="offcanvas offcanvas-end" id="offcanvasCreateEdit"></div>');
+    window.DitenHelp.open();
+    expect(document.querySelector("[data-diten-help-enter-hint]").hidden).toBe(false);
+  });
+
+  it("`?` over an open edit panel does not stack the help panel on it", () => {
+    boot();
+    document.body.insertAdjacentHTML("beforeend", '<div class="offcanvas offcanvas-end show" id="offcanvasCreateEdit"></div>');
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "?", bubbles: true, cancelable: true }));
+    expect(shown).toEqual([]);
   });
 
   it("with no panel on the page (unauthorized face), open() answers false and `?` falls back to the list", () => {

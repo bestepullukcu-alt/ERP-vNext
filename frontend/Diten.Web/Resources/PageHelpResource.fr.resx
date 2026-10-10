@@ -162,12 +162,6 @@
   <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
     <value>Ouvrez une ligne pour lire la semaine, puis choisissez Approuver, ou Renvoyer avec un motif pour qu'elle soit corrigée.</value>
   </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
-    <value>Approuver plusieurs</value>
-  </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
-    <value>Cochez les semaines sans remarque et utilisez Approuver la sélection pour les approuver ensemble.</value>
-  </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
     <value>Gérez les personnes qui peuvent se connecter à votre locataire : invitez-les, modifiez leurs données, activez ou non leur compte. Réservée aux administrateurs ; désactiver, supprimer ou réinitialiser agit aussitôt.</value>
   </data>

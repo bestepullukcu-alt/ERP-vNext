@@ -162,12 +162,6 @@
   <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
     <value>افتح صفًا لقراءة الأسبوع، ثم اختر اعتماد، أو إعادة مع ذكر السبب ليتم تصحيحه.</value>
   </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
-    <value>اعتماد عدة أسابيع</value>
-  </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
-    <value>حدّد الأسابيع التي لا تحتاج إلى ملاحظات واستخدم اعتماد المحدد لاعتمادها معًا.</value>
-  </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
     <value>أدِر كل من يمكنه تسجيل الدخول إلى المستأجر: ادعُ المستخدمين وعدّل بياناتهم وحدّد ما إذا كان كل حساب نشطًا. يستخدمها المسؤولون، ويسري التعطيل أو الحذف أو إعادة تعيين كلمة المرور فورًا.</value>
   </data>

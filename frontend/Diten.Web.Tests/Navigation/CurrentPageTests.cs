@@ -18,6 +18,7 @@ public sealed class CurrentPageTests
         ("TASKCREATE", "/Tasks/Create"),
         ("users", "/Governance/Users"),
         ("ROLE_PERMISSIONS", "/Governance/RolePermissions"),
+        ("BOARD", "/Board?view=kanban#top"),
         ("BROKEN", null),
         ("EXTERNAL", "https://example.test/Tasks")
     ];
@@ -29,6 +30,7 @@ public sealed class CurrentPageTests
     [InlineData("/Tasks/0b7e/Edit", "TASKS")]
     [InlineData("/Governance/Users", "USERS")]
     [InlineData("/Governance/RolePermissions", "ROLEPERMISSIONS")]
+    [InlineData("/Board", "BOARD")]        // U6 — a route carrying a query / fragment still matches its path
     public void The_longest_route_on_a_segment_boundary_wins_and_the_code_is_normalized(string path, string expected)
     {
         Assert.Equal(expected, CurrentPage.Match(path, Menu));

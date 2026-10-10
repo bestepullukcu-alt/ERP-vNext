@@ -87,10 +87,14 @@ describe("BL-586: where Enter is NOT save", () => {
   });
 
   test("textarea: Ctrl+Enter and Cmd+Enter save", () => {
+    let now = 1000000;
+    vi.spyOn(Date, "now").mockImplementation(() => now);
     const clicks = panel(`<textarea id="desc"></textarea>${SAVE}`);
     press(document.getElementById("desc"), { ctrlKey: true });
+    now += 5000; // past the one-press-one-action window
     press(document.getElementById("desc"), { metaKey: true });
     expect(clicks).toEqual(["save", "save"]);
+    vi.restoreAllMocks();
   });
 
   test("a disabled primary button: nothing is clicked (no double submission), and no native submit either", () => {
@@ -151,6 +155,115 @@ describe("BL-586: where Enter is NOT save", () => {
       document.removeEventListener("keydown", own);
     }
     expect(clicks).toEqual([]);
+  });
+});
+
+describe("UX-COMMON-FIX1: consequential actions, one press one action, pickers read before their own handlers", () => {
+  const CHORD = '<button type="button" id="publish" class="btn btn-primary" data-dt-primary="chord">Publish</button>';
+
+  test("a chord-marked primary: bare Enter does nothing (and no native submit); Ctrl+Enter clicks it once", () => {
+    const clicks = panel(`<input id="n" type="text">${CHORD}`);
+    const bare = press(document.getElementById("n"));
+    expect(clicks, "a bare Enter published").toEqual([]);
+    expect(bare.defaultPrevented, "a bare Enter fell through to a native form submission").toBe(true);
+    press(document.getElementById("n"), { ctrlKey: true });
+    expect(clicks).toEqual(["publish"]);
+  });
+
+  test("a chord-marked primary: Cmd+Enter (macOS) clicks it too", () => {
+    const clicks = panel(`<input id="n" type="text">${CHORD}`);
+    press(document.getElementById("n"), { metaKey: true });
+    expect(clicks).toEqual(["publish"]);
+  });
+
+  test("a field with a datalist keeps Enter (it may commit a suggestion)", () => {
+    const clicks = panel(`<input id="n" type="text" list="opts"><datalist id="opts"><option value="a"></option></datalist>${SAVE}`);
+    const event = press(document.getElementById("n"));
+    expect(clicks).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  test("two quick Enters are ONE click (no double POST where the page has no busy lock)", () => {
+    const clicks = panel(`<input id="n" type="text">${SAVE}`);
+    press(document.getElementById("n"));
+    press(document.getElementById("n"));
+    expect(clicks).toEqual(["save"]);
+  });
+
+  test("an open allowInput flatpickr: Enter commits the date and closes the calendar — the panel does NOT save", () => {
+    global.self = global.self || window;
+    loadScript("wwwroot/assets/vendor/libs/flatpickr/flatpickr.js");
+    const clicks = panel(`<input id="due" type="text">${SAVE}`);
+    const due = document.getElementById("due");
+    const fp = window.flatpickr(due, { dateFormat: "Y-m-d", allowInput: true });
+    due.focus();
+    fp.open();
+    expect(fp.isOpen).toBe(true);
+    due.value = "2026-10-20";
+    due.dispatchEvent(new Event("input", { bubbles: true }));
+    press(due, { keyCode: 13 }); // flatpickr reads keyCode
+
+    expect(fp.isOpen, "flatpickr did not handle its Enter").toBe(false);
+    expect(due.value).toBe("2026-10-20");
+    expect(clicks, "the panel saved while the reader was choosing a date").toEqual([]);
+    fp.destroy();
+  });
+
+  test("an unmarked .btn-primary that is hidden right now (d-none, [hidden], an inactive tab) is not the primary", () => {
+    const clicks = panel(`<input id="n" type="text">
+      <div class="d-none"><button type="button" id="hiddenSave" class="btn btn-primary">Save</button></div>
+      <div hidden><button type="button" id="hiddenSave2" class="btn btn-primary">Save</button></div>
+      <button type="button" id="save" class="btn btn-primary">Save</button>`);
+    press(document.getElementById("n"));
+    expect(clicks).toEqual(["save"]);
+  });
+
+  test("the only .btn-primary hidden in an inactive step: nothing is clicked", () => {
+    const clicks = panel(`<input id="n" type="text"><div class="d-none"><button type="button" id="save" class="btn btn-primary">Save</button></div>`);
+    press(document.getElementById("n"));
+    expect(clicks).toEqual([]);
+  });
+
+  test.each(["email", "number", "search", "tel", "url", "password", "date", "time"])(
+    "U3: Enter in an <input type=%s> runs the primary", (type) => {
+      const clicks = panel(`<input id="n" type="${type}">${SAVE}`);
+      press(document.getElementById("n"));
+      expect(clicks).toEqual(["save"]);
+    });
+
+  test("U4a: a primary disabled ONLY by the .disabled class is not clicked", () => {
+    const clicks = panel(`<input id="n" type="text"><button type="button" id="save" class="btn btn-primary disabled">Save</button>`);
+    press(document.getElementById("n"));
+    expect(clicks).toEqual([]);
+  });
+
+  test("U4b: a primary disabled ONLY by aria-disabled is not clicked", () => {
+    const clicks = panel(`<input id="n" type="text"><button type="button" id="save" class="btn btn-primary" aria-disabled="true">Save</button>`);
+    press(document.getElementById("n"));
+    expect(clicks).toEqual([]);
+  });
+
+  test.each([
+    ["the autocomplete panel (.aa-Panel)", '<div class="aa-Panel"></div>'],
+    ["a jQuery UI autocomplete list", '<ul class="ui-autocomplete"></ul>']
+  ])("an open %s keeps Enter", (_label, markup) => {
+    const clicks = panel(`<input id="n" type="text">${SAVE}${markup}`);
+    press(document.getElementById("n"));
+    expect(clicks).toEqual([]);
+  });
+
+  test("a closed jQuery UI autocomplete (display: none) does not hold Enter", () => {
+    const clicks = panel(`<input id="n" type="text">${SAVE}<ul class="ui-autocomplete" style="display: none"></ul>`);
+    press(document.getElementById("n"));
+    expect(clicks).toEqual(["save"]);
+  });
+
+  test("a panel still sliding in (.offcanvas.showing) is answered", () => {
+    document.body.innerHTML = `<div class="offcanvas offcanvas-end showing" id="p"><input id="n" type="text">${SAVE}</div>`;
+    const clicks = [];
+    document.getElementById("save").addEventListener("click", () => clicks.push("save"));
+    press(document.getElementById("n"));
+    expect(clicks).toEqual(["save"]);
   });
 });
 
@@ -222,6 +335,65 @@ describe("BL-586: every side panel with fields names its primary action", () => 
   test("a panel the rule cannot read is listed with its reason; the list only shrinks", () => {
     const unreadable = [...new Set(withFields.filter((b) => !readable(b.body)).map((b) => b.file))].sort();
     expect(unreadable).toEqual(Object.keys(UNRECOGNIZED_PANELS).sort());
+  });
+
+  /*
+   * UX-COMMON-FIX1 (CT decision) — a primary whose label says it cannot be taken back must be chord-marked
+   * (`data-dt-primary="chord"`: bare Enter does nothing, Ctrl / Cmd + Enter runs it). The words were measured from
+   * the 70 panels' primary labels (resource key and English text); generic verbs that also name reversible work
+   * (Run, Apply, Upload, Request, Record, Post) are left out — those panels carry the mark explicitly instead.
+   */
+  const CONSEQUENTIAL = /\b(Publish|Approve|Reject|Submit|Send|Confirm|End|Terminate|Retire|Deactivate|Delete|Delegate|Withdraw|Cancel|Suspend|Amend|Escalat\w*|Transition|Evidence|Reserve|Snapshot)/;
+  const splitWords = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
+  // A consequential-sounding label on a reversible save, by name and reason. The list only shrinks.
+  const NOT_CONSEQUENTIAL = {
+    "EnterpriseStrategyBusinessPerformance/Components/Planning/_PlanningCycleOffcanvas.cshtml":
+      "hard-coded English 'Submit' on a plain create / update save of a planning cycle; FROZEN _Layout (no Enter rule there)",
+    "EnterpriseStrategyBusinessPerformance/Components/Planning/_StrategyPeriodOffcanvas.cshtml":
+      "hard-coded English 'Submit' on a plain create / update save of a strategy period; FROZEN _Layout"
+  };
+  const primaryMarkup = (body) => {
+    const marked = [...body.matchAll(/<button\b[^>]*data-dt-primary[^>]*>([\s\S]*?)<\/button>/g)];
+    if (marked.length) { return marked.map((m) => m[0]); }
+    const primaries = [...body.matchAll(/<button\b[^>]*class="[^"]*\bbtn-primary\b[^"]*"[^>]*>([\s\S]*?)<\/button>/g)];
+    return primaries.length === 1 ? [primaries[0][0]] : [];
+  };
+
+  test("a primary whose label is consequential is chord-marked (Ctrl+Enter), or named as an exception", () => {
+    const unmarked = [];
+    withFields.forEach((block) => {
+      if (NOT_CONSEQUENTIAL[block.file]) { return; }
+      primaryMarkup(block.body).forEach((button) => {
+        const label = splitWords(button.replace(/<button\b[^>]*>/, ""));
+        if (CONSEQUENTIAL.test(label) && !/data-dt-primary="chord"/.test(button)) {
+          unmarked.push(`${block.file}:${block.line} ${label.replace(/\s+/g, " ").trim()}`);
+        }
+      });
+    });
+    expect(unmarked).toEqual([]);
+  });
+
+  test("the measured consequential panels carry the chord mark (incl. those whose label is just 'Save')", () => {
+    const chord = (file, id) => withFields.filter((b) => b.file === file)
+      .some((b) => new RegExp(`id="${id}"[^>]*data-dt-primary="chord"|data-dt-primary="chord"[^>]*id="${id}"`).test(b.body));
+    [
+      ["Platform/Workflow/Index.cshtml", "wf-publish-submit"],
+      ["Platform/Workflow/Tasks.cshtml", "wf-taskaction-submit"],
+      ["Platform/Workflow/Escalations.cshtml", "wf-esc-run"],
+      ["CRM/VisitExecution/Index.cshtml", "ve-submit-report"],
+      ["CRM/VisitExecution/Index.cshtml", "ve-amend-report"],
+      ["CRM/Accounts/_ContactLinkEndOffcanvas.cshtml", "btnConfirmEndContactLink"],
+      ["CRM/Accounts/_RelationshipEndOffcanvas.cshtml", "btnConfirmEndRelationship"],
+      ["CRM/Campaigns/_SnapshotPanel.cshtml", "submitSnapshot"],
+      ["CRM/TerritoryManagement/_AccountAssignments.cshtml", "apply-selected-button"],
+      ["DocumentManagement/ControlledDocuments/VersionHistory.cshtml", "btnSubmitVersion"],
+      ["DocumentManagement/MasterRegister/Details.cshtml", "lifecycleModalSubmit"],
+      ["DocumentManagement/MasterRegister/Details.cshtml", "approvalEvidenceSubmit"],
+      ["MDM/ProductAbbreviationRegister/_CreateEditOffcanvas.cshtml", "btnRequestAbbreviation"],
+      // "karar CT" (one Save, a reversible or an irreversible act by mode): chord until CT decides.
+      ["MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml", "btnSaveGsku"],
+      ["Platform/Tenants/Details.cshtml", "btnSubmitSubscriptionAction"]
+    ].forEach(([file, id]) => expect(chord(file, id), `${file} #${id}`).toBe(true));
   });
 
   test("the panels that save with a non-primary colour carry the mark", () => {

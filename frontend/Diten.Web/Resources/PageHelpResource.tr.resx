@@ -162,12 +162,6 @@
   <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
     <value>Haftayı okumak için bir satırı açın; ardından Onayla'yı ya da düzeltilmesi için gerekçesiyle Geri gönder'i seçin.</value>
   </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
-    <value>Toplu onay</value>
-  </data>
-  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
-    <value>Açıklama gerektirmeyen haftaları işaretleyin ve birlikte onaylamak için Seçilenleri onayla'yı kullanın.</value>
-  </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
     <value>Kiracınızda oturum açabilen herkesi yönetin: kullanıcı davet edin, bilgilerini düzenleyin, hesabın aktif olup olmadığına karar verin. Yöneticiler kullanır; devre dışı bırakma, silme ve parola sıfırlama hemen geçerlidir.</value>
   </data>

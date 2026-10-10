@@ -86,6 +86,16 @@ describe("DitenTour with a library", () => {
     expect(calls[1]).toBe("drive");
   });
 
+  it("U5: the button and progress texts are escaped too", () => {
+    boot({ strings: { "Tour.Previous": "<b>Back</b>", "Tour.Done": "<i>Done</i>", "Tour.Progress": "<u>1</u>" } });
+    fakeLibrary();
+    window.DitenTour.register("T", { version: 1, steps: STEPS });
+    window.DitenTour.start("T");
+    expect(calls[0].prevBtnText).toBe("&lt;b&gt;Back&lt;/b&gt;");
+    expect(calls[0].doneBtnText).toBe("&lt;i&gt;Done&lt;/i&gt;");
+    expect(calls[0].progressText).toBe("&lt;u&gt;1&lt;/u&gt;");
+  });
+
   it("a missing string shows its key, not an empty bubble", () => {
     boot();
     fakeLibrary();
