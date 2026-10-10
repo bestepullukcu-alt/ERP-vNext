@@ -30,6 +30,13 @@ namespace TenantArchitecture.ArchitectureTests;
  * And scripts/check_trx_no_skipped.py is run on fixture TRX files: 0 skipped → 0; a skipped test → 1 and its name;
  * no file → 1; malformed XML → 1; a file without results → 1.
  *
+ * FIX1 (WP-CI-SERVICE-TESTS-03): EVERY file under .github/workflows — only the named ones may exist; each has exactly one
+ * top-level `permissions: contents: read` and none below it; no pull_request_target / workflow_run / issue_comment; no
+ * `secrets` outside comments; every action at its ONE commit in ActionPins (also a `uses:` value on the next line); no
+ * continue-on-error, no job-level if:, no step-level if: on the test / gates / mongod install steps; the mongod variables
+ * never overridden by an env: key; phase1's build lines (in run_phase1_gates.sh) match the out-of-solution projects both
+ * ways; every live-broker test class runs in LiveRabbitMqCollection.
+ *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
  */
 public class CiServiceTestsGuardTests
@@ -68,11 +75,14 @@ public class CiServiceTestsGuardTests
     // WP-CI-SERVICE-TESTS-03 (CT decision b): phase1 builds each service's solution and runs no service test. A test
     // project outside its solution (e3d3a7331 broke Platform.Eventing.Tests, unseen) must be built by its own phase1 step
     // — build only: its tests need a broker / an owned mongod and run in service-tests.yml.
+    // FIX1: the build lines live in scripts/run_phase1_gates.sh (a local gates run = CI) and the rule is two-way — every
+    // project outside its solution has exactly its build line, and a build line for a project that is IN its solution
+    // (or gone) is red too, so moving a project into the solution means removing its line.
     [Fact]
     public void Every_service_test_project_outside_its_solution_is_built_by_phase1()
     {
         var root = RepoRoot();
-        var phase1 = File.ReadAllText(Path.Combine(root, ".github", "workflows", "phase1-gates.yml")).Replace("\r\n", "\n");
+        var gates = File.ReadAllText(Path.Combine(root, "scripts", "run_phase1_gates.sh")).Replace("\r\n", "\n");
         var outside = new List<string>();
         foreach (var dir in ServiceTestRoots)
         {
@@ -85,13 +95,19 @@ public class CiServiceTestsGuardTests
                 .Where(project => !listed.Contains(Path.GetFileName(project), StringComparison.Ordinal)));
         }
 
-        Assert.NotEmpty(outside);
-        var unbuilt = outside.Where(project => !Regex.IsMatch(phase1,
-            @"(?m)^\s+run: dotnet build " + Regex.Escape(project) + @" -c Debug\s*$")).ToArray();
+        var built = Regex.Matches(gates, @"(?m)^dotnet build (services/[^ ]+/tests/[^ ]+\.csproj) -c Debug\s*$")
+            .Select(match => match.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
+        var unbuilt = outside.Except(built).ToArray();
+        var surplus = built.Except(outside).ToArray();
         Assert.True(unbuilt.Length == 0,
-            "Service test projects outside their solution that phase1 never compiles — add a build step to "
-            + "phase1-gates.yml: " + string.Join(", ", unbuilt));
-        Assert.All(outside, project => Assert.DoesNotContain("dotnet test " + project, phase1, StringComparison.Ordinal));
+            "Service test projects outside their solution that phase1 never compiles — add a build line to "
+            + "scripts/run_phase1_gates.sh: " + string.Join(", ", unbuilt));
+        Assert.True(surplus.Length == 0,
+            "Build lines in scripts/run_phase1_gates.sh for test projects that are in their solution (or gone) — remove: "
+            + string.Join(", ", surplus));
+        Assert.All(outside, project => Assert.DoesNotContain("dotnet test " + project, gates, StringComparison.Ordinal));
+        var phase1 = WorkflowText("phase1-gates.yml");
+        Assert.Contains("run: ./scripts/run_phase1_gates.sh", phase1, StringComparison.Ordinal);
     }
 
     // BL-590: the rule does not lean on the exclusion list. A tree with one more service test project than the matrix
@@ -180,7 +196,11 @@ public class CiServiceTestsGuardTests
             Assert.Matches(@"--blame-hang-timeout \d+m", run);
             Assert.Contains("--logger \"trx;", run, StringComparison.Ordinal);
         });
-        Assert.Matches(@"- name: Skipped = 0\s+if: always\(\)\s+run: python3 scripts/check_trx_no_skipped\.py ", workflow);
+        // FIX1: the check runs with the job's suite, so only that suite's allow-list codes can pass.
+        Assert.Matches(@"- name: Skipped = 0\s+if: always\(\)\s+run: python3 scripts/check_trx_no_skipped\.py --suite ""\$SUITE"" ", workflow);
+        // …and phase1 runs the allow-list's own tests (scripts/tests) on every push.
+        Assert.Matches(@"(?m)^python3 -m unittest discover -s scripts/tests -p 'test_\*\.py'$",
+            File.ReadAllText(Path.Combine(RepoRoot(), "scripts", "run_phase1_gates.sh")));
     }
 
     [Fact]
@@ -217,12 +237,169 @@ public class CiServiceTestsGuardTests
     private static void AssertReadOnlyAndPinned(string workflow)
     {
         Assert.Matches(@"(?m)^permissions:\n  contents: read\n(?!  )", workflow);
-        Assert.DoesNotContain("secrets.", workflow, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"(?m)^[ \t]+permissions[ \t]*:", workflow);
+        Assert.DoesNotMatch(@"\bsecrets\b", Uncommented(workflow));
 
-        var uses = Regex.Matches(workflow, @"uses: *(\S+)").Select(match => match.Groups[1].Value).ToArray();
+        var uses = Uses(workflow);
         Assert.NotEmpty(uses);
-        Assert.All(uses, action => Assert.Matches(
-            @"^actions/(checkout|setup-dotnet|upload-artifact)@[0-9a-f]{40}$", action));
+        Assert.All(uses, action =>
+        {
+            var at = action.IndexOf('@');
+            Assert.True(at > 0 && ActionPins.TryGetValue(action[..at], out var pin) && action[(at + 1)..] == pin,
+                $"'{action}' is not an allowed action at its one recorded commit");
+        });
+    }
+
+    // ------------------------------------------------------------------------------------- every workflow (FIX1)
+
+    /// <summary>
+    /// FIX1 (CT decision): the ONE commit each allowed action runs at — both workflows, the same entry. A tag, a typo, a
+    /// commit from a fork network or 40 zeros is red; upgrading an action is a deliberate edit of this table (with the
+    /// tag ↔ SHA measured by `git ls-remote`). Dependabot is not used (owner's decision): pins are raised by hand.
+    /// </summary>
+    private static readonly Dictionary<string, string> ActionPins = new(StringComparer.Ordinal)
+    {
+        ["actions/checkout"] = "11d5960a326750d5838078e36cf38b85af677262",       // v4.4.0
+        ["actions/setup-dotnet"] = "67a3573c9a986a3f9c594539f4ab511d57bb3ce9",   // v4.3.1
+        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02" // v4.6.2
+    };
+
+    /// <summary>The workflow files the repository is allowed to hold — a new one is added here on purpose, with review.</summary>
+    private static readonly string[] NamedWorkflows = ["phase1-gates.yml", "service-tests.yml"];
+
+    [Fact]
+    public void Only_the_named_workflow_files_exist()
+    {
+        var present = Directory.EnumerateFiles(Path.Combine(RepoRoot(), ".github", "workflows"))
+            .Where(path => path.EndsWith(".yml", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase))
+            .Select(Path.GetFileName)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        Assert.True(present.SequenceEqual(NamedWorkflows.Order(StringComparer.Ordinal)),
+            "Workflow files outside the guard's named list (add it to NamedWorkflows, with its rules): "
+            + string.Join(", ", present.Except(NamedWorkflows)) + " / missing: " + string.Join(", ", NamedWorkflows.Except(present!)));
+    }
+
+    // One top-level read-only token per file and none below it: a job or step `permissions:` (write-all, contents:
+    // write) would otherwise widen the token past the rule.
+    [Fact]
+    public void Every_workflow_has_one_read_only_token_and_no_job_or_step_permissions()
+    {
+        foreach (var name in NamedWorkflows)
+        {
+            var workflow = WorkflowText(name);
+            Assert.Single(Regex.Matches(workflow, @"(?m)^permissions[ \t]*:"));
+            Assert.Matches(@"(?m)^permissions:\n  contents: read\n(?!  )", workflow);
+            Assert.True(!Regex.IsMatch(workflow, @"(?m)^[ \t]+permissions[ \t]*:"), $"{name}: a job or step permissions: block");
+        }
+    }
+
+    // Triggers that run with the base repository's token on code from a fork or a comment are not used.
+    [Fact]
+    public void No_workflow_uses_a_privileged_trigger_or_reads_a_secret()
+    {
+        foreach (var name in NamedWorkflows)
+        {
+            var code = Uncommented(WorkflowText(name));
+            Assert.True(!Regex.IsMatch(code, @"\b(pull_request_target|workflow_run|issue_comment)\b"), $"{name}: privileged trigger");
+            Assert.True(!Regex.IsMatch(code, @"\bsecrets\b"), $"{name}: reads a secret");
+        }
+    }
+
+    [Fact]
+    public void Phase1_triggers_are_push_and_pull_request()
+    {
+        var on = Regex.Match(WorkflowText("phase1-gates.yml"), @"(?ms)^on:\n(.*?)^\S").Groups[1].Value;
+        Assert.Equal(["push", "pull_request"],
+            Regex.Matches(on, @"(?m)^  ([a-z_]+):").Select(match => match.Groups[1].Value).ToArray());
+    }
+
+    [Fact]
+    public void Every_action_in_every_workflow_is_at_its_one_recorded_commit()
+    {
+        foreach (var name in NamedWorkflows) AssertReadOnlyAndPinned(WorkflowText(name));
+        Assert.Equal(ActionPins.Keys.Order(StringComparer.Ordinal),
+            NamedWorkflows.SelectMany(name => Uses(WorkflowText(name))).Select(action => action[..action.IndexOf('@')])
+                .Distinct().Order(StringComparer.Ordinal));
+    }
+
+    // A red test step must stay red: no continue-on-error anywhere, and the steps that run tests / the gates / install
+    // mongod carry no condition (a step-level `if:` could switch them off); no job-level `if:` either.
+    [Fact]
+    public void Nothing_can_turn_a_red_test_or_build_green()
+    {
+        foreach (var name in NamedWorkflows)
+        {
+            var code = Uncommented(WorkflowText(name));
+            Assert.True(!Regex.IsMatch(code, @"\bcontinue-on-error\b"), $"{name}: continue-on-error");
+            Assert.True(!Regex.IsMatch(code, @"(?m)^    if[ \t]*:"), $"{name}: a job-level if:");
+        }
+
+        foreach (var (file, step) in new[]
+                 {
+                     ("service-tests.yml", "Test"), ("service-tests.yml", "Install mongod (pinned version and digest)"),
+                     ("phase1-gates.yml", "Run Phase 1 Gates")
+                 })
+            Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?m)^[ \t]+if[ \t]*:"), $"{file} '{step}' has an if:");
+    }
+
+    // The tests find mongod through these two variables, set by the (unconditional) install step only — no env: key may
+    // override them (an empty DITEN_TEST_MONGOD would turn owned-mongod tests into "not found").
+    [Fact]
+    public void The_mongod_variables_are_set_by_the_install_step_and_never_overridden()
+    {
+        var workflow = WorkflowText("service-tests.yml");
+        var install = Step(workflow, "Install mongod (pinned version and digest)");
+        Assert.Contains("echo \"DITEN_TEST_MONGOD=$bin/mongod\" >> \"$GITHUB_ENV\"", install, StringComparison.Ordinal);
+        Assert.Contains("echo \"DITEN_ITEST_MONGOD_BIN_DIR=$bin\" >> \"$GITHUB_ENV\"", install, StringComparison.Ordinal);
+        Assert.True(!Regex.IsMatch(Uncommented(workflow), @"(?m)^[ \t]+(DITEN_TEST_MONGOD|DITEN_ITEST_MONGOD_BIN_DIR)[ \t]*:"),
+            "an env: key overrides a mongod variable");
+    }
+
+    // FIX1: every test class that opens a LIVE broker joins LiveRabbitMqCollection (one at a time) — a third one running
+    // in parallel would bring back the cross-test delivery race.
+    [Fact]
+    public void Every_class_that_opens_a_live_broker_runs_in_the_live_rabbitmq_collection()
+    {
+        var root = RepoRoot();
+        var callers = Directory.EnumerateFiles(Path.Combine(root, "services"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => path.Replace('\\', '/').Contains("/tests/", StringComparison.Ordinal)
+                           && !path.Contains("/bin/", StringComparison.Ordinal) && !path.Contains("/obj/", StringComparison.Ordinal))
+            .Select(path => (Path: path, Text: File.ReadAllText(path)))
+            .Where(file => file.Text.Contains("CreateUsingRabbitMq", StringComparison.Ordinal))
+            .ToList();
+        Assert.True(callers.Count >= 2, $"only {callers.Count} live-broker test files found — the scan is blind");
+        foreach (var (path, text) in callers)
+            foreach (Match call in Regex.Matches(text, @"CreateUsingRabbitMq"))
+            {
+                var declaration = Regex.Matches(text[..call.Index], @"(?m)^(?:public |internal )?(?:sealed )?class \w+").LastOrDefault();
+                Assert.True(declaration is not null, path + ": no enclosing class");
+                var before = text[..declaration!.Index].TrimEnd();
+                Assert.True(before.EndsWith("[Collection(LiveRabbitMqCollection.Name)]", StringComparison.Ordinal),
+                    $"{Path.GetRelativePath(root, path)}: {declaration.Value} opens a live broker outside LiveRabbitMqCollection");
+            }
+    }
+
+    private static string WorkflowText(string name)
+        => File.ReadAllText(Path.Combine(RepoRoot(), ".github", "workflows", name)).Replace("\r\n", "\n");
+
+    /// <summary>The text with each line's # comment removed (a word in a comment is not a key or a value).</summary>
+    private static string Uncommented(string text)
+        => string.Join("\n", text.Split('\n').Select(line => line.IndexOf('#') is var hash and >= 0 ? line[..hash] : line));
+
+    /// <summary>
+    /// Every action a workflow names — `uses:` with its value on the same line or (YAML allows it) on the next one(s),
+    /// after an optional block indicator. Every `uses` key must yield a value, so a form this reader misses is red.
+    /// </summary>
+    private static string[] Uses(string workflow)
+    {
+        var code = Uncommented(workflow);
+        var keys = Regex.Matches(code, @"(?m)^[ \t]*(?:-[ \t]*)?uses[ \t]*:").Count;
+        var values = Regex.Matches(code, @"(?m)^[ \t]*(?:-[ \t]*)?uses[ \t]*:\s*(?:[>|][-+]?\s*)?([^\s#]+)")
+            .Select(match => match.Groups[1].Value.Trim('"', '\''))
+            .ToArray();
+        Assert.True(keys == values.Length, $"{keys} uses: keys but {values.Length} values read");
+        return values;
     }
 
     // ------------------------------------------------------------------------------------- the skipped=0 script

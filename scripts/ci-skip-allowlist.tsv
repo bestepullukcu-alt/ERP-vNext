@@ -1,0 +1,8 @@
+# WP-CI-SERVICE-TESTS-03 FIX1 (CT decision): the ONLY skips the service-tests job accepts. One line per (suite, code):
+# suite<TAB>CODE<TAB>reason. A skip passes only when its TRX reason STARTS with the code and the job's suite matches.
+# Anything else — no reason, an unknown code, a code listed for another suite (UNIX_ONLY is listed nowhere: on Ubuntu
+# it must not happen) — is red. Adding a line is a Control Tower decision; the reason column says why the test cannot
+# be true on that runner. Source of the codes: BL-570 FIX4 (6148288a8), UnixConditionalFacts.cs.
+auth-app	MACOS_ONLY	macOS decides descriptor anonymity differently; Linux is tested by its own /proc/self/fd test
+auth-app	UID_EQUALS_GID	in an image where euid = egid a uid offset moved onto the gid reads the same value
+auth-app	RUNS_AS_ROOT	root reads a mode-000 file (CAP_DAC_OVERRIDE), so the refusal is not observable

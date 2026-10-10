@@ -128,6 +128,19 @@ else
   echo "[phase1] skip mdm: services/Diten.MdmService/Diten.MdmService.sln not found"
 fi
 
+# WP-CI-SERVICE-TESTS-03 (CT decision b; FIX1: here, not in the workflow, so a local gates run builds them too). These
+# service test projects are NOT in their service's solution, so the solution builds above never compile them —
+# e3d3a7331 broke Platform.Eventing.Tests and nobody saw it. BUILD only: their tests need RabbitMQ / an owned mongod and
+# run in service-tests.yml. Guard: CiServiceTestsGuardTests (both ways — every such project built here, nothing else).
+# WP-CI-SERVICE-TESTS-03 FIX1: the CI helper scripts' own tests (the skip allow-list of check_trx_no_skipped.py).
+echo "[phase1] test ci scripts"
+python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+
+echo "[phase1] build test projects outside their solution"
+dotnet build services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj -c Debug
+dotnet build services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj -c Debug
+dotnet build services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj -c Debug
+
 echo "[phase1] test tenancy"
 dotnet test tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.TenancyTests.csproj -c Debug
 
