@@ -270,13 +270,31 @@ public sealed class ProductLegalEntityScopeConsumerGuard
         catch (Exception exception) when (IsInvalidEvidence(exception))
         {
             // S4 FIX2 (R2): one unreadable policy must not deny the whole batch — the single path denies only its own
-            // product. The batch read failed, so every product is decided the single way: the same decision per product.
-            foreach (var id in ids) decisions[id] = await EvaluateAsync(context, id, cancellationToken);
+            // product. S4 FIX3: the batch is read again in groups of FallbackGroupSize; only a group that fails again is
+            // decided the single way (the same decision per product) — 200 ids with one bad policy: 1 + 10 group reads +
+            // 20 single ones, not 1 + 200.
+            foreach (var group in ids.Chunk(FallbackGroupSize))
+            {
+                IReadOnlyDictionary<Guid, ProductLegalEntityScopePolicy> groupPolicies;
+                try
+                {
+                    groupPolicies = await _policies.GetByGlobalProductIdsAsync(group, cancellationToken);
+                }
+                catch (Exception groupException) when (IsInvalidEvidence(groupException))
+                {
+                    foreach (var id in group) decisions[id] = await EvaluateAsync(context, id, cancellationToken);
+                    continue;
+                }
+                foreach (var id in group) decisions[id] = Decide(context, id, groupPolicies.GetValueOrDefault(id));
+            }
             return decisions;
         }
         foreach (var id in ids) decisions[id] = Decide(context, id, policies.GetValueOrDefault(id));
         return decisions;
     }
+
+    /// <summary>S4 FIX3: the group a failed batch policy read is retried in (measured: 31 reads vs 201 for 200 ids).</summary>
+    public const int FallbackGroupSize = 20;
 
     private ProductLegalEntityScopeConsumerDecision Decide(
         ProductLegalEntityScopeConsumerContext context, Guid globalProductId, ProductLegalEntityScopePolicy? policy)

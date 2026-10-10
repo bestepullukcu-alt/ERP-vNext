@@ -20,7 +20,7 @@ namespace Diten.ApiGateway.Tests;
 /// reach MDM's internal surface (<c>/api/internal/**</c>) with an encoded or raw <c>..</c> / <c>%2f</c>? A real Kestrel
 /// listener stands in for MDM and records every request it receives (the raw target, and the path Kestrel routes on —
 /// decoded except %2F, dot-normalised, exactly as MDM's own Kestrel would); the gateway is a real Kestrel host with Ocelot
-/// (the version the gateway runs) and the product-master route as ocelot.json writes it. Requests are written to the
+/// (the version the gateway runs) and the product-master route read from the shipped ocelot.json (S4 FIX3). Requests are written to the
 /// socket byte for byte (no client normalises them). The rule: nothing that arrives is routed under <c>/api/internal</c>.
 /// </summary>
 public sealed class Mod0290Fu04ProductMasterTraversalTests(Xunit.Abstractions.ITestOutputHelper output)
@@ -53,6 +53,8 @@ public sealed class Mod0290Fu04ProductMasterTraversalTests(Xunit.Abstractions.IT
         Assert.True(status is >= 200 and < 600, $"no answer for {target}");
     }
 
+    private const string ShippedUpstreamTemplate = "/api/product-master/{everything}";
+
     private static int Port(WebApplication app) => new Uri(app.Urls.Single()).Port;
 
     private static async Task<WebApplication> StartDownstreamAsync(ConcurrentQueue<(string Raw, string Routed)> seen)
@@ -76,20 +78,18 @@ public sealed class Mod0290Fu04ProductMasterTraversalTests(Xunit.Abstractions.IT
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Logging.ClearProviders();
-        var route = $$"""
-            {
-              "Routes": [
-                {
-                  "DownstreamPathTemplate": "/api/product-master/{everything}",
-                  "DownstreamScheme": "http",
-                  "DownstreamHostAndPorts": [ { "Host": "127.0.0.1", "Port": {{downstreamPort}} } ],
-                  "UpstreamPathTemplate": "/api/product-master/{everything}",
-                  "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ]
-                }
-              ],
-              "GlobalConfiguration": { "BaseUrl": "http://127.0.0.1" }
-            }
-            """;
+        // S4 FIX3: the route is the SHIPPED one — read from ocelot.json (the copy beside the tests), only its downstream
+        // host and port pointed at the stand-in. A route that drifts there (its templates, its methods) is measured here.
+        var shipped = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "ocelot.json")))!;
+        var productMaster = shipped["Routes"]!.AsArray()
+            .Single(x => (string?)x!["UpstreamPathTemplate"] == ShippedUpstreamTemplate)!.DeepClone().AsObject();
+        productMaster["DownstreamHostAndPorts"] = new System.Text.Json.Nodes.JsonArray(
+            new System.Text.Json.Nodes.JsonObject { ["Host"] = "127.0.0.1", ["Port"] = downstreamPort });
+        var route = new System.Text.Json.Nodes.JsonObject
+        {
+            ["Routes"] = new System.Text.Json.Nodes.JsonArray(productMaster),
+            ["GlobalConfiguration"] = new System.Text.Json.Nodes.JsonObject { ["BaseUrl"] = "http://127.0.0.1" }
+        }.ToJsonString();
         builder.Configuration.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(route)));
         builder.Services.AddOcelot(builder.Configuration);
         var app = builder.Build();

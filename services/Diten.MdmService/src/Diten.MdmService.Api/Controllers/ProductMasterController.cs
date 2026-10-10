@@ -87,7 +87,8 @@ public sealed class ProductMasterController : ControllerBase
     private async Task<string?> BodyAsync(CancellationToken cancellationToken)
     {
         if (Request.ContentLength > ProductMasterContract.MaximumBodyBytes) return null;
-        // S4 FIX2 (M8): the 64 KB (+1) window is rented, not allocated per request.
+        // S4 FIX2 (M8): the 64 KB (+1) window is rented, not allocated per request; S4 FIX3: returned cleared, so a
+        // request body never stays readable in the shared pool.
         var limit = ProductMasterContract.MaximumBodyBytes + 1;
         var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(limit);
         try
@@ -101,7 +102,7 @@ public sealed class ProductMasterController : ControllerBase
         }
         finally
         {
-            System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
+            System.Buffers.ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
         }
     }
 

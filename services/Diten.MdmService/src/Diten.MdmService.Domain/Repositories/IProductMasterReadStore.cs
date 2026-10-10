@@ -79,4 +79,6 @@ public sealed record ProductMasterStockableRow(
 public sealed record ProductMasterStockablePage(
     IReadOnlyList<ProductMasterStockableRow> Rows, long Total, IReadOnlyList<ProductMasterUnreadableRow> Unreadable);
 
-public sealed record ProductMasterUnreadableRow(ProductMasterRowKind Kind, string Id);
+// S4 FIX3 (R1): an unreadable row keeps its place in the merged order (its stored code when that much is readable), so
+// the page window counts it like any other row and no readable row slides out of every page.
+public sealed record ProductMasterUnreadableRow(ProductMasterRowKind Kind, string Id, string? CanonicalCode = null);

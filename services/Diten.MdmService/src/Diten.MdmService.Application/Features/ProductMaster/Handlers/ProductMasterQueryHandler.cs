@@ -162,7 +162,7 @@ public sealed class ProductMasterQueryHandler :
                 || !TryParseInt(query.PageSize, DefaultPageSize, out var pageSize) || pageSize is < 1 or > MaximumPageSize
                 || (long)page * pageSize > MaximumSearchWindow
                 || query.Q?.Length > MaximumQueryLength
-                // draft.13 (S4 FIX2 R4): a control character (U+0000–U+001F) is not text — 400, never a store pattern.
+                // draft.13/14 (S4 FIX2 R4): a control character (U+0000–U+001F, U+007F–U+009F) is not text — 400, never a store pattern.
                 || query.Q is not null && query.Q.Any(char.IsControl)
                 || query.SkuLevel is not null && !TryParseLevel(query.SkuLevel, out level)
                 || query.MaterialType is not null && !TryParseMaterialType(query.MaterialType, out materialType)
@@ -200,21 +200,29 @@ public sealed class ProductMasterQueryHandler :
                 statuses.Products,
                 productScope,
                 page * pageSize), cancellationToken);
-            // S4 FIX2 (R1): every skipped row by kind and id (never its content).
-            foreach (var skipped in found.Unreadable)
-                _logger.LogWarning(
-                    "PRODUCT_MASTER_SEARCH_ROW_UNREADABLE: a {Kind} row ({Id}) could not be read and was skipped.",
-                    skipped.Kind, skipped.Id);
-
-            // Stable order: the canonical code (ordinal; codes are unique per kind), then the kind.
-            var pageRows = found.Rows
+            // S4 FIX3 (R1): an unreadable row keeps its place in the merged order (a placeholder: kind, id, its stored code
+            // when readable), so the page window is cut over readable rows AND placeholders — the same rows every
+            // request sees, no readable row slides out of every page, and past the last page is 200-empty. A placeholder
+            // is never answered: those inside this page's slice are dropped and logged. Stable order: the canonical code
+            // (ordinal; codes are unique per kind; an unreadable code first, as the store sorts it), then the kind.
+            var slice = found.Rows
+                .Select(row => (row.Kind, row.CanonicalCode,
+                    Row: (ProductMasterStockableRow?)row, Skipped: (ProductMasterUnreadableRow?)null))
+                .Concat(found.Unreadable.Select(skipped => (skipped.Kind, skipped.CanonicalCode,
+                    Row: (ProductMasterStockableRow?)null, Skipped: (ProductMasterUnreadableRow?)skipped)))
                 .OrderBy(x => x.CanonicalCode, StringComparer.Ordinal).ThenBy(x => x.Kind)
                 .Skip((page - 1) * pageSize).Take(pageSize)
-                .Select(row => (JsonNode?)StockableRow(row))
                 .ToArray();
-            // S4 FIX2 (R1): nothing readable but rows were there → the store cannot answer this page (a systematic read
-            // failure must not look like an empty catalogue). At least one row read: 200, the skipped ones logged.
-            if (pageRows.Length == 0 && found.Unreadable.Count > 0) return Fail(Unavailable, 503);
+            var pageRows = slice.Where(x => x.Row is not null).Select(x => (JsonNode?)StockableRow(x.Row!)).ToArray();
+            var dropped = slice.Where(x => x.Skipped is not null).Select(x => x.Skipped!).ToArray();
+            // One line per request: how many, and the first 20 by kind and id (never a row's content).
+            if (dropped.Length > 0)
+                _logger.LogWarning(
+                    "PRODUCT_MASTER_SEARCH_ROW_UNREADABLE: {Count} row(s) on this page could not be read and were skipped: {Rows}.",
+                    dropped.Length, string.Join(", ", dropped.Take(MaximumLoggedUnreadableRows).Select(x => $"{x.Kind}:{x.Id}")));
+            // S4 FIX2 (R1) on the page itself: nothing readable on it but rows were there → the store cannot answer this
+            // page (a systematic read failure must not look like an empty catalogue). One row read: 200, the rest logged.
+            if (pageRows.Length == 0 && dropped.Length > 0) return Fail(Unavailable, 503);
             return Ok(new JsonObject
             {
                 ["items"] = new JsonArray(pageRows),
@@ -224,6 +232,8 @@ public sealed class ProductMasterQueryHandler :
                 ["contractVersion"] = ContractVersion
             });
         }, cancellationToken, "searchStockableItems");
+
+    private const int MaximumLoggedUnreadableRows = 20;
 
     private static JsonObject StockableRow(ProductMasterStockableRow row)
     {

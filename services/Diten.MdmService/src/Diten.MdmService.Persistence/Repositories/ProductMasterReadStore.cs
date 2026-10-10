@@ -151,7 +151,7 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
                 {
                     // A row the store cannot read is skipped and named (kind + id; the caller logs it); it is never
                     // answered half-read. A window with nothing readable is the caller's 503 (S4 FIX2 R1).
-                    unreadable.Add(new(kind, IdText(row)));
+                    unreadable.Add(new(kind, IdText(row), CodeText(row)));
                 }
             }
         }
@@ -172,6 +172,12 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
         }
         return new(rows, total, unreadable);
     }
+
+    // The stored code of an unreadable row when it is a string (its sort position in the store); otherwise none.
+    private static string? CodeText(BsonValue row) =>
+        row is BsonDocument document && document.TryGetValue("CanonicalCode", out var code) && code is BsonString text
+            ? text.Value
+            : null;
 
     private static string IdText(BsonValue row)
     {

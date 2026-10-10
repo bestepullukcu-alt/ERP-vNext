@@ -99,6 +99,10 @@ public sealed partial class ProductMasterS4HttpTests
     [InlineData("a%0Ab")]
     [InlineData("a%1Fb")]
     [InlineData("%00%0A")]
+    // draft.14 (S4 FIX3, CT decision): U+007F–U+009F are control characters too.
+    [InlineData("a%7Fb")]
+    [InlineData("a%C2%85b")]
+    [InlineData("a%C2%9Fb")]
     public async Task S4_FIX2_R4_A_control_character_in_q_is_400(string q)
     {
         await ErrorAsync(await Reader().GetAsync($"{Base}/stockable-items?q={q}"), 400, "INVALID_PARAMETER",
@@ -142,12 +146,47 @@ public sealed partial class ProductMasterS4HttpTests
             foreach (var extra in actual.Except(expected)) findings.Add($"status={filter ?? "(none)"}: {extra} listed");
         }
         Assert.True(findings.Count == 0, string.Join("\n", findings.Take(40)));
+
+        // S4 FIX3: beyond membership — every listed row says what getSku (the production read path) says about it: the
+        // name, the lot / serial flags, the base unit, the status, the code and the item.
+        var listed = await AllRowsAsync(null);
+        Assert.Equal(["FinishedGood", "Gsku", "Item", "Lsku"],
+            listed.Values.Select(x => x.GetProperty("skuLevel").GetString()!).Distinct().Order(StringComparer.Ordinal));
+        var client = Reader();
+        foreach (var (id, row) in listed)
+        {
+            var sku = await OkAsync(await client.GetAsync(
+                $"{Base}/skus/{id}?level={row.GetProperty("skuLevel").GetString()}"), "getSku");
+            foreach (var field in new[] { "name", "lotControlled", "serialControlled", "baseUomId", "lifecycleStatus",
+                         "canonicalCode", "itemId", "skuLevel", "itemKind" })
+            {
+                var listedValue = row.TryGetProperty(field, out var a) ? a.ToString() : "<absent>";
+                var readValue = sku.TryGetProperty(field, out var b) ? b.ToString() : "<absent>";
+                if (listedValue != readValue) findings.Add($"{id} {field}: listed '{listedValue}', getSku '{readValue}'");
+            }
+        }
+        Assert.True(findings.Count == 0, string.Join("\n", findings.Take(40)));
+    }
+
+    private async Task<Dictionary<string, JsonElement>> AllRowsAsync(string? status)
+    {
+        var rows = new Dictionary<string, JsonElement>();
+        for (var page = 1; page <= 20; page++)
+        {
+            var body = await OkAsync(await Reader().GetAsync(
+                $"{Base}/stockable-items?pageSize=100&page={page}" + (status is null ? "" : $"&status={status}")),
+                "searchStockableItems");
+            var batch = body.GetProperty("items").EnumerateArray().ToArray();
+            foreach (var row in batch) rows[row.GetProperty("skuId").GetString()!] = row;
+            if (batch.Length < 100) break;
+        }
+        return rows;
     }
 
     private async Task<HashSet<string>> AllIdsAsync(string? status)
     {
         var ids = new HashSet<string>();
-        for (var page = 1; page <= 10; page++)
+        for (var page = 1; page <= 20; page++)
         {
             var body = await OkAsync(await Reader().GetAsync(
                 $"{Base}/stockable-items?pageSize=100&page={page}" + (status is null ? "" : $"&status={status}")),
@@ -185,7 +224,8 @@ public sealed partial class ProductMasterS4HttpTests
 
         // LSKU: its serial flag × its GSKU's completeness × status.
         var market = 0;
-        foreach (var parentVariant in new[] { "complete", "lot-null", "storage-null", "stockable-false" })
+        // S4 FIX3: every GSKU variant as the parent (FIX2 had four).
+        foreach (var parentVariant in gskuVariants.Select(x => x.Name))
         {
             var gsku = RuleGsku(revision.Id, pack++, ProductIdentityLifecycleStatus.IdentityApproved);
             gskuVariants.Single(x => x.Name == parentVariant).Change(gsku);
@@ -213,7 +253,8 @@ public sealed partial class ProductMasterS4HttpTests
             ("own-shelf", f => f.ShelfLifeDays = 365)
         };
         var index = 0;
-        foreach (var parentVariant in new[] { "complete", "base-null", "shelf-null" })
+        // S4 FIX3: + a parent whose base unit is "" (the store's $nin [null, ""]).
+        foreach (var parentVariant in new[] { "complete", "base-null", "base-empty", "shelf-null" })
         foreach (var (_, change) in fgVariants)
         {
             var gsku = RuleGsku(revision.Id, pack++, ProductIdentityLifecycleStatus.IdentityApproved);
@@ -251,13 +292,18 @@ public sealed partial class ProductMasterS4HttpTests
 
     // T4 in the search: a row whose Global Product, revision or parent GSKU is deleted is never listed — and getSku
     // answers it as none too (the same live chain on both paths).
+    // S4 FIX3: under the Enforced scope branch too (M3: the policy join is another path to the Global Product).
     [Theory]
-    [InlineData("global-product")]
-    [InlineData("revision")]
-    [InlineData("parent-gsku")]
-    public async Task S4_FIX2_R5_Rows_under_a_deleted_parent_are_never_listed(string parent)
+    [InlineData("global-product", false)]
+    [InlineData("revision", false)]
+    [InlineData("parent-gsku", false)]
+    [InlineData("global-product", true)]
+    [InlineData("revision", true)]
+    [InlineData("parent-gsku", true)]
+    public async Task S4_FIX2_R5_Rows_under_a_deleted_parent_are_never_listed(string parent, bool enforced)
     {
         var world = await SeedWorldAsync();
+        if (enforced) await EnforceScopeAsync(world.Product.Id);
         var (collection, id) = parent switch
         {
             "global-product" => ("mdm_global_products", world.Product.Id),
@@ -352,10 +398,14 @@ public sealed partial class ProductMasterS4HttpTests
     // ------------------------------------------------------------------------------------------- M1
 
     // The pack quantity is stored with its scale ("16.50"); the screen shows "16.5" — the search finds what is shown.
-    [Fact]
-    public async Task S4_FIX2_M1_The_search_finds_the_pack_quantity_as_it_is_shown()
+    // S4 FIX3: under the Enforced scope branch too (M3).
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task S4_FIX2_M1_The_search_finds_the_pack_quantity_as_it_is_shown(bool enforced)
     {
         var world = await SeedWorldAsync();
+        if (enforced) await EnforceScopeAsync(world.Product.Id);
         var scaled = await SeedGskuAsync(world.Revision.Id, 16.50m, complete: true, ProductIdentityLifecycleStatus.IdentityApproved);
         var stored = await host.Database.GetCollection<BsonDocument>("mdm_gskus")
             .Find(new BsonDocument("_id", new BsonBinaryData(scaled.Id, GuidRepresentation.Standard))).SingleAsync();
