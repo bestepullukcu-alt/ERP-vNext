@@ -8398,6 +8398,46 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-608
+
+**İş akışı şablonu kendi adaylarını tanımlarsa tüketicinin (MDM) verdiği onaycı adayını eziyor; tüketici bunu göremiyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform iş akışı motoru) · BULAN: FU04 S2 incelemesi + FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- MDM kalem onayı başlatmada aday olarak `position:{ApproverPositionId}` (QA Müdürü) gönderiyor. Yayımlanmış şablonun adımı kendi adaylarını taşıyorsa motor onları kullanıyor.
+- `TrustedWorkflowStartResult` etkin adayları ya da aday kaynağını taşımıyor; MDM başlatmada doğrulayamıyor (S2 FIX1: UYGULANAMAZ).
+- Bugünkü önlem yalnız runbook: "`ITEM-ACTIVATION` tanımı aday TANIMLAMAZ".
+
+Yapılacak (seç, SAP / Oracle karşılaştırmasıyla):
+- (a) güvenilir tüketici aday verdiyse ve şablon adımı da aday taşıyorsa başlatmayı adlı kodla reddet;
+- (b) başlatma sonucunda aday kaynağı (`consumer` / `template`) ve etkin aday kümesi; tüketici kendisi karar verir.
+- Tüketiciler: MDM kalem, GSKU, LSKU, Global Ürün onayları.
+
+Gelecek regresyon riski: 🟡 yanlış yayımlanmış bir şablon, QA dışı birinin GMP onayını vermesine yol açar (yönetici hatası gerekir; sızıntı yok).
+
+---
+
+### BL-607
+
+**LSKU kimlik onayı: yalnız insan kararını bekleyen açık onay deneme sınırına sayılıyor; ~6,5 saat sonra "takılı" görünüyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM, LSKU) · BULAN: FU04 S2 FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10 · CANLI ÖN KOŞULU (LSKU onayı canlıda kullanılacaksa)
+
+Ölçüm:
+- `LskuIdentityWorkflowProcessor.cs:959`: motor "henüz karar yok" (NonTerminal) dediğinde `ScheduleRetryAsync(counted)` çağrılıyor. 30 denemede `RETRY_LIMIT_REACHED` → işlem takılı / el ile uzlaştırma göstergesine düşüyor.
+- 15 dk geri çekilme tavanıyla ~6,5 saat. Onaycı aynı gün içinde karar vermezse sağlıklı bir onay "takılı" olur.
+- S2 (kalem) FIX1'de düzeltildi: GSKU düzeltme akışının kabul edilmiş kuralı ("açık onay başarısızlık değildir"; yeniden deneme gecikmesiyle tekrar sorulur, seri sıfırlanır, sınıra sayılmaz). LSKU'ya dokunulmadı.
+
+Yapılacak:
+- aynı kural LSKU'ya; uçtan uca test (30+ "karar yok" cevabı → takılı değil);
+- çok eski açık onay için ayrı gösterge (S2'nin `ITEM_ACTIVATION_UNPROCESSED` deseni);
+- GSKU kimlik akışı ve FG'de de ölç.
+
+Gelecek regresyon riski: 🔴 canlıda LSKU onayı açılırsa her yavaş onay operatör alarmı üretir ve el ile uzlaştırma ister.
+
+---
+
 ### BL-606
 
 **Güvenilir iş akışı başlatma sözleşmesinde serbest metin gerekçe yok: onaycı, yeniden etkinleştirme gerekçesini Görev Merkezi'nde göremiyor**
