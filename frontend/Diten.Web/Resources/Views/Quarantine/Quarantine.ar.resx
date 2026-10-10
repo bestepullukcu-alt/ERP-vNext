@@ -431,4 +431,7 @@
   <data name="Quarantine.Level.Item" xml:space="preserve"><value>صنف مادة</value></data>
   <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>تعديل الملاحظة</value></data>
   <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>تم حفظ ملاحظة نتيجة التحليل.</value></data>
+  <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>تم تحديث ملاحظة التحليل</value></data>
+  <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>الملاحظة مقفلة ما دام هناك قرار على هذا السجل بانتظار الموافقة أو التطبيق.</value></data>
+  <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>الملاحظة: {0} → {1} حرفًا · المرفقات: {2} → {3}</value></data>
 </root>

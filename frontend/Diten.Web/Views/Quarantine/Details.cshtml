@@ -97,6 +97,7 @@
                                 <div class="border rounded p-2 bg-lighter" data-f="note">—</div>
                                 @if (Perms.Has("quarantine.holds.review"))
                                 {
+                                    <div class="small text-muted mt-1 d-none" id="qr-d-note-locked"><i class="bx bx-lock-alt me-1"></i>@Localizer["Quarantine.Details.Quality.NoteLocked"]</div>
                                     <div class="d-none" id="qr-d-note-editor">
                                         <textarea class="form-control" id="qr-d-note-input" rows="4" maxlength="2000" aria-label="@Localizer["Quarantine.Details.Quality.Note"]"></textarea>
                                         <div class="d-flex justify-content-end gap-2 mt-2">

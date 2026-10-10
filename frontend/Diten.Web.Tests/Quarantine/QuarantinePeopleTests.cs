@@ -144,7 +144,7 @@ public sealed class QuarantinePeopleTests
         var details = File.ReadAllText(Path.Combine(TraceViewRenderer.WebRoot, "wwwroot", "assets", "js", "Quarantine", "details.js"));
         Assert.Contains("ui.write('PATCH', ", details);
         Assert.Contains("{ analysisNote: note }, state.etag)", details);
-        Assert.Contains("show(ui.byId('qr-d-note-edit'), ui.can('STARTREVIEW') && open)", details);
+        Assert.Contains("show(ui.byId('qr-d-note-edit'), ui.can('STARTREVIEW') && open && !noteLocked);", details); // FUB2: + the decision lock
     }
 
     [Theory]

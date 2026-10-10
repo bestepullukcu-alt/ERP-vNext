@@ -431,4 +431,7 @@
   <data name="Quarantine.Level.Item" xml:space="preserve"><value>Malzeme kalemi</value></data>
   <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>Notu düzenle</value></data>
   <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>Analiz sonucu notu kaydedildi.</value></data>
+  <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Analiz notu güncellendi</value></data>
+  <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>Bu kayıt için onay ya da uygulama bekleyen bir karar varken not düzenlenemez.</value></data>
+  <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Not: {0} → {1} karakter · Ek: {2} → {3}</value></data>
 </root>

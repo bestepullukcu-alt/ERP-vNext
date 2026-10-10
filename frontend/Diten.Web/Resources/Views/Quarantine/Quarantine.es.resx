@@ -431,4 +431,7 @@
   <data name="Quarantine.Level.Item" xml:space="preserve"><value>Artículo de material</value></data>
   <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>Editar la nota</value></data>
   <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>Se guardó la nota del resultado de análisis.</value></data>
+  <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Nota de análisis actualizada</value></data>
+  <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>La nota está bloqueada mientras una decisión sobre este registro espera aprobación o aplicación.</value></data>
+  <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Nota: {0} → {1} caracteres · Adjuntos: {2} → {3}</value></data>
 </root>

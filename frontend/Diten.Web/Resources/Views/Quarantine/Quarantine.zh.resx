@@ -431,4 +431,7 @@
   <data name="Quarantine.Level.Item" xml:space="preserve"><value>物料项</value></data>
   <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>编辑备注</value></data>
   <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>分析结果备注已保存。</value></data>
+  <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>分析备注已更新</value></data>
+  <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>此记录有待审批或待执行的决定时，备注已锁定。</value></data>
+  <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>备注：{0} → {1} 个字符 · 附件：{2} → {3}</value></data>
 </root>

@@ -28,7 +28,8 @@
     const HISTORY_DOT = {
         Quarantined: 'warning', ReviewStarted: 'primary', DecisionSubmitted: 'info', Approved: 'success', Applied: 'success',
         Rejected: 'danger', Cancelled: 'secondary', TimedOut: 'secondary', Withdrawn: 'secondary', ApplyFailed: 'danger',
-        FourEyesViolation: 'danger', Blocked: 'danger', ReviewCompleted: 'primary', Disposed: 'info', Unblocked: 'success', SampleRetained: 'primary'
+        FourEyesViolation: 'danger', Blocked: 'danger', ReviewCompleted: 'primary', Disposed: 'info', Unblocked: 'success', SampleRetained: 'primary',
+        NoteUpdated: 'secondary'
     };
     const signatureChip = (label, id) => id
         ? `<span class="badge bg-label-primary d-inline-flex align-items-center gap-1 mt-1" title="${esc(id)}"><i class="bx bx-pen"></i>${esc(t(label, String(id).slice(0, 8)))}</span>`
@@ -47,6 +48,7 @@
                     <div class="timeline-header mb-1"><h6 class="mb-0">${esc(t('Quarantine.History.' + h.action) || h.action)}</h6><small class="text-muted">${esc(dateTime(h.atUtc))}</small></div>
                     <div class="small text-muted">${esc(ui.person(h.by))}</div>
                     ${h.reason ? `<div class="small mt-1">“${esc(h.reason)}”</div>` : ''}
+                    ${h.noteChange ? `<div class="small mt-1">${esc(t('Quarantine.Details.History.NoteChange', h.noteChange.previousNoteLength, h.noteChange.noteLength, h.noteChange.previousAttachmentCount, h.noteChange.attachmentCount))}</div>` : ''}
                     <div class="d-flex flex-wrap gap-1">${signatureChip('Quarantine.Details.History.Signature', h.signatureId)}${signatureChip('Quarantine.Details.History.ApproverSignature', h.approverSignatureId)}</div>
                 </div>
             </li>`).join('');
@@ -123,7 +125,10 @@
         const open = h.status !== 'Decided';
         show(ui.byId('qr-d-decide'), ui.can('DECIDE') && open && !h.activeDecision);
         show(ui.byId('qr-d-review'), ui.can('STARTREVIEW') && open && h.reviewState === 'Waiting' && !h.activeDecision);
-        show(ui.byId('qr-d-note-edit'), ui.can('STARTREVIEW') && open);
+        // QUARANTINE 1.2.0 (FU-0175-ITEM-03): a submitted decision locks the note until it ends — the explanation replaces the button.
+        const noteLocked = !!h.activeDecision;
+        show(ui.byId('qr-d-note-edit'), ui.can('STARTREVIEW') && open && !noteLocked);
+        show(ui.byId('qr-d-note-locked'), ui.can('STARTREVIEW') && open && noteLocked);
         closeNoteEditor();
         const late = ui.byId('qr-d-late');
         show(late, !!h.late && open);

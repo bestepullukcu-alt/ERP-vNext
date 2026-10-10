@@ -431,4 +431,7 @@
   <data name="Quarantine.Level.Item" xml:space="preserve"><value>Материальная позиция</value></data>
   <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>Изменить заметку</value></data>
   <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>Заметка о результате анализа сохранена.</value></data>
+  <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Примечание к анализу обновлено</value></data>
+  <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>Примечание заблокировано, пока решение по этой записи ожидает утверждения или применения.</value></data>
+  <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Примечание: {0} → {1} символов · Вложения: {2} → {3}</value></data>
 </root>
