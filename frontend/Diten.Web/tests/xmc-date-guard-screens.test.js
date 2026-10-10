@@ -48,6 +48,7 @@ afterEach(() => {
   document.querySelectorAll(".flatpickr-calendar").forEach((cal) => cal.remove());
   document.body.innerHTML = "";
   delete window.DitenDateField;
+  delete window.Stepper;
   vi.restoreAllMocks();
 });
 
@@ -137,7 +138,7 @@ const l10nIdOf = (script) => {
   return match ? match[1] : null;
 };
 
-const bootForm = async (form) => {
+const bootForm = async (form, extra = "") => {
   loadScript("wwwroot/assets/js/shared/diten-datefield.js");
   const fields = Object.entries(form.required)
     .map(([id, value]) => `<select id="${id}"><option value="${value}" selected>${value}</option></select>`).join("");
@@ -148,7 +149,7 @@ const bootForm = async (form) => {
     <input type="text" id="${form.from}" class="form-control flatpickr-date">
     <input type="text" id="${form.to}" class="form-control flatpickr-date">
     <button type="button" id="other">x</button>
-    <button type="button" class="btn btn-primary" id="${form.submit}">Save</button>`;
+    <button type="button" class="btn btn-primary" id="${form.submit}">Save</button>${extra}`;
   vi.spyOn(console, "error").mockImplementation(() => {});
   loadScript(form.script);
   await tick();
@@ -256,5 +257,140 @@ describe("LegalEntities list filter: a refused date stops Apply (WCN-FIX-04)", (
     delete window.showToast;
     delete window.DtDefaults;
     delete window.bootstrap;
+  });
+});
+
+/*
+ * WCN-FIX-05 — the "both dates are covered" claim, bound to tests: {start date, end date} × {OrganizationUnits Save,
+ * Positions Save, wizard Next, wizard Save (which also jumps back to the first invalid step), list filter Apply}.
+ * The wizard runs with a stand-in for bs-stepper that dispatches the SAME events the library does
+ * (show.bs-stepper, cancelable, then shown.bs-stepper, with detail.indexStep) — the wizard's own listeners do the rest.
+ */
+class FakeStepper {
+  constructor(el) { this.el = el; this.index = 0; this.toCalls = []; FakeStepper.last = this; }
+  to(step) {
+    const show = new CustomEvent("show.bs-stepper", { detail: { indexStep: step - 1 }, cancelable: true });
+    this.el.dispatchEvent(show);
+    if (show.defaultPrevented) { return; }
+    this.index = step - 1;
+    this.toCalls.push(step);
+    this.el.dispatchEvent(new CustomEvent("shown.bs-stepper", { detail: { indexStep: step - 1 } }));
+  }
+  next() { this.to(this.index + 2); }
+  previous() { this.to(this.index); }
+}
+
+const WIZARD = FORMS.find((form) => form.name === "LegalEntities wizard");
+
+const bootWizard = async () => {
+  FakeStepper.last = null;
+  window.Stepper = FakeStepper;
+  await bootForm(WIZARD,
+    '<div id="le-wizard-stepper"></div><button type="button" id="le-next">Next</button><button type="button" id="le-prev">Prev</button>');
+  expect(FakeStepper.last && FakeStepper.last.el.id, "the wizard did not build its stepper").toBe("le-wizard-stepper");
+};
+
+describe.each(["from", "to"])("WCN-FIX-05: a refused %s date", (which) => {
+  test.each(FORMS.filter((form) => form !== WIZARD))("$name: Save is stopped and says why", async (form) => {
+    await bootForm(form);
+    const other = which === "from" ? form.to : form.from;
+    typeAndTab(other, "01.02.2026");
+    typeAndTab(form[which], "31.02.2026");
+    document.getElementById(form.submit).click();
+    await tick();
+    expect(writes()).toEqual([]);
+    expect(document.getElementById(form.alert).textContent).toContain("DATE-REFUSED");
+  });
+
+  test("LegalEntities wizard: Next on the dates' step does not move on, and says why", async () => {
+    await bootWizard();
+    const stepper = FakeStepper.last;
+    document.getElementById("le-next").click();          // step 1 → 2 (step 1 is filled)
+    expect(stepper.index).toBe(1);
+    typeAndTab(WIZARD[which], "31.02.2026");
+    document.getElementById("le-next").click();          // step 2 → refused
+    expect(stepper.index, "the wizard moved past a refused date").toBe(1);
+    expect(document.getElementById(WIZARD.alert).textContent).toContain("DATE-REFUSED");
+  });
+
+  test("LegalEntities wizard: Save on the last step is stopped and jumps back to the dates' step", async () => {
+    await bootWizard();
+    const stepper = FakeStepper.last;
+    for (let i = 0; i < 5; i += 1) { document.getElementById("le-next").click(); }
+    expect(stepper.index, "the wizard did not reach its last step").toBe(5);
+    typeAndTab(WIZARD[which], "31.02.2026");
+    document.getElementById(WIZARD.submit).click();
+    await tick();
+    expect(writes()).toEqual([]);
+    expect(stepper.index, "Save did not take the reader back to the first invalid step").toBe(1);
+    expect(document.getElementById(WIZARD.alert).textContent).toContain("DATE-REFUSED");
+  });
+});
+
+describe("WCN-FIX-05: the list filter's Apply stops for either date", () => {
+  const source = read("wwwroot/assets/js/MasterData/LegalEntities/index.js");
+  test.each(["filterCreatedFrom", "filterCreatedTo"])("a refused %s stops Apply", (id) => {
+    const start = source.indexOf("        document.getElementById('btnFilterApply')?.addEventListener('click', () => {");
+    const end = source.indexOf("        document.getElementById('btnFilterReset')", start);
+    loadScript("wwwroot/assets/js/shared/diten-datefield.js");
+    document.body.innerHTML = `<input id="filterCreatedFrom"><input id="filterCreatedTo"><button id="other">x</button>
+      <button id="btnFilterApply">Apply</button>`;
+    const datePickers = {};
+    ["filterCreatedFrom", "filterCreatedTo"].forEach((key) => {
+      datePickers[key] = window.flatpickr(document.getElementById(key), { dateFormat: "Y-m-d", altInput: true, altFormat: "d.m.Y", allowInput: true });
+      window.DitenDateField.guardAgainstSilentMisparse(datePickers[key], "altFormat");
+    });
+    const api = { draw: vi.fn() };
+    window.showToast = vi.fn();
+    window.DtDefaults = { updateVisualState: vi.fn() };
+    window.bootstrap = { Collapse: { getOrCreateInstance: () => ({ hide: vi.fn() }) } };
+    // eslint-disable-next-line no-new-func
+    new Function("api", "datePickers", "L", "$", "dateVal", "getAppliedFilterCount", "saveFilterArmed",
+      "setSaveFilterVisible", "isDirtyComparedToDefault", "filterCollapseId", "appliedFilters", source.slice(start, end))(
+      api, datePickers, { DateNotRecognized: "DATE-REFUSED" }, () => ({ val: () => [] }),
+      (key) => document.getElementById(key).value, () => 0, false, () => {}, () => false, "x", {});
+    const fp = datePickers[id];
+    fp.altInput.focus();
+    fp.altInput.value = "31.02.2026";
+    fp.altInput.dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("other").focus();
+    document.getElementById("btnFilterApply").click();
+
+    expect(api.draw).not.toHaveBeenCalled();
+    expect(window.showToast).toHaveBeenCalledWith("DATE-REFUSED", "error");
+    delete window.showToast;
+    delete window.DtDefaults;
+    delete window.bootstrap;
+  });
+});
+
+/*
+ * WCN-FIX-05 · 3 — the screens' l10n blocks carry the refusal sentence, and SharedResource has it in all 7 languages.
+ * The JS tests above inject their own JSON; without this a deleted line would leave every language on the script's
+ * English fallback and nothing would notice.
+ */
+describe("DateNotRecognized reaches every screen that shows it", () => {
+  const BLOCKS = [
+    "Views/Organization/PositionAssignments/_FormL10n.cshtml",
+    "Views/Organization/OrganizationUnits/_FormL10n.cshtml",
+    "Views/Organization/Positions/_FormL10n.cshtml",
+    "Views/MasterData/LegalEntities/_WizardL10n.cshtml",
+    "Views/MasterData/LegalEntities/_IndexL10n.cshtml"
+  ];
+  test.each(BLOCKS)("%s emits DateNotRecognized from SharedResource", (block) => {
+    expect(read(block)).toMatch(/DateNotRecognized\s*=\s*SharedLocalizer\["DateNotRecognized"\]\.Value/);
+  });
+
+  test.each(["en", "tr", "fr", "es", "zh", "ar", "ru"])("SharedResource.%s carries a non-empty DateNotRecognized", (lang) => {
+    const xml = read(`Resources/SharedResource.${lang}.resx`);
+    const match = /<data name="DateNotRecognized"[^>]*>\s*<value>([\s\S]*?)<\/value>/.exec(xml);
+    expect(match && match[1].trim().length).toBeGreaterThan(10);
+  });
+
+  test("the scripts read the key the blocks emit", () => {
+    ["wwwroot/assets/js/Organization/PositionAssignments/form.js", "wwwroot/assets/js/Organization/OrganizationUnits/form.js",
+      "wwwroot/assets/js/Organization/Positions/form.js", "wwwroot/assets/js/MasterData/LegalEntities/wizard.js",
+      "wwwroot/assets/js/MasterData/LegalEntities/index.js"]
+      .forEach((script) => expect(read(script), script).toContain("L.DateNotRecognized"));
   });
 });

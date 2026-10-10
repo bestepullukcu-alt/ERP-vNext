@@ -45,13 +45,26 @@
      *
      * The display formats come from the culture's ShortDatePattern, and five of the seven tenant languages have
      * unpadded parts (measured, .NET: en M/d/yyyy → n/j/Y, tr d.MM.yyyy → j.m.Y, es d/M/yyyy → j/n/Y, zh yyyy/M/d →
-     * Y/n/j, ar d‏/M‏/yyyy → j‏/n‏/Y with RIGHT-TO-LEFT MARKs around the separators). A text comparison refused
+     * Y/n/j, ar d\u200F/M\u200F/yyyy → j\u200F/n\u200F/Y with RIGHT-TO-LEFT MARKs around the separators). A text comparison refused
      * "05/03/2026" where the format writes "5/3/2026", and refused EVERY date typed in Arabic (nobody types the
      * invisible marks). So: the numbers are read from the typed text in the order of the format's numeric tokens and
      * each must equal the resolved date's own component. An overflow ("31.02" → 03.03) still differs and is refused.
      * A 4-digit year token takes 4 digits ("26" is not 2026, and must not silently become year 26).
      * A format with text tokens (month / weekday names, AM/PM, …) falls back to the exact text comparison.
      */
+    /*
+     * WCN-FIX-05 — what the reader types, in the form flatpickr's parser reads: its token regexes are ASCII `\d`, so
+     * Arabic-Indic (U+0660–0669), extended Arabic-Indic (U+06F0–06F9) and full-width (U+FF10–FF19) digits are mapped to
+     * ASCII, and invisible bidi marks (U+200E/200F, U+061C, U+202A–202E, U+2066–2069) are removed (measured: flatpickr
+     * refused "٥/٣/٢٠٢٦" and "５/３/２０２６" outright).
+     */
+    const BIDI_MARKS = /[\u200E\u200F\u061C\u202A-\u202E\u2066-\u2069]/g;
+    const normalizeTyped = (text) => String(text ?? '')
+        .replace(BIDI_MARKS, '')
+        .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+        .replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x06F0))
+        .replace(/[\uFF10-\uFF19]/g, (d) => String(d.charCodeAt(0) - 0xFF10));
+
     const NUMERIC_TOKENS = { d: 'day', j: 'day', m: 'month', n: 'month', Y: 'year', y: 'year2', H: 'hour', G: 'hour',
         h: 'hour', i: 'minute', S: 'second', s: 'second' };
     const TEXT_TOKENS = 'DlMFKUZwW';
@@ -67,17 +80,19 @@
         if (hasText || tokens.length === 0) {
             return !!(instance && instance.formatDate(resolved, format) === raw);
         }
-        if (/\p{L}/u.test(raw)) { return false; }
-        const numbers = raw.match(/\d+/g) || [];
+        // Chinese / Japanese date units are separators ("2026年3月5日" — flatpickr reads it as 2026-03-05, measured).
+        const text = normalizeTyped(raw).replace(/[年月日]/g, ' ');
+        if (/\p{L}/u.test(text)) { return false; }
+        const numbers = text.match(/\d+/g) || [];
         if (numbers.length !== tokens.length) { return false; }
         return tokens.every((token, index) => {
-            const text = numbers[index];
-            const value = Number(text);
+            const digits = numbers[index];
+            const value = Number(digits);
             switch (NUMERIC_TOKENS[token]) {
                 case 'day': return value === resolved.getDate();
                 case 'month': return value === resolved.getMonth() + 1;
-                case 'year': return text.length === 4 && value === resolved.getFullYear();
-                case 'year2': return text.length <= 2 && value === resolved.getFullYear() % 100;
+                case 'year': return digits.length === 4 && value === resolved.getFullYear();
+                case 'year2': return digits.length <= 2 && value === resolved.getFullYear() % 100;
                 case 'hour': return token === 'h' ? value === (resolved.getHours() % 12 || 12) : value === resolved.getHours();
                 case 'minute': return value === resolved.getMinutes();
                 default: return value === resolved.getSeconds();
@@ -187,6 +202,9 @@
                 mark();
                 return;
             }
+            // WCN-FIX-05 — the field was judged (or left) with nothing refused: what it holds now is the reader's
+            // choice, including an EMPTY field they cleared on purpose. An older restore point must not outlive it.
+            restorePoint = null;
             unmark();
         };
 
@@ -199,13 +217,26 @@
             rejected = false;
             timeEditedSinceReject = false;
             unmark();
-            ownCall(() => instance.setDate(back.slice(), false));
+            /*
+             * WCN-FIX-05 — ANNOUNCED (triggerChange: true): the page's own state follows the box. flatpickr's blur
+             * commit of the misparse (alt-tab) dispatched `change` + `input`, and the reader's typing dispatched `input`;
+             * a page that copies those into a draft (WorkCenterNext's subtask panel: app.js onInput / onChange →
+             * draft.dueAt → save) would otherwise keep the misparse while the box shows the restored value. On a plain
+             * field the library's `input` echo of this restore is swallowed by the echo mark below (measured).
+             */
+            ownCall(() => instance.setDate(back.slice(), true));
         };
 
         // WCN-FIX-04 — a value the PAGE writes (quick-create's default, a saved view's filter, a reset) ends the
         // reader's pending typing and any refusal: it is not the reader's text, and judging or re-clearing it would
-        // delete a value nobody typed. flatpickr's own commits of the typed text pass the box's text itself
-        // (onBlur, Enter, documentClick: setDate(self._input.value, …)); those are not the page's.
+        // delete a value nobody typed. flatpickr's own commits of the typed text pass the box's text itself AND the
+        // format to read it with (onBlur, Enter, documentClick: setDate(self._input.value, …, fmt)); those are not the
+        // page's. WCN-FIX-05 — the format is part of the test: a page resetting an already-empty refused field with
+        // setDate('') passes the box's (empty) text too, but no format, and is the page's write.
+        //
+        // Limit (documented by a test): a page write made from INSIDE an onChange hook while flatpickr commits typed
+        // text (depth > 0, e.g. a hook that clamps the date) counts as part of that commit, so the typed text is
+        // still judged against the result — the safe side for a GxP date; no screen does this today.
         const pageWrote = () => {
             lastTyped = '';
             restorePoint = null;
@@ -217,7 +248,8 @@
             const nativeSetDate = instance.setDate;
             const nativeClear = instance.clear;
             instance.setDate = function (date, ...rest) {
-                if (own === 0 && depth === 0 && !(typeof date === 'string' && date === target.value)) { pageWrote(); }
+                const libraryCommit = typeof date === 'string' && date === target.value && typeof rest[1] === 'string';
+                if (own === 0 && depth === 0 && !libraryCommit) { pageWrote(); }
                 depth += 1;
                 try { return nativeSetDate.call(this, date, ...rest); } finally { depth -= 1; }
             };
@@ -230,6 +262,9 @@
 
         target.addEventListener('input', () => {
             if (libraryEcho) { libraryEcho = false; return; }
+            // WCN-FIX-05 — Arabic-Indic / full-width digits and bidi marks become what flatpickr's parser can read.
+            const clean = normalizeTyped(target.value);
+            if (clean !== target.value) { target.value = clean; }
             if (restorePoint === null) { restorePoint = (instance.selectedDates || []).slice(); }
             lastTyped = target.value;
             rejected = false;
@@ -244,7 +279,7 @@
         if (Array.isArray(instance.config.onOpen)) {
             instance.config.onOpen.push(() => {
                 cancelled = false;
-                if (target.value.trim() !== lastTyped.trim()) { lastTyped = ''; }
+                if (target.value.trim() !== lastTyped.trim()) { lastTyped = ''; restorePoint = null; }
             });
         }
 
@@ -259,9 +294,16 @@
              * desktop where flatpickr listens to `touchstart` instead of `mousedown`, a mouse click on something that
              * takes no focus, closes nothing — while flatpickr's onBlur HAS committed the typed text. So the judgment is
              * deferred one task: if the calendar is still open and the text is still unjudged, it is judged then.
+             *
+             * WCN-FIX-05 — on a window switch the browser KEEPS `document.activeElement === target` (the window lost
+             * focus, not the element) and `document.hasFocus()` turns false; jsdom's blur() moves focus to <body>
+             * instead. Either means the reader is not in the box: both are tested.
              */
             global.setTimeout(() => {
-                if (instance.isOpen && lastTyped.trim() && global.document && global.document.activeElement !== target) {
+                const doc = global.document;
+                const away = !!doc && (doc.activeElement !== target
+                    || (typeof doc.hasFocus === 'function' && !doc.hasFocus()));
+                if (instance.isOpen && lastTyped.trim() && away) {
                     judge(instance.selectedDates);
                 }
             }, 0);
@@ -367,5 +409,5 @@
     };
 
     // guardAgainstSilentMisparse exposed so a test can drive it directly against a real flatpickr instance.
-    global.DitenDateField = { enhance, guardAgainstSilentMisparse, typedReadsBack };
+    global.DitenDateField = { enhance, guardAgainstSilentMisparse, typedReadsBack, normalizeTyped };
 })(typeof window !== 'undefined' ? window : globalThis);
