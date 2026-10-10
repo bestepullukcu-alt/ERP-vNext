@@ -275,7 +275,7 @@ public sealed class ItemQuarantineTests : IClassFixture<QuarantineApiFactory>
 /// WP-0174-ITEM — FU-0175-Q5-01 <c>updateHold</c> (PATCH /holds/{holdId}, key <c>quarantine.holds.review</c>, If-Match): the analysis
 /// note and attachment references while the hold is open; stale version → 409 <c>QUARANTINE_CONFLICT</c>; decided → 409
 /// <c>QUARANTINE_HOLD_CLOSED</c>; one <c>inventory_audit</c> row with the before / after values per change; the idempotency rule of
-/// the contract; no history row (owner decision — the frozen HistoryAction has no such value, open point O-ITEM-1).
+/// the contract; since QUARANTINE 1.2.0 (WP-MVP1-FUB2, FU-0175-ITEM-01) also one NoteUpdated history row per change — see HoldNoteLockTests.
 /// </summary>
 public sealed class UpdateHoldTests : IClassFixture<QuarantineApiFactory>
 {
@@ -302,7 +302,7 @@ public sealed class UpdateHoldTests : IClassFixture<QuarantineApiFactory>
     private int History(QuarantineScenario s) => s.Ledger.Persisted("quarantine_history").Count;
 
     [Fact]
-    public async Task The_note_is_saved_with_a_new_version_one_audit_row_and_no_history_row()
+    public async Task The_note_is_saved_with_a_new_version_one_audit_row_and_one_history_row()
     {
         var (s, holdId, etag) = await OpenHoldAsync();
         var historyBefore = History(s);
@@ -321,7 +321,7 @@ public sealed class UpdateHoldTests : IClassFixture<QuarantineApiFactory>
         Assert.Equal("pH 6,8 — spesifikasyon içinde", audit["AnalysisNote"].AsString);
         Assert.Equal(s.Ledger.User.ToString(), audit["UserId"].AsString);
         Assert.Equal(version - 1, audit["PreviousVersion"].AsInt32);
-        Assert.Equal(historyBefore, History(s));
+        Assert.Equal(historyBefore + 1, History(s)); // WP-MVP1-FUB2: the NoteUpdated row (was: no history row)
 
         // read back through getHold
         Assert.Equal("pH 6,8 — spesifikasyon içinde", Id(await s.GetHoldAsync(holdId), "analysisNote"));

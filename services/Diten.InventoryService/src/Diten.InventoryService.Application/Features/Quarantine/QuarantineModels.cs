@@ -23,7 +23,11 @@ public sealed record DecisionRefDto(string DecisionId, string DecisionNumber, st
 
 public sealed record AttachmentDto(string Name, string DmsRef);
 
-public sealed record HistoryEntryDto(string AtUtc, UserRefDto By, string Action, string? Reason, string? DecisionId, string? SignatureId, string? ApproverSignatureId);
+public sealed record HistoryEntryDto(string AtUtc, UserRefDto By, string Action, string? Reason, string? DecisionId, string? SignatureId, string? ApproverSignatureId,
+    NoteChangeDto? NoteChange = null);
+
+/// <summary>QUARANTINE 1.2.0 <c>NoteChange</c> — on a <c>NoteUpdated</c> history row.</summary>
+public sealed record NoteChangeDto(int PreviousNoteLength, int NoteLength, int PreviousAttachmentCount, int AttachmentCount);
 
 public sealed record MovementLinkDto(
     string TransactionId,

@@ -303,9 +303,24 @@ public sealed class QuarantineHistoryEntry : EntityBase
 
     public string? ApproverSignatureId { get; set; }
 
+    /// <summary>QUARANTINE 1.2.0: set on a <c>NoteUpdated</c> row only — the sizes before / after, not the text (that is in the audit row).</summary>
+    public HistoryNoteChange? NoteChange { get; set; }
+
     public Guid CorrelationId { get; set; }
 
     public string LeSource { get; set; } = string.Empty;
+}
+
+/// <summary>The summary of an <c>updateHold</c> change on its history row (QUARANTINE 1.2.0 <c>NoteChange</c>).</summary>
+public sealed class HistoryNoteChange
+{
+    public int PreviousNoteLength { get; set; }
+
+    public int NoteLength { get; set; }
+
+    public int PreviousAttachmentCount { get; set; }
+
+    public int AttachmentCount { get; set; }
 }
 
 /// <summary>

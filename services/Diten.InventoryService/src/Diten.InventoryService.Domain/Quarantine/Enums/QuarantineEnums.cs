@@ -136,5 +136,8 @@ public enum HistoryAction
     ReviewCompleted,
     Disposed,
     Unblocked,
-    SampleRetained
+    SampleRetained,
+
+    /// <summary>QUARANTINE 1.2.0 (FU-0175-ITEM-01): <c>updateHold</c> changed the analysis note / attachment references.</summary>
+    NoteUpdated
 }

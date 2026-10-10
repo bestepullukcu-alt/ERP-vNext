@@ -99,7 +99,8 @@ public static class QuarantineMapping
 
     public static HistoryEntryDto History(QuarantineHistoryEntry entry)
         => new(QuarantineSupport.Wire(entry.AtUtc), new UserRefDto(Id(entry.ByUserId)), entry.Action.ToString(), entry.Reason,
-            entry.DecisionId is { } d ? Id(d) : null, entry.SignatureId, entry.ApproverSignatureId);
+            entry.DecisionId is { } d ? Id(d) : null, entry.SignatureId, entry.ApproverSignatureId,
+            entry.NoteChange is { } n ? new NoteChangeDto(n.PreviousNoteLength, n.NoteLength, n.PreviousAttachmentCount, n.AttachmentCount) : null);
 
     public static MovementLinkDto Movement(InventoryTransaction t)
         => new(Id(t.Id), t.TransactionNumber, WireNames.ToWire(t.MovementType), QuarantineSupport.Wire(t.PostingDate),

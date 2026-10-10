@@ -19,9 +19,11 @@ namespace Diten.InventoryService.Tests.Contract;
 /// AC15 (second half): the REAL typed HttpClients of this service — wired by the production
 /// <c>AddInfrastructure</c>, with the production header-forwarding handler — against Prism mocks of the consumed contracts.
 /// Plus AC16 on the real clients: an unreachable master fails closed.
-/// <para>WP-0173-PM1: the PRODUCT-MASTER mock serves the v1.1 DRAFT (`product-master-bundle.openapi.yaml` 1.1.0-draft.8). Its first
-/// (default) example of every operation is the v1.0 one ("v1.0-mock-only"); the v1.1 answers are named examples, chosen with
-/// Prism's <c>Prefer: example=…</c> header, which only these smokes add (the production client sends none). The frozen v1.0
+/// <para>WP-0173-PM1: the PRODUCT-MASTER mock serves the v1.1 DRAFT (`product-master-bundle.openapi.yaml`, since WP-MVP1-FUB2
+/// 1.1.0-draft.11 from <c>00a4d4268</c>). Since draft.11 the first (default) example of every v1.1 operation is v1.1-shaped and the
+/// v1.0 one is the LAST, named <c>v1.0-mock</c>; every answer is a named example, chosen with Prism's <c>Prefer: example=…</c> header
+/// (<c>gsku | fg | item | lsku | global-product | item-uom | page | v1.0-mock</c>), which only these smokes add (the production client
+/// sends none). The frozen v1.0
 /// copy runs as a third mock for the backward-compatibility smoke. Every v1.1 answer is also validated against the v1.1
 /// schema with the open-enum rule (CT-PM1-3).</para>
 /// </summary>
@@ -58,7 +60,9 @@ public sealed class PrismConsumedContractSmokeTests : IClassFixture<PrismMockFix
 
         var product = await client.GetProductAsync(ExampleItem);
         Assert.Equal("Active", product!.LifecycleStatus);
-        Assert.Null(product.LotControlled); // the v1.1 Global Product example carries no stock field (O-1): unknown, not false
+        // draft.11 (OD-1): the Global Product answer carries the DEPRECATED lot / serial flags, "doubt = yes". No rule reads
+        // LotControlled; SerialControlled true keeps a GSKU refused below (the consumer behaviour is the draft.9 one).
+        Assert.Equal((true, true), (product.LotControlled, product.SerialControlled));
 
         var uom = await client.GetSkuUomAsync(ExampleMaterial);
         Assert.Equal("KGM", uom!.BaseUomId);
@@ -72,10 +76,11 @@ public sealed class PrismConsumedContractSmokeTests : IClassFixture<PrismMockFix
         Assert.Equal(new StockBehaviour(true, false, null), ProductMasterStockRules.Behaviour(SkuLevel.Item, item.LotControlled, item.SerialControlled, null));
     }
 
+    /// <summary>draft.11: the v1.0-shaped answer is the named <c>v1.0-mock</c> example (it was the default up to draft.10).</summary>
     [Fact]
-    public async Task The_default_v1_0_shaped_answer_leaves_the_sku_flags_unknown_never_false()
+    public async Task The_v1_0_mock_answer_leaves_the_sku_flags_unknown_never_false()
     {
-        using var scope = Services(_prism.ProductMasterBaseUrl, _prism.LocationMasterBaseUrl, preferV11: false).CreateScope();
+        using var scope = Services(_prism.ProductMasterBaseUrl, _prism.LocationMasterBaseUrl, preferV11: false, preferExample: "v1.0-mock").CreateScope();
         var client = scope.ServiceProvider.GetRequiredService<IProductMasterClient>();
 
         var sku = await client.GetSkuAsync(ExampleSku, SkuLevel.Lsku);
@@ -84,6 +89,18 @@ public sealed class PrismConsumedContractSmokeTests : IClassFixture<PrismMockFix
         Assert.Equal(StockBehaviourRefusal.DataIncomplete, ProductMasterStockRules.Behaviour(SkuLevel.Lsku, sku.LotControlled, sku.SerialControlled, null).Refusal);
         var product = await client.GetProductAsync(ExampleItem);
         Assert.True(product!.LotControlled); // the deprecated product flag is read (true) but no rule uses it
+    }
+
+    /// <summary>draft.11: with no <c>Prefer</c> header (what production sends) Prism answers the FIRST example, now the v1.1 one.</summary>
+    [Fact]
+    public async Task Without_a_Prefer_header_the_draft_11_mock_answers_the_v1_1_example()
+    {
+        using var scope = Services(_prism.ProductMasterBaseUrl, _prism.LocationMasterBaseUrl, preferV11: false).CreateScope();
+        var client = scope.ServiceProvider.GetRequiredService<IProductMasterClient>();
+
+        var lsku = await client.GetSkuAsync(ExampleSku, SkuLevel.Lsku);
+        Assert.Equal((true, true, "Active"), (lsku!.LotControlled, lsku.SerialControlled, lsku.LifecycleStatus));
+        Assert.Equal(new StockBehaviour(true, true, null), ProductMasterStockRules.Behaviour(SkuLevel.Lsku, lsku.LotControlled, lsku.SerialControlled, null));
     }
 
     [Theory]
@@ -180,7 +197,7 @@ public sealed class PrismConsumedContractSmokeTests : IClassFixture<PrismMockFix
         return body;
     }
 
-    private static ServiceProvider Services(Uri productMaster, Uri locationMaster, bool preferV11)
+    private static ServiceProvider Services(Uri productMaster, Uri locationMaster, bool preferV11, string? preferExample = null)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -201,6 +218,11 @@ public sealed class PrismConsumedContractSmokeTests : IClassFixture<PrismMockFix
             // Test-only: picks the v1.1 named example of each operation (Prism `Prefer`); production sends no such header.
             services.AddHttpClient<IProductMasterClient, ProductMasterHttpClient>().AddHttpMessageHandler(() => new PreferV11ExampleHandler());
         }
+        else if (preferExample is not null)
+        {
+            // Test-only: one named example for every request (draft.11 `v1.0-mock`).
+            services.AddHttpClient<IProductMasterClient, ProductMasterHttpClient>().AddHttpMessageHandler(() => new PreferExampleHandler(preferExample));
+        }
 
         // The production handler forwards the CALLER's bearer (Prism requires one) and correlation id.
         var context = new DefaultHttpContext();
@@ -210,6 +232,15 @@ public sealed class PrismConsumedContractSmokeTests : IClassFixture<PrismMockFix
         context.RequestServices = provider;
         provider.GetRequiredService<CorrelationContext>().Set(Guid.NewGuid());
         return provider;
+    }
+
+    private sealed class PreferExampleHandler(string example) : DelegatingHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            request.Headers.TryAddWithoutValidation("Prefer", "example=" + example);
+            return base.SendAsync(request, cancellationToken);
+        }
     }
 
     /// <summary>Maps each request to the v1.1 example of the contract that answers it.</summary>

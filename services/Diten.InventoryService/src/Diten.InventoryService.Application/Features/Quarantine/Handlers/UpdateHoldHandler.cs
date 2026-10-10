@@ -15,13 +15,17 @@ namespace Diten.InventoryService.Application.Features.Quarantine.Handlers;
 /// stock moves. Order:
 /// <list type="number">
 /// <item>Shape (400): something to change; note ≤ 2000; ≤ 20 attachments, each with a name and a DMS reference.</item>
-/// <item>Idempotency (contract x-rules): the caller's earlier call with this key — same hold + same body → the current hold
-/// (200), otherwise 400 <c>IDEMPOTENCY_KEY_REUSED</c>.</item>
-/// <item>The hold (404), still open (409 <c>QUARANTINE_HOLD_CLOSED</c>), If-Match equal to its version (409
+/// <item>Idempotency (contract x-rules): the caller's earlier call with this key — same hold + same body → the FIRST result
+/// (200, O-ITEM-4: the version, note and attachments that call wrote, from its audit row, over the current read; a later edit
+/// does not change the answer), otherwise 400 <c>IDEMPOTENCY_KEY_REUSED</c>.</item>
+/// <item>The hold (404), still open (409 <c>QUARANTINE_HOLD_CLOSED</c>), no submitted decision on it (409
+/// <c>QUARANTINE_DECISION_ALREADY_PENDING</c> — QUARANTINE 1.2.0, FU-0175-ITEM-03: the GxP lock while a decision waits for
+/// approval or is approved and not yet applied; it lifts when the decision ends), If-Match equal to its version (409
 /// <c>QUARANTINE_CONFLICT</c>).</item>
 /// <item>Nothing different → the current hold, nothing written. Otherwise ONE transaction: the hold with version + 1 (the
-/// replace is version-conditioned, so a concurrent edit is a 409 too) and one <see cref="QuarantineHoldUpdateAuditRecord"/>
-/// holding the before / after values. No history row (open point O-ITEM-1: the frozen HistoryAction has no such value).</item>
+/// replace is version-conditioned, so a concurrent edit is a 409 too), one <see cref="QuarantineHoldUpdateAuditRecord"/>
+/// holding the before / after values and one <c>NoteUpdated</c> history row (QUARANTINE 1.2.0, FU-0175-ITEM-01: who, when and
+/// the note lengths / attachment counts before and after).</item>
 /// </list>
 /// The answer is the <c>getHold</c> body (HoldDetail) read after the write.
 /// </summary>
@@ -70,7 +74,7 @@ public sealed class UpdateHoldHandler : IRequestHandler<UpdateHoldCommand, Respo
         if (await _repository.FindHoldUpdateAsync(_support.UserId, request.IdempotencyKey, ct) is { } earlier)
         {
             return string.Equals(earlier.RequestFingerprint, fingerprint, StringComparison.Ordinal)
-                ? await DetailAsync(request.HoldId, ct)
+                ? FirstResult(await DetailAsync(request.HoldId, ct), earlier)
                 : QuarantineSupport.KeyReused<HoldDetailDto>();
         }
 
@@ -83,6 +87,12 @@ public sealed class UpdateHoldHandler : IRequestHandler<UpdateHoldCommand, Respo
         if (hold.Status == HoldStatus.Decided)
         {
             return QuarantineSupport.Fail<HoldDetailDto>(QuarantineDecisionRules.HoldClosed, "The hold is already decided.", 409);
+        }
+
+        if (hold.ActiveDecisionId is not null)
+        {
+            return QuarantineSupport.Fail<HoldDetailDto>(QuarantineDecisionRules.DecisionAlreadyPending,
+                "A decision on this hold is waiting for approval or to be applied; the analysis note is locked until it ends.", 409);
         }
 
         if (hold.Version != request.ExpectedVersion)
@@ -118,6 +128,17 @@ public sealed class UpdateHoldHandler : IRequestHandler<UpdateHoldCommand, Respo
             OccurredAt = now
         };
 
+        var history = _support.History(HistorySubject.Hold, hold.Id, HistoryAction.NoteUpdated, now);
+        history.TenantId = hold.TenantId;
+        history.LegalEntityId = hold.LegalEntityId;
+        history.NoteChange = new HistoryNoteChange
+        {
+            PreviousNoteLength = hold.AnalysisNote?.Length ?? 0,
+            NoteLength = newNote?.Length ?? 0,
+            PreviousAttachmentCount = hold.Attachments.Count,
+            AttachmentCount = newAttachments.Count
+        };
+
         hold.AnalysisNote = newNote;
         hold.Attachments = Copy(newAttachments);
         hold.UpdatedAt = now;
@@ -126,6 +147,7 @@ public sealed class UpdateHoldHandler : IRequestHandler<UpdateHoldCommand, Respo
         {
             if (!await session.ReplaceHoldAsync(hold, request.ExpectedVersion, c)) return false;
             await session.InsertHoldUpdateAuditAsync(audit, c);
+            await session.InsertHistoryAsync([history], c);
             return true;
         }, ct);
 
@@ -133,6 +155,48 @@ public sealed class UpdateHoldHandler : IRequestHandler<UpdateHoldCommand, Respo
     }
 
     private Task<Response<HoldDetailDto>> DetailAsync(Guid holdId, CancellationToken ct) => _sender.Send(new GetHoldQuery(holdId.ToString("D")), ct);
+
+    /// <summary>O-ITEM-4: the replay answers what the first call wrote (its audit row) — the rest of the body is the current read.</summary>
+    private static Response<HoldDetailDto> FirstResult(Response<HoldDetailDto> current, QuarantineHoldUpdateAuditRecord first)
+    {
+        if (!current.IsSuccessful || current.Data is not { } d)
+        {
+            return current;
+        }
+
+        return Response<HoldDetailDto>.Success(new HoldDetailDto
+        {
+            HoldId = d.HoldId,
+            HoldNumber = d.HoldNumber,
+            LegalEntityId = d.LegalEntityId,
+            Item = d.Item,
+            Lot = d.Lot,
+            Warehouse = d.Warehouse,
+            Location = d.Location,
+            StockStatus = d.StockStatus,
+            Quantity = d.Quantity,
+            BaseUom = d.BaseUom,
+            Source = d.Source,
+            SourceDocument = d.SourceDocument,
+            EnteredAtUtc = d.EnteredAtUtc,
+            CreatedBy = d.CreatedBy,
+            ReviewState = d.ReviewState,
+            Status = d.Status,
+            WaitDays = d.WaitDays,
+            TargetDays = d.TargetDays,
+            Late = d.Late,
+            ActiveDecision = d.ActiveDecision,
+            Version = first.Version,
+            AnalysisNote = first.AnalysisNote,
+            Attachments = first.Attachments.Select(a => new AttachmentDto(a.Name, a.DmsRef)).ToList(),
+            ReviewStartedAtUtc = d.ReviewStartedAtUtc,
+            ReviewStartedBy = d.ReviewStartedBy,
+            DecidedAtUtc = d.DecidedAtUtc,
+            History = d.History,
+            Movements = d.Movements,
+            Decisions = d.Decisions
+        });
+    }
 
     private static bool SameAttachments(IReadOnlyList<HoldAttachment> a, IReadOnlyList<HoldAttachment> b)
         => a.Count == b.Count && a.Zip(b).All(p => p.First.Name == p.Second.Name && p.First.DmsRef == p.Second.DmsRef);

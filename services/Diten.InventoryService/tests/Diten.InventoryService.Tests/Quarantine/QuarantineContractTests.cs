@@ -43,20 +43,75 @@ public sealed class QuarantineContractTests
         => Yaml.Value["components"]!["schemas"]![schema]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
 
     [Fact]
-    public void The_contract_is_frozen_1_1_0_owned_by_MOD_0175()
+    public void The_contract_is_frozen_1_2_0_owned_by_MOD_0175()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.1.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.2.0", info["version"]!.GetValue<string>());
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0175", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/quarantine", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
         var changelog = string.Join(" ", info["x-changelog"]!.AsArray().Select(v => v!.GetValue<string>()));
-        Assert.All(new[] { "R-1", "R-2", "R-3", "R-4", "1.1.0", "WP-0174-ITEM", "Item" }, r => Assert.Contains(r, changelog, StringComparison.Ordinal));
+        Assert.All(new[] { "R-1", "R-2", "R-3", "R-4", "1.1.0", "WP-0174-ITEM", "Item", "1.2.0", "WP-MVP1-FUB2", "NoteUpdated", "QUARANTINE_DECISION_ALREADY_PENDING" },
+            r => Assert.Contains(r, changelog, StringComparison.Ordinal));
     }
 
     private const string FrozenV10Sha256 = "c8f31720cd7f8b5d379160465c8c60d9f1dbc08c9f2548ad0775e1ebf60946a9";
 
+    /// <summary>WP-MVP1-FUB2: the 1.1.0 file as frozen by WP-0174-ITEM (base <c>fa4c4e188</c>), kept byte for byte.</summary>
+    private const string FrozenV11Sha256 = "31b21f0843c83434d77fe5745b8f657653c1c1444f64bef56225f14c3270b58a";
+
     private static string FixtureV10Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "quarantine-v1.0.0.openapi.yaml");
+
+    private static string FixtureV11Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "quarantine-v1.1.0.openapi.yaml");
+
+    private static string Sha256(string path)
+        => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(path).Replace("\r\n", "\n")))).ToLowerInvariant();
+
+    [Fact]
+    public void The_v1_1_fixture_is_the_1_1_0_file_byte_for_byte()
+        => Assert.Equal(FrozenV11Sha256, Sha256(FixtureV11Path));
+
+    /// <summary>
+    /// WP-MVP1-FUB2: 1.2.0 = 1.1.0 + <c>NoteUpdated</c> appended to <c>HistoryAction</c> + the optional <c>HistoryEntry.noteChange</c>
+    /// (<c>NoteChange</c>, a new schema) + <c>QUARANTINE_DECISION_ALREADY_PENDING</c> appended to updateHold's x-error-codes and its
+    /// description + one changelog line + the version. Everything else is byte-equal as data.
+    /// </summary>
+    [Fact]
+    public void The_1_2_0_change_is_the_note_history_row_and_the_note_lock_code_and_nothing_else()
+    {
+        var before = LoadJson(FixtureV11Path);
+        var after = LoadJson(ContractSchemas.QuarantineContractPath);
+        string[] Values(JsonNode? array) => array!.AsArray().Select(v => v!.GetValue<string>()).ToArray();
+        var actions = Values(before["components"]!["schemas"]!["HistoryAction"]!["enum"]);
+        Assert.Equal([.. actions, "NoteUpdated"], Values(after["components"]!["schemas"]!["HistoryAction"]!["enum"]));
+        var update = (JsonObject)after["paths"]!["/holds/{holdId}"]!["patch"]!;
+        Assert.Equal([.. Values(before["paths"]!["/holds/{holdId}"]!["patch"]!["x-error-codes"]), "QUARANTINE_DECISION_ALREADY_PENDING"], Values(update["x-error-codes"]));
+        Assert.Contains("QUARANTINE_DECISION_ALREADY_PENDING", update["description"]!.GetValue<string>(), StringComparison.Ordinal);
+        Assert.Null(before["paths"]!["/holds/{holdId}"]!["patch"]!["description"]);
+        Assert.Equal("#/components/schemas/NoteChange", after["components"]!["schemas"]!["HistoryEntry"]!["properties"]!["noteChange"]!["$ref"]!.GetValue<string>());
+        var noteChange = after["components"]!["schemas"]!["NoteChange"]!;
+        Assert.Equal(["previousNoteLength", "noteLength", "previousAttachmentCount", "attachmentCount"], Values(noteChange["required"]));
+        Assert.All(noteChange["properties"]!.AsObject(), p => Assert.Equal("integer", p.Value!["type"]!.GetValue<string>()));
+        Assert.Null(before["components"]!["schemas"]!["NoteChange"]);
+        Assert.Equal(["atUtc", "by", "action"], Values(after["components"]!["schemas"]!["HistoryEntry"]!["required"])); // noteChange is optional
+        var oldLog = Values(before["info"]!["x-changelog"]);
+        var newLog = Values(after["info"]!["x-changelog"]);
+        Assert.Equal(oldLog, newLog.Take(oldLog.Length));
+        Assert.Single(newLog.Skip(oldLog.Length));
+
+        foreach (var file in new[] { before, after })
+        {
+            file["info"]!.AsObject().Remove("version");
+            file["info"]!.AsObject().Remove("x-changelog");
+            file["components"]!["schemas"]!["HistoryAction"]!.AsObject().Remove("enum");
+            file["components"]!["schemas"]!["HistoryEntry"]!["properties"]!.AsObject().Remove("noteChange");
+            file["components"]!["schemas"]!.AsObject().Remove("NoteChange");
+            file["paths"]!["/holds/{holdId}"]!["patch"]!.AsObject().Remove("x-error-codes");
+            file["paths"]!["/holds/{holdId}"]!["patch"]!.AsObject().Remove("description");
+        }
+
+        Assert.Equal(before.ToJsonString(), after.ToJsonString());
+    }
 
     private static JsonObject LoadJson(string path)
         => (JsonObject)JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(new DeserializerBuilder().Build().Deserialize<object>(File.ReadAllText(path))))!;
@@ -76,7 +131,7 @@ public sealed class QuarantineContractTests
     public void The_1_1_0_change_is_Item_on_SkuLevel_and_nothing_else()
     {
         var before = LoadJson(FixtureV10Path);
-        var after = LoadJson(ContractSchemas.QuarantineContractPath);
+        var after = LoadJson(FixtureV11Path); // WP-MVP1-FUB2: the 1.1.0 file is now the fixture; 1.2.0 is measured against it above
         Assert.Equal(["Gsku", "Lsku", "FinishedGood"], before["components"]!["schemas"]!["SkuLevel"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()));
         Assert.Equal(["Gsku", "Lsku", "FinishedGood", "Item"], after["components"]!["schemas"]!["SkuLevel"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()));
         var oldLog = before["info"]!["x-changelog"]!.AsArray().Select(v => v!.GetValue<string>()).ToList();
@@ -139,6 +194,7 @@ public sealed class QuarantineContractTests
         Assert.Equal(states.OrderBy(x => x), System.Enum.GetNames<DecisionState>().OrderBy(x => x));
 
         var actions = Regex.Match(Section("### 2.3", "### 2.4"), @"""action"": ""([^""]+)""").Groups[1].Value.Split('|').Select(s => s.Trim()).ToHashSet();
+        actions.Add("NoteUpdated"); // QUARANTINE 1.2.0 (WP-MVP1-FUB2), after the proposal; measured by The_1_2_0_change_is_…
         Assert.Equal(actions.OrderBy(x => x), Enum("HistoryAction").OrderBy(x => x));
         Assert.Equal(actions.OrderBy(x => x), System.Enum.GetNames<HistoryAction>().OrderBy(x => x));
     }
