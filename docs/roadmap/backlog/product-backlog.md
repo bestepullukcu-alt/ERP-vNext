@@ -8398,6 +8398,23 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-598
+
+**MDM depoları kurucuda eşzamanlı Mongo çağrısı yapıyor (dizin oluşturma): Mongo kapalıyken istek 503 yerine 500**
+
+DURUM: AÇIK · SAHİP: CT (MDM altyapı) · BULAN: FU04 S4 FIX2 incelemesi + FIX3 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (S4 FIX3, `3c71bb496`):
+- `ProductLegalEntityScopePolicyRepository` kurucusu `Indexes.CreateMany`'yi eşzamanlı çağırıyor. Depo scoped; isteğin DI çözümü sırasında Mongo'ya gidiliyor. Mongo kapalıysa `TimeoutException` → 500 (işleyicinin 503 eşlemesine varılmıyor). Veri riski yok.
+- İki dizin UNIQUE (ürün başına bir politika). Barındırılan başlatıcıya taşımak, dizin yokken çift politika yazma penceresi açar (🔴); bu yüzden taşınmadı.
+- Benzer desen yaklaşık 29 MDM deposunda var.
+
+Öneri (S4 FIX3 raporu §5): süreç başına `Lazy<Task>` ile dizin hazırlığı; yazmalar hazırlığı bekler ve hazır değilse 503 ile kapanır; okumalar DI'da Mongo'ya gitmez. Önce tek depo (politika), ölç, sonra diğerleri.
+
+Gelecek regresyon riski: 🟡 Mongo kesintisinde tüketiciler kodsuz 500 görür (stok "cevap yok" sayar, kapalı başarısız).
+
+---
+
 ### BL-597
 
 **Zaman Çizelgesi onay listesi deposunun kiracı süzgeci testle sabitlenmemiş (takeover kodu, savunma katmanı)**
