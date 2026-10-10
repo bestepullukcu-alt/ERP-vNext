@@ -132,3 +132,11 @@
   - eski veri.
 - **Tahmini prompt:** 3–5. Kesin sayı MDM kararından sonra.
 - **Sıra:** W1 → W2 → W3 → W4 → W5 ∥ W6 → W7 → W9 → Faz 8 → **W10 Marka**.
+
+### W2 durum notu (2026-10-10)
+- **1. tur:** BE-a, BE-b ve WEB-a E2 + canlı E4 ☑.
+- **2. tur:** BE-c ∥ WEB-b ajanlarda ([WP-VW-W2-round2](WP-VW-W2-round2.md)).
+- **3. tur (kullanıcı onayı):** WEB-b kabulünden sonra W2-WEB-c tasarım uyumu ∥ W2-BE-d panel verisi.
+  - Farklar: [DESIGN-GAP-W2](mockups/visit-workspace/DESIGN-GAP-W2-2026-10-09.md).
+  - Durum süzgeci ÇOKLU seçim.
+- **W2 toplam:** 7 prompt.
