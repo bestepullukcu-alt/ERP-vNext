@@ -32,6 +32,7 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
         {
             _pipe?.Dispose();
             _pipe = null;
+            if (exception is SecretChannelRejectedException) throw; // keeps its reason (same message)
             throw Invalid();
         }
         return Task.CompletedTask;
@@ -73,9 +74,14 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
     private static void ValidateInheritedPipeHandle(string value)
     {
         if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number)
-            || number <= 2 || value != number.ToString(CultureInfo.InvariantCulture)) throw Invalid();
+            || value != number.ToString(CultureInfo.InvariantCulture)) throw Invalid();
+        // 0 / 1 / 2 are stdin / stdout / stderr: never a secret channel, by NUMBER (BL570 FIX1, CT sabotage K4).
+        if (number <= 2) throw Rejected(Reasons.StandardDescriptor);
         if (!OperatingSystem.IsWindows())
-            throw new PlatformNotSupportedException("This operational secret sink requires Windows pipe validation.");
+        {
+            ValidateInheritedUnixDescriptor(number);
+            return;
+        }
         if (IntPtr.Size == 4 && number > int.MaxValue) throw Invalid();
         var handle = new IntPtr(number);
         if (handle == GetStdHandle(-10) || handle == GetStdHandle(-11) || handle == GetStdHandle(-12)
@@ -84,8 +90,71 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
 
     private static InvalidOperationException Invalid() => new("The inherited one-shot secret pipe is invalid or unavailable.");
 
+    private static SecretChannelRejectedException Rejected(string reason) => new(reason);
+
+    /// <summary>Why a descriptor was refused (BL570 FIX1 M4) — for tests and diagnostics; the message stays generic.</summary>
+    public static class Reasons
+    {
+        public const string StandardDescriptor = "STANDARD_DESCRIPTOR";
+        public const string NotAFifo = "NOT_A_FIFO";
+        public const string NotWriteOnly = "NOT_WRITE_ONLY";
+        public const string NotInherited = "NOT_INHERITED";
+        public const string SameAsStandardStream = "SAME_AS_STANDARD_STREAM";
+        public const string PeerNotConnected = "PEER_NOT_CONNECTED";
+        public const string FifoTooPermissive = "FIFO_TOO_PERMISSIVE";
+        // FIX3: a named FIFO owned by another account (before FIX3 it was told as FIFO_TOO_PERMISSIVE).
+        public const string FifoNotOwned = "FIFO_NOT_OWNED";
+    }
+
+    /// <summary>The named refusal when this OS cannot verify the inherited pipe as Windows does: no secret is produced.</summary>
+    public const string UnsupportedPlatform = "SECRET_OUTPUT_UNSUPPORTED_PLATFORM";
+
+    // WP-AUTH-BL570-01: the Unix twin of the checks above. The descriptor must be a FIFO (a terminal, a regular file,
+    // a socket or /dev/null is refused), opened exactly WRITE-ONLY (FIX1 R1: a read-write end is its own reader),
+    // INHERITED across exec (FIX1 M1: FD_CLOEXEC clear — the runtime's own pipes are close-on-exec), and NOT the same
+    // object as stdin / stdout / stderr — a duplicate of a piped stdout passes a plain "is it a pipe" test and would
+    // carry the secret to whatever reads stdout (the twin of the GetStdHandle comparison, by identity, not number).
+    private static void ValidateInheritedUnixDescriptor(long number)
+    {
+        if (!UnixPipeHandleInspector.IsSupported) throw new PlatformNotSupportedException(UnsupportedPlatform);
+        if (number > int.MaxValue) throw Invalid();
+        var descriptor = (int)number;
+        if (UnixPipeHandleInspector.Stat(descriptor) is not { } target) throw Invalid(); // not an open descriptor
+        if (target.Type != UnixPipeHandleInspector.TypeFifo) throw Rejected(Reasons.NotAFifo);
+        // FIX2 item 8: a NAMED FIFO (an mkfifo node) is reachable by path — anyone its mode lets in could read the secret.
+        // It must be this user's own (FIX3: FIFO_NOT_OWNED) and private — no group / other bits (FIFO_TOO_PERMISSIVE). An
+        // anonymous pipe (one that looks exactly like a fresh pipe() of this process — FIX3 R1) has no path: no check.
+        // Operator note (FIX3): `mkfifo` gives 0644 under the usual umask — refused; make it 0600 (`mkfifo -m 600`). macOS
+        // extended ACLs (chmod +a) are NOT visible in the mode bits checked here: do not put ACLs on the FIFO.
+        if (!UnixPipeHandleInspector.IsAnonymousPipe(descriptor, target) && NamedFifoRefusal(target) is { } refusal)
+            throw Rejected(refusal);
+        if (!UnixPipeHandleInspector.IsWriteOnly(descriptor)) throw Rejected(Reasons.NotWriteOnly);
+        if (!UnixPipeHandleInspector.IsInherited(descriptor)) throw Rejected(Reasons.NotInherited);
+        for (var standard = 0; standard <= 2; standard++)
+        {
+            if (UnixPipeHandleInspector.Stat(standard) is { } stream
+                && stream.Device == target.Device && stream.Inode == target.Inode) throw Rejected(Reasons.SameAsStandardStream);
+        }
+    }
+
+    /// <summary>
+    /// FIX3 (CT sabotage C3 / C4): the named-FIFO decision alone, on an identity — testable without a second account: not
+    /// this euid's → FIFO_NOT_OWNED; any group / other bit (read, write or execute) → FIFO_TOO_PERMISSIVE; else null.
+    /// </summary>
+    public static string? NamedFifoRefusal(UnixPipeHandleInspector.Identity identity) =>
+        !UnixPipeHandleInspector.IsOwnedByThisUser(identity) ? Reasons.FifoNotOwned
+        : !UnixPipeHandleInspector.HasNoGroupOrOtherAccess(identity) ? Reasons.FifoTooPermissive
+        : null;
+
     private static void ValidateConnectedPeer(SafePipeHandle handle)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            var descriptor = handle.DangerousGetHandle().ToInt64();
+            if (descriptor is < 3 or > int.MaxValue) throw Rejected(Reasons.StandardDescriptor);
+            if (!UnixPipeHandleInspector.PeerIsConnected((int)descriptor)) throw Rejected(Reasons.PeerNotConnected);
+            return;
+        }
         // Anonymous pipes use the Windows named-pipe implementation. FilePipeLocalInformation
         // exposes connection state without reading/writing payload or waiting for peer I/O.
         // GetFileType/GetNamedPipeHandleState can still succeed after the reader has closed.
@@ -129,4 +198,11 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern uint GetFileType(IntPtr handle);
     private sealed record SecretDeliveryEnvelope(Guid ServiceClientIdentityId, string ClientCode, string Secret);
+}
+
+/// <summary>A refused secret channel, with its reason (the message is the same generic one as every refusal).</summary>
+public sealed class SecretChannelRejectedException(string reason)
+    : InvalidOperationException("The inherited one-shot secret pipe is invalid or unavailable.")
+{
+    public string Reason { get; } = reason;
 }

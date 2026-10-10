@@ -524,6 +524,8 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     [InlineData("run-apply-hash", null)]
     [InlineData("run-apply-binding", null)]
     [InlineData("run-apply-valid", null)]
+    [InlineData("run-already-running", null)] // WP-AUTH-BL570-01: the single-instance lock, on every OS
+    [InlineData("run-recovered-abandoned", null)] // BL570 FIX1 M8: a crashed run's lock is taken over and SAID
     public async Task Provenance_WhenExactRuntimeSourceSetChanges_FailsClosed(string mutation, string? reason)
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
@@ -563,16 +565,37 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
             options.BinarySha256, head, DateTimeOffset.UtcNow);
         var store = new RecordingReconciliationStore(plan) { Snapshot = local, ReturnNoReceipt = true };
         var source = new RecordingEntitlementSource(plan) { Snapshot = authority };
-        var runner = new EntitlementReconciliationOperationalRunner(store, new RecordingTokenService(plan.ActorId), source, _ => Task.FromResult("stable-process-set"));
+        var warnings = new StringWriter();
+        // run-recovered-abandoned: the lock REPORTS a taken-over abandoned run (the OS signal itself is unreliable on
+        // macOS — measured; the takeover is real either way). What is under test is the runner's answer to it.
+        var runner = new EntitlementReconciliationOperationalRunner(store, new RecordingTokenService(plan.ActorId), source, _ => Task.FromResult("stable-process-set"))
+            { Warnings = warnings };
+        if (scenario == "run-recovered-abandoned")
+            runner = new EntitlementReconciliationOperationalRunner(store, new RecordingTokenService(plan.ActorId), source, _ => Task.FromResult("stable-process-set"))
+                { Warnings = warnings, AcquireLock = _ => OperationalSingleInstanceLock.InState(acquired: true, recovered: true) };
         var output = options.PlanOutput!;
         try
         {
+            if (scenario == "run-already-running")
+            {
+                // Another run holds the machine-wide lock: this one is refused at once, touching nothing.
+                using (var other = OperationalSingleInstanceLock.TryAcquire(EntitlementReconciliationOperationalRunner.LockName))
+                {
+                    Assert.True(other.Acquired);
+                    Assert.Equal("OPERATION_ALREADY_RUNNING", (await Assert.ThrowsAsync<InvalidOperationException>(
+                        () => Task.Run(() => runner.RunAsync(options, "test-token", CancellationToken.None)))).Message);
+                    Assert.False(File.Exists(output));
+                    Assert.Equal(0, store.Commits);
+                }
+            }
             var result = await runner.RunAsync(options, "test-token", CancellationToken.None);
-            Assert.StartsWith("PLAN " + output, result); Assert.Equal(0, store.Commits); Assert.Equal(0, store.Finalizations);
+            Assert.StartsWith("PLAN " + output, result);
+            Assert.Equal(scenario == "run-recovered-abandoned"
+                ? EntitlementReconciliationOperationalRunner.LockRecoveredWarning + Environment.NewLine : "", warnings.ToString()); Assert.Equal(0, store.Commits); Assert.Equal(0, store.Finalizations);
             var json = await File.ReadAllTextAsync(output); var saved = JsonSerializer.Deserialize<EntitlementReconciliationPlan>(json)!;
             Assert.Equal(json, saved.CanonicalJson()); Assert.EndsWith(saved.Sha256(), result);
             Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(output)!, Path.GetFileName(output) + ".*.pending"));
-            if (scenario == "run-plan") return;
+            if (scenario is "run-plan" or "run-already-running" or "run-recovered-abandoned") return;
             if (scenario == "run-existing-output")
             {
                 await Assert.ThrowsAsync<IOException>(() => runner.RunAsync(options, "test-token", CancellationToken.None));
@@ -618,6 +641,8 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalMode.cs",
         "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationCommandOptions.cs",
         "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalRunner.cs",
+        "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/OperationalSingleInstanceLock.cs",
+        "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/UnixProcessObservation.cs",
         "services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/EntitlementReconciliationOperationStore.cs"
     ];
     internal static string[] PlanArguments() => [EntitlementReconciliationCommandOptions.Selector,

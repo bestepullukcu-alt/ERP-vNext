@@ -12,12 +12,14 @@ using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
 
+using Diten.AuthService.Application.Tests.Persistence;
+
 namespace Diten.AuthService.Application.Tests.ServiceIdentityTokens;
 
 [Collection(OperationalMongoCollection.Name)]
 public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixture fixture, ITestOutputHelper output)
 {
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("Production", "Production")]
     [InlineData("Development", "Production")]
     [InlineData("development", "Development")]
@@ -33,7 +35,7 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         Assert.DoesNotContain("Now listening", result.Stdout);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("--SERVICE-CLIENT-OPERATIONAL-RUN")]
     [InlineData("--service-client-operational-unknown")]
     public async Task Release_child_captures_malformed_family_before_normal_startup(string command)
@@ -59,7 +61,7 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         }) yield return [pair];
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [MemberData(nameof(MixedSelectors))]
     public async Task Release_child_mixed_operational_selectors_reject_before_host_without_secret_or_database_mutation(string[] selectors)
     {
@@ -93,7 +95,7 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         await actorRows.AssertUnchangedAsync();
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Real_Release_child_rotates_through_actual_pipe_without_normal_startup_or_unrelated_writes()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -148,7 +150,7 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         Assert.Equal(1, (await scope.Identities.Find(x => x.Id == scope.Identity.Id).SingleAsync()).OperationalVersion);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Release_child_current_revoked_grant_denies_before_credential_or_journal_mutation()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -183,13 +185,13 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
     {
         var api = Path.Combine(AppContext.BaseDirectory, "Diten.AuthService.Api.dll");
         Assert.True(File.Exists(api) && File.Exists(Path.ChangeExtension(api, ".runtimeconfig.json")), "Matching isolated Release API artifacts are required.");
-        var start = new ProcessStartInfo(@"C:\Program Files\dotnet\dotnet.exe")
+        var start = new ProcessStartInfo(DotnetHost())
         {
             UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true,
             RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = AppContext.BaseDirectory
         };
         start.Environment.Clear();
-        foreach (var name in new[] { "SystemRoot", "WINDIR", "PATH", "TEMP", "TMP", "USERPROFILE", "COMSPEC" })
+        foreach (var name in new[] { "SystemRoot", "WINDIR", "PATH", "TEMP", "TMP", "USERPROFILE", "COMSPEC", "HOME", "TMPDIR", "DOTNET_ROOT" })
             if (Environment.GetEnvironmentVariable(name) is { } value) start.Environment[name] = value;
         start.Environment["DOTNET_ENVIRONMENT"] = "Development";
         start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
@@ -197,6 +199,17 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         start.ArgumentList.Add(api);
         foreach (var argument in arguments) start.ArgumentList.Add(argument);
         return start;
+    }
+
+    // WP-AUTH-BL570-01: the Release child runs under the same dotnet host on every OS — Windows keeps its install
+    // path; elsewhere the host running these tests (DOTNET_HOST_PATH when the SDK sets it).
+    private static string DotnetHost()
+    {
+        if (OperatingSystem.IsWindows()) return @"C:\Program Files\dotnet\dotnet.exe";
+        var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        if (string.IsNullOrEmpty(host) && Path.GetFileNameWithoutExtension(Environment.ProcessPath) == "dotnet") host = Environment.ProcessPath;
+        Assert.True(host is not null && Path.IsPathFullyQualified(host) && File.Exists(host), "The dotnet host running these tests is required for the Release child.");
+        return host!;
     }
 
     private async Task<ChildResult> RunChild(ProcessStartInfo start, string input, Action? afterStart = null)
