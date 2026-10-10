@@ -95,6 +95,13 @@ jobs:
           dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release
           dotnet build services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -c Release
 
+      # FIX2 (measured on a clean worktree, no bin/obj): Platform BackgroundJobs' child-host test
+      # (PlatformApiStartupExecutionModeTests.Actual_api_host_serves_health_with_scheduler_and_dashboard_disabled) starts
+      # Platform.API's RELEASE DLL; the Debug test build does not produce it, so the row is red without this step.
+      - name: Build the Release Platform API the child-host test starts (Platform BackgroundJobs)
+        if: matrix.suite == 'platform-bgjobs'
+        run: dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release
+
       # MDM's Mongo tests (and Eventing's) connect to a URI instead of starting their own mongod: a job-local one,
       # same pinned binary, data in the runner's temp. A ONE-NODE REPLICA SET (BL-590): MDM writes in transactions, and
       # a transaction needs a replica set. The tarball has no shell, so scripts/mongo_rs_initiate.py (python3 standard

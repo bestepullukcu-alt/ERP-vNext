@@ -59,6 +59,13 @@ class CrossDbGateTests(unittest.TestCase):
         code, out = self.run_gate({"services/Diten.Platform/tests/Some.Tests/Fixture.cs": CLIENT})
         self.assertEqual(0, code, out)
 
+    # FIX2 (mutation Y6): a Windows checkout reports the path with backslashes; the gate normalises them before it
+    # compares, so the named exception still matches (and only it).
+    def test_a_backslashed_path_of_the_exception_is_normalised(self):
+        backslashed = EXCEPTION.replace("services/", "services/", 1).split("/", 1)
+        code, out = self.run_gate({"services/" + backslashed[1].replace("/", "\\"): "class A {\n" + CLIENT + "}\n"})
+        self.assertEqual(0, code, out)
+
     def test_the_repository_passes(self):
         result = subprocess.run(["bash", GATE], capture_output=True, text=True, timeout=300, cwd=REPO)
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)

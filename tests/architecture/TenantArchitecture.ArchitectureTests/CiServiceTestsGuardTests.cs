@@ -37,6 +37,14 @@ namespace TenantArchitecture.ArchitectureTests;
  * never overridden by an env: key; phase1's build lines (in run_phase1_gates.sh) match the out-of-solution projects both
  * ways; every live-broker test class runs in LiveRabbitMqCollection.
  *
+ * FIX2 (CT decision — the regex race ends, no YAML package): the reading is FAIL-CLOSED. Only FULL-LINE comments are
+ * dropped (Code); an inline `#` and what follows it is scanned like any text, so a false positive is red, never a pass.
+ * Every search ignores case. Keys (permissions, uses, if, run, secrets, the mongod names, exclude, on) are counted
+ * ANYWHERE — block or flow form, quoted or not — and any count other than the expected one is red. A run: block may
+ * not neutralise a failure (`||`, `; true`, `|| :`, `exit 0`, `set +e`); the test and gates lines are exact; the gates
+ * script starts with `set -euo pipefail`; every if: in a file is one of an expected list; no matrix exclude, no
+ * --filter; the Release prerequisite steps (mdm-app, platform-bgjobs) are pinned; the skip allow-list caps each code.
+ *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
  */
 public class CiServiceTestsGuardTests
@@ -218,10 +226,8 @@ public class CiServiceTestsGuardTests
     public void Triggers_permissions_and_actions_are_the_decided_ones()
     {
         var workflow = Workflow();
-        var on = Regex.Match(workflow, @"(?ms)^on:\n(.*?)^\S").Groups[1].Value;
-        Assert.Equal(["pull_request", "push", "workflow_dispatch"],
-            Regex.Matches(on, @"(?m)^  ([a-z_]+):").Select(match => match.Groups[1].Value).ToArray());
-        Assert.Matches(@"(?m)^  push:\n    branches: \[main\]$", on);
+        Assert.Equal(["pull_request", "push", "workflow_dispatch"], Triggers(Code(workflow)));
+        Assert.Matches(@"(?m)^on:\n  pull_request:\n  push:\n    branches: \[main\]\n  workflow_dispatch:\n", Code(workflow));
         AssertReadOnlyAndPinned(workflow);
     }
 
@@ -236,9 +242,9 @@ public class CiServiceTestsGuardTests
 
     private static void AssertReadOnlyAndPinned(string workflow)
     {
-        Assert.Matches(@"(?m)^permissions:\n  contents: read\n(?!  )", workflow);
-        Assert.DoesNotMatch(@"(?m)^[ \t]+permissions[ \t]*:", workflow);
-        Assert.DoesNotMatch(@"\bsecrets\b", Uncommented(workflow));
+        var code = Code(workflow);
+        AssertOneReadOnlyToken(code);
+        Assert.DoesNotMatch(@"(?i)\bsecrets\b|\bgithub[._]token\b", code);
 
         var uses = Uses(workflow);
         Assert.NotEmpty(uses);
@@ -287,10 +293,9 @@ public class CiServiceTestsGuardTests
     {
         foreach (var name in NamedWorkflows)
         {
-            var workflow = WorkflowText(name);
-            Assert.Single(Regex.Matches(workflow, @"(?m)^permissions[ \t]*:"));
-            Assert.Matches(@"(?m)^permissions:\n  contents: read\n(?!  )", workflow);
-            Assert.True(!Regex.IsMatch(workflow, @"(?m)^[ \t]+permissions[ \t]*:"), $"{name}: a job or step permissions: block");
+            var code = Code(WorkflowText(name));
+            Assert.True(KeyCount(code, "permissions") == 1, $"{name}: {KeyCount(code, "permissions")} permissions keys (block or flow, any case)");
+            AssertOneReadOnlyToken(code);
         }
     }
 
@@ -300,18 +305,17 @@ public class CiServiceTestsGuardTests
     {
         foreach (var name in NamedWorkflows)
         {
-            var code = Uncommented(WorkflowText(name));
-            Assert.True(!Regex.IsMatch(code, @"\b(pull_request_target|workflow_run|issue_comment)\b"), $"{name}: privileged trigger");
-            Assert.True(!Regex.IsMatch(code, @"\bsecrets\b"), $"{name}: reads a secret");
+            var code = Code(WorkflowText(name));
+            Assert.True(!Regex.IsMatch(code, @"(?i)\b(pull_request_target|workflow_run|issue_comment)\b"), $"{name}: privileged trigger");
+            Assert.True(!Regex.IsMatch(code, @"(?i)\bsecrets\b|\bgithub[._]token\b"), $"{name}: reads a secret");
+            Assert.True(KeyCount(code, "on") == 1, $"{name}: {KeyCount(code, "on")} on: keys");
         }
     }
 
     [Fact]
     public void Phase1_triggers_are_push_and_pull_request()
     {
-        var on = Regex.Match(WorkflowText("phase1-gates.yml"), @"(?ms)^on:\n(.*?)^\S").Groups[1].Value;
-        Assert.Equal(["push", "pull_request"],
-            Regex.Matches(on, @"(?m)^  ([a-z_]+):").Select(match => match.Groups[1].Value).ToArray());
+        Assert.Equal(["push", "pull_request"], Triggers(Code(WorkflowText("phase1-gates.yml"))));
     }
 
     [Fact]
@@ -323,16 +327,44 @@ public class CiServiceTestsGuardTests
                 .Distinct().Order(StringComparer.Ordinal));
     }
 
-    // A red test step must stay red: no continue-on-error anywhere, and the steps that run tests / the gates / install
-    // mongod carry no condition (a step-level `if:` could switch them off); no job-level `if:` either.
+    // A red test step must stay red: no continue-on-error anywhere, no job-level `if:`, and EVERY `if:` in a file is one of
+    // its expected conditions, in order (FIX2) — the test / gates / mongod-install steps have none. No run: block may
+    // neutralise a failure; the test and gates commands are exact; the gates script fails fast; no matrix exclude and no
+    // --filter (a row or a test cannot be dropped quietly).
+    private static readonly Dictionary<string, string[]> ExpectedIfs = new(StringComparer.Ordinal)
+    {
+        ["phase1-gates.yml"] = [],
+        ["service-tests.yml"] =
+        [
+            "matrix.suite == 'mdm-app'",
+            "matrix.suite == 'platform-bgjobs'",
+            "startsWith(matrix.suite, 'mdm-') || matrix.suite == 'platform-eventing'",
+            "matrix.suite == 'platform-eventing'",
+            "startsWith(matrix.suite, 'auth-')",
+            "always()",
+            "always()"
+        ]
+    };
+
     [Fact]
     public void Nothing_can_turn_a_red_test_or_build_green()
     {
         foreach (var name in NamedWorkflows)
         {
-            var code = Uncommented(WorkflowText(name));
-            Assert.True(!Regex.IsMatch(code, @"\bcontinue-on-error\b"), $"{name}: continue-on-error");
-            Assert.True(!Regex.IsMatch(code, @"(?m)^    if[ \t]*:"), $"{name}: a job-level if:");
+            var code = Code(WorkflowText(name));
+            Assert.True(!Regex.IsMatch(code, @"(?i)\bcontinue-on-error\b"), $"{name}: continue-on-error");
+            Assert.True(!Regex.IsMatch(code, @"(?im)^    [""']?if[""']?[ \t]*:"), $"{name}: a job-level if:");
+            Assert.Equal(ExpectedIfs[name], KeyValues(code, "if"));
+            Assert.True(KeyCount(code, "exclude") == 0, $"{name}: a matrix exclude:");
+            Assert.True(!Regex.IsMatch(code, @"(?i)--filter\b"), $"{name}: dotnet test --filter");
+
+            var runs = RunBlocks(code);
+            Assert.True(runs.Count == KeyCount(code, "run"), $"{name}: {KeyCount(code, "run")} run: keys but {runs.Count} blocks read");
+            foreach (var run in runs)
+            {
+                var neutraliser = Regex.Match(run, @"(?i)\|\||;\s*true\b|\bexit\s+0\b|\bset\s+\+[a-z]*e");
+                Assert.True(!neutraliser.Success, $"{name}: a run: block can turn a failure green ('{neutraliser.Value}'): {run}");
+            }
         }
 
         foreach (var (file, step) in new[]
@@ -340,7 +372,38 @@ public class CiServiceTestsGuardTests
                      ("service-tests.yml", "Test"), ("service-tests.yml", "Install mongod (pinned version and digest)"),
                      ("phase1-gates.yml", "Run Phase 1 Gates")
                  })
-            Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?m)^[ \t]+if[ \t]*:"), $"{file} '{step}' has an if:");
+            Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?im)^[ \t]+[""']?if[""']?[ \t]*:"), $"{file} '{step}' has an if:");
+
+        Assert.Equal(
+            "- name: Test\n        run: |\n"
+            + "          dotnet test \"$PROJECT\" -c Debug --blame-hang --blame-hang-timeout 20m \\\n"
+            + "            --logger \"trx;LogFileName=$SUITE.trx\" --results-directory \"$RUNNER_TEMP/test-results\"\n",
+            Step(Code(WorkflowText("service-tests.yml")), "Test"));
+        Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
+
+        var gates = File.ReadAllText(Path.Combine(RepoRoot(), "scripts", "run_phase1_gates.sh")).Replace("\r\n", "\n");
+        Assert.Equal("set -euo pipefail",
+            gates.Split('\n').Skip(1).First(line => line.Trim().Length > 0 && !line.TrimStart().StartsWith('#')));
+        Assert.DoesNotMatch(@"(?im)^\s*set\s+\+[a-z]*[eu]", gates);
+    }
+
+    // The Release assemblies a row's tests load from bin/Release (FIX1 mdm-app; FIX2 platform-bgjobs: its child-host test
+    // starts Platform.API's Release DLL — measured red on a clean tree without this step). Pinned, with their condition.
+    [Fact]
+    public void The_release_prerequisite_steps_are_pinned_to_their_rows()
+    {
+        var workflow = Code(WorkflowText("service-tests.yml"));
+        Assert.Equal(
+            "- name: Build the Release assemblies the MDM cross-service tests load (MDM)\n"
+            + "        if: matrix.suite == 'mdm-app'\n        run: |\n"
+            + "          dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release\n"
+            + "          dotnet build services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -c Release\n",
+            Step(workflow, "Build the Release assemblies the MDM cross-service tests load (MDM)"));
+        Assert.Equal(
+            "- name: Build the Release Platform API the child-host test starts (Platform BackgroundJobs)\n"
+            + "        if: matrix.suite == 'platform-bgjobs'\n"
+            + "        run: dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release\n",
+            Step(workflow, "Build the Release Platform API the child-host test starts (Platform BackgroundJobs)"));
     }
 
     // The tests find mongod through these two variables, set by the (unconditional) install step only — no env: key may
@@ -352,12 +415,22 @@ public class CiServiceTestsGuardTests
         var install = Step(workflow, "Install mongod (pinned version and digest)");
         Assert.Contains("echo \"DITEN_TEST_MONGOD=$bin/mongod\" >> \"$GITHUB_ENV\"", install, StringComparison.Ordinal);
         Assert.Contains("echo \"DITEN_ITEST_MONGOD_BIN_DIR=$bin\" >> \"$GITHUB_ENV\"", install, StringComparison.Ordinal);
-        Assert.True(!Regex.IsMatch(Uncommented(workflow), @"(?m)^[ \t]+(DITEN_TEST_MONGOD|DITEN_ITEST_MONGOD_BIN_DIR)[ \t]*:"),
-            "an env: key overrides a mongod variable");
+        var code = Code(workflow);
+        foreach (var variable in new[] { "DITEN_TEST_MONGOD", "DITEN_ITEST_MONGOD_BIN_DIR" })
+            Assert.True(KeyCount(code, variable) == 0, $"an env: key (block or flow, any case) overrides {variable}");
+        // FIX2: the only assignments — export, $GITHUB_ENV, anything with "=" — are the install step's two lines.
+        var assignments = Regex.Matches(code, @"(?i)DITEN_I?TEST_MONGOD(?:_BIN_DIR)?[ \t]*=").ToArray();
+        Assert.True(assignments.Length == 2, $"{assignments.Length} assignments of a mongod variable, expected the install step's 2");
+        var installAt = code.IndexOf("- name: Install mongod (pinned version and digest)\n", StringComparison.Ordinal);
+        Assert.All(assignments, assignment =>
+            Assert.True(assignment.Index > installAt && assignment.Index < installAt + Step(code, "Install mongod (pinned version and digest)").Length,
+                "a mongod variable is assigned outside the install step"));
     }
 
     // FIX1: every test class that opens a LIVE broker joins LiveRabbitMqCollection (one at a time) — a third one running
-    // in parallel would bring back the cross-test delivery race.
+    // in parallel would bring back the cross-test delivery race. FIX2: any declaration form (modifiers, nesting,
+    // record), any opener (CreateUsingRabbitMq, UsingRabbitMq, ConnectionFactory), and each call checked against the
+    // OUTERMOST class whose braces contain it — a later or nested class cannot hide behind an earlier correct one.
     [Fact]
     public void Every_class_that_opens_a_live_broker_runs_in_the_live_rabbitmq_collection()
     {
@@ -366,40 +439,153 @@ public class CiServiceTestsGuardTests
             .Where(path => path.Replace('\\', '/').Contains("/tests/", StringComparison.Ordinal)
                            && !path.Contains("/bin/", StringComparison.Ordinal) && !path.Contains("/obj/", StringComparison.Ordinal))
             .Select(path => (Path: path, Text: File.ReadAllText(path)))
-            .Where(file => file.Text.Contains("CreateUsingRabbitMq", StringComparison.Ordinal))
+            .Where(file => Regex.IsMatch(file.Text, LiveBrokerOpener))
             .ToList();
         Assert.True(callers.Count >= 2, $"only {callers.Count} live-broker test files found — the scan is blind");
         foreach (var (path, text) in callers)
-            foreach (Match call in Regex.Matches(text, @"CreateUsingRabbitMq"))
+            foreach (var problem in LiveBrokerCallsOutsideTheCollection(text))
+                Assert.Fail($"{Path.GetRelativePath(root, path)}: {problem}");
+    }
+
+    // The rule on synthetic sources: what FIX1's reader missed is red now.
+    [Theory]
+    [InlineData("[Collection(LiveRabbitMqCollection.Name)]\npublic class A { void M() { Bus.Factory.CreateUsingRabbitMq(c => {}); } }\n", 0)]
+    [InlineData("public abstract partial class A { void M() { Bus.Factory.CreateUsingRabbitMq(c => {}); } }\n", 1)]
+    [InlineData("    internal static class A { void M() { x.UsingRabbitMq((c, f) => {}); } }\n", 1)]
+    [InlineData("public sealed record A { void M() { new ConnectionFactory(); } }\n", 1)]
+    [InlineData("[Collection(LiveRabbitMqCollection.Name)]\npublic class A { void M() { } }\npublic class B { void M() { Bus.Factory.CreateUsingRabbitMq(c => {}); } }\n", 1)]
+    [InlineData("[Collection(LiveRabbitMqCollection.Name)]\npublic class A { private sealed class Inner { void M() { new ConnectionFactory(); } } }\n", 0)]
+    [InlineData("public class A { [Collection(LiveRabbitMqCollection.Name)]\n private class Inner { void M() { new ConnectionFactory(); } } }\n", 1)]
+    public void A_live_broker_call_is_checked_against_its_outermost_class(string source, int problems)
+    {
+        Assert.Equal(problems, LiveBrokerCallsOutsideTheCollection(source).Count);
+    }
+
+    private const string LiveBrokerOpener = @"\b(?:CreateUsingRabbitMq|UsingRabbitMq|ConnectionFactory)\b";
+
+    private static List<string> LiveBrokerCallsOutsideTheCollection(string text)
+    {
+        var classes = Regex.Matches(text,
+                @"(?m)^[ \t]*(?:(?:public|internal|private|protected|sealed|abstract|partial|static|file|unsafe|new)\s+)*(?:class|record(?:\s+class)?|struct)\s+\w+")
+            .Select(declaration =>
             {
-                var declaration = Regex.Matches(text[..call.Index], @"(?m)^(?:public |internal )?(?:sealed )?class \w+").LastOrDefault();
-                Assert.True(declaration is not null, path + ": no enclosing class");
-                var before = text[..declaration!.Index].TrimEnd();
-                Assert.True(before.EndsWith("[Collection(LiveRabbitMqCollection.Name)]", StringComparison.Ordinal),
-                    $"{Path.GetRelativePath(root, path)}: {declaration.Value} opens a live broker outside LiveRabbitMqCollection");
+                var open = text.IndexOf('{', declaration.Index + declaration.Length);
+                var depth = 0;
+                var close = text.Length;
+                for (var i = open; open >= 0 && i < text.Length; i++)
+                {
+                    if (text[i] == '{') depth++;
+                    else if (text[i] == '}' && --depth == 0) { close = i; break; }
+                }
+                return (Declaration: declaration, Start: declaration.Index, End: close);
+            })
+            .ToList();
+        var problems = new List<string>();
+        foreach (Match call in Regex.Matches(text, LiveBrokerOpener))
+        {
+            var outermost = classes.Where(c => c.Start < call.Index && call.Index < c.End).OrderBy(c => c.Start).FirstOrDefault();
+            if (outermost.Declaration is null)
+            {
+                problems.Add($"{call.Value} outside any class");
+                continue;
             }
+
+            var before = text[..outermost.Start].TrimEnd();
+            if (!before.EndsWith("[Collection(LiveRabbitMqCollection.Name)]", StringComparison.Ordinal))
+                problems.Add($"{outermost.Declaration.Value.Trim()} opens a live broker ({call.Value}) outside LiveRabbitMqCollection");
+        }
+
+        return problems;
     }
 
     private static string WorkflowText(string name)
         => File.ReadAllText(Path.Combine(RepoRoot(), ".github", "workflows", name)).Replace("\r\n", "\n");
 
-    /// <summary>The text with each line's # comment removed (a word in a comment is not a key or a value).</summary>
-    private static string Uncommented(string text)
-        => string.Join("\n", text.Split('\n').Select(line => line.IndexOf('#') is var hash and >= 0 ? line[..hash] : line));
+    /// <summary>
+    /// FIX2 (CT decision): the text without its FULL-LINE comments. An inline `#` is NOT cut — YAML lets `#` stand inside a
+    /// value (`TOKEN: "#${{ secrets.X }}"`), and a reader that cuts there is blind; scanning the comment text too can only
+    /// make the guard red (a false positive), never green.
+    /// </summary>
+    private static string Code(string text)
+        => string.Join("\n", text.Split('\n').Where(line => !Regex.IsMatch(line, @"^\s*#")));
+
+    /// <summary>A YAML key anywhere — block or flow (`{ a: b }`), quoted or not, any case; not part of a longer word.</summary>
+    private static Regex Key(string name)
+        => new($@"(?<![\w.$-])[""']?{Regex.Escape(name)}[""']?[ \t]*:(?!:)", RegexOptions.IgnoreCase);
+
+    private static int KeyCount(string code, string name) => Key(name).Matches(code).Count;
+
+    /// <summary>The rest of the line after each occurrence of the key, trimmed (a flow value keeps its tail: never equal).</summary>
+    private static string[] KeyValues(string code, string name)
+        => Key(name).Matches(code).Select(match => code[(match.Index + match.Length)..].Split('\n')[0].Trim()).ToArray();
+
+    /// <summary>The single top-level token: `permissions:` at column 0 whose block is exactly `  contents: read`, blank lines
+    /// included in the block (a key after a blank line still belongs to it).</summary>
+    private static void AssertOneReadOnlyToken(string code)
+    {
+        Assert.True(!Regex.IsMatch(code, @"(?i)\b(?:write-all|read-all)\b"), "write-all / read-all");
+        var lines = code.Split('\n');
+        var at = Array.FindIndex(lines, line => Regex.IsMatch(line, @"^permissions:[ \t]*$"));
+        Assert.True(at >= 0, "no top-level `permissions:` block");
+        var block = lines.Skip(at + 1).TakeWhile(line => line.Length == 0 || char.IsWhiteSpace(line[0]))
+            .Where(line => line.Trim().Length > 0).ToArray();
+        Assert.Equal(["  contents: read"], block);
+    }
+
+    /// <summary>The trigger names under the top-level `on:` (to the next column-0 key; full-line comments already gone).</summary>
+    private static string[] Triggers(string code)
+    {
+        var lines = code.Split('\n');
+        var at = Array.FindIndex(lines, line => Regex.IsMatch(line, @"^on:[ \t]*$"));
+        Assert.True(at >= 0, "no top-level block `on:`");
+        return lines.Skip(at + 1).TakeWhile(line => line.Length == 0 || char.IsWhiteSpace(line[0]))
+            .Select(line => Regex.Match(line, @"^  [""']?([A-Za-z_]+)[""']?[ \t]*:", RegexOptions.IgnoreCase))
+            .Where(match => match.Success).Select(match => match.Groups[1].Value).ToArray();
+    }
+
+    /// <summary>Each `run:` value: the rest of its line, or — after a block indicator — the lines indented below the key.</summary>
+    private static List<string> RunBlocks(string code)
+    {
+        var lines = code.Split('\n');
+        var blocks = new List<string>();
+        for (var i = 0; i < lines.Length; i++)
+        {
+            foreach (Match key in Key("run").Matches(lines[i]))
+            {
+                var value = lines[i][(key.Index + key.Length)..].Trim();
+                if (!Regex.IsMatch(value, @"^[>|][-+]?$"))
+                {
+                    blocks.Add(value);
+                    continue;
+                }
+
+                var indent = lines[i].Length - lines[i].TrimStart().Length;
+                blocks.Add(string.Join("\n", lines.Skip(i + 1)
+                    .TakeWhile(line => line.Trim().Length == 0 || line.Length - line.TrimStart().Length > indent)));
+            }
+        }
+
+        return blocks;
+    }
 
     /// <summary>
-    /// Every action a workflow names — `uses:` with its value on the same line or (YAML allows it) on the next one(s),
-    /// after an optional block indicator. Every `uses` key must yield a value, so a form this reader misses is red.
+    /// Every action a workflow names — `uses:` anywhere (block or flow, quoted, any case), its value on the same line or,
+    /// after a block indicator, on the next. Every `uses` key must yield a value, so a form this reader misses is red.
     /// </summary>
     private static string[] Uses(string workflow)
     {
-        var code = Uncommented(workflow);
-        var keys = Regex.Matches(code, @"(?m)^[ \t]*(?:-[ \t]*)?uses[ \t]*:").Count;
-        var values = Regex.Matches(code, @"(?m)^[ \t]*(?:-[ \t]*)?uses[ \t]*:\s*(?:[>|][-+]?\s*)?([^\s#]+)")
-            .Select(match => match.Groups[1].Value.Trim('"', '\''))
-            .ToArray();
-        Assert.True(keys == values.Length, $"{keys} uses: keys but {values.Length} values read");
-        return values;
+        var code = Code(workflow);
+        var values = new List<string>();
+        foreach (Match key in Key("uses").Matches(code))
+        {
+            var rest = code[(key.Index + key.Length)..];
+            var value = Regex.Match(rest, @"^[ \t]*(?:[>|][-+]?[ \t]*\n[ \t]*)?[""']?([^\s#,}""']+)");
+            if (value.Success) values.Add(value.Groups[1].Value);
+        }
+
+        var keys = KeyCount(code, "uses");
+        Assert.True(keys == values.Count, $"{keys} uses: keys but {values.Count} values read");
+        return values.ToArray();
     }
 
     // ------------------------------------------------------------------------------------- the skipped=0 script

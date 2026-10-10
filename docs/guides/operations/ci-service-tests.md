@@ -44,6 +44,8 @@ Tower kararıyla `NotInThisJob`'a adlandırırsınız.
 ve MDM çözümlerini derler. Ölçüm (2026-10-10, `*.Tests.csproj`):
 - Crm (1), Hcm (1), DevEnablement (1), ManagementGovernance (1), Ppm (1), Pvg (5), Procurement (1), EnterpriseStrategy (2);
 - Building Blocks (2): `Email.Tests` `Diten.Platform.sln`'de, derleniyor ama koşulmuyor; `Security.Secrets.Tests` hiçbiri.
+- Gateway (1): `gateway/Diten.ApiGateway.Tests`. phase1 yalnız `Diten.ApiGateway.csproj`'u derler (çözüm yok), test projesi
+  ne derleniyor ne koşuluyor (FIX2'de ölçüldü).
 - Bekçi bugün yalnız Platform / Auth / MDM `tests/` dizinlerini tarar.
 
 **Tetik** (Control Tower kararı, Actions dakikası için): `pull_request`, yalnız `main`'e `push`, elle
@@ -97,6 +99,24 @@ Bekçi `.github/workflows/` altındaki **her** dosyayı okur:
 - **mongod değişkenleri:** `DITEN_TEST_MONGOD` ve `DITEN_ITEST_MONGOD_BIN_DIR` yalnız (koşulsuz) kurulum adımında yazılır;
   hiçbir `env:` anahtarı onları ezemez (boş bir `DITEN_TEST_MONGOD`, sahipli mongod testlerini "bulunamadı"ya çevirirdi).
 - **Canlı broker:** `CreateUsingRabbitMq` çağıran her test sınıfı `LiveRabbitMqCollection`'a katılır (tarama testi).
+
+### Okuma kuralı: kapalı başarısız (FIX2, CT kararı)
+
+Yeni paket yok (YAML ayrıştırıcı bir indirmedir); düzenli ifade yarışı yerine:
+- Yalnız **tam satır** yorumları atılır (`^\s*#`). Satır içi `#` ve sonrası da taranır; yanlış pozitif kırmızıdır, kabul.
+- Bütün aramalar büyük / küçük harf duyarsız (`SECRETS`, `Secrets['X']` da kırmızı).
+- Anahtarlar her yerde sayılır: blok ya da akış biçimi (`{ runs-on: x, permissions: write-all }`), tırnaklı ya da değil
+  (`"permissions":`). Beklenen sayıdan sapma kırmızı: `permissions` 1, `on` 1, `uses` = okunan değer sayısı, `run` =
+  okunan blok sayısı, mongod adları anahtar olarak 0, `exclude` 0.
+- Üst düzey belirteç bloğu tam `  contents: read`; araya boş satır ya da yorum girse de blok sonraki sütun-0 anahtarına
+  kadar okunur (`actions: write` kırmızı).
+- Her dosyadaki **bütün** `if:` değerleri beklenen listeyle, sırasıyla eşleşir (`ExpectedIfs`).
+- Hiçbir `run:` bloğunda `||`, `; true`, `exit 0`, `set +e` yok; Test komutu ve `run: ./scripts/run_phase1_gates.sh` tam
+  metin; betiğin yorum dışı ilk satırı `set -euo pipefail`. `dotnet test`'te `--filter` yok.
+- Release ön koşul adımları sabit: `mdm-app` (Platform.API + MDM.Api) ve `platform-bgjobs` (yalnız Platform.API; çocuk
+  host testi Release DLL'ini başlatır, temiz ağaçta ölçüldü).
+- Canlı broker taraması her bildirim biçimini (`abstract`, `partial`, `static`, iç içe, `record`) ve her açıcıyı
+  (`CreateUsingRabbitMq`, `UsingRabbitMq`, `ConnectionFactory`) okur; her çağrı onu kapsayan EN DIŞ sınıfa göre denetlenir.
 
 ## Süre sınırları
 
@@ -161,20 +181,21 @@ resmi indirme sayfasından okunur ve dosyaya yazılır.
 - Çalışmayan her testi **adıyla** basar ve 1 ile çıkar.
 - Dosya yoksa, okunamıyorsa, bozuksa ya da hiç sonuç taşımıyorsa da 1 ile çıkar, büyük harfle `*** FAILED ***` ve
   `NOTHING WAS CHECKED` yazar.
-- İzinli atlama listesi **yok**. Bir atlama Control Tower kararıdır.
+- Kabul edilen tek atlamalar aşağıdaki adlı izin listesindekilerdir (FIX1). Listeye satır eklemek Control Tower kararıdır.
 - Adım `if: always()`: test adımı kırmızı olsa da koşar, iki sonuç da görünür.
 - TRX dosyaları `test-results-<satır>` adıyla yüklenir.
 
 Yerelde:
 
 ```bash
-python3 scripts/check_trx_no_skipped.py <sonuç.trx>
+python3 scripts/check_trx_no_skipped.py --suite <satır, ör. auth-app> <sonuç.trx>
 ```
 
 ### Adlı atlama izin listesi (FIX1, CT kararı)
 
 BL-570 FIX4 (`6148288a8`) bazı Auth testlerini bu koşucuda doğru olamayacakları için ADIYLA atlar. Kabul edilen tek
-atlamalar `scripts/ci-skip-allowlist.tsv`'dedir. Satır başına `suite<TAB>KOD<TAB>gerekçe`; bugün yalnız `auth-app`:
+atlamalar `scripts/ci-skip-allowlist.tsv`'dedir. Satır başına `suite<TAB>KOD<TAB>en çok<TAB>gerekçe` (FIX2: kod başına üst
+sınır = bugün o kodu taşıyan test sayısı, `6148288a8`'de ölçüldü: her biri 1); bugün yalnız `auth-app`:
 - `MACOS_ONLY`: Ubuntu'da her zaman (Linux kendi `/proc/self/fd` testiyle ölçülür);
 - `UID_EQUALS_GID`: uid = gid olan imajda;
 - `RUNS_AS_ROOT`: kök konteynerde (CAP_DAC_OVERRIDE).
@@ -183,6 +204,8 @@ Kurallar:
 - Bir atlama, TRX'teki nedeni (`Output/ErrorInfo/Message`, ölçüldü) listedeki bir KODLA BAŞLIYORSA ve iş satırı (`--suite`)
   eşleşiyorsa geçer.
 - Nedensiz atlama, bilinmeyen kod ya da başka satırın kodu KIRMIZI.
+- Bir kodla üst sınırdan çok atlama KIRMIZI (yeni bir test kodu ödünç alamaz). Yalnız `NotExecuted` sonucu izinli atlama
+  olabilir; izinli nedenli başka bir sonuç da kırmızıdır (FIX2).
 - `UNIX_ONLY` hiçbir satırda yok: Ubuntu'da görülürse kırmızı.
 - Kabul edilen atlamalar koda göre sayılıp iş günlüğüne yazılır
   (`allowed skips for suite auth-app: 3 (MACOS_ONLY x1, …)`).

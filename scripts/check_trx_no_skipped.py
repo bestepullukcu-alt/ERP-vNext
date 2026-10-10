@@ -8,7 +8,9 @@ The ONE exception (WP-CI-SERVICE-TESTS-03 FIX1, CT decision): a skip whose reaso
 allow-list (scripts/ci-skip-allowlist.tsv) names FOR THIS SUITE. Those are tests that cannot be true on this runner by
 construction (BL-570 FIX4: MACOS_ONLY on Ubuntu, UID_EQUALS_GID in a uid = gid image, RUNS_AS_ROOT in a root container).
 A skip without a reason, with an unknown code, or with a code listed only for another suite is red. The allowed ones are
-counted by code in the job log. Without --suite no skip is allowed at all.
+counted by code in the job log. Without --suite no skip is allowed at all. FIX2: each (suite, code) has a MAXIMUM — the
+number of tests that carry the code today (measured); more skips than that is red, so a new test cannot quietly borrow
+a code. Only a NotExecuted result can be an allowed skip; any other non-pass outcome is red whatever its reason.
 
 It never passes silently: a missing, unreadable or malformed result file, a file with no test results, an unreadable
 allow-list, or counters that disagree with the results are all *** FAILED *** in capitals, exit 1.
@@ -36,9 +38,9 @@ class AllowlistError(Exception):
     pass
 
 
-def load_allowlist(path: str) -> set[tuple[str, str]]:
-    """(suite, code) pairs. Lines: suite <TAB> CODE <TAB> reason; '#' comments and blank lines are ignored."""
-    pairs: set[tuple[str, str]] = set()
+def load_allowlist(path: str) -> dict[tuple[str, str], int]:
+    """(suite, code) → maximum. Lines: suite <TAB> CODE <TAB> max <TAB> reason; '#' comments and blank lines are ignored."""
+    pairs: dict[tuple[str, str], int] = {}
     try:
         with open(path, encoding="utf-8") as handle:
             lines = handle.read().splitlines()
@@ -48,15 +50,19 @@ def load_allowlist(path: str) -> set[tuple[str, str]]:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         parts = line.split("\t")
-        if len(parts) != 3 or not all(part.strip() for part in parts) or not CODE.fullmatch(parts[1].strip()):
-            raise AllowlistError(f"allow-list line {number} is not 'suite<TAB>CODE<TAB>reason': {line!r}")
-        pairs.add((parts[0].strip(), parts[1].strip()))
+        if (len(parts) != 4 or not all(part.strip() for part in parts) or not CODE.fullmatch(parts[1].strip())
+                or not re.fullmatch(r"[1-9][0-9]*", parts[2].strip())):
+            raise AllowlistError(f"allow-list line {number} is not 'suite<TAB>CODE<TAB>max<TAB>reason': {line!r}")
+        key = (parts[0].strip(), parts[1].strip())
+        if key in pairs:
+            raise AllowlistError(f"allow-list line {number} repeats {key}")
+        pairs[key] = int(parts[2].strip())
     return pairs
 
 
-def check(path: str, suite: str | None = None, allowed: set[tuple[str, str]] | None = None) -> tuple[list[str], Counter]:
+def check(path: str, suite: str | None = None, allowed: dict[tuple[str, str], int] | None = None) -> tuple[list[str], Counter]:
     """Returns (problems, allowed skips by code) for one TRX file; no problems means every test ran or was allowed."""
-    allowed = allowed or set()
+    allowed = allowed or {}
     accepted: Counter = Counter()
     try:
         root = ET.parse(path).getroot()
@@ -91,6 +97,11 @@ def check(path: str, suite: str | None = None, allowed: set[tuple[str, str]] | N
     if not_run:
         problems.append(f"*** FAILED *** {len(not_run)} test(s) did not run in {path}:")
         problems.extend(f"    {name}" for name in not_run)
+    for code, count in sorted(accepted.items()):
+        maximum = allowed[(suite, code)]
+        if count > maximum:
+            problems.append(f"*** FAILED *** {count} skips with code {code} in suite {suite}, at most {maximum} allowed "
+                            f"(scripts/ci-skip-allowlist.tsv) — a new test borrowed the code")
 
     counters = root.find(f"{NS}ResultSummary/{NS}Counters")
     if counters is None:
@@ -111,7 +122,7 @@ def main(argv: list[str]) -> int:
     if not args.paths:
         print(f"{PREFIX} *** FAILED *** no result file given — NOTHING WAS CHECKED")
         return 1
-    allowed: set[tuple[str, str]] = set()
+    allowed: dict[tuple[str, str], int] = {}
     if args.suite:
         try:
             allowed = load_allowlist(args.allowlist)

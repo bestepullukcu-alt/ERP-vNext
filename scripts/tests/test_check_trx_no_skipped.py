@@ -98,7 +98,7 @@ class SkipAllowListTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             bad = os.path.join(directory, "allow.tsv")
             with open(bad, "w", encoding="utf-8") as handle:
-                handle.write("auth-app MACOS_ONLY spaces-not-tabs\n")
+                handle.write("auth-app MACOS_ONLY 1 spaces-not-tabs\n")
             trx_path = os.path.join(directory, "r.trx")
             with open(trx_path, "w", encoding="utf-8") as handle:
                 handle.write(trx(("A.Passes", "Passed", None)))
@@ -108,9 +108,34 @@ class SkipAllowListTests(unittest.TestCase):
             self.assertEqual(1, code, out.getvalue())
             self.assertIn("allow-list line 1", out.getvalue())
 
-    def test_the_repository_allowlist_holds_exactly_the_three_auth_codes(self):
-        self.assertEqual({("auth-app", "MACOS_ONLY"), ("auth-app", "UID_EQUALS_GID"), ("auth-app", "RUNS_AS_ROOT")},
+    def test_the_repository_allowlist_holds_exactly_the_three_auth_codes_one_test_each(self):
+        self.assertEqual({("auth-app", "MACOS_ONLY"): 1, ("auth-app", "UID_EQUALS_GID"): 1, ("auth-app", "RUNS_AS_ROOT"): 1},
                          script.load_allowlist(ALLOWLIST))
+
+    # FIX2: a code has a maximum — a second test borrowing RUNS_AS_ROOT is red, and named.
+    def test_more_skips_with_a_code_than_its_maximum_is_red(self):
+        code, out = self.run_script(trx(("A.Root", "NotExecuted", RUNS_AS_ROOT),
+                                        ("A.Borrower", "NotExecuted", RUNS_AS_ROOT)), "--suite", "auth-app")
+        self.assertEqual(1, code, out)
+        self.assertIn("2 skips with code RUNS_AS_ROOT in suite auth-app, at most 1 allowed", out)
+
+    # FIX2 (mutation Y7): only a NotExecuted result can be an allowed skip — another outcome with an allowed reason is red.
+    def test_an_allowed_reason_on_another_outcome_is_red(self):
+        for outcome in ("Inconclusive", "Timeout", "Aborted", ""):
+            with self.subTest(outcome=outcome):
+                code, out = self.run_script(trx(("A.Odd", outcome, MACOS_ONLY)), "--suite", "auth-app")
+                self.assertEqual(1, code, out)
+                self.assertIn("A.Odd", out)
+
+    def test_a_repeated_or_maxless_allowlist_line_is_red(self):
+        for content in ("auth-app\tMACOS_ONLY\t1\tr\nauth-app\tMACOS_ONLY\t1\tr\n", "auth-app\tMACOS_ONLY\tr\n",
+                        "auth-app\tMACOS_ONLY\t0\tr\n"):
+            with self.subTest(content=content), tempfile.TemporaryDirectory() as directory:
+                bad = os.path.join(directory, "allow.tsv")
+                with open(bad, "w", encoding="utf-8") as handle:
+                    handle.write(content)
+                with self.assertRaises(script.AllowlistError):
+                    script.load_allowlist(bad)
 
 
 if __name__ == "__main__":
