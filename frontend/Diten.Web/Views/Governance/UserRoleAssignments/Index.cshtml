@@ -2,9 +2,24 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<UserRoleAssignmentsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["Title"].Value;
     Layout = "_LayoutTenantShell";
+}
+
+@*
+    UAS-001 (WP-URA-FIX-01) — nothing below this block is drawn for a user who may not assign roles: not the heading,
+    not the user picker, not the role cards, not the antiforgery form, and — because returning here stops
+    @@section Scripts from registering — not index.js, which would otherwise load the user and role lists, take 403s
+    from the gateway and leave a half-drawn page. Same gate as the sibling Role Permissions screen.
+
+    ⚠ Display only. AuthService's [HasPermission("auth.users.assign-role")] remains the authority (UAS-001 §4).
+*@
+@if (!Perms.Has("auth.users.assign-role"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Title"].Value" />
+    return;
 }
 
 <div class="mb-3">

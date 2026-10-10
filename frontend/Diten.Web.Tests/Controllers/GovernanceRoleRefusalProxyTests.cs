@@ -327,7 +327,10 @@ public sealed class GovernanceRoleRefusalProxyTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("tenantId", TenantId.ToString())], "test"))
+                // WP-URA-FIX-01 — the user-role proxy now refuses locally without auth.users.assign-role; these tests
+                // measure how the GATEWAY's refusals are mapped, so the user holds the key and the call reaches it.
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                    [new Claim("tenantId", TenantId.ToString()), new Claim("permission", "auth.users.assign-role")], "test"))
             }
         };
         return controller;

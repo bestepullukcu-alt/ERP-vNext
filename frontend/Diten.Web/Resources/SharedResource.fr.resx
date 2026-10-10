@@ -542,7 +542,7 @@
   <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Feuilles de temps</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Utilisateurs</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Rôles</value></data>
-  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Autorisations de rôle</value></data>
+  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Autorisations des rôles</value></data>
   <data name="Nav.Page.USERROLES" xml:space="preserve"><value>Rôles des utilisateurs</value></data>
   <data name="Nav.Page.SECURITYSETTINGS" xml:space="preserve"><value>Paramètres de sécurité</value></data>
   <data name="Nav.Page.MENUSETTINGS" xml:space="preserve"><value>Paramètres du menu</value></data>
