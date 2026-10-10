@@ -13,6 +13,23 @@
     var L = {};
     var current = null;
     var SAVED_FLAG = 'profile.languageSaved';
+    var savedBeforeReload = false;
+
+    // FIX2 — the "saved" flag is ALWAYS spent when the page starts (the shell's own rule), whether the read below works.
+    function takeSavedFlag() {
+        try {
+            var was = root.sessionStorage.getItem(SAVED_FLAG) === '1';
+            root.sessionStorage.removeItem(SAVED_FLAG);
+            return was;
+        } catch (e) { return false; }
+    }
+
+    // FIX2 — draw the page again at its own address only: a "?culture=xx" the top bar's menu left in the address would
+    // otherwise win over the cookie just written and put the screen back in that language.
+    function redraw() {
+        try { root.sessionStorage.setItem(SAVED_FLAG, '1'); } catch (e) { /* the notice is a nicety */ }
+        root.location.replace(root.location.pathname);
+    }
 
     function byId(id) { return doc.getElementById(id); }
     function t(key) { return L[key] || key; }
@@ -75,11 +92,6 @@
             current = data.preferredLanguage || '';
             byId('profileLanguage').value = current;
             show(true);
-            var savedBeforeReload = false;
-            try {
-                savedBeforeReload = root.sessionStorage.getItem(SAVED_FLAG) === '1';
-                root.sessionStorage.removeItem(SAVED_FLAG);
-            } catch (e) { savedBeforeReload = false; }
             if (savedBeforeReload) { notify(t('Saved'), 'success'); }
         }).catch(function () {
             byId('profileSkeleton').classList.add('d-none');
@@ -98,11 +110,17 @@
                 notify(messageFor(result.body), 'danger');
                 return;
             }
-            var saved = result.body && result.body.data ? result.body.data.preferredLanguage : chosen;
-            if (saved && saved !== current) {
-                // The web tier set the screen-language cookie: draw the page again in the chosen language, and say so there.
-                try { root.sessionStorage.setItem(SAVED_FLAG, '1'); } catch (e) { /* the notice is a nicety */ }
-                root.location.reload();
+            // FIX2 — a 2xx whose body cannot be read is not "saved".
+            if (!result.body || !result.body.data) {
+                notify(t('SaveFailed'), 'danger');
+                return;
+            }
+            var saved = result.body.data.preferredLanguage || null;
+            // The web tier set the screen-language cookie: draw the page in it — also when the language was already the
+            // saved one but THIS browser shows another (a new browser), compared with the page's own lang.
+            var screenLanguage = (doc.documentElement.getAttribute('lang') || '').toLowerCase().split('-')[0];
+            if (saved && (saved !== current || saved !== screenLanguage)) {
+                redraw();
                 return;
             }
             current = saved || '';
@@ -114,6 +132,7 @@
     }
 
     function start() {
+        savedBeforeReload = takeSavedFlag();
         readL10n();
         if (!byId('profilePage')) { return; }
         byId('profileSave').addEventListener('click', save);

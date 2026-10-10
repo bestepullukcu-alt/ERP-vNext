@@ -30,8 +30,9 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
     public ProfileControllerTests(WebApplicationFactory<Program> factory) => _factory = factory;
 
     [Fact]
-    public async Task The_profile_read_goes_to_the_users_own_record_and_comes_back_verbatim()
+    public async Task The_profile_read_goes_to_the_users_own_record()
     {
+        // FIX2 — no longer verbatim: projected to the page's four fields (see The_profile_read_reaches_the_browser_as_four_fields_only).
         const string me = """{"data":{"id":"1","email":"jean@acme.test","firstName":"Jean","lastName":"Dupont","preferredLanguage":"fr"},"isSuccessful":true,"statusCode":200}""";
         var gateway = new CapturingGateway(HttpStatusCode.OK, me);
         var (controller, _) = ControllerWith(gateway, "GET");
@@ -39,7 +40,7 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
         var result = Assert.IsType<ContentResult>(await controller.Me());
 
         Assert.Equal(200, result.StatusCode);
-        Assert.Equal(me, result.Content);
+        Assert.Equal("""{"data":{"firstName":"Jean","lastName":"Dupont","email":"jean@acme.test","preferredLanguage":"fr"},"isSuccessful":true,"statusCode":200}""", result.Content);
         Assert.Equal($"{Gateway}/api/auth/me", gateway.LastUri);
         Assert.Equal(TenantId.ToString("D"), gateway.LastTenantHeader);
         Assert.StartsWith("Bearer ", gateway.LastAuthorization);
@@ -122,6 +123,9 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
     [InlineData("not json")]
     [InlineData("[]")]
     [InlineData("""{"preferredLanguage":7}""")]
+    [InlineData("{}")]                                              // FIX2: no field is NOT "clear my choice"
+    [InlineData("""{"language":"fr"}""")]                         // FIX2: a misspelled field
+    [InlineData("""{"preferredLanguage":"\ud800"}""")]               // FIX2: a lone surrogate is refused, never a 500
     public async Task A_body_that_is_not_a_language_never_reaches_AuthService(string body)
     {
         var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
@@ -141,16 +145,126 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
         Assert.Null(gateway.LastUri);
     }
 
+    [Fact]
+    public async Task A_body_that_is_not_json_is_refused_415_and_never_sent()
+    {
+        var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
+        var (controller, _) = ControllerWith(gateway, "PUT", "preferredLanguage=fr", contentType: "application/x-www-form-urlencoded");
+
+        var result = Assert.IsType<ObjectResult>(await controller.SavePreferences());
+
+        Assert.Equal(415, result.StatusCode);
+        Assert.Null(gateway.LastUri);
+    }
+
+    [Fact]
+    public async Task The_profile_read_reaches_the_browser_as_four_fields_only()
+    {
+        const string whole = """{"data":{"id":"1","email":"jean@acme.test","firstName":"Jean","lastName":"Dupont","isActive":true,"roles":["Admin"],"tenantId":"77777777-7777-7777-7777-777777777777","failedLoginAttempts":3,"setupUrl":"https://dev.test/set?token=x","preferredLanguage":"fr"},"isSuccessful":true,"statusCode":200}""";
+        var (controller, _) = ControllerWith(new CapturingGateway(HttpStatusCode.OK, whole), "GET");
+
+        var result = Assert.IsType<ContentResult>(await controller.Me());
+
+        Assert.Equal("application/json", result.ContentType);
+        using var answer = System.Text.Json.JsonDocument.Parse(result.Content!);
+        var data = answer.RootElement.GetProperty("data");
+        Assert.Equal(["firstName", "lastName", "email", "preferredLanguage"], data.EnumerateObject().Select(p => p.Name));
+        Assert.Equal("fr", data.GetProperty("preferredLanguage").GetString());
+        Assert.DoesNotContain("roles", result.Content);
+        Assert.DoesNotContain("setupUrl", result.Content);
+        Assert.DoesNotContain("failedLoginAttempts", result.Content);
+    }
+
+    [Fact]
+    public async Task A_tenant_header_the_browser_wrote_is_ignored_the_tenant_comes_from_the_token()
+    {
+        var gateway = new CapturingGateway(HttpStatusCode.OK, Saved("fr"));
+        var (controller, _) = ControllerWith(gateway, "PUT", """{"preferredLanguage":"fr"}""", spoofedTenant: Guid.NewGuid().ToString());
+
+        await controller.SavePreferences();
+
+        Assert.Equal(TenantId.ToString("D"), gateway.LastTenantHeader);
+    }
+
+    [Fact]
+    public async Task An_expired_token_sends_nothing_upstream()
+    {
+        var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
+        var (controller, _) = ControllerWith(gateway, "GET", expired: true);
+
+        Assert.IsType<UnauthorizedObjectResult>(await controller.Me());
+        Assert.Null(gateway.LastUri);
+    }
+
+    [Theory]
+    [InlineData("GET", "/Profile")]
+    [InlineData("GET", "/Profile/api/me")]
+    [InlineData("PUT", "/Profile/api/preferences")]
+    public async Task A_platform_administrators_token_gets_403_and_none_of_the_page(string method, string url)
+    {
+        // UAS-001, measured end to end: the web tier's own validation of a SIGNED token, then the shell filter.
+        using var client = _factory
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Development"))
+            .CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        using var request = new HttpRequestMessage(new HttpMethod(method), url);
+        request.Headers.Add("Cookie", "access_token=" + SignedDevelopmentToken("platform_admin", Guid.Parse("00000000-0000-0000-0000-000000000001")));
+        if (method == "PUT")
+        {
+            request.Content = new StringContent("""{"preferredLanguage":"fr"}""", Encoding.UTF8, "application/json");
+        }
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("profilePage", body);
+        Assert.DoesNotContain("profileLanguage", body);
+    }
+
+    // Signed with the web tier's own Development settings (appsettings.Development.json, the local development value).
+    private static string SignedDevelopmentToken(string actorType, Guid tenantId)
+    {
+        using var settings = System.Text.Json.JsonDocument.Parse(File.ReadAllText(WebSourcePath("appsettings.Development.json")));
+        var jwt = settings.RootElement.GetProperty("JwtSettings");
+        var key = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.GetProperty("Secret").GetString()!));
+        var token = new JwtSecurityToken(
+            jwt.GetProperty("Issuer").GetString(), jwt.GetProperty("Audience").GetString(),
+            [new Claim("sub", Guid.NewGuid().ToString()), new Claim("actor_type", actorType), new Claim("tenant_id", tenantId.ToString())],
+            expires: DateTime.UtcNow.AddMinutes(10),
+            signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(key, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static string WebSourcePath(params string[] parts)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            var candidate = Path.Combine(new[] { dir.FullName, "frontend", "Diten.Web" }.Concat(parts).ToArray());
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new FileNotFoundException(string.Join('/', parts));
+    }
+
     [Theory]
     [InlineData("/Profile")]
     [InlineData("/Profile/api/me")]
+    [InlineData("PUT /Profile/api/preferences")]
     public async Task The_routes_are_served_by_the_web_tier_and_ask_an_anonymous_caller_to_sign_in(string url)
     {
         using var client = _factory
             .WithWebHostBuilder(builder => builder.UseEnvironment("Development"))
             .CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
-        var response = await client.GetAsync(url);
+        var response = url.StartsWith("PUT ", StringComparison.Ordinal)
+            ? await client.PutAsync(url[4..], new StringContent("""{"preferredLanguage":"fr"}""", Encoding.UTF8, "application/json"))
+            : await client.GetAsync(url);
 
         Assert.Equal(HttpStatusCode.Found, response.StatusCode);
         Assert.Contains("login", response.Headers.Location?.OriginalString ?? string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -165,7 +279,8 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
         context.Response.Headers.SetCookie.FirstOrDefault(c => c is not null && c.StartsWith(CultureCookie + "=", StringComparison.Ordinal));
 
     private static (ProfileController Controller, HttpContext Context) ControllerWith(
-        HttpMessageHandler gateway, string method, string? body = null, bool withToken = true)
+        HttpMessageHandler gateway, string method, string? body = null, bool withToken = true,
+        string contentType = "application/json", bool expired = false, string? spoofedTenant = null)
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway })
@@ -174,12 +289,18 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = method;
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body ?? string.Empty));
-        httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentType = contentType;
+        if (spoofedTenant is not null)
+        {
+            httpContext.Request.Headers["X-Tenant-Id"] = spoofedTenant;
+        }
+
         if (withToken)
         {
             var jwt = new JwtSecurityToken(
                 claims: [new Claim("sub", Guid.NewGuid().ToString()), new Claim("tenant_id", TenantId.ToString()), new Claim("actor_type", "tenant_user")],
-                expires: DateTime.UtcNow.AddMinutes(10));
+                notBefore: expired ? DateTime.UtcNow.AddHours(-2) : null,
+                expires: expired ? DateTime.UtcNow.AddHours(-1) : DateTime.UtcNow.AddMinutes(10));
             httpContext.Request.Headers.Cookie = $"access_token={new JwtSecurityTokenHandler().WriteToken(jwt)}";
         }
 
@@ -267,6 +388,39 @@ public sealed class ProfileViewContractTests
         Assert.True(item > 0);
         var anchor = layout.LastIndexOf("<a ", item, StringComparison.Ordinal);
         Assert.Contains("href=\"/Profile\"", layout[anchor..item]);
+    }
+
+    [Fact]
+    public void The_pages_language_options_are_exactly_the_seven_the_controller_writes()
+    {
+        var index = File.ReadAllText(SourcePath("Views", "Profile", "Index.cshtml"));
+        var options = Regex.Matches(index, @"<option value=""([a-z]+)""").Select(m => m.Groups[1].Value);
+
+        Assert.Equal(ProfileController.Languages.OrderBy(l => l), options.OrderBy(l => l));
+    }
+
+    [Fact]
+    public void A_save_redraws_the_page_at_its_own_address_and_the_saved_flag_is_always_spent()
+    {
+        var script = File.ReadAllText(SourcePath("wwwroot", "assets", "js", "Profile", "index.js"));
+
+        // A "?culture=xx" the top bar left in the address must not win over the cookie just written.
+        Assert.Contains("root.location.replace(root.location.pathname)", script);
+        Assert.DoesNotContain("location.reload(", script);
+        // The flag is taken at start, whatever happens to the read after it.
+        Assert.Matches(@"function start\(\) \{\s*savedBeforeReload = takeSavedFlag\(\);", script);
+        // A 2xx without a readable body is not "saved".
+        Assert.Contains("if (!result.body || !result.body.data)", script);
+    }
+
+    [Fact]
+    public void The_loading_words_are_outside_the_hidden_placeholder()
+    {
+        var index = File.ReadAllText(SourcePath("Views", "Profile", "Index.cshtml"));
+        var loading = index.IndexOf("@Localizer[\"Loading\"]", StringComparison.Ordinal);
+        var hidden = index.IndexOf("aria-hidden=\"true\"", StringComparison.Ordinal);
+
+        Assert.True(loading > 0 && hidden > loading, "the Loading text is inside (or after) the aria-hidden block");
     }
 
     [Fact]

@@ -21,15 +21,18 @@
     <div class="alert d-none" id="profileNotice" role="status" aria-live="polite"></div>
 
     @* The skeleton while the profile loads; replaced by the card below (never both). *@
-    <section class="card" id="profileSkeleton" aria-hidden="true">
-        <div class="card-body placeholder-glow">
-            <span class="placeholder col-4 mb-3"></span>
-            <span class="placeholder col-6 mb-3"></span>
-            <span class="placeholder col-8 mb-3"></span>
-            <span class="placeholder col-3"></span>
-        </div>
-        <span class="visually-hidden">@Localizer["Loading"]</span>
-    </section>
+    <div id="profileSkeleton">
+        @* FIX2 (a11y) — the words a screen reader hears are OUTSIDE the hidden placeholder block. *@
+        <span class="visually-hidden" role="status">@Localizer["Loading"]</span>
+        <section class="card" aria-hidden="true">
+            <div class="card-body placeholder-glow">
+                <span class="placeholder col-4 mb-3"></span>
+                <span class="placeholder col-6 mb-3"></span>
+                <span class="placeholder col-8 mb-3"></span>
+                <span class="placeholder col-3"></span>
+            </div>
+        </section>
+    </div>
 
     <section class="card d-none" id="profileCard">
         <div class="card-body">

@@ -54,15 +54,70 @@ public sealed class ProfileController : Controller
         return View("~/Views/Profile/Index.cshtml");
     }
 
+    /// <summary>The user's own record — PROJECTED to the four fields the page shows (FIX2): AuthService's whole UserDto
+    /// (roles, tenant, failed sign-ins, a development set-up link) never reaches the browser from here.</summary>
     [HttpGet("/Profile/api/me")]
-    public Task<IActionResult> Me() => ForwardAsync(HttpMethod.Get, $"{_gatewayUrl}/api/auth/me", null, writeCulture: false);
+    public async Task<IActionResult> Me()
+    {
+        var result = await ForwardAsync(HttpMethod.Get, $"{_gatewayUrl}/api/auth/me", null, writeCulture: false);
+        if (result is not ContentResult { StatusCode: >= 200 and < 300 } answer)
+        {
+            return result;
+        }
+
+        return ProjectMe(answer.Content) is { } projected
+            ? new ContentResult { Content = projected, ContentType = "application/json", StatusCode = answer.StatusCode }
+            : StatusCode(StatusCodes.Status502BadGateway, new { message = "The profile answer could not be read." });
+    }
+
+    /// <summary>{ data: { firstName, lastName, email, preferredLanguage }, isSuccessful, statusCode } — nothing else.</summary>
+    internal static string? ProjectMe(string? json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json ?? string.Empty);
+            if (!document.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            string? Text(string name) => data.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+            return JsonSerializer.Serialize(new
+            {
+                data = new
+                {
+                    firstName = Text("firstName"),
+                    lastName = Text("lastName"),
+                    email = Text("email"),
+                    preferredLanguage = Text("preferredLanguage")
+                },
+                isSuccessful = true,
+                statusCode = 200
+            });
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>The largest body the write accepts — a language code needs a few dozen bytes.</summary>
+    internal const int MaxBodyBytes = 4096;
 
     [HttpPut("/Profile/api/preferences")]
+    [RequestSizeLimit(MaxBodyBytes)]
     public async Task<IActionResult> SavePreferences()
     {
+        // FIX2 — JSON only (415 otherwise), and a body that does not NAME preferredLanguage is refused (400): never read as
+        // "clear my choice". Clearing is an explicit null, exactly as AuthService itself requires.
+        if (!Request.HasJsonContentType())
+        {
+            return StatusCode(StatusCodes.Status415UnsupportedMediaType, new { message = "The body must be JSON." });
+        }
+
         if (!TryReadLanguage(await ReadBodyAsync(), out var language))
         {
-            return BadRequest(new { message = "preferredLanguage must be a string or null." });
+            return BadRequest(new { message = "The body must name preferredLanguage: a language, or null to clear it." });
         }
 
         var body = JsonSerializer.Serialize(new { preferredLanguage = language });
@@ -87,9 +142,14 @@ public sealed class ProfileController : Controller
                 return false;
             }
 
-            if (!document.RootElement.TryGetProperty("preferredLanguage", out var value))
+            // FIX2 — the field must be THERE (any letter case, as AuthService reads it); absent or misspelled is refused.
+            var named = document.RootElement.EnumerateObject()
+                .Where(property => string.Equals(property.Name, "preferredLanguage", StringComparison.OrdinalIgnoreCase))
+                .Select(property => (JsonElement?)property.Value)
+                .FirstOrDefault();
+            if (named is not { } value)
             {
-                return true; // absent = no choice (null): the same as clearing
+                return false;
             }
 
             switch (value.ValueKind)
@@ -103,8 +163,9 @@ public sealed class ProfileController : Controller
                     return false;
             }
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
         {
+            // InvalidOperationException: a string that is not text (a lone surrogate, "\ud800") — refused, never a 500.
             return false;
         }
     }
