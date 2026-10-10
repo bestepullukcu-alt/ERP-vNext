@@ -67,4 +67,11 @@
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
     <value>Чтобы отправить на утверждение, сначала задайте складские флаги в складских параметрах.</value>
   </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} и {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="StockDaysExceedShelfLife" xml:space="preserve"><value>Срок годности должен быть не менее {1} дн. — {0} не может его превышать.</value></data>
 </root>

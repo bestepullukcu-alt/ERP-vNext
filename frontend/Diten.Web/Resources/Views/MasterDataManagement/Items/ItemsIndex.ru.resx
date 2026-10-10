@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ItemsTitle" xml:space="preserve"><value>Позиции</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Материалы, хранящиеся на складе: идентификация, тип материала и поведение запаса.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить позицию</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="CanonicalCode" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Наименование</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="MaterialType" xml:space="preserve"><value>Тип материала</value></data>
+  <data name="BaseUomCode" xml:space="preserve"><value>Базовая единица</value></data>
+  <data name="UnitCode" xml:space="preserve"><value>Код единицы</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Складируемая</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>Учёт по партиям</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="ShelfLifeDays" xml:space="preserve"><value>Срок годности (дни)</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>Интервал повторного контроля (дни)</value></data>
+  <data name="MinRemainingShelfLifeDays" xml:space="preserve"><value>Минимальный остаточный срок годности (дни)</value></data>
+  <data name="StorageConditionCodes" xml:space="preserve"><value>Условия хранения</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>Пересчёт единиц</value></data>
+  <data name="Version" xml:space="preserve"><value>Версия</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создано</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Последнее изменение</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="MaterialType_ACTIVE_INGREDIENT" xml:space="preserve"><value>Активная субстанция</value></data>
+  <data name="MaterialType_EXCIPIENT" xml:space="preserve"><value>Вспомогательное вещество</value></data>
+  <data name="MaterialType_RAW_MATERIAL" xml:space="preserve"><value>Прочее сырьё</value></data>
+  <data name="MaterialType_PACKAGING_PRIMARY" xml:space="preserve"><value>Первичная упаковка</value></data>
+  <data name="MaterialType_PACKAGING_SECONDARY" xml:space="preserve"><value>Вторичная упаковка</value></data>
+  <data name="MaterialType_INTERMEDIATE" xml:space="preserve"><value>Промежуточный продукт</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="LifecyclePendingActivation" xml:space="preserve"><value>Ожидает утверждения</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Активна</value></data>
+  <data name="LifecycleDeactivated" xml:space="preserve"><value>Деактивирована</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Выведена из оборота</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новая позиция</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить позицию</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Сведения о позиции</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="StockBehaviourSection" xml:space="preserve"><value>Поведение запаса</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Парацетамол</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>Что это за материал и где он используется</value></data>
+  <data name="MaterialTypePlaceholder" xml:space="preserve"><value>Выберите тип материала</value></data>
+  <data name="BaseUomPlaceholder" xml:space="preserve"><value>Код единицы, напр. KGM</value></data>
+  <data name="UnitCodeHint" xml:space="preserve"><value>Единицы вводятся кодом (UN/ECE Rec 20), напр. KGM кг, GRM г, MGM мг, LTR л, MLT мл, C62 шт., XBX коробка, XCS ящик.</value></data>
+  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>Коды через запятую, напр. COOL_2_8, PROTECT_FROM_LIGHT</value></data>
+  <data name="StorageConditionHint" xml:space="preserve"><value>Условия хранения вводятся кодом: AMBIENT_15_25, COOL_2_8, FROZEN_BELOW_MINUS_20, PROTECT_FROM_LIGHT, PROTECT_FROM_MOISTURE. Не более одного температурного условия.</value></data>
+  <data name="DaysPlaceholder" xml:space="preserve"><value>Дни</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>Из единицы</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>В единицу</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>Числитель</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>Знаменатель</value></data>
+  <data name="ConversionHint" xml:space="preserve"><value>1 исходная единица = числитель / знаменатель целевых единиц. Десятичные числа с точкой, больше нуля.</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>Добавить пересчёт</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>Удалить</value></data>
+  <data name="NoConversions" xml:space="preserve"><value>Пересчётов пока нет.</value></data>
+  <data name="ActiveLockedNote" xml:space="preserve"><value>Позиция активна: свободно меняются только наименование и описание. Заполненное поле запаса меняется только утверждённой корректировкой; пустое можно заполнить один раз.</value></data>
+  <data name="EditNotAvailable" xml:space="preserve"><value>Эту позицию нельзя изменить в текущем статусе.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>Позиция создана как черновик.</value></data>
+  <data name="UpdateSuccess" xml:space="preserve"><value>Позиция сохранена.</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>Срок действия формы истёк. Обновите страницу и введите позицию заново.</value></data>
+  <data name="ErrorValidation" xml:space="preserve"><value>Некоторые значения не приняты. Проверьте поля и повторите попытку.</value></data>
+  <data name="ErrorForbidden" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>Позиция не найдена. Возможно, она удалена или у вас нет к ней доступа.</value></data>
+  <data name="ErrorConflict" xml:space="preserve"><value>Позиция была изменена за это время. Обновите её и повторите попытку.</value></data>
+  <data name="ErrorProviderUnavailable" xml:space="preserve"><value>Сервис позиций сейчас недоступен. Повторите попытку чуть позже.</value></data>
+  <data name="ErrorProviderTimeout" xml:space="preserve"><value>Сервис позиций не ответил вовремя. Повторите попытку чуть позже.</value></data>
+  <data name="ErrorGateway" xml:space="preserve"><value>Не удалось прочитать ответ. Повторите попытку чуть позже.</value></data>
+  <data name="ErrorExportTooLarge" xml:space="preserve"><value>Слишком много строк для одного экспорта (более 50 000). Сначала сузьте список фильтром или поиском.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>Статус позиции за это время изменился. Список обновлён.</value></data>
+  <data name="Submit" xml:space="preserve"><value>Отправить на утверждение</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>Запросить повторную активацию</value></data>
+  <data name="Retire" xml:space="preserve"><value>Вывести из оборота</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Отправить этот черновик на утверждение активации?</value></data>
+  <data name="DeactivateConfirmation" xml:space="preserve"><value>Деактивировать позицию? Её нельзя будет выбрать для новых поступлений; существующий запас можно отпускать.</value></data>
+  <data name="ReactivateConfirmation" xml:space="preserve"><value>Запросить повторную активацию позиции? Она проходит то же утверждение, что и первая активация.</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>Вывести позицию из оборота? Это окончательно: запас должен быть нулевым, код больше не используется.</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>Позиция отправлена на утверждение.</value></data>
+  <data name="DeactivateSuccess" xml:space="preserve"><value>Позиция деактивирована.</value></data>
+  <data name="ReactivateSuccess" xml:space="preserve"><value>Повторная активация запрошена.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>Позиция выведена из оборота.</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Причина</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Укажите причину (до 500 символов, в одну строку).</value></data>
+  <data name="ListSeparator" xml:space="preserve"><value>, </value></data>
+  <data name="RefusalNameInvalid" xml:space="preserve"><value>Введите наименование длиной 1–200 символов.</value></data>
+  <data name="RefusalDescriptionInvalid" xml:space="preserve"><value>Описание может содержать не более 2 000 символов.</value></data>
+  <data name="RefusalMaterialTypeRequired" xml:space="preserve"><value>Выберите тип материала.</value></data>
+  <data name="RefusalMaterialTypeInvalid" xml:space="preserve"><value>Этот тип материала не входит в шесть разрешённых.</value></data>
+  <data name="RefusalBaseUomRequired" xml:space="preserve"><value>Введите код базовой единицы.</value></data>
+  <data name="RefusalBaseUomInvalid" xml:space="preserve"><value>Код базовой единицы слишком длинный; введите код, например KGM.</value></data>
+  <data name="RefusalFlagsRequired" xml:space="preserve"><value>Укажите и «Учёт по партиям», и «Складируемая».</value></data>
+  <data name="RefusalShelfLifeInvalid" xml:space="preserve"><value>Срок годности должен быть от 1 до 3650 дней.</value></data>
+  <data name="RefusalRetestInvalid" xml:space="preserve"><value>Интервал повторного контроля должен быть от 1 до 3650 дней.</value></data>
+  <data name="RefusalMinRemainingInvalid" xml:space="preserve"><value>Минимальный остаточный срок должен быть от 0 до 3650 дней и не больше срока годности.</value></data>
+  <data name="RefusalStorageInvalid" xml:space="preserve"><value>Условия хранения должны быть кодами (не более 10).</value></data>
+  <data name="RefusalReasonRequired" xml:space="preserve"><value>Требуется причина (до 500 символов, в одну строку).</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>Запрос имел неожиданный формат. Обновите страницу и повторите попытку.</value></data>
+  <data name="RefusalListParameter" xml:space="preserve"><value>Не удалось применить поиск или фильтр (поиск — не более 200 символов). Измените его и повторите попытку.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>Позиция не найдена. Возможно, она удалена или у вас нет к ней доступа.</value></data>
+  <data name="RefusalNameConflict" xml:space="preserve"><value>Позиция с таким наименованием и типом материала уже существует.</value></data>
+  <data name="RefusalReferenceValueInvalid" xml:space="preserve"><value>Введённый код не является активным значением своего списка. Проверьте тип материала, коды единиц и условия хранения.</value></data>
+  <data name="RefusalReferenceValueInvalidNamed" xml:space="preserve"><value>Эти значения не являются активными значениями своих списков: {0}.</value></data>
+  <data name="RefusalStorageConflict" xml:space="preserve"><value>Условия хранения несовместимы друг с другом.</value></data>
+  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>Выберите не более одного температурного условия (например, COOL_2_8 или AMBIENT_15_25, не оба).</value></data>
+  <data name="RefusalStorageRepeated" xml:space="preserve"><value>Условие хранения указано дважды.</value></data>
+  <data name="RefusalUomConversion" xml:space="preserve"><value>Один из пересчётов единиц недопустим.</value></data>
+  <data name="RefusalUomConversionUnitMissing" xml:space="preserve"><value>Для каждого пересчёта нужны исходная и целевая единицы.</value></data>
+  <data name="RefusalUomConversionSameUnit" xml:space="preserve"><value>Пересчёт не может переводить единицу саму в себя.</value></data>
+  <data name="RefusalUomConversionFactor" xml:space="preserve"><value>Числитель и знаменатель должны быть десятичными числами больше нуля, записанными через точку (напр. 0.001), без экспоненты и знака.</value></data>
+  <data name="RefusalUomConversionPairRepeated" xml:space="preserve"><value>Пара единиц указана дважды (обратное направление выводится; укажите каждую пару один раз).</value></data>
+  <data name="RefusalStockBehaviourIncomplete" xml:space="preserve"><value>Складируемой позиции нужны поля запаса: для неупаковочной позиции — хотя бы одно условие хранения, а также срок годности или интервал повторного контроля.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>За это время позицию изменил другой пользователь. Обновите её и повторите попытку.</value></data>
+  <data name="RefusalCriticalFieldLocked" xml:space="preserve"><value>У активной позиции заполненное поле запаса нельзя изменить без утверждённой корректировки.</value></data>
+  <data name="RefusalCriticalFieldLockedNamed" xml:space="preserve"><value>У активной позиции «{0}» нельзя изменить без утверждённой корректировки.</value></data>
+  <data name="RefusalTransitionInvalid" xml:space="preserve"><value>Это действие невозможно в текущем статусе позиции. Обновите список.</value></data>
+  <data name="RefusalDeactivatedNotEditable" xml:space="preserve"><value>Деактивированную позицию нельзя изменить.</value></data>
+  <data name="RefusalRetireRequiresDeactivation" xml:space="preserve"><value>Активную позицию сначала деактивируют; вывести из оборота можно только деактивированную.</value></data>
+  <data name="RefusalRetireStockNotZero" xml:space="preserve"><value>У позиции ещё есть запас, поэтому её нельзя вывести из оборота. Она остаётся деактивированной.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>Эта форма уже отправлялась с другими значениями. Обновите страницу и введите позицию заново.</value></data>
+  <data name="RefusalReferenceListUnavailable" xml:space="preserve"><value>Справочные списки (единицы, условия хранения, типы материала) сейчас нельзя проверить. Повторите попытку чуть позже.</value></data>
+  <data name="RefusalRetireStockCheckUnavailable" xml:space="preserve"><value>Проверку запаса выполнить не удалось, поэтому позиция не выведена из оборота. Она остаётся деактивированной; повторите позже.</value></data>
+  <data name="RefusalActivationApprovalUnavailable" xml:space="preserve"><value>Утверждение активации пока недоступно: позиции нельзя отправить на утверждение или повторно активировать, пока не включён процесс утверждения. Ничего не изменено.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>Сервис, необходимый для этого действия, сейчас недоступен. Повторите попытку чуть позже.</value></data>
+  <data name="RefusalCreatePending" xml:space="preserve"><value>Позиция сохранена, но ещё не завершена. Сохраните ту же форму ещё раз, чтобы завершить.</value></data>
+  <data name="RefusalTryAgain" xml:space="preserve"><value>Запрос не удалось выполнить. Обновите страницу и повторите попытку.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>Сервис позиций сообщил о внутреннем несоответствии. Сообщите администратору.</value></data>
+</root>

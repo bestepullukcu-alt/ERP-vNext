@@ -202,7 +202,11 @@ public static class ProductItemSkuMasterModels
         // FIX4 item 1 (b): STUCK when a correction or retirement request holds the GSKU in manual reconciliation; the
         // request itself only for its requester (REPEAT_REQUEST sends it again, as it was).
         string? LifecycleRequestState = null,
-        GskuPendingLifecycleRequestDto? PendingLifecycleRequest = null);
+        GskuPendingLifecycleRequestDto? PendingLifecycleRequest = null)
+    {
+        // MOD-0290-FU04 S5 (O-12): the "Stock behaviour" section — values, stockable and why not, locks (O-8).
+        public global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourDto? StockBehaviour { get; init; }
+    }
 
     public sealed record GskuPendingLifecycleRequestDto(
         string Kind,
@@ -283,6 +287,9 @@ public static class ProductItemSkuMasterModels
         // FG FIX1 item 1: the audited Draft cancellation as reads see it (None / PendingAudit / Cancelled) — it takes
         // precedence over the stored Draft for actions and display; derived, never a stored flag.
         public FinishedGoodCancellationDisposition CancellationDisposition { get; init; }
+
+        // MOD-0290-FU04 S5 (O-12): the "Stock behaviour" section (base unit and days from the GSKU, O-14 / D-2).
+        public global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourDto? StockBehaviour { get; init; }
     }
 
     public sealed record FinishedGoodGskuSelectorDto(
@@ -337,7 +344,11 @@ public static class ProductItemSkuMasterModels
         int Version,
         DateTimeOffset CreatedAt,
         DateTimeOffset? UpdatedAt,
-        IReadOnlyList<string>? AvailableActions = null);
+        IReadOnlyList<string>? AvailableActions = null)
+    {
+        // MOD-0290-FU04 S5 (O-3): the LSKU's own serial flag; everything else read from its GSKU now.
+        public global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourDto? StockBehaviour { get; init; }
+    }
 
     public sealed record LskuCreateGskuOptionDto(
         Guid Id,

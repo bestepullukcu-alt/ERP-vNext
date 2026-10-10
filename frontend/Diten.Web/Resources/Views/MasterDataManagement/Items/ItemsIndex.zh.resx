@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ItemsTitle" xml:space="preserve"><value>物料</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>库存中保管的物料：标识、物料类型和库存行为。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增物料</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="CanonicalCode" xml:space="preserve"><value>代码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="MaterialType" xml:space="preserve"><value>物料类型</value></data>
+  <data name="BaseUomCode" xml:space="preserve"><value>基本单位</value></data>
+  <data name="UnitCode" xml:space="preserve"><value>单位代码</value></data>
+  <data name="Stockable" xml:space="preserve"><value>可库存</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>批次管理</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="ShelfLifeDays" xml:space="preserve"><value>保质期（天）</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>复检间隔（天）</value></data>
+  <data name="MinRemainingShelfLifeDays" xml:space="preserve"><value>最短剩余保质期（天）</value></data>
+  <data name="StorageConditionCodes" xml:space="preserve"><value>储存条件</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>单位换算</value></data>
+  <data name="Version" xml:space="preserve"><value>版本</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>最后修改</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="MaterialType_ACTIVE_INGREDIENT" xml:space="preserve"><value>活性成分</value></data>
+  <data name="MaterialType_EXCIPIENT" xml:space="preserve"><value>辅料</value></data>
+  <data name="MaterialType_RAW_MATERIAL" xml:space="preserve"><value>其他原料</value></data>
+  <data name="MaterialType_PACKAGING_PRIMARY" xml:space="preserve"><value>内包装材料</value></data>
+  <data name="MaterialType_PACKAGING_SECONDARY" xml:space="preserve"><value>外包装材料</value></data>
+  <data name="MaterialType_INTERMEDIATE" xml:space="preserve"><value>中间体</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="LifecyclePendingActivation" xml:space="preserve"><value>待审批</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>有效</value></data>
+  <data name="LifecycleDeactivated" xml:space="preserve"><value>已停用</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>已退役</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建物料</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑物料</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>物料详情</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="StockBehaviourSection" xml:space="preserve"><value>库存行为</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如：对乙酰氨基酚</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>该物料是什么以及用于何处</value></data>
+  <data name="MaterialTypePlaceholder" xml:space="preserve"><value>请选择物料类型</value></data>
+  <data name="BaseUomPlaceholder" xml:space="preserve"><value>单位代码，例如 KGM</value></data>
+  <data name="UnitCodeHint" xml:space="preserve"><value>单位按代码输入（UN/ECE Rec 20），例如 KGM 千克、GRM 克、MGM 毫克、LTR 升、MLT 毫升、C62 个、XBX 盒、XCS 箱。</value></data>
+  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>以逗号分隔的代码，例如 COOL_2_8, PROTECT_FROM_LIGHT</value></data>
+  <data name="StorageConditionHint" xml:space="preserve"><value>储存条件按代码输入：AMBIENT_15_25、COOL_2_8、FROZEN_BELOW_MINUS_20、PROTECT_FROM_LIGHT、PROTECT_FROM_MOISTURE。最多一个温度条件。</value></data>
+  <data name="DaysPlaceholder" xml:space="preserve"><value>天数</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>源单位</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>目标单位</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>分子</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>分母</value></data>
+  <data name="ConversionHint" xml:space="preserve"><value>1 个源单位 = 分子 / 分母 个目标单位。使用小数点的十进制数，且大于零。</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>添加换算</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>移除</value></data>
+  <data name="NoConversions" xml:space="preserve"><value>暂无换算。</value></data>
+  <data name="ActiveLockedNote" xml:space="preserve"><value>该物料已生效：只能自由修改名称和描述。已填写的库存字段只能通过已批准的更正修改；空字段仍可填写一次。</value></data>
+  <data name="EditNotAvailable" xml:space="preserve"><value>该物料在当前状态下无法编辑。</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>物料已作为草稿创建。</value></data>
+  <data name="UpdateSuccess" xml:space="preserve"><value>物料已保存。</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>此表单已过期。请重新加载页面并再次输入物料。</value></data>
+  <data name="ErrorValidation" xml:space="preserve"><value>部分值未被接受。请检查字段后重试。</value></data>
+  <data name="ErrorForbidden" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>您的会话已结束。请重新登录。</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>未找到该物料。它可能已被移除，或您无权访问。</value></data>
+  <data name="ErrorConflict" xml:space="preserve"><value>该物料在此期间已被修改。请重新加载后重试。</value></data>
+  <data name="ErrorProviderUnavailable" xml:space="preserve"><value>物料服务当前不可用。请稍后重试。</value></data>
+  <data name="ErrorProviderTimeout" xml:space="preserve"><value>物料服务未及时响应。请稍后重试。</value></data>
+  <data name="ErrorGateway" xml:space="preserve"><value>无法读取响应。请稍后重试。</value></data>
+  <data name="ErrorExportTooLarge" xml:space="preserve"><value>一次导出的行数过多（超过 50,000 行）。请先通过筛选或搜索缩小列表。</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>该物料的状态在此期间已更改。列表已刷新。</value></data>
+  <data name="Submit" xml:space="preserve"><value>提交审批</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>停用</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>申请重新启用</value></data>
+  <data name="Retire" xml:space="preserve"><value>退役</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>将此草稿提交启用审批？</value></data>
+  <data name="DeactivateConfirmation" xml:space="preserve"><value>停用该物料？它将不能再用于新的入库；现有库存仍可出库。</value></data>
+  <data name="ReactivateConfirmation" xml:space="preserve"><value>申请重新启用该物料？重新启用与首次启用经过相同的审批。</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>将该物料退役？此操作不可撤销：库存须为零，代码不再重复使用。</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>物料已提交审批。</value></data>
+  <data name="DeactivateSuccess" xml:space="preserve"><value>物料已停用。</value></data>
+  <data name="ReactivateSuccess" xml:space="preserve"><value>已申请重新启用。</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>物料已退役。</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>原因</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>请输入原因（最多 500 个字符，单行）。</value></data>
+  <data name="ListSeparator" xml:space="preserve"><value>、</value></data>
+  <data name="RefusalNameInvalid" xml:space="preserve"><value>请输入 1–200 个字符的名称。</value></data>
+  <data name="RefusalDescriptionInvalid" xml:space="preserve"><value>描述最多 2,000 个字符。</value></data>
+  <data name="RefusalMaterialTypeRequired" xml:space="preserve"><value>请选择物料类型。</value></data>
+  <data name="RefusalMaterialTypeInvalid" xml:space="preserve"><value>该物料类型不属于允许的六种类型之一。</value></data>
+  <data name="RefusalBaseUomRequired" xml:space="preserve"><value>请输入基本单位代码。</value></data>
+  <data name="RefusalBaseUomInvalid" xml:space="preserve"><value>基本单位代码过长；请输入类似 KGM 的单位代码。</value></data>
+  <data name="RefusalFlagsRequired" xml:space="preserve"><value>请同时设置“批次管理”和“可库存”。</value></data>
+  <data name="RefusalShelfLifeInvalid" xml:space="preserve"><value>保质期必须在 1 到 3650 天之间。</value></data>
+  <data name="RefusalRetestInvalid" xml:space="preserve"><value>复检间隔必须在 1 到 3650 天之间。</value></data>
+  <data name="RefusalMinRemainingInvalid" xml:space="preserve"><value>最短剩余保质期必须在 0 到 3650 天之间，且不得超过保质期。</value></data>
+  <data name="RefusalStorageInvalid" xml:space="preserve"><value>储存条件必须为代码（最多 10 个）。</value></data>
+  <data name="RefusalReasonRequired" xml:space="preserve"><value>必须填写原因（最多 500 个字符，单行）。</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>请求格式不符合要求。请重新加载页面后重试。</value></data>
+  <data name="RefusalListParameter" xml:space="preserve"><value>无法应用搜索或筛选（搜索最多 200 个字符）。请修改后重试。</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>未找到该物料。它可能已被移除，或您无权访问。</value></data>
+  <data name="RefusalNameConflict" xml:space="preserve"><value>已存在相同名称和物料类型的物料。</value></data>
+  <data name="RefusalReferenceValueInvalid" xml:space="preserve"><value>输入的某个代码不是其列表中的有效值。请检查物料类型、单位代码和储存条件。</value></data>
+  <data name="RefusalReferenceValueInvalidNamed" xml:space="preserve"><value>以下值不是其列表中的有效值：{0}。</value></data>
+  <data name="RefusalStorageConflict" xml:space="preserve"><value>储存条件相互不兼容。</value></data>
+  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>最多选择一个温度条件（例如 COOL_2_8 或 AMBIENT_15_25，不能同时选择）。</value></data>
+  <data name="RefusalStorageRepeated" xml:space="preserve"><value>某个储存条件重复输入了两次。</value></data>
+  <data name="RefusalUomConversion" xml:space="preserve"><value>某个单位换算无效。</value></data>
+  <data name="RefusalUomConversionUnitMissing" xml:space="preserve"><value>每个换算都需要源单位和目标单位。</value></data>
+  <data name="RefusalUomConversionSameUnit" xml:space="preserve"><value>换算不能将一个单位换算为其自身。</value></data>
+  <data name="RefusalUomConversionFactor" xml:space="preserve"><value>分子和分母必须是大于零的十进制数，使用小数点书写（例如 0.001），不带指数或符号。</value></data>
+  <data name="RefusalUomConversionPairRepeated" xml:space="preserve"><value>某对单位重复输入（反向换算会自动推导；每对只需输入一次）。</value></data>
+  <data name="RefusalStockBehaviourIncomplete" xml:space="preserve"><value>可库存物料需要填写库存字段：非包装物料至少需要一个储存条件，以及保质期或复检间隔。</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>该物料在此期间已被他人修改。请重新加载后重试。</value></data>
+  <data name="RefusalCriticalFieldLocked" xml:space="preserve"><value>对于已生效的物料，未经批准的更正不能修改已填写的库存字段。</value></data>
+  <data name="RefusalCriticalFieldLockedNamed" xml:space="preserve"><value>对于已生效的物料，未经批准的更正不能修改“{0}”。</value></data>
+  <data name="RefusalTransitionInvalid" xml:space="preserve"><value>在物料当前状态下无法执行此操作。请重新加载列表。</value></data>
+  <data name="RefusalDeactivatedNotEditable" xml:space="preserve"><value>已停用的物料无法编辑。</value></data>
+  <data name="RefusalRetireRequiresDeactivation" xml:space="preserve"><value>已生效的物料须先停用；只有已停用的物料才能退役。</value></data>
+  <data name="RefusalRetireStockNotZero" xml:space="preserve"><value>该物料仍有库存，因此无法退役。它将保持停用状态。</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>此表单已使用不同的值提交过。请重新加载页面并再次输入物料。</value></data>
+  <data name="RefusalReferenceListUnavailable" xml:space="preserve"><value>当前无法校验参考列表（单位、储存条件、物料类型）。请稍后重试。</value></data>
+  <data name="RefusalRetireStockCheckUnavailable" xml:space="preserve"><value>库存检查未能完成，因此物料未退役。它将保持停用状态；请稍后重试。</value></data>
+  <data name="RefusalActivationApprovalUnavailable" xml:space="preserve"><value>启用审批尚不可用：在审批流程开启之前，物料无法提交审批或重新启用。未作任何更改。</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>此操作所需的服务当前不可用。请稍后重试。</value></data>
+  <data name="RefusalCreatePending" xml:space="preserve"><value>物料已保存但尚未完成。请再次保存同一表单以完成。</value></data>
+  <data name="RefusalTryAgain" xml:space="preserve"><value>请求未能完成。请重新加载页面后重试。</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>物料服务报告了内部不一致。请通知您的管理员。</value></data>
+</root>

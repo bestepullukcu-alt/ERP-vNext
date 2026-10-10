@@ -171,11 +171,13 @@ public sealed class SetGskuStockBehaviourHandler(
         if ((plan.Sets.ContainsKey(StockBehaviourFields.ShelfLifeDays)
              || plan.Sets.ContainsKey(StockBehaviourFields.RetestDays)
              || plan.Sets.ContainsKey(StockBehaviourFields.MinRemainingShelfLifeDays))
-            && !StockBehaviourRules.DaysWithinShelfLife(
+            && StockFlagGate.DaysDetail(
                 shelfLifeAfter,
                 plan.After(StockBehaviourFields.RetestDays, gsku.RetestDays),
-                plan.After(StockBehaviourFields.MinRemainingShelfLifeDays, gsku.MinRemainingShelfLifeDays)))
-            return StockBehaviourContext.Fail(StockBehaviourRules.DaysInvalid, 422);
+                plan.After(StockBehaviourFields.MinRemainingShelfLifeDays, gsku.MinRemainingShelfLifeDays)) is { } daysDetail)
+            // S5 (D-15): the refusal says which days exceed and the bound the shelf life must reach — the way out of an
+            // older record whose days were filled before its shelf life.
+            return Response<StockBehaviourResult>.Fail([StockBehaviourRules.DaysInvalid, .. daysDetail], 422);
 
         var baseUom = plan.After(StockBehaviourFields.BaseUomCode, gsku.BaseUomCode);
         var conversions = plan.After<List<ItemUomConversion>>(StockBehaviourFields.UomConversions, gsku.UomConversions);

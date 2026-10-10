@@ -26,4 +26,20 @@
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Единица, используемая этим GSKU, была выведена из использования после утверждения. Утверждение остаётся в силе: оно применено со значениями, проверенными при отправке; выведенную единицу нельзя выбрать для новых записей.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Перед отправкой этого GSKU на утверждение задайте в складских параметрах: {0}.</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Сначала укажите срок годности: для утверждённого GSKU {0} можно задать только после того, как известен его срок годности.</value></data>
+  <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>Списки единиц и условий хранения сейчас недоступны. Повторите попытку чуть позже.</value></data>
+  <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Сначала задайте базовую единицу GSKU — готовый продукт использует её.</value></data>
+  <data name="RefusalStockGskuShelfLifeMissing" xml:space="preserve"><value>Сначала задайте срок годности GSKU — собственный срок готового продукта не может его превышать.</value></data>
+  <data name="RefusalStockConversionInvalid" xml:space="preserve"><value>Пересчёт единиц недопустим: сначала задайте базовую единицу; каждая единица должна сводиться к ней не более чем за четыре шага без циклов, а пары одной размерности (например, кг ↔ г) вручную не вводятся.</value></data>
+  <data name="RefusalStockStorageConflict" xml:space="preserve"><value>Можно выбрать только одно температурное условие.</value></data>
+  <data name="RefusalStockStorageInvalid" xml:space="preserve"><value>Кода условия хранения нет в списке. Проверьте коды.</value></data>
+  <data name="RefusalStockUomInvalid" xml:space="preserve"><value>Кода единицы нет в списке. Проверьте коды.</value></data>
+  <data name="RefusalStockPackUomUnknown" xml:space="preserve"><value>Единицы упаковки этого GSKU нет в списке единиц, поэтому пересчёт коробка ↔ упаковка вывести нельзя.</value></data>
+  <data name="RefusalStockIncomplete" xml:space="preserve"><value>Пока нельзя сделать складируемым: сначала заполните все обязательные складские поля.</value></data>
+  <data name="RefusalStockShelfLifeInvalid" xml:space="preserve"><value>Срок годности должен быть целым числом дней от 1 до 3650.</value></data>
+  <data name="RefusalStockFgShelfLifeExceedsGsku" xml:space="preserve"><value>Срок годности готового продукта не может превышать срок его GSKU.</value></data>
+  <data name="RefusalStockGtinInvalid" xml:space="preserve"><value>GTIN должен состоять из 14 цифр с верной контрольной цифрой GS1.</value></data>
+  <data name="RefusalStockDaysInvalid" xml:space="preserve"><value>Интервал повторного контроля и минимальный остаточный срок годности должны быть целыми числами дней от 0 до 3650.</value></data>
+  <data name="RefusalStockNotEditable" xml:space="preserve"><value>Статус этой записи не позволяет менять складское поведение.</value></data>
+  <data name="RefusalStockFieldLocked" xml:space="preserve"><value>Заполненное значение утверждённой записи здесь изменить нельзя — только через исправление. В списки можно лишь добавлять новые строки.</value></data>
+  <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Этот GTIN уже используется другим готовым продуктом.</value></data>
 </root>

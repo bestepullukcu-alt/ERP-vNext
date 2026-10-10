@@ -81,4 +81,10 @@
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
     <value>To send this for approval, first enter its stock flags in stock behaviour.</value>
   </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} and {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
 </root>

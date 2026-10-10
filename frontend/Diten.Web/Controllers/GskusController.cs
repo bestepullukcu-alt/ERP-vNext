@@ -279,6 +279,32 @@ public sealed class GskusController : Controller
             cancellationToken);
     }
 
+    // MOD-0290-FU04 S5 (O-12) — the "Stock behaviour" offcanvas's save: its own key (StockBehaviourAccess.Gsku), the
+    // fields the maker changed and nothing else, expectedVersion = the detail's gskuVersion. The Idempotency-Key is
+    // derived per form attempt (StockBehaviourWrite.OperationId); a refusal is said through the code bridge, a 422 as a 422.
+    [HttpPut("api/{id:guid}/stock-behaviour")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetStockBehaviour(Guid id, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(Services.MasterData.StockBehaviourAccess.Gsku))
+            return ForbiddenResult();
+        var write = id == Guid.Empty ? null : await Services.MasterData.StockBehaviourWrite.ReadAsync(
+            Request, Services.MasterData.StockBehaviourWrite.GskuFields, [], HttpContext.RequestAborted);
+        if (write is null)
+            return SafeFailure(HttpStatusCode.BadRequest);
+        if (!Services.MasterData.StockBehaviourWrite.TryResolveActor(User, out var tenantId, out var actor))
+            return UnauthorizedResult();
+
+        return await ProxyLifecycleRequestAsync(
+            HttpMethod.Put,
+            $"{_gatewayUrl}/api/gskus/{id:D}/stock-behaviour",
+            new StringContent(write.Body, Encoding.UTF8, "application/json"),
+            Services.MasterData.StockBehaviourWrite.OperationId(tenantId, actor, "gsku", "stock-behaviour", id, write),
+            new HashSet<int> { StatusCodes.Status200OK },
+            "stock-behaviour",
+            cancellationToken);
+    }
+
     // FIX3 B17: the list component's server request (start, length, search, orderBy, orderDir, lifecycleStatus) becomes
     // MDM's page query, and MDM's page becomes the component's envelope { data: { items, total, filteredTotal } }.
     // MDM returns one count (the rows matching search + filter), so total and filteredTotal are both that count.
@@ -865,7 +891,9 @@ public sealed class GskusController : Controller
         }
         foreach (var code in codeList)
         {
-            string? sentence = DetailSentences.TryGetValue(code, out var detailed)
+            string? sentence = code == DaysInvalidCode && DaysInvalidSentence(details.GetValueOrDefault(code)) is { } days
+                ? days
+                : DetailSentences.TryGetValue(code, out var detailed)
                 ? DetailSentence(detailed.Key, detailed.Labels, details.GetValueOrDefault(code))
                 : KnownFailureKeys.TryGetValue(code, out var known)
                 ? _localizer[known].Value
@@ -916,7 +944,31 @@ public sealed class GskusController : Controller
         var said = (fields ?? []).Where(labels.ContainsKey).Distinct(StringComparer.Ordinal)
             .Select(field => _localizer[labels[field]].Value).ToList();
         if (said.Count == 0) said.AddRange(labels.Values.Select(label => _localizer[label].Value));
-        return string.Format(System.Globalization.CultureInfo.CurrentCulture, _refusals[key].Value, string.Join(", ", said));
+        // S5 (D-19): two labels joined with the language's own conjunction (resx), not a bare comma.
+        return string.Format(System.Globalization.CultureInfo.CurrentCulture, _refusals[key].Value,
+            Services.Localization.LocalizedList.Join(said, _localizer["ListJoinTwo"].Value, _localizer["ListSeparator"].Value));
+    }
+
+    // S5 (D-15): STOCK_DAYS_INVALID names the days that exceed the shelf life, then the bound the shelf life must reach
+    // (shelfLifeDaysAtLeast=N) — said as one sentence with N, the way out of a record whose days came first. Without
+    // those details it is the map's bound sentence (0–3650).
+    private const string DaysInvalidCode = "STOCK_DAYS_INVALID";
+    private const string ShelfLifeAtLeast = "shelfLifeDaysAtLeast=";
+
+    private string? DaysInvalidSentence(IReadOnlyList<string>? details)
+    {
+        var bound = (details ?? []).Where(item => item.StartsWith(ShelfLifeAtLeast, StringComparison.Ordinal))
+            .Select(item => int.TryParse(item[ShelfLifeAtLeast.Length..], NumberStyles.None, CultureInfo.InvariantCulture,
+                out var days) ? days : (int?)null)
+            .FirstOrDefault();
+        if (bound is null) return null;
+        var labels = DetailSentences["STOCK_DAYS_REQUIRE_SHELF_LIFE"].Labels;
+        var said = (details ?? []).Where(labels.ContainsKey).Distinct(StringComparer.Ordinal)
+            .Select(field => _localizer[labels[field]].Value).ToList();
+        if (said.Count == 0) said.AddRange(labels.Values.Select(label => _localizer[label].Value));
+        return string.Format(CultureInfo.CurrentCulture, _localizer["StockDaysExceedShelfLife"].Value,
+            Services.Localization.LocalizedList.Join(said, _localizer["ListJoinTwo"].Value, _localizer["ListSeparator"].Value),
+            bound.Value.ToString(CultureInfo.CurrentCulture));
     }
 
     private sealed class NoRefusals : IStringLocalizer<GskuRefusals>
@@ -945,6 +997,9 @@ public sealed class GskusController : Controller
             HttpStatusCode.Forbidden => StatusCodes.Status403Forbidden,
             HttpStatusCode.NotFound => StatusCodes.Status404NotFound,
             HttpStatusCode.Conflict => StatusCodes.Status409Conflict,
+            // S5 (D-17): the stock edit's rule refusals (STOCK_DAYS_*, STOCK_BEHAVIOUR_INCOMPLETE, …) are 422 — said as
+            // themselves, never turned into a gateway failure.
+            HttpStatusCode.UnprocessableEntity => StatusCodes.Status422UnprocessableEntity,
             HttpStatusCode.ServiceUnavailable => StatusCodes.Status503ServiceUnavailable,
             HttpStatusCode.GatewayTimeout => StatusCodes.Status504GatewayTimeout,
             _ => StatusCodes.Status502BadGateway
@@ -965,7 +1020,7 @@ public sealed class GskusController : Controller
 
     private string MapStatusMessage(int statusCode) => statusCode switch
     {
-        StatusCodes.Status400BadRequest => _localizer["ErrorValidation"].Value,
+        StatusCodes.Status400BadRequest or StatusCodes.Status422UnprocessableEntity => _localizer["ErrorValidation"].Value,
         StatusCodes.Status401Unauthorized => _sharedLocalizer["Unauthorized"].Value,
         StatusCodes.Status403Forbidden => _localizer["ErrorForbidden"].Value,
         StatusCodes.Status404NotFound => _localizer["ErrorNotFound"].Value,

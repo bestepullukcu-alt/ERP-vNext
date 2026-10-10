@@ -45,6 +45,21 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string ProductIdentityLifecycleOperationRecover =
         "mdm.product-identity.lifecycle-operations.recover";
 
+    // MOD-0290-FU04 S5 (§23 #7): the Items page's keys (ItemsController). No withdraw key yet — S2 brings the approval.
+    private const string ItemsRead = "mdm.items.read";
+    private const string ItemsCreate = "mdm.items.create";
+    private const string ItemsUpdate = "mdm.items.update";
+    private const string ItemsSubmit = "mdm.items.submit";
+    private const string ItemsDeactivate = "mdm.items.deactivate";
+    private const string ItemsRetire = "mdm.items.retire";
+
+    // S5 (O-12, CT decision 5): the stock-behaviour edit is held TODAY by the keys StockBehaviourPermissions names; its
+    // own keys (mdm.<level>.edit-stock-behaviour) come in a separate work item (BL-573) — a new mdm.gskus.* key would
+    // break Auth's exact lifecycle key set.
+    private const string GskusEditStockBehaviour = "mdm.gskus.update";
+    private const string LskusEditStockBehaviour = "mdm.lskus.create";
+    private const string FinishedGoodsEditStockBehaviour = "mdm.finished-goods.create";
+
     public ModuleManifestDocument GetManifest() =>
         new(
             ModuleCode: "product-item-sku-master",
@@ -52,7 +67,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
             DisplayName: "Product / Item / SKU Master",
             Domain: "MASTER-DATA-MANAGEMENT",
             Service: "DitenMdmService",
-            ModuleVersion: "1.0.0",
+            // S5: + the ITEMS page and the EDIT_STOCK_BEHAVIOUR actions.
+            ModuleVersion: "1.1.0",
             IsTenantAssignable: true,
             SortOrder: 340,
             Pages:
@@ -104,7 +120,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         // GSKU / LSKU — never a human's (Auth: non-human key). Both get their endpoints in the FG
                         // lifecycle round.
                         new ModuleManifestAction("SUBMIT", "Submit", FinishedGoodsSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire", FinishedGoodsRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
+                        new ModuleManifestAction("RETIRE", "Retire", FinishedGoodsRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
+                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", FinishedGoodsEditStockBehaviour, "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "GSKUS",
@@ -124,7 +141,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", "mdm.gskus.withdraw", "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", "mdm.gskus.request-correction", "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", "mdm.gskus.request-retirement", "RowAction", 70, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire Identity", "mdm.gskus.retire", "System", 80, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
+                        new ModuleManifestAction("RETIRE", "Retire Identity", "mdm.gskus.retire", "System", 80, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
+                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", GskusEditStockBehaviour, "RowAction", 90, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "LSKUS",
@@ -142,7 +160,29 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("SUBMIT", "Submit", LskusSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", LskusWithdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", LskusRequestRetirement, "RowAction", 37, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire", LskusRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
+                        new ModuleManifestAction("RETIRE", "Retire", LskusRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
+                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", LskusEditStockBehaviour, "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+                // MOD-0290-FU04 S5 (§23 #1, #7): the Items page under Master Data, for holders of mdm.items.read.
+                // WITHDRAW_APPROVAL is not declared until S2 (CT decision 4).
+                new ModuleManifestPage(
+                    PageCode: "ITEMS",
+                    DisplayName: "Items",
+                    RoutePath: "/MasterDataManagement/Items",
+                    RequiredPermission: ItemsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 45,
+                    Actions:
+                    [
+                        new ModuleManifestAction("ADD_NEW", "Add New", ItemsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("VIEW_DETAILS", "View Details", ItemsRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("EDIT", "Edit", ItemsUpdate, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("SUBMIT", "Submit", ItemsSubmit, "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DEACTIVATE", "Deactivate", ItemsDeactivate, "RowAction", 50, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REACTIVATE", "Reactivate", ItemsSubmit, "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", ItemsRetire, "RowAction", 70, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "PRODUCT_ABBREVIATIONS",

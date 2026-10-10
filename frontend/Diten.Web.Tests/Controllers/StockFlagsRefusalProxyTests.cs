@@ -113,7 +113,7 @@ public sealed class StockFlagsRefusalProxyTests
 
     [Theory]
     [InlineData(new[] { "serialControlled", "gsku.lotControlled" },
-        "ErrorStockFlagsRequired[StockFlagSerialControlled, StockFlagGskuLotControlled]")]
+        "ErrorStockFlagsRequired[StockFlagSerialControlled + StockFlagGskuLotControlled]")]
     [InlineData(new[] { "gsku.lotControlled" }, "ErrorStockFlagsRequired[StockFlagGskuLotControlled]")]
     [InlineData(new[] { "serialControlled" }, "ErrorStockFlagsRequired[StockFlagSerialControlled]")]
     public async Task An_lsku_refusal_names_which_flag_is_missing(string[] flags, string sentence)
@@ -151,6 +151,54 @@ public sealed class StockFlagsRefusalProxyTests
         }
     }
 
+    // S5 (D-17): a 422 refusal (the stock edit's rules) stays a 422 with its sentence — never a 502.
+    // The sabotage target "422 → 502".
+    [Theory]
+    [InlineData(HttpStatusCode.UnprocessableEntity, 422)]
+    [InlineData(HttpStatusCode.Conflict, 409)]
+    public async Task A_422_refusal_is_said_as_a_422(HttpStatusCode mdm, int expected)
+    {
+        var result = await GskuAnswerAsync(mdm, ["STOCK_DAYS_REQUIRE_SHELF_LIFE", "retestDays"]);
+
+        var (status, errors, _) = Read(result);
+        Assert.Equal(expected, status);
+        Assert.Equal("refusal:RefusalStockDaysRequireShelfLife[localized:StockDayRetest]", Assert.Single(errors));
+    }
+
+    // S5 (D-18): the parity keys are the PRODUCTION map's — every refusal that names fields (GskusController.DetailSentences):
+    // its sentence in GskuRefusals and each field label in GskusIndex, in all seven languages, the sentence with {0}.
+    [Fact]
+    public void Every_field_naming_refusal_of_the_proxy_is_in_all_seven_languages()
+    {
+        var map = (System.Collections.IDictionary)typeof(GskusController)
+            .GetField("DetailSentences", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+            .GetValue(null)!;
+        Assert.True(map.Count >= 2, "the proxy's field-naming refusals were not found");
+        foreach (var language in Languages)
+        {
+            var refusals = Resx("Gskus", "GskuRefusals", language);
+            var index = Resx("Gskus", "GskusIndex", language);
+            foreach (System.Collections.DictionaryEntry entry in map)
+            {
+                var (key, labels) = ((string, IReadOnlyDictionary<string, string>))entry.Value!;
+                Assert.True(refusals.TryGetValue(key, out var sentence) && sentence.Contains("{0}", StringComparison.Ordinal),
+                    $"{key} missing or without {{0}} in {language}");
+                foreach (var label in labels.Values)
+                    Assert.True(index.TryGetValue(label, out var text) && !string.IsNullOrWhiteSpace(text), $"{label} missing in {language}");
+            }
+            foreach (var resx in new[] { index, Resx("Lskus", "LskusIndex", language) })
+            {
+                Assert.Matches(@"\{0\}.*\{1\}", resx["ListJoinTwo"]);
+                Assert.False(string.IsNullOrEmpty(resx["ListSeparator"]), $"ListSeparator missing in {language}");
+            }
+        }
+    }
+
+    private static Dictionary<string, string> Resx(string folder, string file, string language) =>
+        XDocument.Load(Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources", "Views", "MasterDataManagement",
+                folder, $"{file}.{language}.resx")).Root!.Elements("data")
+            .ToDictionary(x => x.Attribute("name")!.Value, x => x.Element("value")?.Value ?? string.Empty);
+
     // The refusal sentences that carry the field list.
     private static bool Formatted(string key) =>
         key.EndsWith("StockFlagsRequired", StringComparison.Ordinal) || key.EndsWith("RequireShelfLife", StringComparison.Ordinal);
@@ -160,7 +208,7 @@ public sealed class StockFlagsRefusalProxyTests
     [InlineData(new[] { "retestDays" }, "refusal:RefusalStockDaysRequireShelfLife[localized:StockDayRetest]")]
     [InlineData(new[] { "minRemainingShelfLifeDays" }, "refusal:RefusalStockDaysRequireShelfLife[localized:StockDayMinRemaining]")]
     [InlineData(new[] { "retestDays", "minRemainingShelfLifeDays" },
-        "refusal:RefusalStockDaysRequireShelfLife[localized:StockDayRetest, localized:StockDayMinRemaining]")]
+        "refusal:RefusalStockDaysRequireShelfLife[localized:StockDayRetest + localized:StockDayMinRemaining]")]
     public async Task The_days_needing_the_shelf_life_are_one_sentence_naming_them(string[] fields, string sentence)
     {
         var result = await GskuSubmitAsync(["STOCK_DAYS_REQUIRE_SHELF_LIFE", .. fields]);
@@ -171,11 +219,13 @@ public sealed class StockFlagsRefusalProxyTests
         Assert.DoesNotContain("\"retestDays", body, StringComparison.Ordinal);
     }
 
-    private static async Task<IActionResult> GskuSubmitAsync(params string[] errors)
+    private static Task<IActionResult> GskuSubmitAsync(params string[] errors) => GskuAnswerAsync(HttpStatusCode.Conflict, errors);
+
+    private static async Task<IActionResult> GskuAnswerAsync(HttpStatusCode mdmStatus, string[] errors)
     {
         var gateway = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?> { ["GatewayUrl"] = "https://gateway-fixture.invalid" }).Build();
-        var controller = new GskusController(new HttpClient(new Answer(Conflict(errors))), gateway,
+        var controller = new GskusController(new HttpClient(new Answer(Answered(mdmStatus, errors))), gateway,
             new EphemeralDataProtectionProvider(), new FormatLocalizer<Diten.Web.SharedResource>("localized"),
             new FormatLocalizer<GskusIndex>("localized"), NullLogger<GskusController>.Instance, new FormatLocalizer<GskuRefusals>("refusal"))
         { ControllerContext = new ControllerContext { HttpContext = Context("mdm.gskus.submit", new() { ["ExpectedVersion"] = "3" }) } };
@@ -192,9 +242,11 @@ public sealed class StockFlagsRefusalProxyTests
         return await controller.SubmitLifecycle(Guid.NewGuid(), 0, CancellationToken.None);
     }
 
-    private static HttpResponseMessage Conflict(string[] errors) => new(HttpStatusCode.Conflict)
+    private static HttpResponseMessage Conflict(string[] errors) => Answered(HttpStatusCode.Conflict, errors);
+
+    private static HttpResponseMessage Answered(HttpStatusCode status, string[] errors) => new(status)
     {
-        Content = new StringContent(JsonSerializer.Serialize(new { isSuccessful = false, statusCode = 409, errors }),
+        Content = new StringContent(JsonSerializer.Serialize(new { isSuccessful = false, statusCode = (int)status, errors }),
             Encoding.UTF8, "application/json")
     };
 
@@ -251,6 +303,9 @@ public sealed class StockFlagsRefusalProxyTests
 
         private string Text(string name)
         {
+            // S5 (D-19): the join patterns are the resx's — here a visible stand-in.
+            if (name == "ListJoinTwo") return "{0} + {1}";
+            if (name == "ListSeparator") return "; ";
             var text = prefix is null ? name : $"{prefix}:{name}";
             return Formatted(name) ? text + "[{0}]" : text;
         }

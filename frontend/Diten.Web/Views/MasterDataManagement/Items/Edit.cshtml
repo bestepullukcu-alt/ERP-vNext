@@ -1,0 +1,24 @@
+@model Diten.Web.Models.Items.ItemFormViewModel
+@using Diten.Web.Views.MasterDataManagement.Items
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ItemsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+@* UAS-001: without mdm.items.update nothing of the form is drawn (ItemsController.Edit answers 403 with this face). *@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.items.update"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ItemsTitle"].Value" />
+    return;
+}
+
+<partial name="~/Views/MasterDataManagement/Items/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/MasterDataManagement/Items/_IndexL10n.cshtml" />
+    <script src="~/assets/js/MasterDataManagement/Items/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterDataManagement/Items/index.js" asp-append-version="true"></script>
+}

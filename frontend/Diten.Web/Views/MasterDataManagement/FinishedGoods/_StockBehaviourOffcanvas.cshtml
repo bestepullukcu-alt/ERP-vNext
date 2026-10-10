@@ -1,0 +1,98 @@
+@using Diten.Web.Views.MasterDataManagement.StockBehaviour
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockBehaviourText> Stock
+@*
+    MOD-0290-FU04 S5 (O-12) — the Finished Good's stock behaviour, edited in its own offcanvas (the draft form does not
+    grow; each group stays under eight inputs): its own conversions (case ↔ box), its own shelf life — empty reads the
+    GSKU's (D-2), never longer than it (O-15) — storage conditions, lot / serial / stockable flags, and the sales-box
+    GTIN (its own request). Its base unit is the GSKU's (O-14) and is not entered. O-8 as on the GSKU. Drawn by
+    Index.cshtml only for a user with the Finished Good's stock-edit key (UAS-001).
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasStockBehaviour" data-sb-level="fg"
+     aria-labelledby="offcanvasStockBehaviourLabel">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="offcanvasStockBehaviourLabel" class="offcanvas-title mb-0">@Stock["SectionTitle"]</h5>
+            <small id="sb-form-subtitle" class="text-muted d-block text-truncate">-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Stock["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="sb-form-not-editable" class="alert alert-warning d-none" role="status">@Stock["NotEditable"]</div>
+        <form id="formStockBehaviour" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <section class="mb-4" aria-labelledby="sb-group-conversions">
+                <h6 id="sb-group-conversions" class="text-uppercase text-heading fw-semibold mb-3">@Stock["UomConversions"]</h6>
+                <div id="sb-input-conversions" class="d-flex flex-column gap-2" data-sb-input="uomConversions"></div>
+                <button type="button" id="sb-add-conversion" class="btn btn-sm btn-label-primary mt-2">
+                    <i class="bx bx-plus me-1"></i>@Stock["AddConversion"]
+                </button>
+                <div class="form-text">@Stock["ConversionHelp"]</div>
+                <div class="form-text text-warning d-none" data-sb-addonly-reason="uomConversions"><i class="bx bx-lock-alt me-1"></i>@Stock["AddOnlyReason"]</div>
+            </section>
+            <section class="mb-4" aria-labelledby="sb-group-shelf-life">
+                <h6 id="sb-group-shelf-life" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupShelfLife"]</h6>
+                <div class="mb-3">
+                    <label for="sb-input-shelf-life" class="form-label fw-medium">@Stock["ShelfLife"]</label>
+                    <input type="number" id="sb-input-shelf-life" class="form-control" min="1" max="3650" step="1" inputmode="numeric"
+                           data-sb-input="shelfLifeDays" aria-describedby="sb-help-shelf-life" />
+                    <div id="sb-help-shelf-life" class="form-text">@Stock["ShelfLifeFromGskuHelp"]</div>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="shelfLifeDays"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+            </section>
+            <section aria-labelledby="sb-group-storage">
+                <h6 id="sb-group-storage" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupStorageControl"]</h6>
+                <div class="mb-3">
+                    <label for="sb-input-storage" class="form-label fw-medium">@Stock["StorageConditions"]</label>
+                    <div class="d-flex flex-wrap gap-1 mb-2" data-sb-existing="storageConditionCodes"></div>
+                    <input type="text" id="sb-input-storage" class="form-control text-uppercase" maxlength="512" autocomplete="off"
+                           data-sb-input="storageConditionCodes" aria-describedby="sb-help-storage" />
+                    <div id="sb-help-storage" class="form-text">@Stock["StorageHelp"]</div>
+                    <div class="form-text text-warning d-none" data-sb-addonly-reason="storageConditionCodes"><i class="bx bx-lock-alt me-1"></i>@Stock["AddOnlyReason"]</div>
+                </div>
+                <div class="mb-3">
+                    <label for="sb-input-lot" class="form-label fw-medium">@Stock["LotControlled"]</label>
+                    <select id="sb-input-lot" class="form-select" data-sb-input="lotControlled">
+                        <option value="">@Stock["NotSet"]</option>
+                        <option value="true">@Stock["Yes"]</option>
+                        <option value="false">@Stock["No"]</option>
+                    </select>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="lotControlled"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+                <div class="mb-3">
+                    <label for="sb-input-serial" class="form-label fw-medium">@Stock["SerialControlled"]</label>
+                    <select id="sb-input-serial" class="form-select" data-sb-input="serialControlled">
+                        <option value="">@Stock["NotSet"]</option>
+                        <option value="true">@Stock["Yes"]</option>
+                        <option value="false">@Stock["No"]</option>
+                    </select>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="serialControlled"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+                <div class="mb-3">
+                    <label for="sb-input-stockable" class="form-label fw-medium">@Stock["Stockable"]</label>
+                    <select id="sb-input-stockable" class="form-select" data-sb-input="stockable">
+                        <option value="">@Stock["NotSet"]</option>
+                        <option value="true">@Stock["Yes"]</option>
+                        <option value="false">@Stock["No"]</option>
+                    </select>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="stockable"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+            </section>
+            <section class="mt-4" aria-labelledby="sb-group-gtin">
+                <h6 id="sb-group-gtin" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupGtin"]</h6>
+                <div class="mb-3">
+                    <label for="sb-input-gtin" class="form-label fw-medium">@Stock["Gtin"]</label>
+                    <input type="text" id="sb-input-gtin" class="form-control" maxlength="14" inputmode="numeric" autocomplete="off"
+                           data-sb-input="gtin" aria-describedby="sb-help-gtin" />
+                    <div id="sb-help-gtin" class="form-text">@Stock["GtinHelp"]</div>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="gtin"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+            </section>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas"><i class="bx bx-x me-1"></i>@Stock["Cancel"]</button>
+        <button type="button" id="btnSaveStockBehaviour" class="btn btn-primary"><i class="bx bx-save me-1"></i>@Stock["Save"]</button>
+    </div>
+    <partial name="~/Views/MasterDataManagement/StockBehaviour/_StockBehaviourL10n.cshtml" />
+</div>

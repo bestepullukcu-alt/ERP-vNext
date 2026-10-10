@@ -92,7 +92,10 @@ public sealed class GetLskuByIdHandler
             lsku.Version,
             lsku.CreatedAt,
             lsku.UpdatedAt,
-            BuildAvailableActions(lsku, gsku, _actorContext)));
+            BuildAvailableActions(lsku, gsku, _actorContext))
+        {
+            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForLsku(gsku, lsku)
+        });
     }
 
     internal static IReadOnlyList<string> BuildAvailableActions(

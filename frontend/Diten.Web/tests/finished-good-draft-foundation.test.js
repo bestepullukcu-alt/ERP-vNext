@@ -103,8 +103,10 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
         const routes = [...source.matchAll(/\[(Http(?:Get|Post|Put|Patch|Delete))(?:\("([^"]*)"\))?\]/g)]
             .map((match) => `${match[1]} ${match[2] ?? ''}`);
         expect(source).toContain('[Route("MasterDataManagement/FinishedGoods")]');
-        expect(routes).toEqual(['HttpGet ', 'HttpGet api', 'HttpGet api/{id:guid}', 'HttpGet api/gsku-selector', 'HttpPost api']);
-        expect(source).not.toMatch(/HttpPut|HttpPatch|HttpDelete|bulk|lifecycle/i);
+        // MOD-0290-FU04 S5 (O-12): + the stock-behaviour save and the GTIN — the only PUTs; still no patch, delete or lifecycle.
+        expect(routes).toEqual(['HttpGet ', 'HttpGet api', 'HttpGet api/{id:guid}', 'HttpGet api/gsku-selector', 'HttpPost api',
+            'HttpPut api/{id:guid}/stock-behaviour', 'HttpPut api/{id:guid}/gtin']);
+        expect(source).not.toMatch(/HttpPatch|HttpDelete|bulk|lifecycle/i);
     });
 
     it('uses only the bounded search contract and exact selector path', () => {

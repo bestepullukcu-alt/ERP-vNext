@@ -540,6 +540,159 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
         return (await Envelope.ReadAsync(response)).GetProperty("data");
     }
 
+    // ------------------------------------------------------------------------------------------- S5 (S3b remainder)
+
+    // D-14 (CT decision): a draft may hold retest / minimum-remaining days without its shelf life, but is not SENT that
+    // way (approved, they lock — R-3's trap). The gate and the action list ask the same rule.
+    // The sabotage target "the D-14 rule removed".
+    [Fact]
+    public async Task S5_A_gsku_draft_with_days_but_no_shelf_life_is_not_sent()
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+        Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(gsku, version, new { lotControlled = true, retestDays = 30 })).StatusCode);
+
+        var refused = await SubmitGskuAsync(gsku, version + 1);
+        Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
+        var errors = await ErrorsAsync(refused);
+        Assert.Equal([StockBehaviourRules.DaysRequireShelfLife, "retestDays"], errors);
+        Assert.Contains(StockFlagGate.SubmitNeedsStockFlagsAction, await GskuActionsAsync(gsku));
+        Assert.DoesNotContain("SUBMIT", await GskuActionsAsync(gsku));
+
+        Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(gsku, version + 1, new { shelfLifeDays = 30 })).StatusCode);
+        Assert.Contains("SUBMIT", await GskuActionsAsync(gsku));
+        var accepted = await SubmitGskuAsync(gsku, version + 2);
+        Assert.True(accepted.StatusCode == HttpStatusCode.Accepted, await accepted.Content.ReadAsStringAsync());
+    }
+
+    // D-14: a draft whose stored days exceed its shelf life (written before the rule) is not sent either; the refusal
+    // names the days and the bound.
+    [Fact]
+    public async Task S5_A_gsku_draft_whose_days_exceed_its_shelf_life_is_not_sent()
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+        Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(gsku, version, new { lotControlled = true })).StatusCode);
+        await host.Database.GetCollection<BsonDocument>("mdm_gskus").UpdateOneAsync(IdFilter(gsku),
+            new BsonDocument("$set", new BsonDocument { { "ShelfLifeDays", 20 }, { "MinRemainingShelfLifeDays", 25 } }));
+
+        var refused = await SubmitGskuAsync(gsku, version + 1);
+        Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
+        var errors = await ErrorsAsync(refused);
+        Assert.Equal([StockBehaviourRules.DaysInvalid, "minRemainingShelfLifeDays", "shelfLifeDaysAtLeast=25"], errors);
+    }
+
+    // D-15: the way out of an older approved record whose days were filled before its shelf life — a shelf life below
+    // them is refused and the refusal says the bound; one at or above it goes.
+    [Fact]
+    public async Task S5_An_older_record_with_days_and_no_shelf_life_gets_its_shelf_life_at_the_named_bound()
+    {
+        var records = await SeedAsync();
+        await host.Database.GetCollection<BsonDocument>("mdm_gskus").UpdateOneAsync(IdFilter(records.Gsku.Id),
+            new BsonDocument("$set", new BsonDocument("RetestDays", 200)));
+
+        var below = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { shelfLifeDays = 100 });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, below.StatusCode);
+        var errors = await ErrorsAsync(below);
+        Assert.Equal([StockBehaviourRules.DaysInvalid, "retestDays", "shelfLifeDaysAtLeast=200"], errors);
+
+        var enough = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { shelfLifeDays = 365 });
+        Assert.True(enough.StatusCode == HttpStatusCode.OK, await enough.Content.ReadAsStringAsync());
+        Assert.Equal(365, (await GskuAsync(records.Gsku.Id)).ShelfLifeDays);
+    }
+
+    // S5 (CT decision 3): the detail answers carry the "Stock behaviour" section — values, sources, stockable and what is
+    // missing, and the O-8 locks (none on a Draft; a filled scalar on an approved record).
+    [Fact]
+    public async Task S5_The_gsku_detail_carries_its_stock_behaviour_with_locks_and_what_is_missing()
+    {
+        var records = await SeedAsync();
+        var before = await StockBehaviourAsync($"/api/gskus/{records.Gsku.Id:D}");
+        Assert.False(before.GetProperty("stockable").GetBoolean());
+        Assert.Equal(["baseUomCode", "shelfLifeDays", "storageConditionCodes", "lotControlled", "stockable"],
+            Strings(before.GetProperty("missing")));
+        Assert.Empty(Strings(before.GetProperty("lockedFields")));
+        Assert.Equal(["uomConversions", "storageConditionCodes"], Strings(before.GetProperty("addOnlyFields")));
+        Assert.Equal("C62", before.GetProperty("derivedPackConversion").GetProperty("toUom").GetString());
+
+        Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(records.Gsku.Id, records.Gsku.Version,
+            new { lotControlled = true, shelfLifeDays = 365, retestDays = 30 })).StatusCode);
+        var after = await StockBehaviourAsync($"/api/gskus/{records.Gsku.Id:D}");
+        Assert.Equal(["shelfLifeDays", "retestDays", "lotControlled"], Strings(after.GetProperty("lockedFields")));
+        Assert.Equal(365, after.GetProperty("shelfLifeDays").GetInt32());
+        Assert.Equal("Own", after.GetProperty("shelfLifeDaysSource").GetString());
+        Assert.True(after.GetProperty("editable").GetBoolean());
+    }
+
+    [Fact]
+    public async Task S5_A_gsku_drafts_filled_stock_fields_are_not_locked()
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+        Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(gsku, version, new { lotControlled = true, shelfLifeDays = 365 })).StatusCode);
+
+        var section = await StockBehaviourAsync($"/api/gskus/{gsku:D}");
+        Assert.Empty(Strings(section.GetProperty("lockedFields")));
+        Assert.Empty(Strings(section.GetProperty("addOnlyFields")));
+    }
+
+    // O-3: the LSKU's own field is the serial flag; the rest is its GSKU's, read now, with its source.
+    [Fact]
+    public async Task S5_The_lsku_detail_reads_the_gskus_stock_values_and_owns_only_the_serial_flag()
+    {
+        var records = await SeedAsync(completeGsku: true);
+        await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { lotControlled = true });
+        var section = await StockBehaviourAsync($"/api/lskus/{records.Lsku.Id:D}");
+
+        Assert.Equal("Gsku", section.GetProperty("lotControlledSource").GetString());
+        Assert.True(section.GetProperty("lotControlled").GetBoolean());
+        Assert.Equal(730, section.GetProperty("shelfLifeDays").GetInt32());
+        Assert.Equal(JsonValueKind.Null, section.GetProperty("serialControlled").ValueKind);
+        Assert.Equal(["serialControlled"], Strings(section.GetProperty("missing")));
+        Assert.Empty(Strings(section.GetProperty("lockedFields")));
+
+        await PutLskuAsync(records.Lsku.Id, records.Lsku.Version, new { serialControlled = false });
+        section = await StockBehaviourAsync($"/api/lskus/{records.Lsku.Id:D}");
+        Assert.True(section.GetProperty("stockable").GetBoolean());
+        Assert.Equal(["serialControlled"], Strings(section.GetProperty("lockedFields")));
+    }
+
+    // O-14 / D-2: the Finished Good's base unit is its GSKU's; its shelf life is its own or, without one, the GSKU's.
+    [Fact]
+    public async Task S5_The_finished_good_detail_reads_its_base_unit_and_fallback_shelf_life_from_its_gsku()
+    {
+        var records = await SeedAsync(completeGsku: true);
+        var section = await StockBehaviourAsync($"/api/finished-goods/{records.FinishedGood.Id:D}");
+
+        Assert.Equal("C62", section.GetProperty("baseUomCode").GetString());
+        Assert.Equal("Gsku", section.GetProperty("baseUomSource").GetString());
+        Assert.Equal(730, section.GetProperty("shelfLifeDays").GetInt32());
+        Assert.Equal("Gsku", section.GetProperty("shelfLifeDaysSource").GetString());
+        Assert.Contains("gtin", Strings(section.GetProperty("missing")));
+    }
+
+    // The section rides the detail's own tenant / scope path: another tenant's read is still "none".
+    [Fact]
+    public async Task S5_The_stock_section_is_never_read_across_tenants()
+    {
+        var records = await SeedAsync();
+        var foreign = host.Client(host.Token(Guid.NewGuid(), _maker, MakerPermissions));
+        foreach (var path in new[] { $"/api/gskus/{records.Gsku.Id:D}", $"/api/lskus/{records.Lsku.Id:D}" })
+        {
+            var response = await foreign.GetAsync(path);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.DoesNotContain("stockBehaviour", await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        }
+    }
+
+    private async Task<JsonElement> StockBehaviourAsync(string path)
+    {
+        var token = host.Token(_tenant, _maker, [.. MakerPermissions, "mdm.finished-goods.read"]);
+        var response = await host.Client(token).GetAsync(path);
+        var text = await response.Content.ReadAsStringAsync();
+        Assert.True(response.StatusCode == HttpStatusCode.OK, text);
+        return (await Envelope.ReadAsync(response)).GetProperty("data").GetProperty("stockBehaviour");
+    }
+
+    private static string[] Strings(JsonElement array) => array.EnumerateArray().Select(x => x.GetString()!).ToArray();
+
     // ------------------------------------------------------------------------------------------- helpers
 
     private string MakerToken() => host.Token(_tenant, _maker, MakerPermissions);

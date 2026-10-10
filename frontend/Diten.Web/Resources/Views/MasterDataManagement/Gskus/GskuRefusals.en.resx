@@ -26,4 +26,20 @@
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>A unit used by this GSKU was retired after the approval. The approval stands: it was applied with the values validated when it was submitted; the retired unit cannot be chosen for new records.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Before sending this GSKU for approval, set in stock behaviour: {0}.</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Enter the shelf life first: on an approved GSKU, {0} can only be set once its shelf life is known.</value></data>
+  <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>The unit and storage-condition lists cannot be read right now. Try again in a moment.</value></data>
+  <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Enter the GSKU's base unit first — the Finished Good uses it.</value></data>
+  <data name="RefusalStockGskuShelfLifeMissing" xml:space="preserve"><value>Enter the GSKU's shelf life first — the Finished Good's own shelf life cannot be longer than it.</value></data>
+  <data name="RefusalStockConversionInvalid" xml:space="preserve"><value>A unit conversion is not valid: set the base unit first; every unit must reach it in at most four steps without loops, and same-dimension pairs (such as kg ↔ g) are not entered by hand.</value></data>
+  <data name="RefusalStockStorageConflict" xml:space="preserve"><value>Only one temperature condition can be chosen.</value></data>
+  <data name="RefusalStockStorageInvalid" xml:space="preserve"><value>A storage condition code is not in the list. Check the codes.</value></data>
+  <data name="RefusalStockUomInvalid" xml:space="preserve"><value>A unit code is not in the list. Check the codes.</value></data>
+  <data name="RefusalStockPackUomUnknown" xml:space="preserve"><value>This GSKU's pack unit is not in the unit list, so its box ↔ pack conversion cannot be derived.</value></data>
+  <data name="RefusalStockIncomplete" xml:space="preserve"><value>It cannot be stockable yet: fill in every required stock field first.</value></data>
+  <data name="RefusalStockShelfLifeInvalid" xml:space="preserve"><value>The shelf life must be a whole number of days from 1 to 3650.</value></data>
+  <data name="RefusalStockFgShelfLifeExceedsGsku" xml:space="preserve"><value>The Finished Good's shelf life cannot be longer than its GSKU's.</value></data>
+  <data name="RefusalStockGtinInvalid" xml:space="preserve"><value>The GTIN must be 14 digits with a valid GS1 check digit.</value></data>
+  <data name="RefusalStockDaysInvalid" xml:space="preserve"><value>The retest interval and the minimum remaining shelf life must be whole numbers of days from 0 to 3650.</value></data>
+  <data name="RefusalStockNotEditable" xml:space="preserve"><value>This record's status does not allow stock behaviour changes.</value></data>
+  <data name="RefusalStockFieldLocked" xml:space="preserve"><value>A filled value on an approved record cannot be changed here — it changes only through a correction. Lists only gain new rows.</value></data>
+  <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Another Finished Good already uses this GTIN.</value></data>
 </root>

@@ -67,4 +67,11 @@
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
     <value>Para enviarlo a aprobación, introduzca primero sus indicadores de stock en el comportamiento de stock.</value>
   </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} y {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="StockDaysExceedShelfLife" xml:space="preserve"><value>La vida útil debe ser de al menos {1} días: {0} no puede superarla.</value></data>
 </root>

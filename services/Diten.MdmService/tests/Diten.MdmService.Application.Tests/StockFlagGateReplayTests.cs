@@ -126,6 +126,82 @@ public sealed class StockFlagGateReplayTests
         }
     }
 
+    // S5 (D-16): every checkpoint, split by an explicit final set written here (not read from the code under test): the
+    // same submit at a final checkpoint meets the gate; at any other it is a repeat the processor continues.
+    private static readonly FirstGskuIdentityWorkflowCheckpoint[] GskuFinal =
+    [
+        FirstGskuIdentityWorkflowCheckpoint.Completed, FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+        FirstGskuIdentityWorkflowCheckpoint.Superseded, FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied,
+        FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable
+    ];
+
+    private static readonly LskuIdentityWorkflowCheckpoint[] LskuFinal =
+    [
+        LskuIdentityWorkflowCheckpoint.Completed, LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+        LskuIdentityWorkflowCheckpoint.Superseded, LskuIdentityWorkflowCheckpoint.WithdrawalApplied,
+        LskuIdentityWorkflowCheckpoint.DecisionNotApplicable
+    ];
+
+    public static TheoryData<FirstGskuIdentityWorkflowCheckpoint> GskuCheckpoints() => new(Enum.GetValues<FirstGskuIdentityWorkflowCheckpoint>());
+
+    public static TheoryData<LskuIdentityWorkflowCheckpoint> LskuCheckpoints() => new(Enum.GetValues<LskuIdentityWorkflowCheckpoint>());
+
+    [Theory]
+    [MemberData(nameof(GskuCheckpoints))]
+    public async Task S5_A_gsku_repeat_meets_the_gate_exactly_at_a_final_checkpoint(FirstGskuIdentityWorkflowCheckpoint checkpoint)
+    {
+        var tenant = new Tenant(Guid.NewGuid());
+        var maker = Guid.NewGuid();
+        var (revision, product) = Parents(tenant);
+        var gsku = new Gsku
+        {
+            Id = Guid.NewGuid(), TenantId = tenant.TenantId, ProductDefinitionRevisionId = revision.Id,
+            LifecycleStatus = ProductIdentityLifecycleStatus.Draft, LotControlled = null
+        };
+        var operationId = Guid.NewGuid();
+        var handler = new StartFirstGskuIdentityWorkflowHandler(tenant, new Maker(FirstGskuIdentityLifecyclePermissions.Submit, maker),
+            new Tokens(), ReadOnly<IGskuRepository>(gsku), ReadOnly<IProductDefinitionRevisionRepository>(revision),
+            ReadOnly<IGlobalProductRepository>(product), Scope(tenant).Rollouts, Scope(tenant).Policies, Scope(tenant).Candidates,
+            null!, new FirstGskuIdentityWorkflowExecutionConfiguration(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)),
+            Operations<IFirstGskuIdentityWorkflowOperationRepository>(operationId, new FirstGskuIdentityWorkflowOperation
+            {
+                OperationId = operationId, GskuId = gsku.Id, MakerSubjectId = maker, ExpectedGskuVersion = Version, Checkpoint = checkpoint
+            }));
+
+        var submit = () => handler.Handle(new(new(gsku.Id, Version, operationId)), default);
+
+        if (GskuFinal.Contains(checkpoint)) Assert.Equal(409, (await submit()).StatusCode);
+        else await Assert.ThrowsAsync<NullReferenceException>(submit);
+    }
+
+    [Theory]
+    [MemberData(nameof(LskuCheckpoints))]
+    public async Task S5_An_lsku_repeat_meets_the_gate_exactly_at_a_final_checkpoint(LskuIdentityWorkflowCheckpoint checkpoint)
+    {
+        var tenant = new Tenant(Guid.NewGuid());
+        var maker = Guid.NewGuid();
+        var (revision, product) = Parents(tenant);
+        var gsku = new Gsku { Id = Guid.NewGuid(), TenantId = tenant.TenantId, ProductDefinitionRevisionId = revision.Id, LotControlled = null };
+        var lsku = new Lsku
+        {
+            Id = Guid.NewGuid(), TenantId = tenant.TenantId, GskuId = gsku.Id, LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+        };
+        var operationId = Guid.NewGuid();
+        var handler = new StartLskuIdentityWorkflowHandler(tenant, new Maker(LskuIdentityLifecyclePermissions.Submit, maker), new Tokens(),
+            ReadOnly<ILskuRepository>(lsku), ReadOnly<IGskuRepository>(gsku), ReadOnly<IProductDefinitionRevisionRepository>(revision),
+            ReadOnly<IGlobalProductRepository>(product), Scope(tenant).Rollouts, Scope(tenant).Policies, Scope(tenant).Candidates,
+            null!, new LskuIdentityWorkflowExecutionConfiguration(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)),
+            Operations<ILskuIdentityWorkflowOperationRepository>(operationId, new LskuIdentityWorkflowOperation
+            {
+                OperationId = operationId, LskuId = lsku.Id, MakerSubjectId = maker, ExpectedLskuVersion = Version, Checkpoint = checkpoint
+            }));
+
+        var submit = () => handler.Handle(new(new(lsku.Id, Version, operationId)), default);
+
+        if (LskuFinal.Contains(checkpoint)) Assert.Equal(409, (await submit()).StatusCode);
+        else await Assert.ThrowsAsync<NullReferenceException>(submit);
+    }
+
     private static (ProductDefinitionRevision Revision, GlobalProduct Product) Parents(ITenantContext tenant)
     {
         var revision = new ProductDefinitionRevision { Id = Guid.NewGuid(), TenantId = tenant.TenantId, GlobalProductId = Guid.NewGuid() };

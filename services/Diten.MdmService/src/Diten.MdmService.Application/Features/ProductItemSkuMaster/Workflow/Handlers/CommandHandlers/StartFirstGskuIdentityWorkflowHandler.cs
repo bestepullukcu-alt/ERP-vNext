@@ -5,6 +5,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Domain.Repositories;
@@ -73,9 +74,9 @@ public sealed class StartFirstGskuIdentityWorkflowHandler(
         // waiting for its maker's replay) is not a new submit and is not stopped here (FIX2: the same maker and expected
         // version, not at a final checkpoint).
         if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
-            && StockFlagGate.MissingForGsku(gsku) is { Count: > 0 } missing
+            && StockFlagGate.SubmitRefusalForGsku(gsku) is { } refusal
             && !await IsRepeatAsync(input, gsku.Id, makerSubjectId, cancellationToken))
-            return Response<FirstGskuIdentityWorkflowResult>.Fail(StockFlagGate.Refusal(missing), 409);
+            return Response<FirstGskuIdentityWorkflowResult>.Fail(refusal, 409);
         var result = await processor.StartInteractiveAsync(
             tenantContext.TenantId,
             input.GskuId,
@@ -113,11 +114,7 @@ public sealed class StartFirstGskuIdentityWorkflowHandler(
         && existing.GskuId == gskuId
         && existing.MakerSubjectId == makerSubjectId
         && existing.ExpectedGskuVersion == input.ExpectedGskuVersion
-        && existing.Checkpoint is not (FirstGskuIdentityWorkflowCheckpoint.Completed
-            or FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
-            or FirstGskuIdentityWorkflowCheckpoint.Superseded
-            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied
-            or FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable);
+        && !IdentityStartReplay.CannotContinue(existing.Checkpoint);
 
     private static Response<FirstGskuIdentityWorkflowResult> Fail(string code, int statusCode) =>
         Response<FirstGskuIdentityWorkflowResult>.Fail(code, statusCode);

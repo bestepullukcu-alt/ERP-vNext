@@ -84,7 +84,8 @@ public sealed class GetFinishedGoodByIdHandler
             finishedGood.CreatedAt,
             finishedGood.UpdatedAt)
         {
-            CancellationDisposition = Lifecycle.FinishedGoodDraftCancellationProof.Disposition(finishedGood)
+            CancellationDisposition = Lifecycle.FinishedGoodDraftCancellationProof.Disposition(finishedGood),
+            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForFinishedGood(gsku, finishedGood)
         });
     }
 }

@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 
@@ -51,4 +52,46 @@ public static class StockFlagGate
 
     /// <summary>The refusal: the code first, then the names of the unset flags (409 — the record is not ready yet).</summary>
     public static IReadOnlyList<string> Refusal(IReadOnlyList<string> missing) => [Required, .. missing];
+
+    /// <summary>
+    /// S5 (D-14, CT decision) — the GSKU submit's whole refusal, or none. The lot flag first (R-04); then the days: a draft
+    /// may hold a retest interval / minimum remaining shelf life without its shelf life (a draft is free), but it is not
+    /// SENT that way — approved, those days are locked, and a shelf life entered later below them would be refused
+    /// (R-3's trap). So: days set → the shelf life too (<see cref="StockBehaviourRules.DaysRequireShelfLife"/> + their
+    /// names), and not below them (<see cref="StockBehaviourRules.DaysInvalid"/> + <see cref="DaysDetail"/>). The action
+    /// list asks this same function.
+    /// </summary>
+    public static IReadOnlyList<string>? SubmitRefusalForGsku(Gsku gsku)
+    {
+        if (MissingForGsku(gsku) is { Count: > 0 } missing) return Refusal(missing);
+        var days = DaysSet(gsku.RetestDays, gsku.MinRemainingShelfLifeDays);
+        if (days.Count == 0) return null;
+        if (gsku.ShelfLifeDays is null) return [StockBehaviourRules.DaysRequireShelfLife, .. days.Select(x => x.Field)];
+        return DaysDetail(gsku.ShelfLifeDays, gsku.RetestDays, gsku.MinRemainingShelfLifeDays) is { } detail
+            ? [StockBehaviourRules.DaysInvalid, .. detail]
+            : null;
+    }
+
+    /// <summary>
+    /// S5 (D-15) — what <see cref="StockBehaviourRules.DaysInvalid"/> names when the days exceed a known shelf life: each
+    /// exceeding field, then the bound the shelf life must reach (<c>shelfLifeDaysAtLeast=N</c>). Null when within.
+    /// </summary>
+    public static IReadOnlyList<string>? DaysDetail(int? shelfLifeDays, int? retestDays, int? minRemainingShelfLifeDays)
+    {
+        if (shelfLifeDays is not { } shelf) return null;
+        var over = DaysSet(retestDays, minRemainingShelfLifeDays).Where(x => x.Days > shelf).ToList();
+        return over.Count == 0 ? null : [.. over.Select(x => x.Field), $"{ShelfLifeAtLeast}={over.Max(x => x.Days)}"];
+    }
+
+    public const string ShelfLifeAtLeast = "shelfLifeDaysAtLeast";
+    public const string RetestDays = "retestDays";
+    public const string MinRemainingShelfLifeDays = "minRemainingShelfLifeDays";
+
+    private static List<(string Field, int Days)> DaysSet(int? retestDays, int? minRemainingShelfLifeDays)
+    {
+        var days = new List<(string, int)>();
+        if (retestDays is { } retest) days.Add((RetestDays, retest));
+        if (minRemainingShelfLifeDays is { } minimum) days.Add((MinRemainingShelfLifeDays, minimum));
+        return days;
+    }
 }

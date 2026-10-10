@@ -67,4 +67,11 @@
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
     <value>لإرساله للموافقة، أدخل أولاً مؤشرات المخزون في سلوك المخزون.</value>
   </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} و{1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>، </value>
+  </data>
+  <data name="StockDaysExceedShelfLife" xml:space="preserve"><value>يجب ألا تقل مدة الصلاحية عن {1} يوماً — لا يمكن أن تتجاوزها {0}.</value></data>
 </root>

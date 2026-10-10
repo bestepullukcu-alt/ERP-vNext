@@ -19,9 +19,10 @@ public sealed class GskuRefusalBridgeTests
 
     // The GSKU code of MDM: the controller and every file of the GSKU flows and the shared product-identity workflow.
     // MOD-0290-FU04 S3b: + StockFlagGate (the GSKU submit's lot-flag refusal). S3b FIX2: + StockBehaviourRules (the stock
-    // edit's refusals; the GSKU's own STOCK_DAYS_REQUIRE_SHELF_LIFE is said now, the rest by S5's stock-behaviour section).
+    // edit's refusals). S5: + every StockBehaviour* file (the edit's handlers, models, controller) and its store's
+    // contract (IProductStockBehaviourRepository) — the stock-behaviour offcanvas sends that edit, so all its codes are said.
     private static readonly Regex GskuFile = new(
-        @"^(Gsku|FirstGsku|ProductIdentityWorkflow|IFirstGsku|IGsku|PlatformWorkflowVerifiedGsku|IVerifiedGsku|CreateFirstGsku|UpdateGsku|RetireGsku|StartGsku|StartFirstGsku|WithdrawFirstGsku|GetGsku|StockFlagGate|StockBehaviourRules)[^/]*\.cs$",
+        @"^(Gsku|FirstGsku|ProductIdentityWorkflow|IFirstGsku|IGsku|PlatformWorkflowVerifiedGsku|IVerifiedGsku|CreateFirstGsku|UpdateGsku|RetireGsku|StartGsku|StartFirstGsku|WithdrawFirstGsku|GetGsku|StockFlagGate|StockBehaviour|IProductStockBehaviourRepository)[^/]*\.cs$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex CodeLiteral = new("\"([A-Z][A-Z0-9]+(?:_[A-Z0-9]+)+)\"", RegexOptions.CultureInvariant);
@@ -52,23 +53,47 @@ public sealed class GskuRefusalBridgeTests
         "PRODUCT_IDENTITY_WORKFLOW_RECOVERY_ARGUMENT_INVALID", "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID"
     };
 
-    // S3b FIX2: the stock-behaviour edit's refusals the GSKU screen does not send yet — S5 (the "Stock behaviour" section)
-    // maps them. Named one by one: a NEW stock code is still caught here.
-    private static readonly HashSet<string> MappedByS5 = new(StringComparer.Ordinal)
-    {
-        "UOM_CONVERSION_INVALID", "ITEM_STORAGE_CONDITION_CONFLICT", "STOCK_STORAGE_CONDITION_INVALID", "STOCK_UOM_INVALID",
-        "STOCK_BEHAVIOUR_INCOMPLETE", "STOCK_SHELF_LIFE_INVALID", "FG_SHELF_LIFE_EXCEEDS_GSKU", "FG_GTIN_INVALID",
-        "STOCK_DAYS_INVALID", "GSKU_PACK_UOM_UNKNOWN"
-    };
+    // S5: the S3b FIX2 waiting list ("MappedByS5") is gone — the stock-behaviour offcanvas sends the edit, so every one
+    // of its codes is mapped and checked like any other (a new stock code fails the test below).
 
     [Fact]
     public void Every_code_of_mdms_gsku_code_has_a_sentence()
     {
         var mapped = MappedCodes();
-        var missing = MdmCodes().Where(code => !NotRefusals.Contains(code) && !MappedByS5.Contains(code) && !mapped.ContainsKey(code))
+        var missing = MdmCodes().Where(code => !NotRefusals.Contains(code) && !mapped.ContainsKey(code))
             .ToArray();
 
         Assert.True(missing.Length == 0, "Codes without a sentence: " + string.Join(", ", missing));
+    }
+
+    // S5: the stock-behaviour edit's codes (the 28 MDM answers it with) are each said by a sentence — read from MDM's
+    // StockBehaviour files and its store contract, so a code added there without a sentence fails here by name.
+    [Fact]
+    public void Every_code_of_the_stock_behaviour_edit_has_a_sentence()
+    {
+        var src = Path.Combine(RepoRoot(), "services", "Diten.MdmService", "src");
+        var codes = Directory.EnumerateFiles(src, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => Path.GetFileName(path).StartsWith("StockBehaviour", StringComparison.Ordinal)
+                           || Path.GetFileName(path) == "IProductStockBehaviourRepository.cs")
+            .SelectMany(path => CodeLiteral.Matches(File.ReadAllText(path)).Select(match => match.Groups[1].Value))
+            .Where(code => !NotRefusals.Contains(code))
+            .ToHashSet(StringComparer.Ordinal);
+        foreach (var expected in new[]
+                 {
+                     "STOCK_BEHAVIOUR_FORBIDDEN", "STOCK_BEHAVIOUR_INVALID", "STOCK_REFERENCE_LIST_UNAVAILABLE",
+                     "FG_GSKU_BASE_UOM_MISSING", "FG_GSKU_SHELF_LIFE_MISSING", "UOM_CONVERSION_INVALID",
+                     "ITEM_STORAGE_CONDITION_CONFLICT", "STOCK_STORAGE_CONDITION_INVALID", "STOCK_UOM_INVALID",
+                     "GSKU_PACK_UOM_UNKNOWN", "STOCK_BEHAVIOUR_INCOMPLETE", "STOCK_SHELF_LIFE_INVALID",
+                     "FG_SHELF_LIFE_EXCEEDS_GSKU", "FG_GTIN_INVALID", "STOCK_DAYS_INVALID", "STOCK_DAYS_REQUIRE_SHELF_LIFE",
+                     "STOCK_BEHAVIOUR_RECORD_NOT_FOUND", "STOCK_BEHAVIOUR_EDIT_BLOCKED_BY_OPERATION",
+                     "STOCK_BEHAVIOUR_RECORD_NOT_EDITABLE", "STOCK_BEHAVIOUR_FIELD_LOCKED", "STOCK_BEHAVIOUR_CONCURRENCY_CONFLICT",
+                     "IDEMPOTENCY_KEY_CONFLICT", "FG_GTIN_CONFLICT", "STOCK_BEHAVIOUR_WRITE_CONTRACT_INVALID",
+                     "IDEMPOTENCY_KEY_INVALID", "GSKU_NOT_FOUND", "LSKU_NOT_FOUND", "FINISHED_GOOD_NOT_FOUND"
+                 })
+            Assert.True(codes.Contains(expected), $"{expected} is no longer in MDM's stock-behaviour code — the scan is stale.");
+        var unmapped = codes.Where(code => !MappedCodes().ContainsKey(code)).ToArray();
+        Assert.True(unmapped.Length == 0, "Stock-behaviour codes without a sentence: " + string.Join(", ", unmapped));
     }
 
     [Fact]
@@ -79,8 +104,6 @@ public sealed class GskuRefusalBridgeTests
 
         Assert.True(orphans.Length == 0, "Mapped codes MDM never answers with: " + string.Join(", ", orphans));
         Assert.Empty(NotRefusals.Where(code => MappedCodes().ContainsKey(code)));
-        // The S5 list stays honest: each is a code MDM has, and none is mapped yet (mapped → take it off the list).
-        Assert.Empty(MappedByS5.Where(code => !known.Contains(code) || MappedCodes().ContainsKey(code)));
     }
 
     [Fact]

@@ -81,4 +81,10 @@
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
     <value>Onaya göndermek için önce stok davranışında stok bayraklarını girin.</value>
   </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} ve {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
 </root>

@@ -26,4 +26,20 @@
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Bu GSKU'nun kullandığı bir birim onaydan sonra kullanımdan kaldırıldı. Onay geçerlidir: gönderim anında doğrulanan değerlerle uygulandı; kaldırılan birim yeni kayıtlarda seçilemez.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Bu GSKU'yu onaya göndermeden önce stok davranışında şunu belirleyin: {0}.</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Önce raf ömrünü girin: onaylı bir GSKU'da {0} ancak raf ömrü bilindiğinde girilebilir.</value></data>
+  <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>Birim ve saklama koşulu listeleri şu anda okunamıyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Önce GSKU'nun temel birimini girin — Bitmiş Ürün onu kullanır.</value></data>
+  <data name="RefusalStockGskuShelfLifeMissing" xml:space="preserve"><value>Önce GSKU'nun raf ömrünü girin — Bitmiş Ürünün kendi raf ömrü ondan uzun olamaz.</value></data>
+  <data name="RefusalStockConversionInvalid" xml:space="preserve"><value>Bir birim çevrimi geçersiz: önce temel birimi girin; her birim ona en çok dört adımda ve döngüsüz ulaşmalı, aynı boyuttaki çiftler (kg ↔ g gibi) elle girilmez.</value></data>
+  <data name="RefusalStockStorageConflict" xml:space="preserve"><value>Yalnız bir sıcaklık koşulu seçilebilir.</value></data>
+  <data name="RefusalStockStorageInvalid" xml:space="preserve"><value>Bir saklama koşulu kodu listede yok. Kodları kontrol edin.</value></data>
+  <data name="RefusalStockUomInvalid" xml:space="preserve"><value>Bir birim kodu listede yok. Kodları kontrol edin.</value></data>
+  <data name="RefusalStockPackUomUnknown" xml:space="preserve"><value>Bu GSKU'nun ambalaj birimi birim listesinde yok; kutu ↔ ambalaj çevrimi türetilemiyor.</value></data>
+  <data name="RefusalStockIncomplete" xml:space="preserve"><value>Henüz stoklanabilir olamaz: önce zorunlu tüm stok alanlarını doldurun.</value></data>
+  <data name="RefusalStockShelfLifeInvalid" xml:space="preserve"><value>Raf ömrü 1 ile 3650 arasında tam gün sayısı olmalıdır.</value></data>
+  <data name="RefusalStockFgShelfLifeExceedsGsku" xml:space="preserve"><value>Bitmiş Ürünün raf ömrü GSKU'sununkinden uzun olamaz.</value></data>
+  <data name="RefusalStockGtinInvalid" xml:space="preserve"><value>GTIN geçerli GS1 kontrol haneli 14 rakam olmalıdır.</value></data>
+  <data name="RefusalStockDaysInvalid" xml:space="preserve"><value>Yeniden test aralığı ve asgari kalan raf ömrü 0 ile 3650 arasında tam gün sayısı olmalıdır.</value></data>
+  <data name="RefusalStockNotEditable" xml:space="preserve"><value>Bu kaydın durumu stok davranışı değişikliğine izin vermiyor.</value></data>
+  <data name="RefusalStockFieldLocked" xml:space="preserve"><value>Onaylı kayıttaki dolu bir değer burada değiştirilemez — yalnız düzeltmeyle değişir. Listelere yalnız yeni satır eklenir.</value></data>
+  <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Bu GTIN'i başka bir Bitmiş Ürün kullanıyor.</value></data>
 </root>

@@ -1,0 +1,428 @@
+/**
+ * MOD-0290-FU04 S5 (O-12) — the "Stock behaviour" section of the GSKU / Finished Good / LSKU quick view and its own
+ * edit offcanvas. One module for the three screens; each page creates it with its level, its proxy and its detail read.
+ *
+ *  - The section and the offcanvas are in the page only for a user with the level's stock-edit key (UAS-001, decided in
+ *    the cshtml). Without the offcanvas `create` answers null — no section, no shortcut, nothing to open.
+ *  - Values are drawn from the detail's `stockBehaviour` (MDM's StockBehaviourDto) with their source ("from GSKU"),
+ *    stockable yes / no and — when not — the missing fields by name, and the lock markers (O-8).
+ *  - O-8 in the form: on a Draft every field is free; on an approved record a field in `lockedFields` is read-only and
+ *    says why, and a list in `addOnlyFields` keeps its stored rows read-only and only gains new ones (sent whole).
+ *  - Only changed fields are posted, with the version the form was opened at and the form attempt's id (the proxy
+ *    derives the Idempotency-Key from it: a repeat of the same attempt is MDM's replay). The detail is read back after.
+ *  - Units and storage conditions are code inputs (CT decision (b)): MDM validates them against its lists and its
+ *    refusal comes back as a sentence in the reader's language.
+ */
+'use strict';
+
+window.DitenStockBehaviour = (function () {
+    // The fields each level edits here, in the order the proxy reads them (pack §4.2; the LSKU only its serial flag, O-3).
+    const levels = Object.freeze({
+        gsku: ['baseUomCode', 'uomConversions', 'shelfLifeDays', 'retestDays', 'minRemainingShelfLifeDays',
+            'storageConditionCodes', 'lotControlled', 'stockable'],
+        fg: ['uomConversions', 'shelfLifeDays', 'storageConditionCodes', 'lotControlled', 'serialControlled', 'stockable',
+            'gtin'],
+        lsku: ['serialControlled']
+    });
+    const formNames = Object.freeze({
+        baseUomCode: 'BaseUomCode', uomConversions: 'UomConversions', shelfLifeDays: 'ShelfLifeDays',
+        retestDays: 'RetestDays', minRemainingShelfLifeDays: 'MinRemainingShelfLifeDays',
+        storageConditionCodes: 'StorageConditionCodes', lotControlled: 'LotControlled',
+        serialControlled: 'SerialControlled', stockable: 'Stockable', gtin: 'Gtin'
+    });
+    const dayFields = new Set(['shelfLifeDays', 'retestDays', 'minRemainingShelfLifeDays']);
+    const flagFields = new Set(['lotControlled', 'serialControlled', 'stockable']);
+    // Which source field says a value is the GSKU's (O-3 / D-2 / O-14).
+    const sourceFields = Object.freeze({
+        baseUomCode: 'baseUomSource', shelfLifeDays: 'shelfLifeDaysSource', retestDays: 'daysSource',
+        minRemainingShelfLifeDays: 'daysSource', lotControlled: 'lotControlledSource'
+    });
+    // MDM's `missing` names → their words. A name not here is never shown raw.
+    const missingWords = Object.freeze({
+        baseUomCode: 'BaseUom', shelfLifeDays: 'ShelfLife', storageConditionCodes: 'StorageConditions',
+        lotControlled: 'LotControlled', serialControlled: 'SerialControlled', gtin: 'Gtin', stockable: 'StockableFlag',
+        caseBoxConversion: 'MissingCaseBox', 'gsku.baseUomCode': 'MissingGskuBaseUom', 'gsku.stockable': 'MissingGskuStockable'
+    });
+    const codePattern = /^[A-Z][A-Z0-9_]{0,63}$/;
+    const amountPattern = /^[0-9]{1,18}(\.[0-9]{1,18})?$/;
+    const maxDays = 3650;
+
+    const valueOf = (source, camel) => source?.[camel] ?? source?.[camel.charAt(0).toUpperCase() + camel.slice(1)];
+    const listOf = (value) => Array.isArray(value) ? value : [];
+    const readWords = () => {
+        try {
+            const raw = JSON.parse(document.getElementById('stock-behaviour-l10n')?.textContent || '{}');
+            return Object.fromEntries(Object.entries(raw).map(([key, text]) => [key.charAt(0).toUpperCase() + key.slice(1), text]));
+        } catch (error) {
+            return {};
+        }
+    };
+    // One id per form attempt (opening the offcanvas); a repeat of the same attempt sends the same id.
+    const newAttemptId = () => {
+        if (typeof crypto?.randomUUID === 'function') return crypto.randomUUID();
+        const bytes = crypto.getRandomValues(new Uint8Array(16));
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+        return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    };
+    const sameList = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+    const conversionOf = (row) => ({
+        fromUom: String(valueOf(row, 'fromUom') ?? ''), toUom: String(valueOf(row, 'toUom') ?? ''),
+        numerator: String(valueOf(row, 'numerator') ?? ''), denominator: String(valueOf(row, 'denominator') ?? '')
+    });
+    const conversionText = (row) => {
+        const item = conversionOf(row);
+        const amount = item.denominator === '1' ? item.numerator : `${item.numerator}/${item.denominator}`;
+        return `1 ${item.fromUom} = ${amount} ${item.toUom}`;
+    };
+
+    const create = ({ level, endpoint, versionField, fetchDetail, onSaved } = {}) => {
+        const offcanvas = document.getElementById('offcanvasStockBehaviour');
+        if (!levels[level] || !offcanvas || typeof fetchDetail !== 'function') return null;
+        const words = readWords();
+        const fields = levels[level];
+        let editor = null;
+        let busy = false;
+
+        const toast = (message, type) => window.showToast?.(message, type);
+        const yesNo = (value) => value === true ? words.Yes : value === false ? words.No : words.NotSet;
+        const shown = (value) => value === null || value === undefined || value === '' ? words.NotSet : String(value);
+        // What MDM holds as THIS record's own value (the form compares against it; an inherited one is not its own).
+        const stored = (sb, field) => {
+            if (field === 'stockable') return valueOf(sb, 'stockableFlag') ?? null;
+            if (field === 'shelfLifeDays' && level === 'fg') {
+                return valueOf(sb, 'shelfLifeDaysSource') === 'Own' ? valueOf(sb, 'shelfLifeDays') ?? null : null;
+            }
+            if (field === 'uomConversions') return listOf(valueOf(sb, 'uomConversions')).map(conversionOf);
+            if (field === 'storageConditionCodes') return listOf(valueOf(sb, 'storageConditionCodes')).map(String);
+            return valueOf(sb, field) ?? null;
+        };
+
+        /* ---- the section (quick view) ---- */
+        const render = (detail) => {
+            const section = document.getElementById('sb-section');
+            if (!section) return;
+            const sb = valueOf(detail, 'stockBehaviour');
+            section.classList.toggle('d-none', !sb);
+            if (!sb) return;
+            const set = (field, text) => {
+                const element = section.querySelector(`[data-sb-value="${field}"]`);
+                if (element) element.textContent = text;
+            };
+            set('baseUomCode', shown(valueOf(sb, 'baseUomCode')));
+            set('shelfLifeDays', shown(valueOf(sb, 'shelfLifeDays')));
+            set('retestDays', shown(valueOf(sb, 'retestDays')));
+            set('minRemainingShelfLifeDays', shown(valueOf(sb, 'minRemainingShelfLifeDays')));
+            const storage = listOf(valueOf(sb, 'storageConditionCodes'));
+            set('storageConditionCodes', storage.length ? storage.join(', ') : words.NotSet);
+            set('lotControlled', yesNo(valueOf(sb, 'lotControlled')));
+            set('serialControlled', yesNo(valueOf(sb, 'serialControlled')));
+            set('gtin', shown(valueOf(sb, 'gtin')));
+            set('stockable', yesNo(valueOf(sb, 'stockable') === true));
+            const conversions = section.querySelector('[data-sb-value="uomConversions"]');
+            if (conversions) {
+                const lines = listOf(valueOf(sb, 'uomConversions')).map(conversionText);
+                const derived = valueOf(sb, 'derivedPackConversion');
+                if (derived) lines.push(`${conversionText(derived)} — ${words.DerivedPackConversion || ''}`);
+                conversions.replaceChildren(...(lines.length ? lines : [words.NotSet]).map((line) => {
+                    const row = document.createElement('div');
+                    row.textContent = line;
+                    return row;
+                }));
+            }
+            section.querySelectorAll('[data-sb-source]').forEach((badge) => badge.classList.toggle('d-none',
+                valueOf(sb, sourceFields[badge.dataset.sbSource] || '') !== 'Gsku'));
+            const locked = listOf(valueOf(sb, 'lockedFields'));
+            section.querySelectorAll('[data-sb-lock]').forEach((marker) =>
+                marker.classList.toggle('d-none', !locked.includes(marker.dataset.sbLock)));
+            const missing = listOf(valueOf(sb, 'missing')).map((name) => words[missingWords[name]]).filter(Boolean);
+            const notStockable = valueOf(sb, 'stockable') !== true;
+            section.querySelector('[data-sb-missing-row]')?.classList.toggle('d-none', !notStockable);
+            section.querySelector('[data-sb-missing]')?.replaceChildren(...missing.map((text) => {
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-label-warning';
+                badge.textContent = text;
+                return badge;
+            }));
+            const edit = document.getElementById('sb-edit');
+            if (edit) {
+                edit.dataset.id = String(valueOf(detail, 'id') ?? '');
+                edit.classList.toggle('d-none', valueOf(sb, 'editable') !== true);
+            }
+        };
+
+        /* ---- the form (offcanvas) ---- */
+        const input = (field) => offcanvas.querySelector(`[data-sb-input="${field}"]`);
+        const conversionRow = (row, readOnly) => {
+            const line = document.createElement('div');
+            line.className = 'row g-2 align-items-center';
+            line.dataset.sbConversionRow = readOnly ? 'stored' : 'open';
+            const parts = [['fromUom', words.ConversionFrom, 'col-3'], ['toUom', words.ConversionTo, 'col-3'],
+                ['numerator', words.ConversionNumerator, 'col-2'], ['denominator', words.ConversionDenominator, 'col-2']];
+            parts.forEach(([part, label, column]) => {
+                const cell = document.createElement('div');
+                cell.className = column;
+                const box = document.createElement('input');
+                box.type = 'text';
+                box.className = 'form-control form-control-sm' + (part.endsWith('Uom') ? ' text-uppercase' : '');
+                box.dataset.sbPart = part;
+                box.value = row ? conversionOf(row)[part] : '';
+                box.setAttribute('aria-label', label || part);
+                box.placeholder = label || '';
+                if (!part.endsWith('Uom')) box.inputMode = 'decimal';
+                box.readOnly = readOnly;
+                box.disabled = readOnly;
+                cell.appendChild(box);
+                line.appendChild(cell);
+            });
+            const action = document.createElement('div');
+            action.className = 'col-2 text-end';
+            if (!readOnly) {
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'btn btn-sm btn-icon btn-label-danger';
+                remove.dataset.sbRemove = 'true';
+                remove.setAttribute('aria-label', words.RemoveConversion || '');
+                remove.title = words.RemoveConversion || '';
+                const icon = document.createElement('i');
+                icon.className = 'bx bx-trash';
+                remove.appendChild(icon);
+                action.appendChild(remove);
+            }
+            line.appendChild(action);
+            return line;
+        };
+        const fill = (sb) => {
+            const editable = valueOf(sb, 'editable') === true;
+            const locked = new Set(listOf(valueOf(sb, 'lockedFields')));
+            const addOnly = new Set(listOf(valueOf(sb, 'addOnlyFields')));
+            offcanvas.querySelector('#sb-form-not-editable')?.classList.toggle('d-none', editable);
+            fields.forEach((field) => {
+                const element = input(field);
+                if (!element) return;
+                const lockedHere = locked.has(field);
+                offcanvas.querySelector(`[data-sb-lock-reason="${field}"]`)?.classList.toggle('d-none', !lockedHere);
+                offcanvas.querySelector(`[data-sb-addonly-reason="${field}"]`)?.classList.toggle('d-none', !addOnly.has(field));
+                const value = stored(sb, field);
+                if (field === 'uomConversions') {
+                    element.replaceChildren(...value.map((row) => conversionRow(row, addOnly.has(field) || !editable)));
+                    const add = offcanvas.querySelector('#sb-add-conversion');
+                    if (add) add.disabled = !editable;
+                    return;
+                }
+                if (field === 'storageConditionCodes') {
+                    // Add-only: the stored codes stand as read-only badges; the box takes only new ones.
+                    const existing = offcanvas.querySelector('[data-sb-existing="storageConditionCodes"]');
+                    existing?.replaceChildren(...(addOnly.has(field) ? value : []).map((code) => {
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-label-secondary';
+                        badge.textContent = code;
+                        return badge;
+                    }));
+                    element.value = addOnly.has(field) ? '' : value.join(', ');
+                } else if (flagFields.has(field)) {
+                    element.value = value === true ? 'true' : value === false ? 'false' : '';
+                    // "Not set" is offered only while nothing is stored — a flag is never cleared (MDM has no "unset").
+                    const unset = element.querySelector('option[value=""]');
+                    if (unset) {
+                        unset.disabled = value !== null;
+                        unset.hidden = value !== null;
+                    }
+                } else {
+                    element.value = value === null ? '' : String(value);
+                }
+                if (field === 'shelfLifeDays' && level === 'fg') {
+                    element.placeholder = valueOf(sb, 'shelfLifeDaysSource') === 'Gsku'
+                        ? String(valueOf(sb, 'shelfLifeDays') ?? '') : '';
+                }
+                element.disabled = !editable || lockedHere;
+                element.readOnly = !editable || lockedHere;
+            });
+            const derived = offcanvas.querySelector('#sb-form-derived');
+            if (derived) {
+                const edge = valueOf(sb, 'derivedPackConversion');
+                derived.textContent = edge ? `${conversionText(edge)} — ${words.DerivedPackConversion || ''}` : '';
+                derived.classList.toggle('d-none', !edge);
+            }
+            const save = offcanvas.querySelector('#btnSaveStockBehaviour');
+            if (save) save.disabled = !editable;
+        };
+
+        // The changed fields only, shape-checked; { stock, gtin, error }. A field locked (O-8) or a record that may not
+        // be edited sends nothing.
+        const collect = () => {
+            const sb = editor.sb;
+            const editable = valueOf(sb, 'editable') === true;
+            const locked = new Set(listOf(valueOf(sb, 'lockedFields')));
+            const addOnly = new Set(listOf(valueOf(sb, 'addOnlyFields')));
+            const stock = {};
+            let gtin = null;
+            if (!editable) return { stock, gtin, error: '' };
+            for (const field of fields) {
+                const element = input(field);
+                if (!element || locked.has(field)) continue;
+                const before = stored(sb, field);
+                if (field === 'uomConversions') {
+                    const rows = [...element.querySelectorAll('[data-sb-conversion-row]')].map((line) => {
+                        const part = (name) => String(line.querySelector(`[data-sb-part="${name}"]`)?.value || '').trim();
+                        return { fromUom: part('fromUom').toUpperCase(), toUom: part('toUom').toUpperCase(),
+                            numerator: part('numerator'), denominator: part('denominator') };
+                    }).filter((row) => row.fromUom || row.toUom || row.numerator || row.denominator);
+                    if (rows.some((row) => !codePattern.test(row.fromUom) || !codePattern.test(row.toUom)
+                        || row.fromUom === row.toUom || !amountPattern.test(row.numerator) || !amountPattern.test(row.denominator)
+                        || Number(row.numerator) <= 0 || Number(row.denominator) <= 0)) {
+                        return { error: words.InvalidConversion };
+                    }
+                    // Add-only: the stored rows are drawn read-only and travel with the new ones (the list is sent whole).
+                    if (!rows.length && before.length) return { error: words.ListCannotBeEmpty };
+                    if (!sameList(rows, before) && rows.length) stock[field] = rows;
+                    continue;
+                }
+                const raw = String(element.value || '').trim();
+                if (field === 'storageConditionCodes') {
+                    const typed = raw.split(',').map((code) => code.trim().toUpperCase()).filter(Boolean);
+                    if (typed.some((code) => !codePattern.test(code))) return { error: words.InvalidCode };
+                    const codes = [...new Set(addOnly.has(field) ? [...before, ...typed] : typed)];
+                    if (!codes.length && before.length) return { error: words.ListCannotBeEmpty };
+                    if (codes.length && !sameList(codes, before)) stock[field] = codes;
+                    continue;
+                }
+                if (raw === '') continue;
+                if (field === 'gtin') {
+                    if (!/^[0-9]{14}$/.test(raw)) return { error: words.InvalidGtin };
+                    if (raw !== before) gtin = raw;
+                } else if (field === 'baseUomCode') {
+                    const code = raw.toUpperCase();
+                    if (!codePattern.test(code)) return { error: words.InvalidCode };
+                    if (code !== before) stock[field] = code;
+                } else if (dayFields.has(field)) {
+                    if (!/^[0-9]{1,4}$/.test(raw) || Number(raw) > maxDays) return { error: words.InvalidDays };
+                    if (Number(raw) !== before) stock[field] = Number(raw);
+                } else if (flagFields.has(field)) {
+                    const flag = raw === 'true';
+                    if (flag !== before) stock[field] = flag;
+                }
+            }
+            return { stock, gtin, error: '' };
+        };
+
+        const put = async (action, changes, version) => {
+            const body = new FormData();
+            body.set('ExpectedVersion', String(version));
+            body.set('FormAttemptId', editor.attemptId);
+            Object.entries(changes).forEach(([field, value]) => body.set(formNames[field],
+                field === 'uomConversions' ? JSON.stringify(value)
+                    : field === 'storageConditionCodes' ? value.join(',') : String(value)));
+            const token = offcanvas.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            body.set('__RequestVerificationToken', token);
+            const response = await fetch(`${endpoint}/${encodeURIComponent(editor.id)}/${action}`, {
+                method: 'PUT', credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
+                body
+            });
+            if (response.status === 401) {
+                window.DtDefaults?.handleUnauthorized?.();
+                const error = new Error('auth-refresh-in-progress');
+                error.authHandled = true;
+                throw error;
+            }
+            let payload = {};
+            try { payload = await response.json(); } catch (error) { }
+            if (!response.ok) {
+                // The proxy says every refusal as a sentence; `unmapped` is a missing mapping (status only, no body logged).
+                if (payload?.unmapped === true) console.warn('Stock behaviour: a refusal without a sentence mapping', response.status);
+                const errors = payload?.errors || payload?.Errors;
+                throw new Error((Array.isArray(errors) && errors.find(Boolean)) || words.SaveFailed);
+            }
+            const data = payload?.data ?? payload?.Data;
+            const answered = valueOf(data, 'version');
+            if ((payload?.isSuccessful ?? payload?.IsSuccessful) !== true
+                || String(valueOf(data, 'recordId')).toLowerCase() !== editor.id.toLowerCase()
+                || !Number.isSafeInteger(answered) || answered < version) {
+                throw new Error(words.SaveFailed);
+            }
+            editor.version = answered;
+            return answered;
+        };
+
+        const save = () => {
+            if (!editor || busy) return;
+            const { stock, gtin, error } = collect();
+            if (error) {
+                toast(error, 'error');
+                return;
+            }
+            if (!Object.keys(stock).length && gtin === null) {
+                toast(words.NoChanges, 'info');
+                return;
+            }
+            const run = async () => {
+                if (!editor || busy) return;
+                busy = true;
+                const button = offcanvas.querySelector('#btnSaveStockBehaviour');
+                if (button) button.disabled = true;
+                const id = editor.id;
+                try {
+                    let version = editor.version;
+                    if (Object.keys(stock).length) version = await put('stock-behaviour', stock, version);
+                    if (gtin !== null) version = await put('gtin', { gtin }, version);
+                    // Read back: the section shows what MDM now holds, never what was typed.
+                    const refreshed = await fetchDetail(id);
+                    render(refreshed);
+                    bootstrap.Offcanvas.getOrCreateInstance(offcanvas).hide();
+                    editor = null;
+                    onSaved?.(id);
+                    const current = valueOf(refreshed, versionField);
+                    if (Number.isSafeInteger(current) && current >= version) toast(words.Saved, 'success');
+                    else toast(words.StateChanged, 'warning');
+                } catch (failure) {
+                    if (!failure?.authHandled) toast(failure?.message || words.SaveFailed, 'error');
+                } finally {
+                    busy = false;
+                    if (button) button.disabled = !editor || valueOf(editor.sb, 'editable') !== true;
+                }
+            };
+            if (typeof window.showConfirm === 'function') {
+                window.showConfirm(words.SaveConfirmation, run, { type: 'primary', confirmButtonText: words.Save });
+            } else {
+                run();
+            }
+        };
+
+        const open = async (id) => {
+            if (!id || busy) return;
+            try {
+                const detail = await fetchDetail(String(id));
+                const sb = valueOf(detail, 'stockBehaviour');
+                const version = valueOf(detail, versionField);
+                if (!sb || !Number.isSafeInteger(version) || version < 0) throw new Error(words.SaveFailed);
+                editor = { id: String(id), version, sb, attemptId: newAttemptId() };
+                const subtitle = offcanvas.querySelector('#sb-form-subtitle');
+                if (subtitle) subtitle.textContent = shown(valueOf(detail, 'canonicalCode'));
+                fill(sb);
+                render(detail);
+                bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show();
+            } catch (error) {
+                if (!error?.authHandled) toast(error?.message || words.SaveFailed, 'error');
+            }
+        };
+
+        offcanvas.querySelector('#btnSaveStockBehaviour')?.addEventListener('click', save);
+        offcanvas.querySelector('#sb-add-conversion')?.addEventListener('click', () =>
+            input('uomConversions')?.appendChild(conversionRow(null, false)));
+        input('uomConversions')?.addEventListener('click', (event) => {
+            event.target.closest?.('[data-sb-remove]')?.closest('[data-sb-conversion-row]')?.remove();
+        });
+        document.getElementById('sb-edit')?.addEventListener('click', (event) => {
+            const id = event.currentTarget?.dataset?.id;
+            const preview = document.getElementById('offcanvasDetailsPreview');
+            if (preview) bootstrap.Offcanvas.getInstance?.(preview)?.hide();
+            open(id);
+        });
+
+        return { words, render, open, save };
+    };
+
+    return { create };
+})();

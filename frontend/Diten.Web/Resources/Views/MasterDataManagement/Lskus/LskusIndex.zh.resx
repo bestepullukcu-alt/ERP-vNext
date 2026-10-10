@@ -81,4 +81,10 @@
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
     <value>要提交审批，请先在库存行为中填写其库存标志。</value>
   </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0}和{1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>、</value>
+  </data>
 </root>

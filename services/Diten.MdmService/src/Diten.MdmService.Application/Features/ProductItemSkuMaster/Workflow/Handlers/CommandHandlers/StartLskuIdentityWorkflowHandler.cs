@@ -5,6 +5,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Domain.Repositories;
@@ -102,11 +103,7 @@ public sealed class StartLskuIdentityWorkflowHandler(
         && existing.LskuId == lskuId
         && existing.MakerSubjectId == maker
         && existing.ExpectedLskuVersion == input.ExpectedVersion
-        && existing.Checkpoint is not (LskuIdentityWorkflowCheckpoint.Completed
-            or LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
-            or LskuIdentityWorkflowCheckpoint.Superseded
-            or LskuIdentityWorkflowCheckpoint.WithdrawalApplied
-            or LskuIdentityWorkflowCheckpoint.DecisionNotApplicable);
+        && !IdentityStartReplay.CannotContinue(existing.Checkpoint);
 
     public const string SubmitAbandoned = "LSKU_IDENTITY_SUBMIT_ABANDONED";
     public const string DecisionNotApplicable = "LSKU_IDENTITY_DECISION_NOT_APPLICABLE";

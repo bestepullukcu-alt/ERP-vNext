@@ -120,7 +120,10 @@ public sealed class GetGskuByIdHandler
                 ? await _identityOperations.LatestApprovalNoteAsync(gsku.Id, cancellationToken)
                 : null,
             stuckRequest is null ? null : "STUCK",
-            stuckRequest is { Requester: true } ? stuckRequest.Request : null));
+            stuckRequest is { Requester: true } ? stuckRequest.Request : null)
+        {
+            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForGsku(gsku)
+        });
     }
 
     /*
@@ -215,7 +218,7 @@ public sealed class GetGskuByIdHandler
                 // S3b FIX1 (R2): a NEW submit the gate would refuse is not offered — its reason is (the reconciling repeat
                 // of an existing operation is not a new submit and stays offered).
                 actions.Add(submit != FirstGskuIdentitySubmitStateKind.ReconciliationRequired
-                            && StockFlagGate.MissingForGsku(gsku).Count > 0
+                            && StockFlagGate.SubmitRefusalForGsku(gsku) is not null
                     ? StockFlagGate.SubmitNeedsStockFlagsAction
                     : "SUBMIT");
         }

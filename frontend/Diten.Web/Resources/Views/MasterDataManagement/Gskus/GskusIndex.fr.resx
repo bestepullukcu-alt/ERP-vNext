@@ -67,4 +67,11 @@
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
     <value>Pour l'envoyer en approbation, saisissez d'abord ses indicateurs de stock dans le comportement de stock.</value>
   </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} et {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="StockDaysExceedShelfLife" xml:space="preserve"><value>La durée de conservation doit être d'au moins {1} jours — {0} ne peut pas la dépasser.</value></data>
 </root>

@@ -14,11 +14,19 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         status, ok: status >= 200 && status < 300,
         json: async () => ({ data, isSuccessful: status < 300, statusCode: status })
     });
-    function harness(responses = []) {
+    // S5: the production stock-behaviour offcanvas (its Razor words as their keys) — in the page only with the stock-edit key.
+    const stockOffcanvas = () => fs.readFileSync(path.join(__dirname, '../Views/MasterDataManagement/Gskus/_StockBehaviourOffcanvas.cshtml'), 'utf8')
+        .replace(/@\*[\s\S]*?\*@/g, '').replace(/^@(using|inject|model)\b.*$/gm, '')
+        .replace(/@Html\.AntiForgeryToken\(\)/g, '<input name="__RequestVerificationToken" value="synthetic-csrf">')
+        .replace(/<partial [^>]*\/>/g, '<script id="stock-behaviour-l10n" type="application/json">{"FillIn":"FillIn"}</script>')
+        .replace(/@Stock\["(\w+)"\]/g, '$1');
+    // stock: 'key' = the module and its offcanvas (a user with the key); 'module' = the module without the offcanvas.
+    function harness(responses = [], { stock = '' } = {}) {
         document.body.innerHTML = '<form id="formGsku"><input name="__RequestVerificationToken" value="synthetic-csrf">' +
             '<select id="globalProductId"></select><select id="packUomCode"></select><input id="packQuantity" value="1"></form>' +
             '<button id="btnSaveGsku"></button><span id="btnSaveGskuText"></span><span id="offcanvasCreateEditLabel"></span>' +
-            '<div id="offcanvasCreateEdit"></div><form id="gskuLifecycleToken"><input name="__RequestVerificationToken" value="synthetic-csrf"></form>';
+            '<div id="offcanvasCreateEdit"></div><form id="gskuLifecycleToken"><input name="__RequestVerificationToken" value="synthetic-csrf"></form>' +
+            (stock === 'key' ? stockOffcanvas() : '');
         const fetch = vi.fn(async () => {
             const next = responses.shift();
             if (next instanceof Error) throw next;
@@ -52,16 +60,18 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         // Test-only access to existing closure functions; shipped JS has no test hook.
         const exposed = source.replace('init: async () => {', `test: {
             readAvailableActions, readVersion, buildListOptions, createProductPickerOptions, fetchProductPage,
-            getErrorMessage, onListError, renderDetail, loadActionMenu,
+            getErrorMessage, onListError, renderDetail, loadActionMenu, rowActionHandlers,
             openExistingEditor, requestLifecycle, requestRetirement, submitEditor, repeatLifecycleRequest,
             setupEditor: (mode) => { editorId = '${id}'; editorGskuVersion = 3; editorRevisionVersion = 2; editorMode = mode; },
             setupTable: (table) => { dt = table; }
         }, init: async () => {`);
-        const api = vm.runInNewContext(exposed + '\nGskusList.test;', {
+        const stockModule = stock ? fs.readFileSync(path.join(__dirname,
+            '../wwwroot/assets/js/MasterDataManagement/StockBehaviour/stock-behaviour.js'), 'utf8') + '\n' : '';
+        const api = vm.runInNewContext(stockModule + exposed + '\nGskusList.test;', {
             window: fakeWindow, document, fetch, $: jquery, Option, FormData, URLSearchParams,
             bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) },
                 Dropdown: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) } },
-            setTimeout, clearTimeout, console
+            setTimeout, clearTimeout, console, crypto: globalThis.crypto
         });
         api.setupTable({ ajax: { reload } });
         return { api, fetch, reload, toast, window: fakeWindow, settle: () => pending };
@@ -100,6 +110,37 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         await h.api.loadActionMenu(document.querySelector('.js-gsku-actions-toggle'));
         const items = [...document.querySelectorAll('.js-gsku-actions-menu [data-action]')].map(x => x.dataset.action);
         expect(items).toEqual(['DETAILS', 'EDIT']);
+        expect(h.toast).not.toHaveBeenCalled();
+    });
+    // MOD-0290-FU04 S5: for a user with the stock-edit key (the offcanvas is in the page) the reason is a working shortcut,
+    // "Fill in stock behaviour"; without the key it stays the quick view's reason only. Unknown actions still throw.
+    it('S5: with the stock-edit key the stock-flag reason is a "Fill in stock behaviour" menu item', async () => {
+        const h = harness([response(detail(flagless))], { stock: 'key' });
+        document.body.insertAdjacentHTML('beforeend', '<div class="dropdown"><button class="js-gsku-actions-toggle" data-id="' + id +
+            '"></button><div class="js-gsku-actions-menu"></div></div>');
+        await h.api.loadActionMenu(document.querySelector('.js-gsku-actions-toggle'));
+        const items = [...document.querySelectorAll('.js-gsku-actions-menu [data-action]')];
+        expect(items.map(x => x.dataset.action)).toEqual(['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED']);
+        expect(items[2].textContent).toBe('FillIn');
+        expect(items[2].dataset.rowAction).toBe('fillStockBehaviour');
+        expect(h.toast).not.toHaveBeenCalled();
+    });
+    it('S5: without the stock-edit key (no offcanvas) the shortcut is not drawn, even with the module loaded', async () => {
+        const h = harness([response(detail(flagless))], { stock: 'module' });
+        document.body.insertAdjacentHTML('beforeend', '<div class="dropdown"><button class="js-gsku-actions-toggle" data-id="' + id +
+            '"></button><div class="js-gsku-actions-menu"></div></div>');
+        await h.api.loadActionMenu(document.querySelector('.js-gsku-actions-toggle'));
+        expect([...document.querySelectorAll('.js-gsku-actions-menu [data-action]')].map(x => x.dataset.action)).toEqual(['DETAILS', 'EDIT']);
+        expect(h.api.rowActionHandlers().fillStockBehaviour).toBeTypeOf('function');
+    });
+    it('S5: the shortcut opens the stock-behaviour offcanvas on a fresh detail read', async () => {
+        const sb = { baseUomCode: null, uomConversions: [], shelfLifeDays: null, storageConditionCodes: [], lotControlled: null,
+            stockableFlag: null, stockable: false, missing: ['lotControlled'], lockedFields: [], addOnlyFields: [], editable: true };
+        const h = harness([response({ ...detail(flagless), canonicalCode: 'GSKU-7', stockBehaviour: sb })], { stock: 'key' });
+        h.api.rowActionHandlers().fillStockBehaviour({ id, trigger: null });
+        await vi.waitFor(() => expect(document.getElementById('sb-form-subtitle').textContent).toBe('GSKU-7'));
+        expect(h.fetch.mock.calls.map(c => c[0])).toEqual(['/MasterDataManagement/Gskus/api/' + id]);
+        expect(document.querySelector('[data-sb-input="lotControlled"]').disabled).toBe(false);
         expect(h.toast).not.toHaveBeenCalled();
     });
     it('a flagless draft: Edit opens the editor', async () => {
@@ -225,7 +266,7 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
             .map((column) => column.data);
         expect(sortable).toEqual(['canonicalCode', 'packQuantity', 'lifecycleStatus']);
         expect(Object.keys(options.actions.onRowAction).sort()).toEqual(
-            ['editDraft', 'quickView', 'repeatRequest', 'requestCorrection', 'requestRetirement', 'submitIdentity', 'withdrawApproval']);
+            ['editDraft', 'fillStockBehaviour', 'quickView', 'repeatRequest', 'requestCorrection', 'requestRetirement', 'submitIdentity', 'withdrawApproval']);
     });
 
     describe('Global Product picker (select2 ajax transport, BL-531 contract)', () => {

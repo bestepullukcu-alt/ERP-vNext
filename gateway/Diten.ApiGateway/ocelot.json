@@ -372,6 +372,7 @@
       "UpstreamHttpMethod": [
         "GET",
         "POST",
+        "PUT",
         "OPTIONS"
       ],
       "UpstreamScheme": "http"
@@ -441,6 +442,7 @@
       "UpstreamHttpMethod": [
         "GET",
         "POST",
+        "PUT",
         "OPTIONS"
       ],
       "UpstreamScheme": "http"
@@ -3320,6 +3322,41 @@
         }
       ],
       "UpstreamPathTemplate": "/api/mdm/products/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/mdm/items",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/mdm/items",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/mdm/items/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/mdm/items/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",

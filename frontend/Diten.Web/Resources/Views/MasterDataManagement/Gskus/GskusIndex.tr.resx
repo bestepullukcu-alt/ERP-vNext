@@ -67,4 +67,11 @@
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
     <value>Onaya göndermek için önce stok davranışında stok bayraklarını girin.</value>
   </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} ve {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="StockDaysExceedShelfLife" xml:space="preserve"><value>Raf ömrü en az {1} gün olmalıdır — {0} raf ömründen uzun olamaz.</value></data>
 </root>

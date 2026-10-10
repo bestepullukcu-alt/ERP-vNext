@@ -21,7 +21,15 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.True(Manifest.IsTenantAssignable);
         Assert.False(Manifest.IsBaseline);
 
-        Assert.Equal(6, Manifest.Pages.Count);
+        Assert.Equal(7, Manifest.Pages.Count);
+        // MOD-0290-FU04 S5 (§23 #1, #7): Items under Master Data, visible to holders of mdm.items.read.
+        var items = Assert.Single(Manifest.Pages, page => page.PageCode == "ITEMS");
+        Assert.Equal("/MasterDataManagement/Items", items.RoutePath);
+        Assert.Equal("mdm.items.read", items.RequiredPermission);
+        Assert.True(items.IsNavigationVisible);
+        Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "EDIT", "SUBMIT", "DEACTIVATE", "REACTIVATE", "RETIRE"],
+            items.Actions.Select(action => action.ActionCode));
+        Assert.Equal("1.1.0", Manifest.ModuleVersion);
         var globalProducts = Assert.Single(Manifest.Pages, page => page.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal("/MasterDataManagement/GlobalProducts", globalProducts.RoutePath);
         Assert.Equal("mdm.global-products.read", globalProducts.RequiredPermission);
@@ -53,7 +61,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         const string prefix = "Permission:";
         var policyProperty = typeof(HasPermissionAttribute).GetProperty("Policy");
-        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController) }
+        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController), typeof(ItemsController), typeof(StockBehaviourController) }
             .SelectMany(controller => controller
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())
@@ -89,6 +97,12 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.gskus.submit",
                 "mdm.gskus.update",
                 "mdm.gskus.withdraw",
+                "mdm.items.create",
+                "mdm.items.deactivate",
+                "mdm.items.read",
+                "mdm.items.retire",
+                "mdm.items.submit",
+                "mdm.items.update",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
                 "mdm.lskus.request-retirement",
@@ -112,7 +126,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(41, declared.Count);
+        Assert.Equal(47, declared.Count);
         Assert.DoesNotContain(declared, permission => permission.StartsWith("mdm.brands.", StringComparison.Ordinal));
         Assert.All(declared, permission =>
         {
@@ -137,6 +151,20 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         };
         Assert.True(declared.Where(permission => !nonControllerPermissions.Contains(permission) && !systemOnly.Contains(permission))
             .ToHashSet(StringComparer.Ordinal).SetEquals(enforced.Where(permission => !systemOnly.Contains(permission))));
+    }
+
+    // S5 (O-12, CT decision 5): every stock-bearing level declares EDIT_STOCK_BEHAVIOUR with the key the stock door
+    // enforces today (StockBehaviourPermissions) — never a new mdm.<level>.* key (Auth's exact lifecycle set).
+    [Theory]
+    [InlineData("GSKUS", "mdm.gskus.update")]
+    [InlineData("LSKUS", "mdm.lskus.create")]
+    [InlineData("FINISHED_GOODS", "mdm.finished-goods.create")]
+    public void Stock_levels_declare_the_stock_behaviour_edit_with_todays_key(string pageCode, string key)
+    {
+        var action = Assert.Single(Assert.Single(Manifest.Pages, page => page.PageCode == pageCode).Actions,
+            action => action.ActionCode == "EDIT_STOCK_BEHAVIOUR");
+        Assert.Equal(key, action.PermissionKey);
+        Assert.True(action.IsRowAction);
     }
 
     [Fact]
@@ -194,8 +222,9 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     public void Gsku_has_exact_lifecycle_actions_and_hidden_system_retire()
     {
         var page = Assert.Single(Manifest.Pages, p => p.PageCode == "GSKUS");
+        // S5 (O-12): + EDIT_STOCK_BEHAVIOUR (held by mdm.gskus.update today).
         Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "EDIT", "SUBMIT", "WITHDRAW_APPROVAL",
-            "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE"], page.Actions.Select(a => a.ActionCode));
+            "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "EDIT_STOCK_BEHAVIOUR"], page.Actions.Select(a => a.ActionCode));
         var retire = Assert.Single(page.Actions, a => a.ActionCode == "RETIRE");
         Assert.False(retire.IsRowAction);
         Assert.False(retire.IsToolbarAction);
@@ -214,9 +243,10 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Single(productPages);
         foreach (var page in productPages)
         {
-            Assert.Equal(4, page.Actions.Count);
+            // S5 (O-12): + EDIT_STOCK_BEHAVIOUR on the existing create key — still the same four keys.
+            Assert.Equal(5, page.Actions.Count);
             Assert.Equal(
-                ["ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS"],
+                ["ADD_NEW", "EDIT_STOCK_BEHAVIOUR", "RETIRE", "SUBMIT", "VIEW_DETAILS"],
                 page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
             Assert.Equal(
                 [
@@ -225,7 +255,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                     "mdm.finished-goods.retire",
                     "mdm.finished-goods.submit"
                 ],
-                page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
+                page.Actions.Select(action => action.PermissionKey).Distinct().OrderBy(value => value, StringComparer.Ordinal));
         }
     }
 

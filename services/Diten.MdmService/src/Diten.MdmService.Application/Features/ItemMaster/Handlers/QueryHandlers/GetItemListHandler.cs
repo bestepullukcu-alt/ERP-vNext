@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ItemMaster.Queries;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -7,7 +8,8 @@ using MediatR;
 namespace Diten.MdmService.Application.Features.ItemMaster.Handlers.QueryHandlers;
 
 // The screen list (S5 consumes it): paged, ordered by code; q matches a code prefix or a name part (case-insensitive).
-public sealed class GetItemListHandler(IItemRepository items) : IRequestHandler<GetItemListQuery, Response<ItemModels.ItemListDto>>
+public sealed class GetItemListHandler(IItemRepository items, IProductIdentityLifecycleActorContext? actor = null)
+    : IRequestHandler<GetItemListQuery, Response<ItemModels.ItemListDto>>
 {
     public const int MaximumPageSize = 100;
     // FIX1 M3: (page - 1) * pageSize stays an int — a page past this is 400, never an overflow (500).
@@ -29,7 +31,10 @@ public sealed class GetItemListHandler(IItemRepository items) : IRequestHandler<
             new ItemPageRequest(page, pageSize, string.IsNullOrWhiteSpace(query.Q) ? null : query.Q.Trim(), type, status),
             cancellationToken);
         return Response<ItemModels.ItemListDto>.Success(new ItemModels.ItemListDto(
-            result.Items.Select(ItemRules.ToDto).ToList(), result.Total, page, pageSize));
+            result.Items.Select(item => ItemRules.ToDto(item) with
+            {
+                AvailableActions = actor is null ? null : ItemActions.For(item.LifecycleStatus, actor)
+            }).ToList(), result.Total, page, pageSize));
     }
 
     private static bool TryType(string code, out ItemMaterialType? type)

@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.FinishedGoods;
 using Diten.Web.Security;
@@ -27,6 +28,7 @@ public sealed class FinishedGoodsController : Controller
     private readonly ITimeLimitedDataProtector _formAttemptProtector;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly IStringLocalizer<FinishedGoodsIndex> _localizer;
+    private readonly IStringLocalizer<Views.MasterDataManagement.Gskus.GskuRefusals>? _refusals;
     private readonly ILogger<FinishedGoodsController> _logger;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -39,7 +41,8 @@ public sealed class FinishedGoodsController : Controller
         IDataProtectionProvider dataProtectionProvider,
         IStringLocalizer<SharedResource> sharedLocalizer,
         IStringLocalizer<FinishedGoodsIndex> localizer,
-        ILogger<FinishedGoodsController> logger)
+        ILogger<FinishedGoodsController> logger,
+        IStringLocalizer<Views.MasterDataManagement.Gskus.GskuRefusals>? refusals = null)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]?.TrimEnd('/')
@@ -50,6 +53,9 @@ public sealed class FinishedGoodsController : Controller
         _sharedLocalizer = sharedLocalizer;
         _localizer = localizer;
         _logger = logger;
+        // S5: the stock-behaviour refusals' sentences (the GSKU code bridge). Resolved by DI in the application; a test
+        // that builds the controller by hand passes it or gets status sentences only.
+        _refusals = refusals;
     }
 
     [HttpGet("")]
@@ -182,6 +188,79 @@ public sealed class FinishedGoodsController : Controller
         }
     }
 
+    // MOD-0290-FU04 S5 (O-12, O-14, O-15, D-2) — the "Stock behaviour" offcanvas's save: conversions, own shelf life
+    // (≤ the GSKU's), storage conditions, lot / serial / stockable flags; expectedVersion = the detail's version. The
+    // GTIN has its own request (below). Own key (StockBehaviourAccess.FinishedGood), an Idempotency-Key per form
+    // attempt, a refusal said through the code bridge (422 kept as 422).
+    [HttpPut("api/{id:guid}/stock-behaviour")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> SetStockBehaviour(Guid id, CancellationToken cancellationToken) =>
+        WriteStockAsync(id, "stock-behaviour", Services.MasterData.StockBehaviourWrite.FinishedGoodFields, [], cancellationToken);
+
+    [HttpPut("api/{id:guid}/gtin")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> AssignGtin(Guid id, CancellationToken cancellationToken) =>
+        WriteStockAsync(id, "gtin", Services.MasterData.StockBehaviourWrite.GtinFields,
+            Services.MasterData.StockBehaviourWrite.GtinFields.ToArray(), cancellationToken);
+
+    private async Task<IActionResult> WriteStockAsync(
+        Guid id,
+        string action,
+        IReadOnlyList<string> fields,
+        IReadOnlyCollection<string> required,
+        CancellationToken cancellationToken)
+    {
+        if (!HasPermission(Services.MasterData.StockBehaviourAccess.FinishedGood))
+            return ForbiddenResult();
+        var write = id == Guid.Empty ? null : await Services.MasterData.StockBehaviourWrite.ReadAsync(
+            Request, fields, required, HttpContext.RequestAborted);
+        if (write is null)
+            return StatusCode(StatusCodes.Status400BadRequest, new { success = false, errors = new[] { StockStatusSentence(400) } });
+        if (!Services.MasterData.StockBehaviourWrite.TryResolveActor(User, out var tenantId, out var actor)
+            || !TryCreateRequest(HttpMethod.Put, $"{_gatewayUrl}/api/finished-goods/{id:D}/{action}",
+                new StringContent(write.Body, Encoding.UTF8, "application/json"), out var request))
+        {
+            return Unauthorized(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+        }
+
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", Services.MasterData.StockBehaviourWrite
+            .OperationId(tenantId, actor, "finished-good", action, id, write).ToString("D"));
+        return await Services.MasterData.StockBehaviourWrite.SendAsync(_httpClient, request,
+            (IStringLocalizer?)_refusals ?? new NoSentences(), StockStatusSentence, _logger, cancellationToken);
+    }
+
+    // The stock write's general sentences (a code without a sentence, a malformed form, a lost answer) — the code
+    // bridge's own words where it has one; the create flow's sentences speak of the GSKU selection and the draft.
+    private string StockStatusSentence(int status)
+    {
+        var key = status switch
+        {
+            400 or 422 => "RefusalInvalidRequest",
+            403 => "RefusalForbidden",
+            404 => "RefusalNotFound",
+            503 => "RefusalServiceUnavailable",
+            _ => null
+        };
+        if (key is not null && _refusals?[key] is { ResourceNotFound: false } sentence)
+            return sentence.Value;
+        return status switch
+        {
+            400 or 422 => _localizer["ErrorValidation"].Value,
+            401 => _sharedLocalizer["Unauthorized"].Value,
+            403 => _localizer["ErrorForbidden"].Value,
+            404 => _localizer["ErrorNotFound"].Value,
+            409 => _localizer["ErrorConflict"].Value,
+            _ => _sharedLocalizer["GatewayError"].Value
+        };
+    }
+
+    private sealed class NoSentences : IStringLocalizer
+    {
+        public LocalizedString this[string name] => new(name, name, resourceNotFound: true);
+        public LocalizedString this[string name, params object[] arguments] => this[name];
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
+    }
+
     /*
      * FG FIX1 part B item 5. MDM's definite refusal (400 · 403 · 404 · 409) ends the attempt: its key is answered the
      * same way forever (CODE_RESERVATION_BURNED, FINISHED_GOOD_DRAFT_CANCELLED, IDEMPOTENCY_KEY_CONFLICT…), so a repeat
@@ -303,7 +382,8 @@ public sealed class FinishedGoodsController : Controller
 
     private string MapStatusMessage(HttpStatusCode statusCode) => statusCode switch
     {
-        HttpStatusCode.BadRequest => _localizer["ErrorValidation"].Value,
+        // S5 (D-17): a stock rule refusal (422) is a validation sentence, never a gateway failure.
+        HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity => _localizer["ErrorValidation"].Value,
         HttpStatusCode.Unauthorized => _sharedLocalizer["Unauthorized"].Value,
         HttpStatusCode.Forbidden => _localizer["ErrorForbidden"].Value,
         HttpStatusCode.NotFound => _localizer["ErrorNotFound"].Value,

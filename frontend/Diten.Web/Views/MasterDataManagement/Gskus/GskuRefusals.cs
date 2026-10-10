@@ -248,5 +248,33 @@ public static class GskuRefusalSentences
         ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "RefusalStockFlagsRequired",
         // MOD-0290-FU04 S3b FIX2 (R-3): an approved GSKU's retest / minimum-remaining days come after its shelf life.
         ["STOCK_DAYS_REQUIRE_SHELF_LIFE"] = "RefusalStockDaysRequireShelfLife",
+        // MOD-0290-FU04 S5 (O-12): every refusal of the stock-behaviour edit (MDM's StockBehaviour* files and its store),
+        // said by the GSKU proxy and — through StockBehaviourWrite — by the LSKU and Finished Good proxies too.
+        // STOCK_DAYS_INVALID with its details (the exceeding days, shelfLifeDaysAtLeast=N) is said by GskusController
+        // with N; without them it is this bound sentence.
+        ["STOCK_BEHAVIOUR_FORBIDDEN"] = "RefusalForbidden",
+        ["STOCK_BEHAVIOUR_INVALID"] = "RefusalInvalidRequest",
+        ["STOCK_REFERENCE_LIST_UNAVAILABLE"] = "RefusalStockReferenceUnavailable",
+        ["FG_GSKU_BASE_UOM_MISSING"] = "RefusalStockGskuBaseUomMissing",
+        ["FG_GSKU_SHELF_LIFE_MISSING"] = "RefusalStockGskuShelfLifeMissing",
+        ["UOM_CONVERSION_INVALID"] = "RefusalStockConversionInvalid",
+        ["ITEM_STORAGE_CONDITION_CONFLICT"] = "RefusalStockStorageConflict",
+        ["STOCK_STORAGE_CONDITION_INVALID"] = "RefusalStockStorageInvalid",
+        ["STOCK_UOM_INVALID"] = "RefusalStockUomInvalid",
+        ["GSKU_PACK_UOM_UNKNOWN"] = "RefusalStockPackUomUnknown",
+        ["STOCK_BEHAVIOUR_INCOMPLETE"] = "RefusalStockIncomplete",
+        ["STOCK_SHELF_LIFE_INVALID"] = "RefusalStockShelfLifeInvalid",
+        ["FG_SHELF_LIFE_EXCEEDS_GSKU"] = "RefusalStockFgShelfLifeExceedsGsku",
+        ["FG_GTIN_INVALID"] = "RefusalStockGtinInvalid",
+        ["STOCK_DAYS_INVALID"] = "RefusalStockDaysInvalid",
+        ["STOCK_BEHAVIOUR_RECORD_NOT_FOUND"] = "RefusalNotFound",
+        ["STOCK_BEHAVIOUR_EDIT_BLOCKED_BY_OPERATION"] = "RefusalBusy",
+        ["STOCK_BEHAVIOUR_RECORD_NOT_EDITABLE"] = "RefusalStockNotEditable",
+        ["STOCK_BEHAVIOUR_FIELD_LOCKED"] = "RefusalStockFieldLocked",
+        ["STOCK_BEHAVIOUR_CONCURRENCY_CONFLICT"] = "RefusalChangedElsewhere",
+        ["FG_GTIN_CONFLICT"] = "RefusalStockGtinConflict",
+        ["STOCK_BEHAVIOUR_WRITE_CONTRACT_INVALID"] = "RefusalInternal",
+        ["LSKU_NOT_FOUND"] = "RefusalNotFound",
+        ["FINISHED_GOOD_NOT_FOUND"] = "RefusalNotFound",
     };
 }

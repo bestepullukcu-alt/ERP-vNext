@@ -33,7 +33,9 @@ public sealed class StockFlagGateCoverageTests
             .ToArray();
         var handlers = handled.Where(x => !LevelsWithoutStockFlags.Contains(x.Command.Name)).Select(x => x.Handler).ToArray();
         var gate = typeof(StockFlagGate).GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .Where(x => x.Name.StartsWith("Missing", StringComparison.Ordinal)).ToHashSet<MemberInfo>();
+            // S5 (D-14): the GSKU's whole submit refusal (flags + days) is a gate entry too.
+            .Where(x => x.Name.StartsWith("Missing", StringComparison.Ordinal)
+                        || x.Name.StartsWith("SubmitRefusal", StringComparison.Ordinal)).ToHashSet<MemberInfo>();
 
         var stockLevels = handlers;
         Assert.Contains(typeof(StartFirstGskuIdentityWorkflowHandler), stockLevels);

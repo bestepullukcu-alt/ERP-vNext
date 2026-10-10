@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="SectionTitle" xml:space="preserve"><value>سلوك المخزون</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل سلوك المخزون</value></data>
+  <data name="FillIn" xml:space="preserve"><value>أكمل سلوك المخزون</value></data>
+  <data name="BaseUom" xml:space="preserve"><value>الوحدة الأساسية</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>تحويلات الوحدات</value></data>
+  <data name="DerivedPackConversion" xml:space="preserve"><value>مشتقة من العبوة — لا تُدخل</value></data>
+  <data name="ShelfLife" xml:space="preserve"><value>مدة الصلاحية (أيام)</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>فترة إعادة الاختبار (أيام)</value></data>
+  <data name="MinRemainingShelfLife" xml:space="preserve"><value>الحد الأدنى لمدة الصلاحية المتبقية (أيام)</value></data>
+  <data name="StorageConditions" xml:space="preserve"><value>شروط التخزين</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>تتبع بالدفعة</value></data>
+  <data name="SerialControlled" xml:space="preserve"><value>تتبع بالرقم التسلسلي</value></data>
+  <data name="Gtin" xml:space="preserve"><value>GTIN (علبة البيع)</value></data>
+  <data name="Stockable" xml:space="preserve"><value>قابل للتخزين</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="NotSet" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="SourceGsku" xml:space="preserve"><value>من GSKU</value></data>
+  <data name="LockedReason" xml:space="preserve"><value>مُدخل في سجل معتمد — لا يتغير إلا عبر تصحيح يتوفر في إصدار لاحق.</value></data>
+  <data name="AddOnlyReason" xml:space="preserve"><value>سجل معتمد — تبقى الصفوف الحالية كما هي؛ يمكنك إضافة صفوف جديدة.</value></data>
+  <data name="NotEditable" xml:space="preserve"><value>حالة هذا السجل لا تسمح بتغيير سلوك المخزون.</value></data>
+  <data name="NotStockableBecause" xml:space="preserve"><value>غير قابل للتخزين بعد. الناقص:</value></data>
+  <data name="StockableFlag" xml:space="preserve"><value>قابل للتخزين = نعم</value></data>
+  <data name="MissingCaseBox" xml:space="preserve"><value>تحويل الكرتونة ↔ العلبة</value></data>
+  <data name="MissingGskuBaseUom" xml:space="preserve"><value>الوحدة الأساسية لـ GSKU</value></data>
+  <data name="MissingGskuStockable" xml:space="preserve"><value>أن يكون GSKU قابلاً للتخزين</value></data>
+  <data name="GroupUnits" xml:space="preserve"><value>الوحدات</value></data>
+  <data name="GroupShelfLife" xml:space="preserve"><value>مدة الصلاحية</value></data>
+  <data name="GroupStorageControl" xml:space="preserve"><value>التخزين والتتبع</value></data>
+  <data name="GroupGtin" xml:space="preserve"><value>تعريف علبة البيع</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>إضافة تحويل</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>إزالة التحويل</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>من وحدة</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>إلى وحدة</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>البسط</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>المقام</value></data>
+  <data name="ConversionHelp" xml:space="preserve"><value>1 من وحدة المصدر = البسط ÷ المقام من وحدة الهدف. رموز الوحدات بأحرف كبيرة، مثل XBX وC62.</value></data>
+  <data name="UomHelp" xml:space="preserve"><value>رمز الوحدة بأحرف كبيرة، مثل C62 (قطعة) أو KGM (كغ).</value></data>
+  <data name="StorageHelp" xml:space="preserve"><value>رموز الشروط بأحرف كبيرة مفصولة بفواصل، مثل COOL_2_8، PROTECT_FROM_LIGHT. شرط حرارة واحد على الأكثر.</value></data>
+  <data name="ShelfLifeFromGskuHelp" xml:space="preserve"><value>اتركه فارغاً لاستخدام مدة صلاحية GSKU؛ لا يمكن أن تتجاوزها قيمة خاصة.</value></data>
+  <data name="GtinHelp" xml:space="preserve"><value>14 رقماً مع رقم تحقق GS1 صحيح.</value></data>
+  <data name="LskuInheritsHelp" xml:space="preserve"><value>كل ما عدا ذلك (الوحدات، مدة الصلاحية، التخزين، الدفعة، قابلية التخزين) يُقرأ من GSKU.</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="SaveConfirmation" xml:space="preserve"><value>هل تريد حفظ تغييرات سلوك المخزون؟</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم حفظ سلوك المخزون.</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>لا توجد تغييرات.</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>تعذر حفظ سلوك المخزون. حاول مرة أخرى.</value></data>
+  <data name="StateChanged" xml:space="preserve"><value>تغيّر السجل في الأثناء؛ تُعرض أحدث القيم.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>أدخل الرموز بأحرف كبيرة (حروف وأرقام وشرطات سفلية) مفصولة بفواصل.</value></data>
+  <data name="InvalidDays" xml:space="preserve"><value>الأيام أعداد صحيحة من 0 إلى 3650 (مدة الصلاحية من 1).</value></data>
+  <data name="InvalidConversion" xml:space="preserve"><value>يحتاج كل تحويل إلى رمزي وحدة مختلفين وبسط ومقام أكبر من الصفر.</value></data>
+  <data name="InvalidGtin" xml:space="preserve"><value>يجب أن يتكون GTIN من 14 رقماً بالضبط.</value></data>
+  <data name="ListCannotBeEmpty" xml:space="preserve"><value>لا يمكن إفراغ قائمة تحتوي على قيم؛ أبقِ عنصراً واحداً على الأقل.</value></data>
+</root>

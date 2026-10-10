@@ -26,4 +26,20 @@
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Une unité utilisée par ce GSKU a été retirée après l'approbation. L'approbation reste valable : elle a été appliquée avec les valeurs validées lors de la soumission ; l'unité retirée ne peut pas être choisie pour de nouveaux enregistrements.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Avant d'envoyer ce GSKU pour approbation, définissez dans le comportement de stock : {0}.</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Saisissez d'abord la durée de conservation : sur un GSKU approuvé, {0} ne peut être défini qu'une fois sa durée de conservation connue.</value></data>
+  <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>Les listes d'unités et de conditions de stockage ne peuvent pas être lues pour le moment. Réessayez dans un instant.</value></data>
+  <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Saisissez d'abord l'unité de base du GSKU — le produit fini l'utilise.</value></data>
+  <data name="RefusalStockGskuShelfLifeMissing" xml:space="preserve"><value>Saisissez d'abord la durée de conservation du GSKU — celle du produit fini ne peut pas la dépasser.</value></data>
+  <data name="RefusalStockConversionInvalid" xml:space="preserve"><value>Une conversion d'unités n'est pas valide : définissez d'abord l'unité de base ; chaque unité doit l'atteindre en quatre étapes au plus, sans boucle, et les paires de même dimension (comme kg ↔ g) ne se saisissent pas.</value></data>
+  <data name="RefusalStockStorageConflict" xml:space="preserve"><value>Une seule condition de température peut être choisie.</value></data>
+  <data name="RefusalStockStorageInvalid" xml:space="preserve"><value>Un code de condition de stockage ne figure pas dans la liste. Vérifiez les codes.</value></data>
+  <data name="RefusalStockUomInvalid" xml:space="preserve"><value>Un code d'unité ne figure pas dans la liste. Vérifiez les codes.</value></data>
+  <data name="RefusalStockPackUomUnknown" xml:space="preserve"><value>L'unité de conditionnement de ce GSKU ne figure pas dans la liste des unités ; sa conversion boîte ↔ conditionnement ne peut pas être déduite.</value></data>
+  <data name="RefusalStockIncomplete" xml:space="preserve"><value>Il ne peut pas encore être stockable : renseignez d'abord tous les champs de stock obligatoires.</value></data>
+  <data name="RefusalStockShelfLifeInvalid" xml:space="preserve"><value>La durée de conservation doit être un nombre entier de jours entre 1 et 3650.</value></data>
+  <data name="RefusalStockFgShelfLifeExceedsGsku" xml:space="preserve"><value>La durée de conservation du produit fini ne peut pas dépasser celle de son GSKU.</value></data>
+  <data name="RefusalStockGtinInvalid" xml:space="preserve"><value>Le GTIN doit comporter 14 chiffres avec une clé de contrôle GS1 valide.</value></data>
+  <data name="RefusalStockDaysInvalid" xml:space="preserve"><value>L'intervalle de recontrôle et la durée de conservation résiduelle minimale doivent être des nombres entiers de jours entre 0 et 3650.</value></data>
+  <data name="RefusalStockNotEditable" xml:space="preserve"><value>Le statut de cet enregistrement ne permet pas de modifier le comportement de stock.</value></data>
+  <data name="RefusalStockFieldLocked" xml:space="preserve"><value>Une valeur renseignée sur un enregistrement approuvé ne peut pas être modifiée ici — seulement par une correction. Les listes ne peuvent que recevoir de nouvelles lignes.</value></data>
+  <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Un autre produit fini utilise déjà ce GTIN.</value></data>
 </root>

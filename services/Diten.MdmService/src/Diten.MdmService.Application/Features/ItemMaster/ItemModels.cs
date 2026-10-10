@@ -73,7 +73,11 @@ public static class ItemModels
         ItemLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt)
+    {
+        // MOD-0290-FU04 S5: the reader's actions on this item (ItemActions); null where the answer is not a read.
+        public IReadOnlyList<string>? AvailableActions { get; init; }
+    }
 
     public sealed record ItemListDto(IReadOnlyList<ItemDto> Items, long Total, int Page, int PageSize);
 }
