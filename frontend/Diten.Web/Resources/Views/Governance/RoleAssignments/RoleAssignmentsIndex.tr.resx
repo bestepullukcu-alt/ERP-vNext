@@ -103,6 +103,9 @@
   <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
     <value>Bu izin platform yönetimine ayrılmıştır; bir role verilemez.</value>
   </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>Bu izin otomatik sistem süreçlerine ayrılmıştır; bir role verilemez.</value>
+  </data>
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>Bu izin rolle birlikte ya da aboneliğinizdeki bir modülle gelir; buradan kaldırılamaz.</value>
   </data>

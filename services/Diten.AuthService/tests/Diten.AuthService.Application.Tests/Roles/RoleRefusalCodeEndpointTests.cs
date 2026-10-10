@@ -150,13 +150,43 @@ public sealed class RoleRefusalCodeEndpointTests : IClassFixture<AccountKindAcce
     public async Task Granting_a_platform_permission_to_a_tenant_role_returns_ROLE_PERMISSION_NOT_TENANT_ASSIGNABLE()
     {
         var role = await _world.NewRoleAsync("esc");
-        var platformOnly = (await _world.AllPermissionsAsync()).First(p => !DefaultRolePermissionTemplate.IsTenantAssignable(p));
+        // A human-grantable platform permission: a non-human one is refused earlier, with its own code (the test below).
+        var platformOnly = (await _world.AllPermissionsAsync())
+            .First(p => DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(p) && !DefaultRolePermissionTemplate.IsTenantAssignable(p));
         using var client = _world.Client();
 
         var response = await client.PostAsJsonAsync($"api/roles/{role.Id}/permissions", new { permissionId = platformOnly.Id });
 
         await AssertRefusedAsync(response, HttpStatusCode.Forbidden, RoleErrorCodes.PermissionNotTenantAssignable);
         Assert.Empty(await _world.GrantsAsync(role.Id));
+    }
+
+    /// <summary>TKO review, small item 3 — the takeover's non-human guard refused with a bare 403 the screen could only show
+    /// in English; it now carries ROLE_PERMISSION_NOT_FOR_HUMAN_ROLE (RoleErrorCodeContractTests holds the screen key in 7
+    /// languages) and still grants nothing.</summary>
+    [Fact]
+    public async Task Granting_a_non_human_permission_returns_ROLE_PERMISSION_NOT_FOR_HUMAN_ROLE()
+    {
+        var role = await _world.NewRoleAsync("nonhuman");
+        // The test host's seeded catalog carries no non-human key, so the test puts one in its own mongod (mdm.gskus.retire,
+        // a DefaultRolePermissionTemplate non-human key) and takes it out again: nothing else in the class sees it.
+        var nonHuman = (await _world.AllPermissionsAsync()).FirstOrDefault(p => !DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(p));
+        var added = nonHuman is null;
+        nonHuman ??= await _world.AddPermissionAsync(new Permission("mdm", "gskus", "retire", "Retire GSKU (system)", "TKO review small item 3"));
+        Assert.False(DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(nonHuman));
+        try
+        {
+            using var client = _world.Client();
+
+            var response = await client.PostAsJsonAsync($"api/roles/{role.Id}/permissions", new { permissionId = nonHuman.Id });
+
+            await AssertRefusedAsync(response, HttpStatusCode.Forbidden, RoleErrorCodes.PermissionNotForHumanRole);
+            Assert.Empty(await _world.GrantsAsync(role.Id));
+        }
+        finally
+        {
+            if (added) await _world.RemovePermissionAsync(nonHuman.Id);
+        }
     }
 
     [Fact]

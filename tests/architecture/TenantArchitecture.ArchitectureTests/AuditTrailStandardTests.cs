@@ -67,6 +67,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // + 2 İ5 istisna (RetireGskuIdentityPair / RetireLskuIdentity — her zaman 403 DirectRetirementIsSystemOnly).
         ["Diten.MdmService"] = new(Debt: 10, Exceptions: 2, Indirect: 19),
         // Birleştirme WP-CT-LANE-TKO-MERGE-01: hattın WP-PLATFORM-AUDIT-INTX-01'i 25 borcu kapattı (164 → 139); takeover'ın
+        // 3 dolaylı işleyicisi (Indirect: 3) aşağıdaki CT kararıyla kalır.
         // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): Start/CancelTrustedWorkflowInstanceCommand — WP-WF-ENGINE-CANDIDATES-01 D2;
         // RunWorkflowEscalationsCommand — WP-WF-ENGINE-CANDIDATES-01 (zaman aşımı / yükseltme WorkflowTransitionLog yazar).
         ["Diten.Platform"] = new(Debt: 139, Exceptions: 5, K2Debt: 192, WritingQueries: 3, Indirect: 3),

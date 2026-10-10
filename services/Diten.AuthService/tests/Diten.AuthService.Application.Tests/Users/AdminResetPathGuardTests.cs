@@ -28,6 +28,9 @@ public sealed class AdminResetPathGuardTests
     private const string AdminReset = "Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/AdminResetPasswordCommandHandler.cs";
     private const string Resend = "Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/ResendUserInvitationCommandHandler.cs";
     private const string CreateUser = "Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/CreateUserCommandHandler.cs";
+    // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521's IUserRepository decorator (FIX6 14ce67b04): it FORWARDS the repository's own
+    // link write to the Mongo repository (guarded for a hidden caller); it is not a flow that issues a link.
+    private const string ScopedUserRepository = "Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs";
 
     /// <summary>The account owner's own password flows — the only places outside the helper the hash may change.</summary>
     private static readonly (string File, string Member)[] OwnPasswordFlows =
@@ -90,8 +93,8 @@ public sealed class AdminResetPathGuardTests
     {
         // BL-529 FIX2 — the link-only write (never the hash) exists for the anonymous "forgot password"; a reset path that
         // used it would issue a link and leave the old password alive.
-        var calls = Calls(SetResetTokenAsyncCall).Select(c => (c.File, c.Member)).Distinct().ToArray();
-        Assert.Equal([(PlatformAuth, "ForgotPassword")], calls);
+        var calls = Calls(SetResetTokenAsyncCall).Select(c => (c.File, c.Member)).Distinct().OrderBy(c => c.File, StringComparer.Ordinal).ToArray();
+        Assert.Equal([(PlatformAuth, "ForgotPassword"), (ScopedUserRepository, "SetPasswordResetTokenAsync")], calls);
     }
 
     [Fact]
@@ -124,9 +127,12 @@ public sealed class AdminResetPathGuardTests
     {
         // BL-529 FIX3/FIX4 — a whole-document replace from a copy read earlier is what put back a replaced password. The
         // interface no longer has one, so no caller can make one; a new write method must be added here on purpose.
-        string[] writes = ["CreateAsync", "SoftDeleteAsync", "RecordLoginOutcomeAsync", "TryWriteChangesAsync", "SetPasswordResetTokenAsync", "RecordLoginFailureAsync"];
+        // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521's two members: SetPlatformActorTypeAsync is TARGETED (one field, by id and
+        // tenant; FIX7 item 1 / FIX8 item 1), VisibleUserIdsAsync reads (FIX7 item 3). Neither is a whole-document write.
+        string[] writes = ["CreateAsync", "SoftDeleteAsync", "RecordLoginOutcomeAsync", "TryWriteChangesAsync", "SetPasswordResetTokenAsync", "RecordLoginFailureAsync",
+            "SetPlatformActorTypeAsync"];
         string[] reads = ["GetByEmailAndTenantAsync", "GetByUserNameAndTenantAsync", "GetByIdAndTenantAsync", "GetByPasswordResetTokenHashAsync",
-            "GetAllByTenantAsync", "SearchActiveAsync", "GetCountByTenantAsync", "CaptureState"];
+            "GetAllByTenantAsync", "SearchActiveAsync", "GetCountByTenantAsync", "CaptureState", "VisibleUserIdsAsync"];
 
         var methods = typeof(Diten.AuthService.Application.Common.Interfaces.IUserRepository).GetMethods().Select(m => m.Name).Distinct().OrderBy(n => n, StringComparer.Ordinal);
 

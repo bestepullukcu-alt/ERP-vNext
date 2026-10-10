@@ -103,6 +103,9 @@
   <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
     <value>Это разрешение предназначено для администрирования платформы и не может быть выдано роли.</value>
   </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>Это разрешение предназначено для автоматических системных процессов и не может быть выдано роли.</value>
+  </data>
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>Это разрешение предоставляется вместе с ролью или модулем вашей подписки, поэтому его нельзя снять здесь.</value>
   </data>

@@ -103,6 +103,9 @@
   <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
     <value>This permission is reserved for platform administration and cannot be given to a role.</value>
   </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>This permission is reserved for automated system processes and cannot be given to a role.</value>
+  </data>
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>This permission comes with the role or with a module of your subscription, so it cannot be removed here.</value>
   </data>

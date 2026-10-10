@@ -354,6 +354,11 @@ public static partial class PlatformSchemaManifest
                         new CreateIndexOptions { Name = "ix_platform_administrators_partner_id" })
 
             }),
+        // BL-521 FIX3 item 3 — a single guard document, read and written only by _id (the implicit index is all it needs).
+        Collection<BsonDocument>(
+            SchemaProfile.Core,
+            PlatformCollections.PlatformAdministratorSafetyGuards,
+            () => System.Array.Empty<CreateIndexModel<BsonDocument>>()),
         Collection<SubscriptionPlan>(
             SchemaProfile.Core,
             PlatformCollections.SubscriptionPlans,

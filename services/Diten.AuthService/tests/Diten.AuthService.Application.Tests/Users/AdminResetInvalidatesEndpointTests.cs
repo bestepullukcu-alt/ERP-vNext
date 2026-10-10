@@ -1094,6 +1094,9 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
     public async Task A_platform_forced_change_racing_a_reset_is_refused_and_does_not_overwrite_it()
     {
         var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521 FIX3 (f45c31af7): the forced door opens only for a PENDING forced change (409
+        // ForcedChangeNotPending before the password is looked at), so the account carries one, as a temporary password does.
+        await WriteAccountAsync(await PlatformUserAsync(email), a => a.RequirePasswordChange(null));
         var session = await PlatformSessionAsync(email, OldPassword);
         using var client = _host.Client(session.AccessToken);
 
@@ -1706,7 +1709,8 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         using var platform = _host.Client();
         platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
         var sync = await platform.PostAsJsonAsync("api/platform-auth/platform-admins/sync",
-            new { email, userName = email.Split('@')[0], displayName = "Synced Admin", actorType = "platform_admin", roles = new[] { "ReadOnly" } });
+            // Merge WP-CT-LANE-BL521-MERGE-01 — status "Active", as Platform's sync sends it (BL-521 FIX4 item 5).
+            new { email, userName = email.Split('@')[0], displayName = "Synced Admin", actorType = "platform_admin", roles = new[] { "ReadOnly" }, status = "Active" });
 
         Assert.True(sync.IsSuccessStatusCode, $"{(int)sync.StatusCode}");
         var after = await PlatformUserAsync(email);
@@ -2800,7 +2804,10 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         displayName = "Reset Platform",
         actorType = "platform_admin",
         roles = new[] { "ReadOnly" },
-        requirePasswordChange = true
+        requirePasswordChange = true,
+        // Merge WP-CT-LANE-BL521-MERGE-01 — the record's status, as every Platform caller now sends it (BL-521 FIX5 item 11):
+        // an EXISTING account is switched on only for "Active"; a body without it is an older Platform and leaves it alone.
+        status = "Active"
     };
 
     private async Task<HttpResponseMessage> ProvisionPlatformAdminAsync(string email)
@@ -3014,6 +3021,11 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         }
 
         public Task MarkLoginAcceptedAsync(string email, CancellationToken ct) => Task.CompletedTask;
+
+        // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521's mint-door question; this fake answers it as its IsActiveAsync does (a confirmed
+        // platform administrator), without the gate/count — those belong to the password-reset doors this test measures.
+        public Task<PlatformAdministratorRecordAnswer> GetActiveActorTypeAsync(string email, CancellationToken ct) =>
+            Task.FromResult(PlatformAdministratorRecordAnswer.ConfirmedAs(PlatformAdministratorRecordAnswer.PlatformAdminActorType));
     }
 
     public sealed class CapturingOtp : IOtpDeliveryService
@@ -3073,6 +3085,9 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             return await inner.CreateAsync(user, ct);
         }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => inner.SoftDeleteAsync(id, tenantId, ct);
+        // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521's two members (FIX7 items 1 and 3), passed through ungated.
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => inner.VisibleUserIdsAsync(tenantId, userIds, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
         public object CaptureState(User user) => inner.CaptureState(user);
         public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)

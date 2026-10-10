@@ -953,13 +953,21 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
             Assert.Equal(HttpStatusCode.Conflict, locked.StatusCode);
             Assert.Contains(RoleErrorCodes.PermissionGrantManaged, await locked.Content.ReadAsStringAsync());
         }
+        else
+        {
+            // TKO review, small item 2 — for brands the Admin's backfilled grant is NOT locked: no 409, it is taken away on
+            // the same path as any Manual grant, and (below) a restart does not hand it back either.
+            var freed = await client.DeleteAsync($"api/roles/{admin}/permissions/{export.Id}");
+            Assert.True(freed.StatusCode == HttpStatusCode.NoContent, $"{(int)freed.StatusCode}: {await freed.Content.ReadAsStringAsync()}");
+            Assert.False(await HoldsAsync(admin, pair));
+        }
 
         await DataSeeder.SeedAsync(_host.Database); // a restart
         await DataSeeder.SeedAsync(_host.Database);
 
         Assert.False(await HoldsAsync(readers, pair)); // not handed back
         Assert.True(await HoldsAsync(viewer, pair));
-        Assert.True(await HoldsAsync(admin, pair));
+        Assert.Equal(templateGivesAdmin, await HoldsAsync(admin, pair)); // brands: the revoked Admin grant stays away
     }
 
     // ── S-H ──────────────────────────────────────────────────────────────────────────────────────────────
@@ -1154,6 +1162,52 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Assert.Equal(0, second.GrantsWritten);
         Assert.False(await HoldsAsync(readers, pair));
         Assert.Equal(auditBefore, await Audit.CountDocumentsAsync(a => a.TenantId == tenant));
+    }
+
+    /// <summary>
+    /// TKO review, small item 2 — the same one-time correction for BRANDS. If the takeover's build ran on a database (dev / CT),
+    /// the brands export grants it filed as SYSTEM are corrected too; and since no template serves mdm.brands.export to any role
+    /// (brand-product-master is not an Admin module), the Admin's grant becomes Manual as well — three corrected rows, not two —
+    /// and it can be taken away (no 409 lock) without a later start handing it back. Module grants stay Module.
+    /// </summary>
+    [Fact]
+    public async Task System_filed_brand_export_grants_become_Manual_once_the_Admins_included_and_can_be_revoked()
+    {
+        var pair = ExportGrantBackfill.Brands;
+        var world = RoleEndpointWorld.Create(_host, "Rana", "Steward");
+        var tenant = world.TenantId;
+        var admin = await RoleAsync(tenant, "Admin", old: true, system: true, GrantSource.System, pair.ReadKey, pair.ExportKey);
+        var viewer = await RoleAsync(tenant, "Viewer", old: true, system: true, GrantSource.System, pair.ReadKey, pair.ExportKey);
+        var readers = await RoleAsync(tenant, "Readers", old: true, system: false, GrantSource.System, pair.ReadKey, pair.ExportKey);
+        var moduleRole = await RoleAsync(tenant, "ModuleReaders", old: true, system: false, GrantSource.Module, pair.ReadKey, pair.ExportKey);
+        await Marks.InsertOneAsync(new PermissionReconciliationMark { TenantId = tenant, Key = pair.ExportKey, ReconciledAtUtc = DateTime.UtcNow, Origin = null });
+        var export = await Permissions.Find(p => p.Key == pair.ExportKey).SingleAsync();
+        var backfillKeys = ExportGrantBackfill.Keys.SelectMany(k => new[] { k.ReadKey, k.ExportKey }).ToList();
+        var backfillPermissions = (await Permissions.Find(p => backfillKeys.Contains(p.Key)).ToListAsync()).Select(p => p.Id).ToList();
+        async Task<List<(Guid, Guid)>> HeldAsync() => (await Grants.Find(g => g.TenantId == tenant && backfillPermissions.Contains(g.PermissionId)).ToListAsync())
+            .Select(g => (g.RoleId, g.PermissionId)).OrderBy(x => x).ToList();
+        var grantsBefore = await HeldAsync();
+
+        await DataSeeder.SeedAsync(_host.Database);
+
+        Assert.Equal(GrantSource.Manual, (await GrantRowAsync(admin, export.Id)).GrantSource);
+        Assert.Equal(GrantSource.Manual, (await GrantRowAsync(viewer, export.Id)).GrantSource);
+        Assert.Equal(GrantSource.Manual, (await GrantRowAsync(readers, export.Id)).GrantSource);
+        Assert.Equal(GrantSource.Module, (await GrantRowAsync(moduleRole, export.Id)).GrantSource);
+        Assert.Equal(grantsBefore, await HeldAsync()); // grants nothing, removes nothing
+        var rows = await AuditRowsAsync(tenant, pair.CorrectionAuditSource);
+        Assert.Equal(3, rows.Count);
+        Assert.All(rows, r => Assert.Equal(ExportGrantBackfill.SourceCorrectedEventName, r.EventName));
+        Assert.Single(rows, r => r.Metadata.Contains(admin.ToString(), StringComparison.OrdinalIgnoreCase));
+
+        using var client = world.Client();
+        var revoked = await client.DeleteAsync($"api/roles/{admin}/permissions/{export.Id}");
+        Assert.True(revoked.StatusCode == HttpStatusCode.NoContent, $"{(int)revoked.StatusCode}: {await revoked.Content.ReadAsStringAsync()}");
+
+        var second = await RunAsync();
+        Assert.Equal(0, second.SourcesCorrected);
+        Assert.Equal(0, second.GrantsWritten);
+        Assert.False(await HoldsAsync(admin, pair));
     }
 
     // ── FIX2 item 5: reads are bounded by what is left to do ─────────────────────────────────────────────

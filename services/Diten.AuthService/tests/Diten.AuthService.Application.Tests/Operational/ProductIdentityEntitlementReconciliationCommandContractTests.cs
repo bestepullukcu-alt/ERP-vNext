@@ -58,6 +58,33 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     //   a357507e4 (Platform, audit round) — RegisterModuleManifestCommandHandler UpsertModuleCatalogAsync 2→3 and
     //     TenantSubscriptionTransactionWriter _tenants.UpdateAsync 2→1.
     // The AddPersistence fingerprint (Bootstrap_…, 447B2703…) did NOT change in this merge.
+    // 2026-10-09 (WP-CT-LANE-BL521-MERGE-01; CT kararı A) — rows re-measured after merging BL-521 (6dea5a0c4) onto the lane
+    // (bc1c92e41). BL-521 never ran this inventory (the test is the lane's), so its writers arrive here; 16 ADDED, 5 REMOVED,
+    // each counted at base ef28b2f7c / lane / BL-521 / merged and attributed by `git log -S` over ef28b2f7c..6dea5a0c4:
+    //   AUTHORITY, role convergence moved into its own file — BL-521 FIX4 796c5a592 removed PlatformAuthController's
+    //     SyncPlatformRolesAsync (_roleRepository.UpsertSystemRoleAsync, _userRoleRepository.AssignAsync / RevokeAsync: REMOVED);
+    //     FIX5 7130dc5c5 (item 12) PlatformAdministratorRoleConvergence roles.UpsertSystemRoleAsync, userRoles.AssignAsync /
+    //     RevokeAsync (ADDED) — Auth's platform roles converge to the Platform RECORD, never the reverse;
+    //     UserRoleRepository Collection.DeleteOneAsync -> DeleteManyAsync (7130dc5c5, FIX5 item 4(c): a revoke removes EVERY
+    //     matching assignment row — a duplicate left behind kept the role alive) and + UpdateOneAsync (7130dc5c5: AssignAsync
+    //     is an upsert with $setOnInsert, so a concurrent grant of the same user + role + tenant cannot write a duplicate).
+    //   AUTHORITY MARKER — PlatformAccountDiscriminator users.SetPlatformActorTypeAsync and UserRepository Collection.UpdateOneAsync
+    //     5 -> 6 (14c96c16f, FIX7 item 1: the record's actor type written onto the account at a platform mint; targeted $set,
+    //     fail-closed). 5 is the lane's (BL-529), +1 is BL-521's.
+    //   DECORATOR FORWARDS — PlatformAccountScopedUserRepository _inner.CreateAsync / SoftDeleteAsync (14ce67b04, FIX6 item 13),
+    //     _inner.SetPlatformActorTypeAsync (14c96c16f) and _inner.SetPasswordResetTokenAsync (THIS MERGE: BL-529's link write
+    //     through BL-521's decorator, guarded for a hidden caller — CT condition 1). Counted only since the scanner binds the
+    //     concrete UserRepository (gate change, see AuthorityCalls; CT to decide).
+    //   PLATFORM GUARDED WRITES — Assign/Suspend/Update _repository.UpdateGuardedAsync, Delete/BulkDelete
+    //     _repository.SoftDeleteGuardedAsync (f45c31af7, FIX3: the last active platform super admin protected by a transaction plus
+    //     a shared guard document). The handlers' earlier UpdateAsync / SoftDeleteAsync rows are unchanged.
+    //   Not a row: PlatformAuthController RevokeAllByUserAsync stays at the lane's 1 — the merge first brought back the old
+    //     shared tail's sweep after a NEW account's creation (BL-529 7935b8143 had taken it out; such an account has no
+    //     session); it is removed again.
+    // 2026-10-09 (WP-CT-LANE-BL521-MERGE-01; CT kararı A, koşul 3) — the AddPersistence fingerprint moved 447B2703… -> 51D35FF8…
+    // for ONE change, BL-521's: FIX6 item 13 (D') 14ce67b04 registers the Mongo UserRepository as itself and IUserRepository as
+    // PlatformAccountScopedUserRepository over it (a tenant actor's view loses the platform accounts). Measured: the merged
+    // Persistence/DependencyInjection.cs differs from the lane (bc1c92e41) in that one hunk only; nothing else in AddPersistence.
     // This is a conservative lexical regression guard, not C# compiler/semantic proof or a writer fence.
     // It deliberately has no git-history dependency: shallow checkouts compare against frozen call rows.
     [Fact]
@@ -95,6 +122,13 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     [InlineData("var rows = database.GetCollection<Role>(PermissionReconciliationMark.CollectionName); await rows.ReplaceOneAsync(filter, role);", "UNCLASSIFIED|rows.ReplaceOneAsync")]
     [InlineData("var rows = database.GetCollection<Role>(collectionName); await rows.ReplaceOneAsync(filter, role);", "UNCLASSIFIED|rows.ReplaceOneAsync")]
     [InlineData("var rows = database.GetCollection<BsonDocument>(BsonDocument.CollectionName); await rows.ReplaceOneAsync(filter, row);", "UNCLASSIFIED|rows.ReplaceOneAsync")]
+    // Merge WP-CT-LANE-BL521-MERGE-01 (CT gate condition) — ONLY the concrete UserRepository is bound by name (BL-521 FIX6
+    // 14ce67b04's decorator field); a writer call through any OTHER concrete, non-interface type stays UNCLASSIFIED and fails
+    // closed — including a name that merely contains it.
+    [InlineData("private readonly UserRepository _inner; await _inner.CreateAsync(user, ct);", "UserRepository|_inner.CreateAsync")]
+    [InlineData("private readonly RoleRepository _roles; await _roles.CreateAsync(role, ct);", "UNCLASSIFIED|_roles.CreateAsync")]
+    [InlineData("private readonly RefreshTokenRepository _tokens; await _tokens.RevokeAllByUserAsync(id, tenant, ct);", "UNCLASSIFIED|_tokens.RevokeAllByUserAsync")]
+    [InlineData("private readonly PlatformAccountScopedUserRepository _scoped; await _scoped.SoftDeleteAsync(id, tenant, ct);", "UNCLASSIFIED|_scoped.SoftDeleteAsync")]
     public void ClosedWriterInventory_WhenSyntheticWriterAdded_DetectsExactCall(string source, string signature)
     {
         Assert.Equal(["new-writer.cs|" + signature], AuthorityCalls("new-writer.cs", source));
@@ -162,7 +196,10 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
             if (!bindings.TryGetValue(name, out var types)) bindings[name] = types = new(StringComparer.Ordinal);
             types.Add(type);
         }
-        foreach (Match declaration in Regex.Matches(source, @"\b(?<type>I\w+(?:Repository|Service|Writer)|IMongoDatabase|TenantSubscriptionTransactionWriter|IMongoCollection\s*<\s*\w+\s*>)\s+(?<name>\w+)"))
+        // Merge WP-CT-LANE-BL521-MERGE-01 — the concrete UserRepository is bound BY NAME (and only it): BL-521 FIX6's
+        // PlatformAccountScopedUserRepository (14ce67b04) writes through a `UserRepository _inner` field, which no interface
+        // pattern matched, so its forwarded writes were UNCLASSIFIED. Bound, each one is a counted row like any other writer.
+        foreach (Match declaration in Regex.Matches(source, @"\b(?<type>I\w+(?:Repository|Service|Writer)|UserRepository|IMongoDatabase|TenantSubscriptionTransactionWriter|IMongoCollection\s*<\s*\w+\s*>)\s+(?<name>\w+)"))
         {
             var type = declaration.Groups["type"].Value;
             if (type.StartsWith("IMongoCollection", StringComparison.Ordinal)) type = Regex.Match(type, @"<\s*(\w+)").Groups[1].Value;
@@ -241,9 +278,11 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         "services/Diten.Platform/src/Diten.Platform.Application/Features/ModulePages",
         "services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators"
     ];
-    // DataSeeder rpCol.InsertOneAsync 17 -> 18 and versionService.IncrementAsync 4 -> 5: BackfillBrandsExportAsync's grant of
-    //   mdm.brands.export to every role holding mdm.brands.read, and its role-assignment version bump — AUTHORITY writes, in
-    //   this frozen list exactly where BackfillUsersExportAsync's same two writes are.
+    // DataSeeder rpCol.InsertOneAsync 16 and versionService.IncrementAsync 3: BRAND-FIX3 M-4 (93f148bc8) had raised them to 18 / 5
+    //   with BackfillBrandsExportAsync (mdm.brands.export to every role holding mdm.brands.read, and its version bump). That
+    //   method — and BackfillUsersExportAsync — no longer exist: WP-ROLES-CLOSE-01 (00d3e39b9, 089da345b) moved the export
+    //   backfill out of DataSeeder into ExportGrantBackfillRunner, whose writes are the ExportGrantBackfillRunner rows below
+    //   (the brands key is ExportGrantBackfill.Brands of that one runner; see the header).
     // BRAND-FIX3 M-4 · CT kararı 2026-10-07 · UsersExportGrantBackfill emsali · tek yönlü, kiracı başına bir kez, kalıcı işaretli
     private const string FrozenWriterCalls = """
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/InternalEventsController.cs|IUserRepository|_userRepository.CreateAsync|1
@@ -257,15 +296,16 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs|IRefreshTokenRepository|_refreshTokenRepository.CreateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs|IRefreshTokenRepository|_refreshTokenRepository.RevokeAllByUserAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs|IRefreshTokenRepository|_refreshTokenRepository.RevokeLiveSessionsAsync|2
-    services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs|IRoleRepository|_roleRepository.UpsertSystemRoleAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs|IUserRepository|_userRepository.CreateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs|IUserRepository|_userRepository.SetPasswordResetTokenAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs|IUserRoleRepository|_userRoleRepository.AssignAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs|IUserRoleRepository|_userRoleRepository.RevokeAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs|IRolePermissionRepository|_rolePermissions.AssignAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs|IRolePermissionRepository|_rolePermissions.RemoveByIdAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs|IRoleRepository|_roles.UpsertSystemRoleAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/FullCatalogPermissionGrantService.cs|IRolePermissionRepository|_rolePermissionRepository.AssignAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/PlatformAccountDiscriminator.cs|IUserRepository|users.SetPlatformActorTypeAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/PlatformAdministratorRoleConvergence.cs|IRoleRepository|roles.UpsertSystemRoleAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/PlatformAdministratorRoleConvergence.cs|IUserRoleRepository|userRoles.AssignAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/PlatformAdministratorRoleConvergence.cs|IUserRoleRepository|userRoles.RevokeAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/RoleProvisioningService.cs|IRolePermissionRepository|_rolePermissionRepository.AssignAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/RoleProvisioningService.cs|IRoleRepository|_roleRepository.UpsertSystemRoleAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/ChangePasswordCommandHandler.cs|IRefreshTokenRepository|_refreshTokenRepository.RevokeLiveSessionsAsync|1
@@ -309,6 +349,10 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/GlobalRepositoryBase.cs|TEntity|Collection.InsertOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/GlobalRepositoryBase.cs|TEntity|Collection.ReplaceOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PermissionRepository.cs|Permission|Collection.UpdateOneAsync|2
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.CreateAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.SetPasswordResetTokenAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.SetPlatformActorTypeAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.SoftDeleteAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RefreshTokenRepository.cs|RefreshToken|Collection.UpdateManyAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RefreshTokenRepository.cs|RefreshToken|Collection.UpdateOneAsync|3
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RepositoryBase.cs|TEntity|Collection.InsertOneAsync|1
@@ -319,8 +363,9 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RolePermissionRepository.cs|RolePermission|Collection.DeleteOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RoleRepository.cs|Role|Collection.UpdateOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.FindOneAndUpdateAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.UpdateOneAsync|5
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRoleRepository.cs|UserRole|Collection.DeleteOneAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.UpdateOneAsync|6
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRoleRepository.cs|UserRole|Collection.DeleteManyAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRoleRepository.cs|UserRole|Collection.UpdateOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.BulkWriteAsync|6
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.InsertOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.UpdateOneAsync|1
@@ -367,15 +412,20 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleRegistration/RegisterModuleManifestCommandHandler.cs|ITransactionalModuleCatalogRepository|_catalogRepository.CreateAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleRegistration/RegisterModuleManifestCommandHandler.cs|ITransactionalModuleCatalogRepository|_catalogRepository.UpdateAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/AssignPlatformAdministratorRolesHandler.cs|IPlatformAdministratorRepository|_repository.UpdateAsync|1
+    services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/AssignPlatformAdministratorRolesHandler.cs|IPlatformAdministratorRepository|_repository.UpdateGuardedAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/BulkDeletePlatformAdministratorsHandler.cs|IPlatformAdministratorRepository|_repository.SoftDeleteAsync|1
+    services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/BulkDeletePlatformAdministratorsHandler.cs|IPlatformAdministratorRepository|_repository.SoftDeleteGuardedAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/DeletePlatformAdministratorHandler.cs|IPlatformAdministratorRepository|_repository.SoftDeleteAsync|1
+    services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/DeletePlatformAdministratorHandler.cs|IPlatformAdministratorRepository|_repository.SoftDeleteGuardedAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/InvitePlatformAdministratorHandler.cs|IPlatformAdministratorProvisioningService|_provisioningService.ProvisionAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/InvitePlatformAdministratorHandler.cs|IPlatformAdministratorRepository|_repository.CreateAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/ReactivatePlatformAdministratorHandler.cs|IPlatformAdministratorRepository|_repository.UpdateAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/ResendPlatformAdministratorInviteHandler.cs|IPlatformAdministratorProvisioningService|_provisioningService.ProvisionAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/ResendPlatformAdministratorInviteHandler.cs|IPlatformAdministratorRepository|_repository.UpdateAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/SuspendPlatformAdministratorHandler.cs|IPlatformAdministratorRepository|_repository.UpdateAsync|1
+    services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/SuspendPlatformAdministratorHandler.cs|IPlatformAdministratorRepository|_repository.UpdateGuardedAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/UpdatePlatformAdministratorHandler.cs|IPlatformAdministratorRepository|_repository.UpdateAsync|1
+    services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/Handlers/CommandHandlers/UpdatePlatformAdministratorHandler.cs|IPlatformAdministratorRepository|_repository.UpdateGuardedAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/Handlers/CommandHandlers/ActivateSubscriptionPlanCommandHandler.cs|IGlobalApplicabilityStateRepository|_state.UpsertSubscriptionPlanAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/Handlers/CommandHandlers/ActivateSubscriptionPlanCommandHandler.cs|ITransactionalSubscriptionPlanRepository|_repository.UpdateAsync|1
     services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/Handlers/CommandHandlers/CreateSubscriptionPlanCommandHandler.cs|IGlobalApplicabilityStateRepository|_state.UpsertSubscriptionPlanAsync|1
@@ -480,7 +530,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         while (!File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent ?? throw new InvalidOperationException("Checkout required");
         var persistence = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs"));
         var normal = persistence[persistence.IndexOf("    public static IServiceCollection AddPersistence(", StringComparison.Ordinal)..].Replace("\r", "").Trim();
-        Assert.Equal("447B2703C1FA80C5A9CA43423A30F1335B6E86698F3741600065D65EB28D1D7A", EntitlementReconciliationPlan.Hash(normal));
+        Assert.Equal("51D35FF8694879A7CE0FCA3E12A32A02D6DEEB49C1A2D3FC0561D6D86D6D80FC", EntitlementReconciliationPlan.Hash(normal)); // BL-521 FIX6 14ce67b04 (see the 2026-10-09 BL-521 note above)
         var operational = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalMode.cs"));
         Assert.Contains("AddEntitlementReconciliationPersistence(configuration)", operational);
         foreach (var forbidden in new[] { "AddPersistence(", "EnsureIndexes", "DataSeeder", "AddHostedService", "AddMassTransit", "GrantModule", "UpsertSystemRole", "WebApplication.CreateBuilder" })

@@ -3,6 +3,19 @@ using Diten.AuthService.Domain.Entities;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
+/// <summary>FIX8 item 1 - what the marker write of <see cref="InMemoryUserRepository"/> does.</summary>
+internal enum MarkerWrite
+{
+    /// <summary>It marks the stored account and reports a match when one was found (the default).</summary>
+    Matches,
+
+    /// <summary>It writes nothing and reports that no account matched.</summary>
+    MatchesNothing,
+
+    /// <summary>It throws.</summary>
+    Throws,
+}
+
 internal sealed class InMemoryUserRepository : IUserRepository
 {
     private readonly List<User> _users;
@@ -11,6 +24,11 @@ internal sealed class InMemoryUserRepository : IUserRepository
     // UserWriteCondition checks. A conditional write is decided against THIS (as Mongo decides against the stored
     // document), not against what the caller captured; another writer is simulated with ChangeStored.
     private readonly Dictionary<Guid, Captured> _stored = new();
+    /// <summary>FIX7 item 3 - plays a tenant actor for <see cref="VisibleUserIdsAsync"/>: the platform accounts are not among the visible ids.</summary>
+    public bool HidesPlatformAccounts { get; init; }
+
+    /// <summary>FIX8 item 1 - how <see cref="SetPlatformActorTypeAsync"/> behaves.</summary>
+    public MarkerWrite MarkerWrites { get; init; } = MarkerWrite.Matches;
 
     public InMemoryUserRepository(IEnumerable<User> users)
     {
@@ -172,6 +190,29 @@ internal sealed class InMemoryUserRepository : IUserRepository
         if (user is null) return Task.FromResult(new LoginFailureOutcome(0, null));
         user.RecordLoginFailure(maxFailedAttempts, lockoutDurationMinutes);
         return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd));
+    }
+
+    public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
+    {
+        switch (MarkerWrites)
+        {
+            case MarkerWrite.Throws:
+                throw new InvalidOperationException("the marker write fails here");
+            case MarkerWrite.MatchesNothing:
+                return Task.FromResult(false);
+        }
+
+        var stored = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
+        stored?.SetPlatformActorType(actorType);
+        return Task.FromResult(stored is not null);
+    }
+
+    public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+    {
+        IReadOnlyCollection<Guid> visible = HidesPlatformAccounts
+            ? userIds.Where(id => !_users.Any(u => u.Id == id && u.TenantId == tenantId && u.IsPlatformAccount)).ToList()
+            : userIds;
+        return Task.FromResult(visible);
     }
 
     public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)

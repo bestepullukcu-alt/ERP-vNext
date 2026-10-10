@@ -1,10 +1,12 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
@@ -23,6 +25,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IAuthAuditService _authAuditService;
+    private readonly ILogger<VerifyMfaCommandHandler> _logger;
 
     public VerifyMfaCommandHandler(
         IMfaChallengeService mfaChallengeService,
@@ -35,7 +38,8 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         ITokenService tokenService,
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
-        IAuthAuditService authAuditService)
+        IAuthAuditService authAuditService,
+        ILogger<VerifyMfaCommandHandler> logger)
     {
         _mfaChallengeService = mfaChallengeService;
         _tenantLoginSettingsClient = tenantLoginSettingsClient;
@@ -48,6 +52,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _authAuditService = authAuditService;
+        _logger = logger;
     }
 
     public async Task<Response<AuthResponse>> Handle(VerifyMfaCommand request, CancellationToken ct)
@@ -64,7 +69,15 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
 
         var settings = await _tenantLoginSettingsClient.GetAsync(challenge.TenantId, ct);
         var user = await _userRepository.GetByIdAndTenantAsync(challenge.UserId, challenge.TenantId, ct);
-        if (user is null || !user.IsActive)
+        // BL-521 FIX6 item 13 (A') — a platform account is not given a tenant token here either (see LoginCommandHandler): a
+        // challenge of one — created before the tenant door refused such accounts — is answered like a wrong code.
+        if (user is { IsPlatformAccount: true })
+        {
+            // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
+            TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.MfaVerifyDoor, challenge.TenantId);
+        }
+
+        if (user is null || !user.IsActive || user.IsPlatformAccount)
         {
             return Response<AuthResponse>.Fail("Invalid verification code.", 401);
         }

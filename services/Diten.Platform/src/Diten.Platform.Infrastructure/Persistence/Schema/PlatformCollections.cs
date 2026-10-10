@@ -163,6 +163,9 @@ public static class PlatformCollections
     public const string OutboxEvents = "outbox_events";
     public const string PlanFeatureMappings = "platform_plan_feature_mappings";
     public const string PlatformAdministrators = "platform_administrators";
+    /// <summary>BL-521 FIX3 item 3 — one document, claimed inside every transaction that takes an active platform super
+    /// administrator out of the set (PlatformAdministratorRepository.UpdateGuardedAsync).</summary>
+    public const string PlatformAdministratorSafetyGuards = "platform_administrator_safety_guards";
     public const string PositionAssignments = "position_assignments";
     public const string Positions = "positions";
     public const string QuotaEvents = "quota_events";

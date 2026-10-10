@@ -132,6 +132,10 @@ builder.Services.AddTrustedServiceTokenValidation(builder.Configuration);
 builder.Services.AddPeopleSearchRateLimit(); // BL-512 — one named limiter policy, used only by the people search
 builder.Services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
     Diten.Platform.API.Security.ClaimsActorPermissionContext>();
+// BL-521 — which tenants this request's platform actor may touch, and whether its record confirms a platform
+// administrator (read once per request from its administrator record). One registration method, called by the test
+// hosts too (FIX1 F8-7): a guard test pins that this line stays here.
+Diten.Platform.API.Security.PlatformActorTenantScopeRegistration.AddPlatformActorTenantScope(builder.Services);
 builder.Services.AddDitenObservability(
     builder.Configuration,
     builder.Environment,

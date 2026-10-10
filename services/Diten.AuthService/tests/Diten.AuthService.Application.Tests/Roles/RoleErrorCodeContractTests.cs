@@ -41,6 +41,7 @@ public sealed class RoleErrorCodeContractTests
             [RoleErrorCodes.ActorRequired] = "ErrorRoleActorRequired",
             [RoleErrorCodes.NotFound] = "ErrorRoleNotFound",
             [RoleErrorCodes.PermissionNotTenantAssignable] = "ErrorRolePermissionNotTenantAssignable",
+            [RoleErrorCodes.PermissionNotForHumanRole] = "ErrorRolePermissionNotForHumanRole",
             [RoleErrorCodes.PermissionAlreadyGranted] = "ErrorRolePermissionAlreadyGranted",
             [RoleErrorCodes.PermissionGrantManaged] = "ErrorRolePermissionGrantManaged"
         }),
