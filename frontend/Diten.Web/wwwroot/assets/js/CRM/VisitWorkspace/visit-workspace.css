@@ -1,46 +1,226 @@
-/* WP-VW-W2 (WEB-a) — Visit Workspace cards, week strip and panel (mockup 01-takvim: status tones of ST). */
-.vw-strip-week { min-width: 7.5rem; text-align: start; }
-.vw-capacity { min-width: 12rem; }
+/* WP-VW-W2 — the Visit Workspace. WEB-c: the mockup's look (mockups/visit-workspace/decoded/01-takvim.html, 00-tema.css
+   tokens). Logical properties only (inline-start / inline-end), so Arabic (dir=rtl) mirrors the bars, chips and panels. */
+#vw-root, #vw-detail, #vw-dialog, #vw-unplaced-modal, #vw-products-modal, #vw-reopen-modal, #vw-unplanned-modal { /* the panel and the dialogs sit outside #vw-root */
+    --vw-p: #0b1a8c; --vw-pl: #e0e2f3; --vw-pbd: #c5c9e8; --vw-pt: #0b1a8c; --vw-pt2: #4b55a8;
+    --vw-h: #384551; --vw-tx: #646e78; --vw-mu: #8592a3; --vw-bd: #e4e6e8; --vw-bd2: #d9dee3; --vw-soft: #f5f5f9; --vw-soft2: #fafafb;
+    --vw-okb: #e8fadf; --vw-ok: #4a9a22; --vw-okc: #71dd37; --vw-wab: #fff2d6; --vw-wa: #b27800; --vw-wac: #ffab00;
+    --vw-dab: #ffe0db; --vw-da: #d1301a; --vw-dac: #ff3e1d; --vw-inb: #d7f5fc; --vw-in: #028aa6; --vw-seb: #ebeef0; --vw-se: #6d7887;
+}
 [dir="rtl"] .vw-flip { transform: scaleX(-1); }
 
-.vw-card { border-radius: .375rem; padding: .25rem .4rem; font-size: .8125rem; line-height: 1.25; border: 1px solid transparent; white-space: normal; text-align: start; }
-.vw-card-top { display: flex; align-items: center; gap: .25rem; }
-.vw-icons { margin-inline-start: auto; display: inline-flex; gap: .15rem; }
-.vw-name { font-weight: 500; }
-.vw-status { font-size: .75rem; opacity: .85; }
-.vw-chips { display: flex; flex-wrap: wrap; gap: .2rem; margin-top: .15rem; }
-.vw-chip { font-size: .6875rem; padding: 0 .3rem; border-radius: .25rem; background: rgba(105, 108, 255, .12); }
-.vw-countdown { font-size: .75rem; font-weight: 500; margin-top: .15rem; }
-.vw-time { font-variant-numeric: tabular-nums; }
+/* ── page head (T1 / T2 / L1) ── */
+.vw-page-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+.vw-page-title { margin: 0; font-size: 22px; font-weight: 500; color: var(--vw-h); }
+.vw-page-sub { font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--vw-tx); }
+.vw-period { padding: 2px 8px; border-radius: 4px; background: var(--vw-seb); color: var(--vw-se); font-size: 13px; }
+.vw-actions-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.vw-unplanned-btn { height: 38px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(11, 26, 140, .35); }
 
-/* the ten work statuses */
-.vw-st-planned { background: #e0e2f3; color: #0b1a8c; border-color: #e0e2f3; }
-.vw-st-today { background: #0b1a8c; color: #fff; border-color: #0b1a8c; }
-.vw-st-today .vw-chip { background: rgba(255, 255, 255, .2); }
-.vw-st-report_missing { background: #fff2d6; color: #b27800; border-color: #fff2d6; }
-.vw-st-reported { background: #e8fadf; color: #4a9a22; border-color: #e8fadf; }
-.vw-st-missed, .vw-st-expired { background: #ffe0db; color: #d1301a; border-color: #ffe0db; }
-.vw-st-not_done, .vw-st-rescheduled, .vw-st-cancelled { background: #ebeef0; color: #6d7887; border-color: #ebeef0; }
-.vw-st-draft { background: transparent; color: #8592a3; border-color: #c5c9e8; }
-.vw-dashed { border-style: dashed; }
-.vw-faded { opacity: .75; }
-.vw-strike .vw-name { text-decoration: line-through; }
+/* the segmented switches: Plan / Execute, Day / Week / Month */
+.vw-seg { display: inline-flex; background: #fff; border: 1px solid var(--vw-bd2); border-radius: 6px; overflow: hidden; font-size: 14px; }
+.vw-seg-btn { border: 0; background: transparent; color: var(--vw-tx); padding: 8px 16px; display: inline-flex; gap: 6px; align-items: center; font-weight: 500; cursor: pointer; }
+.vw-seg-btn.active { background: var(--vw-p); color: #fff; }
+.vw-seg-sm { font-size: 13px; }
+.vw-seg-sm .vw-seg-btn { padding: 7px 12px; font-weight: 400; color: var(--vw-h); }
+.vw-seg-sm .vw-seg-btn.active { color: #fff; }
 
-.vw-band { border-radius: .375rem; padding: .5rem .75rem; }
-.vw-list-card { display: block; width: 100%; border: 0; background: none; padding: 0; margin-bottom: .4rem; text-align: start; }
-.vw-day-head { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .25rem 0; }
-.vw-day-option { display: grid; grid-template-columns: 1fr auto; gap: .1rem .5rem; align-items: center; padding: .4rem .6rem; border: 1px solid #d9dee3; border-radius: .375rem; background: #fff; text-align: start; }
-.vw-day-option.active { border-color: #0b1a8c; box-shadow: 0 0 0 1px #0b1a8c; }
-.vw-day-option .vw-mini { grid-column: 1 / -1; height: 4px; }
+/* ── the calendar card (T3 / T4 / L2 / L3) ── */
+.vw-layout { display: flex; gap: 16px; align-items: flex-start; }
+.vw-main { flex: 1; min-width: 0; }
+.vw-cal-card { box-shadow: 0 3px 8px rgba(34, 48, 62, .08); overflow: hidden; }
+.vw-cal-head { padding: 14px 18px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--vw-bd); }
+.vw-icon-btn { width: 34px; height: 34px; border: 1px solid var(--vw-bd2); background: #fff; color: var(--vw-h); border-radius: 6px; font-size: 20px; display: inline-flex; align-items: center; justify-content: center; }
+.vw-text-btn { height: 34px; border: 1px solid var(--vw-bd2); background: #fff; color: var(--vw-h); border-radius: 6px; padding: 0 12px; font-size: 14px; }
+.vw-range { font-size: 18px; font-weight: 500; color: var(--vw-h); }
+.vw-select { height: 34px; border: 1px solid var(--vw-bd2); border-radius: 6px; padding: 0 8px; font-size: 13px; color: var(--vw-h); background: #fff; max-width: 190px; }
+.vw-select-btn { display: inline-flex; align-items: center; gap: 6px; }
+.vw-week-head { padding: 10px 18px; display: flex; gap: 12px 16px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--vw-bd); background: var(--vw-soft2); }
+.vw-week-title { font-weight: 600; color: var(--vw-h); font-size: 15px; }
+.vw-state-chip { padding: 3px 9px; border-radius: 4px; font-size: 12px; font-weight: 500; background: var(--vw-seb); color: var(--vw-se); }
+.vw-wst-draft { background: var(--vw-pl); color: var(--vw-pt); }
+.vw-wst-approved { background: var(--vw-okb); color: var(--vw-ok); }
+.vw-capacity { display: flex; flex-direction: column; gap: 4px; min-width: 240px; font-size: 13px; }
+.vw-bar { height: 5px; border-radius: 3px; background: var(--vw-bd); overflow: hidden; max-width: 300px; }
+.vw-bar > div { height: 100%; background: var(--vw-p); }
+.vw-bar > div.vw-over { background: var(--vw-dac); }
+.vw-slip-chip { border: 0; background: var(--vw-wab); color: var(--vw-wa); border-radius: 4px; padding: 4px 10px; font-size: 13px; font-weight: 500; }
+.vw-head-btn { height: 34px; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.vw-cal-body { padding: 0 6px 6px; }
+.vw-legend { padding: 10px 18px; border-top: 1px solid var(--vw-bd); display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 12px; color: var(--vw-mu); }
+.vw-leg { display: inline-flex; gap: 5px; align-items: center; }
+.vw-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid transparent; }
 
-#vw-calendar .fc-event { background: transparent !important; border: 0 !important; }
+/* ── the grid (T6) ── */
+#vw-calendar.fc { --fc-today-bg-color: rgba(224, 226, 243, .45); --fc-now-indicator-color: #ff3e1d; font-size: 13px; }
+#vw-calendar.fc .fc-col-header-cell { background: var(--vw-soft2); vertical-align: top; }
+#vw-calendar.fc .fc-col-header-cell-cushion { display: block; padding: 8px 6px; text-decoration: none; }
+#vw-calendar.fc .fc-timegrid-slot { block-size: 29px; } /* the host IS the .fc root (DitenCalendar) */
+#vw-calendar.fc .fc-timegrid-slot-minor { border-top-style: dotted; }
+#vw-calendar.fc .fc-timegrid-slot-label-cushion { color: var(--vw-mu); }
+#vw-calendar.fc .fc-timegrid-col.fc-day-today, #vw-calendar.fc .fc-daygrid-day.fc-day-today { background: var(--fc-today-bg-color) !important; }
+#vw-calendar.fc .fc-timegrid-now-indicator-line { border-width: 2px 0 0; }
+#vw-calendar .fc-event { background: transparent !important; border: 0 !important; box-shadow: none !important; }
 #vw-calendar .dc-event-title, #vw-calendar .dc-event-time { display: none; }
+#vw-calendar.fc .dc-event-body { display: block; height: 100%; } /* the shared body is a wrapping flex row: the card would shrink to its text */
+#vw-calendar.fc .fc-view-harness { margin-inline: 0; } /* the Sneat theme pulls it out by the card padding; our card body has none */
+#vw-calendar.fc .fc-timegrid-event, #vw-calendar.fc .fc-event-main { padding: 0; } /* the card fills the slot (the mockup: no inset) */
+/* the workspace's days carry capacity, not working windows: DitenCalendar would shade every hour as non-working (the
+   mockup's grid is white); a holiday keeps its own band + column class */
+#vw-calendar.fc .fc-non-business { background: transparent; }
 
+/* the day head (T5): two lines at most */
+.vw-day-head { display: flex; flex-direction: column; gap: 4px; text-align: start; font-weight: 400; }
+.vw-day-top { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
+.vw-day-name { font-size: 13px; font-weight: 600; color: var(--vw-h); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vw-day-name.vw-is-today { color: var(--vw-pt); }
+.vw-today-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: var(--vw-p); color: #fff; white-space: nowrap; }
+.vw-day-bar { height: 4px; border-radius: 2px; background: var(--vw-bd); overflow: hidden; }
+.vw-day-bar > span { display: block; height: 100%; background: var(--vw-p); }
+.vw-day-bar > span.vw-over { background: var(--vw-dac); }
+.vw-day-load { font-size: 11px; color: var(--vw-mu); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vw-holiday { font-size: 11px; }
+
+/* ── the card (T7 / L4): the status's pastel ground + its leading edge; draft dashed ── */
+.vw-card { width: 100%; height: 100%; box-sizing: border-box; overflow: hidden; border-radius: 6px; padding: 3px 6px; display: flex; flex-direction: column; gap: 1px;
+    font-size: 11.5px; line-height: 1.3; border: 1px solid transparent; border-inline-start-width: 3px; text-align: start; white-space: nowrap; }
+.vw-card > * { flex: 0 0 auto; } /* never squeeze the lines: the card clips at its bottom */
+.vw-card-top { display: flex; justify-content: space-between; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; }
+.vw-icons { display: inline-flex; gap: 3px; align-items: center; font-size: 13px; }
+.vw-time { font-variant-numeric: tabular-nums; }
+.vw-name { font-weight: 600; color: var(--vw-h); overflow: hidden; text-overflow: ellipsis; }
+.vw-acc { color: var(--vw-mu); overflow: hidden; text-overflow: ellipsis; }
+.vw-chips { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 1px; overflow: hidden; max-height: 2.6em; }
+.vw-sub { font-weight: 600; font-size: 11px; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; }
+/* compact (a short visit, or a narrow Plan-mode column): time, name, institution — the name keeps its own line */
+.vw-card.vw-compact .vw-chips, .vw-card.vw-compact .vw-sub { display: none; }
+/* tiny (under 25 minutes): one line, time + name */
+.vw-card.vw-tiny .vw-acc { display: none; }
+.vw-card.vw-tiny { flex-direction: row; align-items: center; gap: 6px; }
+.vw-card.vw-tiny .vw-card-top { flex: 0 0 auto; }
+.vw-card.vw-tiny .vw-name { min-width: 0; }
+.vw-card.vw-tiny .vw-icons .bx:not(.vw-st-icon) { display: none; }
+.vw-strike .vw-name { text-decoration: line-through; }
+.vw-untimed { opacity: .85; }
+
+/* the product chips: promo filled, reminder outlined (cards, panel, legend) */
+.vw-pchip { padding: 0 4px; border-radius: 3px; font-size: 10px; font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
+.vw-pchip-promo { background: var(--vw-pl); color: var(--vw-pt); border-color: var(--vw-pbd); }
+.vw-pchip-reminder { background: #fff; color: var(--vw-h); border-color: var(--vw-bd2); }
+
+/* the ten work statuses (card, chip, swatch, dot) */
+.vw-st-draft { background: #fff; color: var(--vw-mu); border-color: var(--vw-pbd); }
+.vw-st-planned { background: var(--vw-pl); color: var(--vw-pt); border-color: var(--vw-pt2); }
+.vw-st-today { background: var(--vw-p); color: #fff; border-color: var(--vw-p); }
+.vw-st-today .vw-name { color: #fff; }
+.vw-st-today .vw-acc { color: rgba(255, 255, 255, .85); }
+.vw-st-today .vw-pchip-promo { background: rgba(255, 255, 255, .22); color: #fff; border-color: rgba(255, 255, 255, .22); }
+.vw-st-today .vw-pchip-reminder { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .6); }
+.vw-st-report_missing { background: var(--vw-wab); color: var(--vw-wa); border-color: var(--vw-wac); }
+.vw-st-reported { background: var(--vw-okb); color: var(--vw-ok); border-color: var(--vw-okc); }
+.vw-st-missed, .vw-st-expired { background: var(--vw-dab); color: var(--vw-da); border-color: var(--vw-dac); }
+.vw-st-not_done, .vw-st-rescheduled, .vw-st-cancelled { background: var(--vw-seb); color: var(--vw-se); border-color: #b4bdc6; }
+.vw-dashed { border-style: dashed; }
+.vw-card.vw-st-draft { opacity: .9; }
+
+/* T9 — the month view: count + status dots */
+.vw-month-event .dc-event-body { padding: 0; }
+.vw-month-cell { display: flex; gap: 6px; align-items: center; padding: 2px 6px; font-size: 12px; color: var(--vw-h); cursor: pointer; }
+.vw-month-count { font-weight: 600; }
+.vw-dots { display: inline-flex; gap: 3px; flex-wrap: wrap; }
+.vw-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; border: 0; background: currentColor !important; } /* the status's strong colour, not its pastel ground */
+.vw-dot.vw-st-today { background: var(--vw-p) !important; }
+.vw-month-dow { font-size: 12px; font-weight: 600; color: var(--vw-h); }
+
+/* ── the detail panel (D1–D6) ── */
+.vw-detail.offcanvas-end { width: 440px; }
+.vw-detail-head { padding: 16px 20px; border-bottom: 1px solid var(--vw-bd); display: flex; gap: 12px; align-items: flex-start; }
+.vw-detail-name { font-size: 19px; font-weight: 600; color: var(--vw-h); }
+.vw-close { width: 32px; height: 32px; border: 0; background: var(--vw-soft); color: var(--vw-h); border-radius: 6px; font-size: 20px; display: inline-flex; align-items: center; justify-content: center; }
+.vw-status-chip { display: inline-flex; gap: 4px; align-items: center; padding: 3px 9px; border-radius: 4px; font-size: 12px; font-weight: 500; border: 1px solid transparent; }
+.vw-flag { display: inline-flex; gap: 3px; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 12px; background: var(--vw-seb); color: var(--vw-se); }
+.vw-spec-chip { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; background: var(--vw-inb); color: var(--vw-in); }
+.vw-seg-chip { padding: 1px 6px; border-radius: 4px; font-size: 12px; font-weight: 500; border: 1px solid var(--vw-pbd); color: var(--vw-pt); }
+.vw-detail-body { padding: 16px 20px; display: grid; align-content: start; gap: 18px; }
+.vw-account-block { display: flex; gap: 12px; }
+.vw-map { width: 96px; height: 72px; flex: 0 0 auto; border-radius: 6px; border: 1px solid var(--vw-bd); background: repeating-linear-gradient(135deg, var(--vw-soft) 0 6px, #fff 6px 12px);
+    display: flex; align-items: center; justify-content: center; font: 10px/1.2 ui-monospace, monospace; color: var(--vw-mu); text-align: center; padding: 4px; }
+.vw-acc-name { color: var(--vw-h); font-weight: 500; font-size: 14px; }
+.vw-when { color: var(--vw-h); display: inline-flex; gap: 5px; align-items: center; }
+.vw-alert { border-radius: 6px; padding: 10px 12px; font-size: 13px; display: flex; gap: 8px; }
+.vw-alert > .bx { font-size: 19px; flex: 0 0 auto; }
+.vw-section-title { font-size: 13px; text-transform: uppercase; letter-spacing: .3px; color: var(--vw-h); font-weight: 600; }
+.vw-prod { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 1px solid var(--vw-bd); border-radius: 6px; }
+.vw-prod-no { width: 22px; height: 22px; border-radius: 50%; background: var(--vw-soft); color: var(--vw-h); font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.vw-prod-name { font-weight: 600; color: var(--vw-h); font-size: 14px; }
+.vw-role { padding: 1px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid transparent; }
+.vw-role-promo { background: var(--vw-pl); color: var(--vw-pt); border-color: var(--vw-pbd); }
+.vw-role-reminder { background: #fff; color: var(--vw-h); border-color: var(--vw-bd2); }
+.vw-estimate { font-size: 13px; display: flex; gap: 6px; align-items: center; color: var(--vw-h); }
+.vw-prev { padding: 10px 12px; background: var(--vw-soft2); border-radius: 6px; font-size: 13px; }
+.vw-detail-actions { padding: 14px 20px; border-top: 1px solid var(--vw-bd); display: flex; gap: 8px; flex-wrap: wrap; }
+.vw-detail-actions .btn { min-height: 38px; display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
+.vw-locked-note { font-size: 13px; color: var(--vw-mu); display: flex; gap: 6px; align-items: center; }
+
+/* ── E2: one dialog, three tabs (P1); the 4-column day grid (P2) ── */
+.vw-dlg { max-width: 560px; }
+.vw-tabs { display: flex; border-bottom: 1px solid var(--vw-bd); }
+.vw-tab { border: 0; background: transparent; padding: 10px 14px; font-size: 14px; color: var(--vw-tx); box-shadow: inset 0 -2px 0 transparent; }
+.vw-tab.active { color: var(--vw-pt); box-shadow: inset 0 -2px 0 var(--vw-p); }
+.vw-tab:disabled { opacity: .4; cursor: not-allowed; }
+.vw-label { font-size: 13px; color: var(--vw-h); font-weight: 500; margin-bottom: 4px; }
+.vw-reason { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--vw-h); }
+.vw-reason:has(input:checked) { background: var(--vw-pl); }
+.vw-day-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.vw-day-option { border: 1px solid var(--vw-bd2); border-radius: 6px; padding: 8px 6px; background: #fff; display: flex; flex-direction: column; gap: 4px; align-items: stretch; text-align: start; color: var(--vw-h); }
+.vw-day-option.active { border-color: var(--vw-p); background: var(--vw-pl); }
+.vw-do-day { font-size: 12px; font-weight: 600; }
+.vw-do-load { font-size: 11px; color: var(--vw-mu); }
+.vw-mini { height: 4px; border-radius: 2px; background: var(--vw-bd); overflow: hidden; display: block; }
+.vw-mini > span { display: block; height: 100%; }
+.vw-mini > .vw-lo { background: var(--vw-okc); }
+.vw-mini > .vw-mid { background: var(--vw-wac); }
+.vw-mini > .vw-hi { background: var(--vw-dac); }
+@media (max-width: 575.98px) { .vw-day-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── the Plan panel (L5–L8) ── */
+.vw-plan-panel { width: 330px; flex: 0 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.vw-panel-card { padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 3px 8px rgba(34, 48, 62, .08); }
+.vw-panel-head { display: flex; gap: 10px; align-items: center; }
+.vw-panel-icon { width: 36px; height: 36px; border-radius: 6px; background: var(--vw-pl); color: var(--vw-pt); display: inline-flex; align-items: center; justify-content: center; font-size: 19px; }
+.vw-panel-title { font-weight: 600; color: var(--vw-h); text-transform: uppercase; letter-spacing: .2px; font-size: 14px; }
+.vw-panel-ro { background: var(--vw-okb); color: var(--vw-ok); border-radius: 6px; padding: 8px 10px; font-size: 12px; display: flex; gap: 6px; align-items: center; }
+.vw-quick { display: flex; gap: 4px; flex-wrap: nowrap; overflow: hidden; } /* L7: small, ONE line, no scrollbar */
+.vw-quick-btn { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; border: 1px solid var(--vw-bd2); background: #fff; color: var(--vw-tx); border-radius: 4px; padding: 1px 6px; font-size: 11px; white-space: nowrap; }
+.vw-quick-btn.active { background: var(--vw-pl); color: var(--vw-pt); border-color: var(--vw-pbd); }
+.vw-btn-soft { height: 32px; background: var(--vw-seb); color: var(--vw-se); border: 0; border-radius: 6px; font-size: 13px; display: inline-flex; gap: 4px; align-items: center; justify-content: center; }
+.vw-btn-outline { height: 32px; background: transparent; color: var(--vw-pt); border: 1px solid var(--vw-pt); border-radius: 6px; font-size: 13px; font-weight: 500; display: inline-flex; gap: 4px; align-items: center; justify-content: center; }
+.vw-btn-soft:disabled, .vw-btn-outline:disabled { opacity: .5; }
+.vw-tg-list { max-height: 560px; overflow-y: auto; border: 1px solid var(--vw-bd); border-radius: 6px; }
+.vw-tg-group { font-size: 11px; text-transform: uppercase; letter-spacing: .3px; color: var(--vw-mu); font-weight: 600; padding: 6px 10px; background: var(--vw-soft2); border-bottom: 1px solid var(--vw-bd); }
+.vw-tg-row { display: flex; gap: 8px; padding: 10px; border-bottom: 1px solid var(--vw-bd); }
+.vw-tg-row.vw-tg-on { background: var(--vw-soft2); }
+.vw-tg-row.vw-draggable { cursor: grab; }
+.vw-tg-check { width: 16px; height: 16px; margin-top: 2px; flex: 0 0 auto; }
+.vw-tg-top { display: flex; justify-content: space-between; gap: 6px; }
+.vw-tg-name { font-size: 13px; font-weight: 600; color: var(--vw-h); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vw-handle { color: var(--vw-mu); }
+.vw-tg-chips { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+.vw-tg-chips .vw-spec-chip { font-size: 11px; padding: 1px 6px; }
+.vw-tg-chips .vw-pchip { font-size: 11px; padding: 1px 6px; }
+.vw-tg-meta { display: flex; gap: 8px; font-size: 12px; color: var(--vw-mu); flex-wrap: wrap; margin-top: 4px; }
+.vw-tg-when { color: var(--vw-pt); font-weight: 500; }
+.vw-summary { background: var(--vw-pl); border-radius: 8px; padding: 16px; color: var(--vw-pt); box-shadow: 0 3px 8px rgba(34, 48, 62, .08); }
+.vw-summary-head { font-size: 12px; text-transform: uppercase; letter-spacing: .3px; color: var(--vw-pt2); margin-bottom: 10px; }
+.vw-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 6px; }
+.vw-sum-n { font-size: 22px; font-weight: 500; }
+.vw-sum-l { font-size: 12px; color: var(--vw-pt2); }
+.vw-summary-dist { border-top: 1px solid var(--vw-pbd); margin-top: 12px; padding-top: 10px; font-size: 13px; line-height: 1.5; }
+
+/* ── the phone ── */
+.vw-list-card { display: block; width: 100%; border: 0; background: none; padding: 0; margin-bottom: .4rem; text-align: start; }
+.vw-list-card .vw-card { height: auto; white-space: normal; }
+@media (max-width: 767.98px) { .vw-plan-panel { display: none !important; } }
 @media (max-width: 767.98px) {
     .vw-detail.offcanvas-end { width: 100% !important; }
+    .vw-cal-head .vw-select { max-width: 100%; }
 }
-
-/* WP-VW-W2 (WEB-b) — Plan mode: the Targets panel (desktop only), its rows are dragged onto the calendar */
-.vw-tg-list { max-height: 640px; overflow-y: auto; }
-.vw-tg-row.vw-draggable { cursor: grab; }
-@media (max-width: 767.98px) { .vw-plan-panel { display: none !important; } }

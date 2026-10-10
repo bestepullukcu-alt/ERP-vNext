@@ -66,7 +66,9 @@ global.window.VisitWorkspaceL10n = { WeekLabel: '{0}. Hafta', TargetsTitle: 'Hed
   PlanDoctorsHeading: 'Planda ({0})', OtherDoctorsHeading: 'Diğer doktorlar', SelectAll: 'Tümünü seç ({0})', ApplyProducts: 'Ürün uygula ({0})',
   SelectionSummary: '{0} doktor · {1} eczane · {2} hesap', DueThisWeek: 'Bu hafta görülmeli', QuickDue: 'Bu hafta', QuickNever: 'Hiç', QuickAll: 'Tümü',
   FrequencyPerPeriod: 'dönemde {0}', FrequencyDefaultWeekly: 'haftada 1 (varsayılan)', RolePromo: 'tanıtım', RoleReminder: 'hatırlatma',
-  Pin_pin_time_past_day_end: 'Ziyaret mesai bitişini aşıyor, erkene alındı', FilterAllAccounts: 'Tüm kurumlar', Unplaced: '⚠ {0}', UnplacedDetail: '{0}' };
+  Pin_pin_time_past_day_end: 'Ziyaret mesai bitişini aşıyor, erkene alındı', FilterAllAccounts: 'Tüm kurumlar', Unplaced: '⚠ {0}', UnplacedDetail: '{0}',
+  TargetsSub: '{0} · sürükleyip güne bırakın', SummaryTitle: 'Seçim özeti · {0}', SummaryDoctors: 'doktor', SummaryPharmacies: 'eczane',
+  SummaryAccounts: 'hesap', NoSelection: 'Seçim yok' };
 require(dir + '/VisitWorkspace/visit-workspace.js');
 const tick = (ms) => new Promise(r => setTimeout(r, ms || 20));
 const puts = () => calls.filter(c => c.method === 'PUT').map(c => [c.url, JSON.parse(c.body)]);
@@ -80,14 +82,17 @@ const puts = () => calls.filter(c => c.method === 'PUT').map(c => [c.url, JSON.p
   // P1 — Plan mode
   el('vw-mode-plan').l.click(); await tick(); await tick(); await tick();
   out.panelHidden = el('vw-plan-panel').classList.contains('d-none');
+  out.unplannedInPlan = !el('vw-unplanned-open').classList.contains('d-none'); // WEB-c T2: + unplanned visit in both modes
   out.editable = cal.editable;
-  out.locked = el('vw-tg-locked').classList.contains('d-none') ? '' : el('vw-tg-locked').textContent;
+  out.locked = el('vw-tg-locked').classList.contains('d-none') ? '' : el('vw-tg-locked').innerHTML;
   out.title = el('vw-tg-title').textContent;
   out.list = el('vw-tg-list').innerHTML;
   out.quick = el('vw-tg-quick').innerHTML;
-  out.selectAll = el('vw-tg-select-all').textContent;
-  out.apply = el('vw-tg-apply').textContent;
-  out.summary = el('vw-tg-summary').textContent;
+  out.selectAll = el('vw-tg-select-all').innerHTML;
+  out.apply = el('vw-tg-apply').innerHTML;
+  out.summary = el('vw-tg-summary').innerHTML;
+  out.summaryHead = el('vw-tg-summary-head').textContent;
+  out.dist = el('vw-tg-dist').innerHTML;
   out.draftEventEditable = (cal.events || []).filter(e => e.editable).map(e => e.id);
 
   // P3 — a Targets row dropped on Tuesday 10:37 (→ 10:30), and on the all-day row (→ no time)

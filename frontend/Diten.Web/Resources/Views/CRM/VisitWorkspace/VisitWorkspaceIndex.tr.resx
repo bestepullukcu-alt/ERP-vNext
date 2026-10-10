@@ -39,8 +39,8 @@
   <data name="DoctorSearch" xml:space="preserve"><value>Ada göre arayın (en az 2 harf)</value></data>
   <data name="TimeLabel" xml:space="preserve"><value>Saat</value></data>
   <data name="AddButton" xml:space="preserve"><value>Ekle</value></data>
-  <data name="WeekLabel" xml:space="preserve"><value>{0}. hafta</value></data>
-  <data name="WeekStateDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>{0}. Hafta</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>Taslak · otomatik</value></data>
   <data name="WeekStateApproved" xml:space="preserve"><value>Onaylı</value></data>
   <data name="WeekStatePast" xml:space="preserve"><value>Geçmiş</value></data>
   <data name="WeekStateNone" xml:space="preserve"><value>Plan yok</value></data>
@@ -165,4 +165,61 @@
   <data name="PickedProducts" xml:space="preserve"><value>Seçilen ürünler</value></data>
   <data name="ProductSearch" xml:space="preserve"><value>Ürün ara…</value></data>
   <data name="ApplyButton" xml:space="preserve"><value>Uygula</value></data>
+  <data name="TodayBadge" xml:space="preserve"><value>Bugün</value></data>
+  <data name="CapacityWeekLine" xml:space="preserve"><value>Bu hafta {0} kapasite · {1} planlı</value></data>
+  <data name="FilterAllStatuses" xml:space="preserve"><value>Tüm durumlar</value></data>
+  <data name="FilterStatusCount" xml:space="preserve"><value>{0} durum</value></data>
+  <data name="CardReportLeft" xml:space="preserve"><value>Rapor için {0} sa kaldı</value></data>
+  <data name="CardMarkLeft" xml:space="preserve"><value>İşaretlemek için {0} sa</value></data>
+  <data name="CardLocked" xml:space="preserve"><value>Kilitli</value></data>
+  <data name="CardMovedTo" xml:space="preserve"><value>→ {0}</value></data>
+  <data name="MonthVisits" xml:space="preserve"><value>{0} ziyaret</value></data>
+  <data name="LegendPinned" xml:space="preserve"><value>sabit</value></data>
+  <data name="LegendUnplanned" xml:space="preserve"><value>plan dışı</value></data>
+  <data name="LegendProduct" xml:space="preserve"><value>ÜRÜN</value></data>
+  <data name="DetailPinned" xml:space="preserve"><value>Güne sabit</value></data>
+  <data name="DetailUnplanned" xml:space="preserve"><value>Plan dışı</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="ContentSteps" xml:space="preserve"><value>{0} içerik adımı</value></data>
+  <data name="AboutMinutes" xml:space="preserve"><value>≈ {0} dk</value></data>
+  <data name="EstimateLine" xml:space="preserve"><value>{0} tanıtım + {1} hatırlatma + rapor ≈ {2} dk</value></data>
+  <data name="EstimateLineNoReminder" xml:space="preserve"><value>{0} tanıtım + rapor ≈ {1} dk</value></data>
+  <data name="DetailFrequency" xml:space="preserve"><value>Sıklık: dönemde {0} · {1}</value></data>
+  <data name="AlertTitle_draft" xml:space="preserve"><value>Taslak hafta</value></data>
+  <data name="AlertText_draft" xml:space="preserve"><value>Sıklığa göre otomatik oluşturuldu. Takvimde sürükleyerek güne sabitleyebilirsiniz.</value></data>
+  <data name="AlertTitle_planned" xml:space="preserve"><value>Hafta onaylı</value></data>
+  <data name="AlertText_planned" xml:space="preserve"><value>Güne taşımak için haftayı yeniden açın. Sonuç girişi ziyaret günü açılır.</value></data>
+  <data name="AlertTitle_today" xml:space="preserve"><value>Bugün · {1}</value></data>
+  <data name="AlertText_today" xml:space="preserve"><value>Kuruma vardığınızda ziyarete başlayın.</value></data>
+  <data name="AlertTitle_report_missing" xml:space="preserve"><value>Rapor için {0} sa kaldı</value></data>
+  <data name="AlertText_report_missing" xml:space="preserve"><value>Süre dolunca kayıt kilitlenir.</value></data>
+  <data name="AlertTitle_reported" xml:space="preserve"><value>Rapor gönderildi</value></data>
+  <data name="AlertText_reported" xml:space="preserve"><value>Değişiklik için gerekçeli düzeltme gerekir.</value></data>
+  <data name="AlertTitle_missed" xml:space="preserve"><value>Kaçırıldı</value></data>
+  <data name="AlertText_missed" xml:space="preserve"><value>Ziyaret başlatılmadı. "Yapılamadı" ya da "Ertele" için {0} sa kaldı.</value></data>
+  <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Kaçırıldı · kilitli</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>48 saat içinde işaretlenmedi. Kayıt kilitlendi, yöneticinize bildirildi.</value></data>
+  <data name="AlertTitle_expired" xml:space="preserve"><value>Rapor süresi doldu</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>Kayıt kilitli, yöneticinize bildirildi.</value></data>
+  <data name="DlgTab_cancel" xml:space="preserve"><value>İptal et</value></data>
+  <data name="DlgTab_notDone" xml:space="preserve"><value>Yapılamadı</value></data>
+  <data name="DlgTab_reschedule" xml:space="preserve"><value>Ertele</value></data>
+  <data name="DlgMean_cancel" xml:space="preserve"><value>Ziyaret yapılmayacak (plan iptali; gün gelmeden de olur).</value></data>
+  <data name="DlgMean_notDone" xml:space="preserve"><value>Gün geldi ama ziyaret olmadı.</value></data>
+  <data name="DlgMean_reschedule" xml:space="preserve"><value>Başka güne kaydırın; yeni tarih seçin.</value></data>
+  <data name="DlgConfirm_cancel" xml:space="preserve"><value>Ziyareti iptal et</value></data>
+  <data name="DlgConfirm_notDone" xml:space="preserve"><value>Yapılamadı olarak işaretle</value></data>
+  <data name="DlgConfirm_reschedule" xml:space="preserve"><value>Ziyareti ertele</value></data>
+  <data name="TargetsSub" xml:space="preserve"><value>{0} · sürükleyip güne bırakın</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Seçim özeti · {0}</value></data>
+  <data name="SummaryDoctors" xml:space="preserve"><value>doktor</value></data>
+  <data name="SummaryPharmacies" xml:space="preserve"><value>eczane</value></data>
+  <data name="SummaryAccounts" xml:space="preserve"><value>hesap</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>Seçim yok</value></data>
+  <data name="ViewLabel" xml:space="preserve"><value>Görünüm</value></data>
+  <data name="ViewDay" xml:space="preserve"><value>Gün</value></data>
+  <data name="ViewWeek" xml:space="preserve"><value>Hafta</value></data>
+  <data name="ViewMonth" xml:space="preserve"><value>Ay</value></data>
+  <data name="TargetsHeading" xml:space="preserve"><value>Hedefler</value></data>
+  <data name="MapPlaceholder" xml:space="preserve"><value>harita önizlemesi</value></data>
 </root>

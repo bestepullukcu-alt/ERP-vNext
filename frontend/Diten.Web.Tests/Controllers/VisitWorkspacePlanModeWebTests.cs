@@ -40,7 +40,7 @@ public sealed class VisitWorkspacePlanModeWebTests
             Assert.False(d.GetProperty("panelHidden").GetBoolean());
             Assert.True(d.GetProperty("editable").GetBoolean());
             Assert.Equal("", d.GetProperty("locked").GetString());
-            Assert.Equal("Hedefler · 42. Hafta", d.GetProperty("title").GetString());
+            Assert.Equal("42. Hafta · sürükleyip güne bırakın", d.GetProperty("title").GetString()); // WEB-c L5: HEDEFLER is the head, the week is the sub line
             Assert.Equal(new[] { "k1" }, d.GetProperty("draftEventEditable").EnumerateArray().Select(x => x.GetString())); // only the draft card moves
         }
 
@@ -49,7 +49,7 @@ public sealed class VisitWorkspacePlanModeWebTests
         {
             Assert.Equal(JsonValueKind.Null, a.GetProperty("createError").ValueKind);
             Assert.False(a.GetProperty("editable").GetBoolean());
-            Assert.Equal("42. Hafta onaylı — değiştirmek için Haftayı yeniden aç.", a.GetProperty("locked").GetString());
+            Assert.EndsWith("42. Hafta onaylı — değiştirmek için Haftayı yeniden aç.", a.GetProperty("locked").GetString()); // WEB-c: after the lock icon
             Assert.Empty(a.GetProperty("draftEventEditable").EnumerateArray());
         }
 
@@ -58,7 +58,7 @@ public sealed class VisitWorkspacePlanModeWebTests
         var js = Script("VisitWorkspace", "visit-workspace.js");
         Assert.Contains("const planEditable = () => !!TC && perms.plan && state.layout === 'grid' && C.canPlanWeek(weekOf(state.week), state.mode);", js);
         Assert.Contains("if (typeof state.calendar.setEditable === 'function') { state.calendar.setEditable(editable); }", js);
-        Assert.Contains("const events = visits.map(v => C.eventOf(v, editable && v.workStatus === 'draft'));", js);
+        Assert.Contains("const e = C.eventOf(v, editable && v.workStatus === 'draft');", js); // WEB-c: the same rule (an untimed draft moves to the first slot, no all-day row)
         Assert.Contains("@if (Model.CanPlan)", View());
         Assert.Contains("@media (max-width: 767.98px) { .vw-plan-panel { display: none !important; } }", Script("VisitWorkspace", "visit-workspace.css")); // phone: no panel
     }
@@ -124,11 +124,15 @@ public sealed class VisitWorkspacePlanModeWebTests
             Assert.True(list.IndexOf("data-cid=\"p1\"", StringComparison.Ordinal) < list.IndexOf("Diğer doktorlar", StringComparison.Ordinal));
             Assert.Contains("<bdi>Kardiyoloji</bdi>", list);      // the specialty LABEL
             Assert.Contains("haftada 1 (varsayılan)", list);      // 4L frequency default
-            Assert.Contains("Bu hafta görülmeli", list);          // 4M due this week
+            Assert.DoesNotContain("Bu hafta görülmeli", list);    // WEB-c L6: the mockup row has no due badge; 4M keeps the "Bu hafta" quick filter
             Assert.Contains("<bdi>A</bdi>", list);                 // the segment badge
             Assert.Contains("Tümü (1)", s.GetProperty("quick").GetString()); // 4M: the counts are the doctors outside the plan
-            Assert.Equal("Tümünü seç (1)", s.GetProperty("selectAll").GetString());
-            Assert.Equal("1 doktor · 1 eczane · 1 hesap", s.GetProperty("summary").GetString());
+            Assert.EndsWith("Tümünü seç (1)", s.GetProperty("selectAll").GetString()); // WEB-c L7: after the icon
+            var sum = s.GetProperty("summary").GetString()!;     // WEB-c L8: big numbers
+            Assert.Contains("<div class=\"vw-sum-n\">1</div><div class=\"vw-sum-l\">doktor</div>", sum);
+            Assert.Contains("<div class=\"vw-sum-n\">1</div><div class=\"vw-sum-l\">eczane</div>", sum);
+            Assert.Contains("<div class=\"vw-sum-n\">1</div><div class=\"vw-sum-l\">hesap</div>", sum);
+            Assert.Equal("Seçim özeti · 42. Hafta", s.GetProperty("summaryHead").GetString());
         }
     }
 

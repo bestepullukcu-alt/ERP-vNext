@@ -28,7 +28,9 @@ public sealed class VisitWorkspaceIndex
         "Err_visit_report_invalid_transition", "Err_resource_not_caller", "Err_visit_reason_applies_to_invalid",
         "Err_visit_not_yet_due", "Err_planned_visit_invalid_transition", "Err_planned_visit_overlap",
         // WP-VW-W2 (WEB-b) — Plan mode
-        "TargetsTitle", "TargetsNoPlan", "PlanReadOnlyWeek", "PlanReadOnlyPast", "QuickDue", "QuickNever", "QuickAll", "FrequencyPerPeriod", "FrequencyDefaultWeekly", "DueThisWeek", "PlanDoctorsHeading", "OtherDoctorsHeading", "NoDoctors", "SelectAll", "ApplyProducts", "SelectionSummary", "TargetsSaved", "PinSaved", "ProductsApplied", "NoProductPicked", "RemoveProduct", "UnplacedReasonOther", "Pin_pin_time_invalid", "Pin_pin_time_outside_hours", "Pin_pin_time_conflict", "Pin_pin_time_past_day_end", "Pin_pin_overflow", "Pin_pin_day_full", "Pin_week_already_approved", "Reason_capacity_full", "Reason_no_near_day", "Reason_period_exhausted", "Reason_missing_location", "Reason_consent_blocked", "Reason_week_full_skipped", "Reason_extra_no_room", "Reason_no_feasible_availability_window"
+        "TargetsTitle", "TargetsNoPlan", "PlanReadOnlyWeek", "PlanReadOnlyPast", "QuickDue", "QuickNever", "QuickAll", "FrequencyPerPeriod", "FrequencyDefaultWeekly", "DueThisWeek", "PlanDoctorsHeading", "OtherDoctorsHeading", "NoDoctors", "SelectAll", "ApplyProducts", "SelectionSummary", "TargetsSaved", "PinSaved", "ProductsApplied", "NoProductPicked", "RemoveProduct", "UnplacedReasonOther", "Pin_pin_time_invalid", "Pin_pin_time_outside_hours", "Pin_pin_time_conflict", "Pin_pin_time_past_day_end", "Pin_pin_overflow", "Pin_pin_day_full", "Pin_week_already_approved", "Reason_capacity_full", "Reason_no_near_day", "Reason_period_exhausted", "Reason_missing_location", "Reason_consent_blocked", "Reason_week_full_skipped", "Reason_extra_no_room", "Reason_no_feasible_availability_window",
+        // WP-VW-W2 (WEB-c) — the mockup's look
+        "TodayBadge", "CapacityWeekLine", "FilterAllStatuses", "FilterStatusCount", "CardReportLeft", "CardMarkLeft", "CardLocked", "CardMovedTo", "MonthVisits", "LegendPinned", "LegendUnplanned", "LegendProduct", "DetailPinned", "DetailUnplanned", "MinutesShort", "ContentSteps", "AboutMinutes", "EstimateLine", "EstimateLineNoReminder", "DetailFrequency", "AlertTitle_draft", "AlertText_draft", "AlertTitle_planned", "AlertText_planned", "AlertTitle_today", "AlertText_today", "AlertTitle_report_missing", "AlertText_report_missing", "AlertTitle_reported", "AlertText_reported", "AlertTitle_missed", "AlertText_missed", "AlertTitle_missed_locked", "AlertText_missed_locked", "AlertTitle_expired", "AlertText_expired", "DlgTab_cancel", "DlgTab_notDone", "DlgTab_reschedule", "DlgMean_cancel", "DlgMean_notDone", "DlgMean_reschedule", "DlgConfirm_cancel", "DlgConfirm_notDone", "DlgConfirm_reschedule", "TargetsSub", "SummaryTitle", "SummaryDoctors", "SummaryPharmacies", "SummaryAccounts", "NoSelection"
     ];
 
     /// <summary>The strings the view itself writes (headings, buttons, labels).</summary>
@@ -39,6 +41,8 @@ public sealed class VisitWorkspaceIndex
         "FrequencyTitle", "CloseButton", "CancelButton", "SaveButton", "ReasonLabel", "NoteLabel", "NoteRequired", "NewDate", "ReopenReason",
         "ReopenHint", "UnplacedTitle", "UnplacedHint", "UnplannedTitle", "UnplannedHint", "DoctorLabel", "DoctorSearch", "TimeLabel", "AddButton",
         // WP-VW-W2 (WEB-b) — Plan mode
-        "ModeLabel", "ModeExecute", "ModePlan", "DragHint", "AccountLabel", "QuickFiltersLabel", "ProductsTitle", "ProductsHint", "PickedProducts", "ProductSearch", "ApplyButton"
+        "ModeLabel", "ModeExecute", "ModePlan", "DragHint", "AccountLabel", "QuickFiltersLabel", "ProductsTitle", "ProductsHint", "PickedProducts", "ProductSearch", "ApplyButton",
+        // WP-VW-W2 (WEB-c)
+        "ViewLabel", "ViewDay", "ViewWeek", "ViewMonth", "TargetsHeading", "MapPlaceholder"
     ];
 }

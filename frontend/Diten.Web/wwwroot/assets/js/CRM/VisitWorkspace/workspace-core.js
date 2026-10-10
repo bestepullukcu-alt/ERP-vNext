@@ -23,6 +23,19 @@
  *   accountOptions(visits)            the institution filter: accountDisplayName ONLY (never a doctor's name)
  *   unplacedRows(week, L)             the "N visits did not fit" list (weeks[].unplaced[])
  *   sessionVersionOf(week)            the version approve / reopen expects (weeks[].sessionVersion), null = read it
+ * WP-VW-W2 (WEB-c) — the mockup's look (pure; the page only draws what these say):
+ *   cardModel(v, ctx)                 a calendar card: status look, time, name, institution, product chips (promo filled /
+ *                                     reminder outlined), the bottom line ("report in 31 h", "mark within 3 h", "→ 13 Oct",
+ *                                     locked) and the compact form (time + name) for a short visit or a narrow column
+ *   compactCard(minutes, narrow)      the compact threshold
+ *   stepMinutes(item) / estimate(v)   the duration rule (user decision): the content steps' minutes when EVERY product has
+ *                                     them, else the planned visit length, else nothing
+ *   monthCell(visits, date)           the month view's day: visit count + one dot per status present
+ *   dialogTabs(v, today, perms)       the one E2 dialog's tabs (cancel · not done · reschedule) and which are enabled
+ *   dayHead(day, count, today)        a day column's head: today, the fill bar, "N visits · X h free"
+ *   LEGEND                            the legend's statuses
+ *   productDistribution(visits)       the selection summary's "TUTUKON 12 · ALMIBA 10"
+ *   alertFor(v, nowMs)                the detail panel's status box (title + text keys)
  * Reason codes / labels are NOT here: they come from the reference set (GET reasons), never a local list.
  */
 (function (root, factory) {
@@ -346,12 +359,140 @@
 
     const sessionVersionOf = week => (week && typeof week.sessionVersion === 'number' ? week.sessionVersion : null);
 
+    // ── WP-VW-W2 (WEB-c) — the mockup's look ────────────────────────────────────────────────────────────────
+    const toMinutes = t => { const m = /^(\d{1,2}):(\d{2})/.exec(String(t || '')); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
+    const lengthOf = v => {
+        const a = toMinutes(v && v.startTime), b = toMinutes(v && v.endTime);
+        if (a != null && b != null && b > a) { return b - a; }
+        return v && v.durationMinutes > 0 ? v.durationMinutes : null;
+    };
+
+    /**
+     * A card turns compact under 25 minutes, or under 45 minutes in a narrow column (Plan mode): time, name and
+     * institution only (no chips, no bottom line). Under 25 minutes it is TINY: one line, time + name (the mockup).
+     */
+    const compactCard = (minutes, narrow) => minutes != null && (minutes < 25 || (!!narrow && minutes < 45));
+    const tinyCard = minutes => minutes != null && minutes < 25;
+
+    /** The product's role: the content's own role when it says so, else the order (the first promo, the others reminders). */
+    const isPromo = (c, i) => (c && c.role ? String(c.role).toLowerCase() === 'promo' : i === 0);
+
+    /**
+     * ctx = { nowMs, narrow, visits } — visits: the read's visits (a rescheduled visit's new date is its successor's).
+     * bottom = { key, args } in the user's language, or null.
+     */
+    const cardModel = (v, ctx) => {
+        const c = ctx || {};
+        const st = statusStyle(v && v.workStatus);
+        const minutes = lengthOf(v);
+        let bottom = null;
+        const cd = showsCountdown(st.code) ? countdown(v.reportDeadline, c.nowMs) : null;
+        if (st.code === 'report_missing' && cd && !cd.passed) { bottom = { key: 'CardReportLeft', args: [cd.hours] }; }
+        else if (st.code === 'missed' && cd && !cd.passed) { bottom = { key: 'CardMarkLeft', args: [cd.hours] }; }
+        else if (st.code === 'expired' || (st.code === 'missed' && cd && cd.passed)) { bottom = { key: 'CardLocked', args: [] }; }
+        else if (st.code === 'rescheduled' && v.rescheduledToPlannedVisitId) {
+            const next = (c.visits || []).find(x => x.plannedVisitId === v.rescheduledToPlannedVisitId);
+            if (next) { bottom = { key: 'CardMovedTo', args: [next.plannedDate], date: true }; }
+        }
+        return {
+            status: st,
+            icon: st.code === 'missed' && cd && cd.passed ? 'bx-lock-alt' : st.icon,
+            time: v && v.startTime ? v.startTime + (v.endTime ? '–' + v.endTime : '') : '',
+            name: (v && v.targetDisplayName) || '—',
+            account: (v && v.accountDisplayName) || '',
+            chips: ((v && v.plannedContent) || []).map((x, i) => ({ name: productLabel(x), promo: isPromo(x, i) })),
+            pinned: !!(v && v.isPinned),
+            unplanned: !!(v && v.source === 'unplanned'),
+            rescheduledFrom: !!(v && v.rescheduledFromPlannedVisitId),
+            bottom: bottom,
+            compact: compactCard(minutes, c.narrow),
+            tiny: tinyCard(minutes),
+            minutes: minutes
+        };
+    };
+
+    /** A content item's step minutes: their sum when EVERY step carries one (the W3 step target), else null. */
+    const stepMinutes = item => {
+        const steps = (item && item.steps) || [];
+        if (!steps.length) { return null; }
+        let sum = 0;
+        for (let i = 0; i < steps.length; i++) {
+            const st = steps[i] || {};
+            const m = typeof st.durationMinutes === 'number' ? st.durationMinutes : (typeof st.targetMinutes === 'number' ? st.targetMinutes : null);
+            if (m == null) { return null; }
+            sum += m;
+        }
+        return sum;
+    };
+
+    /** The visit's duration (user decision 2026-10-09): the steps' minutes > the planned length > nothing. */
+    const estimate = v => {
+        const items = (v && v.plannedContent) || [];
+        const per = items.map(stepMinutes);
+        if (items.length && per.every(m => m != null)) { return { minutes: per.reduce((a, b) => a + b, 0), source: 'steps' }; }
+        const planned = lengthOf(v);
+        if (planned != null) { return { minutes: planned, source: 'planned' }; }
+        return null;
+    };
+
+    /** The month view's day: how many visits (a cancelled one does not count) and one dot per status present. */
+    const monthCell = (visits, date) => {
+        const day = (visits || []).filter(v => v.plannedDate === date);
+        const live = day.filter(v => v.workStatus !== 'cancelled');
+        return { count: live.length, dots: STATUSES.filter(code => day.some(v => statusStyle(v.workStatus).code === code)) };
+    };
+
+    /** The ONE E2 dialog: three tabs; a tab is enabled when the visit's actions allow it (a past day takes no cancel). */
+    const DIALOG_TABS = ['cancel', 'notDone', 'reschedule'];
+    const dialogTabs = (v, today, perms) => {
+        const allowed = actionsFor(v, today, perms);
+        return DIALOG_TABS.map(key => ({ key: key, enabled: allowed.indexOf(key) > -1 }));
+    };
+
+    /** A day column's head: today, the holiday, the fill bar and "N visits · X h free". */
+    const dayHead = (day, count, today) => {
+        const d = day || {};
+        const cap = capacity(d.plannedMinutes, d.capacityMinutes);
+        return { isToday: d.date === today, holiday: !!d.isHoliday, pct: cap.pct, over: cap.over, count: count || 0, freeMinutes: Math.max(0, d.freeMinutes || 0) };
+    };
+
+    /** The legend under the calendar (the mockup's order). */
+    const LEGEND = ['draft', 'planned', 'today', 'report_missing', 'reported', 'missed', 'cancelled'];
+
+    /** The selection summary's product counts over the given visits (a cancelled visit does not count), most first. */
+    const productDistribution = visits => {
+        const map = {};
+        (visits || []).filter(v => v.workStatus !== 'cancelled').forEach(v => (v.plannedContent || []).forEach(c => {
+            const name = productLabel(c);
+            if (name) { map[name] = (map[name] || 0) + 1; }
+        }));
+        return Object.keys(map).map(name => ({ name: name, count: map[name] }))
+            .sort((a, b) => b.count - a.count || (a.name < b.name ? -1 : 1));
+    };
+
+    /** The detail panel's status box: tone + icon + title / text keys (with their arguments). */
+    const alertFor = (v, nowMs) => {
+        const st = statusStyle(v && v.workStatus);
+        const cd = showsCountdown(st.code) ? countdown(v.reportDeadline, nowMs) : null;
+        const locked = st.code === 'expired' || (st.code === 'missed' && cd && cd.passed);
+        const key = st.code === 'missed' && locked ? 'missed_locked' : st.code;
+        return {
+            cssClass: st.cssClass,
+            icon: locked ? 'bx-lock-alt' : st.icon,
+            titleKey: 'AlertTitle_' + key,
+            textKey: 'AlertText_' + key,
+            hours: cd && !cd.passed ? cd.hours : null,
+            time: (v && v.startTime) || ''
+        };
+    };
+
     return {
         STATUSES, statusStyle, countdown, showsCountdown, layoutFor, PHONE_MAX, actionsFor, noteState, canSave,
         saveNotDone, ERROR_CODES, errorKey, errorText, productLabel, contentRoles, filterVisits, loadFilters,
         saveFilters, FILTER_KEY, addDays, mondayOf, weekWindow, capacity, reopenOk, REOPEN_MIN, lastReportOf, visitKey,
         eventOf, unplannedBody,
         canPlanWeek, PIN_STEP, roundToStep, pinFromDrop, pinsWith, PIN_CODES, pinKey, pinText, pinMoveCode,
-        dragItem, parseDragItem, accountOptions, unplacedRows, sessionVersionOf
+        dragItem, parseDragItem, accountOptions, unplacedRows, sessionVersionOf,
+        compactCard, tinyCard, cardModel, stepMinutes, estimate, monthCell, DIALOG_TABS, dialogTabs, dayHead, LEGEND, productDistribution, alertFor, isPromo
     };
 }));

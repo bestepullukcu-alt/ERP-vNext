@@ -1,13 +1,17 @@
 /**
- * WP-VW-W2 (WEB-a) — the Visit Workspace page (Execute mode): the week strip, the week header, the calendar (week /
- * day time grid on a desktop, the day list on a phone), the cards, the filters, the detail panel and the cancel /
- * not done / reschedule dialogs. Every rule lives in workspace-core.js (pure, tested in Node); every text comes from
- * window.VisitWorkspaceL10n (7 languages) or from the CRM (reason labels from the reference set, names, products).
- * Dates / numbers in the APPLICATION language through VisitPlanningFormat; every data name isolated (bidi) for RTL.
- * Calls go to the same-origin proxy /CRM/VisitWorkspace/api/*.
+ * WP-VW-W2 (WEB-a) — the Visit Workspace page (Execute mode): the week header, the calendar (week / day time grid on a
+ * desktop, the day list on a phone), the cards, the filters, the detail panel and the cancel / not done / reschedule
+ * dialog. Every rule lives in workspace-core.js (pure, tested in Node); every text comes from window.VisitWorkspaceL10n
+ * (7 languages) or from the CRM (reason labels from the reference set, names, products). Dates / numbers in the
+ * APPLICATION language through VisitPlanningFormat; every data name isolated (bidi) for RTL. Calls go to the
+ * same-origin proxy /CRM/VisitWorkspace/api/*.
  * WP-VW-W2 (WEB-b) — Plan mode: the Targets panel (the Visit Planning rules, targets-core.js, and its proxies under
  * /CRM/VisitPlanning/api), a doctor dragged onto a day / time and a draft card moved there = a day pin with a start time
  * (the existing session update), apply products, the institution filter (accountDisplayName) and the unplaced list.
+ * WP-VW-W2 (WEB-c) — the mockup's look: no week strip; ONE calendar card (‹ › Today + the range, the filters, Day /
+ * Week / Month; FullCalendar's own toolbar hidden), the week inside it, the cards / day heads / month cells / legend
+ * of the mockup, the detail panel's blocks, ONE E2 dialog with three tabs and the Targets panel's cards. Behaviour
+ * (data, requests, the two-step save, the drag rules, the permissions) is unchanged.
  */
 (function (window, document) {
     'use strict';
@@ -40,6 +44,8 @@
     const toast = (msg, type) => { if (window.showToast) { window.showToast(msg, type || 'success'); } };
     const hours = min => F.hours(min, L.HoursShort || '{0} h');
     const setText = (id, t) => { const n = el(id); if (n) { n.textContent = t; } };
+    const showModal = id => { const m = el(id); if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).show(); } };
+    const hideModal = id => { const m = el(id); if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).hide(); } };
 
     const call = (method, path, body, prefix) => fetch((prefix || base) + path, {
         method: method,
@@ -58,6 +64,8 @@
     const state = {
         week: C.mondayOf(todayYmd()),
         day: todayYmd(),
+        view: 'week',   // WP-VW-W2 (WEB-c) — day | week | month (the card head's switch)
+        range: null,    // the calendar's visible range { from, to } (the month view reads it)
         window: null,
         data: null,
         contract: null,
@@ -71,11 +79,14 @@
     function safeStorage() { try { return window.localStorage; } catch (e) { return null; } }
 
     // ── loading ──────────────────────────────────────────────────────────────────────────────────────────────
-    const inWindow = monday => state.window && monday >= state.window.from && C.addDays(monday, 6) <= state.window.to;
+    // The read window: the week view reads two weeks around (C.weekWindow); the month view reads its visible grid.
+    const needed = () => (state.view === 'month' && state.range ? { from: state.range.from, to: state.range.to } : C.weekWindow(state.week));
+    const covers = n => !!state.window && n.from >= state.window.from && n.to <= state.window.to;
 
     function load(force) {
-        if (!force && state.data && inWindow(state.week)) { render(); return Promise.resolve(); }
-        state.window = C.weekWindow(state.week);
+        const want = needed();
+        if (!force && state.data && covers(want)) { render(); return Promise.resolve(); }
+        state.window = want;
         setBusy(true);
         return get('/calendar?from=' + state.window.from + '&to=' + state.window.to).then(r => {
             setBusy(false);
@@ -104,45 +115,67 @@
 
     function render() {
         renderMode();
-        renderStrip();
         renderHeader();
         renderFilters();
+        renderLegend();
         if (state.layout === 'list') { renderDayList(); } else { renderCalendar(); }
         renderPanel();
     }
 
     const STATE_KEY = { draft: 'WeekStateDraft', approved: 'WeekStateApproved', past: 'WeekStatePast', none: 'WeekStateNone' };
-    const STATE_TONE = { draft: 'primary', approved: 'success', past: 'secondary', none: 'light' };
+    const VIEWS = { day: 'timeGridDay', week: 'timeGridWeek', month: 'dayGridMonth' };
+    const yearOf = ymd => String(ymd).slice(0, 4);
 
-    function renderStrip() {
-        const strip = el('vw-week-strip'); if (!strip || !state.data) { return; }
-        strip.innerHTML = state.data.weeks.map(w => {
-            const active = w.weekStart === state.week;
-            return '<button type="button" class="btn btn-sm ' + (active ? 'btn-primary' : 'btn-outline-secondary') + ' vw-strip-week" data-week="' + esc(w.weekStart) + '">'
-                + '<span class="d-block fw-medium">' + esc(fmt(L.WeekLabel || '{0}', w.weekNumber)) + '</span>'
-                + '<span class="d-block small">' + esc(F.workRange(w.weekStart, C.addDays(w.weekStart, 4))) + '</span>'
-                + '<span class="badge bg-label-' + STATE_TONE[w.state] + ' mt-1">' + esc(L[STATE_KEY[w.state]] || w.state) + '</span>'
-                + '</button>';
-        }).join('');
+    /** The card head's range: "5 Eki – 9 Eki 2026" (week), "Per 8 Eki 2026" (day), "Ekim 2026" (month). */
+    function rangeTitle() {
+        if (state.view === 'month') {
+            const mid = state.range ? C.addDays(state.range.from, 15) : state.week;
+            try {
+                return new Intl.DateTimeFormat(F.dateCulture(), { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(mid + 'T12:00:00Z'));
+            } catch (e) { return mid.slice(0, 7); }
+        }
+        if (state.view === 'day') { return F.dayLabel(state.day) + ' ' + yearOf(state.day); }
+        const friday = C.addDays(state.week, 4);
+        return F.dayMonth(state.week) + ' – ' + F.dayMonth(friday) + ' ' + yearOf(friday);
     }
 
     function renderHeader() {
+        // T1 — the period chip (W2-BE-d periodName; hidden without it)
+        const period = el('vw-period-chip');
+        if (period) {
+            const name = state.data && state.data.periodName;
+            period.innerHTML = name ? F.bidi(name) : '';
+            period.classList.toggle('d-none', !name);
+        }
+        setText('vw-range-title', rangeTitle());
+        document.querySelectorAll('#vw-views [data-view]').forEach(b => {
+            const on = b.getAttribute('data-view') === state.view;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-pressed', String(on));
+        });
+        // T2 / L1 — the unplanned visit in BOTH modes (it is always today's)
+        const unplanned = el('vw-unplanned-open');
+        if (unplanned) { unplanned.classList.toggle('d-none', !perms.manage); }
+
         const w = weekOf(state.week);
-        const title = el('vw-week-title'), badge = el('vw-week-badge'), bar = el('vw-capacity-bar'), barText = el('vw-capacity-text');
-        if (!w) { if (title) { title.textContent = ''; } return; }
-        if (title) { title.textContent = fmt(L.WeekLabel || '{0}', w.weekNumber) + ' · ' + F.workRange(w.weekStart, C.addDays(w.weekStart, 4)); }
+        const head = el('vw-week-head');
+        if (head) { head.classList.toggle('d-none', !w || state.view === 'month'); }
+        if (!w) { setText('vw-week-title', ''); return; }
+        // T4 / L3 — "42. Hafta · 12–16 Eki", the state chip, the capacity line + bar, did-not-fit, approve / reopen
+        setText('vw-week-title', fmt(L.WeekLabel || '{0}', w.weekNumber) + ' · ' + F.workRange(w.weekStart, C.addDays(w.weekStart, 4)));
+        const badge = el('vw-week-badge');
         if (badge) {
-            badge.className = 'badge bg-label-' + STATE_TONE[w.state];
+            badge.className = 'vw-state-chip vw-wst-' + w.state;
             badge.textContent = L[STATE_KEY[w.state]] || w.state;
         }
         const cap = C.capacity(w.plannedMinutes, w.capacityMinutes);
+        const bar = el('vw-capacity-bar');
         if (bar) {
             bar.style.width = cap.pct + '%';
-            bar.className = 'progress-bar ' + (cap.over ? 'bg-danger' : 'bg-primary');
+            bar.className = cap.over ? 'vw-over' : '';
             bar.setAttribute('aria-valuenow', String(cap.raw));
         }
-        if (barText) { barText.textContent = F.isolateRatios(fmt(L.CapacityLabel || '{0} / {1}', hours(w.plannedMinutes), hours(w.capacityMinutes))); }
-
+        setText('vw-capacity-text', F.isolateRatios(fmt(L.CapacityWeekLine || '{0} · {1}', hours(w.capacityMinutes), hours(w.plannedMinutes))));
         const unplaced = el('vw-unplaced');
         if (unplaced) {
             unplaced.classList.toggle('d-none', !(w.unplacedCount > 0));
@@ -151,11 +184,6 @@
         const approve = el('vw-approve'), reopen = el('vw-reopen');
         if (approve) { approve.classList.toggle('d-none', !(perms.apply && w.canApprove)); }
         if (reopen) { reopen.classList.toggle('d-none', !(perms.apply && w.canReopen)); }
-        const unplanned = el('vw-unplanned-open');
-        if (unplanned) {
-            const today = todayYmd();
-            unplanned.classList.toggle('d-none', !(perms.manage && today >= w.weekStart && today <= C.addDays(w.weekStart, 6)));
-        }
     }
 
     function renderFilters() {
@@ -170,14 +198,15 @@
         const accountSelect = el('vw-filter-account');
         if (accountSelect) { accountSelect.classList.toggle('d-none', !hasAccounts); }
         fillSelect('vw-filter-product', products, L.FilterAllProducts, state.filters.productId);
+        // T8 — the status filter stays MULTI (user decision), labelled "All statuses" / "N statuses"
         const box = el('vw-filter-status');
         if (box && !box.dataset.ready) {
             box.innerHTML = C.STATUSES.map(s => '<label class="dropdown-item d-flex gap-2 align-items-center"><input type="checkbox" class="form-check-input m-0" value="' + s + '"'
-                + (state.filters.statuses.indexOf(s) > -1 ? ' checked' : '') + '> <span>' + esc(L['Status_' + s] || s) + '</span></label>').join('');
+                + (state.filters.statuses.indexOf(s) > -1 ? ' checked' : '') + '> <span class="vw-swatch vw-st-' + s + '"></span><span>' + esc(L['Status_' + s] || s) + '</span></label>').join('');
             box.dataset.ready = '1';
         }
-        const count = el('vw-filter-status-count');
-        if (count) { count.textContent = state.filters.statuses.length ? String(state.filters.statuses.length) : ''; }
+        const n = state.filters.statuses.length;
+        setText('vw-filter-status-label', n ? fmt(L.FilterStatusCount || '{0}', n) : (L.FilterAllStatuses || ''));
     }
 
     function fillSelect(id, map, allLabel, selected) {
@@ -187,83 +216,165 @@
             + entries.map(e => '<option value="' + esc(e[0]) + '"' + (e[0] === selected ? ' selected' : '') + '>' + esc(F.isolate(e[1])) + '</option>').join('');
     }
 
-    // ── the card ────────────────────────────────────────────────────────────────────────────────────────────
+    // T10 / L9 — the legend under the calendar: the status colours, pinned, unplanned, the product roles
+    function renderLegend() {
+        const box = el('vw-legend');
+        if (!box || box.dataset.ready) { return; }
+        box.innerHTML = C.LEGEND.map(code => '<span class="vw-leg"><span class="vw-swatch vw-st-' + code + (code === 'draft' ? ' vw-dashed' : '') + '"></span>' + esc(L['Status_' + code] || code) + '</span>').join('')
+            + '<span class="vw-leg"><i class="bx bxs-pin"></i>' + esc(L.LegendPinned || '') + '</span>'
+            + '<span class="vw-leg"><i class="bx bx-user-plus"></i>' + esc(L.LegendUnplanned || '') + '</span>'
+            + '<span class="vw-leg"><span class="vw-pchip vw-pchip-promo">' + esc(L.LegendProduct || '') + '</span>' + esc(L.RolePromo || '') + '</span>'
+            + '<span class="vw-leg"><span class="vw-pchip vw-pchip-reminder">' + esc(L.LegendProduct || '') + '</span>' + esc(L.RoleReminder || '') + '</span>';
+        box.dataset.ready = '1';
+    }
+
+    // ── the card (T7 / L4) ───────────────────────────────────────────────────────────────────────────────────
+    const bottomText = b => (b ? F.isolateRatios(fmt(L[b.key] || '', b.date ? F.dayMonth(b.args[0]) : b.args[0])) : '');
+
     function cardHtml(v) {
-        const st = C.statusStyle(v.workStatus);
-        const icons = (v.isPinned ? '<i class="bx bx-pin" title="' + esc(L.Icon_Pinned || '') + (v.pinnedTime ? ' ' + esc(v.pinnedTime) : '') + '"></i>' : '')
-            + (v.source === 'unplanned' ? '<i class="bx bx-walk" title="' + esc(L.Icon_Unplanned || '') + '"></i>' : '')
-            + (v.rescheduledFromPlannedVisitId ? '<i class="bx bx-calendar-edit" title="' + esc(L.Icon_Rescheduled || '') + '"></i>' : '');
-        const products = (v.plannedContent || []).map(c => '<span class="vw-chip">' + F.bidi(C.productLabel(c)) + '</span>').join('');
-        let countdownHtml = '';
-        if (C.showsCountdown(v.workStatus)) {
-            const cd = C.countdown(v.reportDeadline, Date.now());
-            if (cd) { countdownHtml = '<div class="vw-countdown">' + esc(cd.passed ? (L.CountdownPassed || '') : F.isolateRatios(fmt(L.CountdownLeft || '{0} {1}', cd.hours, cd.minutes))) + '</div>'; }
-        }
-        const time = v.startTime ? '<span class="vw-time">' + esc(v.startTime) + (v.endTime ? '–' + esc(v.endTime) : '') + '</span>' : '';
-        return '<div class="vw-card ' + st.cssClass + (st.dashed ? ' vw-dashed' : '') + (st.faded ? ' vw-faded' : '') + (st.strike ? ' vw-strike' : '') + '">'
-            + '<div class="vw-card-top"><i class="bx ' + st.icon + '"></i>' + time + '<span class="vw-icons">' + icons + '</span></div>'
+        const m = C.cardModel(v, { nowMs: Date.now(), narrow: state.mode === 'plan', visits: state.data ? state.data.visits : [] });
+        const st = m.status;
+        const icons = (m.pinned ? '<i class="bx bxs-pin" title="' + esc(L.Icon_Pinned || '') + (v.pinnedTime ? ' ' + esc(v.pinnedTime) : '') + '"></i>' : '')
+            + (m.unplanned ? '<i class="bx bx-user-plus" title="' + esc(L.Icon_Unplanned || '') + '"></i>' : '')
+            + (m.rescheduledFrom ? '<i class="bx bx-calendar-edit" title="' + esc(L.Icon_Rescheduled || '') + '"></i>' : '')
+            + '<i class="bx ' + m.icon + ' vw-st-icon" title="' + esc(L[st.labelKey] || '') + '"></i>';
+        const chips = m.chips.map(c => '<span class="vw-pchip ' + (c.promo ? 'vw-pchip-promo' : 'vw-pchip-reminder') + '">' + F.bidi(c.name) + '</span>').join('');
+        return '<div class="vw-card ' + st.cssClass + (st.dashed ? ' vw-dashed' : '') + (st.strike ? ' vw-strike' : '') + (m.compact ? ' vw-compact' : '') + (m.tiny ? ' vw-tiny' : '') + '">'
+            + '<div class="vw-card-top"><span class="vw-time">' + esc(m.time) + '</span><span class="vw-icons">' + icons + '</span></div>'
             + '<div class="vw-name">' + F.bidi(v.targetDisplayName || '—') + '</div>'
-            + '<div class="vw-status">' + esc(L[st.labelKey] || v.workStatus) + '</div>'
-            + (products ? '<div class="vw-chips">' + products + '</div>' : '')
-            + countdownHtml
+            + (m.account ? '<div class="vw-acc">' + F.bidi(m.account) + '</div>' : '')
+            + (chips ? '<div class="vw-chips">' + chips + '</div>' : '')
+            + (m.bottom ? '<div class="vw-sub vw-countdown">' + esc(bottomText(m.bottom)) + '</div>' : '')
             + '</div>';
     }
 
+    // T9 — a month cell: the day's visit count and one dot per status present; a click opens that day
+    function monthHtml(id) {
+        const cell = (state.monthCells || {})[id];
+        if (!cell) { return ''; }
+        return '<div class="vw-month-cell"><span class="vw-month-count">' + esc(fmt(L.MonthVisits || '{0}', cell.count)) + '</span>'
+            + '<span class="vw-dots">' + cell.dots.map(code => '<span class="vw-dot vw-st-' + code + '" title="' + esc(L['Status_' + code] || code) + '"></span>').join('') + '</span></div>';
+    }
+
     // ── desktop: the time grid (DitenCalendar over the vendored FullCalendar) ─────────────────────────────────
+    const isMonthId = id => String(id || '').indexOf('m:') === 0;
+
     function renderCalendar() {
         const host = el('vw-calendar'), list = el('vw-day-list');
         if (list) { list.classList.add('d-none'); }
         if (!host) { return; }
         host.classList.remove('d-none');
-        const visits = visitsOf(state.week);
+        // WP-VW-W2 (WEB-b) — Plan mode on a draft week: the draft cards move; nothing else does (the month view: nothing)
+        const editable = state.view !== 'month' && planEditable();
+        let visits, events, dayFacts;
+        if (state.view === 'month') {
+            visits = C.filterVisits(state.data ? state.data.visits : [], state.filters);
+            const dates = Array.from(new Set(visits.map(v => v.plannedDate))).sort();
+            state.monthCells = {};
+            dates.forEach(d => { state.monthCells['m:' + d] = C.monthCell(visits, d); });
+            events = dates.map(d => ({ id: 'm:' + d, title: '', kind: 'month', allDay: true, date: d, classNames: ['vw-month-event'] }));
+            dayFacts = state.data ? state.data.days : [];
+        } else {
+            visits = visitsOf(state.week);
+            // T6 — no all-day row: a visit without a time sits at the day's first slot (marked), never hidden
+            events = visits.map(v => {
+                const e = C.eventOf(v, editable && v.workStatus === 'draft');
+                if (e.allDay) {
+                    e.allDay = false;
+                    e.startUtc = v.plannedDate + 'T08:30:00Z';
+                    e.endUtc = v.plannedDate + 'T09:00:00Z';
+                    e.classNames = e.classNames.concat(['vw-untimed']);
+                }
+                return e;
+            });
+            dayFacts = daysOf(state.week);
+        }
         const byId = {};
         visits.forEach(v => { byId[C.visitKey(v)] = v; });
-        // WP-VW-W2 (WEB-b) — Plan mode on a draft week: the draft cards move; nothing else does
-        const editable = planEditable();
-        const events = visits.map(v => C.eventOf(v, editable && v.workStatus === 'draft'));
-        const days = daysOf(state.week).map(d => ({ date: d.date, dayKind: d.isHoliday ? 'holiday' : (d.kind === 'weekend' ? 'weekend' : 'working'), holidayName: d.holidayName || L.HolidayLabel || '' }));
+        const days = dayFacts.map(d => ({ date: d.date, dayKind: d.isHoliday ? 'holiday' : (d.kind === 'weekend' ? 'weekend' : 'working'), holidayName: d.holidayName || L.HolidayLabel || '' }));
         // CT (live E4) — the lookup is set BEFORE DitenCalendar.create: FullCalendar draws the first events inside create
         // (eventContent → renderExtras), and a missing lookup threw there, so the grid never rendered.
         state.byId = byId;
 
         if (!state.calendar && window.DitenCalendar) {
             state.calendar = window.DitenCalendar.create(host, {
-                zone: 'UTC', view: 'week', date: state.week, editable: editable, events: events, days: [],
+                zone: 'UTC', view: state.view, date: state.week, editable: editable, events: events, days: [],
                 onExternalDrop: planDrop, // a Targets row dropped on a day / time
                 onEventMove: planMove,    // a draft card moved to another day / time
-                renderExtras: ev => { const v = (state.byId || {})[ev.id]; return v ? cardHtml(v) : ''; },
-                onEventClick: id => openDetail((state.byId || {})[id]),
-                onRangeChange: info => {
-                    const monday = C.mondayOf(info.from);
-                    if (monday !== state.week) { state.week = monday; load(false); }
-                }
+                renderExtras: ev => (isMonthId(ev.id) ? monthHtml(ev.id) : ((state.byId || {})[ev.id] ? cardHtml(state.byId[ev.id]) : '')),
+                onEventClick: id => {
+                    if (isMonthId(id)) { gotoDay(String(id).slice(2)); return; }
+                    openDetail((state.byId || {})[id]);
+                },
+                onRangeChange: rangeChanged
             });
             if (state.calendar) {
                 const fc = state.calendar.calendar;
                 fc.setOption('weekends', false);
-                fc.setOption('headerToolbar', { start: 'prev,next today', center: 'title', end: 'timeGridWeek,timeGridDay' });
-                fc.setOption('slotMinTime', '08:00:00');
-                fc.setOption('slotMaxTime', '19:00:00');
-                fc.setOption('dayHeaderContent', arg => ({ html: dayHeaderHtml(arg.date.toISOString().slice(0, 10)) }));
+                fc.setOption('headerToolbar', false); // T3 — the card head is ours (prev / next / today / the view switch)
+                fc.setOption('allDaySlot', false);    // T6 — no all-day row
+                fc.setOption('slotMinTime', '08:30:00'); // T6 — the hour labels at :30 (the mockup's grid)
+                fc.setOption('slotMaxTime', '18:30:00');
+                fc.setOption('scrollTime', '08:30:00');
+                fc.setOption('slotLabelFormat', { hour: '2-digit', minute: '2-digit', hour12: false });
+                fc.setOption('dayHeaderContent', arg => {
+                    const day = arg.date.toISOString().slice(0, 10);
+                    return { html: arg.view && arg.view.type === VIEWS.month ? '<span class="vw-month-dow">' + esc(F.dayShort(day)) + '</span>' : dayHeaderHtml(day) };
+                });
             }
         }
         state.byId = byId;
         if (state.calendar) {
             if (typeof state.calendar.setEditable === 'function') { state.calendar.setEditable(editable); }
             state.calendar.setData(events, days);
-            if (state.calendar.date() < state.week || state.calendar.date() > C.addDays(state.week, 6)) { state.calendar.calendar.gotoDate(state.week); }
+            if (state.view !== 'month' && (state.calendar.date() < state.week || state.calendar.date() > C.addDays(state.week, 6))) { state.calendar.calendar.gotoDate(state.week); }
         }
         const empty = el('vw-empty');
-        if (empty) { empty.classList.toggle('d-none', visits.length > 0 || !!(weekOf(state.week) && weekOf(state.week).state !== 'none')); }
+        if (empty) { empty.classList.toggle('d-none', state.view === 'month' || visits.length > 0 || !!(weekOf(state.week) && weekOf(state.week).state !== 'none')); }
     }
 
+    /** The calendar moved (our prev / next / today / view switch, or a day opened from the month view). */
+    function rangeChanged(info) {
+        const before = state.view + '|' + state.week;
+        state.view = info.view || 'week';
+        state.range = { from: info.from, to: info.to };
+        if (state.view === 'day') { state.day = info.from; }
+        state.week = C.mondayOf(state.view === 'month' ? (info.date || info.from) : info.from);
+        if (before !== state.view + '|' + state.week || !covers(needed())) { load(false); } else { renderHeader(); }
+    }
+
+    function gotoDay(date) {
+        if (state.calendar && state.calendar.calendar) { state.calendar.calendar.changeView(VIEWS.day, date); }
+    }
+
+    function switchView(view) {
+        if (!VIEWS[view]) { return; }
+        if (state.calendar && state.calendar.calendar && state.layout === 'grid') { state.calendar.calendar.changeView(VIEWS[view]); return; }
+        state.view = view;
+        render();
+    }
+
+    function navigate(step) {
+        if (state.calendar && state.calendar.calendar && state.layout === 'grid') {
+            const fc = state.calendar.calendar;
+            if (step === 0) { fc.today(); } else if (step < 0) { fc.prev(); } else { fc.next(); }
+            return;
+        }
+        if (step === 0) { state.week = C.mondayOf(todayYmd()); state.day = todayYmd(); } else { state.week = C.addDays(state.week, 7 * step); }
+        load(false);
+    }
+
+    // T5 — a day column's head: the day + the Today badge, the holiday, the fill bar and "N visits · X h free"
     function dayHeaderHtml(date) {
         const d = (state.data ? state.data.days : []).find(x => x.date === date);
-        const head = '<div class="vw-day-head"><span class="fw-medium">' + esc(F.dayLabel(date)) + '</span>';
-        if (!d) { return head + '</div>'; }
-        if (d.isHoliday) { return head + '<span class="badge bg-label-danger">' + esc(d.holidayName || L.HolidayLabel || '') + '</span></div>'; }
-        const count = (state.data.visits || []).filter(v => v.plannedDate === date && v.workStatus !== 'cancelled').length;
-        return head + '<span class="small text-muted">' + esc(F.isolateRatios(fmt(L.DayLoad || '{0} · {1}', count, hours(d.freeMinutes)))) + '</span></div>';
+        const count = (state.data ? state.data.visits : []).filter(v => v.plannedDate === date && v.workStatus !== 'cancelled').length;
+        const h = C.dayHead(d || { date: date }, count, todayYmd());
+        const top = '<div class="vw-day-head"><div class="vw-day-top"><span class="vw-day-name' + (h.isToday ? ' vw-is-today' : '') + '">' + esc(F.dayLabel(date)) + '</span>'
+            + (h.isToday ? '<span class="vw-today-badge">' + esc(L.TodayBadge || '') + '</span>' : '') + '</div>';
+        if (!d) { return top + '</div>'; }
+        if (h.holiday) { return top + '<span class="vw-holiday badge bg-label-danger">' + esc(d.holidayName || L.HolidayLabel || '') + '</span></div>'; }
+        return top + '<div class="vw-day-bar"><span' + (h.over ? ' class="vw-over"' : '') + ' style="width:' + h.pct + '%"></span></div>'
+            + '<div class="vw-day-load">' + esc(F.isolateRatios(fmt(L.DayLoad || '{0} · {1}', h.count, hours(h.freeMinutes)))) + '</div></div>';
     }
 
     // ── phone: the day list ──────────────────────────────────────────────────────────────────────────────────
@@ -287,28 +398,67 @@
                 : '<div class="text-muted small p-3">' + esc(L.NoVisitDay || '') + '</div>');
     }
 
-    // ── the detail panel ─────────────────────────────────────────────────────────────────────────────────────
-    const BAND = { missed: 'BandMissed', expired: 'BandExpired', report_missing: 'BandReportMissing', draft: 'BandDraft', cancelled: 'BandCancelled' };
+    // ── the detail panel (D1–D6) ─────────────────────────────────────────────────────────────────────────────
+    function lengthMinutes(v) {
+        const a = /^(\d{1,2}):(\d{2})/.exec(v.startTime || ''), b = /^(\d{1,2}):(\d{2})/.exec(v.endTime || '');
+        if (a && b) { return (Number(b[1]) * 60 + Number(b[2])) - (Number(a[1]) * 60 + Number(a[2])); }
+        return v.durationMinutes || null;
+    }
 
     function openDetail(v) {
         if (!v) { return; }
         state.current = v;
         const st = C.statusStyle(v.workStatus);
+        // D1 — the status chip (+ pinned / unplanned), the name, the specialty LABEL (never its code) and the badges
+        el('vw-detail-chips').innerHTML = '<span class="vw-status-chip ' + st.cssClass + (st.dashed ? ' vw-dashed' : '') + '"><i class="bx ' + st.icon + '"></i> ' + esc(L[st.labelKey] || v.workStatus) + '</span>'
+            + (v.isPinned ? '<span class="vw-flag"><i class="bx bxs-pin"></i> ' + esc(L.DetailPinned || '') + (v.pinnedTime ? ' ' + esc(v.pinnedTime) : '') + '</span>' : '')
+            + (v.source === 'unplanned' ? '<span class="vw-flag"><i class="bx bx-user-plus"></i> ' + esc(L.DetailUnplanned || '') + '</span>' : '');
         el('vw-detail-title').innerHTML = F.bidi(v.targetDisplayName || '—');
-        el('vw-detail-sub').textContent = F.dayLabel(v.plannedDate) + (v.startTime ? ' · ' + v.startTime : '');
+        const tags = (v.specialtyLabel ? '<span class="vw-spec-chip">' + F.bidi(v.specialtyLabel) + '</span>' : '')
+            + (Array.isArray(v.badges) ? v.badges : []).map(b => '<span class="vw-seg-chip">' + F.bidi(b) + '</span>').join('');
+        const tagBox = el('vw-detail-tags');
+        tagBox.innerHTML = tags;
+        tagBox.classList.toggle('d-none', !tags);
 
+        // D2 — the institution block: the map placeholder, the name, the address, "Sal 6 Eki · 14:00–14:25 · 25 dk"
+        el('vw-detail-account').innerHTML = F.bidi(v.accountDisplayName || '—');
+        const address = el('vw-detail-address');
+        address.innerHTML = v.accountAddress ? F.bidi(v.accountAddress) : '';
+        address.classList.toggle('d-none', !v.accountAddress);
+        const len = lengthMinutes(v);
+        setText('vw-detail-when', [F.dayLabel(v.plannedDate), v.startTime ? v.startTime + (v.endTime ? '–' + v.endTime : '') : '', len ? fmt(L.MinutesShort || '{0}', len) : '']
+            .filter(Boolean).join(' · '));
+
+        // D3 — the status box (the mockup's words)
+        const a = C.alertFor(v, Date.now());
+        const title = fmt(L[a.titleKey] || L[st.labelKey] || '', a.hours != null ? a.hours : '', a.time);
+        const text = fmt(L[a.textKey] || '', a.hours != null ? a.hours : '', a.time);
         const band = el('vw-detail-band');
-        const cd = C.showsCountdown(v.workStatus) ? C.countdown(v.reportDeadline, Date.now()) : null;
-        band.className = 'vw-band ' + st.cssClass;
-        band.innerHTML = '<i class="bx ' + st.icon + '"></i> <span class="fw-medium">' + esc(L[st.labelKey] || v.workStatus) + '</span>'
-            + (BAND[v.workStatus] ? '<div class="small">' + esc(L[BAND[v.workStatus]] || '') + '</div>' : '')
-            + (cd ? '<div class="small">' + esc(cd.passed ? (L.CountdownPassed || '') : F.isolateRatios(fmt(L.CountdownLeft || '{0} {1}', cd.hours, cd.minutes))) + '</div>' : '')
-            + (v.cancellationNote ? '<div class="small">' + F.bidi(v.cancellationNote) + '</div>' : '');
+        band.className = 'vw-alert ' + a.cssClass;
+        band.innerHTML = '<i class="bx ' + a.icon + '"></i><div class="d-flex flex-column"><strong>' + esc(title) + '</strong>'
+            + (text ? '<span>' + esc(text) + '</span>' : '') + (v.cancellationNote ? '<span>' + F.bidi(v.cancellationNote) + '</span>' : '') + '</div>';
 
-        const roles = C.contentRoles(v.plannedContent);
-        el('vw-detail-content').innerHTML = roles.length
-            ? roles.map(r => '<li class="d-flex justify-content-between gap-2"><span>' + F.bidi(r.name) + '</span><span class="badge ' + (r.roleKey === 'RolePromo' ? 'bg-label-primary' : 'bg-label-secondary') + '">' + esc(L[r.roleKey] || '') + '</span></li>').join('')
-            : '<li class="text-muted">' + esc(L.NoContent || '') + '</li>';
+        // D4 — what to present: numbered product cards (name + role + the stage · N content steps · ≈ step minutes)
+        const items = v.plannedContent || [];
+        el('vw-detail-content').innerHTML = items.length
+            ? items.map((c, i) => {
+                const promo = C.isPromo(c, i);
+                const minutes = C.stepMinutes(c);
+                const steps = (c.steps || []).length;
+                const parts = [c.stageName ? F.bidi(c.stageName) : '', steps ? esc(fmt(L.ContentSteps || '{0}', steps)) : '', minutes != null ? esc(fmt(L.AboutMinutes || '{0}', minutes)) : ''].filter(Boolean);
+                return '<div class="vw-prod"><span class="vw-prod-no">' + (i + 1) + '</span><div class="flex-grow-1" style="min-width:0">'
+                    + '<div class="d-flex gap-1 align-items-center flex-wrap"><span class="vw-prod-name">' + F.bidi(C.productLabel(c)) + '</span>'
+                    + '<span class="vw-role ' + (promo ? 'vw-role-promo' : 'vw-role-reminder') + '">' + esc(L[promo ? 'RolePromo' : 'RoleReminder'] || '') + '</span></div>'
+                    + (parts.length ? '<div class="small">' + parts.join(' · ') + '</div>' : '') + '</div></div>';
+            }).join('')
+            : '<div class="text-muted">' + esc(L.NoContent || '') + '</div>';
+        // the duration (user decision): the steps' minutes > the planned length > nothing
+        const est = C.estimate(v);
+        const estBox = el('vw-detail-estimate');
+        const promos = items.filter((c, i) => C.isPromo(c, i)).length;
+        const reminders = items.length - promos; // the mockup: no "+ 0 reminder"
+        estBox.innerHTML = est ? '<i class="bx bx-stopwatch"></i> ' + esc(reminders > 0 ? fmt(L.EstimateLine || '{2}', promos, reminders, est.minutes) : fmt(L.EstimateLineNoReminder || '{1}', promos, est.minutes)) : '';
+        estBox.classList.toggle('d-none', !est);
 
         renderPrevious(v);
         renderFrequency(v);
@@ -333,9 +483,10 @@
         });
     }
 
+    // D4 — "Sıklık: dönemde N · done / remaining" at the section's head
     function renderFrequency(v) {
         const box = el('vw-detail-frequency');
-        box.classList.add('d-none');
+        box.textContent = '';
         const w = weekOf(v.weekStart);
         if (!w || !w.planningSessionId || !v.contactId) { return; }
         get('/sessions/' + encodeURIComponent(w.planningSessionId) + '/targets?weekStart=' + encodeURIComponent(v.weekStart)).then(r => {
@@ -343,39 +494,43 @@
             const doc = (r.body.data.doctors || []).find(d => d.contactId === v.contactId);
             const s = doc && doc.status;
             if (!s || s.requiredVisitCount == null) { return; }
-            box.textContent = F.isolateRatios(fmt(L.Frequency || '{0} / {1} · {2}', s.done || 0, s.requiredVisitCount, s.planned || 0));
-            box.classList.remove('d-none');
+            box.textContent = fmt(L.DetailFrequency || '{0} · {1}', s.requiredVisitCount, F.ratio(s.done || 0, s.remaining != null ? s.remaining : '—'));
         });
     }
 
     const ACTION = {
         cancel: { label: 'Action_cancel', tone: 'outline-danger', icon: 'bx-block' },
         result: { label: 'Action_result', tone: 'primary', icon: 'bx-play-circle' },
-        notDone: { label: 'Action_notDone', tone: 'outline-danger', icon: 'bx-x-circle' },
-        reschedule: { label: 'Action_reschedule', tone: 'primary', icon: 'bx-calendar-edit' },
-        sendReport: { label: 'Action_sendReport', tone: 'warning', icon: 'bx-send' },
+        notDone: { label: 'Action_notDone', tone: 'primary', icon: 'bx-x-circle' },
+        reschedule: { label: 'Action_reschedule', tone: 'outline-primary', icon: 'bx-calendar-edit' },
+        sendReport: { label: 'Action_sendReport', tone: 'primary', icon: 'bx-edit' },
         plan: { label: 'Action_plan', tone: 'outline-primary', icon: 'bx-edit' }
     };
 
+    // D6 — the actions at the panel's foot, full width
     function renderActions(v) {
         const box = el('vw-detail-actions');
         const keys = C.actionsFor(v, todayYmd(), perms);
         box.innerHTML = keys.map(k => {
-            if (k === 'locked') { return '<div class="alert alert-secondary mb-0 small"><i class="bx bx-lock-alt"></i> ' + esc(L.LockedInfo || '') + '</div>'; }
+            if (k === 'locked') { return '<div class="vw-locked-note"><i class="bx bx-lock-alt"></i> ' + esc(L.LockedInfo || '') + '</div>'; }
             const a = ACTION[k];
-            if (k === 'result' || k === 'sendReport') { return '<a class="btn btn-' + a.tone + '" href="' + esc(executionUrl) + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</a>'; }
+            if (k === 'result' || k === 'sendReport') { return '<a class="btn btn-' + a.tone + ' flex-fill" href="' + esc(executionUrl) + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</a>'; }
             if (k === 'plan') {
                 const w = weekOf(v.weekStart);
                 const href = w && w.planningSessionId ? planningUrl + '/Details/' + encodeURIComponent(w.planningSessionId) : planningUrl;
-                return '<a class="btn btn-' + a.tone + '" href="' + esc(href) + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</a>';
+                return '<a class="btn btn-' + a.tone + ' flex-fill" href="' + esc(href) + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</a>';
             }
-            return '<button type="button" class="btn btn-' + a.tone + '" data-dialog="' + k + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</button>';
+            return '<button type="button" class="btn btn-' + a.tone + ' flex-fill" data-dialog="' + k + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</button>';
         }).join('');
+        box.classList.toggle('d-none', !keys.length);
     }
 
-    // ── E2 dialogs: cancel / not done / reschedule ───────────────────────────────────────────────────────────
+    // ── E2 (P1 / P2): ONE dialog, three tabs — cancel · not done · reschedule ─────────────────────────────────
     const APPLIES = { cancel: 'cancel', notDone: 'missed', reschedule: 'reschedule' };
     const TITLE = { cancel: 'DlgCancelTitle', notDone: 'DlgNotDoneTitle', reschedule: 'DlgRescheduleTitle' };
+    const TAB = { cancel: 'DlgTab_cancel', notDone: 'DlgTab_notDone', reschedule: 'DlgTab_reschedule' };
+    const MEAN = { cancel: 'DlgMean_cancel', notDone: 'DlgMean_notDone', reschedule: 'DlgMean_reschedule' };
+    const CONFIRM = { cancel: 'DlgConfirm_cancel', notDone: 'DlgConfirm_notDone', reschedule: 'DlgConfirm_reschedule' };
     const dlg = { kind: null, reasons: [], reason: null, date: null, saving: false };
 
     function maxNote() { return (state.contract && state.contract.maxNoteLength) || 500; }
@@ -384,15 +539,21 @@
         const v = state.current; if (!v) { return; }
         dlg.kind = kind; dlg.reasons = []; dlg.reason = null; dlg.date = null; dlg.saving = false;
         el('vw-dlg-title').textContent = L[TITLE[kind]] || '';
-        el('vw-dlg-target').innerHTML = F.bidi(v.targetDisplayName || '—');
+        // P1 — "Dr. Kerem Aslan · 8 Eki Perşembe 11:30"
+        el('vw-dlg-target').innerHTML = F.bidi(v.targetDisplayName || '—') + ' · ' + esc(F.dayMonth(v.plannedDate) + ' ' + F.weekdayLong(v.plannedDate) + (v.startTime ? ' ' + v.startTime : ''));
+        el('vw-dlg-tabs').innerHTML = C.dialogTabs(v, todayYmd(), perms).map(t => '<button type="button" role="tab" class="vw-tab' + (t.key === kind ? ' active' : '') + '" data-tab="' + t.key + '" aria-selected="' + (t.key === kind) + '"'
+            + (t.enabled ? '' : ' disabled') + '>' + esc(L[TAB[t.key]] || '') + '</button>').join('');
+        setText('vw-dlg-mean', L[MEAN[kind]] || '');
+        const save = el('vw-dlg-save');
+        save.textContent = L[CONFIRM[kind]] || '';
+        save.className = 'btn ' + (kind === 'cancel' ? 'btn-danger' : 'btn-primary');
         el('vw-dlg-note').value = '';
         el('vw-dlg-error').classList.add('d-none');
         el('vw-dlg-date-box').classList.toggle('d-none', kind !== 'reschedule');
         el('vw-dlg-reasons').innerHTML = '<div class="text-muted small">' + esc(L.Loading || '') + '</div>';
         el('vw-dlg-days').innerHTML = '';
         syncDialog();
-        const modal = el('vw-dialog');
-        if (modal && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(modal).show(); }
+        showModal('vw-dialog');
 
         get('/reasons?appliesTo=' + APPLIES[kind] + '&lang=' + encodeURIComponent(lang())).then(r => {
             if (dlg.kind !== kind) { return; }
@@ -402,8 +563,8 @@
             }
             dlg.reasons = r.body.data.items || [];
             el('vw-dlg-reasons').innerHTML = dlg.reasons.map((x, i) =>
-                '<label class="form-check"><input class="form-check-input" type="radio" name="vw-reason" value="' + esc(x.code) + '" id="vw-reason-' + i + '"> '
-                + '<span class="form-check-label">' + F.bidi(x.label) + '</span></label>').join('');
+                '<label class="vw-reason"><input class="form-check-input m-0" type="radio" name="vw-reason" value="' + esc(x.code) + '" id="vw-reason-' + i + '"> '
+                + '<span>' + F.bidi(x.label) + '</span></label>').join('');
             syncDialog();
         });
 
@@ -411,13 +572,15 @@
             get('/reschedule-options?plannedVisitId=' + encodeURIComponent(v.plannedVisitId)).then(r => {
                 if (dlg.kind !== kind) { return; }
                 const daysList = r.ok && r.body && r.body.data ? r.body.data.days || [] : [];
+                // P2 — a 4-column grid of day cards: the day, a mini bar, "4 visits · 4,9 h free"
                 el('vw-dlg-days').innerHTML = daysList.length
                     ? daysList.map(d => {
                         const cap = C.capacity(d.plannedMinutes, d.capacityMinutes);
+                        const tone = cap.raw > 85 ? 'vw-hi' : cap.raw > 60 ? 'vw-mid' : 'vw-lo';
                         return '<button type="button" class="vw-day-option" data-date="' + esc(d.date) + '">'
-                            + '<span class="fw-medium">' + esc(F.dayLabel(d.date)) + '</span>'
-                            + '<span class="small text-muted">' + esc(F.isolateRatios(fmt(L.RescheduleDayLoad || '{0} · {1} / {2}', d.plannedCount, hours(d.plannedMinutes), hours(d.capacityMinutes)))) + '</span>'
-                            + '<span class="progress vw-mini"><span class="progress-bar ' + (cap.over ? 'bg-danger' : 'bg-primary') + '" style="width:' + cap.pct + '%"></span></span>'
+                            + '<span class="vw-do-day">' + esc(F.dayLabel(d.date)) + '</span>'
+                            + '<span class="vw-mini"><span class="' + tone + '" style="width:' + cap.pct + '%"></span></span>'
+                            + '<span class="vw-do-load">' + esc(F.isolateRatios(fmt(L.DayLoad || '{0} · {1}', d.plannedCount, hours(Math.max(0, d.capacityMinutes - d.plannedMinutes))))) + '</span>'
                             + '</button>';
                     }).join('')
                     : '<div class="text-muted small">' + esc(L.RescheduleNoDays || '') + '</div>';
@@ -448,8 +611,7 @@
         const done = r => {
             dlg.saving = false;
             if (r.ok) {
-                const modal = el('vw-dialog');
-                if (modal && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(modal).hide(); }
+                hideModal('vw-dialog');
                 const panel = el('vw-detail');
                 if (panel && window.bootstrap) { window.bootstrap.Offcanvas.getOrCreateInstance(panel).hide(); }
                 toast(L.Saved || '');
@@ -498,8 +660,7 @@
         el('vw-reopen-title').textContent = fmt(L.ReopenTitle || '{0}', fmt(L.WeekLabel || '{0}', w.weekNumber));
         el('vw-reopen-reason').value = '';
         syncReopen();
-        const m = el('vw-reopen-modal');
-        if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).show(); }
+        showModal('vw-reopen-modal');
     }
 
     function syncReopen() {
@@ -520,11 +681,7 @@
         }).then(r => {
             if (!r) { return; }
             btn.disabled = false;
-            if (r.ok) {
-                const m = el('vw-reopen-modal');
-                if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).hide(); }
-                toast(L.ReopenDone || ''); load(true);
-            } else { toast(C.errorText(r, L), 'error'); }
+            if (r.ok) { hideModal('vw-reopen-modal'); toast(L.ReopenDone || ''); load(true); } else { toast(C.errorText(r, L), 'error'); }
         });
     }
 
@@ -534,12 +691,11 @@
         // WP-VW-W2 (WEB-b) — the list itself (weeks[].unplaced[], BE-c): name, institution, the reason in the user's language
         const list = el('vw-unplaced-list');
         if (list) {
-            list.innerHTML = C.unplacedRows(w, L).map(u => '<li class="list-group-item px-0"><div class="fw-medium">' + F.bidi(u.name) + '</div>'
+            list.innerHTML = C.unplacedRows(w, L).map(u => '<li class="list-group-item px-0 d-flex justify-content-between gap-2"><div><div class="fw-medium">' + F.bidi(u.name) + '</div>'
                 + (u.account ? '<div class="small text-muted">' + F.bidi(u.account) + '</div>' : '')
-                + '<div class="small">' + esc(u.reason) + '</div></li>').join('');
+                + '<div class="small">' + esc(u.reason) + '</div></div></li>').join('');
         }
-        const m = el('vw-unplaced-modal');
-        if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).show(); }
+        showModal('vw-unplaced-modal');
     }
 
     // ── unplanned visit (today only) ─────────────────────────────────────────────────────────────────────────
@@ -553,8 +709,7 @@
         el('vw-unp-day').textContent = F.dayLabel(todayYmd());
         el('vw-unp-error').classList.add('d-none');
         el('vw-unp-save').disabled = true;
-        const m = el('vw-unplanned-modal');
-        if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).show(); }
+        showModal('vw-unplanned-modal');
     }
 
     function searchContacts() {
@@ -576,16 +731,10 @@
         el('vw-unp-save').disabled = true;
         post('/planned-visits/unplanned', C.unplannedBody(unp.contactId, todayYmd(), el('vw-unp-time').value || null, Date.now())).then(r => {
             el('vw-unp-save').disabled = false;
-            if (r.ok) {
-                const m = el('vw-unplanned-modal');
-                if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).hide(); }
-                toast(L.Saved || ''); load(true);
-                return;
-            }
+            if (r.ok) { hideModal('vw-unplanned-modal'); toast(L.Saved || ''); load(true); return; }
             const box = el('vw-unp-error'); box.textContent = C.errorText(r, L); box.classList.remove('d-none');
         });
     }
-
 
     // ── Plan mode (WP-VW-W2 WEB-b) ───────────────────────────────────────────────────────────────────────────
     // The Targets panel next to the calendar runs on the Visit Planning page's OWN rules (targets-core.js — the same
@@ -593,7 +742,7 @@
     // read, the product search, the reference labels). Only a DRAFT week is edited; an approved / past week is read-only
     // with the reopen hint. A doctor dropped on a day / time, or a draft card moved there, is a day pin (+ start time on
     // the 15-minute grid) through the EXISTING session update.
-    const plan = { sessionId: null, week: null, session: null, accounts: [], accountId: null, quick: 'due', rows: {}, counts: {}, specLabels: {}, picked: [], results: [] };
+    const plan = { sessionId: null, week: null, session: null, accounts: [], accountId: null, accountCounts: {}, quick: 'due', rows: {}, counts: {}, specLabels: {}, picked: [], results: [] };
     const planCall = (method, path, body) => call(method, path, body, planBase);
     const QUICK = ['due', 'never', 'all'];
     const QUICK_KEY = { due: 'QuickDue', never: 'QuickNever', all: 'QuickAll' };
@@ -620,8 +769,8 @@
         }
         const panel = el('vw-plan-panel');
         if (panel) { panel.classList.toggle('d-none', !(planOn && state.layout === 'grid')); }
-        const main = el('vw-main-col');
-        if (main) { main.className = planOn && state.layout === 'grid' ? 'col-12 col-md-8' : 'col-12'; }
+        const layout = el('vw-layout');
+        if (layout) { layout.classList.toggle('vw-with-panel', planOn && state.layout === 'grid'); }
         if (planOn) { loadPlan(false); }
     }
 
@@ -645,7 +794,11 @@
             plan.accounts = [];
             const add = (id, name) => { if (id && !seen[id]) { seen[id] = true; plan.accounts.push({ id: id, name: name || '—' }); } };
             ((t.ok && t.body && t.body.data && t.body.data.accounts) || []).forEach(a => add(a.accountId, a.accountName));
-            ((mine.ok && mine.body && mine.body.data && mine.body.data.items) || []).forEach(a => add(a.accountId || a.id, a.accountName || a.name));
+            ((mine.ok && mine.body && mine.body.data && mine.body.data.items) || []).forEach(a => {
+                const id = a.accountId || a.id;
+                add(id, a.accountName || a.name);
+                if (id && a.activeContactCount != null) { plan.accountCounts[id] = a.activeContactCount; }
+            });
             if (!plan.accountId || !seen[plan.accountId]) { plan.accountId = plan.accounts.length ? plan.accounts[0].id : null; }
             return loadDoctors();
         });
@@ -662,24 +815,35 @@
                 const d = r.ok && r.body && r.body.data;
                 plan.rows[key] = d && Array.isArray(d.items) ? d.items.map(TC.doctorRow) : [];
                 plan.counts[key] = d && d.quickCounts && typeof d.quickCounts === 'object' ? d.quickCounts : null;
+                if (quick === 'all') { plan.accountCounts[aid] = plan.rows[key].length; }
             });
         };
         return Promise.all([read('all'), read(plan.quick)]).then(renderPanel);
+    }
+
+    // L6 — this week's place of a doctor: its first draft / planned visit of the week ("Sal 10:15")
+    function whenThisWeek(contactId) {
+        const v = (state.data ? state.data.visits : []).filter(x => x.contactId === contactId && x.weekStart === state.week && x.workStatus !== 'cancelled')
+            .sort((a, b) => (a.plannedDate + (a.startTime || '')) < (b.plannedDate + (b.startTime || '')) ? -1 : 1)[0];
+        return v ? F.dayShort(v.plannedDate) + (v.startTime ? ' ' + v.startTime : '') : '';
     }
 
     function renderPanel() {
         if (state.mode !== 'plan' || !el('vw-tg-list')) { return; }
         const w = weekOf(state.week);
         const editable = planEditable();
-        setText('vw-tg-title', w ? fmt(L.TargetsTitle || '{0}', weekText(w)) : '');
+        // L5 — "HEDEFLER" + "42. Hafta · sürükleyip güne bırakın"
+        setText('vw-tg-title', w ? fmt(L.TargetsSub || '{0}', weekText(w)) : '');
         const lockText = !w || !w.planningSessionId ? (L.TargetsNoPlan || '')
             : w.state === 'approved' ? fmt(L.PlanReadOnlyWeek || '{0}', weekText(w))
             : w.state === 'past' ? fmt(L.PlanReadOnlyPast || '{0}', weekText(w)) : '';
         const lock = el('vw-tg-locked');
-        if (lock) { lock.textContent = lockText; lock.classList.toggle('d-none', !lockText); }
+        if (lock) { lock.innerHTML = lockText ? '<i class="bx bx-lock-alt"></i> ' + esc(lockText) : ''; lock.classList.toggle('d-none', !lockText); }
         const sel = el('vw-tg-account');
         if (sel) {
-            sel.innerHTML = plan.accounts.map(a => '<option value="' + esc(a.id) + '"' + (a.id === plan.accountId ? ' selected' : '') + '>' + esc(F.isolate(a.name)) + '</option>').join('');
+            // L5 — the institution with its doctor count
+            sel.innerHTML = plan.accounts.map(a => '<option value="' + esc(a.id) + '"' + (a.id === plan.accountId ? ' selected' : '') + '>' + esc(F.isolate(a.name))
+                + (plan.accountCounts[a.id] != null ? ' (' + plan.accountCounts[a.id] + ')' : '') + '</option>').join('');
             sel.disabled = !plan.accounts.length;
         }
 
@@ -687,26 +851,38 @@
         const visible = plan.rows[doctorKey(plan.accountId, plan.quick)] || [];
         const split = TC.splitPlanFirst(all, visible, inPlan);
         const counts = TC.quickCounts(all, plan.counts[doctorKey(plan.accountId, 'all')], inPlan);
-        el('vw-tg-quick').innerHTML = QUICK.map(q => '<button type="button" class="btn btn-sm ' + (q === plan.quick ? 'btn-primary' : 'btn-outline-secondary')
+        // L7 — the quick filters: small, one line
+        el('vw-tg-quick').innerHTML = QUICK.map(q => '<button type="button" class="vw-quick-btn' + (q === plan.quick ? ' active' : '')
             + ' vw-tg-quick" data-quick="' + q + '" aria-pressed="' + (q === plan.quick) + '">' + esc(L[QUICK_KEY[q]] || q) + ' (' + counts[q] + ')</button>').join('');
 
+        const products = cid => {
+            const saved = savedContacts().find(c => c.contactId === cid);
+            return ((saved && saved.products) || []).map((p, i) => '<span class="vw-pchip ' + (TC.roleOf(p) === TC.ROLE_PROMO ? 'vw-pchip-promo' : 'vw-pchip-reminder') + '">'
+                + F.bidi(p.productName || p.productCode || '') + '</span>').join('');
+        };
+        // L6 — the doctor card: ⋮⋮ handle, the bold name, the coloured specialty chip, the planned product chips,
+        // "dönemde N · done / remaining · Sal 10:15" and the segment chips
         const row = r => {
             const st = r.status || {};
             const can = editable && !r.blocked;
-            const freq = st.requiredVisitCount != null && st.frequencyStatus !== 'unknown' ? fmt(L.FrequencyPerPeriod || '{0}', st.requiredVisitCount)
+            const base = st.requiredVisitCount != null && st.frequencyStatus !== 'unknown' ? fmt(L.FrequencyPerPeriod || '{0}', st.requiredVisitCount)
                 : (st.frequencyDefault === 'weekly' ? (L.FrequencyDefaultWeekly || '') : '');
+            const ratio = st.done != null || st.remaining != null ? F.ratio(st.done || 0, st.remaining != null ? st.remaining : '—') : '';
+            const freq = [base, ratio].filter(Boolean).join(' · ');
+            const when = whenThisWeek(r.contactId);
             const spec = r.specialty ? (plan.specLabels[r.specialty] || plan.specLabels[String(r.specialty).toLowerCase()] || r.specialty) : '';
-            return '<div class="vw-tg-row d-flex gap-2 align-items-start py-2 border-bottom' + (can ? ' vw-draggable' : '') + '" draggable="' + (can ? 'true' : 'false')
+            return '<div class="vw-tg-row' + (inPlan(r.contactId) ? ' vw-tg-on' : '') + (can ? ' vw-draggable' : '') + '" draggable="' + (can ? 'true' : 'false')
                 + '" data-cid="' + esc(r.contactId) + '">'
-                + '<input class="form-check-input mt-1 vw-tg-check" type="checkbox" data-cid="' + esc(r.contactId) + '"' + (inPlan(r.contactId) ? ' checked' : '')
+                + '<input class="form-check-input vw-tg-check" type="checkbox" data-cid="' + esc(r.contactId) + '"' + (inPlan(r.contactId) ? ' checked' : '')
                 + (can ? '' : ' disabled') + ' aria-label="' + esc(r.name) + '">'
-                + '<div class="flex-grow-1" style="min-width:0"><div class="fw-medium">' + F.bidi(r.name) + '</div>'
-                + '<div class="small text-muted d-flex flex-wrap gap-2">' + (spec ? '<span>' + F.bidi(spec) + '</span>' : '') + (freq ? '<span>' + esc(freq) + '</span>' : '') + '</div>'
-                + '<div class="d-flex flex-wrap gap-1 mt-1">' + (st.dueThisWeek ? '<span class="badge bg-label-primary">' + esc(L.DueThisWeek || '') + '</span>' : '')
-                + (st.segmentBadges || []).map(n => '<span class="badge bg-label-info">' + F.bidi(n) + '</span>').join('') + '</div></div>'
-                + (can ? '<i class="bx bx-grid-vertical text-muted" aria-hidden="true"></i>' : '') + '</div>';
+                + '<div class="flex-grow-1" style="min-width:0">'
+                + '<div class="vw-tg-top"><span class="vw-tg-name">' + F.bidi(r.name) + '</span>' + (can ? '<i class="bx bx-grid-vertical vw-handle" aria-hidden="true"></i>' : '') + '</div>'
+                + '<div class="vw-tg-chips">' + (spec ? '<span class="vw-spec-chip">' + F.bidi(spec) + '</span>' : '') + products(r.contactId) + '</div>'
+                + '<div class="vw-tg-meta">' + (freq ? '<span>' + esc(freq) + '</span>' : '') + (when ? '<span class="vw-tg-when">' + esc(when) + '</span>' : '')
+                + (st.segmentBadges || []).map(n => '<span class="vw-seg-chip">' + F.bidi(n) + '</span>').join('') + '</div>'
+                + '</div></div>';
         };
-        const head = t => '<div class="small text-muted text-uppercase fw-semibold mt-2">' + esc(t) + '</div>';
+        const head = t => '<div class="vw-tg-group">' + esc(t) + '</div>';
         el('vw-tg-list').innerHTML = (split.plan.length
             ? head(fmt(L.PlanDoctorsHeading || '{0}', split.plan.length)) + split.plan.map(row).join('') + (split.others.length ? head(L.OtherDoctorsHeading || '') : '')
             : '') + split.others.map(row).join('')
@@ -714,11 +890,16 @@
 
         const selectable = split.others.filter(r => !r.blocked);
         const selAll = el('vw-tg-select-all');
-        if (selAll) { selAll.textContent = fmt(L.SelectAll || '{0}', selectable.length); selAll.disabled = !editable || !selectable.length; }
+        if (selAll) { selAll.innerHTML = '<i class="bx bx-check-double"></i> ' + esc(fmt(L.SelectAll || '{0}', selectable.length)); selAll.disabled = !editable || !selectable.length; }
         const apply = el('vw-tg-apply');
-        if (apply) { apply.textContent = fmt(L.ApplyProducts || '{0}', split.plan.length); apply.disabled = !editable || !split.plan.length; }
+        if (apply) { apply.innerHTML = '<i class="bx bx-package"></i> ' + esc(fmt(L.ApplyProducts || '{0}', split.plan.length)); apply.disabled = !editable || !split.plan.length; }
+        // L8 — the selection summary card: big numbers + the product distribution of the week
         const s = plan.session || {};
-        setText('vw-tg-summary', fmt(L.SelectionSummary || '{0} · {1} · {2}', (s.selectedContacts || []).length, (s.selectedPharmacyIds || []).length, (s.selectedAccountIds || []).length));
+        setText('vw-tg-summary-head', w ? fmt(L.SummaryTitle || '{0}', weekText(w)) : '');
+        el('vw-tg-summary').innerHTML = [[(s.selectedContacts || []).length, L.SummaryDoctors], [(s.selectedPharmacyIds || []).length, L.SummaryPharmacies], [(s.selectedAccountIds || []).length, L.SummaryAccounts]]
+            .map(x => '<div><div class="vw-sum-n">' + x[0] + '</div><div class="vw-sum-l">' + esc(x[1] || '') + '</div></div>').join('');
+        const dist = C.productDistribution((state.data ? state.data.visits : []).filter(v => v.weekStart === state.week));
+        el('vw-tg-dist').innerHTML = dist.length ? dist.map(d => F.bidi(d.name) + ' ' + d.count).join(' · ') : esc(L.NoSelection || '');
     }
 
     /** The EXISTING session update; on success the panel and the calendar read again (the engine re-placed the week). */
@@ -760,8 +941,9 @@
         return writePlan(body, L.PinSaved || '').then(ok => {
             if (!ok || !pin.startTime) { return ok; }
             const v = (state.data ? state.data.visits : []).find(x => x.weekStart === week.weekStart && x.targetId === target.targetId && x.pinnedTime);
-            const code = C.pinMoveCode(v);
-            if (code) { toast(L[C.pinKey(code)] || '', 'warning'); }
+            // the read's own reason (W2-BE-d pinMoveReason) first; the estimate only without it
+            const code = v && v.pinMoveReason ? v.pinMoveReason : C.pinMoveCode(v);
+            if (code && L[C.pinKey(code)]) { toast(L[C.pinKey(code)], 'warning'); }
             return ok;
         });
     }
@@ -793,8 +975,7 @@
         plan.picked = []; plan.results = [];
         el('vw-prod-search').value = '';
         renderProducts();
-        const m = el('vw-products-modal');
-        if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).show(); }
+        showModal('vw-products-modal');
     }
 
     function searchProducts() {
@@ -810,7 +991,7 @@
         const picked = TC.rolesByOrder(plan.picked);
         el('vw-prod-picked').innerHTML = picked.length
             ? picked.map((p, i) => '<li class="d-flex justify-content-between align-items-center gap-2 py-1"><span>' + F.bidi(C.productLabel(p)) + '</span>'
-                + '<span class="d-flex gap-1 align-items-center"><span class="badge ' + (i === 0 ? 'bg-label-primary' : 'bg-label-secondary') + '">' + esc(L[i === 0 ? 'RolePromo' : 'RoleReminder'] || '') + '</span>'
+                + '<span class="d-flex gap-1 align-items-center"><span class="vw-role ' + (i === 0 ? 'vw-role-promo' : 'vw-role-reminder') + '">' + esc(L[i === 0 ? 'RolePromo' : 'RoleReminder'] || '') + '</span>'
                 + '<button type="button" class="btn btn-sm btn-icon btn-text-secondary vw-prod-remove" data-pid="' + esc(p.productId) + '" aria-label="' + esc(L.RemoveProduct || '') + '"><i class="bx bx-x"></i></button></span></li>').join('')
             : '<li class="text-muted small">' + esc(L.NoProductPicked || '') + '</li>';
         el('vw-prod-results').innerHTML = plan.results.map(p => '<button type="button" class="list-group-item list-group-item-action vw-prod-add" data-pid="' + esc(p.productId) + '"'
@@ -826,24 +1007,23 @@
             const saved = savedContacts().find(c => c.contactId === r.contactId);
             return { doctor: doctorOf(r.contactId), products: TC.unionPicks(saved && saved.products, chosen) };
         });
-        writePlan(TC.selectionUpdate(plan.session, savedContacts(), changes), L.ProductsApplied || '').then(ok => {
-            const m = el('vw-products-modal');
-            if (ok && m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).hide(); }
-        });
+        writePlan(TC.selectionUpdate(plan.session, savedContacts(), changes), L.ProductsApplied || '').then(ok => { if (ok) { hideModal('vw-products-modal'); } });
     }
 
     // ── wiring ───────────────────────────────────────────────────────────────────────────────────────────────
     root.addEventListener('click', e => {
-        const week = e.target.closest('.vw-strip-week');
-        if (week) { state.week = week.getAttribute('data-week'); load(false); return; }
         const day = e.target.closest('.vw-list-day');
         if (day) { state.day = day.getAttribute('data-day'); renderDayList(); return; }
         const card = e.target.closest('.vw-list-card');
-        if (card) { openDetail(state.byId[card.getAttribute('data-key')]); }
+        if (card) { openDetail(state.byId[card.getAttribute('data-key')]); return; }
+        const view = e.target.closest('[data-view]');
+        if (view) { switchView(view.getAttribute('data-view')); }
     });
     document.addEventListener('click', e => {
         const d = e.target.closest('[data-dialog]');
         if (d) { openDialog(d.getAttribute('data-dialog')); return; }
+        const tab = e.target.closest('[data-tab]');
+        if (tab) { if (!tab.disabled) { openDialog(tab.getAttribute('data-tab')); } return; }
         const opt = e.target.closest('.vw-day-option');
         if (opt) {
             dlg.date = opt.getAttribute('data-date');
@@ -875,9 +1055,9 @@
     on('vw-unplanned-open', 'click', openUnplanned);
     on('vw-unp-search', 'input', searchContacts);
     on('vw-unp-save', 'click', saveUnplanned);
-    on('vw-prev', 'click', () => { state.week = C.addDays(state.week, -7); load(false); });
-    on('vw-next', 'click', () => { state.week = C.addDays(state.week, 7); load(false); });
-    on('vw-today', 'click', () => { state.week = C.mondayOf(todayYmd()); state.day = todayYmd(); load(false); });
+    on('vw-prev', 'click', () => navigate(-1));
+    on('vw-next', 'click', () => navigate(1));
+    on('vw-today', 'click', () => navigate(0));
 
     // WP-VW-W2 (WEB-b) — Plan mode
     on('vw-mode-execute', 'click', () => setMode('execute'));

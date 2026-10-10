@@ -56,7 +56,7 @@ public sealed class VisitWorkspaceWebTests
         var bail = view.IndexOf("return;", denied, StringComparison.Ordinal);
         Assert.True(denied > 0 && bail > denied);
         Assert.True(view.IndexOf("id=\"vw-root\"", StringComparison.Ordinal) > bail, "nothing of the page before the access check");
-        Assert.Contains("id=\"vw-week-strip\"", view);
+        Assert.DoesNotContain("vw-week-strip", view); // WEB-c T3: no week strip — one calendar card
         Assert.Contains("id=\"vw-calendar\"", view);
         Assert.Contains("<partial name=\"_CalendarAssets\" />", view); // the vendored FullCalendar, no new library
         Assert.DoesNotContain("cdn.", view);
@@ -429,14 +429,14 @@ public sealed class VisitWorkspaceWebTests
         var card = r.GetProperty("cardHtml").GetString()!;
         Assert.Contains("vw-st-missed", card);
         Assert.Contains("<bdi>Tutukon</bdi>", card); // the product NAME, the code only as a fallback
-        Assert.Contains("bx-pin", card);
-        Assert.Contains("bx-walk", card);
+        Assert.Contains("bxs-pin", card);      // WEB-c T7: the top-right icons
+        Assert.Contains("bx-user-plus", card); // unplanned
         Assert.Contains("vw-countdown", card);
         Assert.Contains("bg-label-danger", r.GetProperty("header").GetString()); // the holiday column
         Assert.False(r.GetProperty("approveHidden").GetBoolean());
         Assert.Contains("data-dialog=\"notDone\"", r.GetProperty("actions").GetString());
         Assert.Contains("data-dialog=\"reschedule\"", r.GetProperty("actions").GetString());
-        Assert.Contains("bg-label-primary", r.GetProperty("content").GetString()); // the first product = promo
+        Assert.Contains("vw-role-promo", r.GetProperty("content").GetString()); // the first product = promo (WEB-c D4)
 
         Assert.True(r.GetProperty("saveDisabledWithoutNote").GetBoolean());
         Assert.True(r.GetProperty("noteRequiredShown").GetBoolean());

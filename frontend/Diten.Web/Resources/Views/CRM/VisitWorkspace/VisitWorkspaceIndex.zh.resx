@@ -40,7 +40,7 @@
   <data name="TimeLabel" xml:space="preserve"><value>时间</value></data>
   <data name="AddButton" xml:space="preserve"><value>添加</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>第 {0} 周</value></data>
-  <data name="WeekStateDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>草稿 · 自动</value></data>
   <data name="WeekStateApproved" xml:space="preserve"><value>已确认</value></data>
   <data name="WeekStatePast" xml:space="preserve"><value>已过去</value></data>
   <data name="WeekStateNone" xml:space="preserve"><value>无计划</value></data>
@@ -165,4 +165,61 @@
   <data name="PickedProducts" xml:space="preserve"><value>已选产品</value></data>
   <data name="ProductSearch" xml:space="preserve"><value>搜索产品…</value></data>
   <data name="ApplyButton" xml:space="preserve"><value>应用</value></data>
+  <data name="TodayBadge" xml:space="preserve"><value>今天</value></data>
+  <data name="CapacityWeekLine" xml:space="preserve"><value>本周容量 {0} · 已计划 {1}</value></data>
+  <data name="FilterAllStatuses" xml:space="preserve"><value>全部状态</value></data>
+  <data name="FilterStatusCount" xml:space="preserve"><value>{0} 个状态</value></data>
+  <data name="CardReportLeft" xml:space="preserve"><value>距报告截止还剩 {0} 小时</value></data>
+  <data name="CardMarkLeft" xml:space="preserve"><value>还剩 {0} 小时可标记</value></data>
+  <data name="CardLocked" xml:space="preserve"><value>已锁定</value></data>
+  <data name="CardMovedTo" xml:space="preserve"><value>→ {0}</value></data>
+  <data name="MonthVisits" xml:space="preserve"><value>{0} 次拜访</value></data>
+  <data name="LegendPinned" xml:space="preserve"><value>已固定</value></data>
+  <data name="LegendUnplanned" xml:space="preserve"><value>计划外</value></data>
+  <data name="LegendProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="DetailPinned" xml:space="preserve"><value>已固定到当天</value></data>
+  <data name="DetailUnplanned" xml:space="preserve"><value>计划外</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} 分钟</value></data>
+  <data name="ContentSteps" xml:space="preserve"><value>{0} 个内容步骤</value></data>
+  <data name="AboutMinutes" xml:space="preserve"><value>≈ {0} 分钟</value></data>
+  <data name="EstimateLine" xml:space="preserve"><value>{0} 推广 + {1} 提醒 + 报告 ≈ {2} 分钟</value></data>
+  <data name="EstimateLineNoReminder" xml:space="preserve"><value>{0} 推广 + 报告 ≈ {1} 分钟</value></data>
+  <data name="DetailFrequency" xml:space="preserve"><value>频率：周期内 {0} 次 · {1}</value></data>
+  <data name="AlertTitle_draft" xml:space="preserve"><value>草稿周</value></data>
+  <data name="AlertText_draft" xml:space="preserve"><value>根据频率自动生成。可在日历中拖动以固定到某一天。</value></data>
+  <data name="AlertTitle_planned" xml:space="preserve"><value>该周已批准</value></data>
+  <data name="AlertText_planned" xml:space="preserve"><value>如需移到其他日期请重新打开该周。结果录入在拜访当天开放。</value></data>
+  <data name="AlertTitle_today" xml:space="preserve"><value>今天 · {1}</value></data>
+  <data name="AlertText_today" xml:space="preserve"><value>到达机构后开始拜访。</value></data>
+  <data name="AlertTitle_report_missing" xml:space="preserve"><value>距报告截止还剩 {0} 小时</value></data>
+  <data name="AlertText_report_missing" xml:space="preserve"><value>超时后记录将被锁定。</value></data>
+  <data name="AlertTitle_reported" xml:space="preserve"><value>报告已提交</value></data>
+  <data name="AlertText_reported" xml:space="preserve"><value>修改需要附理由的更正。</value></data>
+  <data name="AlertTitle_missed" xml:space="preserve"><value>已错过</value></data>
+  <data name="AlertText_missed" xml:space="preserve"><value>拜访未开始。还剩 {0} 小时可标记“未完成”或“改期”。</value></data>
+  <data name="AlertTitle_missed_locked" xml:space="preserve"><value>已错过 · 已锁定</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>48 小时内未标记。记录已锁定并已通知您的经理。</value></data>
+  <data name="AlertTitle_expired" xml:space="preserve"><value>报告期限已过</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>记录已锁定并已通知您的经理。</value></data>
+  <data name="DlgTab_cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="DlgTab_notDone" xml:space="preserve"><value>未完成</value></data>
+  <data name="DlgTab_reschedule" xml:space="preserve"><value>改期</value></data>
+  <data name="DlgMean_cancel" xml:space="preserve"><value>拜访不会进行（取消计划；可在当天之前）。</value></data>
+  <data name="DlgMean_notDone" xml:space="preserve"><value>当天已到但拜访未进行。</value></data>
+  <data name="DlgMean_reschedule" xml:space="preserve"><value>改到其他日期；请选择新日期。</value></data>
+  <data name="DlgConfirm_cancel" xml:space="preserve"><value>取消拜访</value></data>
+  <data name="DlgConfirm_notDone" xml:space="preserve"><value>标记为未完成</value></data>
+  <data name="DlgConfirm_reschedule" xml:space="preserve"><value>改期拜访</value></data>
+  <data name="TargetsSub" xml:space="preserve"><value>{0} · 拖到某一天</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>选择摘要 · {0}</value></data>
+  <data name="SummaryDoctors" xml:space="preserve"><value>位医生</value></data>
+  <data name="SummaryPharmacies" xml:space="preserve"><value>家药房</value></data>
+  <data name="SummaryAccounts" xml:space="preserve"><value>个客户</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>未选择</value></data>
+  <data name="ViewLabel" xml:space="preserve"><value>视图</value></data>
+  <data name="ViewDay" xml:space="preserve"><value>日</value></data>
+  <data name="ViewWeek" xml:space="preserve"><value>周</value></data>
+  <data name="ViewMonth" xml:space="preserve"><value>月</value></data>
+  <data name="TargetsHeading" xml:space="preserve"><value>目标</value></data>
+  <data name="MapPlaceholder" xml:space="preserve"><value>地图预览</value></data>
 </root>

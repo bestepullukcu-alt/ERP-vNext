@@ -40,7 +40,7 @@
   <data name="TimeLabel" xml:space="preserve"><value>Hora</value></data>
   <data name="AddButton" xml:space="preserve"><value>Añadir</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>Semana {0}</value></data>
-  <data name="WeekStateDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>Borrador · automático</value></data>
   <data name="WeekStateApproved" xml:space="preserve"><value>Aprobada</value></data>
   <data name="WeekStatePast" xml:space="preserve"><value>Pasada</value></data>
   <data name="WeekStateNone" xml:space="preserve"><value>Sin plan</value></data>
@@ -165,4 +165,61 @@
   <data name="PickedProducts" xml:space="preserve"><value>Productos elegidos</value></data>
   <data name="ProductSearch" xml:space="preserve"><value>Buscar un producto…</value></data>
   <data name="ApplyButton" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="TodayBadge" xml:space="preserve"><value>Hoy</value></data>
+  <data name="CapacityWeekLine" xml:space="preserve"><value>Esta semana {0} de capacidad · {1} planificadas</value></data>
+  <data name="FilterAllStatuses" xml:space="preserve"><value>Todos los estados</value></data>
+  <data name="FilterStatusCount" xml:space="preserve"><value>{0} estados</value></data>
+  <data name="CardReportLeft" xml:space="preserve"><value>Quedan {0} h para el informe</value></data>
+  <data name="CardMarkLeft" xml:space="preserve"><value>{0} h para marcarla</value></data>
+  <data name="CardLocked" xml:space="preserve"><value>Bloqueada</value></data>
+  <data name="CardMovedTo" xml:space="preserve"><value>→ el {0}</value></data>
+  <data name="MonthVisits" xml:space="preserve"><value>{0} visitas</value></data>
+  <data name="LegendPinned" xml:space="preserve"><value>fijada</value></data>
+  <data name="LegendUnplanned" xml:space="preserve"><value>no planificada</value></data>
+  <data name="LegendProduct" xml:space="preserve"><value>PRODUCTO</value></data>
+  <data name="DetailPinned" xml:space="preserve"><value>Fijada al día</value></data>
+  <data name="DetailUnplanned" xml:space="preserve"><value>No planificada</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} min</value></data>
+  <data name="ContentSteps" xml:space="preserve"><value>{0} pasos de contenido</value></data>
+  <data name="AboutMinutes" xml:space="preserve"><value>≈ {0} min</value></data>
+  <data name="EstimateLine" xml:space="preserve"><value>{0} promoción + {1} recordatorio + informe ≈ {2} min</value></data>
+  <data name="EstimateLineNoReminder" xml:space="preserve"><value>{0} promoción + informe ≈ {1} min</value></data>
+  <data name="DetailFrequency" xml:space="preserve"><value>Frecuencia: {0} en el período · {1}</value></data>
+  <data name="AlertTitle_draft" xml:space="preserve"><value>Semana borrador</value></data>
+  <data name="AlertText_draft" xml:space="preserve"><value>Creada automáticamente según la frecuencia. Arrástrela en el calendario para fijarla a un día.</value></data>
+  <data name="AlertTitle_planned" xml:space="preserve"><value>Semana aprobada</value></data>
+  <data name="AlertText_planned" xml:space="preserve"><value>Reabra la semana para moverla. El registro del resultado se abre el día de la visita.</value></data>
+  <data name="AlertTitle_today" xml:space="preserve"><value>Hoy · {1}</value></data>
+  <data name="AlertText_today" xml:space="preserve"><value>Inicie la visita al llegar a la institución.</value></data>
+  <data name="AlertTitle_report_missing" xml:space="preserve"><value>Quedan {0} h para el informe</value></data>
+  <data name="AlertText_report_missing" xml:space="preserve"><value>Al vencer el plazo, el registro se bloquea.</value></data>
+  <data name="AlertTitle_reported" xml:space="preserve"><value>Informe enviado</value></data>
+  <data name="AlertText_reported" xml:space="preserve"><value>Un cambio requiere una corrección justificada.</value></data>
+  <data name="AlertTitle_missed" xml:space="preserve"><value>Perdida</value></data>
+  <data name="AlertText_missed" xml:space="preserve"><value>La visita no se inició. Quedan {0} h para «No realizada» o «Aplazar».</value></data>
+  <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Perdida · bloqueada</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>No se marcó en 48 horas. El registro está bloqueado y se notificó a su responsable.</value></data>
+  <data name="AlertTitle_expired" xml:space="preserve"><value>Plazo del informe vencido</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>El registro está bloqueado y se notificó a su responsable.</value></data>
+  <data name="DlgTab_cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="DlgTab_notDone" xml:space="preserve"><value>No realizada</value></data>
+  <data name="DlgTab_reschedule" xml:space="preserve"><value>Aplazar</value></data>
+  <data name="DlgMean_cancel" xml:space="preserve"><value>La visita no se realizará (cancelación del plan; también antes del día).</value></data>
+  <data name="DlgMean_notDone" xml:space="preserve"><value>Llegó el día pero la visita no se realizó.</value></data>
+  <data name="DlgMean_reschedule" xml:space="preserve"><value>Muévala a otro día; elija la nueva fecha.</value></data>
+  <data name="DlgConfirm_cancel" xml:space="preserve"><value>Cancelar la visita</value></data>
+  <data name="DlgConfirm_notDone" xml:space="preserve"><value>Marcar como no realizada</value></data>
+  <data name="DlgConfirm_reschedule" xml:space="preserve"><value>Aplazar la visita</value></data>
+  <data name="TargetsSub" xml:space="preserve"><value>{0} · arrastre a un día</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Resumen de la selección · {0}</value></data>
+  <data name="SummaryDoctors" xml:space="preserve"><value>médicos</value></data>
+  <data name="SummaryPharmacies" xml:space="preserve"><value>farmacias</value></data>
+  <data name="SummaryAccounts" xml:space="preserve"><value>cuentas</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>Sin selección</value></data>
+  <data name="ViewLabel" xml:space="preserve"><value>Vista</value></data>
+  <data name="ViewDay" xml:space="preserve"><value>Día</value></data>
+  <data name="ViewWeek" xml:space="preserve"><value>Semana</value></data>
+  <data name="ViewMonth" xml:space="preserve"><value>Mes</value></data>
+  <data name="TargetsHeading" xml:space="preserve"><value>Objetivos</value></data>
+  <data name="MapPlaceholder" xml:space="preserve"><value>vista del mapa</value></data>
 </root>

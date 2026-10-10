@@ -40,7 +40,7 @@
   <data name="TimeLabel" xml:space="preserve"><value>Время</value></data>
   <data name="AddButton" xml:space="preserve"><value>Добавить</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>Неделя {0}</value></data>
-  <data name="WeekStateDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>Черновик · автоматически</value></data>
   <data name="WeekStateApproved" xml:space="preserve"><value>Утверждена</value></data>
   <data name="WeekStatePast" xml:space="preserve"><value>Прошедшая</value></data>
   <data name="WeekStateNone" xml:space="preserve"><value>Нет плана</value></data>
@@ -165,4 +165,61 @@
   <data name="PickedProducts" xml:space="preserve"><value>Выбранные продукты</value></data>
   <data name="ProductSearch" xml:space="preserve"><value>Найти продукт…</value></data>
   <data name="ApplyButton" xml:space="preserve"><value>Применить</value></data>
+  <data name="TodayBadge" xml:space="preserve"><value>Сегодня</value></data>
+  <data name="CapacityWeekLine" xml:space="preserve"><value>На этой неделе ёмкость {0} · запланировано {1}</value></data>
+  <data name="FilterAllStatuses" xml:space="preserve"><value>Все статусы</value></data>
+  <data name="FilterStatusCount" xml:space="preserve"><value>Статусов: {0}</value></data>
+  <data name="CardReportLeft" xml:space="preserve"><value>До отчёта {0} ч</value></data>
+  <data name="CardMarkLeft" xml:space="preserve"><value>Отметить в течение {0} ч</value></data>
+  <data name="CardLocked" xml:space="preserve"><value>Заблокирован</value></data>
+  <data name="CardMovedTo" xml:space="preserve"><value>→ на {0}</value></data>
+  <data name="MonthVisits" xml:space="preserve"><value>Визитов: {0}</value></data>
+  <data name="LegendPinned" xml:space="preserve"><value>закреплён</value></data>
+  <data name="LegendUnplanned" xml:space="preserve"><value>внеплановый</value></data>
+  <data name="LegendProduct" xml:space="preserve"><value>ПРОДУКТ</value></data>
+  <data name="DetailPinned" xml:space="preserve"><value>Закреплён на день</value></data>
+  <data name="DetailUnplanned" xml:space="preserve"><value>Внеплановый</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="ContentSteps" xml:space="preserve"><value>Шагов контента: {0}</value></data>
+  <data name="AboutMinutes" xml:space="preserve"><value>≈ {0} мин</value></data>
+  <data name="EstimateLine" xml:space="preserve"><value>{0} промо + {1} напоминание + отчёт ≈ {2} мин</value></data>
+  <data name="EstimateLineNoReminder" xml:space="preserve"><value>{0} промо + отчёт ≈ {1} мин</value></data>
+  <data name="DetailFrequency" xml:space="preserve"><value>Частота: {0} за период · {1}</value></data>
+  <data name="AlertTitle_draft" xml:space="preserve"><value>Черновая неделя</value></data>
+  <data name="AlertText_draft" xml:space="preserve"><value>Создан автоматически по частоте. Перетащите в календаре, чтобы закрепить на день.</value></data>
+  <data name="AlertTitle_planned" xml:space="preserve"><value>Неделя утверждена</value></data>
+  <data name="AlertText_planned" xml:space="preserve"><value>Чтобы перенести, откройте неделю заново. Ввод результата открывается в день визита.</value></data>
+  <data name="AlertTitle_today" xml:space="preserve"><value>Сегодня · {1}</value></data>
+  <data name="AlertText_today" xml:space="preserve"><value>Начните визит, когда прибудете в учреждение.</value></data>
+  <data name="AlertTitle_report_missing" xml:space="preserve"><value>До отчёта {0} ч</value></data>
+  <data name="AlertText_report_missing" xml:space="preserve"><value>По истечении срока запись блокируется.</value></data>
+  <data name="AlertTitle_reported" xml:space="preserve"><value>Отчёт отправлен</value></data>
+  <data name="AlertText_reported" xml:space="preserve"><value>Для изменения нужна обоснованная корректировка.</value></data>
+  <data name="AlertTitle_missed" xml:space="preserve"><value>Пропущен</value></data>
+  <data name="AlertText_missed" xml:space="preserve"><value>Визит не начат. На «Не выполнен» или «Перенести» осталось {0} ч.</value></data>
+  <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Пропущен · заблокирован</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>Не отмечен за 48 часов. Запись заблокирована, руководитель уведомлён.</value></data>
+  <data name="AlertTitle_expired" xml:space="preserve"><value>Срок отчёта истёк</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>Запись заблокирована, руководитель уведомлён.</value></data>
+  <data name="DlgTab_cancel" xml:space="preserve"><value>Отменить</value></data>
+  <data name="DlgTab_notDone" xml:space="preserve"><value>Не выполнен</value></data>
+  <data name="DlgTab_reschedule" xml:space="preserve"><value>Перенести</value></data>
+  <data name="DlgMean_cancel" xml:space="preserve"><value>Визит не состоится (отмена плана; возможна и до дня визита).</value></data>
+  <data name="DlgMean_notDone" xml:space="preserve"><value>День наступил, но визит не состоялся.</value></data>
+  <data name="DlgMean_reschedule" xml:space="preserve"><value>Перенесите на другой день; выберите новую дату.</value></data>
+  <data name="DlgConfirm_cancel" xml:space="preserve"><value>Отменить визит</value></data>
+  <data name="DlgConfirm_notDone" xml:space="preserve"><value>Отметить как не выполненный</value></data>
+  <data name="DlgConfirm_reschedule" xml:space="preserve"><value>Перенести визит</value></data>
+  <data name="TargetsSub" xml:space="preserve"><value>{0} · перетащите на день</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Сводка выбора · {0}</value></data>
+  <data name="SummaryDoctors" xml:space="preserve"><value>врачей</value></data>
+  <data name="SummaryPharmacies" xml:space="preserve"><value>аптек</value></data>
+  <data name="SummaryAccounts" xml:space="preserve"><value>учреждений</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>Ничего не выбрано</value></data>
+  <data name="ViewLabel" xml:space="preserve"><value>Вид</value></data>
+  <data name="ViewDay" xml:space="preserve"><value>День</value></data>
+  <data name="ViewWeek" xml:space="preserve"><value>Неделя</value></data>
+  <data name="ViewMonth" xml:space="preserve"><value>Месяц</value></data>
+  <data name="TargetsHeading" xml:space="preserve"><value>Цели</value></data>
+  <data name="MapPlaceholder" xml:space="preserve"><value>превью карты</value></data>
 </root>

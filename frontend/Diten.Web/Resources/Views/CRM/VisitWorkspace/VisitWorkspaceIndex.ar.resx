@@ -40,7 +40,7 @@
   <data name="TimeLabel" xml:space="preserve"><value>الوقت</value></data>
   <data name="AddButton" xml:space="preserve"><value>إضافة</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>الأسبوع {0}</value></data>
-  <data name="WeekStateDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>مسودة · تلقائية</value></data>
   <data name="WeekStateApproved" xml:space="preserve"><value>معتمد</value></data>
   <data name="WeekStatePast" xml:space="preserve"><value>منقضٍ</value></data>
   <data name="WeekStateNone" xml:space="preserve"><value>لا خطة</value></data>
@@ -165,4 +165,61 @@
   <data name="PickedProducts" xml:space="preserve"><value>المنتجات المختارة</value></data>
   <data name="ProductSearch" xml:space="preserve"><value>ابحث عن منتج…</value></data>
   <data name="ApplyButton" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="TodayBadge" xml:space="preserve"><value>اليوم</value></data>
+  <data name="CapacityWeekLine" xml:space="preserve"><value>هذا الأسبوع سعة {0} · مخطط {1}</value></data>
+  <data name="FilterAllStatuses" xml:space="preserve"><value>كل الحالات</value></data>
+  <data name="FilterStatusCount" xml:space="preserve"><value>{0} حالات</value></data>
+  <data name="CardReportLeft" xml:space="preserve"><value>متبقٍ {0} س للتقرير</value></data>
+  <data name="CardMarkLeft" xml:space="preserve"><value>متبقٍ {0} س لوضع علامة</value></data>
+  <data name="CardLocked" xml:space="preserve"><value>مقفلة</value></data>
+  <data name="CardMovedTo" xml:space="preserve"><value>← {0}</value></data>
+  <data name="MonthVisits" xml:space="preserve"><value>{0} زيارات</value></data>
+  <data name="LegendPinned" xml:space="preserve"><value>مثبتة</value></data>
+  <data name="LegendUnplanned" xml:space="preserve"><value>غير مخططة</value></data>
+  <data name="LegendProduct" xml:space="preserve"><value>منتج</value></data>
+  <data name="DetailPinned" xml:space="preserve"><value>مثبتة على اليوم</value></data>
+  <data name="DetailUnplanned" xml:space="preserve"><value>غير مخططة</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} د</value></data>
+  <data name="ContentSteps" xml:space="preserve"><value>{0} خطوات محتوى</value></data>
+  <data name="AboutMinutes" xml:space="preserve"><value>≈ {0} د</value></data>
+  <data name="EstimateLine" xml:space="preserve"><value>{0} ترويج + {1} تذكير + تقرير ≈ {2} د</value></data>
+  <data name="EstimateLineNoReminder" xml:space="preserve"><value>{0} ترويج + تقرير ≈ {1} د</value></data>
+  <data name="DetailFrequency" xml:space="preserve"><value>التكرار: {0} في الفترة · {1}</value></data>
+  <data name="AlertTitle_draft" xml:space="preserve"><value>أسبوع مسودة</value></data>
+  <data name="AlertText_draft" xml:space="preserve"><value>أُنشئت تلقائيًا حسب التكرار. اسحبها في التقويم لتثبيتها على يوم.</value></data>
+  <data name="AlertTitle_planned" xml:space="preserve"><value>الأسبوع معتمد</value></data>
+  <data name="AlertText_planned" xml:space="preserve"><value>أعد فتح الأسبوع لنقلها إلى يوم آخر. يُفتح إدخال النتيجة يوم الزيارة.</value></data>
+  <data name="AlertTitle_today" xml:space="preserve"><value>اليوم · {1}</value></data>
+  <data name="AlertText_today" xml:space="preserve"><value>ابدأ الزيارة عند وصولك إلى المؤسسة.</value></data>
+  <data name="AlertTitle_report_missing" xml:space="preserve"><value>متبقٍ {0} س للتقرير</value></data>
+  <data name="AlertText_report_missing" xml:space="preserve"><value>عند انتهاء المهلة يُقفل السجل.</value></data>
+  <data name="AlertTitle_reported" xml:space="preserve"><value>تم إرسال التقرير</value></data>
+  <data name="AlertText_reported" xml:space="preserve"><value>يتطلب التغيير تصحيحًا مبررًا.</value></data>
+  <data name="AlertTitle_missed" xml:space="preserve"><value>فائتة</value></data>
+  <data name="AlertText_missed" xml:space="preserve"><value>لم تبدأ الزيارة. متبقٍ {0} س لـ «لم تتم» أو «تأجيل».</value></data>
+  <data name="AlertTitle_missed_locked" xml:space="preserve"><value>فائتة · مقفلة</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>لم يُحدَّد خلال 48 ساعة. أُقفل السجل وأُبلغ مديرك.</value></data>
+  <data name="AlertTitle_expired" xml:space="preserve"><value>انتهت مهلة التقرير</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>السجل مقفل وأُبلغ مديرك.</value></data>
+  <data name="DlgTab_cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="DlgTab_notDone" xml:space="preserve"><value>لم تتم</value></data>
+  <data name="DlgTab_reschedule" xml:space="preserve"><value>تأجيل</value></data>
+  <data name="DlgMean_cancel" xml:space="preserve"><value>لن تتم الزيارة (إلغاء الخطة؛ حتى قبل يومها).</value></data>
+  <data name="DlgMean_notDone" xml:space="preserve"><value>حلّ اليوم لكن الزيارة لم تتم.</value></data>
+  <data name="DlgMean_reschedule" xml:space="preserve"><value>انقلها إلى يوم آخر؛ اختر التاريخ الجديد.</value></data>
+  <data name="DlgConfirm_cancel" xml:space="preserve"><value>إلغاء الزيارة</value></data>
+  <data name="DlgConfirm_notDone" xml:space="preserve"><value>تحديد كـ «لم تتم»</value></data>
+  <data name="DlgConfirm_reschedule" xml:space="preserve"><value>تأجيل الزيارة</value></data>
+  <data name="TargetsSub" xml:space="preserve"><value>{0} · اسحب إلى يوم</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>ملخص الاختيار · {0}</value></data>
+  <data name="SummaryDoctors" xml:space="preserve"><value>أطباء</value></data>
+  <data name="SummaryPharmacies" xml:space="preserve"><value>صيدليات</value></data>
+  <data name="SummaryAccounts" xml:space="preserve"><value>حسابات</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>لا يوجد اختيار</value></data>
+  <data name="ViewLabel" xml:space="preserve"><value>العرض</value></data>
+  <data name="ViewDay" xml:space="preserve"><value>يوم</value></data>
+  <data name="ViewWeek" xml:space="preserve"><value>أسبوع</value></data>
+  <data name="ViewMonth" xml:space="preserve"><value>شهر</value></data>
+  <data name="TargetsHeading" xml:space="preserve"><value>الأهداف</value></data>
+  <data name="MapPlaceholder" xml:space="preserve"><value>معاينة الخريطة</value></data>
 </root>
