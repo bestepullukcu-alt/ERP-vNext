@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>Bu kalem henüz etkinleştirilemez: aşağıdaki stok alanlarını doldurup yeniden gönderin.</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>Lot takibi</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>Temel birim</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>Saklama koşulları (en az bir)</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>Birim çevrimleri (her birim temel birime en çok dört adımda bağlı)</value></data>
+</root>

@@ -28,4 +28,16 @@ public sealed record AuditForwardRequest(
     // these three. Null = not sent (every command without IAuditDetailsProvider forwards exactly what it did before).
     IReadOnlyDictionary<string, object?>? BeforeState = null,
     IReadOnlyDictionary<string, object?>? AfterState = null,
-    IReadOnlyDictionary<string, object?>? Metadata = null);
+    IReadOnlyDictionary<string, object?>? Metadata = null,
+    // MOD-0290-FU04 S2: the tenant of a command that runs outside a user's request (the approval worker applying a
+    // decision). Null = the forwarder reads the tenant from the request's token as before. Never overrides a token's.
+    Guid? TenantId = null);
+
+/// <summary>
+/// MOD-0290-FU04 S2: an audited command that knows its tenant itself — run by a worker, with no user token to read it
+/// from. The record's actor is then the system (the decision's own actor travels in the command's metadata).
+/// </summary>
+public interface IAuditTenantProvider
+{
+    Guid AuditTenantId { get; }
+}

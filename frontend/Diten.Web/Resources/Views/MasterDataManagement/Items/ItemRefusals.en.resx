@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>This item cannot be activated yet: fill in the stock fields listed below, then submit it again.</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>Lot controlled</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>Base unit</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>Storage conditions (at least one)</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>Unit conversions (each unit within four steps of the base unit)</value></data>
+</root>

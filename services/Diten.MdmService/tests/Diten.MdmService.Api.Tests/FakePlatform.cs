@@ -105,6 +105,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     }
 
     public int StartCalls;
+    public ProductIdentityWorkflowStartRequest? LastStartRequest { get; private set; }
     private long _sequence;
 
     public IReadOnlyList<Instance> Instances(string objectType) =>
@@ -133,6 +134,8 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref StartCalls);
+        // MOD-0290-FU04 S2: what the last start carried (the item approval's position candidate is asserted on it).
+        LastStartRequest = request;
         if (OnNextStart is { } gate)
         {
             OnNextStart = null;

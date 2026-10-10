@@ -74,7 +74,7 @@ public sealed class UpdateItemHandler : IRequestHandler<UpdateItemCommand, Respo
         item.RetestDays = values.RetestDays;
         item.MinRemainingShelfLifeDays = values.MinRemainingShelfLifeDays;
         item.UpdatedBy = _actor.ActorId;
-        var written = await _items.ReplaceAsync(item, expectedVersion, cancellationToken);
+        var written = await _items.UpdateFieldsAsync(item, expectedVersion, cancellationToken);
         // FIX1 item 2: only the fields that moved, before / after; an empty locked field filled now is named.
         if (written.Succeeded) ItemAudit.RecordChanges(command.AuditDetails, before, item, draft);
         return ItemWrites.Map(written);

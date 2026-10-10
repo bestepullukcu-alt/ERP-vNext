@@ -65,7 +65,8 @@ public static class ItemModels
         string BaseUomCode,
         IReadOnlyList<ItemUomConversionDto> UomConversions,
         IReadOnlyList<string> StorageConditionCodes,
-        bool LotControlled,
+        // FU04 S2 (R-04): null = not filled (a legacy draft); an Active item never shows null.
+        bool? LotControlled,
         bool Stockable,
         int? ShelfLifeDays,
         int? RetestDays,

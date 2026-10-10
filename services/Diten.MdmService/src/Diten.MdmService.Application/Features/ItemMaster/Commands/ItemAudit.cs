@@ -33,9 +33,23 @@ public static class ItemAudit
     public const string Lifecycle = "lifecycle";
     public const string StockCheck = "stockCheck";
 
+    // FU04 S2 (§21): the approval's facts — the request (operation, kind), the decision's evidence (who, when, which task,
+    // which transition) and the coded outcome. Ids and codes only.
+    public const string OperationId = "operationId";
+    public const string ActivationKind = "activationKind";
+    public const string Decision = "decision";
+    public const string DecisionActorId = "decisionActorId";
+    public const string DecisionAt = "decisionAt";
+    public const string ApprovalTaskId = "approvalTaskId";
+    public const string TransitionSequence = "transitionSequence";
+    public const string OutcomeCode = "outcomeCode";
+    public const string MissingFields = "missingFields";
+
     public static readonly IReadOnlySet<string> MetadataKeys = new HashSet<string>(StringComparer.Ordinal)
     {
-        FirstFill, ReasonProvided, Replay, Lifecycle, StockCheck, AuditDetails.RefusalCodeKey
+        FirstFill, ReasonProvided, Replay, Lifecycle, StockCheck, AuditDetails.RefusalCodeKey,
+        OperationId, ActivationKind, Decision, DecisionActorId, DecisionAt, ApprovalTaskId, TransitionSequence, OutcomeCode,
+        MissingFields
     };
 
     // The audited values of a row (codes and plain values; conversions as "FROM>TO=N/D", sorted).

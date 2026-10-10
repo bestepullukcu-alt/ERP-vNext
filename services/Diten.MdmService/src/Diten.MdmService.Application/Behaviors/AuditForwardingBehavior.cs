@@ -57,7 +57,9 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
                     CorrelationId: _correlation?.CorrelationId,
                     BeforeState: details?.BeforeState,
                     AfterState: details?.AfterState,
-                    Metadata: details is { Metadata.Count: > 0 } ? details.Metadata : null);
+                    Metadata: details is { Metadata.Count: > 0 } ? details.Metadata : null,
+                    TenantId: (request as IAuditTenantProvider)?.AuditTenantId is { } tenant && tenant != Guid.Empty
+                        ? tenant : null);
 
                 await _forwarder.ForwardAsync(forwardRequest, cancellationToken);
             }

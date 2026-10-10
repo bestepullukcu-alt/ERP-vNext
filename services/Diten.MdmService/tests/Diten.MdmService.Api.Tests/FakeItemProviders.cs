@@ -34,6 +34,11 @@ public sealed class FakeItemReferences : IItemReferenceResolver
     // FIX2 m1: a "not found" answer whose list holds a null entry.
     public bool NullNotFoundEntry { get; set; }
     public HashSet<string> Retired { get; } = new(StringComparer.Ordinal);
+    // MOD-0290-FU04 S2 (the IU review: ITEM-UNIVERSAL-V1 → V2): the catalog version the lists answer with (1 by default), a
+    // code the list no longer holds, and a storage condition whose ConditionKind changed.
+    public int CatalogVersion { get; set; } = 1;
+    public HashSet<string> Removed { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, string> KindOverride { get; } = new(StringComparer.Ordinal);
     // WP-PLT-ITEM-LISTS-01: the REAL Platform client a test puts in (the host's resolver is this fake).
     public IItemReferenceResolver? Override { get; set; }
 
@@ -46,6 +51,9 @@ public sealed class FakeItemReferences : IItemReferenceResolver
         NullNotFoundEntry = false;
         Override = null;
         Retired.Clear();
+        CatalogVersion = 1;
+        Removed.Clear();
+        KindOverride.Clear();
     }
 
     public Task<ItemReferenceResolveResult> ResolveLatestAsync(IReadOnlyList<ItemReferenceRequest> requests,
@@ -55,15 +63,16 @@ public sealed class FakeItemReferences : IItemReferenceResolver
         Calls.Enqueue(requests);
         if (Throw) throw new HttpRequestException("item list provider down (test)");
         if (Outage) return Task.FromResult(ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
-        var missing = requests.Where(request =>
-            !Sets.TryGetValue(request.SetCode, out var set) || !set.ContainsKey(request.ValueCode)).ToList();
+        var missing = requests.Where(request => Removed.Contains(request.ValueCode)
+            || !Sets.TryGetValue(request.SetCode, out var set) || !set.ContainsKey(request.ValueCode)).ToList();
         if (NullNotFoundEntry) return Task.FromResult(ItemReferenceResolveResult.Missing([null!]));
         if (missing.Count > 0) return Task.FromResult(ItemReferenceResolveResult.Missing(missing));
         return Task.FromResult(ItemReferenceResolveResult.Success(requests.Select(request =>
         {
-            var kind = Sets[request.SetCode][request.ValueCode];
+            var kind = KindOverride.TryGetValue(request.ValueCode, out var changed) ? changed : Sets[request.SetCode][request.ValueCode];
             var retired = Retired.Contains(request.ValueCode);
-            return new ItemReferenceSelection(request.SetCode, request.ValueCode, VersionId, 1, "LATEST", ResolvedAt,
+            var versionId = CatalogVersion == 1 ? VersionId : Guid.Parse($"6f1d3c55-0e1b-4c38-9a77-1b1f2a9e0c{CatalogVersion:00}");
+            return new ItemReferenceSelection(request.SetCode, request.ValueCode, versionId, CatalogVersion, "LATEST", ResolvedAt,
                 retired, !retired,
                 NullAttributes ? null! : kind is null || OmitConditionKind
                     ? new Dictionary<string, string?>()

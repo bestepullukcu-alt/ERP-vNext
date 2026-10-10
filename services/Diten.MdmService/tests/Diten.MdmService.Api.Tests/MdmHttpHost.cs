@@ -42,7 +42,7 @@ namespace Diten.MdmService.Api.Tests;
 /// Program.cs registers services, before WebApplicationFactory's configuration hooks apply. They are restored as soon
 /// as the host is built. ⚠ One host per test process: AddPersistence registers a global Guid serializer.</para>
 /// </summary>
-public sealed class MdmHttpHost : IAsyncLifetime
+public class MdmHttpHost : IAsyncLifetime
 {
     public const string DatabaseName = "diten_mdm_itest_http";
     private const string Issuer = "diten-auth-service";
@@ -113,6 +113,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
 
     public IMongoDatabase Database =>
         Factory.Services.GetRequiredService<IMongoClient>().GetDatabase(DatabaseName);
+
+    /// <summary>MOD-0290-FU04 S2: settings a derived host adds on top of these (none here).</summary>
+    protected virtual IReadOnlyDictionary<string, string?> AdditionalSettings { get; } = new Dictionary<string, string?>();
 
     public async Task InitializeAsync()
     {
@@ -237,6 +240,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["LskuRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
                 ["LskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
             };
+            // MOD-0290-FU04 S2: a derived host adds its own settings (ItemActivationHttpHost switches the item approval on).
+            foreach (var (key, value) in AdditionalSettings) overrides[key] = value;
             foreach (var (key, value) in overrides)
             {
                 previous[key] = Environment.GetEnvironmentVariable(key);

@@ -21,6 +21,9 @@ public sealed class ItemsController : CustomBaseController
     public const string SubmitPermission = "mdm.items.submit";
     public const string DeactivatePermission = "mdm.items.deactivate";
     public const string RetirePermission = "mdm.items.retire";
+    // FU04 S2 (§14): the maker takes the activation request back. Like every item key, it reaches Auth with the module
+    // manifest in S5; until then no role holds it.
+    public const string WithdrawPermission = "mdm.items.withdraw";
 
     private readonly IMediator _mediator;
 
@@ -67,6 +70,23 @@ public sealed class ItemsController : CustomBaseController
     public async Task<IActionResult> RequestReactivation(Guid id, [FromBody] ItemModels.ItemLifecycleRequest request,
         CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new RequestItemReactivationCommand(id, request), cancellationToken));
+
+    // FU04 S2 (§8.1): PendingActivation → Draft (Deactivated for a reactivation); only the request's maker.
+    [HttpPost("{id:guid}/withdraw")]
+    [HasPermission(WithdrawPermission)]
+    public async Task<IActionResult> WithdrawApproval(Guid id, [FromBody] ItemModels.ItemLifecycleRequest request,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new WithdrawItemApprovalCommand(id, request), cancellationToken));
+
+    // FU04 S2 (S1 carry-over c): the operator repair of IT- codes held with no item row — the product identity family's
+    // operator key (the same one the LSKU / FG admission repair uses); no screen calls it.
+    [HttpPost("operator/orphan-code-repairs")]
+    [HasPermission(Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.LskuIdentityLifecyclePermissions
+        .RecoverLifecycleOperation)]
+    public async Task<IActionResult> RepairOrphanCodes([FromQuery] int limit = 100, [FromQuery] int minimumAgeMinutes = 15,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(new RepairItemOrphanCodesCommand(limit, minimumAgeMinutes),
+            cancellationToken));
 
     [HttpPost("{id:guid}/deactivate")]
     [HasPermission(DeactivatePermission)]

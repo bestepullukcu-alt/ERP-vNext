@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>此物料尚不能激活：请填写下列库存字段，然后重新提交。</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>批次管理</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>基本单位</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>储存条件（至少一项）</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>单位换算（每个单位与基本单位相距不超过四步）</value></data>
+</root>
