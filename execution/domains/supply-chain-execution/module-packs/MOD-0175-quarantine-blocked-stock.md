@@ -1454,6 +1454,22 @@ reviewed against the mockup. Merged into the MVP-1 branch. Decisions on the open
     signed decision (ESIG-2026-000001) → approval by B in WorkCenter (ESIG-2026-000002) → Applied; people shown by name.
 - **Evidence.** `docs/records/audits/2026-10/mod-0174-item-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`, `mod-0174-item-shots/`.
 
+**ITEM — CT acceptance (2026-10-10).** The CT merged the MVP-1 branch (FUB1) into `feature/sce/mod-0174-item` (clean) and measured
+the merged tree: Inventory **829/829** (the suite started and stopped its own ephemeral replica set — 27017 untouched), Web **696/696**,
+gateway **107/108** (known 5065), architecture **18/18**. CT sabotage (own): the two `quarantine.holds.review` gates of the analysis-note
+editor on Kayıt Detayı → `@if (true)` → `The_note_editor_is_drawn_only_for_the_review_key_and_patches_with_the_page_ETag` red, restored,
+porcelain clean. **TRACE 1.3.0, QUARANTINE 1.1.0, INVENTORY 1.2.1 FROZEN.** FU-0175-Q5-01 and FU-0175-Q5-02 CLOSED. Fast-forwarded
+into the MVP-1 branch. Decisions on the opens:
+- **O-ITEM-1:** a note change is in `inventory_audit` with old / new values (Part 11 audit trail met); its row in the decision history
+  → **FU-0175-ITEM-01** (history entry kind in the next additive QUARANTINE version).
+- **O-ITEM-2 → FU-0175-ITEM-02:** display names need `auth.users.lookup`, today only on the tenant Admin role. Add it to the default
+  quarantine / QA roles for new tenants (AuthService default-role template, CT-D10 pattern); existing tenants = manual grant (owner told).
+- **O-ITEM-5 → FU-0175-ITEM-03 (before G1):** the analysis note stays editable while a decision is PendingApproval — lock the edit
+  (409) until the decision is decided / withdrawn, so the approver signs what the decider saw. (The note is not a `qd-v1` field, so
+  signatures do not break; the rule is GxP clarity.)
+- **O-ITEM-3** (movement rows without user name) and **O-ITEM-4** (`updateHold` replay returns the current state) → small FU batch.
+- O-ITEM-6: known gateway 5065 red (procurement).
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts

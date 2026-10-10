@@ -1024,6 +1024,9 @@ F-3 shell "Search" → central layout owner. FU-0174-P5 CLOSED.
     signed decision (ESIG-2026-000001) → approval by B in WorkCenter (ESIG-2026-000002) → Applied; people shown by name.
 - **Evidence.** `docs/records/audits/2026-10/mod-0174-item-evidence-2026-10-09.md`, `-scripts-2026-10-09.md`, `mod-0174-item-shots/`.
 
+**ITEM — CT acceptance (2026-10-10):** TRACE 1.3.0 FROZEN (`SkuLevel` + `Item`; `createLot` + `PRODUCT_MASTER_DATA_INCOMPLETE`,
+`SKU_LEVEL_NOT_STOCKABLE`). Lot-controlled `Item` materials get lots and post; details and decisions in the MOD-0175 pack §19 ITEM CT note.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
