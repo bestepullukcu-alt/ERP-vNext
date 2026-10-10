@@ -577,8 +577,9 @@ public sealed class VerifySignatureCommandHandler : IRequestHandler<VerifySignat
         }
 
         var record = await _records.GetAsync(actor.TenantId, request.Id, ct);
-        // VIS1: the same visibility rule as search / get — a tenant-level record is verified only by a read holder or its signer.
-        if (record is null || (await _visibility.ScopeAsync(actor, ESignatureVisibilityPurpose.Read, ct)).HidesTenantLevel(record))
+        // FUB1 (FU-0022-VIS-02): the whole visibility rule, as search / export — the signer, a company record only inside the
+        // caller's data scope, a tenant-level record only for a read holder (VIS1). Anything else is "not found" (no oracle).
+        if (record is null || !(await _visibility.ScopeAsync(actor, ESignatureVisibilityPurpose.Read, ct)).CanSee(record))
         {
             return ESignResponses.Fail<VerificationResultDto>(ESignCodes.NotFound, 404, "Signature not found.");
         }

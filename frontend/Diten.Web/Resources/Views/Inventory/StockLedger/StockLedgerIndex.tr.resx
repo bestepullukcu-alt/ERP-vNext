@@ -46,6 +46,7 @@
   <data name="SkuLevelGsku" xml:space="preserve"><value>Küresel SKU</value></data>
   <data name="SkuLevelLsku" xml:space="preserve"><value>Yerel SKU</value></data>
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Mamul</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Malzeme kalemi</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>Bu hareket için kaynakta yeterli stok yok. Hiçbir değişiklik yapılmadı; kullanılabilir miktarı kontrol edip tekrar deneyin.</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>Bu hareketin ters kaydı zaten yapılmış. Hiçbir değişiklik yapılmadı; ters kaydı görmek için listeyi yenileyin.</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>Ürün veya lokasyon verisi şu anda doğrulanamıyor, bu yüzden değişiklik yapılmadı. Bağlantı geri geldiğinde tekrar deneyin.</value></data>

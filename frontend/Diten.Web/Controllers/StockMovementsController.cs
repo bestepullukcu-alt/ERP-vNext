@@ -287,7 +287,8 @@ public sealed partial class StockMovementsController : Controller
 
         return Json(new
         {
-            items = result.Items.Select(o => new { value = o.Value, text = o.Text }),
+            // FUB1 (O-PM1-6): sub = the second line (a Global Product's SKU name under the product's own name); null elsewhere
+            items = result.Items.Select(o => new { value = o.Value, text = o.Text, sub = o.Sub }),
             available = result.Available,
             message = result.Available ? null : _localizer["PickerUnavailable"].Value
         });

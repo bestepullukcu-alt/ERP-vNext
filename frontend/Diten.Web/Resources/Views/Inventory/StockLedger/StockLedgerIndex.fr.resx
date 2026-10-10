@@ -46,6 +46,7 @@
   <data name="SkuLevelGsku" xml:space="preserve"><value>SKU global</value></data>
   <data name="SkuLevelLsku" xml:space="preserve"><value>SKU local</value></data>
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Produit fini</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Article matière</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>Le stock à la source est insuffisant pour ce mouvement. Rien n'a été modifié ; vérifiez la quantité disponible et réessayez.</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>Ce mouvement a déjà été contre-passé. Rien n'a été modifié ; rechargez la liste pour voir la contre-passation.</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>Les données produit ou emplacement ne peuvent pas être vérifiées pour le moment ; aucune modification n'a été faite. Réessayez lorsque la connexion sera rétablie.</value></data>

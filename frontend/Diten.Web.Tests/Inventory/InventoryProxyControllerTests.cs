@@ -237,10 +237,76 @@ public sealed class InventoryProxyControllerTests
         Assert.Equal([Item, material], products.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("value").GetString()));
         Assert.Equal("IT-3 · Amoxicillin trihydrate", products.GetProperty("items")[1].GetProperty("text").GetString());
         Assert.Equal(["Gsku:" + Sku, "Item:" + material], skus.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("value").GetString()));
-        Assert.All(gateway.Requests, r => Assert.Contains(ProductPickerSource.AllowedPaths, p => r.PathAndQuery.StartsWith(p + "?", StringComparison.Ordinal)));
-        Assert.All(gateway.Requests, r => Assert.Contains("status=Active", r.PathAndQuery, StringComparison.Ordinal));
+        // FUB1 (O-PM1-6): besides the contract search, only the product picker's own product read (getProduct) — nothing else
+        Assert.All(gateway.Requests, r => Assert.True(
+            ProductPickerSource.AllowedPaths.Any(p => r.PathAndQuery.StartsWith(p + "?", StringComparison.Ordinal))
+            || r.PathAndQuery == ProductPickerSource.ProductPath + Item, r.PathAndQuery));
+        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery == ProductPickerSource.ProductPath + material); // a material item needs no read
+        Assert.All(gateway.Requests.Where(r => r.PathAndQuery.StartsWith(ProductPickerSource.Path, StringComparison.Ordinal)), r => Assert.Contains("status=Active", r.PathAndQuery, StringComparison.Ordinal));
         Assert.Contains(gateway.Requests, r => r.PathAndQuery == "/api/product-master/stockable-items?status=Active&page=1&pageSize=20&q=amo");
         Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.Contains("/api/global-products", StringComparison.Ordinal) || r.PathAndQuery.Contains("/api/gskus", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// FUB1 (O-PM1-6): the product picker shows a Global Product by its OWN name (getProduct) with the SKU's display name on a second
+    /// line; a material item keeps "code · name" with no second line; a product the read cannot answer keeps today's text.
+    /// </summary>
+    [Fact]
+    public async Task The_product_picker_names_a_Global_Product_by_its_own_name_with_the_SKU_name_second()
+    {
+        const string material = "d4e5f6a7-0000-0000-0000-000000000003";
+        const string unknown = "e5f6a7b8-0000-0000-0000-000000000004";
+        var gateway = new FakeGateway();
+        gateway.On("/api/product-master/stockable-items", 200, $$"""
+            {"items":[
+              {"skuId":"{{Sku}}","skuLevel":"Gsku","itemId":"{{Item}}","itemKind":"GlobalProduct","canonicalCode":"GS-1","name":"Amoxicillin 500 mg · 16 tb","lifecycleStatus":"Active"},
+              {"skuId":"{{material}}","skuLevel":"Item","itemId":"{{material}}","itemKind":"Item","canonicalCode":"IT-3","name":"Amoxicillin trihydrate","lifecycleStatus":"Active"},
+              {"skuId":"{{Guid.NewGuid()}}","skuLevel":"Lsku","itemId":"{{unknown}}","itemKind":"GlobalProduct","canonicalCode":"LS-7","name":"Paracetamol TR","lifecycleStatus":"Active"}
+            ],"page":1,"pageSize":20,"totalCount":3,"contractVersion":"v1.1"}
+            """);
+        gateway.On(ProductPickerSource.ProductPath + Item, 200, """{"itemId":"x","canonicalCode":"GP-100","name":"Amoxicillin"}""");
+        gateway.On(ProductPickerSource.ProductPath + unknown, 503, string.Empty);
+
+        var items = Body(await Movements(gateway, ReadAndCreate).Lookups("products", "a", null, CancellationToken.None)).GetProperty("items");
+
+        Assert.Equal("GP-100 · Amoxicillin", items[0].GetProperty("text").GetString());          // the product's own name …
+        Assert.Equal("Amoxicillin 500 mg · 16 tb", items[0].GetProperty("sub").GetString());       // … the SKU name second
+        Assert.Equal("IT-3 · Amoxicillin trihydrate", items[1].GetProperty("text").GetString());   // material item unchanged
+        Assert.Equal(JsonValueKind.Null, items[1].GetProperty("sub").ValueKind);
+        Assert.Equal("Paracetamol TR", items[2].GetProperty("text").GetString());                  // read failed → today's text
+    }
+
+    /// <summary>
+    /// FUB1 (O-PM1-6) — K3 sabotage (b): the ledger and movement lists show every level the ledger knows by its label in all 7
+    /// languages (no raw "Item" / "Lsku"): the resx key exists, the L10n bridge delivers it, the list maps the level to it.
+    /// </summary>
+    [Fact]
+    public void Every_sku_level_is_labelled_in_the_ledger_and_movement_lists_in_seven_languages()
+    {
+        var web = Diten.Web.Tests.Traceability.TraceViewRenderer.WebRoot;
+        foreach (var (folder, marker, script) in new[] { ("StockLedger", "StockLedgerIndex", "StockLedger"), ("StockMovements", "StockMovementsIndex", "StockMovements") })
+        {
+            var l10n = File.ReadAllText(Path.Combine(web, "Views", "Inventory", folder, "_IndexL10n.cshtml"));
+            var bridge = File.ReadAllText(Path.Combine(web, "wwwroot", "assets", "js", "Inventory", script, "index.l10n.js"));
+            var list = File.ReadAllText(Path.Combine(web, "wwwroot", "assets", "js", "Inventory", script, "index.js"));
+            Assert.Contains("const skuLevelText = (level) => (level && L()['SkuLevel' + level]) || level || '';", list, StringComparison.Ordinal);
+            Assert.Contains("esc(skuLevelText(full.skuLevel))", list, StringComparison.Ordinal);
+            foreach (var level in InventoryListAdapter.SkuLevels)
+            {
+                Assert.Contains($"SkuLevel{level} = Localizer[\"SkuLevel{level}\"].Value", l10n, StringComparison.Ordinal);
+                Assert.Contains($"'SkuLevel{level}'", bridge, StringComparison.Ordinal);
+                var en = System.Xml.Linq.XDocument.Load(Path.Combine(web, "Resources", "Views", "Inventory", folder, $"{marker}.en.resx")).Root!
+                    .Elements("data").Single(d => (string)d.Attribute("name")! == $"SkuLevel{level}").Element("value")!.Value;
+                foreach (var lang in new[] { "ar", "en", "es", "fr", "ru", "tr", "zh" })
+                {
+                    var value = System.Xml.Linq.XDocument.Load(Path.Combine(web, "Resources", "Views", "Inventory", folder, $"{marker}.{lang}.resx")).Root!
+                        .Elements("data").SingleOrDefault(d => (string)d.Attribute("name")! == $"SkuLevel{level}")?.Element("value")?.Value;
+                    Assert.False(string.IsNullOrWhiteSpace(value), $"{folder} {lang}: SkuLevel{level}");
+                    Assert.NotEqual(level, value);                                   // never the raw wire value
+                    if (lang != "en" && level is not "Gsku" and not "Lsku") Assert.NotEqual(en, value);
+                }
+            }
+        }
     }
 
     [Fact]

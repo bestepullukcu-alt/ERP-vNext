@@ -46,6 +46,7 @@
   <data name="SkuLevelGsku" xml:space="preserve"><value>SKU عالمي</value></data>
   <data name="SkuLevelLsku" xml:space="preserve"><value>SKU محلي</value></data>
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>منتج نهائي</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>صنف مادة</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>لا يوجد مخزون كافٍ في المصدر لهذه الحركة. لم يتم تغيير أي شيء؛ تحقّق من الكمية المتاحة ثم حاول مرة أخرى.</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>تم عكس هذه الحركة مسبقًا. لم يتم تغيير أي شيء؛ أعد تحميل القائمة لرؤية القيد العكسي.</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>تعذّر التحقق من بيانات المنتج أو الموقع حاليًا، لذلك لم يتم أي تغيير. حاول مرة أخرى عند عودة الاتصال.</value></data>
