@@ -8398,6 +8398,29 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-599
+
+**Sessiz tarih yanlış ayrıştırma koruması olmayan ~10 ekran (31.02 → 03.03 uyarısız kaydedilir)**
+
+DURUM: AÇIK · SAHİP: CT (ortak bileşen) + ekran sahipleri (XMC-001) · BULAN: WP-WCN-FIX-01 FIX3 incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (FIX3 incelemesi, `487bc7998`):
+- `allowInput: true` ile flatpickr kullanan ve paylaşılan BL-391 korumasını (`DitenDateField.guardAgainstSilentMisparse`) çağırmayan ekranlar. Örnekler:
+  - `CRM/Claims/country-version.js:144`, `CRM/Knowledge/form.js:120` (CRM ekibi);
+  - `Platform/Tenants/details.js:1929` (Platform, CT hattı);
+  - `esbp-horizon-dates.js:100`;
+  - diğerleri.
+- Korunanlar (WCN-FIX-01): ortak `diten-datefield` alanları, PositionAssignments, Organizasyon Birimleri, Pozisyonlar, Tüzel Kişi sihirbazı ve liste süzgeci.
+
+Yapılacak:
+- tam liste (`git grep allowInput`);
+- CT hattı ekranları (Platform Tenants) WCN-FIX-01 kabulünden sonra mekanik olarak bağlanır (koruma + görünüm betiği + korumasızsa `allowInput: false` + ekran başına test + isteğe bağlı tarih reddinde kayıt durur);
+- CRM / diğer ekiplerin ekranları için sahiplerine sorulur.
+
+Gelecek regresyon riski: 🟡 GxP tarihleri (yürürlük, fesih, hasar) uyarısız yanlış kaydedilebilir.
+
+---
+
 ### BL-598
 
 **MDM depoları kurucuda eşzamanlı Mongo çağrısı yapıyor (dizin oluşturma): Mongo kapalıyken istek 503 yerine 500**
