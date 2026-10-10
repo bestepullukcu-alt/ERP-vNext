@@ -388,6 +388,91 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         Assert.Throws<InvalidOperationException>(() => ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
     }
 
+    // ------------------------------------------------------------------------------------------- BL-592 FIX1
+    // Written out — never read from the production constants.
+    private static readonly string[] SixItemKeys =
+    [
+        "mdm.items.read", "mdm.items.create", "mdm.items.update", "mdm.items.submit", "mdm.items.deactivate",
+        "mdm.items.retire"
+    ];
+
+    // CT decision: the allowed item sets are the six, or the six + mdm.items.withdraw (FU04 S2), both all-or-nothing.
+    [Fact]
+    public void BL592_FIX1_The_six_item_keys_with_withdraw_are_an_allowed_set()
+    {
+        var keys = DeclaredKeys();
+        keys.AddRange(SixItemKeys);
+        keys.Add("mdm.items.withdraw");
+        keys.Add("mdm.product-master.read");
+
+        ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys);
+    }
+
+    [Theory]
+    [InlineData("mdm.items.create, mdm.items.deactivate, mdm.items.read, mdm.items.retire, mdm.items.submit, mdm.items.update")]
+    [InlineData("mdm.items.retire")]
+    public void BL592_FIX1_Withdraw_without_all_six_is_refused_naming_the_missing_keys(string missing)
+    {
+        var keys = DeclaredKeys();
+        var absent = missing.Split(", ");
+        keys.AddRange(SixItemKeys.Where(key => !absent.Contains(key)));
+        keys.Add("mdm.items.withdraw");
+
+        var refused = Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
+
+        Assert.Contains($"Missing: [{missing}].", refused.Message, StringComparison.Ordinal);
+        Assert.Contains("Unexpected: [].", refused.Message, StringComparison.Ordinal);
+    }
+
+    // Mutation P2 (the two resource prefixes compared Ordinal instead of OrdinalIgnoreCase): a differently cased key of
+    // either resource must still be seen — and named — not skipped as a key the rule never looked at.
+    [Theory]
+    [InlineData("MDM.ITEMS.READ")]
+    [InlineData("Mdm.Product-Master.Read")]
+    public void BL592_FIX1_A_differently_cased_item_or_product_master_key_is_refused_by_name(string cased)
+    {
+        var keys = DeclaredKeys();
+        keys.AddRange(SixItemKeys);
+        keys.Add("mdm.product-master.read");
+        keys.Add(cased);
+
+        var refused = Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
+
+        Assert.Contains($"Unexpected: [{cased}].", refused.Message, StringComparison.Ordinal);
+    }
+
+    // Mutation P1 (the item / product-master keys dropped from the definition check): a catalogued item or read-contract
+    // row under another module, with platform scope, or soft-deleted is refused like any product key.
+    [Theory]
+    [InlineData("mdm.items.update", "module")]
+    [InlineData("mdm.items.update", "scope")]
+    [InlineData("mdm.items.update", "deleted")]
+    [InlineData("mdm.items.withdraw", "scope")]
+    [InlineData("mdm.product-master.read", "module")]
+    [InlineData("mdm.product-master.read", "scope")]
+    [InlineData("mdm.product-master.read", "deleted")]
+    public void BL592_FIX1_Item_and_read_contract_definitions_must_match_the_contract(string key, string drift)
+    {
+        var declared = ProductCatalog();
+        declared.AddRange(SixItemKeys.Append("mdm.items.withdraw").Append("mdm.product-master.read")
+            .Where(candidate => candidate != key)
+            .Select(ProductPermission));
+        var separator = key.LastIndexOf('.');
+        declared.Add(new Permission("mdm", key["mdm.".Length..separator], key[(separator + 1)..], key, null,
+            moduleOverride: drift == "module" ? "another-module" : ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            scope: drift == "scope" ? PermissionScope.PlatformAdmin : PermissionScope.Tenant)
+            { IsDeleted = drift == "deleted" });
+
+        var refused = Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+                declared,
+                declared.Concat(SharedDependencies())));
+
+        Assert.Equal("Product Identity permission catalog definitions do not match the exact approved contract.", refused.Message);
+    }
+
     private static List<Permission> ProductCatalog()
         => ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
             .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys)

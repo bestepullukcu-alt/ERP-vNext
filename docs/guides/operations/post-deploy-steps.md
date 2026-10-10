@@ -294,22 +294,30 @@ verir.
 **Belirti:** (1) kiracı açılışından sonra ilk yöneticinin e-postası gelmez ve Platform günlüğünde `INVITE_LINK_ROOT_…`.
 (2) Başlangıçta `IndexOptionsConflict` ya da kısmi filtre hatası.
 
-### 7 · BL-592 — Stok ekibinin ürün okuma sözleşmesi: Platform güvenilir kapsam çiftine `mdm.product-master.read`
+### 7 · BL-592 — Stok ekibinin ürün okuma sözleşmesi: Platform güvenilir kapsam çiftine `mdm.product-master.read` (Platform KODU önce, yapılandırma sonra; Auth, manifestten ÖNCE)
 
 | | |
 |---|---|
-| **Modül** | MOD-0290-FU04 S4 okuma sözleşmesi (`/api/product-master/*`, MDM) → Platform güvenilir tüzel kişi kapsamı (WP-MDM-PERMS-01) |
-| **Ne zaman** | BL-592'yi taşıyan Platform deploy'unda; MDM'nin Enforced kapsam yayılımı açık her ortamda |
-| **Ne** | Platform yapılandırması `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` listesine bir çift: `ModuleCode = product-item-sku-master`, `PermissionKey = mdm.product-master.read`. Kod izin listesi bunu tanıyor (en çok 38 çift); yapılandırma depoda değil, her ortam kendisi verir. Sır değişmez, yalnız çift eklenir. |
-| **Yapılmazsa** | Enforced kiracıda okuma sözleşmesinin her ürün satırı 403 `LEGAL_ENTITY_SCOPE_FORBIDDEN` (kapalı başarısızlık, sızıntı yok). Kalem satırları etkilenmez (kalem uçları kapsam sormaz). |
-| **Kim** | Deploy operatörü (Platform yapılandırması) |
+| **Modül** | MOD-0290-FU04 S4 okuma sözleşmesi (`/api/product-master/*`, MDM) → Platform güvenilir tüzel kişi kapsamı; Auth ürün modülü hak profili (WP-MDM-PERMS-01) |
+| **Ne zaman** | BL-592'yi taşıyan deploy'da; MDM'nin Enforced kapsam yayılımı açık her ortamda |
+| **Sıra** | **1.** Platform KODU (BL-592: izin listesinde anahtar var, tavan 38). **2.** Platform yapılandırması: `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` listesine bir çift, `ModuleCode = product-item-sku-master`, `PermissionKey = mdm.product-master.read` (38 çift). **3.** Auth BL-592, kalem / `mdm.product-master.*` anahtarlarını **İLK beyan eden** MDM manifestinden ÖNCE. **4.** O MDM manifesti (S4 / S5 / S2 ve stock-gate hatta birleştikten sonraki küçük MDM adımı). |
+| **Ne** | Yapılandırma depoda değil, her ortam kendisi verir. Sır değişmez, yalnız çift eklenir. |
+| **Yapılmazsa / ters sırada** | (a) Çift hiç eklenmezse: Enforced kiracıda okuma sözleşmesinin her ürün satırı 403 `LEGAL_ENTITY_SCOPE_FORBIDDEN` (kapalı başarısızlık, sızıntı yok). Kalem satırları etkilenmez (kalem uçları kapsam sormaz). (b) **38 çiftli yapılandırma BL-592 ÖNCESİ Platform koduna verilirse** (tavan 37, anahtar listede yok): yapılandırma geçersiz sayılır, MDM kimlik bilgisi **tamamen** reddedilir, MDM'nin **her** güvenilir kapsam sorusu 403 — (a)'dan çok daha geniş. (c) **MDM manifesti Auth BL-592'den önce** anahtarları beyan ederse: eski Auth'ta bu iki anahtar düz "read" eylemidir; varsayılan Viewer tabanı (`RoleProvisioningService` / `DataSeeder`, yalnız ekler) `mdm.items.read`'i ve `mdm.product-master.read`'i **ürün modülü hakkı olmayan kiracılar dahil HER kiracının** Viewer'ına verir ve sonra hiçbir şey geri almaz (System hakkı eşitlemeyle silinmez). |
+| **Geri alma** | Ters sırada: **önce** yapılandırma 37 çifte (`mdm.product-master.read` çifti çıkarılır), **sonra** Platform kodu. Kod önce geri alınırsa 38 çiftli yapılandırma (b)'deki gibi bütün kimlik bilgisini düşürür. Auth geri alınacaksa önce manifest adımı geri alınmalı; geri alınmış Auth'ta beyan edilmiş anahtar (c)'deki kalıcı Viewer hakkını doğurur. |
+| **Kim** | Deploy operatörü (Platform kodu + yapılandırması, Auth) · MDM sahibi (manifest adımı) |
 
-**Kontrol:** liste 38'i aşmamalı ve her çift bir kez geçmeli; aksi hâlde Platform MDM kimlik bilgisini reddeder (bütün
-güvenilir kapsam soruları 403). Yeni çiftten sonra Enforced bir kiracıda `/api/product-master/…` bir ürün satırı döndürmeli.
+**Kontrol:**
+- Liste 38'i aşmamalı ve her çift bir kez geçmeli; aksi hâlde Platform MDM kimlik bilgisini reddeder (bütün güvenilir
+  kapsam soruları 403).
+- Yeni çiftten sonra Enforced bir kiracıda `/api/product-master/…` bir ürün satırı döndürmeli. **Bu kontrol, MDM manifest
+  adımı (4) anahtarı rollere taşıyana kadar GEÇEMEZ:** o adıma kadar hiçbir rol `mdm.product-master.read` tutmaz, çağrı
+  yetkiyle düşer. Adım 2'den sonra bu kontrolün kırmızı olması tek başına hata değildir; adım 4'ten sonra kırmızıysa hatadır.
+- Adım 3'ten sonra, adım 4'ten önce: ürün modülü hakkı OLMAYAN bir kiracının Viewer'ı `mdm.items.read` tutmamalı.
 
-**Ön koşul (BL-592, CT kararı A):** anahtar Auth kataloğuna ve rollere yalnız manifest → Platform kataloğu → Auth
-eşitlemesi yoluyla girer. MDM manifestinin `mdm.product-master.read`'i beyan etmesi S4 ve stock-gate hatta birleştikten
-sonraki küçük MDM adımıdır. O adım yapılmadan stok ekibine "hazır" denmez.
+**Ön koşul (BL-592, CT kararı A):** anahtarlar Auth kataloğuna ve rollere yalnız manifest → Platform kataloğu → Auth
+eşitlemesi yoluyla girer. Ürün modülü hakkıyla: Admin her beyan edilen kalem anahtarını (altı; S2 birleşince
+`mdm.items.withdraw` ile yedi) ve `mdm.product-master.read`'i, Viewer yalnız `mdm.items.read` ve `mdm.product-master.read`'i
+alır; hak yoksa kimse almaz. Manifest adımı yapılmadan stok ekibine "hazır" denmez.
 
 ---
 

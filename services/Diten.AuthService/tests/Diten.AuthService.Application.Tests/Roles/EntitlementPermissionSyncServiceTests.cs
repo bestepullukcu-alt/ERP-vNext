@@ -1937,7 +1937,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         => rolePerms.Rows
             .Where(grant => grant.RoleId == roleId)
             .Select(grant => catalog.Single(permission => permission.Id == grant.PermissionId).Key)
-            .Where(key => ItemKeys.Contains(key) || key == ProductMasterReadKey)
+            .Where(key => key.StartsWith("mdm.items.", StringComparison.Ordinal) || key == ProductMasterReadKey)
             .Order(StringComparer.Ordinal)
             .ToList();
 
@@ -1984,7 +1984,10 @@ public sealed class EntitlementPermissionSyncServiceTests
         var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
             ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, ProductIdentityDeclaredKeys(catalog), Actor));
 
-        Assert.Contains("mdm.items", refused.Message, StringComparison.Ordinal);
+        // FIX1: the refusal names the missing keys — not a fixed text that every refusal shares.
+        Assert.Contains($"Missing: [{string.Join(", ", ItemKeys.Except(partial).Order(StringComparer.Ordinal))}].",
+            refused.Message, StringComparison.Ordinal);
+        Assert.Contains("Unexpected: [].", refused.Message, StringComparison.Ordinal);
         Assert.Empty(rolePerms.Rows);
     }
 
@@ -1998,8 +2001,10 @@ public sealed class EntitlementPermissionSyncServiceTests
         catalog.Add(PermissionFor(unknown));
         var (svc, _, rolePerms) = BuildWith(catalog);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
             ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, ProductIdentityDeclaredKeys(catalog), Actor));
+        Assert.Contains($"Unexpected: [{unknown}].", refused.Message, StringComparison.Ordinal);
+        Assert.Contains("Missing: [].", refused.Message, StringComparison.Ordinal);
         Assert.Empty(rolePerms.Rows);
     }
 
@@ -2037,6 +2042,69 @@ public sealed class EntitlementPermissionSyncServiceTests
 
         Assert.DoesNotContain(rolePerms.Rows, grant =>
             catalog.Single(p => p.Id == grant.PermissionId).Key.StartsWith("mdm.product-master.", StringComparison.Ordinal));
+        Assert.Equal(ItemKeys.Order(StringComparer.Ordinal),
+            NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole)));
+        Assert.Equal(["mdm.items.read"], NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.ViewerRole)));
+    }
+
+    // ------------------------------------------------------------------------------------------- BL-592 FIX1
+    private const string ItemsWithdrawKey = "mdm.items.withdraw";
+
+    // Item 1 (CT decision): S2 adds mdm.items.withdraw. The six + withdraw reconcile; Admin holds all seven item keys and
+    // the read contract (8), Viewer the two reads only — withdraw is not a read. (Only-the-maker-withdraws is MDM's rule.)
+    [Fact]
+    public async Task BL592_FIX1_Six_item_keys_and_withdraw_reconcile_admin_eight_and_viewer_two()
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), ItemKeys.Append(ItemsWithdrawKey));
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        var admin = NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole));
+        Assert.Equal(ItemKeys.Append(ItemsWithdrawKey).Append(ProductMasterReadKey).Order(StringComparer.Ordinal), admin);
+        Assert.Equal(8, admin.Count);
+        Assert.Equal(new[] { "mdm.items.read", ProductMasterReadKey }.Order(StringComparer.Ordinal),
+            NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.ViewerRole)));
+    }
+
+    // absent: the item keys left out next to withdraw; "all" = withdraw alone.
+    [Theory]
+    [InlineData("all")]
+    [InlineData("mdm.items.retire")]
+    [InlineData("mdm.items.read mdm.items.create")]
+    public async Task BL592_FIX1_Withdraw_without_all_six_item_keys_is_refused_by_name(string absent)
+    {
+        var expectedMissing = absent == "all" ? ItemKeys : absent.Split(' ');
+        var declaredItems = ItemKeys.Except(expectedMissing).Append(ItemsWithdrawKey).ToArray();
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), declaredItems);
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, ProductIdentityDeclaredKeys(catalog), Actor));
+
+        Assert.Contains($"Missing: [{string.Join(", ", expectedMissing.Order(StringComparer.Ordinal))}].",
+            refused.Message, StringComparison.Ordinal);
+        Assert.Empty(rolePerms.Rows);
+    }
+
+    // Item 2: the read contract catalogued under ANOTHER module (brand-product-master) while the product module declares
+    // the six item keys only. The product sync succeeds and no role holds the key — this goes red the day the grant is
+    // made by key prefix instead of by the module's declaration (mutation P3).
+    [Fact]
+    public async Task BL592_FIX1_A_read_contract_catalogued_under_another_module_is_granted_to_nobody_by_the_product_sync()
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), ItemKeys, productMaster: false);
+        var foreign = new Permission("mdm", "product-master", "read", "Read Product Master", null,
+            moduleOverride: "brand-product-master", scope: PermissionScope.Tenant);
+        catalog.Add(foreign);
+        Assert.DoesNotContain(ProductMasterReadKey, ProductIdentityDeclaredKeys(catalog));
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, grant => grant.PermissionId == foreign.Id);
         Assert.Equal(ItemKeys.Order(StringComparer.Ordinal),
             NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole)));
         Assert.Equal(["mdm.items.read"], NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.ViewerRole)));

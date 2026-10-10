@@ -69,15 +69,30 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
         Assert.False(authenticator.AllowsPair("product-item-sku-master", "mdm.gskus.read"));
     }
 
-    [Fact]
-    public void More_than_exact_maximum_pairs_fails_closed()
+    // BL-592 FIX1: 39 configured pairs are refused, built from REAL keys (the earlier fake mdm.x{i}.read keys were refused
+    // by the allow list before the count was ever reached). Measured: with today's code the 39th is refused by the
+    // distinct-pair check (a repeat) or by the allow list (an unlisted, well-formed key) — the "<= MaxAllowedPairs" bound
+    // and the allow list are equivalent while the allow list holds exactly MaxAllowedPairs keys (report: equivalent mutant).
+    [Theory]
+    [InlineData("repeat")]
+    [InlineData("unlisted")]
+    public void Thirty_eight_real_pairs_and_a_thirty_ninth_fail_closed(string thirtyNinth)
     {
         var options = Options();
-        options.Mdm.AllowedPairs = Enumerable.Range(0, TrustedLegalEntityScopeCredentialAuthenticator.MaxAllowedPairs + 1)
-            .Select(i => new TrustedLegalEntityScopeAllowedPair { ModuleCode = "product-item-sku-master", PermissionKey = $"mdm.x{i}.read" })
-            .ToList();
+        options.Mdm.AllowedPairs = AllThirtyEightPermissions.Select(permission => new TrustedLegalEntityScopeAllowedPair
+            { ModuleCode = "product-item-sku-master", PermissionKey = permission }).ToList();
+        Assert.True(Create(options).Authenticate("mdm", "active-secret", TrustedLegalEntityScopeCredentialAuthenticator.Audience).Authenticated);
 
-        Assert.True(Create(options).Authenticate("mdm", "active-secret", TrustedLegalEntityScopeCredentialAuthenticator.Audience).Forbidden);
+        options.Mdm.AllowedPairs.Add(new()
+        {
+            ModuleCode = "product-item-sku-master",
+            PermissionKey = thirtyNinth == "repeat" ? "mdm.product-master.read" : "mdm.items.read"
+        });
+        Assert.Equal(39, options.Mdm.AllowedPairs.Count);
+
+        var authenticator = Create(options);
+        Assert.True(authenticator.Authenticate("mdm", "active-secret", TrustedLegalEntityScopeCredentialAuthenticator.Audience).Forbidden);
+        Assert.False(authenticator.AllowsPair("product-item-sku-master", "mdm.product-master.read"));
     }
 
     [Fact]
@@ -298,6 +313,18 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
         "mdm.product-legal-entity-scopes.read", "mdm.product-legal-entity-scopes.configure",
         "mdm.product-legal-entity-scopes.replace", "mdm.product-legal-entity-scopes.end",
         "mdm.product-legal-entity-scope-rollout.activate", "mdm.product-legal-entity-scope-rollout.rollback"
+    ];
+
+    // BL-592: the 38 pairs a fully configured environment lists (the 22 canonical + 15 GSKU / LSKU / FG lifecycle actions +
+    // the product-master read contract). Declared AFTER CanonicalPermissions: static fields initialise in text order.
+    private static readonly string[] AllThirtyEightPermissions =
+    [
+        .. CanonicalPermissions,
+        "mdm.gskus.update", "mdm.gskus.submit", "mdm.gskus.withdraw", "mdm.gskus.request-correction",
+        "mdm.gskus.request-retirement", "mdm.gskus.retire", "mdm.lskus.withdraw", "mdm.lskus.request-retirement",
+        "mdm.lskus.submit", "mdm.lskus.retire", "mdm.finished-goods.submit", "mdm.finished-goods.cancel-draft",
+        "mdm.finished-goods.withdraw", "mdm.finished-goods.request-retirement",
+        "mdm.finished-goods.withdraw-retirement-request", "mdm.product-master.read"
     ];
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
