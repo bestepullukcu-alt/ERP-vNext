@@ -61,7 +61,15 @@ public sealed record WorkspaceVisitDto(
     string? PinnedTime,
     bool IsExtra,
     // W2-BE-c (C2, additive) — the visit's institution name (written + draft; one bulk name read).
-    string? AccountDisplayName = null);
+    string? AccountDisplayName = null,
+    // W2-BE-d (additive) — the doctor's specialty (medical-specialty code + its label in the request language), the
+    // doctor's segment badges (the 3D rule), the institution's address (line · district, city) and, on a draft visit,
+    // why the engine moved it off its pinned day / time (pin_time_conflict, pin_time_past_day_end, pin_day_full, …).
+    string? SpecialtyCode = null,
+    string? SpecialtyLabel = null,
+    IReadOnlyList<string>? Badges = null,
+    string? AccountAddress = null,
+    string? PinMoveReason = null);
 
 /// <summary>One Monday-week of the window: its plan state and load.</summary>
 public sealed record WorkspaceWeekDto(
@@ -100,7 +108,9 @@ public sealed record WorkspaceCalendarDto(
     string ResourceId,
     IReadOnlyList<WorkspaceVisitDto> Visits,
     IReadOnlyList<WorkspaceWeekDto> Weeks,
-    IReadOnlyList<WorkspaceDayDto> Days);
+    IReadOnlyList<WorkspaceDayDto> Days,
+    // W2-BE-d (additive) — the cycle period of the window (its first day inside a period).
+    string? PeriodName = null);
 
 /// <summary>The workspace week states.</summary>
 public static class WorkspaceWeekStates

@@ -137,7 +137,7 @@ public sealed class ContactPeriodStatusReader
             var freq = frequency.GetValueOrDefault(contactId);
             result[contactId] = Compose(
                 contactId, mine, reportByPlan, request.Period, request.Today, freq,
-                Badges(segments, contactId), consent.GetValueOrDefault(contactId),
+                SegmentBadges(segments, contactId), consent.GetValueOrDefault(contactId),
                 contacts.TryGetValue(contactId, out var contact) && VisitTargetNameReader.IsInactiveStatus(contact.Status),
                 request.WeekStart);
         }
@@ -278,7 +278,9 @@ public sealed class ContactPeriodStatusReader
     /// <summary>The Monday of the ISO week containing <paramref name="date"/>.</summary>
     public static DateOnly WeekStart(DateOnly date) => date.AddDays(-(((int)date.DayOfWeek + 6) % 7));
 
-    private static IReadOnlyList<string> Badges(ContactSegmentSet segments, Guid contactId)
+    /// <summary>The doctor's segment badges: the names of their active segments, alphabetical, at most
+    /// <see cref="MaxSegmentBadges"/>. W2-BE-d — public: the visit workspace cards show the SAME badges.</summary>
+    public static IReadOnlyList<string> SegmentBadges(ContactSegmentSet segments, Guid contactId)
         => segments.For(contactId)
             .Select(id => segments.SegmentNames.GetValueOrDefault(id))
             .Where(name => !string.IsNullOrWhiteSpace(name))

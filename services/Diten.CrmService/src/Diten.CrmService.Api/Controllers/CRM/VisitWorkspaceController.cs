@@ -31,10 +31,10 @@ public sealed class VisitWorkspaceController : CustomBaseController
     [HasPermission(ReportPerms.Read)]
     [HasPermission(PlanPerms.Read)]
     public async Task<IActionResult> Calendar(
-        [FromQuery] string? from, [FromQuery] string? to, [FromQuery] string? resourceId,
+        [FromQuery] string? from, [FromQuery] string? to, [FromQuery] string? resourceId, [FromQuery] string? lang,
         CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
-            new GetWorkspaceCalendarQuery(from, to, resourceId), cancellationToken));
+            new GetWorkspaceCalendarQuery(from, to, resourceId, lang ?? Request.Headers.AcceptLanguage.ToString()), cancellationToken));
 
     /// <summary>The active reasons for cancel / missed / reschedule, labelled by <c>?lang=</c> or Accept-Language.</summary>
     [HttpGet("api/crm/visit-workspace/reasons")]

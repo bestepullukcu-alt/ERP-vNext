@@ -12,7 +12,10 @@ public sealed record GetRescheduleOptionsQuery(Guid PlannedVisitId) : IRequest<R
 
 /// <summary>WP-VW-W2 (A4) — the unified workspace calendar of [From, To] (≤ 42 days) for the caller (or, with read-all,
 /// for <paramref name="ResourceId"/>).</summary>
-public sealed record GetWorkspaceCalendarQuery(string? From, string? To, string? ResourceId = null)
+public sealed record GetWorkspaceCalendarQuery(
+    string? From, string? To, string? ResourceId = null,
+    // W2-BE-d — the label language (two letters; ?lang, else Accept-Language, else en).
+    string? Language = null)
     : IRequest<Response<WorkspaceCalendarDto>>;
 
 /// <summary>WP-VW-W2 — what the workspace publishes (statuses incl. draft, reason set, limits, codes).</summary>

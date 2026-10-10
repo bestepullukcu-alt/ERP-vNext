@@ -1,5 +1,10 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Common.ReferenceValidation;
+using Diten.CrmService.Application.Features.Contact;
+using Diten.CrmService.Application.Features.CyclePeriod.Read;
+using Diten.CrmService.Application.Features.Segmentation.Resolution;
+using Diten.CrmService.Application.Features.VisitPlanning.TargetStatus;
 using Diten.CrmService.Application.Features.PlannedVisit;
 using Diten.CrmService.Application.Features.VisitPlanning;
 using Diten.CrmService.Application.Features.VisitReport;
@@ -42,6 +47,9 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
     private readonly VisitWorkspaceDays _days;
     private readonly VisitTargetNameReader _names;
     private readonly TimeProvider _clock;
+    private readonly IContactSegmentSetReader? _segments;
+    private readonly IReferenceDataCatalogReader? _catalog;
+    private readonly ICyclePeriodReader? _periods;
 
     public GetWorkspaceCalendarHandler(
         ITenantContext tenant,
@@ -53,8 +61,15 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
         VisitWorkspaceDays days,
         VisitTargetNameReader names,
         IWorkspacePlanPreviewSource? previews = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        // W2-BE-d — segment badges (the 3D source), reference labels (specialty / city / district), the period name.
+        IContactSegmentSetReader? segments = null,
+        IReferenceDataCatalogReader? catalog = null,
+        ICyclePeriodReader? periods = null)
     {
+        _segments = segments;
+        _catalog = catalog;
+        _periods = periods;
         _tenant = tenant;
         _caller = caller;
         _calendar = calendar;
@@ -148,7 +163,7 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
         var weekStates = new Dictionary<DateOnly, (string State, PlanningSession Session, WeekCapacityDto? Capacity, IReadOnlyList<UnscheduledPreview> Unplaced)>();
         var draftDayMinutes = new Dictionary<DateOnly, int>();
         var draftTargets = new List<(Guid? AccountId, Guid? ContactId, string TargetType, Guid TargetId)>();
-        var draftVisits = new List<(PlannedSlotPreview Slot, string WeekStart)>();
+        var draftVisits = new List<(PlannedSlotPreview Slot, string WeekStart, string? PinMove)>();
         if (_previews is not null)
         {
             foreach (var session in sessions)
@@ -196,7 +211,10 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                         continue;
                     }
 
-                    draftVisits.Add((slot, monday.ToString("yyyy-MM-dd")));
+                    // W2-BE-d (5) — why the engine moved this visit off its pinned day / time (the preview's own move list)
+                    var move = (preview.PinOverflow ?? Array.Empty<PinOverflowPreview>())
+                        .FirstOrDefault(p => p.TargetId == slot.TargetId && p.ToDate == slot.PlannedDate);
+                    draftVisits.Add((slot, monday.ToString("yyyy-MM-dd"), move?.Reason));
                     draftTargets.Add((slot.AccountId, slot.ContactId, slot.TargetType, slot.TargetId));
                 }
             }
@@ -220,7 +238,7 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                 .Concat(draftTargets.Select(t => t.AccountId))
                 .Concat(draftTargets.Where(t => VisitTargetNameReader.NamedByInstitution(t.TargetType)).Select(t => (Guid?)t.TargetId))
                 .Concat(unplacedAll.Select(UnplacedAccount)),
-            draftTargets.Select(t => t.ContactId).Concat(unplacedAll.Select(UnplacedContact)),
+            draftTargets.Select(t => t.ContactId).Concat(unplacedAll.Select(UnplacedContact)).Concat(atoms.Values.Select(a => a.ContactId)),
             cancellationToken);
         for (var i = 0; i < visits.Count; i++)
         {
@@ -237,7 +255,7 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
         if (draftVisits.Count > 0)
         {
             var keys = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var (slot, weekStart) in draftVisits)
+            foreach (var (slot, weekStart, pinMove) in draftVisits)
             {
                 var key = $"{weekStart}|{slot.TargetType}|{slot.TargetId}";
                 for (var n = 2; !keys.Add(key); n++)
@@ -260,7 +278,8 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                         .ToList(),
                     PlannedVisitSource.RoutePlan, null, null, null, null, null,
                     slot.IsPinned, PinnedTime: slot.PinnedTime, slot.IsExtra, // W2-BE-b (CT wiring)
-                    AccountDisplayName: target.Account));
+                    AccountDisplayName: target.Account,
+                    PinMoveReason: pinMove));
             }
         }
 
@@ -313,6 +332,40 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
             }
         }
 
+        // ── W2-BE-d (2–4) — specialty (code + label), segment badges, institution address on every card ────────────
+        var language = GetVisitReasonsHandler.NormalizeLanguage(request.Language);
+        Guid? AccountOf(WorkspaceVisitDto v) => v.AccountId ?? (VisitTargetNameReader.NamedByInstitution(v.TargetType) ? v.TargetId : null);
+        var labels = new WorkspaceReferenceLabels(_catalog);
+        await labels.LoadAsync(ContactReferenceValidation.MedicalSpecialtySet, visits.Any(v => names.ContactSpecialty(v.ContactId) is not null), cancellationToken);
+        var accountsOnCards = visits.Select(v => names.AccountTarget(AccountOf(v))).Where(a => a is not null).ToList();
+        await labels.LoadAsync(ContactReferenceValidation.CitySet, accountsOnCards.Any(a => !string.IsNullOrWhiteSpace(a!.CityRef)), cancellationToken);
+        await labels.LoadAsync(ContactReferenceValidation.DistrictSet, accountsOnCards.Any(a => !string.IsNullOrWhiteSpace(a!.DistrictRef)), cancellationToken);
+        var doctorIds = visits.Select(v => v.ContactId).OfType<Guid>().Distinct().ToList();
+        var segmentSet = _segments is null || doctorIds.Count == 0
+            ? null
+            : await _segments.ReadAsync(tenantId, doctorIds, _clock.GetUtcNow(), cancellationToken);
+        for (var i = 0; i < visits.Count; i++)
+        {
+            var v = visits[i];
+            var code = names.ContactSpecialty(v.ContactId);
+            visits[i] = v with
+            {
+                SpecialtyCode = code,
+                SpecialtyLabel = labels.Label(ContactReferenceValidation.MedicalSpecialtySet, code, language),
+                Badges = segmentSet is not null && v.ContactId is { } doctor
+                    ? ContactPeriodStatusReader.SegmentBadges(segmentSet, doctor)
+                    : Array.Empty<string>(),
+                AccountAddress = AddressOf(names.AccountTarget(AccountOf(v)), labels, language)
+            };
+        }
+
+        // W2-BE-d (1) — the period of the window: the first day that lies in one of the rep's periods.
+        string? periodName = null;
+        if (_periods is not null && dayRows.FirstOrDefault(d => d.CyclePeriodId is not null)?.CyclePeriodId is { } periodId)
+        {
+            periodName = (await _periods.GetByIdAsync(periodId, cancellationToken))?.CycleName;
+        }
+
         var ordered = visits
             .OrderBy(v => v.PlannedDate, StringComparer.Ordinal)
             .ThenBy(v => v.SequenceOrder ?? int.MaxValue)
@@ -320,7 +373,25 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
             .ToList();
 
         return Response<WorkspaceCalendarDto>.Success(new WorkspaceCalendarDto(
-            from.ToString("yyyy-MM-dd"), to.ToString("yyyy-MM-dd"), resourceId, ordered, weeksOut, days));
+            from.ToString("yyyy-MM-dd"), to.ToString("yyyy-MM-dd"), resourceId, ordered, weeksOut, days, periodName));
+    }
+
+    /// <summary>W2-BE-d (4) — "line · district, city" from the institution record; the district / city are their reference
+    /// labels (a code without a published label is left out, never shown raw). Null when there is nothing to show.</summary>
+    public static string? AddressOf(NamedTarget? account, WorkspaceReferenceLabels labels, string language)
+    {
+        if (account is null)
+        {
+            return null;
+        }
+
+        var place = string.Join(", ", new[]
+        {
+            labels.Label(ContactReferenceValidation.DistrictSet, account.DistrictRef, language),
+            labels.Label(ContactReferenceValidation.CitySet, account.CityRef, language)
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
+        var parts = new[] { account.AddressLine?.Trim(), place }.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+        return parts.Count == 0 ? null : string.Join(" · ", parts);
     }
 
     /// <summary>The preview's week status → the workspace state (an empty, not approved week has no plan yet).</summary>

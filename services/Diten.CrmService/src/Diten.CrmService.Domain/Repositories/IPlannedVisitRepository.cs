@@ -53,6 +53,22 @@ public interface IPlannedVisitRepository
             .ToList();
     }
 
+    /// <summary>W2-BE-d (6) — ALL plans of one rep (any date / status) in ONE read: the workspace preview cache's stamp.
+    /// The default narrows <see cref="ListAsync"/> in memory; the Mongo repository answers with a single
+    /// <c>Resource.ResourceId = r</c> find on the existing (tenant, resource, date) index prefix.</summary>
+    async Task<IReadOnlyList<PlannedVisit>> ListByResourceAsync(
+        Guid tenantId, string resourceId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(resourceId))
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        return (await ListAsync(tenantId, cancellationToken))
+            .Where(p => string.Equals(p.Resource?.ResourceId, resourceId, StringComparison.Ordinal))
+            .ToList();
+    }
+
     /// <summary>WP-VP-4A — the non-deleted plans with these ids in ONE read (an old committed plan's written visits). The
     /// default narrows <see cref="ListAsync"/>; the Mongo repository answers with a single <c>_id $in</c> find.</summary>
     async Task<IReadOnlyList<PlannedVisit>> ListByIdsAsync(

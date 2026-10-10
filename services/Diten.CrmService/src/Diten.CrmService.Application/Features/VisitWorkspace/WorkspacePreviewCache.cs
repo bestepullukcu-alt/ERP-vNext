@@ -140,7 +140,8 @@ public sealed class CachedWorkspacePlanPreviewSource : IWorkspacePlanPreviewSour
             return known;
         }
 
-        var visits = (await _plannedVisits.ListAsync(tenantId, cancellationToken))
+        // W2-BE-d (6) — the rep's plans only (one repository read by resource), not the whole tenant filtered here.
+        var visits = (await _plannedVisits.ListByResourceAsync(tenantId, resourceId, cancellationToken))
             .Where(v => string.Equals(v.Resource.ResourceId, resourceId, StringComparison.Ordinal))
             .OrderBy(v => v.Id)
             .ToList();
