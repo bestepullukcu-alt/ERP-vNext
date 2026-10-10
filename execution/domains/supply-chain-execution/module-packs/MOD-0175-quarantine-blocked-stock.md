@@ -1515,6 +1515,21 @@ into the MVP-1 branch. Decisions on the opens:
   - B approves QKR-2026-0002 in WorkCenter (ESIG-2026-000003) → Applied, hold Decided.
   - Fleet PIDs unchanged.
 
+**FUB2 — CT acceptance (2026-10-10).** CT re-ran Inventory **839/839** (own ephemeral replica set; 27017 untouched), Web **699/699**,
+architecture **18/18** in the agent worktree (MVP-1 still at the base — no merge needed). CT sabotage (own): the request-fingerprint
+comparison of `updateHold` replay forced to "equal" → `The_same_key_answers_the_first_result_even_after_a_later_edit_and_a_different_body_is_400`
+red, restored, porcelain clean (the CT's first run used a `~Quarantine` filter that misses `Api/HoldNoteLockTests` — re-run with the right
+filter). **QUARANTINE 1.2.0 and ESIGN 1.0.1 FROZEN; PRODUCT-MASTER files at draft.11 (`00a4d4268`).** FU-0175-ITEM-01, FU-0175-ITEM-03,
+O-ITEM-4, FU-0022-CT-01 CLOSED. Fast-forwarded into the MVP-1 branch. The two BLOCKED items:
+- **FU-0175-ITEM-02 — not changed (CT):** `auth.users.lookup` also opens the tenant user search and account verification, broader than
+  display names, and the default-role template reaches existing tenants (below). It is NOT added to Viewer. Owner grants it manually to
+  the QA roles that need names; a narrow display-name key is **FU-0018-NAMES-01** (AuthService owner, post-MVP-1).
+- **Finding (security, owner decision pending) — FU-0022-SEED-02:** `RoleProvisioningService.EnsureDefaultRolesAsync` re-applies the
+  default-role template (adds missing keys) on `tenant-admin-invited`, `tenant-activated` and at every AuthService start for the seed
+  tenant. CT-D10's "new tenants only" therefore does not hold: the E3 / E5B e-signature signer keys reach existing tenants at those events.
+- **O-ITEM-3 → FU-0173-UI-USER-01 (post-G1):** the movement rows carry no user (QUARANTINE `MovementLink` has a name field only, INVENTORY
+  `TransactionItem` none) — needs an additive contract field; the audit trail already records the user.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
