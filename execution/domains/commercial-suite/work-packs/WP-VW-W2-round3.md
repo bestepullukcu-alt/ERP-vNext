@@ -180,3 +180,28 @@ Commit: "feat(web): WP-VW-W2-WEB-c — visit workspace design fit (calendar card
 İl / ilçe / uzmanlık setlerinde TR etiket yok.
 
 **Bekleyen:** W2-WEB-c.
+
+## §37 CT kabul — W2-WEB-c E2 ACCEPTED (2026-10-10)
+**Commit:** `1a129eef5` (ajan `87f42d85f`, cherry-pick, çakışma yok). Push: test dalı.
+
+**CT K13:**
+- Web 861 → **865/0**. Ziyaret Planlama yeşil (`targets-core.js` / `diten-calendar.js` değişmedi).
+- CRM dokunulmadı; mimari 27.
+
+**Ajanın görsel karşılaştırması:** ayrı sekmede statik sahne (worktree'nin gerçek CSS/JS + sahte veri) ↔ mockup, 1440 genişlik. Testlerin göremediği 5 CSS hatası bulup düzeltti:
+- `#vw-calendar` zaten `.fc` olduğundan iç kurallar tutmuyordu;
+- Sneat -24px kenar boşluğu;
+- mesai penceresi olmayan günlerin gri gölgesi;
+- `dc-event-body` daralması;
+- renk değişkenleri panel / E2 dışında kalıyordu.
+
+**Bilinçli sapmalar (CT kabul):**
+- saatsiz ziyaret 08:30 diliminde işaretli;
+- "Değiştir (N dk)" yok (DTO'da rapor zamanı yok);
+- süre tahmini şimdilik planlanan süre (W3 `steps[].durationMinutes` gelince kendiliğinden geçer);
+- sığmayanlar modal;
+- Planla satırında "Bu hafta görülmeli" rozeti yok (hızlı süzgeçte var).
+
+**CT sabotajı:** E2 sekme uygunluğu kapatıldı (hepsi etkin) → 2 kırmızı (`A1`, `A2` design fit). Geri alındı, touch yapıldı; tam tur 865/0.
+
+**Sıradaki:** fleet yeniden başlatılınca canlı E4 + mockup ile görsel karşılaştırma (Yürüt, Planla, Ayrıntı, E2, Ay, RTL, telefon).
