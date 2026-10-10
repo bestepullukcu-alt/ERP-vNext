@@ -86,10 +86,14 @@ public sealed record ProductMasterStockablePage(
 public sealed record ProductMasterUnreadableRow(
     ProductMasterRowKind Kind, string Id, string? CanonicalCode = null, int CodeBracket = ProductMasterCodeBracket.Text);
 
-/// <summary>S4 FIX4 — the BSON type order of a stored canonical code, as the store's $sort places it.</summary>
+/// <summary>S4 FIX4 — the BSON type order of a stored canonical code, as the store's $sort places it.
+/// BL-603 — <see cref="First"/> (MinKey and the legacy undefined, before missing / null and every other value; measured on the
+/// real store) and <see cref="Last"/> (MaxKey, after every other value).</summary>
 public static class ProductMasterCodeBracket
 {
+    public const int First = -1;
     public const int BeforeText = 0;
     public const int Text = 1;
     public const int AfterText = 2;
+    public const int Last = 3;
 }

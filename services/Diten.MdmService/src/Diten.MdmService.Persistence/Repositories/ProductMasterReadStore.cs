@@ -174,27 +174,35 @@ public sealed class ProductMasterReadStore : IProductMasterReadStore
         return new(rows, total, unreadable);
     }
 
-    // S4 FIX4: where the store's $sort on CanonicalCode put an unreadable row — BSON's type order: missing / null and
-    // numbers before text, text (by its value), then objects, arrays of those, binary, bool, dates. An array sorts by
-    // its smallest element (ascending); that is followed best-effort: its smallest string, else a number / null /
-    // empty array before text, else after it. Inside "before text" the store's own order (null < numbers) is not
-    // reproduced — such codes are never written by MDM, only by a damaged document.
-    private static (int Bracket, string? Code) CodePlace(BsonValue row)
+    // S4 FIX4: where the store's $sort on CanonicalCode put an unreadable row — BSON's type order: MinKey and undefined first (BL-603),
+    // missing / null and numbers before text, text AND symbol (one class, by their value; BL-603), then objects, arrays
+    // of those, binary, bool, dates …, MaxKey last (BL-603). An array sorts by its smallest element (ascending): its
+    // elements are placed by the same rule and the smallest place is the array's (a nested array, best-effort, after
+    // text); an empty array is before text. Inside "before text" and "after text" the store's own order (null <
+    // numbers; objects < binary < …) is not reproduced — such codes are never written by MDM, only by a damaged document.
+    // ProductMasterCodePlaceMongoOrderTests holds this to the real store's $sort for every BsonType.
+    internal static (int Bracket, string? Code) CodePlace(BsonValue row)
     {
         if (row is not BsonDocument document || !document.TryGetValue("CanonicalCode", out var code))
             return (ProductMasterCodeBracket.BeforeText, null);
-        return code switch
-        {
-            BsonString text => (ProductMasterCodeBracket.Text, text.Value),
-            BsonNull or BsonInt32 or BsonInt64 or BsonDouble or BsonDecimal128 => (ProductMasterCodeBracket.BeforeText, null),
-            BsonArray array when array.Count == 0
-                || array.Any(x => x is BsonNull or BsonInt32 or BsonInt64 or BsonDouble or BsonDecimal128)
-                => (ProductMasterCodeBracket.BeforeText, null),
-            BsonArray array when array.Any(x => x.IsString) =>
-                (ProductMasterCodeBracket.Text, array.Where(x => x.IsString).Select(x => x.AsString).Min(StringComparer.Ordinal)),
-            _ => (ProductMasterCodeBracket.AfterText, null)
-        };
+        return Place(code);
     }
+
+    internal static (int Bracket, string? Code) Place(BsonValue code) => code switch
+    {
+        // Measured on the real store (ProductMasterCodePlaceMongoOrderTests): an undefined code sorts before a missing / null one.
+        BsonMinKey or BsonUndefined => (ProductMasterCodeBracket.First, null),
+        BsonMaxKey => (ProductMasterCodeBracket.Last, null),
+        BsonString text => (ProductMasterCodeBracket.Text, text.Value),
+        BsonSymbol symbol => (ProductMasterCodeBracket.Text, symbol.Name),
+        BsonNull or BsonInt32 or BsonInt64 or BsonDouble or BsonDecimal128 => (ProductMasterCodeBracket.BeforeText, null),
+        BsonArray { Count: 0 } => (ProductMasterCodeBracket.BeforeText, null),
+        BsonArray array => array
+            .Select(element => element is BsonArray ? (ProductMasterCodeBracket.AfterText, (string?)null) : Place(element))
+            .OrderBy(place => place.Item1).ThenBy(place => place.Item2, StringComparer.Ordinal)
+            .First(),
+        _ => (ProductMasterCodeBracket.AfterText, null)
+    };
 
     private static string IdText(BsonValue row)
     {
