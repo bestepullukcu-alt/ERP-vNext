@@ -196,6 +196,8 @@
     const isFilled = (id) => trim(byId(id)?.value).length > 0;
     const updateSaveState = () => { /* placeholder hook for future required-counter; kept for symmetry */ };
 
+    // WCN-FIX-04 — the guard marks the box the reader types in (altInput), not the hidden value input.
+    const dateRefused = (id) => !!byId(id)?._flatpickr?.altInput?.classList.contains('is-invalid');
     const validate = () => {
         // Tracked separately from the custom-field result: the generic "required fields are missing" line
         // belongs to the FIXED fields. Emitting it alongside a per-field custom message printed the same
@@ -223,6 +225,16 @@
                 ok = false;
                 check.errors.forEach((e) => { if (!messages.includes(e.message)) messages.push(e.message); });
             }
+        }
+
+        /*
+         * WCN-FIX-04 — a refused typed date is CLEARED by the guard, and an empty optional date is a valid payload.
+         * The update is a full replace, so saving would turn "ends on 31.02" into "never ends" — and on an edit it
+         * would DELETE the stored end date. A refused date stops the save until it is entered again.
+         */
+        if (DATE_FIELDS.some(dateRefused)) {
+            ok = false;
+            messages.push(L.DateNotRecognized || 'A date you typed could not be read, so it was not saved.');
         }
 
         if (!ok) {

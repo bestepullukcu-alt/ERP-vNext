@@ -105,3 +105,156 @@ describe.each(SCREENS)("$name", (screen) => {
     expect(own).toBeGreaterThan(shared);
   });
 });
+
+/*
+ * WCN-FIX-04 (CT decision: YES) — a refused optional date stops the save on the three form screens (an empty optional
+ * date is a valid "open-ended" payload, and the update is a full replace: saving would DELETE a stored end date), and
+ * stops Apply on the list filter (the refused date would drop out of the query while Apply closed the panel that shows
+ * its mark). The real scripts are booted; only the network is stubbed and every write is recorded.
+ */
+const writes = () => global.fetch.mock.calls.filter((call) => call[1] && call[1].method && call[1].method !== "GET");
+
+const FORMS = [
+  { name: "OrganizationUnits form", script: "wwwroot/assets/js/Organization/OrganizationUnits/form.js",
+    root: '<div id="ou-form-page" data-ou-id="" data-ou-mode="create"></div>',
+    l10nId: "ou-form-l10n", alert: "ou-form-alert", submit: "ou-submit",
+    required: { ouCode: "OU-1", ouName: "Unit", ouLegalEntityId: "le-1" },
+    from: "ouEffectiveFrom", to: "ouEffectiveTo" },
+  { name: "Positions form", script: "wwwroot/assets/js/Organization/Positions/form.js",
+    root: '<div id="p-form-page" data-p-id="" data-p-mode="create"></div>',
+    l10nId: "position-form-l10n", alert: "p-form-alert", submit: "p-submit",
+    required: { pCode: "P-1", pName: "Position", pOrgUnitId: "ou-1" },
+    from: "pEffectiveFrom", to: "pEffectiveTo" },
+  { name: "LegalEntities wizard", script: "wwwroot/assets/js/MasterData/LegalEntities/wizard.js",
+    root: '<div id="le-wizard-page" data-le-id="" data-le-mode="create"></div>',
+    l10nId: "le-wizard-l10n", alert: "le-wizard-alert", submit: "le-submit",
+    required: { leCode: "LE-1", leLegalName: "Entity", leLegalFormCode: "LLC", leCountryCode: "TR", leBaseCurrencyCode: "TRY" },
+    from: "leIncorporationDate", to: "leDissolutionDate" }
+];
+
+const l10nIdOf = (script) => {
+  const match = /(?:getElementById|byId)\('([a-z0-9-]+-l10n)'\)/.exec(read(script));
+  return match ? match[1] : null;
+};
+
+const bootForm = async (form) => {
+  loadScript("wwwroot/assets/js/shared/diten-datefield.js");
+  const fields = Object.entries(form.required)
+    .map(([id, value]) => `<select id="${id}"><option value="${value}" selected>${value}</option></select>`).join("");
+  document.body.innerHTML = `${form.root}
+    <script type="application/json" id="${l10nIdOf(form.script)}">{"DateFormat":"d.m.Y","DateNotRecognized":"DATE-REFUSED","RequiredField":"REQUIRED"}</script>
+    <div id="${form.alert}" class="d-none"></div>
+    ${fields}
+    <input type="text" id="${form.from}" class="form-control flatpickr-date">
+    <input type="text" id="${form.to}" class="form-control flatpickr-date">
+    <button type="button" id="other">x</button>
+    <button type="button" class="btn btn-primary" id="${form.submit}">Save</button>`;
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  loadScript(form.script);
+  await tick();
+  // The wizard enables its submit only on its last step (bs-stepper is not loaded here); without this the click
+  // would reach nothing and "no write" would pass for the wrong reason — the control test below proves it is reached.
+  document.getElementById(form.submit).disabled = false;
+};
+
+const typeAndTab = (id, text) => {
+  const fp = document.getElementById(id)._flatpickr;
+  fp.altInput.focus();
+  fp.altInput.value = text;
+  fp.altInput.dispatchEvent(new Event("input", { bubbles: true }));
+  document.getElementById("other").focus();
+  return fp;
+};
+
+describe.each(FORMS)("$name: a refused date stops the save (WCN-FIX-04)", (form) => {
+  test("the screen's l10n block id was found (guards against a vacuous boot)", () => {
+    expect(l10nIdOf(form.script)).toBeTruthy();
+  });
+
+  test("an end date typed as '31.02.2026' is refused: no POST / PUT, and the reason is shown", async () => {
+    await bootForm(form);
+    typeAndTab(form.from, "01.02.2026");
+    const to = typeAndTab(form.to, "31.02.2026");
+    expect(to.altInput.classList.contains("is-invalid")).toBe(true);
+
+    document.getElementById(form.submit).click();
+    await tick();
+
+    expect(writes(), "the refused end date was saved as 'no end date'").toEqual([]);
+    expect(document.getElementById(form.alert).textContent).toContain("DATE-REFUSED");
+  });
+
+  test("control: the same screen with a readable end date DOES write (the save is reached)", async () => {
+    await bootForm(form);
+    typeAndTab(form.from, "01.02.2026");
+    typeAndTab(form.to, "20.02.2026");
+    document.getElementById(form.submit).click();
+    await tick();
+    expect(writes()).toHaveLength(1);
+  });
+
+  test("a stored end date and then a typo: nothing is written, so the stored end date is not deleted", async () => {
+    await bootForm(form);
+    document.getElementById(form.to)._flatpickr.setDate("2026-12-31", true); // what loadForEdit writes
+    typeAndTab(form.to, "31.02.2027");
+
+    document.getElementById(form.submit).click();
+    await tick();
+
+    expect(writes()).toEqual([]);
+  });
+});
+
+describe("LegalEntities list filter: a refused date stops Apply (WCN-FIX-04)", () => {
+  const source = read("wwwroot/assets/js/MasterData/LegalEntities/index.js");
+
+  test("the filter dates are bound where the filters are set up (index.js setupFilters → initDatePickers)", () => {
+    const setup = source.indexOf("const setupFilters = (api) => {");
+    expect(setup).toBeGreaterThan(-1);
+    expect(source.indexOf("initDatePickers();", setup)).toBeGreaterThan(setup);
+    expect(source.indexOf("initDatePickers();", setup)).toBeLessThan(source.indexOf("btnFilterApply", setup));
+  });
+
+  test("Apply with a refused 'created to' date draws nothing, keeps the panel open, and says why", async () => {
+    // The Apply handler is lifted from the real file with the closure it reads; the guard and flatpickr are real.
+    const start = source.indexOf("        document.getElementById('btnFilterApply')?.addEventListener('click', () => {");
+    const end = source.indexOf("        document.getElementById('btnFilterReset')", start);
+    expect(start).toBeGreaterThan(-1);
+    loadScript("wwwroot/assets/js/shared/diten-datefield.js");
+    document.body.innerHTML = `<input id="filterCreatedFrom"><input id="filterCreatedTo"><button id="other">x</button>
+      <button id="btnFilterApply">Apply</button><div id="inlineFilterCollapse" class="collapse show"></div>`;
+    const datePickers = {};
+    ["filterCreatedFrom", "filterCreatedTo"].forEach((id) => {
+      datePickers[id] = window.flatpickr(document.getElementById(id), { dateFormat: "Y-m-d", altInput: true, altFormat: "d.m.Y", allowInput: true });
+      window.DitenDateField.guardAgainstSilentMisparse(datePickers[id], "altFormat");
+    });
+    const api = { draw: vi.fn() };
+    const toasts = [];
+    window.showToast = (message, type) => toasts.push([message, type]);
+    window.DtDefaults = { updateVisualState: vi.fn() };
+    const hide = vi.fn();
+    window.bootstrap = { Collapse: { getOrCreateInstance: () => ({ hide }) } };
+    // eslint-disable-next-line no-new-func
+    const bind = new Function("api", "datePickers", "L", "$", "dateVal", "getAppliedFilterCount", "saveFilterArmed",
+      "setSaveFilterVisible", "isDirtyComparedToDefault", "filterCollapseId", "appliedFilters",
+      `${source.slice(start, end)}`);
+    bind(api, datePickers, { DateNotRecognized: "DATE-REFUSED" }, () => ({ val: () => [] }),
+      (id) => document.getElementById(id).value, () => 0, false, () => {}, () => false, "inlineFilterCollapse", {});
+
+    const to = datePickers.filterCreatedTo;
+    to.altInput.focus();
+    to.altInput.value = "31.02.2026";
+    to.altInput.dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("other").focus();
+    expect(to.altInput.classList.contains("is-invalid")).toBe(true);
+
+    document.getElementById("btnFilterApply").click();
+
+    expect(api.draw).not.toHaveBeenCalled();
+    expect(hide, "Apply closed the panel that shows the red mark").not.toHaveBeenCalled();
+    expect(toasts).toEqual([["DATE-REFUSED", "error"]]);
+    delete window.showToast;
+    delete window.DtDefaults;
+    delete window.bootstrap;
+  });
+});

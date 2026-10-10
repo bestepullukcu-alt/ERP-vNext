@@ -202,6 +202,8 @@
             if (!isFilled(id)) { ok = false; if (surfaceErrors && el) el.classList.add('is-invalid'); }
             else if (el) { el.classList.remove('is-invalid'); }
         });
+        // WCN-FIX-04 — the dates live on step 2: a refused one fails that step, at Next and at the final Submit.
+        if (stepNum === 2 && DATE_FIELDS.some(dateRefused)) { ok = false; }
         if (stepNum === 3) {
             const parentMissing = isParentRequired() && !isFilled('leParentLegalEntityId');
             const parentEl = byId('leParentLegalEntityId');
@@ -211,7 +213,14 @@
         return ok;
     };
 
+    // WCN-FIX-04 — the guard marks the box the reader types in (altInput), not the hidden value input.
+    const dateRefused = (id) => !!byId(id)?._flatpickr?.altInput?.classList.contains('is-invalid');
+    const requiredMissing = () => Object.values(STEP_REQUIRED).flat().some((id) => !isFilled(id));
     const stepErrorMessage = () => {
+        // A refused date is named on its own when nothing required is missing (the empty field reads as optional).
+        if (DATE_FIELDS.some(dateRefused) && !requiredMissing() && !(isParentRequired() && !isFilled('leParentLegalEntityId'))) {
+            return L.DateNotRecognized || 'A date you typed could not be read, so it was not saved.';
+        }
         const parentMissing = isParentRequired() && !isFilled('leParentLegalEntityId');
         return parentMissing
             ? (L.ParentRequiredForBranch || L.RequiredField || 'Required fields are missing.')

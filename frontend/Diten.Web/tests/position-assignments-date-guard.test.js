@@ -131,6 +131,24 @@ describe("PositionAssignments form: a refused date stops the save (WCN-FIX-03)",
     expect(alert.textContent).toContain("DATE-REFUSED");
   });
 
+  test("the box still focused and the reader clicks Save directly: the guard judges first, nothing is written", async () => {
+    boot();
+    fill("aEffectiveFrom", "01.02.2026");
+    const to = document.getElementById("aEffectiveTo")._flatpickr;
+    to.altInput.focus();
+    to.altInput.value = "31.02.2026";
+    to.altInput.dispatchEvent(new Event("input", { bubbles: true }));
+    const save = document.getElementById("a-submit");
+    save.dispatchEvent(new MouseEvent("mousedown", { bubbles: true })); // the press: flatpickr closes, the guard judges
+    save.focus();                                                        // the focus moves to the button
+    save.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(to.altInput.classList.contains("is-invalid")).toBe(true);
+    expect(posts()).toEqual([]);
+    expect(document.getElementById("a-form-alert").textContent).toContain("DATE-REFUSED");
+  });
+
   test("control: the same form with a readable end date does save", async () => {
     boot();
     fill("aEffectiveFrom", "01.02.2026");

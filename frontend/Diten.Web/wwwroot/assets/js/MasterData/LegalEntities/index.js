@@ -489,6 +489,17 @@ const LegalEntitiesList = (function () {
         initDatePickers();
         applySavedTableState(api, defaultViewState || { filters: appliedFilters });
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+            /*
+             * WCN-FIX-04 — a refused filter date is cleared by the guard; applying would drop it from the query
+             * silently AND close the panel that shows its red mark. Apply stops instead: the panel stays open and
+             * the reason is said.
+             */
+            const refusedDate = ['filterCreatedFrom', 'filterCreatedTo']
+                .some((id) => !!datePickers[id]?.altInput?.classList.contains('is-invalid'));
+            if (refusedDate) {
+                window.showToast?.(L.DateNotRecognized || 'A date you typed could not be read.', 'error');
+                return;
+            }
             appliedFilters = {
                 country: $('#filterCountry').val() || [],
                 operationalStatus: $('#filterOperationalStatus').val() || [],

@@ -40,6 +40,51 @@
      * the value) or 'altFormat' for an altInput field (Organization/PositionAssignments/form.js's own shape) —
      * whichever format governs the text the reader is actually looking at and typing into.
      */
+    /*
+     * WCN-FIX-04 — does the typed text MEAN the date flatpickr resolved? Compared by COMPONENT, not by text.
+     *
+     * The display formats come from the culture's ShortDatePattern, and five of the seven tenant languages have
+     * unpadded parts (measured, .NET: en M/d/yyyy → n/j/Y, tr d.MM.yyyy → j.m.Y, es d/M/yyyy → j/n/Y, zh yyyy/M/d →
+     * Y/n/j, ar d‏/M‏/yyyy → j‏/n‏/Y with RIGHT-TO-LEFT MARKs around the separators). A text comparison refused
+     * "05/03/2026" where the format writes "5/3/2026", and refused EVERY date typed in Arabic (nobody types the
+     * invisible marks). So: the numbers are read from the typed text in the order of the format's numeric tokens and
+     * each must equal the resolved date's own component. An overflow ("31.02" → 03.03) still differs and is refused.
+     * A 4-digit year token takes 4 digits ("26" is not 2026, and must not silently become year 26).
+     * A format with text tokens (month / weekday names, AM/PM, …) falls back to the exact text comparison.
+     */
+    const NUMERIC_TOKENS = { d: 'day', j: 'day', m: 'month', n: 'month', Y: 'year', y: 'year2', H: 'hour', G: 'hour',
+        h: 'hour', i: 'minute', S: 'second', s: 'second' };
+    const TEXT_TOKENS = 'DlMFKUZwW';
+    const typedReadsBack = (raw, resolved, fmt, instance) => {
+        const format = String(fmt || '');
+        const tokens = [];
+        let hasText = false;
+        for (let i = 0; i < format.length; i += 1) {
+            const ch = format[i];
+            if (ch === '\\') { i += 1; continue; }
+            if (NUMERIC_TOKENS[ch]) { tokens.push(ch); } else if (TEXT_TOKENS.indexOf(ch) >= 0) { hasText = true; }
+        }
+        if (hasText || tokens.length === 0) {
+            return !!(instance && instance.formatDate(resolved, format) === raw);
+        }
+        if (/\p{L}/u.test(raw)) { return false; }
+        const numbers = raw.match(/\d+/g) || [];
+        if (numbers.length !== tokens.length) { return false; }
+        return tokens.every((token, index) => {
+            const text = numbers[index];
+            const value = Number(text);
+            switch (NUMERIC_TOKENS[token]) {
+                case 'day': return value === resolved.getDate();
+                case 'month': return value === resolved.getMonth() + 1;
+                case 'year': return text.length === 4 && value === resolved.getFullYear();
+                case 'year2': return text.length <= 2 && value === resolved.getFullYear() % 100;
+                case 'hour': return token === 'h' ? value === (resolved.getHours() % 12 || 12) : value === resolved.getHours();
+                case 'minute': return value === resolved.getMinutes();
+                default: return value === resolved.getSeconds();
+            }
+        });
+    };
+
     const guardAgainstSilentMisparse = (instance, formatKey) => {
         // A real flatpickr instance always has both; a minimal test double (or a future caller that hands this
         // an incomplete object) does not, and the SAME "nothing to enhance, quietly skip" posture `enhance`
@@ -91,48 +136,104 @@
         let lastTyped = '';
         let libraryEcho = false;
         let cancelled = false;
-        // A refused text stays refused until the reader types again or picks a day: a later time-input edit fills
-        // in "today" on an empty enableTime field (flatpickr's own default), and that date was never chosen.
+        // A refused text stays refused until the reader types again, picks a day, or the PAGE writes the field.
         let rejected = false;
+        // The time inputs were used after a refusal: they fill in "today" on an empty enableTime field.
+        let timeEditedSinceReject = false;
+        // WCN-FIX-04 — what the field held when the reader's typing run began; Escape puts THIS back, never the
+        // live value (flatpickr may already have committed the misparse on a blur, e.g. alt-tab).
+        let restorePoint = null;
+        // The guard's own setDate / clear calls, and calls made from inside one (flatpickr's setDate → clear).
+        let own = 0;
+        let depth = 0;
+        let markedByGuard = false;
         const echoReachesTarget = target === instance.input;
         const format = () => instance.config[formatKey];
+        const ownCall = (fn) => { own += 1; try { return fn(); } finally { own -= 1; } };
 
-        const judge = (selectedDates, { onlyTyped = false } = {}) => {
+        const mark = () => { markedByGuard = true; target.classList.add('is-invalid'); };
+        const unmark = () => {
+            if (!markedByGuard) { return; } // a mark the PAGE set (its own required check) is the page's
+            markedByGuard = false;
+            target.classList.remove('is-invalid');
+        };
+
+        const judge = (selectedDates) => {
             const raw = lastTyped.trim();
             lastTyped = '';
-            if (!raw) {
-                if (!onlyTyped) { settle(selectedDates); }
-                return;
-            }
+            if (!raw) { settle(selectedDates); return; }
             const resolved = (selectedDates || [])[0];
-            const reformatted = resolved ? instance.formatDate(resolved, format()) : '';
-            if (!resolved || reformatted !== raw) {
+            if (!resolved || !typedReadsBack(raw, resolved, format(), instance)) {
                 // Marked BEFORE the clear: clear() runs the page's onChange hooks, and one that throws must not
                 // leave an emptied field that does not say why.
                 rejected = true;
-                target.classList.add('is-invalid');
-                instance.clear();
+                timeEditedSinceReject = false;
+                mark();
+                ownCall(() => instance.clear());
             } else {
                 rejected = false;
+                restorePoint = null;
+                markedByGuard = false;
                 target.classList.remove('is-invalid');
             }
         };
 
-        // onClose with nothing typed: a refused field that something else filled in since (a time-input edit) is
-        // emptied again and stays marked; otherwise the mark goes.
+        // Nothing typed to judge: a refused field stays empty and marked (emptied again if the time inputs filled in
+        // "today" since); anything else loses a mark the guard set — an empty optional field is not invalid.
         const settle = (selectedDates) => {
             if (rejected) {
-                if ((selectedDates || []).length > 0) { instance.clear(); }
-                target.classList.add('is-invalid');
+                if (timeEditedSinceReject && (selectedDates || []).length > 0) { ownCall(() => instance.clear()); }
+                timeEditedSinceReject = false;
+                mark();
                 return;
             }
-            target.classList.remove('is-invalid');
+            unmark();
         };
+
+        // Escape: the reader's typing is withdrawn and the field shows what it held before that typing began.
+        const cancelTyping = () => {
+            lastTyped = '';
+            const back = restorePoint;
+            restorePoint = null;
+            if (!back) { return; }
+            rejected = false;
+            timeEditedSinceReject = false;
+            unmark();
+            ownCall(() => instance.setDate(back.slice(), false));
+        };
+
+        // WCN-FIX-04 — a value the PAGE writes (quick-create's default, a saved view's filter, a reset) ends the
+        // reader's pending typing and any refusal: it is not the reader's text, and judging or re-clearing it would
+        // delete a value nobody typed. flatpickr's own commits of the typed text pass the box's text itself
+        // (onBlur, Enter, documentClick: setDate(self._input.value, …)); those are not the page's.
+        const pageWrote = () => {
+            lastTyped = '';
+            restorePoint = null;
+            rejected = false;
+            timeEditedSinceReject = false;
+            unmark();
+        };
+        if (typeof instance.setDate === 'function' && typeof instance.clear === 'function') {
+            const nativeSetDate = instance.setDate;
+            const nativeClear = instance.clear;
+            instance.setDate = function (date, ...rest) {
+                if (own === 0 && depth === 0 && !(typeof date === 'string' && date === target.value)) { pageWrote(); }
+                depth += 1;
+                try { return nativeSetDate.call(this, date, ...rest); } finally { depth -= 1; }
+            };
+            instance.clear = function (...args) {
+                if (own === 0 && depth === 0) { pageWrote(); }
+                depth += 1;
+                try { return nativeClear.apply(this, args); } finally { depth -= 1; }
+            };
+        }
 
         target.addEventListener('input', () => {
             if (libraryEcho) { libraryEcho = false; return; }
+            if (restorePoint === null) { restorePoint = (instance.selectedDates || []).slice(); }
             lastTyped = target.value;
             rejected = false;
+            timeEditedSinceReject = false;
         });
         if (echoReachesTarget && Array.isArray(instance.config.onChange)) {
             instance.config.onChange.push(() => {
@@ -146,8 +247,29 @@
                 if (target.value.trim() !== lastTyped.trim()) { lastTyped = ''; }
             });
         }
-        target.addEventListener('blur', () => {
-            if (!instance.isOpen) { judge(instance.selectedDates, { onlyTyped: true }); }
+
+        target.addEventListener('blur', (event) => {
+            if (!instance.isOpen) { judge(instance.selectedDates); return; }
+            // Open calendar: focus moving INTO it is not leaving the field.
+            const to = event.relatedTarget;
+            if (to && instance.calendarContainer && instance.calendarContainer.contains(to)) { return; }
+            /*
+             * WCN-FIX-04 — open calendar, focus gone elsewhere. Usually the focus landing outside closes it
+             * (documentClick) and onClose judges. But a window switch (alt-tab: no relatedTarget) or, on a touch-capable
+             * desktop where flatpickr listens to `touchstart` instead of `mousedown`, a mouse click on something that
+             * takes no focus, closes nothing — while flatpickr's onBlur HAS committed the typed text. So the judgment is
+             * deferred one task: if the calendar is still open and the text is still unjudged, it is judged then.
+             */
+            global.setTimeout(() => {
+                if (instance.isOpen && lastTyped.trim() && global.document && global.document.activeElement !== target) {
+                    judge(instance.selectedDates);
+                }
+            }, 0);
+        });
+        // Escape in the box cancels the typing too (flatpickr ignores Escape in an allowInput box).
+        target.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape' || (!lastTyped.trim() && !(rejected && restorePoint))) { return; }
+            if (instance.isOpen) { cancelled = true; instance.close(); } else { cancelTyping(); }
         });
 
         const calendar = instance.calendarContainer;
@@ -157,7 +279,7 @@
                     && event.target.closest('.flatpickr-day:not(.flatpickr-disabled):not(.notAllowed)');
                 return !!(day && instance.daysContainer && instance.daysContainer.contains(day));
             };
-            const picked = () => { lastTyped = ''; rejected = false; };
+            const picked = () => { lastTyped = ''; restorePoint = null; rejected = false; timeEditedSinceReject = false; };
             calendar.addEventListener('click', (event) => { if (fromDay(event)) { picked(); } }, true);
             calendar.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' && fromDay(event)) { picked(); }
@@ -165,18 +287,21 @@
             }, true);
             calendar.addEventListener('focusin', (event) => {
                 const time = instance.timeContainer;
-                if (!time || !time.contains(event.target) || !lastTyped.trim()) { return; }
-                instance.setDate(lastTyped, true, format());
-                judge(instance.selectedDates, { onlyTyped: true });
+                if (!time || !time.contains(event.target)) { return; }
+                if (lastTyped.trim()) {
+                    ownCall(() => instance.setDate(lastTyped, true, format()));
+                    judge(instance.selectedDates);
+                }
+                // The reader is in the time inputs now; after a refusal, what they fill in is not a chosen date.
+                if (rejected) { timeEditedSinceReject = true; }
             });
         }
 
         instance.config.onClose.push((selectedDates) => {
             if (cancelled) {
                 cancelled = false;
-                lastTyped = '';
-                if (rejected) { settle(instance.selectedDates); return; }
-                instance.setDate(instance.selectedDates.slice(), false);
+                cancelTyping();
+                if (rejected) { settle(instance.selectedDates); }
                 return;
             }
             judge(selectedDates);
@@ -242,5 +367,5 @@
     };
 
     // guardAgainstSilentMisparse exposed so a test can drive it directly against a real flatpickr instance.
-    global.DitenDateField = { enhance, guardAgainstSilentMisparse };
+    global.DitenDateField = { enhance, guardAgainstSilentMisparse, typedReadsBack };
 })(typeof window !== 'undefined' ? window : globalThis);

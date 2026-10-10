@@ -5,18 +5,14 @@
 @inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
-    static string ToFlatpickr(string net) =>
-        net.Replace("dd", "\x01").Replace("d", "\x02")
-           .Replace("MM", "\x03").Replace("M", "\x04")
-           .Replace("yyyy", "Y").Replace("yy", "y")
-           .Replace("\x01", "d").Replace("\x02", "j").Replace("\x03", "m").Replace("\x04", "n");
+    // WCN-FIX-04 — one conversion for every view (FlatpickrDateFormat: drops the bidi marks Arabic's pattern carries).
 
     var payload = new
     {
         RequiredField = Localizer["RequiredField"].Value,
         // WCN-FIX-03 — a typed date the shared guard refused: the save stops and says why (SharedResource, 7 languages).
         DateNotRecognized = SharedLocalizer["DateNotRecognized"].Value,
-        DateFormat = ToFlatpickr(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
+        DateFormat = Diten.Web.Services.Localization.FlatpickrDateFormat.ForCurrentCulture(),
         // The only 409 create/update returns is the one-primary-per-position conflict → show this localized message.
         OnePrimaryError = Localizer["OnePrimaryError"].Value,
         RecordCreated = SharedLocalizer["RecordCreated"].Value,

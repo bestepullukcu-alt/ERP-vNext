@@ -121,14 +121,27 @@
 
     // ─── Validation + payload ────────────────────────────────────────────────
     const isFilled = (id) => trim(byId(id)?.value).length > 0;
+    // WCN-FIX-04 — the guard marks the box the reader types in (altInput), not the hidden value input.
+    const dateRefused = (id) => !!byId(id)?._flatpickr?.altInput?.classList.contains('is-invalid');
     const validate = () => {
         let ok = true;
+        const messages = [];
         REQUIRED.forEach((id) => {
             const el = byId(id);
             if (!isFilled(id)) { ok = false; el?.classList.add('is-invalid'); }
             else el?.classList.remove('is-invalid');
         });
-        if (!ok) showAlert([L.RequiredField || 'Required fields are missing.']);
+        if (!ok) messages.push(L.RequiredField || 'Required fields are missing.');
+        /*
+         * WCN-FIX-04 — a refused typed date is CLEARED by the guard, and an empty optional date is a valid payload.
+         * The update is a full replace, so saving would turn "ends on 31.02" into "never ends" — and on an edit it
+         * would DELETE the stored end date. A refused date stops the save until it is entered again.
+         */
+        if (DATE_FIELDS.some(dateRefused)) {
+            ok = false;
+            messages.push(L.DateNotRecognized || 'A date you typed could not be read, so it was not saved.');
+        }
+        if (!ok) showAlert(messages);
         return ok;
     };
     const valueOrNull = (id) => { const v = trim(byId(id)?.value); return v.length ? v : null; };
