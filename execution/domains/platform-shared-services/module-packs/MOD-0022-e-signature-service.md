@@ -1700,6 +1700,29 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   template additively on `tenant-admin-invited` (any existing tenant) and `tenant-activated`. So the `DefaultSignerPermissions`
   also reach tenants provisioned earlier, beyond the seed tenant of FU-0022-SEED-01.
 
+**ROLE1 — CT-D10 "new tenants only" now holds (WP-0018-ROLE1, CT-MVP1-0018-ROLE1 v1, 2026-10-10; agent result, pending CT).**
+- **Owner decision (binding):** the default role template is applied to a tenant only when it is first set up; afterwards only an
+  administrator decides a role's content.
+- **AuthService rule.** `DefaultRoleProvisioningRule`: a default role gets the template **iff the same call created it**.
+  - "Created" is the atomic insert against `uq_roles_tenant_name_active`, so concurrent events apply the template once.
+  - No marker, no new collection.
+- **Events.** `tenant-activated` / `tenant-admin-invited` / register create only the default roles a tenant lacks. Existing roles
+  are never completed — so the `DefaultSignerPermissions` no longer reach existing tenants.
+  **FU-0022-SEED-02 CLOSED.**
+- **Seed tenant.** It gets the template on its first seed only; later AuthService starts no longer complete it.
+  **FU-0022-SEED-01 CLOSED.** New keys are granted by hand in development; this is documented on `DataSeeder`.
+- **Audit.** Every template role creation writes `default_role_provisioned` (tenant, role, permissionCount, trigger).
+- **Not changed (measured):** the startup Admin self-service reconciler still re-adds its four keys to every tenant's Admin role,
+  even after an administrator removed one (probe: `auth.users.lookup` came back on restart) → **O-ROLE1-1** for CT / owner.
+  The entitled-module sync and the seed's module / 97c5 grants → O-ROLE1-2.
+- **Measured.**
+  - AuthService Application 1063 → **1072** (+9); Web 699/699; architecture 18/18. Warnings 6 / 21, unchanged.
+  - 8 red-first cases on the base, run in a separate base worktree.
+  - Sabotages (a) invited-completes / (b) activated-completes / (c) seed-completes / (d) always-new → 4 / 3 / 1 / 6 red.
+  - Runtime probe (own AuthService + own mongod): a removed Viewer key does NOT come back through invitation, re-activation or
+    restart; the invitee is assigned Admin; 5 audit rows in total, one per created role.
+- **Evidence.** `docs/records/audits/2026-10/mod-0018-role1-evidence-2026-10-10.md`, `-scripts-2026-10-10.md`.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
