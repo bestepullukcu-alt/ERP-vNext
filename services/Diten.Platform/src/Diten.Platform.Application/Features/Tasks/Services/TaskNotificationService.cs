@@ -24,7 +24,11 @@ public enum TaskNotificationOutcome
     NoRecipients = 2,
 
     /// <summary>The notification layer refused or threw. Logged; never the caller's problem.</summary>
-    Failed = 3
+    Failed = 3,
+
+    /// <summary>WP-EMAIL-LANG-01 FIX2 — some language groups were queued and some were not (PARTIAL_RECIPIENT_FAILURE): the
+    /// queued readers have their mail, so a caller keeps its claim (a retry would mail them again). Logged as a Warning.</summary>
+    PartiallyDispatched = 4
 }
 
 /// <summary>
@@ -308,6 +312,18 @@ public sealed class TaskNotificationService : ITaskNotificationService
                     resolvedLocale,
                     string.Join(" | ", response.Errors));
                 return TaskNotificationOutcome.Failed;
+            }
+
+            // FIX2 — a partly sent mail is not a quiet success: which language groups did not leave, by code (never an
+            // address), and the outcome says so, so a caller can count it.
+            if (string.Equals(response.ReasonCode, NotificationEventDispatchAdapter.ReasonPartialRecipientFailure, StringComparison.Ordinal))
+            {
+                _logger.LogWarning(
+                    "task.notification.partially_dispatched EventCode={EventCode} TaskId={TaskId} Groups={Groups}",
+                    eventCode,
+                    task.Id,
+                    string.Join(" | ", response.Errors));
+                return TaskNotificationOutcome.PartiallyDispatched;
             }
 
             return TaskNotificationOutcome.Dispatched;

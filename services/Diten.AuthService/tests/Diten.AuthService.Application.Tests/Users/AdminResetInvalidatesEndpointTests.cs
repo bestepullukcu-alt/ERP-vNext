@@ -567,6 +567,38 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal("fr", (await ReadUserAsync(user.Id)).PreferredLanguage);
     }
 
+    [Theory]
+    [InlineData("")]   // empty
+    [InlineData("{")]  // broken JSON
+    public async Task An_empty_or_broken_body_gets_the_same_coded_400(string body)
+    {
+        // FIX2 — read by the door, not bound by the framework: the same code as every other wrong body.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var refused = await client.PutAsync("api/auth/me/preferences", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Contains("USER_PREFERENCES_BODY_INVALID", await refused.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task The_field_name_is_read_whatever_its_case()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var set = await client.PutAsync("api/auth/me/preferences",
+            new StringContent("{\"PreferredLanguage\":\"zh\"}", System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.OK, set.StatusCode);
+        Assert.Equal("zh", (await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
     [Fact]
     public async Task Too_many_preference_writes_from_one_user_are_refused_with_429()
     {
@@ -583,6 +615,9 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         var refused = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" });
 
         Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        // FIX2 — Retry-After comes from the lease (the time left in this window), in whole seconds, within the window.
+        Assert.True(refused.Headers.RetryAfter?.Delta is { } wait && wait > TimeSpan.Zero && wait <= TimeSpan.FromMinutes(5),
+            $"Retry-After: {refused.Headers.RetryAfter}");
         Assert.NotEqual("ru", (await ReadUserAsync(user.Id)).PreferredLanguage);
         // Per USER: another person of the same tenant is not refused.
         var otherSession = await TenantSessionAsync(tenantId, other.Email, OldPassword);

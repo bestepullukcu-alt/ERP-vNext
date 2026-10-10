@@ -144,7 +144,7 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
          *    A group's To is a subset of the caller's To, so nobody sees an address the single message would not have shown.
          */
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        var to = Distinct(request.To, seen);
+        var to = Distinct(PreferringALanguage(request.To), seen);
         var cc = Distinct(request.Cc, seen);
         var bcc = Distinct(request.Bcc, seen);
 
@@ -180,7 +180,9 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
                     copiesPending ? bcc : null,
                     ct);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            // FIX2 — only the CALLER's cancellation stops the loop; a cancellation that is not ours (a provider's own
+            // timeout) is one group's failure like any other.
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 _logger.LogWarning(
                     ex,
@@ -198,6 +200,13 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
             }
             else
             {
+                // FIX2 — a provider refusal leaves its dispatch ROW (with these copies) for the retry job: the copies are
+                // on their way with it, so the next group must not carry them a second time.
+                if (string.Equals(response.ReasonCode, Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonProviderRejected, StringComparison.Ordinal))
+                {
+                    copiesPending = false;
+                }
+
                 firstFailure ??= response;
                 failures.Add($"{group.Key}: {response.ReasonCode ?? "<none>"}");
             }
@@ -222,6 +231,23 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
 
     /// <summary>FIX1 — one language group's dispatch threw (caught, logged; the other groups were still tried).</summary>
     public const string ReasonGroupDispatchFailed = "GROUP_DISPATCH_FAILED";
+
+    // FIX2 — the same address twice in To: the entry that carries a language is the one kept (it knows more), in the place
+    // of the first occurrence; otherwise the first one.
+    private static List<EmailRecipientDto> PreferringALanguage(IReadOnlyList<EmailRecipientDto> to)
+    {
+        var withLanguage = new Dictionary<string, EmailRecipientDto>(StringComparer.Ordinal);
+        foreach (var recipient in to)
+        {
+            var key = NotificationParsing.NormalizeEmail(recipient.Email);
+            if (!withLanguage.ContainsKey(key) && SupportedLocaleOrNull(recipient.Locale) is not null)
+            {
+                withLanguage[key] = recipient;
+            }
+        }
+
+        return to.Select(recipient => withLanguage.TryGetValue(NotificationParsing.NormalizeEmail(recipient.Email), out var better) ? better : recipient).ToList();
+    }
 
     // One address, one send — across To, Cc and Bcc together; the first occurrence wins (To before Cc before Bcc).
     private static List<EmailRecipientDto> Distinct(IReadOnlyList<EmailRecipientDto>? recipients, HashSet<string> seen)

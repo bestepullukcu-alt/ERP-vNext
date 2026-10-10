@@ -56,8 +56,17 @@ public sealed record UpdateMyPreferencesRequest(string? PreferredLanguage)
     public static bool TryRead(System.Text.Json.JsonElement body, out UpdateMyPreferencesRequest? request)
     {
         request = null;
-        if (body.ValueKind != System.Text.Json.JsonValueKind.Object
-            || !body.TryGetProperty("preferredLanguage", out var value))
+        if (body.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        // FIX2 — the name is read case-insensitively, as the framework's binding did ("PreferredLanguage" works too).
+        var named = body.EnumerateObject()
+            .Where(property => string.Equals(property.Name, "preferredLanguage", StringComparison.OrdinalIgnoreCase))
+            .Select(property => (System.Text.Json.JsonElement?)property.Value)
+            .FirstOrDefault();
+        if (named is not { } value)
         {
             return false;
         }

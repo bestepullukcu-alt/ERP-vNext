@@ -101,7 +101,6 @@ public sealed class AuthController : CustomBaseController
     [HttpPut("me/preferences")]
     [Authorize]
     public async Task<IActionResult> UpdateMyPreferences(
-        [FromBody] System.Text.Json.JsonElement body,
         [FromServices] Diten.AuthService.Infrastructure.Security.SelfServiceRateLimiter limiter,
         CancellationToken ct)
     {
@@ -118,16 +117,30 @@ public sealed class AuthController : CustomBaseController
         }
 
         // FIX1 — per user (and tenant): a flood of writes is refused with 429 before anything is read or written.
-        if (!limiter.TryAcquirePreferences(tenantId, userId))
+        if (!limiter.TryAcquirePreferences(tenantId, userId, out var retryAfter))
         {
-            Response.Headers.RetryAfter = ((int)limiter.Window.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            Response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
             return CreateActionResultInstance(Response<NoContent>.Fail(
                 "Too many requests. Try again later.",
                 [new ResponseError(Diten.AuthService.Application.Common.AuthRefusalCodes.TooManyRequests)],
                 429));
         }
 
-        if (!UpdateMyPreferencesRequest.TryRead(body, out var request))
+        // FIX2 — the body is read HERE, not bound: an empty or broken body gets the same coded 400 as a wrong one, instead
+        // of the framework's code-less model-binding answer.
+        UpdateMyPreferencesRequest? request = null;
+        var readable = false;
+        try
+        {
+            using var document = await System.Text.Json.JsonDocument.ParseAsync(Request.Body, cancellationToken: ct);
+            readable = UpdateMyPreferencesRequest.TryRead(document.RootElement, out request);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            readable = false;
+        }
+
+        if (!readable)
         {
             return CreateActionResultInstance(Response<NoContent>.Fail(
                 "The body must name preferredLanguage: a language, or null to clear it.",

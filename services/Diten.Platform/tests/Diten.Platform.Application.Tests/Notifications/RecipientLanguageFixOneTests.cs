@@ -174,10 +174,199 @@ public sealed class RecipientLanguageFixOneTests
         var first = await reminders.Handle(new SendDueSoonRemindersCommand(now, 100, "sweep-1"), CancellationToken.None);
         var second = await reminders.Handle(new SendDueSoonRemindersCommand(now.AddHours(1), 100, "sweep-2"), CancellationToken.None);
 
-        Assert.Equal(1, first.Data!.RemindersSent);
-        Assert.Equal(0, second.Data!.RemindersSent);
+        // FIX2 — a reminder that reached only some readers is counted as PARTIAL (not "sent", not "not delivered").
+        Assert.Equal(1, first.Data!.Partial);
+        Assert.Equal(0, first.Data.NotDelivered);
+        Assert.Equal(0, second.Data!.RemindersSent + second.Data.Partial);
         Assert.False(string.IsNullOrWhiteSpace((await tasks.GetByIdAsync(task.Id, CancellationToken.None))!.LastDueSoonReminderKey)); // the claim is KEPT
         Assert.Equal(["fay@acme.test"], queue.Queued.SelectMany(c => c.Request.To).Select(r => r.Email)); // once, not every hour
+    }
+
+    // ---------------------------------------------------------------- FIX2 — a partly sent reminder is counted and said
+
+    [Fact]
+    public async Task A_partly_sent_reminder_is_PartiallyDispatched_counted_logged_and_keeps_its_claim()
+    {
+        var (task, tasks, notifications, logger, queue) = PoolReminder(failLocale: "ru");
+        var reminders = new SendDueSoonRemindersHandler(tasks, notifications, NullLogger<SendDueSoonRemindersHandler>.Instance);
+
+        var outcome = await notifications.NotifyAsync(task, TaskNotificationEvents.DueSoon, [Fay, Ruslan], Guid.Empty, CancellationToken.None);
+        Assert.Equal(TaskNotificationOutcome.PartiallyDispatched, outcome);
+        var warning = Assert.Single(logger.Entries, e => e.Line.Contains("task.notification.partially_dispatched", StringComparison.Ordinal));
+        Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Warning, warning.Level);
+        Assert.Contains(task.Id.ToString(), warning.Line);
+        Assert.Contains("ru: RECIPIENT_INVALID", warning.Line);
+        Assert.DoesNotContain("@acme.test", warning.Line); // codes, never an address
+
+        var swept = await reminders.Handle(new SendDueSoonRemindersCommand(Now, 100, "sweep-1"), CancellationToken.None);
+
+        Assert.Equal(1, swept.Data!.Partial);
+        Assert.Equal(0, swept.Data.RemindersSent);
+        Assert.Equal(0, swept.Data.NotDelivered);
+        Assert.False(string.IsNullOrWhiteSpace((await tasks.GetByIdAsync(task.Id, CancellationToken.None))!.LastDueSoonReminderKey)); // kept
+    }
+
+    [Fact]
+    public async Task A_sweep_with_a_partly_sent_reminder_is_logged_as_a_Warning()
+    {
+        var logger = new Lines<Diten.Platform.Application.Features.Tasks.BackgroundJobs.TaskDueSoonSweepJob>();
+        var job = new Diten.Platform.Application.Features.Tasks.BackgroundJobs.TaskDueSoonSweepJob(
+            new ActiveTenants(), new FakeTenantContext(Tenant), new OneSweepAnswer(new SendDueSoonRemindersResponse(1, 0, 0, 0, 0, Partial: 1)), logger);
+
+        await job.HandleAsync(
+            new Diten.Platform.Application.Features.Tasks.BackgroundJobs.TaskDueSoonSweepJobArgs(0),
+            new Diten.BuildingBlocks.BackgroundJobs.BackgroundJobContext(),
+            CancellationToken.None);
+
+        var line = Assert.Single(logger.Entries, e => e.Line.Contains("task.duesoon.sweep.completed", StringComparison.Ordinal));
+        Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Warning, line.Level);
+        Assert.Contains("Partial=1", line.Line);
+    }
+
+    [Fact]
+    public async Task A_cancellation_the_caller_did_not_ask_for_is_one_groups_failure()
+    {
+        // A provider's own timeout (TaskCanceledException) with the caller's token NOT cancelled: the next group still goes.
+        var (adapter, queue) = Build(throwLocale: "fr", throwForeignCancellation: true);
+
+        var result = await adapter.DispatchByEventCodeAsync(Request(
+            new EmailRecipientDto("fay@acme.test", "Fay", "fr"),
+            new EmailRecipientDto("ruslan@acme.test", "Ruslan", "ru")));
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(NotificationEventDispatchAdapter.ReasonPartialRecipientFailure, result.ReasonCode);
+        Assert.Equal(["ruslan@acme.test"], queue.Queued.SelectMany(c => c.Request.To).Select(r => r.Email));
+    }
+
+    [Fact]
+    public async Task Copies_on_a_provider_refused_row_are_not_sent_again_with_the_next_group()
+    {
+        // PROVIDER_REJECTED leaves its dispatch row — with the copies — for the retry job: the next group must not carry them.
+        var (adapter, queue) = Build(failLocale: "fr", failReason: "PROVIDER_REJECTED");
+        var request = Request(
+            new EmailRecipientDto("fay@acme.test", "Fay", "fr"),
+            new EmailRecipientDto("ruslan@acme.test", "Ruslan", "ru")) with
+        {
+            Cc = [new EmailRecipientDto("cc@acme.test", "Cc")],
+            Bcc = [new EmailRecipientDto("bcc@acme.test", "Bcc")]
+        };
+
+        await adapter.DispatchByEventCodeAsync(request);
+
+        Assert.Equal(1, queue.Sent.Count(c => c.Request.Cc is { Count: > 0 }));
+        Assert.Equal(1, queue.Sent.Count(c => c.Request.Bcc is { Count: > 0 }));
+        Assert.Null(Assert.Single(queue.Queued).Request.Cc);
+    }
+
+    [Fact]
+    public async Task The_same_address_twice_in_to_keeps_the_entry_that_knows_a_language()
+    {
+        var (adapter, queue) = Build();
+
+        await adapter.DispatchByEventCodeAsync(Request(
+            new EmailRecipientDto("ana@acme.test", "Ana"),
+            new EmailRecipientDto("ANA@acme.test", "Ana", "es")));
+
+        var command = Assert.Single(queue.Sent);
+        Assert.Equal("es", command.Request.Locale);
+        Assert.Single(command.Request.To);
+    }
+
+    [Fact]
+    public async Task A_reader_the_real_validator_refuses_is_a_partial_failure_and_the_others_get_the_reminder()
+    {
+        // The real pipeline validator (IsRecipientRefusal), not a scripted refusal: Ruslan's stored address is not one
+        // plain address. The French reader still gets the mail; the call is a partial success.
+        var mediator = new TaskNotificationLocaleTests.RealValidationMediator();
+        var adapter = new NotificationEventDispatchAdapter(
+            new OneEvent(new NotificationEventDefinition
+            {
+                EventCode = TaskNotificationEvents.DueSoon, SourceType = NotificationEventSourceType.PlatformSeed, OwnerModuleId = "MOD-0024",
+                Channel = NotificationChannelCode.Email, DefaultTemplateKey = TaskNotificationEvents.DueSoon + ".email",
+                FallbackDisplayName = TaskNotificationEvents.DueSoon, Status = NotificationEventStatus.Active
+            }),
+            mediator, new TenantLanguageResolver(), NullLogger<NotificationEventDispatchAdapter>.Instance);
+
+        var result = await adapter.DispatchByEventCodeAsync(new NotificationEventDispatchRequest(
+            Tenant, TaskNotificationEvents.DueSoon,
+            [new EmailRecipientDto("fay@acme.test", "Fay", "fr"), new EmailRecipientDto("ruslan@acme.test, other@evil.test", "Ruslan", "ru")],
+            new Dictionary<string, object?> { ["TaskTitle"] = "Review" }));
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(NotificationEventDispatchAdapter.ReasonPartialRecipientFailure, result.ReasonCode);
+        Assert.Contains(result.Errors, e => e.StartsWith("ru:", StringComparison.Ordinal) && e.Contains("RECIPIENT_INVALID", StringComparison.Ordinal));
+        Assert.Equal(["fay@acme.test"], mediator.Queued.SelectMany(c => c.Request.To).Select(r => r.Email));
+    }
+
+    private static readonly Guid Fay = Guid.Parse("f0f0f0f0-0000-0000-0000-00000000f0f0");
+    private static readonly Guid Ruslan = Guid.Parse("e0e0e0e0-0000-0000-0000-00000000e0e0");
+    private static readonly DateTimeOffset Now = new(2026, 10, 9, 9, 0, 0, TimeSpan.Zero);
+
+    private static (TaskItem Task, FakeTaskItemRepository Tasks, TaskNotificationService Notifications, Lines<TaskNotificationService> Logger, RecordingQueue Queue)
+        PoolReminder(string failLocale)
+    {
+        var position = Guid.NewGuid();
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(), TenantId = Tenant, Title = "Pool deadline", Lifecycle = TaskLifecycle.InProgress,
+            AssignmentTarget = TaskAssignmentTarget.PositionPool, PoolPositionId = position, OrganizationUnitId = Guid.NewGuid(),
+            EmailNotificationsEnabled = true, DueAt = Now.AddDays(1), ReminderLeadDays = 3, Version = 1
+        };
+        var tasks = new FakeTaskItemRepository(task);
+        var (adapter, queue) = Build(failLocale: failLocale, eventCode: TaskNotificationEvents.DueSoon);
+        var logger = new Lines<TaskNotificationService>();
+        var notifications = new TaskNotificationService(
+            adapter,
+            new FakeNotificationLocaleResolver(),
+            new LanguagePeople((Fay, "fay@acme.test", "fr"), (Ruslan, "ruslan@acme.test", "ru")),
+            new FakePositionAssignmentRepository(Holder(position, Fay), Holder(position, Ruslan)),
+            new FakeUserNotificationRepository(),
+            new FakeTenantContext(Tenant),
+            logger);
+        return (task, tasks, notifications, logger, queue);
+    }
+
+    internal sealed class Lines<T> : Microsoft.Extensions.Logging.ILogger<T>
+    {
+        public List<(Microsoft.Extensions.Logging.LogLevel Level, string Line)> Entries { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Entries.Add((logLevel, formatter(state, exception)));
+    }
+
+    /// <summary>The sweep's per-tenant command, answering a fixed result.</summary>
+    private sealed class OneSweepAnswer(SendDueSoonRemindersResponse answer) : IMediator
+    {
+        public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default) =>
+            Task.FromResult((TResponse)(object)Response<SendDueSoonRemindersResponse>.Success(answer));
+        public Task<object?> Send(object request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task Publish(object notification, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification => Task.CompletedTask;
+    }
+
+    /// <summary>One active tenant; nothing else of the registry is used by the sweep.</summary>
+    private sealed class ActiveTenants : ITenantRegistryRepository
+    {
+        public Task<IReadOnlyList<Diten.Platform.Domain.Entities.Tenant>> GetActiveTenantsAsync(CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<Diten.Platform.Domain.Entities.Tenant>>(
+            [
+                new Diten.Platform.Domain.Entities.Tenant { Id = Tenant, Code = "LANG", Slug = "lang", Name = "lang", DisplayName = "Lang", Domain = "lang.test", Region = "EU", Environment = "Production" }
+            ]);
+        public Task<Diten.Platform.Domain.Entities.Tenant?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateAsync(Diten.Platform.Domain.Entities.Tenant t, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<Diten.Platform.Domain.Entities.Tenant?> GetByCodeAsync(string code, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<Diten.Platform.Domain.Entities.Tenant?> GetBySlugAsync(string slug, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<Diten.Platform.Domain.Entities.Tenant?> GetByDomainAsync(string domain, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<Diten.Platform.Domain.Entities.Tenant> CreateAsync(Diten.Platform.Domain.Entities.Tenant t, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateStatusAsync(Guid id, Diten.Platform.Domain.Entities.TenantStatus status, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<Diten.Platform.Domain.Entities.Tenant>> GetAllAsync(CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<(IReadOnlyList<Diten.Platform.Domain.Entities.Tenant> Items, long TotalCount)> QueryAsync(TenantListQuery query, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<TenantRegistryStats> GetStatsAsync(CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     // ---------------------------------------------------------------- the three other producers pass the person's language
@@ -221,9 +410,10 @@ public sealed class RecipientLanguageFixOneTests
     };
 
     private static (NotificationEventDispatchAdapter Adapter, RecordingQueue Queue) Build(
-        string? failLocale = null, string? throwLocale = null, string eventCode = EventCode)
+        string? failLocale = null, string? throwLocale = null, string eventCode = EventCode,
+        string failReason = "RECIPIENT_INVALID", bool throwForeignCancellation = false)
     {
-        var queue = new RecordingQueue(failLocale, throwLocale);
+        var queue = new RecordingQueue(failLocale, throwLocale, failReason, throwForeignCancellation);
         var events = new OneEvent(new NotificationEventDefinition
         {
             EventCode = eventCode, SourceType = NotificationEventSourceType.PlatformSeed, OwnerModuleId = "MOD-0024",
@@ -244,7 +434,7 @@ public sealed class RecipientLanguageFixOneTests
     }
 
     /// <summary>The queue: every command it was handed (Sent) and those it accepted (Queued); one locale is refused or throws.</summary>
-    private sealed class RecordingQueue(string? failLocale, string? throwLocale) : IMediator
+    private sealed class RecordingQueue(string? failLocale, string? throwLocale, string failReason = "RECIPIENT_INVALID", bool throwForeignCancellation = false) : IMediator
     {
         public List<QueueEmailNotificationCommand> Sent { get; } = [];
         public List<QueueEmailNotificationCommand> Queued { get; } = [];
@@ -255,12 +445,15 @@ public sealed class RecipientLanguageFixOneTests
             Sent.Add(command);
             if (command.Request.Locale == throwLocale)
             {
-                throw new InvalidOperationException("the queue is down for this group");
+                // A provider's OWN timeout is a cancellation the caller did not ask for (FIX2).
+                throw throwForeignCancellation
+                    ? new TaskCanceledException("the provider timed out")
+                    : new InvalidOperationException("the queue is down for this group");
             }
 
             if (command.Request.Locale == failLocale)
             {
-                return Task.FromResult((TResponse)(object)Response<NotificationDispatchDto>.Fail("refused for good", 400, "RECIPIENT_INVALID"));
+                return Task.FromResult((TResponse)(object)Response<NotificationDispatchDto>.Fail("refused", 400, failReason));
             }
 
             Queued.Add(command);
