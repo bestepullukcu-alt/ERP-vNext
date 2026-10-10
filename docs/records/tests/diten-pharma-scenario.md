@@ -113,7 +113,8 @@ Durum anahtarı: `[x]` sahip "Tamam" dedi · `[ ]` bekliyor · ⏳ kod henüz de
 - [ ] `is-push-hat` Ana çalışma dalını GitHub'a gönderin (PR değil): `git -C /Users/alitufanoglu/ERP-vNext/.claude/worktrees/kanban-preview push origin chore/ct-round-2`.
 - [ ] `is-stok-cevap-2` Push'tan sonra stok ekibine ikinci cevabı gönderin (kabul edilenler, üç çekince, R-12 beklentisi, bütün MVP'ler cevabı).
 - [ ] `is-crm-mesaj` CRM ekibine Marka değişiklikleri mesajını gönderin.
-- [ ] `is-qa-pozisyon` Kalem onayından (S2) önce dev'de "QA Müdürü" pozisyonu + en az iki kişi.
+- [ ] `is-qa-pozisyon` S2 kabul + dev yeniden başlatmadan SONRA: dev'de "QA Müdürü" pozisyonu (aktif, kalemi oluşturan OLMAYAN iki kişi), `ITEM-ACTIVATION` tanımı tek onay adımıyla yayımlanır, pozisyon kimliği CT'ye (yerel ayar dosyası). Ayrıntı: `docs/guides/operations/service-trust-chain-runbook.md` §11 (S2 dalı `b2bd59538`).
+- [ ] `is-canli-kalem-isci` Canlı kararı: kalem onayı canlıda açılsın mı; canlı QA Müdürü pozisyonu; kalem işçisi canlıda çalışsın mı (kapalıysa onaylanan kalem etkinleşmez; BL-536).
 - [ ] `is-canli-hesap` Canlı sorusunu cevaplayın: ekibiniz canlıda kiracı ekranlarına platform hesabıyla mı giriyor? (Evetse canlıda da sıradan yönetici hesabı önceden açılmalı.)
 - [ ] `is-rol-onerisi` Canlı rol önerisini inceleyin: 13 rol, görev ayrımı kuralları (kendi üretim, fason, satış). Dosya: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`. Hangi rollerin canlıda açılacağını söyleyin.
 - [ ] `is-ik-viewer` Canlı sorusu (güvenlik): canlıda İnsan Sermayesi modülü açık mı, "Viewer" rolü kimlerde? Açıksa Viewer ücret / yan hak ekranlarını görebiliyor (BL-581).
