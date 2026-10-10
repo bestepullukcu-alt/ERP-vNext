@@ -25,6 +25,8 @@ public sealed class OwnedMongoResolutionTests
     // FIX3 R4 (a): a variable that is GIVEN but names no installed mongod is red — never the silent skip it was.
     [Theory]
     [InlineData("bin/mongod", true)]          // relative
+    [InlineData("", true)]                    // FIX4: empty (an unresolved CI variable)
+    [InlineData("   ", true)]
     [InlineData(Installed, false)]            // named but missing
     public void A_given_variable_that_names_no_mongod_is_a_failure_not_a_skip(string variable, bool exists)
     {

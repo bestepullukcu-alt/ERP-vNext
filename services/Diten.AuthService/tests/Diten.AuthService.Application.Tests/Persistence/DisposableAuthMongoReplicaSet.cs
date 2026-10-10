@@ -44,8 +44,11 @@ public sealed class DisposableAuthMongoReplicaSet : IAsyncLifetime
     //   not given → the Windows default install on Windows only; else nothing — unless DITEN_REQUIRE_OWNED_MONGO=1 (CI and
     //   acceptance runs set it), when nothing is a failure too.
     // A mongod of the wrong version fails the fixture's own start (red) as before.
-    public static string? ResolveExecutable() =>
-        ResolveOwned() is { Failure: { } failure } ? throw new InvalidOperationException(failure) : ResolveOwned().Executable;
+    public static string? ResolveExecutable()
+    {
+        var resolution = ResolveOwned(); // FIX4: resolved once
+        return resolution.Failure is { } failure ? throw new InvalidOperationException(failure) : resolution.Executable;
+    }
 
     public static OwnedMongodResolution ResolveOwned() => Resolve(
         Environment.GetEnvironmentVariable(OwnedMongo.Variable),
@@ -61,7 +64,9 @@ public sealed class DisposableAuthMongoReplicaSet : IAsyncLifetime
     // missing is a FAILURE; nothing found is a skip unless required.
     internal static OwnedMongodResolution Resolve(string? variable, bool required, bool windows, Func<string, bool> exists)
     {
-        if (!string.IsNullOrWhiteSpace(variable))
+        // FIX4: an EMPTY variable is "given" too (a CI variable that resolved to nothing) — invalid, red; only an absent one
+        // (null) is "not given".
+        if (variable is not null)
             return Path.IsPathFullyQualified(variable) && exists(variable)
                 ? new(variable, null)
                 : new(null, InvalidVariable + ": " + OwnedMongo.Variable + " names no installed mongod (an absolute path to an existing file).");

@@ -111,6 +111,8 @@ public sealed class UnixProcessObservationTests
         Assert.Equal([1, 2, 77], rows.Select(row => row.Pid));
         Assert.Equal("/sbin/init splash", rows[0].CommandLine);
         Assert.Equal("kthreadd", rows[1].CommandLine);
+        Assert.True(rows[1].FromComm);   // FIX4
+        Assert.False(rows[0].FromComm);
         Assert.Equal("/srv/auth/Diten.AuthService.Api", rows[2].Image);
     }
 
@@ -149,8 +151,16 @@ public sealed class UnixProcessObservationTests
             var probe = Assert.Single(rows, row => row.Pid == child.Id);
             Assert.Contains("Diten.AuthService.ObservationProbe", probe.CommandLine, StringComparison.Ordinal);
             var self = Environment.ProcessId;
-            var basis = rows.Where(row => row.Pid == 1 || row.Pid == self).ToArray();
-            Assert.Equal(2, basis.Length);
+            // FIX4: a container whose pid 1 is the test run itself (`dotnet test …Diten.AuthService…`) — or this process
+            // being pid 1 — must not decide the claim: a pid 1 that carries the marker is stood in for by a neutral row
+            // (Classify needs pid 1 present, not its text); self = 1 gives a one-row basis.
+            var basis = rows.Where(row => row.Pid == 1 || row.Pid == self)
+                .Select(row => row.Pid == 1 && row.Pid != self
+                               && row.CommandLine.Contains(UnixProcessObservation.Marker, StringComparison.OrdinalIgnoreCase)
+                    ? new Row(1, "/sbin/init", "/sbin/init")
+                    : row)
+                .ToArray();
+            Assert.Equal(self == 1 ? 1 : 2, basis.Length);
 
             Assert.Equal(UnixProcessObservation.NotQuiescent, Assert.Throws<InvalidOperationException>(
                 () => UnixProcessObservation.Classify([.. basis, probe], [], self)).Message);
@@ -176,11 +186,14 @@ public sealed class UnixProcessObservationTests
     {
         var existing = Path.GetTempPath();
         var gone = Path.Combine(Path.GetTempPath(), "diten-gone-" + Guid.NewGuid().ToString("N"));
-        Assert.True(UnixProcessObservation.Ended(gone, new IOException("eio", 5)));
-        Assert.True(UnixProcessObservation.Ended(existing, new IOException("esrch", 3)));
-        Assert.True(UnixProcessObservation.Ended(existing, new FileNotFoundException("enoent")));
-        Assert.False(UnixProcessObservation.Ended(existing, new IOException("eio", 5)));
-        Assert.False(UnixProcessObservation.Ended(existing, new IOException("unknown")));
+        // FIX4: the read's errno alone decides — no "directory gone" branch (Directory.Exists is false on any stat failure).
+        _ = existing; _ = gone;
+        Assert.True(UnixProcessObservation.Ended(new IOException("esrch", 3)));
+        Assert.True(UnixProcessObservation.Ended(new IOException("enoent", 2)));
+        Assert.True(UnixProcessObservation.Ended(new FileNotFoundException("enoent")));
+        Assert.True(UnixProcessObservation.Ended(new DirectoryNotFoundException("enoent")));
+        Assert.False(UnixProcessObservation.Ended(new IOException("eio", 5)));
+        Assert.False(UnixProcessObservation.Ended(new IOException("unknown")));
     }
 
     // FIX3 R2 on a synthetic tree: the directory exists and its command line fails with another I/O error (a symbolic
@@ -200,10 +213,9 @@ public sealed class UnixProcessObservationTests
 
     // FIX3 (CT sabotage C7 survived: the UnauthorizedAccessException branch had no test): a /proc entry whose command line
     // this account may not read (another user's, hidepid half-applied…) refuses the observation — never skipped.
-    [UnixFact]
+    [NotRootUnixFact]
     public void A_proc_entry_whose_command_line_cannot_be_read_by_this_account_refuses_the_observation()
     {
-        Assert.False(Environment.UserName == "root", "Run as a regular user: root reads a mode-000 file.");
         var root = Path.Combine(Path.GetTempPath(), "diten-fake-proc-eacces-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root, "1"));
         File.WriteAllBytes(Path.Combine(root, "1", "cmdline"), "/sbin/init\0"u8.ToArray());
@@ -220,6 +232,29 @@ public sealed class UnixProcessObservationTests
         {
             File.SetUnixFileMode(locked, UnixFileMode.UserRead | UnixFileMode.UserWrite);
         }
+    }
+
+    // FIX4 (review: fromComm untested from the production path): the REAL reader on a synthetic tree — an empty command
+    // line and a comm that is the 15-character marker — gives a comm-only row, and the decision refuses on it.
+    [Fact]
+    public void A_comm_only_auth_process_read_by_the_proc_reader_is_not_quiescent()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "diten-fake-proc-comm-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "1"));
+        File.WriteAllBytes(Path.Combine(root, "1", "cmdline"), "/sbin/init\0"u8.ToArray());
+        Directory.CreateDirectory(Path.Combine(root, Self.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        File.WriteAllBytes(Path.Combine(root, Self.ToString(System.Globalization.CultureInfo.InvariantCulture), "cmdline"),
+            "/usr/bin/dotnet\0test-runner.dll\0"u8.ToArray());
+        Directory.CreateDirectory(Path.Combine(root, "77"));
+        File.WriteAllBytes(Path.Combine(root, "77", "cmdline"), []);
+        File.WriteAllText(Path.Combine(root, "77", "comm"), "Diten.AuthServi\n");
+
+        var rows = UnixProcessObservation.ListWithProc(root);
+
+        var commOnly = Assert.Single(rows, row => row.Pid == 77);
+        Assert.True(commOnly.FromComm);
+        Assert.Equal(UnixProcessObservation.NotQuiescent, Assert.Throws<InvalidOperationException>(
+            () => UnixProcessObservation.Classify(rows, [], Self)).Message);
     }
 
     // FIX3: Linux' comm is cut to 15 characters — a comm-only row is matched on the 15 the kernel keeps.

@@ -77,9 +77,13 @@ public static class UnixPipeHandleInspector
         if (layout.AnonymousPermissions is not { } permissions || layout.AnonymousDevice is not { } device) return false;
         if (identity.Uid != GetEffectiveUid() || identity.Permissions != permissions || identity.Device != device) return false;
         if (layout.MacOs) return identity.Links == 0;
-        try { return new FileInfo($"/proc/self/fd/{descriptor}").LinkTarget?.StartsWith("pipe:", StringComparison.Ordinal) == true; }
+        try { return IsPipeLink(new FileInfo($"/proc/self/fd/{descriptor}").LinkTarget); }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException) { return false; }
     }
+
+    // FIX4: the Linux rule alone (tested on any OS): only `pipe:[…]` is an anonymous pipe — a named FIFO's link is its path
+    // (`/tmp/x`, or `/tmp/x (deleted)` once unlinked), a socket is `socket:[…]`, no link (null) is not one.
+    internal static bool IsPipeLink(string? linkTarget) => linkTarget?.StartsWith("pipe:", StringComparison.Ordinal) == true;
 
     /// <summary>
     /// Opened WRITE-ONLY — exactly O_WRONLY (BL570 FIX1 R1). A read-write end (<c>exec 3&lt;&gt;fifo</c>) makes the

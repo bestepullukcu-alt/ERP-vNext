@@ -272,6 +272,7 @@ public sealed class ServiceClientSecretOutputSinkUnixTests
     [InlineData("610", true, Reasons.FifoTooPermissive)]   // group execute
     [InlineData("604", true, Reasons.FifoTooPermissive)]   // others read
     [InlineData("602", true, Reasons.FifoTooPermissive)]   // others write
+    [InlineData("601", true, Reasons.FifoTooPermissive)]   // others execute (FIX4)
     public void A_named_fifo_is_a_channel_only_when_owned_by_this_user_and_closed_to_group_and_others(
         string mode, bool owned, string? expected)
     {
@@ -377,17 +378,44 @@ public sealed class ServiceClientSecretOutputSinkUnixTests
         Assert.Null(UnixPipeHandleInspector.Prove(otherOs));
     }
 
-    // FIX3: the uid and link fields are proven too — a uid offset that reads another field (macOS: the gid next to it) or
-    // a link count read from the mode fails the proof. ⚠ Run as ROOT a wrong uid offset that lands on another zero (root's
-    // gid 0) would pass: unmeasured (no root here), named in the FIX3 report. The proof also records what an anonymous pipe
-    // looks like here (macOS: mode 0660 on device 0 — measured 2026-10-09).
-    [UnixFact]
-    public void A_wrong_uid_or_link_offset_fails_the_proof_and_the_anonymous_signature_is_recorded()
+    // FIX3 / FIX4: the uid field is proven — a uid offset moved onto the gid (+4 on every row) fails the proof. Only where
+    // euid ≠ egid: Ubuntu's 1000 / 1000, .NET's `app` 1654 / 1654 and root 0 / 0 read the same value there — skipped BY NAME
+    // (UID_EQUALS_GID), never a false red on CI.
+    [UidDiffersFromGidFact]
+    public void A_uid_offset_moved_onto_the_gid_fails_the_proof()
     {
         var real = UnixPipeHandleInspector.Candidate()!;
-        if (Environment.UserName != "root")
-            Assert.Null(UnixPipeHandleInspector.Prove(real with { UidOffset = real.UidOffset + 4 }));
+        Assert.Null(UnixPipeHandleInspector.Prove(real with { UidOffset = real.UidOffset + 4 }));
+    }
+
+    // FIX4: the link count decides anonymity on macOS only (Linux reads /proc/self/fd) — a link count read from the mode
+    // fails macOS' proof; Linux' twin is the pure link rule below.
+    [MacOsFact]
+    public void A_link_count_read_from_another_field_fails_the_proof_on_macOS()
+    {
+        var real = UnixPipeHandleInspector.Candidate()!;
         Assert.Null(UnixPipeHandleInspector.Prove(real with { LinksOffset = real.ModeOffset }));
+    }
+
+    // FIX4: Linux' anonymity rule alone, on synthetic link targets (runs everywhere): only `pipe:[…]` is anonymous.
+    [Theory]
+    [InlineData("pipe:[123456]", true)]
+    [InlineData("/tmp/diten-fifo", false)]
+    [InlineData("/tmp/diten-fifo (deleted)", false)]
+    [InlineData("socket:[42]", false)]
+    [InlineData("anon_inode:[eventfd]", false)]
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void On_Linux_only_a_pipe_link_is_an_anonymous_pipe(string? linkTarget, bool anonymous)
+    {
+        Assert.Equal(anonymous, UnixPipeHandleInspector.IsPipeLink(linkTarget));
+    }
+
+    // FIX3: the proof records what an anonymous pipe looks like here (macOS: mode 0660 on device 0 — measured 2026-10-09).
+    [UnixFact]
+    public void The_proof_records_the_anonymous_pipe_signature()
+    {
+        var real = UnixPipeHandleInspector.Candidate()!;
         var proven = UnixPipeHandleInspector.Prove(real)!;
         Assert.NotNull(proven.AnonymousPermissions);
         Assert.NotNull(proven.AnonymousDevice);

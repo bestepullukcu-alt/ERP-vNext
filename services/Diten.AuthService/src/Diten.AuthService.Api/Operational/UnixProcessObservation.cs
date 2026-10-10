@@ -145,7 +145,7 @@ public static class UnixProcessObservation
     /// <summary>
     /// Linux: every <c>&lt;root&gt;/&lt;pid&gt;/cmdline</c> (kernel threads: <c>comm</c>), and the image from <c>exe</c> when readable
     /// (another user's is not — the command line still is). A process that ENDED mid-read is skipped — only when it is
-    /// really gone (FIX3 R2: its directory no longer exists, or the read said ENOENT / ESRCH); ANY other I/O error (EIO,
+    /// really gone (FIX3 R2 / FIX4: the read said ENOENT / ESRCH); ANY other I/O error (EIO,
     /// a short read the kernel refused…) refuses the observation, as an unreadable command line does — before FIX3 every
     /// IOException was "ended", which opened the fail-closed rule. ⚠ PID namespaces: only this namespace's processes are
     /// listed — an Auth in another container is caught by its 5056 listener alone. Unmeasured on this machine (no Linux).
@@ -173,7 +173,7 @@ public static class UnixProcessObservation
             {
                 throw new InvalidOperationException(ObservationFailed); // cannot classify → fail closed
             }
-            catch (IOException exception) when (Ended(directory, exception))
+            catch (IOException exception) when (Ended(exception))
             {
                 // ended between the listing and the read (gone, ENOENT, ESRCH): not running
             }
@@ -188,10 +188,11 @@ public static class UnixProcessObservation
     private const int NoSuchFile = 2;    // ENOENT
     private const int NoSuchProcess = 3; // ESRCH
 
-    // FIX3 R2: "ended" only when it really is — the directory is gone, or the read said ENOENT / ESRCH.
-    internal static bool Ended(string directory, IOException exception) =>
-        !Directory.Exists(directory)
-        || exception is FileNotFoundException or DirectoryNotFoundException
+    // FIX3 R2: "ended" only when it really is — the read said ENOENT / ESRCH.
+    // FIX4: no "the directory is gone" branch — Directory.Exists answers false on ANY stat failure, so "gone" was "stat
+    // failed"; the read's own errno says whether the process ended.
+    internal static bool Ended(IOException exception) =>
+        exception is FileNotFoundException or DirectoryNotFoundException
         || (exception.HResult & 0xFFFF) is NoSuchFile or NoSuchProcess;
 
     // /proc mounted with hidepid=1|2|invisible|noaccess hides other users' processes: the listing would be incomplete.
