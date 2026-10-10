@@ -440,13 +440,24 @@ public sealed class FakeLegalEntityScopes : Diten.MdmService.Application.Contrac
 {
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Guid[]> _tenants = new();
 
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (int Status, string Code)> _refusals = new();
+
     public void Answer(Guid tenantId, params Guid[] legalEntityIds) =>
         _tenants[tenantId] = legalEntityIds.OrderBy(x => x.ToString("D"), StringComparer.Ordinal).ToArray();
 
+    /// <summary>MOD-0290-FU04 S4 FIX1: the provider refuses this tenant with a status of its own (401 / 403 / 504 …).</summary>
+    public void Refuse(Guid tenantId, int status, string code) => _refusals[tenantId] = (status, code);
+
+    // ⚠ S4 FIX1 B2 (BL-592): this fake answers EVERY permission key, mdm.product-master.read included. The real
+    // provider (Platform's trusted scope credential) has a fixed list of keys that does not hold it yet, so in an
+    // Enforced tenant the real answer is a refusal. No test here can see that; it is a go-live prerequisite.
     public Task<Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult> ResolveAsync(
         Guid expectedTenantId, Guid expectedSubjectId, string moduleCode, string permissionKey,
         CancellationToken cancellationToken = default) =>
-        Task.FromResult(_tenants.TryGetValue(expectedTenantId, out var ids)
+        Task.FromResult(_refusals.TryGetValue(expectedTenantId, out var refusal)
+            ? new Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult(
+                false, refusal.Status, refusal.Code, expectedTenantId, expectedSubjectId, moduleCode, permissionKey, null, [])
+            : _tenants.TryGetValue(expectedTenantId, out var ids)
             ? Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult.Success(
                 expectedTenantId, expectedSubjectId, moduleCode, permissionKey, DateTimeOffset.UtcNow, ids)
             : new Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult(

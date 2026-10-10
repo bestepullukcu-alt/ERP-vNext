@@ -67,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<IGskuRepository, GskuRepository>();
         services.AddScoped<IFinishedGoodRepository, FinishedGoodRepository>();
         services.AddScoped<IItemRepository, ItemRepository>();
+        services.AddScoped<IProductMasterReadStore, ProductMasterReadStore>();
         services.AddScoped<ILskuRepository, LskuRepository>();
         services.AddScoped<ILskuIdentityWorkflowOperationRepository, LskuIdentityWorkflowOperationRepository>();
         services.AddScoped<ILskuIdentityWorkflowTenantPartitionDiscovery, LskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
