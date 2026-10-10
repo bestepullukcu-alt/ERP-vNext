@@ -8398,6 +8398,25 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-603
+
+**S4 okuma sözleşmesi: okunamayan satır yer tutucusunun BSON tür sırası — MinKey / Symbol kolları ve tür başına teori testi eksik (FIX4 küçükleri)**
+
+DURUM: AÇIK · SAHİP: CT (MDM, product-master) · BULAN: FU04 S4 FIX4 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- S4 FIX4 (`75c128b33`, hatta `717775d59`) yer tutucuyu deponun BSON tür sırasına göre diziyor: eksik / null / sayı, sonra dize, sonra diğer; diziler en küçük öğeyle (en iyi çaba).
+- MinKey (her şeyden önce) ve Symbol (dizeyle aynı sınıf) kolları açıkça ele alınmıyor. Bozuk bir kod alanı bu türlerden biriyse yer tutucunun yeri Mongo'nun sırasından sapabilir.
+- Tür başına sıra tek bir teoriyle sabitlenmemiş (her tür için "yer tutucu, depo sırasıyla aynı yerde").
+
+Yapılacak:
+- MinKey / MaxKey / Symbol kolları;
+- `BsonType` değerleri üzerinden tek teori: gerçek Mongo sıralamasıyla yer tutucu sırası aynı.
+
+Gelecek regresyon riski: 🟢 yalnız bozuk (tür dışı) kod alanında sayfa kayması; sızıntı yok.
+
+---
+
 ### BL-602
 
 **MDM kapsam yazımı: `A_replace_under_constant_lease_traffic_on_other_products_succeeds` makine yükünde kararsız**
