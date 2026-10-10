@@ -148,7 +148,8 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
 
         try
         {
-            return await _users.GetByEmailAndTenantAsync(email, tenantId, ct);
+            // FIX1 — the same normalised form the sign-in code's lookup uses (stored addresses are lower case).
+            return await _users.GetByEmailAndTenantAsync(email.Trim().ToLowerInvariant(), tenantId, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

@@ -67,6 +67,7 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             services.AddScoped<IUserRoleRepository>(sp => new FailingOnceUserRoles(
                 ActivatorUtilities.CreateInstance<Diten.AuthService.Persistence.Repositories.UserRoleRepository>(sp), FailOnce));
             services.AddSingleton<IOtpDeliveryService>(Otp);
+            services.AddSingleton(new Diten.AuthService.Infrastructure.Security.SelfServiceRateLimiter(PreferencesLimit, TimeSpan.FromMinutes(5)));
             services.Configure<Diten.AuthService.Infrastructure.Settings.MfaOptions>(o => o.HashSecret = MfaSecret);
             // FIX3 — the production refresh-token repository with two hold points: before a session is written
             // (create:{user}) and before the reset's sweep (scan:{user}).
@@ -82,6 +83,9 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         }
 
         public CapturingOtp Otp { get; } = new();
+
+        /// <summary>WP-EMAIL-LANG-01 FIX1 — the per-user limit of me/preferences, low enough to reach in a test.</summary>
+        public const int PreferencesLimit = 3;
 
         /// <summary>BL-454 stage D FIX3 (3) — "create:{email}" / "assign:{tenantId}": the next such write throws, once.</summary>
         public ConcurrentDictionary<string, bool> FailOnce { get; } = new();
@@ -540,6 +544,102 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         var session = await TenantSessionAsync(tenantId, user.Email, OldPassword); // the account still signs in
         Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" })).StatusCode);
         Assert.Equal("ru", (await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    // ── WP-EMAIL-LANG-01 FIX1 ────────────────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"preferedLanguage\":\"fr\"}")]  // misspelled
+    [InlineData("{\"preferredLanguage\":7}")]
+    [InlineData("[]")]
+    public async Task A_body_that_does_not_name_the_language_is_refused_and_never_clears_it(string body)
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "fr" })).StatusCode);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var refused = await client.PutAsync("api/auth/me/preferences", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Equal("fr", (await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task Too_many_preference_writes_from_one_user_are_refused_with_429()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var other = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        for (var i = 0; i < Host.PreferencesLimit; i++)
+        {
+            Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = i % 2 == 0 ? "fr" : "es" })).StatusCode);
+        }
+
+        var refused = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" });
+
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.NotEqual("ru", (await ReadUserAsync(user.Id)).PreferredLanguage);
+        // Per USER: another person of the same tenant is not refused.
+        var otherSession = await TenantSessionAsync(tenantId, other.Email, OldPassword);
+        Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(otherSession.AccessToken, tenantId, new { preferredLanguage = "ru" })).StatusCode);
+    }
+
+    [Theory]
+    [InlineData(true, false)]  // tenant_user without tenant_id
+    [InlineData(false, true)]  // no actor_type at all
+    public async Task A_token_without_its_tenant_or_its_actor_type_is_refused(bool withActorType, bool withTenant)
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var claims = new List<System.Security.Claims.Claim> { new("sub", user.Id.ToString()) };
+        if (withActorType) claims.Add(new("actor_type", "tenant_user"));
+        if (withTenant) claims.Add(new("tenant_id", tenantId.ToString()));
+
+        using var client = _host.Client(SignedToken(claims), tenantId);
+        var set = await client.PutAsJsonAsync("api/auth/me/preferences", new { preferredLanguage = "fr" });
+
+        Assert.Equal(withActorType ? HttpStatusCode.Unauthorized : HttpStatusCode.Forbidden, set.StatusCode);
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Theory]
+    [InlineData(false)] // no tenant header: the middleware takes the token's (empty) tenant
+    [InlineData(true)]  // the header copied from the token, as the web tier's proxy does: both empty, no mismatch
+    public async Task A_tenant_users_token_whose_tenant_is_the_empty_id_is_refused_with_401(bool headerFromToken)
+    {
+        // CT K6 — tenant_id = 00000000-0000-0000-0000-000000000000 is no tenant. Measured: a header naming a REAL tenant
+        // next to it is refused earlier, 400 "Tenant mismatch" (TenantResolutionMiddleware); without that contradiction
+        // the request reaches the door, and only the door's own Guid.Empty check stops it: 401, nothing looked up.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var token = SignedToken([new("sub", user.Id.ToString()), new("actor_type", "tenant_user"), new("tenant_id", Guid.Empty.ToString())]);
+
+        using var client = _host.Client(token);
+        if (headerFromToken)
+        {
+            client.DefaultRequestHeaders.Add("X-Tenant-Id", Guid.Empty.ToString());
+        }
+
+        var set = await client.PutAsJsonAsync("api/auth/me/preferences", new { preferredLanguage = "fr" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, set.StatusCode);
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    // A token signed with the host's own key, carrying exactly the claims given.
+    private string SignedToken(IEnumerable<System.Security.Claims.Claim> claims)
+    {
+        var settings = _host.Factory.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Diten.AuthService.Infrastructure.Settings.JwtSettings>>().Value;
+        var key = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(settings.Secret));
+        var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
+            settings.Issuer, settings.Audience, claims, expires: DateTime.UtcNow.AddMinutes(10),
+            signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(key, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256));
+        return new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token);
     }
 
     // ── BL-454 stage D FIX1: the tenant-created event only CREATES ──────────────────────────────────────────────

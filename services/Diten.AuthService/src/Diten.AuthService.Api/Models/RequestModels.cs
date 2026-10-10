@@ -49,4 +49,29 @@ public sealed record UpdateRoleRequest(string DisplayName, string? Description);
 
 /// <summary>WP-EMAIL-LANG-01 — the ONLY field a user may set through <c>PUT api/auth/me/preferences</c>. There is no user
 /// id, tenant id or any other field here on purpose: anything else in the body is not bound (no mass assignment).</summary>
-public sealed record UpdateMyPreferencesRequest(string? PreferredLanguage);
+public sealed record UpdateMyPreferencesRequest(string? PreferredLanguage)
+{
+    /// <summary>FIX1 — the body must be a JSON object that NAMES <c>preferredLanguage</c> (a string, or <c>null</c> to clear).
+    /// <c>{}</c> or a misspelled name is refused (400), never read as "clear my choice". Other properties are ignored.</summary>
+    public static bool TryRead(System.Text.Json.JsonElement body, out UpdateMyPreferencesRequest? request)
+    {
+        request = null;
+        if (body.ValueKind != System.Text.Json.JsonValueKind.Object
+            || !body.TryGetProperty("preferredLanguage", out var value))
+        {
+            return false;
+        }
+
+        switch (value.ValueKind)
+        {
+            case System.Text.Json.JsonValueKind.Null:
+                request = new UpdateMyPreferencesRequest((string?)null);
+                return true;
+            case System.Text.Json.JsonValueKind.String:
+                request = new UpdateMyPreferencesRequest(value.GetString());
+                return true;
+            default:
+                return false;
+        }
+    }
+}

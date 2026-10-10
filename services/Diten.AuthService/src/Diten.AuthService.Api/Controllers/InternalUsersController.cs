@@ -147,7 +147,8 @@ public sealed class InternalUsersController : ControllerBase
 
     /// <summary>
     /// <c>GET internal/users/contacts?tenantId={guid}&amp;ids=guid,guid</c> →
-    /// <c>[{ "id": "...", "displayName": "...", "email": "..." }]</c>.
+    /// <c>[{ "id": "...", "displayName": "...", "email": "...", "preferredLanguage": "fr" | null }]</c> (WP-EMAIL-LANG-01: the
+    /// language the person's mail is written in; null = none, the tenant's applies).
     ///
     /// <para><b>A SIBLING of display-names, not a widening of it.</b> That endpoint's contract is deliberately
     /// "id and display name — the entire contract", and adding an address to it would hand an email to every

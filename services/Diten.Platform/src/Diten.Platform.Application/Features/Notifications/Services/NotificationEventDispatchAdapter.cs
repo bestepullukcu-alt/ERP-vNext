@@ -129,38 +129,113 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
 
         /*
          * 7) Locale, per recipient. WP-EMAIL-LANG-01 (CT decision 2026-10-09) — each person is written to in their own
-         *    language: the recipients are grouped by the language they carry (EmailRecipientDto.Locale, a supported one),
-         *    and each group is its OWN dispatch — its own row, id and retries, so a retry never sends to another group.
-         *    No language = the caller's Locale, then the tenant's configured language, then "en" (the resolver).
-         *    Every recipient is in exactly one group; Cc and Bcc travel once, with the first group. A group's To is a
-         *    subset of the caller's To, so nobody sees an address the single message would not have shown them.
+         *    language, one dispatch per language: its own row, id and retries, so a retry never sends to another group.
+         *    FIX1 — in this order:
+         *    a) one address, one send: To / Cc / Bcc are de-duplicated together (NormalizeEmail; To first, then Cc, then Bcc);
+         *    b) the language is RESOLVED per person first (their own → the caller's Locale → the tenant's → "en"), and the
+         *       groups are made by the RESOLVED value: no preference and an explicit choice of the tenant's language are one
+         *       group, not two;
+         *    c) each group is tried on its own: an exception in one group (other than cancellation) is caught, logged and
+         *       counted, and the next group is still tried — when NO group was queued, the first exception is thrown again
+         *       as it was (a single dispatch behaves exactly as before);
+         *    d) Cc and Bcc ride with the first group that is QUEUED (a failed group sent nobody, so they move on);
+         *    e) the answer: every group queued → that dispatch; SOME queued → success with PARTIAL_RECIPIENT_FAILURE (the
+         *       queued readers have their mail, so a caller that retries on failure would mail them again); none → failure.
+         *    A group's To is a subset of the caller's To, so nobody sees an address the single message would not have shown.
          */
-        var groups = request.To
-            .GroupBy(recipient => SupportedLocaleOrNull(recipient.Locale))
-            .ToList();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var to = Distinct(request.To, seen);
+        var cc = Distinct(request.Cc, seen);
+        var bcc = Distinct(request.Bcc, seen);
 
-        Response<NotificationDispatchDto>? first = null;
-        Response<NotificationDispatchDto>? firstFailure = null;
-        for (var index = 0; index < groups.Count; index++)
+        var resolved = new Dictionary<string, string>(StringComparer.Ordinal);
+        var people = new List<(EmailRecipientDto Recipient, string Locale)>(to.Count);
+        foreach (var recipient in to)
         {
-            var group = groups[index];
-            var locale = await _localeResolver.ResolveAsync(request.TenantId, group.Key ?? request.Locale, ct);
-            var response = await QueueAsync(
-                request, eventCode, templateKey, locale,
-                group.Select(recipient => recipient with { Locale = null }).ToList(),
-                index == 0 ? request.Cc : null,
-                index == 0 ? request.Bcc : null,
-                ct);
-            first ??= response;
-            if (!response.IsSuccessful)
+            var asked = SupportedLocaleOrNull(recipient.Locale) ?? request.Locale ?? string.Empty;
+            if (!resolved.TryGetValue(asked, out var locale))
+            {
+                locale = await _localeResolver.ResolveAsync(request.TenantId, asked.Length == 0 ? null : asked, ct);
+                resolved[asked] = locale;
+            }
+
+            people.Add((recipient with { Locale = null }, locale));
+        }
+
+        var groups = people.GroupBy(person => person.Locale, StringComparer.Ordinal).ToList();
+        Response<NotificationDispatchDto>? firstQueued = null;
+        Response<NotificationDispatchDto>? firstFailure = null;
+        var failures = new List<string>();
+        System.Runtime.ExceptionServices.ExceptionDispatchInfo? firstException = null;
+        var copiesPending = cc.Count > 0 || bcc.Count > 0;
+        foreach (var group in groups)
+        {
+            Response<NotificationDispatchDto> response;
+            try
+            {
+                response = await QueueAsync(
+                    request, eventCode, templateKey, group.Key,
+                    group.Select(person => person.Recipient).ToList(),
+                    copiesPending ? cc : null,
+                    copiesPending ? bcc : null,
+                    ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "notification.dispatch_group_failed TenantId={TenantId} EventCode={EventCode} Locale={Locale} Recipients={Count}",
+                    request.TenantId, eventCode, group.Key, group.Count());
+                firstException ??= System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex);
+                response = Response<NotificationDispatchDto>.Fail(
+                    "The dispatch of one language group failed.", 500, ReasonGroupDispatchFailed);
+            }
+
+            if (response.IsSuccessful)
+            {
+                firstQueued ??= response;
+                copiesPending = false;
+            }
+            else
             {
                 firstFailure ??= response;
+                failures.Add($"{group.Key}: {response.ReasonCode ?? "<none>"}");
             }
         }
 
-        // One answer for the producer: the first failure when any group failed (each failure is logged above with its
-        // locale), otherwise the first group's dispatch.
-        return firstFailure ?? first!;
+        if (firstQueued is null)
+        {
+            // Nobody was queued: the call answers exactly as a single dispatch did before FIX1 — a thrown refusal (e.g. the
+            // pipeline's validator) is thrown again, unchanged; a refused answer is returned.
+            firstException?.Throw();
+            return firstFailure!;
+        }
+
+        return firstFailure is null
+            ? firstQueued
+            : Response<NotificationDispatchDto>.PartialSuccess(firstQueued.Data!, ReasonPartialRecipientFailure, failures, firstQueued.StatusCode);
+    }
+
+    /// <summary>FIX1 — some language groups were queued and some were not. The call SUCCEEDED (the queued readers have their
+    /// mail); <see cref="Response{T}.Errors"/> names each failed group's language and reason.</summary>
+    public const string ReasonPartialRecipientFailure = "PARTIAL_RECIPIENT_FAILURE";
+
+    /// <summary>FIX1 — one language group's dispatch threw (caught, logged; the other groups were still tried).</summary>
+    public const string ReasonGroupDispatchFailed = "GROUP_DISPATCH_FAILED";
+
+    // One address, one send — across To, Cc and Bcc together; the first occurrence wins (To before Cc before Bcc).
+    private static List<EmailRecipientDto> Distinct(IReadOnlyList<EmailRecipientDto>? recipients, HashSet<string> seen)
+    {
+        var kept = new List<EmailRecipientDto>();
+        foreach (var recipient in recipients ?? [])
+        {
+            if (seen.Add(NotificationParsing.NormalizeEmail(recipient.Email)))
+            {
+                kept.Add(recipient);
+            }
+        }
+
+        return kept;
     }
 
     /// <summary>The supported recipient languages (the seven tenant languages); anything else is "no language".</summary>

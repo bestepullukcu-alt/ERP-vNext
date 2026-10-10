@@ -23,6 +23,14 @@ public sealed class Response<T>
     public static Response<T> Success(int statusCode = 200, string? correlationId = null) =>
         new() { StatusCode = statusCode, IsSuccessful = true, CorrelationId = correlationId };
 
+    /// <summary>
+    /// WP-EMAIL-LANG-01 FIX1 — a SUCCESS that is not complete: the work was done for some and not for others (e.g. some of a
+    /// notification's language groups were queued). <paramref name="reasonCode"/> says so and <paramref name="errors"/>
+    /// names what was not done. Named apart from <c>Success</c> / <c>Fail</c> so it is never picked by accident.
+    /// </summary>
+    public static Response<T> PartialSuccess(T data, string reasonCode, IReadOnlyList<string> errors, int statusCode = 200) =>
+        new() { Data = data, StatusCode = statusCode, IsSuccessful = true, ReasonCode = reasonCode, Errors = errors };
+
     public static Response<T> Fail(
         string error,
         int statusCode = 400,

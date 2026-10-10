@@ -45,7 +45,12 @@ public sealed class UpdateMyPreferencesCommandHandler(IUserRepository users, IUs
 
         var state = users.CaptureState(user);
         user.SetPreferredLanguage(language);
-        await users.TryWriteChangesAsync(user, state, request.TenantId, UserWriteCondition.None, ct);
+        // FIX1 — the write's answer counts: false = the account is no longer there to write (deleted meanwhile). Nothing
+        // changed, so nothing is audited.
+        if (!await users.TryWriteChangesAsync(user, state, request.TenantId, UserWriteCondition.None, ct))
+        {
+            return UserErrorCodes.NotFoundRefusal<MyPreferencesDto>();
+        }
 
         // BL-456 / AUD-001 — the field NAME, and its before/after: a language code is not personal data.
         await audit.RecordAsync(UserAuditEvents.Updated, request.TenantId, user.Id,

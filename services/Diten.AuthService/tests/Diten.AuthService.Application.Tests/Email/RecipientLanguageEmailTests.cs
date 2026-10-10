@@ -120,6 +120,97 @@ public sealed class RecipientLanguageEmailTests
         }
     }
 
+    // ---------------------------------------------------------------- FIX1
+
+    [Fact]
+    public async Task A_write_that_finds_no_account_answers_404_and_writes_no_audit_row()
+    {
+        var user = new User(Recipient, "hash", "Jean", "Dupont", Tenant);
+        var audit = new RecordingAudit();
+        var handler = new Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers.UpdateMyPreferencesCommandHandler(
+            new WriteFindsNothing(user), audit);
+
+        var result = await handler.Handle(
+            new Diten.AuthService.Application.Features.Users.Commands.UpdateMyPreferencesCommand(user.Id, Tenant, "fr"),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(404, result.StatusCode);
+        Assert.Empty(audit.Events);
+    }
+
+    [Fact]
+    public async Task An_unreadable_preference_is_a_warning_by_tenant_with_no_address_and_no_code()
+    {
+        var logger = new Lines();
+        var service = new SmtpOtpDeliveryService(
+            Options.Create(new SmtpOptions { Host = "smtp.test", FromEmail = "noreply@di10.test" }),
+            new FixedIdentity(new TenantEmailIdentity("Diten Pharma", "tr", null, null)),
+            System.Reflection.DispatchProxy.Create<IUserRepository, TenantUserEmailFixRoundOneTests.BrokenUsersProxy>(),
+            logger);
+
+        using var message = await service.BuildMessageAsync(Tenant, Recipient, "482915", DateTime.UtcNow.AddMinutes(5), CancellationToken.None);
+
+        var line = Assert.Single(logger.Entries, e => e.Line.Contains("preferred_language_unread", StringComparison.Ordinal));
+        Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Warning, line.Level);
+        Assert.Contains(Tenant.ToString(), line.Line);
+        Assert.DoesNotContain(Recipient, line.Line, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("482915", line.Line);
+    }
+
+    [Fact]
+    public async Task An_invitation_to_an_address_written_in_capitals_still_finds_the_persons_language()
+    {
+        var user = new User(Recipient, "hash", "Jean", "Dupont", Tenant);
+        user.SetPreferredLanguage("fr");
+        var service = Invitations(new InMemoryUserRepository([user]), "tr");
+
+        using var message = await service.BuildMessageAsync(" " + Recipient.ToUpperInvariant() + " ", "t", CancellationToken.None);
+
+        Assert.Equal(TenantUserInvitationEmailTemplate.Subject("fr", "Diten Pharma", isPasswordReset: false), message.Subject);
+    }
+
+    private sealed class RecordingAudit : IUserAuditRecorder
+    {
+        public List<string> Events { get; } = [];
+
+        public Task RecordAsync(string eventName, Guid tenantId, Guid targetUserId, IReadOnlyDictionary<string, object?> metadata, CancellationToken ct = default)
+        {
+            Events.Add(eventName);
+            return Task.CompletedTask;
+        }
+
+    }
+
+    /// <summary>The account is read, then gone before the write (deleted meanwhile): the write matches nothing.</summary>
+    private sealed class WriteFindsNothing(User user) : IUserRepository
+    {
+        private readonly InMemoryUserRepository _inner = new([user]);
+        public Task<User?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct) => _inner.GetByEmailAndTenantAsync(email, tenantId, ct);
+        public Task<User?> GetByUserNameAndTenantAsync(string normalizedUserName, Guid tenantId, CancellationToken ct) => _inner.GetByUserNameAndTenantAsync(normalizedUserName, tenantId, ct);
+        public Task<User?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.GetByIdAndTenantAsync(id, tenantId, ct);
+        public Task<User?> GetByPasswordResetTokenHashAsync(string tokenHash, CancellationToken ct) => _inner.GetByPasswordResetTokenHashAsync(tokenHash, ct);
+        public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct) => _inner.GetAllByTenantAsync(tenantId, page, pageSize, ct);
+        public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct) => _inner.SearchActiveAsync(tenantId, term, limit, ct);
+        public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => _inner.GetCountByTenantAsync(tenantId, ct);
+        public Task<User> CreateAsync(User u, CancellationToken ct) => _inner.CreateAsync(u, ct);
+        public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
+        public Task RecordLoginOutcomeAsync(User u, Guid tenantId, CancellationToken ct) => _inner.RecordLoginOutcomeAsync(u, tenantId, ct);
+        public object CaptureState(User u) => _inner.CaptureState(u);
+        public Task<bool> TryWriteChangesAsync(User u, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct) => Task.FromResult(false);
+        public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
+        public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);
+    }
+
+    private sealed class Lines : Microsoft.Extensions.Logging.ILogger<SmtpOtpDeliveryService>
+    {
+        public List<(Microsoft.Extensions.Logging.LogLevel Level, string Line)> Entries { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Entries.Add((logLevel, formatter(state, exception)));
+    }
+
     // ---------------------------------------------------------------- helpers
 
     private static TenantUserInvitationEmailService Invitations(IUserRepository users, string tenantLanguage) => new(

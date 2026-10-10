@@ -100,7 +100,10 @@ public sealed class AuthController : CustomBaseController
     /// </summary>
     [HttpPut("me/preferences")]
     [Authorize]
-    public async Task<IActionResult> UpdateMyPreferences([FromBody] UpdateMyPreferencesRequest request, CancellationToken ct)
+    public async Task<IActionResult> UpdateMyPreferences(
+        [FromBody] System.Text.Json.JsonElement body,
+        [FromServices] Diten.AuthService.Infrastructure.Security.SelfServiceRateLimiter limiter,
+        CancellationToken ct)
     {
         if (!string.Equals(User.FindFirst("actor_type")?.Value, TenantUserActorType, StringComparison.Ordinal))
         {
@@ -114,6 +117,24 @@ public sealed class AuthController : CustomBaseController
             return CreateActionResultInstance(Response<NoContent>.Fail("Unauthorized.", 401));
         }
 
+        // FIX1 — per user (and tenant): a flood of writes is refused with 429 before anything is read or written.
+        if (!limiter.TryAcquirePreferences(tenantId, userId))
+        {
+            Response.Headers.RetryAfter = ((int)limiter.Window.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return CreateActionResultInstance(Response<NoContent>.Fail(
+                "Too many requests. Try again later.",
+                [new ResponseError(Diten.AuthService.Application.Common.AuthRefusalCodes.TooManyRequests)],
+                429));
+        }
+
+        if (!UpdateMyPreferencesRequest.TryRead(body, out var request))
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail(
+                "The body must name preferredLanguage: a language, or null to clear it.",
+                [new ResponseError(PreferencesBodyInvalidCode)],
+                400));
+        }
+
         var result = await _mediator.Send(
             new Diten.AuthService.Application.Features.Users.Commands.UpdateMyPreferencesCommand(
                 userId, tenantId, request?.PreferredLanguage, HttpContext.TraceIdentifier),
@@ -122,6 +143,9 @@ public sealed class AuthController : CustomBaseController
     }
 
     private const string TenantUserActorType = "tenant_user";
+
+    /// <summary>FIX1 — <c>PUT api/auth/me/preferences</c> with a body that does not name <c>preferredLanguage</c>.</summary>
+    public const string PreferencesBodyInvalidCode = "USER_PREFERENCES_BODY_INVALID";
 
     private static string ResolveRequestIp(HttpContext context)
     {

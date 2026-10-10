@@ -117,15 +117,17 @@ public sealed class RecipientLanguageDispatchTests
     }
 
     [Fact]
-    public async Task A_group_that_fails_is_the_answer_and_the_other_groups_are_still_sent()
+    public async Task A_group_that_fails_does_not_fail_the_call_and_the_other_groups_are_still_sent()
     {
+        // FIX1 (R1) — the queued readers have their mail: the call SUCCEEDS and names the partial failure.
         var (adapter, queue) = Build(failLocale: "fr");
 
         var result = await adapter.DispatchByEventCodeAsync(Request(
             new EmailRecipientDto("a@acme.test", "A", "fr"),
             new EmailRecipientDto("b@acme.test", "B")));
 
-        Assert.False(result.IsSuccessful);
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(NotificationEventDispatchAdapter.ReasonPartialRecipientFailure, result.ReasonCode);
         Assert.Equal(2, queue.Commands.Count);
     }
 

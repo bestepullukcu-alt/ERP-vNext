@@ -7,6 +7,8 @@ using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Infrastructure.Services.EmailTemplates;
 using Diten.AuthService.Infrastructure.Settings;
 using Diten.BuildingBlocks.Email;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Diten.AuthService.Infrastructure.Services;
@@ -24,12 +26,21 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
     private readonly SmtpOptions _options;
     private readonly ITenantEmailIdentityClient? _identity;
     private readonly IUserRepository? _users;
+    private readonly ILogger<SmtpOtpDeliveryService> _logger;
 
-    public SmtpOtpDeliveryService(IOptions<SmtpOptions> options, ITenantEmailIdentityClient? identity = null, IUserRepository? users = null)
+    /// <summary>FIX1 — the longest the sign-in code waits for the recipient's language; past it, the tenant's applies.</summary>
+    public static readonly TimeSpan PreferredLanguageReadLimit = TimeSpan.FromSeconds(2);
+
+    public SmtpOtpDeliveryService(
+        IOptions<SmtpOptions> options,
+        ITenantEmailIdentityClient? identity = null,
+        IUserRepository? users = null,
+        ILogger<SmtpOtpDeliveryService>? logger = null)
     {
         _options = options.Value;
         _identity = identity;
         _users = users;
+        _logger = logger ?? NullLogger<SmtpOtpDeliveryService>.Instance;
     }
 
     public async Task SendEmailOtpAsync(Guid tenantId, string email, string code, DateTime expiresAtUtc, CancellationToken ct)
@@ -83,7 +94,9 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
         return message;
     }
 
-    // The recipient's own choice, when it can be read; a read that fails never stops the code (the tenant's language applies).
+    // The recipient's own choice, when it can be read. A read that fails or takes longer than PreferredLanguageReadLimit never
+    // stops or delays the code (the tenant's language applies) — and is said in the log by tenant, never with the address or
+    // the code (FIX1).
     private async Task<string?> PreferredLanguageOfAsync(Guid tenantId, string email, CancellationToken ct)
     {
         if (_users is null || tenantId == Guid.Empty || string.IsNullOrWhiteSpace(email))
@@ -91,12 +104,17 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
             return null;
         }
 
+        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        bounded.CancelAfter(PreferredLanguageReadLimit);
         try
         {
-            return (await _users.GetByEmailAndTenantAsync(email.Trim().ToLowerInvariant(), tenantId, ct))?.PreferredLanguage;
+            return (await _users.GetByEmailAndTenantAsync(email.Trim().ToLowerInvariant(), tenantId, bounded.Token))?.PreferredLanguage;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
+            _logger.LogWarning(
+                "auth.otp.preferred_language_unread TenantId={TenantId} ExceptionType={ExceptionType}. The tenant's language is used.",
+                tenantId, ex.GetType().Name);
             return null;
         }
     }
