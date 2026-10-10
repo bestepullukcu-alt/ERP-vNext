@@ -154,3 +154,29 @@ KORU/YAPMA: ARCH GATE; davranış (veri, istekler, iki adımlı Kaydet, sürükl
 DOĞRULA (E2): Web 861/0 tabanı · Ziyaret Planlama testleri yeşil · CRM dokunulmaz · mimari 27. Testler belge Acceptance 1–5 (saf düzen kuralları Node'da; duman testi sahte DOM: şerit yok, kart başlığında süzgeçler + Gün/Hafta/Ay, allDaySlot:false, headerToolbar:false, E2 tek pencere 3 sekme, ertele 4 sütun, Planla'da plan dışı düğmesi, createError null); sabotaj 2 (şerit geri → kırmızı; süre kuralında adım süresi yok sayılsın → kırmızı; geri al — git checkout -- YOK). dotnet test -o çıktısı REPO İÇİNDE.
 Commit: "feat(web): WP-VW-W2-WEB-c — visit workspace design fit (calendar card, cards, month view, legend, detail panel, one E2 dialog, plan panel)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde madde (T/D/P/L kodlarıyla) yapıldı / bilinçli sapma, mockup'la görsel karşılaştırma notu, BE-d'ye bağlı kısımlar, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — W2-BE-d E2 ACCEPTED (2026-10-10)
+**Commit:** `726f403c2` (ajan `d4fd8e58c`, cherry-pick, çakışma yok). Push: test dalı.
+
+**CT K13:**
+- CRM 2553 → **2558/0/5**. PiiMasking bilinen kararsız test bir koşuda düştü, tekrarında yeşil.
+- Mimari **27**.
+
+**Kod okuması:**
+- `WorkspaceReferenceLabels` mevcut `LabelOf` kuralını kullanıyor (`label_<dil>` → `display_name`); etiketi bulunamayan kod gösterilmiyor.
+- Rozetler 3D ile aynı kaynak (yöntem paylaşıldı, kopya yok).
+- `pinMoveReason` önizleme `PinOverflow` listesinden geliyor.
+- Damga `ListByResource` ile okunuyor.
+
+**CT sabotajı:** etiketi bulunmayan kod ham hâliyle dönsün → 2 kırmızı (`D2`, `D3_D4`). Geri alındı, touch yapıldı.
+
+**Veri bulguları (kod değil, veri sahibi işi; betikle yama YOK):**
+1. `medical-specialty` setindeki 22 aktif kodun hepsinde `label_tr` yok; uzmanlıklar İngilizce görünecek. Çözüm: Referans Verileri ekranından `label_tr` girilmesi.
+2. Kurumların `CityRef` değeri `TR-01-ADANA` biçiminde (demo yükleme, bölge kodu); `city` setinin kodları ise `adana` biçiminde. 81 / 81 eşleşmiyor; adreste il çıkmıyor.
+3. `DistrictRef` boş; `district` setinde yalnız 9 Edirne ilçesi var.
+
+İl / ilçe / uzmanlık setlerinde TR etiket yok.
+
+**Bekleyen:** W2-WEB-c.
