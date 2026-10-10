@@ -8398,6 +8398,30 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-604
+
+**CI: Platform / Auth / MDM dışındaki servislerin testleri ne derleniyor ne koşuluyor (Crm, Hcm, DevEnablement, ManagementGovernance, Ppm, Pvg, Procurement)**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / CI) + servis sahipleri · BULAN: WP-CI-SERVICE-TESTS-03 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10 · TEK PR'DAN ÖNCE KARAR
+
+Ölçüm:
+- BL-577 / BL-590 / CI takibi 2 yalnız Platform, Auth ve MDM test projelerini `service-tests.yml`'a ve phase1 derlemesine aldı.
+- Test projesi sayıları (`*Tests.csproj`):
+  - CrmService 1, DevEnablementService 1, HcmService 1, ProcurementService 1;
+  - ManagementGovernanceService 3, PpmService 2, PvgService 5;
+  - EnterpriseStrategyService 2, Building.Blocks 2.
+- İnceleme: Crm, Hcm, DevEnablement, ManagementGovernance, Ppm, Pvg ve Procurement testleri CI'da ne derleniyor ne koşuluyor. EnterpriseStrategy ve Building.Blocks: ölç (çözümde olabilirler).
+- Bu servislerin sahibi başka ekipler; CT onların test kırmızılarını düzeltmez (XMC-001).
+
+Yapılacak:
+- her servis için: çözümde mi (phase1 derliyor mu), testleri yerelde yeşil mi, dış bağımlılığı (mongod, RabbitMQ) ne?;
+- yeşil olanlar `service-tests.yml` matrisine satır; kırmızı olanlar sahibine iş (XMC-001: "bunu da düzeltelim mi?");
+- PPM: kendi ekibinin onayı (PPM dosyalarına CT dokunmaz).
+
+Gelecek regresyon riski: 🟡 bu servislerde kırılan test CI'da görünmez; tek PR'da main'e kırmızı test girebilir.
+
+---
+
 ### BL-603
 
 **S4 okuma sözleşmesi: okunamayan satır yer tutucusunun BSON tür sırası — MinKey / Symbol kolları ve tür başına teori testi eksik (FIX4 küçükleri)**
