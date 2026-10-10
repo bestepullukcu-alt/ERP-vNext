@@ -8398,6 +8398,42 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-610
+
+**Modal pencerelerde Enter yerel form gönderimi yapıyor: ortak klavye katmanı (UXH-001) yalnız yan panelleri kapsıyor**
+
+DURUM: AÇIK · SAHİP: CT (Web kabuğu) + ekran sahipleri · BULAN: UX-COMMON FIX1 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `diten-enter-primary.js` yalnız offcanvas yan panellerinde çalışıyor. `.modal` içindeki formlarda Enter tarayıcının örtük gönderimini tetikliyor.
+- Adlı örnekler: `gateEvidenceModal`, Platform Administrators `suspendModal` (askıya alma: sonuçlu işlem).
+
+Yapılacak:
+- modal içi sonuçlu birincillerin envanteri (yan panel sınıflandırmasının deseni);
+- modallara da chord / enter işareti, ya da modal formlarında örtük gönderimin kapatılması;
+- UXH-001'e satır.
+
+Gelecek regresyon riski: 🟡 modal içinde yanlışlıkla Enter, onay sorusu olmayan sonuçlu bir işlemi gönderebilir.
+
+---
+
+### BL-609
+
+**Sayfa yardım defteri mandalı: tavan defterin kendi başlığında; bir PR tavanı sessizce yükseltebilir (ana dala karşı CI denetimi yok)**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / CI) · BULAN: UX-COMMON FIX1 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `page-help-ledger.test.js` satır sayısını defter başlığındaki tavanla karşılaştırıyor (FIX2 ile eşitlik). Aynı dosya hem bekçi hem tavan; PR ikisini birlikte yükseltirse test yeşil kalır.
+
+Yapılacak:
+- phase1'de (`run_phase1_gates.sh`, PR'da taban dalı zaten çekiliyor) defter başlığını `git show origin/$GITHUB_BASE_REF:docs/roadmap/backlog/page-help-ledger.md` ile karşılaştır; tavan artışı kırmızı (bilinçli artış için adlı istisna satırı).
+- ci-followup2 hatta girdikten sonra (aynı betik).
+
+Gelecek regresyon riski: 🟢 yardım metni borcu sessizce büyüyebilir.
+
+---
+
 ### BL-608
 
 **İş akışı şablonu kendi adaylarını tanımlarsa tüketicinin (MDM) verdiği onaycı adayını eziyor; tüketici bunu göremiyor**
