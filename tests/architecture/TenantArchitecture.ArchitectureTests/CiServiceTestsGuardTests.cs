@@ -20,6 +20,8 @@ namespace TenantArchitecture.ArchitectureTests;
  *   • every job has timeout-minutes; every `dotnet test` has --blame-hang-timeout and writes a TRX; the skipped=0
  *     step runs on that TRX with `if: always()`;
  *   • mongod is pinned (version, a 64-hex SHA-256 checked with sha256sum, ubuntu-22.04) and DITEN_TEST_MONGOD is set;
+ *   • WP-CI-SERVICE-TESTS-03: a service test project that is NOT in its service's solution is never compiled by the
+ *     phase1 gates (they build the solution) — phase1-gates.yml must build it on its own, and never `dotnet test` it;
  *   • BL-590: the job-local mongod for MDM and Eventing is a one-node replica set (--replSet, the bounded initiator,
  *     directConnection=true); RabbitMQ is pinned by tag AND digest, with a bounded readiness wait; Auth rows carry the
  *     owned-Mongo flag (takes effect with BL-570 FIX3);
@@ -59,8 +61,37 @@ public class CiServiceTestsGuardTests
         var gone = rows.Where(row => !File.Exists(Path.Combine(root, row))).ToArray();
         Assert.True(gone.Length == 0, "Matrix rows whose project does not exist: " + string.Join(", ", gone));
         Assert.Empty(rows.Intersect(NotInThisJob.Keys));
-        Assert.True(rows.Count >= 6, $"only {rows.Count} matrix rows read — the guard is blind");
+        Assert.True(rows.Count >= 8, $"only {rows.Count} matrix rows read — the guard is blind");
         Assert.All(NotInThisJob, entry => Assert.False(string.IsNullOrWhiteSpace(entry.Value), entry.Key));
+    }
+
+    // WP-CI-SERVICE-TESTS-03 (CT decision b): phase1 builds each service's solution and runs no service test. A test
+    // project outside its solution (e3d3a7331 broke Platform.Eventing.Tests, unseen) must be built by its own phase1 step
+    // — build only: its tests need a broker / an owned mongod and run in service-tests.yml.
+    [Fact]
+    public void Every_service_test_project_outside_its_solution_is_built_by_phase1()
+    {
+        var root = RepoRoot();
+        var phase1 = File.ReadAllText(Path.Combine(root, ".github", "workflows", "phase1-gates.yml")).Replace("\r\n", "\n");
+        var outside = new List<string>();
+        foreach (var dir in ServiceTestRoots)
+        {
+            var service = Path.GetDirectoryName(dir)!.Replace('\\', '/');
+            var solution = Path.Combine(root, service, Path.GetFileName(service) + ".sln");
+            Assert.True(File.Exists(solution), "no solution at " + solution);
+            var listed = File.ReadAllText(solution);
+            outside.AddRange(UnrunProjects(root, new HashSet<string>(StringComparer.Ordinal), [])
+                .Where(project => project.StartsWith(dir + "/", StringComparison.Ordinal))
+                .Where(project => !listed.Contains(Path.GetFileName(project), StringComparison.Ordinal)));
+        }
+
+        Assert.NotEmpty(outside);
+        var unbuilt = outside.Where(project => !Regex.IsMatch(phase1,
+            @"(?m)^\s+run: dotnet build " + Regex.Escape(project) + @" -c Debug\s*$")).ToArray();
+        Assert.True(unbuilt.Length == 0,
+            "Service test projects outside their solution that phase1 never compiles — add a build step to "
+            + "phase1-gates.yml: " + string.Join(", ", unbuilt));
+        Assert.All(outside, project => Assert.DoesNotContain("dotnet test " + project, phase1, StringComparison.Ordinal));
     }
 
     // BL-590: the rule does not lean on the exclusion list. A tree with one more service test project than the matrix
@@ -171,6 +202,20 @@ public class CiServiceTestsGuardTests
         Assert.Equal(["pull_request", "push", "workflow_dispatch"],
             Regex.Matches(on, @"(?m)^  ([a-z_]+):").Select(match => match.Groups[1].Value).ToArray());
         Assert.Matches(@"(?m)^  push:\n    branches: \[main\]$", on);
+        AssertReadOnlyAndPinned(workflow);
+    }
+
+    // WP-CI-SERVICE-TESTS-03 (CT decision): phase1-gates.yml keeps its own triggers, but the same rule — a read-only
+    // token, no secret, every action one of the allowed ones pinned to a commit SHA, not a tag.
+    [Fact]
+    public void Phase1_has_a_read_only_token_and_every_action_pinned_to_a_commit()
+    {
+        AssertReadOnlyAndPinned(File.ReadAllText(Path.Combine(RepoRoot(), ".github", "workflows", "phase1-gates.yml"))
+            .Replace("\r\n", "\n"));
+    }
+
+    private static void AssertReadOnlyAndPinned(string workflow)
+    {
         Assert.Matches(@"(?m)^permissions:\n  contents: read\n(?!  )", workflow);
         Assert.DoesNotContain("secrets.", workflow, StringComparison.Ordinal);
 

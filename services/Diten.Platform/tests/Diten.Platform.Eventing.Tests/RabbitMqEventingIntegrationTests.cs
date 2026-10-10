@@ -18,6 +18,7 @@ using PlatformEventTransportMessage = Diten.Platform.Application.Contracts.Event
 
 namespace Diten.Platform.Eventing.Tests;
 
+[Collection(LiveRabbitMqCollection.Name)]
 public sealed class RabbitMqEventingIntegrationTests
 {
     [SkippableFact]
@@ -151,9 +152,15 @@ public sealed class RabbitMqEventingIntegrationTests
                 Assert.Equal(ConsumedEventExecutionResult.Duplicate, duplicateResult);
                 Assert.Equal(1, sideEffects.Count);
 
+                // WP-CI-SERVICE-TESTS-03: the duplicate is stopped by the unique index ux_consumed_events (EventId,
+                // ConsumerName) — TryStartAsync's insert fails, the handler never runs (asserted above: Duplicate, one side
+                // effect). Since e41795d10 the duplicate path no longer rewrites the record to SkippedDuplicate (it tells an
+                // in-flight duplicate from a consumed one instead): the first consumption's record stays as it was.
                 var duplicateConsumed = await consumedRepository.GetAsync(envelope.EventId, nameof(TestTenantActivatedV1Consumer));
                 Assert.NotNull(duplicateConsumed);
-                Assert.Equal(ConsumedEventStatus.SkippedDuplicate, duplicateConsumed!.Status);
+                Assert.Equal(ConsumedEventStatus.Consumed, duplicateConsumed!.Status);
+                Assert.Equal(consumed.ConsumedAtUtc, duplicateConsumed.ConsumedAtUtc);
+                Assert.Equal(consumed.AttemptCount, duplicateConsumed.AttemptCount);
 
                 var storedAfterPublish = await outboxRepository.GetByEventIdAsync(envelope.EventId);
                 Assert.NotNull(storedAfterPublish);
@@ -372,7 +379,7 @@ public sealed class RabbitMqEventingIntegrationTests
             _signal = signal;
         }
 
-        public Task Consume(ConsumeContext<PlatformEventTransportMessage> context)
+        public async Task Consume(ConsumeContext<PlatformEventTransportMessage> context)
         {
             var message = context.Message;
             var payload = JsonSerializer.Deserialize<TenantActivatedV1>(message.PayloadJson)
@@ -390,16 +397,18 @@ public sealed class RabbitMqEventingIntegrationTests
                     message.OccurredAtUtc),
                 payload);
 
-            return _consumedEventStore.ExecuteOnceAsync(
+            // WP-CI-SERVICE-TESTS-03: the signal fires once ExecuteOnceAsync has RETURNED — the store marks the record
+            // Consumed only after the handler, so a signal from inside the handler let the test read it as Started.
+            await _consumedEventStore.ExecuteOnceAsync(
                 envelope,
                 nameof(TestTenantActivatedV1Consumer),
                 _ =>
                 {
                     _sideEffects.Capture(envelope);
-                    _signal.TrySetResult();
                     return Task.CompletedTask;
                 },
                 context.CancellationToken);
+            _signal.TrySetResult();
         }
     }
 

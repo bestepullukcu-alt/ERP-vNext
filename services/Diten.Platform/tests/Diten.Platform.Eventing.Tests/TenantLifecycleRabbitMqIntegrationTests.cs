@@ -32,6 +32,7 @@ using Xunit;
 
 namespace Diten.Platform.Eventing.Tests;
 
+[Collection(LiveRabbitMqCollection.Name)]
 public sealed class TenantLifecycleRabbitMqIntegrationTests
 {
     [SkippableFact]
@@ -191,7 +192,32 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                 }
 
                 var published = await processor.PublishPendingAsync();
-                Assert.Equal(envelopes.Count, published);
+                // WP-CI-SERVICE-TESTS-03: the outbox is drained while the consumers already run. A lifecycle mail they
+                // queue (QueueEmailNotificationHandler, e41795d10) adds its own follow-up events to the SAME outbox —
+                // notifications.email.queued.v1 and .dispatch.sent / .failed.v1 — and the loop publishes those too
+                // (measured: 6 + 2 queued + 2 sent, caused by the suspended and reactivated events). How many arrive in
+                // time is a race, so the old "published == 6" was never a contract. What this test owns: each of its own
+                // events is published, and every other published row is a notification caused by one of them.
+                var outbox = await database.GetCollection<OutboxEvent>(PlatformCollections.OutboxEvents)
+                    .Find(FilterDefinition<OutboxEvent>.Empty).ToListAsync();
+                var ownIds = envelopes.Select(envelope => (Guid)envelope.GetType().GetProperty("EventId")!.GetValue(envelope)!)
+                    .ToHashSet();
+                var own = outbox.Where(row => ownIds.Contains(row.EventId)).ToList();
+                Assert.Equal(envelopes.Count, own.Count);
+                Assert.All(own, row => Assert.Equal(OutboxEventStatus.Published, row.Status));
+                var ownCausations = own.Select(row => row.CausationId).ToHashSet();
+                var followUps = outbox.Where(row => !ownIds.Contains(row.EventId)).ToList();
+                Assert.All(followUps, row =>
+                {
+                    Assert.Contains(row.EventName, new[]
+                    {
+                        Diten.Platform.Contracts.Events.Notifications.NotificationEmailQueuedV1.Name,
+                        Diten.Platform.Contracts.Events.Notifications.NotificationDispatchSentV1.Name,
+                        Diten.Platform.Contracts.Events.Notifications.NotificationDispatchFailedV1.Name
+                    });
+                    Assert.Contains(row.CausationId, ownCausations);
+                });
+                Assert.Equal(outbox.Count(row => row.Status == OutboxEventStatus.Published), published);
 
                 await auditService.WaitAsync(TimeSpan.FromSeconds(30));
                 await mediator.WaitAsync(TimeSpan.FromSeconds(30));
@@ -245,6 +271,10 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                     Assert.Contains(dispatch.To, recipient => recipient.Email == adminEmail);
                 });
 
+                // WP-CI-SERVICE-TESTS-03: 3176391aa (e-mail slice 2 stage D) took the created mail out — the first admin is
+                // invited instead — and moved the first count 3 → 2, but left this section's "4" (= the old 3 + 1). The
+                // contract: the new suspension sends ONE more mail; the redelivery of the same event sends none.
+                var mailsBeforeDuplicate = mediator.Commands.Count;
                 var duplicateEventId = Guid.NewGuid();
                 var duplicateEvent = new TenantSuspendedV1(tenantId, DateTimeOffset.UtcNow, "Duplicate sensitive reason", actorId);
                 await PublishAsync(eventBus, duplicateEvent, tenantId, correlationId, duplicateEventId);
@@ -258,7 +288,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
                 Assert.Equal(auditService.TargetCount + 1, auditService.Requests.Count);
-                Assert.Equal(4, mediator.Commands.Count);
+                Assert.Equal(mailsBeforeDuplicate + 1, mediator.Commands.Count);
                 await WaitForConsumedStatusAsync(consumedRepository, duplicateEventId, TenantLifecycleAuditConsumer.ConsumerName, ConsumedEventStatus.Consumed);
                 await WaitForConsumedStatusAsync(consumedRepository, duplicateEventId, TenantLifecycleNotificationConsumer.ConsumerName, ConsumedEventStatus.Consumed);
             }
@@ -540,7 +570,11 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             var response = await _handler.Handle(command, cancellationToken);
             lock (_gate)
             {
-                if (Commands.Count >= _targetCount)
+                // WP-CI-SERVICE-TESTS-03: "reached" = this many HANDLED (the mail sent and the dispatch updated), not
+                // this many received — a command is recorded before its handler runs, so counting Commands let the
+                // wait return while both sends were still in flight (the dispatches read back Queued).
+                _completed++;
+                if (_completed >= _targetCount)
                 {
                     _targetReached.TrySetResult();
                 }
@@ -549,11 +583,13 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             return (TResponse)(object)response;
         }
 
+        private int _completed;
+
         public Task WaitAsync(TimeSpan timeout)
         {
             lock (_gate)
             {
-                if (Commands.Count >= _targetCount)
+                if (_completed >= _targetCount)
                 {
                     return Task.CompletedTask;
                 }

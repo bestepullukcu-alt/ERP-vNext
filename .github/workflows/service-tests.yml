@@ -52,8 +52,16 @@ jobs:
             project: services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj
           - suite: auth-acceptance-host
             project: services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj
+          # WP-CI-SERVICE-TESTS-03 (with the MDM takeover): starts its OWN mongod (Support/OwnedMongo.cs, random port,
+          # DITEN_TEST_MONGOD / DITEN_ITEST_MONGOD_BIN_DIR); auth-* also carries DITEN_REQUIRE_OWNED_MONGO.
+          - suite: auth-scr
+            project: services/Diten.AuthService/tests/Diten.AuthService.ServiceClientRegistry.Tests/Diten.AuthService.ServiceClientRegistry.Tests.csproj
           - suite: mdm-app
             project: services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj
+          # WP-CI-SERVICE-TESTS-03 (with the MDM takeover): MdmHttpHost starts its OWN mongod (DITEN_TEST_MONGOD); the
+          # job-local replica set this row also gets (mdm-*) is not used by it — harmless, measured.
+          - suite: mdm-api
+            project: services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Diten.MdmService.Api.Tests.csproj
     env:
       SUITE: ${{ matrix.suite }}
       PROJECT: ${{ matrix.project }}

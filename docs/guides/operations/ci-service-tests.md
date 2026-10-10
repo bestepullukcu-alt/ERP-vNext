@@ -1,6 +1,7 @@
 # CI · Servis testleri (`service-tests`)
 
-> BL-577 ile eklendi (2026-10-09); BL-590 ile Eventing ve kabul sunucusu satırları, MDM için replika kümesi. İş dosyası `.github/workflows/service-tests.yml`; bekçisi
+> BL-577 ile eklendi (2026-10-09); BL-590 ile Eventing ve kabul sunucusu satırları, MDM için replika kümesi;
+> WP-CI-SERVICE-TESTS-03 (2026-10-10) ile takeover satırları (`auth-scr`, `mdm-api`) ve phase1 derleme adımları. İş dosyası `.github/workflows/service-tests.yml`; bekçisi
 > `tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs` korur.
 
 ## Ne koşar
@@ -15,10 +16,17 @@ her proje ayrı bir iş (matris, `fail-fast: false`).
 | `platform-eventing` | `Diten.Platform.Eventing.Tests` | test 6 sn (68 test; yerelde özel RabbitMQ 4.3.2 düğümü + replika kümesi) |
 | `auth-app` | `Diten.AuthService.Application.Tests` | test 6 dk 52 sn (1617 test) |
 | `auth-acceptance-host` | `Diten.AuthService.AccountKindAcceptanceHost.Tests` | test 3 dk 36 sn (68 test) |
-| `mdm-app` | `Diten.MdmService.Application.Tests` | test 20 sn (463 test; ürün işleri takeover'da) |
+| `auth-scr` | `Diten.AuthService.ServiceClientRegistry.Tests` | test 4 sn (160 test) |
+| `mdm-app` | `Diten.MdmService.Application.Tests` | test 2 dk 30 sn (2503 test; takeover; yerelde 38 kırmızı Release derlemesi ister) |
+| `mdm-api` | `Diten.MdmService.Api.Tests` | test 7 dk 32 sn (762 test) |
 
 Süreler yalnız test koşusudur; CI'da derleme ve mongod indirme eklenir. En uzun satır `platform-app`'tir. İşin
 90 dakikalık sınırı ona göre geniş tutuldu: Linux koşucusu bu Mac'ten yavaş olabilir.
+
+**Kendi mongod'unu açan satırlar:** `auth-scr` (`Support/OwnedMongo.cs`), `mdm-api` (`MdmHttpHost`),
+`auth-acceptance-host` ve Platform'un geçici kümeleri: ikiliyi `DITEN_TEST_MONGOD` / `DITEN_ITEST_MONGOD_BIN_DIR`'den
+alır, rastgele port, geçici veri. `mdm-api` adı işe özel replika kümesini de başlatır (`mdm-*`); test onu kullanmaz,
+zararsız.
 
 İşte olmayan servis test projesi bugün **yok**. Bekçinin `NotInThisJob` listesi BL-590'dan beri boş; liste, ileride bir
 Control Tower kararının yeri olarak durur. Kural ona dayanmaz: diskteki projeleri matrisle karşılaştırır.
@@ -28,6 +36,26 @@ satırını eklersiniz ya da Control Tower kararıyla `NotInThisJob`'a adlandır
 
 **Tetik** (Control Tower kararı, Actions dakikası için): `pull_request`, yalnız `main`'e `push`, elle
 (`workflow_dispatch`). Dal push'u bu işi koşmaz.
+
+## phase1: çözüm dışındaki test projeleri derlenir
+
+`phase1-gates.yml` her push'ta servis çözümlerini (`*.sln`) derler, servis testi koşmaz. Çözümde OLMAYAN bir test
+projesini bu yüzden hiç derlemez: `e3d3a7331` `Platform.Eventing.Tests`'i kırdı, kimse görmedi.
+
+- phase1 bu projeleri kendi adımıyla **yalnız derler** (`dotnet build … -c Debug`):
+  - `Diten.Platform.Eventing.Tests`;
+  - `Diten.Platform.BackgroundJobs.Tests`;
+  - `Diten.AuthService.AccountKindAcceptanceHost.Tests`.
+- Testleri RabbitMQ / sahipli mongod ister, burada koşar.
+- Bekçi (`Every_service_test_project_outside_its_solution_is_built_by_phase1`) çözüm dosyasını okur. Çözüm dışındaki
+  her servis test projesi için phase1'de derleme adımı ister; `dotnet test` istemez.
+- Yeni bir proje çözüme eklenmezse bekçi kırmızıdır.
+- phase1 da `service-tests.yml` ile aynı kurala uyar (WP-CI-SERVICE-TESTS-03 eki):
+  - `permissions: contents: read`;
+  - sır okunmaz;
+  - her eylem izin verilen üç eylemden biri ve COMMIT SHA'sına sabit (etiket değil).
+  - SHA'lar 2026-10-10'da `@v4`'ün çözüldüğü sürümler: `checkout` v4.4.0, `setup-dotnet` v4.3.1. Davranış değişmedi.
+  - Bekçi: `Phase1_has_a_read_only_token_and_every_action_pinned_to_a_commit`.
 
 ## Süre sınırları
 
