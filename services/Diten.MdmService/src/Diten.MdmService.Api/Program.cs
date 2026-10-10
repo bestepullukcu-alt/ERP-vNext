@@ -1,7 +1,6 @@
 using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.MdmService.Api.ModuleRegistration;
-using Diten.MdmService.Api.Security;
 using Diten.MdmService.Application;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
@@ -52,15 +51,6 @@ builder.Services
             ClockSkew = JwtValidationDefaults.ClockSkew
         };
     });
-
-// Q366 (2026-10-03): InternalLegalEntityReferenceController takes IPlatformServiceTokenValidator in its constructor and
-// nothing registered it, so Platform's service-identity call to /api/internal/tenants/{t}/legal-entities/{id}/
-// reference-validation could never be answered and no Org Unit's Legal Entity ever validated (Q362). These lines make
-// that endpoint constructible and bind the PlatformServiceIdentity section it checks the token against. Restored
-// verbatim from the Q185 lane tree (Q362, Q363).
-builder.Services.Configure<PlatformServiceIdentityOptions>(
-    builder.Configuration.GetSection(PlatformServiceIdentityOptions.SectionName));
-builder.Services.AddSingleton<IPlatformServiceTokenValidator, PlatformServiceTokenValidator>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();

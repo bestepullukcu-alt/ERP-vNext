@@ -159,8 +159,6 @@ public static class DependencyInjection
             configuration.GetSection(
                 Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
-        // Q366 (2026-10-03): restored with the two registrations below — see the comment there (Q362, Q363).
-        services.Configure<MdmServiceIdentityOptions>(configuration.GetSection(MdmServiceIdentityOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()
             .Bind(configuration.GetSection(SmtpProviderOptions.SectionName))
@@ -206,22 +204,11 @@ public static class DependencyInjection
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
-        // R-2 (PR #134, 2026-10-07): the legal-entity scope chain is retired. The token no longer carries
-        // legal_entity_id; SupplyChain sends LegalEntityId on the request and the service validates it against MDM.
-        // InternalTenantLegalEntityScopeController is gone, and it held the ONLY production call to
-        // InternalScopeResolutionContext.Bind — so IsBound is now never true in production,
-        // MdmLegalEntityReferenceValidator always takes the public api/legal-entities/{id}/lookup-validation path,
-        // and the service token below is never minted at runtime.
-        //
-        // These two lines nonetheless STAY, and not by inertia: MdmLegalEntityReferenceValidator takes both as
-        // OPTIONAL constructor dependencies, and the composition guard
-        // (EveryOptionalDitenDependency_IsRegisteredInTheProductionContainer) fails on "Optional Diten.*
-        // dependencies that silently resolve to null" — which is Q363's lesson encoded as a test. Dropping the
-        // registrations turns that guard red. Q366 added them for the controller; Q475 records that R-2 leaves them
-        // registered with no caller, and that retiring the whole internal path — these two, the MDM internal
-        // reference-validation endpoint, and MdmServiceIdentity's secret — is a separate owner decision.
-        services.AddScoped<IInternalScopeResolutionContext, InternalScopeResolutionContext>();
-        services.AddSingleton<IMdmServiceIdentityTokenProvider, MdmServiceIdentityTokenProvider>();
+        // R-2b (PR #134): the internal legal-entity path is retired outright. R-2 had already left it with no
+        // production caller — InternalTenantLegalEntityScopeController held the only call to Bind, so IsBound was
+        // never true and the service token was never minted; Q481 measured that a deliberately wrong
+        // MdmServiceIdentity secret changed nothing. The context, the token provider, their options and MDM's
+        // internal reference-validation endpoint are gone, so there is nothing left to register here.
         services.AddTenantAuthorizationContext();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddSingleton<EntitlementCacheService>();
