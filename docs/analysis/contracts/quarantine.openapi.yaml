@@ -9,13 +9,14 @@ info:
     Workflow approval (DEC-INV-08, KQ-F); "Numune / Referans" is BLOCKED stock at a sample location (KQ-E). Tenant from the token,
     company from the W-0173-02 scope (X-Legal-Entity-Id validated against MDM); another company → 403 CROSS_LE_FORBIDDEN,
     another tenant → 404. Success bodies are the schemas below; failures are the INVENTORY Error schema.
-  version: 1.1.0
+  version: 1.2.0
   x-status: FROZEN
   x-owner: MOD-0175
   x-owner-service: Diten.InventoryService (MOD-0175, in-process with MOD-0173 / MOD-0174)
   x-changelog:
     - "1.0.0 — frozen by WP-0175-Q1 from the accepted proposal (2026-10-08). Reconciliations of the freeze (evidence §2): R-1 the envelope is the measured INVENTORY / TRACE wire (unwrapped success body, Error on failure) — proposal rule 3 names 'the shape used by INVENTORY / TRACE'; R-2 a bucket carries an optional lotId (a lot-controlled stock row cannot be addressed otherwise; quarantineStock keeps the top-level lotId for mode Retest); R-3 settings are the scope company's (contract rule 2; the scope middleware refuses a legalEntityId query member) — no legalEntityId request member; R-4 Decision.disposition shows the resolved sampleLocationId."
     - "1.1.0 — additive (WP-0174-ITEM; MOD-0173 PM1 CT acceptance O-PM1-1): SkuLevel gains Item (a material item that is its own SKU, skuId == itemId) — the same four values as INVENTORY-BUNDLE / TRACE-BUNDLE SkuLevel, so an Item-level bucket can be quarantined, blocked and decided and every hold / blocked / decision body carrying it stays valid. Nothing else changed: no path, parameter, property, type, required list, status code or other enum value; the qd-v1 signable field list is unchanged."
+    - "1.2.0 — additive (WP-MVP1-FUB2; FU-0175-ITEM-01, FU-0175-ITEM-03): HistoryAction gains NoteUpdated — a saved updateHold writes one history row (by, atUtc) with the new optional HistoryEntry.noteChange (NoteChange: previousNoteLength, noteLength, previousAttachmentCount, attachmentCount — the sizes before / after, not the text; the text stays in the inventory_audit row); updateHold lists the existing QUARANTINE_DECISION_ALREADY_PENDING (409) — the note is locked while the hold has a submitted decision (waiting for approval, or approved and not yet applied) and editable again when that decision ends. The x-rules replay rule now holds for updateHold too (O-ITEM-4: the same key answers the first result). Nothing else changed: no path, parameter, request schema, required list, status code or other enum value; the qd-v1 signable field list is unchanged."
   x-decisions: [DEC-INV-08, KQ-A, KQ-B, KQ-C, KQ-D, KQ-E, KQ-F, KQ-G, KQ-H, KQ-I, CT-Q6, CT-Q8, CT-Q9]
 servers: [{ url: /api/quarantine }]
 security: [{ bearerAuth: [] }]
@@ -87,7 +88,8 @@ paths:
       operationId: updateHold
       x-permission: quarantine.holds.review
       summary: "Analysis note / attachment references while the hold is open."
-      x-error-codes: [QUARANTINE_HOLD_CLOSED, QUARANTINE_CONFLICT]
+      description: "1.2.0: locked (409 QUARANTINE_DECISION_ALREADY_PENDING) while the hold has a submitted decision — waiting for approval, or approved and not yet applied; editable again when the decision ends (rejected, cancelled, timed out, withdrawn). A saved change writes one NoteUpdated history entry with noteChange."
+      x-error-codes: [QUARANTINE_HOLD_CLOSED, QUARANTINE_CONFLICT, QUARANTINE_DECISION_ALREADY_PENDING]
       parameters: [{ $ref: '#/components/parameters/HoldId' }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateHoldRequest' } } } }
       responses:
@@ -401,7 +403,7 @@ components:
     DecisionState: { type: string, enum: [Draft, Submitted, PendingApproval, Approved, Applied, Rejected, Cancelled, TimedOut, Withdrawn, StartFailed, ApplyFailed, FourEyesViolation] }
     BlockedOrigin: { type: string, enum: [QuarantineDecision, ManualBlock, Rework, OtherInbound, LotBlocked] }
     BlockedStatus: { type: string, enum: [Open, Closed, SampleRetained] }
-    HistoryAction: { type: string, enum: [Quarantined, ReviewStarted, DecisionSubmitted, Approved, Rejected, Cancelled, TimedOut, Withdrawn, Applied, ApplyFailed, FourEyesViolation, Blocked, ReviewCompleted, Disposed, Unblocked, SampleRetained] }
+    HistoryAction: { type: string, enum: [Quarantined, ReviewStarted, DecisionSubmitted, Approved, Rejected, Cancelled, TimedOut, Withdrawn, Applied, ApplyFailed, FourEyesViolation, Blocked, ReviewCompleted, Disposed, Unblocked, SampleRetained, NoteUpdated] }
     EsignActionCode: { type: string, enum: [quarantine.hold.release, quarantine.hold.reject, quarantine.hold.block, quarantine.blocked.dispose, quarantine.blocked.unblock, quarantine.hold.create, quarantine.lot.release] }
     UserRef:
       type: object
@@ -459,6 +461,16 @@ components:
         decisionId: { type: string, format: uuid }
         signatureId: { type: string }
         approverSignatureId: { type: string }
+        noteChange: { $ref: '#/components/schemas/NoteChange' }
+    NoteChange:
+      type: object
+      description: "1.2.0 — on a NoteUpdated history entry only: the analysis note length (characters, after trim; 0 = no note) and the attachment count before and after the change."
+      required: [previousNoteLength, noteLength, previousAttachmentCount, attachmentCount]
+      properties:
+        previousNoteLength: { type: integer, minimum: 0 }
+        noteLength: { type: integer, minimum: 0 }
+        previousAttachmentCount: { type: integer, minimum: 0 }
+        attachmentCount: { type: integer, minimum: 0 }
     MovementLink:
       type: object
       description: "The INVENTORY transaction (sourceModule MOD-0175, sourceDocumentId = decision / hold / blocked number; or the intake transaction)."

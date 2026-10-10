@@ -23,10 +23,13 @@ public sealed class ESignatureContractTests
     private static readonly Regex Operation = new(@"\b(GET|POST|PUT|PATCH|DELETE) (/[A-Za-z0-9/{}_.-]+)", RegexOptions.Compiled);
 
     [Fact]
-    public void The_contract_is_frozen_1_0_0_and_owned_by_MOD_0022()
+    public void The_contract_is_frozen_1_0_1_and_owned_by_MOD_0022()
     {
         var yaml = Read(ContractFile);
-        Assert.Matches(@"(?m)^  version: 1\.0\.0$", yaml);
+        // WP-MVP1-FUB2 (FU-0022-CT-01): 1.0.1 is description only — the visibility note of VIS1 / FUB1.
+        Assert.Matches(@"(?m)^  version: 1\.0\.1$", yaml);
+        Assert.Contains("- \"1.0.1 — description only (WP-MVP1-FUB2, FU-0022-CT-01;", yaml, StringComparison.Ordinal);
+        Assert.Contains("\"Visibility (1.0.1): a record WITHOUT a company (tenant-level, legalEntityId null", yaml, StringComparison.Ordinal);
         Assert.Matches(@"(?m)^  x-status: FROZEN$", yaml);
         Assert.Matches(@"(?m)^  x-owner: MOD-0022$", yaml);
     }

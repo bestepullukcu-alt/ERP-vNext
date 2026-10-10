@@ -8,12 +8,13 @@ info:
     writer. Every operation and schema of the proposal is here unchanged in meaning; x-implementation-notes record what
     E1/E2 measured about the shape (envelope field names, the consume answer code on each side).
     Behaviour authority stays the MOD-0022 module pack §8; this file is the wire shape.
-  version: 1.0.0
+  version: 1.0.1
   x-status: FROZEN
   x-owner: MOD-0022
   x-owner-service: "Diten.Platform (5057) for /api/v1/esign/** and /api/internal/esign/**; Diten.AuthService (5056) for §4.1–4.3"
   x-changelog:
     - "1.0.0 — frozen (WP-0022-E2). §4.1–4.3 implemented by E1 (AuthService), §4.4–4.16 and §4.20–4.26 by E2 (Platform), §4.17–4.19 (samples) are E3 and answer 404 until then; the Workflow addendum (x-workflow-addendum) is E4. After this freeze only additive changes (minor version)."
+    - "1.0.1 — description only (WP-MVP1-FUB2, FU-0022-CT-01; behaviour of WP-0022-VIS1 and WP-MVP1-FUB1, CT-accepted): who sees which signature record — see the x-implementation-notes line 'Visibility'. No path, parameter, schema, status code, error code or permission changed."
   x-proposal: drafts/esign-bundle-v1-proposal.md
   x-rules:
     - "1. Every call is made with the user's own tenant token (actor_type = tenant_user) through the Gateway. No service-key signing. The only S2S calls are §4.3 (Platform → AuthService) and §4.23 (module → Platform); neither carries user authority."
@@ -33,6 +34,7 @@ info:
     - "§4.4 keeps an image only as content + SHA-256; records carry SHA-256 of the ticket (ticketRef), never the ticket."
     - "Subject resolution failure of any kind (unknown, other tenant, invisible, owner unreachable) is one answer: 404 ESIGN_SUBJECT_NOT_FOUND (no oracle)."
     - "Export dates are printed in UTC with the 'UTC' suffix (no tenant time zone is modelled yet)."
+    - "Visibility (1.0.1): a record WITHOUT a company (tenant-level, legalEntityId null — e.g. a workflow-task signature) is visible to every holder of esign.signatures.read (getSignature, listSignaturesBySubject, verifySignature) or esign.signatures.export (searchSignatures, createExport) in the tenant; a company record follows the caller's LegalEntity data scope (SEC-002) and is answered as absent (404 / not listed) outside it; the signer always sees their own records."
   x-decisions: [KS-0, KS-1, KS-2, KS-3, KS-4, KS-5, KS-6, KS-7, KS-8, KS-9, KS-10, KS-11, KS-12, KS-13, CT-D1, CT-D2, CT-D4, CT-D7, CT-D8, CT-D9, CT-D10, CT-D11, CT-D12, CT-D13, CT-D14, CT-D15]
 servers: [{ url: / }]
 security: [{ bearerAuth: [] }]
