@@ -345,6 +345,7 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
                     .Set(x => x.LifecycleStatus, ItemLifecycleStatus.PendingActivation)
                     .Set(x => x.ActivationKind, operation.ActivationKind)
                     .Set(x => x.ActivationWorkflowBinding, binding)
+                    .Set(x => x.ActivationRequestReason, operation.RequestReason)
                     .Set(x => x.ActivationSubmitOperationId, null)
                     .Set(x => x.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
                     .Inc(x => x.Version, 1),
@@ -380,10 +381,15 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
         var expectedVersion = operation.ExpectedItemVersion + 1;
         var current = await _items.Find(LiveItem(operation.ItemId)).FirstOrDefaultAsync(cancellationToken);
         if (current is null) return new(false, false, null, "ITEM_NOT_FOUND");
-        if (current.Version == expectedVersion + 1 && current.LifecycleStatus == target
+        // The replay is recognised by the decision it wrote (S2 FIX1 item 3), not by an exact version: a later edit of the
+        // Active item moves the version on and must not turn the replay into a conflict.
+        if (current.Version >= expectedVersion + 1 && current.LifecycleStatus == target
             && current.ActivationWorkflowBinding?.WorkflowInstanceId == operation.WorkflowInstanceId
+            && current.ActivationWorkflowBinding.StartIdempotencyKey == operation.StartIdempotencyKey
             && current.ActivationWorkflowBinding.TerminalDecision is { } done
-            && done.TransitionSequence == evidence.TransitionSequence && done.Decision == evidence.Decision)
+            && done.ApprovalTaskId == evidence.ApprovalTaskId
+            && done.TransitionSequence == evidence.TransitionSequence && done.Decision == evidence.Decision
+            && done.DecisionActorSubjectId == evidence.DecisionActorSubjectId)
             return new(true, true, current, null);
         try
         {
@@ -392,7 +398,10 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
                 & Builders<Item>.Filter.Eq(x => x.LifecycleStatus, ItemLifecycleStatus.PendingActivation)
                 & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.WorkflowInstanceId, operation.WorkflowInstanceId)
                 & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.StartIdempotencyKey, operation.StartIdempotencyKey)
-                & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.TerminalDecision, null),
+                & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.TerminalDecision, null)
+                // S2 FIX1 (minor): maker ≠ approver against the PERSISTED maker of this approval, in the write itself — a
+                // caller that names the wrong maker cannot slip the maker's own decision through.
+                & Builders<Item>.Filter.Ne(x => x.ActivationWorkflowBinding!.SubmitterSubjectId, evidence.DecisionActorSubjectId),
                 Builders<Item>.Update
                     .Set(x => x.LifecycleStatus, target)
                     .Set(x => x.ActivationWorkflowBinding!.TerminalDecision, evidence)
@@ -433,6 +442,8 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.WorkflowInstanceId, operation.WorkflowInstanceId)
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.ApprovalTaskId, operation.ApprovalTaskId)
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.SubmitterSubjectId, operation.MakerSubjectId)
+            // S2 FIX1 (minor): only the persisted maker withdraws — held in the write against the binding itself.
+            & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.SubmitterSubjectId, cancellationEvidence.RequesterSubjectId)
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.TerminalDecision, null),
             Builders<Item>.Update.Set(x => x.LifecycleStatus, target)
                 .Set(x => x.ActivationWorkflowBinding!.CancellationEvidence, cancellationEvidence),
@@ -581,6 +592,7 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
         && (!operation.WorkflowTemplateId.HasValue || operation.WorkflowTemplateId != Guid.Empty)
         && (operation.WorkflowTemplateCode is null || IsExactBounded(operation.WorkflowTemplateCode, 128))
         && operation.LastStartSentAtUtcTicksV1 == 0
+        && (operation.RequestReason is null || IsExactBounded(operation.RequestReason, 500))
         && operation.TemporalStorageVersion is 0 or ItemWorkflowOperation.CurrentTemporalStorageVersion;
 
     private static bool IsExactReplay(ItemWorkflowOperation existing, ItemWorkflowOperation candidate) =>
@@ -593,6 +605,7 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
         && existing.WorkflowTemplateCode == candidate.WorkflowTemplateCode
         && existing.ApproverPositionId == candidate.ApproverPositionId
         && existing.ReasonCode == candidate.ReasonCode
+        && existing.RequestReason == candidate.RequestReason
         && existing.CommentRequired == candidate.CommentRequired
         && existing.EvidenceRequired == candidate.EvidenceRequired
         && existing.ObjectType == candidate.ObjectType
@@ -879,4 +892,14 @@ public sealed class ItemWorkflowTenantPartitionDiscoveryRepository : IItemWorkfl
 
     public Task<long> CountNeedingAPersonAsync(long nowUtcTicks, CancellationToken cancellationToken = default) =>
         _operations.CountDocumentsAsync(NeedingAPerson(nowUtcTicks), cancellationToken: cancellationToken);
+
+    // S2 FIX1 item 2: what the worker scans (the recovery filter's checkpoints), untouched since the cutoff. A running
+    // worker touches each of them at least every retry ceiling (15 min) — so an old one means nobody is processing.
+    public static FilterDefinition<ItemWorkflowOperation> Unprocessed(long untouchedSinceUtcTicks) =>
+        Op.Ne(x => x.IsDeleted, true)
+        & Op.Nin(x => x.Checkpoint, ItemWorkflowOperationRepository.NotScanned)
+        & Op.Lt(x => x.UpdatedAtUtcTicksV1, untouchedSinceUtcTicks);
+
+    public Task<long> CountUnprocessedAsync(long untouchedSinceUtcTicks, CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(Unprocessed(untouchedSinceUtcTicks), cancellationToken: cancellationToken);
 }

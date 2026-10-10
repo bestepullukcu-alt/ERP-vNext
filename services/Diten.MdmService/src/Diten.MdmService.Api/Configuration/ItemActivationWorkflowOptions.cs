@@ -59,4 +59,10 @@ public sealed class ItemActivationGaugeOptions
     public const string SectionName = "ItemActivationGauge";
     public bool Enabled { get; set; } = true;
     public int IntervalSeconds { get; set; } = 300;
+    // S2 FIX1 item 2: an approval the worker should be carrying, untouched this long, is counted as unprocessed. A running
+    // worker touches every one at least once per retry ceiling (15 min, ProductIdentityRecoveryStreak.DefaultMaxRetryDelay)
+    // plus its poll interval; 60 leaves a wide margin. Bounds 20–1440 (below 20 a healthy worker could be counted).
+    public int UnprocessedAfterMinutes { get; set; } = 60;
+
+    public TimeSpan UnprocessedAfter => TimeSpan.FromMinutes(Math.Clamp(UnprocessedAfterMinutes, 20, 1440));
 }

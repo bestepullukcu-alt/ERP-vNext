@@ -50,7 +50,8 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
 
         var httpContext = _httpContextAccessor.HttpContext;
         var user = httpContext?.User;
-        var (actorType, actorId) = ResolveActor(user);
+        // S2 FIX1 item 5: a command that is never its caller's act is recorded as the system's.
+        var (actorType, actorId) = request.SystemActor ? (ActorSystem, (Guid?)null) : ResolveActor(user);
         // FU04 S2: a worker's command names its tenant itself; a user's token always wins.
         var tenantId = ReadGuid(user?.FindFirst("tenant_id")?.Value) ?? request.TenantId;
 
@@ -69,7 +70,7 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
             ["requestType"] = request.RequestType,
             ["actorType"] = actorType,
             ["actorId"] = actorId,
-            ["actorEmail"] = user?.FindFirst(ClaimTypes.Email)?.Value ?? user?.FindFirst("email")?.Value,
+            ["actorEmail"] = request.SystemActor ? null : user?.FindFirst(ClaimTypes.Email)?.Value ?? user?.FindFirst("email")?.Value,
             ["targetTenantId"] = tenantId,
             ["category"] = request.Category,
             ["entityType"] = request.EntityType,

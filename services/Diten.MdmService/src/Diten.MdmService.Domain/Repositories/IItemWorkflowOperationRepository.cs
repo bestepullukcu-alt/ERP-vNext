@@ -65,4 +65,8 @@ public interface IItemWorkflowTenantPartitionDiscovery
 
     // Of those, the ones the requester's repeat cannot settle — a person's (BL-530).
     Task<long> CountNeedingAPersonAsync(long nowUtcTicks, CancellationToken cancellationToken = default);
+
+    // S2 FIX1 item 2: approvals the worker should be carrying (not ended, not parked for a person or the maker) that nobody
+    // has touched since the cutoff — the flow is on and no worker is processing it.
+    Task<long> CountUnprocessedAsync(long untouchedSinceUtcTicks, CancellationToken cancellationToken = default);
 }

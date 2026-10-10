@@ -30,7 +30,8 @@ public sealed class ItemActivationRequests(
     IItemRepository items,
     IItemWorkflowOperationRepository operations,
     ItemActivationAvailability availability,
-    IServiceProvider services)
+    IServiceProvider services,
+    Diten.MdmService.Application.Contracts.ReferenceData.IItemReferenceResolver references)
 {
     public const string SubmitAbandoned = "ITEM_ACTIVATION_SUBMIT_ABANDONED";
     public const string DecisionNotApplicable = "ITEM_ACTIVATION_DECISION_NOT_APPLICABLE";
@@ -65,10 +66,28 @@ public sealed class ItemActivationRequests(
         try { token = delegatedTokenAccessor.GetRequiredToken(); }
         catch (ProductIdentityDelegatedTokenException exception) { return Fail(exception.ErrorCode, 401); }
 
+        // S2 FIX1 (minor): a new request freezes the list's evidence for its approval (an S1 row's missing kinds are filled
+        // here); a list that refuses or cannot answer refuses the submit by name — nothing is reserved.
+        List<Diten.MdmService.Domain.ValueObjects.ItemReferenceEvidenceEntry>? evidence = null;
+        if (!known)
+        {
+            var (refusal, frozen) = await ItemReferenceEvidence.FreezeAsync(references, item, cancellationToken);
+            if (refusal is not null)
+            {
+                audit.Set(ItemAudit.OutcomeCode, refusal.Code ?? ItemReferenceEvidence.ProviderUnavailable);
+                return Response<ItemModels.ItemDto>.Fail(
+                    refusal.Code ?? ItemReferenceEvidence.ProviderUnavailable,
+                    refusal.Verdict == ItemReferenceEvidence.Verdict.NotApplicable ? 409 : 503);
+            }
+            evidence = frozen;
+        }
+
         var processor = Processor();
         var execution = Execution();
+        // S2 FIX1 item 6: the reason travels with the request (kept on its operation; the text never enters the audit).
+        var reason = string.IsNullOrWhiteSpace(request.Reason) ? null : request.Reason.Trim();
         var result = await processor.StartInteractiveAsync(tenantContext.TenantId, itemId, kind, expectedVersion,
-            operationId, maker, token, execution.LeaseDuration, execution.RetryDelay, cancellationToken);
+            operationId, maker, token, execution.LeaseDuration, execution.RetryDelay, cancellationToken, reason, evidence);
         if (result.IsReplay) audit.Set(ItemAudit.Replay, true);
         if (result.Operation is { } ended && ended.Checkpoint is ItemWorkflowCheckpoint.AbandonedBeforeWorkflowStart
                 or ItemWorkflowCheckpoint.DecisionNotApplicable)

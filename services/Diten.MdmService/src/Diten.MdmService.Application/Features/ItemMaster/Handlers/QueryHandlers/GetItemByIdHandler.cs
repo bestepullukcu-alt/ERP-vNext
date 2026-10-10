@@ -10,6 +10,6 @@ public sealed class GetItemByIdHandler(IItemRepository items) : IRequestHandler<
 {
     public async Task<Response<ItemModels.ItemDto>> Handle(GetItemByIdQuery query, CancellationToken cancellationToken) =>
         await items.GetByIdAsync(query.Id, cancellationToken) is { } item
-            ? Response<ItemModels.ItemDto>.Success(ItemRules.ToDto(item))
+            ? Response<ItemModels.ItemDto>.Success(ItemRules.ToDto(item, detail: true))
             : Response<ItemModels.ItemDto>.Fail(ItemErrors.NotFound, 404);
 }

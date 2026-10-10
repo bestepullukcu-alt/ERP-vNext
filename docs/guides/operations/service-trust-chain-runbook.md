@@ -386,7 +386,7 @@ the same client, token and Platform endpoints as the flows above. What differs:
 | MDM section (switch, approver, template) | `ItemActivationWorkflow` — `:Enabled`, `:TemplateCode` (tracked: `ITEM-ACTIVATION`), `:ApproverPositionId`, `:ReasonCode` (tracked: `ITEM_ACTIVATION_APPROVAL`), optional `:DueAfterSeconds` |
 | MDM worker section | `ItemActivationWorkflowWorker` — `:Enabled`, `:LeaseOwner` (tracked: `mdm-dev-local-item`), `:StartSettleSeconds` (120; 1–600) |
 | Platform `ObjectType` / template code | `Item` / `ITEM-ACTIVATION` — Platform's `TrustedWorkflowStartAuthorization` lists exactly `{Diten.MDM, TRUSTED_WORKFLOW_CONSUMER, Item, ITEM-ACTIVATION}` for the default client (tracked in `appsettings.Development.json`) |
-| Approver | the **QA Manager position** (OD-7). MDM sends the candidate `position:{ApproverPositionId}`; the engine resolves the position's current holders and the first one decides (GP-1b). The id is configuration — never code. A vacant position answers the start with "candidates required" (the maker is told; nothing is held). |
+| Approver | the **QA Manager position** (OD-7). MDM sends the candidate `position:{ApproverPositionId}`; the engine resolves the position's current holders and the first one decides (GP-1b). The id is configuration — never code. A vacant position: Platform answers the start 503 "candidates required" (`WorkflowInstanceStartCoordinator`, an empty seat is transient); the operation waits for the maker's replay (`AwaitingMakerReplay`) and **the submit fence is held** — the item stays Draft / Deactivated and refuses edits (`ITEM_ACTIVATION_SUBMIT_IN_FLIGHT`) until the maker submits again; `manual_reconciliation` counts it. Fill the seat, then the maker submits again (the LSKU behaviour). The id is one value for the whole deployment: a tenant whose QA Manager position has another id fails closed (known limit). |
 | Maker ≠ approver | the maker's own decision is never applied: the item goes back (Draft, or Deactivated for a reactivation) with `ITEM_ACTIVATION_SELF_APPROVAL_IGNORED`. The engine also drops the starter from the candidates. |
 
 **Not written by the bootstrap.** `setup-service-trust.*` writes the switches and approvers of the GP / GSKU / LSKU flows
@@ -407,9 +407,25 @@ A non-default `--client-code` gets no Platform `Item` entry from the bootstrap (
 1. Organisation → Positions: create (or pick) the **QA Manager** position in the tenant, Active; assign at least one person
    who is NOT the item's maker (two people are proposed, OD-7). Copy the position's id.
 2. Platform → Workflow definitions: create `ITEM-ACTIVATION` and publish it with one approval step (step 4 above). The
-   step may carry `assignment.candidatePrincipalIds = ["position:<id>"]`; if it does, it wins over what MDM sends.
+   step **must NOT define candidates** (`assignment.candidatePrincipalIds` empty): a step's candidates win over the
+   `position:<ApproverPositionId>` MDM sends, and MDM does not check that the person who decides holds the QA Manager
+   position — a definition with its own candidates silently changes who may approve.
 3. MDM local file: the JSON above; restart MDM.
 4. Item keys: `mdm.items.submit`, `.withdraw` reach roles with the module manifest (S5); until then grant them by hand.
+
+**The worker reads the item lists with MDM's service identity** (S2 FIX1): no user is present when the approval is
+applied, so the reference check runs with the trusted service token for the tenant (audience
+`TRUSTED_REFERENCE_DATA_CONSUMER`, the GSKU workflow resolver's identity provider `AuthWorkflowVerifiedMarketServiceIdentityProvider`
+and the `VerifiedGskuResolver` credential). Platform's item-universal endpoint accepts it. If Platform or Auth refuses it
+(401 after one refresh, 403, or no identity issued), the approval is stuck with
+`ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR` (an error line, `needing_a_person`) and the item stays PendingActivation —
+fix the identity / credential configuration, then the maker submits again. An outage (5xx, timeout) only waits.
+
+**Approval on, worker off** (S2 FIX1): not refused at start (in a multi-instance deployment one instance carries the
+worker). Each instance with the approval on and its worker off says so once at start (Warning). The gauge
+`ITEM_ACTIVATION_UNPROCESSED` (flow tag on the recovery gauges) counts approvals the worker should be carrying that nobody
+has touched for `ItemActivationGauge:UnprocessedAfterMinutes` (default 60, 20–1440; a running worker touches each at
+least every 15 minutes).
 
 **The activation gate** (contract draft.11 "Etkinleştirme kuralı", R-04): at the submit and again when the approval is
 applied, the item needs `lotControlled` filled, a base unit, at least one storage condition unless it is packaging (O-25),
@@ -671,7 +687,10 @@ applied (production runs with background jobs off — decide it with the owner).
   - `flow=ITEM_ORPHAN_CODE` `…manual_reconciliation` — `IT-` codes held for more than 15 minutes with no item row. Swept by
     `POST /api/mdm/items/operator/orphan-code-repairs?limit=…&minimumAgeMinutes=…` (key
     `mdm.product-identity.lifecycle-operations.recover`): a consumed code is burned (never reused); a reserved-but-never-
-    consumed code is counted, not burned.
+    consumed code is counted, not burned. `minimumAgeMinutes` is 15–525600 (the gauge's own age is the floor: a younger
+    code may still be consumed by its create's repeat); outside → 400 `ITEM_ORPHAN_CODE_REPAIR_INVALID`.
+  - `flow=ITEM_ACTIVATION_UNPROCESSED` `…manual_reconciliation` — approvals the worker should be carrying that nobody has
+    touched for `ItemActivationGauge:UnprocessedAfterMinutes` (default 60): the approval is on and no worker runs it.
   - `…count_failed` = 1 for a flow: its last count failed, the numbers above are stale.
 - Newly stuck operations are logged once (Error) by the recovery cycle: `ITEM_ACTIVATION operation … is stuck (…)`.
 

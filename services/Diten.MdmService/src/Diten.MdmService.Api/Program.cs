@@ -309,6 +309,8 @@ builder.Services.AddSingleton<ItemActivationGauge>();
 builder.Services.AddOptions<ItemActivationGaugeOptions>()
     .Bind(builder.Configuration.GetSection(ItemActivationGaugeOptions.SectionName));
 builder.Services.AddHostedService<ItemActivationGaugeWorker>();
+// S2 FIX1 item 2: the approval on with this instance's worker off is said at start (not refused).
+builder.Services.AddHostedService<ItemActivationWorkerOffWarning>();
 builder.Services.AddOptions<LskuRetirementRequestWorkflowOptions>()
     .Bind(builder.Configuration.GetSection(LskuRetirementRequestWorkflowOptions.SectionName))
     .Validate(options => !options.Enabled || IsValidLskuRetirementRequestOptions(options,

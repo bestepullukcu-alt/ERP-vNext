@@ -21,7 +21,27 @@ public sealed class ApplyItemActivationDecisionHandler(IItemWorkflowOperationRep
         audit.Set(ItemAudit.ActivationKind, operation.ActivationKind.ToString());
         var target = ItemActivationWorkflowProcessor.SourceStatus(operation.ActivationKind);
         ItemWorkflowWriteResult written;
-        if (command.NotApplicableReason is { } reason)
+        var source = ItemLifecycleStatus.PendingActivation;
+        if (command.PendingBinding is { } binding)
+        {
+            // S2 FIX1 item 5: the worker puts the item pending on its approval (the start's answer was learnt later).
+            audit.Set(ItemAudit.Decision, "Pending");
+            source = target;
+            target = ItemLifecycleStatus.PendingActivation;
+            written = await operations.ApplyLocalPendingAsync(command.Claim, operation, binding, command.UpdatedAtUtcTicks,
+                cancellationToken);
+        }
+        else if (command.Withdrawal is { } withdrawal)
+        {
+            // S2 FIX1 item 5: the worker finishes the maker's withdrawal (the engine's cancel was answered later).
+            audit.Set(ItemAudit.Decision, "Withdrawn");
+            audit.Set(ItemAudit.ApprovalTaskId, withdrawal.ApprovalTaskId.ToString("D"));
+            audit.Set(ItemAudit.TransitionSequence, withdrawal.TransitionSequence);
+            audit.Set(ItemAudit.OutcomeCode, withdrawal.ReasonCode);
+            written = await operations.ApplyWithdrawalAsync(command.Claim, operation, withdrawal, command.UpdatedAtUtcTicks,
+                cancellationToken);
+        }
+        else if (command.NotApplicableReason is { } reason)
         {
             audit.Set(ItemAudit.Decision, "NotApplicable");
             audit.Set(ItemAudit.OutcomeCode, reason);
@@ -48,7 +68,7 @@ public sealed class ApplyItemActivationDecisionHandler(IItemWorkflowOperationRep
             return Response<ItemWorkflowWriteResult>.Fail(written.ErrorCode ?? "ITEM_ACTIVATION_STATE_CONFLICT",
                 written.ErrorCode == Domain.Repositories.ProductIdentityStore.Unavailable ? 503 : 409);
         if (written.IsReplay) audit.Set(ItemAudit.Replay, true);
-        audit.Change(nameof(Item.LifecycleStatus), ItemLifecycleStatus.PendingActivation.ToString(), target.ToString());
+        audit.Change(nameof(Item.LifecycleStatus), source.ToString(), target.ToString());
         audit.Set(ItemAudit.Lifecycle, target.ToString());
         return Response<ItemWorkflowWriteResult>.Success(written);
     }
@@ -66,6 +86,17 @@ public sealed class MediatorItemActivationDecisionWriter(ISender sender) : IItem
         string reasonCode, long updatedAtUtcTicks, CancellationToken cancellationToken) =>
         SendAsync(new(operation.ItemId, operation.TenantId, claim, operation, null, reasonCode, updatedAtUtcTicks),
             cancellationToken);
+
+    public Task<ItemWorkflowWriteResult> ApplyLocalPendingAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
+        Domain.ValueObjects.ProductIdentityWorkflowBinding binding, long updatedAtUtcTicks, CancellationToken cancellationToken) =>
+        SendAsync(new(operation.ItemId, operation.TenantId, claim, operation, null, null, updatedAtUtcTicks,
+            PendingBinding: binding), cancellationToken);
+
+    public Task<ItemWorkflowWriteResult> ApplyWithdrawalAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
+        Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence evidence, long updatedAtUtcTicks,
+        CancellationToken cancellationToken) =>
+        SendAsync(new(operation.ItemId, operation.TenantId, claim, operation, null, null, updatedAtUtcTicks,
+            Withdrawal: evidence), cancellationToken);
 
     private async Task<ItemWorkflowWriteResult> SendAsync(ApplyItemActivationDecisionCommand command,
         CancellationToken cancellationToken)

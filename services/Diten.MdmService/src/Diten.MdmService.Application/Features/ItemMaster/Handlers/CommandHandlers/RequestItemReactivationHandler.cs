@@ -12,6 +12,7 @@ public sealed class RequestItemReactivationHandler(ItemActivationRequests reques
     public Task<Response<ItemModels.ItemDto>> Handle(RequestItemReactivationCommand command, CancellationToken cancellationToken)
     {
         command.AuditDetails.Set(ItemAudit.ReasonProvided, !string.IsNullOrWhiteSpace(command.Request.Reason));
+        command.AuditDetails.Set(ItemAudit.ReasonLength, command.Request.Reason?.Trim().Length ?? 0);
         return requests.StartAsync(command.ItemId, command.Request, ItemActivationKind.Reactivation, command.AuditDetails,
             cancellationToken);
     }

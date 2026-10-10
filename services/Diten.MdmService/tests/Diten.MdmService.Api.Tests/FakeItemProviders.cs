@@ -105,3 +105,88 @@ public sealed class FakeStockAvailability : IInventoryStockAvailabilityClient
         return Answer;
     }
 }
+
+/// <summary>
+/// MOD-0290-FU04 S2 FIX1 item 1: Platform's item-universal endpoint ON THE WIRE for the approval worker's REAL client
+/// (PlatformWorkflowItemReferenceResolverClient). It accepts exactly what Platform's executor accepts on this path — the
+/// resolver credential + audience headers and MDM's service token (the host's FakeServiceIdentity) — and answers in
+/// Platform's envelope from the same lists a test sets on <see cref="FakeItemReferences"/> (removed, changed kind, catalog
+/// version, outage). A test can make it refuse the service token (401 every time, or 403).
+/// </summary>
+public sealed class FakeItemListPlatform(FakeItemReferences lists) : HttpMessageHandler
+{
+    public const string ServiceToken = "http-host-service-token";
+    public ConcurrentQueue<string?> Bearers { get; } = new();
+    public int? RefuseServiceToken { get; set; }
+    // Runs once, inside the next accepted call, before the answer (a test changes the item there).
+    public Func<Task>? OnNextResolve { get; set; }
+
+    public void Reset()
+    {
+        RefuseServiceToken = null;
+        OnNextResolve = null;
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
+    {
+        var bearer = request.Headers.Authorization is { Scheme: "Bearer" } auth ? auth.Parameter : null;
+        Bearers.Enqueue(bearer);
+        if (request.RequestUri?.AbsolutePath != "/" + Diten.MdmService.Infrastructure.ReferenceData.PlatformItemReferenceResolverClient.RelativePath)
+            return Envelope(404, false, null, "NOT_FOUND");
+        if (!Header(request, Diten.MdmService.Infrastructure.ReferenceData.PlatformItemReferenceResolverClient.CredentialIdHeader)
+            || !Header(request, Diten.MdmService.Infrastructure.ReferenceData.PlatformItemReferenceResolverClient.CredentialSecretHeader)
+            || !Header(request, Diten.MdmService.Infrastructure.ReferenceData.PlatformItemReferenceResolverClient.AudienceHeader))
+            return Envelope(401, false, null, "REFERENCE_UNAUTHENTICATED");
+        if (RefuseServiceToken is { } refused)
+            return Envelope(refused, false, null, refused == 403 ? "REFERENCE_FORBIDDEN" : "REFERENCE_UNAUTHENTICATED");
+        if (bearer != ServiceToken) return Envelope(401, false, null, "REFERENCE_UNAUTHENTICATED");
+
+        if (OnNextResolve is { } hook)
+        {
+            OnNextResolve = null;
+            await hook();
+        }
+        var asked = System.Text.Json.Nodes.JsonNode.Parse(await request.Content!.ReadAsStringAsync(token))!["selections"]!
+            .AsArray().Select(x => new ItemReferenceRequest((string)x!["set_code"]!, (string)x["value_code"]!)).ToList();
+        var saved = lists.Override;
+        lists.Override = null;
+        ItemReferenceResolveResult answer;
+        try { answer = await lists.ResolveLatestAsync(asked, token); }
+        finally { lists.Override = saved; }
+
+        if (answer.IsSuccessful)
+            return Envelope(200, true, new
+            {
+                selections = answer.Selections.Select(s => new Dictionary<string, object?>
+                {
+                    ["set_code"] = s.SetCode, ["value_code"] = s.ValueCode,
+                    ["catalog_version"] = "ITEM-UNIVERSAL-V" + s.CatalogVersionNumber,
+                    ["catalog_version_id"] = s.CatalogVersionId, ["catalog_version_number"] = s.CatalogVersionNumber,
+                    ["resolution_mode"] = s.ResolutionMode, ["resolved_at_utc"] = s.ResolvedAtUtc,
+                    ["is_retired"] = s.IsRetired, ["selectable_for_new"] = s.SelectableForNew,
+                    ["attributes"] = s.SetCode == ItemReferenceSets.ItemUom
+                        ? new Dictionary<string, string?> { ["DimensionCode"] = "MASS", ["MaximumDecimalPrecision"] = "3" }
+                        : s.Attributes
+                }).ToList()
+            }, null);
+        if (answer.FailureCode == ItemReferenceResolveResult.ValueNotFound)
+            return Envelope(404, false, new
+            {
+                not_found = answer.NotFound.Select(p => new Dictionary<string, string> { ["set_code"] = p.SetCode, ["value_code"] = p.ValueCode })
+            }, ItemReferenceResolveResult.ValueNotFound);
+        return Envelope(503, false, null, answer.FailureCode ?? "REFERENCE_PROVIDER_UNAVAILABLE");
+    }
+
+    private static bool Header(HttpRequestMessage request, string name) =>
+        request.Headers.TryGetValues(name, out var values) && values.Count() == 1 && !string.IsNullOrWhiteSpace(values.Single());
+
+    private static HttpResponseMessage Envelope(int status, bool successful, object? data, string? reason) =>
+        new((System.Net.HttpStatusCode)status)
+        {
+            Content = System.Net.Http.Json.JsonContent.Create(new Dictionary<string, object?>
+            {
+                ["data"] = data, ["statusCode"] = status, ["isSuccessful"] = successful,
+                ["errors"] = reason is null ? Array.Empty<string>() : new[] { reason }, ["reason_code"] = reason
+            })
+        };
+}

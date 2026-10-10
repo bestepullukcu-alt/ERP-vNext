@@ -152,9 +152,11 @@ public sealed class ItemActivationWorkflowRecoveryWorker(
 /// A failed count is flagged (count_failed = 1), never silent.
 /// </summary>
 public sealed class ItemActivationGauge(IServiceScopeFactory scopes, TimeProvider clock, ILogger<ItemActivationGauge> logger,
-    ProductIdentityRecoveryMetrics? metrics = null)
+    ProductIdentityRecoveryMetrics? metrics = null, IOptions<ItemActivationGaugeOptions>? options = null)
 {
     public const string OrphanCodeFlow = "ITEM_ORPHAN_CODE";
+    // S2 FIX1 item 2: approvals nobody is processing (the flow on, no worker carrying them) — counted, never silent.
+    public const string UnprocessedFlow = "ITEM_ACTIVATION_UNPROCESSED";
 
     public async Task RecordAsync(CancellationToken ct)
     {
@@ -180,6 +182,24 @@ public sealed class ItemActivationGauge(IServiceScopeFactory scopes, TimeProvide
         }
         try
         {
+            var after = (options?.Value ?? new ItemActivationGaugeOptions()).UnprocessedAfter;
+            await using var scope = scopes.CreateAsyncScope();
+            var unprocessed = await scope.ServiceProvider.GetRequiredService<IItemWorkflowTenantPartitionDiscovery>()
+                .CountUnprocessedAsync((now - after).UtcTicks, ct);
+            metrics?.Record(UnprocessedFlow, unprocessed);
+            metrics?.RecordCountFailed(UnprocessedFlow, false);
+            if (unprocessed > 0)
+                logger.LogWarning("{Flow}: {Count} item approvals have not been processed for more than {Minutes} minutes (is an approval worker running?).",
+                    UnprocessedFlow, unprocessed, (int)after.TotalMinutes);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception exception)
+        {
+            metrics?.RecordCountFailed(UnprocessedFlow, true);
+            logger.LogError("{Flow}: the count failed with {ExceptionType}.", UnprocessedFlow, exception.GetType().Name);
+        }
+        try
+        {
             await using var scope = scopes.CreateAsyncScope();
             var orphans = await scope.ServiceProvider.GetRequiredService<IItemOrphanCodeCensus>()
                 .CountOrphanItemCodesAsync(now - ItemOrphanCodes.MinimumAge, ct);
@@ -196,6 +216,27 @@ public sealed class ItemActivationGauge(IServiceScopeFactory scopes, TimeProvide
             logger.LogError("{Flow}: the count failed with {ExceptionType}.", OrphanCodeFlow, exception.GetType().Name);
         }
     }
+}
+
+/// <summary>
+/// S2 FIX1 item 2 (CT decision: warn, never refuse — in a multi-instance deployment one instance carries the worker): the
+/// approval is on while THIS instance's worker is off — said once at start; the unprocessed gauge counts what nobody carries.
+/// </summary>
+public sealed class ItemActivationWorkerOffWarning(
+    IOptions<ItemActivationWorkflowOptions> workflow,
+    IOptions<ItemActivationWorkflowWorkerOptions> worker,
+    ILogger<ItemActivationWorkerOffWarning> logger) : IHostedService
+{
+    public const string Message =
+        "ITEM_ACTIVATION: the item approval is on and this instance's approval worker is off — approvals are carried only if another instance runs the worker (ITEM_ACTIVATION_UNPROCESSED counts the ones nobody carries).";
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        if (workflow.Value.Enabled && !worker.Value.Enabled) logger.LogWarning(Message);
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 public sealed class ItemActivationGaugeWorker(ItemActivationGauge gauge, IOptions<ItemActivationGaugeOptions> options)

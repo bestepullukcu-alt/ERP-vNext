@@ -47,7 +47,7 @@ public sealed class ItemActivationWorkflowStartRequestFactory(
         DerivedId("item-activation-withdrawal-v1", tenantId, itemId, expectedVersion, 0, requester.ToString("D"));
 
     public ItemActivationWorkflowStartPlan Create(Guid tenantId, Item item, ItemActivationKind kind, Guid operationId,
-        int expectedVersion, Guid makerSubjectId)
+        int expectedVersion, Guid makerSubjectId, string? requestReason = null)
     {
         ArgumentNullException.ThrowIfNull(item);
         var source = kind == ItemActivationKind.Reactivation ? ItemLifecycleStatus.Deactivated : ItemLifecycleStatus.Draft;
@@ -55,14 +55,14 @@ public sealed class ItemActivationWorkflowStartRequestFactory(
             || makerSubjectId == Guid.Empty || expectedVersion < 0 || item.Version != expectedVersion
             || item.TenantId != tenantId || item.IsDeleted || item.LifecycleStatus != source
             || kind is not (ItemActivationKind.Activation or ItemActivationKind.Reactivation)
-            || string.IsNullOrWhiteSpace(item.CanonicalCode))
+            || string.IsNullOrWhiteSpace(item.CanonicalCode) || !IsValidReason(requestReason))
             throw new InvalidOperationException(StartFactsInvalid);
 
         EnsureConfiguration();
         var now = timeProvider.GetUtcNow();
         DateTimeOffset? dueAt = configuration.DueAfter.HasValue ? now.Add(configuration.DueAfter.Value) : null;
         var startKey = $"item-activation:{tenantId:D}:{operationId:D}";
-        var fingerprint = Fingerprint(tenantId, operationId, item, kind, expectedVersion, makerSubjectId);
+        var fingerprint = Fingerprint(tenantId, operationId, item, kind, expectedVersion, makerSubjectId, requestReason);
         var request = new ProductIdentityWorkflowStartRequest(
             configuration.TemplateId, configuration.TemplateCode, ItemObjectType, item.Id.ToString("D"),
             item.CanonicalCode, [PositionCandidate(configuration.ApproverPositionId)], configuration.ReasonCode, startKey,
@@ -83,6 +83,7 @@ public sealed class ItemActivationWorkflowStartRequestFactory(
             ApproverPositionId = configuration.ApproverPositionId,
             ReasonCode = configuration.ReasonCode,
             CommentRequired = configuration.CommentRequired,
+            RequestReason = requestReason,
             EvidenceRequired = configuration.EvidenceRequired,
             DueAtUtcTicksV1 = dueAt?.UtcTicks,
             ObjectType = ItemObjectType,
@@ -123,8 +124,12 @@ public sealed class ItemActivationWorkflowStartRequestFactory(
         if (!IsValid(configuration)) throw new InvalidOperationException(ConfigurationInvalid);
     }
 
+    // The lifecycle request's own rule (ItemLifecycleValidator): 1–500 characters, trimmed, no control character.
+    public static bool IsValidReason(string? reason) =>
+        reason is null || reason.Length is >= 1 and <= 500 && reason == reason.Trim() && !reason.Any(char.IsControl);
+
     private string Fingerprint(Guid tenantId, Guid operationId, Item item, ItemActivationKind kind, int expectedVersion,
-        Guid makerSubjectId)
+        Guid makerSubjectId, string? requestReason)
     {
         var facts = string.Join('\n',
             "contract=item-activation-workflow-start-v1",
@@ -142,7 +147,9 @@ public sealed class ItemActivationWorkflowStartRequestFactory(
             $"evidenceRequired={configuration.EvidenceRequired}",
             $"objectType={ItemObjectType}",
             $"objectRef={Encode(item.CanonicalCode)}",
-            $"dueAfterTicks={configuration.DueAfter?.Ticks.ToString(CultureInfo.InvariantCulture) ?? string.Empty}");
+            $"dueAfterTicks={configuration.DueAfter?.Ticks.ToString(CultureInfo.InvariantCulture) ?? string.Empty}",
+            // S2 FIX1 item 6: the same request with another reason is another request (an idempotency conflict).
+            $"requestReason={Encode(requestReason)}");
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(facts))).ToLowerInvariant();
     }
 

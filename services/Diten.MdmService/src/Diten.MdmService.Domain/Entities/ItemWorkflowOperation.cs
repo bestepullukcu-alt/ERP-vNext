@@ -20,6 +20,11 @@ public sealed class ItemWorkflowOperation : EntityBase
     public Guid ApproverPositionId { get; set; }
     public string ReasonCode { get; set; } = string.Empty;
     public bool CommentRequired { get; set; }
+    // S2 FIX1 item 6: the requester's free-text reason (a reactivation's is required), kept with its request — written
+    // once at the reservation, part of the operation's fingerprint. Never in an audit record (FIX1-EK).
+    public string? RequestReason { get; set; }
+    // S2 FIX1 (minor): the reference evidence frozen at the submit (null on an operation reserved before FIX1).
+    public List<Diten.MdmService.Domain.ValueObjects.ItemReferenceEvidenceEntry>? ReferenceEvidence { get; set; }
     public bool EvidenceRequired { get; set; }
     public long? DueAtUtcTicksV1 { get; set; }
     public string ObjectType { get; set; } = string.Empty;

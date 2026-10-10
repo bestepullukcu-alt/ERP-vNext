@@ -11,6 +11,29 @@ public interface IItemReferenceResolver
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// MOD-0290-FU04 S2 FIX1 item 1 — the same lists for a caller with NO user request (the approval worker): MDM's trusted
+/// service identity for the given tenant (the GSKU workflow resolver's pattern: tenant + service token, one refresh on a
+/// 401). A refusal of that identity (401 / 403, or an identity Auth will not issue) is a CONFIGURATION error, answered with
+/// its own status and code — never "the provider is down, wait".
+/// </summary>
+public interface IWorkflowItemReferenceResolver
+{
+    Task<ItemReferenceResolveResult> ResolveLatestAsync(
+        Guid tenantId,
+        IReadOnlyList<ItemReferenceRequest> requests,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>The workflow resolver bound to one tenant — the shape the item rules read (<see cref="IItemReferenceResolver"/>).</summary>
+public sealed class TenantBoundItemReferenceResolver(IWorkflowItemReferenceResolver resolver, Guid tenantId)
+    : IItemReferenceResolver
+{
+    public Task<ItemReferenceResolveResult> ResolveLatestAsync(IReadOnlyList<ItemReferenceRequest> requests,
+        CancellationToken cancellationToken = default) =>
+        resolver.ResolveLatestAsync(tenantId, requests, cancellationToken);
+}
+
 public static class ItemReferenceSets
 {
     public const string ItemUom = "item-uom";
@@ -44,6 +67,16 @@ public sealed record ItemReferenceResolveResult(
     IReadOnlyList<ItemReferenceRequest> NotFound)
 {
     public const string ValueNotFound = "REFERENCE_VALUE_NOT_FOUND";
+    // S2 FIX1 item 1: the provider's refusals of MDM's own credentials — configuration, not an outage.
+    public const string Unauthenticated = "REFERENCE_UNAUTHENTICATED";
+    public const string Forbidden = "REFERENCE_FORBIDDEN";
+    public const string ConfigurationInvalid = "REFERENCE_PROVIDER_CONFIGURATION_INVALID";
+    public const string ServiceIdentityRefused = "REFERENCE_SERVICE_IDENTITY_REFUSED";
+
+    /// <summary>A refusal of MDM's own credentials or configuration — a person must fix it; waiting never ends it.</summary>
+    public bool IsConfigurationRefusal => !IsSuccessful
+        && (StatusCode is 401 or 403
+            || FailureCode is Unauthenticated or Forbidden or ConfigurationInvalid or ServiceIdentityRefused);
 
     public static ItemReferenceResolveResult Success(IReadOnlyList<ItemReferenceSelection> selections) =>
         new(true, 200, null, selections, []);

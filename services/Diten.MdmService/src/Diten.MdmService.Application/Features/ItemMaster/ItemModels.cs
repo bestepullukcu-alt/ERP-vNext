@@ -74,7 +74,10 @@ public static class ItemModels
         ItemLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        // S2 FIX1 item 6 (CT decision A): the pending reactivation's reason — the detail only (mdm.items.read), null in
+        // a list and once the reactivation is decided.
+        string? PendingReactivationReason = null);
 
     public sealed record ItemListDto(IReadOnlyList<ItemDto> Items, long Total, int Page, int PageSize);
 }

@@ -18,7 +18,8 @@ public sealed class RepairItemOrphanCodesHandler(ITenantContext tenantContext, I
     public async Task<Response<ItemOrphanCodeRepairResult>> Handle(RepairItemOrphanCodesCommand command,
         CancellationToken cancellationToken)
     {
-        if (command.Limit is < 1 or > 100 || command.MinimumAgeMinutes < ItemOrphanCodes.MinimumAgeFloorMinutes)
+        if (command.Limit is < 1 or > 100 || command.MinimumAgeMinutes < ItemOrphanCodes.MinimumAgeFloorMinutes
+            || command.MinimumAgeMinutes > ItemOrphanCodes.MinimumAgeCeilingMinutes)
             return Response<ItemOrphanCodeRepairResult>.Fail("ITEM_ORPHAN_CODE_REPAIR_INVALID", 400);
         var cutoff = clock.GetUtcNow() - TimeSpan.FromMinutes(command.MinimumAgeMinutes);
         var found = await census.FindOrphanItemCodesAsync(tenantContext.TenantId, cutoff, command.Limit, cancellationToken);

@@ -38,6 +38,13 @@ public interface IItemActivationDecisionWriter
 
     Task<ItemWorkflowWriteResult> ApplyNotApplicableAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
         string reasonCode, long updatedAtUtcTicks, CancellationToken cancellationToken);
+
+    // S2 FIX1 item 5: the worker's two other item moves, audited the same way (a user's request records its own move).
+    Task<ItemWorkflowWriteResult> ApplyLocalPendingAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
+        ProductIdentityWorkflowBinding binding, long updatedAtUtcTicks, CancellationToken cancellationToken);
+
+    Task<ItemWorkflowWriteResult> ApplyWithdrawalAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
+        Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence evidence, long updatedAtUtcTicks, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -63,7 +70,8 @@ public sealed class ItemActivationWorkflowProcessor(
     IProductIdentityWorkflowClient workflowClient,
     ItemActivationWorkflowStartRequestFactory requestFactory,
     IItemActivationDecisionWriter decisionWriter,
-    Diten.MdmService.Application.Contracts.ReferenceData.IItemReferenceResolver references,
+    // S2 FIX1 item 1: the worker has no user request — the lists are read with MDM's service identity for the tenant.
+    Diten.MdmService.Application.Contracts.ReferenceData.IWorkflowItemReferenceResolver references,
     TimeProvider timeProvider,
     ILogger<ItemActivationWorkflowProcessor>? logger = null,
     ItemActivationWorkflowExecutionConfiguration? execution = null)
@@ -84,6 +92,8 @@ public sealed class ItemActivationWorkflowProcessor(
     public const string WithdrawalUnderWay = "ITEM_ACTIVATION_WITHDRAWAL_UNDER_WAY";
     public const string RetryLimitReached = "ITEM_ACTIVATION_WORKFLOW_RETRY_LIMIT_REACHED";
     public const string MakerReplayRequired = "ITEM_ACTIVATION_WORKFLOW_MAKER_REPLAY_REQUIRED";
+    public const string DecisionPendingCode = "ITEM_ACTIVATION_WORKFLOW_DECISION_PENDING";
+    public const string IdempotencyConflict = "ITEM_ACTIVATION_WORKFLOW_IDEMPOTENCY_CONFLICT";
     // The engine cancel's reason code for a maker's withdrawal (the free text, if any, travels as the comment).
     public const string WithdrawalReasonCode = "ITEM_ACTIVATION_WITHDRAWN_BY_MAKER";
 
@@ -102,7 +112,8 @@ public sealed class ItemActivationWorkflowProcessor(
 
     public async Task<ItemActivationWorkflowProcessingResult> StartInteractiveAsync(
         Guid tenantId, Guid itemId, ItemActivationKind kind, int expectedVersion, Guid operationId, Guid makerSubjectId,
-        string delegatedUserToken, TimeSpan leaseDuration, TimeSpan retryDelay, CancellationToken cancellationToken = default)
+        string delegatedUserToken, TimeSpan leaseDuration, TimeSpan retryDelay, CancellationToken cancellationToken = default,
+        string? requestReason = null, List<ItemReferenceEvidenceEntry>? referenceEvidence = null)
     {
         if (tenantId == Guid.Empty || itemId == Guid.Empty || operationId == Guid.Empty || makerSubjectId == Guid.Empty
             || expectedVersion < 0 || kind is not (ItemActivationKind.Activation or ItemActivationKind.Reactivation)
@@ -119,7 +130,9 @@ public sealed class ItemActivationWorkflowProcessor(
             ItemActivationWorkflowStartPlan plan;
             try
             {
-                plan = requestFactory.Create(tenantId, item, kind, operationId, expectedVersion, makerSubjectId);
+                plan = requestFactory.Create(tenantId, item, kind, operationId, expectedVersion, makerSubjectId, requestReason);
+                // S2 FIX1 (minor): the evidence the approval will be held to, frozen once with the reservation.
+                plan.Operation.ReferenceEvidence = referenceEvidence;
             }
             catch (InvalidOperationException exception)
             {
@@ -139,6 +152,10 @@ public sealed class ItemActivationWorkflowProcessor(
 
         if (!ExactInteractiveFacts(operation, tenantId, itemId, kind, expectedVersion, makerSubjectId))
             return Fail("ITEM_ACTIVATION_WORKFLOW_OPERATION_CONFLICT", 409);
+        // S2 FIX1 item 6: the same request carries the same reason; another reason under its key is an idempotency
+        // conflict (CT decision A).
+        if (!string.Equals(operation.RequestReason, requestReason, StringComparison.Ordinal))
+            return Fail(IdempotencyConflict, 409);
         // A submit whose withdrawal is under way belongs to the withdrawal path.
         if (InWithdrawal(operation)) return Fail(operation, WithdrawalUnderWay, 409);
 
@@ -293,7 +310,11 @@ public sealed class ItemActivationWorkflowProcessor(
                         advanced = await QuarantineAsync(claim, "ITEM_ACTIVATION_WITHDRAWAL_EVIDENCE_INVALID", now, cancellationToken);
                         break;
                     }
-                    var written = await operations.ApplyWithdrawalAsync(claim, operation, evidence, now.UtcTicks, cancellationToken);
+                    // S2 FIX1 item 5: finished by the worker → its own audited command; in the requester's withdrawal
+                    // request the request's own record carries the move.
+                    var written = string.IsNullOrWhiteSpace(token)
+                        ? await decisionWriter.ApplyWithdrawalAsync(claim, operation, evidence, now.UtcTicks, cancellationToken)
+                        : await operations.ApplyWithdrawalAsync(claim, operation, evidence, now.UtcTicks, cancellationToken);
                     advanced = written.Succeeded || await WriteRefusedAsync(operation, claim, written.ErrorCode, now,
                         retryDelay, string.IsNullOrWhiteSpace(token), cancellationToken);
                     break;
@@ -627,7 +648,10 @@ public sealed class ItemActivationWorkflowProcessor(
         if (!CompleteStartProof(operation))
             return await QuarantineAsync(claim, "ITEM_ACTIVATION_WORKFLOW_START_PROOF_INVALID", now, cancellationToken);
         var binding = BindingFor(operation);
-        var result = await operations.ApplyLocalPendingAsync(claim, operation, binding, now.UtcTicks, cancellationToken);
+        // S2 FIX1 item 5: made by the worker → its own audited command; in the maker's submit the submit's record carries it.
+        var result = counted
+            ? await decisionWriter.ApplyLocalPendingAsync(claim, operation, binding, now.UtcTicks, cancellationToken)
+            : await operations.ApplyLocalPendingAsync(claim, operation, binding, now.UtcTicks, cancellationToken);
         if (!result.Succeeded)
             return await WriteRefusedAsync(operation, claim, result.ErrorCode, now, retryDelay, counted, cancellationToken);
         if (result.Item is null || result.Item.Version != operation.ExpectedItemVersion + 1
@@ -647,15 +671,22 @@ public sealed class ItemActivationWorkflowProcessor(
             return await QuarantineAsync(claim, "ITEM_ACTIVATION_WORKFLOW_START_PROOF_INVALID", now, cancellationToken);
         var result = await workflowClient.GetTerminalEvidenceAsync(operation.TenantId,
             new(operation.WorkflowInstanceId.Value, operation.ObjectType, operation.ObjectId), cancellationToken);
-        // The engine's first answer — open: wait.
-        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal
-                or ProductIdentityWorkflowTransportOutcome.NotFound or ProductIdentityWorkflowTransportOutcome.Incomplete
+        // The engine's first answer — open: wait. S2 FIX1 (minor, the GSKU correction's accepted rule): an approval still
+        // open is not a failure — the person has not decided yet. It is asked again after the retry delay, its streak
+        // reset; it never counts toward the retry limit (counted, a day's wait used to reach RETRY_LIMIT_REACHED in ~6.5 h
+        // of 15-minute polls and the gauge called it stuck).
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal)
+            return await operations.AdvanceAsync(claim, new(ItemWorkflowCheckpoint.AwaitingDecision,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks, now.Add(retryDelay).UtcTicks,
+                BoundedCode(result.ErrorCode, DecisionPendingCode), ReleaseLease: true), cancellationToken);
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
+                or ProductIdentityWorkflowTransportOutcome.Incomplete
             || Retryable(result.Outcome)
             || result.Outcome != ProductIdentityWorkflowTransportOutcome.Success
             && ProductIdentityWorkflowFaultPolicy.Classify(ProductIdentityWorkflowCall.TerminalEvidence, result.Outcome,
                 result.ErrorCode).Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
             return await ScheduleRetryAsync(operation, claim, ItemWorkflowCheckpoint.AwaitingDecision,
-                result.ErrorCode ?? "ITEM_ACTIVATION_WORKFLOW_DECISION_PENDING", now, retryDelay, counted, cancellationToken);
+                result.ErrorCode ?? DecisionPendingCode, now, retryDelay, counted, cancellationToken);
         // The second — closed without a decision: the item goes back.
         if (ProductIdentityWorkflowFaultPolicy.IsClosedWithoutDecision(result))
             return await DecisionNotApplicableAsync(operation, claim, ClosedWithoutDecision, now, retryDelay, counted,
@@ -716,7 +747,9 @@ public sealed class ItemActivationWorkflowProcessor(
         // its list, same kind), never with a fresh version number.
         var item = await items.GetByIdAsync(operation.ItemId, cancellationToken);
         if (item is null) return await QuarantineAsync(claim, ItemErrors.NotFound, now, cancellationToken);
-        var held = await ItemReferenceEvidence.CheckAsync(references, item, cancellationToken);
+        var held = await ItemReferenceEvidence.CheckAsync(
+            new Diten.MdmService.Application.Contracts.ReferenceData.TenantBoundItemReferenceResolver(references,
+                operation.TenantId), item, cancellationToken, operation.ReferenceEvidence);
         switch (held.Verdict)
         {
             case ItemReferenceEvidence.Verdict.Wait:
@@ -726,6 +759,9 @@ public sealed class ItemActivationWorkflowProcessor(
                 return await DecisionNotApplicableAsync(operation, claim, held.Code!, now, retryDelay, counted,
                     cancellationToken);
             case ItemReferenceEvidence.Verdict.Stuck:
+                if (held.Code == ItemReferenceEvidence.ProviderConfigurationError)
+                    log.LogError("Item activation operation {OperationId} of tenant {TenantId}: the item list provider refused MDM's service identity or configuration ({ResultCode}); the approved item stays pending until this is fixed and the requester submits again.",
+                        operation.OperationId, operation.TenantId, held.Code);
                 return await QuarantineAsync(claim, held.Code, now, cancellationToken);
         }
         return await operations.AdvanceAsync(claim, new(ItemWorkflowCheckpoint.ApprovalValidated,
@@ -788,9 +824,13 @@ public sealed class ItemActivationWorkflowProcessor(
             ? ItemLifecycle.Target(ItemLifecycleStatus.PendingActivation, ItemTransition.ApproveActivation, kind)
             : ItemLifecycle.Target(ItemLifecycleStatus.PendingActivation, ItemTransition.RejectActivation, kind);
 
+    // S2 FIX1 item 3: the decision is recognised by what it wrote — this approval's binding and its terminal decision
+    // (instance, task, transition sequence …) with the target status — never by an exact version: an Active item may take
+    // a name / description edit between the decision's write and this check (the audit POST alone may take 100 s), and
+    // an exact version would then fail every replay and the reconciliation after it.
     private static bool ExactDecisionResult(Item? item, ItemWorkflowOperation operation,
         ProductIdentityWorkflowDecisionEvidence evidence) =>
-        item is not null && item.Version == operation.ExpectedItemVersion + 2
+        item is not null && item.Version >= operation.ExpectedItemVersion + 2
         && item.ActivationWorkflowBinding is { } binding && ExactOperationBinding(binding, operation)
         && binding.TerminalDecision is { } persisted && ExactTerminalDecision(persisted, evidence)
         && item.LifecycleStatus == DecisionTarget(operation.ActivationKind, evidence.Decision);

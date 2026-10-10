@@ -95,6 +95,8 @@ public class MdmHttpHost : IAsyncLifetime
     public FakeMarkets Markets { get; } = new();
     // MOD-0290-FU04 S1: the three item lists (MOD-0048-FU01 §4) and the tenant-wide stock answer (O-11).
     public FakeItemReferences ItemReferences { get; } = new();
+    public FakeItemListPlatform ItemListPlatform => _itemListPlatform ??= new(ItemReferences);
+    private FakeItemListPlatform? _itemListPlatform;
     public FakeStockAvailability Stock { get; } = new();
 
     /// <summary>
@@ -116,6 +118,9 @@ public class MdmHttpHost : IAsyncLifetime
 
     /// <summary>MOD-0290-FU04 S2: settings a derived host adds on top of these (none here).</summary>
     protected virtual IReadOnlyDictionary<string, string?> AdditionalSettings { get; } = new Dictionary<string, string?>();
+
+    // S2 FIX1: a derived host's own replacements, after the base ones.
+    protected virtual void ConfigureMoreServices(IServiceCollection services) { }
 
     public async Task InitializeAsync()
     {
@@ -146,7 +151,8 @@ public class MdmHttpHost : IAsyncLifetime
                 ["JwtSettings__Audience"] = Audience,
                 ["PlatformRegistration__BaseUrl"] = "",
                 // The real approval-time resolver client, pointed at the in-process Platform answer.
-                ["VerifiedGskuResolver__PlatformBaseAddress"] = "http://platform.test/",
+                // S2 FIX1 item 1: https — the item-list clients refuse plain http outside Development (the GSKU clients take both).
+                ["VerifiedGskuResolver__PlatformBaseAddress"] = "https://platform.test/",
                 ["VerifiedGskuResolver__Timeout"] = "00:00:02",
                 ["VerifiedGskuResolver__CredentialIdentifier"] = "http-host-resolver",
                 ["VerifiedGskuResolver__CredentialSecret"] = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)),
@@ -289,6 +295,11 @@ public class MdmHttpHost : IAsyncLifetime
                     // MOD-0290-FU04 S1: the item lists and the stock answer (production: both fail closed).
                     services.RemoveAll<IItemReferenceResolver>();
                     services.AddSingleton<IItemReferenceResolver>(ItemReferences);
+                    // S2 FIX1 item 1: the approval worker's item lists go through the REAL service-identity client; only
+                    // Platform's endpoint is faked (it answers from ItemReferences and checks the service token).
+                    services.AddHttpClient(nameof(Diten.MdmService.Infrastructure.ReferenceData.PlatformWorkflowItemReferenceResolverClient))
+                        .ConfigurePrimaryHttpMessageHandler(() => ItemListPlatform);
+                    ConfigureMoreServices(services);
                     services.RemoveAll<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient>();
                     services.AddSingleton<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient>(Stock);
                 });

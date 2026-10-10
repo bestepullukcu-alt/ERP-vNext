@@ -110,6 +110,37 @@ public sealed class ItemActivationUnitTests
             Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceResolveResult.Success([])).Verdict);
     }
 
+    // S2 FIX1 item 1 / T1: the provider refusing MDM itself (401 / 403, or its credential / identity / configuration code
+    // in any status) is a named configuration error — stuck, never a wait; only an outage (5xx) waits.
+    [Theory]
+    [InlineData(401, "REFERENCE_UNAUTHENTICATED")]
+    [InlineData(403, "REFERENCE_FORBIDDEN")]
+    [InlineData(401, "REFERENCE_SERVICE_IDENTITY_REFUSED")]
+    [InlineData(503, "REFERENCE_PROVIDER_CONFIGURATION_INVALID")]
+    [InlineData(503, "REFERENCE_UNAUTHENTICATED")]
+    public void Fix1_T1_A_refusal_of_MDM_itself_is_a_configuration_error_never_a_wait(int status, string code)
+    {
+        var item = Complete();
+        var outcome = ItemReferenceEvidence.Judge(item, ItemReferenceEvidence.Requests(item),
+            Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceResolveResult.Fail(status, code));
+
+        Assert.Equal((ItemReferenceEvidence.Verdict.Stuck, ItemReferenceEvidence.ProviderConfigurationError),
+            (outcome.Verdict, outcome.Code));
+    }
+
+    [Theory]
+    [InlineData(503, "REFERENCE_PROVIDER_UNAVAILABLE")]
+    [InlineData(503, "REFERENCE_PROVIDER_TIMEOUT")]
+    [InlineData(500, "REFERENCE_PROVIDER_UNAVAILABLE")]
+    public void Fix1_T1_An_outage_still_waits(int status, string code)
+    {
+        var item = Complete();
+        var outcome = ItemReferenceEvidence.Judge(item, ItemReferenceEvidence.Requests(item),
+            Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceResolveResult.Fail(status, code));
+
+        Assert.Equal((ItemReferenceEvidence.Verdict.Wait, ItemReferenceEvidence.ProviderUnavailable), (outcome.Verdict, outcome.Code));
+    }
+
     // ------------------------------------------------------------------------------------------ the shared binding part
 
     [Theory]

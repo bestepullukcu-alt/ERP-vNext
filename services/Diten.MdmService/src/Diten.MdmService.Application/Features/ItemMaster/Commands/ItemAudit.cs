@@ -29,6 +29,8 @@ public static class ItemAudit
     // FIX1-EK (CT decision, AUD-001 §3): the free-text reason never enters the audit record — only whether one was given.
     // The text stays on the item. A coded reason list (S5) brings "reasonCode" back as a list code.
     public const string ReasonProvided = "reasonProvided";
+    // S2 FIX1 item 6 (CT decision A): a reactivation's reason enters the record only as "given" and its length.
+    public const string ReasonLength = "reasonLength";
     public const string Replay = "replay";
     public const string Lifecycle = "lifecycle";
     public const string StockCheck = "stockCheck";
@@ -47,7 +49,7 @@ public static class ItemAudit
 
     public static readonly IReadOnlySet<string> MetadataKeys = new HashSet<string>(StringComparer.Ordinal)
     {
-        FirstFill, ReasonProvided, Replay, Lifecycle, StockCheck, AuditDetails.RefusalCodeKey,
+        FirstFill, ReasonProvided, ReasonLength, Replay, Lifecycle, StockCheck, AuditDetails.RefusalCodeKey,
         OperationId, ActivationKind, Decision, DecisionActorId, DecisionAt, ApprovalTaskId, TransitionSequence, OutcomeCode,
         MissingFields
     };

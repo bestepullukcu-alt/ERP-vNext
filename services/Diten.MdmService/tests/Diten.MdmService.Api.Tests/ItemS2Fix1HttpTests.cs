@@ -1,0 +1,629 @@
+using System.Collections.Concurrent;
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Diten.MdmService.Api.Audit;
+using Diten.MdmService.Api.Configuration;
+using Diten.MdmService.Api.ModuleRegistration;
+using Diten.MdmService.Api.Services.ItemMaster;
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts.Workflow;
+using Diten.MdmService.Application.Features.ItemMaster.Activation;
+using Diten.MdmService.Application.Features.ItemMaster.Commands;
+using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
+using Diten.MdmService.Persistence.Repositories;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using Xunit;
+
+namespace Diten.MdmService.Api.Tests;
+
+/// <summary>
+/// MOD-0290-FU04 S2 FIX1 (P-2026-10-10-FU04-S2-FIX1) — the review's blocker and required items over HTTP, the real store
+/// on the throwaway replica-set mongod. The approval WORKER reads the item lists through the REAL service-identity client
+/// (Platform's endpoint is faked on the wire: FakeItemListPlatform checks MDM's service token and the resolver headers).
+/// </summary>
+[Collection(ItemActivationHttpCollection.Name)]
+public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLifetime
+{
+    private static readonly string[] All =
+    [
+        "mdm.items.read", "mdm.items.create", "mdm.items.update", "mdm.items.submit", "mdm.items.withdraw",
+        "mdm.items.deactivate", "mdm.items.retire", "mdm.product-identity.lifecycle-operations.recover"
+    ];
+
+    private const string Items = "api/mdm/items";
+    private readonly Guid _tenant = Guid.NewGuid();
+    private readonly Guid _maker = Guid.NewGuid();
+    private readonly Guid _approver = Guid.NewGuid();
+
+    public Task InitializeAsync()
+    {
+        host.ItemReferences.Reset();
+        host.ItemListPlatform.Reset();
+        host.ItemListPlatform.Bearers.Clear();
+        host.AfterDecisionWrite = null;
+        host.Engine.LookupFailure = null;
+        host.Engine.NextStartFails = null;
+        host.Engine.NextStartFailure = null;
+        host.Engine.NextLookupFailure = null;
+        return Task.CompletedTask;
+    }
+
+    public Task DisposeAsync()
+    {
+        host.ItemListPlatform.Reset();
+        host.AfterDecisionWrite = null;
+        host.Audit.Inner = null;
+        return Task.CompletedTask;
+    }
+
+    // ------------------------------------------------------------------------------------------ item 1 (blocker)
+
+    // The worker has no HttpContext: the approval's reference check goes to Platform with MDM's SERVICE token for the
+    // tenant (the GSKU workflow resolver's pattern) — and the approved item becomes Active.
+    [Fact]
+    public async Task Fix1_Item1_The_worker_reads_the_lists_with_MDMs_service_identity_and_the_approved_item_becomes_Active()
+    {
+        var id = await PendingAsync("Microcrystalline cellulose");
+        host.ItemListPlatform.Bearers.Clear();
+
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+
+        Assert.Equal(ItemLifecycleStatus.Active, (await ItemAsync(id)).LifecycleStatus);
+        Assert.Equal(ItemWorkflowCheckpoint.Completed, (await OperationAsync(id)).Checkpoint);
+        Assert.NotEmpty(host.ItemListPlatform.Bearers);
+        Assert.All(host.ItemListPlatform.Bearers, bearer => Assert.Equal(FakeItemListPlatform.ServiceToken, bearer));
+    }
+
+    // Platform refuses MDM's service identity: a named CONFIGURATION error — stuck (needing_a_person), never a wait — and
+    // the approved item is not Active (fail closed). A 401 is retried once with a refreshed identity first.
+    [Theory]
+    [InlineData(401, 2)]
+    [InlineData(403, 1)]
+    public async Task Fix1_Item1_A_refused_service_identity_is_a_named_configuration_error_and_the_item_is_not_Active(
+        int refusal, int calls)
+    {
+        var discovery = new ItemWorkflowTenantPartitionDiscoveryRepository(host.Database);
+        var personBefore = await discovery.CountNeedingAPersonAsync(host.Clock.GetUtcNow().UtcTicks);
+        var id = await PendingAsync("Hypromellose " + refusal);
+        host.ItemListPlatform.RefuseServiceToken = refusal;
+        host.ItemListPlatform.Bearers.Clear();
+
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+
+        var operation = await OperationAsync(id);
+        Assert.Equal(ItemWorkflowCheckpoint.ManualReconciliationRequired, operation.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired, operation.RecoveryDisposition);
+        Assert.Equal(ItemReferenceEvidence.ProviderConfigurationError, operation.LastFailureCode);
+        Assert.Equal(ItemLifecycleStatus.PendingActivation, (await ItemAsync(id)).LifecycleStatus);
+        Assert.Equal(calls, host.ItemListPlatform.Bearers.Count);
+        Assert.Equal(personBefore + 1, await discovery.CountNeedingAPersonAsync(host.Clock.GetUtcNow().UtcTicks));
+    }
+
+    // ------------------------------------------------------------------------------------------ item 2
+
+    // The approval on and no worker carrying it: counted once it has been untouched past the threshold; a running worker
+    // touches it (an open approval is asked again) and it is no longer counted.
+    [Fact]
+    public async Task Fix1_Item2_An_approval_nobody_processes_is_counted_and_a_running_worker_clears_it()
+    {
+        var id = await PendingAsync("Colloidal silica");
+        var after = new ItemActivationGaugeOptions().UnprocessedAfter;
+        Assert.Equal(TimeSpan.FromMinutes(60), after);
+
+        using (host.Clock.Shift(after + TimeSpan.FromMinutes(1)))
+        {
+            Assert.Equal(1, await UnprocessedOfThisTenantAsync(after));
+            await CycleAsync();
+            Assert.Equal(0, await UnprocessedOfThisTenantAsync(after));
+        }
+        Assert.Equal(ItemWorkflowCheckpoint.AwaitingDecision, (await OperationAsync(id)).Checkpoint);
+    }
+
+    [Theory]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, false)]
+    public async Task Fix1_Item2_Approval_on_with_this_instances_worker_off_is_warned_at_start_never_refused(
+        bool approval, bool worker, bool warned)
+    {
+        var logs = new Recording();
+        var warning = new ItemActivationWorkerOffWarning(
+            Options.Create(new ItemActivationWorkflowOptions { Enabled = approval }),
+            Options.Create(new ItemActivationWorkflowWorkerOptions { Enabled = worker }),
+            logs);
+
+        await warning.StartAsync(CancellationToken.None);
+
+        Assert.Equal(warned, logs.Entries.Any(x => x.Level == LogLevel.Warning && x.Message == ItemActivationWorkerOffWarning.Message));
+        Assert.Contains(typeof(ItemActivationWorkerOffWarning), host.RegisteredHostedServices);
+    }
+
+    // ------------------------------------------------------------------------------------------ item 3
+
+    // An Active item takes a name edit between the decision's write and the processor's check of it: the approval is
+    // still recognised by what it wrote (binding + terminal decision + status), and completes.
+    [Fact]
+    public async Task Fix1_Item3_A_name_edit_between_the_decision_write_and_its_check_still_completes()
+    {
+        var id = await PendingAsync("Mannitol");
+        host.AfterDecisionWrite = async (_, written) =>
+        {
+            host.AfterDecisionWrite = null;
+            await EditNameAsync(id, 2, "Mannitol (renamed)");
+            return written;
+        };
+
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+
+        var item = await ItemAsync(id);
+        Assert.Equal((ItemLifecycleStatus.Active, 3, "Mannitol (renamed)"), (item.LifecycleStatus, item.Version, item.Name));
+        Assert.Equal(ItemWorkflowCheckpoint.Completed, (await OperationAsync(id)).Checkpoint);
+    }
+
+    // The decision was written, its answer lost, then the item was renamed: the replay is recognised by the decision it
+    // wrote (not an exact version) — the operation completes instead of retrying into a permanent conflict.
+    [Fact]
+    public async Task Fix1_Item3_A_replayed_decision_is_recognised_after_a_name_edit()
+    {
+        var id = await PendingAsync("Sorbitan oleate");
+        host.AfterDecisionWrite = async (_, _) =>
+        {
+            host.AfterDecisionWrite = null;
+            await EditNameAsync(id, 2, "Sorbitan oleate (renamed)");
+            return new ItemWorkflowWriteResult(false, false, null, ProductIdentityStore.Unavailable);
+        };
+
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        Assert.Equal(ItemWorkflowCheckpoint.ApprovalValidated, (await OperationAsync(id)).Checkpoint);
+        using (host.Clock.Shift(TimeSpan.FromMinutes(1))) await CycleAsync();
+
+        var item = await ItemAsync(id);
+        Assert.Equal((ItemLifecycleStatus.Active, 3), (item.LifecycleStatus, item.Version));
+        Assert.Equal(ItemWorkflowCheckpoint.Completed, (await OperationAsync(id)).Checkpoint);
+    }
+
+    // ------------------------------------------------------------------------------------------ T4: the gate, twice
+
+    // The item moved outside MDM's rules between the approval's validation and its write (lot control cleared): the
+    // gate is checked again as the decision is applied — not applied, the item goes back with the named code.
+    [Fact]
+    public async Task Fix1_T4_The_activation_gate_is_checked_again_when_the_decision_is_applied()
+    {
+        var id = await PendingAsync("Calcium phosphate");
+        host.ItemListPlatform.OnNextResolve = () => RawItems().UpdateOneAsync(Filter(id),
+            new BsonDocument("$set", new BsonDocument(nameof(Item.LotControlled), BsonNull.Value)));
+
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+
+        var operation = await OperationAsync(id);
+        Assert.Equal(ItemWorkflowCheckpoint.DecisionNotApplicable, operation.Checkpoint);
+        Assert.Equal(ItemActivationGate.StockFieldsRequired, operation.LastFailureCode);
+        Assert.Equal(ItemLifecycleStatus.Draft, (await ItemAsync(id)).LifecycleStatus);
+    }
+
+    // ------------------------------------------------------------------------------------------ item 5
+
+    // The start's answer was lost and the lookup failed once: the WORKER learns the start and puts the item pending — an
+    // audited move (path b), the system's act.
+    [Fact]
+    public async Task Fix1_Item5_The_item_the_worker_puts_pending_is_audited()
+    {
+        var id = await CreatedAsync("Stearic acid");
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "FAKE_ENGINE_TIMEOUT", true);
+        host.Engine.NextLookupFailure = (ProductIdentityWorkflowTransportOutcome.Retryable, "FAKE_LOOKUP_RETRY");
+
+        var submit = await PostAsync(id, "submit", Lifecycle(0));
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, submit.StatusCode);
+        Assert.Equal(ItemLifecycleStatus.Draft, (await ItemAsync(id)).LifecycleStatus);
+        using (host.Clock.Shift(TimeSpan.FromMinutes(1))) await CycleAsync();
+
+        Assert.Equal(ItemLifecycleStatus.PendingActivation, (await ItemAsync(id)).LifecycleStatus);
+        var record = Assert.Single(Trail(id, nameof(ApplyItemActivationDecisionCommand)));
+        Assert.Equal(1, record.Outcome);
+        Assert.True(record.SystemActor);
+        Assert.Equal("Pending", record.Metadata![ItemAudit.Decision]);
+        Assert.Equal(("Draft", "PendingActivation"),
+            ((string?)record.BeforeState![nameof(Item.LifecycleStatus)], (string?)record.AfterState![nameof(Item.LifecycleStatus)]));
+    }
+
+    // The engine answered the maker's cancel but the request ended before the item moved: the WORKER finishes the
+    // withdrawal — an audited move, the system's act, the item back to Draft.
+    [Fact]
+    public async Task Fix1_Item5_A_withdrawal_the_worker_finishes_is_audited()
+    {
+        var id = await PendingAsync("Glyceryl behenate");
+        var operation = await OperationAsync(id);
+        var instance = host.Engine.Open("Item", id.ToString("D"));
+        var commandId = Guid.NewGuid();
+        // The state a withdrawal reaches when the engine's cancel was answered (WithdrawalObserved), its item move not made.
+        await RawOperations().UpdateOneAsync(x => x.Id == operation.Id, Builders<ItemWorkflowOperation>.Update
+            .Set(x => x.Checkpoint, ItemWorkflowCheckpoint.WithdrawalObserved)
+            .Set(x => x.WithdrawalCommandId, commandId)
+            .Set(x => x.WithdrawalFingerprint, new string('a', 64))
+            .Set(x => x.WithdrawalRequesterSubjectId, _maker)
+            .Set(x => x.WithdrawalExpectedItemVersion, 1)
+            .Set(x => x.WithdrawalReasonCode, ItemActivationWorkflowProcessor.WithdrawalReasonCode)
+            .Set(x => x.WithdrawalExpectedWorkflowInstanceVersion, 1)
+            .Set(x => x.WithdrawalExpectedApprovalTaskVersion, 1)
+            .Set(x => x.WithdrawalTransitionLogId, Guid.NewGuid())
+            .Set(x => x.WithdrawalObservedAtUtcTicksV1, host.Clock.GetUtcNow().UtcTicks)
+            .Set(x => x.WithdrawalTransitionSequence, instance.Sequence + 1)
+            .Set(x => x.WithdrawalResultWorkflowInstanceVersion, 2)
+            .Set(x => x.WithdrawalResultApprovalTaskVersion, 2)
+            .Set(x => x.WithdrawalTaskStatus, "Cancelled")
+            .Set(x => x.WithdrawalInstanceStatus, "Cancelled")
+            .Set(x => x.WithdrawalObjectRef, operation.ObjectRef)
+            .Set(x => x.NextAttemptAtUtcTicksV1, null)
+            .Set(x => x.LeaseOwner, null));
+
+        await CycleAsync();
+
+        Assert.Equal(ItemLifecycleStatus.Draft, (await ItemAsync(id)).LifecycleStatus);
+        var record = Assert.Single(Trail(id, nameof(ApplyItemActivationDecisionCommand)));
+        Assert.Equal(1, record.Outcome);
+        Assert.True(record.SystemActor);
+        Assert.Equal("Withdrawn", record.Metadata![ItemAudit.Decision]);
+    }
+
+    // The decision's write is refused attempt after attempt (the item moved under it): ONE failed record for the
+    // operation (and one per change of code) — never one per retry.
+    [Fact]
+    public async Task Fix1_Item5_A_decision_refused_again_and_again_is_recorded_once()
+    {
+        var id = await PendingAsync("Sodium starch glycolate");
+        await RawItems().UpdateOneAsync(Filter(id), new BsonDocument("$inc", new BsonDocument(nameof(Item.Version), 5)));
+
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        for (var attempt = 1; attempt <= 3; attempt++)
+            using (host.Clock.Shift(TimeSpan.FromMinutes(attempt * 20))) await CycleAsync();
+
+        Assert.True((await OperationAsync(id)).FailedAttemptCount >= 3);
+        Assert.Single(Trail(id, nameof(ApplyItemActivationDecisionCommand)), record => record.Outcome == 2);
+    }
+
+    // The approver's decision applied during the MAKER's replay (the same submit, a retry due) is the system's act — the
+    // record never names the maker as its actor; who decided travels in its metadata.
+    [Fact]
+    public async Task Fix1_Item5_A_decision_applied_in_the_makers_replay_is_the_systems_act_not_the_makers()
+    {
+        var wire = CaptureTheProductionForwarder();
+        var id = await PendingAsync("Polysorbate 80");
+        await RawItems().UpdateOneAsync(Filter(id), new BsonDocument("$inc", new BsonDocument(nameof(Item.Version), 5)));
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        Assert.Equal(ItemWorkflowCheckpoint.ApprovalValidated, (await OperationAsync(id)).Checkpoint);
+        await RawItems().UpdateOneAsync(Filter(id), new BsonDocument("$inc", new BsonDocument(nameof(Item.Version), -5)));
+
+        using (host.Clock.Shift(TimeSpan.FromMinutes(1)))
+        {
+            var replay = await PostAsync(id, "submit", Lifecycle(0));
+            Assert.True(replay.IsSuccessStatusCode, await replay.Content.ReadAsStringAsync());
+        }
+
+        Assert.Equal(ItemLifecycleStatus.Active, (await ItemAsync(id)).LifecycleStatus);
+        var record = Assert.Single(Trail(id, nameof(ApplyItemActivationDecisionCommand)), x => x.Outcome == 1);
+        Assert.True(record.SystemActor);
+        Assert.Equal(_approver.ToString("D"), record.Metadata![ItemAudit.DecisionActorId]);
+        var body = wire.Select(text => JsonDocument.Parse(text).RootElement)
+            .Last(x => x.GetProperty("requestType").GetString() == nameof(ApplyItemActivationDecisionCommand)
+                       && x.GetProperty("outcome").GetInt32() == 1);
+        Assert.Equal(4, body.GetProperty("actorType").GetInt32());
+        Assert.Equal(JsonValueKind.Null, body.GetProperty("actorId").ValueKind);
+    }
+
+    // ------------------------------------------------------------------------------------------ item 6
+
+    // CT decision A: the reactivation's reason is kept with its request (once, in its fingerprint: another reason under
+    // the same request is 409 IDEMPOTENCY); the item's DETAIL shows it while the reactivation is pending — never a list,
+    // never another tenant, hidden once decided; the audit record carries only "given" and its length.
+    [Fact]
+    public async Task Fix1_Item6_The_reactivation_reason_is_kept_shown_in_the_detail_only_while_pending_and_never_audited()
+    {
+        const string reason = "Supplier requalified";
+        var id = await DeactivatedAsync("Lactitol");
+        var version = (await ItemAsync(id)).Version;
+
+        var requested = await PostAsync(id, "reactivation-requests", Lifecycle(version, reason));
+
+        Assert.True(requested.StatusCode == HttpStatusCode.Accepted, await requested.Content.ReadAsStringAsync());
+        Assert.Equal(reason, (await OperationAsync(id)).RequestReason);
+        Assert.Equal(reason, await DetailReasonAsync(Client(), id));
+        var list = await Envelope.ReadAsync(await Client().GetAsync($"{Items}?pageSize=100"));
+        Assert.DoesNotContain(reason, list.GetRawText(), StringComparison.Ordinal);
+        var stranger = host.Client(host.Token(Guid.NewGuid(), Guid.NewGuid(), All));
+        Assert.Equal(HttpStatusCode.NotFound, (await stranger.GetAsync($"{Items}/{id}")).StatusCode);
+        var noRead = host.Client(host.Token(_tenant, _maker, "mdm.items.create"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await noRead.GetAsync($"{Items}/{id}")).StatusCode);
+
+        var other = await PostAsync(id, "reactivation-requests", Lifecycle(version, "Another reason"));
+        Assert.Equal(HttpStatusCode.Conflict, other.StatusCode);
+        Assert.Equal(ItemActivationWorkflowProcessor.IdempotencyConflict, await FirstErrorAsync(other));
+
+        var record = Trail(id, nameof(RequestItemReactivationCommand)).First(x => x.Outcome == 1);
+        Assert.Equal(true, record.Metadata![ItemAudit.ReasonProvided]);
+        Assert.Equal(reason.Length, record.Metadata[ItemAudit.ReasonLength]);
+        Assert.DoesNotContain(host.Audit.Forwarded, x => JsonSerializer.Serialize(x).Contains(reason, StringComparison.Ordinal));
+
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        Assert.Equal(ItemLifecycleStatus.Active, (await ItemAsync(id)).LifecycleStatus);
+        Assert.Null(await DetailReasonAsync(Client(), id));
+    }
+
+    [Fact]
+    public async Task Fix1_Item6_A_reason_with_a_control_character_or_over_the_limit_is_refused()
+    {
+        var id = await DeactivatedAsync("Maltitol");
+        var version = (await ItemAsync(id)).Version;
+
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await PostAsync(id, "reactivation-requests", Lifecycle(version, "line\nbreak"))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await PostAsync(id, "reactivation-requests", Lifecycle(version, new string('r', 501)))).StatusCode);
+        Assert.Equal(ItemLifecycleStatus.Deactivated, (await ItemAsync(id)).LifecycleStatus);
+    }
+
+    private static async Task<string?> DetailReasonAsync(HttpClient client, Guid id)
+    {
+        var detail = await Envelope.ReadAsync(await client.GetAsync($"{Items}/{id}"));
+        return detail.GetProperty("data").GetProperty("pendingReactivationReason").GetString();
+    }
+
+    // ------------------------------------------------------------------------------------------ minor
+
+    // An S1 row never stored its storage condition's kind: the submit freezes the kind the list gives, and the approval is
+    // held to it — the list changing that kind is a named refusal, not an unseen pass.
+    [Fact]
+    public async Task Fix1_Minor_An_S1_item_without_stored_kinds_is_held_to_the_kind_frozen_at_the_submit()
+    {
+        var id = await CreatedAsync("Benzyl alcohol");
+        await RawItems().UpdateOneAsync(Filter(id), new BsonDocument("$unset",
+            new BsonDocument(nameof(Item.StorageConditionKinds), "")));
+        Assert.Equal(HttpStatusCode.Accepted, (await PostAsync(id, "submit", Lifecycle(0))).StatusCode);
+        var frozen = Assert.Single((await OperationAsync(id)).ReferenceEvidence!, x => x.ValueCode == "AMBIENT_15_25");
+        Assert.Equal("TEMPERATURE", frozen.Kind);
+
+        host.ItemReferences.KindOverride["AMBIENT_15_25"] = "PROTECTION";
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+
+        var operation = await OperationAsync(id);
+        Assert.Equal(ItemWorkflowCheckpoint.DecisionNotApplicable, operation.Checkpoint);
+        Assert.Equal(ItemReferenceEvidence.ValueChanged, operation.LastFailureCode);
+    }
+
+    // An approval still open is not a failure: asked again and again, it never moves toward the retry limit.
+    [Fact]
+    public async Task Fix1_Minor_An_open_approval_never_counts_toward_the_retry_limit()
+    {
+        var id = await PendingAsync("Ethylcellulose");
+
+        for (var poll = 1; poll <= 4; poll++)
+            using (host.Clock.Shift(TimeSpan.FromMinutes(poll * 20))) await CycleAsync();
+
+        var operation = await OperationAsync(id);
+        Assert.Equal(ItemWorkflowCheckpoint.AwaitingDecision, operation.Checkpoint);
+        Assert.Equal(0, operation.FailedAttemptCount);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+        Assert.NotEqual(ItemActivationWorkflowProcessor.RetryLimitReached, operation.LastFailureCode);
+    }
+
+    [Theory]
+    [InlineData(14)]
+    [InlineData(525_601)]
+    [InlineData(int.MaxValue)]
+    public async Task Fix1_Minor_The_orphan_repair_age_outside_its_bounds_is_400_by_name(int minutes)
+    {
+        var repair = await Client().PostAsync($"{Items}/operator/orphan-code-repairs?limit=10&minimumAgeMinutes={minutes}", null);
+
+        Assert.Equal(HttpStatusCode.BadRequest, repair.StatusCode);
+        Assert.Equal("ITEM_ORPHAN_CODE_REPAIR_INVALID", await FirstErrorAsync(repair));
+    }
+
+    // The store holds maker ≠ approver by name (the argument guard) AND against the persisted maker in the write itself:
+    // a caller that names the wrong maker cannot write the maker's own decision.
+    [Fact]
+    public async Task Fix1_Minor_The_store_refuses_the_makers_own_decision_by_name_and_against_the_persisted_maker()
+    {
+        var id = await PendingAsync("Shellac");
+        var operation = await OperationAsync(id);
+        var store = new ItemWorkflowOperationRepository(host.Database, new Tenant(_tenant));
+        var claim = new ItemWorkflowClaim(_tenant, operation.OperationId, id, operation.OperationFingerprint, "store-test", 1,
+            ItemWorkflowCheckpoint.ApprovalValidated, host.Clock.GetUtcNow().AddMinutes(1).UtcTicks);
+
+        var named = await store.ApplyDecisionAsync(claim, operation, Decision(operation, _maker), host.Clock.GetUtcNow().UtcTicks);
+        Assert.Equal("ITEM_ACTIVATION_DECISION_CONTRACT_INVALID", named.ErrorCode);
+
+        operation.MakerSubjectId = Guid.NewGuid(); // the caller names the wrong maker
+        var slipped = await store.ApplyDecisionAsync(claim, operation, Decision(operation, _maker), host.Clock.GetUtcNow().UtcTicks);
+        Assert.False(slipped.Succeeded);
+        var item = await ItemAsync(id);
+        Assert.Equal(ItemLifecycleStatus.PendingActivation, item.LifecycleStatus);
+        Assert.Null(item.ActivationWorkflowBinding!.TerminalDecision);
+    }
+
+    // Only the persisted maker withdraws: the store refuses another requester by name.
+    [Fact]
+    public async Task Fix1_Minor_The_store_refuses_a_withdrawal_by_anyone_but_the_maker_by_name()
+    {
+        var id = await PendingAsync("Carnauba wax");
+        var operation = await OperationAsync(id);
+        operation.WithdrawalCommandId = Guid.NewGuid();
+        operation.WithdrawalExpectedItemVersion = 1;
+        var store = new ItemWorkflowOperationRepository(host.Database, new Tenant(_tenant));
+        var claim = new ItemWorkflowClaim(_tenant, operation.OperationId, id, operation.OperationFingerprint, "store-test", 1,
+            ItemWorkflowCheckpoint.WithdrawalObserved, host.Clock.GetUtcNow().AddMinutes(1).UtcTicks);
+        var evidence = new Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence
+        {
+            WorkflowInstanceId = operation.WorkflowInstanceId!.Value, ApprovalTaskId = operation.ApprovalTaskId!.Value,
+            RequesterSubjectId = Guid.NewGuid(), IdempotencyKey = operation.WithdrawalCommandId.Value.ToString("D"),
+            TaskStatus = "Cancelled", InstanceStatus = "Cancelled", ReasonCode = ItemActivationWorkflowProcessor.WithdrawalReasonCode
+        };
+
+        var refused = await store.ApplyWithdrawalAsync(claim, operation, evidence, host.Clock.GetUtcNow().UtcTicks);
+
+        Assert.Equal("ITEM_ACTIVATION_WITHDRAWAL_CONTRACT_INVALID", refused.ErrorCode);
+        Assert.Equal(ItemLifecycleStatus.PendingActivation, (await ItemAsync(id)).LifecycleStatus);
+    }
+
+    // ------------------------------------------------------------------------------------------ helpers
+
+    private ProductIdentityWorkflowDecisionEvidence Decision(ItemWorkflowOperation operation, Guid actor) => new()
+    {
+        Decision = ProductIdentityDecisionKind.Approved,
+        WorkflowInstanceId = operation.WorkflowInstanceId!.Value,
+        ApprovalTaskId = operation.ApprovalTaskId!.Value,
+        WorkflowTemplateId = operation.WorkflowTemplateId!.Value,
+        WorkflowTemplateVersionId = operation.WorkflowTemplateVersionId!.Value,
+        ObjectType = operation.ObjectType,
+        ObjectId = operation.ItemId,
+        ObjectRef = operation.ObjectRef,
+        DecisionActorSubjectId = actor,
+        DecisionAtUtc = host.Clock.GetUtcNow(),
+        TransitionSequence = 9,
+        TaskStatus = "Approved",
+        InstanceStatus = "Completed"
+    };
+
+    private async Task<long> UnprocessedOfThisTenantAsync(TimeSpan after) =>
+        await RawOperations().CountDocumentsAsync(
+            ItemWorkflowTenantPartitionDiscoveryRepository.Unprocessed((host.Clock.GetUtcNow() - after).UtcTicks)
+            & Builders<ItemWorkflowOperation>.Filter.Eq(x => x.TenantId, _tenant));
+
+    private async Task EditNameAsync(Guid id, int version, string name)
+    {
+        var body = Fields(name);
+        body["expectedVersion"] = version;
+        var edit = await Client().PutAsJsonAsync($"{Items}/{id}", body);
+        Assert.True(edit.IsSuccessStatusCode, await edit.Content.ReadAsStringAsync());
+    }
+
+    private ConcurrentQueue<string> CaptureTheProductionForwarder()
+    {
+        var wire = new ConcurrentQueue<string>();
+        host.Audit.Inner = new PlatformAuditForwarder(new CapturingFactory(wire),
+            Options.Create(new PlatformRegistrationOptions { BaseUrl = "http://platform.test", InternalApiKey = "test-only" }),
+            host.Factory.Services.GetRequiredService<IHttpContextAccessor>(), NullLogger<PlatformAuditForwarder>.Instance);
+        return wire;
+    }
+
+    private HttpClient Client() => host.Client(host.Token(_tenant, _maker, All));
+
+    private Task CycleAsync() => host.RunAsync<ItemActivationWorkflowRecoveryRunner>(runner => runner.RunCycleAsync());
+
+    private Task<HttpResponseMessage> PostAsync(Guid id, string door, object body) =>
+        Client().PostAsJsonAsync($"{Items}/{id}/{door}", body);
+
+    private async Task<Guid> CreatedAsync(string name)
+    {
+        var body = Fields(name);
+        body["idempotencyKey"] = "ITEM-" + Guid.NewGuid().ToString("N");
+        var response = await Client().PostAsJsonAsync(Items, body);
+        Assert.True(response.StatusCode == HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
+        return (await Envelope.ReadAsync(response)).GetProperty("data").GetGuid();
+    }
+
+    private async Task<Guid> PendingAsync(string name)
+    {
+        var id = await CreatedAsync(name);
+        var submit = await PostAsync(id, "submit", Lifecycle(0));
+        Assert.True(submit.StatusCode == HttpStatusCode.Accepted, await submit.Content.ReadAsStringAsync());
+        return id;
+    }
+
+    private async Task<Guid> DeactivatedAsync(string name)
+    {
+        var id = await PendingAsync(name);
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        var version = (await ItemAsync(id)).Version;
+        var deactivated = await PostAsync(id, "deactivate", Lifecycle(version, "not used"));
+        Assert.True(deactivated.StatusCode == HttpStatusCode.OK, await deactivated.Content.ReadAsStringAsync());
+        return id;
+    }
+
+    private static Dictionary<string, object?> Fields(string name) => new()
+    {
+        ["name"] = name,
+        ["description"] = null,
+        ["materialType"] = "RAW_MATERIAL",
+        ["baseUomCode"] = "KGM",
+        ["uomConversions"] = new object[] { new { fromUom = "KGM", toUom = "GRM", numerator = "1000", denominator = "1" } },
+        ["storageConditionCodes"] = new[] { "AMBIENT_15_25" },
+        ["lotControlled"] = true,
+        ["stockable"] = true,
+        ["shelfLifeDays"] = 730,
+        ["retestDays"] = null,
+        ["minRemainingShelfLifeDays"] = null
+    };
+
+    private static object Lifecycle(int version, string? reason = null) => new { expectedVersion = version, reason };
+
+    private IMongoCollection<BsonDocument> RawItems() => host.Database.GetCollection<BsonDocument>(ItemRepository.CollectionName);
+
+    private IMongoCollection<ItemWorkflowOperation> RawOperations() =>
+        host.Database.GetCollection<ItemWorkflowOperation>(ItemWorkflowOperationRepository.CollectionName);
+
+    private static FilterDefinition<BsonDocument> Filter(Guid id) =>
+        new BsonDocument("_id", new BsonBinaryData(id, GuidRepresentation.Standard));
+
+    private Task<Item> ItemAsync(Guid id) =>
+        host.Database.GetCollection<Item>(ItemRepository.CollectionName).Find(x => x.Id == id).SingleAsync();
+
+    private Task<ItemWorkflowOperation> OperationAsync(Guid itemId) =>
+        RawOperations().Find(x => x.TenantId == _tenant && x.ItemId == itemId).SortByDescending(x => x.CreatedAtUtcTicksV1)
+            .FirstAsync();
+
+    private IEnumerable<Diten.MdmService.Application.Contracts.Audit.AuditForwardRequest> Trail(Guid id, string type) =>
+        host.Audit.Forwarded.Where(x => x.EntityId == id && x.RequestType == type);
+
+    private static async Task<string?> FirstErrorAsync(HttpResponseMessage response) =>
+        Envelope.FirstError(await Envelope.ReadAsync(response));
+
+    private sealed class Tenant(Guid id) : ITenantContext
+    {
+        public Guid TenantId { get; private set; } = id;
+        public bool IsResolved => TenantId != Guid.Empty;
+        public void SetTenant(Guid tenantId) => TenantId = tenantId;
+    }
+
+    private sealed class Recording : ILogger<ItemActivationWorkerOffWarning>
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter) => Entries.Add((logLevel, formatter(state, exception)));
+    }
+
+    private sealed class CapturingFactory(ConcurrentQueue<string> wire) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(new Capturing(wire));
+    }
+
+    private sealed class Capturing(ConcurrentQueue<string> wire) : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            wire.Enqueue(await request.Content!.ReadAsStringAsync(ct));
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
+}

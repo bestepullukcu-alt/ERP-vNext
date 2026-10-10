@@ -11,6 +11,8 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Persistence.Repositories;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -40,6 +42,8 @@ public sealed class ItemS2HttpTests(ItemActivationHttpHost host) : IAsyncLifetim
     public Task InitializeAsync()
     {
         host.ItemReferences.Reset();
+        host.ItemListPlatform.Reset();
+        host.AfterDecisionWrite = null;
         host.Engine.LookupFailure = null;
         host.Engine.NextStartFails = null;
         host.Engine.NextStartFailure = null;
@@ -669,6 +673,45 @@ public sealed class ItemActivationHttpHost : MdmHttpHost
         ["ItemActivationWorkflowWorker__RetryDelaySeconds"] = "1",
         ["ItemActivationWorkflowWorker__StartSettleSeconds"] = "2"
     };
+
+    /// <summary>
+    /// S2 FIX1 item 3: runs right after the decision's item write, before the processor reads its answer — a test puts an
+    /// edit there (and may replace the answer, e.g. a lost one). Null: the real writer alone.
+    /// </summary>
+    public Func<ItemWorkflowOperation, ItemWorkflowWriteResult, Task<ItemWorkflowWriteResult>>? AfterDecisionWrite { get; set; }
+
+    protected override void ConfigureMoreServices(IServiceCollection services)
+    {
+        services.RemoveAll<IItemActivationDecisionWriter>();
+        services.AddScoped<IItemActivationDecisionWriter>(provider => new HookedDecisionWriter(
+            new MediatorItemActivationDecisionWriter(provider.GetRequiredService<MediatR.ISender>()), this));
+    }
+
+    private sealed class HookedDecisionWriter(IItemActivationDecisionWriter real, ItemActivationHttpHost host)
+        : IItemActivationDecisionWriter
+    {
+        public async Task<ItemWorkflowWriteResult> ApplyDecisionAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
+            Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowDecisionEvidence evidence, long updatedAtUtcTicks,
+            CancellationToken cancellationToken)
+        {
+            var written = await real.ApplyDecisionAsync(claim, operation, evidence, updatedAtUtcTicks, cancellationToken);
+            return host.AfterDecisionWrite is { } hook ? await hook(operation, written) : written;
+        }
+
+        public Task<ItemWorkflowWriteResult> ApplyNotApplicableAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
+            string reasonCode, long updatedAtUtcTicks, CancellationToken cancellationToken) =>
+            real.ApplyNotApplicableAsync(claim, operation, reasonCode, updatedAtUtcTicks, cancellationToken);
+
+        public Task<ItemWorkflowWriteResult> ApplyLocalPendingAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
+            Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowBinding binding, long updatedAtUtcTicks,
+            CancellationToken cancellationToken) =>
+            real.ApplyLocalPendingAsync(claim, operation, binding, updatedAtUtcTicks, cancellationToken);
+
+        public Task<ItemWorkflowWriteResult> ApplyWithdrawalAsync(ItemWorkflowClaim claim, ItemWorkflowOperation operation,
+            Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence evidence, long updatedAtUtcTicks,
+            CancellationToken cancellationToken) =>
+            real.ApplyWithdrawalAsync(claim, operation, evidence, updatedAtUtcTicks, cancellationToken);
+    }
 }
 
 [CollectionDefinition(Name, DisableParallelization = true)]

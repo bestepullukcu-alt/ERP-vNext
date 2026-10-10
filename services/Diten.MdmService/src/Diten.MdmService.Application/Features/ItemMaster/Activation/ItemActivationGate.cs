@@ -84,6 +84,10 @@ public static class ItemReferenceEvidence
     public const string ValueChanged = "ITEM_REFERENCE_VALUE_CHANGED";
     public const string ProviderUnavailable = "ITEM_REFERENCE_LIST_UNAVAILABLE";
     public const string ContractConflict = "ITEM_REFERENCE_CONTRACT_CONFLICT";
+    // S2 FIX1 item 1: the list provider refused MDM itself (its service identity, credential or configuration). Waiting
+    // never ends it — stuck, counted by needing_a_person, the item stays pending (fail closed) until a person fixes it and
+    // the requester's same submit reads again.
+    public const string ProviderConfigurationError = "ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR";
 
     public enum Verdict { Held, Wait, NotApplicable, Stuck }
 
@@ -107,7 +111,13 @@ public static class ItemReferenceEvidence
         return requests.Where(request => !string.IsNullOrWhiteSpace(request.ValueCode)).Distinct().ToList();
     }
 
-    public static async Task<Outcome> CheckAsync(
+    /// <summary>
+    /// S2 FIX1 (minor) — at the submit: what the list answers now for every code the item holds, frozen for the approval
+    /// (code + kind + catalog version). An S1 row that never stored a storage condition's kind gets it from this answer. A
+    /// list that no longer holds a code, or that gives a storage condition another kind than the item stored, refuses the
+    /// submit by name (the maker saves the item again); a list that cannot answer refuses it as an outage (fail closed).
+    /// </summary>
+    public static async Task<(Outcome? Refusal, List<ItemReferenceEvidenceEntry>? Evidence)> FreezeAsync(
         Diten.MdmService.Application.Contracts.ReferenceData.IItemReferenceResolver resolver, Item item,
         CancellationToken cancellationToken)
     {
@@ -115,14 +125,48 @@ public static class ItemReferenceEvidence
         Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceResolveResult? result;
         try { result = await resolver.ResolveLatestAsync(requests, cancellationToken); }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
-        catch (Exception) { return new(Verdict.Wait, ProviderUnavailable); }
-        return Judge(item, requests, result);
+        catch (Exception) { return (new(Verdict.Wait, ProviderUnavailable), null); }
+        var verdict = Judge(item, requests, result);
+        if (verdict.Verdict != Verdict.Held) return (verdict, null);
+        return (null, requests.Select(request =>
+        {
+            var selection = result!.Selections.First(s => s is not null && s.SetCode == request.SetCode
+                && s.ValueCode == request.ValueCode);
+            return new ItemReferenceEvidenceEntry
+            {
+                SetCode = request.SetCode,
+                ValueCode = request.ValueCode,
+                Kind = request.SetCode == Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceSets.StorageCondition
+                    ? selection.Attributes?.GetValueOrDefault(
+                        Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceSets.ConditionKindAttribute)
+                    : null,
+                CatalogVersionNumber = selection.CatalogVersionNumber
+            };
+        }).ToList());
     }
 
-    // The rule alone (tested): what the list answered, against what the item holds.
+    public static async Task<Outcome> CheckAsync(
+        Diten.MdmService.Application.Contracts.ReferenceData.IItemReferenceResolver resolver, Item item,
+        CancellationToken cancellationToken, IReadOnlyList<ItemReferenceEvidenceEntry>? frozen = null)
+    {
+        // The codes asked are the ones frozen at the submit (an operation reserved before FIX1 has none: the item's).
+        var requests = frozen is { Count: > 0 }
+            ? frozen.Select(entry => new Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceRequest(
+                entry.SetCode, entry.ValueCode)).Distinct().ToList()
+            : Requests(item);
+        Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceResolveResult? result;
+        try { result = await resolver.ResolveLatestAsync(requests, cancellationToken); }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch (Exception) { return new(Verdict.Wait, ProviderUnavailable); }
+        return Judge(item, requests, result, frozen);
+    }
+
+    // The rule alone (tested): what the list answered, against the evidence frozen at the submit (or, without it, what the
+    // item holds).
     public static Outcome Judge(Item item,
         IReadOnlyList<Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceRequest> requests,
-        Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceResolveResult? result)
+        Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceResolveResult? result,
+        IReadOnlyList<ItemReferenceEvidenceEntry>? frozen = null)
     {
         if (result is null) return new(Verdict.Wait, ProviderUnavailable);
         if (!result.IsSuccessful)
@@ -132,7 +176,8 @@ public static class ItemReferenceEvidence
                            && requests.Contains(missing))
                     ? new(Verdict.NotApplicable, ValueRemoved)
                     : new(Verdict.Stuck, ContractConflict);
-            return result.StatusCode is 401 or 403 or >= 500
+            if (result.IsConfigurationRefusal) return new(Verdict.Stuck, ProviderConfigurationError);
+            return result.StatusCode >= 500
                 ? new(Verdict.Wait, ProviderUnavailable)
                 : new(Verdict.Stuck, ContractConflict);
         }
@@ -143,7 +188,7 @@ public static class ItemReferenceEvidence
                 && string.Equals(s.ValueCode, request.ValueCode, StringComparison.Ordinal));
             if (selection is null) return new(Verdict.Stuck, ContractConflict);
             if (request.SetCode == Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceSets.StorageCondition
-                && item.StorageConditionKinds is { } kinds && kinds.TryGetValue(request.ValueCode, out var stored)
+                && StoredKind(item, frozen, request.ValueCode) is { } stored
                 && !string.Equals(stored, selection.Attributes?.GetValueOrDefault(
                     Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceSets.ConditionKindAttribute),
                     StringComparison.Ordinal))
@@ -151,5 +196,12 @@ public static class ItemReferenceEvidence
         }
         return Outcome.Held;
     }
+
+    // The kind to hold the list to: the frozen one, else the item's own (an S1 row may have none).
+    private static string? StoredKind(Item item, IReadOnlyList<ItemReferenceEvidenceEntry>? frozen, string code) =>
+        frozen?.FirstOrDefault(entry => entry.SetCode
+            == Diten.MdmService.Application.Contracts.ReferenceData.ItemReferenceSets.StorageCondition
+            && entry.ValueCode == code)?.Kind
+        ?? (item.StorageConditionKinds is { } kinds && kinds.TryGetValue(code, out var stored) ? stored : null);
 }
 

@@ -19,8 +19,13 @@ public sealed record ItemOrphanCodeRepairResult(int Found, int Burned, int NotCo
 
 public static class ItemOrphanCodes
 {
-    // A creation takes seconds; a code held longer than this with no row is a leak (the LSKU / FG repair's floor is 5).
+    // A creation takes seconds; a code held longer than this with no row is a leak.
     public static readonly TimeSpan MinimumAge = TimeSpan.FromMinutes(15);
-    public const int MinimumAgeFloorMinutes = 5;
+    // S2 FIX1 (minor): the repair never burns what the gauge does not yet count as a leak — its floor IS the gauge's age
+    // (15, not the LSKU / FG repair's 5): an item create whose answer was lost is repeated by its client with the same
+    // creation key, and that repeat consumes the held code; burnt earlier, the repeat fails with a code that was never
+    // a leak. Above: one year (a larger value only narrows the sweep; past it the cutoff leaves the clock's range → 500).
+    public const int MinimumAgeFloorMinutes = 15;
+    public const int MinimumAgeCeilingMinutes = 525_600;
     public const string BurnReason = "ITEM_ORPHAN_CODE_REPAIRED";
 }

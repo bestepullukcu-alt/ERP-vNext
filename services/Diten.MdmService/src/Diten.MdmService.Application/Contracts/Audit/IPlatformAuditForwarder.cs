@@ -31,7 +31,10 @@ public sealed record AuditForwardRequest(
     IReadOnlyDictionary<string, object?>? Metadata = null,
     // MOD-0290-FU04 S2: the tenant of a command that runs outside a user's request (the approval worker applying a
     // decision). Null = the forwarder reads the tenant from the request's token as before. Never overrides a token's.
-    Guid? TenantId = null);
+    Guid? TenantId = null,
+    // S2 FIX1 item 5: the record's actor is the system, whoever's request carried the command (an approver's decision
+    // applied during the maker's replay is not the maker's act; the decision's own actor travels in the metadata).
+    bool SystemActor = false);
 
 /// <summary>
 /// MOD-0290-FU04 S2: an audited command that knows its tenant itself — run by a worker, with no user token to read it
@@ -40,4 +43,21 @@ public sealed record AuditForwardRequest(
 public interface IAuditTenantProvider
 {
     Guid AuditTenantId { get; }
+}
+
+/// <summary>
+/// S2 FIX1 item 5: an audited command whose act is never the caller's — the forwarder records the system as its actor even
+/// when a user's request carried it (e.g. the maker's replay applying the approver's decision).
+/// </summary>
+public interface IAuditSystemActor
+{
+}
+
+/// <summary>
+/// S2 FIX1 item 5: a command retried by a worker whose repeated refusals are one fact — a failed outcome is forwarded only
+/// when this says so (the operation's first failure, and each change of code), never once per attempt.
+/// </summary>
+public interface IAuditFailureRepeatFilter
+{
+    bool ShouldAuditFailure(string? refusalCode);
 }

@@ -38,6 +38,10 @@ public sealed class Item : EntityBase
     public int? MinRemainingShelfLifeDays { get; set; }
     public ItemLifecycleStatus LifecycleStatus { get; set; } = ItemLifecycleStatus.Draft;
     public ItemActivationKind? ActivationKind { get; set; }
+    // S2 FIX1 item 6 (CT decision A): the requester's free-text reason of the approval the item is pending on, written with
+    // the pending move (from its operation). Shown in the item's DETAIL only while a reactivation is pending; once decided
+    // it is hidden (the operation keeps it as the request's history). Never in an audit record.
+    public string? ActivationRequestReason { get; set; }
     // FU04 S2 (§2.6, the shared GP / GSKU / LSKU binding): the activation approval this item is bound to — set when the
     // item goes PendingActivation, its decision or cancellation evidence kept on it. Null on a draft never submitted.
     public ProductIdentityWorkflowBinding? ActivationWorkflowBinding { get; set; }
