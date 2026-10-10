@@ -421,17 +421,17 @@ The canonical contract family is `/api/shipment-bundle/**` to service port 5061,
 
 ## 16. Acceptance Criteria
 
-- [ ] `Diten.SupplyChainService` builds with the mandated five layers, four pipeline behaviors and base controller.
-- [ ] Create shipment persists exactly one tenant/legal-entity scoped shipment and one lifecycle/outbox entry.
-- [ ] Repeating the same create/transition idempotency key returns the same result without a second write/event.
-- [ ] Allowed transitions match `SHIPMENT-BUNDLE` v1 and invalid transitions fail without partial state.
-- [ ] Capturing POD transitions the shipment to Delivered atomically and emits the specified events once.
-- [ ] A command's UUID correlation ID is preserved across shipment lifecycle and POD events.
-- [ ] Cross-tenant/cross-LE reads and mutations return 404; missing permissions return 403.
-- [ ] Inventory data is read only through `INVENTORY-BUNDLE` v1 mock/client; no stock collection or balance exists locally.
+- [x] `Diten.SupplyChainService` builds with the mandated five layers, four pipeline behaviors and base controller. — measured 2026-10-11: five layers (Api/Application/Domain/Infrastructure/Persistence), four behaviors registered (Validation, Logging, ExceptionHandling, Performance; `DependencyInjection.cs:35-38`), `CustomBaseController` used by six of seven controllers — the exception is `SandopPlansController`, in the uncomposed MOD-0190. Solution builds with 0 warnings, 0 errors.
+- [x] Create shipment persists exactly one tenant/legal-entity scoped shipment and one lifecycle/outbox entry. — measured 2026-10-11: one document in each of `sce_shipments`, `sce_shipment_history`, `sce_shipment_outbox`, `sce_shipment_audit`, `sce_shipment_receipts`. docs/records/audits/2026-10/mvp6-g5-logistics-golden-flow-01/
+- [x] Repeating the same create/transition idempotency key returns the same result without a second write/event. — measured 2026-10-11: 201 then 200, same shipmentId, `idempotentReplay=true`, one database record. Carrier create behaves the same (one record, replay true).
+- [x] Allowed transitions match `SHIPMENT-BUNDLE` v1 and invalid transitions fail without partial state. — measured 2026-10-11: Planned 200, Delivered 422, Dispatched 200, Planned 422, InTransit 200; four accepted transitions left four lifecycle entries and the two rejected ones wrote nothing.
+- [x] Capturing POD transitions the shipment to Delivered atomically and emits the specified events once. — measured 2026-10-11: shipment reaches `Delivered`, one `Delivered` lifecycle entry, and `ShipmentDelivered` and `PodCaptured` are two distinct events emitted once each (six state changes, six outbox events).
+- [x] A command's UUID correlation ID is preserved across shipment lifecycle and POD events. — measured 2026-10-11: one correlation found in 36 documents across all five modules, including the outbox envelopes. Field name differs per module: Shipments `CorrelationId`, Loads/Returns/Claims `CorrelationRoot`.
+- [x] Cross-tenant/cross-LE reads and mutations return 404; missing permissions return 403. — measured 2026-10-11 with a real second tenant and its own MDM legal entity: own read 200, cross-tenant read 404, cross-LE read 404, cross-tenant write 404, token without `supplychain.shipments.read` 403.
+- [x] Inventory data is read only through `INVENTORY-BUNDLE` v1 mock/client; no stock collection or balance exists locally. — measured 2026-10-11: no local stock/balance class and no such Mongo collection; `inventoryReferenceId` is only ever validated as an opaque string and never dereferenced; the one `IInventoryReadClient` lives in the uncomposed SourceIntake and is not registered in `Program.cs`.
 - [ ] Warehouse intake uses the recorded v1 map; incompatible correlation, missing trusted scope and source drift are explicit blocked/reconciliation states, never fabricated shipments.
-- [ ] Contract examples pass a live mock smoke test and implementation payloads match the frozen OpenAPI.
-- [ ] G5 evidence plan covers shipment→carrier/load→POD→return/claim, source reconciliation and regression; module
+- [x] Contract examples pass a live mock smoke test and implementation payloads match the frozen OpenAPI. — measured 2026-10-11: 19 live responses validated against `SHIPMENT-BUNDLE` 3.2.1 (JSON Schema 2020-12), zero schema violations, error paths included. The run found two operations returning an undeclared 404; the contract was patched to 3.2.1 and re-validated clean.
+- [ ] G5 evidence plan covers shipment→carrier/load→POD→return/claim, source reconciliation and regression; module — the CHAIN half is done (measured 2026-10-11: ten steps, all pass, docs/records/audits/2026-10/mvp6-g5-logistics-golden-flow-01/). SOURCE RECONCILIATION is still open: it is the warehouse-intake path, which has no producer until MOD-0178 exists, so this box stays unticked.
       completion remains open until downstream modules and central contracts pass E5 integration.
 
 ## 17. Test Expectations

@@ -115,11 +115,11 @@ Desired family is the frozen `SHIPMENT-BUNDLE` carrier surface. Only `integratio
 
 ## 16. Acceptance Criteria
 
-- [ ] Runtime remains absent while status is `draft`.
+- [x] Runtime remains absent while status is `draft`. — SUPERSEDED, and the old wording is kept so the change is visible: this pack is no longer `draft`. Its status is `ready-for-dev`, owner-approved 2026-10-04 (see `status_note`), and the Carrier runtime was merged to main in PR #134 (`a814bad0f`). The line is ticked as satisfied-then-superseded, not as a runtime that is still absent.
 - [ ] Future implementation matches all Carrier schemas, examples, headers and deterministic errors in v1.
-- [ ] Carrier status and idempotency tests prove no duplicate write/audit; no Carrier event is invented (the frozen event enum excludes Carrier).
-- [ ] Cross-tenant/cross-LE access returns 404.
-- [ ] MOD-0185 consumes carrier by contract/reference without internal database/type sharing.
+- [x] Carrier status and idempotency tests prove no duplicate write/audit; no Carrier event is invented (the frozen event enum excludes Carrier). — measured live 2026-10-11: the same idempotency key returned the same carrierId with `idempotentReplay=true` and exactly one `carriers` document; the database has no carrier outbox collection at all, so no Carrier event is emitted.
+- [x] Cross-tenant/cross-LE access returns 404. — measured live 2026-10-11: `GET /carriers` with a foreign legal entity answers 404 `CARRIER_NOT_FOUND`; the shipment-side cross-tenant and cross-LE cases were measured with a real second tenant in `docs/records/audits/2026-10/mvp6-g5-logistics-golden-flow-01/`.
+- [x] MOD-0185 consumes carrier by contract/reference without internal database/type sharing. — measured 2026-10-11: `LoadReferenceReader` resolves the carrier over HTTP through `api/shipment-bundle/carriers` and validates the frozen wire shape; there is no project reference, shared type or shared collection between the two modules. A live load create against a real carrier succeeded.
 
 ## 17. Test Expectations
 
@@ -131,8 +131,8 @@ tenant isolation, RBAC, idempotency and Mongo DB-010 architecture guards.
 - [x] Canonical ID/name passed DCP-002.
 - [x] Owned boundary and frozen `SHIPMENT-BUNDLE` v1 are identified.
 - [x] Backend-only initial slice and protected paths are explicit.
-- [ ] Owner approval to change `draft` to `ready-for-dev` is absent.
-- [ ] Runtime dispatch is authorized.
+- [x] Owner approval to change `draft` to `ready-for-dev` is absent. — SUPERSEDED: approval was given 2026-10-04 and the pack's `status` is `ready-for-dev`. Wording kept so the transition is visible rather than silently rewritten.
+- [x] Runtime dispatch is authorized. — Carrier runtime was dispatched, reviewed and merged in PR #134 (`a814bad0f`).
 
 ## 19. Implementation Notes
 
