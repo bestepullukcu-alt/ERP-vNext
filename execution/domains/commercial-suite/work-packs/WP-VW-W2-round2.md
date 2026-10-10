@@ -134,3 +134,46 @@ KORU/YAPMA: ARCH GATE (play/kampanya görünmez); Ziyaret Planlama / Ziyaret Yü
 DOĞRULA (E2): Web 854/0 tabanı · CRM dokunulmaz · mimari 27. Testler belge Acceptance 1–6 — saf kurallar Node'da + visit-workspace-smoke.js sahte DOM (sahte takvim create içinde ilk olayları çizer, createError null kalmalı); sabotaj 2 (yuvarlama kaldır → kırmızı; onaylıda sürükleme açık → kırmızı; geri al — git checkout -- YOK). dotnet test -o çıktısı REPO İÇİNDE.
 Commit: "feat(web): WP-VW-W2-WEB-b — visit workspace plan mode: targets panel, drag to day / time, apply products, account filter, unplaced list" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, Hedefler modülünün nasıl paylaşıldığı, mockup'tan bilinçli sapmalar, BE-c'ye bağımlı kısımlar, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — W2-BE-c + W2-WEB-b E2 ACCEPTED (2026-10-10)
+**Commit'ler** (test dalına cherry-pick, çakışma yok; push: test dalı):
+- BE-c `c6ec35355` (ajan `a07eee848`);
+- WEB-b `fd00376e4` (ajan `6416b1230`).
+
+**CT K13:**
+- CRM 2543 → **2553/0/5**.
+- Web 854 → **861/0**; Ziyaret Planlama 113/113 (5 eski test ortak modüle yöneltildi).
+- Mimari **27**.
+
+**BE-c kod okuması:**
+- `CachedWorkspacePlanPreviewSource`:
+  - anahtar: kiracı | oturum | `Version` | bugün (UTC) | yazılmış ziyaret + rapor damgası;
+  - TTL 10 dk, 256 kayıt, en eski düşer;
+  - anahtarda olmayan girdiler (kurum / doktor, sıklık, segment, izin, dönem / kapasite, takvim, içerik, bölge) en geç 10 dk'da yansır. Ajan raporladı; **kabul**.
+- Tatil adı Platform `holiday.dayName`'den geliyor (tek dil: Nager yerel ad, yoksa İngilizce).
+- `DayBalancer` sonrası dengeleme geçişi: senaryo önce 480/80/40/60/40 → sonra 260/80/260/60/40.
+
+**WEB-b kod okuması:**
+- `VisitPlanning/targets-core.js` ortak modül; `details.js`, `targets.js`, `weeks.js` ve Çalışma Alanı bunu kullanıyor, kopya yok.
+- Planla modu mevcut Ziyaret Planlama vekil uçlarını kullanıyor; yeni uç yok.
+- **Paket dışı düzeltme:** `weeks.js` sabitleri yeniden yazarken `startTime`'ı siliyordu; ortak `pinInput` artık koruyor.
+
+**Ajanın bilinçli sapmaları (CT kabul, kullanıcıya bildirildi):**
+1. İşaret anında yazılıyor (ayrı Kaydet yok).
+2. Ürün uygula, doktorun tüm taslak ziyaretlerine uygulanıyor (yazım doktor düzeyinde), var olan ürünler korunuyor.
+3. Saat kayması nedeni tahmin ediliyor (takvim okuması kayma nedenini taşımıyor). Sonraki BE işinde `pinMoves` takvime taşınmalı.
+4. Kurum listesi: planın kurumları + "Hesaplarım"ın ilk 50 kaydı, arama yok.
+
+**CT sabotajları:**
+- önbellek anahtarından ziyaret damgası çıkarıldı → `C1_a_written_visit_or_its_report_changing_asks_again` kırmızı;
+- ortak `pinInput` saati düşürdü → `A3` + `A2` kırmızı.
+
+Geri alındı, touch yapıldı; tam tur yeşil.
+
+**Takip notları:**
+- `StampAsync` kiracının TÜM planlı ziyaretlerini okuyup süzüyor; büyük veride temsilciye göre okuma (`ListByResource`) gerekir.
+- Kayma nedeni takvim okumasına taşınmalı (W2-BE-d adayı).
+
+**Sıradaki:** fleet yeniden başlatılınca canlı E4 + mockup görsel karşılaştırması (Planla modu) → 3. tur (W2-WEB-c ∥ W2-BE-d).
