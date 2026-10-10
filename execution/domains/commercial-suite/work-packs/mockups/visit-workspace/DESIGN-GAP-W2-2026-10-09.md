@@ -54,4 +54,5 @@
   - Ürün başına: içerik adımlarının süre hedefi tanımlıysa (adım × dakika; adım süre hedefi W3-BE-b ile gelir) toplamı gösterilir.
   - Toplamda ve adım süresi yoksa: planlanan ziyaret süresi (`durationMinutes`).
   - İkisi de yoksa süre gösterilmez.
-- **Açık:** T8 (durum süzgeci tek / çoklu), paket zamanlaması (WEB-b sonrası ayrı paket önerisi).
+- **T8 (2026-10-10): ÇOKLU seçim kalır** (mockup tek seçim; kullanıcı çoklu istedi; görünüm mockup stilinde: "Tüm durumlar" etiketli çoklu seçim).
+- **Zamanlama (2026-10-10): CT önerisi kabul** — W2-WEB-b kabulünden sonra W2-WEB-c (tasarım uyumu) ∥ W2-BE-d (panel verisi).
