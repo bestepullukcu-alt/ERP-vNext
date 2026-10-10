@@ -72,6 +72,7 @@
   <data name="Storage_PROTECT_FROM_LIGHT" xml:space="preserve"><value>Işıktan koruyun</value></data>
   <data name="Storage_PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Nemden koruyun</value></data>
   <data name="OptionsUnavailable" xml:space="preserve"><value>Birim ve saklama koşulu listeleri şu anda yüklenemiyor; bu alanlar değiştirilemez. Diğer alanlar yine kaydedilebilir; biraz sonra tekrar deneyin.</value></data>
+  <data name="OptionsUnavailableCreate" xml:space="preserve"><value>Liste gelene kadar kalem oluşturulamaz.</value></data>
   <data name="TemperatureOnlyOne" xml:space="preserve"><value>Yalnızca bir sıcaklık koşulu seçilebilir. Önce seçili olanı kaldırın.</value></data>
   <data name="SelectUnit" xml:space="preserve"><value>Birim seçin</value></data>
 </root>

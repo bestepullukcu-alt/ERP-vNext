@@ -170,6 +170,24 @@ describe('Items executed browser contracts', () => {
         expect(document.body.innerHTML).not.toMatch(/onclick=/i);
     });
 
+    // S5c: the record shows its units and storage conditions by name with the code beside it; a value the vocabulary
+    // does not name (a newer catalog value) by its code — never blank. The sabotage target "the label lookup removed".
+    it('S5c: the details show units and storage conditions by name, the code beside it, an unnamed one by its code', () => {
+        const labels = '<script id="reference-option-labels" type="application/json">' +
+            JSON.stringify({ Uom_KGM: 'Kilogram', Uom_XBX: 'Box', Storage_COOL_2_8: 'Store at 2-8 °C' }) + '</script>';
+        const h = harness([], labels + '<div id="itemDetails" data-item-id="' + id + '"><div data-item-field="lifecycleStatus"></div>' +
+            '<div data-item-field="baseUomCode"></div><div data-item-field="storageConditionCodes"></div>' +
+            '<div id="itemDetailActions"></div><table><tbody id="itemDetailConversions"></tbody></table></div>');
+        h.api.renderRecord({ ...item(['DETAILS']), storageConditionCodes: ['COOL_2_8', 'NEW_CONDITION'],
+            uomConversions: [{ fromUom: 'XBX', toUom: 'IU', numerator: '100', denominator: '1' }] });
+
+        expect(document.querySelector('[data-item-field="baseUomCode"]').textContent).toBe('Kilogram (KGM)');
+        expect(document.querySelector('[data-item-field="storageConditionCodes"]').textContent)
+            .toBe('Store at 2-8 °C (COOL_2_8), NEW_CONDITION');
+        expect([...document.querySelectorAll('#itemDetailConversions td')].map((x) => x.textContent))
+            .toEqual(['Box (XBX)', 'IU', '100', '1']);
+    });
+
     it('says the proxy\'s sentences and warns on an unmapped refusal without showing a code', async () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         const h = harness();
@@ -204,11 +222,11 @@ describe('Items form option lists (S5b)', () => {
     const labels = '<script id="reference-option-labels" type="application/json">' + JSON.stringify({
         uom_KGM: 'Kilogram', Uom_C62: 'Piece', Storage_COOL_2_8: 'Refrigerated', Storage_AMBIENT_15_25: 'Room temperature',
         Storage_PROTECT_FROM_LIGHT: 'Protect from light', TemperatureOnlyOne: 'Only one temperature condition',
-        OptionsUnavailable: 'Lists unavailable'
+        OptionsUnavailable: 'Lists unavailable', optionsUnavailableCreate: 'The item cannot be created until the list arrives.'
     }) + '</script>';
     const option = (code, attributes = {}) => ({ code, sortOrder: 0, attributes });
     const options = {
-        catalogVersion: 'v1',
+        catalogVersions: { materialTypes: 'MT-V1', uoms: 'ITEM-UNIVERSAL-V1', storageConditions: 'SC-V1' },
         materialTypes: [option('ACTIVE_INGREDIENT'), option('EXCIPIENT')],
         uoms: [option('C62'), option('KGM'), option('IU')],
         storageConditions: [option('AMBIENT_15_25', { ConditionKind: 'TEMPERATURE' }), option('COOL_2_8', { ConditionKind: 'TEMPERATURE' }),
@@ -297,15 +315,38 @@ describe('Items form option lists (S5b)', () => {
         expect(document.querySelector('input.js-conversion-from, input.js-conversion-to, template input.js-conversion-from')).toBeNull();
         const reasons = [...document.querySelectorAll('[data-item-options-reason]')];
         expect(reasons.length).toBeGreaterThanOrEqual(3);
-        expect(reasons.every((x) => !x.classList.contains('d-none') && x.textContent === 'The lists cannot be loaded right now.')).toBe(true);
+        const createReason = 'The lists cannot be loaded right now. The item cannot be created until the list arrives.';
+        expect(reasons.every((x) => !x.classList.contains('d-none') && x.textContent === createReason)).toBe(true);
         expect($('[name="Name"]').disabled).toBe(false);
         expect($('[name="ShelfLifeDays"]').disabled).toBe(false);
 
         // A create cannot be sent without its lists: the reason is said, nothing is posted.
         $('[name="Name"]').value = 'Synthetic';
         await h.api.submitForm(new Event('submit'));
-        expect($('#itemFormAlert').textContent).toBe('The lists cannot be loaded right now.');
+        expect($('#itemFormAlert').textContent).toBe(createReason);
         expect(h.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    // S5b-FIX2: the Create form says no item can be made without the lists (OptionsUnavailableCreate) — never the
+    // Edit form's "the other fields can still be saved". An empty list (no proxy sentence) says the Create sentence alone;
+    // the Edit form keeps its own sentence. Sabotage target "the Create reason removed".
+    it('S5b-FIX2: a create without the lists says the item cannot be created until the list arrives; an edit does not', async () => {
+        const empty = { ...options, uoms: [] };
+        const create = harness('create', { [`GET ${optionsUrl}`]: ok(empty) });
+        await create.api.initForm();
+        const createReasons = [...document.querySelectorAll('[data-item-options-reason]')].map((x) => x.textContent);
+        expect(createReasons.length).toBeGreaterThanOrEqual(3);
+        expect(createReasons.every((x) => x === 'The item cannot be created until the list arrives.')).toBe(true);
+
+        const item = { id, name: 'Old', materialType: 'EXCIPIENT', baseUomCode: 'KGM', storageConditionCodes: [], uomConversions: [],
+            lotControlled: false, stockable: false, lifecycleStatus: 1, version: 2, availableActions: ['DETAILS', 'EDIT'] };
+        const edit = harness('edit', {
+            [`GET ${optionsUrl}`]: ok(empty), [`GET /MasterDataManagement/Items/api/${id}`]: ok(item)
+        });
+        await edit.api.initForm();
+        const editReasons = [...document.querySelectorAll('[data-item-options-reason]')].map((x) => x.textContent);
+        expect(editReasons.length).toBeGreaterThanOrEqual(3);
+        expect(editReasons.every((x) => x === 'Lists unavailable')).toBe(true);
     });
 
     it('an edit without the lists keeps the stored codes in the passive selects and still saves a rename', async () => {

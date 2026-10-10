@@ -25,7 +25,7 @@
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>La aprobación se cerró sin una decisión (cancelada o vencida). El borrador puede editarse y enviarse de nuevo.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Una unidad que usa este GSKU se retiró después de la aprobación. La aprobación sigue vigente: se aplicó con los valores validados al enviarla; la unidad retirada no puede elegirse para registros nuevos.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Antes de enviar este GSKU a aprobación, defina en el comportamiento de stock: {0}.</value></data>
-  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>Este envío se está retirando. No puede enviarse de nuevo hasta que termine la retirada; vuelva a abrir el GSKU en un momento.</value></data>
+  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>Hay una retirada de este envío en curso; vuelva a enviar la retirada para terminarla antes de enviar de nuevo.</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Introduzca primero la vida útil: en un GSKU aprobado, {0} solo puede definirse cuando su vida útil es conocida.</value></data>
   <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>Las listas de unidades y condiciones de almacenamiento no se pueden leer ahora. Inténtelo de nuevo en un momento.</value></data>
   <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Introduzca primero la unidad base del GSKU: el producto terminado la utiliza.</value></data>

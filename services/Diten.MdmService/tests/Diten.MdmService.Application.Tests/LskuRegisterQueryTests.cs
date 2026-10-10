@@ -166,7 +166,8 @@ public sealed class LskuRegisterQueryTests
                 access.Rollouts,
                 access.Policies,
                 access.Candidates,
-                tenantContext)
+                tenantContext,
+                new UntouchedStockStore())
             .Handle(new GetLskuByIdQuery(Guid.NewGuid()), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
@@ -427,5 +428,17 @@ public sealed class LskuRegisterQueryTests
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
             throw new InvalidOperationException("unreachable");
         }
+    }
+
+    // S5b-FIX2: the detail's stock store is required; a 404 never reaches it.
+    private sealed class UntouchedStockStore : IProductStockBehaviourRepository
+    {
+        public Task<StockBehaviourWriteResult> WriteGskuAsync(StockBehaviourWrite write, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<StockBehaviourWriteResult> WriteLskuAsync(StockBehaviourWrite write, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<StockBehaviourWriteResult> WriteFinishedGoodAsync(StockBehaviourWrite write, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<bool> GtinHeldByAnotherAsync(string gtin, Guid finishedGoodId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 }

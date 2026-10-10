@@ -45,6 +45,12 @@ public sealed partial class PlatformItemReferenceResolverClientTests
     [InlineData("no-condition-kind")]
     [InlineData("no-dimension")]
     [InlineData("no-version")]
+    // S5b-FIX2 (2): one row per remaining rule. A repeated set with the count still matching (only SetEquals refuses it).
+    [InlineData("set-repeated-count-matches")]
+    [InlineData("version-number-zero")]
+    [InlineData("display-name-empty")]
+    [InlineData("precision-unparsable")]
+    [InlineData("condition-kind-other")]
     public async Task S5b_An_enumeration_that_does_not_list_exactly_the_asked_sets_is_untrusted(string fault)
     {
         var body = EnumerationResponse();
@@ -57,6 +63,11 @@ public sealed partial class PlatformItemReferenceResolverClientTests
             case "code-repeated": sets[0]!["values"]!.AsArray().Add(sets[0]!["values"]![0]!.DeepClone()); break;
             case "no-condition-kind": sets[1]!["values"]![0]!["attributes"]!.AsObject().Remove("ConditionKind"); break;
             case "no-dimension": sets[0]!["values"]![0]!["attributes"]!.AsObject().Remove("DimensionCode"); break;
+            case "set-repeated-count-matches": sets[2] = sets[1]!.DeepClone(); break;
+            case "version-number-zero": sets[1]!["catalog_version_number"] = 0; break;
+            case "display-name-empty": sets[2]!["values"]![0]!["display_name"] = ""; break;
+            case "precision-unparsable": sets[0]!["values"]![0]!["attributes"]!["MaximumDecimalPrecision"] = "two"; break;
+            case "condition-kind-other": sets[1]!["values"]![0]!["attributes"]!["ConditionKind"] = "HUMIDITY"; break;
             default: sets[0]!["catalog_version_id"] = Guid.Empty.ToString(); break;
         }
 

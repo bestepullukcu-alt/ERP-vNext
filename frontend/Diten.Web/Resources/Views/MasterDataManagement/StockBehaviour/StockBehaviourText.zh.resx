@@ -72,6 +72,7 @@
   <data name="Storage_PROTECT_FROM_LIGHT" xml:space="preserve"><value>避光保存</value></data>
   <data name="Storage_PROTECT_FROM_MOISTURE" xml:space="preserve"><value>防潮保存</value></data>
   <data name="OptionsUnavailable" xml:space="preserve"><value>单位和储存条件列表暂时无法加载，因此这些字段无法更改。其他字段仍可保存；请稍后重试。</value></data>
+  <data name="OptionsUnavailableCreate" xml:space="preserve"><value>在列表加载之前，无法创建该物料。</value></data>
   <data name="TemperatureOnlyOne" xml:space="preserve"><value>只能选择一个温度条件。请先移除已选择的温度条件。</value></data>
   <data name="SelectUnit" xml:space="preserve"><value>选择单位</value></data>
 </root>

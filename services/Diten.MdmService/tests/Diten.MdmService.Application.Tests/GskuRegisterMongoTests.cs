@@ -58,7 +58,8 @@ public sealed class GskuRegisterMongoTests
             access.Rollouts,
             access.Policies,
             access.Candidates,
-            tenantContext);
+            tenantContext,
+            new ProductStockBehaviourRepository(scope.Database, tenantContext));
 
         var cross = await handler.Handle(new GetGskuByIdQuery(crossTenant.Gsku.Id), default);
         var tombstone = await handler.Handle(new GetGskuByIdQuery(deleted.Gsku.Id), default);
@@ -168,7 +169,8 @@ public sealed class GskuRegisterMongoTests
             access.Rollouts,
             access.Policies,
             access.Candidates,
-            tenantContext);
+            tenantContext,
+            new ProductStockBehaviourRepository(scope.Database, tenantContext));
 
         var page = await list.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20 }, default);
         var item = await detail.Handle(new GetGskuByIdQuery(pair.Gsku.Id), default);
@@ -234,7 +236,8 @@ public sealed class GskuRegisterMongoTests
             access.Rollouts,
             access.Policies,
             access.Candidates,
-            tenantContext);
+            tenantContext,
+            new ProductStockBehaviourRepository(scope.Database, tenantContext));
 
         var page = await list.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20 }, default);
         var responses = await Task.WhenAll(new[] { missing, deleted, crossTenant }

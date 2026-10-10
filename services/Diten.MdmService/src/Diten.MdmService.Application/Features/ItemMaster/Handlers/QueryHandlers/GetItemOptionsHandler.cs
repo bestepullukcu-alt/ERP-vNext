@@ -22,7 +22,11 @@ public sealed class GetItemOptionsHandler(IItemReferenceResolver resolver)
         if (!listed.IsSuccessful)
             return Response<ItemModels.ItemOptionsDto>.Fail(listed.FailureCode ?? "REFERENCE_PROVIDER_UNAVAILABLE",
                 listed.StatusCode is 401 or 504 ? listed.StatusCode : 503);
-        var bySet = listed.Sets.ToDictionary(set => set.SetCode, StringComparer.Ordinal);
+        // S5b-FIX2 (2): an answer naming a set twice is untrusted (503 by name) — never a crash, never a pick of one.
+        var groups = listed.Sets.GroupBy(set => set.SetCode, StringComparer.Ordinal).ToList();
+        if (groups.Any(group => group.Count() > 1))
+            return Response<ItemModels.ItemOptionsDto>.Fail(ItemReferenceCheck.UntrustedAnswer, 503);
+        var bySet = groups.ToDictionary(group => group.Key, group => group.Single(), StringComparer.Ordinal);
         if (Sets.Any(set => !bySet.TryGetValue(set, out var found) || found.Values.Count == 0))
             return Response<ItemModels.ItemOptionsDto>.Fail(ItemReferenceCheck.UntrustedAnswer, 503);
 
@@ -31,7 +35,10 @@ public sealed class GetItemOptionsHandler(IItemReferenceResolver resolver)
             .Select(value => new ItemModels.ItemOptionDto(value.ValueCode, value.DisplayName, value.SortOrder, value.Attributes))
             .ToList();
         return Response<ItemModels.ItemOptionsDto>.Success(new ItemModels.ItemOptionsDto(
-            bySet[ItemReferenceSets.ItemUom].CatalogVersion,
+            new ItemModels.ItemOptionsCatalogVersions(
+                bySet[ItemReferenceSets.MaterialType].CatalogVersion,
+                bySet[ItemReferenceSets.ItemUom].CatalogVersion,
+                bySet[ItemReferenceSets.StorageCondition].CatalogVersion),
             Options(ItemReferenceSets.MaterialType),
             Options(ItemReferenceSets.ItemUom),
             Options(ItemReferenceSets.StorageCondition)));

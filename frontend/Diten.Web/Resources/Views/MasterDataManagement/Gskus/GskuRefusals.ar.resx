@@ -25,7 +25,7 @@
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>أُغلقت الموافقة دون قرار (أُلغيت أو انتهت مدتها). يمكن تعديل المسودة وتقديمها مرة أخرى.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>أُوقف استخدام وحدة يستخدمها هذا الـ GSKU بعد الموافقة. تظل الموافقة سارية: طُبّقت بالقيم التي تم التحقق منها عند التقديم؛ ولا يمكن اختيار الوحدة الموقوفة في سجلات جديدة.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>قبل إرسال GSKU هذا للموافقة، حدّد في سلوك المخزون: {0}.</value></data>
-  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>يجري سحب هذا الإرسال. لا يمكن إرساله مرة أخرى حتى ينتهي السحب؛ افتح GSKU مرة أخرى بعد قليل.</value></data>
+  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>يجري سحب هذا الإرسال؛ أعد إرسال السحب لإكماله قبل الإرسال مرة أخرى.</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>أدخل مدة الصلاحية أولاً: في GSKU معتمد، لا يمكن تحديد {0} إلا بعد معرفة مدة صلاحيته.</value></data>
   <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>تعذرت قراءة قوائم الوحدات وشروط التخزين الآن. حاول مرة أخرى بعد قليل.</value></data>
   <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>أدخل أولاً الوحدة الأساسية لـ GSKU — يستخدمها المنتج النهائي.</value></data>

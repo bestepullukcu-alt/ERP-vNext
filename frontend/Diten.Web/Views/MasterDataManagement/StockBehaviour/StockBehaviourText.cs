@@ -34,6 +34,12 @@ public sealed class StockBehaviourText
         "OptionsUnavailable", "TemperatureOnlyOne", "SelectUnit"
     ];
 
+    /// <summary>
+    /// S5b-FIX2: what the item form reads (_ReferenceOptionLabels.cshtml) — the option keys plus the Create form's own
+    /// reason (no item can be created without the lists); the stock forms never create, so they do not carry it.
+    /// </summary>
+    public static readonly IReadOnlyList<string> ItemFormOptionKeys = [.. OptionKeys, "OptionsUnavailableCreate"];
+
     /// <summary>The words the browser module (StockBehaviour/stock-behaviour.js) reads from #stock-behaviour-l10n.</summary>
     public static readonly IReadOnlyList<string> ScriptKeys =
     [

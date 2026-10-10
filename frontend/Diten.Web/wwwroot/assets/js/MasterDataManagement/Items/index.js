@@ -277,6 +277,11 @@ const ItemsPage = (function () {
     const uomLabel = (code) => (code && optionWords[`Uom_${code}`]) || code || '';
     const storageLabel = (code) => (code && optionWords[`Storage_${code}`]) || code || '';
     const listLabels = { materialTypes: materialTypeLabel, uoms: uomLabel, storageConditions: storageLabel };
+    // S5c: a stored value is shown by its name with the code beside it ("Kilogram (KGM)"); a value the vocabulary does
+    // not name yet (a newer catalog value) is shown by its code alone — never blank.
+    const named = (label, code) => (code ? (label && label !== code ? `${label} (${code})` : code) : '');
+    const uomShown = (code) => named(uomLabel(code), code);
+    const storageShown = (code) => named(storageLabel(code), code);
     const optionState = { ready: false, lists: { materialTypes: [], uoms: [], storageConditions: [] }, reason: '' };
 
     // select2 (the shell's picker) when the page has it; a plain select otherwise. Changes are heard through jQuery
@@ -412,6 +417,13 @@ const ItemsPage = (function () {
 
     // The lists arrived: every list field is filled and becomes choosable. They did not: every list field stays passive
     // and says why; the other fields stay usable.
+    // S5b-FIX2: on the Create form a missing list means no item at all (material type and base unit are required), so
+    // the reason says so (OptionsUnavailableCreate). The Edit form keeps the proxy's / shared sentence as it is.
+    const unavailableReason = (message) => {
+        const create = form.dataset.formMode !== 'edit' ? optionWords.OptionsUnavailableCreate : '';
+        if (!create) return message;
+        return message && message !== optionWords.OptionsUnavailable ? `${message} ${create}` : create;
+    };
     const applyOptions = (result) => {
         const listFields = Array.from(form.querySelectorAll('[data-item-options]'));
         const add = document.getElementById('btnAddConversion');
@@ -429,7 +441,7 @@ const ItemsPage = (function () {
             }));
             if (add) add.disabled = false;
         } else {
-            optionState.reason = result.message;
+            optionState.reason = unavailableReason(result.message);
             listFields.forEach((select) => {
                 select.disabled = true;
                 enhanceSelect(select);
@@ -438,7 +450,7 @@ const ItemsPage = (function () {
             if (add) add.disabled = true;
         }
         form.querySelectorAll('[data-item-options-reason]').forEach((reason) => {
-            reason.textContent = result.ok ? '' : result.message;
+            reason.textContent = result.ok ? '' : optionState.reason;
             reason.classList.toggle('d-none', result.ok);
         });
     };
@@ -622,8 +634,8 @@ const ItemsPage = (function () {
         setField('version', valueOf(item, 'version'));
         setField('createdAt', formatDate(valueOf(item, 'createdAt')));
         setField('updatedAt', formatDate(valueOf(item, 'updatedAt')));
-        setField('baseUomCode', valueOf(item, 'baseUomCode'));
-        setField('storageConditionCodes', (valueOf(item, 'storageConditionCodes') || []).join(', '));
+        setField('baseUomCode', uomShown(valueOf(item, 'baseUomCode')));
+        setField('storageConditionCodes', (valueOf(item, 'storageConditionCodes') || []).map(storageShown).join(', '));
         setField('shelfLifeDays', valueOf(item, 'shelfLifeDays'));
         setField('retestDays', valueOf(item, 'retestDays'));
         setField('minRemainingShelfLifeDays', valueOf(item, 'minRemainingShelfLifeDays'));
@@ -638,7 +650,8 @@ const ItemsPage = (function () {
             const row = document.createElement('tr');
             ['fromUom', 'toUom', 'numerator', 'denominator'].forEach((key) => {
                 const cell = document.createElement('td');
-                cell.textContent = valueOf(conversion, key) ?? '';
+                const value = valueOf(conversion, key) ?? '';
+                cell.textContent = key === 'fromUom' || key === 'toUom' ? uomShown(value) : value;
                 row.appendChild(cell);
             });
             return row;

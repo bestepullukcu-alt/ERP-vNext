@@ -32,14 +32,13 @@ public interface IProductStockBehaviourRepository
     /// <summary>
     /// MOD-0290-FU04 S5-FIX1 (1) — whether an operation holds the record now, by the SAME predicates the write above
     /// refuses with <see cref="StockBehaviourStoreCodes.BlockedByOperation"/> (one source: the detail's
-    /// <c>editable</c> never offers an edit the write would refuse). A fake that does not know says "not held".
+    /// <c>editable</c> never offers an edit the write would refuse). S5b-FIX2: no default body — every store answers.
     /// </summary>
-    Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default) => Task.FromResult(false);
+    Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default);
 
-    Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default) => Task.FromResult(false);
+    Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default);
 
-    Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default) =>
-        Task.FromResult(false);
+    Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default);
 }
 
 /// <summary>The stored field names a stock-behaviour write may set (the entity property names).</summary>

@@ -72,6 +72,7 @@
   <data name="Storage_PROTECT_FROM_LIGHT" xml:space="preserve"><value>Proteger de la luz</value></data>
   <data name="Storage_PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Proteger de la humedad</value></data>
   <data name="OptionsUnavailable" xml:space="preserve"><value>Las listas de unidades y condiciones de almacenamiento no se pueden cargar ahora; estos campos no se pueden cambiar. Los demás campos se pueden guardar; inténtelo de nuevo en un momento.</value></data>
+  <data name="OptionsUnavailableCreate" xml:space="preserve"><value>El artículo no se puede crear hasta que llegue la lista.</value></data>
   <data name="TemperatureOnlyOne" xml:space="preserve"><value>Solo se puede elegir una condición de temperatura. Quite primero la ya elegida.</value></data>
   <data name="SelectUnit" xml:space="preserve"><value>Seleccione una unidad</value></data>
 </root>

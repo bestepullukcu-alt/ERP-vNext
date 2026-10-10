@@ -107,7 +107,7 @@ describe('Stock behaviour section and offcanvas (O-12, O-8)', () => {
         expect($('[data-sb-value="lotControlled"]').textContent).toBe('Yes');
         expect($('[data-sb-value="stockable"]').textContent).toBe('No');
         expect([...$('[data-sb-value="uomConversions"]').children].map(x => x.textContent))
-            .toEqual(['1 XCS = 12 XBX', '1 XBX = 10 C62 — DerivedPackConversion']);
+            .toEqual(['1 Uom_XCS (XCS) = 12 Uom_XBX (XBX)', '1 Uom_XBX (XBX) = 10 Uom_C62 (C62) — DerivedPackConversion']);
         expect($('[data-sb-lock="shelfLifeDays"]').classList.contains('d-none')).toBe(false);
         expect($('[data-sb-lock="lotControlled"]').classList.contains('d-none')).toBe(true);
         expect($('[data-sb-source="baseUomCode"]').classList.contains('d-none')).toBe(false);
@@ -115,6 +115,19 @@ describe('Stock behaviour section and offcanvas (O-12, O-8)', () => {
         // A missing name the screen does not know is never shown raw.
         expect([...$('[data-sb-missing]').children].map(x => x.textContent)).toEqual(['StockableFlag']);
         expect($('#sb-edit').classList.contains('d-none')).toBe(false);
+    });
+
+    // S5c: the conversion lines, the base unit and the storage conditions by name with the code beside it; a unit the
+    // vocabulary does not name yet (a newer catalog value) by its code. The sabotage target "the label lookup removed".
+    it('S5c: the quick view names the units and storage conditions, the code beside them; an unnamed unit by its code', () => {
+        const h = harness('gsku', 'Gskus');
+        h.module.render(detail(stockBehaviour({
+            uomConversions: [{ fromUom: 'XCS', toUom: 'XPL', numerator: '4', denominator: '1' }], derivedPackConversion: null
+        })));
+
+        expect([...$('[data-sb-value="uomConversions"]').children].map(x => x.textContent)).toEqual(['1 Uom_XCS (XCS) = 4 XPL']);
+        expect($('[data-sb-value="baseUomCode"]').textContent).toBe('Uom_C62 (C62)');
+        expect($('[data-sb-value="storageConditionCodes"]').textContent).toBe('Storage_COOL_2_8 (COOL_2_8)');
     });
 
     it('O-8: on an approved record a locked field is drawn read-only and says why; the others stay free', async () => {

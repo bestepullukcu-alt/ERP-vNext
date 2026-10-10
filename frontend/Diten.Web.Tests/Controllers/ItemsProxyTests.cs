@@ -504,7 +504,7 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     // ── Options (S5b, BL-600) ───────────────────────────────────────────────────────────────────────────────────
 
     private const string OptionsAnswer =
-        "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"catalogVersion\":\"v7\"," +
+        "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"catalogVersions\":{\"materialTypes\":\"MT-V3\",\"uoms\":\"ITEM-UNIVERSAL-V2\",\"storageConditions\":\"SC-V1\",\"extra\":\"dropped\"}," +
         "\"materialTypes\":[{\"code\":\"EXCIPIENT\",\"displayName\":\"Excipient\",\"sortOrder\":2,\"attributes\":{}}," +
         "{\"code\":\"ACTIVE_INGREDIENT\",\"displayName\":\"API\",\"sortOrder\":1,\"attributes\":{}}]," +
         "\"uoms\":[{\"code\":\"KGM\",\"displayName\":\"kilogram\",\"sortOrder\":5,\"attributes\":{\"DimensionCode\":\"MASS\",\"MaximumDecimalPrecision\":\"3\"}}," +
@@ -543,7 +543,13 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         using var body = JsonDocument.Parse(result.Content!);
         var data = body.RootElement.GetProperty("data");
         Assert.True(body.RootElement.GetProperty("success").GetBoolean());
-        Assert.Equal("v7", data.GetProperty("catalogVersion").GetString());
+        // S5b-FIX2: one catalog version per list, passed on as catalogVersions — only its three strings.
+        var versions = data.GetProperty("catalogVersions");
+        Assert.Equal("MT-V3", versions.GetProperty("materialTypes").GetString());
+        Assert.Equal("ITEM-UNIVERSAL-V2", versions.GetProperty("uoms").GetString());
+        Assert.Equal("SC-V1", versions.GetProperty("storageConditions").GetString());
+        Assert.Equal(3, versions.EnumerateObject().Count());
+        Assert.False(data.TryGetProperty("catalogVersion", out _));
         Assert.Equal(new[] { "ACTIVE_INGREDIENT", "EXCIPIENT" }, data.GetProperty("materialTypes").EnumerateArray().Select(o => o.GetProperty("code").GetString()!).ToArray());
         Assert.Equal(new[] { "C62", "KGM" }, data.GetProperty("uoms").EnumerateArray().Select(o => o.GetProperty("code").GetString()!).ToArray());
         var cool = data.GetProperty("storageConditions").EnumerateArray().First();
@@ -600,6 +606,8 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     [InlineData("{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"materialTypes\":[{\"code\":\"EXCIPIENT\"}],\"uoms\":[],\"storageConditions\":[{\"code\":\"COOL_2_8\"}]}}")]
     [InlineData("{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"materialTypes\":[{\"code\":\"EXCIPIENT\"}],\"uoms\":[{\"code\":\"kg <b>\"}],\"storageConditions\":[{\"code\":\"COOL_2_8\"}]}}")]
     [InlineData("{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"uoms\":[{\"code\":\"KGM\"}]}}")]
+    // S5b-FIX2: a code with a trailing newline is not code-shaped ("$" would have let "KGM\n" through; the pattern ends \z).
+    [InlineData("{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"materialTypes\":[{\"code\":\"EXCIPIENT\"}],\"uoms\":[{\"code\":\"KGM\\n\"}],\"storageConditions\":[{\"code\":\"COOL_2_8\"}]}}")]
     [InlineData("{\"isSuccessful\":false,\"statusCode\":200}")]
     [InlineData("not json")]
     public async Task Lists_that_cannot_be_offered_are_a_gateway_failure_never_an_empty_list(string answer)
@@ -610,6 +618,49 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
 
         Assert.Equal(StatusCodes.Status502BadGateway, result.StatusCode);
         Assert.DoesNotContain("\"data\"", JsonSerializer.Serialize(result.Value));
+    }
+
+    // S5b-FIX2: a list whose code ends in a newline ("KGM\n") is answered 502 by name — the case pinned on its own so a
+    // revert of the \z anchor is red under this test's name.
+    [Fact]
+    public async Task A_code_with_a_trailing_newline_is_not_code_shaped_and_the_options_answer_is_502()
+    {
+        var answer = OptionsAnswer.Replace("\"code\":\"KGM\"", "\"code\":\"KGM\\n\"", StringComparison.Ordinal);
+        Assert.Contains("\"KGM\\n\"", answer, StringComparison.Ordinal);
+        var wire = new RecordingHandler(HttpStatusCode.OK, answer);
+
+        var result = Assert.IsType<ObjectResult>(await Controller(wire, ["mdm.items.create"], "").Options(CancellationToken.None));
+
+        Assert.Equal(StatusCodes.Status502BadGateway, result.StatusCode);
+        Assert.DoesNotContain("\"data\"", JsonSerializer.Serialize(result.Value));
+    }
+
+    // S5b-FIX2: catalogVersions missing, not an object, or with a non-string version never fails the lists.
+    [Theory]
+    [InlineData("", null, null, null, true)]
+    [InlineData("\"catalogVersions\":\"v7\",", null, null, null, true)]
+    [InlineData("\"catalogVersions\":{\"materialTypes\":7,\"uoms\":\"U-V2\",\"storageConditions\":null},", null, "U-V2", null, false)]
+    public async Task An_odd_or_missing_catalog_versions_is_null_and_the_lists_are_still_offered(string versionsJson,
+        string? materialTypes, string? uoms, string? storageConditions, bool wholeNull)
+    {
+        var answer = OptionsAnswer[..OptionsAnswer.IndexOf("\"catalogVersions\"", StringComparison.Ordinal)] + versionsJson
+            + OptionsAnswer[OptionsAnswer.IndexOf("\"materialTypes\":[", StringComparison.Ordinal)..];
+        var wire = new RecordingHandler(HttpStatusCode.OK, answer);
+
+        var result = Assert.IsType<ContentResult>(await Controller(wire, ["mdm.items.create"], "").Options(CancellationToken.None));
+
+        using var body = JsonDocument.Parse(result.Content!);
+        var data = body.RootElement.GetProperty("data");
+        Assert.Equal(2, data.GetProperty("uoms").GetArrayLength());
+        var versions = data.GetProperty("catalogVersions");
+        if (wholeNull)
+        {
+            Assert.Equal(JsonValueKind.Null, versions.ValueKind);
+            return;
+        }
+        Assert.Equal(materialTypes, versions.GetProperty("materialTypes").GetString());
+        Assert.Equal(uoms, versions.GetProperty("uoms").GetString());
+        Assert.Equal(storageConditions, versions.GetProperty("storageConditions").GetString());
     }
 
     [Fact]
@@ -647,6 +698,21 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         // The labels by code (seven languages) are on the page for the script; the material types are no fixed list.
         Assert.Contains("id=\"reference-option-labels\"", html);
         Assert.DoesNotContain("value=\"EXCIPIENT\"", html);
+        // S5b-FIX2: the Create form's own "no item until the list arrives" reason reaches the page with the labels.
+        Assert.Contains("ptionsUnavailableCreate\":", html, StringComparison.Ordinal);
+    }
+
+    // S5c: the Details page carries the unit / storage-condition names by code (seven languages) for the script that shows
+    // the record's units and storage conditions by name — the same vocabulary as the forms.
+    [Fact]
+    public async Task S5c_The_details_page_carries_the_unit_and_storage_names_by_code()
+    {
+        var html = await LayoutRenderer.RenderAsync(factory, ItemsController.DetailsView.TrimStart('~'), "Items", "mdm.items.read",
+            new Dictionary<string, object?>());
+
+        Assert.Contains("id=\"reference-option-labels\"", html);
+        Assert.Contains("Uom_KGM", html);
+        Assert.Contains("Storage_COOL_2_8", html);
     }
 
     // ── Fixture ─────────────────────────────────────────────────────────────────────────────────────────────────

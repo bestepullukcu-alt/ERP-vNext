@@ -114,10 +114,11 @@ window.DitenStockBehaviour = (function () {
         fromUom: String(valueOf(row, 'fromUom') ?? ''), toUom: String(valueOf(row, 'toUom') ?? ''),
         numerator: String(valueOf(row, 'numerator') ?? ''), denominator: String(valueOf(row, 'denominator') ?? '')
     });
-    const conversionText = (row) => {
+    // S5c: the units by name with the code beside them (unitShown); the code alone where the vocabulary has no name.
+    const conversionText = (row, unitShown = (code) => code) => {
         const item = conversionOf(row);
         const amount = item.denominator === '1' ? item.numerator : `${item.numerator}/${item.denominator}`;
-        return `1 ${item.fromUom} = ${amount} ${item.toUom}`;
+        return `1 ${unitShown(item.fromUom)} = ${amount} ${unitShown(item.toUom)}`;
     };
 
     const create = ({ level, endpoint, versionField, fetchDetail, onSaved } = {}) => {
@@ -136,6 +137,10 @@ window.DitenStockBehaviour = (function () {
         const uomLabel = (code) => (code && words[`Uom_${code}`]) || code;
         const storageLabel = (code) => (code && words[`Storage_${code}`]) || code;
         const labels = { uoms: uomLabel, storageConditions: storageLabel };
+        // S5c: a stored value by its name with its code ("Kilogram (KGM)"); a newer catalog value without a name by its code.
+        const named = (label, code) => (code ? (label && label !== code ? `${label} (${code})` : code) : code);
+        const uomShown = (code) => named(uomLabel(code), code);
+        const storageShown = (code) => named(storageLabel(code), code);
         // What MDM holds as THIS record's own value (the form compares against it; an inherited one is not its own).
         const stored = (sb, field) => {
             if (field === 'stockable') return valueOf(sb, 'stockableFlag') ?? null;
@@ -158,21 +163,21 @@ window.DitenStockBehaviour = (function () {
                 const element = section.querySelector(`[data-sb-value="${field}"]`);
                 if (element) element.textContent = text;
             };
-            set('baseUomCode', shown(uomLabel(valueOf(sb, 'baseUomCode'))));
+            set('baseUomCode', shown(uomShown(valueOf(sb, 'baseUomCode'))));
             set('shelfLifeDays', shown(valueOf(sb, 'shelfLifeDays')));
             set('retestDays', shown(valueOf(sb, 'retestDays')));
             set('minRemainingShelfLifeDays', shown(valueOf(sb, 'minRemainingShelfLifeDays')));
             const storage = listOf(valueOf(sb, 'storageConditionCodes'));
-            set('storageConditionCodes', storage.length ? storage.map(storageLabel).join(', ') : words.NotSet);
+            set('storageConditionCodes', storage.length ? storage.map(storageShown).join(', ') : words.NotSet);
             set('lotControlled', yesNo(valueOf(sb, 'lotControlled')));
             set('serialControlled', yesNo(valueOf(sb, 'serialControlled')));
             set('gtin', shown(valueOf(sb, 'gtin')));
             set('stockable', yesNo(valueOf(sb, 'stockable') === true));
             const conversions = section.querySelector('[data-sb-value="uomConversions"]');
             if (conversions) {
-                const lines = listOf(valueOf(sb, 'uomConversions')).map(conversionText);
+                const lines = listOf(valueOf(sb, 'uomConversions')).map((row) => conversionText(row, uomShown));
                 const derived = valueOf(sb, 'derivedPackConversion');
-                if (derived) lines.push(`${conversionText(derived)} — ${words.DerivedPackConversion || ''}`);
+                if (derived) lines.push(`${conversionText(derived, uomShown)} — ${words.DerivedPackConversion || ''}`);
                 conversions.replaceChildren(...(lines.length ? lines : [words.NotSet]).map((line) => {
                     const row = document.createElement('div');
                     row.textContent = line;
@@ -370,7 +375,7 @@ window.DitenStockBehaviour = (function () {
             const derived = offcanvas.querySelector('#sb-form-derived');
             if (derived) {
                 const edge = valueOf(sb, 'derivedPackConversion');
-                derived.textContent = edge ? `${conversionText(edge)} — ${words.DerivedPackConversion || ''}` : '';
+                derived.textContent = edge ? `${conversionText(edge, uomShown)} — ${words.DerivedPackConversion || ''}` : '';
                 derived.classList.toggle('d-none', !edge);
             }
             const save = offcanvas.querySelector('#btnSaveStockBehaviour');

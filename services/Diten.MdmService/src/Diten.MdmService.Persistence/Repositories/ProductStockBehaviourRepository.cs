@@ -133,10 +133,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
             ? Builders<Gsku>.Filter.Exists(x => x.IdentitySubmitReservations, false)
               | Builders<Gsku>.Filter.Eq(x => x.IdentitySubmitReservations, 0)
             : Builders<Gsku>.Filter.Eq(x => x.IdentitySubmitReservations, current.IdentitySubmitReservations);
-        var filter = Conditions(target, write)
-            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
-            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
-            & reservations;
+        var filter = Conditions(target, write) & LocksFree<Gsku>(GskuLocks) & reservations;
         if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
         var written = await _gskus.FindOneAndUpdateAsync(filter,
             Update<Gsku>(write, nameof(Gsku.StockBehaviourCommand)),
@@ -145,7 +142,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
 
         var now = await _gskus.Find(target).FirstOrDefaultAsync(cancellationToken);
         return Classify(now, now?.StockBehaviourCommand, now?.Version, now?.LifecycleStatus, write,
-            now is not null && (now.ActiveLifecycleOperation is not null || now.RetirementOperationId is not null
+            now is not null && (LocksHeld(now, GskuLocks)
                                 || now.IdentitySubmitReservations != current.IdentitySubmitReservations));
     }
 
@@ -160,7 +157,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         if (current.Version == write.ExpectedVersion && await LskuOperationHoldsAsync(current, cancellationToken))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
-        var filter = Conditions(target, write) & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null);
+        var filter = Conditions(target, write) & LocksFree<Lsku>(LskuLocks);
         if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
         var written = await _lskus.FindOneAndUpdateAsync(filter,
             Update<Lsku>(write, nameof(Lsku.StockBehaviourCommand)),
@@ -169,7 +166,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
 
         var now = await _lskus.Find(target).FirstOrDefaultAsync(cancellationToken);
         return Classify(now, now?.StockBehaviourCommand, now?.Version, now?.LifecycleStatus, write,
-            now?.ActiveLifecycleOperation is not null);
+            now is not null && LocksHeld(now, LskuLocks));
     }
 
     public async Task<StockBehaviourWriteResult> WriteFinishedGoodAsync(
@@ -217,13 +214,27 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
 
     // ------------------------------------------------------------------------------------------- operation holds
     // S5-FIX1 (1): ONE definition per level, read by the write above AND by the detail's editable flag.
+    // S5b-FIX2 (1): the lifecycle locks a record carries are named ONCE per level (GskuLocks / LskuLocks). The write's
+    // Mongo filter (LocksFree: each field Eq null — a missing field matches too) and the in-memory reading (LocksHeld:
+    // Classify and *HeldAsync) are both generated from that one list; a pinned theory proves the two translations agree
+    // on every lock, set and unset, on a real store.
+
+    internal static readonly string[] GskuLocks = [nameof(Gsku.ActiveLifecycleOperation), nameof(Gsku.RetirementOperationId)];
+    internal static readonly string[] LskuLocks = [nameof(Lsku.ActiveLifecycleOperation)];
+
+    internal static FilterDefinition<T> LocksFree<T>(IEnumerable<string> locks) =>
+        locks.Aggregate(Builders<T>.Filter.Empty, (filter, field) => filter & new BsonDocument(field, BsonNull.Value));
+
+    internal static bool LocksHeld<T>(T record, IEnumerable<string> locks) =>
+        locks.Any(field => (typeof(T).GetProperty(field)
+                            ?? throw new InvalidOperationException($"{typeof(T).Name} has no lock field {field}."))
+            .GetValue(record) is not null);
 
     public async Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default) =>
-        gsku.ActiveLifecycleOperation is not null || gsku.RetirementOperationId is not null
-        || await GskuSubmitHoldsAsync(gsku, cancellationToken);
+        LocksHeld(gsku, GskuLocks) || await GskuSubmitHoldsAsync(gsku, cancellationToken);
 
     public async Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default) =>
-        lsku.ActiveLifecycleOperation is not null || await LskuOperationHoldsAsync(lsku, cancellationToken);
+        LocksHeld(lsku, LskuLocks) || await LskuOperationHoldsAsync(lsku, cancellationToken);
 
     public Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default) =>
         FinishedGoodOperationHoldsAsync(finishedGood, cancellationToken);

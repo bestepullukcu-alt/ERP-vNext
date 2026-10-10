@@ -115,6 +115,39 @@ public sealed partial class ItemS1HttpTests
         Assert.DoesNotContain("\"uoms\"", text, StringComparison.Ordinal);
     }
 
+    // S5b-FIX2 (2): an answer that names a set twice is refused by name (503 UNTRUSTED_ANSWER) — never a crash (500),
+    // never one of the two picked. Sabotage target "ToDictionary back".
+    [Fact]
+    public async Task S5b_FIX2_An_enumeration_naming_a_set_twice_is_untrusted_never_a_crash()
+    {
+        host.ItemReferences.RepeatEnumeratedSet = true;
+
+        var response = await Client().GetAsync($"{Items}/options");
+        var text = await response.Content.ReadAsStringAsync();
+
+        Assert.True(response.StatusCode == HttpStatusCode.ServiceUnavailable, text);
+        Assert.Contains("UNTRUSTED_ANSWER", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"uoms\"", text, StringComparison.Ordinal);
+    }
+
+    // S5b-FIX2: each list carries its own catalog version (a V2 item-uom beside V1 lists).
+    [Fact]
+    public async Task S5b_FIX2_Each_list_carries_its_own_catalog_version()
+    {
+        host.ItemReferences.EnumeratedVersions["item-uom"] = "ITEM-UNIVERSAL-V2";
+
+        var response = await Client().GetAsync($"{Items}/options");
+        var text = await response.Content.ReadAsStringAsync();
+        Assert.True(response.StatusCode == HttpStatusCode.OK, text);
+        using var document = JsonDocument.Parse(text);
+        var versions = document.RootElement.GetProperty("data").GetProperty("catalogVersions");
+
+        Assert.Equal("ITEM-UNIVERSAL-V2", versions.GetProperty("uoms").GetString());
+        Assert.Equal("ITEM-UNIVERSAL-V1", versions.GetProperty("materialTypes").GetString());
+        Assert.Equal("ITEM-UNIVERSAL-V1", versions.GetProperty("storageConditions").GetString());
+        Assert.False(document.RootElement.GetProperty("data").TryGetProperty("catalogVersion", out _));
+    }
+
     private static string[] Codes(JsonElement array) => array.EnumerateArray().Select(x => x.GetProperty("code").GetString()!).ToArray();
 
     private async Task<string[]> DetailActionsAsync(HttpClient client, Guid id)

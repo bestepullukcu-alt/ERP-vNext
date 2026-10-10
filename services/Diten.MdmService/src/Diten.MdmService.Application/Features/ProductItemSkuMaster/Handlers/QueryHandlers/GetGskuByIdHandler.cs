@@ -25,7 +25,7 @@ public sealed class GetGskuByIdHandler
     private readonly IGskuCorrectionWorkflowOperationRepository? _corrections;
     private readonly IGskuRetirementRequestOperationRepository? _retirementRequests;
     // S5-FIX1 (1): the stock write's own "held by an operation" predicates, for the section's editable flag.
-    private readonly IProductStockBehaviourRepository? _stockBehaviour;
+    private readonly IProductStockBehaviourRepository _stockBehaviour;
 
     public GetGskuByIdHandler(
         IGskuRepository gskus,
@@ -35,11 +35,12 @@ public sealed class GetGskuByIdHandler
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
         ITenantContext tenantContext,
+        // S5b-FIX2: required — the detail's editable flag always asks the write's own predicates.
+        IProductStockBehaviourRepository stockBehaviour,
         IProductIdentityLifecycleActorContext? actorContext = null,
         IFirstGskuIdentityWorkflowOperationRepository? identityOperations = null,
         IGskuCorrectionWorkflowOperationRepository? corrections = null,
-        IGskuRetirementRequestOperationRepository? retirementRequests = null,
-        IProductStockBehaviourRepository? stockBehaviour = null)
+        IGskuRetirementRequestOperationRepository? retirementRequests = null)
     {
         _stockBehaviour = stockBehaviour;
         _identityOperations = identityOperations;
@@ -127,7 +128,7 @@ public sealed class GetGskuByIdHandler
             stuckRequest is { Requester: true } ? stuckRequest.Request : null)
         {
             StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForGsku(gsku,
-                _stockBehaviour is not null && await _stockBehaviour.GskuHeldAsync(gsku, cancellationToken))
+                await _stockBehaviour.GskuHeldAsync(gsku, cancellationToken))
         });
     }
 

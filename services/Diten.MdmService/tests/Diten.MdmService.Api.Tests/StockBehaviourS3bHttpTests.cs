@@ -707,6 +707,12 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
     [InlineData("lsku-draft-busy", false)]
     [InlineData("fg-draft-cancelled", false)]
     [InlineData("fg-draft-free", true)]
+    // S5b-FIX2 (1): every hold the write reads, each alone.
+    [InlineData("fg-draft-busy", false)]
+    [InlineData("gsku-active-op", false)]
+    [InlineData("gsku-retirement-op", false)]
+    [InlineData("lsku-active-op", false)]
+    [InlineData("lsku-retirement-request", false)]
     public async Task S5_FIX1_Editable_is_exactly_what_the_stock_write_accepts(string shape, bool expected)
     {
         var (path, write) = await StockShapeAsync(shape);
@@ -811,6 +817,62 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
                 var records = await SeedAsync(completeGsku: true);
                 return ($"/api/finished-goods/{records.FinishedGood.Id:D}",
                     () => PutFinishedGoodAsync(records.FinishedGood.Id, records.FinishedGood.Version, new { lotControlled = true }));
+            }
+            case "fg-draft-busy":
+            {
+                // An unfinished identity operation of the Finished Good (its submit is under way).
+                var records = await SeedAsync(completeGsku: true);
+                var operationId = Guid.NewGuid();
+                await host.Database.GetCollection<FinishedGoodIdentityWorkflowOperation>(
+                        Diten.MdmService.Persistence.Repositories.FinishedGoodIdentityWorkflowOperationRepository.CollectionName)
+                    .InsertOneAsync(new FinishedGoodIdentityWorkflowOperation
+                    {
+                        Id = Guid.NewGuid(), TenantId = _tenant, OperationId = operationId,
+                        FinishedGoodId = records.FinishedGood.Id, GskuId = records.Gsku.Id, MakerSubjectId = _maker,
+                        ExpectedFinishedGoodVersion = records.FinishedGood.Version,
+                        StartIdempotencyKey = "start-" + operationId.ToString("N"), OperationFingerprint = new string('c', 64),
+                        Checkpoint = FinishedGoodIdentityWorkflowCheckpoint.WorkflowStarted
+                    });
+                return ($"/api/finished-goods/{records.FinishedGood.Id:D}",
+                    () => PutFinishedGoodAsync(records.FinishedGood.Id, records.FinishedGood.Version, new { lotControlled = true }));
+            }
+            case "gsku-active-op":
+            case "gsku-retirement-op":
+            {
+                var records = await SeedAsync();
+                var update = shape == "gsku-active-op"
+                    ? Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, new GskuActiveLifecycleOperationBinding(
+                        GskuLifecycleOperationKind.Correction, Guid.NewGuid(), records.Gsku.Version))
+                    : Builders<Gsku>.Update.Set(x => x.RetirementOperationId, Guid.NewGuid());
+                await host.Database.GetCollection<Gsku>("mdm_gskus").UpdateOneAsync(x => x.Id == records.Gsku.Id, update);
+                return ($"/api/gskus/{records.Gsku.Id:D}",
+                    () => PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { lotControlled = true }));
+            }
+            case "lsku-active-op":
+            {
+                var records = await SeedAsync();
+                await host.Database.GetCollection<Lsku>("mdm_lskus").UpdateOneAsync(x => x.Id == records.Lsku.Id,
+                    Builders<Lsku>.Update.Set(x => x.ActiveLifecycleOperation, new LskuActiveLifecycleOperationBinding(
+                        LskuLifecycleOperationKind.Retirement, Guid.NewGuid(), records.Lsku.Version)));
+                return ($"/api/lskus/{records.Lsku.Id:D}",
+                    () => PutLskuAsync(records.Lsku.Id, records.Lsku.Version, new { serialControlled = true }));
+            }
+            case "lsku-retirement-request":
+            {
+                // An active retirement request of the LSKU (decided, not yet completed — the lock already given back).
+                var records = await SeedAsync();
+                var operationId = Guid.NewGuid();
+                await host.Database.GetCollection<LskuRetirementRequestOperation>(
+                        Diten.MdmService.Persistence.Repositories.LskuRetirementRequestOperationRepository.CollectionName)
+                    .InsertOneAsync(new LskuRetirementRequestOperation
+                    {
+                        Id = Guid.NewGuid(), TenantId = _tenant, OperationId = operationId, LskuId = records.Lsku.Id,
+                        BaseLskuVersion = records.Lsku.Version, IsActive = true,
+                        Checkpoint = LskuRetirementRequestCheckpoint.DecisionApplied,
+                        StartIdempotencyKey = "start-" + operationId.ToString("N"), OperationFingerprint = new string('c', 64)
+                    });
+                return ($"/api/lskus/{records.Lsku.Id:D}",
+                    () => PutLskuAsync(records.Lsku.Id, records.Lsku.Version, new { serialControlled = true }));
             }
             default:
                 throw new ArgumentOutOfRangeException(nameof(shape), shape, null);

@@ -88,11 +88,14 @@ public static class ItemModels
         int SortOrder,
         IReadOnlyDictionary<string, string?> Attributes);
 
+    // S5b-FIX2: each list carries its own catalog version (the sets are versioned apart — e.g. a V2 item-uom).
     public sealed record ItemOptionsDto(
-        string CatalogVersion,
+        ItemOptionsCatalogVersions CatalogVersions,
         IReadOnlyList<ItemOptionDto> MaterialTypes,
         IReadOnlyList<ItemOptionDto> Uoms,
         IReadOnlyList<ItemOptionDto> StorageConditions);
+
+    public sealed record ItemOptionsCatalogVersions(string MaterialTypes, string Uoms, string StorageConditions);
 
     public sealed record ItemListDto(IReadOnlyList<ItemDto> Items, long Total, int Page, int PageSize);
 }

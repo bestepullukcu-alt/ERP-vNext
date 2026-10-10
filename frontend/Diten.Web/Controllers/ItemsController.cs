@@ -356,11 +356,13 @@ public sealed class ItemsController : Controller
     }
 
     // ── Options (S5b, BL-600): the lists the forms choose from ─────────────────────────────────────────────────────
-    // MDM's { catalogVersion, materialTypes, uoms, storageConditions } is passed on as codes, order and attributes only
+    // MDM's { catalogVersions, materialTypes, uoms, storageConditions } is passed on as codes, order and attributes only
     // (the English displayName is not a screen label: the screen labels by stable code). A list that is missing, empty or
     // not code-shaped is not a list to offer (502); a refusal keeps its status with its sentence (OptionsKeys).
+    // S5b-FIX2: catalogVersions is one version per list ({ materialTypes, uoms, storageConditions }, strings only); a
+    // missing or odd one is null — it never fails the lists. The code pattern ends with \z: "$" would accept "KGM\n".
 
-    private static readonly Regex OptionCode = new("^[A-Z][A-Z0-9_]{0,63}$", RegexOptions.CultureInvariant);
+    private static readonly Regex OptionCode = new(@"^[A-Z][A-Z0-9_]{0,63}\z", RegexOptions.CultureInvariant);
     private static readonly string[] OptionLists = ["materialTypes", "uoms", "storageConditions"];
 
     [HttpGet("api/options")]
@@ -380,7 +382,7 @@ public sealed class ItemsController : Controller
                 if (!response.IsSuccessStatusCode)
                     return await KnownOrStatusFailureAsync(response, cancellationToken, options: true);
 
-                var lists = ReadOptions(await response.Content.ReadAsStringAsync(cancellationToken), out var catalogVersion);
+                var lists = ReadOptions(await response.Content.ReadAsStringAsync(cancellationToken), out var catalogVersions);
                 if (lists is null)
                 {
                     _logger.LogWarning("Item options proxy: MDM answered lists that cannot be offered.");
@@ -396,7 +398,7 @@ public sealed class ItemsController : Controller
                         success = true,
                         data = new
                         {
-                            catalogVersion,
+                            catalogVersions,
                             materialTypes = lists["materialTypes"],
                             uoms = lists["uoms"],
                             storageConditions = lists["storageConditions"]
@@ -422,10 +424,12 @@ public sealed class ItemsController : Controller
 
     private sealed record OptionView(string Code, int SortOrder, Dictionary<string, string?> Attributes);
 
+    private sealed record CatalogVersionsView(string? MaterialTypes, string? Uoms, string? StorageConditions);
+
     // MDM's envelope → the three lists (each non-empty, every code code-shaped and once), or null.
-    private static Dictionary<string, List<OptionView>>? ReadOptions(string body, out string? catalogVersion)
+    private static Dictionary<string, List<OptionView>>? ReadOptions(string body, out CatalogVersionsView? catalogVersions)
     {
-        catalogVersion = null;
+        catalogVersions = null;
         try
         {
             using var document = JsonDocument.Parse(body);
@@ -437,8 +441,13 @@ public sealed class ItemsController : Controller
                 || data.ValueKind != JsonValueKind.Object)
                 return null;
 
-            if (Property(data, "catalogVersion") is { ValueKind: JsonValueKind.String } version)
-                catalogVersion = version.GetString();
+            if (Property(data, "catalogVersions") is { ValueKind: JsonValueKind.Object } versions)
+            {
+                static string? Version(JsonElement versions, string list) =>
+                    Property(versions, list) is { ValueKind: JsonValueKind.String } version ? version.GetString() : null;
+                catalogVersions = new CatalogVersionsView(Version(versions, "materialTypes"), Version(versions, "uoms"),
+                    Version(versions, "storageConditions"));
+            }
             var lists = new Dictionary<string, List<OptionView>>(StringComparer.Ordinal);
             foreach (var name in OptionLists)
             {

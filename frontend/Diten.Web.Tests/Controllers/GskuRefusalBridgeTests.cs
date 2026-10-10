@@ -129,6 +129,23 @@ public sealed class GskuRefusalBridgeTests
         }
     }
 
+    // S5b-FIX2: a submit refused while its withdrawal is under way (FIRST_GSKU_IDENTITY_WITHDRAWAL_UNDER_WAY) is finished by
+    // RE-SENDING THE WITHDRAWAL — the sentence says so (en pinned literally), never "open the GSKU again", in every
+    // language (the old "wait and reopen" wording is gone from all seven).
+    [Fact]
+    public void The_submit_during_withdrawal_sentence_tells_the_user_to_resend_the_withdrawal()
+    {
+        Assert.Equal("RefusalSubmitDuringWithdrawal", GskuRefusalSentences.Keys["FIRST_GSKU_IDENTITY_WITHDRAWAL_UNDER_WAY"]);
+        var english = ResxKeys("GskuRefusals.en.resx")["RefusalSubmitDuringWithdrawal"];
+        Assert.Contains("re-send the withdrawal", english, StringComparison.Ordinal);
+        Assert.Equal("A withdrawal of this submit is under way; re-send the withdrawal to finish it before submitting again.", english);
+        foreach (var language in Languages)
+        {
+            var text = ResxKeys($"GskuRefusals.{language}.resx")["RefusalSubmitDuringWithdrawal"];
+            Assert.DoesNotContain("GSKU", text, StringComparison.Ordinal);
+        }
+    }
+
     [Fact]
     public void The_two_maps_do_not_overlap()
     {

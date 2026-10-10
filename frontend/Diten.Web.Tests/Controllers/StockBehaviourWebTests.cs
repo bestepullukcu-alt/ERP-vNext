@@ -181,6 +181,74 @@ public sealed class StockBehaviourWebTests(WebApplicationFactory<Program> factor
         Assert.NotEqual(first, await KeyOf(actor, tenant, "4"));
     }
 
+    // K5 extension (S5b-FIX2): the key is bound to WHICH record, at WHICH level, for WHICH action too. Each is varied
+    // alone (same actor, tenant, attempt, version and body — the bodies are asserted equal) and the key MDM receives
+    // changes. Sabotage target: recordId.ToString("D") removed from StockBehaviourWrite.OperationId.
+    [Fact]
+    public async Task The_idempotency_key_sent_to_mdm_differs_by_record_id_alone()
+    {
+        var attempt = Guid.NewGuid().ToString("D");
+        var actor = Guid.NewGuid().ToString("D");
+        var tenant = Guid.NewGuid().ToString("D");
+        async Task<SentRequest> SentFor(Guid record)
+        {
+            var mdm = new Capture(Success());
+            await Gsku(mdm, Form(("ShelfLifeDays", "730")), attempt, actor, tenant).SetStockBehaviour(record, CancellationToken.None);
+            return Assert.Single(mdm.Sent);
+        }
+
+        var first = await SentFor(Id);
+        var again = await SentFor(Id);
+        var other = await SentFor(Guid.Parse("0d6c1e2f-3a4b-4c5d-8e6f-7a8b9c0d1e2f"));
+        Assert.Equal(first.IdempotencyKey, again.IdempotencyKey);
+        Assert.Equal(first.Body, other.Body);
+        Assert.Matches(DGuid, other.IdempotencyKey);
+        Assert.NotEqual(first.IdempotencyKey, other.IdempotencyKey);
+    }
+
+    [Fact]
+    public async Task The_idempotency_key_sent_to_mdm_differs_by_level_alone()
+    {
+        var attempt = Guid.NewGuid().ToString("D");
+        var actor = Guid.NewGuid().ToString("D");
+        var tenant = Guid.NewGuid().ToString("D");
+        var lskuMdm = new Capture(Success());
+        var finishedGoodMdm = new Capture(Success());
+
+        await Lsku(lskuMdm, Form(("SerialControlled", "true")), "mdm.lskus.create", attempt, actor, tenant)
+            .SetStockBehaviour(Id, CancellationToken.None);
+        await FinishedGood(finishedGoodMdm, Form(("SerialControlled", "true")), "mdm.finished-goods.create", attempt, actor, tenant)
+            .SetStockBehaviour(Id, CancellationToken.None);
+
+        var lsku = Assert.Single(lskuMdm.Sent);
+        var finishedGood = Assert.Single(finishedGoodMdm.Sent);
+        Assert.Equal("{\"expectedVersion\":3,\"serialControlled\":true}", lsku.Body);
+        Assert.Equal(lsku.Body, finishedGood.Body);
+        Assert.NotEqual(lsku.IdempotencyKey, finishedGood.IdempotencyKey);
+    }
+
+    // The two Finished Good actions (stock-behaviour, gtin) never carry the same body, so the action alone cannot be
+    // varied through the proxy: the key MDM receives for the GTIN request is measured, shown to be exactly the production
+    // derivation for (finished-good, gtin), and the same derivation with only the action changed gives another key.
+    [Fact]
+    public async Task The_idempotency_key_sent_to_mdm_differs_by_action_alone()
+    {
+        var attempt = Guid.NewGuid();
+        var actor = Guid.NewGuid().ToString("D");
+        var tenant = Guid.NewGuid();
+        var mdm = new Capture(Success());
+
+        await FinishedGood(mdm, Form(("Gtin", "04012345678901")), "mdm.finished-goods.create", attempt.ToString("D"), actor,
+            tenant.ToString("D")).AssignGtin(Id, CancellationToken.None);
+
+        var sent = Assert.Single(mdm.Sent);
+        var write = new Diten.Web.Services.MasterData.StockBehaviourWrite.Request(3, attempt, sent.Body);
+        Assert.Equal(sent.IdempotencyKey, Diten.Web.Services.MasterData.StockBehaviourWrite
+            .OperationId(tenant, actor, "finished-good", "gtin", Id, write).ToString("D"));
+        Assert.NotEqual(sent.IdempotencyKey, Diten.Web.Services.MasterData.StockBehaviourWrite
+            .OperationId(tenant, actor, "finished-good", "stock-behaviour", Id, write).ToString("D"));
+    }
+
     // A form the level does not accept never reaches MDM: an unknown field (an identity field, the LSKU's own flag on a
     // GSKU), no change at all, a malformed value, no form attempt, and a caller without the stock-edit key.
     [Theory]
@@ -329,6 +397,51 @@ public sealed class StockBehaviourWebTests(WebApplicationFactory<Program> factor
         }
     }
 
+    // S5b-FIX2 label drift guard: every unit (item-uom) and storage condition (storage-condition) Platform's contract
+    // fixture enumerates has its label (Uom_<code> / Storage_<code>) in all seven StockBehaviourText resx files — the
+    // ones _ReferenceOptionLabels.cshtml reads. Read from Platform's own fixture (read-only), not a copy of its codes.
+    // INTENTIONALLY RED when ITEM-UNIVERSAL-V2 (IU, CodeStandard, item-uom's new version) merges into that fixture,
+    // until the new codes' labels are added here in seven languages (and to StockBehaviourText.UomCodes).
+    [Fact]
+    public void Every_unit_and_storage_condition_of_platforms_contract_has_its_label_in_all_seven_languages()
+    {
+        var fixture = Path.Combine(RepoRoot(), "services", "Diten.Platform", "tests", "Diten.Platform.Application.Tests",
+            "BusinessReferenceData", "Fixtures", "item-universal-enumerate.contract.json");
+        using var contract = JsonDocument.Parse(File.ReadAllText(fixture));
+        string[] CodesOf(string set) => contract.RootElement.GetProperty("response").GetProperty("data").GetProperty("sets")
+            .EnumerateArray().Single(s => s.GetProperty("set_code").GetString() == set)
+            .GetProperty("values").EnumerateArray().Select(v => v.GetProperty("value_code").GetString()!).ToArray();
+        var expected = CodesOf("item-uom").Select(code => "Uom_" + code)
+            .Concat(CodesOf("storage-condition").Select(code => "Storage_" + code)).ToArray();
+        Assert.True(expected.Length >= 17, $"Only {expected.Length} codes read — the fixture's shape changed.");
+
+        foreach (var language in Languages)
+        {
+            var file = Resx("StockBehaviour", "StockBehaviourText", language);
+            var missing = expected.Where(key => !file.TryGetValue(key, out var text) || string.IsNullOrWhiteSpace(text)).ToArray();
+            Assert.True(missing.Length == 0, $"StockBehaviourText.{language}.resx misses: {string.Join(", ", missing)}");
+        }
+        // The partial serializes exactly StockBehaviourText.ItemFormOptionKeys: a label the resx has but the key list
+        // does not name never reaches the page.
+        Assert.All(expected, key => Assert.Contains(key, StockBehaviourText.ItemFormOptionKeys));
+    }
+
+    // S5b-FIX2: the item Create form's own reason (no item without the lists) is read by the page in seven languages.
+    [Fact]
+    public void The_create_forms_options_unavailable_sentence_is_in_all_seven_languages()
+    {
+        Assert.Contains("OptionsUnavailableCreate", StockBehaviourText.ItemFormOptionKeys);
+        Assert.Equal("The item cannot be created until the list arrives.",
+            Resx("StockBehaviour", "StockBehaviourText", "en")["OptionsUnavailableCreate"]);
+        foreach (var language in Languages)
+        {
+            var file = Resx("StockBehaviour", "StockBehaviourText", language);
+            Assert.True(file.TryGetValue("OptionsUnavailableCreate", out var text) && !string.IsNullOrWhiteSpace(text),
+                $"OptionsUnavailableCreate missing in {language}");
+            Assert.NotEqual(file["OptionsUnavailable"], text);
+        }
+    }
+
     // The LSKU and Finished Good proxies say the stock codes with the GSKU bridge's sentences: none of the codes their
     // writes can answer may carry a field list ({0}) — it would never be filled there.
     [Fact]
@@ -375,17 +488,17 @@ public sealed class StockBehaviourWebTests(WebApplicationFactory<Program> factor
         { ControllerContext = new ControllerContext { HttpContext = Context(permission, form, formAttempt, actor, tenant) } };
 
     private static LskusController Lsku(HttpMessageHandler mdm, Dictionary<string, StringValues> form,
-        string permission = "mdm.lskus.create") =>
+        string permission = "mdm.lskus.create", string? formAttempt = null, string? actor = null, string? tenant = null) =>
         new(new HttpClient(mdm), Configuration(), new EphemeralDataProtectionProvider(),
             new FormatLocalizer<LskusIndex>(null), NullLogger<LskusController>.Instance, new FormatLocalizer<GskuRefusals>("refusal"))
-        { ControllerContext = new ControllerContext { HttpContext = Context(permission, form) } };
+        { ControllerContext = new ControllerContext { HttpContext = Context(permission, form, formAttempt, actor, tenant) } };
 
     private static FinishedGoodsController FinishedGood(HttpMessageHandler mdm, Dictionary<string, StringValues> form,
-        string permission = "mdm.finished-goods.create") =>
+        string permission = "mdm.finished-goods.create", string? formAttempt = null, string? actor = null, string? tenant = null) =>
         new(new HttpClient(mdm), Configuration(), new EphemeralDataProtectionProvider(),
             new FormatLocalizer<Diten.Web.SharedResource>("localized"), new FormatLocalizer<FinishedGoodsIndex>("localized"),
             NullLogger<FinishedGoodsController>.Instance, new FormatLocalizer<GskuRefusals>("refusal"))
-        { ControllerContext = new ControllerContext { HttpContext = Context(permission, form) } };
+        { ControllerContext = new ControllerContext { HttpContext = Context(permission, form, formAttempt, actor, tenant) } };
 
     private static IConfiguration Configuration() => new ConfigurationBuilder()
         .AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build();

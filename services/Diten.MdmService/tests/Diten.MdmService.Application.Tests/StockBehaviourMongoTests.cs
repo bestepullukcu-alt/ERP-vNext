@@ -782,6 +782,80 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
     }
 
+    // ---------------------------------------------------------------- S5b-FIX2 (1): one lock definition
+
+    // The write's lock filter (LocksFree, Mongo) and the held reading (LocksHeld, in memory — Classify and *HeldAsync)
+    // come from ONE list per level; on the real store the two translations agree for every lock set, none set, and a
+    // document written without the fields. Sabotage target "the filter and Classify diverge".
+    [Theory]
+    [InlineData("gsku", "none")]
+    [InlineData("gsku", "missing")]
+    [InlineData("gsku", nameof(Gsku.ActiveLifecycleOperation))]
+    [InlineData("gsku", nameof(Gsku.RetirementOperationId))]
+    [InlineData("lsku", "none")]
+    [InlineData("lsku", "missing")]
+    [InlineData("lsku", nameof(Lsku.ActiveLifecycleOperation))]
+    public async Task S5b_FIX2_The_lock_filter_and_the_held_reading_agree_on_the_store(string level, string shape)
+    {
+        var store = new ProductStockBehaviourRepository(_database, Tenant());
+        bool matched, held;
+        if (level == "gsku")
+        {
+            var gsku = await SeedGskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+            await ShapeLocksAsync(Gskus, gsku.Id, ProductStockBehaviourRepository.GskuLocks, shape,
+                new GskuActiveLifecycleOperationBinding(GskuLifecycleOperationKind.Correction, Guid.NewGuid(), gsku.Version));
+            var target = Builders<Gsku>.Filter.Eq(x => x.Id, gsku.Id);
+            matched = await Gskus.Find(target & ProductStockBehaviourRepository.LocksFree<Gsku>(ProductStockBehaviourRepository.GskuLocks)).AnyAsync();
+            var now = await Gskus.Find(target).SingleAsync();
+            held = ProductStockBehaviourRepository.LocksHeld(now, ProductStockBehaviourRepository.GskuLocks);
+            // The detail's reading is the same one (no submit exists here).
+            Assert.Equal(held, await store.GskuHeldAsync(now));
+        }
+        else
+        {
+            var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+            await ShapeLocksAsync(Lskus, lsku.Id, ProductStockBehaviourRepository.LskuLocks, shape,
+                new LskuActiveLifecycleOperationBinding(LskuLifecycleOperationKind.Retirement, Guid.NewGuid(), lsku.Version));
+            var target = Builders<Lsku>.Filter.Eq(x => x.Id, lsku.Id);
+            matched = await Lskus.Find(target & ProductStockBehaviourRepository.LocksFree<Lsku>(ProductStockBehaviourRepository.LskuLocks)).AnyAsync();
+            var now = await Lskus.Find(target).SingleAsync();
+            held = ProductStockBehaviourRepository.LocksHeld(now, ProductStockBehaviourRepository.LskuLocks);
+            Assert.Equal(held, await store.LskuHeldAsync(now));
+        }
+
+        Assert.Equal(shape is not ("none" or "missing"), held);
+        Assert.Equal(!held, matched);
+    }
+
+    // The lists name every lifecycle lock the entities carry: a new lock field cannot be forgotten by one translation.
+    [Fact]
+    public void S5b_FIX2_The_lock_lists_name_every_lifecycle_lock_of_the_entity()
+    {
+        static string[] Locks(Type type) => type.GetProperties()
+            .Where(x => x.Name == "ActiveLifecycleOperation" || x.Name.EndsWith("OperationId", StringComparison.Ordinal))
+            .Select(x => x.Name).Order().ToArray();
+
+        Assert.Equal(Locks(typeof(Gsku)), ProductStockBehaviourRepository.GskuLocks.Order());
+        Assert.Equal(Locks(typeof(Lsku)), ProductStockBehaviourRepository.LskuLocks.Order());
+    }
+
+    private static async Task ShapeLocksAsync<T>(IMongoCollection<T> collection, Guid id, string[] locks, string shape, object binding)
+        where T : EntityBase
+    {
+        var filter = Builders<T>.Filter.Eq(x => x.Id, id);
+        if (shape == "missing")
+        {
+            await collection.UpdateOneAsync(filter, Builders<T>.Update.Combine(locks.Select(x => Builders<T>.Update.Unset(x))));
+            return;
+        }
+        if (shape == "none") return;
+        Assert.Contains(shape, locks);
+        var value = typeof(T).GetProperty(shape)!.PropertyType == typeof(Guid?) ? (object)Guid.NewGuid() : binding;
+        var current = await collection.Find(filter).SingleAsync();
+        typeof(T).GetProperty(shape)!.SetValue(current, value);
+        await collection.ReplaceOneAsync(filter, current);
+    }
+
     private async Task<Guid> SeedLskuRetirementAsync(Lsku lsku, LskuRetirementRequestCheckpoint checkpoint, bool active,
         Guid? tenantId = null, Guid? lskuId = null, bool deleted = false,
         ProductIdentityWorkflowRecoveryDisposition disposition = ProductIdentityWorkflowRecoveryDisposition.None)
@@ -997,6 +1071,15 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
 
         public Task<bool> GtinHeldByAnotherAsync(string gtin, Guid finishedGoodId, CancellationToken cancellationToken = default) =>
             inner.GtinHeldByAnotherAsync(gtin, finishedGoodId, cancellationToken);
+
+        public Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default) =>
+            inner.GskuHeldAsync(gsku, cancellationToken);
+
+        public Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default) =>
+            inner.LskuHeldAsync(lsku, cancellationToken);
+
+        public Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default) =>
+            inner.FinishedGoodHeldAsync(finishedGood, cancellationToken);
     }
 
     /// <summary>The two MOD-0048 item lists as FU01 §4 plans them (S1's fake: ConditionKind on storage conditions).</summary>

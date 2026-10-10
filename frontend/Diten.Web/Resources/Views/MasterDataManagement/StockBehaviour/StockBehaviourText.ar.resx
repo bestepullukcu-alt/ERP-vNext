@@ -72,6 +72,7 @@
   <data name="Storage_PROTECT_FROM_LIGHT" xml:space="preserve"><value>يحفظ بعيداً عن الضوء</value></data>
   <data name="Storage_PROTECT_FROM_MOISTURE" xml:space="preserve"><value>يحفظ بعيداً عن الرطوبة</value></data>
   <data name="OptionsUnavailable" xml:space="preserve"><value>تعذر تحميل قوائم الوحدات وظروف التخزين الآن، لذا لا يمكن تغيير هذه الحقول. لا يزال بإمكانك حفظ الحقول الأخرى؛ حاول مرة أخرى بعد قليل.</value></data>
+  <data name="OptionsUnavailableCreate" xml:space="preserve"><value>لا يمكن إنشاء الصنف حتى تصل القائمة.</value></data>
   <data name="TemperatureOnlyOne" xml:space="preserve"><value>يمكن اختيار شرط حرارة واحد فقط. أزل الشرط المختار أولاً.</value></data>
   <data name="SelectUnit" xml:space="preserve"><value>اختر وحدة</value></data>
 </root>

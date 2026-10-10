@@ -1,3 +1,4 @@
+using Diten.Platform.API.Controllers.Internal;
 using Diten.Platform.API.Models.BusinessReferenceData;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.BusinessReferenceData.Handlers.QueryHandlers;
@@ -160,6 +161,52 @@ public sealed partial class ItemUniversalReferenceDataTests
             new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!;
         Assert.Null(body.AdditionalFields);
         Assert.Equal(codes, body.SetCodes);
+    }
+
+    // S5b-FIX2: a set code longer than 64 is a malformed ask (CONTRACT_INVALID) — never "not supported", whatever it
+    // spells; 64 itself reaches the set check.
+    [Fact]
+    public async Task S5b_FIX2_A_set_code_longer_than_64_is_contract_invalid_not_unsupported()
+    {
+        var refused = await Enumerate("item-uom", new string('x', 65));
+        Assert.Equal(400, refused.StatusCode);
+        Assert.Equal(ResolveItemUniversalReferenceDataHandler.ContractInvalid, refused.Errors.Single());
+
+        var unsupported = await Enumerate("item-uom", new string('x', 64));
+        Assert.Equal(ResolveItemUniversalReferenceDataHandler.SetNotSupported, unsupported.Errors.Single());
+    }
+
+    // S5b-FIX2: the enumeration body is capped like the resolve's (sabotage target V4).
+    [Fact]
+    public void S5b_FIX2_The_enumeration_body_is_capped()
+    {
+        var limit = Assert.Single(typeof(InternalItemUniversalReferenceDataController)
+            .GetMethod(nameof(InternalItemUniversalReferenceDataController.Enumerate))!
+            .GetCustomAttributes(typeof(RequestSizeLimitAttribute), false).Cast<RequestSizeLimitAttribute>());
+        Assert.NotNull(limit);
+        Assert.Equal(65536, InternalItemUniversalReferenceDataController.MaximumRequestBytes);
+    }
+
+    // S5b-FIX2: an unexpected failure inside the enumeration is a named 503 (a timeout a named 504), never a bare 500
+    // (sabotage target V6).
+    [Theory]
+    [InlineData(false, 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
+    [InlineData(true, 504, "REFERENCE_PROVIDER_TIMEOUT")]
+    public async Task S5b_FIX2_An_unexpected_failure_in_the_enumeration_is_answered_by_name(bool cancelled, int status, string code)
+    {
+        var behavior = new Diten.Platform.Application.Features.BusinessReferenceData.BusinessReferenceDataExceptionBehavior<
+            EnumerateItemUniversalReferenceDataQuery, Response<ItemUniversalEnumerationResult>>(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<Diten.Platform.Application.Features.BusinessReferenceData
+                .BusinessReferenceDataExceptionBehavior<EnumerateItemUniversalReferenceDataQuery,
+                    Response<ItemUniversalEnumerationResult>>>.Instance);
+
+        var response = await behavior.Handle(new EnumerateItemUniversalReferenceDataQuery(["item-uom"]),
+            () => Task.FromException<Response<ItemUniversalEnumerationResult>>(
+                cancelled ? new OperationCanceledException() : new NullReferenceException()),
+            CancellationToken.None);
+
+        Assert.Equal(status, response.StatusCode);
+        Assert.Equal(code, response.Errors.Single());
     }
 
     private static Task<Response<ItemUniversalEnumerationResult>> Enumerate(params string?[] setCodes)
