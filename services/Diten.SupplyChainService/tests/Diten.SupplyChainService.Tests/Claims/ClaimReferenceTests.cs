@@ -60,12 +60,38 @@ public sealed class ClaimReferenceTests
   var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim {ShipmentId=id,CarrierId=carrier},default));
   Assert.Equal(404,ex.Status);Assert.Equal("CLAIM_NOT_FOUND",ex.Code);
  }
- [Fact] public async Task Reader_ExplicitCarrierWithNullShipmentCarrier_BusinessMismatch422()
+/*
+ * D187-01, owner ruling 2026-10-11. This test used to assert the OPPOSITE - a null shipment carrier
+ * plus an explicit claim carrier was 422 - and that assertion was the undecided question in code form.
+ * Nothing writes Shipment.CarrierId (MOD-0183:95 "no new assignment API"; :499 holds the assignment
+ * surface), so the old rule made a claim against the carrier that actually carried the shipment
+ * impossible: measured live 2026-10-10, 422 with the real carrier and 201 without one.
+ *
+ * The carrier is still not taken on trust - the reader resolves it against the scoped carrier list and
+ * answers 404 when it is absent, which is what sets CarrierStatus.
+ *
+ * SABOTAGE: restore the old condition in ClaimLifecycle (compare to ShipmentCarrierId unconditionally)
+ * and these three cases go red while the mismatch test below stays green.
+ */
+ [Theory][InlineData("Active")][InlineData("Suspended")][InlineData("Retired")]
+ public async Task Reader_ExplicitCarrierWithAbsentShipmentCarrier_IsAccepted(string status)
  {
   var id=Guid.NewGuid();var carrier=Guid.NewGuid();var shipment=Shipment(id);shipment["carrierId"]=null;
-  var handler=new BranchTransport(shipment.ToJsonString(),Carriers(carrier,"Retired").ToJsonString());var claim=new Claim {ShipmentId=id,CarrierId=carrier,ClaimedAmount="1"};
-  var snapshot=await BranchReader(handler).ObserveAsync(claim,default);Assert.Null(snapshot.ShipmentCarrierId);
-  var ex=Assert.Throws<ClaimFailureException>(()=>ClaimLifecycle.ValidateCreate(claim,snapshot));Assert.Equal(422,ex.Status);Assert.Equal("CLAIM_CARRIER_MISMATCH",ex.Code);Assert.Equal(2,handler.Paths.Count);
+  var handler=new BranchTransport(shipment.ToJsonString(),Carriers(carrier,status).ToJsonString());var claim=new Claim {ShipmentId=id,CarrierId=carrier,ClaimedAmount="1"};
+  var snapshot=await BranchReader(handler).ObserveAsync(claim,default);Assert.Null(snapshot.ShipmentCarrierId);Assert.Equal(status,snapshot.CarrierStatus);
+  ClaimLifecycle.ValidateCreate(claim,snapshot);Assert.Equal(2,handler.Paths.Count);
+ }
+ // The other half of the ruling: a shipment carrier that is PRESENT and DIFFERENT is still a mismatch,
+ // so the guard keeps its full meaning the day an assignment surface lands.
+ [Fact] public async Task Reader_ExplicitCarrierDiffersFromPresentShipmentCarrier_Mismatch422()
+ {
+  var id=Guid.NewGuid();var shipmentCarrier=Guid.NewGuid();var claimed=Guid.NewGuid();
+  var shipment=Shipment(id);shipment["carrierId"]=shipmentCarrier.ToString();
+  var handler=new BranchTransport(shipment.ToJsonString(),Carriers(claimed,"Active").ToJsonString());
+  var claim=new Claim {ShipmentId=id,CarrierId=claimed,ClaimedAmount="1"};
+  var snapshot=await BranchReader(handler).ObserveAsync(claim,default);Assert.Equal(shipmentCarrier,snapshot.ShipmentCarrierId);
+  var ex=Assert.Throws<ClaimFailureException>(()=>ClaimLifecycle.ValidateCreate(claim,snapshot));
+  Assert.Equal(422,ex.Status);Assert.Equal("CLAIM_CARRIER_MISMATCH",ex.Code);
  }
  [Fact] public async Task Reader_ExplicitCarrierWithMissingShipmentField_IncompleteBeforeCarrierRead()
  {
