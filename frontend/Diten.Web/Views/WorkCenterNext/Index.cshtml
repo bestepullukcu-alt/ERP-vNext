@@ -3,6 +3,7 @@
 @inject IHtmlLocalizer<WorkCenterNextIndex> Localizer
 @{
     ViewData["Title"] = Localizer["Title"].Value;
+    ViewData["PageCode"] = "WORKCENTER"; // WP-UX-COMMON-01 — the help panel / tour code, also when the menu did not load
     Layout = "_LayoutTenantShell";
 }
 
@@ -25,8 +26,8 @@
        re-checks every key. Loaded first so window.Permissions exists before app.js renders the header. *@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_L10n" />
-    @* WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer and its `?` list strings. *@
-    <partial name="~/Views/Shared/_DitenShortcuts.cshtml" />
+    @* WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer is loaded by _LayoutTenantShell for every page
+       (WP-UX-COMMON-01); this page registers its keys with it and does not load it a second time. *@
     @* Tasks strings + engine client, needed by the quick-create offcanvas above. *@
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
     <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>

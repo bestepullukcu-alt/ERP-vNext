@@ -122,6 +122,13 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
                 return EmptyBecause(EmptyPayloadReason);
             }
 
+            // WP-UX-COMMON-01 (BL-495) — the page being drawn, by its stable code, for the top bar's help panel. The
+            // menu holds every entitled page with its route and renders before the top bar, so it is the one place
+            // that can answer without a second call (see CurrentPage).
+            HttpContext.Items[CurrentPage.PageCodeItem] = CurrentPage.Match(
+                HttpContext.Request.Path.Value,
+                groups.SelectMany(g => g.Items ?? Array.Empty<NavigationItem>()).Select(i => ((string?)i.PageCode, i.RoutePath)));
+
             // FIX-3 — DATA-DRIVEN: group modules by DOMAIN (display name resolved server-side). Each module is one
             // entry; the view links a single-page module straight to its page, or makes a multi-page module a
             // collapsible group. Grouping/order/visibility come entirely from the response (Domain, SortOrder,

@@ -1,0 +1,237 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Help.Panel.Open" xml:space="preserve">
+    <value>Help for this page</value>
+  </data>
+  <data name="Help.Panel.Title" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="Help.Panel.Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Help.Panel.PurposeHeading" xml:space="preserve">
+    <value>What this page is for</value>
+  </data>
+  <data name="Help.Panel.StepsHeading" xml:space="preserve">
+    <value>How to use it</value>
+  </data>
+  <data name="Help.Panel.ShortcutsHeading" xml:space="preserve">
+    <value>Keyboard shortcuts on this page</value>
+  </data>
+  <data name="Help.Panel.EnterHint" xml:space="preserve">
+    <value>In a side panel, Enter saves; in a multi-line field, Ctrl+Enter (⌘+Enter on a Mac) saves.</value>
+  </data>
+  <data name="Help.Panel.StartTour" xml:space="preserve">
+    <value>Start the tour</value>
+  </data>
+  <data name="Help.Panel.Preparing" xml:space="preserve">
+    <value>Help text for this page is being prepared.</value>
+  </data>
+  <data name="Tour.Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Tour.Previous" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Tour.Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Tour.Progress" xml:space="preserve">
+    <value>{{current}} of {{total}}</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Title" xml:space="preserve">
+    <value>Tabs</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Text" xml:space="preserve">
+    <value>Inbox holds work and approval requests sent to you, My Work the work you own, and Pool the work your team can pick up.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Title" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Text" xml:space="preserve">
+    <value>Type part of a title to narrow the list; the filter chips narrow it further by type and status.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Title" xml:space="preserve">
+    <value>The list</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Text" xml:space="preserve">
+    <value>Click a row to open the work: its details, checklist, comments and history are there.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Title" xml:space="preserve">
+    <value>Act on it</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Text" xml:space="preserve">
+    <value>Accept, Start and Complete sit on the row. Open an approval request to Approve or Reject it; to hand work to someone else, use Delegate in the opened work.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Title" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Text" xml:space="preserve">
+    <value>Create a new task, note or meeting from here.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Title" xml:space="preserve">
+    <value>The week</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Text" xml:space="preserve">
+    <value>Move between weeks with the arrows; Today brings you back to the current week.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Title" xml:space="preserve">
+    <value>Add a row</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Text" xml:space="preserve">
+    <value>Use + Task row or + Category row to add what you worked on this week.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Title" xml:space="preserve">
+    <value>Enter time</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Text" xml:space="preserve">
+    <value>Type the hours into each day's cell; the totals update as you go.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Title" xml:space="preserve">
+    <value>Submit the week</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Text" xml:space="preserve">
+    <value>When the week is complete, choose Submit for approval; your approver then sees it in Timesheet approvals.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Title" xml:space="preserve">
+    <value>Weeks waiting for you</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Text" xml:space="preserve">
+    <value>Weeks your team submitted for approval are listed here.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Title" xml:space="preserve">
+    <value>Open a week</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
+    <value>Open a row to read the week, then choose Approve, or Return with a reason so it can be corrected.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
+    <value>Approve several</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
+    <value>Tick the weeks that need no comment and use Approve selected to approve them together.</value>
+  </data>
+  <data name="Help.USERS.Purpose" xml:space="preserve">
+    <value>Manage everyone who can sign in to your tenant: invite users, edit their details and decide whether each account is active. Administrators use it; disabling, deleting or a password reset takes effect at once.</value>
+  </data>
+  <data name="Help.USERS.Step1" xml:space="preserve">
+    <value>Narrow the list with the search box, or click “Filter”, choose “Status”, “Roles” or “Account Type” and click “Apply”.</value>
+  </data>
+  <data name="Help.USERS.Step2" xml:space="preserve">
+    <value>Click “Add User”, fill in “Email”, “First Name” and “Last Name” in the side panel, then click “Save” or press Enter in a field.</value>
+  </data>
+  <data name="Help.USERS.Step3" xml:space="preserve">
+    <value>Ask the new user to set a password through the e-mailed link; until then the status shows “Invited” and the row offers “Resend Invitation”.</value>
+  </data>
+  <data name="Help.USERS.Step4" xml:space="preserve">
+    <value>Open a row's actions to “View” or “Edit” a user, “Disable” or “Enable” the account, send a “Reset Password” link, or “Delete” it.</value>
+  </data>
+  <data name="Help.USERS.Step5" xml:space="preserve">
+    <value>To give a user roles, open the User Roles page; the “Roles” column here only shows what is already assigned.</value>
+  </data>
+  <data name="Help.ROLES.Purpose" xml:space="preserve">
+    <value>This page lists your tenant's roles: System roles that come with the platform and Custom roles you create. Administrators add, edit or delete custom roles here; permissions are set on Role Permissions.</value>
+  </data>
+  <data name="Help.ROLES.Step1" xml:space="preserve">
+    <value>Search the list, or click “Filter”, pick “System (built-in, locked)” or “Custom (editable)” under “Type” and click “Apply”.</value>
+  </data>
+  <data name="Help.ROLES.Step2" xml:space="preserve">
+    <value>Click “Add Role”, enter “Name” and “Display Name” (and a “Description” if needed), then click “Save”; the name cannot be changed later.</value>
+  </data>
+  <data name="Help.ROLES.Step3" xml:space="preserve">
+    <value>Click the key icon “Manage Permissions” on a row to open Role Permissions with that role already selected.</value>
+  </data>
+  <data name="Help.ROLES.Step4" xml:space="preserve">
+    <value>Use “View”, “Edit” or “Delete” on a custom role; a system role shows a lock icon and can only be viewed.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Purpose" xml:space="preserve">
+    <value>This page sets what a role is allowed to do: you grant or remove permissions, grouped by module, for one role at a time. Administrators use it, and each change affects every user who holds the role.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1" xml:space="preserve">
+    <value>Pick a role in the “Role” box; coming from “Manage Permissions” on the Roles page opens it with the role already selected.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2" xml:space="preserve">
+    <value>Narrow the permissions with “Module”, the “Search permissions…” box, or the “All”, “Assigned” and “Unassigned” tabs.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3" xml:space="preserve">
+    <value>Click an unassigned permission chip to grant it to the role; the change is saved at once.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4" xml:space="preserve">
+    <value>Click an assigned chip and confirm to remove it; chips with a lock come from the baseline or a module and cannot be changed here.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5" xml:space="preserve">
+    <value>Check “Selected Role” on the right for “Permission coverage” and the assigned, locked and unassigned counts.</value>
+  </data>
+  <data name="Help.USERROLES.Purpose" xml:space="preserve">
+    <value>This page links users to roles: pick one user, then give them roles or take roles away. A user can hold several roles and gets the union of their permissions, so each change alters what they can do.</value>
+  </data>
+  <data name="Help.USERROLES.Step1" xml:space="preserve">
+    <value>Pick a person in the “User” box to see the roles they hold and the ones they do not.</value>
+  </data>
+  <data name="Help.USERROLES.Step2" xml:space="preserve">
+    <value>Narrow the roles with the “Search Roles” box or the “All”, “Assigned” and “Unassigned” tabs.</value>
+  </data>
+  <data name="Help.USERROLES.Step3" xml:space="preserve">
+    <value>Click “Assign” on a role under “Unassigned Roles” to give it to the user; the change is saved at once.</value>
+  </data>
+  <data name="Help.USERROLES.Step4" xml:space="preserve">
+    <value>Click “Remove” on an assigned role, or the x beside it under “Active Roles”, and confirm to take it away.</value>
+  </data>
+</root>

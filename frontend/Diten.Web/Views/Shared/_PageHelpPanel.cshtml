@@ -1,0 +1,79 @@
+@model Diten.Web.Models.Shared.PageHelpModel
+@using System.Linq
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Diten.Web.PageHelpResource> Help
+@*
+    WP-UX-COMMON-01 (BL-495) — the "?" help panel, the tour layer and the side-panel Enter rule, once per shell.
+
+    The panel says (a) what the page is for and (b) how to use it, from `Help.{PageCode}.Purpose` / `.Step1..5`;
+    (c) lists the page's registered shortcuts (DitenShortcuts.list(), filled in by diten-help.js — no row when the
+    page registers none); (d) offers "Start the tour" only when the page registered one, the tour library is on the
+    page and the screen is at least `md` wide. A page without text says its help is being prepared.
+
+    Text is resx text rendered by Razor (encoded), never HTML. Not drawn on the unauthorized face (UAS-001).
+    Needs: _DitenShortcuts (above it), Bootstrap (offcanvas).
+*@
+@{
+    var code = Model?.PageCode;
+    string? Text(string key)
+    {
+        var value = Help[key];
+        return value.ResourceNotFound || string.IsNullOrWhiteSpace(value.Value) ? null : value.Value;
+    }
+    var purpose = code is null ? null : Text($"Help.{code}.Purpose");
+    var steps = code is null || purpose is null
+        ? new List<string>()
+        : Enumerable.Range(1, 5).Select(i => Text($"Help.{code}.Step{i}")).Where(s => s is not null).Select(s => s!).ToList();
+    var tourStrings = Help.GetAllStrings(true)
+        .Where(s => s.Name.StartsWith("Tour.", StringComparison.Ordinal))
+        .GroupBy(s => s.Name)
+        .ToDictionary(g => g.Key, g => g.First().Value);
+}
+<script src="~/assets/js/shared/diten-enter-primary.js" asp-append-version="true"></script>
+@if (!Diten.Web.Services.Navigation.CurrentPage.IsAccessDenied(Context))
+{
+    <div class="offcanvas offcanvas-end diten-help-panel" tabindex="-1" id="diten-help-panel"
+        aria-labelledby="diten-help-title" data-page-code="@code">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="diten-help-title">@Help["Help.Panel.Title"]</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Help["Help.Panel.Close"]"></button>
+        </div>
+        <div class="offcanvas-body">
+            @if (purpose is not null)
+            {
+                <section class="diten-help-section" data-diten-help-purpose>
+                    <h6 class="diten-help-heading">@Help["Help.Panel.PurposeHeading"]</h6>
+                    <p>@purpose</p>
+                </section>
+                @if (steps.Count > 0)
+                {
+                    <section class="diten-help-section" data-diten-help-steps>
+                        <h6 class="diten-help-heading">@Help["Help.Panel.StepsHeading"]</h6>
+                        <ol class="diten-help-steps">
+                            @foreach (var step in steps)
+                            {
+                                <li>@step</li>
+                            }
+                        </ol>
+                    </section>
+                }
+            }
+            else
+            {
+                <p class="diten-help-preparing" data-diten-help-preparing>@Help["Help.Panel.Preparing"]</p>
+            }
+            <section class="diten-help-section" data-diten-help-shortcuts hidden>
+                <h6 class="diten-help-heading">@Help["Help.Panel.ShortcutsHeading"]</h6>
+                <div data-diten-help-shortcut-list></div>
+            </section>
+            <p class="diten-help-note">@Help["Help.Panel.EnterHint"]</p>
+            <div class="diten-help-tour" data-diten-help-tour hidden>
+                <button type="button" class="btn btn-primary" data-diten-help-start-tour>@Help["Help.Panel.StartTour"]</button>
+            </div>
+        </div>
+    </div>
+    <script id="diten-tour-l10n" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(tourStrings))</script>
+    <script src="~/assets/js/shared/diten-tour.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-tour-catalog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-help.js" asp-append-version="true"></script>
+}

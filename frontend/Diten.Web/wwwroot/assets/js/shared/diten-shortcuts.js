@@ -27,7 +27,8 @@
  *   · focus is in an input, a textarea, a select or anything contenteditable;
  *   · a Bootstrap modal or offcanvas is open, or a SweetAlert is on screen — the key belongs to that layer;
  *   · Ctrl, Cmd or Alt is held — those chords belong to the browser and the OS.
- * `?` is the one exception: it opens the list from anywhere except a form field (where it is a character).
+ * `?` is the one exception: it opens the list from anywhere except a form field (where it is a character). Where the
+ * shell draws the page help panel (WP-UX-COMMON-01), `?` opens that panel instead — it carries the same list.
  *
  * ── CONFLICTS ARE LOUD ─────────────────────────────────────────────────────────────────────────────────────
  * The same key twice in one scope is a console error and the SECOND entry is refused. Silently letting the later
@@ -167,7 +168,10 @@
         if (isFormField(event.target)) { return; }
         if (key === LIST_KEY) {
             event.preventDefault();
-            open();
+            // WP-UX-COMMON-01 — where the shell draws the page help panel, `?` opens THAT (it lists these same
+            // shortcuts, beside what the page is for); elsewhere it still opens the list on its own.
+            const help = global.DitenHelp;
+            if (!(help && typeof help.open === 'function' && help.open())) { open(); }
             return;
         }
         if (hasModifier(event) || overlayOpen()) { return; }
@@ -265,6 +269,7 @@
         open,
         list,
         renderList,
+        keyCap,
         t,
         __scopes: scopes,
         __uninstall: () => { if (doc) { doc.removeEventListener('keydown', onKeydown); } }

@@ -216,7 +216,8 @@ kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini de
 `unauthorized-surface-standard` yetkisiz kullanıcı ne görür (UAS-001) ·
 `frontend-js-standard` · `premium-modal-standard` uyarı ve modal ·
 liste → `frontend-datatable-template` · detay → `frontend-details-template` ·
-create/edit → `frontend-form-template`
+create/edit → `frontend-form-template` ·
+`page-help-and-keyboard` "?" yardım metni (yoksa borç defteri), yan panelde Enter, kısayol katmanı, tur (UXH-001)
 
 ### Kullanıcıya görünen metin varsa
 `localization-standard` (Platform 2 dil · Tenant 7 dil) ·

@@ -1,0 +1,237 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Help.Panel.Open" xml:space="preserve">
+    <value>Ayuda para esta página</value>
+  </data>
+  <data name="Help.Panel.Title" xml:space="preserve">
+    <value>Ayuda</value>
+  </data>
+  <data name="Help.Panel.Close" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="Help.Panel.PurposeHeading" xml:space="preserve">
+    <value>Para qué sirve esta página</value>
+  </data>
+  <data name="Help.Panel.StepsHeading" xml:space="preserve">
+    <value>Cómo usarla</value>
+  </data>
+  <data name="Help.Panel.ShortcutsHeading" xml:space="preserve">
+    <value>Atajos de teclado de esta página</value>
+  </data>
+  <data name="Help.Panel.EnterHint" xml:space="preserve">
+    <value>En un panel lateral, Intro guarda; en un campo de varias líneas, Ctrl+Intro (⌘+Intro en Mac) guarda.</value>
+  </data>
+  <data name="Help.Panel.StartTour" xml:space="preserve">
+    <value>Iniciar el recorrido</value>
+  </data>
+  <data name="Help.Panel.Preparing" xml:space="preserve">
+    <value>El texto de ayuda de esta página se está preparando.</value>
+  </data>
+  <data name="Tour.Next" xml:space="preserve">
+    <value>Siguiente</value>
+  </data>
+  <data name="Tour.Previous" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Tour.Done" xml:space="preserve">
+    <value>Listo</value>
+  </data>
+  <data name="Tour.Progress" xml:space="preserve">
+    <value>{{current}} de {{total}}</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Title" xml:space="preserve">
+    <value>Pestañas</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Text" xml:space="preserve">
+    <value>Bandeja de entrada reúne el trabajo y las solicitudes de aprobación que le envían, Mi trabajo lo que tiene asignado y Bandeja común lo que su equipo puede tomar.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Title" xml:space="preserve">
+    <value>Búsqueda</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Text" xml:space="preserve">
+    <value>Escriba parte de un título para acotar la lista; los filtros la acotan aún más por tipo y estado.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Title" xml:space="preserve">
+    <value>La lista</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Text" xml:space="preserve">
+    <value>Haga clic en una fila para abrir el trabajo: allí están sus detalles, lista de control, comentarios e historial.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Title" xml:space="preserve">
+    <value>Actuar</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Text" xml:space="preserve">
+    <value>Aceptar, Iniciar y Completar están en la fila. Abra una solicitud de aprobación para Aprobar o Rechazar; para pasar el trabajo a otra persona, use Delegar en el trabajo abierto.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Title" xml:space="preserve">
+    <value>Nuevo</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Text" xml:space="preserve">
+    <value>Cree aquí una nueva tarea, nota o reunión.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Title" xml:space="preserve">
+    <value>La semana</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Text" xml:space="preserve">
+    <value>Cambie de semana con las flechas; Hoy le devuelve a la semana actual.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Title" xml:space="preserve">
+    <value>Añadir una fila</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Text" xml:space="preserve">
+    <value>Use + Fila de tarea o + Fila de categoría para añadir aquello en lo que trabajó esta semana.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Title" xml:space="preserve">
+    <value>Introducir el tiempo</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Text" xml:space="preserve">
+    <value>Escriba las horas en la celda de cada día; los totales se actualizan sobre la marcha.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Title" xml:space="preserve">
+    <value>Enviar la semana</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Text" xml:space="preserve">
+    <value>Cuando la semana esté completa, elija Enviar para aprobación; su aprobador la verá en Aprobaciones de hojas de horas.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Title" xml:space="preserve">
+    <value>Semanas pendientes</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Text" xml:space="preserve">
+    <value>Aquí se listan las semanas que su equipo envió para aprobación.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Title" xml:space="preserve">
+    <value>Abrir una semana</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
+    <value>Abra una fila para leer la semana y elija Aprobar, o Devolver con un motivo para que se corrija.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step3.Title" xml:space="preserve">
+    <value>Aprobar varias</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step3.Text" xml:space="preserve">
+    <value>Marque las semanas que no requieren comentarios y use Aprobar seleccionadas para aprobarlas juntas.</value>
+  </data>
+  <data name="Help.USERS.Purpose" xml:space="preserve">
+    <value>Gestione a quienes pueden iniciar sesión en su inquilino: invítelos, edite sus datos y decida si su cuenta está activa. La usan los administradores; desactivar, eliminar o restablecer surte efecto al instante.</value>
+  </data>
+  <data name="Help.USERS.Step1" xml:space="preserve">
+    <value>Acote la lista con el cuadro de búsqueda, o haga clic en «Filtrar», elija «Estado», «Roles» o «Tipo de cuenta» y haga clic en «Aplicar».</value>
+  </data>
+  <data name="Help.USERS.Step2" xml:space="preserve">
+    <value>Haga clic en «Agregar usuario», complete «Correo electrónico», «Nombre» y «Apellido» en el panel lateral y haga clic en «Guardar» o pulse Intro en un campo.</value>
+  </data>
+  <data name="Help.USERS.Step3" xml:space="preserve">
+    <value>Pida al nuevo usuario que defina su contraseña con el enlace recibido por correo; hasta entonces el estado es «Invitado» y la fila ofrece «Reenviar invitación».</value>
+  </data>
+  <data name="Help.USERS.Step4" xml:space="preserve">
+    <value>Abra las acciones de una fila para «Ver» o «Editar registro», «Desactivar» o «Activar» la cuenta, «Restablecer contraseña» o «Eliminar».</value>
+  </data>
+  <data name="Help.USERS.Step5" xml:space="preserve">
+    <value>Para dar roles a un usuario, abra la página Roles de usuario; la columna «Roles» de aquí solo muestra los ya asignados.</value>
+  </data>
+  <data name="Help.ROLES.Purpose" xml:space="preserve">
+    <value>Esta página muestra los roles del inquilino: los de Sistema que trae la plataforma y los Personalizados que usted crea. Los administradores gestionan aquí los personalizados; los permisos van en Permisos de rol.</value>
+  </data>
+  <data name="Help.ROLES.Step1" xml:space="preserve">
+    <value>Busque en la lista, o haga clic en «Filtrar», elija «Sistema (integrado, bloqueado)» o «Personalizado (editable)» en «Tipo» y haga clic en «Aplicar».</value>
+  </data>
+  <data name="Help.ROLES.Step2" xml:space="preserve">
+    <value>Haga clic en «Agregar rol», escriba «Nombre» y «Nombre para mostrar» (y una «Descripción» si hace falta) y haga clic en «Guardar»; el nombre no se puede cambiar después.</value>
+  </data>
+  <data name="Help.ROLES.Step3" xml:space="preserve">
+    <value>Haga clic en el icono de llave «Gestionar permisos» de una fila para abrir Permisos de rol con ese rol ya seleccionado.</value>
+  </data>
+  <data name="Help.ROLES.Step4" xml:space="preserve">
+    <value>Use «Ver», «Editar registro» o «Eliminar» en un rol personalizado; un rol del sistema muestra un candado y solo se puede ver.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Purpose" xml:space="preserve">
+    <value>Esta página define lo que un rol puede hacer: asigne o quite permisos, agrupados por módulo, de un rol a la vez. La usan los administradores, y cada cambio afecta a todos los usuarios con ese rol.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1" xml:space="preserve">
+    <value>Elija un rol en el cuadro «Rol»; si llega desde «Gestionar permisos» en la página Roles, el rol ya aparece seleccionado.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2" xml:space="preserve">
+    <value>Acote los permisos con «Módulo», el cuadro «Buscar permisos…» o las pestañas «Todos», «Asignado» y «Sin asignar».</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3" xml:space="preserve">
+    <value>Haga clic en una etiqueta de permiso sin asignar para otorgarlo al rol; el cambio se guarda al instante.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4" xml:space="preserve">
+    <value>Haga clic en una etiqueta asignada y confirme para quitarla; las que tienen candado vienen de la base o de un módulo y no se cambian aquí.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5" xml:space="preserve">
+    <value>Revise «Rol seleccionado» a la derecha para ver la «Cobertura de permisos» y los recuentos de permisos asignados, bloqueados y sin asignar.</value>
+  </data>
+  <data name="Help.USERROLES.Purpose" xml:space="preserve">
+    <value>Esta página vincula usuarios y roles: elija un usuario y asígnele o quítele roles. Un usuario recibe la unión de los permisos de todos sus roles, así que cada cambio modifica lo que puede hacer.</value>
+  </data>
+  <data name="Help.USERROLES.Step1" xml:space="preserve">
+    <value>Elija una persona en el cuadro «Usuario» para ver los roles que tiene y los que no.</value>
+  </data>
+  <data name="Help.USERROLES.Step2" xml:space="preserve">
+    <value>Acote los roles con el cuadro «Buscar roles» o las pestañas «Todos», «Asignados» y «No asignados».</value>
+  </data>
+  <data name="Help.USERROLES.Step3" xml:space="preserve">
+    <value>Haga clic en «Asignar» en un rol de «Roles no asignados» para dárselo al usuario; el cambio se guarda al instante.</value>
+  </data>
+  <data name="Help.USERROLES.Step4" xml:space="preserve">
+    <value>Para quitar un rol, haga clic en «Quitar» en un rol asignado, o en la x junto a él en «Roles activos», y confirme.</value>
+  </data>
+</root>

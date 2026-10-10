@@ -1014,7 +1014,7 @@
                     </ul>
                 </div>
                 <div class="dropdown">
-                    <button type="button" class="btn btn-primary shadow-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button type="button" class="btn btn-primary shadow-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-tour="wcn-new">
                         <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
@@ -1253,7 +1253,7 @@
         const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-wcn-shortcuts aria-haspopup="dialog" aria-keyshortcuts="?" title="${esc(t('KeyboardHint'))}" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button></div>`;
         return `<div class="card mb-3 wcn-tabcard">
             <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
-                <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
+                <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}" data-tour="wcn-tabs">
                     ${TABS.map(tab).join('')}
                 </ul>
                 ${views}
@@ -1409,7 +1409,7 @@
             return `<div id="wcnTableFilterHost" class="px-3"><div class="collapse${state.filtersOpen ? ' show' : ''}" id="wcnFilterCollapse"><div class="pt-0 pb-3 wcn-filter-panel dt-filter-host">${filterPanel()}</div></div></div>`;
         }
         // Persistent search (page-level, not per-view) with a clear affordance.
-        const searchBox = `<div class="wcn-search wcn-search-inline">
+        const searchBox = `<div class="wcn-search wcn-search-inline" data-tour="wcn-search">
             <i class="bx bx-search"></i>
             <input type="text" class="form-control shadow-none" data-wcn-search
                 value="${esc(state.search)}" placeholder="${esc(t('SearchPlaceholder'))}" aria-label="${esc(t('SearchPlaceholder'))}">
@@ -1800,7 +1800,7 @@
                 ${compact ? '' : `<p class="wcn-row-summary">${summaryHtml}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
-            <div class="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
+            <div class="wcn-row-actions" data-tour="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
         </div>`;
     };
 
@@ -7631,7 +7631,8 @@
          */
         const sidePanel = '';
 
-        const mainPanel = `<div id="wcn-main-panel" class="wcn-main${state.view === 'table' ? '' : ' wcn-main-open'}" role="tabpanel" aria-labelledby="wcn-tab-${state.tab}" tabindex="0">${main}</div>`;
+        // WP-UX-COMMON-01 — `data-tour` marks are the Task Center tour's targets (tour.js); markup only, no behaviour.
+        const mainPanel = `<div id="wcn-main-panel" data-tour="wcn-list" class="wcn-main${state.view === 'table' ? '' : ' wcn-main-open'}" role="tabpanel" aria-labelledby="wcn-tab-${state.tab}" tabindex="0">${main}</div>`;
         const workspaceToolbar = state.view === 'table'
             ? buildChips()
             : `<section class="card wcn-workspace-card wcn-workspace-toolbar-card">${buildChips()}</section>`;
