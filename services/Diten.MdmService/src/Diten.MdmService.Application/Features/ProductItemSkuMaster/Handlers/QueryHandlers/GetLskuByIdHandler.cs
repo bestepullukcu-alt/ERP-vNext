@@ -21,6 +21,8 @@ public sealed class GetLskuByIdHandler
     private readonly IGlobalProductRepository _globalProducts;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
     private readonly IProductIdentityLifecycleActorContext _actorContext;
+    // S5-FIX1 (1): the stock write's own "held by an operation" predicates, for the section's editable flag.
+    private readonly IProductStockBehaviourRepository? _stockBehaviour;
 
     public GetLskuByIdHandler(
         ILskuRepository lskus,
@@ -31,8 +33,10 @@ public sealed class GetLskuByIdHandler
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
         ITenantContext tenantContext,
-        IProductIdentityLifecycleActorContext? actorContext = null)
+        IProductIdentityLifecycleActorContext? actorContext = null,
+        IProductStockBehaviourRepository? stockBehaviour = null)
     {
+        _stockBehaviour = stockBehaviour;
         _lskus = lskus;
         _gskus = gskus;
         _revisions = revisions;
@@ -94,7 +98,8 @@ public sealed class GetLskuByIdHandler
             lsku.UpdatedAt,
             BuildAvailableActions(lsku, gsku, _actorContext))
         {
-            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForLsku(gsku, lsku)
+            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForLsku(gsku, lsku,
+                _stockBehaviour is not null && await _stockBehaviour.LskuHeldAsync(lsku, cancellationToken))
         });
     }
 

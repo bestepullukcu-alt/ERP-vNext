@@ -126,17 +126,8 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         var current = await _gskus.Find(target).FirstOrDefaultAsync(cancellationToken);
         if (current is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(current.StockBehaviourCommand, write) is { } replay) return replay;
-        if (current.Version == write.ExpectedVersion)
-        {
-            var latest = await FirstGskuIdentityWorkflowOperationRepository.LatestForGsku(
-                    _gskuIdentity, OperationTenant<FirstGskuIdentityWorkflowOperation>(), current.Id)
-                .FirstOrDefaultAsync(cancellationToken);
-            // The draft edit's own rule (FirstGskuIdentitySubmitState): only no submit, or a finished / ended one, frees
-            // the record.
-            if (FirstGskuIdentitySubmitState.Of(latest, current.Version).Kind is not
-                (FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.Ended))
-                return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
-        }
+        if (current.Version == write.ExpectedVersion && await GskuSubmitHoldsAsync(current, cancellationToken))
+            return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
         var reservations = current.IdentitySubmitReservations == 0
             ? Builders<Gsku>.Filter.Exists(x => x.IdentitySubmitReservations, false)
@@ -166,22 +157,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         var current = await _lskus.Find(target).FirstOrDefaultAsync(cancellationToken);
         if (current is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(current.StockBehaviourCommand, write) is { } replay) return replay;
-        if (current.Version == write.ExpectedVersion
-            && (await _lskuIdentity.Find(OperationTenant<LskuIdentityWorkflowOperation>()
-                        & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LskuId, current.Id)
-                        & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, LskuFinished))
-                    .AnyAsync(cancellationToken)
-                // S3 FIX1 B1: an ACTIVE retirement request — after its decision the request gives the LSKU's lock back
-                // and only THEN reads the LSKU at base + 2 to complete; a stock edit in that window moved it to base + 3
-                // and the request was stuck for good (still active, so ux_lsku_active_retirement refused every new
-                // request). Active = IsActive not false (a document without the flag counts as active — the safe side)
-                // and not Completed (an old completed request without the flag never blocks).
-                || await _lskuRetirement.Find(OperationTenant<LskuRetirementRequestOperation>()
-                        & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.LskuId, current.Id)
-                        & Builders<LskuRetirementRequestOperation>.Filter.Ne(x => x.IsActive, false)
-                        & Builders<LskuRetirementRequestOperation>.Filter.Ne(
-                            x => x.Checkpoint, LskuRetirementRequestCheckpoint.Completed))
-                    .AnyAsync(cancellationToken)))
+        if (current.Version == write.ExpectedVersion && await LskuOperationHoldsAsync(current, cancellationToken))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
         var filter = Conditions(target, write) & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null);
@@ -208,11 +184,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         // S3 FIX1 M4: a cancelled draft is not editable at all.
         if (current.DraftCancellation is not null)
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.RecordNotEditable);
-        if (current.Version == write.ExpectedVersion
-            && (await _finishedGoodIdentity.Find(OperationTenant<FinishedGoodIdentityWorkflowOperation>()
-                        & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Eq(x => x.FinishedGoodId, current.Id)
-                        & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, FinishedGoodFinished))
-                    .AnyAsync(cancellationToken)))
+        if (current.Version == write.ExpectedVersion && await FinishedGoodOperationHoldsAsync(current, cancellationToken))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
         var filter = Conditions(target, write) & Builders<FinishedGood>.Filter.Eq(x => x.DraftCancellation, null);
@@ -242,6 +214,51 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         return Classify(now, write.MarksGtin ? now?.GtinCommand : now?.StockBehaviourCommand, now?.Version,
             now?.LifecycleStatus, write, heldByOperation: false);
     }
+
+    // ------------------------------------------------------------------------------------------- operation holds
+    // S5-FIX1 (1): ONE definition per level, read by the write above AND by the detail's editable flag.
+
+    public async Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default) =>
+        gsku.ActiveLifecycleOperation is not null || gsku.RetirementOperationId is not null
+        || await GskuSubmitHoldsAsync(gsku, cancellationToken);
+
+    public async Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default) =>
+        lsku.ActiveLifecycleOperation is not null || await LskuOperationHoldsAsync(lsku, cancellationToken);
+
+    public Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default) =>
+        FinishedGoodOperationHoldsAsync(finishedGood, cancellationToken);
+
+    // The draft edit's own rule (FirstGskuIdentitySubmitState): only no submit, or a finished / ended one, frees the record.
+    private async Task<bool> GskuSubmitHoldsAsync(Gsku current, CancellationToken cancellationToken)
+    {
+        var latest = await FirstGskuIdentityWorkflowOperationRepository.LatestForGsku(
+                _gskuIdentity, OperationTenant<FirstGskuIdentityWorkflowOperation>(), current.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        return FirstGskuIdentitySubmitState.Of(latest, current.Version).Kind is not
+            (FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.Ended);
+    }
+
+    private async Task<bool> LskuOperationHoldsAsync(Lsku current, CancellationToken cancellationToken) =>
+        await _lskuIdentity.Find(OperationTenant<LskuIdentityWorkflowOperation>()
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LskuId, current.Id)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, LskuFinished))
+            .AnyAsync(cancellationToken)
+        // S3 FIX1 B1: an ACTIVE retirement request — after its decision the request gives the LSKU's lock back and only
+        // THEN reads the LSKU at base + 2 to complete; a stock edit in that window moved it to base + 3 and the request
+        // was stuck for good (still active, so ux_lsku_active_retirement refused every new request). Active = IsActive
+        // not false (a document without the flag counts as active — the safe side) and not Completed (an old completed
+        // request without the flag never blocks).
+        || await _lskuRetirement.Find(OperationTenant<LskuRetirementRequestOperation>()
+                & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.LskuId, current.Id)
+                & Builders<LskuRetirementRequestOperation>.Filter.Ne(x => x.IsActive, false)
+                & Builders<LskuRetirementRequestOperation>.Filter.Ne(x => x.Checkpoint, LskuRetirementRequestCheckpoint.Completed))
+            .AnyAsync(cancellationToken);
+
+    private Task<bool> FinishedGoodOperationHoldsAsync(FinishedGood current, CancellationToken cancellationToken) =>
+        _finishedGoodIdentity.Find(OperationTenant<FinishedGoodIdentityWorkflowOperation>()
+                & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Eq(x => x.FinishedGoodId, current.Id)
+                & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, FinishedGoodFinished))
+            .AnyAsync(cancellationToken);
 
     public Task<bool> GtinHeldByAnotherAsync(string gtin, Guid finishedGoodId, CancellationToken cancellationToken = default) =>
         _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)

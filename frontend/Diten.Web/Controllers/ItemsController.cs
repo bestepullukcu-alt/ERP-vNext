@@ -22,10 +22,11 @@ namespace Diten.Web.Controllers;
 /// proxy to MDM's <c>/api/mdm/items</c> through the gateway. The browser never holds a token or a tenant: the proxy
 /// forwards the access-token cookie as Bearer and the tenant from the signed-in principal (the GSKU proxy's pattern).
 ///
-/// <para><b>No list of the selectable values exists for a screen</b> (measured 2026-10-10): MDM resolves item-uom,
-/// storage-condition and material-type only by exact code (IItemReferenceResolver → Platform's internal
-/// item-universal/resolve). So the material type is the closed set of six (ItemRules), and units and storage
-/// conditions are typed codes that MDM judges (ITEM_REFERENCE_VALUE_INVALID → a sentence naming the value).</para>
+/// <para><b>S5b (BL-600) — the lists to choose from</b>: <c>api/options</c> passes on MDM's item options (material
+/// types, units, storage conditions, from Platform's enumeration). The form offers only those as selects; a list that
+/// cannot be read is a refusal by name (503 / 504 / 401 with its sentence) — never an empty list, and the form never
+/// falls back to typed codes. The list is not the proof of a choice: MDM still resolves every chosen code on the write
+/// (ITEM_REFERENCE_VALUE_INVALID → a sentence naming the value).</para>
 /// </summary>
 [Authorize]
 [Route("MasterDataManagement/Items")]
@@ -37,6 +38,15 @@ public sealed class ItemsController : Controller
     public const string SubmitPermission = "mdm.items.submit";
     public const string DeactivatePermission = "mdm.items.deactivate";
     public const string RetirePermission = "mdm.items.retire";
+
+    /// <summary>
+    /// S5b: whoever may open a form that offers the item lists — the item form (create / update) and the GSKU / LSKU /
+    /// Finished Good stock forms (MDM's own any-of on <c>GET /api/mdm/items/options</c>). A read-only key is not one.
+    /// </summary>
+    public static readonly IReadOnlyList<string> OptionsPermissions =
+    [
+        CreatePermission, UpdatePermission, "mdm.gskus.update", "mdm.lskus.create", "mdm.finished-goods.create"
+    ];
 
     public const string IndexView = "~/Views/MasterDataManagement/Items/Index.cshtml";
     public const string CreateView = "~/Views/MasterDataManagement/Items/Create.cshtml";
@@ -96,10 +106,12 @@ public sealed class ItemsController : Controller
         return View(CreateView, new ItemFormViewModel());
     }
 
+    // S5-FIX1: the edit form reads the item first (api/{id} asks the read key), so the page asks BOTH keys — an update
+    // key without the read key would draw a form that can never be filled.
     [HttpGet("Edit/{id:guid}")]
     public IActionResult Edit(Guid id)
     {
-        if (!HasPermission(UpdatePermission))
+        if (!HasPermission(UpdatePermission) || !HasPermission(ReadPermission))
             return Denied(EditView, new ItemFormViewModel { Id = id });
 
         return View(EditView, new ItemFormViewModel { Id = id });
@@ -342,6 +354,136 @@ public sealed class ItemsController : Controller
             value = "'" + value;
         return "\"" + value.Replace("\"", "\"\"") + "\"";
     }
+
+    // ── Options (S5b, BL-600): the lists the forms choose from ─────────────────────────────────────────────────────
+    // MDM's { catalogVersion, materialTypes, uoms, storageConditions } is passed on as codes, order and attributes only
+    // (the English displayName is not a screen label: the screen labels by stable code). A list that is missing, empty or
+    // not code-shaped is not a list to offer (502); a refusal keeps its status with its sentence (OptionsKeys).
+
+    private static readonly Regex OptionCode = new("^[A-Z][A-Z0-9_]{0,63}$", RegexOptions.CultureInvariant);
+    private static readonly string[] OptionLists = ["materialTypes", "uoms", "storageConditions"];
+
+    [HttpGet("api/options")]
+    public async Task<IActionResult> Options(CancellationToken cancellationToken)
+    {
+        if (!OptionsPermissions.Any(HasPermission))
+            return ForbiddenResult();
+
+        if (!TryCreateGatewayRequest(HttpMethod.Get, $"{_gatewayUrl}/api/mdm/items/options", content: null, out var request))
+            return UnauthorizedResult();
+
+        try
+        {
+            using (request)
+            using (var response = await _httpClient.SendAsync(request, cancellationToken))
+            {
+                if (!response.IsSuccessStatusCode)
+                    return await KnownOrStatusFailureAsync(response, cancellationToken, options: true);
+
+                var lists = ReadOptions(await response.Content.ReadAsStringAsync(cancellationToken), out var catalogVersion);
+                if (lists is null)
+                {
+                    _logger.LogWarning("Item options proxy: MDM answered lists that cannot be offered.");
+                    return SafeFailure(HttpStatusCode.BadGateway);
+                }
+
+                return new ContentResult
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    ContentType = "application/json",
+                    Content = JsonSerializer.Serialize(new
+                    {
+                        success = true,
+                        data = new
+                        {
+                            catalogVersion,
+                            materialTypes = lists["materialTypes"],
+                            uoms = lists["uoms"],
+                            storageConditions = lists["storageConditions"]
+                        }
+                    }, _jsonOptions)
+                };
+            }
+        }
+        catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning(exception, "Item options proxy timed out.");
+            return OptionsRefusal(StatusCodes.Status504GatewayTimeout, "RefusalOptionsTimeout");
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogError(exception, "Item options proxy failed.");
+            return OptionsRefusal(StatusCodes.Status503ServiceUnavailable, "RefusalOptionsUnavailable");
+        }
+    }
+
+    private IActionResult OptionsRefusal(int status, string key) =>
+        StatusCode(status, new { success = false, errors = new[] { _localizer[key].Value } });
+
+    private sealed record OptionView(string Code, int SortOrder, Dictionary<string, string?> Attributes);
+
+    // MDM's envelope → the three lists (each non-empty, every code code-shaped and once), or null.
+    private static Dictionary<string, List<OptionView>>? ReadOptions(string body, out string? catalogVersion)
+    {
+        catalogVersion = null;
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object
+                || !(root.TryGetProperty("isSuccessful", out var successful) || root.TryGetProperty("IsSuccessful", out successful))
+                || successful.ValueKind != JsonValueKind.True
+                || !(root.TryGetProperty("data", out var data) || root.TryGetProperty("Data", out data))
+                || data.ValueKind != JsonValueKind.Object)
+                return null;
+
+            if (Property(data, "catalogVersion") is { ValueKind: JsonValueKind.String } version)
+                catalogVersion = version.GetString();
+            var lists = new Dictionary<string, List<OptionView>>(StringComparer.Ordinal);
+            foreach (var name in OptionLists)
+            {
+                if (Property(data, name) is not { ValueKind: JsonValueKind.Array } array || array.GetArrayLength() == 0)
+                    return null;
+                var options = new List<OptionView>();
+                foreach (var option in array.EnumerateArray())
+                {
+                    if (option.ValueKind != JsonValueKind.Object
+                        || Property(option, "code") is not { ValueKind: JsonValueKind.String } code
+                        || !OptionCode.IsMatch(code.GetString()!)
+                        || options.Any(seen => seen.Code == code.GetString()))
+                        return null;
+                    var sortOrder = Property(option, "sortOrder") is { ValueKind: JsonValueKind.Number } order
+                        && order.TryGetInt32(out var parsed) ? parsed : 0;
+                    var attributes = new Dictionary<string, string?>(StringComparer.Ordinal);
+                    if (Property(option, "attributes") is { ValueKind: JsonValueKind.Object } values)
+                    {
+                        foreach (var attribute in values.EnumerateObject())
+                        {
+                            attributes[attribute.Name] = attribute.Value.ValueKind switch
+                            {
+                                JsonValueKind.String => attribute.Value.GetString(),
+                                JsonValueKind.Null => null,
+                                _ => attribute.Value.GetRawText()
+                            };
+                        }
+                    }
+                    options.Add(new OptionView(code.GetString()!, sortOrder, attributes));
+                }
+                lists[name] = options.OrderBy(option => option.SortOrder).ThenBy(option => option.Code, StringComparer.Ordinal).ToList();
+            }
+            return lists;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static JsonElement? Property(JsonElement element, string camel) =>
+        element.TryGetProperty(camel, out var value)
+        || element.TryGetProperty(char.ToUpperInvariant(camel[0]) + camel[1..], out value)
+            ? value
+            : null;
 
     // ── Read one ──────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -620,7 +762,8 @@ public sealed class ItemsController : Controller
     // Several codes → each one's sentence, once. A code with no sentence is a missing mapping: the status's sentence
     // is shown, the code is logged here and the browser is told (unmapped) — the raw code never reaches the browser.
 
-    private async Task<IActionResult> KnownOrStatusFailureAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    private async Task<IActionResult> KnownOrStatusFailureAsync(HttpResponseMessage response, CancellationToken cancellationToken,
+        bool options = false)
     {
         if (!IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
             return SafeFailure(response.StatusCode);
@@ -655,7 +798,7 @@ public sealed class ItemsController : Controller
             else if (!IsCode(code) && index > 0)
                 continue;
 
-            var sentence = Sentence(code, detail);
+            var sentence = (options ? OptionsSentence(code) : null) ?? Sentence(code, detail);
             if (sentence is null)
             {
                 unmapped = true;
@@ -671,6 +814,19 @@ public sealed class ItemsController : Controller
         return unmapped
             ? StatusCode(status, new { success = false, errors = sentences.ToArray(), unmapped = true })
             : StatusCode(status, new { success = false, errors = sentences.ToArray() });
+    }
+
+    // The options read's refusals (S5b): its own map, then any REFERENCE_ code Platform passes on — all "cannot be loaded".
+    private string? OptionsSentence(string code)
+    {
+        if (ItemRefusalSentences.OptionsKeys.TryGetValue(code, out var key))
+            return _localizer[key].Value;
+        if (code.StartsWith(ItemRefusalSentences.OptionsCodePrefix, StringComparison.Ordinal) && IsCode(code))
+        {
+            _logger.LogWarning("Item options proxy: a provider code without its own sentence ({ErrorCode}).", code);
+            return _localizer["RefusalOptionsUnavailable"].Value;
+        }
+        return null;
     }
 
     private string? Sentence(string code, string? detail)

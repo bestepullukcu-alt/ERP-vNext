@@ -10,8 +10,13 @@
  *    says why, and a list in `addOnlyFields` keeps its stored rows read-only and only gains new ones (sent whole).
  *  - Only changed fields are posted, with the version the form was opened at and the form attempt's id (the proxy
  *    derives the Idempotency-Key from it: a repeat of the same attempt is MDM's replay). The detail is read back after.
- *  - Units and storage conditions are code inputs (CT decision (b)): MDM validates them against its lists and its
+ *  - S5b (BL-600): units and storage conditions are SELECTS filled from the item options read (Items proxy
+ *    api/options), labelled by stable code (an unknown code is shown as itself). A list that cannot be loaded leaves
+ *    those fields passive with the reason beside them — never a typed-code box; the other fields stay usable. At most
+ *    one temperature storage condition (O-2, the list's ConditionKind). MDM still validates every chosen code and its
  *    refusal comes back as a sentence in the reader's language.
+ *  - A Finished Good saved in two requests (stock, then GTIN) whose GTIN request fails is still read back: the stock
+ *    part is MDM's new version, the editor moves to it, and the GTIN refusal is said in its own sentence (S5-FIX1).
  */
 'use strict';
 
@@ -43,6 +48,12 @@ window.DitenStockBehaviour = (function () {
         lotControlled: 'LotControlled', serialControlled: 'SerialControlled', gtin: 'Gtin', stockable: 'StockableFlag',
         caseBoxConversion: 'MissingCaseBox', 'gsku.baseUomCode': 'MissingGskuBaseUom', 'gsku.stockable': 'MissingGskuStockable'
     });
+    // The lists the stock forms choose from (S5b): one read per page, kept once it succeeded; a failure is asked again
+    // at the next opening. The Items proxy answers any of the stock-edit keys (ItemsController.OptionsPermissions).
+    const optionsEndpoint = '/MasterDataManagement/Items/api/options';
+    const listFields = Object.freeze({ baseUomCode: 'uoms', uomConversions: 'uoms', storageConditionCodes: 'storageConditions' });
+    const temperatureKind = 'TEMPERATURE';
+    let optionsRead = null;
     const codePattern = /^[A-Z][A-Z0-9_]{0,63}$/;
     const amountPattern = /^[0-9]{1,18}(\.[0-9]{1,18})?$/;
     const maxDays = 3650;
@@ -67,6 +78,38 @@ window.DitenStockBehaviour = (function () {
         return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
     };
     const sameList = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+    const readOptionList = (data, name) => listOf(valueOf(data, name))
+        .filter((option) => typeof valueOf(option, 'code') === 'string' && codePattern.test(valueOf(option, 'code')))
+        .map((option) => ({ code: valueOf(option, 'code'), attributes: valueOf(option, 'attributes') || {} }));
+    // { ready, lists, reason }: ready only with both lists non-empty — an empty list is said as unavailable.
+    const unavailable = (reason) => ({ ready: false, lists: { uoms: [], storageConditions: [] }, reason });
+    const loadOptions = (fallback) => {
+        if (optionsRead) return optionsRead;
+        const attempt = (async () => {
+            try {
+                const response = await fetch(optionsEndpoint, {
+                    credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                let payload = {};
+                try { payload = await response.json(); } catch (error) { }
+                if (!response.ok) {
+                    const errors = payload?.errors || payload?.Errors;
+                    return unavailable((Array.isArray(errors) && errors.find(Boolean)) || fallback);
+                }
+                const data = payload?.data ?? payload?.Data;
+                const lists = { uoms: readOptionList(data, 'uoms'), storageConditions: readOptionList(data, 'storageConditions') };
+                if (!lists.uoms.length || !lists.storageConditions.length) return unavailable(fallback);
+                return { ready: true, lists, reason: '' };
+            } catch (error) {
+                return unavailable(fallback);
+            }
+        })();
+        optionsRead = attempt.then((result) => {
+            if (!result.ready) optionsRead = null;
+            return result;
+        });
+        return optionsRead;
+    };
     const conversionOf = (row) => ({
         fromUom: String(valueOf(row, 'fromUom') ?? ''), toUom: String(valueOf(row, 'toUom') ?? ''),
         numerator: String(valueOf(row, 'numerator') ?? ''), denominator: String(valueOf(row, 'denominator') ?? '')
@@ -82,12 +125,17 @@ window.DitenStockBehaviour = (function () {
         if (!levels[level] || !offcanvas || typeof fetchDetail !== 'function') return null;
         const words = readWords();
         const fields = levels[level];
+        const needsOptions = fields.some((field) => listFields[field]);
         let editor = null;
         let busy = false;
+        let options = { ready: false, lists: { uoms: [], storageConditions: [] }, reason: '' };
 
         const toast = (message, type) => window.showToast?.(message, type);
         const yesNo = (value) => value === true ? words.Yes : value === false ? words.No : words.NotSet;
         const shown = (value) => value === null || value === undefined || value === '' ? words.NotSet : String(value);
+        const uomLabel = (code) => (code && words[`Uom_${code}`]) || code;
+        const storageLabel = (code) => (code && words[`Storage_${code}`]) || code;
+        const labels = { uoms: uomLabel, storageConditions: storageLabel };
         // What MDM holds as THIS record's own value (the form compares against it; an inherited one is not its own).
         const stored = (sb, field) => {
             if (field === 'stockable') return valueOf(sb, 'stockableFlag') ?? null;
@@ -110,12 +158,12 @@ window.DitenStockBehaviour = (function () {
                 const element = section.querySelector(`[data-sb-value="${field}"]`);
                 if (element) element.textContent = text;
             };
-            set('baseUomCode', shown(valueOf(sb, 'baseUomCode')));
+            set('baseUomCode', shown(uomLabel(valueOf(sb, 'baseUomCode'))));
             set('shelfLifeDays', shown(valueOf(sb, 'shelfLifeDays')));
             set('retestDays', shown(valueOf(sb, 'retestDays')));
             set('minRemainingShelfLifeDays', shown(valueOf(sb, 'minRemainingShelfLifeDays')));
             const storage = listOf(valueOf(sb, 'storageConditionCodes'));
-            set('storageConditionCodes', storage.length ? storage.join(', ') : words.NotSet);
+            set('storageConditionCodes', storage.length ? storage.map(storageLabel).join(', ') : words.NotSet);
             set('lotControlled', yesNo(valueOf(sb, 'lotControlled')));
             set('serialControlled', yesNo(valueOf(sb, 'serialControlled')));
             set('gtin', shown(valueOf(sb, 'gtin')));
@@ -154,6 +202,69 @@ window.DitenStockBehaviour = (function () {
 
         /* ---- the form (offcanvas) ---- */
         const input = (field) => offcanvas.querySelector(`[data-sb-input="${field}"]`);
+        // select2 when the page has it (the shell's picker), a plain select otherwise; select2 announces a choice with a
+        // jQuery change event only, so a change is heard through jQuery when it is there.
+        const select2Available = () => typeof window.jQuery === 'function' && typeof window.jQuery.fn?.select2 === 'function';
+        const enhanceSelect = (select) => {
+            if (!select || !select2Available()) return;
+            const $select = window.jQuery(select);
+            if ($select.hasClass('select2-hidden-accessible')) return;
+            $select.select2({
+                width: '100%', dropdownParent: window.jQuery(offcanvas), allowClear: false,
+                placeholder: select.dataset.placeholder || '', closeOnSelect: !select.multiple
+            });
+        };
+        const refreshSelect = (select) => {
+            if (select && select2Available()) window.jQuery(select).trigger('change.select2');
+        };
+        const selectedCodes = (select) => Array.from(select?.selectedOptions || [], (option) => option.value).filter(Boolean);
+        // The list's codes in its order (minus `except`); a chosen code the list no longer offers stays, so a stored
+        // value is shown and never silently dropped.
+        const fillSelect = (select, listName, chosen, except = []) => {
+            if (!select) return;
+            const label = labels[listName];
+            const keep = new Set(chosen.filter(Boolean));
+            const codes = options.lists[listName].map((option) => option.code).filter((code) => !except.includes(code));
+            const placeholder = select.multiple ? [] : [Object.assign(document.createElement('option'), {
+                value: '', textContent: words.SelectUnit || '', selected: keep.size === 0
+            })];
+            select.replaceChildren(...placeholder, ...[...codes, ...[...keep].filter((code) => !codes.includes(code))]
+                .map((code) => Object.assign(document.createElement('option'), {
+                    value: code, textContent: label(code), selected: keep.has(code)
+                })));
+            refreshSelect(select);
+        };
+        const temperatureCodes = () => new Set(options.lists.storageConditions
+            .filter((option) => valueOf(option.attributes, 'conditionKind') === temperatureKind)
+            .map((option) => option.code));
+        // O-2: at most one TEMPERATURE condition, counting the stored rows of an add-only list. A second one is refused
+        // in words and taken back (the one chosen before stays); the other temperatures are passive while one is held.
+        const enforceOneTemperature = () => {
+            const select = input('storageConditionCodes');
+            if (!select || !editor || !options.ready) return;
+            const temperatures = temperatureCodes();
+            const addOnly = listOf(valueOf(editor.sb, 'addOnlyFields')).includes('storageConditionCodes');
+            const fixed = addOnly ? stored(editor.sb, 'storageConditionCodes').filter((code) => temperatures.has(code)) : [];
+            const chosen = selectedCodes(select).filter((code) => temperatures.has(code));
+            const refused = fixed.length + chosen.length > 1;
+            if (refused) {
+                const keep = fixed[0] || chosen.find((code) => editor.storage.includes(code)) || chosen[0];
+                Array.from(select.options).forEach((option) => {
+                    if (temperatures.has(option.value) && option.value !== keep) option.selected = false;
+                });
+            }
+            const note = offcanvas.querySelector('#sb-storage-temperature-note');
+            if (note) {
+                note.textContent = refused ? words.TemperatureOnlyOne || '' : '';
+                note.classList.toggle('d-none', !refused);
+            }
+            const held = fixed[0] || selectedCodes(select).find((code) => temperatures.has(code));
+            Array.from(select.options).forEach((option) => {
+                if (temperatures.has(option.value)) option.disabled = Boolean(held) && option.value !== held;
+            });
+            editor.storage = selectedCodes(select);
+            refreshSelect(select);
+        };
         const conversionRow = (row, readOnly) => {
             const line = document.createElement('div');
             line.className = 'row g-2 align-items-center';
@@ -163,16 +274,23 @@ window.DitenStockBehaviour = (function () {
             parts.forEach(([part, label, column]) => {
                 const cell = document.createElement('div');
                 cell.className = column;
-                const box = document.createElement('input');
-                box.type = 'text';
-                box.className = 'form-control form-control-sm' + (part.endsWith('Uom') ? ' text-uppercase' : '');
+                const unit = part.endsWith('Uom');
+                // A unit is chosen from the list (S5b) — never typed; without the list it stays passive.
+                const box = document.createElement(unit ? 'select' : 'input');
                 box.dataset.sbPart = part;
-                box.value = row ? conversionOf(row)[part] : '';
                 box.setAttribute('aria-label', label || part);
-                box.placeholder = label || '';
-                if (!part.endsWith('Uom')) box.inputMode = 'decimal';
-                box.readOnly = readOnly;
-                box.disabled = readOnly;
+                if (unit) {
+                    box.className = 'form-select form-select-sm';
+                    fillSelect(box, 'uoms', row ? [conversionOf(row)[part]] : []);
+                } else {
+                    box.type = 'text';
+                    box.className = 'form-control form-control-sm';
+                    box.value = row ? conversionOf(row)[part] : '';
+                    box.placeholder = label || '';
+                    box.inputMode = 'decimal';
+                    box.readOnly = readOnly;
+                }
+                box.disabled = readOnly || (unit && !options.ready);
                 cell.appendChild(box);
                 line.appendChild(cell);
             });
@@ -198,6 +316,10 @@ window.DitenStockBehaviour = (function () {
             const locked = new Set(listOf(valueOf(sb, 'lockedFields')));
             const addOnly = new Set(listOf(valueOf(sb, 'addOnlyFields')));
             offcanvas.querySelector('#sb-form-not-editable')?.classList.toggle('d-none', editable);
+            offcanvas.querySelectorAll('[data-sb-options-reason]').forEach((reason) => {
+                reason.textContent = options.ready ? '' : options.reason || words.OptionsUnavailable || '';
+                reason.classList.toggle('d-none', options.ready);
+            });
             fields.forEach((field) => {
                 const element = input(field);
                 if (!element) return;
@@ -208,7 +330,7 @@ window.DitenStockBehaviour = (function () {
                 if (field === 'uomConversions') {
                     element.replaceChildren(...value.map((row) => conversionRow(row, addOnly.has(field) || !editable)));
                     const add = offcanvas.querySelector('#sb-add-conversion');
-                    if (add) add.disabled = !editable;
+                    if (add) add.disabled = !editable || !options.ready;
                     return;
                 }
                 if (field === 'storageConditionCodes') {
@@ -217,10 +339,13 @@ window.DitenStockBehaviour = (function () {
                     existing?.replaceChildren(...(addOnly.has(field) ? value : []).map((code) => {
                         const badge = document.createElement('span');
                         badge.className = 'badge bg-label-secondary';
-                        badge.textContent = code;
+                        badge.textContent = storageLabel(code);
                         return badge;
                     }));
-                    element.value = addOnly.has(field) ? '' : value.join(', ');
+                    // Add-only: the select offers only what is not stored yet; otherwise it holds the stored choice.
+                    fillSelect(element, 'storageConditions', addOnly.has(field) ? [] : value, addOnly.has(field) ? value : []);
+                } else if (field === 'baseUomCode') {
+                    fillSelect(element, 'uoms', [value === null ? '' : String(value)]);
                 } else if (flagFields.has(field)) {
                     element.value = value === true ? 'true' : value === false ? 'false' : '';
                     // "Not set" is offered only while nothing is stored — a flag is never cleared (MDM has no "unset").
@@ -236,9 +361,12 @@ window.DitenStockBehaviour = (function () {
                     element.placeholder = valueOf(sb, 'shelfLifeDaysSource') === 'Gsku'
                         ? String(valueOf(sb, 'shelfLifeDays') ?? '') : '';
                 }
-                element.disabled = !editable || lockedHere;
+                element.disabled = !editable || lockedHere || (Boolean(listFields[field]) && !options.ready);
                 element.readOnly = !editable || lockedHere;
+                if (listFields[field]) enhanceSelect(element);
             });
+            if (editor) editor.storage = selectedCodes(input('storageConditionCodes'));
+            enforceOneTemperature();
             const derived = offcanvas.querySelector('#sb-form-derived');
             if (derived) {
                 const edge = valueOf(sb, 'derivedPackConversion');
@@ -261,7 +389,8 @@ window.DitenStockBehaviour = (function () {
             if (!editable) return { stock, gtin, error: '' };
             for (const field of fields) {
                 const element = input(field);
-                if (!element || locked.has(field)) continue;
+                // A list field without its list is passive (S5b): nothing of it is sent.
+                if (!element || locked.has(field) || (listFields[field] && !options.ready)) continue;
                 const before = stored(sb, field);
                 if (field === 'uomConversions') {
                     const rows = [...element.querySelectorAll('[data-sb-conversion-row]')].map((line) => {
@@ -281,9 +410,11 @@ window.DitenStockBehaviour = (function () {
                 }
                 const raw = String(element.value || '').trim();
                 if (field === 'storageConditionCodes') {
-                    const typed = raw.split(',').map((code) => code.trim().toUpperCase()).filter(Boolean);
+                    const typed = selectedCodes(element);
                     if (typed.some((code) => !codePattern.test(code))) return { error: words.InvalidCode };
                     const codes = [...new Set(addOnly.has(field) ? [...before, ...typed] : typed)];
+                    const temperatures = temperatureCodes();
+                    if (codes.filter((code) => temperatures.has(code)).length > 1) return { error: words.TemperatureOnlyOne };
                     if (!codes.length && before.length) return { error: words.ListCannotBeEmpty };
                     if (codes.length && !sameList(codes, before)) stock[field] = codes;
                     continue;
@@ -346,6 +477,25 @@ window.DitenStockBehaviour = (function () {
             return answered;
         };
 
+        // After a partial save: the detail again, the editor moved to its version and values; the GTIN typed stays typed.
+        const refreshAfterPartialSave = async (id) => {
+            try {
+                const refreshed = await fetchDetail(id);
+                render(refreshed);
+                const sb = valueOf(refreshed, 'stockBehaviour');
+                const current = valueOf(refreshed, versionField);
+                if (!editor || editor.id !== id || !sb || !Number.isSafeInteger(current)) return;
+                const typedGtin = input('gtin')?.value;
+                editor.sb = sb;
+                editor.version = current;
+                fill(sb);
+                if (input('gtin') && typedGtin !== undefined) input('gtin').value = typedGtin;
+                onSaved?.(id);
+            } catch (error) {
+                // The refusal of the GTIN is what is said; a failed read leaves the editor at the version put() saw.
+            }
+        };
+
         const save = () => {
             if (!editor || busy) return;
             const { stock, gtin, error } = collect();
@@ -366,7 +516,16 @@ window.DitenStockBehaviour = (function () {
                 try {
                     let version = editor.version;
                     if (Object.keys(stock).length) version = await put('stock-behaviour', stock, version);
-                    if (gtin !== null) version = await put('gtin', { gtin }, version);
+                    if (gtin !== null) {
+                        try {
+                            version = await put('gtin', { gtin }, version);
+                        } catch (gtinFailure) {
+                            // S5-FIX1: the stock part may be saved already — it is read back either way, so the
+                            // section and the editor stand at MDM's version; the GTIN refusal keeps its own sentence.
+                            if (Object.keys(stock).length && !gtinFailure?.authHandled) await refreshAfterPartialSave(id);
+                            throw gtinFailure;
+                        }
+                    }
                     // Read back: the section shows what MDM now holds, never what was typed.
                     const refreshed = await fetchDetail(id);
                     render(refreshed);
@@ -393,11 +552,15 @@ window.DitenStockBehaviour = (function () {
         const open = async (id) => {
             if (!id || busy) return;
             try {
-                const detail = await fetchDetail(String(id));
+                const [detail, lists] = await Promise.all([
+                    fetchDetail(String(id)),
+                    needsOptions ? loadOptions(words.OptionsUnavailable || '') : Promise.resolve(options)
+                ]);
+                options = lists;
                 const sb = valueOf(detail, 'stockBehaviour');
                 const version = valueOf(detail, versionField);
                 if (!sb || !Number.isSafeInteger(version) || version < 0) throw new Error(words.SaveFailed);
-                editor = { id: String(id), version, sb, attemptId: newAttemptId() };
+                editor = { id: String(id), version, sb, attemptId: newAttemptId(), storage: [] };
                 const subtitle = offcanvas.querySelector('#sb-form-subtitle');
                 if (subtitle) subtitle.textContent = shown(valueOf(detail, 'canonicalCode'));
                 fill(sb);
@@ -411,6 +574,11 @@ window.DitenStockBehaviour = (function () {
         offcanvas.querySelector('#btnSaveStockBehaviour')?.addEventListener('click', save);
         offcanvas.querySelector('#sb-add-conversion')?.addEventListener('click', () =>
             input('uomConversions')?.appendChild(conversionRow(null, false)));
+        const storageSelect = input('storageConditionCodes');
+        if (storageSelect) {
+            if (typeof window.jQuery === 'function') window.jQuery(storageSelect).on('change', enforceOneTemperature);
+            else storageSelect.addEventListener('change', enforceOneTemperature);
+        }
         input('uomConversions')?.addEventListener('click', (event) => {
             event.target.closest?.('[data-sb-remove]')?.closest('[data-sb-conversion-row]')?.remove();
         });

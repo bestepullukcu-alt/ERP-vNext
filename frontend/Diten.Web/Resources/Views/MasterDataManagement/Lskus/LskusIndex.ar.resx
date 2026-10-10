@@ -79,7 +79,7 @@
     <value>التحكم بالدفعة لـ GSKU التابع له — يجب أن يحدده شخص مخوّل بتعديل GSKU</value>
   </data>
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
-    <value>لإرساله للموافقة، أدخل أولاً مؤشرات المخزون في سلوك المخزون.</value>
+    <value>سلوك المخزون غير مكتمل أو غير متسق، لذا لا يمكن إرساله للموافقة بعد. أكمله في سلوك المخزون.</value>
   </data>
   <data name="ListJoinTwo" xml:space="preserve">
     <value>{0} و{1}</value>

@@ -136,10 +136,14 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
     it('S5: the shortcut opens the stock-behaviour offcanvas on a fresh detail read', async () => {
         const sb = { baseUomCode: null, uomConversions: [], shelfLifeDays: null, storageConditionCodes: [], lotControlled: null,
             stockableFlag: null, stockable: false, missing: ['lotControlled'], lockedFields: [], addOnlyFields: [], editable: true };
-        const h = harness([response({ ...detail(flagless), canonicalCode: 'GSKU-7', stockBehaviour: sb })], { stock: 'key' });
+        // S5b: the offcanvas reads its unit / storage lists (the Items options proxy) beside the fresh detail.
+        const lists = response({ uoms: [{ code: 'C62', attributes: {} }],
+            storageConditions: [{ code: 'COOL_2_8', attributes: { ConditionKind: 'TEMPERATURE' } }] });
+        const h = harness([response({ ...detail(flagless), canonicalCode: 'GSKU-7', stockBehaviour: sb }), lists], { stock: 'key' });
         h.api.rowActionHandlers().fillStockBehaviour({ id, trigger: null });
         await vi.waitFor(() => expect(document.getElementById('sb-form-subtitle').textContent).toBe('GSKU-7'));
-        expect(h.fetch.mock.calls.map(c => c[0])).toEqual(['/MasterDataManagement/Gskus/api/' + id]);
+        expect(h.fetch.mock.calls.map(c => c[0])).toEqual(['/MasterDataManagement/Gskus/api/' + id, '/MasterDataManagement/Items/api/options']);
+        expect(document.querySelector('[data-sb-input="baseUomCode"]').disabled).toBe(false);
         expect(document.querySelector('[data-sb-input="lotControlled"]').disabled).toBe(false);
         expect(h.toast).not.toHaveBeenCalled();
     });

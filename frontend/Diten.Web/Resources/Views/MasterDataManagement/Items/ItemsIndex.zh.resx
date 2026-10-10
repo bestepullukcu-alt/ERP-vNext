@@ -46,10 +46,10 @@
   <data name="NamePlaceholder" xml:space="preserve"><value>例如：对乙酰氨基酚</value></data>
   <data name="DescriptionPlaceholder" xml:space="preserve"><value>该物料是什么以及用于何处</value></data>
   <data name="MaterialTypePlaceholder" xml:space="preserve"><value>请选择物料类型</value></data>
-  <data name="BaseUomPlaceholder" xml:space="preserve"><value>单位代码，例如 KGM</value></data>
-  <data name="UnitCodeHint" xml:space="preserve"><value>单位按代码输入（UN/ECE Rec 20），例如 KGM 千克、GRM 克、MGM 毫克、LTR 升、MLT 毫升、C62 个、XBX 盒、XCS 箱。</value></data>
-  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>以逗号分隔的代码，例如 COOL_2_8, PROTECT_FROM_LIGHT</value></data>
-  <data name="StorageConditionHint" xml:space="preserve"><value>储存条件按代码输入：AMBIENT_15_25、COOL_2_8、FROZEN_BELOW_MINUS_20、PROTECT_FROM_LIGHT、PROTECT_FROM_MOISTURE。最多一个温度条件。</value></data>
+  <data name="BaseUomPlaceholder" xml:space="preserve"><value>选择单位</value></data>
+  <data name="UnitCodeHint" xml:space="preserve"><value>从列表中选择单位。</value></data>
+  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>选择储存条件</value></data>
+  <data name="StorageConditionHint" xml:space="preserve"><value>从列表中选择一个或多个条件。最多一个温度条件。</value></data>
   <data name="DaysPlaceholder" xml:space="preserve"><value>天数</value></data>
   <data name="ConversionFrom" xml:space="preserve"><value>源单位</value></data>
   <data name="ConversionTo" xml:space="preserve"><value>目标单位</value></data>
@@ -108,7 +108,7 @@
   <data name="RefusalReferenceValueInvalid" xml:space="preserve"><value>输入的某个代码不是其列表中的有效值。请检查物料类型、单位代码和储存条件。</value></data>
   <data name="RefusalReferenceValueInvalidNamed" xml:space="preserve"><value>以下值不是其列表中的有效值：{0}。</value></data>
   <data name="RefusalStorageConflict" xml:space="preserve"><value>储存条件相互不兼容。</value></data>
-  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>最多选择一个温度条件（例如 COOL_2_8 或 AMBIENT_15_25，不能同时选择）。</value></data>
+  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>最多选择一个温度条件。</value></data>
   <data name="RefusalStorageRepeated" xml:space="preserve"><value>某个储存条件重复输入了两次。</value></data>
   <data name="RefusalUomConversion" xml:space="preserve"><value>某个单位换算无效。</value></data>
   <data name="RefusalUomConversionUnitMissing" xml:space="preserve"><value>每个换算都需要源单位和目标单位。</value></data>
@@ -131,4 +131,6 @@
   <data name="RefusalCreatePending" xml:space="preserve"><value>物料已保存但尚未完成。请再次保存同一表单以完成。</value></data>
   <data name="RefusalTryAgain" xml:space="preserve"><value>请求未能完成。请重新加载页面后重试。</value></data>
   <data name="RefusalInternal" xml:space="preserve"><value>物料服务报告了内部不一致。请通知您的管理员。</value></data>
+  <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>物料类型、单位和储存条件列表暂时无法加载，因此无法选择这些字段。请稍后重试。</value></data>
+  <data name="RefusalOptionsTimeout" xml:space="preserve"><value>物料类型、单位和储存条件列表未能及时加载，因此无法选择这些字段。请稍后重试。</value></data>
 </root>

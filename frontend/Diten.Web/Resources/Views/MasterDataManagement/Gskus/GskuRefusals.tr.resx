@@ -25,6 +25,7 @@
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>Onay, karar verilmeden kapatıldı (iptal edildi ya da süresi doldu). Taslak düzenlenip yeniden gönderilebilir.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Bu GSKU'nun kullandığı bir birim onaydan sonra kullanımdan kaldırıldı. Onay geçerlidir: gönderim anında doğrulanan değerlerle uygulandı; kaldırılan birim yeni kayıtlarda seçilemez.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Bu GSKU'yu onaya göndermeden önce stok davranışında şunu belirleyin: {0}.</value></data>
+  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>Bu gönderim geri çekiliyor. Geri çekme bitene kadar yeniden gönderilemez; GSKU'yu biraz sonra yeniden açın.</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Önce raf ömrünü girin: onaylı bir GSKU'da {0} ancak raf ömrü bilindiğinde girilebilir.</value></data>
   <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>Birim ve saklama koşulu listeleri şu anda okunamıyor. Biraz sonra yeniden deneyin.</value></data>
   <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Önce GSKU'nun temel birimini girin — Bitmiş Ürün onu kullanır.</value></data>

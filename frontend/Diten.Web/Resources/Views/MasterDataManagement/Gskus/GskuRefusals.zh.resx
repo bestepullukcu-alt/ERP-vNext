@@ -25,6 +25,7 @@
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>该审批未作决定即已关闭（已取消或已过期）。草稿可以编辑并重新提交。</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>此 GSKU 使用的某个单位在审批之后被停用。审批依然有效：它按提交时验证的值应用；被停用的单位不能用于新记录。</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>在提交此 GSKU 审批之前，请在库存行为中设置：{0}。</value></data>
+  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>此提交正在撤回中。撤回完成前无法再次提交；请稍后重新打开该 GSKU。</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>请先输入保质期：已批准的 GSKU 只有在保质期已知后才能设置{0}。</value></data>
   <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>暂时无法读取单位和储存条件列表。请稍后重试。</value></data>
   <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>请先填写 GSKU 的基本单位——成品使用该单位。</value></data>

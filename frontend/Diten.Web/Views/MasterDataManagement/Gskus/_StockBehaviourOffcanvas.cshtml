@@ -3,8 +3,9 @@
 @inject IHtmlLocalizer<StockBehaviourText> Stock
 @*
     MOD-0290-FU04 S5 (O-12) — the GSKU's stock behaviour, edited in its own offcanvas (the identity form does not grow;
-    each group stays under eight inputs). Units and storage conditions are code inputs (CT decision (b)): MDM checks
-    them against its lists. O-8: on a Draft every field is free; on an approved GSKU a filled field is read-only with
+    each group stays under eight inputs). S5b (BL-600): units and storage conditions are selects filled by
+    stock-behaviour.js from the item options read, labelled by stable code; without the lists they stay passive with
+    the reason (data-sb-options-reason) — never typed codes. MDM still checks every chosen code. O-8: on a Draft every field is free; on an approved GSKU a filled field is read-only with
     its reason, and the conversion / storage lists only gain rows. The box ↔ pack conversion is the pack's (O-14), shown
     and never entered. Drawn by Index.cshtml only for a user with the GSKU's stock-edit key (UAS-001).
 *@
@@ -25,9 +26,10 @@
                 <h6 id="sb-group-units" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupUnits"]</h6>
                 <div class="mb-3">
                     <label for="sb-input-base-uom" class="form-label fw-medium">@Stock["BaseUom"]</label>
-                    <input type="text" id="sb-input-base-uom" class="form-control text-uppercase" maxlength="64" autocomplete="off"
-                           data-sb-input="baseUomCode" aria-describedby="sb-help-base-uom" />
+                    <select id="sb-input-base-uom" class="form-select" disabled data-sb-input="baseUomCode"
+                            data-placeholder="@Stock["SelectUnit"]" aria-describedby="sb-help-base-uom"></select>
                     <div id="sb-help-base-uom" class="form-text">@Stock["UomHelp"]</div>
+                    <div class="form-text text-warning d-none" data-sb-options-reason></div>
                     <div class="form-text text-warning d-none" data-sb-lock-reason="baseUomCode"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
                 </div>
             </section>
@@ -39,6 +41,7 @@
                     <i class="bx bx-plus me-1"></i>@Stock["AddConversion"]
                 </button>
                 <div class="form-text">@Stock["ConversionHelp"]</div>
+                <div class="form-text text-warning d-none" data-sb-options-reason></div>
                 <div class="form-text text-warning d-none" data-sb-addonly-reason="uomConversions"><i class="bx bx-lock-alt me-1"></i>@Stock["AddOnlyReason"]</div>
             </section>
             <section class="mb-4" aria-labelledby="sb-group-shelf-life">
@@ -67,9 +70,11 @@
                 <div class="mb-3">
                     <label for="sb-input-storage" class="form-label fw-medium">@Stock["StorageConditions"]</label>
                     <div class="d-flex flex-wrap gap-1 mb-2" data-sb-existing="storageConditionCodes"></div>
-                    <input type="text" id="sb-input-storage" class="form-control text-uppercase" maxlength="512" autocomplete="off"
-                           data-sb-input="storageConditionCodes" aria-describedby="sb-help-storage" />
+                    <select id="sb-input-storage" class="form-select" multiple disabled data-sb-input="storageConditionCodes"
+                            data-placeholder="@Stock["StorageConditions"]" aria-describedby="sb-help-storage"></select>
                     <div id="sb-help-storage" class="form-text">@Stock["StorageHelp"]</div>
+                    <div id="sb-storage-temperature-note" class="form-text text-danger d-none" role="alert"></div>
+                    <div class="form-text text-warning d-none" data-sb-options-reason></div>
                     <div class="form-text text-warning d-none" data-sb-addonly-reason="storageConditionCodes"><i class="bx bx-lock-alt me-1"></i>@Stock["AddOnlyReason"]</div>
                 </div>
                 <div class="mb-3">

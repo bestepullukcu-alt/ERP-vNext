@@ -79,7 +79,7 @@
     <value>le suivi par lot de son GSKU — à définir par une personne autorisée à modifier le GSKU</value>
   </data>
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
-    <value>Pour l'envoyer en approbation, saisissez d'abord ses indicateurs de stock dans le comportement de stock.</value>
+    <value>Le comportement de stock est incomplet ou incohérent ; l'envoi en approbation n'est pas encore possible. Complétez-le dans Comportement de stock.</value>
   </data>
   <data name="ListJoinTwo" xml:space="preserve">
     <value>{0} et {1}</value>

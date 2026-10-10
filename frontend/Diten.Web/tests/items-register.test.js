@@ -178,3 +178,185 @@ describe('Items executed browser contracts', () => {
         expect(warn).toHaveBeenCalled();
     });
 });
+
+/*
+ * MOD-0290-FU04 S5b (BL-600) — the item form's lists, executed against the production _Form.cshtml (its Razor words
+ * replaced by their keys) and the options read scripted: material type / base unit / conversion units / storage
+ * conditions are selects filled from the options and labelled by stable code; at most one temperature (O-2); a list
+ * that cannot be loaded leaves them passive with the reason — never a code input.
+ */
+describe('Items form option lists (S5b)', () => {
+    const id = '12345678-1234-1234-1234-123456789012';
+    const optionsUrl = '/MasterDataManagement/Items/api/options';
+    const formMarkup = (mode) => fs.readFileSync(path.join(__dirname, '../Views/MasterDataManagement/Items/_Form.cshtml'), 'utf8')
+        .replace(/@\*[\s\S]*?\*@/g, '')
+        .replace(/^@(using|inject|model)\b.*$/gm, '')
+        .replace(/^@\{[\s\S]*?^\}/m, '')
+        .replace(/@Html\.AntiForgeryToken\(\)/g, '<input type="hidden" name="__RequestVerificationToken" value="synthetic-csrf">')
+        .replace(/@\(isEdit \? "edit" : "create"\)/g, mode)
+        .replace(/@\(ViewData\["ItemFormAttemptToken"\][^)]*\)/g, 'synthetic-attempt')
+        .replace(/@Model\?\.Id/g, mode === 'edit' ? id : '')
+        .replace(/@(Shared)?Localizer\["(\w+)"\]/g, '$2')
+        .replace(/@title/g, 'title')
+        .replace(/<label asp-for="(\w+)"/g, '<label for="$1"')
+        .replace(/<input asp-for="(LotControlled|Stockable)"/g, '<input type="checkbox" id="$1" name="$1"')
+        .replace(/asp-for="(\w+)"/g, 'id="$1" name="$1"');
+    const labels = '<script id="reference-option-labels" type="application/json">' + JSON.stringify({
+        uom_KGM: 'Kilogram', Uom_C62: 'Piece', Storage_COOL_2_8: 'Refrigerated', Storage_AMBIENT_15_25: 'Room temperature',
+        Storage_PROTECT_FROM_LIGHT: 'Protect from light', TemperatureOnlyOne: 'Only one temperature condition',
+        OptionsUnavailable: 'Lists unavailable'
+    }) + '</script>';
+    const option = (code, attributes = {}) => ({ code, sortOrder: 0, attributes });
+    const options = {
+        catalogVersion: 'v1',
+        materialTypes: [option('ACTIVE_INGREDIENT'), option('EXCIPIENT')],
+        uoms: [option('C62'), option('KGM'), option('IU')],
+        storageConditions: [option('AMBIENT_15_25', { ConditionKind: 'TEMPERATURE' }), option('COOL_2_8', { ConditionKind: 'TEMPERATURE' }),
+            option('PROTECT_FROM_LIGHT', { ConditionKind: 'PROTECTION' })]
+    };
+    const ok = (data, status = 200) => ({ status, ok: true, json: async () => ({ success: true, data, isSuccessful: true, statusCode: status }) });
+    const refused = (status, sentence) => ({ status, ok: false, json: async () => ({ success: false, errors: [sentence] }) });
+
+    function harness(mode, answers) {
+        document.body.innerHTML = formMarkup(mode) + labels;
+        const fetch = vi.fn(async (url, init) => {
+            const answer = answers[`${init?.method || 'GET'} ${url}`];
+            if (!answer) throw new Error(`Unexpected HTTP call ${init?.method || 'GET'} ${url}`);
+            return typeof answer === 'function' ? answer(init) : answer;
+        });
+        const fakeWindow = {
+            L10n: new Proxy({}, { get: (_, key) => String(key) }), showToast: vi.fn(), location: { href: '' }
+        };
+        const source = fs.readFileSync(path.join(__dirname, '../wwwroot/assets/js/MasterDataManagement/Items/index.js'), 'utf8');
+        // Test-only access to existing closure functions; shipped JS has no test hook.
+        const exposed = source.replace('init: async () => {', 'test: { initForm, submitForm }, init: async () => {');
+        const api = vm.runInNewContext(exposed + '\nItemsPage.test;', {
+            window: fakeWindow, document, fetch, FormData, URLSearchParams, setTimeout, clearTimeout, console, Event
+        });
+        return { api, fetch, window: fakeWindow };
+    }
+    const $ = (selector) => document.querySelector(selector);
+    const texts = (select) => [...select.options].map((x) => x.textContent);
+    const values = (select) => [...select.options].map((x) => x.value);
+    const choose = (select, codes) => {
+        [...select.options].forEach((x) => { x.selected = codes.includes(x.value); });
+        select.dispatchEvent(new Event('change'));
+    };
+
+    it('fills every list field as a select from the options, labelled by stable code (an unknown code as itself)', async () => {
+        const h = harness('create', { [`GET ${optionsUrl}`]: ok(options) });
+        await h.api.initForm();
+
+        expect(h.fetch.mock.calls[0][0]).toBe(optionsUrl);
+        expect(JSON.stringify(h.fetch.mock.calls[0][1].headers)).not.toMatch(/Authorization|X-Tenant-Id/);
+        const material = $('[name="MaterialType"]');
+        const base = $('[name="BaseUomCode"]');
+        const storage = $('[name="StorageConditionCodes"]');
+        expect([material.tagName, base.tagName, storage.tagName]).toEqual(['SELECT', 'SELECT', 'SELECT']);
+        expect(storage.multiple).toBe(true);
+        expect(values(material)).toEqual(['', 'ACTIVE_INGREDIENT', 'EXCIPIENT']);
+        expect(texts(material).slice(1)).toEqual(['MaterialType_ACTIVE_INGREDIENT', 'MaterialType_EXCIPIENT']);
+        expect(texts(base)).toEqual(['BaseUomPlaceholder', 'Piece', 'Kilogram', 'IU']);
+        expect(texts(storage)).toEqual(['Room temperature', 'Refrigerated', 'Protect from light']);
+        expect([material, base, storage].every((x) => !x.disabled)).toBe(true);
+        expect([...document.querySelectorAll('[data-item-options-reason]')].every((x) => x.classList.contains('d-none'))).toBe(true);
+
+        $('#btnAddConversion').click();
+        const row = $('#itemConversionRows .js-conversion-row');
+        expect(row.querySelector('.js-conversion-from').tagName).toBe('SELECT');
+        expect(values(row.querySelector('.js-conversion-to'))).toEqual(['', 'C62', 'KGM', 'IU']);
+    });
+
+    it('O-2: a second temperature condition is refused in words and taken back; the first one stays', async () => {
+        const h = harness('create', { [`GET ${optionsUrl}`]: ok(options) });
+        await h.api.initForm();
+        const storage = $('[name="StorageConditionCodes"]');
+
+        choose(storage, ['COOL_2_8', 'PROTECT_FROM_LIGHT']);
+        expect($('#itemStorageTemperatureNote').classList.contains('d-none')).toBe(true);
+        expect(storage.querySelector('option[value="AMBIENT_15_25"]').disabled).toBe(true);
+
+        choose(storage, ['COOL_2_8', 'PROTECT_FROM_LIGHT', 'AMBIENT_15_25']);
+        expect([...storage.selectedOptions].map((x) => x.value)).toEqual(['COOL_2_8', 'PROTECT_FROM_LIGHT']);
+        expect($('#itemStorageTemperatureNote').classList.contains('d-none')).toBe(false);
+        expect($('#itemStorageTemperatureNote').textContent).toBe('Only one temperature condition');
+    });
+
+    // Sabotage target "the form falls back to a code input when the list is missing".
+    it('without the lists the list fields stay passive selects with the reason — never a code input; the rest is usable', async () => {
+        const h = harness('create', { [`GET ${optionsUrl}`]: refused(503, 'The lists cannot be loaded right now.') });
+        await h.api.initForm();
+
+        for (const name of ['MaterialType', 'BaseUomCode', 'StorageConditionCodes']) {
+            const element = $(`[name="${name}"]`);
+            expect(element.tagName).toBe('SELECT');
+            expect(element.disabled).toBe(true);
+            expect(document.querySelector(`input[name="${name}"]`)).toBeNull();
+        }
+        expect($('#btnAddConversion').disabled).toBe(true);
+        expect(document.querySelector('input.js-conversion-from, input.js-conversion-to, template input.js-conversion-from')).toBeNull();
+        const reasons = [...document.querySelectorAll('[data-item-options-reason]')];
+        expect(reasons.length).toBeGreaterThanOrEqual(3);
+        expect(reasons.every((x) => !x.classList.contains('d-none') && x.textContent === 'The lists cannot be loaded right now.')).toBe(true);
+        expect($('[name="Name"]').disabled).toBe(false);
+        expect($('[name="ShelfLifeDays"]').disabled).toBe(false);
+
+        // A create cannot be sent without its lists: the reason is said, nothing is posted.
+        $('[name="Name"]').value = 'Synthetic';
+        await h.api.submitForm(new Event('submit'));
+        expect($('#itemFormAlert').textContent).toBe('The lists cannot be loaded right now.');
+        expect(h.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('an edit without the lists keeps the stored codes in the passive selects and still saves a rename', async () => {
+        const item = {
+            id, name: 'Old', materialType: 'EXCIPIENT', baseUomCode: 'KGM', storageConditionCodes: ['COOL_2_8'],
+            uomConversions: [{ fromUom: 'XBX', toUom: 'KGM', numerator: '10', denominator: '1' }],
+            lotControlled: true, stockable: true, lifecycleStatus: 1, version: 6, availableActions: ['DETAILS', 'EDIT']
+        };
+        let sent;
+        const h = harness('edit', {
+            [`GET ${optionsUrl}`]: refused(503, 'The lists cannot be loaded right now.'),
+            [`GET /MasterDataManagement/Items/api/${id}`]: ok(item),
+            [`PUT /MasterDataManagement/Items/api/${id}`]: (init) => { sent = JSON.parse(init.body); return ok(item); }
+        });
+        await h.api.initForm();
+
+        expect($('[name="BaseUomCode"]').value).toBe('KGM');
+        expect($('[name="BaseUomCode"]').disabled).toBe(true);
+        expect($('.js-conversion-from').value).toBe('XBX');
+        expect($('.js-conversion-from').disabled).toBe(true);
+        $('[name="Name"]').value = 'New name';
+        await h.api.submitForm(new Event('submit'));
+
+        expect(sent).toMatchObject({
+            name: 'New name', materialType: 'EXCIPIENT', baseUomCode: 'KGM', storageConditionCodes: ['COOL_2_8'], expectedVersion: 6,
+            uomConversions: [{ fromUom: 'XBX', toUom: 'KGM', numerator: '10', denominator: '1' }]
+        });
+    });
+
+    it('sends the chosen codes: the material type, the base unit, the storage conditions and the conversion units', async () => {
+        let sent;
+        const h = harness('create', {
+            [`GET ${optionsUrl}`]: ok(options),
+            'POST /MasterDataManagement/Items/api': (init) => { sent = JSON.parse(init.body); return ok({ id }, 201); }
+        });
+        await h.api.initForm();
+        $('[name="Name"]').value = 'Synthetic';
+        $('[name="MaterialType"]').value = 'EXCIPIENT';
+        $('[name="BaseUomCode"]').value = 'KGM';
+        choose($('[name="StorageConditionCodes"]'), ['COOL_2_8', 'PROTECT_FROM_LIGHT']);
+        $('#btnAddConversion').click();
+        const row = $('#itemConversionRows .js-conversion-row');
+        row.querySelector('.js-conversion-from').value = 'C62';
+        row.querySelector('.js-conversion-to').value = 'KGM';
+        row.querySelector('.js-conversion-numerator').value = '0.5';
+        row.querySelector('.js-conversion-denominator').value = '1';
+        await h.api.submitForm(new Event('submit'));
+
+        expect(sent).toMatchObject({
+            materialType: 'EXCIPIENT', baseUomCode: 'KGM', storageConditionCodes: ['COOL_2_8', 'PROTECT_FROM_LIGHT'],
+            uomConversions: [{ fromUom: 'C62', toUom: 'KGM', numerator: '0.5', denominator: '1' }], formAttemptToken: 'synthetic-attempt'
+        });
+    });
+});

@@ -14,4 +14,9 @@ public sealed class UnavailableItemReferenceResolver : IItemReferenceResolver
         IReadOnlyList<ItemReferenceRequest> requests,
         CancellationToken cancellationToken = default) =>
         Task.FromResult(ItemReferenceResolveResult.Fail(503, ProviderNotAvailable));
+
+    public Task<ItemReferenceEnumerationResult> EnumerateLatestAsync(
+        IReadOnlyList<string> setCodes,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(ItemReferenceEnumerationResult.Fail(503, ProviderNotAvailable));
 }

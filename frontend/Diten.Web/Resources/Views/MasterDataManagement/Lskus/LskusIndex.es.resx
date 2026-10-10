@@ -79,7 +79,7 @@
     <value>el control por lote de su GSKU — debe definirlo alguien autorizado a editar el GSKU</value>
   </data>
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
-    <value>Para enviarlo a aprobación, introduzca primero sus indicadores de stock en el comportamiento de stock.</value>
+    <value>El comportamiento de stock está incompleto o es incoherente, por lo que aún no se puede enviar a aprobación. Complételo en Comportamiento de stock.</value>
   </data>
   <data name="ListJoinTwo" xml:space="preserve">
     <value>{0} y {1}</value>

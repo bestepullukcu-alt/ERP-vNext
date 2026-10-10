@@ -372,7 +372,6 @@
       "UpstreamHttpMethod": [
         "GET",
         "POST",
-        "PUT",
         "OPTIONS"
       ],
       "UpstreamScheme": "http"
@@ -442,7 +441,6 @@
       "UpstreamHttpMethod": [
         "GET",
         "POST",
-        "PUT",
         "OPTIONS"
       ],
       "UpstreamScheme": "http"
@@ -3327,6 +3325,51 @@
         "POST",
         "PUT",
         "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/lskus/{id}/stock-behaviour",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/lskus/{id}/stock-behaviour",
+      "UpstreamHttpMethod": [
+        "PUT"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/finished-goods/{id}/stock-behaviour",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/finished-goods/{id}/stock-behaviour",
+      "UpstreamHttpMethod": [
+        "PUT"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/finished-goods/{id}/gtin",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/finished-goods/{id}/gtin",
+      "UpstreamHttpMethod": [
+        "PUT"
       ],
       "UpstreamScheme": "http"
     },

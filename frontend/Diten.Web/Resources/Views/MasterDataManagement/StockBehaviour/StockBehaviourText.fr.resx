@@ -36,9 +36,9 @@
   <data name="ConversionTo" xml:space="preserve"><value>Unité cible</value></data>
   <data name="ConversionNumerator" xml:space="preserve"><value>Numérateur</value></data>
   <data name="ConversionDenominator" xml:space="preserve"><value>Dénominateur</value></data>
-  <data name="ConversionHelp" xml:space="preserve"><value>1 unité source = numérateur ÷ dénominateur unités cibles. Codes d'unité en majuscules, p. ex. XBX, C62.</value></data>
-  <data name="UomHelp" xml:space="preserve"><value>Code d'unité en majuscules, p. ex. C62 (pièce) ou KGM (kg).</value></data>
-  <data name="StorageHelp" xml:space="preserve"><value>Codes de condition en majuscules, séparés par des virgules, p. ex. COOL_2_8, PROTECT_FROM_LIGHT. Une seule condition de température au plus.</value></data>
+  <data name="ConversionHelp" xml:space="preserve"><value>1 unité source = numérateur ÷ dénominateur unités cibles. Les unités sont choisies dans la liste.</value></data>
+  <data name="UomHelp" xml:space="preserve"><value>Choisissez l'unité dans la liste.</value></data>
+  <data name="StorageHelp" xml:space="preserve"><value>Choisissez une ou plusieurs conditions dans la liste. Au plus une condition de température.</value></data>
   <data name="ShelfLifeFromGskuHelp" xml:space="preserve"><value>Laissez vide pour reprendre la durée du GSKU ; une valeur propre ne peut pas la dépasser.</value></data>
   <data name="GtinHelp" xml:space="preserve"><value>14 chiffres avec une clé de contrôle GS1 valide.</value></data>
   <data name="LskuInheritsHelp" xml:space="preserve"><value>Tout le reste (unités, durée de conservation, stockage, lot, stockable) est lu depuis le GSKU.</value></data>
@@ -54,4 +54,24 @@
   <data name="InvalidConversion" xml:space="preserve"><value>Chaque conversion requiert deux codes d'unité différents ainsi qu'un numérateur et un dénominateur supérieurs à zéro.</value></data>
   <data name="InvalidGtin" xml:space="preserve"><value>Le GTIN doit comporter exactement 14 chiffres.</value></data>
   <data name="ListCannotBeEmpty" xml:space="preserve"><value>Une liste renseignée ne peut pas être vidée ; gardez-en au moins un élément.</value></data>
+  <data name="Uom_C62" xml:space="preserve"><value>Pièce</value></data>
+  <data name="Uom_MC" xml:space="preserve"><value>Microgramme (µg)</value></data>
+  <data name="Uom_MGM" xml:space="preserve"><value>Milligramme (mg)</value></data>
+  <data name="Uom_GRM" xml:space="preserve"><value>Gramme (g)</value></data>
+  <data name="Uom_KGM" xml:space="preserve"><value>Kilogramme (kg)</value></data>
+  <data name="Uom_MLT" xml:space="preserve"><value>Millilitre (mL)</value></data>
+  <data name="Uom_LTR" xml:space="preserve"><value>Litre (L)</value></data>
+  <data name="Uom_MTR" xml:space="preserve"><value>Mètre (m)</value></data>
+  <data name="Uom_MTK" xml:space="preserve"><value>Mètre carré (m²)</value></data>
+  <data name="Uom_XBX" xml:space="preserve"><value>Boîte</value></data>
+  <data name="Uom_XCS" xml:space="preserve"><value>Carton</value></data>
+  <data name="Uom_XRO" xml:space="preserve"><value>Rouleau</value></data>
+  <data name="Storage_AMBIENT_15_25" xml:space="preserve"><value>Température ambiante (15–25 °C)</value></data>
+  <data name="Storage_COOL_2_8" xml:space="preserve"><value>Réfrigéré (2–8 °C)</value></data>
+  <data name="Storage_FROZEN_BELOW_MINUS_20" xml:space="preserve"><value>Congelé (en dessous de −20 °C)</value></data>
+  <data name="Storage_PROTECT_FROM_LIGHT" xml:space="preserve"><value>Conserver à l'abri de la lumière</value></data>
+  <data name="Storage_PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Conserver à l'abri de l'humidité</value></data>
+  <data name="OptionsUnavailable" xml:space="preserve"><value>Les listes des unités et des conditions de stockage ne peuvent pas être chargées pour le moment ; ces champs ne peuvent pas être modifiés. Les autres champs peuvent toujours être enregistrés ; réessayez dans un instant.</value></data>
+  <data name="TemperatureOnlyOne" xml:space="preserve"><value>Une seule condition de température peut être choisie. Retirez d'abord celle déjà choisie.</value></data>
+  <data name="SelectUnit" xml:space="preserve"><value>Sélectionnez une unité</value></data>
 </root>

@@ -6,7 +6,9 @@
     grow; each group stays under eight inputs): its own conversions (case ↔ box), its own shelf life — empty reads the
     GSKU's (D-2), never longer than it (O-15) — storage conditions, lot / serial / stockable flags, and the sales-box
     GTIN (its own request). Its base unit is the GSKU's (O-14) and is not entered. O-8 as on the GSKU. Drawn by
-    Index.cshtml only for a user with the Finished Good's stock-edit key (UAS-001).
+    Index.cshtml only for a user with the Finished Good's stock-edit key (UAS-001). S5b (BL-600): conversion units and
+    storage conditions are selects filled from the item options read; without the lists they stay passive with the
+    reason (data-sb-options-reason) — never typed codes.
 *@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasStockBehaviour" data-sb-level="fg"
      aria-labelledby="offcanvasStockBehaviourLabel">
@@ -28,6 +30,7 @@
                     <i class="bx bx-plus me-1"></i>@Stock["AddConversion"]
                 </button>
                 <div class="form-text">@Stock["ConversionHelp"]</div>
+                <div class="form-text text-warning d-none" data-sb-options-reason></div>
                 <div class="form-text text-warning d-none" data-sb-addonly-reason="uomConversions"><i class="bx bx-lock-alt me-1"></i>@Stock["AddOnlyReason"]</div>
             </section>
             <section class="mb-4" aria-labelledby="sb-group-shelf-life">
@@ -45,9 +48,11 @@
                 <div class="mb-3">
                     <label for="sb-input-storage" class="form-label fw-medium">@Stock["StorageConditions"]</label>
                     <div class="d-flex flex-wrap gap-1 mb-2" data-sb-existing="storageConditionCodes"></div>
-                    <input type="text" id="sb-input-storage" class="form-control text-uppercase" maxlength="512" autocomplete="off"
-                           data-sb-input="storageConditionCodes" aria-describedby="sb-help-storage" />
+                    <select id="sb-input-storage" class="form-select" multiple disabled data-sb-input="storageConditionCodes"
+                            data-placeholder="@Stock["StorageConditions"]" aria-describedby="sb-help-storage"></select>
                     <div id="sb-help-storage" class="form-text">@Stock["StorageHelp"]</div>
+                    <div id="sb-storage-temperature-note" class="form-text text-danger d-none" role="alert"></div>
+                    <div class="form-text text-warning d-none" data-sb-options-reason></div>
                     <div class="form-text text-warning d-none" data-sb-addonly-reason="storageConditionCodes"><i class="bx bx-lock-alt me-1"></i>@Stock["AddOnlyReason"]</div>
                 </div>
                 <div class="mb-3">

@@ -11,6 +11,10 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehavi
 /// their source), whether it is stockable and — when not — which fields are missing, and which fields are locked (O-8:
 /// free on a Draft; on an approved record a filled scalar is locked and a list only gains items). The screen draws from
 /// this alone; it never reads the service-to-service contract (<c>/api/product-master</c>).
+/// <para>S5-FIX1 (1): <c>Editable</c> is exactly what the write accepts — the status rule
+/// (<see cref="StockBehaviourContext.Editable"/>, a Finished Good's draft cancellation by
+/// <see cref="StockBehaviourContext.FinishedGoodEditable"/>) and no operation holding the record (the write's own
+/// predicates, <c>IProductStockBehaviourRepository.*HeldAsync</c>).</para>
 /// </summary>
 public sealed record StockBehaviourDto(
     string? BaseUomCode,
@@ -55,7 +59,7 @@ public static class StockBehaviourView
     public const string CaseBoxConversion = "caseBoxConversion";
     public const string GskuStockable = "gsku.stockable";
 
-    public static StockBehaviourDto ForGsku(Gsku gsku)
+    public static StockBehaviourDto ForGsku(Gsku gsku, bool heldByOperation = false)
     {
         var missing = new List<string>();
         if (string.IsNullOrEmpty(gsku.BaseUomCode)) missing.Add(BaseUomCode);
@@ -75,11 +79,11 @@ public static class StockBehaviourView
                 (RetestDays, gsku.RetestDays is not null), (MinRemainingShelfLifeDays, gsku.MinRemainingShelfLifeDays is not null),
                 (LotControlled, gsku.LotControlled is not null), (Stockable, gsku.Stockable is not null)),
             AddOnly(gsku.LifecycleStatus, UomConversions, StorageConditionCodes),
-            StockBehaviourContext.Editable(gsku.LifecycleStatus));
+            StockBehaviourContext.Editable(gsku.LifecycleStatus) && !heldByOperation);
     }
 
     // O-3: everything but the serial flag is the GSKU's, read now; the LSKU's own field is only SerialControlled.
-    public static StockBehaviourDto ForLsku(Gsku gsku, Lsku lsku)
+    public static StockBehaviourDto ForLsku(Gsku gsku, Lsku lsku, bool heldByOperation = false)
     {
         var parent = ForGsku(gsku);
         var missing = new List<string>();
@@ -97,13 +101,13 @@ public static class StockBehaviourView
             Missing = missing,
             LockedFields = Locked(lsku.LifecycleStatus, (SerialControlled, lsku.SerialControlled is not null)),
             AddOnlyFields = [],
-            Editable = StockBehaviourContext.Editable(lsku.LifecycleStatus)
+            Editable = StockBehaviourContext.Editable(lsku.LifecycleStatus) && !heldByOperation
         };
     }
 
     // O-14: the base unit is the GSKU's; D-2: the shelf life is the FG's own or, when it has none, the GSKU's; the days
     // (retest / minimum remaining) are the GSKU's.
-    public static StockBehaviourDto ForFinishedGood(Gsku gsku, FinishedGood finishedGood)
+    public static StockBehaviourDto ForFinishedGood(Gsku gsku, FinishedGood finishedGood, bool heldByOperation = false)
     {
         var shelfLife = finishedGood.ShelfLifeDays ?? gsku.ShelfLifeDays;
         var missing = new List<string>();
@@ -126,7 +130,7 @@ public static class StockBehaviourView
                 (SerialControlled, finishedGood.SerialControlled is not null), (Stockable, finishedGood.Stockable is not null),
                 (Gtin, !string.IsNullOrEmpty(finishedGood.Gtin))),
             AddOnly(finishedGood.LifecycleStatus, UomConversions, StorageConditionCodes),
-            StockBehaviourContext.Editable(finishedGood.LifecycleStatus));
+            StockBehaviourContext.FinishedGoodEditable(finishedGood) && !heldByOperation);
     }
 
     // O-8: nothing is locked on a Draft; on any other status a filled scalar is.

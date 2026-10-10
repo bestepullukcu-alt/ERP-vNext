@@ -67,7 +67,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
             .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())
             .Select(attribute => policyProperty?.GetValue(attribute) as string ?? string.Empty)
             .Where(policy => policy.StartsWith(prefix, StringComparison.Ordinal))
-            .Select(policy => policy[prefix.Length..])
+            // An any-of door (S5b items/options: "a|b|c") enforces each of its keys.
+            .SelectMany(policy => policy[prefix.Length..].Split('|'))
             .ToHashSet(StringComparer.Ordinal);
 
         var declared = Manifest.Pages
@@ -164,7 +165,10 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         var action = Assert.Single(Assert.Single(Manifest.Pages, page => page.PageCode == pageCode).Actions,
             action => action.ActionCode == "EDIT_STOCK_BEHAVIOUR");
         Assert.Equal(key, action.PermissionKey);
-        Assert.True(action.IsRowAction);
+        // S5-FIX1: the real surface is the quick view's section and its own form — a form action, not a row action.
+        Assert.Equal("FormAction", action.ActionType);
+        Assert.False(action.IsRowAction);
+        Assert.False(action.IsToolbarAction);
     }
 
     [Fact]

@@ -65,7 +65,7 @@
     <value>asgari kalan raf ömrü</value>
   </data>
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
-    <value>Onaya göndermek için önce stok davranışında stok bayraklarını girin.</value>
+    <value>Stok davranışı eksik veya tutarsız olduğu için bu kayıt henüz onaya gönderilemez. Stok davranışında tamamlayın.</value>
   </data>
   <data name="ListJoinTwo" xml:space="preserve">
     <value>{0} ve {1}</value>

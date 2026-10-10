@@ -21,6 +21,8 @@ namespace Diten.MdmService.Infrastructure.ReferenceData;
 public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
 {
     public const string RelativePath = "api/internal/v1/reference-data/item-universal/resolve";
+    // MOD-0290-FU04 S5b (BL-600): the same controller, the same trust (credential, audience, caller's token).
+    public const string EnumerateRelativePath = "api/internal/v1/reference-data/item-universal/enumerate";
     public const string CredentialIdHeader = "X-Verified-Gsku-Credential-Id";
     public const string CredentialSecretHeader = "X-Verified-Gsku-Credential";
     public const string AudienceHeader = "X-Verified-Gsku-Audience";
@@ -141,6 +143,94 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
         }
     }
 
+    /// <summary>
+    /// MOD-0290-FU04 S5b (BL-600): every value of the asked sets. The resolve's preflight and trust (configuration,
+    /// caller's token, credential headers, budget); an answer that does not list exactly the asked sets — once each, each
+    /// with a version and at least one value, codes unique, the attributes the forms read present — is UNTRUSTED_ANSWER.
+    /// Every failure is an outage (503, its code), never an empty list.
+    /// </summary>
+    public async Task<ItemReferenceEnumerationResult> EnumerateLatestAsync(IReadOnlyList<string> setCodes,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsConfigured(_options, _development))
+        {
+            _logger.LogWarning(ItemReferenceProvider.NotConfiguredWarning);
+            return ItemReferenceEnumerationResult.Fail(503, ConfigurationInvalid);
+        }
+        var wanted = (setCodes ?? []).Distinct(StringComparer.Ordinal).ToList();
+        if (wanted.Count is 0 or > 3) return ItemReferenceEnumerationResult.Fail(503, "REFERENCE_RESOLUTION_CONTRACT_INVALID");
+
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext?.User.Identity?.IsAuthenticated != true
+            || !AuthenticationHeaderValue.TryParse(httpContext.Request.Headers.Authorization.FirstOrDefault(), out var delegated)
+            || !string.Equals(delegated.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(delegated.Parameter))
+            return ItemReferenceEnumerationResult.Fail(401, "REFERENCE_UNAUTHENTICATED");
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_options.PlatformBaseAddress!, EnumerateRelativePath));
+        request.Headers.Authorization = delegated;
+        request.Headers.TryAddWithoutValidation(CredentialIdHeader, _options.CredentialIdentifier);
+        request.Headers.TryAddWithoutValidation(CredentialSecretHeader, _options.CredentialSecret);
+        request.Headers.TryAddWithoutValidation(AudienceHeader, Audience);
+        request.Content = JsonContent.Create(new EnumerateRequest(wanted));
+
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        budget.CancelAfter(_options.Timeout);
+        try
+        {
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, budget.Token);
+            EnumerationEnvelope? envelope;
+            try
+            {
+                envelope = await response.Content.ReadFromJsonAsync<EnumerationEnvelope>(cancellationToken: budget.Token);
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return (int)response.StatusCode >= 500
+                    ? ItemReferenceEnumerationResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE")
+                    : ItemReferenceEnumerationResult.Fail(503, ItemReferenceCheck.UntrustedAnswer);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                return envelope?.IsSuccessful == true && envelope.Data?.Sets is { } sets && TrustedEnumeration(wanted, sets)
+                    ? ItemReferenceEnumerationResult.Success(sets.Select(set => new ItemReferenceEnumeratedSet(
+                        set!.SetCode, set.CatalogVersion, set.CatalogVersionId, set.CatalogVersionNumber,
+                        set.Values!.Select(value => new ItemReferenceEnumeratedValue(value!.ValueCode, value.DisplayName,
+                            value.SortOrder, value.Attributes!)).ToList())).ToList())
+                    : ItemReferenceEnumerationResult.Fail(503, ItemReferenceCheck.UntrustedAnswer);
+            }
+
+            var failure = MapFailure(response.StatusCode, envelope?.ReasonCode);
+            return ItemReferenceEnumerationResult.Fail(failure.StatusCode, failure.FailureCode!);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return ItemReferenceEnumerationResult.Fail(503, "REFERENCE_PROVIDER_TIMEOUT");
+        }
+        catch (HttpRequestException)
+        {
+            return ItemReferenceEnumerationResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE");
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _logger.LogWarning("Item reference provider answer could not be read ({ExceptionType}).", exception.GetType().Name);
+            return ItemReferenceEnumerationResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE");
+        }
+    }
+
+    internal static bool TrustedEnumeration(IReadOnlyList<string> wanted, IReadOnlyList<EnumeratedSet?> sets) =>
+        sets.Count == wanted.Count
+        && sets.All(set => set is not null)
+        && sets.Select(set => set!.SetCode).ToHashSet(StringComparer.Ordinal).SetEquals(wanted)
+        && sets.All(set => set!.CatalogVersionId != Guid.Empty && !string.IsNullOrWhiteSpace(set.CatalogVersion)
+                           && set.CatalogVersionNumber > 0
+                           && set.Values is { Count: > 0 } values
+                           && values.All(value => value is not null && !string.IsNullOrWhiteSpace(value.ValueCode)
+                                                  && !string.IsNullOrWhiteSpace(value.DisplayName) && value.Attributes is not null
+                                                  && AttributesHold(set.SetCode, value.Attributes))
+                           && values.Select(value => value!.ValueCode).Distinct(StringComparer.Ordinal).Count() == values.Count);
+
     // The answer covers exactly the request, once each; versions agree inside a set; the attributes the item reads exist.
     internal static bool Trusted(IReadOnlyList<ItemReferenceRequest> wanted, IReadOnlyList<Selection?> selections)
     {
@@ -158,17 +248,18 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
                                            && string.Equals(selection.ResolutionMode, "LATEST", StringComparison.Ordinal)
                                            && selection.ResolvedAtUtc != default
                                            && selection.Attributes is not null
-                                           && AttributesHold(selection));
+                                           && AttributesHold(selection.SetCode, selection.Attributes));
     }
 
-    private static bool AttributesHold(Selection selection) => selection.SetCode switch
+    // One rule for the resolve and the enumeration: the attributes the item and the forms read.
+    private static bool AttributesHold(string setCode, IReadOnlyDictionary<string, string?> attributes) => setCode switch
     {
         ItemReferenceSets.StorageCondition =>
-            selection.Attributes!.TryGetValue(ItemReferenceSets.ConditionKindAttribute, out var kind)
+            attributes.TryGetValue(ItemReferenceSets.ConditionKindAttribute, out var kind)
             && kind is ItemReferenceSets.TemperatureKind or ItemReferenceSets.ProtectionKind,
         ItemReferenceSets.ItemUom =>
-            selection.Attributes!.TryGetValue("DimensionCode", out var dimension) && !string.IsNullOrWhiteSpace(dimension)
-            && selection.Attributes.TryGetValue("MaximumDecimalPrecision", out var precision)
+            attributes.TryGetValue("DimensionCode", out var dimension) && !string.IsNullOrWhiteSpace(dimension)
+            && attributes.TryGetValue("MaximumDecimalPrecision", out var precision)
             && int.TryParse(precision, out var digits) && digits >= 0,
         ItemReferenceSets.MaterialType => true,
         _ => false
@@ -193,6 +284,32 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
         // Every failure is an outage for the item (fail-closed): nothing here is the user's fault.
         return ItemReferenceResolveResult.Fail(503, code);
     }
+
+    private sealed record EnumerateRequest([property: JsonPropertyName("set_codes")] IReadOnlyList<string> SetCodes);
+
+    private sealed class EnumerationEnvelope
+    {
+        public bool IsSuccessful { get; init; }
+        public EnumerationData? Data { get; init; }
+
+        [JsonPropertyName("reason_code")]
+        public string? ReasonCode { get; init; }
+    }
+
+    private sealed record EnumerationData([property: JsonPropertyName("sets")] IReadOnlyList<EnumeratedSet?>? Sets);
+
+    internal sealed record EnumeratedSet(
+        [property: JsonPropertyName("set_code")] string SetCode,
+        [property: JsonPropertyName("catalog_version")] string CatalogVersion,
+        [property: JsonPropertyName("catalog_version_id")] Guid CatalogVersionId,
+        [property: JsonPropertyName("catalog_version_number")] int CatalogVersionNumber,
+        [property: JsonPropertyName("values")] IReadOnlyList<EnumeratedValue?>? Values);
+
+    internal sealed record EnumeratedValue(
+        [property: JsonPropertyName("value_code")] string ValueCode,
+        [property: JsonPropertyName("display_name")] string DisplayName,
+        [property: JsonPropertyName("sort_order")] int SortOrder,
+        [property: JsonPropertyName("attributes")] IReadOnlyDictionary<string, string?>? Attributes);
 
     private sealed record ResolveRequest([property: JsonPropertyName("selections")] IReadOnlyList<ResolveSelectionRequest> Selections);
 

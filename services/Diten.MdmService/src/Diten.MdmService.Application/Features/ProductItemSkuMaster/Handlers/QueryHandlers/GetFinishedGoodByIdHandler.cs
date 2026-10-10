@@ -15,6 +15,8 @@ public sealed class GetFinishedGoodByIdHandler
     private readonly IProductDefinitionRevisionRepository _revisions;
     private readonly IGlobalProductRepository _globalProducts;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    // S5-FIX1 (1): the stock write's own "held by an operation" predicates, for the section's editable flag.
+    private readonly IProductStockBehaviourRepository? _stockBehaviour;
 
     public GetFinishedGoodByIdHandler(
         IFinishedGoodRepository finishedGoods,
@@ -24,8 +26,10 @@ public sealed class GetFinishedGoodByIdHandler
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IProductStockBehaviourRepository? stockBehaviour = null)
     {
+        _stockBehaviour = stockBehaviour;
         _finishedGoods = finishedGoods;
         _gskus = gskus;
         _revisions = revisions;
@@ -85,7 +89,8 @@ public sealed class GetFinishedGoodByIdHandler
             finishedGood.UpdatedAt)
         {
             CancellationDisposition = Lifecycle.FinishedGoodDraftCancellationProof.Disposition(finishedGood),
-            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForFinishedGood(gsku, finishedGood)
+            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForFinishedGood(gsku, finishedGood,
+                _stockBehaviour is not null && await _stockBehaviour.FinishedGoodHeldAsync(finishedGood, cancellationToken))
         });
     }
 }

@@ -53,6 +53,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string ItemsDeactivate = "mdm.items.deactivate";
     private const string ItemsRetire = "mdm.items.retire";
 
+    // S5-FIX1: EDIT_STOCK_BEHAVIOUR is a FORM action (the quick view's "Stock behaviour" section opens its own offcanvas;
+    // the row menu only offers it as the STOCK_FLAGS_REQUIRED shortcut), not a row action of its own.
     // S5 (O-12, CT decision 5): the stock-behaviour edit is held TODAY by the keys StockBehaviourPermissions names; its
     // own keys (mdm.<level>.edit-stock-behaviour) come in a separate work item (BL-573) — a new mdm.gskus.* key would
     // break Auth's exact lifecycle key set.
@@ -121,7 +123,7 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         // lifecycle round.
                         new ModuleManifestAction("SUBMIT", "Submit", FinishedGoodsSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("RETIRE", "Retire", FinishedGoodsRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
-                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", FinishedGoodsEditStockBehaviour, "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", FinishedGoodsEditStockBehaviour, "FormAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "GSKUS",
@@ -142,7 +144,7 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", "mdm.gskus.request-correction", "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", "mdm.gskus.request-retirement", "RowAction", 70, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("RETIRE", "Retire Identity", "mdm.gskus.retire", "System", 80, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
-                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", GskusEditStockBehaviour, "RowAction", 90, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", GskusEditStockBehaviour, "FormAction", 90, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "LSKUS",
@@ -161,7 +163,7 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", LskusWithdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", LskusRequestRetirement, "RowAction", 37, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("RETIRE", "Retire", LskusRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
-                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", LskusEditStockBehaviour, "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", LskusEditStockBehaviour, "FormAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 // MOD-0290-FU04 S5 (§23 #1, #7): the Items page under Master Data, for holders of mdm.items.read.
                 // WITHDRAW_APPROVAL is not declared until S2 (CT decision 4).

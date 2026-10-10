@@ -10,6 +10,11 @@
  *
  * ACTIONS ARE THE SERVER'S: a row or a record shows exactly the actions MDM returned for it (availableActions, in
  * MDM's order) — an action this screen does not know is never drawn, and a lifecycle request re-reads the item first.
+ *
+ * THE LISTS ARE MDM'S (S5b, BL-600): material type, base unit, conversion units and storage conditions are selects
+ * filled from the options read (api/options), labelled by stable code (an unknown code is shown as itself). A list
+ * that cannot be loaded leaves them passive with the reason beside them — never a typed-code box. At most one
+ * temperature storage condition (O-2, read from the list's ConditionKind); MDM judges every chosen code again.
  */
 'use strict';
 
@@ -255,9 +260,98 @@ const ItemsPage = (function () {
         dt = list.dt;
     };
 
+    // ── Option lists (S5b, BL-600) ──────────────────────────────────────────────────────────────────────────────
+    // The unit / storage-condition labels and the list words come from the shared stock vocabulary
+    // (#reference-option-labels, StockBehaviourText); material-type labels are the page's own (L.MaterialType_…).
+    const optionWords = (() => {
+        try {
+            const raw = JSON.parse(document.getElementById('reference-option-labels')?.textContent || '{}') || {};
+            // The serializer may camel-case the keys (uom_KGM); they are read as written in the resx (Uom_KGM).
+            return Object.fromEntries(Object.entries(raw).map(([key, text]) => [key.charAt(0).toUpperCase() + key.slice(1), text]));
+        } catch (error) {
+            return {};
+        }
+    })();
+    const optionCodePattern = /^[A-Z][A-Z0-9_]{0,63}$/;
+    const temperatureKind = 'TEMPERATURE';
+    const uomLabel = (code) => (code && optionWords[`Uom_${code}`]) || code || '';
+    const storageLabel = (code) => (code && optionWords[`Storage_${code}`]) || code || '';
+    const listLabels = { materialTypes: materialTypeLabel, uoms: uomLabel, storageConditions: storageLabel };
+    const optionState = { ready: false, lists: { materialTypes: [], uoms: [], storageConditions: [] }, reason: '' };
+
+    // select2 (the shell's picker) when the page has it; a plain select otherwise. Changes are heard through jQuery
+    // when it is there (select2 announces a choice with a jQuery change event only).
+    const select2Available = () => typeof window.jQuery === 'function' && typeof window.jQuery.fn?.select2 === 'function';
+    const enhanceSelect = (select) => {
+        if (!select || !select2Available()) return;
+        const $select = window.jQuery(select);
+        if ($select.hasClass('select2-hidden-accessible')) return;
+        $select.select2({
+            width: '100%',
+            placeholder: select.dataset.placeholder || '',
+            allowClear: false,
+            closeOnSelect: !select.multiple
+        });
+    };
+    const refreshSelect = (select) => {
+        if (select && select2Available()) window.jQuery(select).trigger('change.select2');
+    };
+    const onSelectChange = (select, handler) => {
+        if (!select) return;
+        if (typeof window.jQuery === 'function') window.jQuery(select).on('change', handler);
+        else select.addEventListener('change', handler);
+    };
+    const selectedCodes = (select) => Array.from(select?.selectedOptions || [], (option) => option.value).filter(Boolean);
+    const makeOption = (code, label, selected) => {
+        const option = document.createElement('option');
+        option.value = code;
+        option.textContent = label(code);
+        option.selected = selected;
+        return option;
+    };
+    // The list's codes in its order; a chosen code the list no longer offers (a retired value the record holds) stays,
+    // so a stored value is shown — never silently dropped.
+    const fillSelect = (select, listName, chosen) => {
+        if (!select) return;
+        const label = listLabels[listName];
+        const keep = new Set((chosen ?? selectedCodes(select)).filter(Boolean));
+        const codes = optionState.lists[listName].map((option) => option.code);
+        const placeholder = select.multiple ? null : select.querySelector('option[value=""]');
+        select.replaceChildren(...(placeholder ? [placeholder] : []),
+            ...[...codes, ...[...keep].filter((code) => !codes.includes(code))].map((code) => makeOption(code, label, keep.has(code))));
+        if (placeholder) placeholder.selected = keep.size === 0;
+        refreshSelect(select);
+    };
+    const readList = (data, name) => {
+        const raw = valueOf(data, name);
+        if (!Array.isArray(raw)) return [];
+        return raw.filter((option) => typeof valueOf(option, 'code') === 'string' && optionCodePattern.test(valueOf(option, 'code')))
+            .map((option) => ({ code: valueOf(option, 'code'), attributes: valueOf(option, 'attributes') || {} }));
+    };
+    const loadOptions = async () => {
+        try {
+            const response = await fetch(`${endpoint}/options`, { credentials: 'same-origin', headers: getAuthHeaders() });
+            if (!response.ok) throw new Error(await getErrorMessage(response));
+            const data = unwrapData(await response.json());
+            const lists = {
+                materialTypes: readList(data, 'materialTypes'),
+                uoms: readList(data, 'uoms'),
+                storageConditions: readList(data, 'storageConditions')
+            };
+            // An empty list is not a list to offer: it is said as unavailable, never drawn as "nothing to choose".
+            if (Object.values(lists).some((list) => !list.length)) throw new Error(optionWords.OptionsUnavailable || L.ErrorGateway);
+            return { ok: true, lists };
+        } catch (error) {
+            return { ok: false, message: error?.message || optionWords.OptionsUnavailable || L.ErrorGateway };
+        }
+    };
+    const temperatureCodes = () => new Set(optionState.lists.storageConditions
+        .filter((option) => valueOf(option.attributes, 'conditionKind') === temperatureKind)
+        .map((option) => option.code));
+
     // ── Form (Create / Edit) ────────────────────────────────────────────────────────────────────────────────────
     const form = document.getElementById('itemForm');
-    const formState = { version: null, status: null };
+    const formState = { version: null, status: null, storage: [] };
     const field = (name) => form?.querySelector(`[name="${name}"]:not([type="hidden"])`);
     const showFormAlert = (text) => {
         const alert = document.getElementById('itemFormAlert');
@@ -273,8 +367,12 @@ const ItemsPage = (function () {
         const body = document.getElementById('itemConversionRows');
         if (!template || !body) return null;
         const row = template.content.firstElementChild.cloneNode(true);
-        row.querySelector('.js-conversion-from').value = valueOf(conversion, 'fromUom') ?? '';
-        row.querySelector('.js-conversion-to').value = valueOf(conversion, 'toUom') ?? '';
+        [['.js-conversion-from', 'fromUom'], ['.js-conversion-to', 'toUom']].forEach(([selector, key]) => {
+            const select = row.querySelector(selector);
+            const stored = valueOf(conversion, key);
+            fillSelect(select, 'uoms', stored ? [String(stored)] : []);
+            select.disabled = !optionState.ready;
+        });
         row.querySelector('.js-conversion-numerator').value = valueOf(conversion, 'numerator') ?? '';
         row.querySelector('.js-conversion-denominator').value = valueOf(conversion, 'denominator') ?? '';
         body.appendChild(row);
@@ -287,23 +385,79 @@ const ItemsPage = (function () {
         const value = Number(text);
         return Number.isInteger(value) ? value : NaN;
     };
-    const splitCodes = (text) => String(text ?? '').split(/[\s,;]+/u).map((code) => code.trim().toUpperCase()).filter(Boolean);
+
+    // O-2: at most one TEMPERATURE storage condition. A second one is refused in words and taken back (the one chosen
+    // first stays); the other temperature options are passive while one is chosen.
+    const enforceOneTemperature = () => {
+        const select = field('StorageConditionCodes');
+        if (!select) return;
+        const temperatures = temperatureCodes();
+        const chosen = selectedCodes(select).filter((code) => temperatures.has(code));
+        const note = document.getElementById('itemStorageTemperatureNote');
+        if (chosen.length > 1) {
+            const keep = chosen.find((code) => formState.storage.includes(code)) || chosen[0];
+            Array.from(select.options).forEach((option) => {
+                if (temperatures.has(option.value) && option.value !== keep) option.selected = false;
+            });
+            if (note) note.textContent = optionWords.TemperatureOnlyOne || '';
+        }
+        note?.classList.toggle('d-none', chosen.length <= 1);
+        const kept = selectedCodes(select).find((code) => temperatures.has(code));
+        Array.from(select.options).forEach((option) => {
+            if (temperatures.has(option.value)) option.disabled = Boolean(kept) && option.value !== kept;
+        });
+        formState.storage = selectedCodes(select);
+        refreshSelect(select);
+    };
+
+    // The lists arrived: every list field is filled and becomes choosable. They did not: every list field stays passive
+    // and says why; the other fields stay usable.
+    const applyOptions = (result) => {
+        const listFields = Array.from(form.querySelectorAll('[data-item-options]'));
+        const add = document.getElementById('btnAddConversion');
+        optionState.ready = result.ok;
+        if (result.ok) {
+            optionState.lists = result.lists;
+            listFields.forEach((select) => {
+                fillSelect(select, select.dataset.itemOptions);
+                select.disabled = false;
+                enhanceSelect(select);
+            });
+            conversionRows().forEach((row) => row.querySelectorAll('select').forEach((select) => {
+                fillSelect(select, 'uoms');
+                select.disabled = false;
+            }));
+            if (add) add.disabled = false;
+        } else {
+            optionState.reason = result.message;
+            listFields.forEach((select) => {
+                select.disabled = true;
+                enhanceSelect(select);
+            });
+            conversionRows().forEach((row) => row.querySelectorAll('select').forEach((select) => { select.disabled = true; }));
+            if (add) add.disabled = true;
+        }
+        form.querySelectorAll('[data-item-options-reason]').forEach((reason) => {
+            reason.textContent = result.ok ? '' : result.message;
+            reason.classList.toggle('d-none', result.ok);
+        });
+    };
 
     // What the form sends: MDM's eleven fields (the proxy forwards exactly these). A fully empty conversion row is no row.
     const readForm = () => ({
         name: String(field('Name')?.value ?? '').trim(),
         description: String(field('Description')?.value ?? '').trim() || null,
         materialType: String(field('MaterialType')?.value ?? '').trim(),
-        baseUomCode: String(field('BaseUomCode')?.value ?? '').trim().toUpperCase(),
-        storageConditionCodes: splitCodes(field('StorageConditionCodes')?.value),
+        baseUomCode: String(field('BaseUomCode')?.value ?? '').trim(),
+        storageConditionCodes: selectedCodes(field('StorageConditionCodes')),
         lotControlled: field('LotControlled')?.checked === true,
         stockable: field('Stockable')?.checked === true,
         shelfLifeDays: readDays('ShelfLifeDays'),
         retestDays: readDays('RetestDays'),
         minRemainingShelfLifeDays: readDays('MinRemainingShelfLifeDays'),
         uomConversions: conversionRows().map((row) => ({
-            fromUom: row.querySelector('.js-conversion-from').value.trim().toUpperCase(),
-            toUom: row.querySelector('.js-conversion-to').value.trim().toUpperCase(),
+            fromUom: row.querySelector('.js-conversion-from').value.trim(),
+            toUom: row.querySelector('.js-conversion-to').value.trim(),
             numerator: row.querySelector('.js-conversion-numerator').value.trim(),
             denominator: row.querySelector('.js-conversion-denominator').value.trim()
         })).filter((conversion) => conversion.fromUom || conversion.toUom || conversion.numerator || conversion.denominator)
@@ -312,9 +466,11 @@ const ItemsPage = (function () {
     const fillForm = (item) => {
         field('Name').value = valueOf(item, 'name') ?? '';
         field('Description').value = valueOf(item, 'description') ?? '';
-        field('MaterialType').value = valueOf(item, 'materialType') ?? '';
-        field('BaseUomCode').value = valueOf(item, 'baseUomCode') ?? '';
-        field('StorageConditionCodes').value = (valueOf(item, 'storageConditionCodes') || []).join(', ');
+        fillSelect(field('MaterialType'), 'materialTypes', [valueOf(item, 'materialType') ?? '']);
+        fillSelect(field('BaseUomCode'), 'uoms', [valueOf(item, 'baseUomCode') ?? '']);
+        fillSelect(field('StorageConditionCodes'), 'storageConditions', (valueOf(item, 'storageConditionCodes') || []).map(String));
+        formState.storage = selectedCodes(field('StorageConditionCodes'));
+        if (optionState.ready) enforceOneTemperature();
         field('LotControlled').checked = valueOf(item, 'lotControlled') === true;
         field('Stockable').checked = valueOf(item, 'stockable') === true;
         ['ShelfLifeDays', 'RetestDays', 'MinRemainingShelfLifeDays'].forEach((name) => {
@@ -332,9 +488,12 @@ const ItemsPage = (function () {
     const applyActiveLocks = (item) => {
         if (valueOf(item, 'lifecycleStatus') !== statusActive) return;
         form.querySelectorAll('[data-item-locked="always"]').forEach((input) => { input.disabled = true; });
-        form.querySelectorAll('[data-item-locked="filled"]').forEach((input) => { if (String(input.value).trim()) input.disabled = true; });
+        form.querySelectorAll('[data-item-locked="filled"]').forEach((input) => {
+            const filled = input.multiple ? selectedCodes(input).length > 0 : String(input.value).trim() !== '';
+            if (filled) input.disabled = true;
+        });
         if ((valueOf(item, 'uomConversions') || []).length) {
-            conversionRows().forEach((row) => row.querySelectorAll('input, button').forEach((input) => { input.disabled = true; }));
+            conversionRows().forEach((row) => row.querySelectorAll('input, select, button').forEach((input) => { input.disabled = true; }));
             const add = document.getElementById('btnAddConversion');
             if (add) add.disabled = true;
         }
@@ -370,7 +529,13 @@ const ItemsPage = (function () {
         form.classList.add('was-validated');
         if (!values.name || !values.materialType || !values.baseUomCode
             || [values.shelfLifeDays, values.retestDays, values.minRemainingShelfLifeDays].some(Number.isNaN)) {
-            showFormAlert(L.ErrorValidation);
+            // A required list that could not be loaded is said as itself, not as "fill in the form".
+            showFormAlert(!optionState.ready && (!values.materialType || !values.baseUomCode) ? optionState.reason : L.ErrorValidation);
+            return;
+        }
+        const temperatures = temperatureCodes();
+        if (values.storageConditionCodes.filter((code) => temperatures.has(code)).length > 1) {
+            showFormAlert(optionWords.TemperatureOnlyOne || L.ErrorValidation);
             return;
         }
         if (save?.disabled) return;
@@ -415,14 +580,16 @@ const ItemsPage = (function () {
     const initForm = async () => {
         if (!form) return;
         form.addEventListener('submit', submitForm);
-        document.getElementById('btnAddConversion')?.addEventListener('click', () => addConversionRow(null)?.querySelector('input')?.focus());
+        document.getElementById('btnAddConversion')?.addEventListener('click', () => addConversionRow(null)?.querySelector('select')?.focus());
         document.getElementById('itemConversionRows')?.addEventListener('click', (event) => {
             const remove = event.target.closest('.js-conversion-remove');
             if (!remove || remove.disabled) return;
             remove.closest('.js-conversion-row')?.remove();
             syncConversionEmpty();
         });
+        onSelectChange(field('StorageConditionCodes'), enforceOneTemperature);
         syncConversionEmpty();
+        applyOptions(await loadOptions());
         if (form.dataset.formMode === 'edit' && form.dataset.itemId) await loadEditForm(form.dataset.itemId);
     };
 

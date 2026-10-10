@@ -64,7 +64,7 @@
     <value>the minimum remaining shelf life</value>
   </data>
   <data name="SubmitNeedsStockFlags" xml:space="preserve">
-    <value>To send this for approval, first enter its stock flags in stock behaviour.</value>
+    <value>Stock behaviour is incomplete or inconsistent, so this cannot be sent for approval yet. Complete it in Stock behaviour.</value>
   </data>
   <data name="ListJoinTwo" xml:space="preserve">
     <value>{0} and {1}</value>

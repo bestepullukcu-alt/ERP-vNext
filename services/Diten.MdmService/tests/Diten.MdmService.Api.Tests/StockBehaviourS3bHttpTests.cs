@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Diten.MdmService.Application.Contracts.Workflow;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
@@ -692,6 +693,132 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
     }
 
     private static string[] Strings(JsonElement array) => array.EnumerateArray().Select(x => x.GetString()!).ToArray();
+
+    // ------------------------------------------------------------------------------------------- S5-FIX1
+
+    // (1) "Edit" is offered exactly where the write accepts it: editable:true ⇒ the write is not a 409, editable:false ⇒
+    // it is. The status rule, a Finished Good's draft cancellation and an operation holding the record are read from the
+    // write's own predicates. The sabotage targets "the FG cancellation condition removed" and "the busy condition
+    // removed".
+    [Theory]
+    [InlineData("gsku-draft-free", true)]
+    [InlineData("gsku-approved", true)]
+    [InlineData("gsku-draft-busy", false)]
+    [InlineData("lsku-draft-busy", false)]
+    [InlineData("fg-draft-cancelled", false)]
+    [InlineData("fg-draft-free", true)]
+    public async Task S5_FIX1_Editable_is_exactly_what_the_stock_write_accepts(string shape, bool expected)
+    {
+        var (path, write) = await StockShapeAsync(shape);
+
+        var editable = (await StockBehaviourAsync(path)).GetProperty("editable").GetBoolean();
+        var response = await write();
+
+        Assert.Equal(expected, editable);
+        var text = await response.Content.ReadAsStringAsync();
+        if (editable) Assert.True(response.StatusCode != HttpStatusCode.Conflict, text);
+        else Assert.True(response.StatusCode == HttpStatusCode.Conflict, text);
+    }
+
+    // (1) the stated cases by name.
+    [Fact]
+    public async Task S5_FIX1_A_cancelled_finished_good_draft_is_not_editable()
+    {
+        var (path, _) = await StockShapeAsync("fg-draft-cancelled");
+        Assert.False((await StockBehaviourAsync(path)).GetProperty("editable").GetBoolean());
+    }
+
+    [Theory]
+    [InlineData("gsku-draft-busy")]
+    [InlineData("lsku-draft-busy")]
+    public async Task S5_FIX1_A_draft_held_by_its_submit_is_not_editable(string shape)
+    {
+        var (path, _) = await StockShapeAsync(shape);
+        Assert.False((await StockBehaviourAsync(path)).GetProperty("editable").GetBoolean());
+    }
+
+    // Minor: a read refused by the legal-entity scope carries no stock block (only the cross-tenant case was tested).
+    [Fact]
+    public async Task S5_FIX1_A_read_refused_by_the_product_scope_carries_no_stock_block()
+    {
+        var records = await SeedAsync();
+        await EnforceScopeForAnotherProductAsync();
+        var token = host.Token(_tenant, _maker, [.. MakerPermissions, "mdm.finished-goods.read"]);
+        foreach (var path in new[] { $"/api/gskus/{records.Gsku.Id:D}", $"/api/lskus/{records.Lsku.Id:D}",
+                     $"/api/finished-goods/{records.FinishedGood.Id:D}" })
+        {
+            var response = await host.Client(token).GetAsync(path);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.DoesNotContain("stockBehaviour", await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        }
+    }
+
+    private async Task<(string Path, Func<Task<HttpResponseMessage>> Write)> StockShapeAsync(string shape)
+    {
+        switch (shape)
+        {
+            case "gsku-draft-free":
+            {
+                var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+                return ($"/api/gskus/{gsku:D}", () => PutGskuAsync(gsku, version, new { lotControlled = true }));
+            }
+            case "gsku-approved":
+            {
+                var records = await SeedAsync();
+                return ($"/api/gskus/{records.Gsku.Id:D}",
+                    () => PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { lotControlled = true }));
+            }
+            case "gsku-draft-busy":
+            {
+                // A submit whose engine start never answered: the draft is held by it (its submit state is in flight).
+                var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+                Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(gsku, version, new { lotControlled = true })).StatusCode);
+                host.Engine.NextStartFails = ProductIdentityWorkflowTransportOutcome.Timeout;
+                await SubmitGskuAsync(gsku, version + 1);
+                var now = await GskuAsync(gsku);
+                Assert.Equal(ProductIdentityLifecycleStatus.Draft, now.LifecycleStatus);
+                return ($"/api/gskus/{gsku:D}", () => PutGskuAsync(gsku, now.Version, new { retestDays = 5 }));
+            }
+            case "lsku-draft-busy":
+            {
+                var records = await SeedAsync(completeGsku: true);
+                Assert.Equal(HttpStatusCode.OK,
+                    (await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { lotControlled = true })).StatusCode);
+                var lsku = await LskuDraftAsync(records.Gsku.Id, "TR");
+                Assert.Equal(HttpStatusCode.OK,
+                    (await PutLskuAsync(lsku, (await LskuAsync(lsku)).Version, new { serialControlled = true })).StatusCode);
+                host.Engine.NextStartFails = ProductIdentityWorkflowTransportOutcome.Timeout;
+                await SubmitLskuAsync(lsku, (await LskuAsync(lsku)).Version);
+                var now = await LskuAsync(lsku);
+                Assert.Equal(ProductIdentityLifecycleStatus.Draft, now.LifecycleStatus);
+                return ($"/api/lskus/{lsku:D}", () => PutLskuAsync(lsku, now.Version, new { serialControlled = false }));
+            }
+            case "fg-draft-cancelled":
+            {
+                var records = await SeedAsync(completeGsku: true);
+                await host.Database.GetCollection<FinishedGood>("mdm_finished_goods").UpdateOneAsync(x => x.Id == records.FinishedGood.Id,
+                    Builders<FinishedGood>.Update.Set(x => x.DraftCancellation, new FinishedGoodDraftCancellation
+                    {
+                        OperationId = Guid.NewGuid(), Fingerprint = "f", IntentId = Guid.NewGuid(), IdempotencyKey = "k",
+                        EvidenceHash = "h", ReasonCode = "MAKER_CANCEL", RequesterSubjectId = _maker,
+                        BaseVersion = records.FinishedGood.Version, RequestedAtUtc = DateTimeOffset.UtcNow
+                    }));
+                return ($"/api/finished-goods/{records.FinishedGood.Id:D}",
+                    () => PutFinishedGoodAsync(records.FinishedGood.Id, records.FinishedGood.Version, new { lotControlled = true }));
+            }
+            case "fg-draft-free":
+            {
+                var records = await SeedAsync(completeGsku: true);
+                return ($"/api/finished-goods/{records.FinishedGood.Id:D}",
+                    () => PutFinishedGoodAsync(records.FinishedGood.Id, records.FinishedGood.Version, new { lotControlled = true }));
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(shape), shape, null);
+        }
+    }
+
+    private Task<HttpResponseMessage> PutFinishedGoodAsync(Guid finishedGood, int version, object fields) =>
+        SendAsync(HttpMethod.Put, $"/api/finished-goods/{finishedGood:D}/stock-behaviour", Merge(version, fields));
 
     // ------------------------------------------------------------------------------------------- helpers
 

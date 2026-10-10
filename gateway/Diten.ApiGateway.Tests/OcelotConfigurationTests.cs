@@ -217,19 +217,31 @@ public sealed class OcelotConfigurationTests
         Assert.DoesNotContain("PUT", rootRoute.UpstreamHttpMethod);
     }
 
-    // MOD-0290-FU04 S5 (CT decision, S5 #1): the LSKU and Finished Good stock-behaviour edits are PUTs — their nested
-    // routes carry PUT (and nothing beyond GET / POST / PUT / OPTIONS), to 5059, path kept.
+    // MOD-0290-FU04 S5 (CT decision) / S5-FIX1: the LSKU and Finished Good stock-behaviour edits are PUTs on their OWN
+    // narrow routes (PUT only, to 5059, path kept); the {everything} routes carry no PUT, as before S5 — no other sub-path
+    // of /api/lskus or /api/finished-goods is reachable with PUT. The sabotage target "the narrow PUT back on {everything}".
     [Theory]
-    [InlineData("/api/lskus/{everything}", "/api/lskus/", "00000000-0000-0000-0000-000000000001/stock-behaviour")]
-    [InlineData("/api/finished-goods/{everything}", "/api/finished-goods/", "00000000-0000-0000-0000-000000000001/stock-behaviour")]
-    [InlineData("/api/finished-goods/{everything}", "/api/finished-goods/", "00000000-0000-0000-0000-000000000001/gtin")]
-    public void Stock_behaviour_edits_reach_mdm_as_put(string upstream, string downstreamPrefix, string suffix)
+    [InlineData("/api/lskus/{id}/stock-behaviour")]
+    [InlineData("/api/finished-goods/{id}/stock-behaviour")]
+    [InlineData("/api/finished-goods/{id}/gtin")]
+    public void Stock_behaviour_edits_reach_mdm_as_put(string template)
     {
-        var route = Assert.Single(LoadConfiguration().Routes, r => r.UpstreamPathTemplate == upstream);
-        Assert.True(new HashSet<string>(["GET", "POST", "PUT", "OPTIONS"], StringComparer.Ordinal).SetEquals(route.UpstreamHttpMethod));
-        Assert.Equal(downstreamPrefix + suffix, route.DownstreamPathTemplate.Replace("{everything}", suffix));
+        var route = Assert.Single(LoadConfiguration().Routes, r => r.UpstreamPathTemplate == template);
+        Assert.Equal(["PUT"], route.UpstreamHttpMethod);
+        Assert.Equal(template, route.DownstreamPathTemplate);
         var host = Assert.Single(route.DownstreamHostAndPorts);
         Assert.Equal(("localhost", 5059, "http"), (host.Host, host.Port, route.DownstreamScheme));
+    }
+
+    [Fact]
+    public void No_other_lsku_or_finished_good_sub_path_is_routed_for_put()
+    {
+        var put = LoadConfiguration().Routes
+            .Where(r => r.UpstreamPathTemplate.StartsWith("/api/lskus", StringComparison.Ordinal)
+                        || r.UpstreamPathTemplate.StartsWith("/api/finished-goods", StringComparison.Ordinal))
+            .Where(r => r.UpstreamHttpMethod.Contains("PUT", StringComparer.OrdinalIgnoreCase))
+            .Select(r => r.UpstreamPathTemplate).Order(StringComparer.Ordinal);
+        Assert.Equal(["/api/finished-goods/{id}/gtin", "/api/finished-goods/{id}/stock-behaviour", "/api/lskus/{id}/stock-behaviour"], put);
     }
 
     // MOD-0290-FU04 S5 (CT decision 2): the Items screen's MDM surface — every ItemsController route reaches 5059 with its
@@ -296,10 +308,10 @@ public sealed class OcelotConfigurationTests
         var config = LoadConfiguration();
         var root = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/lskus");
         var nested = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/lskus/{everything}");
-        // MOD-0290-FU04 S5 (CT decision): the nested route also carries PUT (the stock-behaviour edit); the root does not.
-        foreach (var (route, methods) in new[] { (root, new[] { "GET", "POST", "OPTIONS" }), (nested, new[] { "GET", "POST", "PUT", "OPTIONS" }) })
+        foreach (var route in new[] { root, nested })
         {
-            Assert.True(new HashSet<string>(methods, StringComparer.Ordinal).SetEquals(route.UpstreamHttpMethod));
+            Assert.True(new HashSet<string>(["GET", "POST", "OPTIONS"], StringComparer.Ordinal)
+                .SetEquals(route.UpstreamHttpMethod));
             var host = Assert.Single(route.DownstreamHostAndPorts);
             Assert.Equal("localhost", host.Host);
             Assert.Equal(5059, host.Port);

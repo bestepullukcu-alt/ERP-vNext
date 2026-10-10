@@ -70,6 +70,27 @@ public sealed class FakeItemReferences : IItemReferenceResolver
                     : new Dictionary<string, string?> { [ItemReferenceSets.ConditionKindAttribute] = kind });
         }).ToList()));
     }
+
+    // S5b (BL-600): the lists to choose from, in their order, with the attributes the forms read; an outage is an outage.
+    public ConcurrentQueue<IReadOnlyList<string>> EnumerationCalls { get; } = new();
+
+    public Task<ItemReferenceEnumerationResult> EnumerateLatestAsync(IReadOnlyList<string> setCodes,
+        CancellationToken cancellationToken = default)
+    {
+        if (Override is { } real) return real.EnumerateLatestAsync(setCodes, cancellationToken);
+        EnumerationCalls.Enqueue(setCodes);
+        if (Throw) throw new HttpRequestException("item list provider down (test)");
+        if (Outage) return Task.FromResult(ItemReferenceEnumerationResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
+        return Task.FromResult(ItemReferenceEnumerationResult.Success(setCodes.Select(set => new ItemReferenceEnumeratedSet(
+            set, "ITEM-UNIVERSAL-V1", VersionId, 1,
+            Sets[set].Select((pair, index) => new ItemReferenceEnumeratedValue(pair.Key, pair.Key, (index + 1) * 10,
+                set == ItemReferenceSets.ItemUom
+                    ? new Dictionary<string, string?> { ["DimensionCode"] = "COUNT", ["MaximumDecimalPrecision"] = "0" }
+                    : pair.Value is null
+                        ? new Dictionary<string, string?>()
+                        : new Dictionary<string, string?> { [ItemReferenceSets.ConditionKindAttribute] = pair.Value }))
+                .ToList())).ToList()));
+    }
 }
 
 /// <summary>MOD-0290-FU04 §8.3: the inventory team's tenant-wide "non-zero stock?" answer, as a test sets it.</summary>

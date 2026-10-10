@@ -25,6 +25,7 @@
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>Утверждение закрыто без решения (отменено или истекло). Черновик можно изменить и отправить снова.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Единица, используемая этим GSKU, была выведена из использования после утверждения. Утверждение остаётся в силе: оно применено со значениями, проверенными при отправке; выведенную единицу нельзя выбрать для новых записей.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Перед отправкой этого GSKU на утверждение задайте в складских параметрах: {0}.</value></data>
+  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>Эта отправка отзывается. Её нельзя отправить снова, пока отзыв не завершится; откройте GSKU ещё раз чуть позже.</value></data>
   <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Сначала укажите срок годности: для утверждённого GSKU {0} можно задать только после того, как известен его срок годности.</value></data>
   <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>Списки единиц и условий хранения сейчас недоступны. Повторите попытку чуть позже.</value></data>
   <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Сначала задайте базовую единицу GSKU — готовый продукт использует её.</value></data>

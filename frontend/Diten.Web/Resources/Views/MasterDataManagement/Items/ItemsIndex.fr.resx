@@ -46,10 +46,10 @@
   <data name="NamePlaceholder" xml:space="preserve"><value>ex. Paracétamol</value></data>
   <data name="DescriptionPlaceholder" xml:space="preserve"><value>Ce qu'est cette matière et où elle est utilisée</value></data>
   <data name="MaterialTypePlaceholder" xml:space="preserve"><value>Choisissez un type de matière</value></data>
-  <data name="BaseUomPlaceholder" xml:space="preserve"><value>Code d'unité, ex. KGM</value></data>
-  <data name="UnitCodeHint" xml:space="preserve"><value>Les unités sont saisies par leur code (UN/ECE Rec 20), ex. KGM kg, GRM g, MGM mg, LTR L, MLT mL, C62 pièce, XBX boîte, XCS carton.</value></data>
-  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>Codes séparés par des virgules, ex. COOL_2_8, PROTECT_FROM_LIGHT</value></data>
-  <data name="StorageConditionHint" xml:space="preserve"><value>Les conditions de stockage sont saisies par leur code : AMBIENT_15_25, COOL_2_8, FROZEN_BELOW_MINUS_20, PROTECT_FROM_LIGHT, PROTECT_FROM_MOISTURE. Une seule condition de température au plus.</value></data>
+  <data name="BaseUomPlaceholder" xml:space="preserve"><value>Sélectionnez une unité</value></data>
+  <data name="UnitCodeHint" xml:space="preserve"><value>Choisissez l'unité dans la liste.</value></data>
+  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>Sélectionnez les conditions de stockage</value></data>
+  <data name="StorageConditionHint" xml:space="preserve"><value>Choisissez une ou plusieurs conditions dans la liste. Au plus une condition de température.</value></data>
   <data name="DaysPlaceholder" xml:space="preserve"><value>Jours</value></data>
   <data name="ConversionFrom" xml:space="preserve"><value>Unité de départ</value></data>
   <data name="ConversionTo" xml:space="preserve"><value>Unité d'arrivée</value></data>
@@ -108,7 +108,7 @@
   <data name="RefusalReferenceValueInvalid" xml:space="preserve"><value>Un code saisi n'est pas une valeur active de sa liste. Vérifiez le type de matière, les codes d'unité et les conditions de stockage.</value></data>
   <data name="RefusalReferenceValueInvalidNamed" xml:space="preserve"><value>Ces valeurs ne sont pas des valeurs actives de leurs listes : {0}.</value></data>
   <data name="RefusalStorageConflict" xml:space="preserve"><value>Les conditions de stockage ne sont pas compatibles entre elles.</value></data>
-  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>Choisissez au plus une condition de température (par exemple COOL_2_8 ou AMBIENT_15_25, pas les deux).</value></data>
+  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>Choisissez au plus une condition de température.</value></data>
   <data name="RefusalStorageRepeated" xml:space="preserve"><value>Une condition de stockage est saisie deux fois.</value></data>
   <data name="RefusalUomConversion" xml:space="preserve"><value>Une conversion d'unités n'est pas valide.</value></data>
   <data name="RefusalUomConversionUnitMissing" xml:space="preserve"><value>Chaque conversion nécessite une unité de départ et une unité d'arrivée.</value></data>
@@ -131,4 +131,6 @@
   <data name="RefusalCreatePending" xml:space="preserve"><value>L'article est enregistré mais pas encore finalisé. Enregistrez à nouveau le même formulaire pour le terminer.</value></data>
   <data name="RefusalTryAgain" xml:space="preserve"><value>La demande n'a pas pu aboutir. Rechargez la page et réessayez.</value></data>
   <data name="RefusalInternal" xml:space="preserve"><value>Le service des articles a signalé une incohérence interne. Veuillez prévenir votre administrateur.</value></data>
+  <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>Les listes des types de matière, des unités et des conditions de stockage ne peuvent pas être chargées pour le moment ; ces champs ne peuvent pas être choisis. Réessayez dans un instant.</value></data>
+  <data name="RefusalOptionsTimeout" xml:space="preserve"><value>Les listes des types de matière, des unités et des conditions de stockage n'ont pas été chargées à temps ; ces champs ne peuvent pas être choisis. Réessayez dans un instant.</value></data>
 </root>

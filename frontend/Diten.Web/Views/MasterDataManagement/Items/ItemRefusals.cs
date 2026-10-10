@@ -51,6 +51,8 @@ public static class ItemRefusalSentences
         ["ITEM_REFERENCE_LIST_UNAVAILABLE"] = "RefusalReferenceListUnavailable",
         ["ITEM_RETIRE_STOCK_CHECK_UNAVAILABLE"] = "RefusalRetireStockCheckUnavailable",
         ["ITEM_ACTIVATION_APPROVAL_UNAVAILABLE"] = "RefusalActivationApprovalUnavailable",
+        // S5b (BL-600): the item form's lists could not be read (GetItemOptionsHandler's own fallback code).
+        ["REFERENCE_PROVIDER_UNAVAILABLE"] = "RefusalOptionsUnavailable",
         ["ITEM_STORE_UNAVAILABLE"] = "RefusalServiceUnavailable",
         ["ITEM_WRITE_OUTCOME_AMBIGUOUS"] = "RefusalServiceUnavailable",
         ["CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE"] = "RefusalServiceUnavailable",
@@ -119,6 +121,30 @@ public static class ItemRefusalSentences
         "UNTRUSTED_ANSWER", "ANSWER_INCOMPLETE", "STOCK_CHECK_UNAVAILABLE", "STOCK_CHECK_BUDGET_EXHAUSTED",
         "STOCK_CHECK_FAILED", "STOCK_CHECK_NO_ANSWER", "INVENTORY_TENANT_WIDE_QUERY_NOT_AVAILABLE"
     };
+
+    /// <summary>
+    /// S5b (BL-600): what the options read (<c>GET /api/mdm/items/options</c>) can be refused with — the reference
+    /// provider's answers MDM passes on (IItemReferenceResolver.EnumerateLatestAsync: the Platform client, the
+    /// unavailable provider, the handler's untrusted-answer check). Every one is "the lists cannot be loaded": the form
+    /// draws its list fields passive with this sentence, never an empty list and never a code input. A
+    /// <c>REFERENCE_*</c> code Platform adds later is said the same way (the client passes Platform's REFERENCE_ codes
+    /// on). ItemRefusalBridgeTests reads these codes from MDM's source.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> OptionsKeys = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["REFERENCE_PROVIDER_UNAVAILABLE"] = "RefusalOptionsUnavailable",
+        ["REFERENCE_PROVIDER_TIMEOUT"] = "RefusalOptionsTimeout",
+        ["REFERENCE_PROVIDER_CONFIGURATION_INVALID"] = "RefusalOptionsUnavailable",
+        ["REFERENCE_RESOLUTION_CONTRACT_INVALID"] = "RefusalOptionsUnavailable",
+        ["REFERENCE_BATCH_LIMIT_EXCEEDED"] = "RefusalOptionsUnavailable",
+        ["REFERENCE_VALUE_NOT_FOUND"] = "RefusalOptionsUnavailable",
+        ["REFERENCE_FORBIDDEN"] = "RefusalOptionsUnavailable",
+        ["REFERENCE_UNAUTHENTICATED"] = "ErrorUnauthorized",
+        ["ITEM_REFERENCE_PROVIDER_NOT_AVAILABLE"] = "RefusalOptionsUnavailable",
+        ["UNTRUSTED_ANSWER"] = "RefusalOptionsUnavailable"
+    };
+
+    public const string OptionsCodePrefix = "REFERENCE_";
 
     /// <summary>The six material types (MDM ItemRules, pack §1) — a closed set; labels by stable code (O-22).</summary>
     public static readonly IReadOnlyList<string> MaterialTypes =

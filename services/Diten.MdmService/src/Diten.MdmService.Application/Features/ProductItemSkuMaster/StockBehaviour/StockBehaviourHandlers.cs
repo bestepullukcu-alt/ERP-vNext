@@ -70,6 +70,11 @@ public sealed class StockBehaviourContext(
     public static bool Editable(ProductIdentityLifecycleStatus status) =>
         status is ProductIdentityLifecycleStatus.Draft or ProductIdentityLifecycleStatus.IdentityApproved;
 
+    // S5-FIX1 (1): a cancelled (or cancelling) Finished Good draft is not editable at all (S3 FIX1 M4) — one rule, read by
+    // the write and by the detail's editable flag.
+    public static bool FinishedGoodEditable(FinishedGood finishedGood) =>
+        Editable(finishedGood.LifecycleStatus) && finishedGood.DraftCancellation is null;
+
     public static Response<StockBehaviourResult> Done(Guid recordId, StockBehaviourWriteResult written)
     {
         if (written.Succeeded)
@@ -301,7 +306,7 @@ public sealed class SetFinishedGoodStockBehaviourHandler(
         if (StockBehaviourContext.Stale(finishedGood.Id, finishedGood.Version, command.ExpectedVersion,
                 finishedGood.StockBehaviourCommand, command.OperationId, fingerprint) is { } stale)
             return stale;
-        if (!StockBehaviourContext.Editable(finishedGood.LifecycleStatus) || finishedGood.DraftCancellation is not null)
+        if (!StockBehaviourContext.FinishedGoodEditable(finishedGood))
             return StockBehaviourContext.Fail(StockBehaviourStoreCodes.RecordNotEditable, 409);
 
         var plan = new StockBehaviourPlan(finishedGood.LifecycleStatus);
@@ -400,7 +405,7 @@ public sealed class AssignFinishedGoodGtinHandler(
         if (StockBehaviourContext.Stale(finishedGood.Id, finishedGood.Version, command.ExpectedVersion,
                 finishedGood.GtinCommand, command.OperationId, fingerprint) is { } stale)
             return stale;
-        if (!StockBehaviourContext.Editable(finishedGood.LifecycleStatus) || finishedGood.DraftCancellation is not null)
+        if (!StockBehaviourContext.FinishedGoodEditable(finishedGood))
             return StockBehaviourContext.Fail(StockBehaviourStoreCodes.RecordNotEditable, 409);
 
         var plan = new StockBehaviourPlan(finishedGood.LifecycleStatus);

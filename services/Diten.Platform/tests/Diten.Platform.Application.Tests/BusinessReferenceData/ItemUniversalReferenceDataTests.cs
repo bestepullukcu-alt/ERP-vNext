@@ -18,7 +18,7 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 /// <summary>
 /// WP-PLT-ITEM-LISTS-01 (MOD-0048-FU01 §4): ITEM-UNIVERSAL-V1, its resolve handler and its controller's trust gate.
 /// </summary>
-public sealed class ItemUniversalReferenceDataTests
+public sealed partial class ItemUniversalReferenceDataTests
 {
     // ------------------------------------------------------------------------------------------- catalog
 

@@ -82,6 +82,45 @@ public sealed class ItemRefusalBridgeTests
         Assert.True(ItemRefusalSentences.Keys.ContainsKey(code), code);
     }
 
+    // S5b (BL-600): the options read passes on the reference provider's answers (the Platform client, the unavailable
+    // provider, the resolver contract) and the handler's untrusted-answer check. Each one is said — read from MDM's source.
+    [Fact]
+    public void Every_code_the_options_read_can_answer_has_a_sentence_and_none_is_an_orphan()
+    {
+        var scanned = OptionsReadCodes();
+        var missing = scanned.Where(code => !ItemRefusalSentences.OptionsKeys.ContainsKey(code)).Order(StringComparer.Ordinal).ToArray();
+        Assert.True(missing.Length == 0, "Options codes without a sentence: " + string.Join(", ", missing));
+        var orphans = ItemRefusalSentences.OptionsKeys.Keys.Where(code => !scanned.Contains(code)).ToArray();
+        Assert.True(orphans.Length == 0, "Options codes MDM never answers with: " + string.Join(", ", orphans));
+        // The handler's own fallback is a scanned item code too, and the item map says it as the same sentence.
+        Assert.Equal(ItemRefusalSentences.OptionsKeys["REFERENCE_PROVIDER_UNAVAILABLE"],
+            ItemRefusalSentences.Keys["REFERENCE_PROVIDER_UNAVAILABLE"]);
+    }
+
+    private static HashSet<string> OptionsReadCodes()
+    {
+        var src = Path.Combine(RepoRoot(), "services", "Diten.MdmService", "src");
+        var files = new[]
+        {
+            Path.Combine(src, "Diten.MdmService.Infrastructure", "ReferenceData", "PlatformItemReferenceResolverClient.cs"),
+            Path.Combine(src, "Diten.MdmService.Infrastructure", "ReferenceData", "UnavailableItemReferenceResolver.cs"),
+            Path.Combine(src, "Diten.MdmService.Application", "Contracts", "ReferenceData", "IItemReferenceResolver.cs"),
+            Path.Combine(src, "Diten.MdmService.Application", "Features", "ItemMaster", "Handlers", "QueryHandlers",
+                "GetItemOptionsHandler.cs")
+        };
+        var codes = files.SelectMany(path => CodeLiteral.Matches(File.ReadAllText(path)).Select(match => match.Groups[1].Value))
+            .Where(code => code.StartsWith(ItemRefusalSentences.OptionsCodePrefix, StringComparison.Ordinal)
+                           || code.StartsWith("ITEM_REFERENCE_PROVIDER_", StringComparison.Ordinal))
+            .ToHashSet(StringComparer.Ordinal);
+        // ItemReferenceCheck.UntrustedAnswer (the handler and the client refuse with it), read from its declaration.
+        var check = File.ReadAllText(Path.Combine(src, "Diten.MdmService.Application", "Features", "ItemMaster", "ItemReferenceCheck.cs"));
+        var untrusted = Regex.Match(check, "UntrustedAnswer\\s*=\\s*\"([A-Z_]+)\"");
+        Assert.True(untrusted.Success, "ItemReferenceCheck.UntrustedAnswer was not found.");
+        codes.Add(untrusted.Groups[1].Value);
+        Assert.True(codes.Count >= 8, $"Only {codes.Count} options codes found — the scan no longer reads the provider's answers.");
+        return codes;
+    }
+
     [Fact]
     public void Every_key_is_in_all_seven_languages_not_empty_and_no_language_has_more()
     {
@@ -92,6 +131,7 @@ public sealed class ItemRefusalBridgeTests
             .Concat(ItemRefusalSentences.LifecycleStatuses.Values.Select(ItemRefusalSentences.LifecycleKey))
             .Concat(ItemRefusalSentences.LockedFieldLabels.Values)
             .Concat(ItemRefusalSentences.ReferenceSetLabels.Values)
+            .Concat(ItemRefusalSentences.OptionsKeys.Values)
             .Concat(["RefusalCriticalFieldLockedNamed", "RefusalReferenceValueInvalidNamed", "ListSeparator"]);
         Assert.Empty(used.Where(key => !english.ContainsKey(key)).Distinct());
 

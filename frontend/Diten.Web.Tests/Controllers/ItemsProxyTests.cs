@@ -121,6 +121,29 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         Assert.Equal("\"IT-101\",\"Last\",\"LifecycleDeactivated\"", lines[^1]);
     }
 
+    // K6 (CT sabotage survivor: the neutralising cut to '=' only, nothing went red). Every cell a spreadsheet would run as
+    // a formula gets a leading apostrophe in the CSV the export endpoint writes; plain text is written as it is.
+    [Theory]
+    [InlineData("=SUM(A1)", "'=SUM(A1)")]
+    [InlineData("+cmd", "'+cmd")]
+    [InlineData("-cmd", "'-cmd")]
+    [InlineData("@cmd", "'@cmd")]
+    [InlineData("\tcmd", "'\tcmd")]
+    [InlineData("\rcmd", "'\rcmd")]
+    [InlineData("Plain name", "Plain name")]
+    public async Task The_export_neutralises_every_formula_lead_and_leaves_plain_text(string name, string written)
+    {
+        var page = "{\"data\":{\"items\":[{\"canonicalCode\":\"IT-001\",\"name\":" + JsonSerializer.Serialize(name) + "}],\"total\":1}}";
+        var wire = new RecordingHandler(HttpStatusCode.OK, page);
+
+        var file = Assert.IsType<FileContentResult>(
+            await Controller(wire, ["mdm.items.read"], "?format=csv&columns=canonicalCode,name").Export(CancellationToken.None));
+
+        var csv = Encoding.UTF8.GetString(file.FileContents).TrimStart('\uFEFF');
+        Assert.StartsWith("\"CanonicalCode\",\"Name\"", csv);
+        Assert.Contains("\"IT-001\",\"" + written + "\"", csv);
+    }
+
     [Fact]
     public async Task An_export_past_50000_rows_is_refused_with_413()
     {
@@ -398,7 +421,9 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
             ("Submit", await reader.Submit(ItemId, 1, CancellationToken.None)),
             ("Reactivate", await reader.RequestReactivation(ItemId, 1, "r", CancellationToken.None)),
             ("Deactivate", await reader.Deactivate(ItemId, 1, "r", CancellationToken.None)),
-            ("Retire", await reader.Retire(ItemId, 1, "r", CancellationToken.None))
+            ("Retire", await reader.Retire(ItemId, 1, "r", CancellationToken.None)),
+            ("Options (read key)", await reader.Options(CancellationToken.None)),
+            ("Options (other read key)", await nobody.Options(CancellationToken.None))
         };
 
         foreach (var (name, result) in results)
@@ -406,11 +431,12 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         Assert.Empty(wire.Requests);
     }
 
+    // The keys a page needs, comma-separated (S5-FIX1: the Edit page needs the update AND the read key).
     public static TheoryData<string, string, string> PageCases => new()
     {
         { "Index", "mdm.items.read", ItemsController.IndexView },
         { "Create", "mdm.items.create", ItemsController.CreateView },
-        { "Edit", "mdm.items.update", ItemsController.EditView },
+        { "Edit", "mdm.items.update,mdm.items.read", ItemsController.EditView },
         { "Details", "mdm.items.read", ItemsController.DetailsView }
     };
 
@@ -419,7 +445,7 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     public void A_page_without_its_key_answers_403_with_its_own_view_never_a_redirect(string page, string permission, string view)
     {
         var denied = Controller(new RecordingHandler(HttpStatusCode.OK, "{}"), ["mdm.gskus.read"], "");
-        var allowed = Controller(new RecordingHandler(HttpStatusCode.OK, "{}"), [permission], "");
+        var allowed = Controller(new RecordingHandler(HttpStatusCode.OK, "{}"), permission.Split(','), "");
 
         var deniedResult = InvokePage(denied, page);
         var allowedResult = InvokePage(allowed, page);
@@ -438,8 +464,9 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     {
         var path = view.TrimStart('~');
         var values = page == "Index" ? null : new Dictionary<string, object?>();
+        var keys = permission.Split(',');
         var denied = await LayoutRenderer.RenderAsync(factory, path, "Items", "mdm.gskus.read", values);
-        var reader = await LayoutRenderer.RenderAsync(factory, path, "Items", permission, values);
+        var reader = await LayoutRenderer.RenderAsync(factory, path, "Items", keys[0], values, keys[1..]);
 
         Assert.Contains("diten-access-denied", denied);
         foreach (var marker in new[] { "items-l10n", "Items/index.js", "dt-items", "skeleton-loader", "itemForm", "itemDetails", "filterMaterialType" })
@@ -454,6 +481,172 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
             "Details" => "id=\"itemDetails\"",
             _ => "id=\"itemForm\""
         }, reader);
+    }
+
+    // S5-FIX1 — sabotage target "the Edit page does not ask the read key": an update key alone draws no form skeleton
+    // (the form reads the item before it can be edited). 403 with the page's own view and the access-denied face.
+    [Fact]
+    public async Task The_Edit_page_without_the_read_key_answers_403_and_draws_no_form()
+    {
+        var updateOnly = Controller(new RecordingHandler(HttpStatusCode.OK, "{}"), ["mdm.items.update"], "");
+
+        var result = Assert.IsType<ViewResult>(updateOnly.Edit(ItemId));
+        var page = await LayoutRenderer.RenderAsync(factory, ItemsController.EditView.TrimStart('~'), "Items", "mdm.items.update",
+            new Dictionary<string, object?>());
+
+        Assert.Equal(StatusCodes.Status403Forbidden, updateOnly.Response.StatusCode);
+        Assert.Equal(ItemsController.EditView, result.ViewName);
+        Assert.Contains("diten-access-denied", page);
+        foreach (var marker in new[] { "itemForm", "items-l10n", "Items/index.js", "reference-option-labels" })
+            Assert.DoesNotContain(marker, page);
+    }
+
+    // ── Options (S5b, BL-600) ───────────────────────────────────────────────────────────────────────────────────
+
+    private const string OptionsAnswer =
+        "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"catalogVersion\":\"v7\"," +
+        "\"materialTypes\":[{\"code\":\"EXCIPIENT\",\"displayName\":\"Excipient\",\"sortOrder\":2,\"attributes\":{}}," +
+        "{\"code\":\"ACTIVE_INGREDIENT\",\"displayName\":\"API\",\"sortOrder\":1,\"attributes\":{}}]," +
+        "\"uoms\":[{\"code\":\"KGM\",\"displayName\":\"kilogram\",\"sortOrder\":5,\"attributes\":{\"DimensionCode\":\"MASS\",\"MaximumDecimalPrecision\":\"3\"}}," +
+        "{\"code\":\"C62\",\"displayName\":\"one\",\"sortOrder\":1,\"attributes\":{\"DimensionCode\":\"COUNT\"}}]," +
+        "\"storageConditions\":[{\"code\":\"COOL_2_8\",\"displayName\":\"Cool\",\"sortOrder\":2,\"attributes\":{\"ConditionKind\":\"TEMPERATURE\",\"TemperatureMinC\":\"2\",\"TemperatureMaxC\":\"8\"}}," +
+        "{\"code\":\"PROTECT_FROM_LIGHT\",\"displayName\":\"Light\",\"sortOrder\":4,\"attributes\":{\"ConditionKind\":\"PROTECTION\",\"ProtectFromLight\":null}}]}}";
+
+    [Theory]
+    [InlineData("mdm.items.create")]
+    [InlineData("mdm.items.update")]
+    [InlineData("mdm.gskus.update")]
+    [InlineData("mdm.lskus.create")]
+    [InlineData("mdm.finished-goods.create")]
+    public async Task The_options_read_is_open_to_each_form_key_and_forwards_the_callers_token_and_tenant(string permission)
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, OptionsAnswer);
+        var controller = Controller(wire, [permission], "?tenantId=evil");
+
+        var result = Assert.IsType<ContentResult>(await controller.Options(CancellationToken.None));
+
+        var request = Assert.Single(wire.Requests);
+        Assert.Equal("GET", request.Method);
+        Assert.Equal($"{Gateway}/api/mdm/items/options", request.Url);
+        Assert.Equal("Bearer synthetic-items-proxy", request.Authorization);
+        Assert.Equal(controller.User.FindFirstValue("tenant_id"), request.TenantId);
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task The_options_are_passed_on_as_codes_in_their_order_with_their_attributes_never_the_english_names()
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, OptionsAnswer);
+
+        var result = Assert.IsType<ContentResult>(await Controller(wire, ["mdm.items.create"], "").Options(CancellationToken.None));
+
+        using var body = JsonDocument.Parse(result.Content!);
+        var data = body.RootElement.GetProperty("data");
+        Assert.True(body.RootElement.GetProperty("success").GetBoolean());
+        Assert.Equal("v7", data.GetProperty("catalogVersion").GetString());
+        Assert.Equal(new[] { "ACTIVE_INGREDIENT", "EXCIPIENT" }, data.GetProperty("materialTypes").EnumerateArray().Select(o => o.GetProperty("code").GetString()!).ToArray());
+        Assert.Equal(new[] { "C62", "KGM" }, data.GetProperty("uoms").EnumerateArray().Select(o => o.GetProperty("code").GetString()!).ToArray());
+        var cool = data.GetProperty("storageConditions").EnumerateArray().First();
+        Assert.Equal("TEMPERATURE", cool.GetProperty("attributes").GetProperty("ConditionKind").GetString());
+        Assert.Equal("MASS", data.GetProperty("uoms")[1].GetProperty("attributes").GetProperty("DimensionCode").GetString());
+        // The screen labels by stable code (seven languages); MDM's English display name is not passed on.
+        Assert.DoesNotContain("displayName", result.Content!);
+        Assert.DoesNotContain("kilogram", result.Content!);
+    }
+
+    [Theory]
+    [InlineData("mdm.items.read")]
+    [InlineData("mdm.gskus.read")]
+    [InlineData("mdm.finished-goods.read")]
+    public async Task The_options_read_without_a_form_key_is_a_403_sentence_and_never_reaches_MDM(string permission)
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, OptionsAnswer);
+
+        var result = Assert.IsType<ObjectResult>(await Controller(wire, [permission], "").Options(CancellationToken.None));
+
+        Assert.Equal(StatusCodes.Status403Forbidden, result.StatusCode);
+        Assert.Contains("ErrorForbidden", JsonSerializer.Serialize(result.Value));
+        Assert.Empty(wire.Requests);
+    }
+
+    // An outage is a refusal by name with its status — never an empty list (no data, no items).
+    [Theory]
+    [InlineData(503, "REFERENCE_PROVIDER_UNAVAILABLE", 503, "RefusalOptionsUnavailable")]
+    [InlineData(503, "REFERENCE_PROVIDER_TIMEOUT", 503, "RefusalOptionsTimeout")]
+    [InlineData(504, "REFERENCE_PROVIDER_TIMEOUT", 504, "RefusalOptionsTimeout")]
+    [InlineData(503, "UNTRUSTED_ANSWER", 503, "RefusalOptionsUnavailable")]
+    [InlineData(503, "REFERENCE_PROVIDER_CONFIGURATION_INVALID", 503, "RefusalOptionsUnavailable")]
+    [InlineData(503, "ITEM_REFERENCE_PROVIDER_NOT_AVAILABLE", 503, "RefusalOptionsUnavailable")]
+    [InlineData(503, "REFERENCE_SOMETHING_PLATFORM_ADDS", 503, "RefusalOptionsUnavailable")]
+    [InlineData(401, "REFERENCE_UNAUTHENTICATED", 401, "ErrorUnauthorized")]
+    [InlineData(403, "FORBIDDEN", 403, "ErrorForbidden")]
+    public async Task An_options_refusal_keeps_its_status_and_is_its_sentence_never_an_empty_list(int status, string code, int expected,
+        string sentenceKey)
+    {
+        var wire = new RecordingHandler((HttpStatusCode)status,
+            $"{{\"isSuccessful\":false,\"statusCode\":{status},\"errors\":[\"{code}\"]}}");
+
+        var result = Assert.IsType<ObjectResult>(await Controller(wire, ["mdm.gskus.update"], "").Options(CancellationToken.None));
+
+        Assert.Equal(expected, result.StatusCode);
+        var text = JsonSerializer.Serialize(result.Value);
+        using var reply = JsonDocument.Parse(text);
+        Assert.Equal(sentenceKey, Assert.Single(reply.RootElement.GetProperty("errors").EnumerateArray()).GetString());
+        Assert.False(reply.RootElement.TryGetProperty("data", out _));
+        Assert.DoesNotContain(code, text);
+    }
+
+    [Theory]
+    [InlineData("{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"materialTypes\":[{\"code\":\"EXCIPIENT\"}],\"uoms\":[],\"storageConditions\":[{\"code\":\"COOL_2_8\"}]}}")]
+    [InlineData("{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"materialTypes\":[{\"code\":\"EXCIPIENT\"}],\"uoms\":[{\"code\":\"kg <b>\"}],\"storageConditions\":[{\"code\":\"COOL_2_8\"}]}}")]
+    [InlineData("{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"uoms\":[{\"code\":\"KGM\"}]}}")]
+    [InlineData("{\"isSuccessful\":false,\"statusCode\":200}")]
+    [InlineData("not json")]
+    public async Task Lists_that_cannot_be_offered_are_a_gateway_failure_never_an_empty_list(string answer)
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, answer);
+
+        var result = Assert.IsType<ObjectResult>(await Controller(wire, ["mdm.items.create"], "").Options(CancellationToken.None));
+
+        Assert.Equal(StatusCodes.Status502BadGateway, result.StatusCode);
+        Assert.DoesNotContain("\"data\"", JsonSerializer.Serialize(result.Value));
+    }
+
+    [Fact]
+    public async Task An_unreachable_or_slow_gateway_is_the_lists_sentence_with_503_or_504()
+    {
+        var down = await Controller(new ThrowingHandler(new HttpRequestException("down")), ["mdm.items.create"], "").Options(CancellationToken.None);
+        var slow = await Controller(new ThrowingHandler(new TaskCanceledException("slow")), ["mdm.items.create"], "").Options(CancellationToken.None);
+
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, Assert.IsType<ObjectResult>(down).StatusCode);
+        Assert.Contains("RefusalOptionsUnavailable", JsonSerializer.Serialize(((ObjectResult)down).Value));
+        Assert.Equal(StatusCodes.Status504GatewayTimeout, Assert.IsType<ObjectResult>(slow).StatusCode);
+        Assert.Contains("RefusalOptionsTimeout", JsonSerializer.Serialize(((ObjectResult)slow).Value));
+    }
+
+    // Sabotage target "the form falls back to a code input when the list is missing": the rendered item form (production
+    // Razor with its layout) offers every list field as a select — none of them is a text box a code could be typed in.
+    [Theory]
+    [InlineData("Create", "mdm.items.create")]
+    [InlineData("Edit", "mdm.items.update,mdm.items.read")]
+    public async Task The_item_form_offers_every_list_as_a_select_never_as_a_code_input(string page, string permission)
+    {
+        var keys = permission.Split(',');
+        var view = page == "Create" ? ItemsController.CreateView : ItemsController.EditView;
+        var html = await LayoutRenderer.RenderAsync(factory, view.TrimStart('~'), "Items", keys[0], new Dictionary<string, object?>(), keys[1..]);
+
+        foreach (var name in new[] { "MaterialType", "BaseUomCode", "StorageConditionCodes" })
+        {
+            Assert.Matches($"<select[^>]*name=\"{name}\"", html);
+            Assert.DoesNotMatch($"<input[^>]*name=\"{name}\"", html);
+        }
+        Assert.Matches("<select[^>]*name=\"StorageConditionCodes\"[^>]*multiple|<select[^>]*multiple[^>]*name=\"StorageConditionCodes\"", html);
+        Assert.Matches("<select[^>]*js-conversion-from", html);
+        Assert.Matches("<select[^>]*js-conversion-to", html);
+        Assert.DoesNotMatch("<input[^>]*js-conversion-(from|to)", html);
+        // The labels by code (seven languages) are on the page for the script; the material types are no fixed list.
+        Assert.Contains("id=\"reference-option-labels\"", html);
+        Assert.DoesNotContain("value=\"EXCIPIENT\"", html);
     }
 
     // ── Fixture ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -478,7 +671,7 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         _ => controller.Details(ItemId)
     };
 
-    private static ItemsController Controller(RecordingHandler wire, string[] permissions, string query,
+    private static ItemsController Controller(HttpMessageHandler wire, string[] permissions, string query,
         IStringLocalizer<ItemsIndex>? localizer = null)
     {
         var gateway = new ConfigurationBuilder().AddInMemoryCollection(
@@ -517,6 +710,12 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
             var body = bodies[Math.Min(_answered++, bodies.Length - 1)];
             return new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
         }
+    }
+
+    private sealed class ThrowingHandler(Exception exception) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromException<HttpResponseMessage>(exception);
     }
 
     private sealed class EchoLocalizer : IStringLocalizer<ItemsIndex>

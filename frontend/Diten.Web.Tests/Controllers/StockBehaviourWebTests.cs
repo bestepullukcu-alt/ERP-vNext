@@ -85,6 +85,30 @@ public sealed class StockBehaviourWebTests(WebApplicationFactory<Program> factor
         Assert.Equal(fields.Split(','), inputs);
     }
 
+    // S5b (BL-600) — sabotage target "the form falls back to a code input when the list is missing": the stock forms
+    // offer units and storage conditions as selects (filled from the item options), never a typed-code box; each list
+    // has its reason slot for "the lists cannot be loaded", and the labels by code reach the module in its words.
+    [Theory]
+    [InlineData("Gskus", "mdm.gskus.read", "mdm.gskus.update", "baseUomCode,storageConditionCodes")]
+    [InlineData("FinishedGoods", "mdm.finished-goods.read", "mdm.finished-goods.create", "storageConditionCodes")]
+    public async Task The_stock_forms_offer_units_and_storage_conditions_as_selects_never_as_code_inputs(
+        string folder, string readKey, string editKey, string listFields)
+    {
+        var page = await LayoutRenderer.RenderAsync(factory, $"/Views/MasterDataManagement/{folder}/Index.cshtml", folder,
+            readKey, null, editKey);
+
+        foreach (var field in listFields.Split(','))
+        {
+            Assert.Matches($"<select[^>]*data-sb-input=\"{field}\"", page);
+            Assert.DoesNotMatch($"<input[^>]*data-sb-input=\"{field}\"", page);
+        }
+        Assert.Matches("<select[^>]*multiple[^>]*data-sb-input=\"storageConditionCodes\"", page);
+        Assert.Contains("data-sb-options-reason", page, StringComparison.Ordinal);
+        Assert.Matches("\"[Ss]torage_COOL_2_8\":", page);
+        Assert.Matches("\"[Uu]om_KGM\":", page);
+        Assert.Matches("\"[Tt]emperatureOnlyOne\":", page);
+    }
+
     // ---- the proxies ----
 
     [Fact]
@@ -129,6 +153,32 @@ public sealed class StockBehaviourWebTests(WebApplicationFactory<Program> factor
         Assert.Equal(first, await KeyOf(attempt, "730"));
         Assert.NotEqual(first, await KeyOf(Guid.NewGuid().ToString("D"), "730"));
         Assert.NotEqual(first, await KeyOf(attempt, "731"));
+    }
+
+    // K5 (CT sabotage survivor: the ACTOR part removed from the derivation, nothing went red). The key MDM receives is
+    // bound to who asks, in which tenant, at which version: the same attempt with the same body by another actor, in
+    // another tenant or at another expected version is another request — never a replay of someone else's.
+    [Fact]
+    public async Task The_idempotency_key_sent_to_mdm_differs_by_actor_tenant_and_expected_version()
+    {
+        var attempt = Guid.NewGuid().ToString("D");
+        var actor = Guid.NewGuid().ToString("D");
+        var tenant = Guid.NewGuid().ToString("D");
+        async Task<string> KeyOf(string who, string where, string version)
+        {
+            var mdm = new Capture(Success());
+            var form = Form(("ShelfLifeDays", "730"));
+            form["ExpectedVersion"] = version;
+            await Gsku(mdm, form, attempt, who, where).SetStockBehaviour(Id, CancellationToken.None);
+            return Assert.Single(mdm.Sent).IdempotencyKey;
+        }
+
+        var first = await KeyOf(actor, tenant, "3");
+        Assert.Matches(DGuid, first);
+        Assert.Equal(first, await KeyOf(actor, tenant, "3"));
+        Assert.NotEqual(first, await KeyOf(Guid.NewGuid().ToString("D"), tenant, "3"));
+        Assert.NotEqual(first, await KeyOf(actor, Guid.NewGuid().ToString("D"), "3"));
+        Assert.NotEqual(first, await KeyOf(actor, tenant, "4"));
     }
 
     // A form the level does not accept never reaches MDM: an unknown field (an identity field, the LSKU's own flag on a

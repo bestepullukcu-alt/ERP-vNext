@@ -79,5 +79,20 @@ public static class ItemModels
         public IReadOnlyList<string>? AvailableActions { get; init; }
     }
 
+    // MOD-0290-FU04 S5b (BL-600): the choices of the three item lists, in their order, with the attributes the forms use
+    // (a unit's dimension and precision; a storage condition's kind — O-2: at most one TEMPERATURE). A list to choose
+    // from, never the proof of a choice: the write resolves every chosen code exactly.
+    public sealed record ItemOptionDto(
+        string Code,
+        string DisplayName,
+        int SortOrder,
+        IReadOnlyDictionary<string, string?> Attributes);
+
+    public sealed record ItemOptionsDto(
+        string CatalogVersion,
+        IReadOnlyList<ItemOptionDto> MaterialTypes,
+        IReadOnlyList<ItemOptionDto> Uoms,
+        IReadOnlyList<ItemOptionDto> StorageConditions);
+
     public sealed record ItemListDto(IReadOnlyList<ItemDto> Items, long Total, int Page, int PageSize);
 }
