@@ -88,6 +88,7 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
         {
             return Fail("PRODUCT_SCOPE_BSON_LIMIT_EXCEEDED");
         }
+        if (result.IndexesNotReady) return StoreNotReady();
         if (result.WriteOutcomeAmbiguous)
             return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
                 "PRODUCT_SCOPE_RECONCILIATION_REQUIRED", 202);
@@ -176,6 +177,15 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
 
     internal static Response<ProductLegalEntityScopeModels.PolicyDto> RolloutUnreadable(string code) =>
         Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(code, 503);
+
+    /// <summary>
+    /// WP-MDM-BL598-01: the policy store's UNIQUE indexes are not in place (Mongo away, or still building) — nothing was
+    /// written; the caller repeats the same command later. A coded 503, never an uncoded 500.
+    /// </summary>
+    public const string StoreNotReadyCode = "PRODUCT_SCOPE_POLICY_STORE_NOT_READY";
+
+    internal static Response<ProductLegalEntityScopeModels.PolicyDto> StoreNotReady() =>
+        Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(StoreNotReadyCode, 503);
 
     internal static Response<ProductLegalEntityScopeModels.PolicyDto> Fail(string code) =>
         Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(code, 409);

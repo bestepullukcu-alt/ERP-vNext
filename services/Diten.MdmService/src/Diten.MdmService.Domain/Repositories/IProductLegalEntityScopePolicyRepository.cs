@@ -60,4 +60,6 @@ public sealed record ProductLegalEntityScopePolicyWriteResult(
     bool WriteOutcomeAmbiguous = false,
     bool VerifiedZeroMutation = false,
     bool LeaseRetentionRequired = false,
-    bool TransientRetriesExhausted = false);
+    bool TransientRetriesExhausted = false,
+    // WP-MDM-BL598-01: the collection's UNIQUE indexes are not (yet) in place — nothing was written; a coded 503.
+    bool IndexesNotReady = false);

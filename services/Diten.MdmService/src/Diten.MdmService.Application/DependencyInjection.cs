@@ -23,6 +23,8 @@ public static class DependencyInjection
         // (validation/exception failures short-circuit before reaching it).
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.AuditForwardingBehavior<,>));
         services.AddValidatorsFromAssembly(assembly);
+        // WP-MDM-BL598-01: Lazy<T> of any registered service — built on first use, inside the caller's own failure handling.
+        services.AddTransient(typeof(Lazy<>), typeof(Common.DeferredService<>));
         services.AddScoped<ProductAbbreviationAuthorization>();
         services.AddScoped<ProductAbbreviationWorkflow>();
         services.AddScoped<IProductLegalEntityScopeEvaluator, ProductLegalEntityScopeEvaluator>();

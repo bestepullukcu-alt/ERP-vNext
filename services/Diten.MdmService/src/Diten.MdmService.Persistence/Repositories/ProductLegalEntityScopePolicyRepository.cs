@@ -68,14 +68,51 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         _tenantId = tenantContext.TenantId;
         _insertExecutor = insertExecutor;
         _updateExecutor = updateExecutor;
-        EnsureIndexes();
+        // WP-MDM-BL598-01: no Mongo call here — the indexes are prepared once per process, lazily (MongoIndexReadiness);
+        // every write below waits for them (the two UNIQUE indexes keep one policy per product), a read only starts them.
+        _indexKey = MongoIndexReadiness.KeyOf(_policies, IndexSet);
     }
+
+    internal const string IndexSet = "policy-unique-v1";
+    private readonly string _indexKey;
+
+    /// <summary>
+    /// The write gate: the UNIQUE indexes are in place, or the write is refused with nothing written
+    /// (<see cref="ProductLegalEntityScopePolicyWriteResult.IndexesNotReady"/> → the handler's coded 503).
+    /// </summary>
+    private async Task<bool> IndexesReadyAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await MongoIndexReadiness.EnsureForWriteAsync(_indexKey, CreateIndexesAsync, WriteIndexBudget, cancellationToken);
+            return true;
+        }
+        catch (MongoIndexNotReadyException)
+        {
+            return false;
+        }
+    }
+
+    // Tests set a short budget (a closed port must not hold a test for the default 10 s).
+    internal TimeSpan WriteIndexBudget { get; init; } = MongoIndexReadiness.DefaultWriteBudget;
+
+    private void StartIndexes() => MongoIndexReadiness.Start(_indexKey, CreateIndexesAsync);
+
+    // Tests: the indexes as production has them once the store has taken its first write (a query-plan test reads them).
+    // refresh: a fresh preparation (the test databases are dropped and reused under one name in one process).
+    internal Task WhenIndexesReadyAsync(CancellationToken cancellationToken = default) =>
+        MongoIndexReadiness.EnsureForWriteAsync(_indexKey, CreateIndexesAsync, WriteIndexBudget, cancellationToken,
+            refresh: true);
+
+    private static readonly ProductLegalEntityScopePolicyWriteResult NotReady =
+        new(false, null, VerifiedZeroMutation: true, IndexesNotReady: true);
 
     public async Task<ProductLegalEntityScopePolicy?> GetByGlobalProductIdAsync(
         Guid globalProductId,
         CancellationToken cancellationToken = default)
     {
         EnsureIdentity(globalProductId, nameof(globalProductId));
+        StartIndexes();
         return await _policies.Find(
                 ActiveTenantFilter
                 & Builders<ProductLegalEntityScopePolicy>.Filter.Eq(
@@ -121,6 +158,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
 
         PrepareCreate(policy);
         EnsureCompleteDocumentWithinBudget(policy.ToBsonDocument(), reserveAuditLifecycleHeadroom: true);
+        if (!await IndexesReadyAsync(cancellationToken)) return NotReady;
 
         try
         {
@@ -155,6 +193,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         ArgumentNullException.ThrowIfNull(policy);
         cancellationToken.ThrowIfCancellationRequested();
         ValidateUpdate(policy, expectedVersion);
+        if (!await IndexesReadyAsync(cancellationToken)) return NotReady;
 
         var persisted = await FindByIdIncludingDeletedAsync(policy.Id, cancellationToken);
         if (persisted is null
@@ -231,6 +270,10 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         }
     }
 
+    // BL-598: the guarded session writes this same collection — the replace waits for the indexes too, before the session
+    // (nothing written when they are not ready: VerifiedZeroMutation, so the coordinator gives the slot back).
+    // BL-598: no index wait here — the guarded session only UPDATES an existing policy and never changes its unique keys
+    // (tenant, product, creation command), so it cannot write a second policy of one product.
     public Task<ProductLegalEntityScopePolicyWriteResult> ReplaceAsync(
         ProductLegalEntityScopeVerifiedWriterAuthority authority,
         ProductLegalEntityScopeWriterLease lease,
@@ -666,9 +709,8 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
             persistedIntent.IntentId == requestedIntent.IntentId
             && ImmutableIntentPayloadEquals(persistedIntent, requestedIntent)));
 
-    private void EnsureIndexes()
-    {
-        _policies.Indexes.CreateMany(
+    private Task CreateIndexesAsync(CancellationToken cancellationToken) =>
+        _policies.Indexes.CreateManyAsync(
         [
             new CreateIndexModel<ProductLegalEntityScopePolicy>(
                 Builders<ProductLegalEntityScopePolicy>.IndexKeys
@@ -688,8 +730,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
                     Unique = true,
                     Name = "ux_mdm_product_legal_entity_scope_policies_tenant_command"
                 })
-        ]);
-    }
+        ], cancellationToken);
 
     private FilterDefinition<ProductLegalEntityScopePolicy> TenantIncludingDeletedFilter =>
         Builders<ProductLegalEntityScopePolicy>.Filter.Eq(policy => policy.TenantId, _tenantId);
