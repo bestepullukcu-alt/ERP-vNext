@@ -8398,6 +8398,25 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-605
+
+**Kalem onayı (S2): onaycı pozisyonu tek küresel yapılandırma değeri; ikinci kiracıda kalem onayı kapalı başarısız**
+
+DURUM: AÇIK · SAHİP: CT (MDM, kalem onayı) · BULAN: FU04 S2 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10 · ÇOK KİRACILI CANLIDAN ÖNCE
+
+Ölçüm:
+- `ItemActivationWorkflow:ApproverPositionId` servis yapılandırmasında tek değer. Aday `position:{id}` olarak motora gidiyor; motor pozisyonu kiracı başına çözüyor.
+- Başka kiracıda o kimlikte pozisyon yok → başlatma reddi (kapalı başarısız; sızıntı yok). Yani bugün kalem onayı yalnız bir kiracıda çalışabilir.
+- GP-1b (Global Ürün) aynı desende mi? Ölç; aynıysa bu satır onu da kapsar.
+
+Yapılacak:
+- kiracı başına onaycı pozisyonu: kiracı ayarı (Platform iş ayarları ya da MDM kiracı yapılandırması; SAP / Oracle karşılaştırmasıyla seç);
+- yoksa adlı ret (`ITEM_ACTIVATION_APPROVER_NOT_CONFIGURED`), 7 dilde cümle.
+
+Gelecek regresyon riski: 🟡 ikinci kiracı canlıya çıkınca kalem onayı çalışmaz (kapalı başarısız, veri riski yok).
+
+---
+
 ### BL-604
 
 **CI: Platform / Auth / MDM dışındaki servislerin testleri ne derleniyor ne koşuluyor (Crm, Hcm, DevEnablement, ManagementGovernance, Ppm, Pvg, Procurement)**
