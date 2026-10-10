@@ -56,3 +56,21 @@
   - İkisi de yoksa süre gösterilmez.
 - **T8 (2026-10-10): ÇOKLU seçim kalır** (mockup tek seçim; kullanıcı çoklu istedi; görünüm mockup stilinde: "Tüm durumlar" etiketli çoklu seçim).
 - **Zamanlama (2026-10-10): CT önerisi kabul** — W2-WEB-b kabulünden sonra W2-WEB-c (tasarım uyumu) ∥ W2-BE-d (panel verisi).
+
+## E1 — Planla modu (W2-WEB-b sonrası, canlı ↔ mockup "E1 · Takvim — Planla (Hedefler paneli)", 2026-10-10)
+| # | Mockup | Bizim sayfa | Ne yapılmalı | Veri |
+|---|---|---|---|---|
+| L1 | Planla / Yürüt bölmeli düğmesi başlığın ALTINDA solda, yanında "Ön sipariş" + "+ Plan dışı ziyaret" (iki modda da) | sağ üstte; Planla modunda "Plan dışı ziyaret" düğmesi YOK | mockup yeri; plan dışı düğmesi iki modda | — |
+| L2 | Hafta şeridi yok | şerit 2 satıra sarıyor, etiketler bitişik ("39. hafta21–25 Eyl") | şerit kaldırılır (T3) | — |
+| L3 | Hafta başlığı: "Taslak · otomatik" çipi, "⚠ 2 ziyaret sığmadı" sarı çipi; "Haftayı onayla" lacivert, başlığın altında | yeşil küçük düğme sağda; sığmadı çipi yok (unplaced 0 iken gizli olabilir) | mockup düzeni | — |
+| L4 | Taslak kartlar kesikli çerçeve, okunur: saat, ad (…), kurum (…); takvim panelle birlikte sığıyor | Planla'da sütunlar çok dar, kart metinleri üst üste biniyor, okunmuyor; gün başlıkları 3 satıra sarıyor | kart düzeni + ellipsis; dar sütunda kompakt kart (saat + ad) | — |
+| L5 | Hedefler paneli: başlık simgesi + "HEDEFLER", "42. Hafta · sürükleyip güne bırakın"; kurum seçimi doktor sayısıyla ("İstanbul Florence Nightingale (4)") | metin uzun; kurum seçiminde sayı yok | mockup başlığı; kurum (N) | — |
+| L6 | Doktor kartı: ⋮⋮ sürükleme tutamacı; ad kalın; **renkli uzmanlık çipi** (Türkçe "Nöroloji"); **planlı ürün çipleri** (tanıtım dolu / hatırlatma çerçeveli); "dönemde 2 · 2/0 **Sal 10:15**" (sıklık · yapılan/kalan · bu haftaki yeri); segment çipi ("Kanaat önderi") | düz satır: ad, uzmanlık İNGİLİZCE ("Family Medicine"), "haftada 1 (varsayılan)", "Bu hafta görülmeli"; ürün yok, bu haftaki gün/saat yok, tutamaç yok | mockup kartı; bu haftaki gün/saat önizlemeden; ürün çipleri | BE-d: uzmanlık ETİKETİ (referans verisi, kiracı dili); ⚠ TR etiketi BRD'de yoksa veri sahibi işi (betikle yama YOK) |
+| L7 | "Tümünü seç" + "Ürün uygula (4)" yan yana, tek satır; hızlı süzgeç çipleri bu ekranda görünmüyor | 3 hızlı süzgeç çipi + Tümünü seç + Ürün uygula alt alta | mockup düzeni (hızlı süzgeçler kurum seçiminin altında tek satır, küçük) | — |
+| L8 | **Seçim özeti** kartı: büyük sayılar "16 doktor · 1 eczane · 6 hesap" + ürün dağılımı "ALMIBA 12 · TUTUKON 10 · …" | tek satır "54 doktor · 0 eczane · 14 hesap" | özet kartı + ürün sayıları | — |
+| L9 | Altta durum açıklama satırı | yok | T10 ile aynı | — |
+- **Canlıda doğrulanan (W2-BE-c):**
+  - ikinci okuma 1,3 sn, üçüncü 69 ms (ilk 10,5 sn);
+  - 29 Eki "Cumhuriyet Bayramı";
+  - 16 kurum adı;
+  - gün dengesi: Pzt 29 → 16 ziyaret, Cum 3 → 16; Amerikan Hastanesi 7 + 13 iki güne bölünmüş.

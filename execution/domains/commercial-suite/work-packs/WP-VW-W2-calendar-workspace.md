@@ -476,3 +476,6 @@ Paket: [WP-VW-W2-round2.md](WP-VW-W2-round2.md) — W2-BE-c (hiz / kurum adi / t
 
 ## Tasarım farkları (2026-10-09)
 CT görsel karşılaştırma: [DESIGN-GAP-W2-2026-10-09](mockups/visit-workspace/DESIGN-GAP-W2-2026-10-09.md) — 23 fark; öneri W2-WEB-c (tasarım uyumu) ∥ W2-BE-d (panel verisi), WEB-b kabulünden sonra (+2 prompt).
+
+## 3. tur
+Paket: [WP-VW-W2-round3.md](WP-VW-W2-round3.md) — W2-WEB-c (tasarım uyumu, DESIGN-GAP T/D/P/L) ∥ W2-BE-d (panel verisi). 2. tur canlı E4 (2026-10-10): hız 2. okuma 1,3 sn / 3. 69 ms, Cumhuriyet Bayramı, kurum adları, gün dengesi Pzt 29→16 / Cum 3→16 — ACCEPTED.
