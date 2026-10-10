@@ -154,10 +154,25 @@ public sealed class SetGskuStockBehaviourHandler(
             gsku.MinRemainingShelfLifeDays);
         if (plan.LockedField is not null)
             return StockBehaviourContext.Fail(StockBehaviourStoreCodes.FieldLocked, 409);
+        var shelfLifeAfter = plan.After(StockBehaviourFields.ShelfLifeDays, gsku.ShelfLifeDays);
+        // S3b FIX2 (R-3, CT decision): no first fill of the retest / minimum-remaining days on a non-Draft GSKU before its
+        // shelf life (in this request or already on it). A Draft stays free. The refusal names the fields after the code.
+        var needShelfLife = new List<string>();
+        if (shelfLifeAfter is null && plan.FirstFills.Contains(StockBehaviourFields.RetestDays))
+            needShelfLife.Add("retestDays");
+        if (shelfLifeAfter is null && plan.FirstFills.Contains(StockBehaviourFields.MinRemainingShelfLifeDays))
+            needShelfLife.Add("minRemainingShelfLifeDays");
+        if (needShelfLife.Count > 0)
+            return Response<StockBehaviourResult>.Fail([StockBehaviourRules.DaysRequireShelfLife, .. needShelfLife], 422);
         // S3b FIX1 (CT decision): the retest interval and the minimum remaining shelf life never exceed the shelf life,
         // when it is known — checked on the record as it will be (a value once filled is locked, so a wrong one would stay).
-        if (!StockBehaviourRules.DaysWithinShelfLife(
-                plan.After(StockBehaviourFields.ShelfLifeDays, gsku.ShelfLifeDays),
+        // S3b FIX2 (R-2): only when this request sets one of the three day fields — an older record already outside the
+        // rule is not locked against every other edit (a flag's first fill, a storage code).
+        if ((plan.Sets.ContainsKey(StockBehaviourFields.ShelfLifeDays)
+             || plan.Sets.ContainsKey(StockBehaviourFields.RetestDays)
+             || plan.Sets.ContainsKey(StockBehaviourFields.MinRemainingShelfLifeDays))
+            && !StockBehaviourRules.DaysWithinShelfLife(
+                shelfLifeAfter,
                 plan.After(StockBehaviourFields.RetestDays, gsku.RetestDays),
                 plan.After(StockBehaviourFields.MinRemainingShelfLifeDays, gsku.MinRemainingShelfLifeDays)))
             return StockBehaviourContext.Fail(StockBehaviourRules.DaysInvalid, 422);

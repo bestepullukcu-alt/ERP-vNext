@@ -854,8 +854,10 @@ public sealed class GskusController : Controller
         var codeList = new List<string>();
         foreach (var item in codes)
         {
-            if (IsCode(item)) codeList.Add(item);
-            else if (codeList.Count > 0)
+            // S3b FIX2 (R-1): an item with no code before it is no code's detail — it is taken as a code, so it reaches
+            // the unmapped path (status sentence, logged, flagged) as before FIX1; never silently dropped.
+            if (IsCode(item) || codeList.Count == 0) codeList.Add(item);
+            else
             {
                 if (!details.TryGetValue(codeList[^1], out var list)) details[codeList[^1]] = list = [];
                 list.Add(item);
@@ -863,8 +865,8 @@ public sealed class GskusController : Controller
         }
         foreach (var code in codeList)
         {
-            string? sentence = code == StockFlagsRequired
-                ? StockFlagsSentence(details.GetValueOrDefault(code))
+            string? sentence = DetailSentences.TryGetValue(code, out var detailed)
+                ? DetailSentence(detailed.Key, detailed.Labels, details.GetValueOrDefault(code))
                 : KnownFailureKeys.TryGetValue(code, out var known)
                 ? _localizer[known].Value
                 : GskuRefusalSentences.Keys.TryGetValue(code, out var refusal)
@@ -886,26 +888,35 @@ public sealed class GskusController : Controller
     }
 
     // S3b FIX1 (R1): a code starts with a letter — a field name ("lotControlled") or anything else is not a code.
-    private static bool IsCode(string value) => value.Length is > 1 and <= 100
+    // S3b FIX2 (measured): every one of the 244 mapped codes has an underscore, and MDM's upper-case literals without one
+    // are enum names, labels and unit codes ("ID", "C62", "KGM") — details, not codes. A code has an underscore.
+    private static bool IsCode(string value) => value.Length is > 2 and <= 100
         && value[0] is >= 'A' and <= 'Z'
+        && value.Contains('_')
         && value.All(character => character is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_');
 
-    private const string StockFlagsRequired = "STOCK_FLAGS_REQUIRED_FOR_APPROVAL";
+    // Refusals that name fields after their code, each said in ONE sentence with the fields' labels in the reader's
+    // language (labels live in GskusIndex: GskuRefusals holds only the refusal map's sentences). A name the proxy does
+    // not know is not shown; with none known, every label of the refusal is said.
+    // S3b FIX1: the stock-flag gate. S3b FIX2 (R-3): the days that need the shelf life first.
+    private static readonly IReadOnlyDictionary<string, (string Key, IReadOnlyDictionary<string, string> Labels)> DetailSentences =
+        new Dictionary<string, (string, IReadOnlyDictionary<string, string>)>(StringComparer.Ordinal)
+        {
+            ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = ("RefusalStockFlagsRequired",
+                new Dictionary<string, string>(StringComparer.Ordinal) { ["lotControlled"] = "StockFlagLotControlled" }),
+            ["STOCK_DAYS_REQUIRE_SHELF_LIFE"] = ("RefusalStockDaysRequireShelfLife",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["retestDays"] = "StockDayRetest", ["minRemainingShelfLifeDays"] = "StockDayMinRemaining"
+                })
+        };
 
-    // The flags MDM names after the code, said in the reader's language (labels live in GskusIndex: GskuRefusals holds
-    // only the refusal map's sentences); a name the proxy does not know is not shown.
-    private static readonly IReadOnlyDictionary<string, string> StockFlagLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+    private string DetailSentence(string key, IReadOnlyDictionary<string, string> labels, IReadOnlyList<string>? fields)
     {
-        ["lotControlled"] = "StockFlagLotControlled"
-    };
-
-    private string StockFlagsSentence(IReadOnlyList<string>? flags)
-    {
-        var labels = (flags ?? []).Where(StockFlagLabels.ContainsKey).Distinct(StringComparer.Ordinal)
-            .Select(flag => _localizer[StockFlagLabels[flag]].Value).ToList();
-        if (labels.Count == 0) labels.Add(_localizer[StockFlagLabels["lotControlled"]].Value);
-        return string.Format(System.Globalization.CultureInfo.CurrentCulture,
-            _refusals["RefusalStockFlagsRequired"].Value, string.Join(", ", labels));
+        var said = (fields ?? []).Where(labels.ContainsKey).Distinct(StringComparer.Ordinal)
+            .Select(field => _localizer[labels[field]].Value).ToList();
+        if (said.Count == 0) said.AddRange(labels.Values.Select(label => _localizer[label].Value));
+        return string.Format(System.Globalization.CultureInfo.CurrentCulture, _refusals[key].Value, string.Join(", ", said));
     }
 
     private sealed class NoRefusals : IStringLocalizer<GskuRefusals>

@@ -246,5 +246,7 @@ public static class GskuRefusalSentences
         ["GSKU_RETIREMENT_REQUEST_STUCK_ON_RELEASE_CONFLICT"] = "RefusalManualReconciliation",
         // MOD-0290-FU04 S3b (R-04): a draft is sent for approval only with its lot flag set.
         ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "RefusalStockFlagsRequired",
+        // MOD-0290-FU04 S3b FIX2 (R-3): an approved GSKU's retest / minimum-remaining days come after its shelf life.
+        ["STOCK_DAYS_REQUIRE_SHELF_LIFE"] = "RefusalStockDaysRequireShelfLife",
     };
 }

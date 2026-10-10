@@ -25,4 +25,5 @@
   <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>L'approbation a été clôturée sans décision (annulée ou expirée). Le brouillon peut être modifié et soumis à nouveau.</value></data>
   <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Une unité utilisée par ce GSKU a été retirée après l'approbation. L'approbation reste valable : elle a été appliquée avec les valeurs validées lors de la soumission ; l'unité retirée ne peut pas être choisie pour de nouveaux enregistrements.</value></data>
   <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Avant d'envoyer ce GSKU pour approbation, définissez dans le comportement de stock : {0}.</value></data>
+  <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Saisissez d'abord la durée de conservation : sur un GSKU approuvé, {0} ne peut être défini qu'une fois sa durée de conservation connue.</value></data>
 </root>

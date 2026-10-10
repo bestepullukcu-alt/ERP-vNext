@@ -8,7 +8,9 @@ namespace Diten.MdmService.Tests.Shared;
 /// MOD-0290-FU04 S3b FIX1 — what compiled code reaches, read from its IL instead of its source text: every method and
 /// field a type's methods call, take a delegate to or read, following the compiler-made parts (async / iterator state
 /// machines, lambdas) and, when asked, transitively every method of the same assembly they reach. A rename, an alias or a helper in
-/// between does not hide a call from it.
+/// between does not hide a call from it; nor does a call through an interface or a virtual method (S3b FIX2: followed to
+/// what implements it in the same assembly). A <c>typeof(T)</c> (ldtoken) is reached as the type itself. Not seen: a
+/// member found by a string at run time (Type.GetType("…"), reflection by name) — no IL names it.
 /// </summary>
 internal static class IlReferences
 {
@@ -35,10 +37,38 @@ internal static class IlReferences
             foreach (var member in Referenced(method))
             {
                 reached.Add(member);
-                if (transitive && member is MethodBase callee && callee.Module.Assembly == type.Assembly) pending.Push(callee);
+                if (transitive && member is MethodBase callee && callee.Module.Assembly == type.Assembly)
+                {
+                    pending.Push(callee);
+                    // S3b FIX2: a call through an interface or a virtual method reaches what implements / overrides it
+                    // in the same assembly (the IL names only the declared method).
+                    if (callee is MethodInfo { IsVirtual: true } declared)
+                        foreach (var implementation in Implementations(declared, type.Assembly)) pending.Push(implementation);
+                }
             }
         }
         return reached;
+    }
+
+    private static IEnumerable<MethodBase> Implementations(MethodInfo declared, Assembly assembly)
+    {
+        var owner = declared.DeclaringType!;
+        foreach (var candidate in assembly.GetTypes().Where(x => x is { IsInterface: false, ContainsGenericParameters: false }))
+        {
+            if (owner.IsInterface)
+            {
+                if (!owner.IsAssignableFrom(candidate) || candidate.IsAbstract) continue;
+                var map = candidate.GetInterfaceMap(owner);
+                var index = Array.IndexOf(map.InterfaceMethods, declared);
+                if (index >= 0) yield return map.TargetMethods[index];
+            }
+            else if (candidate.IsSubclassOf(owner))
+            {
+                foreach (var method in candidate.GetMethods(Everything)
+                             .Where(x => x != declared && x.GetBaseDefinition() == declared.GetBaseDefinition()))
+                    yield return method;
+            }
+        }
     }
 
     private static IEnumerable<MethodBase> MethodsOf(Type type) =>

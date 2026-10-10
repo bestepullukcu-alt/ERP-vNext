@@ -18,9 +18,10 @@ public sealed class GskuRefusalBridgeTests
     private static readonly string[] Languages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
 
     // The GSKU code of MDM: the controller and every file of the GSKU flows and the shared product-identity workflow.
-    // MOD-0290-FU04 S3b: + StockFlagGate (the GSKU submit's lot-flag refusal).
+    // MOD-0290-FU04 S3b: + StockFlagGate (the GSKU submit's lot-flag refusal). S3b FIX2: + StockBehaviourRules (the stock
+    // edit's refusals; the GSKU's own STOCK_DAYS_REQUIRE_SHELF_LIFE is said now, the rest by S5's stock-behaviour section).
     private static readonly Regex GskuFile = new(
-        @"^(Gsku|FirstGsku|ProductIdentityWorkflow|IFirstGsku|IGsku|PlatformWorkflowVerifiedGsku|IVerifiedGsku|CreateFirstGsku|UpdateGsku|RetireGsku|StartGsku|StartFirstGsku|WithdrawFirstGsku|GetGsku|StockFlagGate)[^/]*\.cs$",
+        @"^(Gsku|FirstGsku|ProductIdentityWorkflow|IFirstGsku|IGsku|PlatformWorkflowVerifiedGsku|IVerifiedGsku|CreateFirstGsku|UpdateGsku|RetireGsku|StartGsku|StartFirstGsku|WithdrawFirstGsku|GetGsku|StockFlagGate|StockBehaviourRules)[^/]*\.cs$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex CodeLiteral = new("\"([A-Z][A-Z0-9]+(?:_[A-Z0-9]+)+)\"", RegexOptions.CultureInvariant);
@@ -51,11 +52,21 @@ public sealed class GskuRefusalBridgeTests
         "PRODUCT_IDENTITY_WORKFLOW_RECOVERY_ARGUMENT_INVALID", "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID"
     };
 
+    // S3b FIX2: the stock-behaviour edit's refusals the GSKU screen does not send yet — S5 (the "Stock behaviour" section)
+    // maps them. Named one by one: a NEW stock code is still caught here.
+    private static readonly HashSet<string> MappedByS5 = new(StringComparer.Ordinal)
+    {
+        "UOM_CONVERSION_INVALID", "ITEM_STORAGE_CONDITION_CONFLICT", "STOCK_STORAGE_CONDITION_INVALID", "STOCK_UOM_INVALID",
+        "STOCK_BEHAVIOUR_INCOMPLETE", "STOCK_SHELF_LIFE_INVALID", "FG_SHELF_LIFE_EXCEEDS_GSKU", "FG_GTIN_INVALID",
+        "STOCK_DAYS_INVALID", "GSKU_PACK_UOM_UNKNOWN"
+    };
+
     [Fact]
     public void Every_code_of_mdms_gsku_code_has_a_sentence()
     {
         var mapped = MappedCodes();
-        var missing = MdmCodes().Where(code => !NotRefusals.Contains(code) && !mapped.ContainsKey(code)).ToArray();
+        var missing = MdmCodes().Where(code => !NotRefusals.Contains(code) && !MappedByS5.Contains(code) && !mapped.ContainsKey(code))
+            .ToArray();
 
         Assert.True(missing.Length == 0, "Codes without a sentence: " + string.Join(", ", missing));
     }
@@ -68,6 +79,8 @@ public sealed class GskuRefusalBridgeTests
 
         Assert.True(orphans.Length == 0, "Mapped codes MDM never answers with: " + string.Join(", ", orphans));
         Assert.Empty(NotRefusals.Where(code => MappedCodes().ContainsKey(code)));
+        // The S5 list stays honest: each is a code MDM has, and none is mapped yet (mapped → take it off the list).
+        Assert.Empty(MappedByS5.Where(code => !known.Contains(code) || MappedCodes().ContainsKey(code)));
     }
 
     [Fact]

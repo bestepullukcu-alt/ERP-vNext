@@ -32,8 +32,11 @@ const GskusList = (function () {
     const L = window.L10n || {};
     const permissionHost = document.querySelector('[data-can-create]');
     const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
-    const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'];
-    const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']);
+    // S3b FIX2 (B1): STOCK_FLAGS_REQUIRED stands where SUBMIT would (after EDIT, before SUBMIT) when the stock-flag gate
+    // would refuse the submit. It is a known action with no menu item: its reason is said in the quick view. An action
+    // this screen does not know is still refused (the server's action list is a contract, pinned by the register test).
+    const actionOrder = ['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'];
+    const supportedActions = new Set(['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']);
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -251,7 +254,8 @@ const GskusList = (function () {
         REPEAT_REQUEST: { key: 'repeatRequest', className: 'js-repeat-request', icon: 'bx bx-refresh', label: () => L.RepeatRequest }
     };
     const renderFreshActionMenu = (menu, id, actions) => {
-        menu.innerHTML = actions.filter((action) => supportedActions.has(action)).map((action) => {
+        // Only actions with a menu item are drawn (STOCK_FLAGS_REQUIRED has none).
+        menu.innerHTML = actions.filter((action) => supportedActions.has(action) && actionPresentation[action]).map((action) => {
             const { key, className, icon, label } = actionPresentation[action];
             return `<a href="javascript:void(0);" class="dropdown-item dt-action-item ${className}" data-row-action="${key}" data-id="${escapeHtml(id)}" data-action="${action}"><i class="${icon} dt-action-icon"></i>${escapeHtml(label())}</a>`;
         }).join('');

@@ -52,14 +52,15 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         // Test-only access to existing closure functions; shipped JS has no test hook.
         const exposed = source.replace('init: async () => {', `test: {
             readAvailableActions, readVersion, buildListOptions, createProductPickerOptions, fetchProductPage,
-            getErrorMessage, onListError,
+            getErrorMessage, onListError, renderDetail, loadActionMenu,
             openExistingEditor, requestLifecycle, requestRetirement, submitEditor, repeatLifecycleRequest,
             setupEditor: (mode) => { editorId = '${id}'; editorGskuVersion = 3; editorRevisionVersion = 2; editorMode = mode; },
             setupTable: (table) => { dt = table; }
         }, init: async () => {`);
         const api = vm.runInNewContext(exposed + '\nGskusList.test;', {
             window: fakeWindow, document, fetch, $: jquery, Option, FormData, URLSearchParams,
-            bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) } },
+            bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) },
+                Dropdown: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) } },
             setTimeout, clearTimeout, console
         });
         api.setupTable({ ajax: { reload } });
@@ -71,6 +72,43 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         ['DETAILS', 'WITHDRAW_APPROVAL'], ['DETAILS', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT']
     ])('accepts the exact server action sequence %j', (...actions) => {
         expect(harness().api.readAvailableActions({ availableActions: actions })).toEqual(actions);
+    });
+    // S3b FIX2 (B1): a flagless draft's list — the gate's reason stands where SUBMIT would. The screen accepts it, says
+    // the reason in the quick view, draws the row menu without it, and the editor still opens (so the flags can be set).
+    const flagless = ['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED'];
+    it('accepts the stock-flag reason in its place, and refuses it out of order', () => {
+        expect(harness().api.readAvailableActions({ availableActions: flagless })).toEqual(flagless);
+        expect(() => harness().api.readAvailableActions({ availableActions: ['DETAILS', 'STOCK_FLAGS_REQUIRED', 'EDIT'] })).toThrow();
+        expect(() => harness().api.readAvailableActions({ availableActions: ['DETAILS', 'SUBMIT', 'STOCK_FLAGS_REQUIRED'] })).toThrow();
+    });
+    it('a flagless draft: the quick view says why it cannot be sent', () => {
+        const h = harness();
+        // The quick view's own fields (Gskus/_DetailsQuickView ids).
+        document.body.insertAdjacentHTML('beforeend', '<div id="offcanvasDetailsPreview"></div><span id="oc-status"></span>' +
+            ['oc-title', 'oc-subtitle', 'oc-id', 'oc-code', 'oc-global-product', 'oc-revision', 'oc-pack', 'oc-version',
+                'oc-created-at', 'oc-updated-at'].map(x => '<span id="' + x + '"></span>').join('') +
+            '<div id="oc-identity-not-applied-row" class="d-none"><span id="oc-identity-not-applied"></span></div>');
+        h.api.renderDetail(detail(flagless), id);
+        expect(document.getElementById('oc-identity-not-applied').textContent).toBe('SubmitNeedsStockFlags');
+        expect(document.getElementById('oc-identity-not-applied-row').classList.contains('d-none')).toBe(false);
+        expect(h.toast).not.toHaveBeenCalled();
+    });
+    it('a flagless draft: the row menu is drawn, with no item for the reason', async () => {
+        const h = harness([response(detail(flagless))]);
+        document.body.insertAdjacentHTML('beforeend', '<div class="dropdown"><button class="js-gsku-actions-toggle" data-id="' + id +
+            '"></button><div class="js-gsku-actions-menu"></div></div>');
+        await h.api.loadActionMenu(document.querySelector('.js-gsku-actions-toggle'));
+        const items = [...document.querySelectorAll('.js-gsku-actions-menu [data-action]')].map(x => x.dataset.action);
+        expect(items).toEqual(['DETAILS', 'EDIT']);
+        expect(h.toast).not.toHaveBeenCalled();
+    });
+    it('a flagless draft: Edit opens the editor', async () => {
+        const h = harness([response(detail(flagless)), response({ gskuId: id, gskuVersion: 3, revisionVersion: 2,
+            uoms: [{ code: 'C62', displayText: 'Unit', sortOrder: 1, maximumDecimalPrecision: 0 }] })]);
+        await h.api.openExistingEditor(id, null, 'edit');
+        expect(h.fetch.mock.calls.map(c => c[0])).toEqual([
+            '/MasterDataManagement/Gskus/api/' + id, '/MasterDataManagement/Gskus/api/' + id + '/edit-options']);
+        expect(h.toast).not.toHaveBeenCalled();
     });
     it.each([['details'], ['DETAILS', 'edit'], ['DETAILS', 'EDIT', 'EDIT'], ['EDIT', 'DETAILS'], ['DETAILS', 'DELETE']])(
         'rejects action aliases, unknown keys and malformed order %j', (...actions) => {
@@ -424,8 +462,8 @@ describe('MOD-0290 GSKU Register exposure', () => {
         const models = read('Models/Gskus/GskuViewModels.cs');
 
         expect(models).toContain('IReadOnlyList<string> AvailableActions');
-        expect(browser).toContain("const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']");
-        expect(browser).toContain("const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'])");
+        expect(browser).toContain("const actionOrder = ['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']");
+        expect(browser).toContain("const supportedActions = new Set(['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'])");
         expect(browser).toContain("REPEAT_REQUEST: { key: 'repeatRequest', className: 'js-repeat-request', icon: 'bx bx-refresh'");
         expect(browser).toContain('const readAvailableActions = (detail) =>');
         expect(browser).toContain("actions[0] !== 'DETAILS'");

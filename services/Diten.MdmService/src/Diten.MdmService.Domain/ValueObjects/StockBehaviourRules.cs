@@ -175,6 +175,11 @@ public static class StockBehaviourRules
 
     public const string DaysInvalid = "STOCK_DAYS_INVALID";
 
+    // S3b FIX2 (R-3, CT decision): on a non-Draft GSKU the retest interval / minimum remaining shelf life is filled only
+    // once the shelf life is known — a first fill is locked, and a shelf life entered later below it would be refused,
+    // leaving the record with no way to get its shelf life (and Stockable). The fields it names follow the code.
+    public const string DaysRequireShelfLife = "STOCK_DAYS_REQUIRE_SHELF_LIFE";
+
     /// <summary>S3b FIX1: retest and minimum remaining shelf life are within the shelf life when it is known.</summary>
     public static bool DaysWithinShelfLife(int? shelfLifeDays, int? retestDays, int? minRemainingShelfLifeDays) =>
         shelfLifeDays is not { } shelf

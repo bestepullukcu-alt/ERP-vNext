@@ -43,7 +43,9 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
     {
         var records = await SeedAsync();
 
-        var first = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { retestDays = 365, minRemainingShelfLifeDays = 180 });
+        // S3b FIX2 (R-3): on an approved GSKU the days come with (or after) the shelf life.
+        var first = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version,
+            new { shelfLifeDays = 730, retestDays = 365, minRemainingShelfLifeDays = 180 });
         Assert.True(first.StatusCode == HttpStatusCode.OK, await first.Content.ReadAsStringAsync());
         var stored = await GskuAsync(records.Gsku.Id);
         Assert.Equal(365, stored.RetestDays);
@@ -79,7 +81,7 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
     {
         var records = await SeedAsync();
         var response = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version,
-            new { retestDays = 0, minRemainingShelfLifeDays = 3650 });
+            new { shelfLifeDays = 3650, retestDays = 0, minRemainingShelfLifeDays = 3650 });
         Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
     }
 
@@ -88,7 +90,7 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
     public async Task S3b_The_lsku_and_the_finished_good_read_retest_and_minimum_remaining_from_their_gsku()
     {
         var records = await SeedAsync();
-        await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { retestDays = 365, minRemainingShelfLifeDays = 180 });
+        await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { shelfLifeDays = 730, retestDays = 365, minRemainingShelfLifeDays = 180 });
         var client = host.Client(MakerToken());
 
         foreach (var (id, level) in new[] { (records.Gsku.Id, "Gsku"), (records.Lsku.Id, "Lsku"), (records.FinishedGood.Id, "FinishedGood") })
@@ -123,7 +125,7 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
         Assert.Equal(JsonValueKind.Null, sku.GetProperty("minRemainingShelfLifeDays").ValueKind);
 
         // A first fill lands on a field that is MISSING (not only null) — the store's Exists(false) | Eq(null) condition.
-        var fill = await PutGskuAsync(records.Gsku.Id, legacy.Version, new { retestDays = 90 });
+        var fill = await PutGskuAsync(records.Gsku.Id, legacy.Version, new { shelfLifeDays = 730, retestDays = 90 });
         Assert.True(fill.StatusCode == HttpStatusCode.OK, await fill.Content.ReadAsStringAsync());
         Assert.Equal(90, (await GskuAsync(records.Gsku.Id)).RetestDays);
     }
@@ -205,7 +207,8 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
         await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { lotControlled = true });
         var version = (await GskuAsync(records.Gsku.Id)).Version;
 
-        var response = await PutGskuAsync(records.Gsku.Id, version, new { lotControlled = (bool?)null, retestDays = 30 });
+        // (S3b FIX2: a second field that needs no shelf life — on an approved GSKU the days now follow the shelf life.)
+        var response = await PutGskuAsync(records.Gsku.Id, version, new { lotControlled = (bool?)null, shelfLifeDays = 365 });
 
         Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         Assert.True((await GskuAsync(records.Gsku.Id)).LotControlled);
@@ -238,21 +241,6 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
         lsku = await JsonAsync(await client.GetAsync($"/api/product-master/skus/{records.Lsku.Id:D}?level=Lsku"));
         Assert.True(lsku.GetProperty("stockable").GetBoolean());
         Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, (await GskuAsync(records.Gsku.Id)).LifecycleStatus);
-    }
-
-    // The refusals above must meet UNSET flags: this class never takes the older flows' flag fill (S3bSubmitFlags).
-    // S3b FIX1: measured on the compiled class, not its text — every method body of this class and of its compiler-made
-    // nested types (async state machines, lambdas) is read instruction by instruction; no call, delegate or field read
-    // may land on S3bSubmitFlags, whatever the source spells (an alias, a using static, a helper in between).
-    [Fact]
-    public void S3b_The_gate_tests_never_take_the_legacy_flag_fill()
-    {
-        var reached = IlReferences.MembersReachedFrom(typeof(StockBehaviourS3bHttpTests))
-            .Where(x => x.DeclaringType == typeof(S3bSubmitFlags)).Select(x => x.Name).ToArray();
-        Assert.Empty(reached);
-        // The reader is measured too: the older flows' own hook does reach the fill.
-        Assert.Contains(IlReferences.MembersReachedFrom(typeof(GskuLifecycleHttpTests)),
-            x => x.DeclaringType == typeof(S3bSubmitFlags));
     }
 
     // ------------------------------------------------------------------------------------------- S3b FIX1
@@ -296,6 +284,78 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
             Assert.Contains("SUBMIT", actions);
             Assert.DoesNotContain(StockFlagGate.SubmitNeedsStockFlagsAction, actions);
         }
+    }
+
+    // CT J3 (S3b FIX2): the LSKU's list asks the LSKU rule — its OWN serial flag and its GSKU's lot — both ways round.
+    // The sabotage target "the action list asks only the parent's lot".
+    [Theory]
+    [InlineData("own-serial-missing")]
+    [InlineData("parent-lot-missing")]
+    public async Task S3b_FIX2_An_lsku_draft_missing_either_flag_offers_the_reason_not_submit(string missing)
+    {
+        var records = await SeedAsync();
+        if (missing == "own-serial-missing")
+            Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { lotControlled = true })).StatusCode);
+        var lsku = await LskuDraftAsync(records.Gsku.Id, "TR");
+        if (missing == "parent-lot-missing")
+            Assert.Equal(HttpStatusCode.OK, (await PutLskuAsync(lsku, (await LskuAsync(lsku)).Version, new { serialControlled = true })).StatusCode);
+
+        foreach (var actions in new[] { await LskuActionsAsync(lsku), await LskuListActionsAsync(lsku) })
+        {
+            Assert.Contains(StockFlagGate.SubmitNeedsStockFlagsAction, actions);
+            Assert.DoesNotContain("SUBMIT", actions);
+        }
+    }
+
+    // R-2 (S3b FIX2): the days rule runs only when the request sets a day field. An older approved GSKU already outside
+    // it (shelf life 100, retest 200 — possible before FIX1) still takes a flag's first fill; a day edit still meets it.
+    // The sabotage target "the rule runs on untouched fields".
+    [Fact]
+    public async Task S3b_FIX2_An_older_record_outside_the_days_rule_still_takes_a_flag_fill()
+    {
+        var records = await SeedAsync();
+        await host.Database.GetCollection<BsonDocument>("mdm_gskus").UpdateOneAsync(IdFilter(records.Gsku.Id),
+            new BsonDocument("$set", new BsonDocument { { "ShelfLifeDays", 100 }, { "RetestDays", 200 } }));
+
+        var flag = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { lotControlled = true });
+        Assert.True(flag.StatusCode == HttpStatusCode.OK, await flag.Content.ReadAsStringAsync());
+
+        var day = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version + 1, new { minRemainingShelfLifeDays = 50 });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, day.StatusCode);
+        Assert.Equal(StockBehaviourRules.DaysInvalid, await FirstErrorAsync(day));
+    }
+
+    // R-3 (S3b FIX2, CT decision): on an approved GSKU without a shelf life, a first fill of the retest / minimum
+    // remaining days is refused and names its fields — once filled they are locked, and a shelf life entered later
+    // below them could never be set. With the shelf life (before, or in the same request) it goes; a draft is free.
+    // The sabotage target "a first fill without a shelf life is accepted".
+    [Theory]
+    [InlineData(30, null, new[] { "retestDays" })]
+    [InlineData(null, 30, new[] { "minRemainingShelfLifeDays" })]
+    [InlineData(30, 30, new[] { "retestDays", "minRemainingShelfLifeDays" })]
+    public async Task S3b_FIX2_An_approved_gsku_takes_the_days_only_after_its_shelf_life(int? retest, int? minimum, string[] fields)
+    {
+        var records = await SeedAsync();
+        Assert.Null(records.Gsku.ShelfLifeDays);
+
+        var refused = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version,
+            new { retestDays = retest, minRemainingShelfLifeDays = minimum });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, refused.StatusCode);
+        var errors = await ErrorsAsync(refused);
+        Assert.Equal([StockBehaviourRules.DaysRequireShelfLife, .. fields], errors);
+        Assert.Equal(records.Gsku.Version, (await GskuAsync(records.Gsku.Id)).Version);
+
+        Assert.Equal(HttpStatusCode.OK, (await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { shelfLifeDays = 100 })).StatusCode);
+        var after = await PutGskuAsync(records.Gsku.Id, records.Gsku.Version + 1, new { retestDays = retest, minRemainingShelfLifeDays = minimum });
+        Assert.True(after.StatusCode == HttpStatusCode.OK, await after.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task S3b_FIX2_A_gsku_draft_takes_the_days_without_a_shelf_life()
+    {
+        var (gsku, version) = await GskuDraftAsync(await SeedProductAsync());
+        var response = await PutGskuAsync(gsku, version, new { retestDays = 30, minRemainingShelfLifeDays = 10 });
+        Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
     }
 
     // R3: the gate speaks only to someone who may see and submit the record. A flagless draft submitted by another
@@ -603,4 +663,26 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
 
     private Task<Lsku> LskuAsync(Guid id) =>
         host.Database.GetCollection<Lsku>("mdm_lskus").Find(x => x.Id == id && x.TenantId == _tenant).SingleAsync();
+}
+
+/// <summary>MOD-0290-FU04 S3b — the gate tests above meet UNSET flags: measured on their compiled class.</summary>
+public sealed class StockBehaviourS3bGuardTests
+{
+    // The refusals above must meet UNSET flags: this class never takes the older flows' flag fill (S3bSubmitFlags).
+    // S3b FIX1: measured on the compiled class, not its text — every method body of this class and of its compiler-made
+    // nested types (async state machines, lambdas) is read instruction by instruction; no call, delegate or field read
+    // may land on S3bSubmitFlags, whatever the source spells (an alias, a using static, a helper in between).
+    // S3b FIX2: in a class of its own — the guard names S3bSubmitFlags (typeof), and the class it reads must not.
+    [Fact]
+    public void S3b_The_gate_tests_never_take_the_legacy_flag_fill()
+    {
+        // S3b FIX2: a typeof(S3bSubmitFlags) (the way to it by reflection) counts too; interface / virtual calls are
+        // followed by the reader. A member found by a string at run time is the reader's stated limit.
+        var reached = IlReferences.MembersReachedFrom(typeof(StockBehaviourS3bHttpTests))
+            .Where(x => x == typeof(S3bSubmitFlags) || x.DeclaringType == typeof(S3bSubmitFlags)).Select(x => x.Name).ToArray();
+        Assert.Empty(reached);
+        // The reader is measured too: the older flows' own hook does reach the fill.
+        Assert.Contains(IlReferences.MembersReachedFrom(typeof(GskuLifecycleHttpTests)),
+            x => x.DeclaringType == typeof(S3bSubmitFlags));
+    }
 }

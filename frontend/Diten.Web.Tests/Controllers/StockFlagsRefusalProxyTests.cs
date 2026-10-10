@@ -69,6 +69,48 @@ public sealed class StockFlagsRefusalProxyTests
         Assert.DoesNotContain("unmapped", body, StringComparison.Ordinal);
     }
 
+    // S3b FIX2 (R-1): a list with no code in it (or an item before the first code) is not dropped — it takes the
+    // unmapped path as before FIX1: the status sentence, flagged, the raw text never shown.
+    // The sabotage target "a code-less list is dropped".
+    [Theory]
+    [InlineData("Some text")]
+    [InlineData("lotControlled")]
+    public async Task A_list_without_a_code_still_says_the_status_sentence_and_is_flagged(string item)
+    {
+        var result = await GskuSubmitAsync(item);
+
+        var (status, errors, body) = Read(result);
+        Assert.Equal(StatusCodes.Status409Conflict, status);
+        Assert.False(string.IsNullOrWhiteSpace(Assert.Single(errors)));
+        Assert.Contains("\"unmapped\":true", body, StringComparison.Ordinal);
+        Assert.DoesNotContain(item, body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task An_item_before_the_first_code_is_said_as_unmapped_and_the_code_after_it_too()
+    {
+        var result = await GskuSubmitAsync("lotControlled", "GSKU_PARENT_NOT_APPROVED");
+
+        var (_, errors, body) = Read(result);
+        Assert.Equal(2, errors.Length);
+        Assert.Contains("localized:ErrorParentNotApproved", errors);
+        Assert.Contains("\"unmapped\":true", body, StringComparison.Ordinal);
+    }
+
+    // S3b FIX2 (minor): a short upper-case detail ("ID") or a unit code ("C62") is not a code — no unmapped flag.
+    [Theory]
+    [InlineData("ID")]
+    [InlineData("C62")]
+    [InlineData("KGM")]
+    public async Task A_short_upper_case_detail_after_a_known_code_is_not_a_code(string detail)
+    {
+        var result = await GskuSubmitAsync("GSKU_PARENT_NOT_APPROVED", detail);
+
+        var (_, errors, body) = Read(result);
+        Assert.Equal("localized:ErrorParentNotApproved", Assert.Single(errors));
+        Assert.DoesNotContain("unmapped", body, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData(new[] { "serialControlled", "gsku.lotControlled" },
         "ErrorStockFlagsRequired[StockFlagSerialControlled, StockFlagGskuLotControlled]")]
@@ -87,8 +129,8 @@ public sealed class StockFlagsRefusalProxyTests
     }
 
     [Theory]
-    [InlineData("Gskus", "GskuRefusals", new[] { "RefusalStockFlagsRequired" })]
-    [InlineData("Gskus", "GskusIndex", new[] { "StockFlagLotControlled", "SubmitNeedsStockFlags" })]
+    [InlineData("Gskus", "GskuRefusals", new[] { "RefusalStockFlagsRequired", "RefusalStockDaysRequireShelfLife" })]
+    [InlineData("Gskus", "GskusIndex", new[] { "StockFlagLotControlled", "SubmitNeedsStockFlags", "StockDayRetest", "StockDayMinRemaining" })]
     [InlineData("Lskus", "LskusIndex", new[] { "ErrorStockFlagsRequired", "StockFlagSerialControlled", "StockFlagGskuLotControlled", "SubmitNeedsStockFlags" })]
     public void The_stock_flag_sentences_are_in_all_seven_languages_and_name_the_flags(string folder, string file, string[] keys)
     {
@@ -102,11 +144,31 @@ public sealed class StockFlagsRefusalProxyTests
             {
                 Assert.True(values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value), $"{key} is missing in {language}");
                 // The refusal sentences carry the flag list; a label or the reason never has a placeholder.
-                Assert.Equal(key.EndsWith("StockFlagsRequired", StringComparison.Ordinal), value!.Contains("{0}", StringComparison.Ordinal));
+                Assert.Equal(Formatted(key), value!.Contains("{0}", StringComparison.Ordinal));
                 // Well-formed: formatting with a label does not throw (a stray brace would, on the live screen).
                 Assert.Contains("label", string.Format(System.Globalization.CultureInfo.InvariantCulture, value + " {0}", "label"));
             }
         }
+    }
+
+    // The refusal sentences that carry the field list.
+    private static bool Formatted(string key) =>
+        key.EndsWith("StockFlagsRequired", StringComparison.Ordinal) || key.EndsWith("RequireShelfLife", StringComparison.Ordinal);
+
+    // S3b FIX2 (R-3): the days that need the shelf life first — one sentence naming them.
+    [Theory]
+    [InlineData(new[] { "retestDays" }, "refusal:RefusalStockDaysRequireShelfLife[localized:StockDayRetest]")]
+    [InlineData(new[] { "minRemainingShelfLifeDays" }, "refusal:RefusalStockDaysRequireShelfLife[localized:StockDayMinRemaining]")]
+    [InlineData(new[] { "retestDays", "minRemainingShelfLifeDays" },
+        "refusal:RefusalStockDaysRequireShelfLife[localized:StockDayRetest, localized:StockDayMinRemaining]")]
+    public async Task The_days_needing_the_shelf_life_are_one_sentence_naming_them(string[] fields, string sentence)
+    {
+        var result = await GskuSubmitAsync(["STOCK_DAYS_REQUIRE_SHELF_LIFE", .. fields]);
+
+        var (_, errors, body) = Read(result);
+        Assert.Equal(sentence, Assert.Single(errors));
+        Assert.DoesNotContain("unmapped", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"retestDays", body, StringComparison.Ordinal);
     }
 
     private static async Task<IActionResult> GskuSubmitAsync(params string[] errors)
@@ -190,7 +252,7 @@ public sealed class StockFlagsRefusalProxyTests
         private string Text(string name)
         {
             var text = prefix is null ? name : $"{prefix}:{name}";
-            return name.EndsWith("StockFlagsRequired", StringComparison.Ordinal) ? text + "[{0}]" : text;
+            return Formatted(name) ? text + "[{0}]" : text;
         }
     }
 }
