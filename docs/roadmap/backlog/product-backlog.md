@@ -8398,6 +8398,25 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-606
+
+**Güvenilir iş akışı başlatma sözleşmesinde serbest metin gerekçe yok: onaycı, yeniden etkinleştirme gerekçesini Görev Merkezi'nde göremiyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform iş akışı motoru + Görev Merkezi) · BULAN: FU04 S2 FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `TrustedWorkflowStartTransportRequest` (`Platform.API/Models/Workflow/TrustedWorkflowConsumerRequestModels.cs:3`) ve `TrustedWorkflowStartRequest` (`WorkflowModels.cs:315`) yalnız şablon, nesne, aday kimlikleri, `ReasonCode` (yapılandırılmış kod), yorum / kanıt bayrakları ve son tarih taşıyor. Serbest metin yok.
+- S2 FIX1 kararı (A): kalem yeniden etkinleştirme gerekçesi MDM işlemine yazılıyor ve kalem detayında görünüyor; onaycı MDM sayfasında okuyor.
+
+Yapılacak:
+- başlatma sözleşmesine isteğe bağlı `requestComment` (uzunluk sınırı, kontrol karakteri reddi; denetime metin değil "verildi + uzunluk");
+- Görev Merkezi görev detayında gösterim (7 dil etiket);
+- tüketiciler: MDM kalem / LSKU / GSKU yeniden etkinleştirme ve emeklilik talepleri.
+
+Gelecek regresyon riski: 🟡 onaycı bağlamı ayrı ekranda arar; veri riski yok.
+
+---
+
 ### BL-605
 
 **Kalem onayı (S2): onaycı pozisyonu tek küresel yapılandırma değeri; ikinci kiracıda kalem onayı kapalı başarısız**
