@@ -1686,6 +1686,20 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   MOD-0175's provider checks the company, Q3); no data-scope check added there. Verify, search and export use `CanSee`.
 - **O-FUB1-2:** the PM1 picker guard widened for the product picker's single-product read — accepted.
 
+### FUB2 — implementation note (WP-MVP1-FUB2, 2026-10-10, pending CT) — FU-0022-CT-01 closed
+
+- **Branch and commits:** branch `feature/mvp1-fub2` from `fa4c4e188`, local only, no push. Commits `f35197c5a` (contracts),
+  `52176c83e` (InventoryService), `6b5382e23` (Web). Evidence: `docs/records/audits/2026-10/mvp1-fub2-evidence-2026-10-10.md`
+  (+ `-scripts`, `mvp1-fub2-shots/`).
+- **ESIGN 1.0.1 — description only.**
+  - Changelog line + x-implementation-notes "Visibility": a company-less (tenant-level) record is visible to every holder of
+    `esign.signatures.read` (get / bySubject / verify) or `esign.signatures.export` (search / export).
+  - A company record follows the SEC-002 data scope (absent outside it). The signer always sees their own.
+  - No path, schema, code or permission changed. `ESignatureContractTests` pins 1.0.1. README row updated. No e-signature code.
+- **Finding for CT-D10 (O-FUB2-1, evidence §2.1).** `RoleProvisioningService.EnsureDefaultRolesAsync` re-applies the default-role
+  template additively on `tenant-admin-invited` (any existing tenant) and `tenant-activated`. So the `DefaultSignerPermissions`
+  also reach tenants provisioned earlier, beyond the seed tenant of FU-0022-SEED-01.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /

@@ -597,6 +597,25 @@ CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY
   - Sabotage (b) (raw level) → red; restored, diff empty.
 - No InventoryService, contract, Lots or Quarantine file was touched.
 
+### FUB2 — implementation note (WP-MVP1-FUB2, 2026-10-10, pending CT)
+
+- **Branch and commits:** branch `feature/mvp1-fub2` from `fa4c4e188`, local only, no push. Commits `f35197c5a` (contracts),
+  `52176c83e` (InventoryService), `6b5382e23` (Web). Evidence: `docs/records/audits/2026-10/mvp1-fub2-evidence-2026-10-10.md`
+  (+ `-scripts`, `mvp1-fub2-shots/`).
+- **PRODUCT-MASTER 1.1.0-draft.11.**
+  - Taken file-only from `origin/chore/ct-round-2` @ `00a4d4268` (branch head `6ddda3cc2`, same blobs).
+  - The v1.0 file is byte-identical (unchanged); no MDM code; the files are not edited.
+  - Consumer behaviour unchanged, no production code change. Prism smokes adapted to the example names:
+    - the default answer is now v1.1;
+    - v1.0 is `Prefer: example=v1.0-mock`;
+    - the Global Product example carries the deprecated lot / serial flags (doubt = yes), so GSKU stays refused.
+  - The v1.0 backward-compatibility smoke stays on the v1.0 file. Prism + validator 66/66.
+- **O-ITEM-3 BLOCKED (O-FUB2-2).**
+  - The stock movement list rows (INVENTORY `TransactionItem`) carry no user, although `InventoryTransaction.CreatedBy` is stored.
+  - Showing the recorder by name needs an additive `TransactionItem.createdBy` (INVENTORY 1.2.2) — outside this WP's allowed
+    contract changes. The ledger list is a balance projection without a recorder.
+  - No ledger / movement Web change.
+
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).

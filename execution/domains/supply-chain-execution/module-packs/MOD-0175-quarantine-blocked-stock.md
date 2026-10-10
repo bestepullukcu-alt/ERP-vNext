@@ -1470,6 +1470,51 @@ into the MVP-1 branch. Decisions on the opens:
 - **O-ITEM-3** (movement rows without user name) and **O-ITEM-4** (`updateHold` replay returns the current state) → small FU batch.
 - O-ITEM-6: known gateway 5065 red (procurement).
 
+### FUB2 — implementation note (WP-MVP1-FUB2, 2026-10-10, pending CT)
+
+- **Branch and commits:** branch `feature/mvp1-fub2` from `fa4c4e188`, local only, no push. Commits `f35197c5a` (contracts),
+  `52176c83e` (InventoryService), `6b5382e23` (Web). Evidence: `docs/records/audits/2026-10/mvp1-fub2-evidence-2026-10-10.md`
+  (+ `-scripts`, `mvp1-fub2-shots/`).
+- **QUARANTINE 1.2.0 (additive).**
+  - `HistoryAction` + `NoteUpdated`.
+  - Optional `HistoryEntry.noteChange` (`NoteChange`: note length / attachment count before → after; the text stays in `inventory_audit`).
+  - `updateHold` lists the existing `QUARANTINE_DECISION_ALREADY_PENDING`.
+  - Diff validator against the new 1.1.0 fixture (byte-pinned).
+- **FU-0175-ITEM-01 CLOSED.**
+  - A saved `updateHold` writes one `NoteUpdated` row (by, atUtc, noteChange) in the same transaction as the hold and the
+    unchanged audit row.
+  - Kayıt Detayı shows "Analiz notu güncellendi · Not: a → b karakter · Ek: c → d".
+- **FU-0175-ITEM-03 CLOSED.**
+  - While `ActiveDecisionId` is set (decision waiting for approval, or approved and not yet applied), `updateHold` → 409
+    `QUARANTINE_DECISION_ALREADY_PENDING`, nothing written.
+  - Editable again when the decision ends (rejected / cancelled / timed out / withdrawn). An applied decision closes the hold (409
+    `QUARANTINE_HOLD_CLOSED`, unchanged). A draft does not lock.
+  - Kayıt Detayı draws the lock explanation instead of "Notu düzenle" (review key only, UAS-001).
+- **O-ITEM-4 CLOSED.**
+  - The same key answers the first result (version, note, attachments from the first call's audit row; the rest is the current
+    read, the decision-replay pattern) even after a later edit. Another body → 400 `IDEMPOTENCY_KEY_REUSED`.
+  - O-FUB2-3: a full snapshot would need a result store.
+- **FU-0175-ITEM-02 BLOCKED (O-FUB2-1).**
+  - Viewer is the only default role with quarantine keys.
+  - `RoleProvisioningService.EnsureDefaultRolesAsync` re-applies the template additively also on `tenant-admin-invited` (any
+    existing tenant) and `tenant-activated`. `DataSeeder` tops up the seed tenant. So a template line reaches existing tenants.
+  - The same path already carries the CT-D10 signer keys.
+  - Options A (new-tenant-only set), B (accept the spread) and C (explicit grant at quarantine set-up) are in evidence §2.1.
+    No AuthService change.
+- **O-ITEM-3 BLOCKED (O-FUB2-2).**
+  - `MovementLink` has only `byUserName` (no user id; the service has no names); INVENTORY `TransactionItem` has no user.
+  - Needs QUARANTINE `MovementLink.by: UserRef` and/or INVENTORY `TransactionItem.createdBy` — not an allowed 1.2.0 change.
+- **Measured.** Inventory 829 → **839** (own replica set); Web 696 → **699**; gateway 107/108 (known 5065); architecture 18/18;
+  AuthService Application 1063 (unchanged).
+  - Red-first: lock 200 → 409, replay version 2 → 1, history row missing.
+  - Sabotages (a), (b), (d) and (a-web) red, restored clean. (c) and (e) have no code (BLOCKED).
+- **Runtime probe** (own stack, own pm-stub on 14036, built-in browser):
+  - A edits the note → NoteUpdated row.
+  - A's signed decision (ESIG-2026-000001) → "Notu düzenle" locked, API 409.
+  - B rejects in WorkCenter → editable again.
+  - B approves QKR-2026-0002 in WorkCenter (ESIG-2026-000003) → Applied, hold Decided.
+  - Fleet PIDs unchanged.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
