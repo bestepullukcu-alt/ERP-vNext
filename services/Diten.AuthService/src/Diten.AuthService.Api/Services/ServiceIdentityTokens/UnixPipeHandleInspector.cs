@@ -32,14 +32,19 @@ public static class UnixPipeHandleInspector
 
     /// <summary>
     /// What fstat tells about a descriptor. <c>Permissions</c> = the mode's low 12 bits; <c>Links</c> = st_nlink
-    /// (FIX2 item 8: macOS anonymous pipes have 0, a named FIFO ≥ 1 — measured).
+    /// (FIX2 item 8: macOS anonymous pipes have 0, a named FIFO ≥ 1 — measured). FIX3: no defaults — a field left zero
+    /// would read as "anonymous" (nlink 0) and "owned by root" (uid 0), so every field is always given.
     /// </summary>
-    public readonly record struct Identity(long Device, ulong Inode, int Type, int Permissions = 0, uint Uid = 0, ulong Links = 0);
+    public readonly record struct Identity(long Device, ulong Inode, int Type, int Permissions, uint Uid, ulong Links);
 
     // Internal (tests via InternalsVisibleTo, BL570 FIX1 R2): a wrong layout must be refused by the proof.
     // Defaults are macOS' struct stat (uid @16, nlink u16 @6 — measured); Linux rows pass theirs.
+    // FIX3 R1: AnonymousPermissions / AnonymousDevice are the mode bits and device of a FRESH pipe(), recorded by Prove —
+    // what a real anonymous pipe looks like on this machine (macOS: 0660 on device 0, measured 2026-10-09); null until
+    // proven, and then nothing is anonymous.
     internal sealed record Layout(int DeviceOffset, int DeviceSize, int ModeOffset, int ModeSize, int InodeOffset, bool MacOs,
-        int UidOffset = 16, int LinksOffset = 6, int LinksSize = 2);
+        int UidOffset = 16, int LinksOffset = 6, int LinksSize = 2, int? AnonymousPermissions = null,
+        long? AnonymousDevice = null);
 
     private static readonly Lazy<Layout?> Proven = new(() => Candidate() is { } candidate ? Prove(candidate) : null,
         LazyThreadSafetyMode.ExecutionAndPublication);
@@ -50,19 +55,28 @@ public static class UnixPipeHandleInspector
     public static Identity? Stat(int descriptor) => Proven.Value is { } layout ? Stat(descriptor, layout) : null;
 
     /// <summary>
-    /// An ANONYMOUS pipe (FIX2 item 8)? macOS: no directory entry links it (st_nlink 0 — measured; a named FIFO has ≥ 1).
+    /// An ANONYMOUS pipe (FIX2 item 8, FIX3 R1)? It must look exactly like the fresh pipe() the proof made: owned by this
+    /// process' euid, the same mode bits, on the same device — and macOS: no directory entry links it (st_nlink 0);
     /// Linux: <c>/proc/self/fd/&lt;fd&gt;</c> reads as <c>pipe:[…]</c> (a link is read, nothing opened; unmeasured here).
+    /// FIX3 R1 (measured 2026-10-09, macOS): a NAMED FIFO whose path was removed after it was opened also has st_nlink 0 —
+    /// "nlink 0" alone let an attacker's 0666 FIFO (unlinked once the operator's shell had opened it) pass as anonymous;
+    /// it keeps its own mode (0666), its filesystem's device (not 0) and its owner, so it no longer does.
     /// </summary>
     public static bool IsAnonymousPipe(int descriptor, Identity identity) =>
-        Proven.Value is { } layout && IsAnonymous(descriptor, identity, layout.MacOs);
+        Proven.Value is { } layout && IsAnonymous(descriptor, identity, layout);
 
-    /// <summary>A named FIFO only its owner can reach: no group / other bits, and owned by this process' euid.</summary>
-    public static bool IsPrivateToThisUser(Identity identity) =>
-        (identity.Permissions & 0x3F) == 0 && identity.Uid == GetEffectiveUid();
+    /// <summary>Owned by this process' euid (FIX3: a FIFO of another account is <c>FIFO_NOT_OWNED</c>).</summary>
+    public static bool IsOwnedByThisUser(Identity identity) => identity.Uid == GetEffectiveUid();
 
-    private static bool IsAnonymous(int descriptor, Identity identity, bool macOs)
+    /// <summary>No group / other permission bits (FIX3: otherwise <c>FIFO_TOO_PERMISSIVE</c>). macOS extended ACLs are
+    /// not visible in these bits — the operator document says so.</summary>
+    public static bool HasNoGroupOrOtherAccess(Identity identity) => (identity.Permissions & 0x3F) == 0;
+
+    private static bool IsAnonymous(int descriptor, Identity identity, Layout layout)
     {
-        if (macOs) return identity.Links == 0;
+        if (layout.AnonymousPermissions is not { } permissions || layout.AnonymousDevice is not { } device) return false;
+        if (identity.Uid != GetEffectiveUid() || identity.Permissions != permissions || identity.Device != device) return false;
+        if (layout.MacOs) return identity.Links == 0;
         try { return new FileInfo($"/proc/self/fd/{descriptor}").LinkTarget?.StartsWith("pipe:", StringComparison.Ordinal) == true; }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException) { return false; }
     }
@@ -157,7 +171,11 @@ public static class UnixPipeHandleInspector
             if ((Fcntl(first[1], GetStatusFlags) & AccessModeMask) != WriteOnly || (Fcntl(first[0], GetStatusFlags) & AccessModeMask) != 0)
                 return null;
             // FIX2 item 8: the uid and link fields are read right too — our own pipe is ours, and seen as anonymous.
-            if (writer.Value.Uid != GetEffectiveUid() || !IsAnonymous(first[1], writer.Value, layout.MacOs)) return null;
+            // FIX3 R1: what an anonymous pipe looks like here (mode bits, device) is recorded from this fresh pipe, and a
+            // SECOND pipe must look the same — so the signature is the kernel's, not one pipe's accident.
+            layout = layout with { AnonymousPermissions = writer.Value.Permissions, AnonymousDevice = writer.Value.Device };
+            if (writer.Value.Uid != GetEffectiveUid() || !IsAnonymous(first[1], writer.Value, layout)
+                || !IsAnonymous(second[1], other.Value, layout)) return null;
 
             var live = PollWrite(first[1], layout.MacOs);
             if (live is not { } before || (before & PollOut) == 0 || (before & (PollError | PollHangUp | PollInvalid)) != 0) return null;

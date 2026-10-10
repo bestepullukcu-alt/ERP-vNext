@@ -12,7 +12,8 @@ namespace Diten.AuthService.Api.Operational;
 /// </summary>
 public static partial class OperationalReason
 {
-    [GeneratedRegex("^[A-Z][A-Z0-9_]{2,63}$", RegexOptions.CultureInvariant)]
+    // FIX3: \z, not $ — $ also matches before a trailing \n, so "CODE\n" passed as a code.
+    [GeneratedRegex(@"^[A-Z][A-Z0-9_]{2,63}\z", RegexOptions.CultureInvariant)]
     private static partial Regex CodeShape();
 
     public static string? From(Exception exception) => exception switch

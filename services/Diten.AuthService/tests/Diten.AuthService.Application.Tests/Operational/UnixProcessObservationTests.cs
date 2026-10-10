@@ -126,32 +126,110 @@ public sealed class UnixProcessObservationTests
         Assert.Equal(hides, UnixProcessObservation.ProcHidesProcesses(path));
     }
 
-    // FIX2 item 3: the REAL listing step contains a live child, with its pid and its marker-carrying command line — the
-    // child is started so that the shell keeps the marker as $0 (`; :` stops sh from exec-ing away). Then the runner's
-    // own default observer refuses. Every wait bounded; the child ends by itself (never killed).
+    // FIX2 item 3 / FIX3 R3(a): the REAL listing step contains a live child, with its pid and its marker-carrying command
+    // line (the shell keeps the marker as $0; `; :` stops sh from exec-ing away). FIX3: the child lives until its stdin
+    // closes (the OperationalLockHolder way — never a timer that may run out under load), and the decision is asserted on
+    // exactly {pid 1, this process, the child} from that real listing — nothing else on the machine (a test runner, a dev
+    // Auth, a bare `dotnet`) can make it pass or fail. Every wait bounded; the child is ended by closing its stdin, and
+    // only if it does not end is it killed — by its own pid, never by name.
     [UnixFact]
-    public async Task The_real_listing_contains_a_live_marker_process_and_the_real_observation_refuses()
+    public async Task The_real_listing_contains_a_live_marker_process_and_it_alone_makes_the_decision_not_quiescent()
     {
         var bound = TimeSpan.FromSeconds(30);
         using var child = Process.Start(new ProcessStartInfo("/bin/sh")
         {
-            ArgumentList = { "-c", "sleep 4; :", "Diten.AuthService.ObservationProbe" },
-            UseShellExecute = false
+            ArgumentList = { "-c", "read _; :", "Diten.AuthService.ObservationProbe" },
+            UseShellExecute = false,
+            RedirectStandardInput = true
         })!;
         try
         {
             using var budget = new CancellationTokenSource(bound);
             var rows = await UnixProcessObservation.ListAsync(budget.Token).WaitAsync(bound);
-            var row = Assert.Single(rows, row => row.Pid == child.Id);
-            Assert.Contains("Diten.AuthService.ObservationProbe", row.CommandLine, StringComparison.Ordinal);
+            var probe = Assert.Single(rows, row => row.Pid == child.Id);
+            Assert.Contains("Diten.AuthService.ObservationProbe", probe.CommandLine, StringComparison.Ordinal);
+            var self = Environment.ProcessId;
+            var basis = rows.Where(row => row.Pid == 1 || row.Pid == self).ToArray();
+            Assert.Equal(2, basis.Length);
 
-            var refused = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => EntitlementReconciliationOperationalRunner.ObserveProcessesAsync(budget.Token).WaitAsync(bound));
-            Assert.Equal(UnixProcessObservation.NotQuiescent, refused.Message);
+            Assert.Equal(UnixProcessObservation.NotQuiescent, Assert.Throws<InvalidOperationException>(
+                () => UnixProcessObservation.Classify([.. basis, probe], [], self)).Message);
+            Assert.Equal(EntitlementReconciliationPlan.Hash(UnixProcessObservation.Quiescent),
+                UnixProcessObservation.Classify(basis, [], self));
         }
         finally
         {
-            await child.WaitForExitAsync().WaitAsync(bound); // ends by itself; never killed
+            child.StandardInput.Close();
+            try { await child.WaitForExitAsync().WaitAsync(bound); }
+            catch (TimeoutException)
+            {
+                child.Kill(); // this test's own child, by its pid
+                await child.WaitForExitAsync().WaitAsync(bound);
+            }
         }
+    }
+
+    // FIX3 R2: a /proc row is skipped only when its process really ended — its directory gone, or ENOENT / ESRCH; any
+    // other I/O error refuses the observation (before FIX3 every IOException was "ended": fail-closed turned open).
+    [Fact]
+    public void Only_a_process_that_really_ended_is_skipped_by_the_proc_reader()
+    {
+        var existing = Path.GetTempPath();
+        var gone = Path.Combine(Path.GetTempPath(), "diten-gone-" + Guid.NewGuid().ToString("N"));
+        Assert.True(UnixProcessObservation.Ended(gone, new IOException("eio", 5)));
+        Assert.True(UnixProcessObservation.Ended(existing, new IOException("esrch", 3)));
+        Assert.True(UnixProcessObservation.Ended(existing, new FileNotFoundException("enoent")));
+        Assert.False(UnixProcessObservation.Ended(existing, new IOException("eio", 5)));
+        Assert.False(UnixProcessObservation.Ended(existing, new IOException("unknown")));
+    }
+
+    // FIX3 R2 on a synthetic tree: the directory exists and its command line fails with another I/O error (a symbolic
+    // link loop — ELOOP, not ENOENT / ESRCH): refused, never skipped.
+    [UnixFact]
+    public void A_proc_entry_that_exists_but_cannot_be_read_refuses_the_observation()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "diten-fake-proc-eio-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "1"));
+        File.WriteAllBytes(Path.Combine(root, "1", "cmdline"), "/sbin/init\0"u8.ToArray());
+        Directory.CreateDirectory(Path.Combine(root, "99"));
+        File.CreateSymbolicLink(Path.Combine(root, "99", "cmdline"), Path.Combine(root, "99", "cmdline"));
+
+        Assert.Equal(UnixProcessObservation.ObservationFailed, Assert.Throws<InvalidOperationException>(
+            () => UnixProcessObservation.ListWithProc(root)).Message);
+    }
+
+    // FIX3 (CT sabotage C7 survived: the UnauthorizedAccessException branch had no test): a /proc entry whose command line
+    // this account may not read (another user's, hidepid half-applied…) refuses the observation — never skipped.
+    [UnixFact]
+    public void A_proc_entry_whose_command_line_cannot_be_read_by_this_account_refuses_the_observation()
+    {
+        Assert.False(Environment.UserName == "root", "Run as a regular user: root reads a mode-000 file.");
+        var root = Path.Combine(Path.GetTempPath(), "diten-fake-proc-eacces-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "1"));
+        File.WriteAllBytes(Path.Combine(root, "1", "cmdline"), "/sbin/init\0"u8.ToArray());
+        Directory.CreateDirectory(Path.Combine(root, "98"));
+        var locked = Path.Combine(root, "98", "cmdline");
+        File.WriteAllBytes(locked, "/srv/auth/Diten.AuthService.Api\0"u8.ToArray());
+        File.SetUnixFileMode(locked, UnixFileMode.None);
+        try
+        {
+            Assert.Equal(UnixProcessObservation.ObservationFailed, Assert.Throws<InvalidOperationException>(
+                () => UnixProcessObservation.ListWithProc(root)).Message);
+        }
+        finally
+        {
+            File.SetUnixFileMode(locked, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+    }
+
+    // FIX3: Linux' comm is cut to 15 characters — a comm-only row is matched on the 15 the kernel keeps.
+    [Fact]
+    public void A_comm_only_row_is_matched_on_what_comm_can_hold()
+    {
+        Assert.Equal(15, UnixProcessObservation.CommMarker.Length);
+        Assert.Equal(UnixProcessObservation.NotQuiescent, Assert.Throws<InvalidOperationException>(
+            () => UnixProcessObservation.Classify(Listing(new Row(77, "Diten.AuthServi", null, FromComm: true)), [], Self)).Message);
+        Assert.Equal(EntitlementReconciliationPlan.Hash(UnixProcessObservation.Quiescent),
+            UnixProcessObservation.Classify(Listing(new Row(77, "Diten.AuthServi", null)), [], Self));
     }
 }

@@ -40,8 +40,14 @@ public static class UnixProcessObservation
     private static readonly Regex PsRow = new(@"^\s*(\d+)\s+(-?\d+)\s+(.*)$", RegexOptions.CultureInvariant);
     private static readonly Regex PsImageRow = new(@"^\s*(\d+)\s+(.*)$", RegexOptions.CultureInvariant);
 
-    /// <summary>A listed process: its command line and, when readable, its image (executable) path.</summary>
-    public readonly record struct ProcessRow(int Pid, string CommandLine, string? Image);
+    /// <summary>
+    /// A listed process: its command line and, when readable, its image (executable) path. <c>FromComm</c>: Linux gave no
+    /// command line and the row carries <c>comm</c> — which the kernel cuts to 15 characters (FIX3).
+    /// </summary>
+    public readonly record struct ProcessRow(int Pid, string CommandLine, string? Image, bool FromComm = false);
+
+    // Linux' comm is at most 15 characters (TASK_COMM_LEN 16 with its NUL): the 17-character marker never fits whole.
+    public static readonly string CommMarker = Marker[..15];
 
     public static async Task<string> ObserveAsync(CancellationToken ct)
     {
@@ -80,7 +86,9 @@ public static class UnixProcessObservation
         if (rows.Any(Unclassifiable)) throw new InvalidOperationException(ObservationFailed);
         var writers = rows.Count(row => row.Pid != selfPid
                                         && (row.CommandLine.Contains(Marker, StringComparison.OrdinalIgnoreCase)
-                                            || (row.Image?.Contains(Marker, StringComparison.OrdinalIgnoreCase) ?? false)));
+                                            || (row.Image?.Contains(Marker, StringComparison.OrdinalIgnoreCase) ?? false)
+                                            // FIX3: a comm-only row is matched on what comm can hold.
+                                            || row.FromComm && row.CommandLine.Contains(CommMarker, StringComparison.OrdinalIgnoreCase)));
         if (writers != 0 || listenerPorts.Contains(AuthPort)) throw new InvalidOperationException(NotQuiescent);
         return EntitlementReconciliationPlan.Hash(Quiescent);
     }
@@ -136,9 +144,11 @@ public static class UnixProcessObservation
 
     /// <summary>
     /// Linux: every <c>&lt;root&gt;/&lt;pid&gt;/cmdline</c> (kernel threads: <c>comm</c>), and the image from <c>exe</c> when readable
-    /// (another user's is not — the command line still is). A process that ends mid-read (ESRCH / gone) is skipped; an
-    /// unreadable command line refuses the observation. ⚠ PID namespaces: only this namespace's processes are listed — an
-    /// Auth in another container is caught by its 5056 listener alone. Unmeasured on this machine (no Linux).
+    /// (another user's is not — the command line still is). A process that ENDED mid-read is skipped — only when it is
+    /// really gone (FIX3 R2: its directory no longer exists, or the read said ENOENT / ESRCH); ANY other I/O error (EIO,
+    /// a short read the kernel refused…) refuses the observation, as an unreadable command line does — before FIX3 every
+    /// IOException was "ended", which opened the fail-closed rule. ⚠ PID namespaces: only this namespace's processes are
+    /// listed — an Auth in another container is caught by its 5056 listener alone. Unmeasured on this machine (no Linux).
     /// </summary>
     internal static IReadOnlyList<ProcessRow> ListWithProc(string root)
     {
@@ -150,25 +160,39 @@ public static class UnixProcessObservation
             try
             {
                 var bytes = File.ReadAllBytes(Path.Combine(directory, "cmdline"));
-                var commandLine = bytes.Length > 0
+                var fromComm = bytes.Length == 0;
+                var commandLine = !fromComm
                     ? Encoding.UTF8.GetString(bytes).Replace('\0', ' ').Trim()
                     : File.ReadAllText(Path.Combine(directory, "comm")).Trim(); // kernel thread: no command line
                 string? image = null;
                 try { image = new FileInfo(Path.Combine(directory, "exe")).LinkTarget; }
                 catch (Exception exception) when (exception is UnauthorizedAccessException or IOException) { }
-                rows.Add(new ProcessRow(pid, commandLine, image));
+                rows.Add(new ProcessRow(pid, commandLine, image, fromComm));
             }
             catch (UnauthorizedAccessException)
             {
                 throw new InvalidOperationException(ObservationFailed); // cannot classify → fail closed
             }
+            catch (IOException exception) when (Ended(directory, exception))
+            {
+                // ended between the listing and the read (gone, ENOENT, ESRCH): not running
+            }
             catch (IOException)
             {
-                // ended between the listing and the read (ESRCH, gone): not running
+                throw new InvalidOperationException(ObservationFailed); // FIX3 R2: any other I/O error → fail closed
             }
         }
         return rows;
     }
+
+    private const int NoSuchFile = 2;    // ENOENT
+    private const int NoSuchProcess = 3; // ESRCH
+
+    // FIX3 R2: "ended" only when it really is — the directory is gone, or the read said ENOENT / ESRCH.
+    internal static bool Ended(string directory, IOException exception) =>
+        !Directory.Exists(directory)
+        || exception is FileNotFoundException or DirectoryNotFoundException
+        || (exception.HResult & 0xFFFF) is NoSuchFile or NoSuchProcess;
 
     // /proc mounted with hidepid=1|2|invisible|noaccess hides other users' processes: the listing would be incomplete.
     internal static bool ProcHidesProcesses(string mountInfo)

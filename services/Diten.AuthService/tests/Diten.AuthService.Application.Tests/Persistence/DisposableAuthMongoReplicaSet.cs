@@ -33,18 +33,42 @@ public sealed class DisposableAuthMongoReplicaSet : IAsyncLifetime
         "refreshTokens", "tenant_user_memberships", "auth_role_assignment_versions", "authAuditLogs"];
 
     /// <summary>The installed mongod this fixture starts (BL570 FIX1 M6: OwnedMongoFact skips on the same answer).</summary>
-    // BL570 FIX2 item 6: the ONE resolver for every owned-mongod fixture and for [OwnedMongoFact]/[OwnedMongoTheory].
-    // DITEN_TEST_MONGOD; the Windows install path only on Windows (never a relative Windows path on Linux); else none.
+    // BL570 FIX2 item 6: the one resolver of THIS project's skipping owned-mongod fixtures (this one, the operational
+    // provisioning fixture) and of [OwnedMongoFact]/[OwnedMongoTheory]. FIX3 correction: NOT of every fixture — the
+    // service-client registry tests (Support/OwnedMongo.cs) and AccountKindAcceptance resolve on their own
+    // (DITEN_ITEST_MONGOD_BIN_DIR, PATH, Homebrew) and never skip: without a mongod they fail red. Binding them here is
+    // proposed in the FIX3 report (it would change their PATH discovery, so not done in this round).
+    // FIX3 R4: a resolution is a mongod, a FAILURE (red, never a skip), or nothing (a skip by name):
+    //   DITEN_TEST_MONGOD given but not an installed mongod (relative, missing) → failure — before FIX3 it was a silent
+    //   skip of ~45 tests and a green run;
+    //   not given → the Windows default install on Windows only; else nothing — unless DITEN_REQUIRE_OWNED_MONGO=1 (CI and
+    //   acceptance runs set it), when nothing is a failure too.
+    // A mongod of the wrong version fails the fixture's own start (red) as before.
     public static string? ResolveExecutable() =>
-        Resolve(Environment.GetEnvironmentVariable("DITEN_TEST_MONGOD"), OperatingSystem.IsWindows(), File.Exists);
+        ResolveOwned() is { Failure: { } failure } ? throw new InvalidOperationException(failure) : ResolveOwned().Executable;
+
+    public static OwnedMongodResolution ResolveOwned() => Resolve(
+        Environment.GetEnvironmentVariable(OwnedMongo.Variable),
+        Environment.GetEnvironmentVariable(OwnedMongo.RequireVariable) == "1", OperatingSystem.IsWindows(), File.Exists);
 
     public const string WindowsDefaultMongod = "C:/Program Files/MongoDB/Server/7.0/bin/mongod.exe";
+    public const string InvalidVariable = "OWNED_TEST_MONGO_INVALID";
+    public const string RequiredButUnavailable = "OWNED_TEST_MONGO_REQUIRED";
 
-    // The rule alone (tested): the variable first; the Windows default ONLY on Windows; a relative or missing path → none.
-    internal static string? Resolve(string? variable, bool windows, Func<string, bool> exists)
+    public sealed record OwnedMongodResolution(string? Executable, string? Failure);
+
+    // The rule alone (tested): the variable first; the Windows default ONLY on Windows; a named path that is relative or
+    // missing is a FAILURE; nothing found is a skip unless required.
+    internal static OwnedMongodResolution Resolve(string? variable, bool required, bool windows, Func<string, bool> exists)
     {
-        if (variable is null) return windows && exists(WindowsDefaultMongod) ? WindowsDefaultMongod : null;
-        return Path.IsPathFullyQualified(variable) && exists(variable) ? variable : null;
+        if (!string.IsNullOrWhiteSpace(variable))
+            return Path.IsPathFullyQualified(variable) && exists(variable)
+                ? new(variable, null)
+                : new(null, InvalidVariable + ": " + OwnedMongo.Variable + " names no installed mongod (an absolute path to an existing file).");
+        if (windows && exists(WindowsDefaultMongod)) return new(WindowsDefaultMongod, null);
+        return required
+            ? new(null, RequiredButUnavailable + ": " + OwnedMongo.RequireVariable + "=1 and no installed mongod was found.")
+            : new(null, null);
     }
 
     public async Task InitializeAsync()

@@ -127,6 +127,10 @@ public sealed class OperationalSingleInstanceLock : IDisposable
         {
             release.Dispose();
             // The name exists but this account may not open it: another account holds or created it (Windows DACL).
+            // FIX3 (CT decision): on Unix the same exception means EACCES on the lock state under /tmp/.dotnet — a lock
+            // file another account created with a mode this one may not open. The name is Windows' but the meaning is the
+            // same (another account's lock) and the answer stays fail-closed. Live: ONE operator account runs these
+            // maintenance commands (deployment steps (a)–(e)); several accounts would be a separate decision.
             throw new InvalidOperationException(
                 failure is UnauthorizedAccessException ? HeldByAnotherAccount : Unavailable, failure);
         }

@@ -139,7 +139,9 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
             using (var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable)) handle = pipe.GetClientHandleAsString();
         else handle = (int.MaxValue - 7).ToString(System.Globalization.CultureInfo.InvariantCulture);
         await using var sink = new ServiceClientSecretOutputSink();
-        await Assert.ThrowsAnyAsync<Exception>(() => sink.PreflightAsync(handle, CancellationToken.None));
+        // FIX3: exactly the generic "invalid or unavailable" refusal (not a named channel rejection, not any exception).
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => sink.PreflightAsync(handle, CancellationToken.None));
+        Assert.Equal("The inherited one-shot secret pipe is invalid or unavailable.", refused.Message);
     }
 
     [Fact]

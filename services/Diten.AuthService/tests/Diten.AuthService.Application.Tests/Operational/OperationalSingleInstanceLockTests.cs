@@ -98,7 +98,14 @@ public sealed class OperationalSingleInstanceLockTests
         finally
         {
             child.StandardInput.Close(); // the holder releases and exits
-            await child.WaitForExitAsync().WaitAsync(bound);
+            try { await child.WaitForExitAsync().WaitAsync(bound); }
+            catch (TimeoutException)
+            {
+                // FIX3: a holder that does not end is THIS test's own child — killed by its pid (never by name), then red.
+                child.Kill();
+                await child.WaitForExitAsync().WaitAsync(bound);
+                throw;
+            }
         }
         Assert.Equal(0, child.ExitCode);
         using var after = OperationalSingleInstanceLock.TryAcquire(name);

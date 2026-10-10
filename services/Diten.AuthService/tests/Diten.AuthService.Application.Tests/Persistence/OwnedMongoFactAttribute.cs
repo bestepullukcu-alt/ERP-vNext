@@ -11,9 +11,15 @@ namespace Diten.AuthService.Application.Tests.Persistence;
 public static class OwnedMongo
 {
     public const string Variable = "DITEN_TEST_MONGOD";
+    // FIX3 R4: set to 1 by CI and acceptance runs — then "no mongod" is red, never a skip (the flag is BL-577's to set).
+    public const string RequireVariable = "DITEN_REQUIRE_OWNED_MONGO";
 
-    public static string? SkipReason =>
-        DisposableAuthMongoReplicaSet.ResolveExecutable() is null
+    public static string? SkipReason => SkipReasonFor(DisposableAuthMongoReplicaSet.ResolveOwned());
+
+    // FIX3 R4: only "nothing found, not required" skips. A FAILURE does not skip: the test runs and its fixture's start
+    // throws the failure — red, with its name.
+    internal static string? SkipReasonFor(DisposableAuthMongoReplicaSet.OwnedMongodResolution resolution) =>
+        resolution is { Executable: null, Failure: null }
             ? $"OWNED_TEST_MONGO_UNAVAILABLE: no installed mongod ({Variable} unset and no default install)."
             : null;
 }

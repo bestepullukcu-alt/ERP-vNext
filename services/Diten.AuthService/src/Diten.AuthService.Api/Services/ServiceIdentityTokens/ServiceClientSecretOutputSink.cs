@@ -102,6 +102,8 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
         public const string SameAsStandardStream = "SAME_AS_STANDARD_STREAM";
         public const string PeerNotConnected = "PEER_NOT_CONNECTED";
         public const string FifoTooPermissive = "FIFO_TOO_PERMISSIVE";
+        // FIX3: a named FIFO owned by another account (before FIX3 it was told as FIFO_TOO_PERMISSIVE).
+        public const string FifoNotOwned = "FIFO_NOT_OWNED";
     }
 
     /// <summary>The named refusal when this OS cannot verify the inherited pipe as Windows does: no secret is produced.</summary>
@@ -120,9 +122,12 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
         if (UnixPipeHandleInspector.Stat(descriptor) is not { } target) throw Invalid(); // not an open descriptor
         if (target.Type != UnixPipeHandleInspector.TypeFifo) throw Rejected(Reasons.NotAFifo);
         // FIX2 item 8: a NAMED FIFO (an mkfifo node) is reachable by path — anyone its mode lets in could read the secret.
-        // It must be this user's own and private (no group / other bits). An anonymous pipe has no path: no check.
-        if (!UnixPipeHandleInspector.IsAnonymousPipe(descriptor, target) && !UnixPipeHandleInspector.IsPrivateToThisUser(target))
-            throw Rejected(Reasons.FifoTooPermissive);
+        // It must be this user's own (FIX3: FIFO_NOT_OWNED) and private — no group / other bits (FIFO_TOO_PERMISSIVE). An
+        // anonymous pipe (one that looks exactly like a fresh pipe() of this process — FIX3 R1) has no path: no check.
+        // Operator note (FIX3): `mkfifo` gives 0644 under the usual umask — refused; make it 0600 (`mkfifo -m 600`). macOS
+        // extended ACLs (chmod +a) are NOT visible in the mode bits checked here: do not put ACLs on the FIFO.
+        if (!UnixPipeHandleInspector.IsAnonymousPipe(descriptor, target) && NamedFifoRefusal(target) is { } refusal)
+            throw Rejected(refusal);
         if (!UnixPipeHandleInspector.IsWriteOnly(descriptor)) throw Rejected(Reasons.NotWriteOnly);
         if (!UnixPipeHandleInspector.IsInherited(descriptor)) throw Rejected(Reasons.NotInherited);
         for (var standard = 0; standard <= 2; standard++)
@@ -131,6 +136,15 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
                 && stream.Device == target.Device && stream.Inode == target.Inode) throw Rejected(Reasons.SameAsStandardStream);
         }
     }
+
+    /// <summary>
+    /// FIX3 (CT sabotage C3 / C4): the named-FIFO decision alone, on an identity — testable without a second account: not
+    /// this euid's → FIFO_NOT_OWNED; any group / other bit (read, write or execute) → FIFO_TOO_PERMISSIVE; else null.
+    /// </summary>
+    public static string? NamedFifoRefusal(UnixPipeHandleInspector.Identity identity) =>
+        !UnixPipeHandleInspector.IsOwnedByThisUser(identity) ? Reasons.FifoNotOwned
+        : !UnixPipeHandleInspector.HasNoGroupOrOtherAccess(identity) ? Reasons.FifoTooPermissive
+        : null;
 
     private static void ValidateConnectedPeer(SafePipeHandle handle)
     {

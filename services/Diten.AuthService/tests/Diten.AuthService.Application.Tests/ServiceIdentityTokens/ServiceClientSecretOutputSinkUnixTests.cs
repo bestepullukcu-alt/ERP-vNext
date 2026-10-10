@@ -17,6 +17,15 @@ public sealed class UnixFactAttribute : FactAttribute
     }
 }
 
+/// <summary>FIX3: the theory twin of <see cref="UnixFactAttribute"/>.</summary>
+public sealed class UnixTheoryAttribute : TheoryAttribute
+{
+    public UnixTheoryAttribute()
+    {
+        if (OperatingSystem.IsWindows()) Skip = "UNIX_ONLY: the Windows pipe path is measured by ServiceClientOperationalProvisioningRunnerTests.";
+    }
+}
+
 /// <summary>
 /// WP-AUTH-BL570-01 (+FIX1) — the secret channel on Unix keeps the Windows rule: the secret goes ONLY to an inherited,
 /// verified OS pipe, once; never a path, never stdout / stderr / a log. Every refusal is asserted with its exact type and
@@ -174,15 +183,17 @@ public sealed class ServiceClientSecretOutputSinkUnixTests
     }
 
     // FIX2 item 8: a NAMED FIFO is reachable by path, so only a private one of this user is a channel: 0600 is accepted,
-    // a FIFO others can open (0666 → 0644 after umask) is refused as FIFO_TOO_PERMISSIVE. Anonymous pipes need no check
-    // (macOS: st_nlink 0 — measured; the anonymous-pipe tests above pass with mode 0660).
+    // a FIFO others can open (0666, 0640) is refused as FIFO_TOO_PERMISSIVE. Anonymous pipes need no check.
+    // FIX3: the mode is SET after mkfifo (chmod) — mkfifo's mode passes through the umask (0666 became 0600 under a 077
+    // umask, and the refusal case silently turned into an accepted one).
     [UnixFact]
     public async Task Only_a_private_named_fifo_of_this_user_is_a_channel()
     {
-        foreach (var (mode, accepted) in new[] { ("600", true), ("666", false) })
+        foreach (var (mode, accepted) in new[] { ("600", true), ("666", false), ("640", false) })
         {
             var path = Path.Combine(Path.GetTempPath(), "diten-unix-sink-named-" + Guid.NewGuid().ToString("N"));
             Assert.Equal(0, MkFifo(path, Convert.ToInt32(mode, 8)));
+            Assert.Equal(0, Chmod(path, Convert.ToInt32(mode, 8)));
             var reader = Open(path, OperatingSystem.IsMacOS() ? 0x4 : 0x800); // O_RDONLY | O_NONBLOCK: a reader exists
             var writer = Open(path, 1);                                          // O_WRONLY (does not block: reader open)
             try
@@ -210,6 +221,102 @@ public sealed class ServiceClientSecretOutputSinkUnixTests
                 Close(reader);
                 Unlink(path);
             }
+        }
+    }
+
+    /*
+     * FIX3 R1 (measured 2026-10-09 on macOS 26: a named FIFO whose path is removed after it was opened reads st_nlink 0,
+     * like an anonymous pipe). The attack: a 0666 FIFO in a shared directory, its reader held by the attacker, the
+     * operator's shell opens the write end, the attacker removes the path — "nlink 0" alone made it "anonymous" and the
+     * owner / mode checks were skipped. It keeps its mode, its filesystem's device and its owner: refused.
+     */
+    [UnixFact]
+    public async Task A_named_fifo_whose_path_was_removed_is_not_taken_for_an_anonymous_pipe()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "diten-unix-sink-unlinked-" + Guid.NewGuid().ToString("N"));
+        Assert.Equal(0, MkFifo(path, Convert.ToInt32("666", 8)));
+        Assert.Equal(0, Chmod(path, Convert.ToInt32("666", 8)));
+        var reader = Open(path, OperatingSystem.IsMacOS() ? 0x4 : 0x800); // O_RDONLY | O_NONBLOCK: the attacker's reader
+        var writer = Open(path, 1);                                          // O_WRONLY: the operator's end
+        var unlinked = false;
+        try
+        {
+            Assert.True(reader > 2 && writer > 2);
+            Assert.Equal(0, Unlink(path));
+            unlinked = true;
+            var identity = UnixPipeHandleInspector.Stat(writer)!.Value;
+            if (OperatingSystem.IsMacOS()) Assert.Equal(0UL, identity.Links); // the measured fact this test is about
+            Assert.False(UnixPipeHandleInspector.IsAnonymousPipe(writer, identity));
+            var handle = Dup(writer);
+            await using var sink = new ServiceClientSecretOutputSink();
+            var refused = await Assert.ThrowsAsync<SecretChannelRejectedException>(
+                () => sink.PreflightAsync(handle.ToString(System.Globalization.CultureInfo.InvariantCulture), CancellationToken.None));
+            Assert.Equal(Reasons.FifoTooPermissive, refused.Reason);
+            Close(handle);
+        }
+        finally
+        {
+            Close(writer);
+            Close(reader);
+            if (!unlinked) Unlink(path);
+        }
+    }
+
+    // FIX3 (CT sabotage C3 / C4 survived: the real FIFO test always had uid = euid, and 0666 → 0644 under the umask hit
+    // the "others" bit anyway). The decision on SYNTHETIC identities — owner and each single group bit tried on its own.
+    [UnixTheory]
+    [InlineData("600", true, null)]
+    [InlineData("600", false, Reasons.FifoNotOwned)]
+    [InlineData("640", true, Reasons.FifoTooPermissive)]   // group read
+    [InlineData("620", true, Reasons.FifoTooPermissive)]   // group write
+    [InlineData("610", true, Reasons.FifoTooPermissive)]   // group execute
+    [InlineData("604", true, Reasons.FifoTooPermissive)]   // others read
+    [InlineData("602", true, Reasons.FifoTooPermissive)]   // others write
+    public void A_named_fifo_is_a_channel_only_when_owned_by_this_user_and_closed_to_group_and_others(
+        string mode, bool owned, string? expected)
+    {
+        var ends = new int[2];
+        Assert.Equal(0, Pipe(ends));
+        try
+        {
+            var mine = UnixPipeHandleInspector.Stat(ends[1])!.Value; // carries this process' euid
+            var identity = mine with
+            {
+                Permissions = Convert.ToInt32(mode, 8),
+                Uid = owned ? mine.Uid : mine.Uid + 1,
+                Links = 1,
+                Device = mine.Device + 1
+            };
+            Assert.Equal(expected, ServiceClientSecretOutputSink.NamedFifoRefusal(identity));
+        }
+        finally
+        {
+            Close(ends[0]);
+            Close(ends[1]);
+        }
+    }
+
+    // FIX3 R1: a real pipe() of this process is anonymous; the same pipe seen as another account's, or with other mode
+    // bits, is not (the signature the proof recorded must match in full).
+    [UnixFact]
+    public void Anonymous_means_exactly_like_a_fresh_pipe_of_this_process()
+    {
+        var ends = new int[2];
+        Assert.Equal(0, Pipe(ends));
+        try
+        {
+            var identity = UnixPipeHandleInspector.Stat(ends[1])!.Value;
+            Assert.True(UnixPipeHandleInspector.IsAnonymousPipe(ends[1], identity));
+            Assert.True(UnixPipeHandleInspector.IsOwnedByThisUser(identity));
+            Assert.False(UnixPipeHandleInspector.IsAnonymousPipe(ends[1], identity with { Uid = identity.Uid + 1 }));
+            Assert.False(UnixPipeHandleInspector.IsOwnedByThisUser(identity with { Uid = identity.Uid + 1 }));
+            Assert.False(UnixPipeHandleInspector.IsAnonymousPipe(ends[1], identity with { Permissions = 0x1B6 }));
+            Assert.False(UnixPipeHandleInspector.IsAnonymousPipe(ends[1], identity with { Device = identity.Device + 1 }));
+        }
+        finally
+        {
+            Close(ends[0]);
+            Close(ends[1]);
         }
     }
 
@@ -268,6 +375,27 @@ public sealed class ServiceClientSecretOutputSinkUnixTests
             ? new UnixPipeHandleInspector.Layout(0, 8, 24, 4, 8, MacOs: false) // Linux x64's table on macOS
             : new UnixPipeHandleInspector.Layout(0, 4, 4, 2, 8, MacOs: true);  // macOS's table on Linux
         Assert.Null(UnixPipeHandleInspector.Prove(otherOs));
+    }
+
+    // FIX3: the uid and link fields are proven too — a uid offset that reads another field (macOS: the gid next to it) or
+    // a link count read from the mode fails the proof. ⚠ Run as ROOT a wrong uid offset that lands on another zero (root's
+    // gid 0) would pass: unmeasured (no root here), named in the FIX3 report. The proof also records what an anonymous pipe
+    // looks like here (macOS: mode 0660 on device 0 — measured 2026-10-09).
+    [UnixFact]
+    public void A_wrong_uid_or_link_offset_fails_the_proof_and_the_anonymous_signature_is_recorded()
+    {
+        var real = UnixPipeHandleInspector.Candidate()!;
+        if (Environment.UserName != "root")
+            Assert.Null(UnixPipeHandleInspector.Prove(real with { UidOffset = real.UidOffset + 4 }));
+        Assert.Null(UnixPipeHandleInspector.Prove(real with { LinksOffset = real.ModeOffset }));
+        var proven = UnixPipeHandleInspector.Prove(real)!;
+        Assert.NotNull(proven.AnonymousPermissions);
+        Assert.NotNull(proven.AnonymousDevice);
+        if (OperatingSystem.IsMacOS())
+        {
+            Assert.Equal(Convert.ToInt32("660", 8), proven.AnonymousPermissions);
+            Assert.Equal(0L, proven.AnonymousDevice);
+        }
     }
 
     private static async Task AssertRefusedAsync(int descriptor, string reason, bool leaveOpen = false)
@@ -329,6 +457,8 @@ public sealed class ServiceClientSecretOutputSinkUnixTests
     private static extern int Pipe(int[] descriptors);
     [DllImport("libc", EntryPoint = "mkfifo", SetLastError = true)]
     private static extern int MkFifo(string path, int mode);
+    [DllImport("libc", EntryPoint = "chmod", SetLastError = true)]
+    private static extern int Chmod(string path, int mode);
     [DllImport("libc", EntryPoint = "open", SetLastError = true)]
     private static extern int Open(string path, int flags);
     [DllImport("libc", EntryPoint = "unlink", SetLastError = true)]
