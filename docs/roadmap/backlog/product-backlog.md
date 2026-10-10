@@ -8398,6 +8398,25 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-602
+
+**MDM kapsam yazımı: `A_replace_under_constant_lease_traffic_on_other_products_succeeds` makine yükünde kararsız**
+
+DURUM: AÇIK · SAHİP: CT (MDM kapsam, MOD-0021-FU02 hattı) · BULAN: CT S4 FIX4 sabotaj tabanı (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `ProductLegalEntityScopeWriteAdmissionMongoTests.cs:387`. S4 FIX4 (`75c128b33`) sabotaj tabanında MDM Application 336 / 337: tek kırmızı bu test. Test S4 dosyası değil; kapsam yazımı FIX3 / FIX4'ten (hat).
+- Olasılıksal: arka planda başka ürünlere sürekli kira alan bir döngü varken bir Replace'in başarmasını bekliyor. Belirlenimci eşi `A_replace_aborted_as_a_transient_write_conflict_is_run_again_not_answered_409` (kancalı WriteConflict) yeşil.
+- Makine yükü yüksekti (ct-heavy kuyruğunda 7 iş, dev sunucuları açık).
+
+Yapılacak:
+- ölç: başarısızlık mesajı `conflict` mı, `retain` mı (yeniden deneme bütçesi mi tükeniyor, gerçek açlık mı?);
+- açlıksa: bütçe / geri çekilme kuralı; değilse test belirlenimci hâle (döngü sayısı sınırlı, kanca ile çakışma) ya da adlı `[Trait("Category","Probabilistic")]` + CI süzgeci.
+
+Gelecek regresyon riski: 🟡 CI ara sıra kırmızı; gerçek açlıksa yoğun kapsam yazımında 503.
+
+---
+
 ### BL-601
 
 **E-posta / ekran dili: yeni tarayıcıda girişte dil çerezi kullanıcının tercihinden dolsun; Ctrl+K'da "Profilim"**
