@@ -8398,6 +8398,24 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-601
+
+**E-posta / ekran dili: yeni tarayıcıda girişte dil çerezi kullanıcının tercihinden dolsun; Ctrl+K'da "Profilim"**
+
+DURUM: AÇIK · SAHİP: CT (kiracı kabuğu) · BULAN: WP-EMAIL-LANG-01 Teslim 1–2 (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `/Profile`'da kaydedilen dil `.AspNetCore.Culture` çerezini yalnız KAYDEDEN tarayıcıda yazıyor. Kullanıcı başka bir tarayıcıda giriş yapınca ekran kuruluş dilinde açılıyor, e-postalar ise tercih edilen dilde gidiyor (tutarsız).
+- Ctrl+K yalnız gezinme menüsünden besleniyor; "Profilim" kullanıcı menüsünde, Ctrl+K'da yok (Platform manifesti gerekir).
+
+Yapılacak:
+- girişte (tenant_user) çerez yoksa tercihten doldur; tercih yoksa dokunma;
+- Ctrl+K'ya "Profilim" (manifest ya da kabuk girişi; ölç).
+
+Gelecek regresyon riski: 🟢 kullanım kolaylığı.
+
+---
+
 ### BL-600
 
 **Kalem birim / saklama koşulu seçenek listesi: Platform'da item-universal listeleme ucu yok (S5'te geçici kod girişi)**
