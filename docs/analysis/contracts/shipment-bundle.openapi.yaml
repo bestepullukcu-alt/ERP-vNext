@@ -12,7 +12,7 @@ info:
     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
-  version: 3.2.0
+  version: 3.2.1
   x-status: FROZEN
   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
@@ -65,6 +65,7 @@ paths:
                 total: 1
                 contractVersion: v1
         '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '503': { $ref: '#/components/responses/DependencyUnavailable' }
     post:
       tags: [Shipments]
@@ -113,6 +114,7 @@ paths:
               schema: { $ref: '#/components/schemas/ShipmentResponse' }
               example: { shipmentId: 18300000-0000-0000-0000-000000000001, shipmentNumber: SHP-2026-000001, status: Draft, idempotentReplay: true, contractVersion: v1 }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/Unprocessable' }
         '503': { $ref: '#/components/responses/DependencyUnavailable' }
