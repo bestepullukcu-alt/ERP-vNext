@@ -14,6 +14,8 @@
     var payload = new
     {
         RequiredField = Localizer["RequiredField"].Value,
+        // WCN-FIX-03 — a typed date the shared guard refused: the save stops and says why (SharedResource, 7 languages).
+        DateNotRecognized = SharedLocalizer["DateNotRecognized"].Value,
         DateFormat = ToFlatpickr(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
         // The only 409 create/update returns is the one-primary-per-position conflict → show this localized message.
         OnePrimaryError = Localizer["OnePrimaryError"].Value,

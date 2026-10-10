@@ -3,12 +3,14 @@ const path = require("path");
 const { loadScript } = require("./load-script");
 
 /*
- * BL-391 × WCN-FIX-02 — Organization / PositionAssignments' effective dates (GxP) through the REAL form.js.
+ * BL-391 × WCN-FIX-02/03 — Organization / PositionAssignments' effective dates (GxP) through the REAL form.js.
  *
  * The form delegates the typed-date guard to the shared `DitenDateField` (XMC-001). Its own copy used to be
  * self-sufficient; a delegation depends on the view loading the shared script. So:
  *   - the real form, with the shared script loaded, clears "31.02.2026" + Enter and marks it invalid;
- *   - without the shared script it says so in the console — never a silent skip;
+ *   - a refused OPTIONAL date (effective-to) stops the save — an empty effective-to is a valid "open-ended" payload,
+ *     so saving it would turn "end on 31.02" into "never ends";
+ *   - without the shared script the dates FAIL CLOSED: read-only, picked from the calendar only — and it is said;
  *   - the view carries the script line, between flatpickr and form.js.
  */
 
@@ -21,9 +23,12 @@ const page = () => {
     <div id="a-form-page" data-a-id="" data-a-mode="create">
       <script type="application/json" id="assignment-form-l10n">{"DateFormat":"d.m.Y"}</script>
       <div id="a-form-alert" class="d-none"></div>
+      <select id="aPositionId"><option value="p-1" selected>P</option></select>
+      <select id="aUserId"><option value="u-1" selected>U</option></select>
       <input type="text" id="aEffectiveFrom" class="form-control flatpickr-date">
       <input type="text" id="aEffectiveTo" class="form-control flatpickr-date">
       <button type="button" id="other">x</button>
+      <button type="button" class="btn btn-primary" id="a-submit">Save</button>
     </div>`;
 };
 
@@ -58,20 +63,85 @@ describe("PositionAssignments form: the effective dates are guarded by the share
     fp.altInput.value = "31.02.2026";
     fp.altInput.dispatchEvent(new Event("input", { bubbles: true }));
     fp.altInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true }));
-    if (fp.isOpen) { fp.close(); }
+    expect(fp.isOpen, "Enter did not close the calendar by itself").toBe(false);
 
     expect(el.value, "a date that does not exist was saved as another date").toBe("");
     expect(fp.altInput.classList.contains("is-invalid")).toBe(true);
   });
 
-  test("without the shared script the form says so in the console (once), instead of silently skipping the guard", () => {
+  test("without the shared script the dates FAIL CLOSED: read-only (picked from the calendar only), and it is said once", () => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     page();
     loadScript("wwwroot/assets/js/Organization/PositionAssignments/form.js");
 
+    ["aEffectiveFrom", "aEffectiveTo"].forEach((id) => {
+      const fp = document.getElementById(id)._flatpickr;
+      expect(fp.config.allowInput, `${id} can still be typed into`).toBe(false);
+      expect(fp.altInput.hasAttribute("readonly"), `${id} box is not read-only`).toBe(true);
+    });
     const guardErrors = errors.mock.calls.filter((call) => String(call[0]).includes("diten-datefield.js"));
     expect(guardErrors).toHaveLength(1);
     expect(String(guardErrors[0][0])).toContain("BL-391");
+  });
+
+  test("with the shared script the dates can be typed (the guard is there)", () => {
+    loadScript("wwwroot/assets/js/shared/diten-datefield.js");
+    page();
+    loadScript("wwwroot/assets/js/Organization/PositionAssignments/form.js");
+    const fp = document.getElementById("aEffectiveTo")._flatpickr;
+    expect(fp.config.allowInput).toBe(true);
+    expect(fp.altInput.hasAttribute("readonly")).toBe(false);
+  });
+});
+
+describe("PositionAssignments form: a refused date stops the save (WCN-FIX-03)", () => {
+  const posts = () => global.fetch.mock.calls.filter((call) => call[1] && call[1].method && call[1].method !== "GET");
+
+  const fill = (id, text) => {
+    const fp = document.getElementById(id)._flatpickr;
+    fp.altInput.focus();
+    fp.altInput.value = text;
+    fp.altInput.dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("other").focus(); // Tab: the closed-calendar blur judges it
+    return fp;
+  };
+
+  const boot = () => {
+    loadScript("wwwroot/assets/js/shared/diten-datefield.js");
+    page();
+    document.getElementById("a-form-page").insertAdjacentHTML("afterbegin",
+      '<script type="application/json" id="assignment-form-l10n">{"DateFormat":"d.m.Y","DateNotRecognized":"DATE-REFUSED"}</script>');
+    document.querySelectorAll("#assignment-form-l10n")[1].remove();
+    loadScript("wwwroot/assets/js/Organization/PositionAssignments/form.js");
+  };
+
+  test("an end date typed as '31.02.2026' is refused, the save does not go out, and the reason is shown", async () => {
+    boot();
+    fill("aEffectiveFrom", "01.02.2026");
+    const to = fill("aEffectiveTo", "31.02.2026");
+    expect(to.altInput.classList.contains("is-invalid")).toBe(true);
+    expect(document.getElementById("aEffectiveTo").value, "the refused end date is empty — an open-ended payload").toBe("");
+
+    document.getElementById("a-submit").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(posts(), "an open-ended assignment was saved instead of the refused end date").toEqual([]);
+    const alert = document.getElementById("a-form-alert");
+    expect(alert.classList.contains("d-none")).toBe(false);
+    expect(alert.textContent).toContain("DATE-REFUSED");
+  });
+
+  test("control: the same form with a readable end date does save", async () => {
+    boot();
+    fill("aEffectiveFrom", "01.02.2026");
+    fill("aEffectiveTo", "20.02.2026");
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {}); // jsdom: navigation after save
+    document.getElementById("a-submit").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    errors.mockRestore();
+
+    expect(posts()).toHaveLength(1);
+    expect(JSON.parse(posts()[0][1].body).effectiveTo).toBe("2026-02-20T00:00:00Z");
   });
 });
 

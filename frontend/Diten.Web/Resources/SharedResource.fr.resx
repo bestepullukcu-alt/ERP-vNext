@@ -1055,4 +1055,7 @@
   <data name="ShellSearchPlaceholder" xml:space="preserve">
     <value>Rechercher ({0})</value>
   </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>Une date saisie n'a pas pu être lue ; elle n'a donc pas été enregistrée. Saisissez-la de nouveau au format du champ ou choisissez-la dans le calendrier.</value>
+  </data>
 </root>

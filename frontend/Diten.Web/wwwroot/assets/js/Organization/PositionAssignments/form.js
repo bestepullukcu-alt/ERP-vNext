@@ -116,34 +116,33 @@
      * first pick into a pre-filled date was lost. The one shared guard (`DitenDateField.guardAgainstSilentMisparse`,
      * altFormat shape) is used instead, so the fix — and any later one — lands here too. The view loads it.
      *
-     * WCN-FIX-02 — the copy was self-sufficient; a delegation is not. If the view stops loading the shared script,
-     * the GxP dates would silently lose the guard, so that is said in the console (as `DitenDateField.enhance`
-     * does for a missing flatpickr) instead of being skipped.
+     * WCN-FIX-02/03 — the copy was self-sufficient; a delegation is not. If the view stops loading the shared
+     * script the guard is missing, and a missing guard FAILS CLOSED: the dates open with `allowInput: false`
+     * (flatpickr makes the box read-only; a date can only be picked from the calendar, never typed past a parser).
+     * It is also said in the console, once.
      */
-    let guardMissingReported = false;
-    const guardDateAgainstSilentMisparse = (instance) => {
-        const sharedGuard = window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse;
-        if (typeof sharedGuard !== 'function') {
-            if (!guardMissingReported) {
-                guardMissingReported = true;
-                console.error('[Assignment Form] The effective dates are NOT protected against a typed date that '
-                    + 'does not exist (BL-391): assets/js/shared/diten-datefield.js is not loaded on this page. Load it '
-                    + 'after flatpickr and before this script.');
-            }
-            return;
-        }
-        sharedGuard(instance, 'altFormat');
+    const sharedGuard = () => {
+        const guard = window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse;
+        return typeof guard === 'function' ? guard : null;
     };
 
     const initDatePickers = () => {
         if (typeof window.flatpickr !== 'function') return;
+        const guard = sharedGuard();
+        if (!guard) {
+            console.error('[Assignment Form] The effective dates cannot be typed: assets/js/shared/diten-datefield.js '
+                + '(the BL-391 typed-date guard) is not loaded on this page, so they open read-only and are picked from '
+                + 'the calendar. Load it after flatpickr and before this script.');
+        }
         DATE_FIELDS.forEach((id) => {
             const el = byId(id);
             if (!el) return;
-            window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
-            guardDateAgainstSilentMisparse(el._flatpickr);
+            window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: !!guard });
+            if (guard) guard(el._flatpickr, 'altFormat');
         });
     };
+    // The box the reader types in (altInput) carries the guard's refusal mark, not the hidden value input.
+    const dateRefused = (id) => !!byId(id)?._flatpickr?.altInput?.classList.contains('is-invalid');
     const dateOrNull = (id) => { const v = trim(byId(id)?.value); return v.length ? `${v}T00:00:00Z` : null; };
     const setDate = (id, iso) => {
         const el = byId(id);
@@ -158,12 +157,23 @@
     const isFilled = (id) => trim(byId(id)?.value).length > 0;
     const validate = () => {
         let ok = true;
+        const messages = [];
         REQUIRED.forEach((id) => {
             const el = byId(id);
             if (!isFilled(id)) { ok = false; el?.classList.add('is-invalid'); }
             else el?.classList.remove('is-invalid');
         });
-        if (!ok) showAlert([L.RequiredField || 'Required fields are missing.']);
+        if (!ok) messages.push(L.RequiredField || 'Required fields are missing.');
+        /*
+         * WCN-FIX-03 — a refused typed date is CLEARED by the guard, and an optional date that is empty is a valid
+         * payload (`effectiveTo: null` = an open-ended assignment). Saving it would turn "end this assignment on
+         * 31.02" into "never ends". A refused date therefore stops the save until it is entered again.
+         */
+        if (DATE_FIELDS.some(dateRefused)) {
+            ok = false;
+            messages.push(L.DateNotRecognized || 'A date you typed could not be read, so it was not saved.');
+        }
+        if (!ok) showAlert(messages);
         return ok;
     };
     const valueOrNull = (id) => { const v = trim(byId(id)?.value); return v.length ? v : null; };

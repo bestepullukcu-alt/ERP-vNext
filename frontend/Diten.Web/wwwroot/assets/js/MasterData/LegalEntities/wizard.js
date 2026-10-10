@@ -143,11 +143,26 @@
 
     // ─── Culture-aware date pickers ──────────────────────────────────────────
     // Stored value stays ISO (Y-m-d); the visible altInput renders in the request culture's short-date format.
+    /*
+     * BL-391 × WCN-FIX-03 (XMC-001) — the legal entity dates use the shared typed-date guard (`DitenDateField.guardAgainstSilentMisparse`,
+     * altFormat shape): a typed date that does not exist ("31.02") is cleared and marked, never saved as another date.
+     * Without the shared script the dates FAIL CLOSED: `allowInput: false` (read-only box, picked from the calendar).
+     */
+    const dateGuard = () => {
+        const guard = window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse;
+        return typeof guard === 'function' ? guard : null;
+    };
+    const reportMissingDateGuard = () => console.error('[Legal Entity Wizard] The dates cannot be typed: assets/js/shared/diten-datefield.js '
+        + '(the BL-391 typed-date guard) is not loaded on this page, so they open read-only and are picked from the calendar.');
     const initDatePickers = () => {
         if (typeof window.flatpickr !== 'function') return;
+        const guard = dateGuard();
+        if (!guard) reportMissingDateGuard();
         DATE_FIELDS.forEach((id) => {
             const el = byId(id);
-            if (el) window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
+            if (!el) return;
+            window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: !!guard });
+            if (guard) guard(el._flatpickr, 'altFormat');
         });
     };
     const dateValue = (id) => trim(byId(id)?.value); // altInput keeps the original input's Y-m-d value

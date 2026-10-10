@@ -46,75 +46,142 @@
         // itself already takes below applies here too — never throw out of a setup path.
         const target = instance?.altInput || instance?.input;
         if (!target || !Array.isArray(instance.config?.onClose) || typeof instance.formatDate !== 'function') {
-            return;
+            return false;
         }
+        // WCN-FIX-03 — guarding twice would bind every listener twice (two judgments, two clears).
+        if (instance._ditenGuarded) { return true; }
+        instance._ditenGuarded = true;
 
         /*
-         * BL-588 (WP-WCN-FIX-01) — ONLY text TYPED in the current open session is judged; a calendar pick never is.
+         * BL-588 (WP-WCN-FIX-01) — ONLY text TYPED by the reader is judged; a calendar pick never is.
          *
          * MEASURED (jsdom + the real vendored flatpickr 4.6.13): flatpickr's selectDate runs updateValue →
-         * close (onClose, THIS guard) → and only then onChange / `input`. The guard used to compare the pick with
-         * `lastTyped`, a copy of the box taken when the field was enhanced (or left over from an earlier close),
-         * so a field that already held a value, or one whose default was written without an event (quick-create's
-         * setDate(today, false)), read the pick as a misparse and CLEARED it: the first pick was lost, the second
-         * (into the now-empty box) was kept. The session now starts clean (onOpen).
+         * close (onClose) → and only then onChange / `input`. The guard used to compare the pick with a stale copy
+         * of the box, so a field that already held a value lost its first pick.
          *
          * WCN-FIX-02 — WHAT RESETS THE TYPED TEXT, AND WHAT MUST NOT.
-         *  - A pick FROM THE CALENDAR resets it: a click on a day (capture phase, so it runs before flatpickr's
-         *    own selectDate → close) and Enter on a focused day.
-         *  - onValueUpdate must NOT reset it. flatpickr fires it from updateValue BEFORE onClose on every path
-         *    that commits typed text — Enter (onKeyDown → setDate → close), Tab (onBlur → setDate) and, on an
-         *    enableTime field, a click outside (documentClick → setDate → updateTime → updateValue). A reset there
-         *    switched this guard off exactly where the reader types ("31.02.2026" + Enter was saved as 03.03.2026).
-         *  - flatpickr's own `input` event, dispatched after onChange with the NORMALISED value, must not overwrite
-         *    what the reader typed either (it did, so plain fields leaked on Enter / Tab even before BL-588).
-         *    `isTrusted` cannot tell the two apart — scripted input (tests, automation, other components) is
-         *    untrusted too — so the echo is recognised by its cause: onChange marks the next `input` as the
-         *    library's own and the mark expires at the end of the task.
+         *  - A pick FROM THE CALENDAR resets it: a click on a selectable day (capture phase, before flatpickr's own
+         *    selectDate → close) and Enter on a focused day. A disabled / not-allowed day selects nothing, so it
+         *    resets nothing; week-number cells carry `flatpickr-day` too (measured: no other class), so a "day" is
+         *    one inside `daysContainer`.
+         *  - onValueUpdate must NOT reset it: flatpickr fires it from updateValue BEFORE the close on every path
+         *    that commits typed text (Enter, Tab, enableTime outside click).
+         *  - flatpickr's own `input` event, dispatched right after onChange with the NORMALISED value, must not
+         *    overwrite what the reader typed. `isTrusted` cannot tell the two apart (scripted input is untrusted
+         *    too), so the echo is recognised by its cause: onChange marks the next `input` as the library's own.
+         *    The echo goes to `instance.input` only — on an altInput field it never reaches the box the reader types
+         *    in, so the mark is set only where it will be consumed. The mark expires at the end of the task: a
+         *    later onChange hook that throws stops flatpickr before it dispatches the echo, and an unexpired mark
+         *    would then swallow the reader's next typing (measured in the tests).
+         *
+         * WCN-FIX-03 — THE CLOSED CALENDAR. The judgment used to run only in onClose. But the box keeps focus with
+         * the calendar CLOSED after every pick (selectDate → focusAndClose) and after Escape, and flatpickr's
+         * onBlur still commits what is typed there (setDate(value, true, fmt)) without any close. So the judgment
+         * is one function, called from onClose AND from a `blur` listener on the box while the calendar is not
+         * open (bound after flatpickr's own, so onBlur has already committed). Blur with the calendar open is left
+         * to the close that follows (the focus moving away closes it).
+         *  - onOpen resets the typed text only when the box no longer shows it (code rewrote the box without an
+         *    event): text the reader typed into the closed box is still theirs to be judged when it closes.
+         *  - Escape inside the open calendar CANCELS the typing: nothing is judged, the box is rewritten from the
+         *    dates that were already selected (the previous valid value stays).
+         *  - Moving into the time inputs (enableTime) first commits and judges what was typed in the box: a valid
+         *    "2026-02-20 10:00" followed by an hour change is then not read as a misparse at close, and a typo is
+         *    still caught (resetting there instead would let documentClick commit the typo unjudged).
          */
         let lastTyped = '';
         let libraryEcho = false;
+        let cancelled = false;
+        // A refused text stays refused until the reader types again or picks a day: a later time-input edit fills
+        // in "today" on an empty enableTime field (flatpickr's own default), and that date was never chosen.
+        let rejected = false;
+        const echoReachesTarget = target === instance.input;
+        const format = () => instance.config[formatKey];
+
+        const judge = (selectedDates, { onlyTyped = false } = {}) => {
+            const raw = lastTyped.trim();
+            lastTyped = '';
+            if (!raw) {
+                if (!onlyTyped) { settle(selectedDates); }
+                return;
+            }
+            const resolved = (selectedDates || [])[0];
+            const reformatted = resolved ? instance.formatDate(resolved, format()) : '';
+            if (!resolved || reformatted !== raw) {
+                // Marked BEFORE the clear: clear() runs the page's onChange hooks, and one that throws must not
+                // leave an emptied field that does not say why.
+                rejected = true;
+                target.classList.add('is-invalid');
+                instance.clear();
+            } else {
+                rejected = false;
+                target.classList.remove('is-invalid');
+            }
+        };
+
+        // onClose with nothing typed: a refused field that something else filled in since (a time-input edit) is
+        // emptied again and stays marked; otherwise the mark goes.
+        const settle = (selectedDates) => {
+            if (rejected) {
+                if ((selectedDates || []).length > 0) { instance.clear(); }
+                target.classList.add('is-invalid');
+                return;
+            }
+            target.classList.remove('is-invalid');
+        };
+
         target.addEventListener('input', () => {
             if (libraryEcho) { libraryEcho = false; return; }
             lastTyped = target.value;
+            rejected = false;
         });
-        if (Array.isArray(instance.config.onChange)) {
+        if (echoReachesTarget && Array.isArray(instance.config.onChange)) {
             instance.config.onChange.push(() => {
                 libraryEcho = true;
                 Promise.resolve().then(() => { libraryEcho = false; });
             });
         }
         if (Array.isArray(instance.config.onOpen)) {
-            instance.config.onOpen.push(() => { lastTyped = ''; });
+            instance.config.onOpen.push(() => {
+                cancelled = false;
+                if (target.value.trim() !== lastTyped.trim()) { lastTyped = ''; }
+            });
         }
+        target.addEventListener('blur', () => {
+            if (!instance.isOpen) { judge(instance.selectedDates, { onlyTyped: true }); }
+        });
+
         const calendar = instance.calendarContainer;
         if (calendar && typeof calendar.addEventListener === 'function') {
-            const fromDay = (event) => !!(event.target && typeof event.target.closest === 'function'
-                && event.target.closest('.flatpickr-day:not(.flatpickr-disabled)'));
-            calendar.addEventListener('click', (event) => { if (fromDay(event)) { lastTyped = ''; } }, true);
+            const fromDay = (event) => {
+                const day = event.target && typeof event.target.closest === 'function'
+                    && event.target.closest('.flatpickr-day:not(.flatpickr-disabled):not(.notAllowed)');
+                return !!(day && instance.daysContainer && instance.daysContainer.contains(day));
+            };
+            const picked = () => { lastTyped = ''; rejected = false; };
+            calendar.addEventListener('click', (event) => { if (fromDay(event)) { picked(); } }, true);
             calendar.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' && fromDay(event)) { lastTyped = ''; }
+                if (event.key === 'Enter' && fromDay(event)) { picked(); }
+                if (event.key === 'Escape' && instance.isOpen) { cancelled = true; }
             }, true);
+            calendar.addEventListener('focusin', (event) => {
+                const time = instance.timeContainer;
+                if (!time || !time.contains(event.target) || !lastTyped.trim()) { return; }
+                instance.setDate(lastTyped, true, format());
+                judge(instance.selectedDates, { onlyTyped: true });
+            });
         }
 
         instance.config.onClose.push((selectedDates) => {
-            const raw = lastTyped.trim();
-            if (!raw) {
-                target.classList.remove('is-invalid');
+            if (cancelled) {
+                cancelled = false;
                 lastTyped = '';
+                if (rejected) { settle(instance.selectedDates); return; }
+                instance.setDate(instance.selectedDates.slice(), false);
                 return;
             }
-
-            const resolved = selectedDates[0];
-            const reformatted = resolved ? instance.formatDate(resolved, instance.config[formatKey]) : '';
-            if (!resolved || reformatted !== raw) {
-                instance.clear();
-                target.classList.add('is-invalid');
-            } else {
-                target.classList.remove('is-invalid');
-            }
-            lastTyped = '';
+            judge(selectedDates);
         });
+        return true;
     };
 
     const enhance = (root, options) => {

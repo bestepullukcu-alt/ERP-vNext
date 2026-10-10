@@ -171,9 +171,8 @@ describe("XMC-001: PositionAssignments uses the shared guard, not a copy of its 
 
   test("form.js delegates to DitenDateField.guardAgainstSilentMisparse with the altFormat shape", () => {
     expect(form).toContain("window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse");
-    expect(form).toContain("sharedGuard(instance, 'altFormat');");
+    expect(form).toContain("if (guard) guard(el._flatpickr, 'altFormat');");
     expect(form, "a private copy of the guard came back").not.toMatch(/lastTyped/);
-    expect(form).toContain("guardDateAgainstSilentMisparse(el._flatpickr);");
   });
 
   test("the Form view loads the shared component after flatpickr and before form.js", () => {
