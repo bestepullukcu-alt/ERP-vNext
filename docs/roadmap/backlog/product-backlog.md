@@ -8498,6 +8498,13 @@ Yapılacak:
 
 Gelecek regresyon riski: 🟡 bu servislerde kırılan test CI'da görünmez; tek PR'da main'e kırmızı test girebilir.
 
+Ölçüm sonucu (2026-10-10, WP-CI-COVERAGE-MEASURE-01, 26 test projesi; rapor WF sohbeti scratchpad `ci-coverage-report.md`):
+- **A, yeşil → satır:** Building.Blocks Secrets 5/5 + Email 109/109 · DevEnablement 92/92 · ManagementGovernance Tests 87/87 · Procurement 147/147 · PVG ×5 (36 / 23 / 40 / 88 / 43) · PPM Tests 381/381 (PPM ekibinin onayıyla). Çözüm dışındakiler (Secrets, Crm, Procurement, PVG ×5) phase1 "yalnız derle" adımı da ister. Satırlar ci-followup2 hatta girdikten sonra (Roller).
+- **B, kırmızı → sahibine (XMC-001):** Crm 1 (PdfSharp sistem fontu yok) · EnterpriseStrategy 8 (RBAC iddiaları: yetkisiz istek reddedilmiyor; hafıza: ES'de güvenlik yok) · ManagementGovernance Architecture 2 · PPM Integration 10 (9'u `ppm.audit-intent.submitted.v1` olay adı Building.Blocks kuralından geçmiyor, 1'i 503 yerine 401).
+- **C, altyapı:** HCM `EmployeeDraftSessionRepositoryMongoTests` ORTAK `localhost:27017` kullanıyor (koşulmadı; HCM'nin kalanı 59/59) · MG ve PPM entegrasyon testleri mongod yolunu sabit `/opt/homebrew/bin/mongod` yazmış (Linux CI'da yok; MG Integration 95/95 dahil).
+- Eventing hatta derlenmiyor (CS0246); ci-followup2 `fd8acd7d4` düzeltiyor.
+- Ekiplere giden mesaj sahip üzerinden (CT taslağı).
+
 ---
 
 ### BL-603
