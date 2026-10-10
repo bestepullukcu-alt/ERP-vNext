@@ -8398,6 +8398,27 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-600
+
+**Kalem birim / saklama koşulu seçenek listesi: Platform'da item-universal listeleme ucu yok (S5'te geçici kod girişi)**
+
+DURUM: AÇIK · SAHİP: CT (Platform + MDM) · BULAN: FU04 S5 ön koşul ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (S5 sohbeti):
+- GSKU `uom` listesi Platform'un özel ucundan geliyor: `api/internal/v1/reference-data/verified-gsku/enumerate-uom` (5 sabit kod).
+- item-universal için Platform'da YALNIZ çözüm ucu var (`InternalItemUniversalReferenceDataController` `POST resolve`). Küme listeleme yok.
+- Genel ekran liste ucunun (`api/lookups/reference-data/consumable-sets/{setCode}/published-values`) izin listesinde `item-uom` / `storage-condition` / `material-type` yok. Ayrıca o uç BRD yayınlı değerleri içindir, kod sahipli katalog için değil.
+- Sonuç: kalem formu ve GSKU / FG "Stok davranışı" formu birim (XBX, XCS, MGM, IU …) ve saklama koşulunu listeden seçtiremiyor. S5 geçici olarak kod alanı + MDM doğrulaması (`STOCK_UOM_INVALID` / `STOCK_STORAGE_CONDITION_INVALID`) kullanıyor; malzeme tipi sabit 6 kod.
+
+Yapılacak:
+- Platform: iç `enumerate-item-universal` ucu (kiracıdan bağımsız, salt okur, aynı güven yolu, sürüm kimliği / numarası ile);
+- MDM: `GET api/mdm/items/options` (material-type, item-uom kod + sıra + boyut + hassasiyet + `CodeStandard`, storage-condition + `ConditionKind`), kesinti = ret;
+- Web: kalem ve stok formlarında seçim listesi (seçim yine tam-kod çözümüyle doğrulanır).
+
+Gelecek regresyon riski: 🟡 kullanım kolaylığı; yanlış kod MDM'de reddedilir (veri riski yok).
+
+---
+
 ### BL-599
 
 **Sessiz tarih yanlış ayrıştırma koruması olmayan ~10 ekran (31.02 → 03.03 uyarısız kaydedilir)**
