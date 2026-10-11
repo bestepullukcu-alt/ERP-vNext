@@ -705,6 +705,9 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
     public string ReplicaConnectionString { get; private set; } = string.Empty;
     public string StandaloneConnectionString { get; private set; } = string.Empty;
 
+    // BL-595 FIX3: the replica's directory and PID (for the test of the owner record a real start writes).
+    internal (string Directory, int ProcessId) ReplicaIdentity => _replica!.Identity;
+
     public async Task InitializeAsync()
     {
         try
@@ -906,9 +909,10 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
                 if (!owned._process.Start()) throw new InvalidOperationException("MDM_TEMPORAL_MONGO_START_FAILED");
                 owned._process.BeginOutputReadLine();
                 owned._process.BeginErrorReadLine();
+                var path = MdmTestMongo.Probe(owned._process.Id).Path;
+                if (path is null) Console.WriteLine($"OWNED_MDM_MONGO_RECORD_WITHOUT_PATH pid={owned._process.Id} (temporal)");
                 MdmTestMongo.WriteOwner(directory, new MdmTestMongo.OwnerRecord(owned._process.Id,
-                    owned._process.StartTime.ToUniversalTime(), Environment.ProcessId, hostStarted,
-                    MdmTestMongo.Probe(owned._process.Id).Path));
+                    owned._process.StartTime.ToUniversalTime(), Environment.ProcessId, hostStarted, path));
                 return owned;
             }
             catch (Exception original)
@@ -921,6 +925,7 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
         }
 
         public bool HasExited => _process is { HasExited: true };
+        public (string Directory, int ProcessId) Identity => (_directory!, _process!.Id);
 
         public void ThrowIfExited()
         {

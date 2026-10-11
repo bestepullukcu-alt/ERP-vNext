@@ -311,6 +311,12 @@ public sealed class MdmTestMongoTests
     // no mongod recorded yet and a dead host: the lock file decides
     [InlineData("no-mongod-yet-lock-held", MdmTestMongo.SweepAction.Keep)]
     [InlineData("no-mongod-yet-lock-unreadable", MdmTestMongo.SweepAction.Keep)]
+    // FIX3: a recorded mongod that is gone, or one started well apart, still yields to a held / unreadable / unknown lock
+    [InlineData("mongod-gone-lock-held", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-gone-lock-unreadable", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-gone-lock-unknown", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-far-lock-held", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-far-lock-unreadable", MdmTestMongo.SweepAction.Keep)]
     // recordless
     [InlineData("no-record", MdmTestMongo.SweepAction.Keep)]
     [InlineData("no-record-old", MdmTestMongo.SweepAction.DeleteDirectory)]
@@ -385,6 +391,14 @@ public sealed class MdmTestMongoTests
             case "no-mongod-yet-lock-unreadable":
                 record = record with { MongodPid = null, MongodStartedUtc = null, MongodPath = null };
                 lockFile = MdmTestMongo.LockRead.CannotRead; break;
+            case "mongod-gone-lock-held": lockFile = new(false, holder); processes[holder] = Alive(T0); break;
+            case "mongod-gone-lock-unreadable": lockFile = MdmTestMongo.LockRead.CannotRead; break;
+            case "mongod-gone-lock-unknown": lockFile = new(false, holder); processes[holder] = MdmTestMongo.ProcessProbe.Unknown; break;
+            case "mongod-far-lock-held":
+                processes[mongod] = Alive(T0.AddHours(3), "/usr/bin/other"); lockFile = new(false, holder); processes[holder] = Alive(T0);
+                break;
+            case "mongod-far-lock-unreadable":
+                processes[mongod] = Alive(T0.AddHours(3), "/usr/bin/other"); lockFile = MdmTestMongo.LockRead.CannotRead; break;
             case "no-record": record = null; break;
             case "no-record-old": record = null; age = Old; break;
             case "no-record-age-unknown": record = null; age = null; break;
@@ -434,10 +448,11 @@ public sealed class MdmTestMongoTests
         File.SetUnixFileMode(lockPath, UnixFileMode.None);
         try
         {
+            // FIX3: root reads a mode-000 file — then this simulation does not hold; skipped by name, not passed.
+            Skip.If(CanRead(lockPath), "running as root: mode 000 does not make the lock unreadable");
             Assert.True(MdmTestMongo.LockPid(directory).Unreadable);
-            Directory.SetCreationTimeUtc(directory, DateTime.UtcNow - Old);
 
-            var action = Assert.Single(MdmTestMongo.Sweep(root, _ => MdmTestMongo.ProcessProbe.Gone, _ => true)).Action;
+            var action = Assert.Single(MdmTestMongo.Sweep(root, _ => MdmTestMongo.ProcessProbe.Gone, _ => true, _ => Old)).Action;
 
             Assert.Equal(MdmTestMongo.SweepAction.Keep, action);
             Assert.True(File.Exists(lockPath));
@@ -477,14 +492,15 @@ public sealed class MdmTestMongoTests
             {
                 Directory.CreateDirectory(directory);
                 File.WriteAllText(Path.Combine(directory, "mongod.lock"), holder.ToString());
-                Directory.SetCreationTimeUtc(directory, DateTime.UtcNow - Old);
             }
             processes[Environment.ProcessId] = Alive(DateTime.UtcNow);
             var stranger = Path.Combine(root, "someone_else_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(stranger);
             var stopped = new List<MdmTestMongo.OwnerRecord>();
 
-            var actions = MdmTestMongo.Sweep(root, ProbeOf(processes), record => { stopped.Add(record); return true; });
+            // FIX3: the age is injected (a file system's creation time cannot be set everywhere — ubuntu CI).
+            var actions = MdmTestMongo.Sweep(root, ProbeOf(processes), record => { stopped.Add(record); return true; },
+                entry => entry.Name.Contains("old-lock", StringComparison.Ordinal) ? Old : Young);
 
             Assert.True(Directory.Exists(directories["host-alive"]));
             Assert.True(Directory.Exists(directories["no-record"]));
@@ -677,7 +693,14 @@ public sealed class MdmTestMongoTests
         }
         finally
         {
-            if (!child.HasExited) child.Kill();
+            // Only this test's own child; a race with its own exit is harmless.
+            try
+            {
+                if (!child.HasExited) child.Kill();
+                child.WaitForExit(5000);
+            }
+            catch (InvalidOperationException) { }
+            catch (System.ComponentModel.Win32Exception) { }
         }
     }
 
@@ -697,6 +720,69 @@ public sealed class MdmTestMongoTests
     public void BL595_An_unreadable_age_is_unknown()
     {
         Assert.Null(MdmTestMongo.AgeOf(new DirectoryInfo(Path.Combine(Path.GetTempPath(), "diten_mdm_missing_" + Guid.NewGuid().ToString("N")))));
+    }
+
+    // FIX3: an owner record that EXISTS but cannot be read or parsed is doubt (Keep) — never "recordless" (which an old
+    // directory would lose).
+    [SkippableTheory]
+    [InlineData("corrupt")]
+    [InlineData("unreadable")]
+    public void BL595_An_owner_record_that_cannot_be_read_keeps_the_directory(string shape)
+    {
+        var root = NewScratch("sweeptest");
+        var directory = Path.Combine(root, MdmTestMongo.DirectoryPrefix + shape);
+        Directory.CreateDirectory(directory);
+        var owner = Path.Combine(directory, MdmTestMongo.OwnerFile);
+        File.WriteAllText(owner, shape == "corrupt" ? "{ not json" : "{}");
+        try
+        {
+            if (shape == "unreadable")
+            {
+                Skip.If(OperatingSystem.IsWindows(), "permission bits are the Unix simulation");
+                File.SetUnixFileMode(owner, UnixFileMode.None);
+                Skip.If(CanRead(owner), "running as root: mode 000 does not make the record unreadable");
+            }
+
+            var action = Assert.Single(MdmTestMongo.Sweep(root, _ => MdmTestMongo.ProcessProbe.Gone, _ => true, _ => Old)).Action;
+
+            Assert.Equal(MdmTestMongo.SweepAction.Keep, action);
+            Assert.True(Directory.Exists(directory));
+        }
+        finally
+        {
+            if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(owner, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    // FIX3 (2): the record a REAL start writes — PID, start time and the executable path as Probe reads it (non-empty);
+    // without the path no leftover of it would ever be stopped.
+    [Fact]
+    public void BL595_A_real_start_records_pid_start_and_path()
+    {
+        var (directory, pid) = MdmTestMongo.OwnedIdentity;
+        AssertRecordOf(directory, pid);
+    }
+
+    internal static void AssertRecordOf(string directory, int pid)
+    {
+        var record = MdmTestMongo.ReadOwner(directory);
+        var probe = MdmTestMongo.Probe(pid);
+
+        Assert.NotNull(record);
+        Assert.Equal(MdmTestMongo.ProcessState.Alive, probe.State);
+        Assert.Equal(pid, record!.MongodPid);
+        Assert.Equal(Environment.ProcessId, record.HostPid);
+        Assert.True(MdmTestMongo.Within(record.MongodStartedUtc!.Value, probe.StartedUtc, MdmTestMongo.StopTolerance));
+        Assert.False(string.IsNullOrEmpty(record.MongodPath));
+        Assert.Equal(probe.Path, record.MongodPath);
+    }
+
+    private static bool CanRead(string path)
+    {
+        try { File.ReadAllText(path); return true; }
+        catch (UnauthorizedAccessException) { return false; }
+        catch (IOException) { return false; }
     }
 
     private static string NewScratch(string kind)
@@ -809,5 +895,30 @@ public sealed class MdmTestMongoRedirectTests
         Assert.StartsWith(MdmTestMongo.RedirectInvalid + ":",
             Assert.Throws<InvalidOperationException>(() => MdmTestMongo.UseOwnedRedirect(value)).Message);
         Assert.Equal(MdmTestMongo.OwnedConnectionString, MdmTestMongo.ConnectionString);
+    }
+
+    // FIX3: an empty redirect is refused by its own name.
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void BL595_An_empty_fixture_redirect_is_refused_by_name(string? value)
+    {
+        var error = Assert.Throws<ArgumentException>(() => MdmTestMongo.UseOwnedRedirect(value!));
+        Assert.StartsWith(MdmTestMongo.RedirectEmpty + ":", error.Message);
+    }
+}
+
+/// <summary>BL-595 FIX3 (2): the record the temporal fixture's real start writes, as the helper's.</summary>
+[Collection(ProductLegalEntityScopeMongoCollection.Name)]
+public sealed class MdmTemporalFixtureRecordTests(Audit.AuditIntentTemporalMongoFixture fixture)
+    : IClassFixture<Audit.AuditIntentTemporalMongoFixture>
+{
+    [Fact]
+    public void BL595_The_temporal_fixture_records_pid_start_and_path()
+    {
+        var (directory, pid) = fixture.ReplicaIdentity;
+        Assert.StartsWith(MdmTestMongo.DirectoryPrefix, Path.GetFileName(directory));
+        MdmTestMongoTests.AssertRecordOf(directory, pid);
     }
 }
