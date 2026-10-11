@@ -17,10 +17,22 @@
 
 The CapacityPlans figure is the important one, and it is not a pass. The first 48/48 was taken on a mongod that had been running
 for hours; on a cold lane replica set four runs gave 48/48, 41/48, 46/48 and 48/48 — half red, a
-**different** set each time. Every failure sits in a fail-point driven path — the timing problem Q214 already
-measured, whose recommended fix (Q214 R1-R3) is still an open work package. The red sets covered almost every
-test MOD-0192's `:197` and `:198` cited, including the one holding the `capacity_audit` count, so both ticks
-were retracted the same day they were made. SandopPlans, by contrast, was 25/25 on two consecutive cold runs.
+**different** set each time, so both ticks were retracted the same day they were made.
+
+**CT's diagnosis of those reds was wrong, and is withdrawn.** CT wrote that every failure sat in a fail-point
+driven path and pointed at Q214 R1-R3. An independent lane measured otherwise and CT confirmed it:
+`CapacityPlans` contains no error 91 anywhere (its only occurrence is `Loads/LoadAtomicityTests.cs:19`), every
+`configureFailPoint` reference in the folder is inside `CapacityFaultTests`, and `CapacityLeaseTests.cs`,
+`CapacityConcurrencyTests.cs` and `CapacityRestartTests.cs` contain none — so four of the five tests CT named
+cannot be fail-point failures. R1 and R2 were already applied before the work package opened.
+
+CT's own measurement is also not trustworthy. Both mongods it ran against were signalled at 14:25:25 and the
+red runs were 14:33-14:36; free disk swung between 10.6 GB and 150 MB in the same window, and one `dotnet test`
+died with exit 144 at the low point. A mongod killed mid-run produces precisely the "different set red each
+time" signature. The independent lane got 48/48 on four cold runs and could not reproduce 41/48 or 46/48.
+
+So `:197` and `:198` stay open because the evidence is **unresolved**, not because the suite is proven
+non-deterministic. SandopPlans, by contrast, was 25/25 on two consecutive cold runs.
 
 Both suites run against the test-only `DemandFixtureReader` / `ConstraintFixtureReader` seam and the
 lane replica sets. Nothing in them reaches a live DEMAND producer, a Workflow endpoint or an Event Bus.
