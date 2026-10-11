@@ -35,7 +35,7 @@ public sealed class EnumerateItemUniversalReferenceDataHandler
 
         var sets = setCodes.Select(code => new ItemUniversalEnumeratedSet(
                 code!, ItemUniversalCatalog.CatalogVersion, ItemUniversalCatalog.GetVersionId(code!),
-                ItemUniversalCatalog.CatalogVersionNumber,
+                ItemUniversalCatalog.GetVersionNumber(code!),
                 ItemUniversalCatalog.Values.Where(value => value.SetCode == code)
                     .OrderBy(value => value.SortOrder).ThenBy(value => value.ValueCode, StringComparer.Ordinal)
                     .Select(value => new ItemUniversalEnumeratedValue(value.ValueCode, value.DisplayName, value.SortOrder,
