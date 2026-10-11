@@ -314,6 +314,11 @@ class Run(object):
         self.check(c, "empty-modes", "POST", "/carriers",
             body={"carrierCode": "L" + uuid.uuid4().hex[:7].upper(), "displayName": "A",
                   "supportedModes": []})
+        # The contract names this one: E05 "header/claim mismatch". The scope headers disagree with
+        # the token, which is the only reference a create has to get wrong.
+        self.check(c, "header-claim-mismatch", "POST", "/carriers",
+            body={"carrierCode": "L" + uuid.uuid4().hex[:7].upper(), "displayName": "A",
+                  "supportedModes": ["Road"]}, legalEntity=str(uuid.uuid4()))
 
     def claims(self, ops):
         q, c, tr = ops["queryClaims"], ops["createClaim"], ops["transitionClaim"]
@@ -353,13 +358,15 @@ class Run(object):
         self.check(tr, "investigating", "POST", "/claims/%s/transition" % cid,
                    body={"targetStatus": "Investigating", "occurredAt": "2030-01-03T09:10:00Z"},
                    extra=h)
+        # Investigating -> Approved is the legal move; the earlier Rejected body was refused 400, which
+        # left the key unbound and turned the reuse probe into an invalid-transition 422 instead of 409.
         kt = "reuse-" + uuid.uuid4().hex
         self.check(tr, "key-first-use", "POST", "/claims/%s/transition" % cid,
-                   body={"targetStatus": "Rejected", "occurredAt": "2030-01-03T09:20:00Z",
-                         "reasonCode": "NOT_COVERED"}, extra=h, key=kt)
+                   body={"targetStatus": "Approved", "occurredAt": "2030-01-03T09:20:00Z",
+                         "approvedAmount": "10.005"}, extra=h, key=kt)
         self.check(tr, "key-reused-different-payload", "POST", "/claims/%s/transition" % cid,
-                   body={"targetStatus": "Closed", "occurredAt": "2030-01-03T09:30:00Z"},
-                   extra=h, key=kt)
+                   body={"targetStatus": "Approved", "occurredAt": "2030-01-03T09:30:00Z",
+                         "approvedAmount": "1.00"}, extra=h, key=kt)
 
     def loads(self, ops):
         q, c, tr = ops["queryLoads"], ops["createLoadPlan"], ops["transitionLoad"]
