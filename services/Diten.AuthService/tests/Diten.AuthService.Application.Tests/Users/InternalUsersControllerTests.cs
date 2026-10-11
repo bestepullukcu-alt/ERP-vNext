@@ -273,6 +273,8 @@ public sealed class InternalUsersControllerTests
         public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
     }
 
     private sealed class FakeInternalEventAuthService(string? expectedKey) : IInternalEventAuthService

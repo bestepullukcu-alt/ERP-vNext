@@ -237,6 +237,11 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
         }
 
         public Task MarkLoginAcceptedAsync(string email, CancellationToken ct) => Task.CompletedTask;
+
+        // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521's mint-door question; this fake answers it as its IsActiveAsync does (a confirmed
+        // platform administrator), without the gate/count — those belong to the password-reset doors this test measures.
+        public Task<PlatformAdministratorRecordAnswer> GetActiveActorTypeAsync(string email, CancellationToken ct) =>
+            Task.FromResult(PlatformAdministratorRecordAnswer.ConfirmedAs(PlatformAdministratorRecordAnswer.PlatformAdminActorType));
     }
 
     public sealed class LinkCapture : IPlatformAuthEmailService

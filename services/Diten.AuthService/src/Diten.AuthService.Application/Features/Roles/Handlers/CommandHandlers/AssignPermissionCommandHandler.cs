@@ -54,7 +54,7 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         // create a human-role grant for them. Revocation remains unguarded so existing grants can be removed safely.
         if (permission is not null && !DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(permission))
         {
-            return Response<NoContent>.Fail("This permission cannot be assigned to a human role.", 403);
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionNotForHumanRole, "This permission cannot be assigned to a human role.", 403);
         }
 
         // FEAT-ROLEPERMS-TENANT-SCOPE — manual assignment must honor the same platform-escalation boundary

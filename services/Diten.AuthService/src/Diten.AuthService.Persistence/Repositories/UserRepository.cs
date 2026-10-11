@@ -67,10 +67,26 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
+    public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
+        => GetAllByTenantAsync(tenantId, page, pageSize, excludePlatformAccounts: false, ct);
+
+    // BL-521 FIX7 item 2 - the platform-account exclusion is part of the QUERY, so Skip/Limit count only the rows the caller
+    // may see (dropping them in memory afterwards returned too few rows).
+    public async Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, bool excludePlatformAccounts, CancellationToken ct)
     {
+        var filters = new List<FilterDefinition<User>>
+        {
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
+        };
+
+        if (excludePlatformAccounts)
+        {
+            filters.Add(NotAPlatformAccount);
+        }
+
         return await Collection
-            .Find(u => u.TenantId == tenantId && u.IsDeleted == false)
+            .Find(Builders<User>.Filter.And(filters))
             // ATT-FIX1 — Skip/Limit needs an order to be a paging: without one, a sweep past 500 users can repeat a
             // user and miss another (natural order is not guaranteed across reads).
             .SortBy(u => u.Id)
@@ -79,11 +95,19 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             .ToListAsync(ct);
     }
 
+    // BL-521 FIX8 item 3 - what a tenant actor is allowed to see is decided by ONE filter (PlatformAccountFilter), equal to
+    // User.IsPlatformAccount: an account whose actor type is missing, null, empty or whitespace is not a platform account.
+    private static readonly FilterDefinition<User> NotAPlatformAccount = PlatformAccountFilter.IsNotPlatformAccount;
+
     // WP-INFRA-AUTH-ACCOUNT-KIND-01 — see IUserRepository. The filter IS the contract: TenantId + IsDeleted=false +
     // IsActive=true, then each whitespace-separated token of the term must match the FIRST or the LAST name
     // (case-insensitive, regex-escaped substring), so "jane sm" finds Jane Smith. Email is deliberately not a
     // match field. Ordered by last name, first name; capped at `limit`.
-    public async Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct)
+    public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct)
+        => SearchActiveAsync(tenantId, term, limit, excludePlatformAccounts: false, ct);
+
+    // BL-521 FIX7 item 2 - the exclusion is in the query: Limit(n) is n rows the caller may see, not n rows of which some are dropped.
+    public async Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, bool excludePlatformAccounts, CancellationToken ct)
     {
         var filters = new List<FilterDefinition<User>>
         {
@@ -91,6 +115,11 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             Builders<User>.Filter.Eq(u => u.IsDeleted, false),
             Builders<User>.Filter.Eq(u => u.IsActive, true)
         };
+
+        if (excludePlatformAccounts)
+        {
+            filters.Add(NotAPlatformAccount);
+        }
 
         foreach (var token in (term ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -138,12 +167,23 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
            && (ex.WriteError.Message ?? string.Empty).Contains(
                Configurations.MongoDbIndexConfigurations.UserEmailIndexName, StringComparison.Ordinal);
 
-    public async Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
+    public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
+        => RecordLoginOutcomeAsync(user, tenantId, excludePlatformAccounts: false, ct);
+
+    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2) — the by-id writes take the platform-account exclusion IN the Mongo filter
+    // (as the list and search do): the decorator's hidden caller writes nothing to a STORED platform account.
+    private static FilterDefinition<User> LiveAccount(Guid userId, Guid tenantId, bool excludePlatformAccounts)
     {
         var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, user.Id),
+            Builders<User>.Filter.Eq(u => u.Id, userId),
             Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
             Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        return excludePlatformAccounts ? filter & NotAPlatformAccount : filter;
+    }
+
+    public async Task RecordLoginOutcomeAsync(User user, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
+    {
+        var filter = LiveAccount(user.Id, tenantId, excludePlatformAccounts);
         var update = Builders<User>.Update
             .Set(u => u.FailedLoginAttempts, user.FailedLoginAttempts)
             .Set(u => u.LockoutEnd, user.LockoutEnd)
@@ -181,6 +221,7 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
                 : Builders<User>.Filter.Ne(u => u.DeactivatedByAdministrator, true));
         }
         if (condition.PasswordResetTokenHash is { } link) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, link));
+        if (condition.IsPlatformAccount is { } platform) filters.Add(platform ? PlatformAccountFilter.IsPlatformAccount : NotAPlatformAccount);
         var filter = Builders<User>.Filter.And(filters);
 
         // Only the elements whose value differs from the state read — never the whole document.
@@ -198,12 +239,12 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return result.MatchedCount == 1;
     }
 
-    public async Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct)
+    public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct)
+        => SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, excludePlatformAccounts: false, ct);
+
+    public async Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, bool excludePlatformAccounts, CancellationToken ct)
     {
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, userId),
-            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var filter = LiveAccount(userId, tenantId, excludePlatformAccounts);
         var update = Builders<User>.Update
             .Set(u => u.PasswordResetTokenHash, tokenHash)
             .Set(u => u.PasswordResetTokenExpiresAt, expiresAtUtc)
@@ -214,13 +255,14 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return result.MatchedCount == 1;
     }
 
-    public async Task<LoginFailureOutcome> RecordLoginFailureAsync(
+    public Task<LoginFailureOutcome> RecordLoginFailureAsync(
         Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
+        => RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, excludePlatformAccounts: false, ct);
+
+    public async Task<LoginFailureOutcome> RecordLoginFailureAsync(
+        Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, bool excludePlatformAccounts, CancellationToken ct)
     {
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, userId),
-            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var filter = LiveAccount(userId, tenantId, excludePlatformAccounts);
 
         var counted = await Collection.FindOneAndUpdateAsync(
             filter,
@@ -254,5 +296,40 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    // BL-521 FIX7 item 1 - a targeted $set, never a replace (see IUserRepository).
+    public async Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, userId),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var update = Builders<User>.Update
+            .Set(u => u.PlatformActorType, actorType.Trim())
+            .Set(u => u.UpdatedAt, DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount > 0; // a $set of the value the document already holds still MATCHES; only a missing account does not
+    }
+
+    // BL-521 FIX7 item 3 - this repository applies no caller scope (see IUserRepository); the decorator does.
+    public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+        => Task.FromResult(userIds);
+
+    /// <summary>The ids among <paramref name="userIds"/> (of this tenant) that belong to a platform account.</summary>
+    public async Task<IReadOnlyCollection<Guid>> PlatformAccountIdsAmongAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+    {
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.In(u => u.Id, userIds),
+            PlatformAccountFilter.IsPlatformAccount);
+
+        return await Collection.Find(filter).Project(u => u.Id).ToListAsync(ct);
     }
 }

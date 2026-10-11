@@ -221,6 +221,42 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         Assert.Equal(0, await host.CountAsync("quota_events"));
     }
 
+    /// <summary>
+    /// BL-521 FIX1 F4 — until the owner opens them, every subscription write is a platform administrator's: a partner is
+    /// refused 403 for its OWN tenant and for any other (before the tenant is looked at, so the answer tells nothing
+    /// about it), nothing is written; it still READS its own tenant's subscription and not another's (404).
+    /// </summary>
+    [Fact]
+    public async Task A_partner_writes_no_subscription_even_for_its_allowed_tenant_and_reads_only_its_own()
+    {
+        await using var host = await Host.StartAsync();
+        var anySubscription = Guid.NewGuid();
+
+        foreach (var tenant in new[] { Host.Tenant, Host.OtherTenant })
+        {
+            var writes = new[]
+            {
+                await host.PostAsync(Host.PartnerToken(), tenant, "", AssignBody),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/activate", "{}"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/cancel", "{}"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/renew", "{}"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/expire", "null"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/suspend", "{}"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/reactivate", "{}"),
+            };
+            Assert.All(writes, response => Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode));
+            Assert.Empty(await host.SubscriptionsAsync(tenant));
+        }
+
+        Assert.Equal(0, await host.EventsAsync());
+
+        // a platform administrator assigns; the partner then reads its own tenant's subscription, not another's
+        var assigned = await host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", AssignBody);
+        Assert.True(assigned.IsSuccessStatusCode, (await Host.ReadAsync(assigned)).Body);
+        Assert.Equal(HttpStatusCode.OK, (await host.GetAsync(Host.PartnerToken(), Host.Tenant, "")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await host.GetAsync(Host.PartnerToken(), Host.OtherTenant, "")).StatusCode);
+    }
+
     [Fact]
     public async Task A_second_assign_is_refused_with_its_code_while_a_subscription_is_live()
     {
@@ -379,19 +415,10 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                                 ClockSkew = TimeSpan.Zero
                             };
                         });
-                    // The production policy (Infrastructure DependencyInjection.AddInfrastructure).
-                    services.AddAuthorization(options => options.AddPolicy("PlatformActor", policy =>
-                    {
-                        policy.RequireAuthenticatedUser();
-                        policy.RequireAssertion(context =>
-                        {
-                            var actorType = context.User.Claims
-                                .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
-                                ?.Value;
-                            return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
-                                   || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
-                        });
-                    }));
+                    // THE production policies (BL-521: no longer a copy — a copy kept admitting partners everywhere).
+                    services.AddAuthorization(Diten.Platform.Infrastructure.DependencyInjection.AddPlatformActorPolicies);
+                    // THE production scope registration (Program.cs calls the same method) — BL-521 FIX1 F8-7.
+                    Diten.Platform.API.Security.PlatformActorTenantScopeRegistration.AddPlatformActorTenantScope(services);
                     services.AddHttpContextAccessor();
 
                     services.AddApplication();
@@ -511,6 +538,13 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
             return client.PostAsync(path, new StringContent(json, Encoding.UTF8, "application/json"));
         }
 
+        public Task<HttpResponseMessage> GetAsync(string token, Guid tenantId, string suffix)
+        {
+            var client = _server.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return client.GetAsync($"/api/platform/tenants/{tenantId:D}/commercial/subscription" + (suffix.Length == 0 ? string.Empty : "/" + suffix));
+        }
+
         /// <summary>One pass of the PRODUCTION outbox processor — the unit of work the hosted worker repeats.</summary>
         public Task<int> ProcessAuditOutboxAsync()
         {
@@ -558,6 +592,15 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
             return (response.StatusCode, code, body);
         }
 
+        public const string PartnerEmail = "partner.admin@di10.test";
+        public static readonly Guid Partner = Guid.Parse("60060060-0000-4000-8000-0000000000e5");
+
+        /// <summary>BL-521 — a partner administrator allowed only <see cref="Tenant"/>.</summary>
+        public static string PartnerToken() => Token(
+            new Claim(JwtRegisteredClaimNames.Sub, Partner.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, PartnerEmail),
+            new Claim("actor_type", "partner_admin"));
+
         public static string AdministratorToken() => Token(
             new Claim(JwtRegisteredClaimNames.Sub, Administrator.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, AdministratorEmail),
@@ -603,6 +646,15 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         private static IPlatformAdministratorRepository Administrators()
         {
             var administrators = new Mock<IPlatformAdministratorRepository>();
+            // BL-521 — a partner administrator allowed ONE tenant (Tenant), not OtherTenant.
+            administrators.Setup(x => x.GetByNormalizedEmailAsync(PartnerEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PlatformAdministrator
+                {
+                    ActorType = ActorType.PartnerAdmin, AllowedTenantIds = [Tenant],
+                    Status = AdministratorStatus.Active,
+                    InvitationStatus = AdministratorInvitationStatus.Accepted,
+                    LastLoginAtUtc = DateTimeOffset.UtcNow
+                });
             administrators.Setup(x => x.GetByNormalizedEmailAsync(AdministratorEmail, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new PlatformAdministrator
                 {

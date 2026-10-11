@@ -28,6 +28,9 @@ public static class RoleErrorCodes
 
     /// <summary>A platform-administration permission cannot be granted to a tenant role.</summary>
     public const string PermissionNotTenantAssignable = "ROLE_PERMISSION_NOT_TENANT_ASSIGNABLE";
+    /// <summary>A non-human execution permission (DefaultRolePermissionTemplate.CanBeGrantedToHumanRole is false) cannot be
+    /// granted to any role a person holds — in a tenant or a platform context (TKO review, small item 3).</summary>
+    public const string PermissionNotForHumanRole = "ROLE_PERMISSION_NOT_FOR_HUMAN_ROLE";
     /// <summary>The role already holds the permission (also the answer to a double click).</summary>
     public const string PermissionAlreadyGranted = "ROLE_PERMISSION_ALREADY_GRANTED";
     /// <summary>A System/Module grant is provisioning-managed and cannot be removed by hand.</summary>

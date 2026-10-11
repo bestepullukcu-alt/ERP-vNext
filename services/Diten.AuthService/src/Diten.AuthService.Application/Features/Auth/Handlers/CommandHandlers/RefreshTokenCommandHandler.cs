@@ -1,8 +1,10 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Application.Features.Auth.Services;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -13,6 +15,10 @@ namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
 public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Response<AuthResponse>>
 {
+    /// <summary>BL-521 FIX5 item 12 — every platform administrator account lives in the platform system tenant: the
+    /// convergence names it, never the tenant a (possibly foreign) token row carries.</summary>
+    private static readonly Guid PlatformTenantId = PlatformSystemTenant.Id;
+
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleRepository _roleRepository;
@@ -122,19 +128,70 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             return Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401);
         }
 
-        var isPlatformActor = IsPlatformActor(actorType);
-        if (isPlatformActor && !await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
+        // BL-521 FIX6 item 13 (A') — a TENANT session of a platform account is not refreshed (see LoginCommandHandler): the
+        // tenant door no longer mints one, and one minted before it refused such accounts ends here with the generic answer of
+        // an invalid refresh token. The account's PLATFORM session (platform_admin / partner_admin) is the platform door's
+        // own and is untouched. Nothing is revoked: the platform sessions of the same account share this user and tenant.
+        if (user.IsPlatformAccount && !IsPlatformActor(actorType))
         {
-            await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, existingToken.TenantId, ct);
-            _logger.LogWarning(
-                "Platform refresh denied by platform administrator status. UserId={UserId} Email={Email}",
-                user.Id,
-                user.Email);
-            return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
+            // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
+            TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.RefreshDoor, existingToken.TenantId);
+            return Response<AuthResponse>.Fail("Invalid refresh token.", 401);
         }
 
+        var isPlatformActor = IsPlatformActor(actorType);
         if (isPlatformActor)
         {
+            // BL-521 FIX1 F1(b) — a platform actor's new token carries the actor type its Platform administrator RECORD
+            // names, not the one the old token carried: a platform administrator demoted to partner becomes partner_admin
+            // at its next refresh instead of keeping platform_admin forever. No active record / unreadable → refused, the
+            // same direction as the activity rule this replaces.
+            var record = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
+            if (record.Verdict == PlatformAdministratorRecordVerdict.Unavailable)
+            {
+                // BL-521 FIX2 item 3 — Platform did not answer (unreachable, 5xx, unreadable). That is not a "no": this
+                // refresh is refused with 503 and NOTHING is revoked — the old refresh token is not even rotated, so the
+                // client retries with it.
+                _logger.LogWarning(
+                    "Platform refresh refused: platform administrator status unavailable. UserId={UserId}",
+                    user.Id);
+                return Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, 503);
+            }
+
+            if (record.Verdict != PlatformAdministratorRecordVerdict.Confirmed)
+            {
+                await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, existingToken.TenantId, ct);
+                _logger.LogWarning(
+                    "Platform refresh denied by platform administrator status. UserId={UserId} Email={Email}",
+                    user.Id,
+                    user.Email);
+                return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
+            }
+
+            var recordActorType = record.ActorType!;
+
+            // BL-521 FIX7 item 1 - Auth's copy of the actor type follows the record at every platform mint (see PlatformLoginCommandHandler).
+            await PlatformAccountDiscriminator.EnsureAsync(_userRepository, user, recordActorType, _logger, ct);
+
+            if (!string.Equals(recordActorType, actorType, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation(
+                    "Platform refresh re-issued with the administrator record's actor type. UserId={UserId} From={From} To={To}",
+                    user.Id,
+                    actorType,
+                    recordActorType);
+            }
+
+            actorType = recordActorType;
+
+            // BL-521 FIX4 item 2 — the refreshed token's roles follow the RECORD: Auth's copy is converged to the roles
+            // Platform's answer names before the token is minted from it. An older Platform that sends none converges nothing.
+            // FIX5 item 3 — no provisioning default at mint; item 12 — the platform tenant, by constant.
+            if (record.Roles is not null)
+            {
+                await PlatformAdministratorRoleConvergence.ConvergeAtMintAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
+            }
+
             await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
         }
 

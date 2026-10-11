@@ -103,6 +103,9 @@
   <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
     <value>هذا الإذن مخصّص لإدارة المنصة ولا يمكن منحه لدور.</value>
   </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>هذا الإذن مخصّص لعمليات النظام الآلية ولا يمكن منحه لدور.</value>
+  </data>
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>هذا الإذن يأتي مع الدور أو مع إحدى وحدات اشتراكك، ولذلك لا يمكن إزالته من هنا.</value>
   </data>

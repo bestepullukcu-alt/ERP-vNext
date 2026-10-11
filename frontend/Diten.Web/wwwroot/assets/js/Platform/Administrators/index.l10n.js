@@ -17,11 +17,12 @@
         'Status', 'Suspend', 'Suspended', 'Unknown', 'Update', 'ViewDetails',
         'SuspendModalTitle', 'SuspendModalWarning', 'SuspendModalReasonLabel',
         'SuspendModalReasonPlaceholder', 'SuspendModalReasonRequired', 'SuspendModalConfirmButton',
-        'EmailUnlockTooltip', 'ResendInviteSuccess', 'SetupLinkTitle', 'SetupLinkIntro',
+        'ResendInviteSuccess', 'SetupLinkTitle', 'SetupLinkIntro',
         'SetupLinkEmailFailedIntro',
         'ProtectedAccount', 'AdminSelfActionDenied', 'AdminSelfRoleDowngradeDenied',
         'AdminLastSuperAdminDenied', 'AdminSeedDeleteDenied', 'AdminSeedSuspendDenied',
-        'AdminSelfResetDenied'
+        'AdminSelfResetDenied',
+        'AdminBulkDuplicateIds', 'AdminBulkDeletePartial'
     ];
 
     const logMissingKeys = (dictionary) => {

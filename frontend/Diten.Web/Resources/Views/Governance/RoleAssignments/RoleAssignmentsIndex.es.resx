@@ -103,6 +103,9 @@
   <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
     <value>Este permiso está reservado a la administración de la plataforma y no se puede conceder a un rol.</value>
   </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>Este permiso está reservado a los procesos automatizados del sistema y no se puede conceder a un rol.</value>
+  </data>
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>Este permiso viene con el rol o con un módulo de su suscripción, por lo que no se puede quitar aquí.</value>
   </data>

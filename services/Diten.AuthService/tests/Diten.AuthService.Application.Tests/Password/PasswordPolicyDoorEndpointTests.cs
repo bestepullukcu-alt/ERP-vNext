@@ -148,9 +148,17 @@ public sealed class PasswordPolicyDoorEndpointTests : IClassFixture<PasswordPoli
         {
             user.SetPasswordResetToken(sp.GetRequiredService<IRefreshTokenHasher>().Hash(resetToken), DateTime.UtcNow.AddHours(1));
         }
+        else
+        {
+            // BL-521 FIX3 item 4 — the forced change door opens only on a pending forced change, for a platform actor.
+            user.RequirePasswordChange(null);
+        }
 
         user = await sp.GetRequiredService<IUserRepository>().CreateAsync(user, CancellationToken.None);
-        var accessToken = sp.GetRequiredService<ITokenService>().GenerateAccessToken(user, [], [], expiresInMinutes: 60);
+        var tokens = sp.GetRequiredService<ITokenService>();
+        var accessToken = withResetToken
+            ? tokens.GenerateAccessToken(user, [], [], expiresInMinutes: 60)
+            : tokens.GeneratePlatformAccessToken(user.Id, user.Email, user.FirstName, user.LastName, PlatformTenantId, "platform_admin", [], [], 60, true);
         return (user.Email, resetToken, accessToken);
     }
 
@@ -164,6 +172,9 @@ public sealed class PasswordPolicyDoorEndpointTests : IClassFixture<PasswordPoli
     {
         public Task<bool> IsActiveAsync(string email, CancellationToken ct) => Task.FromResult(true);
         public Task MarkLoginAcceptedAsync(string email, CancellationToken ct) => Task.CompletedTask;
+        // BL-521 FIX1 F1(b) — the interface's record actor type; this host's platform user is a platform administrator.
+        public Task<PlatformAdministratorRecordAnswer> GetActiveActorTypeAsync(string email, CancellationToken ct) =>
+            Task.FromResult(PlatformAdministratorRecordAnswer.ConfirmedAs("platform_admin"));
     }
 
     private sealed class TenCharactersUpperAndSpecial : ITenantLoginSettingsClient

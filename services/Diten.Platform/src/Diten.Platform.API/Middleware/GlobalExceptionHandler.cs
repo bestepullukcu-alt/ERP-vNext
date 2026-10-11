@@ -50,6 +50,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             // cannot cure it, so it is not "try later" (500, its own code, no internal sentence). Before the arm below.
             Diten.Platform.Application.Features.Audit.TransactionOwnedAuditIntentInvalidException => CreateAuditIntentInvalidProblemDetails(),
             Diten.Platform.Application.Features.Audit.TransactionOwnedAuditRefusedException => CreateAuditUnavailableProblemDetails(),
+            // BL-521 FIX2 item 3 — the administrator record could not be read: no answer, "try again", never "denied".
+            PlatformAdministratorRecordUnavailableException => CreateAdministratorRecordUnavailableProblemDetails(),
             InvalidOperationException invalidOperationException => CreateProblemDetails(
                 invalidOperationException.Message, 
                 "Application Error", 
@@ -95,6 +97,18 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             Detail = "The change could not be recorded in the audit trail right now, so it was not made. Please try again later."
         };
         problemDetails.Extensions["reason_code"] = AuditRecordUnavailableCode;
+        return problemDetails;
+    }
+
+    private static ProblemDetails CreateAdministratorRecordUnavailableProblemDetails()
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Service Unavailable",
+            Status = (int)HttpStatusCode.ServiceUnavailable,
+            Detail = "The administrator record could not be read right now. Please try again later."
+        };
+        problemDetails.Extensions["reason_code"] = PlatformAdministratorRecordUnavailableException.ReasonCode;
         return problemDetails;
     }
 

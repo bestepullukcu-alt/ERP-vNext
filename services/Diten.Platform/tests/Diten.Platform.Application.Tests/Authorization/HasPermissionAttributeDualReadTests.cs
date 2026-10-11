@@ -82,22 +82,39 @@ public sealed class HasPermissionAttributeDualReadTests
         Assert.True(await IsAllowedAsync("platform.administrators.read", "platform_admin"));
     }
 
+    // BL-521 — this test used to pin that a partner administrator passes EVERY key on EVERY endpoint. That was the
+    // gap: it now passes only an endpoint that admits partners (PartnerAdminScopeAttribute), where its tenant scope is
+    // applied, and is refused everywhere else.
     [Fact]
-    public async Task Partner_admin_actor_bypasses_permission_check()
+    public async Task Partner_admin_actor_is_refused_where_the_endpoint_does_not_admit_partners()
     {
-        Assert.True(await IsAllowedAsync("platform.administrators.read", "partner_admin"));
+        Assert.False(await IsAllowedAsync("platform.administrators.read", "partner_admin"));
+    }
+
+    [Fact]
+    public async Task Partner_admin_actor_bypasses_the_key_where_the_endpoint_admits_partners()
+    {
+        Assert.True(await IsAllowedAsync("platform.tenants.read", "partner_admin", authenticated: true, admitsPartners: true));
     }
 
     private static async Task<bool> IsAllowedAsync(
         string requirement,
         string? actorType,
         params string[] permissionClaims)
-        => await IsAllowedAsync(requirement, actorType, authenticated: true, permissionClaims);
+        => await IsAllowedAsync(requirement, actorType, authenticated: true, admitsPartners: false, permissionClaims);
 
     private static async Task<bool> IsAllowedAsync(
         string requirement,
         string? actorType,
         bool authenticated,
+        params string[] permissionClaims)
+        => await IsAllowedAsync(requirement, actorType, authenticated, admitsPartners: false, permissionClaims);
+
+    private static async Task<bool> IsAllowedAsync(
+        string requirement,
+        string? actorType,
+        bool authenticated,
+        bool admitsPartners,
         params string[] permissionClaims)
     {
         var attribute = new HasPermissionAttribute(requirement);
@@ -122,7 +139,8 @@ public sealed class HasPermissionAttributeDualReadTests
             RequestServices = new ServiceCollection().BuildServiceProvider(),
         };
 
-        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        var descriptor = new ActionDescriptor { EndpointMetadata = admitsPartners ? [new PartnerAdminScopeAttribute("id")] : [] };
+        var actionContext = new ActionContext(httpContext, new RouteData(), descriptor);
         var filterContext = new AuthorizationFilterContext(actionContext, new List<IFilterMetadata>());
 
         await attribute.OnAuthorizationAsync(filterContext);

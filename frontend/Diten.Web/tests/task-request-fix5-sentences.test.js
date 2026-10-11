@@ -165,7 +165,8 @@ describe("the link picker says when the server stopped at its ceiling", () => {
     global.MeetingsL10n = { t: (key) => `m:${key}` };
     global.DitenPersonPicker = { renderPersonOptions: () => {}, buildSearchableDropdownAdapter: () => ({}) };
     // Merge WP-CT-LANE-TKO-MERGE-01 — the lane's Meetings/form.js builds its people pickers with DitenPeopleSearch (BL-531).
-    global.DitenPeopleSearch = { options: () => ({}) };
+    // TKO review, small item 4 — the REAL shared module, not a stand-in: a change to its contract shows here.
+    loadScript("wwwroot/assets/js/shared/diten-people-search.js");
     global.DitenModal = { success: () => {}, error: () => {} };
     global.jQuery = undefined;
     global.showConfirm = (title, onConfirm, options) => { confirms.push(options); };
