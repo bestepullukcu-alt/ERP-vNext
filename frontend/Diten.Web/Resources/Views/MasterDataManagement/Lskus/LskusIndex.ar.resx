@@ -72,6 +72,9 @@
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>تغيّر هذا LSKU أو أُلغي بعد بدء الإرسال، لذلك لم يُرسل أي شيء للموافقة. افتح LSKU مرة أخرى وأرسله إذا كان لا يزال مطلوبًا.</value>
   </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>يجري سحب هذا الإرسال؛ أعد إرسال السحب لإكماله قبل الإرسال مرة أخرى.</value>
+  </data>
   <data name="StockFlagSerialControlled" xml:space="preserve">
     <value>التحكم بالرقم التسلسلي (LSKU هذا)</value>
   </data>

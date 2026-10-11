@@ -130,11 +130,14 @@ public sealed partial class ItemS1HttpTests
         Assert.DoesNotContain("\"uoms\"", text, StringComparison.Ordinal);
     }
 
-    // S5b-FIX2: each list carries its own catalog version (a V2 item-uom beside V1 lists).
+    // S5b-FIX2: each list carries its own catalog version. FIX3: three DIFFERENT versions, each in its own field (a
+    // list reporting another list's version is red).
     [Fact]
     public async Task S5b_FIX2_Each_list_carries_its_own_catalog_version()
     {
+        host.ItemReferences.EnumeratedVersions["material-type"] = "ITEM-UNIVERSAL-V3";
         host.ItemReferences.EnumeratedVersions["item-uom"] = "ITEM-UNIVERSAL-V2";
+        host.ItemReferences.EnumeratedVersions["storage-condition"] = "ITEM-UNIVERSAL-V4";
 
         var response = await Client().GetAsync($"{Items}/options");
         var text = await response.Content.ReadAsStringAsync();
@@ -143,8 +146,8 @@ public sealed partial class ItemS1HttpTests
         var versions = document.RootElement.GetProperty("data").GetProperty("catalogVersions");
 
         Assert.Equal("ITEM-UNIVERSAL-V2", versions.GetProperty("uoms").GetString());
-        Assert.Equal("ITEM-UNIVERSAL-V1", versions.GetProperty("materialTypes").GetString());
-        Assert.Equal("ITEM-UNIVERSAL-V1", versions.GetProperty("storageConditions").GetString());
+        Assert.Equal("ITEM-UNIVERSAL-V3", versions.GetProperty("materialTypes").GetString());
+        Assert.Equal("ITEM-UNIVERSAL-V4", versions.GetProperty("storageConditions").GetString());
         Assert.False(document.RootElement.GetProperty("data").TryGetProperty("catalogVersion", out _));
     }
 

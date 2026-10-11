@@ -72,6 +72,9 @@
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>此 LSKU 在提交开始后已被更改或取消，因此未提交任何审批。请重新打开该 LSKU，如仍需要，请再次提交。</value>
   </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>此提交的撤回正在进行中；请重新发送撤回以完成它，然后再次提交。</value>
+  </data>
   <data name="StockFlagSerialControlled" xml:space="preserve">
     <value>序列号管理（此 LSKU）</value>
   </data>

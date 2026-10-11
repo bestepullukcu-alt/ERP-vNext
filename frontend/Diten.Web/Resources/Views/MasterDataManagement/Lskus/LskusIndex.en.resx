@@ -72,6 +72,9 @@
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>This LSKU changed or was cancelled after the submission started, so nothing was sent for approval. Open the LSKU again and submit it if it is still needed.</value>
   </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>A withdrawal of this submit is under way; re-send the withdrawal to finish it before submitting again.</value>
+  </data>
   <data name="StockFlagSerialControlled" xml:space="preserve">
     <value>serial control (this LSKU)</value>
   </data>

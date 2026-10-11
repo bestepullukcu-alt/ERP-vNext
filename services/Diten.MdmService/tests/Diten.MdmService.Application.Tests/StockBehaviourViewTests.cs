@@ -56,9 +56,9 @@ public sealed class StockBehaviourViewTests
         }
         return level switch
         {
-            "gsku" => StockBehaviourView.ForGsku(gsku),
-            "lsku" => StockBehaviourView.ForLsku(gsku, lsku),
-            _ => StockBehaviourView.ForFinishedGood(gsku, fg)
+            "gsku" => StockBehaviourView.ForGsku(gsku, heldByOperation: false),
+            "lsku" => StockBehaviourView.ForLsku(gsku, lsku, heldByOperation: false),
+            _ => StockBehaviourView.ForFinishedGood(gsku, fg, heldByOperation: false)
         };
     }
 }

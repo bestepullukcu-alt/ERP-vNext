@@ -344,7 +344,8 @@ window.DitenStockBehaviour = (function () {
                     existing?.replaceChildren(...(addOnly.has(field) ? value : []).map((code) => {
                         const badge = document.createElement('span');
                         badge.className = 'badge bg-label-secondary';
-                        badge.textContent = storageLabel(code);
+                        // S5c: the stored condition by its name with its code beside it; an unnamed one by its code.
+                        badge.textContent = storageShown(code);
                         return badge;
                     }));
                     // Add-only: the select offers only what is not stored yet; otherwise it holds the stored choice.

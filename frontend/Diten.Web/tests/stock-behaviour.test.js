@@ -20,7 +20,8 @@ describe('Stock behaviour section and offcanvas (O-12, O-8)', () => {
         'SaveFailed', 'StateChanged', 'InvalidCode', 'InvalidDays', 'InvalidConversion', 'InvalidGtin', 'ListCannotBeEmpty',
         'Uom_C62', 'Uom_XBX', 'Uom_XCS', 'Storage_COOL_2_8', 'Storage_AMBIENT_15_25', 'Storage_PROTECT_FROM_LIGHT',
         'OptionsUnavailable', 'TemperatureOnlyOne', 'SelectUnit'];
-    const l10n = `<script id="stock-behaviour-l10n" type="application/json">${JSON.stringify(Object.fromEntries(words.map(w => [w, w])))}</script>`;
+    // Each word is its own key; a test may give a word its real sentence (extraWords).
+    const l10nOf = (extraWords = {}) => `<script id="stock-behaviour-l10n" type="application/json">${JSON.stringify({ ...Object.fromEntries(words.map(w => [w, w])), ...extraWords })}</script>`;
     const optionsUrl = '/MasterDataManagement/Items/api/options';
     const option = (code, attributes = {}) => ({ code, sortOrder: 0, attributes });
     const optionsAnswer = {
@@ -34,11 +35,11 @@ describe('Stock behaviour section and offcanvas (O-12, O-8)', () => {
         })
     };
     // The production markup, its Razor words as their keys.
-    const offcanvas = (folder) => fs.readFileSync(path.join(views, folder, '_StockBehaviourOffcanvas.cshtml'), 'utf8')
+    const offcanvas = (folder, extraWords = {}) => fs.readFileSync(path.join(views, folder, '_StockBehaviourOffcanvas.cshtml'), 'utf8')
         .replace(/@\*[\s\S]*?\*@/g, '')
         .replace(/^@(using|inject|model)\b.*$/gm, '')
         .replace(/@Html\.AntiForgeryToken\(\)/g, '<input name="__RequestVerificationToken" value="test-csrf">')
-        .replace(/<partial [^>]*\/>/g, l10n)
+        .replace(/<partial [^>]*\/>/g, () => l10nOf(extraWords))
         .replace(/@Stock\["(\w+)"\]/g, '$1');
     const section = '<section id="sb-section"><button id="sb-edit" class="d-none"></button>' +
         ['baseUomCode', 'uomConversions', 'shelfLifeDays', 'storageConditionCodes', 'lotControlled', 'stockable']
@@ -58,8 +59,8 @@ describe('Stock behaviour section and offcanvas (O-12, O-8)', () => {
     const ok = (body, status = 200) => ({ status, ok: status >= 200 && status < 300, json: async () => body });
     const saved = (version) => ok({ data: { recordId: id, version, changed: true, isReplay: false }, isSuccessful: true, statusCode: 200 });
 
-    function harness(level, folder, { withOffcanvas = true, details = [], options = optionsAnswer } = {}) {
-        document.body.innerHTML = section + (withOffcanvas ? offcanvas(folder) : '');
+    function harness(level, folder, { withOffcanvas = true, details = [], options = optionsAnswer, extraWords = {} } = {}) {
+        document.body.innerHTML = section + (withOffcanvas ? offcanvas(folder, extraWords) : '');
         const queue = [...details];
         const fetchDetail = vi.fn(async () => {
             const next = queue.shift();
@@ -130,6 +131,17 @@ describe('Stock behaviour section and offcanvas (O-12, O-8)', () => {
         expect($('[data-sb-value="storageConditionCodes"]').textContent).toBe('Storage_COOL_2_8 (COOL_2_8)');
     });
 
+    // S5b-FIX3: the offcanvas badge of a stored (add-only) storage condition follows the S5c pattern — the name with the
+    // code beside it; a code the vocabulary does not name (a newer catalog value) by its code alone, never blank.
+    it('S5b-FIX3: the offcanvas badges name a stored storage condition with its code; an unnamed code stands alone', async () => {
+        const approved = stockBehaviour({ storageConditionCodes: ['COOL_2_8', 'FREEZE_BELOW_MINUS_20'], addOnlyFields: ['storageConditionCodes'] });
+        const h = harness('gsku', 'Gskus', { details: [detail(approved)], extraWords: { Storage_COOL_2_8: 'Store at 2-8 °C' } });
+        await h.module.open(id);
+
+        expect([...$('[data-sb-existing="storageConditionCodes"]').children].map(x => x.textContent))
+            .toEqual(['Store at 2-8 °C (COOL_2_8)', 'FREEZE_BELOW_MINUS_20']);
+    });
+
     it('O-8: on an approved record a locked field is drawn read-only and says why; the others stay free', async () => {
         const h = harness('gsku', 'Gskus', { details: [detail(stockBehaviour({ lockedFields: ['shelfLifeDays', 'lotControlled', 'baseUomCode'] }))] });
         await h.module.open(id);
@@ -155,7 +167,7 @@ describe('Stock behaviour section and offcanvas (O-12, O-8)', () => {
         expect(stored.querySelector('[data-sb-remove]')).toBeNull();
         expect($('[data-sb-addonly-reason="uomConversions"]').classList.contains('d-none')).toBe(false);
         // The stored storage conditions stand as labelled badges; the select offers only what is not stored yet.
-        expect([...$('[data-sb-existing="storageConditionCodes"]').children].map(x => x.textContent)).toEqual(['Storage_COOL_2_8']);
+        expect([...$('[data-sb-existing="storageConditionCodes"]').children].map(x => x.textContent)).toEqual(['Storage_COOL_2_8 (COOL_2_8)']);
         expect([...$('[data-sb-input="storageConditionCodes"]').options].map(x => x.value)).toEqual(['AMBIENT_15_25', 'PROTECT_FROM_LIGHT']);
         expect($('[data-sb-input="storageConditionCodes"]').value).toBe('');
 

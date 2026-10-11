@@ -183,7 +183,9 @@ public sealed partial class ItemUniversalReferenceDataTests
         var limit = Assert.Single(typeof(InternalItemUniversalReferenceDataController)
             .GetMethod(nameof(InternalItemUniversalReferenceDataController.Enumerate))!
             .GetCustomAttributes(typeof(RequestSizeLimitAttribute), false).Cast<RequestSizeLimitAttribute>());
-        Assert.NotNull(limit);
+        // FIX3: the cap's VALUE, not only its presence.
+        Assert.Equal(InternalItemUniversalReferenceDataController.MaximumRequestBytes,
+            ((Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata)limit).MaxRequestBodySize);
         Assert.Equal(65536, InternalItemUniversalReferenceDataController.MaximumRequestBytes);
     }
 

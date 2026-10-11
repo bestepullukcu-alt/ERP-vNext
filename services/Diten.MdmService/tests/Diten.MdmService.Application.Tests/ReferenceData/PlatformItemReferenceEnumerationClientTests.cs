@@ -51,6 +51,14 @@ public sealed partial class PlatformItemReferenceResolverClientTests
     [InlineData("display-name-empty")]
     [InlineData("precision-unparsable")]
     [InlineData("condition-kind-other")]
+    // S5b-FIX3: the rules that had no row.
+    [InlineData("catalog-version-empty")]
+    [InlineData("precision-negative")]
+    [InlineData("dimension-empty")]
+    [InlineData("set-null")]
+    [InlineData("value-null")]
+    [InlineData("value-code-empty")]
+    [InlineData("attributes-null")]
     public async Task S5b_An_enumeration_that_does_not_list_exactly_the_asked_sets_is_untrusted(string fault)
     {
         var body = EnumerationResponse();
@@ -68,6 +76,13 @@ public sealed partial class PlatformItemReferenceResolverClientTests
             case "display-name-empty": sets[2]!["values"]![0]!["display_name"] = ""; break;
             case "precision-unparsable": sets[0]!["values"]![0]!["attributes"]!["MaximumDecimalPrecision"] = "two"; break;
             case "condition-kind-other": sets[1]!["values"]![0]!["attributes"]!["ConditionKind"] = "HUMIDITY"; break;
+            case "catalog-version-empty": sets[1]!["catalog_version"] = ""; break;
+            case "precision-negative": sets[0]!["values"]![0]!["attributes"]!["MaximumDecimalPrecision"] = "-1"; break;
+            case "dimension-empty": sets[0]!["values"]![0]!["attributes"]!["DimensionCode"] = ""; break;
+            case "set-null": sets[2] = null; break;
+            case "value-null": sets[2]!["values"]![0] = null; break;
+            case "value-code-empty": sets[2]!["values"]![0]!["value_code"] = ""; break;
+            case "attributes-null": sets[2]!["values"]![0]!["attributes"] = null; break;
             default: sets[0]!["catalog_version_id"] = Guid.Empty.ToString(); break;
         }
 

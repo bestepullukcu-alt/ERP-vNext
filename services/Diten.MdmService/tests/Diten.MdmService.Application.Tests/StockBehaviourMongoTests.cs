@@ -782,19 +782,26 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
     }
 
-    // ---------------------------------------------------------------- S5b-FIX2 (1): one lock definition
+    // ---------------------------------------------------------------- S5b-FIX2 (1) / FIX3 (1): one lock definition
 
-    // The write's lock filter (LocksFree, Mongo) and the held reading (LocksHeld, in memory — Classify and *HeldAsync)
-    // come from ONE list per level; on the real store the two translations agree for every lock set, none set, and a
-    // document written without the fields. Sabotage target "the filter and Classify diverge".
+    // The write's lock filter (LocksFree, Mongo) and the held reading (LocksHeld, in memory — Classify, *HeldAsync and
+    // the Finished Good's editable rule) come from ONE list per level, built from [StockWriteLock]; on the real store
+    // the two translations agree for every lock set, none set, and a document written without the fields. FIX3: the
+    // rows are the attribute lists themselves (a new lock is a new row), and the Finished Good has its rows too.
+    // Sabotage targets "the filter and Classify diverge" (GSKU and Finished Good).
+    public static IEnumerable<object[]> LockShapes() =>
+        new[] { "gsku", "lsku", "fg" }.SelectMany(level => new[] { "none", "missing" }.Concat(LocksOf(level))
+            .Select(shape => new object[] { level, shape }));
+
+    private static IReadOnlyList<string> LocksOf(string level) => level switch
+    {
+        "gsku" => ProductStockBehaviourRepository.GskuLocks,
+        "lsku" => ProductStockBehaviourRepository.LskuLocks,
+        _ => ProductStockBehaviourRepository.FinishedGoodLocks
+    };
+
     [Theory]
-    [InlineData("gsku", "none")]
-    [InlineData("gsku", "missing")]
-    [InlineData("gsku", nameof(Gsku.ActiveLifecycleOperation))]
-    [InlineData("gsku", nameof(Gsku.RetirementOperationId))]
-    [InlineData("lsku", "none")]
-    [InlineData("lsku", "missing")]
-    [InlineData("lsku", nameof(Lsku.ActiveLifecycleOperation))]
+    [MemberData(nameof(LockShapes))]
     public async Task S5b_FIX2_The_lock_filter_and_the_held_reading_agree_on_the_store(string level, string shape)
     {
         var store = new ProductStockBehaviourRepository(_database, Tenant());
@@ -802,8 +809,7 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         if (level == "gsku")
         {
             var gsku = await SeedGskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
-            await ShapeLocksAsync(Gskus, gsku.Id, ProductStockBehaviourRepository.GskuLocks, shape,
-                new GskuActiveLifecycleOperationBinding(GskuLifecycleOperationKind.Correction, Guid.NewGuid(), gsku.Version));
+            await ShapeLocksAsync(Gskus, gsku.Id, ProductStockBehaviourRepository.GskuLocks, shape);
             var target = Builders<Gsku>.Filter.Eq(x => x.Id, gsku.Id);
             matched = await Gskus.Find(target & ProductStockBehaviourRepository.LocksFree<Gsku>(ProductStockBehaviourRepository.GskuLocks)).AnyAsync();
             var now = await Gskus.Find(target).SingleAsync();
@@ -811,35 +817,122 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
             // The detail's reading is the same one (no submit exists here).
             Assert.Equal(held, await store.GskuHeldAsync(now));
         }
-        else
+        else if (level == "lsku")
         {
             var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
-            await ShapeLocksAsync(Lskus, lsku.Id, ProductStockBehaviourRepository.LskuLocks, shape,
-                new LskuActiveLifecycleOperationBinding(LskuLifecycleOperationKind.Retirement, Guid.NewGuid(), lsku.Version));
+            await ShapeLocksAsync(Lskus, lsku.Id, ProductStockBehaviourRepository.LskuLocks, shape);
             var target = Builders<Lsku>.Filter.Eq(x => x.Id, lsku.Id);
             matched = await Lskus.Find(target & ProductStockBehaviourRepository.LocksFree<Lsku>(ProductStockBehaviourRepository.LskuLocks)).AnyAsync();
             var now = await Lskus.Find(target).SingleAsync();
             held = ProductStockBehaviourRepository.LocksHeld(now, ProductStockBehaviourRepository.LskuLocks);
             Assert.Equal(held, await store.LskuHeldAsync(now));
         }
+        else
+        {
+            var (_, finishedGood) = await SeedFinishedGoodAsync(ProductIdentityLifecycleStatus.Draft);
+            await ShapeLocksAsync(FinishedGoods, finishedGood.Id, ProductStockBehaviourRepository.FinishedGoodLocks, shape);
+            var target = Builders<FinishedGood>.Filter.Eq(x => x.Id, finishedGood.Id);
+            matched = await FinishedGoods.Find(target & ProductStockBehaviourRepository.LocksFree<FinishedGood>(
+                ProductStockBehaviourRepository.FinishedGoodLocks)).AnyAsync();
+            var now = await FinishedGoods.Find(target).SingleAsync();
+            held = ProductStockBehaviourRepository.LocksHeld(now, ProductStockBehaviourRepository.FinishedGoodLocks);
+            // The detail's editable flag reads the same list (a Draft: only the locks decide).
+            Assert.Equal(!held, StockBehaviourContext.FinishedGoodEditable(now));
+        }
 
         Assert.Equal(shape is not ("none" or "missing"), held);
         Assert.Equal(!held, matched);
     }
 
-    // The lists name every lifecycle lock the entities carry: a new lock field cannot be forgotten by one translation.
-    [Fact]
-    public void S5b_FIX2_The_lock_lists_name_every_lifecycle_lock_of_the_entity()
-    {
-        static string[] Locks(Type type) => type.GetProperties()
-            .Where(x => x.Name == "ActiveLifecycleOperation" || x.Name.EndsWith("OperationId", StringComparison.Ordinal))
-            .Select(x => x.Name).Order().ToArray();
+    // FIX3 (1): every property of a stock level is CLASSIFIED — a write lock ([StockWriteLock]) or named here as not
+    // one. A new property of ANY name is red until someone decides which it is (no naming rule; a harmless audit field
+    // named "…OperationId" is not forced into the locks, a lock named "FenceToken" does not slip past).
+    // Declared before NotWriteLocks: static fields initialise in text order.
+    private static readonly string[] EntityFields =
+        ["Id", "TenantId", "IsDeleted", "DeletedAt", "CreatedAt", "UpdatedAt", "Version"];
 
-        Assert.Equal(Locks(typeof(Gsku)), ProductStockBehaviourRepository.GskuLocks.Order());
-        Assert.Equal(Locks(typeof(Lsku)), ProductStockBehaviourRepository.LskuLocks.Order());
+    private static readonly Dictionary<Type, string[]> NotWriteLocks = new()
+    {
+        [typeof(Gsku)] =
+        [
+            .. EntityFields, "ProductDefinitionRevisionId", "CanonicalCode", "CodeReservationId", "CreationCommandId",
+            "PackApplicabilityCode", "PackQuantity", "PackUomCode", "PackApplicabilitySelection", "PackUomSelection",
+            "LifecycleStatus", // the status rule (Draft / IdentityApproved), conditioned on its own
+            "IdentityWorkflowBinding", // the identity submit holds through its OPERATION record (GskuSubmitHoldsAsync)
+            "ChildCreationAdmissions", // the children's creation, not a hold on this record's stock write
+            "RetirementOperationFingerprint", // travels with RetirementOperationId (the lock)
+            "IdentitySubmitReservations", // its own rule: the write is conditioned on the count read
+            "AuditIntents", "AuditIntentReceipts", "BaseUomCode", "UomConversions", "ShelfLifeDays",
+            "StorageConditionCodes", "LotControlled", "RetestDays", "MinRemainingShelfLifeDays", "Stockable",
+            "StockReferenceSelections", "StockBehaviourCommand" // the write's own idempotency mark
+        ],
+        [typeof(Lsku)] =
+        [
+            .. EntityFields, "GskuId", "CanonicalCode", "CodeReservationId", "CreationCommandId", "MarketCode",
+            "MarketSelection", "LifecycleStatus",
+            "IdentityWorkflowBinding", // the identity submit holds through its operation record and its fence
+            "AuditIntents", "AuditIntentReceipts", "SerialControlled", "StockBehaviourCommand"
+        ],
+        [typeof(FinishedGood)] =
+        [
+            .. EntityFields, "GskuId", "CanonicalCode", "CodeReservationId", "CreationCommandId", "LifecycleStatus",
+            "AuditIntents", "AuditIntentReceipts", "UomConversions", "ShelfLifeDays", "StorageConditionCodes",
+            "LotControlled", "SerialControlled", "Stockable", "Gtin",
+            "ReleasedGtin", // what a cancelled draft gave up — its cancellation is the lock
+            "StockReferenceSelections", "StockBehaviourCommand", "GtinCommand"
+        ]
+    };
+
+    [Fact]
+    public void S5b_FIX3_Every_property_of_a_stock_level_is_a_write_lock_or_named_as_not_one()
+    {
+        foreach (var (type, notLocks) in NotWriteLocks)
+        {
+            var properties = type.GetProperties().Select(x => x.Name).ToArray();
+            var locks = type.GetProperties().Where(x => x.IsDefined(typeof(StockWriteLockAttribute), true)).Select(x => x.Name).ToArray();
+            var unclassified = properties.Except(locks).Except(notLocks).ToArray();
+            Assert.True(unclassified.Length == 0, $"{type.Name}: classify — [StockWriteLock] or NotWriteLocks: {string.Join(", ", unclassified)}");
+            Assert.Empty(notLocks.Intersect(locks));
+            Assert.Empty(notLocks.Except(properties));
+        }
+
+        // The repository's lists ARE the attribute's (no list by hand), and today's locks are these.
+        Assert.Equal(new[] { "ActiveLifecycleOperation", "RetirementOperationId" }, ProductStockBehaviourRepository.GskuLocks);
+        Assert.Equal(new[] { "ActiveLifecycleOperation" }, ProductStockBehaviourRepository.LskuLocks);
+        Assert.Equal(new[] { "DraftCancellation" }, ProductStockBehaviourRepository.FinishedGoodLocks);
     }
 
-    private static async Task ShapeLocksAsync<T>(IMongoCollection<T> collection, Guid id, string[] locks, string shape, object binding)
+    // FIX3 minor: a GSKU held by its retirement refuses the write by the BLOCKED code (not a concurrency conflict).
+    [Fact]
+    public async Task S5b_FIX3_A_gsku_held_by_its_retirement_refuses_the_stock_write_as_blocked()
+    {
+        var gsku = await SeedGskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        await Gskus.UpdateOneAsync(x => x.Id == gsku.Id, Builders<Gsku>.Update.Set(x => x.RetirementOperationId, Guid.NewGuid()));
+
+        var response = await SetGsku(gsku, lot: true);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Contains(StockBehaviourStoreCodes.BlockedByOperation, response.Errors!);
+        Assert.DoesNotContain(StockBehaviourStoreCodes.ConcurrencyConflict, response.Errors!);
+    }
+
+    // A value for each lock type (a new lock type is red here until it has one).
+    private static object SampleLock(Type type, int version) =>
+        Nullable.GetUnderlyingType(type) == typeof(Guid) ? Guid.NewGuid()
+        : type == typeof(GskuActiveLifecycleOperationBinding)
+            ? new GskuActiveLifecycleOperationBinding(GskuLifecycleOperationKind.Correction, Guid.NewGuid(), version)
+        : type == typeof(LskuActiveLifecycleOperationBinding)
+            ? new LskuActiveLifecycleOperationBinding(LskuLifecycleOperationKind.Retirement, Guid.NewGuid(), version)
+        : type == typeof(FinishedGoodDraftCancellation)
+            ? new FinishedGoodDraftCancellation
+            {
+                OperationId = Guid.NewGuid(), Fingerprint = "f", IntentId = Guid.NewGuid(), IdempotencyKey = "k",
+                EvidenceHash = "h", ReasonCode = "MAKER_CANCEL", RequesterSubjectId = Guid.NewGuid(),
+                BaseVersion = version, RequestedAtUtc = DateTimeOffset.UtcNow
+            }
+        : throw new InvalidOperationException($"No sample value for the lock type {type.Name} — add one here.");
+
+    private static async Task ShapeLocksAsync<T>(IMongoCollection<T> collection, Guid id, IReadOnlyList<string> locks, string shape)
         where T : EntityBase
     {
         var filter = Builders<T>.Filter.Eq(x => x.Id, id);
@@ -850,9 +943,9 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         }
         if (shape == "none") return;
         Assert.Contains(shape, locks);
-        var value = typeof(T).GetProperty(shape)!.PropertyType == typeof(Guid?) ? (object)Guid.NewGuid() : binding;
         var current = await collection.Find(filter).SingleAsync();
-        typeof(T).GetProperty(shape)!.SetValue(current, value);
+        var property = typeof(T).GetProperty(shape)!;
+        property.SetValue(current, SampleLock(property.PropertyType, current.Version));
         await collection.ReplaceOneAsync(filter, current);
     }
 

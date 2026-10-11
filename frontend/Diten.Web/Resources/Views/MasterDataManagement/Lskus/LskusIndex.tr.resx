@@ -72,6 +72,9 @@
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>Bu LSKU gönderim başladıktan sonra değişti ya da iptal edildi; bu yüzden onaya hiçbir şey gönderilmedi. LSKU'yu yeniden açın ve hâlâ gerekiyorsa gönderin.</value>
   </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>Bu gönderimin geri çekilmesi sürüyor; yeniden göndermeden önce bitirmek için geri çekmeyi yeniden gönderin.</value>
+  </data>
   <data name="StockFlagSerialControlled" xml:space="preserve">
     <value>seri takibi (bu LSKU)</value>
   </data>

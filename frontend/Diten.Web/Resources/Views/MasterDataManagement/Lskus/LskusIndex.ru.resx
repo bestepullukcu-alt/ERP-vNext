@@ -72,6 +72,9 @@
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>Этот LSKU был изменён или отменён после начала отправки, поэтому на согласование ничего не отправлено. Откройте LSKU снова и отправьте его, если он всё ещё нужен.</value>
   </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>Отзыв этой отправки ещё выполняется; повторно отправьте отзыв, чтобы завершить его, прежде чем отправлять снова.</value>
+  </data>
   <data name="StockFlagSerialControlled" xml:space="preserve">
     <value>учёт по серийным номерам (этот LSKU)</value>
   </data>

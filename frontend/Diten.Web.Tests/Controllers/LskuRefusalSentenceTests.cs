@@ -27,6 +27,8 @@ public sealed class LskuRefusalSentenceTests
     private static readonly string[] Keys =
     [
         "ErrorMarketAlreadyExists", "ErrorSubmitAbandoned", "ErrorDecisionNotApplicable", "ErrorSubmitTargetChanged",
+        // S5b-FIX3: the submit-during-withdrawal sentence.
+        "ErrorSubmitDuringWithdrawal",
         // MOD-0290-FU04 S3b FIX1 (R5): the stock-flag gate's sentence, its flag labels and the action list's reason.
         "ErrorStockFlagsRequired", "StockFlagSerialControlled", "StockFlagGskuLotControlled", "SubmitNeedsStockFlags"
     ];
@@ -76,6 +78,32 @@ public sealed class LskuRefusalSentenceTests
         Assert.Equal("ErrorSubmitTargetChanged", FirstError(result, 409));
     }
 
+    // S5b-FIX3: a submit refused while its withdrawal is under way (LSKU_IDENTITY_WITHDRAWAL_UNDER_WAY) is finished by
+    // RE-SENDING THE WITHDRAWAL — its own sentence (en pinned), in all seven languages; never the status sentence.
+    [Fact]
+    public async Task A_submit_during_withdrawal_is_said_in_its_own_sentence_telling_the_user_to_resend_the_withdrawal()
+    {
+        var controller = Controller(Conflict("LSKU_IDENTITY_WITHDRAWAL_UNDER_WAY"));
+        controller.ControllerContext.HttpContext.Request.ContentType = "application/x-www-form-urlencoded";
+        controller.ControllerContext.HttpContext.Request.Form = new FormCollection(new()
+        {
+            ["ExpectedVersion"] = "0",
+            ["__RequestVerificationToken"] = "x"
+        });
+
+        var result = await controller.SubmitLifecycle(Guid.NewGuid(), 0, CancellationToken.None);
+
+        Assert.Equal("ErrorSubmitDuringWithdrawal", FirstError(result, 409));
+        var english = ResxValues("en")["ErrorSubmitDuringWithdrawal"];
+        Assert.Contains("re-send the withdrawal", english, StringComparison.Ordinal);
+        Assert.Equal("A withdrawal of this submit is under way; re-send the withdrawal to finish it before submitting again.", english);
+        foreach (var language in Languages)
+        {
+            Assert.True(ResxValues(language).TryGetValue("ErrorSubmitDuringWithdrawal", out var text)
+                && !string.IsNullOrWhiteSpace(text), $"ErrorSubmitDuringWithdrawal is missing in {language}");
+        }
+    }
+
     [Fact]
     public async Task Any_other_conflict_keeps_the_status_sentence()
     {
@@ -93,10 +121,7 @@ public sealed class LskuRefusalSentenceTests
     {
         foreach (var language in Languages)
         {
-            var path = Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources", "Views", "MasterDataManagement",
-                "Lskus", $"LskusIndex.{language}.resx");
-            var values = XDocument.Load(path).Root!.Elements("data")
-                .ToDictionary(x => x.Attribute("name")!.Value, x => x.Element("value")?.Value ?? string.Empty);
+            var values = ResxValues(language);
             foreach (var key in Keys)
             {
                 Assert.True(values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value),
@@ -104,6 +129,11 @@ public sealed class LskuRefusalSentenceTests
             }
         }
     }
+
+    private static Dictionary<string, string> ResxValues(string language) =>
+        XDocument.Load(Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources", "Views", "MasterDataManagement",
+                "Lskus", $"LskusIndex.{language}.resx")).Root!.Elements("data")
+            .ToDictionary(x => x.Attribute("name")!.Value, x => x.Element("value")?.Value ?? string.Empty);
 
     private static string FirstError(IActionResult result, int status)
     {

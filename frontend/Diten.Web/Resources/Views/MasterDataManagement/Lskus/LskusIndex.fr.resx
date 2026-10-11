@@ -72,6 +72,9 @@
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>Ce LSKU a été modifié ou annulé après le début de la soumission ; rien n'a donc été envoyé en approbation. Rouvrez le LSKU et soumettez-le s'il est toujours nécessaire.</value>
   </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>Un retrait de cette soumission est en cours ; renvoyez le retrait pour le terminer avant de soumettre à nouveau.</value>
+  </data>
   <data name="StockFlagSerialControlled" xml:space="preserve">
     <value>le suivi par numéro de série (ce LSKU)</value>
   </data>

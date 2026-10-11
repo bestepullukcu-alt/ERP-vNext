@@ -73,7 +73,8 @@ public sealed class StockBehaviourContext(
     // S5-FIX1 (1): a cancelled (or cancelling) Finished Good draft is not editable at all (S3 FIX1 M4) — one rule, read by
     // the write and by the detail's editable flag.
     public static bool FinishedGoodEditable(FinishedGood finishedGood) =>
-        Editable(finishedGood.LifecycleStatus) && finishedGood.DraftCancellation is null;
+        // S5b-FIX3: the record's write locks ([StockWriteLock] — today the draft cancellation), the list the write reads.
+        Editable(finishedGood.LifecycleStatus) && !StockWriteLocks.Held(finishedGood);
 
     public static Response<StockBehaviourResult> Done(Guid recordId, StockBehaviourWriteResult written)
     {

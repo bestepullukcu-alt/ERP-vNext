@@ -178,13 +178,14 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         if (current is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(write.MarksGtin ? current.GtinCommand : current.StockBehaviourCommand, write) is { } replay)
             return replay;
-        // S3 FIX1 M4: a cancelled draft is not editable at all.
-        if (current.DraftCancellation is not null)
+        // S3 FIX1 M4: a cancelled draft is not editable at all. S5b-FIX3: its lock (the draft cancellation) is read
+        // from the Finished Good's lock list, as the filter below and the detail's editable flag read it.
+        if (LocksHeld(current, FinishedGoodLocks))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.RecordNotEditable);
         if (current.Version == write.ExpectedVersion && await FinishedGoodOperationHoldsAsync(current, cancellationToken))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
-        var filter = Conditions(target, write) & Builders<FinishedGood>.Filter.Eq(x => x.DraftCancellation, null);
+        var filter = Conditions(target, write) & LocksFree<FinishedGood>(FinishedGoodLocks);
         var update = Update<FinishedGood>(write,
             write.MarksGtin ? nameof(FinishedGood.GtinCommand) : nameof(FinishedGood.StockBehaviourCommand));
         if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
@@ -205,7 +206,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
 
         var now = await _finishedGoods.Find(target).FirstOrDefaultAsync(cancellationToken);
         // A cancellation that landed between the pre-read and the write (the write's own condition refused it).
-        if (now?.DraftCancellation is not null
+        if (now is not null && LocksHeld(now, FinishedGoodLocks)
             && Replay(write.MarksGtin ? now.GtinCommand : now.StockBehaviourCommand, write) is null)
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.RecordNotEditable);
         return Classify(now, write.MarksGtin ? now?.GtinCommand : now?.StockBehaviourCommand, now?.Version,
@@ -214,13 +215,15 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
 
     // ------------------------------------------------------------------------------------------- operation holds
     // S5-FIX1 (1): ONE definition per level, read by the write above AND by the detail's editable flag.
-    // S5b-FIX2 (1): the lifecycle locks a record carries are named ONCE per level (GskuLocks / LskuLocks). The write's
-    // Mongo filter (LocksFree: each field Eq null — a missing field matches too) and the in-memory reading (LocksHeld:
-    // Classify and *HeldAsync) are both generated from that one list; a pinned theory proves the two translations agree
-    // on every lock, set and unset, on a real store.
+    // S5b-FIX2 (1): the lifecycle locks a record carries are ONE list per level. The write's Mongo filter (LocksFree:
+    // each field Eq null — a missing field matches too) and the in-memory reading (LocksHeld: Classify and *HeldAsync)
+    // are both generated from it; a pinned theory proves the two translations agree on every lock, set and unset, on a
+    // real store. S5b-FIX3 (CT decision): the lists are built by reflection from [StockWriteLock] on the entities
+    // (StockWriteLocks.Of) — no list is written by hand, the Finished Good's draft cancellation included.
 
-    internal static readonly string[] GskuLocks = [nameof(Gsku.ActiveLifecycleOperation), nameof(Gsku.RetirementOperationId)];
-    internal static readonly string[] LskuLocks = [nameof(Lsku.ActiveLifecycleOperation)];
+    internal static readonly IReadOnlyList<string> GskuLocks = StockWriteLocks.Of<Gsku>();
+    internal static readonly IReadOnlyList<string> LskuLocks = StockWriteLocks.Of<Lsku>();
+    internal static readonly IReadOnlyList<string> FinishedGoodLocks = StockWriteLocks.Of<FinishedGood>();
 
     internal static FilterDefinition<T> LocksFree<T>(IEnumerable<string> locks) =>
         locks.Aggregate(Builders<T>.Filter.Empty, (filter, field) => filter & new BsonDocument(field, BsonNull.Value));

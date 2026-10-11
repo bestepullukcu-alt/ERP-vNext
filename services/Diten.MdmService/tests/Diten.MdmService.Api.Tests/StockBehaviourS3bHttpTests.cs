@@ -713,6 +713,10 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
     [InlineData("gsku-retirement-op", false)]
     [InlineData("lsku-active-op", false)]
     [InlineData("lsku-retirement-request", false)]
+    // S5b-FIX3 (2): the LSKU's free rows — an LSKU that is never held must be editable (a "held" that is always true
+    // went unseen before).
+    [InlineData("lsku-approved", true)]
+    [InlineData("lsku-draft-free", true)]
     public async Task S5_FIX1_Editable_is_exactly_what_the_stock_write_accepts(string shape, bool expected)
     {
         var (path, write) = await StockShapeAsync(shape);
@@ -723,7 +727,14 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
         Assert.Equal(expected, editable);
         var text = await response.Content.ReadAsStringAsync();
         if (editable) Assert.True(response.StatusCode != HttpStatusCode.Conflict, text);
-        else Assert.True(response.StatusCode == HttpStatusCode.Conflict, text);
+        else
+        {
+            Assert.True(response.StatusCode == HttpStatusCode.Conflict, text);
+            // FIX3 minor: the 409 is the hold's own code, never a concurrency conflict.
+            Assert.Contains(shape == "fg-draft-cancelled" ? StockBehaviourStoreCodes.RecordNotEditable
+                : StockBehaviourStoreCodes.BlockedByOperation, text, StringComparison.Ordinal);
+            Assert.DoesNotContain(StockBehaviourStoreCodes.ConcurrencyConflict, text, StringComparison.Ordinal);
+        }
     }
 
     // (1) the stated cases by name.
@@ -817,6 +828,22 @@ public sealed class StockBehaviourS3bHttpTests(MdmHttpHost host)
                 var records = await SeedAsync(completeGsku: true);
                 return ($"/api/finished-goods/{records.FinishedGood.Id:D}",
                     () => PutFinishedGoodAsync(records.FinishedGood.Id, records.FinishedGood.Version, new { lotControlled = true }));
+            }
+            case "lsku-approved":
+            {
+                var records = await SeedAsync();
+                return ($"/api/lskus/{records.Lsku.Id:D}",
+                    () => PutLskuAsync(records.Lsku.Id, records.Lsku.Version, new { serialControlled = true }));
+            }
+            case "lsku-draft-free":
+            {
+                var records = await SeedAsync(completeGsku: true);
+                Assert.Equal(HttpStatusCode.OK,
+                    (await PutGskuAsync(records.Gsku.Id, records.Gsku.Version, new { lotControlled = true })).StatusCode);
+                var lsku = await LskuDraftAsync(records.Gsku.Id, "TR");
+                var now = await LskuAsync(lsku);
+                Assert.Equal(ProductIdentityLifecycleStatus.Draft, now.LifecycleStatus);
+                return ($"/api/lskus/{lsku:D}", () => PutLskuAsync(lsku, now.Version, new { serialControlled = true }));
             }
             case "fg-draft-busy":
             {

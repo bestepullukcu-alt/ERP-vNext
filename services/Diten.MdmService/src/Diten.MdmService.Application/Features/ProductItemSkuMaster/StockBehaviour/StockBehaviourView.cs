@@ -59,7 +59,7 @@ public static class StockBehaviourView
     public const string CaseBoxConversion = "caseBoxConversion";
     public const string GskuStockable = "gsku.stockable";
 
-    public static StockBehaviourDto ForGsku(Gsku gsku, bool heldByOperation = false)
+    public static StockBehaviourDto ForGsku(Gsku gsku, bool heldByOperation)
     {
         var missing = new List<string>();
         if (string.IsNullOrEmpty(gsku.BaseUomCode)) missing.Add(BaseUomCode);
@@ -83,9 +83,10 @@ public static class StockBehaviourView
     }
 
     // O-3: everything but the serial flag is the GSKU's, read now; the LSKU's own field is only SerialControlled.
-    public static StockBehaviourDto ForLsku(Gsku gsku, Lsku lsku, bool heldByOperation = false)
+    public static StockBehaviourDto ForLsku(Gsku gsku, Lsku lsku, bool heldByOperation)
     {
-        var parent = ForGsku(gsku);
+        // The GSKU's values only; the LSKU's own editable flag is set below (the GSKU's hold is not the LSKU's).
+        var parent = ForGsku(gsku, heldByOperation: false);
         var missing = new List<string>();
         if (!parent.Stockable) missing.Add(GskuStockable);
         if (lsku.SerialControlled is null) missing.Add(SerialControlled);
@@ -107,7 +108,7 @@ public static class StockBehaviourView
 
     // O-14: the base unit is the GSKU's; D-2: the shelf life is the FG's own or, when it has none, the GSKU's; the days
     // (retest / minimum remaining) are the GSKU's.
-    public static StockBehaviourDto ForFinishedGood(Gsku gsku, FinishedGood finishedGood, bool heldByOperation = false)
+    public static StockBehaviourDto ForFinishedGood(Gsku gsku, FinishedGood finishedGood, bool heldByOperation)
     {
         var shelfLife = finishedGood.ShelfLifeDays ?? gsku.ShelfLifeDays;
         var missing = new List<string>();

@@ -419,6 +419,8 @@ public sealed class LskusController : Controller
         ["LSKU_IDENTITY_SUBMIT_ABANDONED"] = "ErrorSubmitAbandoned",
         ["LSKU_IDENTITY_SUBMIT_TARGET_CHANGED"] = "ErrorSubmitTargetChanged",
         ["LSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "ErrorDecisionNotApplicable",
+        // S5b-FIX3: a submit refused while its withdrawal is under way is finished by re-sending the withdrawal (as GSKU).
+        ["LSKU_IDENTITY_WITHDRAWAL_UNDER_WAY"] = "ErrorSubmitDuringWithdrawal",
         // MOD-0290-FU04 S3b (R-04): its serial flag and its GSKU's lot flag must be set before it is sent for approval.
         ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "ErrorStockFlagsRequired"
     };
