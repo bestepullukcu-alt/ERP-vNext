@@ -8398,6 +8398,39 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-614
+
+**CT hattında 32 vitest kırmızısı (11'i CT alanı); CI'da vitest satırı yok, bu yüzden büyümeleri görünmüyor**
+
+DURUM: AÇIK · SAHİP: CT (11 CT alanı) + CRM / Enterprise Strategy / PVG ekipleri (21, XMC-001) · BULAN: CT hat doğrulaması (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`afedcdeb9`, tam `npx vitest run`: 32 kırmızı / 4633 geçti; taban `a980dbf74` 32 / 4586):
+- **Ad listesi aynı, içerik değil.** Stock-gate birleşimi (`38da7cf52`) zaten kırmızı iki teste yeni ihlal ekledi:
+  - `diten-field-icons` "no NEW offcanvas ships without the wrapper": +3 (`MasterDataManagement/{FinishedGoods,Gskus,Lskus}/_StockBehaviourOffcanvas.cshtml`);
+  - `global-confirm-input-type` hesap dışı `showInput` çağıranı 20 → 21.
+  Kırmızı bir test, yeni ihlali saklıyor.
+- CT alanı (11):
+  - `diten-field-icons` ×2 (4 sarmalayıcısız form + 2 bayat `KNOWN_NO_ICONS` girdisi);
+  - `diten-tags` (SharedResource açığı 39 > 33);
+  - `global-confirm-input-type`;
+  - `global-products-register` (`DtDefaults`'ta `extend: 'print'` aranıyor);
+  - `governance-users-error-codes-ct` (harita 20, tablo 18: `USER_RESET_CONFLICT`, `USER_RESET_SELF`);
+  - `governance-users-list-component` (`Users/index.js` 453 > 450 satır);
+  - `wcn-dialog-one-language` (adsız `inputOptions` çağıranı);
+  - `workcenter-next-provider-labels` ×2 (21 anahtar 7 dilde eksik; ham eylem adları `WorkAggregation_Action_{Decline,Offer,Withdraw}`);
+  - `workcenter-next-l10n-key-guard` (b) (3 sunucu anahtarı cümlesiz).
+- Diğer ekipler (21): CRM kampanya ×7 + rıza ×4; Enterprise Strategy ×9 (strategy-apis ×4, planning / periods / objectives); PVG ×1.
+
+Yapılacak:
+1. Açık dallar (WCN FIX6, URA FIX1, UX-COMMON, kr-fix1; hepsi bu dosyalara dokunuyor) hatta birleşince yeniden ölçüm, AYRINTI düzeyinde (ad değil, ihlal listesi).
+2. Kalanlar için tek CT iş paketi: bilinen listeye eklemek yok, düzeltme var; 7 dil.
+3. 21'i ekip mesajına (`ekiplere-ci-test-mesaji.md`).
+4. CI'ya vitest satırı: yalnız küçülebilen adlı kırmızı listesiyle (test adı + ihlal sayısı).
+
+Gelecek regresyon riski: 🟡 CI vitest koşmadığı sürece her birleşim kırmızı testlere sessizce yeni ihlal ekleyebilir (stock-gate'te oldu).
+
+---
+
 ### BL-613
 
 **MDM ürün kimlik akışları: yedi akış açık onayı düz `now + retryDelay` ile yokluyor (BL-607'nin geri çekilmesi yalnız LSKU kimlikte)**
