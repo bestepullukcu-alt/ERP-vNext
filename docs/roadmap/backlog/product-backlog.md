@@ -8855,6 +8855,13 @@ Gelecek regresyon riski: 🔴 S5'siz canlıya çıkarsa ürün SKU onayı ekrand
 
 DURUM: AÇIK · SAHİP: sahip (temizlik kararı) + CT (betik kuralı) · BULAN: WP-CI-SERVICE-TESTS-02 olayı (2026-10-09) · KAYIT: 2026-10-09
 
+**İLERLEME (2026-10-12):**
+- **MDM KAPANDI.** `086a48a4b` (iş `86cd96f47`, 3 düzeltme turu). MDM testleri teste ait mongod başlatıyor; `MDM_TEST_MONGO` ortamdan okunmuyor; "şüphede Keep" süpürmesi; bekçi.
+- Kalan MDM ikinci tur: `MdmHttpHost.cs` ve `MdmDocumentClassMapsTests.cs` (`NotYetMoved`, yalnız port reddi; S2 / BL-598 birleşince).
+- CI: `service-tests.yml:145` mdm-* satırları için hâlâ `MDM_TEST_MONGO` dışa aktarıyor ve 27017'de iş yerel mongod başlatıyor (artık etkisiz; Eventing için gerekli olabilir). `CiServiceTestsGuardTests.cs:182` satırı sabitliyor. CT, main-sync kabulünden sonra.
+- Platform kısmı: main-sync'te karar C (Roller sohbeti).
+- 79 eski veritabanının silinmesi sahipte.
+
 Olay (2026-10-09 ~20:50):
 - BL-590 işçisinin yerel betiğinde iş-yerel mongod başlamadı (port meşgul). URI'ler boş kaldı; MDM App testleri ~3 dk varsayılan `localhost:27017`'ye, yani ortak dev Mongo'ya bağlandı. İşçi kendisi bildirdi.
 - CT salt okunur ölçtü: dev veritabanlarında (`DitenERP_Dev`, `diten_platform`, `diten_auth_v3`, `DitenEnterpriseDb`) pencerede test kaynaklı yazı yok. MDM testleri kendi adlı DB'lerini kullanır.
