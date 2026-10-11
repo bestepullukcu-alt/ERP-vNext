@@ -246,6 +246,7 @@ class Run(object):
                           "displayName": "Live conform", "supportedModes": ["Road"]},
                           extra={"X-Correlation-Id": corr})
         f["cid"] = (c or {}).get("carrierId")
+        f["carrier_id"] = f["cid"]
 
         self.call("POST", "/shipments/%s/transition" % f["sid"],
                   {"targetStatus": "Planned", "occurredAt": "2030-01-01T09:00:00Z"},
@@ -345,6 +346,7 @@ class Run(object):
         if st != 201:
             return
         cid = cl["claimId"]
+        self.f["claim_id"] = cid
         self.check(tr, "open-to-approved-is-invalid", "POST", "/claims/%s/transition" % cid,
                    body={"targetStatus": "Approved", "occurredAt": "2030-01-03T09:00:00Z",
                          "approvedAmount": "10.005"}, extra=h)
@@ -370,6 +372,7 @@ class Run(object):
         if st != 201:
             return
         lid = l["loadId"]
+        self.f["load_id"] = lid
         # The same shipment on a second load: the declared 409.
         self.check(c, "shipment-already-assigned", "POST", "/loads", body=f["load_body"], extra=h)
         self.check(tr, "transition", "POST", "/loads/%s/transition" % lid,
@@ -396,15 +399,56 @@ class Run(object):
                    extra={"X-Correlation-Id": str(uuid.uuid4())})
 
 
+FAULTS   = os.environ.get("G5_FAULTS") == "1"
+FAULT_MONGO_PORT = os.environ.get("G5_FAULT_MONGO_PORT", "33994")
+
+
+class MongoFault(object):
+    """Arms a MongoDB failCommand fail point for one probe, and always disarms it.
+
+    Two things were measured on 2026-10-11 and both matter. The error code must be
+    NON-retryable: 11600 (InterruptedAtShutdown) is retryable, so the driver retries, the
+    write succeeds and the probe answers 201 — or the service hangs and the client times
+    out at status 0. Error 13 is not retried, and the service maps it to the declared
+    503 PERSISTENCE_UNAVAILABLE. And `times` must exceed 1 for the same reason.
+
+    The service sets no appName, so this fail point hits every client on that mongod. It is
+    therefore armed immediately before one request and disarmed in a finally, never held.
+    """
+
+    def __init__(self, commands, code=13, times=10):
+        self.js_on = ('db.adminCommand({configureFailPoint:"failCommand",mode:{times:%d},'
+                      'data:{failCommands:%s,errorCode:%d}})' % (times, json.dumps(commands), code))
+
+    @staticmethod
+    def _run(js):
+        import subprocess
+        return subprocess.run(["mongosh", "--quiet", "--port", FAULT_MONGO_PORT, "admin", "--eval", js],
+                              capture_output=True, text=True, timeout=30)
+
+    def __enter__(self):
+        self._run(self.js_on); return self
+
+    def __exit__(self, *exc):
+        self._run('db.adminCommand({configureFailPoint:"failCommand",mode:"off"})')
+        return False
+
+
 # Why a declared status was not reached. "I could not reach it" and "it cannot be reached" are
 # different claims and the report must not blur them. Measured 2026-10-11 against the live stack.
 UNREACHABLE = {
-    "fault-injection": (
-        "needs a fault this driver does not inject (dependency down, store down, bad dependency reply)",
-        {(op, code) for op in ("queryCarriers", "createCarrier", "changeCarrierStatus", "queryLoads",
-                               "createLoadPlan", "transitionLoad", "queryClaims", "createClaim",
-                               "transitionClaim")
-                    for code in (500, 502, 503)}),
+    "no-store-path": (
+        "declared, and NOT reachable through any store failure: measured 2026-10-11, error codes 2, 13, 14, "
+        "96 and 121 injected into find and insert all answer 503 PERSISTENCE_UNAVAILABLE. The service never "
+        "leaks an internal error for a store fault, which is the right design — so 500 remains a catch-all "
+        "for an unhandled exception this driver cannot induce, not a path it declined to drive",
+        {(op, 500) for op in ("queryCarriers", "createCarrier", "changeCarrierStatus", "queryLoads",
+                              "createLoadPlan", "transitionLoad", "queryClaims", "createClaim",
+                              "transitionClaim")}),
+    "needs-a-proxy": (
+        "needs a dependency that answers with an invalid body; the reference readers call back through the "
+        "gateway and this driver stands up no interposing proxy",
+        {("createClaim", 502), ("createLoadPlan", 502), ("transitionLoad", 502)}),
     "over-declared": (
         "the contract declares it and the operation cannot produce it — a list answers 200 even for an "
         "unknown filter value, measured: /loads?carrierId=<unknown> 200, /loads?status=Planned 200, "
@@ -422,6 +466,52 @@ def classify(op_id, code):
         if (op_id, code) in pairs:
             return kind
     return "not-yet-driven"
+
+
+def fault_probes(run, ops):
+    """503 on every operation, by making its store refuse. 500 and 502 are deliberately not
+    attempted here: 500 needs an unexpected exception the service does not raise on demand,
+    and 502 needs a dependency that answers with an invalid body, which needs a proxy this
+    driver does not stand up. Both are reported as unreached rather than faked."""
+    print("--- faults (G5_FAULTS=1) — store refusals on mongod %s" % FAULT_MONGO_PORT)
+    plan = [
+        ("queryCarriers",       "GET",  "/carriers",            None, ["find"]),
+        ("queryLoads",          "GET",  "/loads",               None, ["find"]),
+        ("queryClaims",         "GET",  "/claims",              None, ["find"]),
+        ("createCarrier",       "POST", "/carriers",
+         {"carrierCode": "F", "displayName": "f", "supportedModes": ["Road"]}, ["insert"]),
+    ]
+    # The by-id operations need something to address. Reuse the ids the happy-path probes made.
+    f = run.f or {}
+    if f.get("carrier_id"):
+        plan.append(("changeCarrierStatus", "POST", "/carriers/%s/status" % f["carrier_id"],
+                     {"targetStatus": "Suspended", "reasonCode": "FAULT"}, ["insert", "update"]))
+    if f.get("sid") and f.get("cid"):
+        plan.append(("createLoadPlan", "POST", "/loads", f["load_body"], ["insert", "find"]))
+        plan.append(("createClaim", "POST", "/claims",
+                     {"shipmentId": f["sid"], "carrierId": f["cid"], "reasonCode": "DAMAGED",
+                      "claimedAmount": "1.00", "currency": "TRY"}, ["insert", "find"]))
+    if f.get("load_id"):
+        plan.append(("transitionLoad", "POST", "/loads/%s/transition" % f["load_id"],
+                     {"targetStatus": "Tendered", "occurredAt": "2030-01-01T13:00:00Z"},
+                     ["insert", "update", "find"]))
+    if f.get("claim_id"):
+        plan.append(("transitionClaim", "POST", "/claims/%s/transition" % f["claim_id"],
+                     {"targetStatus": "Closed", "occurredAt": "2030-01-04T09:00:00Z"},
+                     ["insert", "update", "find"]))
+    for oid, method, path, body, commands in plan:
+        op = ops.get(oid)
+        if op is None:
+            continue
+        if body and "carrierCode" in body:
+            body = dict(body, carrierCode="F" + uuid.uuid4().hex[:7].upper())
+        try:
+            with MongoFault(commands):
+                status, reply = run.call(method, path, body)
+        except Exception as exc:
+            print("  ERROR      %-44s %s" % (oid + " store-refuses", str(exc)[:60])); continue
+        run.checked += 1
+        run.record(op, "store-refuses", status, reply)
 
 
 def main():
@@ -446,6 +536,10 @@ def main():
         fn(ops)
         print()
 
+    if FAULTS:
+        fault_probes(run, ops)
+        print()
+
     print("=" * 78)
     print("probes issued            %d" % run.checked)
     total = sum(len(o["statuses"]) for o in ops.values())
@@ -465,7 +559,7 @@ def main():
     for oid, o in sorted(ops.items()):
         for code in sorted(set(o["statuses"]) - run.hit.get(oid, set())):
             buckets.setdefault(classify(oid, code), []).append("%s %s" % (oid, code))
-    for kind in ("not-yet-driven", "undocumented", "over-declared", "fault-injection"):
+    for kind in ("not-yet-driven", "undocumented", "over-declared", "needs-a-proxy", "no-store-path"):
         rows = buckets.get(kind)
         if not rows:
             continue
