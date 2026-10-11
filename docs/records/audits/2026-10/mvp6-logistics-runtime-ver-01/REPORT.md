@@ -45,7 +45,16 @@ legal entity by forwarding the caller's own token to MDM, where `MdmLegalEntityS
 `mdm.legal-entities.read`.
 
 **A user provisioned with only SupplyChain permissions therefore gets 503 on every SupplyChain call.** This is
-owner item Q470, and the fix for it was reverted in `e9b0f3b19`. The acceptance line stays open.
+owner item Q470.
+
+CT first recorded that the fix for it was reverted in `e9b0f3b19`. **That was wrong and is withdrawn.**
+`d465cd417` touched four Platform files and no SupplyChain file at all; its own revert message says
+"SupplyChain has no project reference to Platform", and the work lives on `fix/platform-mdm-403-unavailable`
+(`63c7c42da`, pushed) — moved out of PR #134 on scope grounds, not rejected. Reinstating it would not change
+this 503. SupplyChain's own mapping is not obviously wrong either: `MdmLegalEntityScopeValidator.cs:55-58`
+reasons that 403 is the caller's authorization problem and that `NotReferenceable` would report a permission
+gap as a missing record. The candidate Q470's own text points at is the missing `mdm.legal-entities.read` in
+the SupplyChain default role template. The acceptance line stays open until the owner chooses.
 
 ## Findings that need an owner or a work package
 

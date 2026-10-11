@@ -495,7 +495,7 @@ The first tenant UI owns only list, create and status change over the published 
 `queryCarriers`, `createCarrier` and `changeCarrierStatus`. It must not add detail-by-id, edit, delete, bulk,
 import/export, lookup, server paging/search/sort, Supplier ownership or a new backend operation. The browser uses
 same-origin MVC adapter routes; the adapter's only service egress is Gateway port 5000. It never calls SupplyChain
-port 5061 directly.
+port 5066 directly. (corrected 2026-10-11: the packs carried **5061**, which is CRM's route. `gateway/Diten.ApiGateway/ocelot.json` sends `/api/shipment-bundle` to 5066 and `/api/crm` to 5061, and `Diten.SupplyChainService.Api/appsettings.json` sets `"Urls": "http://127.0.0.1:5066"`. Measured independently by CT and by runtime VER lane AL-SCE-LOGISTICS-RUNTIME-VER, which ran the whole golden flow on 5066. Starting on 5061 answers 503 on every page and collides with CRM. `AGENTS.md` §3 still says 5061 and is the owner's to correct.)
 
 The create surface has exactly four user fields: required `carrierCode`, required `displayName`, required
 `supportedModes`, and optional nullable `externalReference`. Tenant/LE, identity, status, audit and version fields

@@ -123,7 +123,7 @@ no current write permission to runtime paths.
 
 ## 8. Runtime Constraints
 
-- Proposed service is `Diten.SupplyChainService` on port 5061; this draft does not authorize runtime work.
+- Proposed service is `Diten.SupplyChainService` on port 5066; this draft does not authorize runtime work. (corrected 2026-10-11: the packs carried **5061**, which is CRM's route. `gateway/Diten.ApiGateway/ocelot.json` sends `/api/shipment-bundle` to 5066 and `/api/crm` to 5061, and `Diten.SupplyChainService.Api/appsettings.json` sets `"Urls": "http://127.0.0.1:5066"`. Measured independently by CT and by runtime VER lane AL-SCE-LOGISTICS-RUNTIME-VER, which ran the whole golden flow on 5066. Starting on 5061 answers 503 on every page and collides with CRM. `AGENTS.md` §3 still says 5061 and is the owner's to correct.)
 - MongoDB records are tenant/legal-entity scoped; cross-scope access returns 404 without existence leakage.
 - `TenantId` and `LegalEntityId` are server-resolved and absent from mutation payloads.
 - Commands require `Idempotency-Key` and UUID `X-Correlation-Id`; replay creates no duplicate state/event.
