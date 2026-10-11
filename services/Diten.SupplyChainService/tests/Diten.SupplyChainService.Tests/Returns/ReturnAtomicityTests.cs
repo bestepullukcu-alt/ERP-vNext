@@ -25,7 +25,7 @@ public sealed class ReturnAtomicityTests
  [Fact] public async Task UnknownCommit_Unresolved503_AllOrNoneThenSameKeyRecovery()
  {
   var f=await ReturnTestFixture.New();var admin=f.Db.Client.GetDatabase("admin");
-  await admin.RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode",new BsonDocument("times",5)},{"data",new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"errorCode",91},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}}}});
+  await admin.RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode",new BsonDocument("times",5)},{"data",new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"appName",f.AppName},{"errorCode",8},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}}}});
   ReturnMutationResult result;
   try{result=await f.Create();}finally{await admin.RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode","off"}});}
   Assert.Equal(503,result.StatusCode);var counts=await f.Counts();Assert.True(counts.All(x=>x==0)||counts.All(x=>x==1));
@@ -43,6 +43,9 @@ public sealed class ReturnTestProbe:IReturnCommitProbe
 public sealed class ReturnTestFixture
 {
  public IMongoDatabase Db {get;private set;}=null!;public ReturnRepository Repository {get;set;}=null!;public ReturnTestProbe Probe {get;}=new();
+ // appName rides on the service's own connection string so a fail point can be scoped to this
+ // fixture alone (Q214 R2). Db is that same client, so arming and the commits under test agree.
+ public string AppName {get;private set;}=null!;
  public ReturnScope Scope {get;set;}=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid());public Guid Shipment=Guid.NewGuid();public Guid Root=Guid.NewGuid();public bool Offline;public int Observations;
  public List<ReturnSourceLine> SourceLines {get;}=[new("1","10","EA",Guid.NewGuid(),Guid.NewGuid())];
  public BsonDocument Filter=>new(){{"TenantId",Scope.TenantId.ToString()},{"LegalEntityId",Scope.LegalEntityId.ToString()}};
@@ -51,11 +54,13 @@ public sealed class ReturnTestFixture
   var uri=Environment.GetEnvironmentVariable("RETURNS_MONGO_URI")??"mongodb://127.0.0.1:27886/?replicaSet=returns_dev";
   var url=MongoUrl.Create(uri);if(url.Servers.Any(s=>s.Port==27017)||url.Servers.Any(s=>s.Host is not("127.0.0.1" or "localhost")))throw new InvalidOperationException("Only isolated local Returns Mongo allowed");
   var services=new Microsoft.Extensions.DependencyInjection.ServiceCollection();
-  var config=new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{{"Mongo:ConnectionString",uri},{"Mongo:DatabaseName",databaseName}}).Build();
+  var appName="returns-"+Guid.NewGuid();
+  var scopedUri=new MongoUrlBuilder(uri){ApplicationName=appName}.ToMongoUrl().ToString();
+  var config=new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{{"Mongo:ConnectionString",scopedUri},{"Mongo:DatabaseName",databaseName}}).Build();
   Diten.SupplyChainService.Persistence.DependencyInjection.AddPersistence(services,config);
   var provider=Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services);
   ReturnEvidence.Record(new{processId=Environment.ProcessId,command=Environment.GetCommandLineArgs(),binary=typeof(ReturnTestFixture).Assembly.Location,binarySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(ReturnTestFixture).Assembly.Location))).ToLowerInvariant()});
-  var f=new ReturnTestFixture{Db=Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IMongoDatabase>(provider)};
+  var f=new ReturnTestFixture{Db=Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IMongoDatabase>(provider),AppName=appName};
   if(caseInsensitive){try{await f.Db.CreateCollectionAsync("return_entitlements",new CreateCollectionOptions{Collation=new Collation("en",strength:CollationStrength.Secondary)});}catch(MongoCommandException ex)when(ex.Code==48){}}
   await new ReturnSchema(f.Db).StartAsync(default);f.Repository=new(f.Db,f.Probe);return f;
  }
