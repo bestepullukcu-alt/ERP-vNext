@@ -62,6 +62,30 @@ jobs:
           # job-local replica set this row also gets (mdm-*) is not used by it — harmless, measured.
           - suite: mdm-api
             project: services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Diten.MdmService.Api.Tests.csproj
+          # WP-CI-SERVICE-TESTS-04 (BL-604 class A): the other services' test projects that are green on a clean tree
+          # (measured, scratchpad cf3-measure.log). Only DevEnablement needs a mongod — its own, via
+          # DITEN_ITEST_MONGOD_BIN_DIR (EphemeralMongo); the rest need nothing outside the process. Not yet here, each with
+          # its reason: the guard's NotInThisJob (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM).
+          - suite: bb-secrets
+            project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
+          - suite: bb-email
+            project: services/Diten.Building.Blocks/tests/Diten.BuildingBlocks.Email.Tests/Diten.BuildingBlocks.Email.Tests.csproj
+          - suite: devenablement-api
+            project: services/Diten.DevEnablementService/tests/Diten.DevEnablementService.Api.Tests/Diten.DevEnablementService.Api.Tests.csproj
+          - suite: mg-tests
+            project: services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Diten.ManagementGovernanceService.Tests.csproj
+          - suite: procurement-api
+            project: services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj
+          - suite: pvg-api
+            project: services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj
+          - suite: pvg-case-processing
+            project: services/Diten.PvgService/tests/Diten.PvgService.CaseProcessing.Tests/Diten.PvgService.CaseProcessing.Tests.csproj
+          - suite: pvg-meddra-coding
+            project: services/Diten.PvgService/tests/Diten.PvgService.MeddraCoding.Tests/Diten.PvgService.MeddraCoding.Tests.csproj
+          - suite: pvg-regpv-base
+            project: services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj
+          - suite: pvg-signal-management
+            project: services/Diten.PvgService/tests/Diten.PvgService.SignalManagement.Tests/Diten.PvgService.SignalManagement.Tests.csproj
     env:
       SUITE: ${{ matrix.suite }}
       PROJECT: ${{ matrix.project }}

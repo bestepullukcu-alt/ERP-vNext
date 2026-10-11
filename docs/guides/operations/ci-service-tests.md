@@ -2,7 +2,8 @@
 
 > BL-577 ile eklendi (2026-10-09); BL-590 ile Eventing ve kabul sunucusu satırları, MDM için replika kümesi;
 > WP-CI-SERVICE-TESTS-03 (2026-10-10) ile takeover satırları (`auth-scr`, `mdm-api`) ve phase1 derleme adımları; FIX1 ile
-> bütün iş akışı dosyaları bekçide, eylem → SHA sözlüğü, MDM Release ön koşulu. İş dosyası `.github/workflows/service-tests.yml`; bekçisi
+> bütün iş akışı dosyaları bekçide, eylem → SHA sözlüğü, MDM Release ön koşulu; WP-CI-SERVICE-TESTS-04 ile diğer
+> servislerin yeşil test projeleri (BL-604 A sınıfı), adlı "henüz yok" listesi ve yardım defteri tavanı (BL-609). İş dosyası `.github/workflows/service-tests.yml`; bekçisi
 > `tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs` korur.
 
 ## Ne koşar
@@ -20,6 +21,16 @@ her proje ayrı bir iş (matris, `fail-fast: false`).
 | `auth-scr` | `Diten.AuthService.ServiceClientRegistry.Tests` | test 4 sn (160 test) |
 | `mdm-app` | `Diten.MdmService.Application.Tests` | test 2 dk 30 sn (2503 test) — önce Platform.API ve MDM.Api **Release** derlenir (aşağıda) |
 | `mdm-api` | `Diten.MdmService.Api.Tests` | test 7 dk 32 sn (762 test) |
+| `bb-secrets` | `Diten.BuildingBlocks.Security.Secrets.Tests` | 5 test, 14 ms |
+| `bb-email` | `Diten.BuildingBlocks.Email.Tests` | 109 test, 0,1 sn |
+| `devenablement-api` | `Diten.DevEnablementService.Api.Tests` | 92 test, 3 sn — kendi mongod'u (`DITEN_ITEST_MONGOD_BIN_DIR`) |
+| `mg-tests` | `Diten.ManagementGovernanceService.Tests` | 87 test, 0,1 sn |
+| `procurement-api` | `Diten.ProcurementService.Api.Tests` | 147 test, 0,2 sn |
+| `pvg-api` · `pvg-case-processing` · `pvg-meddra-coding` · `pvg-regpv-base` · `pvg-signal-management` | `Diten.PvgService.*.Tests` | 36 · 23 · 40 · 88 · 43 test, her biri < 0,5 sn |
+
+Son on satır WP-CI-SERVICE-TESTS-04 ile geldi. Temiz bir `git worktree` kopyasında (bin / obj yok), Debug, işin koştuğu gibi
+ölçüldü: derleme + test + `check_trx_no_skipped.py --suite`, hepsi yeşil, atlanan 0. Koşu boyunca 27017'ye (ortak dev
+Mongo) bağlanan test süreci olmadı.
 
 **`mdm-app` Release ön koşulu (FIX1, ölçüldü):** 38 MDM testi Platform.API'nin ve MDM.Api'nin RELEASE derlemesini
 `bin/Release/net8.0`'dan yükler (çapraz servis sözleşmesi, `ApiStartupExecutionMode…`, `PlatformProductIdentityWorkflowClient…`
@@ -35,18 +46,22 @@ Süreler yalnız test koşusudur; CI'da derleme ve mongod indirme eklenir. En uz
 alır, rastgele port, geçici veri. `mdm-api` adı işe özel replika kümesini de başlatır (`mdm-*`); test onu kullanmaz,
 zararsız.
 
-**Platform / Auth / MDM** için işte olmayan servis test projesi bugün **yok**. Bekçinin `NotInThisJob` listesi BL-590'dan
-beri boş; liste, ileride bir Control Tower kararının yeri olarak durur. Kural ona dayanmaz: diskteki projeleri matrisle
-karşılaştırır. Bu üç servise yeni bir test projesi gelirse bekçide **kırmızıdır**: ya satırını eklersiniz ya da Control
-Tower kararıyla `NotInThisJob`'a adlandırırsınız.
+**Henüz işte olmayanlar (`NotInThisJob`, WP-CI-SERVICE-TESTS-04).** Bekçi `services/` altındaki **her** test projesini
+(`*Tests.csproj`: `ArchitectureTests`, `IntegrationTests` dahil; Building Blocks dahil) matrisle karşılaştırır. Satırı
+olmayan proje bu listede gerekçesiyle durur, yoksa kırmızıdır. Listeden ad çıkarmak satırını eklemek demektir; ikisi
+çakışamaz. Bugünkü liste (BL-604 ölçümü):
+- **Crm** `Application.Tests`: B, 1 kırmızı (PdfSharp sistem fontu ister).
+- **Enterprise Strategy** `Application.Tests` (6 kırmızı, RBAC dahil), `EndToEnd.Tests` (2): B.
+- **HCM** `Application.Tests`: C → B, `EmployeeDraftSessionRepositoryMongoTests` ortak `localhost:27017`'yi kullanır.
+- **MG** `IntegrationTests`: C, sabit `/opt/homebrew/bin/mongod`; `DITEN_TEST_MONGOD`'dan okumalı.
+- **MG** `ArchitectureTests`: B, 2 kırmızı; kardeş test DLL'lerini yükler (MG çözümü derlenmeli).
+- **PPM** `Tests`: yeşil, ama **PPM ekibinin onayı bekleniyor** (sahip iletiyor).
+- **PPM** `IntegrationTests`: B + C (10 kırmızı, sabit mongod yolu) ve onay.
 
-**Diğer servislerin testleri CI'da hiç yok (BL-604).** Ne derleniyor ne koşuluyor; phase1 yalnız gateway, Auth, Platform
-ve MDM çözümlerini derler. Ölçüm (2026-10-10, `*.Tests.csproj`):
-- Crm (1), Hcm (1), DevEnablement (1), ManagementGovernance (1), Ppm (1), Pvg (5), Procurement (1), EnterpriseStrategy (2);
-- Building Blocks (2): `Email.Tests` `Diten.Platform.sln`'de, derleniyor ama koşulmuyor; `Security.Secrets.Tests` hiçbiri.
-- Gateway (1): `gateway/Diten.ApiGateway.Tests`. phase1 yalnız `Diten.ApiGateway.csproj`'u derler (çözüm yok), test projesi
-  ne derleniyor ne koşuluyor (FIX2'de ölçüldü).
-- Bekçi bugün yalnız Platform / Auth / MDM `tests/` dizinlerini tarar.
+B / C işleri sahiplerinindir (XMC-001); CT bu turda onlara dokunmaz.
+
+**Kapsam dışı:** `gateway/Diten.ApiGateway.Tests` `services/` altında değil. Bekçi onu taramaz; phase1 yalnız
+`Diten.ApiGateway.csproj`'u derler.
 
 **Tetik** (Control Tower kararı, Actions dakikası için): `pull_request`, yalnız `main`'e `push`, elle
 (`workflow_dispatch`). Dal push'u bu işi koşmaz.
@@ -117,6 +132,30 @@ Yeni paket yok (YAML ayrıştırıcı bir indirmedir); düzenli ifade yarışı 
   host testi Release DLL'ini başlatır, temiz ağaçta ölçüldü).
 - Canlı broker taraması her bildirim biçimini (`abstract`, `partial`, `static`, iç içe, `record`) ve her açıcıyı
   (`CreateUsingRabbitMq`, `UsingRabbitMq`, `ConnectionFactory`) okur; her çağrı onu kapsayan EN DIŞ sınıfa göre denetlenir.
+
+### Sertleştirme ve bilinen sınırlar (son tur, CT kararı)
+
+Ek kurallar (kapalı başarısız):
+- CRLF normalleştirmesinden sonra iş akışlarında ve geçit betiğinde başka satır sonu yok (yalnız CR, NEL, U+2028 / U+2029).
+- `||`, `; true`, `exit 0`, `set +…`, `trap` yasağı `run:` değerine değil, `if:` satırları dışındaki **bütün** metne uygulanır.
+- `Skipped = 0` adımı da `Test` gibi tam metin (` | cat` olmaz).
+- Geçit betiği:
+  - 1. satır `#!/usr/bin/env bash`;
+  - `||` tam 2 kez (denetim defteri grep'leri);
+  - `exit 0`, `trap`, `set +`, `--filter` yok;
+  - tenancy / architecture / web `dotnet test` satırları tam ve birer kez.
+- `shell:` / `defaults:` anahtarı yok. İş düzeyi `SUITE` / `PROJECT` matris değerleri. `GITHUB_ENV` yazımları sayılı
+  (service-tests 9, phase1 0). `GITHUB_PATH` yok. mongod ataması heredoc biçiminde de yakalanır.
+- `github['token']`, `toJSON(` yasak.
+- phase1 `push.branches: ["**"]` sabit; `timeout-minutes` en az 1.
+- YAML düğüm özellikleri (`&`, `*`, `!`), `? anahtar`, onaltılık kaçış yok.
+- Broker taramasında `//` yorum satırları öznitelik sayılmaz.
+
+**Bilinen sınırlar** (bekçi metin okur, YAML değil; PR gözden geçirmesine kalır, CT backlog'a yazdı):
+- YAML kaçış dizileri (`\x`, `\u` dışındakiler);
+- takma adların ve birleştirme anahtarlarının (`<<`) bütün biçimleri;
+- dizgi içinde dengesiz süslü parantezli C# sınıf gövdeleri;
+- yeniden kullanılabilir iş akışları ve bileşik eylemler (bugün hiçbiri izinli değil).
 
 ## Süre sınırları
 
@@ -232,6 +271,26 @@ bu desene uymaz (klasör `Diten.Platform.Infrastructure`), kapı o commit'ten be
 
 Testleri: `scripts/tests/test_check_cross_db_enforcement.py` (üretim betiğini geçici ağaca kopyalayıp koşturur; son
 durum gerçek depoda koşar).
+
+## Yardım defteri tavanı taban dala karşı (BL-609)
+
+`docs/roadmap/backlog/page-help-ledger.md` (UXH-001) tavanlarını başlıktaki tek satırda taşır:
+`**Tavan (yalnız azalır): kiracı 236 · platform 18 · frozen 99**`. Web testi satır sayısının tavanın altında kaldığını
+ölçer, ama aynı PR'da yükseltilen tavanı göremez.
+
+phase1 (`scripts/check_page_help_ledger_ceiling.py`) bu satırı PR'ın taban dalınınkiyle karşılaştırır:
+- Tabandan büyük tavan KIRMIZI, adıyla.
+- Kaybolan ya da yeni gelen kategori kırmızı. Bozuk başlık kırmızı.
+- Bilinçli artış: defterde, gerekçeli bir CT satırı, kesin sayılarla:
+  `- Tavan artışı (CT kararı): kiracı 236 → 240 — <gerekçe>`.
+- Taban yoksa (push), defter bu dalda ya da tabanda yoksa adım **SKIPPED** der ve "NOTHING WAS CHECKED" yazar.
+  Bugün defter bu dalda yok; UX-COMMON birleşince devreye girer.
+
+Yerelde:
+
+```bash
+python3 scripts/check_page_help_ledger_ceiling.py --base origin/main
+```
 
 ## İlk kırmızıların sınıflanması
 
