@@ -8398,6 +8398,22 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-617
+
+**İzinler ekranı (`PermissionsController`) UAS-001 kapısı taşımıyor: Index ve sunucu tarafı `Lookups` çağrısı anahtarsız kullanıcıya açık**
+
+DURUM: AÇIK · SAHİP: CT (Yönetişim ekranları) · BULAN: URA FIX1 bağımsız incelemesi (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`158f35ad9`):
+- Kullanıcı Rolleri ve Rol Atamaları artık 403 + erişim yok yüzü veriyor (URA FIX1).
+- Aynı ailedeki `PermissionsController` Index ve `Lookups` (ağ geçidini sunucu tarafında çağırıyor) anahtar denetimi yapmıyor. Okuma yetkisi AuthService'te (`[HasPermission]`), ama sayfa iskeleti yetkisize çiziliyor.
+
+Yapılacak: URA deseni (denetleyici + görünüm aynı okuyucu, Index 403, sunucu çağrısından önce ret, HTTP testi); UAS bekçisinin GATED listesine.
+
+Gelecek regresyon riski: 🟡 yetkisiz kullanıcı sayfa iskeletini görür (UAS-001); veri sızıntısı yok (AuthService kapısı).
+
+---
+
 ### BL-616
 
 **İTS karekod / seri numarası bildirimi ve barkod etiketi basımı için modül yok (MOD-0290 yalnız GTIN numarasını tutar)**
