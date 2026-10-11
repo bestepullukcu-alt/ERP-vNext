@@ -8398,6 +8398,30 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-615
+
+**origin/main'in kendi phase1 mimari testi kırmızı (8): CRM ve SCE / MVP-6 denetimsiz yazma komutları, SCE defteri yok, shipment-bundle sözleşme pin'i bayat**
+
+DURUM: AÇIK · SAHİP: CRM ekibi + SCE / MVP-6 ekibi (XMC-001; ileti sahip üzerinden) · BULAN: main-sync (Roller sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🔴
+
+Ölçüm (git arşivi, `a814bad0f`): TenantArchitecture 69/77, 8 kırmızı. `run_phase1_gates.sh:180` mimariyi koşuyor, yani main'in CI'ı da kırmızı.
+- `AuditTrailStandardTests` ×2:
+  - 44 yeni yazma komutu denetimsiz ve deftersiz. CRM 27: Knowledge Path, Regulatory (CountryLegalProfile, SafetyText), ReopenPlanningWeek. SupplyChainService 17: Carrier, Shipment, Load, Return, Claim, Capacity, S&OP.
+  - `EveryServiceWithWriteCommands_HasALedger`: SupplyChainService'in defteri yok.
+- `DocsPathGuardTests` ×5: `docs/analysis/contracts/shipment-bundle.openapi.yaml` main'de 3.2.0 (`1ccbc49b7`), pin hâlâ 3.1.0.
+- `MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest`: main'in düzelttiği iki dosya listede bayat kalmıştı. CT hattı main-sync'te listeyi küçülttü (kural gevşemedi).
+
+CT KARARI (2026-10-11): CT bu borcu üstlenmez. phase1'in defter adımı satır EKLEYEN PR'ı zaten kırmızı yapıyor. Hat bu kırmızılarla birleşir; tek PR'ın CI'ı main düzelene kadar bu 8 kırmızıyı gösterir.
+
+Yapılacak:
+- CRM: 27 komuta denetim ya da adlı defter kararı;
+- SCE / MVP-6: 17 komut + defter + pin 3.2.0;
+- ileti `ekiplere-ci-test-mesaji.md`.
+
+Gelecek regresyon riski: 🔴 main'in phase1'i kırmızı kaldıkça her PR kırmızı görünür ve yeni bir kırmızı fark edilmez.
+
+---
+
 ### BL-614
 
 **CT hattında 32 vitest kırmızısı (11'i CT alanı); CI'da vitest satırı yok, bu yüzden büyümeleri görünmüyor**
