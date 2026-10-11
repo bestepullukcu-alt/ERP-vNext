@@ -40,6 +40,7 @@ const GATED = {
   // Added when the Role Permissions screen was gated. The map is the guard: a screen absent from it is
   // simply not checked, which is why removing the gate from this very view broke nothing until this line existed.
   "Governance/RoleAssignments/Index.cshtml": "auth.roles.assign-permission",
+  "Governance/UserRoleAssignments/Index.cshtml": "auth.users.assign-role",
   // MOD-0357 S3 — the four Meetings screens, each on the key its own data actually needs (create/update stay
   // separate from read: a caller who may read a meeting is not automatically who may write one).
   "Meetings/Index.cshtml": "platform.meetings.read",
@@ -62,16 +63,26 @@ describe("the gate stands in front of the page, not beside it", () => {
   Object.entries(GATED).forEach(([file, key]) => {
     const source = () => read("Views", file);
 
+    /*
+     * Two readers are accepted: the UX snapshot (`Perms.Has`, injected) and — where the controller answers the status
+     * code — the controller's own reader (`Diten.Web.Security.PermissionClaims.HasPermission(User, …)`), so the status
+     * and the face read the claims the same way (GlobalProducts EK item 11; WP-URA-FIX-01 FIX1).
+     */
+    const escaped = key.replace(/\./g, "\\.");
+    const snapshotGate = new RegExp(`Perms\\.Has\\("${escaped}"\\)`);
+    const claimsGate = new RegExp(`Diten\\.Web\\.Security\\.PermissionClaims\\.HasPermission\\(User, "${escaped}"\\)`);
     test(`${file} checks ${key}`, () => {
-      expect(source(), "the view does not inject the permission snapshot")
-        .toMatch(/@inject\s+Diten\.Web\.Services\.IPermissionSnapshot\s+Perms/);
-      expect(source(), `the view does not gate on ${key}`)
-        .toMatch(new RegExp(`Perms\\.Has\\("${key.replace(/\./g, "\\.")}"\\)`));
+      const s = source();
+      expect(snapshotGate.test(s) || claimsGate.test(s), `the view does not gate on ${key}`).toBe(true);
+      if (snapshotGate.test(s)) {
+        expect(s, "the view does not inject the permission snapshot")
+          .toMatch(/@inject\s+Diten\.Web\.Services\.IPermissionSnapshot\s+Perms/);
+      }
     });
 
     test(`${file} renders the refusal and stops before drawing anything`, () => {
       const s = source();
-      const gate = s.indexOf("Perms.Has(");
+      const gate = Math.max(s.search(snapshotGate), s.search(claimsGate));
       const partial = s.indexOf('name="_AccessDenied"');
       const stop = s.indexOf("return;", gate);
 

@@ -16,7 +16,10 @@
 
     ⚠ Display only. AuthService's [HasPermission("auth.users.assign-role")] remains the authority (UAS-001 §4).
 *@
-@if (!Perms.Has("auth.users.assign-role"))
+@* WP-URA-FIX-01 FIX1 — the SAME reader as the controller (PermissionClaims): "*", a "permissions" claim and a
+   comma-separated list count the same here as there, so the status code and the face can never disagree. The UX
+   snapshot (Perms) reads only exact "permission" claims. Same rule as GlobalProducts (EK item 11, FIX5). *@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "auth.users.assign-role"))
 {
     <partial name="_AccessDenied" model="@Localizer["Title"].Value" />
     return;

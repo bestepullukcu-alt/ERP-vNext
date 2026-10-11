@@ -313,25 +313,25 @@ public sealed class GovernanceRoleRefusalProxyTests
         => new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build();
 
     private static RolesController Roles(HttpMessageHandler gateway, string language = "en", RecordingLogger? logs = null)
-        => WithTenant(new RolesController(new HttpClient(gateway), Configuration(), new ResxLocalizer(language), (logs ?? new RecordingLogger()).For<RolesController>()));
+        => WithTenant(null, new RolesController(new HttpClient(gateway), Configuration(), new ResxLocalizer(language), (logs ?? new RecordingLogger()).For<RolesController>()));
 
     private static RoleAssignmentsController RoleAssignments(HttpMessageHandler gateway, string language = "en", RecordingLogger? logs = null)
-        => WithTenant(new RoleAssignmentsController(new HttpClient(gateway), Configuration(), new ResxLocalizer(language), (logs ?? new RecordingLogger()).For<RoleAssignmentsController>()));
+        => WithTenant(RoleAssignmentsController.AssignPermissionPermission, new RoleAssignmentsController(new HttpClient(gateway), Configuration(), new ResxLocalizer(language), (logs ?? new RecordingLogger()).For<RoleAssignmentsController>()));
 
     private static UserRoleAssignmentsController UserRoleAssignments(HttpMessageHandler gateway, string language = "en", RecordingLogger? logs = null)
-        => WithTenant(new UserRoleAssignmentsController(new HttpClient(gateway), Configuration(), new ResxLocalizer(language), (logs ?? new RecordingLogger()).For<UserRoleAssignmentsController>()));
+        => WithTenant(UserRoleAssignmentsController.AssignRolePermission, new UserRoleAssignmentsController(new HttpClient(gateway), Configuration(), new ResxLocalizer(language), (logs ?? new RecordingLogger()).For<UserRoleAssignmentsController>()));
 
-    private static T WithTenant<T>(T controller) where T : Controller
+    // WP-URA-FIX-01 (+FIX1) — the role-permission and user-role proxies now refuse locally without their key; these
+    // tests measure how the GATEWAY's refusals are mapped, so each proxy's user holds exactly ITS key (and the Roles
+    // proxy, which has no local gate, none) and the call reaches the gateway.
+    private static T WithTenant<T>(string? permission, T controller) where T : Controller
     {
+        Claim[] claims = permission is null
+            ? [new Claim("tenantId", TenantId.ToString())]
+            : [new Claim("tenantId", TenantId.ToString()), new Claim("permission", permission)];
         controller.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext
-            {
-                // WP-URA-FIX-01 — the user-role proxy now refuses locally without auth.users.assign-role; these tests
-                // measure how the GATEWAY's refusals are mapped, so the user holds the key and the call reaches it.
-                User = new ClaimsPrincipal(new ClaimsIdentity(
-                    [new Claim("tenantId", TenantId.ToString()), new Claim("permission", "auth.users.assign-role")], "test"))
-            }
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test")) }
         };
         return controller;
     }

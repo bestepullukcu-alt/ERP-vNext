@@ -20,12 +20,27 @@ const NON_ENGLISH = ["tr", "fr", "es", "zh", "ar", "ru"];
 // Keys whose value may legitimately equal English in a language (a product name, a code). Empty on purpose.
 const SAME_AS_ENGLISH_ALLOWED = {};
 
+// XML entities decoded, so `&amp;` / `&#39;` cannot make an English copy look different.
+const decode = (text) => text
+  .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+  .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+  .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+  .replace(/&amp;/g, "&");
+
 const read = (relative) => {
   const xml = fs.readFileSync(path.join(ROOT, relative), "utf8");
   const out = new Map();
-  for (const m of xml.matchAll(/<data name="([^"]+)"[^>]*>\s*<value>([\s\S]*?)<\/value>/g)) { out.set(m[1], m[2].trim()); }
+  for (const m of xml.matchAll(/<data name="([^"]+)"[^>]*>\s*<value>([\s\S]*?)<\/value>/g)) { out.set(m[1], decode(m[2]).trim()); }
   return out;
 };
+
+// FIX1 — "the same as English" is measured on the WORDS: case, trailing punctuation and invisible characters
+// (zero-width, bidi marks) do not make "assign", "Assign." or "Assign\u200B" a translation of "Assign".
+const comparable = (text) => String(text)
+  .replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF\u061C]/g, "")
+  .replace(/[\s.!?…:;,。！？،؛]+$/u, "")
+  .trim()
+  .toLocaleLowerCase("en");
 
 const screen = Object.fromEntries(LANGS.map((lang) => [lang,
   read(`Resources/Views/Governance/UserRoleAssignments/UserRoleAssignmentsIndex.${lang}.resx`)]));
@@ -51,12 +66,25 @@ describe("User Roles screen: every tenant language", () => {
     const english = [];
     for (const [key, value] of screen.en) {
       NON_ENGLISH.forEach((lang) => {
-        if (screen[lang].get(key) === value && !(SAME_AS_ENGLISH_ALLOWED[lang] || []).includes(key)) {
+        if (comparable(screen[lang].get(key)) === comparable(value) && !(SAME_AS_ENGLISH_ALLOWED[lang] || []).includes(key)) {
           english.push(`${lang}/${key} = "${value}"`);
         }
       });
     }
     expect(english).toEqual([]);
+  });
+});
+
+describe("the guard's comparison cannot be dodged by spelling", () => {
+  test.each(["assign", "Assign.", "Assign\u200B", " ASSIGN ", "Assign&#46;"])("%j still counts as the English 'Assign'", (variant) => {
+    expect(comparable(decode(variant))).toBe(comparable("Assign"));
+  });
+});
+
+describe("Arabic Role Permissions speaks of permissions with ONE word (أذونات)", () => {
+  test("no value in the Arabic Role Permissions file uses صلاحيات", () => {
+    const mixed = [...rolePermissions.ar].filter(([, value]) => /صلاحي/.test(value)).map(([key]) => key);
+    expect(mixed).toEqual([]);
   });
 });
 

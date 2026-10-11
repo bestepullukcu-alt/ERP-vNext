@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
+using Diten.Web.Security;
 using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,11 @@ namespace Diten.Web.Controllers;
 [Route("RoleAssignments")]
 public sealed class RoleAssignmentsController : Controller
 {
+    // WP-URA-FIX-01 FIX1 (UAS-001, CT decision: the same page family as User Roles) — the key that opens this screen:
+    // the platform manifest's ROLE_PERMISSIONS page and AuthService's role-permission assign / revoke require it.
+    // Display + proxy gate only; AuthService stays the authority.
+    public const string AssignPermissionPermission = "auth.roles.assign-permission";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -41,12 +47,29 @@ public sealed class RoleAssignmentsController : Controller
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View("~/Views/Governance/RoleAssignments/Index.cshtml");
+    public IActionResult Index()
+    {
+        // UAS-001 — 403 and the access-denied face inside the shell (Index.cshtml checks first); never a redirect.
+        if (!PermissionClaims.HasPermission(User, AssignPermissionPermission))
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+        return View("~/Views/Governance/RoleAssignments/Index.cshtml");
+    }
+
+    // A write this user may not make is refused here, before any call leaves for the gateway, with the sentence a 403
+    // from AuthService produces through GatewayRefusal.
+    private IActionResult? RefuseWithoutPermission() =>
+        PermissionClaims.HasPermission(User, AssignPermissionPermission)
+            ? null
+            : StatusCode(StatusCodes.Status403Forbidden,
+                GatewayRefusal.Local(_sharedLocalizer["AccessDenied"].Value));
 
     [HttpPost("assign")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Assign([FromForm] Guid roleId, [FromForm] Guid permissionId)
     {
+        if (RefuseWithoutPermission() is { } refused)
+            return refused;
+
         if (roleId == Guid.Empty || permissionId == Guid.Empty)
             return Json(GatewayRefusal.Local(_sharedLocalizer["ValidationFailed"].Value));
 
@@ -73,6 +96,9 @@ public sealed class RoleAssignmentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Revoke([FromForm] Guid roleId, [FromForm] Guid permissionId)
     {
+        if (RefuseWithoutPermission() is { } refused)
+            return refused;
+
         if (roleId == Guid.Empty || permissionId == Guid.Empty)
             return Json(GatewayRefusal.Local(_sharedLocalizer["ValidationFailed"].Value));
 

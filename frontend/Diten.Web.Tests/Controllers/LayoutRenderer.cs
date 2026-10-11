@@ -20,9 +20,18 @@ namespace Diten.Web.Tests.Controllers;
 /// </summary>
 internal static class LayoutRenderer
 {
-    public static async Task<string> RenderAsync<TProgram>(WebApplicationFactory<TProgram> factory, string viewPath,
+    public static Task<string> RenderAsync<TProgram>(WebApplicationFactory<TProgram> factory, string viewPath,
         string controller, string permission, IReadOnlyDictionary<string, object?>? viewDataValues = null,
         params string[] extraPermissions) where TProgram : class
+        => RenderWithClaimsAsync(factory, viewPath, controller,
+            [new Claim("permission", permission), .. extraPermissions.Select(extra => new Claim("permission", extra))],
+            viewDataValues);
+
+    /// <summary>WP-URA-FIX-01 FIX1 — the same render with the reader's permission claims as given ("*", a plural
+    /// "permissions" claim, a comma-separated list): what the shape of the claim does to the page is measurable.</summary>
+    public static async Task<string> RenderWithClaimsAsync<TProgram>(WebApplicationFactory<TProgram> factory,
+        string viewPath, string controller, IEnumerable<Claim> permissionClaims,
+        IReadOnlyDictionary<string, object?>? viewDataValues = null) where TProgram : class
     {
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en");
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
@@ -36,8 +45,7 @@ internal static class LayoutRenderer
                 new Claim("tenant_id", Guid.NewGuid().ToString("D")),
                 new Claim("actor_type", "tenant_user"),
                 new Claim("sub", Guid.NewGuid().ToString("D")),
-                new Claim("permission", permission),
-                .. extraPermissions.Select(extra => new Claim("permission", extra))
+                .. permissionClaims
             ], "fixture"))
         };
         httpContext.Request.Scheme = "https";

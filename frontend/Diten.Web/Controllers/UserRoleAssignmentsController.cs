@@ -54,13 +54,15 @@ public sealed class UserRoleAssignmentsController : Controller
         return View("~/Views/Governance/UserRoleAssignments/Index.cshtml");
     }
 
-    // A write this user may not make is refused here with a 403 and the shell's own sentence, before any call leaves
-    // for the gateway — the same answer AuthService would give, without the round trip or its technical text.
+    // A write this user may not make is refused here with a 403 before any call leaves for the gateway. FIX1 — the
+    // sentence is the one a 403 from AuthService already produces through GatewayRefusal (`AccessDenied`): the same
+    // refusal reads the same whichever side made it. (`AccessDeniedMessage` names "this page" — right for the face,
+    // wrong for an action toast.)
     private IActionResult? RefuseWithoutPermission() =>
         PermissionClaims.HasPermission(User, AssignRolePermission)
             ? null
             : StatusCode(StatusCodes.Status403Forbidden,
-                GatewayRefusal.Local(_sharedLocalizer["AccessDeniedMessage"].Value));
+                GatewayRefusal.Local(_sharedLocalizer["AccessDenied"].Value));
 
     [HttpPost("assign")]
     [ValidateAntiForgeryToken]
