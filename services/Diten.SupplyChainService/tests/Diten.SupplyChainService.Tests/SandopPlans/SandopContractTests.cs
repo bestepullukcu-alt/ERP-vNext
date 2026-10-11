@@ -1,9 +1,10 @@
 using System.Text.Json;using Xunit;using MongoDB.Driver;using Diten.SupplyChainService.Domain.Features.SandopPlans;using Diten.SupplyChainService.Application.Features.SandopPlans;using Diten.SupplyChainService.Persistence.Features.SandopPlans;using Diten.SupplyChainService.Infrastructure.Features.SandopPlans;
 namespace Diten.SupplyChainService.Tests.SandopPlans;
 internal static class SandopTestHost
-{ public static async Task<(SandopRepository Repo,IMongoDatabase Db,SandopScope Scope,DemandFixtureReader Fixture)> Open()
+{ public static async Task<(SandopRepository Repo,IMongoDatabase Db,SandopScope Scope,DemandFixtureReader Fixture)> Open(string? appName=null)
 { var uri=Environment.GetEnvironmentVariable("MVP6_MOD0190_MONGO_URI")??throw new InvalidOperationException("Set lane-local MVP6_MOD0190_MONGO_URI; operational 27017 is forbidden.");
- var client=new MongoClient(uri);var db=client.GetDatabase("DitenSupplyChain_Mod0190_Test");await SandopSchema.EnsureAsync(db);var scope=new SandopScope(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid());
+ // appName, when given, lets a fail point be scoped to this client alone (Q214 R2). Default stays unnamed.
+ var client=new MongoClient(appName is null?new MongoUrl(uri):new MongoUrlBuilder(uri){ApplicationName=appName}.ToMongoUrl());var db=client.GetDatabase("DitenSupplyChain_Mod0190_Test");await SandopSchema.EnsureAsync(db);var scope=new SandopScope(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid());
  return(new SandopRepository(db),db,scope,new DemandFixtureReader([new DemandFixture(scope.TenantId,scope.LegalEntityId,"dp-2027","3","sha256:abc",true)])); }
  public static JsonElement J(string json)=>JsonDocument.Parse(json).RootElement.Clone();
  public static JsonElement Create()=>J("""{"name":"FY2027","horizonStart":"2027-01-01","horizonEnd":"2027-12-31","demandPlanId":"dp-2027","demandPlanVersion":"3"}""");
