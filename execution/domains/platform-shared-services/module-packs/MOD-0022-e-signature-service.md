@@ -1723,6 +1723,18 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
     restart; the invitee is assigned Admin; 5 audit rows in total, one per created role.
 - **Evidence.** `docs/records/audits/2026-10/mod-0018-role1-evidence-2026-10-10.md`, `-scripts-2026-10-10.md`.
 
+### ROLE1 — CT acceptance (2026-10-11)
+
+- **CT-ACCEPTED.** Owner decision 2026-10-10: the default-role template applies only when a role is created. CT re-ran AuthService
+  Application **1072/1072**, Web **699/699**, architecture **18/18** in the agent worktree; read `DefaultRoleProvisioningRule` (grants only
+  when the role was created by this call — the existing unique index `uq_roles_tenant_name_active` decides) and `RoleProvisioningService`.
+  CT sabotage (own): the `default_role_provisioned` audit write disabled → 3 red in `DefaultRoleTemplateOnceTests`, restored, porcelain
+  clean. **FU-0022-SEED-01 / -02 CLOSED; CT-D10 holds for the template paths.** Fast-forwarded into the MVP-1 branch.
+- Still adding keys to existing roles (measured, not changed — owner decision pending): **O-ROLE1-1** the Admin reconciler re-adds four
+  self-service keys (`platform.tenant-security.read/manage`, `platform.tenant-navigation.manage`, `auth.users.lookup`) to every tenant's
+  Admin role at every AuthService start; **O-ROLE1-2** the module-licence sync and the seed's module / 97c5 grants add licensed modules'
+  keys to existing roles. **O-ROLE1-4:** `how-to-add-a-module.md` step 3 still describes the old behaviour (docs follow-up).
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
