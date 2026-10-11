@@ -122,7 +122,7 @@ runtime work. Contract changes require a separate versioned, single-writer speci
 
 ## 8. Runtime Constraints
 
-- Planned service is `Diten.SupplyChainService` on port 5061, using five layers and CQRS/MediatR.
+- Planned service is `Diten.SupplyChainService` on port 5066, using five layers and CQRS/MediatR. (5061 is CRM's route; `gateway/Diten.ApiGateway/ocelot.json` sends SupplyChain to 5066 — corrected 2026-10-11, the pack had carried CRM's port)
 - MongoDB data is tenant/legal-entity scoped; cross-scope access returns 404 without existence leakage.
 - Mutations require `Idempotency-Key` and UUID `X-Correlation-Id` per frozen contract.
 - DEMAND input is immutable provenance; evaluations cannot mutate or duplicate its source facts.
@@ -185,17 +185,17 @@ but cannot edit the shared permission registry without a separately authorized o
 
 ## 15. Gateway / API Routing Decision
 
-Desired public family is `/api/supply-chain/capacity-plans/**` routed to port 5061. This pack does not authorize an
+Desired public family is `/api/supply-chain/capacity-plans/**` routed to port 5066. This pack does not authorize an
 `ocelot.json` change. An integration-agent WP must add/verify routes and propagation of authorization, tenant,
 legal-entity, correlation and idempotency headers after endpoints exist.
 
 ## 16. Acceptance Criteria
 
-- [ ] Capacity plan stores one tenant/legal-entity aggregate with immutable DEMAND reference provenance; Published/exact-version authority is identified and mock-only proof is labeled.
-- [ ] No demand quantity, confidence or forecast series is persisted as a competing source of truth.
-- [ ] Scenario creation stores only owned adjustments and opaque versioned constraint references.
-- [ ] Evaluation acceptance persists once and exposes Accepted/Running/Completed/Failed; only `CAPACITY-EVAL-FIXTURE-192-01@1` literal Finite/Infinite results and the approved fenced executor design are in scope. E4 restart/race proof remains required.
-- [ ] Terminal evaluation returns fixture-literal decimal-string bottleneck measures, releases active slot, appends one audit and one `capacity.evaluation.completed.v1` Pending outbox in one transaction; no optimizer/publisher.
+- [x] Capacity plan stores one tenant/legal-entity aggregate with immutable DEMAND reference provenance; Published/exact-version authority is identified and mock-only proof is labeled. — measured 2026-10-11: a plan whose `SourceChecksum` does not match the fixture answers `INVALID_DEMAND_REFERENCE` and leaves `capacity_receipts` and `capacity_outbox` at 0; the exact-checksum plan answers `201`. A foreign TenantId and a foreign LegalEntityId both read back null, and a soft-deleted plan reads back null in its own scope. The proof runs on the test-only `DemandFixtureReader`/`ConstraintFixtureReader` seam and is labeled mock-only here.
+- [x] No demand quantity, confidence or forecast series is persisted as a competing source of truth. — measured 2026-10-11: `CapacityIsolationTests` reads the raw `capacity_plans` document. `DemandQuantity` and `ForecastSeries` were already asserted absent; **confidence was not**, though the line names it. The check is now a loop over `DemandQuantity|ForecastSeries|Confidence|DemandConfidence|Quantity|Series`.
+- [x] Scenario creation stores only owned adjustments and opaque versioned constraint references. — measured 2026-10-11: a scenario carrying an unknown constraint reference answers `INVALID_CONSTRAINT_REFERENCE` and `capacity_scenarios` stays empty; the accepted shape stores only its own `Adjustments` plus opaque `ConstraintRefs(name,"SUPPLY-CONSTRAINTS",version)` — no constraint value is copied.
+- [ ] Evaluation acceptance persists once and exposes Accepted/Running/Completed/Failed; only `CAPACITY-EVAL-FIXTURE-192-01@1` literal Finite/Infinite results and the approved fenced executor design are in scope. E4 restart/race proof remains required. — RETRACTED 2026-10-11, same day it was ticked. The tick was measured once at 48/48 on a mongod that had been running for hours. Re-measured on a cold lane replica set the CapacityPlans suite is **not deterministic**: four cold runs gave 48/48, 41/48, 46/48 and 48/48, with a different set failing each time — half the runs red. The red sets covered almost every test this line cited — `CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal`, `CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation` and `Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set`, `CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry`, and `CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect`, which is where the `capacity_audit` count lives and which failed in every red run. The failures are in fail-point driven paths, which is the timing problem Q214 measured and whose recommended fix (Q214 R1-R3: inject error 8 with the UnknownTransactionCommitResult label, scope the fail point with appName, assert how many times it fired) is still an open work package. The behaviour these lines describe is almost certainly implemented — but a citation that is green only on a warm mongod is not a measurement, and CT retracted two of its own ticks for less today.
+- [ ] Terminal evaluation returns fixture-literal decimal-string bottleneck measures, releases active slot, appends one audit and one `capacity.evaluation.completed.v1` Pending outbox in one transaction; no optimizer/publisher. — RETRACTED 2026-10-11, same day it was ticked. The tick was measured once at 48/48 on a mongod that had been running for hours. Re-measured on a cold lane replica set the CapacityPlans suite is **not deterministic**: four cold runs gave 48/48, 41/48, 46/48 and 48/48, with a different set failing each time — half the runs red. The red sets covered almost every test this line cited — `CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal`, `CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation` and `Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set`, `CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry`, and `CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect`, which is where the `capacity_audit` count lives and which failed in every red run. The failures are in fail-point driven paths, which is the timing problem Q214 measured and whose recommended fix (Q214 R1-R3: inject error 8 with the UnknownTransactionCommitResult label, scope the fail point with appName, assert how many times it fired) is still an open work package. The behaviour these lines describe is almost certainly implemented — but a citation that is green only on a warm mongod is not a measurement, and CT retracted two of its own ticks for less today.
 - [ ] UUID correlation is preserved from HTTP request through response, audit and lifecycle event.
 - [ ] Cross-scope access returns 404; missing permission returns 403.
 - [ ] Six operations match published `SANDOP-CAPACITY` 2.0.0 YAML and annex, including required/null/error/header/replay matrix; wire `contractVersion: v1`.
@@ -321,7 +321,7 @@ approve/archive, cancel/rerun, optimizer, chart, DEMAND/constraint lookup or S&O
 
 ### 23.4 Screens, routes, permissions
 
-Browser → same-origin MVC (`proxy-profile`, NET-001) → Gateway 5000 → SupplyChain 5061. The browser never calls 5000/5061 or holds a bearer token.
+Browser → same-origin MVC (`proxy-profile`, NET-001) → Gateway 5000 → SupplyChain 5066. The browser never calls 5000/5066 or holds a bearer token.
 
 | Surface | MVC route | Gateway downstream | UI display gate | Backend |
 |---|---|---|---|---|
@@ -461,7 +461,7 @@ No row has run. HTTP/browser/DB expectations follow §§13 and 16 and the tables
 | ID | Criterion | Readiness |
 |---|---|---|
 | CP-VS1 | Early vertical slice: real-Auth actor with all four keys creates a plan on the exact DEMAND fixture (201 Draft), creates a scenario with one constraint reference and one adjustment `"10.5"` (201), submits a Finite evaluation for one resource (202 Accepted), presses Refresh until Completed; the bottleneck table shows the `CAPACITY-EVAL-FIXTURE-192-01@1` literal decimal strings exactly; DB +1 plan, +1 scenario, +1 evaluation, active slot released, audits and Pending events per §16 | BLOCKED (target, gateway, permission seed, fixture seed, executor on target) |
-| CP-01 | Same-origin chain: browser requests only `/SupplyChain/CapacityPlans/**`; none to 5000/5061; no bearer token in the browser | BLOCKED (gateway) |
+| CP-01 | Same-origin chain: browser requests only `/SupplyChain/CapacityPlans/**`; none to 5000/5066; no bearer token in the browser | BLOCKED (gateway) |
 | CP-02 | No list request anywhere; open plan/scenario by ID; malformed UUID blocked client-side; unknown IDs → safe-not-found per resource | READY |
 | CP-03 | Skeleton / empty / error distinct in workspace, panels and bottleneck table | READY |
 | CP-04 | UAS-001 without `.read` | READY |
