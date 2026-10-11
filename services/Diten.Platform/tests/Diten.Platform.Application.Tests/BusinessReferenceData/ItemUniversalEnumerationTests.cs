@@ -34,7 +34,7 @@ public sealed partial class ItemUniversalReferenceDataTests
             Assert.Equal(catalog.Select(x => x.ValueCode), set.Values.Select(x => x.ValueCode));
             Assert.Equal(catalog.Select(x => x.Attributes), set.Values.Select(x => x.Attributes));
             Assert.Equal(ItemUniversalCatalog.GetVersionId(set.SetCode), set.CatalogVersionId);
-            Assert.Equal((ItemUniversalCatalog.CatalogVersion, ItemUniversalCatalog.CatalogVersionNumber),
+            Assert.Equal((ItemUniversalCatalog.CatalogVersion, ItemUniversalCatalog.GetVersionNumber(set.SetCode)),
                 (set.CatalogVersion, set.CatalogVersionNumber));
         }
         Assert.All(response.Data.Sets.Single(x => x.SetCode == "storage-condition").Values,
