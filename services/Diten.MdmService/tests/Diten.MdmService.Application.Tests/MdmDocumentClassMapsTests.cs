@@ -213,8 +213,8 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
         // Measured on this branch (cut before SCOPE-INT-01): the store's read refuses the document, and the write fence
         // answers its coded 503. The product READ's coded 503 (instead of the raw refusal) is BL-567, which arrives with
         // the takeover merge (SCOPE-INT-01) — CT re-measures it there.
-        var previous = Environment.GetEnvironmentVariable("MDM_TEST_MONGO");
-        Environment.SetEnvironmentVariable("MDM_TEST_MONGO", _fixture.ReplicaConnectionString);
+        // BL-595 FIX2: the shared helpers follow this class's replica set in-process (never the environment).
+        var ownedRedirect = MdmTestMongo.UseOwnedRedirect(_fixture.ReplicaConnectionString);
         try
         {
             await using var scope = await ProductScopeMongoScope.CreateAsync();
@@ -240,7 +240,7 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDM_TEST_MONGO", previous);
+            ownedRedirect.Dispose();
         }
     }
 

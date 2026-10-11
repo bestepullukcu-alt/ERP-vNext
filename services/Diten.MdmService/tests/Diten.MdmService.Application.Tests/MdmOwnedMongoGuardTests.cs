@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -39,10 +40,12 @@ public sealed class MdmOwnedMongoGuardTests
     // Built from the helper's constant. The arms: the port; any localhost URI (a test never needs it — owned servers are
     // 127.0.0.1 with a port); a loopback IP without a port (the driver's default is the shared port); a bare scheme
     // literal (a URI assembled by concatenation); a client or settings built with no arguments (the default server).
+    // FIX2: the port also with a digit separator or a suffix (27_017, 27017L); localhost and a portless loopback IP
+    // anywhere in a host list (not only first).
     internal static readonly Regex SharedMongoPattern = new(
-        $@"\b{MdmTestMongo.SharedPort}\b"
-        + @"|mongodb:/{2}(?:[^""\s/@]*@)?localhost"
-        + @"|mongodb:/{2}(?:[^""\s/@]*@)?(?:127\.0\.0\.1|\[::1\])(?![:\d])"
+        $@"\b{MdmTestMongo.SharedPortText[..2]}_?{MdmTestMongo.SharedPortText[2..]}[lLuU]*\b"
+        + @"|mongodb:/{2}[^""\s/]*?\blocalhost\b"
+        + @"|mongodb:/{2}[^""\s/]*?(?:127\.0\.0\.1|\[::1\])(?![:\d])"
         + @"|""mongodb:/{2}"""
         + @"|new\s+MongoClient(?:Settings)?\s*\(\s*\)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -60,14 +63,46 @@ public sealed class MdmOwnedMongoGuardTests
         Assert.True(sources.Length > 100, $"only {sources.Length} MDM test sources read — the guard is blind");
         Assert.All(Exempt, path => Assert.Contains(path, sources));
 
-        var naming = sources.Where(path => SharedMongoPattern.IsMatch(File.ReadAllText(Path.Combine(root, path)))).ToHashSet();
-        var offenders = naming.Except(NotYetMoved.Keys).Except(Exempt).Order(StringComparer.Ordinal).ToArray();
+        var (offenders, stale) = Judge(sources, path => File.ReadAllText(Path.Combine(root, path)), NotYetMoved.Keys, Exempt);
         Assert.True(offenders.Length == 0,
             "an MDM test names the shared Mongo — connect through MdmTestMongo.ConnectionString and refuse the port with "
             + "MdmTestMongo.SharedPort:\n" + string.Join("\n", offenders));
-
-        var stale = NotYetMoved.Keys.Where(path => !naming.Contains(path)).ToArray();
         Assert.True(stale.Length == 0, "no longer names the shared Mongo — take it off NotYetMoved:\n" + string.Join("\n", stale));
+    }
+
+    /// <summary>
+    /// FIX2 (CT N4): the guard's decision alone — a source that names the shared Mongo and is neither listed nor exempt
+    /// is an OFFENDER; a listed file that no longer names it is STALE. Tested with fake input, because on the real tree
+    /// both listed files still name the port and the stale branch never fires.
+    /// </summary>
+    internal static (string[] Offenders, string[] Stale) Judge(IEnumerable<string> sources, Func<string, string> read,
+        IEnumerable<string> notYetMoved, IEnumerable<string> exempt)
+    {
+        var listed = notYetMoved.ToArray();
+        var naming = sources.Where(path => SharedMongoPattern.IsMatch(read(path))).ToHashSet(StringComparer.Ordinal);
+        var offenders = naming.Except(listed).Except(exempt).Order(StringComparer.Ordinal).ToArray();
+        var stale = listed.Where(path => !naming.Contains(path)).Order(StringComparer.Ordinal).ToArray();
+        return (offenders, stale);
+    }
+
+    // FIX2 (CT N4): offenders and stale entries, on fake sources.
+    [Fact]
+    public void BL595_The_guard_names_an_offender_and_a_stale_entry()
+    {
+        var files = new Dictionary<string, string>
+        {
+            ["a/Moved.cs"] = "var c = MdmTestMongo.ConnectionString;",
+            ["a/StillListed.cs"] = "Assert.NotEqual(" + MdmTestMongo.SharedPortText + ", port);",
+            ["a/CleanNowButListed.cs"] = "Assert.NotEqual(MdmTestMongo.SharedPort, port);",
+            ["a/NewOffender.cs"] = "new MongoClient(\"mongodb://localhost\")",
+            ["a/Helper.cs"] = "public const int SharedPort = " + MdmTestMongo.SharedPortText + ";"
+        };
+
+        var (offenders, stale) = Judge(files.Keys, path => files[path],
+            ["a/StillListed.cs", "a/CleanNowButListed.cs"], ["a/Helper.cs"]);
+
+        Assert.Equal(new[] { "a/NewOffender.cs" }, offenders);
+        Assert.Equal(new[] { "a/CleanNowButListed.cs" }, stale);
     }
 
     // FIX1: the pattern's own examples. Red = the guard catches it.
@@ -90,6 +125,12 @@ public sealed class MdmOwnedMongoGuardTests
     [InlineData("mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=25", false)]
     [InlineData("new MongoClient(settings)", false)]
     [InlineData("Port = 270170", false)]
+    // FIX2
+    [InlineData("var port = 27_017;", true)]
+    [InlineData("const long port = " + MdmTestMongo.SharedPortText + "L;", true)]
+    [InlineData("mongodb://127.0.0.1:41234,localhost:41235", true)]
+    [InlineData("mongodb://127.0.0.1:41234,127.0.0.1", true)]
+    [InlineData("mongodb://127.0.0.1:41234,127.0.0.1:41235/?replicaSet=x", false)]
     public void BL595_The_guard_pattern_catches_every_shared_mongo_form_it_claims(string text, bool caught)
     {
         Assert.Equal(caught, SharedMongoPattern.IsMatch(text));
@@ -234,28 +275,128 @@ public sealed class MdmTestMongoTests
         public override void Send(SendOrPostCallback callback, object? state) { }
     }
 
-    // FIX1 (3): the sweep rule.
+    // ------------------------------------------------------------------------------------------- the sweep (FIX1/FIX2)
+    // One rule: in doubt, Keep. Shapes: a record (or none) and the processes the probe reports.
+
+    private const string MongodPath = "/opt/test/bin/mongod";
+    private static readonly DateTime T0 = new(2026, 10, 11, 8, 0, 0, DateTimeKind.Utc);
+    private static readonly TimeSpan Young = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan Old = MdmTestMongo.RecordlessGrace + TimeSpan.FromMinutes(1);
+
     [Theory]
+    // a live run, by the loose host tolerance (a clock step within it is the same host — FIX2 (5))
     [InlineData("host-alive", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("host-start-9s-later", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("host-start-9s-earlier", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("host-start-11s-earlier", MdmTestMongo.SweepAction.StopMongodAndDeleteDirectory)]
+    // a dead run
     [InlineData("host-dead-mongod-alive", MdmTestMongo.SweepAction.StopMongodAndDeleteDirectory)]
     [InlineData("host-dead-mongod-gone", MdmTestMongo.SweepAction.DeleteDirectory)]
     [InlineData("host-dead-pid-reused", MdmTestMongo.SweepAction.DeleteDirectory)]
     [InlineData("host-dead-no-mongod-yet", MdmTestMongo.SweepAction.DeleteDirectory)]
-    [InlineData("host-pid-reused", MdmTestMongo.SweepAction.StopMongodAndDeleteDirectory)]
+    // the stop is strict (FIX2 (4)/(5)): start within 1 s AND the executable path
+    [InlineData("mongod-start-0.9s", MdmTestMongo.SweepAction.StopMongodAndDeleteDirectory)]
+    [InlineData("mongod-start-1.5s", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-start-minus-1.5s", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-path-differs", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-path-unreadable", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("record-without-path", MdmTestMongo.SweepAction.Keep)]
+    // UNKNOWN is doubt (FIX2 (1))
+    [InlineData("host-unknown", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-unknown", MdmTestMongo.SweepAction.Keep)]
+    // an empty or impossible record is doubt
+    [InlineData("host-pid-zero", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("host-start-default", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("mongod-pid-one", MdmTestMongo.SweepAction.Keep)]
+    // no mongod recorded yet and a dead host: the lock file decides
+    [InlineData("no-mongod-yet-lock-held", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("no-mongod-yet-lock-unreadable", MdmTestMongo.SweepAction.Keep)]
+    // recordless
     [InlineData("no-record", MdmTestMongo.SweepAction.Keep)]
     [InlineData("no-record-old", MdmTestMongo.SweepAction.DeleteDirectory)]
-    // CT note: an older-code run (no record) still going after the grace — its mongod holds mongod.lock → kept.
+    [InlineData("no-record-age-unknown", MdmTestMongo.SweepAction.Keep)]
     [InlineData("no-record-old-lock-held", MdmTestMongo.SweepAction.Keep)]
     [InlineData("no-record-old-lock-dead", MdmTestMongo.SweepAction.DeleteDirectory)]
+    [InlineData("no-record-old-lock-unknown", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("no-record-old-lock-unreadable", MdmTestMongo.SweepAction.Keep)]
+    [InlineData("no-record-old-lock-pid-one", MdmTestMongo.SweepAction.Keep)]
     public void BL595_The_sweep_rule(string shape, MdmTestMongo.SweepAction expected)
     {
-        var (record, live) = SweepShape(shape);
-        var age = shape.StartsWith("no-record-old", StringComparison.Ordinal)
-            ? MdmTestMongo.RecordlessGrace + TimeSpan.FromMinutes(1)
-            : TimeSpan.FromMinutes(1);
-        int? lockPid = shape.StartsWith("no-record-old-lock", StringComparison.Ordinal) ? 3001 : null;
-        if (shape == "no-record-old-lock-held") live[3001] = DateTime.UtcNow.AddHours(-5);
-        Assert.Equal(expected, MdmTestMongo.Decide(record, pid => live.TryGetValue(pid, out var at) ? at : null, age, lockPid));
+        var (record, processes, age, lockFile) = SweepShape(shape);
+        Assert.Equal(expected, MdmTestMongo.Decide(record, ProbeOf(processes), age, lockFile));
+    }
+
+    // FIX2 (5): the two tolerances, at their edges and in both directions.
+    [Theory]
+    [InlineData(0, 1, true)]
+    [InlineData(999, 1, true)]
+    [InlineData(1000, 1, true)]
+    [InlineData(1001, 1, false)]
+    [InlineData(-1001, 1, false)]
+    [InlineData(-999, 1, true)]
+    [InlineData(10000, 10, true)]
+    [InlineData(-10001, 10, false)]
+    public void BL595_The_tolerances_are_symmetric_and_bounded(int milliseconds, int seconds, bool within)
+    {
+        Assert.Equal(within, MdmTestMongo.Within(T0.AddMilliseconds(milliseconds), T0, TimeSpan.FromSeconds(seconds)));
+        Assert.Equal(TimeSpan.FromSeconds(1), MdmTestMongo.StopTolerance);
+        Assert.Equal(TimeSpan.FromSeconds(10), MdmTestMongo.HostTolerance);
+    }
+
+    private static Func<int, MdmTestMongo.ProcessProbe> ProbeOf(Dictionary<int, MdmTestMongo.ProcessProbe> processes) =>
+        pid => processes.TryGetValue(pid, out var probe) ? probe : MdmTestMongo.ProcessProbe.Gone;
+
+    private static MdmTestMongo.ProcessProbe Alive(DateTime started, string? path = MongodPath) =>
+        new(MdmTestMongo.ProcessState.Alive, started, path);
+
+    // A record (or none), the processes by PID, the directory's age and its mongod.lock — for one shape.
+    private static (MdmTestMongo.OwnerRecord? Record, Dictionary<int, MdmTestMongo.ProcessProbe> Processes, TimeSpan? Age,
+        MdmTestMongo.LockRead Lock) SweepShape(string shape, int offset = 0)
+    {
+        int host = 1001 + offset, mongod = 2001 + offset, holder = 3001 + offset;
+        var processes = new Dictionary<int, MdmTestMongo.ProcessProbe>();
+        MdmTestMongo.OwnerRecord? record = new(mongod, T0.AddSeconds(5), host, T0, MongodPath);
+        TimeSpan? age = Young;
+        var lockFile = MdmTestMongo.LockRead.None;
+        switch (shape)
+        {
+            case "host-alive": processes[host] = Alive(T0, "/usr/bin/dotnet"); processes[mongod] = Alive(T0.AddSeconds(5)); break;
+            case "host-start-9s-later": processes[host] = Alive(T0.AddSeconds(9)); processes[mongod] = Alive(T0.AddSeconds(5)); break;
+            case "host-start-9s-earlier": processes[host] = Alive(T0.AddSeconds(-9)); processes[mongod] = Alive(T0.AddSeconds(5)); break;
+            case "host-start-11s-earlier": processes[host] = Alive(T0.AddSeconds(-11)); processes[mongod] = Alive(T0.AddSeconds(5)); break;
+            case "host-dead-mongod-alive": processes[mongod] = Alive(T0.AddSeconds(5)); break;
+            case "host-dead-mongod-gone": break;
+            case "host-dead-pid-reused": processes[mongod] = Alive(T0.AddHours(3), "/usr/bin/other"); break;
+            case "host-dead-no-mongod-yet": record = record with { MongodPid = null, MongodStartedUtc = null, MongodPath = null }; break;
+            case "mongod-start-0.9s": processes[mongod] = Alive(T0.AddSeconds(5).AddMilliseconds(900)); break;
+            case "mongod-start-1.5s": processes[mongod] = Alive(T0.AddSeconds(5).AddMilliseconds(1500)); break;
+            case "mongod-start-minus-1.5s": processes[mongod] = Alive(T0.AddSeconds(5).AddMilliseconds(-1500)); break;
+            case "mongod-path-differs": processes[mongod] = Alive(T0.AddSeconds(5), "/usr/bin/sleep"); break;
+            case "mongod-path-unreadable": processes[mongod] = Alive(T0.AddSeconds(5), null); break;
+            case "record-without-path": record = record with { MongodPath = null }; processes[mongod] = Alive(T0.AddSeconds(5)); break;
+            case "host-unknown": processes[host] = MdmTestMongo.ProcessProbe.Unknown; break;
+            case "mongod-unknown": processes[mongod] = MdmTestMongo.ProcessProbe.Unknown; break;
+            case "host-pid-zero": record = record with { HostPid = 0 }; break;
+            case "host-start-default": record = record with { HostStartedUtc = default }; break;
+            case "mongod-pid-one": record = record with { MongodPid = 1 }; break;
+            case "no-mongod-yet-lock-held":
+                record = record with { MongodPid = null, MongodStartedUtc = null, MongodPath = null };
+                lockFile = new(false, holder); processes[holder] = Alive(T0); break;
+            case "no-mongod-yet-lock-unreadable":
+                record = record with { MongodPid = null, MongodStartedUtc = null, MongodPath = null };
+                lockFile = MdmTestMongo.LockRead.CannotRead; break;
+            case "no-record": record = null; break;
+            case "no-record-old": record = null; age = Old; break;
+            case "no-record-age-unknown": record = null; age = null; break;
+            case "no-record-old-lock-held": record = null; age = Old; lockFile = new(false, holder); processes[holder] = Alive(T0); break;
+            case "no-record-old-lock-dead": record = null; age = Old; lockFile = new(false, holder); break;
+            case "no-record-old-lock-unknown":
+                record = null; age = Old; lockFile = new(false, holder); processes[holder] = MdmTestMongo.ProcessProbe.Unknown; break;
+            case "no-record-old-lock-unreadable": record = null; age = Old; lockFile = MdmTestMongo.LockRead.CannotRead; break;
+            case "no-record-old-lock-pid-one": record = null; age = Old; lockFile = new(false, 1); break;
+            default: throw new ArgumentOutOfRangeException(nameof(shape), shape, null);
+        }
+        return (record, processes, age, lockFile);
     }
 
     [Theory]
@@ -265,12 +406,13 @@ public sealed class MdmTestMongoTests
     [InlineData(null, null)]
     public void BL595_The_lock_holder_is_read_from_mongod_lock(string? content, int? expected)
     {
-        var directory = Path.Combine(Path.GetTempPath(), "diten_mdm_locktest_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(directory);
+        var directory = NewScratch("locktest");
         try
         {
-            if (content is not null) File.WriteAllText(Path.Combine(directory, "mongod.lock"), content.Replace("\\n", "\n"));
-            Assert.Equal(expected, MdmTestMongo.LockPid(directory));
+            if (content is not null) File.WriteAllText(Path.Combine(directory, "mongod.lock"), content);
+            var read = MdmTestMongo.LockPid(directory);
+            Assert.False(read.Unreadable);
+            Assert.Equal(expected, read.Pid);
         }
         finally
         {
@@ -278,47 +420,157 @@ public sealed class MdmTestMongoTests
         }
     }
 
-    // FIX1 (3): the sweep on a real directory tree — a live run's directory stays, a dead run's goes, a process whose
-    // start time does not match is never stopped, nothing outside the prefix is touched.
+    // FIX2 (2): a lock file that exists but cannot be READ (a Windows mongod holds it exclusively; here: no permission)
+    // is "unreadable" — never "none" — and a recordless old directory holding one is kept.
+    [SkippableFact]
+    public void BL595_An_unreadable_mongod_lock_keeps_the_directory()
+    {
+        Skip.If(OperatingSystem.IsWindows(), "permission bits are the Unix simulation of a held lock");
+        var root = NewScratch("sweeptest");
+        var directory = Path.Combine(root, MdmTestMongo.DirectoryPrefix + "unreadable");
+        Directory.CreateDirectory(directory);
+        var lockPath = Path.Combine(directory, "mongod.lock");
+        File.WriteAllText(lockPath, "4242");
+        File.SetUnixFileMode(lockPath, UnixFileMode.None);
+        try
+        {
+            Assert.True(MdmTestMongo.LockPid(directory).Unreadable);
+            Directory.SetCreationTimeUtc(directory, DateTime.UtcNow - Old);
+
+            var action = Assert.Single(MdmTestMongo.Sweep(root, _ => MdmTestMongo.ProcessProbe.Gone, _ => true)).Action;
+
+            Assert.Equal(MdmTestMongo.SweepAction.Keep, action);
+            Assert.True(File.Exists(lockPath));
+        }
+        finally
+        {
+            File.SetUnixFileMode(lockPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    // The sweep on a real directory tree: a live run's directory stays, a dead run's goes, a process whose start time
+    // does not match is never stopped, an old recordless directory goes unless a live process holds its lock, a young one
+    // stays, nothing outside the prefix is touched.
     [Fact]
     public void BL595_The_sweep_removes_only_dead_runs_and_stops_only_a_verified_mongod()
     {
-        var root = Path.Combine(Path.GetTempPath(), "diten_mdm_sweeptest_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
+        var root = NewScratch("sweeptest");
         try
         {
             var directories = new Dictionary<string, string>();
-            var live = new Dictionary<int, DateTime>();
-            foreach (var shape in new[] { "host-alive", "host-dead-mongod-alive", "host-dead-mongod-gone", "host-dead-pid-reused", "no-record" })
+            var processes = new Dictionary<int, MdmTestMongo.ProcessProbe>();
+            var shapes = new[] { "host-alive", "host-dead-mongod-alive", "host-dead-mongod-gone", "host-dead-pid-reused", "no-record" };
+            foreach (var shape in shapes)
             {
-                var (record, alive) = SweepShape(shape, offset: directories.Count * 100);
-                foreach (var pair in alive) live[pair.Key] = pair.Value;
+                var (record, alive, _, _) = SweepShape(shape, offset: directories.Count * 100);
+                foreach (var pair in alive) processes[pair.Key] = pair.Value;
                 var directory = Path.Combine(root, MdmTestMongo.DirectoryPrefix + shape);
                 Directory.CreateDirectory(directory);
                 if (record is not null) MdmTestMongo.WriteOwner(directory, record);
                 directories[shape] = directory;
             }
+            // Recordless and old: one whose lock names a live process (this test's own), one whose lock is stale.
+            var heldOld = Path.Combine(root, MdmTestMongo.DirectoryPrefix + "old-lock-held");
+            var staleOld = Path.Combine(root, MdmTestMongo.DirectoryPrefix + "old-lock-stale");
+            foreach (var (directory, holder) in new[] { (heldOld, Environment.ProcessId), (staleOld, 9_999_001) })
+            {
+                Directory.CreateDirectory(directory);
+                File.WriteAllText(Path.Combine(directory, "mongod.lock"), holder.ToString());
+                Directory.SetCreationTimeUtc(directory, DateTime.UtcNow - Old);
+            }
+            processes[Environment.ProcessId] = Alive(DateTime.UtcNow);
             var stranger = Path.Combine(root, "someone_else_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(stranger);
-            var stopped = new List<(int Pid, DateTime Started)>();
+            var stopped = new List<MdmTestMongo.OwnerRecord>();
 
-            var actions = MdmTestMongo.Sweep(root, pid => live.TryGetValue(pid, out var at) ? at : null,
-                (pid, started) => { stopped.Add((pid, started)); return true; });
+            var actions = MdmTestMongo.Sweep(root, ProbeOf(processes), record => { stopped.Add(record); return true; });
 
             Assert.True(Directory.Exists(directories["host-alive"]));
             Assert.True(Directory.Exists(directories["no-record"]));
+            Assert.True(Directory.Exists(heldOld));
+            Assert.False(Directory.Exists(staleOld));
             Assert.False(Directory.Exists(directories["host-dead-mongod-alive"]));
             Assert.False(Directory.Exists(directories["host-dead-mongod-gone"]));
             Assert.False(Directory.Exists(directories["host-dead-pid-reused"]));
             Assert.True(Directory.Exists(stranger));
+            // Only the dead run's live mongod (directory 1: PIDs offset by 100), by its recorded PID, start and path.
             var only = Assert.Single(stopped);
-            // Only the dead run's live mongod (directory 1: PIDs offset by 100), by its recorded PID and start time.
-            Assert.Equal((2101, new DateTime(2026, 10, 11, 8, 0, 5, DateTimeKind.Utc)), only);
-            Assert.Equal(5, actions.Count);
+            Assert.Equal((2101, T0.AddSeconds(5), MongodPath), (only.MongodPid!.Value, only.MongodStartedUtc!.Value, only.MongodPath));
+            Assert.Equal(7, actions.Count);
         }
         finally
         {
             Directory.Delete(root, recursive: true);
+        }
+    }
+
+    // FIX2 (3): a link is never followed — neither a prefixed link at the top (its target's content stays) nor a link
+    // inside an owned directory (the link goes, its target stays).
+    [Fact]
+    public void BL595_The_sweep_never_follows_a_link()
+    {
+        var root = NewScratch("sweeptest");
+        var outside = NewScratch("linktarget");
+        try
+        {
+            var (dead, _, _, _) = SweepShape("host-dead-mongod-gone");
+            MdmTestMongo.WriteOwner(outside, dead!);
+            var precious = Path.Combine(outside, "precious.txt");
+            File.WriteAllText(precious, "keep me");
+            var topLink = Path.Combine(root, MdmTestMongo.DirectoryPrefix + "link");
+            Directory.CreateSymbolicLink(topLink, outside);
+
+            var owned = Path.Combine(root, MdmTestMongo.DirectoryPrefix + "with-inner");
+            Directory.CreateDirectory(owned);
+            MdmTestMongo.WriteOwner(owned, dead!);
+            Directory.CreateSymbolicLink(Path.Combine(owned, "inner"), outside);
+
+            var actions = MdmTestMongo.Sweep(root, _ => MdmTestMongo.ProcessProbe.Gone, _ => true);
+
+            Assert.True(File.Exists(precious));
+            Assert.True(File.Exists(Path.Combine(outside, MdmTestMongo.OwnerFile)));
+            Assert.Equal(MdmTestMongo.SweepAction.Keep, actions.Single(x => x.Directory == topLink).Action);
+            Assert.False(Directory.Exists(owned));
+
+            // And a direct cleanup call on the link refuses it.
+            MdmTestMongo.DeleteOwnDirectory(root, topLink);
+            Assert.True(File.Exists(precious));
+        }
+        finally
+        {
+            foreach (var entry in new DirectoryInfo(root).EnumerateFileSystemInfos())
+                if (MdmTestMongo.IsLink(entry)) entry.Delete();
+            Directory.Delete(root, recursive: true);
+            Directory.Delete(outside, recursive: true);
+        }
+    }
+
+    // The cleanup's scope: only a prefixed child of the root — never a non-prefixed one, never one outside the root.
+    [Fact]
+    public void BL595_A_cleanup_touches_only_a_prefixed_child_of_its_root()
+    {
+        var root = NewScratch("sweeptest");
+        var outsideRoot = NewScratch("outside");
+        try
+        {
+            var unprefixed = Path.Combine(root, "not_ours");
+            var deeper = Path.Combine(root, "nested", MdmTestMongo.DirectoryPrefix + "deep");
+            var foreign = Path.Combine(outsideRoot, MdmTestMongo.DirectoryPrefix + "foreign");
+            foreach (var directory in new[] { unprefixed, deeper, foreign }) Directory.CreateDirectory(directory);
+
+            MdmTestMongo.DeleteOwnDirectory(root, unprefixed);
+            MdmTestMongo.DeleteOwnDirectory(root, deeper);
+            MdmTestMongo.DeleteOwnDirectory(root, foreign);
+
+            Assert.True(Directory.Exists(unprefixed));
+            Assert.True(Directory.Exists(deeper));
+            Assert.True(Directory.Exists(foreign));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+            Directory.Delete(outsideRoot, recursive: true);
         }
     }
 
@@ -327,12 +579,12 @@ public sealed class MdmTestMongoTests
     [Fact]
     public void BL595_A_cleanup_removes_the_owner_record_last()
     {
-        var root = Path.Combine(Path.GetTempPath(), "diten_mdm_sweeptest_" + Guid.NewGuid().ToString("N"));
+        var root = NewScratch("sweeptest");
         var directory = Path.Combine(root, MdmTestMongo.DirectoryPrefix + "order");
         Directory.CreateDirectory(Path.Combine(directory, "journal"));
         try
         {
-            var (record, _) = SweepShape("host-dead-mongod-gone");
+            var (record, _, _, _) = SweepShape("host-dead-mongod-gone");
             MdmTestMongo.WriteOwner(directory, record!);
             foreach (var name in new[] { "WiredTiger.wt", "zz-collection.wt", "mongod.lock" })
                 File.WriteAllText(Path.Combine(directory, name), "x");
@@ -342,7 +594,7 @@ public sealed class MdmTestMongoTests
             Assert.Equal(5, order.Count);
             Assert.Equal(Path.Combine(directory, MdmTestMongo.OwnerFile), order[^1]);
 
-            MdmTestMongo.Sweep(root, _ => null, (_, _) => true);
+            MdmTestMongo.Sweep(root, _ => MdmTestMongo.ProcessProbe.Gone, _ => true);
             Assert.False(Directory.Exists(directory));
         }
         finally
@@ -355,15 +607,15 @@ public sealed class MdmTestMongoTests
     [Fact]
     public void BL595_The_sweep_keeps_what_it_could_not_verify()
     {
-        var root = Path.Combine(Path.GetTempPath(), "diten_mdm_sweeptest_" + Guid.NewGuid().ToString("N"));
+        var root = NewScratch("sweeptest");
         var directory = Path.Combine(root, MdmTestMongo.DirectoryPrefix + "unverified");
         Directory.CreateDirectory(directory);
         try
         {
-            var (record, live) = SweepShape("host-dead-mongod-alive");
+            var (record, processes, _, _) = SweepShape("host-dead-mongod-alive");
             MdmTestMongo.WriteOwner(directory, record!);
 
-            var actions = MdmTestMongo.Sweep(root, pid => live.TryGetValue(pid, out var at) ? at : null, (_, _) => false);
+            var actions = MdmTestMongo.Sweep(root, ProbeOf(processes), _ => false);
 
             Assert.True(Directory.Exists(directory));
             Assert.Equal(MdmTestMongo.SweepAction.Keep, Assert.Single(actions).Action);
@@ -374,24 +626,84 @@ public sealed class MdmTestMongoTests
         }
     }
 
-    // Records and the live processes (PID → start) for one sweep shape. PIDs are offset per directory.
-    private static (MdmTestMongo.OwnerRecord? Record, Dictionary<int, DateTime> Live) SweepShape(string shape, int offset = 0)
+    // FIX2: the sweep at start is best effort — a failure inside it never fails the tests' start.
+    [Fact]
+    public void BL595_A_failing_sweep_never_fails_the_start()
     {
-        var t = new DateTime(2026, 10, 11, 8, 0, 0, DateTimeKind.Utc);
-        int host = 1001 + offset, mongod = 2001 + offset;
-        var live = new Dictionary<int, DateTime>();
-        MdmTestMongo.OwnerRecord? record = new(mongod, t.AddSeconds(5), host, t);
-        switch (shape)
+        var root = NewScratch("sweeptest");
+        Directory.CreateDirectory(Path.Combine(root, MdmTestMongo.DirectoryPrefix + "boom"));
+        var (record, _, _, _) = SweepShape("host-alive");
+        MdmTestMongo.WriteOwner(Path.Combine(root, MdmTestMongo.DirectoryPrefix + "boom"), record!);
+        try
         {
-            case "host-alive": live[host] = t; live[mongod] = t.AddSeconds(5); break;
-            case "host-dead-mongod-alive": live[mongod] = t.AddSeconds(5); break;
-            case "host-dead-mongod-gone": break;
-            case "host-dead-pid-reused": live[mongod] = t.AddHours(3); break; // another process now has that PID
-            case "host-dead-no-mongod-yet": record = record with { MongodPid = null, MongodStartedUtc = null }; break;
-            case "host-pid-reused": live[host] = t.AddHours(3); live[mongod] = t.AddSeconds(5); break;
-            default: record = null; break;
+            MdmTestMongo.SweepBestEffort(root, _ => throw new InvalidOperationException("probe failed"), _ => true);
         }
-        return (record, live);
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    // FIX2 (4): the ONE stop path against a REAL process (a child this test starts, not a mongod): stopped only when the
+    // PID, the start time AND the executable path all match the record.
+    [SkippableTheory]
+    [InlineData("start-differs", false)]
+    [InlineData("path-differs", false)]
+    [InlineData("no-path", false)]
+    [InlineData("all-match", true)]
+    public void BL595_The_stop_needs_pid_start_and_executable_path(string shape, bool stops)
+    {
+        Skip.If(OperatingSystem.IsWindows(), "the child is /bin/sleep");
+        using var child = Process.Start(new ProcessStartInfo("/bin/sleep", "60") { UseShellExecute = false })!;
+        try
+        {
+            var probe = MdmTestMongo.Probe(child.Id);
+            Assert.Equal(MdmTestMongo.ProcessState.Alive, probe.State);
+            Assert.NotNull(probe.Path);
+            var record = new MdmTestMongo.OwnerRecord(child.Id, probe.StartedUtc, Environment.ProcessId, DateTime.UtcNow,
+                probe.Path);
+            record = shape switch
+            {
+                "start-differs" => record with { MongodStartedUtc = probe.StartedUtc.AddSeconds(5) },
+                "path-differs" => record with { MongodPath = "/usr/bin/true" },
+                "no-path" => record with { MongodPath = null },
+                _ => record
+            };
+
+            var stopped = MdmTestMongo.StopVerified(record);
+
+            Assert.Equal(stops, stopped);
+            Assert.Equal(stops, child.WaitForExit(stops ? 15000 : 300));
+        }
+        finally
+        {
+            if (!child.HasExited) child.Kill();
+        }
+    }
+
+    // FIX2 (1): a PID no process has is GONE (not unknown); this process is alive with its own start and path.
+    [Fact]
+    public void BL595_The_probe_says_gone_and_alive()
+    {
+        Assert.Equal(MdmTestMongo.ProcessState.Gone, MdmTestMongo.Probe(9_999_001).State);
+        var self = MdmTestMongo.Probe(Environment.ProcessId);
+        Assert.Equal(MdmTestMongo.ProcessState.Alive, self.State);
+        Assert.True(MdmTestMongo.Within(self.StartedUtc, Process.GetCurrentProcess().StartTime.ToUniversalTime(),
+            MdmTestMongo.StopTolerance));
+    }
+
+    // FIX2: an age that cannot be read is unknown.
+    [Fact]
+    public void BL595_An_unreadable_age_is_unknown()
+    {
+        Assert.Null(MdmTestMongo.AgeOf(new DirectoryInfo(Path.Combine(Path.GetTempPath(), "diten_mdm_missing_" + Guid.NewGuid().ToString("N")))));
+    }
+
+    private static string NewScratch(string kind)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"diten_mdm_{kind}_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        return directory;
     }
 
     // FIX1 (4): a port taken between its pick and mongod's bind is retried on a fresh one.
@@ -447,27 +759,55 @@ public sealed class MdmTestMongoTests
 }
 
 /// <summary>
-/// FIX1: <see cref="MdmTestMongo.ConnectionString"/> reads the redirect from the process — in the serial collection
-/// (the redirecting classes run there too), set and restored here.
+/// FIX2 (6): the redirect is set in-process by a fixture (<see cref="MdmTestMongo.UseOwnedRedirect"/>) and NEVER read
+/// from the environment — a <c>MDM_TEST_MONGO</c> left in a shell does not move a test's writes. In the serial
+/// collection (the redirecting fixtures run there too); everything set is restored.
 /// </summary>
 [Collection(ProductLegalEntityScopeMongoCollection.Name)]
 public sealed class MdmTestMongoRedirectTests
 {
     [Theory]
-    [InlineData("mongodb://127.0.0.1:41234/?replicaSet=x&directConnection=true", true)]
-    [InlineData("mongodb://127.0.0.1:" + MdmTestMongo.SharedPortText, false)]
-    public void BL595_The_connection_follows_the_in_process_redirect(string value, bool followed)
+    [InlineData("mongodb://127.0.0.1:27018")]
+    [InlineData("mongodb://127.0.0.1:41234/?replicaSet=x&directConnection=true")]
+    [InlineData("mongodb://db.example.com:41234")]
+    public void BL595_An_environment_value_never_moves_the_connection(string value)
     {
         var previous = Environment.GetEnvironmentVariable(MdmTestMongo.RedirectVariable);
         Environment.SetEnvironmentVariable(MdmTestMongo.RedirectVariable, value);
         try
         {
-            if (followed) Assert.Equal(value, MdmTestMongo.ConnectionString);
-            else Assert.Equal(MdmTestMongo.OwnedConnectionString, MdmTestMongo.ConnectionString);
+            Assert.Equal(MdmTestMongo.OwnedConnectionString, MdmTestMongo.ConnectionString);
         }
         finally
         {
             Environment.SetEnvironmentVariable(MdmTestMongo.RedirectVariable, previous);
         }
+    }
+
+    [Fact]
+    public void BL595_A_fixture_redirect_is_followed_and_restored()
+    {
+        const string first = "mongodb://127.0.0.1:41234/?replicaSet=x&directConnection=true";
+        const string second = "mongodb://127.0.0.1:41235/?replicaSet=y&directConnection=true";
+
+        using (MdmTestMongo.UseOwnedRedirect(first))
+        {
+            Assert.Equal(first, MdmTestMongo.ConnectionString);
+            using (MdmTestMongo.UseOwnedRedirect(second)) Assert.Equal(second, MdmTestMongo.ConnectionString);
+            Assert.Equal(first, MdmTestMongo.ConnectionString);
+        }
+
+        Assert.Equal(MdmTestMongo.OwnedConnectionString, MdmTestMongo.ConnectionString);
+    }
+
+    [Theory]
+    [InlineData("mongodb://127.0.0.1:" + MdmTestMongo.SharedPortText)]
+    [InlineData("mongodb://db.example.com:41234")]
+    [InlineData("not a uri")]
+    public void BL595_A_fixture_redirect_to_the_shared_port_or_a_remote_host_is_refused(string value)
+    {
+        Assert.StartsWith(MdmTestMongo.RedirectInvalid + ":",
+            Assert.Throws<InvalidOperationException>(() => MdmTestMongo.UseOwnedRedirect(value)).Message);
+        Assert.Equal(MdmTestMongo.OwnedConnectionString, MdmTestMongo.ConnectionString);
     }
 }

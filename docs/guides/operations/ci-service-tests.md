@@ -175,9 +175,8 @@ Ek kurallar (kapalı başarısız):
   - `DITEN_ITEST_MONGOD_BIN_DIR`: ikilinin dizini. Auth'un kabul sunucusu bunu kullanır.
 - **MDM App** (BL-595) kendi mongod'unu açar: tek yardımcı `MdmTestMongo`. İkiliyi `DITEN_TEST_MONGOD`'dan alır (Auth
   kuralı), rastgele port, geçici dizin, tek düğümlü replika kümesi, yalnız `127.0.0.1`. Değişken yoksa adlı kırmızı
-  (`OWNED_TEST_MONGO_UNAVAILABLE`); ortak 27017'ye asla düşmez. `MDM_TEST_MONGO` yalnız 27017 dışındaki bir loopback
-  mongod'u gösteriyorsa izlenir (kendi replika kümesini kuran sınıfların süreç içi yönlendirmesi). İşin
-  `127.0.0.1:27017` değeri yok sayılır. **MDM Api** (`MdmHttpHost`) de kendi mongod'unu açar.
+  (`OWNED_TEST_MONGO_UNAVAILABLE`); ortak 27017'ye asla düşmez. Bağlantı ortamdan okunmaz (FIX2): `MDM_TEST_MONGO` yok sayılır;
+  kendi replika kümesini kuran sınıflar yardımcıyı süreç içinde `MdmTestMongo.UseOwnedRedirect` ile ona yöneltir. **MDM Api** (`MdmHttpHost`) de kendi mongod'unu açar.
 - **Eventing testleri** kendi mongod'unu açmaz, bir URI'ye bağlanır: `Eventing__MongoDb__ConnectionString`
   (varsayılan `localhost:27017`).
 - **İşe özel mongod (Eventing satırı; MDM satırlarında BL-595'ten beri kullanılmıyor):** aynı ikiliyle `127.0.0.1:27017`'de **tek düğümlü bir replika kümesi**

@@ -17,16 +17,16 @@ public sealed class ProductLegalEntityScopeActivationMongoTests
     : IClassFixture<AuditIntentTemporalMongoFixture>, IDisposable
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 28, 12, 0, 0, TimeSpan.Zero);
-    private readonly string? _previousMongoConnection;
+    // BL-595 FIX2: the shared helpers follow this class's own replica set, in-process (never the environment).
+    private readonly IDisposable _ownedRedirect;
 
     public ProductLegalEntityScopeActivationMongoTests(AuditIntentTemporalMongoFixture fixture)
     {
-        _previousMongoConnection = Environment.GetEnvironmentVariable("MDM_TEST_MONGO");
-        Environment.SetEnvironmentVariable("MDM_TEST_MONGO", fixture.ReplicaConnectionString);
+        _ownedRedirect = MdmTestMongo.UseOwnedRedirect(fixture.ReplicaConnectionString);
     }
 
     public void Dispose() =>
-        Environment.SetEnvironmentVariable("MDM_TEST_MONGO", _previousMongoConnection);
+        _ownedRedirect.Dispose();
 
     [Fact]
     public async Task Fence_exact_replay_is_idempotent_drift_denied_and_only_equal_stable_snapshots_quiesce()

@@ -21,16 +21,16 @@ namespace Diten.MdmService.Application.Tests;
 /// <c>[OwnedMongoFact]</c>); MDM's tests are plain <c>[Fact]</c>s, so "nothing found" is RED by name
 /// (<see cref="Unavailable"/>) — never a silent pass and never the shared server, the same answer MDM's HTTP host
 /// already gives. <c>DITEN_REQUIRE_OWNED_MONGO=1</c> is honoured (<see cref="RequiredButUnavailable"/>).</para>
-/// <para>The one redirect (<see cref="RedirectVariable"/>): six test classes own a replica set of their own
-/// (<c>AuditIntentTemporalMongoFixture</c>) and, for their lifetime, point the shared helpers at it by setting
-/// <c>MDM_TEST_MONGO</c> in-process (their collection runs alone). That is honoured ONLY for a loopback server that is
-/// not the shared port — another test-owned mongod. Every host must be loopback (else RED by name,
-/// <see cref="RedirectInvalid"/>, a default port included); then a list naming the shared port is ignored (CI's
-/// job-local value <c>127.0.0.1:27017</c>: the owned mongod is used).</para>
-/// <para>FIX1: the start runs off the test's synchronization context (no xunit worker is held waiting for itself);
-/// a port lost between its pick and mongod's bind is retried; every owned directory carries an owner record, and a
-/// start sweeps what an earlier, killed run left behind (only its own prefix, only a mongod whose PID AND start time
-/// match a record whose test host is gone — never by name).</para>
+/// <para>The one redirect: test classes that own a replica set of their own (<c>AuditIntentTemporalMongoFixture</c>)
+/// point the shared helpers at it for their lifetime through <see cref="UseOwnedRedirect"/> — in-process, by the
+/// fixture's own API (their collection runs alone). FIX2: the process ENVIRONMENT is never read for a connection — a
+/// <c>MDM_TEST_MONGO</c> left in a shell (or CI's job-local value) does not move a test, its writes or its
+/// <c>DropDatabase</c> anywhere. A redirect must name loopback hosts only and not the shared port
+/// (<see cref="RedirectInvalid"/>).</para>
+/// <para>FIX1/FIX2 cleanup: every owned directory carries an owner record; a start sweeps what an earlier, killed run
+/// left behind. The one rule is "in doubt, Keep": a process whose state cannot be read, a lock file that cannot be
+/// read, a directory whose age cannot be read, a link, an empty record — all kept. A leftover mongod is stopped only
+/// when its PID, start time (within <see cref="StopTolerance"/>) AND executable path all match its record.</para>
 /// </summary>
 public static class MdmTestMongo
 {
@@ -43,30 +43,55 @@ public static class MdmTestMongo
     public const string InvalidVariable = "OWNED_TEST_MONGO_INVALID";
     public const string Unavailable = "OWNED_TEST_MONGO_UNAVAILABLE";
     public const string RequiredButUnavailable = "OWNED_TEST_MONGO_REQUIRED";
+    /// <summary>The environment variable a test process IGNORES (FIX2) — named so the test can set it and prove it.</summary>
     public const string RedirectVariable = "MDM_TEST_MONGO";
     public const string RedirectInvalid = "OWNED_TEST_MONGO_REDIRECT_INVALID";
     public const string DirectoryPrefix = "diten_mdm_owned_";
     public const string OwnerFile = "owner.json";
     public const int StartAttempts = 3;
     public static readonly TimeSpan RecordlessGrace = TimeSpan.FromHours(1);
+    /// <summary>FIX2 (5): a host counts as the recorded one within this (loose: a clock step must not make it "gone").</summary>
+    public static readonly TimeSpan HostTolerance = TimeSpan.FromSeconds(10);
+    /// <summary>FIX2 (5): a mongod is stopped only within this (strict) — plus the PID and the executable path.</summary>
+    public static readonly TimeSpan StopTolerance = TimeSpan.FromSeconds(1);
     private const string ReplicaSetName = "mdm-owned";
 
     public sealed record Resolution(string? Executable, string? Failure);
 
     private static readonly Lazy<OwnedMongod> Owned = new(Start, LazyThreadSafetyMode.ExecutionAndPublication);
+    private static string? _redirect;
 
     /// <summary>
-    /// The connection every MDM Mongo test uses: a test-owned redirect (see the class remarks), else this process's own
-    /// replica set (started on first use; a failure is red by name).
+    /// The connection every MDM Mongo test uses: an in-process redirect set by a fixture (<see cref="UseOwnedRedirect"/>),
+    /// else this process's own replica set (started on first use; a failure is red by name).
     /// </summary>
-    public static string ConnectionString =>
-        RedirectFor(Environment.GetEnvironmentVariable(RedirectVariable)) ?? OwnedConnectionString;
+    public static string ConnectionString => _redirect ?? OwnedConnectionString;
 
     /// <summary>This process's own replica set — never a redirect.</summary>
     public static string OwnedConnectionString => Owned.Value.ConnectionString;
 
     /// <summary>Whether the owned mongod's stop is registered for process exit (set where the handler is added).</summary>
     public static bool StopRegisteredForExit { get; private set; }
+
+    /// <summary>
+    /// FIX2 (6): a fixture that owns a replica set points the shared helpers at it until the returned scope is disposed
+    /// (the previous redirect is restored). Only from a serial collection. The URI must be a test-owned loopback mongod
+    /// that is not the shared port — anything else is <see cref="RedirectInvalid"/>.
+    /// </summary>
+    public static IDisposable UseOwnedRedirect(string connectionString)
+    {
+        var valid = RedirectFor(connectionString)
+                    ?? throw new InvalidOperationException($"{RedirectInvalid}: a redirect never names the shared port.");
+        var previous = _redirect;
+        _redirect = valid;
+        return new Restore(() => _redirect = previous);
+    }
+
+    private sealed class Restore(Action restore) : IDisposable
+    {
+        private int _done;
+        public void Dispose() { if (Interlocked.Exchange(ref _done, 1) == 0) restore(); }
+    }
 
     // The redirect rule alone (tested): absent → none; every host loopback, else the named failure (a default port too);
     // then a list naming the shared port → none; else the value.
@@ -75,11 +100,11 @@ public static class MdmTestMongo
         if (string.IsNullOrWhiteSpace(value)) return null;
         MongoUrl url;
         try { url = new MongoUrl(value); }
-        catch (MongoConfigurationException) { throw new InvalidOperationException($"{RedirectInvalid}: {RedirectVariable} is not a mongodb URI."); }
+        catch (MongoConfigurationException) { throw new InvalidOperationException($"{RedirectInvalid}: not a mongodb URI."); }
         var servers = url.Servers.ToArray();
         if (servers.Length == 0 || !servers.All(server => server.Host is "127.0.0.1" or "localhost"))
             throw new InvalidOperationException(
-                $"{RedirectInvalid}: {RedirectVariable} may only name a test-owned loopback mongod (never a remote one).");
+                $"{RedirectInvalid}: a redirect may only name a test-owned loopback mongod (never a remote one).");
         return servers.Any(server => server.Port == SharedPort) ? null : value;
     }
 
@@ -130,13 +155,23 @@ public static class MdmTestMongo
         OwnedMongod? owned = null;
         ConnectionFor(ResolveOwned(), executable =>
         {
-            Sweep(Path.GetTempPath(), ProcessStartOf, StopVerified);
+            SweepBestEffort(Path.GetTempPath());
             owned = WaitOffContext(() => OwnedMongod.StartWithRetryAsync(executable, PickPort, StartAttempts));
             return owned.ConnectionString;
         });
         AppDomain.CurrentDomain.ProcessExit += (_, _) => owned!.Stop();
         StopRegisteredForExit = true;
         return owned!;
+    }
+
+    // FIX2: the sweep is best effort — an unexpected failure is written out and never fails the tests' start.
+    internal static void SweepBestEffort(string root, Func<int, ProcessProbe>? probe = null, Func<OwnerRecord, bool>? stop = null)
+    {
+        try { Sweep(root, probe ?? Probe, stop ?? StopVerified); }
+        catch (Exception exception)
+        {
+            Console.WriteLine($"OWNED_MDM_MONGO_SWEEP_SKIPPED {exception.GetType().Name}: {exception.Message}");
+        }
     }
 
     private static int PickPort()
@@ -146,70 +181,137 @@ public static class MdmTestMongo
         return ((IPEndPoint)listener.LocalEndpoint).Port;
     }
 
-    // ------------------------------------------------------------------------------------------------- FIX1 (3) sweep
+    // ------------------------------------------------------------------------------------------------- the sweep
 
-    /// <summary>What a start writes into its directory: its mongod and its test host, each by PID and start time.</summary>
-    public sealed record OwnerRecord(int? MongodPid, DateTime? MongodStartedUtc, int HostPid, DateTime HostStartedUtc);
+    /// <summary>What a start writes into its directory: its mongod (PID, start time, executable) and its test host.</summary>
+    public sealed record OwnerRecord(int? MongodPid, DateTime? MongodStartedUtc, int HostPid, DateTime HostStartedUtc,
+        string? MongodPath = null);
 
     public enum SweepAction { Keep, DeleteDirectory, StopMongodAndDeleteDirectory }
 
-    /// <summary>
-    /// The sweep rule alone (tested). <paramref name="startOf"/> answers a live process's start time (UTC), or null when
-    /// no process has that PID. A process is "the recorded one" only when its PID AND start time match.
-    /// </summary>
-    internal static SweepAction Decide(OwnerRecord? record, Func<int, DateTime?> startOf, TimeSpan age, int? lockPid = null)
+    /// <summary>FIX2 (1): a process is alive (with its start and path), gone, or UNKNOWN (its state could not be read).</summary>
+    public enum ProcessState { Gone, Alive, Unknown }
+
+    public readonly record struct ProcessProbe(ProcessState State, DateTime StartedUtc = default, string? Path = null)
     {
-        // No record: a start writes it the moment it creates the directory, so a recordless directory is one from before
-        // the record existed (the older helper, c3a9f00c7) or a write that failed. Its process, if any, is never touched:
-        // nothing verifies it. The directory goes only when it is older than the grace AND no live process holds it —
-        // a running mongod keeps its PID in <dbpath>/mongod.lock (emptied on a clean stop), so an older-code run that is
-        // still going, however long, keeps its directory.
-        if (record is null)
-            return age > RecordlessGrace && !(lockPid is { } holder && startOf(holder) is not null)
-                ? SweepAction.DeleteDirectory
-                : SweepAction.Keep;
-        var hostAlive = Same(startOf(record.HostPid), record.HostStartedUtc);
-        var mongodAlive = record is { MongodPid: { } pid, MongodStartedUtc: { } started } && Same(startOf(pid), started);
-        if (hostAlive) return SweepAction.Keep; // another live run's server
-        return mongodAlive ? SweepAction.StopMongodAndDeleteDirectory : SweepAction.DeleteDirectory;
+        public static readonly ProcessProbe Gone = new(ProcessState.Gone);
+        public static readonly ProcessProbe Unknown = new(ProcessState.Unknown);
     }
 
-    private static bool Same(DateTime? actual, DateTime recorded) =>
-        actual is { } value && Math.Abs((value - recorded).TotalSeconds) < 1;
+    /// <summary>FIX2 (2): a lock file is absent / empty, names a PID, or exists but cannot be READ.</summary>
+    public readonly record struct LockRead(bool Unreadable, int? Pid)
+    {
+        public static readonly LockRead None = new(false, null);
+        public static readonly LockRead CannotRead = new(true, null);
+    }
 
     /// <summary>
-    /// Sweeps <paramref name="root"/>: only directories named with <see cref="DirectoryPrefix"/>, each by its owner
-    /// record and <see cref="Decide"/>. <paramref name="stop"/> stops a process only after verifying PID + start time.
-    /// Returns what it did, for the test.
+    /// The sweep rule alone (tested). "In doubt, Keep": an unreadable process state, an unreadable lock, an unknown
+    /// age, an empty record, a start time between the strict and the loose tolerance, an unverifiable executable path.
+    /// </summary>
+    internal static SweepAction Decide(OwnerRecord? record, Func<int, ProcessProbe> probe, TimeSpan? age, LockRead lockFile)
+    {
+        if (record is null)
+        {
+            // A start writes its record the moment it creates the directory: a recordless directory is from the older
+            // helper (c3a9f00c7) or a failed write. Its process, if any, is never touched; the directory goes only when
+            // its age is known and past the grace, and no live — or unreadable — process holds its mongod.lock.
+            if (age is not { } known || known <= RecordlessGrace) return SweepAction.Keep;
+            return LockFree(lockFile, probe) ? SweepAction.DeleteDirectory : SweepAction.Keep;
+        }
+        // An empty or impossible record is doubt.
+        if (record.HostPid <= 1 || record.HostStartedUtc == default) return SweepAction.Keep;
+
+        var host = probe(record.HostPid);
+        if (host.State == ProcessState.Unknown) return SweepAction.Keep;
+        // Loose: a clock step must not make a live host look gone.
+        if (host.State == ProcessState.Alive && Within(host.StartedUtc, record.HostStartedUtc, HostTolerance))
+            return SweepAction.Keep;
+
+        // The host is gone (or its PID belongs to a process started well apart from it).
+        if (record is not { MongodPid: { } pid, MongodStartedUtc: { } started })
+            // No mongod recorded yet: the lock file says whether one is running in it.
+            return LockFree(lockFile, probe) ? SweepAction.DeleteDirectory : SweepAction.Keep;
+        if (pid <= 1) return SweepAction.Keep;
+
+        var mongod = probe(pid);
+        switch (mongod.State)
+        {
+            case ProcessState.Unknown:
+                return SweepAction.Keep;
+            case ProcessState.Gone:
+                return LockFree(lockFile, probe) ? SweepAction.DeleteDirectory : SweepAction.Keep;
+        }
+        // Alive. Strict for a stop: PID, start time within StopTolerance AND the executable path.
+        if (Within(mongod.StartedUtc, started, StopTolerance))
+            return record.MongodPath is { } path && mongod.Path is { } actual && SamePath(actual, path)
+                ? SweepAction.StopMongodAndDeleteDirectory
+                : SweepAction.Keep;
+        // Started well apart: that PID is another process now (never touched) — this run's mongod is gone.
+        return Within(mongod.StartedUtc, started, HostTolerance) ? SweepAction.Keep : SweepAction.DeleteDirectory;
+    }
+
+    private static bool LockFree(LockRead lockFile, Func<int, ProcessProbe> probe) =>
+        !lockFile.Unreadable
+        && (lockFile.Pid is not { } holder || (holder > 1 && probe(holder).State == ProcessState.Gone));
+
+    internal static bool Within(DateTime actual, DateTime recorded, TimeSpan tolerance) =>
+        (actual - recorded).Duration() <= tolerance;
+
+    private static bool SamePath(string actual, string recorded) =>
+        string.Equals(Path.GetFullPath(actual), Path.GetFullPath(recorded),
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+
+    // FIX2 (3): a link (symbolic link, junction, any reparse point) is never followed, read or deleted.
+    internal static bool IsLink(FileSystemInfo entry) =>
+        entry.LinkTarget is not null || entry.Attributes.HasFlag(FileAttributes.ReparsePoint);
+
+    /// <summary>
+    /// Sweeps <paramref name="root"/>: only real (non-link) directories named with <see cref="DirectoryPrefix"/>, each by
+    /// its owner record and <see cref="Decide"/>. <paramref name="stop"/> stops a process only after verifying PID,
+    /// start time and executable path again. Returns what it did, for the test.
     /// </summary>
     internal static IReadOnlyList<(string Directory, SweepAction Action)> Sweep(
-        string root, Func<int, DateTime?> startOf, Func<int, DateTime, bool> stop)
+        string root, Func<int, ProcessProbe> probe, Func<OwnerRecord, bool> stop)
     {
         var done = new List<(string, SweepAction)>();
         if (!Directory.Exists(root)) return done;
-        foreach (var directory in Directory.EnumerateDirectories(root, DirectoryPrefix + "*"))
+        foreach (var entry in new DirectoryInfo(root).EnumerateDirectories(DirectoryPrefix + "*"))
         {
-            var record = ReadOwner(directory);
-            var action = Decide(record, startOf, DateTime.UtcNow - Directory.GetCreationTimeUtc(directory), LockPid(directory));
-            if (action == SweepAction.StopMongodAndDeleteDirectory
-                && !stop(record!.MongodPid!.Value, record.MongodStartedUtc!.Value))
+            if (IsLink(entry)) { done.Add((entry.FullName, SweepAction.Keep)); continue; }
+            var record = ReadOwner(entry.FullName);
+            var action = Decide(record, probe, AgeOf(entry), LockPid(entry.FullName));
+            if (action == SweepAction.StopMongodAndDeleteDirectory && !stop(record!))
                 action = SweepAction.Keep; // it could not be verified or stopped: leave it
-            if (action != SweepAction.Keep) DeleteOwnDirectory(root, directory);
-            done.Add((directory, action));
+            if (action != SweepAction.Keep) DeleteOwnDirectory(root, entry.FullName);
+            done.Add((entry.FullName, action));
         }
         return done;
     }
 
-    // The PID a running mongod wrote into its dbpath's mongod.lock (empty after a clean stop), or null.
-    internal static int? LockPid(string directory)
+    // FIX2: an age that cannot be read (a stat failure answers the 1601 epoch) is unknown → Keep.
+    internal static TimeSpan? AgeOf(FileSystemInfo entry)
     {
         try
         {
-            return int.TryParse(File.ReadAllText(Path.Combine(directory, "mongod.lock")).Trim(), out var pid) && pid > 0
-                ? pid
-                : null;
+            entry.Refresh();
+            var created = entry.CreationTimeUtc;
+            return created.Year <= 1601 ? null : DateTime.UtcNow - created;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException) { return null; }
+    }
+
+    // The PID a running mongod wrote into its dbpath's mongod.lock (empty after a clean stop); a lock that exists but
+    // cannot be read is UNREADABLE (FIX2: a Windows mongod holds it exclusively) — never "none".
+    internal static LockRead LockPid(string directory)
+    {
+        var path = Path.Combine(directory, "mongod.lock");
+        if (!File.Exists(path)) return LockRead.None;
+        try
+        {
+            return int.TryParse(File.ReadAllText(path).Trim(), out var pid) && pid > 0 ? new LockRead(false, pid) : LockRead.None;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException) { return LockRead.CannotRead; }
     }
 
     internal static OwnerRecord? ReadOwner(string directory)
@@ -221,49 +323,73 @@ public static class MdmTestMongo
     internal static void WriteOwner(string directory, OwnerRecord record) =>
         File.WriteAllText(Path.Combine(directory, OwnerFile), JsonSerializer.Serialize(record));
 
-    private static DateTime? ProcessStartOf(int pid)
+    /// <summary>FIX2 (1): a process's state — alive (start, executable path), gone, or unknown (could not be read).</summary>
+    internal static ProcessProbe Probe(int pid)
     {
-        try
+        Process process;
+        try { process = Process.GetProcessById(pid); }
+        catch (ArgumentException) { return ProcessProbe.Gone; } // no process has that PID
+        catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception
+                                              or UnauthorizedAccessException) { return ProcessProbe.Unknown; }
+        using (process)
         {
-            using var process = Process.GetProcessById(pid);
-            return process.HasExited ? null : process.StartTime.ToUniversalTime();
+            try
+            {
+                if (process.HasExited) return ProcessProbe.Gone;
+                var started = process.StartTime.ToUniversalTime();
+                string? path;
+                try { path = process.MainModule?.FileName; }
+                catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception
+                                                      or NotSupportedException) { path = null; }
+                return new ProcessProbe(ProcessState.Alive, started, path);
+            }
+            catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception
+                                                  or UnauthorizedAccessException) { return ProcessProbe.Unknown; }
         }
-        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException
-                                              or System.ComponentModel.Win32Exception) { return null; }
     }
 
-    // Stops a leftover mongod by PID only after its start time matches the record (never by name).
-    private static bool StopVerified(int pid, DateTime startedUtc)
+    /// <summary>
+    /// FIX2 (4): the ONE stop path. A leftover mongod is stopped only when its PID, its start time (within
+    /// <see cref="StopTolerance"/>) and its executable path all match the record — read again right before the stop.
+    /// Never by name.
+    /// </summary>
+    internal static bool StopVerified(OwnerRecord record)
     {
+        if (record is not { MongodPid: { } pid, MongodStartedUtc: { } started, MongodPath: { } path } || pid <= 1) return false;
         try
         {
             using var process = Process.GetProcessById(pid);
-            if (process.HasExited || !Same(process.StartTime.ToUniversalTime(), startedUtc)) return false;
+            if (process.HasExited || !Within(process.StartTime.ToUniversalTime(), started, StopTolerance)) return false;
+            if (process.MainModule?.FileName is not { } actual || !SamePath(actual, path)) return false;
             process.Kill();
             return process.WaitForExit(15000);
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException
-                                              or System.ComponentModel.Win32Exception) { return false; }
+                                              or System.ComponentModel.Win32Exception or NotSupportedException) { return false; }
     }
 
-    // Removes a directory only when it is a prefixed child of the given root.
-    private static void DeleteOwnDirectory(string root, string directory)
+    // Removes a directory only when it is a real (non-link), prefixed child of the given root.
+    internal static void DeleteOwnDirectory(string root, string directory)
     {
         var target = Path.GetFullPath(directory);
         var scope = Path.GetFullPath(root);
         if (!scope.EndsWith(Path.DirectorySeparatorChar)) scope += Path.DirectorySeparatorChar;
         if (!target.StartsWith(scope, StringComparison.OrdinalIgnoreCase)
-            || !Path.GetFileName(target).StartsWith(DirectoryPrefix, StringComparison.Ordinal)) return;
-        // FIX1 (measured: an exit-time cleanup cut short left data files and no record): the owner record goes LAST,
-        // so an interrupted cleanup still carries it and the next start's sweep removes the rest at once.
+            || !Path.GetFileName(target).StartsWith(DirectoryPrefix, StringComparison.Ordinal)
+            || Path.GetDirectoryName(target.TrimEnd(Path.DirectorySeparatorChar)) + Path.DirectorySeparatorChar != scope
+            || !Directory.Exists(target) || IsLink(new DirectoryInfo(target))) return;
         for (var attempt = 0; attempt < 20 && Directory.Exists(target); attempt++)
         {
             try
             {
                 foreach (var path in DeletionOrder(target))
+                {
+                    var entry = new FileInfo(path);
+                    if (IsLink(entry)) { File.Delete(path); continue; } // the link itself, never its target
                     if (Directory.Exists(path)) Directory.Delete(path, recursive: true);
                     else File.Delete(path);
-                Directory.Delete(target, recursive: true);
+                }
+                Directory.Delete(target, recursive: false);
             }
             catch (IOException) { Thread.Sleep(100); }
             catch (UnauthorizedAccessException) { Thread.Sleep(100); }
@@ -318,10 +444,6 @@ public static class MdmTestMongo
             if (port == SharedPort) throw new MongodExitedException("The owned mongod drew the SHARED port.");
             var owned = new OwnedMongod { Port = port };
             owned._directory = Path.Combine(Path.GetTempPath(), DirectoryPrefix + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(owned._directory);
-            using var host = Process.GetCurrentProcess();
-            var hostStarted = host.StartTime.ToUniversalTime();
-            WriteOwner(owned._directory, new OwnerRecord(null, null, Environment.ProcessId, hostStarted));
             var start = new ProcessStartInfo(Path.GetFullPath(executable))
             {
                 UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true
@@ -329,6 +451,10 @@ public static class MdmTestMongo
             foreach (var argument in MongodArguments(port, owned._directory)) start.ArgumentList.Add(argument);
             try
             {
+                Directory.CreateDirectory(owned._directory);
+                using var host = Process.GetCurrentProcess();
+                var hostStarted = host.StartTime.ToUniversalTime();
+                WriteOwner(owned._directory, new OwnerRecord(null, null, Environment.ProcessId, hostStarted));
                 owned._process = new Process { StartInfo = start, EnableRaisingEvents = true };
                 owned._process.OutputDataReceived += (_, line) => owned.Capture(line.Data);
                 owned._process.ErrorDataReceived += (_, line) => owned.Capture(line.Data);
@@ -336,8 +462,10 @@ public static class MdmTestMongo
                 owned._started = owned._process.StartTime;
                 owned._process.BeginOutputReadLine();
                 owned._process.BeginErrorReadLine();
-                WriteOwner(owned._directory,
-                    new OwnerRecord(owned._process.Id, owned._started.ToUniversalTime(), Environment.ProcessId, hostStarted));
+                // The executable as the OS reports it (the same reading the sweep's check makes).
+                var path = Probe(owned._process.Id).Path;
+                WriteOwner(owned._directory, new OwnerRecord(owned._process.Id, owned._started.ToUniversalTime(),
+                    Environment.ProcessId, hostStarted, path));
 
                 var direct = $"mongodb://127.0.0.1:{port}/?directConnection=true";
                 await owned.WaitAsync(direct, async admin =>
@@ -353,6 +481,9 @@ public static class MdmTestMongo
                 await owned.WaitAsync(owned.ConnectionString, async admin =>
                     (await admin.RunCommandAsync<BsonDocument>(new BsonDocument("hello", 1)).ConfigureAwait(false))
                     .GetValue("isWritablePrimary", false).ToBoolean()).ConfigureAwait(false);
+                // FIX2: a server that answered on a lost port may be a stranger's — ours must still be running.
+                if (owned._process.HasExited)
+                    throw new MongodExitedException($"OWNED_TEST_MONGO_EXITED_AFTER_READY:{owned._process.ExitCode}");
                 Console.WriteLine($"OWNED_MDM_MONGO_STARTED pid={owned._process.Id} port={port}");
                 return owned;
             }
