@@ -93,8 +93,8 @@ CRM'e gönderilen cevap (2026-10-09, sahip iletir):
 
 | # | Soru | CT önerisi | Cevap |
 |---|---|---|---|
-| 1 | İki "ürün" var: Global Ürün (kimlik zinciri) ve Marka altındaki "Ürünler" (CRM listesi). Tek ürün kaydına inelim mi? | Evet. Marka Global Ürüne bağlanır, "Ürünler" sayfası zamanla Global Ürünün CRM görünümü olur. SAP'de tek malzeme ana kaydı vardır, marka onun bir özelliğidir; Oracle'da da tek item master vardır. | bekleniyor |
-| 2 | Lokal SKU'nun ekseni ülke (pazar) mi, şirket (tüzel kişi) mi, ikisi birden mi? | Ülke zorunlu kalsın; satan şirket isteğe bağlı alan olsun (paket: şirket "açık karar"). | bekleniyor |
-| 3 | Fason üretimde müşterinin ürünü için de bizde Global Ürün → GSKU → Bitmiş Ürün açılacak mı? | Evet; müşteri bilgisi sonra ayrı ilişki olarak eklenir. | bekleniyor |
-| 4 | Bitmiş Ürün GSKU'ya bağlı, ülkeye değil. Ülkeye özel ambalaj (ör. Türkçe prospektüs) ayrı bitmiş ürün mü olmalı? | Ülkeye özel ambalaj ayrı GSKU olsun; bitmiş ürün de ona bağlansın. | bekleniyor |
-| 5 | Canlıda Global Ürün / GSKU onayını hangi pozisyon verecek? | Kalite (QA) pozisyonu; dev'de senaryodaki Metin (CTO). | bekleniyor |
+| 1 | İki "ürün" var: Global Ürün (kimlik zinciri) ve Marka altındaki "Ürünler" (CRM listesi). Tek ürün kaydına inelim mi? | Evet. Marka Global Ürüne bağlanır, "Ürünler" sayfası zamanla Global Ürünün CRM görünümü olur. SAP'de tek malzeme ana kaydı vardır, marka onun bir özelliğidir; Oracle'da da tek item master vardır. | KARAR: öneri kabul (sahip, 2026-10-11) |
+| 2 | Lokal SKU'nun ekseni ülke (pazar) mi, şirket (tüzel kişi) mi, ikisi birden mi? | Ülke zorunlu kalsın; satan şirket isteğe bağlı alan olsun (paket: şirket "açık karar"). | KARAR: öneri kabul (sahip, 2026-10-11) |
+| 3 | Fason üretimde müşterinin ürünü için de bizde Global Ürün → GSKU → Bitmiş Ürün açılacak mı? | Evet; müşteri bilgisi sonra ayrı ilişki olarak eklenir. | KARAR: öneri kabul (sahip, 2026-10-11) |
+| 4 | Bitmiş Ürün GSKU'ya bağlı, ülkeye değil. Ülkeye özel ambalaj (ör. Türkçe prospektüs) ayrı bitmiş ürün mü olmalı? | Ülkeye özel ambalaj ayrı GSKU olsun; bitmiş ürün de ona bağlansın. | KARAR: öneri kabul (sahip, 2026-10-11) |
+| 5 | Canlıda Global Ürün / GSKU onayını hangi pozisyon verecek? | Kalite (QA) pozisyonu; dev'de senaryodaki Metin (CTO). | KARAR: öneri kabul (sahip, 2026-10-11) |
