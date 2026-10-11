@@ -139,20 +139,29 @@ class Run(object):
         if not tok:
             raise RuntimeError("login %s" % code)
         self.tok = tok
-        path = "/tmp/alsce-runtime-ver/leonly_tok.txt"
-        if os.path.exists(path):
-            self.leonly = open(path).read().strip()
+        # The 403 probes need a principal that authenticates but lacks the SupplyChain permissions. A token
+        # file goes stale in ten minutes, so this mints one instead of reading yesterday's. The identity is
+        # the runtime lane's second-tenant user, which holds mdm.legal-entities.read and nothing else --
+        # the legal-entity validation must succeed or the request dies at 503 in the middleware and never
+        # reaches [HasPermission] (measured 2026-10-11).
+        pw_file = "/tmp/alsce-runtime-ver/noperm_pw.txt"
+        if os.path.exists(pw_file) and "T2" in self.st:
+            _, lt, _ = self.api.login(self.st["T2"], "ver.noperm@diten.test",
+                                      open(pw_file).read().strip())
+            self.leonly = lt
         print("token digest %s%s" % (self.api.digest(tok),
-              "" if self.leonly else "   (no leonly token; 403 probes skipped)"))
+              "" if self.leonly else "   (no limited token; 403 probes skipped)"))
 
-    def call(self, method, path, body=None, tok="default", extra=None, drop=None, key=None):
+    def call(self, method, path, body=None, tok="default", extra=None, drop=None, key=None,
+             tenant=None, legalEntity=None):
         t = self.tok if tok == "default" else tok
         if t is None:
             hs = {"X-Tenant-Id": self.t1, "X-Legal-Entity-Id": self.le1,
                   "X-Correlation-Id": str(uuid.uuid4()), "Idempotency-Key": uuid.uuid4().hex}
             hs.update(extra or {})
             return self.api.raw(method, GATEWAY + "/api/shipment-bundle" + path, body, hs)
-        return self.api.sc(method, path, t, self.t1, self.le1, body, key=key, extra=extra, drop=drop)
+        return self.api.sc(method, path, t, tenant or self.t1, legalEntity or self.le1, body,
+                           key=key, extra=extra, drop=drop)
 
     def media_type(self, op, path):
         """A real text/plain request. The lane helper rewrites Content-Type to
@@ -181,7 +190,7 @@ class Run(object):
         self.record(op, "wrong-media-type", status, body)
 
     # ------------------------------------------------------------- checking
-    def check(self, op, label, method, path, **kw):
+    def check(self, op, label, method, path, **kw):  # kw passes through to call()
         """Issue one probe and hold the response to the contract it declares."""
         status, body = self.call(method, path, **kw)
         self.checked += 1
@@ -257,7 +266,8 @@ class Run(object):
         body = op.get("example") if op["method"] != "GET" else None
         self.check(op, "no-bearer", op["method"], base, body=body, tok=None)
         if self.leonly:
-            self.check(op, "no-permission", op["method"], base, body=body, tok=self.leonly)
+            self.check(op, "no-permission", op["method"], base, body=body, tok=self.leonly,
+                       tenant=self.st["T2"], legalEntity=self.st["LE2"])
         if op["method"] != "GET":
             self.media_type(op, base)
             self.check(op, "malformed-body", op["method"], base, body={"nope": 1})
@@ -283,8 +293,26 @@ class Run(object):
                   "supportedModes": ["Road"]})
         self.check(s, "status-change", "POST", "/carriers/%s/status" % cid,
             body={"targetStatus": "Suspended", "reasonCode": "LIVE"})
-        self.check(s, "invalid-transition", "POST", "/carriers/%s/status" % cid,
+        self.check(s, "invalid-enum", "POST", "/carriers/%s/status" % cid,
             body={"targetStatus": "NotAStatus", "reasonCode": "LIVE"})
+        # Same idempotency key, different payload: the declared IDEMPOTENCY_KEY_REUSED 409.
+        k = "reuse-" + uuid.uuid4().hex
+        self.check(s, "key-first-use", "POST", "/carriers/%s/status" % cid,
+            body={"targetStatus": "Active", "reasonCode": "LIVE"}, key=k)
+        self.check(s, "key-reused-different-payload", "POST", "/carriers/%s/status" % cid,
+            body={"targetStatus": "Retired", "reasonCode": "OTHER"}, key=k)
+        # A legal enum value that is not a legal move from the current state: the declared 422.
+        self.check(s, "illegal-move", "POST", "/carriers/%s/status" % cid,
+            body={"targetStatus": "Active", "reasonCode": "LIVE"})
+        kc = "reuse-" + uuid.uuid4().hex
+        code2 = "L" + uuid.uuid4().hex[:7].upper()
+        self.check(c, "key-first-use", "POST", "/carriers",
+            body={"carrierCode": code2, "displayName": "A", "supportedModes": ["Road"]}, key=kc)
+        self.check(c, "key-reused-different-payload", "POST", "/carriers",
+            body={"carrierCode": code2, "displayName": "B", "supportedModes": ["Sea"]}, key=kc)
+        self.check(c, "empty-modes", "POST", "/carriers",
+            body={"carrierCode": "L" + uuid.uuid4().hex[:7].upper(), "displayName": "A",
+                  "supportedModes": []})
 
     def claims(self, ops):
         q, c, tr = ops["queryClaims"], ops["createClaim"], ops["transitionClaim"]
@@ -307,6 +335,13 @@ class Run(object):
         st, cl = self.check(c, "create", "POST", "/claims", body=body, extra=h)
         self.check(c, "zero-amount", "POST", "/claims",
                    body=dict(body, claimedAmount="0.00"), extra=h)
+        self.check(c, "unknown-shipment", "POST", "/claims",
+                   body=dict(body, shipmentId=str(uuid.uuid4())), extra=h)
+        kk = "reuse-" + uuid.uuid4().hex
+        self.check(c, "key-first-use", "POST", "/claims",
+                   body=dict(body, reasonCode="LOST"), extra=h, key=kk)
+        self.check(c, "key-reused-different-payload", "POST", "/claims",
+                   body=dict(body, reasonCode="DAMAGED", claimedAmount="99.99"), extra=h, key=kk)
         if st != 201:
             return
         cid = cl["claimId"]
@@ -316,6 +351,13 @@ class Run(object):
         self.check(tr, "investigating", "POST", "/claims/%s/transition" % cid,
                    body={"targetStatus": "Investigating", "occurredAt": "2030-01-03T09:10:00Z"},
                    extra=h)
+        kt = "reuse-" + uuid.uuid4().hex
+        self.check(tr, "key-first-use", "POST", "/claims/%s/transition" % cid,
+                   body={"targetStatus": "Rejected", "occurredAt": "2030-01-03T09:20:00Z",
+                         "reasonCode": "NOT_COVERED"}, extra=h, key=kt)
+        self.check(tr, "key-reused-different-payload", "POST", "/claims/%s/transition" % cid,
+                   body={"targetStatus": "Closed", "occurredAt": "2030-01-03T09:30:00Z"},
+                   extra=h, key=kt)
 
     def loads(self, ops):
         q, c, tr = ops["queryLoads"], ops["createLoadPlan"], ops["transitionLoad"]
@@ -335,10 +377,51 @@ class Run(object):
         # Planned -> Planned is not a legal move: the declared 422.
         self.check(tr, "invalid-transition", "POST", "/loads/%s/transition" % lid,
                    body={"targetStatus": "Planned", "occurredAt": "2030-01-01T10:40:00Z"}, extra=h)
+        f2 = dict(f["load_body"], carrierId=str(uuid.uuid4()))
+        self.check(c, "unknown-carrier", "POST", "/loads", body=f2, extra=h)
+        f3 = dict(f["load_body"], shipmentIds=[str(uuid.uuid4())])
+        self.check(c, "unknown-shipment", "POST", "/loads", body=f3, extra=h)
+        f4 = dict(f["load_body"], mode="Air")
+        self.check(c, "carrier-mode-unsupported", "POST", "/loads", body=f4, extra=h)
+        kl = "reuse-" + uuid.uuid4().hex
+        self.check(tr, "key-first-use", "POST", "/loads/%s/transition" % lid,
+                   body={"targetStatus": "Tendered", "occurredAt": "2030-01-01T11:00:00Z"},
+                   extra=h, key=kl)
+        self.check(tr, "key-reused-different-payload", "POST", "/loads/%s/transition" % lid,
+                   body={"targetStatus": "Accepted", "occurredAt": "2030-01-01T12:00:00Z"},
+                   extra=h, key=kl)
         # A foreign correlation root: 409, the rule F7 found and no acceptance line states.
         self.check(tr, "foreign-correlation-root", "POST", "/loads/%s/transition" % lid,
                    body={"targetStatus": "Tendered", "occurredAt": "2030-01-01T10:50:00Z"},
                    extra={"X-Correlation-Id": str(uuid.uuid4())})
+
+
+# Why a declared status was not reached. "I could not reach it" and "it cannot be reached" are
+# different claims and the report must not blur them. Measured 2026-10-11 against the live stack.
+UNREACHABLE = {
+    "fault-injection": (
+        "needs a fault this driver does not inject (dependency down, store down, bad dependency reply)",
+        {(op, code) for op in ("queryCarriers", "createCarrier", "changeCarrierStatus", "queryLoads",
+                               "createLoadPlan", "transitionLoad", "queryClaims", "createClaim",
+                               "transitionClaim")
+                    for code in (500, 502, 503)}),
+    "over-declared": (
+        "the contract declares it and the operation cannot produce it — a list answers 200 even for an "
+        "unknown filter value, measured: /loads?carrierId=<unknown> 200, /loads?status=Planned 200, "
+        "/carriers?status=Active 200. Its example is LOAD_NOT_FOUND, which belongs to the by-id operations",
+        {("queryCarriers", 404), ("queryLoads", 404)}),
+    "undocumented": (
+        "declared with a schema and ZERO examples, so the contract itself does not say what triggers it "
+        "(components/responses/CarrierCreateUnprocessable) — the single coverage gap in the document",
+        {("createCarrier", 422)}),
+}
+
+
+def classify(op_id, code):
+    for kind, (_why, pairs) in UNREACHABLE.items():
+        if (op_id, code) in pairs:
+            return kind
+    return "not-yet-driven"
 
 
 def main():
@@ -377,11 +460,19 @@ def main():
         for line in run.bad[kind]:
             print("  %-10s %s" % (kind.upper(), line))
 
-    print("\nUNREACHED per operation:")
+    print("\nUNREACHED, classified — silence is not a pass:")
+    buckets = {}
     for oid, o in sorted(ops.items()):
-        missing = sorted(set(o["statuses"]) - run.hit.get(oid, set()))
-        if missing:
-            print("  %-22s %s" % (oid, ",".join(str(m) for m in missing)))
+        for code in sorted(set(o["statuses"]) - run.hit.get(oid, set())):
+            buckets.setdefault(classify(oid, code), []).append("%s %s" % (oid, code))
+    for kind in ("not-yet-driven", "undocumented", "over-declared", "fault-injection"):
+        rows = buckets.get(kind)
+        if not rows:
+            continue
+        why = UNREACHABLE.get(kind, (None,))[0] or "reachable in principle; this driver does not build the state yet"
+        print("  %s (%d) — %s" % (kind, len(rows), why))
+        for r in rows:
+            print("      %s" % r)
 
     rc = (1 if run.bad["undeclared"] else 0) | (2 if run.bad["schema"] else 0) \
        | (4 if run.bad["header"] else 0)
