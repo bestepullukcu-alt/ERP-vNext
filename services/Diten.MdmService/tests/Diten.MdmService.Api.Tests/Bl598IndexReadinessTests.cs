@@ -208,6 +208,105 @@ public sealed class Bl598IndexReadinessTests(MdmHttpHost host)
         return client;
     }
 
+    // ================================================================================== BL-598 FIX1
+
+    // D1: the read / End re-assertion window is ten minutes by default (Create re-asserts on every call).
+    [Fact]
+    public void Bl598_Fix1_The_default_revalidation_window_is_ten_minutes()
+    {
+        Assert.Equal(TimeSpan.FromMinutes(10), MongoIndexReadiness.Revalidate);
+    }
+
+    // Item 1 (CT decision): a unique index dropped under the running process is built again by the very next Create —
+    // with the DEFAULT window — so two racing Creates of one product leave ONE policy.
+    [Fact]
+    public async Task Bl598_Fix1_After_a_dropped_unique_index_the_next_creates_rebuild_it_and_leave_one_policy_per_product()
+    {
+        var name = FreshDatabase();
+        var tenant = Guid.NewGuid();
+        Assert.True((await new ProductLegalEntityScopePolicyRepository(Back(name), new Tenant(tenant))
+            .CreateAsync(Policy(tenant, Guid.NewGuid()))).Succeeded);
+        var collection = Back(name).GetCollection<BsonDocument>(ProductLegalEntityScopePolicyRepository.CollectionName);
+        await collection.Indexes.DropOneAsync("ux_mdm_product_legal_entity_scope_policies_tenant_product");
+
+        var product = Guid.NewGuid();
+        var results = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ =>
+            new ProductLegalEntityScopePolicyRepository(Back(name), new Tenant(tenant)).CreateAsync(Policy(tenant, product))));
+
+        Assert.Equal(1, results.Count(result => result.Succeeded));
+        Assert.Equal(1, await collection.CountDocumentsAsync(
+            new BsonDocument("GlobalProductId", new BsonBinaryData(product, GuidRepresentation.Standard))));
+        var indexes = await (await collection.Indexes.ListAsync()).ToListAsync();
+        Assert.Contains(indexes, index => index["name"] == "ux_mdm_product_legal_entity_scope_policies_tenant_product");
+    }
+
+    // Item 2: a failed preparation is said once (collection + failure type + code, no tenant datum) — not silently a 503.
+    [Fact]
+    public async Task Bl598_Fix1_A_failed_preparation_is_logged_once_per_failure()
+    {
+        var logs = new Recording();
+        var tenant = Guid.NewGuid();
+        var repository = new ProductLegalEntityScopePolicyRepository(Away(FreshDatabase()), new Tenant(tenant), logs)
+        {
+            WriteIndexBudget = TimeSpan.FromSeconds(5)
+        };
+
+        Assert.True((await repository.CreateAsync(Policy(tenant, Guid.NewGuid()))).IndexesNotReady);
+
+        var line = Assert.Single(logs.Entries);
+        Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Error, line.Level);
+        Assert.Contains(MongoIndexReadiness.NotReady, line.Message);
+        Assert.Contains(ProductLegalEntityScopePolicyRepository.CollectionName, line.Message);
+        Assert.Contains(nameof(TimeoutException), line.Message);
+        Assert.DoesNotContain(tenant.ToString("D"), line.Message);
+    }
+
+    // D2: End (an update) waits for the indexes too — refused as not ready while Mongo is away, nothing written.
+    [Fact]
+    public async Task Bl598_Fix1_An_update_while_Mongo_is_away_is_refused_as_not_ready()
+    {
+        var tenant = Guid.NewGuid();
+        var repository = new ProductLegalEntityScopePolicyRepository(Away(FreshDatabase()), new Tenant(tenant))
+        {
+            WriteIndexBudget = TimeSpan.FromSeconds(5)
+        };
+        var policy = Policy(tenant, Guid.NewGuid());
+        policy.Id = Guid.NewGuid();
+        policy.EndCurrent(0, Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        var result = await repository.UpdateAsync(policy, 0);
+
+        Assert.True(result.IndexesNotReady);
+        Assert.True(result.VerifiedZeroMutation);
+    }
+
+    // D5: a read starts the preparation (without waiting) — the first write then finds it under way or done.
+    [Fact]
+    public async Task Bl598_Fix1_A_read_starts_the_preparation()
+    {
+        var database = Back(FreshDatabase());
+        var repository = new ProductLegalEntityScopePolicyRepository(database, new Tenant(Guid.NewGuid()));
+        var key = MongoIndexReadiness.KeyOf(database.GetCollection<ProductLegalEntityScopePolicy>(
+            ProductLegalEntityScopePolicyRepository.CollectionName), ProductLegalEntityScopePolicyRepository.IndexSet);
+
+        Assert.Null(await repository.GetByGlobalProductIdAsync(Guid.NewGuid()));
+
+        Assert.True(MongoIndexReadiness.StartedForTests.ContainsKey(key));
+    }
+
+    private sealed class Recording : Microsoft.Extensions.Logging.ILogger<ProductLegalEntityScopePolicyRepository>
+    {
+        public List<(Microsoft.Extensions.Logging.LogLevel Level, string Message)> Entries { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            lock (Entries) Entries.Add((logLevel, formatter(state, exception)));
+        }
+    }
+
     // A new policy as the create handler builds it (one creation audit intent), for the store's own tenant.
     private static ProductLegalEntityScopePolicy Policy(Guid tenant, Guid product)
     {

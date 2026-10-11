@@ -3,6 +3,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -23,26 +24,30 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         Func<Task<ProductLegalEntityScopePolicy?>>,
         Task<ProductLegalEntityScopePolicy?>> _updateExecutor;
 
-    public ProductLegalEntityScopePolicyRepository(IMongoDatabase database, ITenantContext tenantContext)
+    public ProductLegalEntityScopePolicyRepository(IMongoDatabase database, ITenantContext tenantContext,
+        ILogger<ProductLegalEntityScopePolicyRepository>? logger = null)
         : this(
             database,
             tenantContext,
             new ProductLegalEntityScopeGuardedWriteSession(database, tenantContext),
             static operation => operation(),
-            static operation => operation())
+            static operation => operation(),
+            logger)
     {
     }
 
     public ProductLegalEntityScopePolicyRepository(
         IMongoDatabase database,
         ITenantContext tenantContext,
-        IProductLegalEntityScopeGuardedWriteSession guardedWriteSession)
+        IProductLegalEntityScopeGuardedWriteSession guardedWriteSession,
+        ILogger<ProductLegalEntityScopePolicyRepository>? logger = null)
         : this(
             database,
             tenantContext,
             guardedWriteSession,
             static operation => operation(),
-            static operation => operation())
+            static operation => operation(),
+            logger)
     {
     }
 
@@ -51,7 +56,8 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         ITenantContext tenantContext,
         IProductLegalEntityScopeGuardedWriteSession guardedWriteSession,
         Func<Func<Task>, Task> insertExecutor,
-        Func<Func<Task<ProductLegalEntityScopePolicy?>>, Task<ProductLegalEntityScopePolicy?>> updateExecutor)
+        Func<Func<Task<ProductLegalEntityScopePolicy?>>, Task<ProductLegalEntityScopePolicy?>> updateExecutor,
+        ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(database);
         ArgumentNullException.ThrowIfNull(tenantContext);
@@ -68,6 +74,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         _tenantId = tenantContext.TenantId;
         _insertExecutor = insertExecutor;
         _updateExecutor = updateExecutor;
+        _logger = logger;
         // WP-MDM-BL598-01: no Mongo call here — the indexes are prepared once per process, lazily (MongoIndexReadiness);
         // every write below waits for them (the two UNIQUE indexes keep one policy per product), a read only starts them.
         _indexKey = MongoIndexReadiness.KeyOf(_policies, IndexSet);
@@ -75,16 +82,22 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
 
     internal const string IndexSet = "policy-unique-v1";
     private readonly string _indexKey;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// The write gate: the UNIQUE indexes are in place, or the write is refused with nothing written
     /// (<see cref="ProductLegalEntityScopePolicyWriteResult.IndexesNotReady"/> → the handler's coded 503).
     /// </summary>
-    private async Task<bool> IndexesReadyAsync(CancellationToken cancellationToken)
+    // maxAge: how old a finished preparation may be before this write re-asserts it. BL-598 FIX1 item 1 (CT decision):
+    // Create — the ONLY insert into this collection — re-asserts the unique indexes on EVERY call (zero: one idempotent
+    // round trip per policy create, cheaper than the old one per request scope), so a dropped / restored collection never
+    // takes two policies of one product. End (an update, cannot insert) keeps the 10-minute window.
+    private async Task<bool> IndexesReadyAsync(CancellationToken cancellationToken, TimeSpan? maxAge = null)
     {
         try
         {
-            await MongoIndexReadiness.EnsureForWriteAsync(_indexKey, CreateIndexesAsync, WriteIndexBudget, cancellationToken);
+            await MongoIndexReadiness.EnsureForWriteAsync(_indexKey, CreateIndexesAsync, WriteIndexBudget, cancellationToken,
+                maxAge: maxAge, logger: _logger);
             return true;
         }
         catch (MongoIndexNotReadyException)
@@ -158,7 +171,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
 
         PrepareCreate(policy);
         EnsureCompleteDocumentWithinBudget(policy.ToBsonDocument(), reserveAuditLifecycleHeadroom: true);
-        if (!await IndexesReadyAsync(cancellationToken)) return NotReady;
+        if (!await IndexesReadyAsync(cancellationToken, maxAge: TimeSpan.Zero)) return NotReady;
 
         try
         {
@@ -270,8 +283,6 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         }
     }
 
-    // BL-598: the guarded session writes this same collection — the replace waits for the indexes too, before the session
-    // (nothing written when they are not ready: VerifiedZeroMutation, so the coordinator gives the slot back).
     // BL-598: no index wait here — the guarded session only UPDATES an existing policy and never changes its unique keys
     // (tenant, product, creation command), so it cannot write a second policy of one product.
     public Task<ProductLegalEntityScopePolicyWriteResult> ReplaceAsync(

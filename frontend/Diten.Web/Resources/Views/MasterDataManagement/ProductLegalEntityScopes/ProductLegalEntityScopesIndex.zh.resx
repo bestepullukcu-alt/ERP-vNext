@@ -25,4 +25,5 @@
   <data name="OtherLegalEntities" xml:space="preserve"><value>其他公司：{0}</value></data>
   <data name="ErrorWriterCapacity" xml:space="preserve"><value>此公司集团当前正在进行的更改过多。请几分钟后重试。</value></data>
   <data name="ErrorStoreUnavailable" xml:space="preserve"><value>暂时无法访问产品范围设置。请稍后重试。</value></data>
+  <data name="ErrorStoreNotReady" xml:space="preserve"><value>产品范围存储正在准备中。请稍后重试。</value></data>
 </root>

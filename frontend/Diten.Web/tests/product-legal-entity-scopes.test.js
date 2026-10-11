@@ -123,6 +123,9 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
     expect(say({ errors: ['PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE'] }, 503)).toBe('fixture: store down');
     expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS'] }, 503)).toBe('fixture: busy');
     expect(say({ errors: ['PRODUCT_SCOPE_REPLACE_CONTENDED'] }, 503)).toBe('fixture: busy');
+    // BL-598 FIX1 item 3: the policy store preparing its indexes — its own sentence, not "provider unavailable".
+    Object.assign(window.L10n, { ErrorStoreNotReady: 'fixture: store preparing' });
+    expect(say({ errors: ['PRODUCT_SCOPE_POLICY_STORE_NOT_READY'] }, 503)).toBe('fixture: store preparing');
     expect(say(null, 500)).toBe('fixture: gateway');
   });
 

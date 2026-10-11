@@ -135,6 +135,56 @@ public sealed class Bl598DeferredResolutionTests
         Assert.False(StoreConnectionFailure.Is(new MongoDB.Driver.MongoClientException("a client defect")));
     }
 
+    // BL-598 FIX1 (minor): measured — the driver's authentication failure IS a connection failure by type; a wrong
+    // credential is a configuration defect, so it is not counted as "the store cannot be reached" (stays a 500).
+    [Fact]
+    public void Bl598_Fix1_A_wrong_credential_is_not_an_outage()
+    {
+        var endPoint = new System.Net.DnsEndPoint("127.0.0.1", 1);
+        var connection = new MongoDB.Driver.Core.Connections.ConnectionId(
+            new MongoDB.Driver.Core.Servers.ServerId(new MongoDB.Driver.Core.Clusters.ClusterId(), endPoint));
+        var authentication = new MongoDB.Driver.MongoAuthenticationException(connection, "bad credentials");
+
+        Assert.True(authentication is MongoDB.Driver.MongoConnectionException);
+        Assert.False(StoreConnectionFailure.Is(authentication));
+    }
+
+    // BL-598 FIX1 (minor): Replace builds its store-backed collaborators lazily — an unreachable store is its coded 503,
+    // a defect is not masked.
+    [Fact]
+    public async Task Bl598_Fix1_Replace_answers_503_when_its_stores_cannot_be_reached()
+    {
+        var handler = new Diten.MdmService.Application.Features.ProductLegalEntityScopes.Handlers.CommandHandlers
+            .ReplaceProductLegalEntityScopePolicyHandler(
+                null!,
+                new Lazy<IProductLegalEntityScopeRolloutStateRepository>(() => throw new TimeoutException("store away")),
+                new Lazy<ILegalEntityRepository>(() => throw new Xunit.Sdk.XunitException("not reached")),
+                new Lazy<ProductLegalEntityScopeCandidateFacade>(() => throw new Xunit.Sdk.XunitException("not reached")),
+                new Lazy<Diten.MdmService.Application.Contracts.Authorization.IProductLegalEntityScopeWriterAuthorityProvider>(
+                    () => throw new Xunit.Sdk.XunitException("not reached")),
+                new Lazy<ProductLegalEntityScopeWriteFenceCoordinator>(() => throw new Xunit.Sdk.XunitException("not reached")));
+
+        var response = await handler.Handle(new(Guid.NewGuid(), Guid.NewGuid(), new()), default);
+
+        Assert.Equal(503, response.StatusCode);
+        Assert.Equal(ProductLegalEntityScopeWriteFenceCoordinator.RolloutStoreUnavailableCode, response.Errors.Single());
+    }
+
+    // D4: a cancelled request is a cancellation, never the store's 503 (fence and product master).
+    [Fact]
+    public async Task Bl598_Fix1_A_cancelled_request_is_never_turned_into_the_stores_503()
+    {
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        var behavior = Behavior(() => throw new TimeoutException("store away"));
+        await Assert.ThrowsAsync<TimeoutException>(() => behavior.Handle(Mutation(),
+            () => Task.FromResult(Response<ProductItemSkuMasterModels.CodeReservationDto>.Fail("NEVER", 500)), cancelled.Token));
+
+        var handler = Handler(() => throw new TimeoutException("store away"));
+        await Assert.ThrowsAsync<TimeoutException>(() =>
+            handler.Handle(new GetProductMasterItemQuery(Guid.NewGuid().ToString("D")), cancelled.Token));
+    }
+
     private static ProductLegalEntityScopeWriteFenceBehavior<ReserveCanonicalCodeCommand,
         Response<ProductItemSkuMasterModels.CodeReservationDto>> Behavior(
         Func<ProductLegalEntityScopeWriteFenceCoordinator> build) =>

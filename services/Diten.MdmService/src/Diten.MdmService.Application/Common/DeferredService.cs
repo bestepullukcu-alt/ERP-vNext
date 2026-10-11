@@ -23,6 +23,11 @@ public static class StoreConnectionFailure
     public static bool Is(Exception exception)
     {
         if (exception is TimeoutException) return true;
+        // BL-598 FIX1 (minor): an authentication failure derives from the connection failure in the driver, but it is a
+        // wrong credential — a configuration defect, not an outage: it stays a 500.
+        for (var type = exception.GetType(); type is not null; type = type.BaseType)
+            if (type.FullName is "MongoDB.Driver.MongoAuthenticationException")
+                return false;
         for (var type = exception.GetType(); type is not null; type = type.BaseType)
             if (type.FullName is "MongoDB.Driver.MongoConnectionException" or "MongoDB.Driver.MongoNotPrimaryException")
                 return true;

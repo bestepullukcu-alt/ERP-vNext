@@ -508,6 +508,8 @@ internal sealed class ScopePolicyRepository : IProductLegalEntityScopePolicyRepo
     public int WriteCount { get; private set; }
     public bool AmbiguousCreate { get; set; }
     public bool AmbiguousUpdate { get; set; }
+    // BL-598 FIX1 item 3: the store whose unique indexes are not in place refuses every write with nothing written.
+    public bool IndexesNotReady { get; set; }
     public bool FailUpdate { get; set; }
     public bool ThrowBsonCreate { get; set; }
     public bool ThrowBsonUpdate { get; set; }
@@ -521,6 +523,8 @@ internal sealed class ScopePolicyRepository : IProductLegalEntityScopePolicyRepo
     {
         if (ThrowBsonCreate)
             throw new InvalidOperationException("PRODUCT_LEGAL_ENTITY_SCOPE_AUDIT_HEADROOM_EXCEEDED");
+        if (IndexesNotReady)
+            return Task.FromResult(new ProductLegalEntityScopePolicyWriteResult(false, null, VerifiedZeroMutation: true, IndexesNotReady: true));
         WriteCount++;
         if (AmbiguousCreate) return Task.FromResult(new ProductLegalEntityScopePolicyWriteResult(false, null, WriteOutcomeAmbiguous: true));
         policy.Id = policy.Id == Guid.Empty ? Guid.NewGuid() : policy.Id;
@@ -531,6 +535,8 @@ internal sealed class ScopePolicyRepository : IProductLegalEntityScopePolicyRepo
     {
         if (ThrowBsonUpdate)
             throw new InvalidOperationException("PRODUCT_LEGAL_ENTITY_SCOPE_BSON_LIMIT_EXCEEDED");
+        if (IndexesNotReady)
+            return Task.FromResult(new ProductLegalEntityScopePolicyWriteResult(false, null, VerifiedZeroMutation: true, IndexesNotReady: true));
         WriteCount++;
         if (AmbiguousUpdate) return Task.FromResult(new ProductLegalEntityScopePolicyWriteResult(false, null, WriteOutcomeAmbiguous: true));
         if (FailUpdate) return Task.FromResult(new ProductLegalEntityScopePolicyWriteResult(false, null, VersionConflict: true));

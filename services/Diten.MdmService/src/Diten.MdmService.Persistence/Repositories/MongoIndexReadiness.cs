@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Diten.MdmService.Persistence.Repositories;
@@ -42,8 +43,12 @@ public static class MongoIndexReadiness
 
     private sealed class Entry(Lazy<Task> work, long createdAtMs)
     {
+        private int _logged;
         public Lazy<Task> Work { get; } = work;
         public long CreatedAtMs { get; } = createdAtMs;
+
+        // BL-598 FIX1 item 2: a failed preparation is said ONCE, by whoever sees it first.
+        public bool TryMarkLogged() => Interlocked.Exchange(ref _logged, 1) == 0;
     }
 
     private static readonly ConcurrentDictionary<string, Entry> Preparations = new(StringComparer.Ordinal);
@@ -64,9 +69,9 @@ public static class MongoIndexReadiness
     /// new preparation (tests whose database is dropped between them).
     /// </summary>
     public static async Task EnsureForWriteAsync(string key, Func<CancellationToken, Task> prepare, TimeSpan budget,
-        CancellationToken cancellationToken, bool refresh = false)
+        CancellationToken cancellationToken, bool refresh = false, TimeSpan? maxAge = null, ILogger? logger = null)
     {
-        var entry = Current(key, prepare, refresh);
+        var entry = Current(key, prepare, refresh, maxAge ?? Revalidate, logger);
         var work = entry.Work.Value;
         try
         {
@@ -85,12 +90,33 @@ public static class MongoIndexReadiness
         catch (Exception exception)
         {
             Preparations.TryRemove(new KeyValuePair<string, Entry>(key, entry));
+            LogFailure(entry, key, exception, logger);
             throw new MongoIndexNotReadyException(key, exception);
         }
     }
 
-    private static Entry Current(string key, Func<CancellationToken, Task> prepare, bool refresh)
+    /// <summary>
+    /// BL-598 FIX1 item 2: a preparation that FAILED (a duplicate key, an index option conflict, an unreachable server)
+    /// would otherwise only show as every write's 503 "not ready, retry" — it is logged once per failure: the collection
+    /// and index set, the failure's type and server code. No tenant datum (the key holds the database / collection).
+    /// </summary>
+    private static void LogFailure(Entry entry, string key, Exception exception, ILogger? logger)
     {
+        if (logger is null || !entry.TryMarkLogged()) return;
+        var failure = exception is AggregateException { InnerException: { } inner } ? inner : exception;
+        logger.LogError("{Code}: index preparation of {IndexKey} failed ({ExceptionType}, server code {ServerCode}); writes to it are refused until it succeeds.",
+            NotReady, key, failure.GetType().Name, (failure as MongoCommandException)?.CodeName ?? "none");
+    }
+
+    // Start (a read) never logs: a failure it starts is said by the first write that meets it.
+    private static Entry Current(string key, Func<CancellationToken, Task> prepare, bool refresh) =>
+        Current(key, prepare, refresh, Revalidate, null);
+
+    private static Entry Current(string key, Func<CancellationToken, Task> prepare, bool refresh, TimeSpan maxAge,
+        ILogger? logger)
+    {
+        // An entry made during THIS call is never stale for it (a zero max age would otherwise loop on a fast build).
+        var calledAtMs = Environment.TickCount64;
         while (true)
         {
             var entry = Preparations.GetOrAdd(key, _ => new Entry(new Lazy<Task>(() =>
@@ -99,9 +125,10 @@ public static class MongoIndexReadiness
                 return Task.Run(() => prepare(CancellationToken.None));
             }, LazyThreadSafetyMode.ExecutionAndPublication), Environment.TickCount64));
             var task = entry.Work.Value;
-            var stale = refresh && task.IsCompleted || task.IsCompletedSuccessfully
-                && Environment.TickCount64 - entry.CreatedAtMs >= (long)Revalidate.TotalMilliseconds;
+            var stale = refresh && task.IsCompleted || task.IsCompletedSuccessfully && entry.CreatedAtMs < calledAtMs
+                && Environment.TickCount64 - entry.CreatedAtMs >= (long)maxAge.TotalMilliseconds;
             if (!task.IsFaulted && !task.IsCanceled && !stale) return entry;
+            if (task.IsFaulted && task.Exception is { } failed) LogFailure(entry, key, failed, logger);
             // A failure already known, or a finished one due to be re-asserted: dropped, and started again for this caller.
             refresh = false;
             Preparations.TryRemove(new KeyValuePair<string, Entry>(key, entry));

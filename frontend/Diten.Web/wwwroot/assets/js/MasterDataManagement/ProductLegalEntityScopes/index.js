@@ -62,7 +62,9 @@ const ProductLegalEntityScopesList = (() => {
         PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE: 'ErrorStoreUnavailable',
         PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS: 'ErrorWriterBusy',
         PRODUCT_SCOPE_REPLACE_CONTENDED: 'ErrorWriterBusy',
-        PRODUCT_SCOPE_RECONCILIATION_REQUIRED: 'ReconciliationPending'
+        PRODUCT_SCOPE_RECONCILIATION_REQUIRED: 'ReconciliationPending',
+        // BL-598 FIX1 item 3: the policy store still preparing its unique indexes (a 503 to try again shortly).
+        PRODUCT_SCOPE_POLICY_STORE_NOT_READY: 'ErrorStoreNotReady'
     });
     const failureText = (payload, status) => {
         const code = payload?.errors?.[0] ?? payload?.Errors?.[0];

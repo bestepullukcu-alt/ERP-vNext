@@ -25,4 +25,5 @@
   <data name="OtherLegalEntities" xml:space="preserve"><value>другие компании: {0}</value></data>
   <data name="ErrorWriterCapacity" xml:space="preserve"><value>Сейчас в этой группе компаний выполняется слишком много изменений. Повторите попытку через несколько минут.</value></data>
   <data name="ErrorStoreUnavailable" xml:space="preserve"><value>Настройки области продукта сейчас недоступны. Повторите попытку чуть позже.</value></data>
+  <data name="ErrorStoreNotReady" xml:space="preserve"><value>Хранилище области продукта готовится к работе. Повторите попытку чуть позже.</value></data>
 </root>
