@@ -40,6 +40,7 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
         }
         var tenants = 0; var operations = 0; var completed = 0; var deferred = 0; var failed = 0;
         var cycle = new ProductIdentityRecoveryCycle();
+        TimeSpan? oldestOpenApproval = null;
         Guid? tenantCursor = null;
         do
         {
@@ -125,10 +126,20 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
             var discovery = countScope.ServiceProvider.GetRequiredService<ILskuIdentityWorkflowTenantPartitionDiscovery>();
             cycle.InManualReconciliation = await discovery.CountManualReconciliationAsync(cancellationToken);
             cycle.NeedingAPerson = await discovery.CountNeedingAPersonAsync(cancellationToken);
+            // BL-607: the oldest approval still open — from when the engine opened it (real progress), not the request.
+            var openedAt = await discovery.OldestOpenApprovalStartedAtUtcTicksAsync(cancellationToken);
+            oldestOpenApproval = openedAt is { } ticks
+                ? timeProvider.GetUtcNow() - new DateTimeOffset(ticks, TimeSpan.Zero)
+                : null;
         }
         cycle.Tenants = tenants;
         cycle.Log(logger, Flow);
         metrics?.Record(Flow, cycle.InManualReconciliation, cycle.NeedingAPerson);
+        var alertAfter = TimeSpan.FromMinutes(settings.OpenApprovalAlertAfterMinutes);
+        metrics?.RecordOldestOpenApproval(Flow, oldestOpenApproval, alertAfter);
+        if (oldestOpenApproval > alertAfter)
+            logger.LogWarning("{Flow}: the oldest approval still open has waited {AgeMinutes} min, past the alert threshold of {ThresholdMinutes} min (a person has not decided; nothing is stuck).",
+                Flow, (long)oldestOpenApproval.Value.TotalMinutes, settings.OpenApprovalAlertAfterMinutes);
         return new(tenants, operations, completed, deferred, failed) { Cycle = cycle };
     }
 

@@ -80,6 +80,13 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
     // FIX3 M4: 1 while the last count of a flow FAILED (a gauge that silently stops is no gauge) — alert on it.
     public const string CountFailedGauge = "mdm.product_identity.recovery.count_failed";
     private readonly ConcurrentDictionary<string, long> _countFailed = new(StringComparer.Ordinal);
+    // BL-607: how long the oldest approval still open (waiting for a person) has been open, per flow — measured from the
+    // moment the engine opened it, not from the request — and the age at which that is worth an alert. A number per flow,
+    // never a tenant. Absent while no approval is open.
+    public const string OldestOpenApprovalAgeGauge = "mdm.product_identity.open_approval.oldest_age";
+    public const string OpenApprovalAlertAfterGauge = "mdm.product_identity.open_approval.alert_after";
+    private readonly ConcurrentDictionary<string, double> _oldestOpenApproval = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, double> _openApprovalAlertAfter = new(StringComparer.Ordinal);
 
     public ProductIdentityRecoveryMetrics()
     {
@@ -95,7 +102,27 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
             () => _countFailed.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
             unit: "{flow}",
             description: "1 while the last count of a flow failed (its other gauges are stale), per flow.");
+        _meter.CreateObservableGauge(OldestOpenApprovalAgeGauge,
+            () => _oldestOpenApproval.Select(item => new Measurement<double>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "s",
+            description: "Age of the oldest approval still open (waiting for a person), from the moment the engine opened it, per flow.");
+        _meter.CreateObservableGauge(OpenApprovalAlertAfterGauge,
+            () => _openApprovalAlertAfter.Select(item => new Measurement<double>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "s",
+            description: "The open-approval age past which an alert is due (validated at start against the backoff ceiling and the poll interval), per flow.");
     }
+
+    /// <summary>BL-607: the oldest open approval's age (null: none open — the gauge drops the flow) and the alert threshold.</summary>
+    public void RecordOldestOpenApproval(string flow, TimeSpan? oldestAge, TimeSpan alertAfter)
+    {
+        if (oldestAge is { } age) _oldestOpenApproval[flow] = Math.Max(age.TotalSeconds, 0);
+        else _oldestOpenApproval.TryRemove(flow, out _);
+        _openApprovalAlertAfter[flow] = alertAfter.TotalSeconds;
+    }
+
+    public double? OldestOpenApprovalSeconds(string flow) => _oldestOpenApproval.TryGetValue(flow, out var value) ? value : null;
+
+    public double? OpenApprovalAlertAfterSeconds(string flow) => _openApprovalAlertAfter.TryGetValue(flow, out var value) ? value : null;
 
     public void RecordCountFailed(string flow, bool failed) => _countFailed[flow] = failed ? 1 : 0;
 

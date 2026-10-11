@@ -956,8 +956,16 @@ public sealed class LskuIdentityWorkflowProcessor(
             operation.TenantId,
             new(operation.WorkflowInstanceId.Value, operation.ObjectType, operation.ObjectId),
             cancellationToken);
-        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal
-            or ProductIdentityWorkflowTransportOutcome.NotFound
+        // BL-607: NOT_TERMINAL (an escalated approval included) is an approval still open — a person has not decided yet.
+        // It is not a failure: it never counts toward the retry limit, and it is asked again on its own backoff.
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal)
+        {
+            return await AwaitOpenApprovalAsync(operation, claim, result.ErrorCode, now, retryDelay, counted,
+                cancellationToken);
+        }
+        // A real fault (the provider unavailable, a refusal of this service, an answer that cannot be read) counts as
+        // before and reaches RETRY_LIMIT_REACHED.
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
             or ProductIdentityWorkflowTransportOutcome.Incomplete
             || Retryable(result.Outcome)
             || result.Outcome != ProductIdentityWorkflowTransportOutcome.Success
@@ -1335,6 +1343,39 @@ public sealed class LskuIdentityWorkflowProcessor(
                 Streak: counted ? RecoveryStreakWrite.Increment : RecoveryStreakWrite.Keep,
                 WithdrawalUnansweredSinceUtcTicksV1: withdrawalUnansweredSince,
                 RetryLimitCauseCode: cause),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// BL-607 — AN OPEN APPROVAL WAITS; IT IS NOT A FAILURE. Before, NOT_TERMINAL went through
+    /// <see cref="ScheduleRetryAsync"/> counted: thirty "not decided yet" answers (~6.5 h at the 15-min ceiling) made a
+    /// healthy approval RETRY_LIMIT_REACHED — "stuck", an operator alarm and a manual reconciliation. Now (the rule the GSKU
+    /// identity and correction flows already follow): the worker's streak is over (Reset), the limit is never reached by
+    /// waiting, and the next look follows <see cref="ProductIdentityOpenApprovalBackoff"/> — doubling, capped, from the moment
+    /// the approval opened; never a flat 30-second poll. An interactive repeat (not counted) leaves the worker's streak as it
+    /// is and keeps a limit already reached (LSKU FIX4 item 6: the limit is said once, by the recovery runner).
+    /// </summary>
+    private Task<bool> AwaitOpenApprovalAsync(
+        LskuIdentityWorkflowOperation operation,
+        LskuIdentityWorkflowClaim claim,
+        string? errorCode,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        bool counted,
+        CancellationToken cancellationToken)
+    {
+        var keepLimit = !counted && operation.LastFailureCode == RetryLimitReached;
+        return operations.AdvanceAsync(
+            claim,
+            new(
+                LskuIdentityWorkflowCheckpoint.AwaitingDecision,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                ProductIdentityOpenApprovalBackoff.NextLookAtUtcTicks(operation.WorkflowStartedAtUtcTicksV1, now, retryDelay),
+                keepLimit ? RetryLimitReached : BoundedCode(errorCode, "LSKU_IDENTITY_WORKFLOW_DECISION_PENDING"),
+                ReleaseLease: true,
+                Streak: counted ? RecoveryStreakWrite.Reset : RecoveryStreakWrite.Keep,
+                RetryLimitCauseCode: keepLimit ? operation.RetryLimitCauseCode : null),
             cancellationToken);
     }
 

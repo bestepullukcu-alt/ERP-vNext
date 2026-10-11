@@ -113,4 +113,19 @@ public sealed class LskuIdentityWorkflowTenantPartitionDiscoveryRepository
                      .IdentitySettledByTheRequestersRepeat))
             | UnansweredWithdrawal(DateTimeOffset.UtcNow),
             cancellationToken: cancellationToken);
+
+    // BL-607: the oldest approval still open, by the moment the engine opened it. A number for one gauge, no tenant data.
+    public async Task<long?> OldestOpenApprovalStartedAtUtcTicksAsync(CancellationToken cancellationToken = default)
+    {
+        var oldest = await _operations
+            .Find(Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.IsDeleted, true)
+                  & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+                      LskuIdentityWorkflowCheckpoint.AwaitingDecision)
+                  & Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.WorkflowStartedAtUtcTicksV1, null))
+            .SortBy(item => item.WorkflowStartedAtUtcTicksV1)
+            .Limit(1)
+            .Project(item => item.WorkflowStartedAtUtcTicksV1)
+            .FirstOrDefaultAsync(cancellationToken);
+        return oldest;
+    }
 }
