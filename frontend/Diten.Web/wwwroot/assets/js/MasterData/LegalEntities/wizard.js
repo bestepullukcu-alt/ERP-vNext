@@ -472,7 +472,13 @@
         stepper = new window.Stepper(el, { linear: false, animation: false });
         // Safety net: block any programmatic/-click jump past the furthest validated step.
         el.addEventListener('show.bs-stepper', (event) => {
-            if (event.detail.indexStep + 1 > maxReachedStep) event.preventDefault();
+            if (event.detail.indexStep + 1 > maxReachedStep) { event.preventDefault(); return; }
+            // WCN-FIX-06 — a header click (the stepper is non-linear) must not carry a refused date FORWARD past its
+            // step, as Next does not. Going back stays free; the final Save still re-checks every step (validateAll).
+            if (currentStep === 2 && event.detail.indexStep + 1 > currentStep && DATE_FIELDS.some(dateRefused)) {
+                event.preventDefault();
+                showAlert([stepErrorMessage()], 'danger');
+            }
         });
         // Keep currentStep + the action bar in sync, and refresh the overview whenever step 6 becomes visible.
         el.addEventListener('shown.bs-stepper', (event) => {

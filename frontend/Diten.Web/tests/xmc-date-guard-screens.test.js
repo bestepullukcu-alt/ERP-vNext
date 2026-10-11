@@ -327,6 +327,22 @@ describe.each(["from", "to"])("WCN-FIX-05: a refused %s date", (which) => {
   });
 });
 
+describe("WCN-FIX-06: the wizard's header click (non-linear stepper) cannot carry a refused date forward", () => {
+  test.each(["from", "to"])("a refused %s date: clicking a later step's header keeps the reader on the dates' step", async (which) => {
+    await bootWizard();
+    const stepper = FakeStepper.last;
+    for (let i = 0; i < 5; i += 1) { document.getElementById("le-next").click(); }
+    stepper.to(2);                                       // back to the dates' step (always allowed)
+    expect(stepper.index).toBe(1);
+    typeAndTab(WIZARD[which], "31.02.2026");
+    stepper.to(4);                                       // a header click on a step already reached
+    expect(stepper.index, "the header click carried a refused date past its step").toBe(1);
+    expect(document.getElementById(WIZARD.alert).textContent).toContain("DATE-REFUSED");
+    stepper.to(1);                                       // going back stays free
+    expect(stepper.index).toBe(0);
+  });
+});
+
 describe("WCN-FIX-05: the list filter's Apply stops for either date", () => {
   const source = read("wwwroot/assets/js/MasterData/LegalEntities/index.js");
   test.each(["filterCreatedFrom", "filterCreatedTo"])("a refused %s stops Apply", (id) => {
@@ -381,10 +397,19 @@ describe("DateNotRecognized reaches every screen that shows it", () => {
     expect(read(block)).toMatch(/DateNotRecognized\s*=\s*SharedLocalizer\["DateNotRecognized"\]\.Value/);
   });
 
+  const sentence = (lang) => {
+    const match = /<data name="DateNotRecognized"[^>]*>\s*<value>([\s\S]*?)<\/value>/.exec(read(`Resources/SharedResource.${lang}.resx`));
+    return match ? match[1].trim() : "";
+  };
+  const comparable = (text) => text.replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, "")
+    .replace(/[\s.!?…:;,。！？،؛]+$/u, "").trim().toLocaleLowerCase("en");
+
   test.each(["en", "tr", "fr", "es", "zh", "ar", "ru"])("SharedResource.%s carries a non-empty DateNotRecognized", (lang) => {
-    const xml = read(`Resources/SharedResource.${lang}.resx`);
-    const match = /<data name="DateNotRecognized"[^>]*>\s*<value>([\s\S]*?)<\/value>/.exec(xml);
-    expect(match && match[1].trim().length).toBeGreaterThan(10);
+    expect(sentence(lang).length).toBeGreaterThan(10);
+  });
+
+  test.each(["tr", "fr", "es", "zh", "ar", "ru"])("SharedResource.%s DateNotRecognized is a translation, not the English sentence", (lang) => {
+    expect(comparable(sentence(lang))).not.toBe(comparable(sentence("en")));
   });
 
   test("the scripts read the key the blocks emit", () => {

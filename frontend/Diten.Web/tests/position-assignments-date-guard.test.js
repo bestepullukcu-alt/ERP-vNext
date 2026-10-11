@@ -131,6 +131,17 @@ describe("PositionAssignments form: a refused date stops the save (WCN-FIX-03)",
     expect(alert.textContent).toContain("DATE-REFUSED");
   });
 
+  test.each([["aEffectiveFrom", "aEffectiveTo"], ["aEffectiveTo", "aEffectiveFrom"]])(
+    "WCN-FIX-06: a refused %s stops the save too (both dates are covered)", async (refused, other) => {
+      boot();
+      fill(other, "01.02.2026");
+      fill(refused, "31.02.2026");
+      document.getElementById("a-submit").click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(posts()).toEqual([]);
+      expect(document.getElementById("a-form-alert").textContent).toContain("DATE-REFUSED");
+    });
+
   test("the box still focused and the reader clicks Save directly: the guard judges first, nothing is written", async () => {
     boot();
     fill("aEffectiveFrom", "01.02.2026");

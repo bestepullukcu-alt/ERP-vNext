@@ -218,7 +218,7 @@ describe("WCN-FIX-05: the component comparison", () => {
     ["Arabic-Indic digits", "٥/٣/٢٠٢٦", "j/n/Y"],
     ["extended Arabic-Indic digits", "۵/۳/۲۰۲۶", "j/n/Y"],
     ["full-width digits", "５/３/２０２６", "j/n/Y"],
-    ["a right-to-left mark typed or pasted", "‏5/3/2026", "j/n/Y"],
+    ["a right-to-left mark typed or pasted", "\u200F5/3/2026", "j/n/Y"],
     ["Chinese date units", "2026年3月5日", "Y/n/j"]
   ])("%s are read as the date they mean (5 March 2026)", (_label, typed, fmt) => {
     const f = field({ dateFormat: "Y-m-d", altInput: true, altFormat: fmt, allowInput: true }, { key: "altFormat" });

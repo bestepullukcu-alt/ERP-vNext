@@ -34,15 +34,86 @@ public sealed class FlatpickrDateFormatTests
         Assert.Equal(expected, FlatpickrDateFormat.FromShortDatePattern(net));
     }
 
+    /// <summary>
+    /// WCN-FIX-06 — every file of the date guard is scanned, derived from the folders rather than listed: the C# and JS
+    /// sources, and the tests (an editor that strips invisible characters would empty a list or make an Arabic case pass
+    /// vacuously; FIX5's own test file carried one). Resource files are NOT scanned: Arabic text legitimately carries
+    /// right-to-left marks.
+    /// </summary>
+    public static TheoryData<string> GuardFiles()
+    {
+        var data = new TheoryData<string>();
+        foreach (var file in GuardFilePaths())
+        {
+            data.Add(file);
+        }
+
+        return data;
+    }
+
+    private static List<string> GuardFilePaths()
+    {
+        var web = FindWebRoot();
+        var repo = Path.GetFullPath(Path.Combine(web, "..", ".."));
+        var files = new List<string>
+        {
+            Path.Combine(web, "wwwroot", "assets", "js", "shared", "diten-datefield.js"),
+            Path.Combine(repo, "frontend", "Diten.Web.Tests", "Services", "FlatpickrDateFormatTests.cs")
+        };
+        files.AddRange(Directory.GetFiles(Path.Combine(web, "Services", "Localization"), "*.cs"));
+        files.AddRange(Directory.GetFiles(Path.Combine(web, "tests"), "*.test.js").Where(file =>
+        {
+            var name = Path.GetFileName(file);
+            return name.StartsWith("date-field-", StringComparison.Ordinal)
+                || name is "xmc-date-guard-screens.test.js" or "position-assignments-date-guard.test.js"
+                    or "wcn-subtask-due-escape.test.js";
+        }));
+        return files
+            .OrderBy(f => f, StringComparer.Ordinal)
+            .Select(file => Path.GetRelativePath(repo, file).Replace(Path.DirectorySeparatorChar, '/'))
+            .ToList();
+    }
+
+    [Fact]
+    public void The_scan_reaches_the_guard_files()
+    {
+        var files = GuardFilePaths();
+        Assert.Contains("frontend/Diten.Web/tests/date-field-fix5.test.js", files);
+        Assert.Contains("frontend/Diten.Web/wwwroot/assets/js/shared/diten-datefield.js", files);
+        Assert.True(files.Count >= 10, $"only {files.Count} files scanned");
+    }
+
     [Theory]
-    [InlineData("frontend/Diten.Web/Services/Localization/FlatpickrDateFormat.cs")]
-    [InlineData("frontend/Diten.Web.Tests/Services/FlatpickrDateFormatTests.cs")]
-    [InlineData("frontend/Diten.Web/wwwroot/assets/js/shared/diten-datefield.js")]
+    [MemberData(nameof(GuardFiles))]
     public void The_marks_are_written_as_escapes_never_as_invisible_characters(string relative)
     {
-        // An editor that strips invisible characters would empty the list (and make the Arabic case pass vacuously).
-        var source = File.ReadAllText(Path.Combine(Path.GetDirectoryName(FindWebRoot())!, "..", relative));
-        Assert.DoesNotContain(source, ch => FlatpickrDateFormat.IsBidiMark(ch));
+        var repo = Path.GetFullPath(Path.Combine(FindWebRoot(), "..", ".."));
+        var source = File.ReadAllText(Path.Combine(repo, relative));
+        var at = source.IndexOf(source.FirstOrDefault(FlatpickrDateFormat.IsBidiMark));
+        Assert.False(source.Any(FlatpickrDateFormat.IsBidiMark),
+            $"{relative} carries an invisible bidi mark at offset {at}; write it as a \\u escape");
+    }
+
+    /// <summary>WCN-FIX-06 — the JS normaliser and the C# format conversion drop the SAME marks.</summary>
+    [Fact]
+    public void The_js_and_the_csharp_mark_sets_are_the_same()
+    {
+        var js = File.ReadAllText(Path.Combine(FindWebRoot(), "wwwroot", "assets", "js", "shared", "diten-datefield.js"));
+        var match = System.Text.RegularExpressions.Regex.Match(js, @"const BIDI_MARKS = /\[([^\]]+)\]/g;");
+        Assert.True(match.Success, "BIDI_MARKS moved or changed shape in diten-datefield.js");
+
+        var jsSet = new HashSet<char>();
+        var body = match.Groups[1].Value;
+        var tokens = System.Text.RegularExpressions.Regex.Matches(body, @"\\u([0-9A-Fa-f]{4})(?:-\\u([0-9A-Fa-f]{4}))?");
+        foreach (System.Text.RegularExpressions.Match token in tokens)
+        {
+            var from = Convert.ToInt32(token.Groups[1].Value, 16);
+            var to = token.Groups[2].Success ? Convert.ToInt32(token.Groups[2].Value, 16) : from;
+            for (var code = from; code <= to; code++) { jsSet.Add((char)code); }
+        }
+
+        var csSet = Enumerable.Range(0, 0x10000).Select(code => (char)code).Where(FlatpickrDateFormat.IsBidiMark).ToHashSet();
+        Assert.Equal(csSet.OrderBy(c => c), jsSet.OrderBy(c => c));
     }
 
     [Fact]

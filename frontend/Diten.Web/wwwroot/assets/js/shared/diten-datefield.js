@@ -209,11 +209,21 @@
         };
 
         // Escape: the reader's typing is withdrawn and the field shows what it held before that typing began.
+        // Mark the next `input` as the library's own (on a plain field the echo reaches the box the reader types in).
+        const markEcho = () => {
+            if (!echoReachesTarget) { return; }
+            libraryEcho = true;
+            Promise.resolve().then(() => { libraryEcho = false; });
+        };
+        const sameDates = (a, b) => a.length === b.length
+            && a.every((date, index) => date.getTime() === b[index].getTime());
+
+        // Returns true when there was a typing run to cancel (so the Escape that asked for it is consumed).
         const cancelTyping = () => {
             lastTyped = '';
             const back = restorePoint;
             restorePoint = null;
-            if (!back) { return; }
+            if (!back) { return false; }
             rejected = false;
             timeEditedSinceReject = false;
             unmark();
@@ -224,7 +234,20 @@
              * draft.dueAt → save) would otherwise keep the misparse while the box shows the restored value. On a plain
              * field the library's `input` echo of this restore is swallowed by the echo mark below (measured).
              */
-            ownCall(() => instance.setDate(back.slice(), true));
+            /*
+             * WCN-FIX-06 — `change` only when the dates really change (empty → typed → Escape changes nothing): a
+             * page acting on `change` (a save, a filter) must not run for a non-change. `input` is announced either way,
+             * because the TYPING reached the page through `input` and a page copying the box (a draft) must see the box
+             * restored. The library's own echo of a plain field is marked as such, as above.
+             */
+            if (sameDates(back, instance.selectedDates || [])) {
+                ownCall(() => instance.setDate(back.slice(), false));
+                markEcho();
+                instance.input.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+                ownCall(() => instance.setDate(back.slice(), true));
+            }
+            return true;
         };
 
         // WCN-FIX-04 — a value the PAGE writes (quick-create's default, a saved view's filter, a reset) ends the
@@ -260,21 +283,39 @@
             };
         }
 
-        target.addEventListener('input', () => {
-            if (libraryEcho) { libraryEcho = false; return; }
-            // WCN-FIX-05 — Arabic-Indic / full-width digits and bidi marks become what flatpickr's parser can read.
-            const clean = normalizeTyped(target.value);
-            if (clean !== target.value) { target.value = clean; }
+        /*
+         * WCN-FIX-05/06 — Arabic-Indic / full-width digits and bidi marks become what flatpickr's parser can read. FIX6:
+         * never in the middle of an IME composition (that text is the IME's until compositionend), and the caret stays
+         * where the reader put it — a mid-text correction on an Arabic keyboard no longer jumps to the end.
+         */
+        const normalizeBox = () => {
+            const value = target.value;
+            const clean = normalizeTyped(value);
+            if (clean === value) { return; }
+            const caret = typeof target.selectionStart === 'number' ? target.selectionStart : value.length;
+            const caretAfter = normalizeTyped(value.slice(0, caret)).length;
+            target.value = clean;
+            if (typeof target.setSelectionRange === 'function') {
+                try { target.setSelectionRange(caretAfter, caretAfter); } catch (error) { /* a type without selection */ }
+            }
+        };
+        const recordTyping = () => {
             if (restorePoint === null) { restorePoint = (instance.selectedDates || []).slice(); }
             lastTyped = target.value;
             rejected = false;
             timeEditedSinceReject = false;
+        };
+        target.addEventListener('input', (event) => {
+            if (libraryEcho) { libraryEcho = false; return; }
+            if (!event.isComposing) { normalizeBox(); }
+            recordTyping();
+        });
+        target.addEventListener('compositionend', () => {
+            normalizeBox();
+            recordTyping();
         });
         if (echoReachesTarget && Array.isArray(instance.config.onChange)) {
-            instance.config.onChange.push(() => {
-                libraryEcho = true;
-                Promise.resolve().then(() => { libraryEcho = false; });
-            });
+            instance.config.onChange.push(markEcho);
         }
         if (Array.isArray(instance.config.onOpen)) {
             instance.config.onOpen.push(() => {
@@ -303,14 +344,23 @@
                 const doc = global.document;
                 const away = !!doc && (doc.activeElement !== target
                     || (typeof doc.hasFocus === 'function' && !doc.hasFocus()));
-                if (instance.isOpen && lastTyped.trim() && away) {
+                // WCN-FIX-06 — a field EMPTIED with Backspace has no text to judge but does have a typing run: its
+                // judgment (settle) ends the run, so a later Escape cannot bring the deleted date back.
+                if (instance.isOpen && (lastTyped.trim() || restorePoint !== null) && away) {
                     judge(instance.selectedDates);
                 }
             }, 0);
         });
-        // Escape in the box cancels the typing too (flatpickr ignores Escape in an allowInput box).
+        /*
+         * Escape in the box cancels the typing too (flatpickr ignores Escape in an allowInput box).
+         * WCN-FIX-06 — ONE rule: Escape cancels whenever a typing run is open (a restore point exists) — typed text,
+         * a field emptied with Backspace, or a refusal; with no run it does nothing here. And when it DID cancel, the
+         * key stops here: a side panel around the field (Bootstrap Offcanvas closes on Escape) must not close too —
+         * the reader's Escape meant "undo my typing". A second Escape, with nothing left to cancel, reaches the panel.
+         */
         target.addEventListener('keydown', (event) => {
-            if (event.key !== 'Escape' || (!lastTyped.trim() && !(rejected && restorePoint))) { return; }
+            if (event.key !== 'Escape' || restorePoint === null) { return; }
+            event.stopPropagation();
             if (instance.isOpen) { cancelled = true; instance.close(); } else { cancelTyping(); }
         });
 
