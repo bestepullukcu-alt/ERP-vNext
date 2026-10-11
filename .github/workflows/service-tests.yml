@@ -86,6 +86,9 @@ jobs:
             project: services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj
           - suite: pvg-signal-management
             project: services/Diten.PvgService/tests/Diten.PvgService.SignalManagement.Tests/Diten.PvgService.SignalManagement.Tests.csproj
+          # Main sync (CI follow-up 3 review): the gateway's own tests (route table, ports, headers). No Mongo, no broker.
+          - suite: gateway
+            project: gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj
     env:
       SUITE: ${{ matrix.suite }}
       PROJECT: ${{ matrix.project }}

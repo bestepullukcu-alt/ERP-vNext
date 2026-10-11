@@ -1,3 +1,4 @@
+using Diten.Platform.Tests.Shared;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
@@ -43,7 +44,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             "External/local RabbitMQ tenant lifecycle integration test is disabled. Set Eventing__RabbitMq__IntegrationTestsEnabled=true and configure Eventing__RabbitMq__Host/Port/VirtualHost/Username/Password.");
 
         var rabbitMq = RabbitMqTestSettings.FromEnvironment();
-        var mongo = MongoTestSettings.FromEnvironment();
+        var mongo = await MongoTestSettings.FromEnvironmentAsync();
         var mongoClient = new MongoClient(mongo.ConnectionString);
         /*
          * ⚠ A FIXED NAME, AND ONLY THE PROFILES THIS TEST USES. This used to be
@@ -472,50 +473,16 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
 
     private sealed record MongoTestSettings(string ConnectionString, string DatabaseName)
     {
-        public static MongoTestSettings FromEnvironment()
+        // Main sync (CT decision C): the ONE Platform test Mongo rule (PlatformTestMongo, linked) — a lane URI, else a
+        // mongod this test process starts from DITEN_TEST_MONGOD, else red by name; never 27017.
+        public static async Task<MongoTestSettings> FromEnvironmentAsync()
         {
             return new MongoTestSettings(
-                RequireLaneMongoConnectionString(),
+                await PlatformTestMongo.ConnectionStringAsync(),
                 Get("Eventing__MongoDb__DatabaseName", "eventing_mvp_tests"));
         }
     }
 
-    // Q131a: the lane's MongoDB comes only from DITEN_PLATFORM_TEST_MONGO_URI: no fallback port, no remote host, no
-    // credentials. Same rules as Diten.Platform.Application.Tests.Persistence.PlatformMongoTestConnection; this project
-    // does not reference that test assembly, so the check is repeated here. Messages never repeat the URI.
-    private static string RequireLaneMongoConnectionString()
-    {
-        const string key = "DITEN_PLATFORM_TEST_MONGO_URI";
-        var connectionString = Environment.GetEnvironmentVariable(key);
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException(
-                $"{key} is not set. Platform Mongo tests fail closed: point it at a lane-owned loopback MongoDB "
-                + "(scripts/test-env/mvp6-test-mongo-env.sh). There is no fallback port.");
-        }
-
-        var url = new MongoUrl(connectionString);
-        if (url.Username is not null)
-        {
-            throw new InvalidOperationException($"{key} must not carry credentials.");
-        }
-
-        foreach (var server in url.Servers ?? [])
-        {
-            if (server.Host is not ("127.0.0.1" or "localhost" or "::1" or "[::1]"))
-            {
-                throw new InvalidOperationException($"{key} must point at a loopback host.");
-            }
-
-            if (server.Port is >= 27017 and <= 27021)
-            {
-                throw new InvalidOperationException(
-                    $"{key} points at protected MongoDB port {server.Port}. Use the lane's own port.");
-            }
-        }
-
-        return connectionString;
-    }
 
     private sealed class CapturingAuditService : IAuditService
     {

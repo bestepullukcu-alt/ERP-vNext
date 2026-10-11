@@ -64,6 +64,12 @@ public class CiServiceTestsGuardTests
     /// </summary>
     private static readonly Dictionary<string, string> NotInThisJob = new(StringComparer.Ordinal)
     {
+        // Main sync (2026-10-11, PR #134 MVP-6): two projects that arrived with origin/main. Both fail closed on a Mongo URI
+        // of their own that no CI row provides; wiring them is their owners' change (XMC-001), not a merge resolution.
+        ["services/Diten.Platform/tests/Diten.Platform.CompositionGuard.Tests/Diten.Platform.CompositionGuard.Tests.csproj"] =
+            "main (MVP-6): needs PLATFORM_COMPOSITION_GUARD_MONGO_URI (a disposable mongod); could take PlatformTestMongo — owner's decision",
+        ["services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj"] =
+            "main (SCE / MVP-6): needs MVP6_MOD0192_MONGO_URI (its own replica set, CapacityTestMongo); SCE's file",
         ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
             "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
         ["services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj"] =
@@ -83,7 +89,8 @@ public class CiServiceTestsGuardTests
     };
 
     /// <summary>WP-CI-SERVICE-TESTS-04: every service and Building Blocks — the whole services/ tree.</summary>
-    private static readonly string[] ServiceTestRoots = ["services"];
+    // Main sync (CI follow-up 3 review): the gateway's tests too (gateway/Diten.ApiGateway.Tests, a matrix row).
+    private static readonly string[] ServiceTestRoots = ["services", "gateway"];
 
     [Fact]
     public void Every_service_test_project_is_a_matrix_row_or_named_with_its_reason()
@@ -98,7 +105,7 @@ public class CiServiceTestsGuardTests
         var gone = rows.Where(row => !File.Exists(Path.Combine(root, row))).ToArray();
         Assert.True(gone.Length == 0, "Matrix rows whose project does not exist: " + string.Join(", ", gone));
         Assert.Empty(rows.Intersect(NotInThisJob.Keys));
-        Assert.True(rows.Count >= 18, $"only {rows.Count} matrix rows read — the guard is blind");
+        Assert.True(rows.Count >= 19, $"only {rows.Count} matrix rows read — the guard is blind");
         var stale = NotInThisJob.Keys.Where(project => !File.Exists(Path.Combine(root, project))).ToArray();
         Assert.True(stale.Length == 0, "NotInThisJob names projects that do not exist: " + string.Join(", ", stale));
         Assert.All(NotInThisJob, entry => Assert.False(string.IsNullOrWhiteSpace(entry.Value), entry.Key));
@@ -124,9 +131,9 @@ public class CiServiceTestsGuardTests
             .Where(project => !solutions.Any(solution => solution.Contains(Path.GetFileName(project), StringComparison.Ordinal)))
             .Order(StringComparer.Ordinal)
             .ToList();
-        Assert.True(outside.Count >= 10, $"only {outside.Count} out-of-solution rows found — the scan is blind");
+        Assert.True(outside.Count >= 11, $"only {outside.Count} out-of-solution rows found — the scan is blind");
 
-        var built = Regex.Matches(gates, @"(?m)^dotnet build (services/[^ ]+Tests\.csproj) -c Debug\s*$")
+        var built = Regex.Matches(gates, @"(?m)^dotnet build ((?:services|gateway)/[^ ]+Tests\.csproj) -c Debug\s*$")
             .Select(match => match.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
         var unbuilt = outside.Except(built).ToArray();
         var surplus = built.Except(outside).ToArray();
@@ -765,6 +772,35 @@ public class CiServiceTestsGuardTests
         var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
         Assert.True(process.WaitForExit(60_000), "the skip check did not finish in 60 s");
         return (process.ExitCode, output);
+    }
+
+    // Main sync (CI follow-up 3 review): a suite name is the row's identity — its TRX file, its artifact, its allow-list
+    // key and every `matrix.suite ==` condition. Two rows with one name would overwrite each other's results.
+    [Fact]
+    public void Every_matrix_suite_name_is_unique()
+    {
+        var suites = Regex.Matches(Code(Workflow()), @"(?m)^ +- suite: *(\S+)\s*$").Select(match => match.Groups[1].Value).ToArray();
+        Assert.True(suites.Length >= 19, $"only {suites.Length} suites read — the guard is blind");
+        var repeated = suites.GroupBy(name => name, StringComparer.Ordinal).Where(group => group.Count() > 1).Select(group => group.Key).ToArray();
+        Assert.True(repeated.Length == 0, "matrix suite names used more than once: " + string.Join(", ", repeated));
+        Assert.Equal(suites.Length, MatrixProjects(Workflow()).Count);
+    }
+
+    // Main sync (CI follow-up 3 review): the BL-609 page-help ceiling check is CALLED, with the base it was given — a
+    // removed call or a dropped `--base` would leave a green step that compared nothing.
+    [Fact]
+    public void The_page_help_ceiling_check_is_called_with_the_base()
+    {
+        var gates = GatesText();
+        Assert.Single(Regex.Matches(gates, @"(?m)^check_page_help_ledger_ceiling\(\) \{$"));
+        Assert.Single(Regex.Matches(gates, @"(?m)^check_page_help_ledger_ceiling$"));
+        Assert.Single(Regex.Matches(gates, @"(?m)^    python3 scripts/check_page_help_ledger_ceiling\.py --base ""\$base""$"));
+        Assert.Single(Regex.Matches(gates, @"(?m)^    python3 scripts/check_page_help_ledger_ceiling\.py$"));
+        Assert.True(gates.IndexOf("\ncheck_page_help_ledger_ceiling\n", StringComparison.Ordinal)
+                    > gates.IndexOf("check_page_help_ledger_ceiling() {", StringComparison.Ordinal),
+            "the ceiling check is called before it is defined");
+        Assert.Matches(@"(?m)^python3 -m unittest discover -s scripts/tests -p 'test_\*\.py'$", gates);
+        Assert.True(File.Exists(Path.Combine(RepoRoot(), "scripts", "tests", "test_check_page_help_ledger_ceiling.py")));
     }
 
     // ------------------------------------------------------------------------------------------------- reading

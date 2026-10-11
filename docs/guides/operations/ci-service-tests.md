@@ -27,6 +27,7 @@ her proje ayrı bir iş (matris, `fail-fast: false`).
 | `mg-tests` | `Diten.ManagementGovernanceService.Tests` | 87 test, 0,1 sn |
 | `procurement-api` | `Diten.ProcurementService.Api.Tests` | 147 test, 0,2 sn |
 | `pvg-api` · `pvg-case-processing` · `pvg-meddra-coding` · `pvg-regpv-base` · `pvg-signal-management` | `Diten.PvgService.*.Tests` | 36 · 23 · 40 · 88 · 43 test, her biri < 0,5 sn |
+| `gateway` | `gateway/Diten.ApiGateway.Tests` | ana dal birleşimiyle; Mongo / aracı yok |
 
 Son on satır WP-CI-SERVICE-TESTS-04 ile geldi. Temiz bir `git worktree` kopyasında (bin / obj yok), Debug, işin koştuğu gibi
 ölçüldü: derleme + test + `check_trx_no_skipped.py --suite`, hepsi yeşil, atlanan 0. Koşu boyunca 27017'ye (ortak dev
@@ -60,8 +61,13 @@ olmayan proje bu listede gerekçesiyle durur, yoksa kırmızıdır. Listeden ad 
 
 B / C işleri sahiplerinindir (XMC-001); CT bu turda onlara dokunmaz.
 
-**Kapsam dışı:** `gateway/Diten.ApiGateway.Tests` `services/` altında değil. Bekçi onu taramaz; phase1 yalnız
-`Diten.ApiGateway.csproj`'u derler.
+- **Platform CompositionGuard.Tests** (main, MVP-6): kendi `PLATFORM_COMPOSITION_GUARD_MONGO_URI`'sini ister (kapalı
+  başarısız); hiçbir CI satırı vermiyor. `PlatformTestMongo`'ya bağlanabilir; sahibinin kararı.
+- **SupplyChainService.Tests** (main, SCE / MVP-6): `MVP6_MOD0192_MONGO_URI` (kendi replika kümesi, `CapacityTestMongo`);
+  SCE'nin dosyası.
+
+**Gateway:** `gateway/Diten.ApiGateway.Tests` bekçi kapsamında (`ServiceTestRoots`) ve `gateway` matris satırı. Çözümü
+olmadığı için phase1 onu ayrıca derler. Matris satır adları tekil olmalı (`Every_matrix_suite_name_is_unique`).
 
 **Tetik** (Control Tower kararı, Actions dakikası için): `pull_request`, yalnız `main`'e `push`, elle
 (`workflow_dispatch`). Dal push'u bu işi koşmaz.
@@ -162,6 +168,41 @@ Ek kurallar (kapalı başarısız):
 - Her iş `timeout-minutes: 90`.
 - Her `dotnet test` `--blame-hang --blame-hang-timeout 20m` taşır. Asılan test işi bitirmez; adıyla durur ve döküm
   bırakır (8. ders).
+
+## Platform testlerinin Mongo'su (ana dal birleşimi, CT kararı C)
+
+Platform test projeleri (Application, BackgroundJobs, Eventing) Mongo adresini TEK yerden alır:
+`services/Diten.Platform/tests/Shared/PlatformTestMongo.cs`, üç projeye bağlı (linked).
+
+Sıra:
+1. **`DITEN_PLATFORM_TEST_MONGO_URI` verilmişse** → o URI, main'in Q131a denetimiyle (PR #134), aynen:
+   - düz `mongodb://`, kimlik bilgisi yok, her host loopback;
+   - 27017–27021 yok; port yazılmamışsa 27017 sayılır;
+   - boş değer "verilmemiş" değil, kırmızı.
+   MVP-6 şerit betikleri (`scripts/test-env/mvp6-test-mongo-env.sh`) olduğu gibi çalışır.
+2. **Yoksa `DITEN_TEST_MONGOD`** (Auth kuralı, BL-570) → test süreci KENDİ mongod'unu açar:
+   - tek düğümlü replika kümesi (işlem destekli), boş bir loopback portunda (27022 ve üstü), geçici dizinde;
+   - süreç bitince kapanır;
+   - boş / göreli / olmayan yol → `OWNED_TEST_MONGO_INVALID`, kırmızı.
+3. **İkisi de yoksa** → `OWNED_TEST_MONGO_UNAVAILABLE`, kırmızı. Atlama yok, 27017'ye ASLA düşmez.
+
+Çocuk süreçler (kilit kanıtları) ebeveynin açtığı mongod'un adresini `DITEN_PLATFORM_TEST_MONGO_URI` üzerinden miras alır;
+kendi mongod'larını açmazlar.
+
+**CI:** `DITEN_TEST_MONGOD` her satırda kurulum adımında veriliyor; Platform satırları için iş akışına ek mongod
+gerekmez. Eventing de artık kendi mongod'unu açar; işe özel replika kümesi yalnız MDM satırları içindir.
+
+**Yerelde** Platform testleri için değişkenlerden biri ZORUNLU:
+
+```bash
+export DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod
+```
+
+Neden: değişkensiz koşu eskiden dev'in ortak Mongo'suna (27017) yazıyordu. BL-595 ölçümü: 79 artık test veritabanı;
+uykudan uyanınca zaman aşımı. Main'in Q121b ölçümü: 49 veritabanı.
+
+**Bekçi:** `PlatformTestsOwnMongoGuardTests` — `services/Diten.Platform/tests` altında yorum dışı her `27017` /
+`mongodb://localhost` adlı bir istisna ister (sayısıyla, gerekçesiyle). Yenisi kırmızı.
 
 ## mongod
 

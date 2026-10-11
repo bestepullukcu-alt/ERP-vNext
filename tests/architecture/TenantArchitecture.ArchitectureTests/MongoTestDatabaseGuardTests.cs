@@ -89,14 +89,8 @@ public class MongoTestDatabaseGuardTests
         // not the shared one this guard protects. Retiring the pair removes both lines.
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeper.cs",
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeperTests.cs",
-        // Neither of these touches the shared mongod this guard protects. Each starts its OWN mongod process on a
-        // free port in a temp directory, names a database inside that private process, and kills the process and
-        // deletes the directory on dispose, so no file-descriptor pressure or leftover database reaches the shared
-        // instance. The standalone one exists to prove transactions fail closed on a NON-replica-set server, which
-        // the shared replica set cannot stand in for. Both entered main on 2026-08-31 and left this guard red in
-        // CI; recorded as BL-393 (CONTROL TOWER, 2026-09-13).
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs",
+        // (BL-393's two entries — PpmAuditRetentionPolicySeedMongoTests, DisposableStandaloneMongo — removed at the main
+        // sync, 2026-10-11: main's 571b469ac stopped both naming a database per run, so their licence was stale.)
         // Same category, product-five takeover (2026-10-01): both name a database per run ONLY inside a mongod the
         // fixture itself starts on a free loopback port and stops on dispose (AuditIntentTemporalMongoFixture /
         // AuditOutboxTemporalReplicaSetFixture: OwnedMongoProcess, own --dbpath under the temp directory).

@@ -28,7 +28,7 @@ public sealed class WorkflowTransitionGateMongoRepositoryTests
         // second test process from dropping it under this one.
         await Diten.Platform.Application.Tests.Persistence.PlatformMongoTestLock.EnsureHeldAsync();
 
-        var mongo = MongoTestSettings.FromEnvironment();
+        var mongo = await MongoTestSettings.FromEnvironmentAsync();
         var settings = MongoClientSettings.FromConnectionString(mongo.ConnectionString);
         /*
          * ⚠ THE SAME GUID REPRESENTATION PRODUCTION USES, AND IT IS NOT OPTIONAL. MongoIntegrationHarness
@@ -115,9 +115,9 @@ public sealed class WorkflowTransitionGateMongoRepositoryTests
 
     private sealed record MongoTestSettings(string ConnectionString, string DatabaseName)
     {
-        public static MongoTestSettings FromEnvironment() =>
+        public static async Task<MongoTestSettings> FromEnvironmentAsync() =>
             new(
-                PlatformMongoTestConnection.RequireConnectionString(),
+                await PlatformMongoTestConnection.RequireConnectionStringAsync(),
                 Get("WorkflowGate__MongoDb__DatabaseName", "workflow_gate_repository_tests"));
 
         private static string Get(string key, string fallback)

@@ -14,7 +14,8 @@ namespace Diten.Platform.Application.Tests.AccessGovernance;
 
 public sealed class TrustedLegalEntityScopeResolutionMongoTests : IAsyncLifetime
 {
-    private readonly MongoClient _client = new("mongodb://127.0.0.1:27017");
+    // Main sync (CT decision C): this process's Mongo (PlatformMongoTestConnection) — never the shared 27017.
+    private MongoClient _client = null!;
     private const string DatabaseName = "diten_platform_fu21_itest";
     private readonly HashSet<Guid> _tenantIds = [];
     private IMongoDatabase _database = null!;
@@ -24,6 +25,7 @@ public sealed class TrustedLegalEntityScopeResolutionMongoTests : IAsyncLifetime
     {
         // BL-395 — this class addresses the shared mongod directly, so it takes the machine-wide lock first.
         await PlatformMongoTestLock.EnsureHeldAsync();
+        _client = new MongoClient(await Diten.Platform.Application.Tests.Persistence.PlatformMongoTestConnection.RequireConnectionStringAsync());
         _database = _client.GetDatabase(DatabaseName);
     }
     public async Task DisposeAsync()
