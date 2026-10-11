@@ -136,6 +136,32 @@ public sealed class RoleProvisioningServiceTests
         Assert.DoesNotContain("auth.users.account-kind.manage", viewerKeys);
     }
 
+    // BL-592 FIX1 (post-deploy §7 order): default provisioning only ever ADDS baseline grants. With Auth BL-592 deployed,
+    // a tenant whose catalog already holds the item and read-contract keys (the MDM manifest declared them) but that has
+    // no product-module entitlement gets NEITHER read on its Viewer, and its Admin none of the item keys — they arrive only
+    // through the module's entitlement sync. Measured: before BL-592 both reads are plain "read" actions and would go
+    // to every tenant's Viewer here, permanently (nothing removes a System grant).
+    [Fact]
+    public async Task Provisioning_without_the_product_entitlement_grants_no_item_or_read_contract_key()
+    {
+        var catalog = Catalog();
+        foreach (var action in new[] { "read", "create", "update", "submit", "deactivate", "retire", "withdraw" })
+            catalog.Add(new Permission("mdm", "items", action, $"Items {action}", null, moduleOverride: "product-item-sku-master"));
+        catalog.Add(new Permission("mdm", "product-master", "read", "Read Product Master", null, moduleOverride: "product-item-sku-master"));
+        var roles = new FakeRoleRepository();
+        var rolePerms = new FakeRolePermissionRepository(catalog);
+        var service = new RoleProvisioningService(roles, new FakePermissionRepository(catalog), rolePerms);
+
+        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+
+        var viewerKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Viewer"), TenantA, catalog).ToList();
+        var adminKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Admin"), TenantA, catalog).ToList();
+        Assert.Equal(ExpectedViewer.OrderBy(k => k), viewerKeys.OrderBy(k => k));
+        Assert.Equal(ExpectedAdmin.OrderBy(k => k), adminKeys.OrderBy(k => k));
+        Assert.DoesNotContain(viewerKeys.Concat(adminKeys), key =>
+            key.StartsWith("mdm.items.", StringComparison.Ordinal) || key == "mdm.product-master.read");
+    }
+
     [Fact]
     public async Task Empty_catalog_creates_roles_without_grants_and_does_not_throw()
     {

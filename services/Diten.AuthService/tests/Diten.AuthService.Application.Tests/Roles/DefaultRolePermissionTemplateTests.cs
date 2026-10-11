@@ -310,6 +310,7 @@ public sealed class DefaultRolePermissionTemplateTests
                 "mdm.gskus.submit",
                 "mdm.gskus.update",
                 "mdm.gskus.withdraw",
+                "mdm.items.read",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
                 "mdm.lskus.request-retirement",
@@ -329,9 +330,31 @@ public sealed class DefaultRolePermissionTemplateTests
                 "mdm.product-legal-entity-scopes.configure",
                 "mdm.product-legal-entity-scopes.end",
                 "mdm.product-legal-entity-scopes.read",
-                "mdm.product-legal-entity-scopes.replace"
+                "mdm.product-legal-entity-scopes.replace",
+                "mdm.product-master.read"
             ],
             DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions.OrderBy(k => k).ToArray());
+    }
+
+    // BL-592 (WP-MDM-PERMS-01): the Items page and the product-master read contract are module keys — the DEFAULT Viewer
+    // (no entitlement) never gets them, though both are read actions in the catalog; the product module's entitlement
+    // grants them (EntitlementPermissionSyncServiceTests.BL592_*).
+    [Fact]
+    public void Default_viewer_gets_neither_the_item_read_nor_the_product_master_read_without_the_entitlement()
+    {
+        var catalog = new List<Permission>
+        {
+            new("mdm", "items", "read", "Read Items", null, moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-master", "read", "Read Product Master", null, moduleOverride: "product-item-sku-master"),
+            new("mdm", "legal-entities", "read", "Read Legal Entities", null, moduleOverride: "legal-entity")
+        };
+
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, catalog)
+            .Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("mdm.items.read", viewerKeys);
+        Assert.DoesNotContain("mdm.product-master.read", viewerKeys);
+        Assert.Contains("mdm.legal-entities.read", viewerKeys);
     }
 
     // FIX-TENANT-SELFSERVICE-PERMS — the tenant Admin receives the curated tenant-scoped platform.* self-service
