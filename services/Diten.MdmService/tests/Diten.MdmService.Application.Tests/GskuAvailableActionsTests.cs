@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
@@ -14,12 +15,18 @@ public sealed class GskuAvailableActionsTests
     [Fact]
     public void Draft_actions_are_permission_gated_and_ordered()
     {
-        var gsku = new Gsku { LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
+        // S3b FIX1 (R2): a draft with its lot flag set; without it the submit is replaced by the gate's reason.
+        var gsku = new Gsku { LifecycleStatus = ProductIdentityLifecycleStatus.Draft, LotControlled = false };
 
         Assert.Equal(["DETAILS", "EDIT", "SUBMIT"], Actions(gsku,
             new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update,
                 FirstGskuIdentityLifecyclePermissions.Submit)));
         Assert.Equal(["DETAILS"], Actions(gsku, new Actor(Guid.NewGuid())));
+
+        gsku.LotControlled = null;
+        Assert.Equal(["DETAILS", "EDIT", StockFlagGate.SubmitNeedsStockFlagsAction], Actions(gsku,
+            new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update,
+                FirstGskuIdentityLifecyclePermissions.Submit)));
     }
 
     [Fact]
@@ -118,7 +125,8 @@ public sealed class GskuAvailableActionsTests
     public void A_drafts_actions_follow_where_its_latest_submit_stands(
         FirstGskuIdentitySubmitStateKind submit, bool edit, bool resubmit)
     {
-        var gsku = new Gsku { Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
+        // S3b FIX1: the lot flag set, so only the submit state decides here.
+        var gsku = new Gsku { Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.Draft, LotControlled = true };
         var submitter = Guid.NewGuid();
         var actor = new Actor(submitter, "mdm.gskus.update", "mdm.gskus.submit");
 

@@ -30,6 +30,7 @@ public sealed class LskusController : Controller
     private readonly string _gateway;
     private readonly ITimeLimitedDataProtector _protector;
     private readonly IStringLocalizer<LskusIndex> _l10n;
+    private readonly IStringLocalizer<Views.MasterDataManagement.Gskus.GskuRefusals>? _refusals;
     private readonly ILogger<LskusController> _logger;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web)
     {
@@ -41,7 +42,8 @@ public sealed class LskusController : Controller
         IConfiguration config,
         IDataProtectionProvider protection,
         IStringLocalizer<LskusIndex> l10n,
-        ILogger<LskusController> logger)
+        ILogger<LskusController> logger,
+        IStringLocalizer<Views.MasterDataManagement.Gskus.GskuRefusals>? refusals = null)
     {
         _http = http;
         _gateway = (config["GatewayUrl"]
@@ -51,6 +53,9 @@ public sealed class LskusController : Controller
             .ToTimeLimitedDataProtector();
         _l10n = l10n;
         _logger = logger;
+        // S5: the stock-behaviour refusals' sentences (the GSKU code bridge). Resolved by DI in the application; a test
+        // that builds the controller by hand passes it or gets status sentences only.
+        _refusals = refusals;
     }
 
     [HttpGet("")]
@@ -205,6 +210,37 @@ public sealed class LskusController : Controller
         request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
         return await SendLifecycleRequestAsync(request, "request-retirement",
             new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted }, cancellationToken);
+    }
+
+    // MOD-0290-FU04 S5 (O-3, O-12) — the LSKU's own stock behaviour is its serial flag only (the rest is its GSKU's): the
+    // "Stock behaviour" offcanvas sends it with expectedVersion = the detail's version. Its own key
+    // (StockBehaviourAccess.Lsku), an Idempotency-Key per form attempt, a refusal said through the code bridge (422 kept).
+    [HttpPut("api/{id:guid}/stock-behaviour")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetStockBehaviour(Guid id, CancellationToken cancellationToken)
+    {
+        if (!Has(Services.MasterData.StockBehaviourAccess.Lsku)) return Failure(HttpStatusCode.Forbidden);
+        var write = id == Guid.Empty ? null : await Services.MasterData.StockBehaviourWrite.ReadAsync(
+            Request, Services.MasterData.StockBehaviourWrite.LskuFields,
+            Services.MasterData.StockBehaviourWrite.LskuFields.ToArray(), HttpContext.RequestAborted);
+        if (write is null) return Failure(HttpStatusCode.BadRequest);
+        if (!Services.MasterData.StockBehaviourWrite.TryResolveActor(User, out var tenantId, out var actor))
+            return Failure(HttpStatusCode.Unauthorized);
+        if (!RequestMessage(HttpMethod.Put, $"{_gateway}/api/lskus/{id:D}/stock-behaviour",
+                new StringContent(write.Body, Encoding.UTF8, "application/json"), out var request))
+            return Failure(HttpStatusCode.Unauthorized);
+
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", Services.MasterData.StockBehaviourWrite
+            .OperationId(tenantId, actor, "lsku", "stock-behaviour", id, write).ToString("D"));
+        return await Services.MasterData.StockBehaviourWrite.SendAsync(_http, request,
+            (IStringLocalizer?)_refusals ?? new NoSentences(), StatusSentence, _logger, cancellationToken);
+    }
+
+    private sealed class NoSentences : IStringLocalizer
+    {
+        public LocalizedString this[string name] => new(name, name, resourceNotFound: true);
+        public LocalizedString this[string name, params object[] arguments] => this[name];
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
     }
 
     // LSKU FIX2 item 11 (B3): the draft cancel proxy — the create key (cancelling undoes a creation); the operation id
@@ -382,8 +418,29 @@ public sealed class LskusController : Controller
         ["LSKU_MARKET_ALREADY_EXISTS"] = "ErrorMarketAlreadyExists",
         ["LSKU_IDENTITY_SUBMIT_ABANDONED"] = "ErrorSubmitAbandoned",
         ["LSKU_IDENTITY_SUBMIT_TARGET_CHANGED"] = "ErrorSubmitTargetChanged",
-        ["LSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "ErrorDecisionNotApplicable"
+        ["LSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "ErrorDecisionNotApplicable",
+        // S5b-FIX3: a submit refused while its withdrawal is under way is finished by re-sending the withdrawal (as GSKU).
+        ["LSKU_IDENTITY_WITHDRAWAL_UNDER_WAY"] = "ErrorSubmitDuringWithdrawal",
+        // MOD-0290-FU04 S3b (R-04): its serial flag and its GSKU's lot flag must be set before it is sent for approval.
+        ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "ErrorStockFlagsRequired"
     };
+
+    private static readonly IReadOnlyDictionary<string, string> StockFlagLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["serialControlled"] = "StockFlagSerialControlled",
+        ["gsku.lotControlled"] = "StockFlagGskuLotControlled"
+    };
+
+    private string StockFlagsSentence(IEnumerable<string> flags)
+    {
+        var labels = flags.Where(StockFlagLabels.ContainsKey).Distinct(StringComparer.Ordinal)
+            .Select(flag => _l10n[StockFlagLabels[flag]].Value).ToList();
+        if (labels.Count == 0) labels.AddRange(StockFlagLabels.Values.Select(label => _l10n[label].Value));
+        return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            _l10n["ErrorStockFlagsRequired"].Value,
+            // S5 (D-19): the language's own conjunction (resx), not a bare comma.
+            Services.Localization.LocalizedList.Join(labels, _l10n["ListJoinTwo"].Value, _l10n["ListSeparator"].Value));
+    }
 
     private async Task<IActionResult> RefusalAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
@@ -398,7 +455,14 @@ public sealed class LskusController : Controller
                     && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0
                     && errors[0].ValueKind == JsonValueKind.String
                     && RefusalSentences.TryGetValue(errors[0].GetString()!, out var key))
-                    return StatusCode(409, new { success = false, errors = new[] { _l10n[key].Value } });
+                {
+                    // S3b FIX1: the stock-flag refusal names the unset flags after its code — said, not dropped.
+                    var sentence = key == "ErrorStockFlagsRequired"
+                        ? StockFlagsSentence(errors.EnumerateArray().Skip(1)
+                            .Where(item => item.ValueKind == JsonValueKind.String).Select(item => item.GetString()!))
+                        : _l10n[key].Value;
+                    return StatusCode(409, new { success = false, errors = new[] { sentence } });
+                }
             }
             catch (JsonException) { }
         }
@@ -414,13 +478,20 @@ public sealed class LskusController : Controller
             HttpStatusCode.Forbidden => 403,
             HttpStatusCode.NotFound => 404,
             HttpStatusCode.Conflict => 409,
+            // S5 (D-17): a rule refusal of the stock edit stays a 422 — never a gateway failure.
+            HttpStatusCode.UnprocessableEntity => 422,
             HttpStatusCode.ServiceUnavailable => 503,
             HttpStatusCode.GatewayTimeout => 504,
             _ => 502
         };
+        return StatusCode(status, new { success = false, errors = new[] { StatusSentence(status) } });
+    }
+
+    private string StatusSentence(int status)
+    {
         var key = status switch
         {
-            400 => "ErrorValidation",
+            400 or 422 => "ErrorValidation",
             401 => "ErrorUnauthorized",
             403 => "ErrorForbidden",
             404 => "ErrorNotFound",
@@ -429,7 +500,7 @@ public sealed class LskusController : Controller
             504 => "ErrorTimeout",
             _ => "ErrorGateway"
         };
-        return StatusCode(status, new { success = false, errors = new[] { _l10n[key].Value } });
+        return _l10n[key].Value;
     }
 
     private async Task<bool> HasOnlyFormFieldsAsync(params string[] allowedFields)

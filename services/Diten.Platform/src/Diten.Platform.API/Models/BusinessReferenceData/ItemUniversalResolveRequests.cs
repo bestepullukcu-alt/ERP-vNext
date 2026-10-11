@@ -27,3 +27,13 @@ public sealed class ItemUniversalResolveSelectionRequest
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? AdditionalFields { get; init; }
 }
+
+// MOD-0290-FU04 S5b (BL-600): the item-universal enumeration body — the sets to list. Unknown fields are refused (400).
+public sealed class ItemUniversalEnumerateRequest
+{
+    [JsonPropertyName("set_codes")]
+    public List<string?>? SetCodes { get; init; }
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalFields { get; init; }
+}

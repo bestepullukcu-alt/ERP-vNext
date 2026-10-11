@@ -877,6 +877,62 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         public override DateTimeOffset GetUtcNow() => now;
     }
 
+    // ── MOD-0290-FU04 S5b (D) · the start repeat during a withdrawal ────────────────────────────────────────────
+
+    // A repeat of the submit while its withdrawal is under way is refused BEFORE any claim or engine call (the LSKU /
+    // Global Product guard): no lease taken, no start, the checkpoint unchanged — on every withdrawal checkpoint and on a
+    // withdrawal parked at AwaitingMakerReplay (rows written before it stopped parking there, where the start used to be
+    // re-run). The sabotage target "the GSKU guard removed".
+    [Theory]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)]
+    public async Task S5b_A_start_repeat_during_its_withdrawal_is_refused_without_a_claim_or_a_call(
+        FirstGskuIdentityWorkflowCheckpoint checkpoint)
+    {
+        var harness = new Harness();
+        await harness.Processor.StartInteractiveAsync(TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var operation = harness.Operations.Current!;
+        operation.Checkpoint = checkpoint;
+        operation.WithdrawalCommandId = Guid.NewGuid();
+        operation.LeaseOwner = null;
+        operation.LeaseUntilUtcTicksV1 = null;
+        var (leases, starts, results, advances) = (operation.LeaseGeneration, harness.Client.StartCalls,
+            harness.Client.StartResultCalls, harness.Operations.AdvanceCalls);
+
+        var repeat = await harness.Processor.StartInteractiveAsync(TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(repeat.Succeeded);
+        Assert.Equal(409, repeat.StatusCode);
+        Assert.Equal(FirstGskuIdentityWorkflowProcessor.WithdrawalUnderWay, repeat.ErrorCode);
+        Assert.Equal((leases, starts, results, advances, checkpoint), (operation.LeaseGeneration, harness.Client.StartCalls,
+            harness.Client.StartResultCalls, harness.Operations.AdvanceCalls, operation.Checkpoint));
+    }
+
+    // The control: AwaitingMakerReplay WITHOUT a withdrawal is the maker's own replay — it is continued, not refused.
+    [Fact]
+    public async Task S5b_A_makers_replay_without_a_withdrawal_is_not_refused_by_the_guard()
+    {
+        var harness = new Harness();
+        await harness.Processor.StartInteractiveAsync(TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var operation = harness.Operations.Current!;
+        operation.Checkpoint = FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay;
+        operation.WithdrawalCommandId = null;
+        operation.LeaseOwner = null;
+        operation.LeaseUntilUtcTicksV1 = null;
+
+        var repeat = await harness.Processor.StartInteractiveAsync(TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.NotEqual(FirstGskuIdentityWorkflowProcessor.WithdrawalUnderWay, repeat.ErrorCode);
+    }
+
     private sealed class Harness
     {
         public Harness(TimeProvider? clock = null)

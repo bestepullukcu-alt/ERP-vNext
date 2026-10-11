@@ -988,6 +988,8 @@ public sealed partial class FgFix1HttpTests(MdmHttpHost host)
 
     private async Task<HttpResponseMessage> SendAsync(string path, object body, string token, Guid? key)
     {
+        // TEST ADAPTATION (S3b, R-04): this older flow opts in to the lot / serial flags a submit now requires.
+        await S3bSubmitFlags.FillForLegacyFlowAsync(host, path);
         using var request = new HttpRequestMessage(HttpMethod.Post, path) { Content = JsonContent.Create(body) };
         if (key.HasValue) request.Headers.Add("Idempotency-Key", key.Value.ToString("D"));
         return await host.Client(token).SendAsync(request);

@@ -1,0 +1,106 @@
+@using Diten.Web.Views.MasterDataManagement.StockBehaviour
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockBehaviourText> Stock
+@*
+    MOD-0290-FU04 S5 (O-12) — the GSKU's stock behaviour, edited in its own offcanvas (the identity form does not grow;
+    each group stays under eight inputs). S5b (BL-600): units and storage conditions are selects filled by
+    stock-behaviour.js from the item options read, labelled by stable code; without the lists they stay passive with
+    the reason (data-sb-options-reason) — never typed codes. MDM still checks every chosen code. O-8: on a Draft every field is free; on an approved GSKU a filled field is read-only with
+    its reason, and the conversion / storage lists only gain rows. The box ↔ pack conversion is the pack's (O-14), shown
+    and never entered. Drawn by Index.cshtml only for a user with the GSKU's stock-edit key (UAS-001).
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasStockBehaviour" data-sb-level="gsku"
+     aria-labelledby="offcanvasStockBehaviourLabel">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="offcanvasStockBehaviourLabel" class="offcanvas-title mb-0">@Stock["SectionTitle"]</h5>
+            <small id="sb-form-subtitle" class="text-muted d-block text-truncate">-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Stock["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="sb-form-not-editable" class="alert alert-warning d-none" role="status">@Stock["NotEditable"]</div>
+        <form id="formStockBehaviour" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <section class="mb-4" aria-labelledby="sb-group-units">
+                <h6 id="sb-group-units" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupUnits"]</h6>
+                <div class="mb-3">
+                    <label for="sb-input-base-uom" class="form-label fw-medium">@Stock["BaseUom"]</label>
+                    <select id="sb-input-base-uom" class="form-select" disabled data-sb-input="baseUomCode"
+                            data-placeholder="@Stock["SelectUnit"]" aria-describedby="sb-help-base-uom"></select>
+                    <div id="sb-help-base-uom" class="form-text">@Stock["UomHelp"]</div>
+                    <div class="form-text text-warning d-none" data-sb-options-reason></div>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="baseUomCode"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+            </section>
+            <section class="mb-4" aria-labelledby="sb-group-conversions">
+                <h6 id="sb-group-conversions" class="text-uppercase text-heading fw-semibold mb-3">@Stock["UomConversions"]</h6>
+                <div id="sb-form-derived" class="form-text mb-2 d-none"></div>
+                <div id="sb-input-conversions" class="d-flex flex-column gap-2" data-sb-input="uomConversions"></div>
+                <button type="button" id="sb-add-conversion" class="btn btn-sm btn-label-primary mt-2">
+                    <i class="bx bx-plus me-1"></i>@Stock["AddConversion"]
+                </button>
+                <div class="form-text">@Stock["ConversionHelp"]</div>
+                <div class="form-text text-warning d-none" data-sb-options-reason></div>
+                <div class="form-text text-warning d-none" data-sb-addonly-reason="uomConversions"><i class="bx bx-lock-alt me-1"></i>@Stock["AddOnlyReason"]</div>
+            </section>
+            <section class="mb-4" aria-labelledby="sb-group-shelf-life">
+                <h6 id="sb-group-shelf-life" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupShelfLife"]</h6>
+                <div class="mb-3">
+                    <label for="sb-input-shelf-life" class="form-label fw-medium">@Stock["ShelfLife"]</label>
+                    <input type="number" id="sb-input-shelf-life" class="form-control" min="1" max="3650" step="1" inputmode="numeric"
+                           data-sb-input="shelfLifeDays" />
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="shelfLifeDays"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+                <div class="mb-3">
+                    <label for="sb-input-retest" class="form-label fw-medium">@Stock["RetestDays"]</label>
+                    <input type="number" id="sb-input-retest" class="form-control" min="0" max="3650" step="1" inputmode="numeric"
+                           data-sb-input="retestDays" />
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="retestDays"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+                <div class="mb-3">
+                    <label for="sb-input-min-remaining" class="form-label fw-medium">@Stock["MinRemainingShelfLife"]</label>
+                    <input type="number" id="sb-input-min-remaining" class="form-control" min="0" max="3650" step="1" inputmode="numeric"
+                           data-sb-input="minRemainingShelfLifeDays" />
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="minRemainingShelfLifeDays"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+            </section>
+            <section aria-labelledby="sb-group-storage">
+                <h6 id="sb-group-storage" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupStorageControl"]</h6>
+                <div class="mb-3">
+                    <label for="sb-input-storage" class="form-label fw-medium">@Stock["StorageConditions"]</label>
+                    <div class="d-flex flex-wrap gap-1 mb-2" data-sb-existing="storageConditionCodes"></div>
+                    <select id="sb-input-storage" class="form-select" multiple disabled data-sb-input="storageConditionCodes"
+                            data-placeholder="@Stock["StorageConditions"]" aria-describedby="sb-help-storage"></select>
+                    <div id="sb-help-storage" class="form-text">@Stock["StorageHelp"]</div>
+                    <div id="sb-storage-temperature-note" class="form-text text-danger d-none" role="alert"></div>
+                    <div class="form-text text-warning d-none" data-sb-options-reason></div>
+                    <div class="form-text text-warning d-none" data-sb-addonly-reason="storageConditionCodes"><i class="bx bx-lock-alt me-1"></i>@Stock["AddOnlyReason"]</div>
+                </div>
+                <div class="mb-3">
+                    <label for="sb-input-lot" class="form-label fw-medium">@Stock["LotControlled"]</label>
+                    <select id="sb-input-lot" class="form-select" data-sb-input="lotControlled">
+                        <option value="">@Stock["NotSet"]</option>
+                        <option value="true">@Stock["Yes"]</option>
+                        <option value="false">@Stock["No"]</option>
+                    </select>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="lotControlled"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+                <div class="mb-3">
+                    <label for="sb-input-stockable" class="form-label fw-medium">@Stock["Stockable"]</label>
+                    <select id="sb-input-stockable" class="form-select" data-sb-input="stockable">
+                        <option value="">@Stock["NotSet"]</option>
+                        <option value="true">@Stock["Yes"]</option>
+                        <option value="false">@Stock["No"]</option>
+                    </select>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="stockable"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+            </section>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas"><i class="bx bx-x me-1"></i>@Stock["Cancel"]</button>
+        <button type="button" id="btnSaveStockBehaviour" class="btn btn-primary"><i class="bx bx-save me-1"></i>@Stock["Save"]</button>
+    </div>
+    <partial name="~/Views/MasterDataManagement/StockBehaviour/_StockBehaviourL10n.cshtml" />
+</div>

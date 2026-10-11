@@ -13,7 +13,10 @@ const LskusList = (() => {
     const initialColumnOrder = Array.from({ length: dataColumnCount + 1 }, (_, index) => index);
     const permissionHost = document.querySelector('[data-can-create]');
     const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
-    const actionOrder = ['DETAILS', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_RETIREMENT'];
+    // S5: STOCK_FLAGS_REQUIRED (the server's "submit waits for the stock flags") is a shortcut to the stock-behaviour
+    // offcanvas — kept only for a user with the LSKU's stock-edit key (the offcanvas exists); otherwise the quick view
+    // says the reason, as before.
+    const actionOrder = ['DETAILS', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_RETIREMENT'];
     const supportedActions = new Set(actionOrder);
     const lifecycleRequests = new Set();
     const normalizeRequestReason = value => typeof value === 'string' ? value.trim() : '';
@@ -262,6 +265,22 @@ const LskusList = (() => {
         window.showToast?.(L.CreateSuccess, 'success');
     };
 
+    /*
+     * MOD-0290-FU04 S5 (O-3, O-12) — the "Stock behaviour" section and its serial-only offcanvas
+     * (StockBehaviour/stock-behaviour.js). In the page only for a user with the LSKU's stock-edit key (UAS-001, decided
+     * in the cshtml): without them there is no module, no section and no shortcut. Created on first use.
+     */
+    let stockBehaviour;
+    const stock = () => {
+        if (stockBehaviour === undefined) {
+            stockBehaviour = window.DitenStockBehaviour?.create?.({
+                level: 'lsku', endpoint, versionField: 'version', fetchDetail,
+                onSaved: () => dt?.ajax.reload(null, false)
+            }) || null;
+        }
+        return stockBehaviour;
+    };
+
     const setDetailValue = (id, value) => {
         const element = document.getElementById(id);
         if (element) element.textContent = value ?? L.Unknown;
@@ -303,6 +322,9 @@ const LskusList = (() => {
         if (!statusElement) throw new Error(L.ErrorGateway);
         statusElement.outerHTML = renderLifecycle(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'))
             .replace('<span ', '<span id="oc-status" ');
+        // S3b FIX1 (R2): the server offers STOCK_FLAGS_REQUIRED instead of SUBMIT when the gate would refuse — say why.
+        document.getElementById('oc-submit-needs-stock-flags')?.classList.toggle('d-none', !needsStockFlags(detail));
+        stock()?.render(detail);
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
         return verified.state;
     };
@@ -332,6 +354,10 @@ const LskusList = (() => {
         button?.classList.toggle('disabled', busy);
         button?.setAttribute('aria-disabled', busy ? 'true' : 'false');
     };
+    const needsStockFlags = detail => {
+        const raw = detail?.availableActions ?? detail?.AvailableActions;
+        return Array.isArray(raw) && raw.includes('STOCK_FLAGS_REQUIRED');
+    };
     const readAvailableActions = detail => {
         const raw = detail?.availableActions ?? detail?.AvailableActions;
         if (!Array.isArray(raw)) return ['DETAILS'];
@@ -341,7 +367,8 @@ const LskusList = (() => {
         if (!actions.includes('DETAILS')) return ['DETAILS'];
         const state = lifecycleCode(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'));
         return actionOrder.filter(value => actions.includes(value))
-            .filter(value => value === 'DETAILS' || value === 'SUBMIT' && state === 1
+            .filter(value => value === 'DETAILS' || value === 'STOCK_FLAGS_REQUIRED' && !!stock()
+                || value === 'SUBMIT' && state === 1
                 || value === 'WITHDRAW_APPROVAL' && state === 2 || value === 'REQUEST_RETIREMENT' && state === 3);
     };
     const postLifecycle = async (id, action, button) => {
@@ -487,6 +514,7 @@ const LskusList = (() => {
         const id = valueOf(row, 'id', 'Id');
         const definitions = {
             DETAILS: ['details', 'js-quick-view', L.QuickView, 'bx bx-show'],
+            STOCK_FLAGS_REQUIRED: ['fill-stock-behaviour', 'js-fill-stock-behaviour', stock()?.words?.FillIn || '', 'bx bx-package'],
             SUBMIT: ['submit', 'js-lifecycle-action', L.SubmitIdentity, 'bx bx-send'],
             WITHDRAW_APPROVAL: ['withdraw', 'js-lifecycle-action', L.WithdrawApproval, 'bx bx-undo'],
             REQUEST_RETIREMENT: ['request-retirement', 'js-request-retirement', L.RequestRetirement, 'bx bx-archive-in']
@@ -611,11 +639,13 @@ const LskusList = (() => {
             const quickView = event.target.closest('.js-quick-view');
             const lifecycleAction = event.target.closest('.js-lifecycle-action');
             const retirementAction = event.target.closest('.js-request-retirement');
-            const action = quickView || lifecycleAction || retirementAction;
+            const stockAction = event.target.closest('.js-fill-stock-behaviour');
+            const action = quickView || lifecycleAction || retirementAction || stockAction;
             if (!action || !action.closest('.datatables-lskus') || action.classList.contains('disabled')) return;
             event.preventDefault();
             if (action.classList.contains('js-lifecycle-action')) requestLifecycle(action.dataset.id, action.dataset.action, action);
             else if (action.classList.contains('js-request-retirement')) requestRetirement(action.dataset.id, action);
+            else if (action.classList.contains('js-fill-stock-behaviour')) stock()?.open(action.dataset.id);
             else populateDetails(action.dataset.id);
         });
     };

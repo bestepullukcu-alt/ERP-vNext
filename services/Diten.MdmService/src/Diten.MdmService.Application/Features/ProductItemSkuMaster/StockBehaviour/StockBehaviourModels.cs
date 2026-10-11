@@ -35,7 +35,10 @@ public sealed record SetGskuStockBehaviourCommand(
     int? ShelfLifeDays = null,
     IReadOnlyList<string>? StorageConditionCodes = null,
     bool? LotControlled = null,
-    bool? Stockable = null)
+    bool? Stockable = null,
+    // S3b (R-06): optional; the LSKU and the Finished Good read them from the GSKU.
+    int? RetestDays = null,
+    int? MinRemainingShelfLifeDays = null)
     : IRequest<Response<StockBehaviourResult>>, IAuditableCommand, IAuditMetadataProvider,
       // CT decision R9: born fenced — no product write while the scope rollout measures the inventory.
       global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation

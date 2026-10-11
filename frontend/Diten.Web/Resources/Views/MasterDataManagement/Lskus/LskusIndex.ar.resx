@@ -63,10 +63,31 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>رفضت خدمة الموافقة هذا الإرسال قبل بدء أي موافقة. لا يزال LSKU مسودة؛ يمكنك إرساله مرة أخرى.</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>قبل إرسال LSKU هذا للموافقة، حدّد في سلوك المخزون: {0}.</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>تعذّر تطبيق الموافقة على هذا LSKU، على سبيل المثال لأن سوقه أو سجله الأصلي لم يعد قابلاً للاستخدام. عاد LSKU مسودة؛ صحّح السبب ثم أرسله مرة أخرى.</value>
   </data>
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>تغيّر هذا LSKU أو أُلغي بعد بدء الإرسال، لذلك لم يُرسل أي شيء للموافقة. افتح LSKU مرة أخرى وأرسله إذا كان لا يزال مطلوبًا.</value>
+  </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>يجري سحب هذا الإرسال؛ أعد إرسال السحب لإكماله قبل الإرسال مرة أخرى.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>التحكم بالرقم التسلسلي (LSKU هذا)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>التحكم بالدفعة لـ GSKU التابع له — يجب أن يحدده شخص مخوّل بتعديل GSKU</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>سلوك المخزون غير مكتمل أو غير متسق، لذا لا يمكن إرساله للموافقة بعد. أكمله في سلوك المخزون.</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} و{1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>، </value>
   </data>
 </root>

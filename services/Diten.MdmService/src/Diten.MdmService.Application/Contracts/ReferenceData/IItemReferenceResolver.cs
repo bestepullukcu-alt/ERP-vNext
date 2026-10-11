@@ -9,6 +9,40 @@ public interface IItemReferenceResolver
     Task<ItemReferenceResolveResult> ResolveLatestAsync(
         IReadOnlyList<ItemReferenceRequest> requests,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// MOD-0290-FU04 S5b (BL-600): every value of the asked sets, for the item / stock forms to offer as a choice — never
+    /// the proof of a choice (the write resolves each chosen code exactly). A provider that cannot list answers an outage;
+    /// one that does not know this call (a test fake) answers the same — never an empty list.
+    /// </summary>
+    Task<ItemReferenceEnumerationResult> EnumerateLatestAsync(
+        IReadOnlyList<string> setCodes,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(ItemReferenceEnumerationResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
+}
+
+public sealed record ItemReferenceEnumeratedValue(
+    string ValueCode,
+    string DisplayName,
+    int SortOrder,
+    IReadOnlyDictionary<string, string?> Attributes);
+
+public sealed record ItemReferenceEnumeratedSet(
+    string SetCode,
+    string CatalogVersion,
+    Guid CatalogVersionId,
+    int CatalogVersionNumber,
+    IReadOnlyList<ItemReferenceEnumeratedValue> Values);
+
+public sealed record ItemReferenceEnumerationResult(
+    bool IsSuccessful,
+    int StatusCode,
+    string? FailureCode,
+    IReadOnlyList<ItemReferenceEnumeratedSet> Sets)
+{
+    public static ItemReferenceEnumerationResult Success(IReadOnlyList<ItemReferenceEnumeratedSet> sets) => new(true, 200, null, sets);
+
+    public static ItemReferenceEnumerationResult Fail(int statusCode, string code) => new(false, statusCode, code, []);
 }
 
 public static class ItemReferenceSets

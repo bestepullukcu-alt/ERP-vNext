@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ItemsTitle" xml:space="preserve"><value>Kalemler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Stokta tutulan malzemeler: kimlik, malzeme türü ve stok davranışı.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Kalem ekle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="CanonicalCode" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="MaterialType" xml:space="preserve"><value>Malzeme türü</value></data>
+  <data name="BaseUomCode" xml:space="preserve"><value>Temel birim</value></data>
+  <data name="UnitCode" xml:space="preserve"><value>Birim kodu</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Stoklanabilir</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>Lot takipli</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="ShelfLifeDays" xml:space="preserve"><value>Raf ömrü (gün)</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>Yeniden test aralığı (gün)</value></data>
+  <data name="MinRemainingShelfLifeDays" xml:space="preserve"><value>Asgari kalan raf ömrü (gün)</value></data>
+  <data name="StorageConditionCodes" xml:space="preserve"><value>Saklama koşulları</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>Birim çevrimleri</value></data>
+  <data name="Version" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Son değişiklik</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="MaterialType_ACTIVE_INGREDIENT" xml:space="preserve"><value>Etkin madde</value></data>
+  <data name="MaterialType_EXCIPIENT" xml:space="preserve"><value>Yardımcı madde</value></data>
+  <data name="MaterialType_RAW_MATERIAL" xml:space="preserve"><value>Diğer hammadde</value></data>
+  <data name="MaterialType_PACKAGING_PRIMARY" xml:space="preserve"><value>Birincil ambalaj</value></data>
+  <data name="MaterialType_PACKAGING_SECONDARY" xml:space="preserve"><value>İkincil ambalaj</value></data>
+  <data name="MaterialType_INTERMEDIATE" xml:space="preserve"><value>Ara ürün</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="LifecyclePendingActivation" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Etkin</value></data>
+  <data name="LifecycleDeactivated" xml:space="preserve"><value>Kullanım dışı</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Emekli</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni kalem</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Kalemi düzenle</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Kalem ayrıntıları</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="StockBehaviourSection" xml:space="preserve"><value>Stok davranışı</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>ör. Parasetamol</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>Bu malzeme nedir ve nerede kullanılır</value></data>
+  <data name="MaterialTypePlaceholder" xml:space="preserve"><value>Malzeme türü seçin</value></data>
+  <data name="BaseUomPlaceholder" xml:space="preserve"><value>Birim seçin</value></data>
+  <data name="UnitCodeHint" xml:space="preserve"><value>Birimi listeden seçin.</value></data>
+  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>Saklama koşullarını seçin</value></data>
+  <data name="StorageConditionHint" xml:space="preserve"><value>Listeden bir veya daha fazla koşul seçin. En fazla bir sıcaklık koşulu.</value></data>
+  <data name="DaysPlaceholder" xml:space="preserve"><value>Gün</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>Kaynak birim</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>Hedef birim</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>Pay</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>Payda</value></data>
+  <data name="ConversionHint" xml:space="preserve"><value>1 kaynak birim = pay / payda hedef birim. Noktalı ondalık sayılar, sıfırdan büyük.</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>Çevrim ekle</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="NoConversions" xml:space="preserve"><value>Henüz çevrim yok.</value></data>
+  <data name="ActiveLockedNote" xml:space="preserve"><value>Bu kalem etkin: yalnız ad ve açıklama serbestçe değişir. Dolu bir stok alanı yalnız onaylı düzeltmeyle değişir; boş bir alan bir kez doldurulabilir.</value></data>
+  <data name="EditNotAvailable" xml:space="preserve"><value>Bu kalem mevcut durumunda düzenlenemez.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>Kalem taslak olarak oluşturuldu.</value></data>
+  <data name="UpdateSuccess" xml:space="preserve"><value>Kalem kaydedildi.</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>Bu formun süresi doldu. Sayfayı yenileyip kalemi yeniden girin.</value></data>
+  <data name="ErrorValidation" xml:space="preserve"><value>Bazı değerler kabul edilmedi. Alanları kontrol edip yeniden deneyin.</value></data>
+  <data name="ErrorForbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden oturum açın.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>Bu kalem bulunamadı. Kaldırılmış olabilir ya da erişiminiz olmayabilir.</value></data>
+  <data name="ErrorConflict" xml:space="preserve"><value>Bu kalem bu arada değişti. Yeniden yükleyip tekrar deneyin.</value></data>
+  <data name="ErrorProviderUnavailable" xml:space="preserve"><value>Kalem hizmeti şu anda kullanılamıyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="ErrorProviderTimeout" xml:space="preserve"><value>Kalem hizmeti zamanında yanıt vermedi. Biraz sonra yeniden deneyin.</value></data>
+  <data name="ErrorGateway" xml:space="preserve"><value>Yanıt okunamadı. Biraz sonra yeniden deneyin.</value></data>
+  <data name="ErrorExportTooLarge" xml:space="preserve"><value>Bir kerede dışa aktarılamayacak kadar çok satır var (50.000'den fazla). Önce listeyi filtre ya da aramayla daraltın.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>Kalemin durumu bu arada değişti. Liste yenilendi.</value></data>
+  <data name="Submit" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Kullanım dışı bırak</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>Yeniden etkinleştirme iste</value></data>
+  <data name="Retire" xml:space="preserve"><value>Emekliye ayır</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Bu taslak etkinleştirme onayına gönderilsin mi?</value></data>
+  <data name="DeactivateConfirmation" xml:space="preserve"><value>Bu kalem kullanım dışı bırakılsın mı? Yeni stok girişlerinde seçilemez; mevcut stok çıkılabilir.</value></data>
+  <data name="ReactivateConfirmation" xml:space="preserve"><value>Bu kalemin yeniden etkinleştirilmesi istensin mi? Yeniden etkinleştirme ilk etkinleştirmeyle aynı onaydan geçer.</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>Bu kalem emekliye ayrılsın mı? Bu kesindir: stok sıfır olmalıdır ve kod yeniden kullanılmaz.</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>Kalem onaya gönderildi.</value></data>
+  <data name="DeactivateSuccess" xml:space="preserve"><value>Kalem kullanım dışı bırakıldı.</value></data>
+  <data name="ReactivateSuccess" xml:space="preserve"><value>Yeniden etkinleştirme istendi.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>Kalem emekliye ayrıldı.</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Bir gerekçe girin (en çok 500 karakter, tek satır).</value></data>
+  <data name="ListSeparator" xml:space="preserve"><value>, </value></data>
+  <data name="RefusalNameInvalid" xml:space="preserve"><value>1–200 karakterlik bir ad girin.</value></data>
+  <data name="RefusalDescriptionInvalid" xml:space="preserve"><value>Açıklama en çok 2.000 karakter olabilir.</value></data>
+  <data name="RefusalMaterialTypeRequired" xml:space="preserve"><value>Bir malzeme türü seçin.</value></data>
+  <data name="RefusalMaterialTypeInvalid" xml:space="preserve"><value>Bu malzeme türü izin verilen altı türden biri değil.</value></data>
+  <data name="RefusalBaseUomRequired" xml:space="preserve"><value>Temel birim kodunu girin.</value></data>
+  <data name="RefusalBaseUomInvalid" xml:space="preserve"><value>Temel birim kodu çok uzun; KGM gibi bir birim kodu girin.</value></data>
+  <data name="RefusalFlagsRequired" xml:space="preserve"><value>'Lot takipli' ve 'Stoklanabilir' alanlarının ikisini de belirleyin.</value></data>
+  <data name="RefusalShelfLifeInvalid" xml:space="preserve"><value>Raf ömrü 1 ile 3650 gün arasında olmalıdır.</value></data>
+  <data name="RefusalRetestInvalid" xml:space="preserve"><value>Yeniden test aralığı 1 ile 3650 gün arasında olmalıdır.</value></data>
+  <data name="RefusalMinRemainingInvalid" xml:space="preserve"><value>Asgari kalan raf ömrü 0 ile 3650 gün arasında olmalı ve raf ömründen uzun olmamalıdır.</value></data>
+  <data name="RefusalStorageInvalid" xml:space="preserve"><value>Saklama koşulları kod olmalıdır (en çok 10).</value></data>
+  <data name="RefusalReasonRequired" xml:space="preserve"><value>Gerekçe gereklidir (en çok 500 karakter, tek satır).</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>İstek beklenen biçimde değildi. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="RefusalListParameter" xml:space="preserve"><value>Arama ya da filtre uygulanamadı (arama en çok 200 karakter olabilir). Değiştirip yeniden deneyin.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>Bu kalem bulunamadı. Kaldırılmış olabilir ya da erişiminiz olmayabilir.</value></data>
+  <data name="RefusalNameConflict" xml:space="preserve"><value>Bu ad ve malzeme türüyle bir kalem zaten var.</value></data>
+  <data name="RefusalReferenceValueInvalid" xml:space="preserve"><value>Girilen bir kod kendi listesinin etkin bir değeri değil. Malzeme türünü, birim kodlarını ve saklama koşullarını kontrol edin.</value></data>
+  <data name="RefusalReferenceValueInvalidNamed" xml:space="preserve"><value>Bu değerler kendi listelerinin etkin değerleri değil: {0}.</value></data>
+  <data name="RefusalStorageConflict" xml:space="preserve"><value>Saklama koşulları birbiriyle uyumlu değil.</value></data>
+  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>En fazla bir sıcaklık koşulu seçin.</value></data>
+  <data name="RefusalStorageRepeated" xml:space="preserve"><value>Bir saklama koşulu iki kez girilmiş.</value></data>
+  <data name="RefusalUomConversion" xml:space="preserve"><value>Bir birim çevrimi geçerli değil.</value></data>
+  <data name="RefusalUomConversionUnitMissing" xml:space="preserve"><value>Her çevrimin hem kaynak hem hedef birimi olmalıdır.</value></data>
+  <data name="RefusalUomConversionSameUnit" xml:space="preserve"><value>Bir çevrim bir birimi kendisine çeviremez.</value></data>
+  <data name="RefusalUomConversionFactor" xml:space="preserve"><value>Pay ve payda sıfırdan büyük, noktayla yazılmış ondalık sayılar olmalıdır (ör. 0.001); üs ya da işaret olmadan.</value></data>
+  <data name="RefusalUomConversionPairRepeated" xml:space="preserve"><value>Bir birim çifti iki kez girilmiş (ters yön türetilir; her çifti bir kez girin).</value></data>
+  <data name="RefusalStockBehaviourIncomplete" xml:space="preserve"><value>Stoklanabilir bir kalemin stok alanları dolu olmalıdır: ambalaj dışı kalemde en az bir saklama koşulu ile raf ömrü ya da yeniden test aralığı.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>Bu kalem bu arada başka biri tarafından değiştirildi. Yeniden yükleyip tekrar deneyin.</value></data>
+  <data name="RefusalCriticalFieldLocked" xml:space="preserve"><value>Etkin bir kalemde dolu bir stok alanı onaylı düzeltme olmadan değiştirilemez.</value></data>
+  <data name="RefusalCriticalFieldLockedNamed" xml:space="preserve"><value>Etkin bir kalemde '{0}' onaylı düzeltme olmadan değiştirilemez.</value></data>
+  <data name="RefusalTransitionInvalid" xml:space="preserve"><value>Bu işlem kalemin mevcut durumunda yapılamaz. Listeyi yenileyin.</value></data>
+  <data name="RefusalDeactivatedNotEditable" xml:space="preserve"><value>Kullanım dışı bırakılmış bir kalem düzenlenemez.</value></data>
+  <data name="RefusalRetireRequiresDeactivation" xml:space="preserve"><value>Etkin bir kalem önce kullanım dışı bırakılır; yalnız kullanım dışı bir kalem emekliye ayrılabilir.</value></data>
+  <data name="RefusalRetireStockNotZero" xml:space="preserve"><value>Bu kalemin hâlâ stoku var, bu yüzden emekliye ayrılamaz. Kullanım dışı kalır.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>Bu form daha önce farklı değerlerle gönderildi. Sayfayı yenileyip kalemi yeniden girin.</value></data>
+  <data name="RefusalReferenceListUnavailable" xml:space="preserve"><value>Referans listeleri (birimler, saklama koşulları, malzeme türleri) şu anda denetlenemiyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="RefusalRetireStockCheckUnavailable" xml:space="preserve"><value>Stok denetimi tamamlanamadı, bu yüzden kalem emekliye ayrılmadı. Kullanım dışı kalır; daha sonra yeniden deneyin.</value></data>
+  <data name="RefusalActivationApprovalUnavailable" xml:space="preserve"><value>Etkinleştirme onayı henüz kullanılamıyor: onay akışı açılana kadar kalemler onaya gönderilemez ya da yeniden etkinleştirilemez. Hiçbir şey değişmedi.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>Bu işlemin gerektirdiği bir hizmet şu anda kullanılamıyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="RefusalCreatePending" xml:space="preserve"><value>Kalem kaydedildi ama henüz tamamlanmadı. Tamamlamak için aynı formu yeniden kaydedin.</value></data>
+  <data name="RefusalTryAgain" xml:space="preserve"><value>İstek tamamlanamadı. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>Kalem hizmeti iç bir tutarsızlık bildirdi. Lütfen yöneticinize bildirin.</value></data>
+  <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>Malzeme türü, birim ve saklama koşulu listeleri şu anda yüklenemiyor; bu alanlar seçilemez. Biraz sonra tekrar deneyin.</value></data>
+  <data name="RefusalOptionsTimeout" xml:space="preserve"><value>Malzeme türü, birim ve saklama koşulu listeleri zamanında yüklenemedi; bu alanlar seçilemez. Biraz sonra tekrar deneyin.</value></data>
+</root>

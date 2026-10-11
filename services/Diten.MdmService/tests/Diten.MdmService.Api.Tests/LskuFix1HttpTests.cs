@@ -632,6 +632,8 @@ public sealed class LskuFix1HttpTests(MdmHttpHost host)
     private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object body, string token,
         Guid? key = null)
     {
+        // TEST ADAPTATION (S3b, R-04): this older flow opts in to the lot / serial flags a submit now requires.
+        await S3bSubmitFlags.FillForLegacyFlowAsync(host, path);
         using var request = new HttpRequestMessage(method, path) { Content = JsonContent.Create(body) };
         request.Headers.Add("Idempotency-Key", (key ?? Guid.NewGuid()).ToString("D"));
         return await host.Client(token).SendAsync(request);

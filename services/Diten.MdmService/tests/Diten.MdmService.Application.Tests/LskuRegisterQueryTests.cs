@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using System.Text.Json;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
@@ -103,10 +104,17 @@ public sealed class LskuRegisterQueryTests
     public void Detail_actions_are_server_owned_ordered_and_maker_only()
     {
         var maker = Guid.NewGuid();
-        var lsku = new Lsku { LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
+        // S3b FIX1 (R2): its serial flag and its GSKU's lot flag set; without either, the gate's reason replaces SUBMIT.
+        var lsku = new Lsku { LifecycleStatus = ProductIdentityLifecycleStatus.Draft, SerialControlled = false };
         Assert.Equal(["DETAILS", "SUBMIT"], Actions(lsku,
             new Actor(maker, LskuIdentityLifecyclePermissions.Submit)));
         Assert.Equal(["DETAILS"], Actions(lsku, new Actor(maker)));
+        Assert.Equal(["DETAILS", StockFlagGate.SubmitNeedsStockFlagsAction], Actions(lsku,
+            new Actor(maker, LskuIdentityLifecyclePermissions.Submit), new Gsku { LotControlled = null }));
+        lsku.SerialControlled = null;
+        Assert.Equal(["DETAILS", StockFlagGate.SubmitNeedsStockFlagsAction], Actions(lsku,
+            new Actor(maker, LskuIdentityLifecyclePermissions.Submit)));
+        lsku.SerialControlled = false;
 
         lsku.LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval;
         lsku.IdentityWorkflowBinding = new ProductIdentityWorkflowBinding { SubmitterSubjectId = maker };
@@ -125,11 +133,11 @@ public sealed class LskuRegisterQueryTests
             LskuRetirementRequestPermissions.Request)));
     }
 
-    private static IReadOnlyList<string> Actions(Lsku lsku, IProductIdentityLifecycleActorContext actor) =>
+    private static IReadOnlyList<string> Actions(Lsku lsku, IProductIdentityLifecycleActorContext actor, Gsku? gsku = null) =>
         Assert.IsAssignableFrom<IReadOnlyList<string>>(
             typeof(GetLskuByIdHandler)
                 .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-                .Invoke(null, [lsku, actor]));
+                .Invoke(null, [lsku, gsku ?? new Gsku { LotControlled = true }, actor]));
 
     private sealed class Actor(Guid? subjectId, params string[] permissions)
         : IProductIdentityLifecycleActorContext
@@ -158,7 +166,8 @@ public sealed class LskuRegisterQueryTests
                 access.Rollouts,
                 access.Policies,
                 access.Candidates,
-                tenantContext)
+                tenantContext,
+                new UntouchedStockStore())
             .Handle(new GetLskuByIdQuery(Guid.NewGuid()), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
@@ -419,5 +428,17 @@ public sealed class LskuRegisterQueryTests
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
             throw new InvalidOperationException("unreachable");
         }
+    }
+
+    // S5b-FIX2: the detail's stock store is required; a 404 never reaches it.
+    private sealed class UntouchedStockStore : IProductStockBehaviourRepository
+    {
+        public Task<StockBehaviourWriteResult> WriteGskuAsync(StockBehaviourWrite write, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<StockBehaviourWriteResult> WriteLskuAsync(StockBehaviourWrite write, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<StockBehaviourWriteResult> WriteFinishedGoodAsync(StockBehaviourWrite write, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<bool> GtinHeldByAnotherAsync(string gtin, Guid finishedGoodId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 }

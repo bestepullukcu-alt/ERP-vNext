@@ -63,10 +63,31 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>审批服务在启动审批之前拒绝了此次提交。该 LSKU 仍为草稿，您可以重新提交。</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>在提交此 LSKU 审批之前，请在库存行为中设置：{0}。</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>审批结果无法应用到此 LSKU，例如其市场或上级记录已不可用。该 LSKU 已恢复为草稿；请纠正原因后重新提交。</value>
   </data>
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>此 LSKU 在提交开始后已被更改或取消，因此未提交任何审批。请重新打开该 LSKU，如仍需要，请再次提交。</value>
+  </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>此提交的撤回正在进行中；请重新发送撤回以完成它，然后再次提交。</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>序列号管理（此 LSKU）</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>其 GSKU 的批次管理——须由有权编辑该 GSKU 的人员设置</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>库存行为不完整或不一致，因此暂时无法提交审批。请在“库存行为”中补全。</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0}和{1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>、</value>
   </data>
 </root>

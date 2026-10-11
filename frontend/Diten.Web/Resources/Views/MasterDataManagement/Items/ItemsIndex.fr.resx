@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ItemsTitle" xml:space="preserve"><value>Articles</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Matières gérées en stock : identité, type de matière et comportement de stock.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter un article</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="CanonicalCode" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="MaterialType" xml:space="preserve"><value>Type de matière</value></data>
+  <data name="BaseUomCode" xml:space="preserve"><value>Unité de base</value></data>
+  <data name="UnitCode" xml:space="preserve"><value>Code d'unité</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Stockable</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>Suivi par lot</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="ShelfLifeDays" xml:space="preserve"><value>Durée de conservation (jours)</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>Intervalle de recontrôle (jours)</value></data>
+  <data name="MinRemainingShelfLifeDays" xml:space="preserve"><value>Durée de conservation résiduelle minimale (jours)</value></data>
+  <data name="StorageConditionCodes" xml:space="preserve"><value>Conditions de stockage</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>Conversions d'unités</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Créé le</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Dernière modification</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="MaterialType_ACTIVE_INGREDIENT" xml:space="preserve"><value>Principe actif</value></data>
+  <data name="MaterialType_EXCIPIENT" xml:space="preserve"><value>Excipient</value></data>
+  <data name="MaterialType_RAW_MATERIAL" xml:space="preserve"><value>Autre matière première</value></data>
+  <data name="MaterialType_PACKAGING_PRIMARY" xml:space="preserve"><value>Conditionnement primaire</value></data>
+  <data name="MaterialType_PACKAGING_SECONDARY" xml:space="preserve"><value>Conditionnement secondaire</value></data>
+  <data name="MaterialType_INTERMEDIATE" xml:space="preserve"><value>Produit intermédiaire</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="LifecyclePendingActivation" xml:space="preserve"><value>En attente d'approbation</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="LifecycleDeactivated" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retiré</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nouvel article</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier l'article</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Détails de l'article</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="StockBehaviourSection" xml:space="preserve"><value>Comportement de stock</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>ex. Paracétamol</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>Ce qu'est cette matière et où elle est utilisée</value></data>
+  <data name="MaterialTypePlaceholder" xml:space="preserve"><value>Choisissez un type de matière</value></data>
+  <data name="BaseUomPlaceholder" xml:space="preserve"><value>Sélectionnez une unité</value></data>
+  <data name="UnitCodeHint" xml:space="preserve"><value>Choisissez l'unité dans la liste.</value></data>
+  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>Sélectionnez les conditions de stockage</value></data>
+  <data name="StorageConditionHint" xml:space="preserve"><value>Choisissez une ou plusieurs conditions dans la liste. Au plus une condition de température.</value></data>
+  <data name="DaysPlaceholder" xml:space="preserve"><value>Jours</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>Unité de départ</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>Unité d'arrivée</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>Numérateur</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>Dénominateur</value></data>
+  <data name="ConversionHint" xml:space="preserve"><value>1 unité de départ = numérateur / dénominateur unités d'arrivée. Nombres décimaux avec un point, supérieurs à zéro.</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>Ajouter une conversion</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="NoConversions" xml:space="preserve"><value>Aucune conversion pour l'instant.</value></data>
+  <data name="ActiveLockedNote" xml:space="preserve"><value>Cet article est actif : seuls le nom et la description se modifient librement. Un champ de stock renseigné ne change que par une correction approuvée ; un champ vide peut encore être renseigné une fois.</value></data>
+  <data name="EditNotAvailable" xml:space="preserve"><value>Cet article ne peut pas être modifié dans son statut actuel.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>L'article a été créé en brouillon.</value></data>
+  <data name="UpdateSuccess" xml:space="preserve"><value>L'article a été enregistré.</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>Ce formulaire a expiré. Rechargez la page et saisissez à nouveau l'article.</value></data>
+  <data name="ErrorValidation" xml:space="preserve"><value>Certaines valeurs n'ont pas été acceptées. Vérifiez les champs et réessayez.</value></data>
+  <data name="ErrorForbidden" xml:space="preserve"><value>Vous n'avez pas l'autorisation pour cette action.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>Cet article est introuvable. Il a peut-être été supprimé ou vous n'y avez pas accès.</value></data>
+  <data name="ErrorConflict" xml:space="preserve"><value>Cet article a été modifié entre-temps. Rechargez-le et réessayez.</value></data>
+  <data name="ErrorProviderUnavailable" xml:space="preserve"><value>Le service des articles est indisponible pour le moment. Réessayez dans un instant.</value></data>
+  <data name="ErrorProviderTimeout" xml:space="preserve"><value>Le service des articles n'a pas répondu à temps. Réessayez dans un instant.</value></data>
+  <data name="ErrorGateway" xml:space="preserve"><value>La réponse n'a pas pu être lue. Réessayez dans un instant.</value></data>
+  <data name="ErrorExportTooLarge" xml:space="preserve"><value>Trop de lignes à exporter en une fois (plus de 50 000). Restreignez d'abord la liste avec un filtre ou une recherche.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>Le statut de l'article a changé entre-temps. La liste a été actualisée.</value></data>
+  <data name="Submit" xml:space="preserve"><value>Envoyer pour approbation</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>Demander la réactivation</value></data>
+  <data name="Retire" xml:space="preserve"><value>Retirer</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Envoyer ce brouillon pour approbation de l'activation ?</value></data>
+  <data name="DeactivateConfirmation" xml:space="preserve"><value>Désactiver cet article ? Il ne pourra plus être choisi pour de nouvelles entrées en stock ; le stock existant peut encore sortir.</value></data>
+  <data name="ReactivateConfirmation" xml:space="preserve"><value>Demander la réactivation de cet article ? La réactivation passe par la même approbation que la première activation.</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>Retirer cet article ? C'est définitif : le stock doit être nul et le code n'est jamais réutilisé.</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>L'article a été envoyé pour approbation.</value></data>
+  <data name="DeactivateSuccess" xml:space="preserve"><value>L'article a été désactivé.</value></data>
+  <data name="ReactivateSuccess" xml:space="preserve"><value>La réactivation a été demandée.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>L'article a été retiré.</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Motif</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Saisissez un motif (500 caractères au plus, sur une ligne).</value></data>
+  <data name="ListSeparator" xml:space="preserve"><value>, </value></data>
+  <data name="RefusalNameInvalid" xml:space="preserve"><value>Saisissez un nom de 1 à 200 caractères.</value></data>
+  <data name="RefusalDescriptionInvalid" xml:space="preserve"><value>La description peut comporter au plus 2 000 caractères.</value></data>
+  <data name="RefusalMaterialTypeRequired" xml:space="preserve"><value>Choisissez un type de matière.</value></data>
+  <data name="RefusalMaterialTypeInvalid" xml:space="preserve"><value>Ce type de matière ne fait pas partie des six types autorisés.</value></data>
+  <data name="RefusalBaseUomRequired" xml:space="preserve"><value>Saisissez le code de l'unité de base.</value></data>
+  <data name="RefusalBaseUomInvalid" xml:space="preserve"><value>Le code de l'unité de base est trop long ; saisissez un code tel que KGM.</value></data>
+  <data name="RefusalFlagsRequired" xml:space="preserve"><value>Renseignez « Suivi par lot » et « Stockable ».</value></data>
+  <data name="RefusalShelfLifeInvalid" xml:space="preserve"><value>La durée de conservation doit être comprise entre 1 et 3650 jours.</value></data>
+  <data name="RefusalRetestInvalid" xml:space="preserve"><value>L'intervalle de recontrôle doit être compris entre 1 et 3650 jours.</value></data>
+  <data name="RefusalMinRemainingInvalid" xml:space="preserve"><value>La durée résiduelle minimale doit être comprise entre 0 et 3650 jours et ne pas dépasser la durée de conservation.</value></data>
+  <data name="RefusalStorageInvalid" xml:space="preserve"><value>Les conditions de stockage doivent être des codes (10 au plus).</value></data>
+  <data name="RefusalReasonRequired" xml:space="preserve"><value>Un motif est requis (500 caractères au plus, sur une ligne).</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>La demande n'avait pas la forme attendue. Rechargez la page et réessayez.</value></data>
+  <data name="RefusalListParameter" xml:space="preserve"><value>La recherche ou le filtre n'a pas pu être appliqué (200 caractères au plus pour une recherche). Modifiez-le et réessayez.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>Cet article est introuvable. Il a peut-être été supprimé ou vous n'y avez pas accès.</value></data>
+  <data name="RefusalNameConflict" xml:space="preserve"><value>Un article portant ce nom et ce type de matière existe déjà.</value></data>
+  <data name="RefusalReferenceValueInvalid" xml:space="preserve"><value>Un code saisi n'est pas une valeur active de sa liste. Vérifiez le type de matière, les codes d'unité et les conditions de stockage.</value></data>
+  <data name="RefusalReferenceValueInvalidNamed" xml:space="preserve"><value>Ces valeurs ne sont pas des valeurs actives de leurs listes : {0}.</value></data>
+  <data name="RefusalStorageConflict" xml:space="preserve"><value>Les conditions de stockage ne sont pas compatibles entre elles.</value></data>
+  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>Choisissez au plus une condition de température.</value></data>
+  <data name="RefusalStorageRepeated" xml:space="preserve"><value>Une condition de stockage est saisie deux fois.</value></data>
+  <data name="RefusalUomConversion" xml:space="preserve"><value>Une conversion d'unités n'est pas valide.</value></data>
+  <data name="RefusalUomConversionUnitMissing" xml:space="preserve"><value>Chaque conversion nécessite une unité de départ et une unité d'arrivée.</value></data>
+  <data name="RefusalUomConversionSameUnit" xml:space="preserve"><value>Une conversion ne peut pas convertir une unité en elle-même.</value></data>
+  <data name="RefusalUomConversionFactor" xml:space="preserve"><value>Le numérateur et le dénominateur doivent être des nombres décimaux supérieurs à zéro, écrits avec un point (ex. 0.001), sans exposant ni signe.</value></data>
+  <data name="RefusalUomConversionPairRepeated" xml:space="preserve"><value>Une paire d'unités est saisie deux fois (le sens inverse est déduit ; saisissez chaque paire une fois).</value></data>
+  <data name="RefusalStockBehaviourIncomplete" xml:space="preserve"><value>Un article stockable nécessite ses champs de stock : pour un article hors conditionnement, au moins une condition de stockage, et une durée de conservation ou un intervalle de recontrôle.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>Cet article a été modifié par quelqu'un d'autre entre-temps. Rechargez-le et réessayez.</value></data>
+  <data name="RefusalCriticalFieldLocked" xml:space="preserve"><value>Sur un article actif, un champ de stock renseigné ne peut pas être modifié sans correction approuvée.</value></data>
+  <data name="RefusalCriticalFieldLockedNamed" xml:space="preserve"><value>Sur un article actif, « {0} » ne peut pas être modifié sans correction approuvée.</value></data>
+  <data name="RefusalTransitionInvalid" xml:space="preserve"><value>Cette action n'est pas possible dans le statut actuel de l'article. Rechargez la liste.</value></data>
+  <data name="RefusalDeactivatedNotEditable" xml:space="preserve"><value>Un article désactivé ne peut pas être modifié.</value></data>
+  <data name="RefusalRetireRequiresDeactivation" xml:space="preserve"><value>Un article actif est d'abord désactivé ; seul un article désactivé peut être retiré.</value></data>
+  <data name="RefusalRetireStockNotZero" xml:space="preserve"><value>Cet article a encore du stock, il ne peut donc pas être retiré. Il reste désactivé.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>Ce formulaire a déjà été envoyé avec d'autres valeurs. Rechargez la page et saisissez à nouveau l'article.</value></data>
+  <data name="RefusalReferenceListUnavailable" xml:space="preserve"><value>Les listes de référence (unités, conditions de stockage, types de matière) ne peuvent pas être vérifiées pour le moment. Réessayez dans un instant.</value></data>
+  <data name="RefusalRetireStockCheckUnavailable" xml:space="preserve"><value>Le contrôle du stock n'a pas pu être effectué, l'article n'a donc pas été retiré. Il reste désactivé ; réessayez plus tard.</value></data>
+  <data name="RefusalActivationApprovalUnavailable" xml:space="preserve"><value>L'approbation d'activation n'est pas encore disponible : les articles ne peuvent être ni envoyés pour approbation ni réactivés tant que le circuit d'approbation n'est pas activé. Rien n'a été modifié.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>Un service nécessaire à cette action est indisponible pour le moment. Réessayez dans un instant.</value></data>
+  <data name="RefusalCreatePending" xml:space="preserve"><value>L'article est enregistré mais pas encore finalisé. Enregistrez à nouveau le même formulaire pour le terminer.</value></data>
+  <data name="RefusalTryAgain" xml:space="preserve"><value>La demande n'a pas pu aboutir. Rechargez la page et réessayez.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>Le service des articles a signalé une incohérence interne. Veuillez prévenir votre administrateur.</value></data>
+  <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>Les listes des types de matière, des unités et des conditions de stockage ne peuvent pas être chargées pour le moment ; ces champs ne peuvent pas être choisis. Réessayez dans un instant.</value></data>
+  <data name="RefusalOptionsTimeout" xml:space="preserve"><value>Les listes des types de matière, des unités et des conditions de stockage n'ont pas été chargées à temps ; ces champs ne peuvent pas être choisis. Réessayez dans un instant.</value></data>
+</root>

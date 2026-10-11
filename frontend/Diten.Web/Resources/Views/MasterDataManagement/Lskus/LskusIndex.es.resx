@@ -63,10 +63,31 @@
   <data name="ErrorSubmitAbandoned" xml:space="preserve">
     <value>El servicio de aprobación rechazó este envío antes de iniciar una aprobación. El LSKU sigue siendo un borrador; puede enviarlo de nuevo.</value>
   </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Antes de enviar este LSKU a aprobación, defina en el comportamiento de stock: {0}.</value>
+  </data>
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>La aprobación no se pudo aplicar a este LSKU, por ejemplo porque su mercado o su elemento principal ya no se puede usar. El LSKU vuelve a ser un borrador; corrija la causa y envíelo de nuevo.</value>
   </data>
   <data name="ErrorSubmitTargetChanged" xml:space="preserve">
     <value>Este LSKU cambió o se canceló después de iniciar el envío, por lo que no se envió nada a aprobación. Vuelva a abrir el LSKU y envíelo si todavía es necesario.</value>
+  </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>Hay una retirada de este envío en curso; vuelva a enviar la retirada para terminarla antes de enviar de nuevo.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>el control por número de serie (este LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>el control por lote de su GSKU — debe definirlo alguien autorizado a editar el GSKU</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>El comportamiento de stock está incompleto o es incoherente, por lo que aún no se puede enviar a aprobación. Complételo en Comportamiento de stock.</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} y {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
   </data>
 </root>

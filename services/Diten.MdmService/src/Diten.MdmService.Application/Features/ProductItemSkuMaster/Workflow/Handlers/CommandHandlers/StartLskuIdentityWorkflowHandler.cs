@@ -5,7 +5,9 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -24,7 +26,8 @@ public sealed class StartLskuIdentityWorkflowHandler(
     IProductLegalEntityScopePolicyRepository scopePolicies,
     ProductLegalEntityScopeCandidateFacade scopeCandidates,
     LskuIdentityWorkflowProcessor processor,
-    LskuIdentityWorkflowExecutionConfiguration executionConfiguration)
+    LskuIdentityWorkflowExecutionConfiguration executionConfiguration,
+    ILskuIdentityWorkflowOperationRepository? identityOperations = null)
     : IRequestHandler<StartLskuIdentityWorkflowCommand, Response<LskuIdentityWorkflowResult>>
 {
     public async Task<Response<LskuIdentityWorkflowResult>> Handle(
@@ -57,6 +60,13 @@ public sealed class StartLskuIdentityWorkflowHandler(
             return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
         var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
         if (!decision.Allowed) return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
+        // S3b (R-04): a NEW submit of a draft needs its serial flag and its GSKU's lot flag set. S3b FIX1: the repeat of an
+        // operation that already exists for this LSKU (the same operation id) is not a new submit and is not stopped here
+        // (FIX2: the same maker and expected version, not at a final checkpoint).
+        if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+            && StockFlagGate.MissingForLsku(lsku, gsku) is { Count: > 0 } missing
+            && !await IsRepeatAsync(input, lsku.Id, maker, cancellationToken))
+            return Response<LskuIdentityWorkflowResult>.Fail(StockFlagGate.Refusal(missing), 409);
         var result = await processor.StartInteractiveAsync(
             tenantContext.TenantId, input.LskuId, input.ExpectedVersion, input.OperationId,
             maker, token, executionConfiguration.LeaseDuration, executionConfiguration.RetryDelay,
@@ -83,6 +93,17 @@ public sealed class StartLskuIdentityWorkflowHandler(
             operation.WorkflowInstanceId, operation.RecoveryDisposition.ToString(), result.IsReplay),
             operation.Checkpoint == LskuIdentityWorkflowCheckpoint.Completed ? 200 : 202);
     }
+
+    // S3b FIX2 (hardening): a repeat is the SAME submit — this LSKU, this maker, this expected version — still under way
+    // (not at a final checkpoint). Anything else under that operation id is a new submit and meets the gate.
+    private async Task<bool> IsRepeatAsync(
+        StartLskuIdentityWorkflowRequest input, Guid lskuId, Guid maker, CancellationToken cancellationToken) =>
+        identityOperations is not null
+        && await identityOperations.GetByOperationIdAsync(input.OperationId, cancellationToken) is { } existing
+        && existing.LskuId == lskuId
+        && existing.MakerSubjectId == maker
+        && existing.ExpectedLskuVersion == input.ExpectedVersion
+        && !IdentityStartReplay.CannotContinue(existing.Checkpoint);
 
     public const string SubmitAbandoned = "LSKU_IDENTITY_SUBMIT_ABANDONED";
     public const string DecisionNotApplicable = "LSKU_IDENTITY_DECISION_NOT_APPLICABLE";

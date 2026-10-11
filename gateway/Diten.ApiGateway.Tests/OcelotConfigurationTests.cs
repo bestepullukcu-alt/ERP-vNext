@@ -221,6 +221,59 @@ public sealed class OcelotConfigurationTests
         Assert.DoesNotContain("PUT", rootRoute.UpstreamHttpMethod);
     }
 
+    // MOD-0290-FU04 S5 (CT decision) / S5-FIX1: the LSKU and Finished Good stock-behaviour edits are PUTs on their OWN
+    // narrow routes (PUT only, to 5059, path kept); the {everything} routes carry no PUT, as before S5 — no other sub-path
+    // of /api/lskus or /api/finished-goods is reachable with PUT. The sabotage target "the narrow PUT back on {everything}".
+    [Theory]
+    [InlineData("/api/lskus/{id}/stock-behaviour")]
+    [InlineData("/api/finished-goods/{id}/stock-behaviour")]
+    [InlineData("/api/finished-goods/{id}/gtin")]
+    public void Stock_behaviour_edits_reach_mdm_as_put(string template)
+    {
+        var route = Assert.Single(LoadConfiguration().Routes, r => r.UpstreamPathTemplate == template);
+        Assert.Equal(["PUT"], route.UpstreamHttpMethod);
+        Assert.Equal(template, route.DownstreamPathTemplate);
+        var host = Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal(("localhost", 5059, "http"), (host.Host, host.Port, route.DownstreamScheme));
+    }
+
+    [Fact]
+    public void No_other_lsku_or_finished_good_sub_path_is_routed_for_put()
+    {
+        var put = LoadConfiguration().Routes
+            .Where(r => r.UpstreamPathTemplate.StartsWith("/api/lskus", StringComparison.Ordinal)
+                        || r.UpstreamPathTemplate.StartsWith("/api/finished-goods", StringComparison.Ordinal))
+            .Where(r => r.UpstreamHttpMethod.Contains("PUT", StringComparer.OrdinalIgnoreCase))
+            .Select(r => r.UpstreamPathTemplate).Order(StringComparer.Ordinal);
+        Assert.Equal(["/api/finished-goods/{id}/gtin", "/api/finished-goods/{id}/stock-behaviour", "/api/lskus/{id}/stock-behaviour"], put);
+    }
+
+    // MOD-0290-FU04 S5 (CT decision 2): the Items screen's MDM surface — every ItemsController route reaches 5059 with its
+    // method and path; nothing under /api/internal is opened by it.
+    [Theory]
+    [InlineData("GET", "")]
+    [InlineData("POST", "")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("PUT", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/submit")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/reactivation-requests")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/deactivate")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/retire")]
+    public void Item_routes_preserve_path_methods_and_destination(string method, string suffix)
+    {
+        var config = LoadConfiguration();
+        var route = suffix.Length == 0
+            ? Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/mdm/items")
+            : Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/mdm/items/{everything}");
+        Assert.Contains(method, route.UpstreamHttpMethod);
+        var downstream = suffix.Length == 0 ? route.DownstreamPathTemplate : route.DownstreamPathTemplate.Replace("{everything}", suffix);
+        Assert.Equal(suffix.Length == 0 ? "/api/mdm/items" : "/api/mdm/items/" + suffix, downstream);
+        var host = Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal(("localhost", 5059, "http"), (host.Host, host.Port, route.DownstreamScheme));
+        Assert.DoesNotContain(config.Routes, r => r.UpstreamPathTemplate.StartsWith("/api/mdm/items", StringComparison.Ordinal)
+                                                  && r.DownstreamPathTemplate.Contains("/internal", StringComparison.Ordinal));
+    }
+
     [Theory]
     [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
     [InlineData("GET", "00000000-0000-0000-0000-000000000001/edit-options")]

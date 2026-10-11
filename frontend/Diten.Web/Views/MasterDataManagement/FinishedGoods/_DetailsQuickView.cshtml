@@ -30,6 +30,12 @@
                 <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-edit"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["UpdatedAt"]</div><div id="oc-updated-at" class="backbone-preview-value mt-1">-</div></div></div></div>
             </div>
         </section>
+        @* MOD-0290-FU04 S5 (O-12, UAS-001 — CT decision): the "Stock behaviour" section is not in the page at all for a
+           user without the stock-edit key (no heading, no placeholder). Display only — MDM's permission stays the judge. *@
+        @if (Diten.Web.Security.PermissionClaims.HasPermission(User, Diten.Web.Services.MasterData.StockBehaviourAccess.FinishedGood))
+        {
+            <partial name="~/Views/MasterDataManagement/FinishedGoods/_StockBehaviourSection.cshtml" />
+        }
     </div>
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-end bg-white">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>

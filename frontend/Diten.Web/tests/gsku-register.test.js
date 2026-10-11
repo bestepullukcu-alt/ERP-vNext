@@ -14,11 +14,19 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         status, ok: status >= 200 && status < 300,
         json: async () => ({ data, isSuccessful: status < 300, statusCode: status })
     });
-    function harness(responses = []) {
+    // S5: the production stock-behaviour offcanvas (its Razor words as their keys) — in the page only with the stock-edit key.
+    const stockOffcanvas = () => fs.readFileSync(path.join(__dirname, '../Views/MasterDataManagement/Gskus/_StockBehaviourOffcanvas.cshtml'), 'utf8')
+        .replace(/@\*[\s\S]*?\*@/g, '').replace(/^@(using|inject|model)\b.*$/gm, '')
+        .replace(/@Html\.AntiForgeryToken\(\)/g, '<input name="__RequestVerificationToken" value="synthetic-csrf">')
+        .replace(/<partial [^>]*\/>/g, '<script id="stock-behaviour-l10n" type="application/json">{"FillIn":"FillIn"}</script>')
+        .replace(/@Stock\["(\w+)"\]/g, '$1');
+    // stock: 'key' = the module and its offcanvas (a user with the key); 'module' = the module without the offcanvas.
+    function harness(responses = [], { stock = '' } = {}) {
         document.body.innerHTML = '<form id="formGsku"><input name="__RequestVerificationToken" value="synthetic-csrf">' +
             '<select id="globalProductId"></select><select id="packUomCode"></select><input id="packQuantity" value="1"></form>' +
             '<button id="btnSaveGsku"></button><span id="btnSaveGskuText"></span><span id="offcanvasCreateEditLabel"></span>' +
-            '<div id="offcanvasCreateEdit"></div><form id="gskuLifecycleToken"><input name="__RequestVerificationToken" value="synthetic-csrf"></form>';
+            '<div id="offcanvasCreateEdit"></div><form id="gskuLifecycleToken"><input name="__RequestVerificationToken" value="synthetic-csrf"></form>' +
+            (stock === 'key' ? stockOffcanvas() : '');
         const fetch = vi.fn(async () => {
             const next = responses.shift();
             if (next instanceof Error) throw next;
@@ -52,15 +60,18 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         // Test-only access to existing closure functions; shipped JS has no test hook.
         const exposed = source.replace('init: async () => {', `test: {
             readAvailableActions, readVersion, buildListOptions, createProductPickerOptions, fetchProductPage,
-            getErrorMessage, onListError,
+            getErrorMessage, onListError, renderDetail, loadActionMenu, rowActionHandlers,
             openExistingEditor, requestLifecycle, requestRetirement, submitEditor, repeatLifecycleRequest,
             setupEditor: (mode) => { editorId = '${id}'; editorGskuVersion = 3; editorRevisionVersion = 2; editorMode = mode; },
             setupTable: (table) => { dt = table; }
         }, init: async () => {`);
-        const api = vm.runInNewContext(exposed + '\nGskusList.test;', {
+        const stockModule = stock ? fs.readFileSync(path.join(__dirname,
+            '../wwwroot/assets/js/MasterDataManagement/StockBehaviour/stock-behaviour.js'), 'utf8') + '\n' : '';
+        const api = vm.runInNewContext(stockModule + exposed + '\nGskusList.test;', {
             window: fakeWindow, document, fetch, $: jquery, Option, FormData, URLSearchParams,
-            bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) } },
-            setTimeout, clearTimeout, console
+            bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) },
+                Dropdown: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) } },
+            setTimeout, clearTimeout, console, crypto: globalThis.crypto
         });
         api.setupTable({ ajax: { reload } });
         return { api, fetch, reload, toast, window: fakeWindow, settle: () => pending };
@@ -71,6 +82,78 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         ['DETAILS', 'WITHDRAW_APPROVAL'], ['DETAILS', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT']
     ])('accepts the exact server action sequence %j', (...actions) => {
         expect(harness().api.readAvailableActions({ availableActions: actions })).toEqual(actions);
+    });
+    // S3b FIX2 (B1): a flagless draft's list — the gate's reason stands where SUBMIT would. The screen accepts it, says
+    // the reason in the quick view, draws the row menu without it, and the editor still opens (so the flags can be set).
+    const flagless = ['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED'];
+    it('accepts the stock-flag reason in its place, and refuses it out of order', () => {
+        expect(harness().api.readAvailableActions({ availableActions: flagless })).toEqual(flagless);
+        expect(() => harness().api.readAvailableActions({ availableActions: ['DETAILS', 'STOCK_FLAGS_REQUIRED', 'EDIT'] })).toThrow();
+        expect(() => harness().api.readAvailableActions({ availableActions: ['DETAILS', 'SUBMIT', 'STOCK_FLAGS_REQUIRED'] })).toThrow();
+    });
+    it('a flagless draft: the quick view says why it cannot be sent', () => {
+        const h = harness();
+        // The quick view's own fields (Gskus/_DetailsQuickView ids).
+        document.body.insertAdjacentHTML('beforeend', '<div id="offcanvasDetailsPreview"></div><span id="oc-status"></span>' +
+            ['oc-title', 'oc-subtitle', 'oc-id', 'oc-code', 'oc-global-product', 'oc-revision', 'oc-pack', 'oc-version',
+                'oc-created-at', 'oc-updated-at'].map(x => '<span id="' + x + '"></span>').join('') +
+            '<div id="oc-identity-not-applied-row" class="d-none"><span id="oc-identity-not-applied"></span></div>');
+        h.api.renderDetail(detail(flagless), id);
+        expect(document.getElementById('oc-identity-not-applied').textContent).toBe('SubmitNeedsStockFlags');
+        expect(document.getElementById('oc-identity-not-applied-row').classList.contains('d-none')).toBe(false);
+        expect(h.toast).not.toHaveBeenCalled();
+    });
+    it('a flagless draft: the row menu is drawn, with no item for the reason', async () => {
+        const h = harness([response(detail(flagless))]);
+        document.body.insertAdjacentHTML('beforeend', '<div class="dropdown"><button class="js-gsku-actions-toggle" data-id="' + id +
+            '"></button><div class="js-gsku-actions-menu"></div></div>');
+        await h.api.loadActionMenu(document.querySelector('.js-gsku-actions-toggle'));
+        const items = [...document.querySelectorAll('.js-gsku-actions-menu [data-action]')].map(x => x.dataset.action);
+        expect(items).toEqual(['DETAILS', 'EDIT']);
+        expect(h.toast).not.toHaveBeenCalled();
+    });
+    // MOD-0290-FU04 S5: for a user with the stock-edit key (the offcanvas is in the page) the reason is a working shortcut,
+    // "Fill in stock behaviour"; without the key it stays the quick view's reason only. Unknown actions still throw.
+    it('S5: with the stock-edit key the stock-flag reason is a "Fill in stock behaviour" menu item', async () => {
+        const h = harness([response(detail(flagless))], { stock: 'key' });
+        document.body.insertAdjacentHTML('beforeend', '<div class="dropdown"><button class="js-gsku-actions-toggle" data-id="' + id +
+            '"></button><div class="js-gsku-actions-menu"></div></div>');
+        await h.api.loadActionMenu(document.querySelector('.js-gsku-actions-toggle'));
+        const items = [...document.querySelectorAll('.js-gsku-actions-menu [data-action]')];
+        expect(items.map(x => x.dataset.action)).toEqual(['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED']);
+        expect(items[2].textContent).toBe('FillIn');
+        expect(items[2].dataset.rowAction).toBe('fillStockBehaviour');
+        expect(h.toast).not.toHaveBeenCalled();
+    });
+    it('S5: without the stock-edit key (no offcanvas) the shortcut is not drawn, even with the module loaded', async () => {
+        const h = harness([response(detail(flagless))], { stock: 'module' });
+        document.body.insertAdjacentHTML('beforeend', '<div class="dropdown"><button class="js-gsku-actions-toggle" data-id="' + id +
+            '"></button><div class="js-gsku-actions-menu"></div></div>');
+        await h.api.loadActionMenu(document.querySelector('.js-gsku-actions-toggle'));
+        expect([...document.querySelectorAll('.js-gsku-actions-menu [data-action]')].map(x => x.dataset.action)).toEqual(['DETAILS', 'EDIT']);
+        expect(h.api.rowActionHandlers().fillStockBehaviour).toBeTypeOf('function');
+    });
+    it('S5: the shortcut opens the stock-behaviour offcanvas on a fresh detail read', async () => {
+        const sb = { baseUomCode: null, uomConversions: [], shelfLifeDays: null, storageConditionCodes: [], lotControlled: null,
+            stockableFlag: null, stockable: false, missing: ['lotControlled'], lockedFields: [], addOnlyFields: [], editable: true };
+        // S5b: the offcanvas reads its unit / storage lists (the Items options proxy) beside the fresh detail.
+        const lists = response({ uoms: [{ code: 'C62', attributes: {} }],
+            storageConditions: [{ code: 'COOL_2_8', attributes: { ConditionKind: 'TEMPERATURE' } }] });
+        const h = harness([response({ ...detail(flagless), canonicalCode: 'GSKU-7', stockBehaviour: sb }), lists], { stock: 'key' });
+        h.api.rowActionHandlers().fillStockBehaviour({ id, trigger: null });
+        await vi.waitFor(() => expect(document.getElementById('sb-form-subtitle').textContent).toBe('GSKU-7'));
+        expect(h.fetch.mock.calls.map(c => c[0])).toEqual(['/MasterDataManagement/Gskus/api/' + id, '/MasterDataManagement/Items/api/options']);
+        expect(document.querySelector('[data-sb-input="baseUomCode"]').disabled).toBe(false);
+        expect(document.querySelector('[data-sb-input="lotControlled"]').disabled).toBe(false);
+        expect(h.toast).not.toHaveBeenCalled();
+    });
+    it('a flagless draft: Edit opens the editor', async () => {
+        const h = harness([response(detail(flagless)), response({ gskuId: id, gskuVersion: 3, revisionVersion: 2,
+            uoms: [{ code: 'C62', displayText: 'Unit', sortOrder: 1, maximumDecimalPrecision: 0 }] })]);
+        await h.api.openExistingEditor(id, null, 'edit');
+        expect(h.fetch.mock.calls.map(c => c[0])).toEqual([
+            '/MasterDataManagement/Gskus/api/' + id, '/MasterDataManagement/Gskus/api/' + id + '/edit-options']);
+        expect(h.toast).not.toHaveBeenCalled();
     });
     it.each([['details'], ['DETAILS', 'edit'], ['DETAILS', 'EDIT', 'EDIT'], ['EDIT', 'DETAILS'], ['DETAILS', 'DELETE']])(
         'rejects action aliases, unknown keys and malformed order %j', (...actions) => {
@@ -187,7 +270,7 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
             .map((column) => column.data);
         expect(sortable).toEqual(['canonicalCode', 'packQuantity', 'lifecycleStatus']);
         expect(Object.keys(options.actions.onRowAction).sort()).toEqual(
-            ['editDraft', 'quickView', 'repeatRequest', 'requestCorrection', 'requestRetirement', 'submitIdentity', 'withdrawApproval']);
+            ['editDraft', 'fillStockBehaviour', 'quickView', 'repeatRequest', 'requestCorrection', 'requestRetirement', 'submitIdentity', 'withdrawApproval']);
     });
 
     describe('Global Product picker (select2 ajax transport, BL-531 contract)', () => {
@@ -424,8 +507,8 @@ describe('MOD-0290 GSKU Register exposure', () => {
         const models = read('Models/Gskus/GskuViewModels.cs');
 
         expect(models).toContain('IReadOnlyList<string> AvailableActions');
-        expect(browser).toContain("const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']");
-        expect(browser).toContain("const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'])");
+        expect(browser).toContain("const actionOrder = ['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']");
+        expect(browser).toContain("const supportedActions = new Set(['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'])");
         expect(browser).toContain("REPEAT_REQUEST: { key: 'repeatRequest', className: 'js-repeat-request', icon: 'bx bx-refresh'");
         expect(browser).toContain('const readAvailableActions = (detail) =>');
         expect(browser).toContain("actions[0] !== 'DETAILS'");

@@ -73,7 +73,29 @@ public static class ItemModels
         ItemLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt)
+    {
+        // MOD-0290-FU04 S5: the reader's actions on this item (ItemActions); null where the answer is not a read.
+        public IReadOnlyList<string>? AvailableActions { get; init; }
+    }
+
+    // MOD-0290-FU04 S5b (BL-600): the choices of the three item lists, in their order, with the attributes the forms use
+    // (a unit's dimension and precision; a storage condition's kind — O-2: at most one TEMPERATURE). A list to choose
+    // from, never the proof of a choice: the write resolves every chosen code exactly.
+    public sealed record ItemOptionDto(
+        string Code,
+        string DisplayName,
+        int SortOrder,
+        IReadOnlyDictionary<string, string?> Attributes);
+
+    // S5b-FIX2: each list carries its own catalog version (the sets are versioned apart — e.g. a V2 item-uom).
+    public sealed record ItemOptionsDto(
+        ItemOptionsCatalogVersions CatalogVersions,
+        IReadOnlyList<ItemOptionDto> MaterialTypes,
+        IReadOnlyList<ItemOptionDto> Uoms,
+        IReadOnlyList<ItemOptionDto> StorageConditions);
+
+    public sealed record ItemOptionsCatalogVersions(string MaterialTypes, string Uoms, string StorageConditions);
 
     public sealed record ItemListDto(IReadOnlyList<ItemDto> Items, long Total, int Page, int PageSize);
 }

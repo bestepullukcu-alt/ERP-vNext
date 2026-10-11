@@ -47,7 +47,8 @@ public sealed class LskuRegisterMongoTests
 
         var detailHandler = new GetLskuByIdHandler(
             lskus, gskus, revisions, products,
-            access.Rollouts, access.Policies, access.Candidates, tenantContext);
+            access.Rollouts, access.Policies, access.Candidates, tenantContext,
+            new ProductStockBehaviourRepository(scope.Database, tenantContext));
         var visibleDetail = await detailHandler.Handle(new GetLskuByIdQuery(visible.Id), CancellationToken.None);
         Assert.True(visibleDetail.IsSuccessful);
 

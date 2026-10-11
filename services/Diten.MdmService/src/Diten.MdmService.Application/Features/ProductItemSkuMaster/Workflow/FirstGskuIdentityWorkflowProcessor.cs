@@ -140,6 +140,16 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             return Fail("FIRST_GSKU_IDENTITY_WORKFLOW_OPERATION_CONFLICT", 409);
         }
 
+        // MOD-0290-FU04 S5b (D, the LSKU / Global Product guard): a submit whose WITHDRAWAL is under way belongs to the
+        // withdrawal path. Without this, a repeat of the original submit on a withdrawal parked at AwaitingMakerReplay
+        // (rows written before the withdrawal stopped parking there) re-ran the START — the store allows AMR →
+        // WorkflowStarted — and the withdrawal was silently replaced; on the Withdrawal* checkpoints it took and gave
+        // back the lease and answered a misleading CONCURRENCY_CONFLICT. Refused before any claim or engine call.
+        if (InWithdrawal(operation))
+        {
+            return Fail(WithdrawalUnderWay, 409);
+        }
+
         var result = await ProcessAsync(
             operation,
             delegatedUserToken,
@@ -157,13 +167,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         TimeSpan leaseDuration,
         TimeSpan retryDelay,
         CancellationToken cancellationToken = default) =>
-        operation.WithdrawalCommandId.HasValue && operation.Checkpoint is
-            FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested
-            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
-            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
-            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved
-            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied
-            or FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+        InWithdrawal(operation)
             ? ProcessWithdrawalAsync(operation, null, leaseOwner, leaseDuration, retryDelay, cancellationToken)
             : ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
                 stopWhenAwaitingDecision: false, cancellationToken);
@@ -1967,6 +1971,21 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
     public const string ManualReconciliationNeeded = "FIRST_GSKU_IDENTITY_MANUAL_RECONCILIATION_NEEDED";
     public const string DecisionNotApplicableCode = "FIRST_GSKU_IDENTITY_DECISION_NOT_APPLICABLE";
     public const string WithdrawalRequesterNeverReturned = "FIRST_GSKU_IDENTITY_WITHDRAWAL_REQUESTER_NEVER_RETURNED";
+
+    // S5b (D): the start repeat refused while the operation's withdrawal is under way (the LSKU's
+    // LSKU_IDENTITY_WITHDRAWAL_UNDER_WAY).
+    public const string WithdrawalUnderWay = "FIRST_GSKU_IDENTITY_WITHDRAWAL_UNDER_WAY";
+
+    // The withdrawal's own checkpoints — and AwaitingMakerReplay where a withdrawal waited in rows written before it
+    // stopped parking there. ONE predicate: the recovery routing and the start guard read it.
+    public static bool InWithdrawal(FirstGskuIdentityWorkflowOperation operation) =>
+        operation.WithdrawalCommandId.HasValue && operation.Checkpoint is
+            FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested
+            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved
+            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied
+            or FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay;
 
     // A revalidation that failed: an outage waits (it is not the record's fault), anything else about the record
     // is quarantined.

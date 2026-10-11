@@ -1,3 +1,4 @@
+using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.ValueObjects;
 
@@ -27,6 +28,17 @@ public interface IProductStockBehaviourRepository
     /// <see cref="StockBehaviourStoreCodes.GtinConflict"/> (pre-check, and the unique partial index under a race).
     /// </summary>
     Task<bool> GtinHeldByAnotherAsync(string gtin, Guid finishedGoodId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// MOD-0290-FU04 S5-FIX1 (1) — whether an operation holds the record now, by the SAME predicates the write above
+    /// refuses with <see cref="StockBehaviourStoreCodes.BlockedByOperation"/> (one source: the detail's
+    /// <c>editable</c> never offers an edit the write would refuse). S5b-FIX2: no default body — every store answers.
+    /// </summary>
+    Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default);
+
+    Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default);
+
+    Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default);
 }
 
 /// <summary>The stored field names a stock-behaviour write may set (the entity property names).</summary>
@@ -35,6 +47,8 @@ public static class StockBehaviourFields
     public const string BaseUomCode = "BaseUomCode";
     public const string UomConversions = "UomConversions";
     public const string ShelfLifeDays = "ShelfLifeDays";
+    public const string RetestDays = "RetestDays";
+    public const string MinRemainingShelfLifeDays = "MinRemainingShelfLifeDays";
     public const string StorageConditionCodes = "StorageConditionCodes";
     public const string LotControlled = "LotControlled";
     public const string SerialControlled = "SerialControlled";

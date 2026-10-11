@@ -1,0 +1,42 @@
+@using Diten.Web.Views.MasterDataManagement.StockBehaviour
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockBehaviourText> Stock
+@*
+    MOD-0290-FU04 S5 (O-3, O-12) — the LSKU's own stock behaviour: the same offcanvas in its serial-only form. Everything
+    else is read from its GSKU (the quick view says so). O-8: free on a Draft; once filled on an approved LSKU the flag
+    is read-only with its reason. Drawn by Index.cshtml only for a user with the LSKU's stock-edit key (UAS-001).
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasStockBehaviour" data-sb-level="lsku"
+     aria-labelledby="offcanvasStockBehaviourLabel">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="offcanvasStockBehaviourLabel" class="offcanvas-title mb-0">@Stock["SectionTitle"]</h5>
+            <small id="sb-form-subtitle" class="text-muted d-block text-truncate">-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Stock["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="sb-form-not-editable" class="alert alert-warning d-none" role="status">@Stock["NotEditable"]</div>
+        <form id="formStockBehaviour" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <section aria-labelledby="sb-group-serial">
+                <h6 id="sb-group-serial" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupStorageControl"]</h6>
+                <div class="mb-3">
+                    <label for="sb-input-serial" class="form-label fw-medium">@Stock["SerialControlled"]</label>
+                    <select id="sb-input-serial" class="form-select" data-sb-input="serialControlled" aria-describedby="sb-help-serial">
+                        <option value="">@Stock["NotSet"]</option>
+                        <option value="true">@Stock["Yes"]</option>
+                        <option value="false">@Stock["No"]</option>
+                    </select>
+                    <div id="sb-help-serial" class="form-text">@Stock["LskuInheritsHelp"]</div>
+                    <div class="form-text text-warning d-none" data-sb-lock-reason="serialControlled"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
+                </div>
+            </section>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas"><i class="bx bx-x me-1"></i>@Stock["Cancel"]</button>
+        <button type="button" id="btnSaveStockBehaviour" class="btn btn-primary"><i class="bx bx-save me-1"></i>@Stock["Save"]</button>
+    </div>
+    <partial name="~/Views/MasterDataManagement/StockBehaviour/_StockBehaviourL10n.cshtml" />
+</div>

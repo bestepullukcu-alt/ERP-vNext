@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="SectionTitle" xml:space="preserve"><value>Stock behaviour</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit stock behaviour</value></data>
+  <data name="FillIn" xml:space="preserve"><value>Fill in stock behaviour</value></data>
+  <data name="BaseUom" xml:space="preserve"><value>Base unit</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>Unit conversions</value></data>
+  <data name="DerivedPackConversion" xml:space="preserve"><value>Derived from the pack — not entered</value></data>
+  <data name="ShelfLife" xml:space="preserve"><value>Shelf life (days)</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>Retest interval (days)</value></data>
+  <data name="MinRemainingShelfLife" xml:space="preserve"><value>Minimum remaining shelf life (days)</value></data>
+  <data name="StorageConditions" xml:space="preserve"><value>Storage conditions</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>Lot controlled</value></data>
+  <data name="SerialControlled" xml:space="preserve"><value>Serial controlled</value></data>
+  <data name="Gtin" xml:space="preserve"><value>GTIN (sales box)</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Stockable</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="NotSet" xml:space="preserve"><value>Not set</value></data>
+  <data name="SourceGsku" xml:space="preserve"><value>from GSKU</value></data>
+  <data name="LockedReason" xml:space="preserve"><value>Filled on an approved record — it can only change through a correction, which comes in a later release.</value></data>
+  <data name="AddOnlyReason" xml:space="preserve"><value>Approved record — the existing rows stay as they are; you can add new ones.</value></data>
+  <data name="NotEditable" xml:space="preserve"><value>This record's status does not allow stock behaviour changes.</value></data>
+  <data name="NotStockableBecause" xml:space="preserve"><value>Not stockable yet. Missing:</value></data>
+  <data name="StockableFlag" xml:space="preserve"><value>Stockable set to yes</value></data>
+  <data name="MissingCaseBox" xml:space="preserve"><value>Case ↔ box conversion</value></data>
+  <data name="MissingGskuBaseUom" xml:space="preserve"><value>Base unit of the GSKU</value></data>
+  <data name="MissingGskuStockable" xml:space="preserve"><value>The GSKU being stockable</value></data>
+  <data name="GroupUnits" xml:space="preserve"><value>Units</value></data>
+  <data name="GroupShelfLife" xml:space="preserve"><value>Shelf life</value></data>
+  <data name="GroupStorageControl" xml:space="preserve"><value>Storage and tracking</value></data>
+  <data name="GroupGtin" xml:space="preserve"><value>Sales box identification</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>Add conversion</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>Remove conversion</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>From unit</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>To unit</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>Numerator</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>Denominator</value></data>
+  <data name="ConversionHelp" xml:space="preserve"><value>1 from-unit = numerator ÷ denominator to-units. Units are chosen from the list.</value></data>
+  <data name="UomHelp" xml:space="preserve"><value>Choose the unit from the list.</value></data>
+  <data name="StorageHelp" xml:space="preserve"><value>Choose one or more conditions from the list. At most one temperature condition.</value></data>
+  <data name="ShelfLifeFromGskuHelp" xml:space="preserve"><value>Leave empty to use the GSKU's shelf life; an own value cannot be longer than it.</value></data>
+  <data name="GtinHelp" xml:space="preserve"><value>14 digits with a valid GS1 check digit.</value></data>
+  <data name="LskuInheritsHelp" xml:space="preserve"><value>Everything else (units, shelf life, storage, lot, stockable) is read from the GSKU.</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="SaveConfirmation" xml:space="preserve"><value>Save the stock behaviour changes?</value></data>
+  <data name="Saved" xml:space="preserve"><value>Stock behaviour saved.</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Nothing has changed.</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Stock behaviour could not be saved. Try again.</value></data>
+  <data name="StateChanged" xml:space="preserve"><value>The record changed meanwhile; the latest values are shown.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>Enter codes in capitals (letters, digits and underscores), separated by commas.</value></data>
+  <data name="InvalidDays" xml:space="preserve"><value>Days are whole numbers from 0 to 3650 (the shelf life from 1).</value></data>
+  <data name="InvalidConversion" xml:space="preserve"><value>Each conversion needs two different unit codes and a numerator and denominator greater than zero.</value></data>
+  <data name="InvalidGtin" xml:space="preserve"><value>The GTIN must be exactly 14 digits.</value></data>
+  <data name="ListCannotBeEmpty" xml:space="preserve"><value>A list that has values cannot be emptied; keep at least one.</value></data>
+  <data name="Uom_C62" xml:space="preserve"><value>Piece</value></data>
+  <data name="Uom_MC" xml:space="preserve"><value>Microgram (µg)</value></data>
+  <data name="Uom_MGM" xml:space="preserve"><value>Milligram (mg)</value></data>
+  <data name="Uom_GRM" xml:space="preserve"><value>Gram (g)</value></data>
+  <data name="Uom_KGM" xml:space="preserve"><value>Kilogram (kg)</value></data>
+  <data name="Uom_MLT" xml:space="preserve"><value>Millilitre (mL)</value></data>
+  <data name="Uom_LTR" xml:space="preserve"><value>Litre (L)</value></data>
+  <data name="Uom_MTR" xml:space="preserve"><value>Metre (m)</value></data>
+  <data name="Uom_MTK" xml:space="preserve"><value>Square metre (m²)</value></data>
+  <data name="Uom_XBX" xml:space="preserve"><value>Box</value></data>
+  <data name="Uom_XCS" xml:space="preserve"><value>Case</value></data>
+  <data name="Uom_XRO" xml:space="preserve"><value>Roll</value></data>
+  <data name="Storage_AMBIENT_15_25" xml:space="preserve"><value>Room temperature (15–25 °C)</value></data>
+  <data name="Storage_COOL_2_8" xml:space="preserve"><value>Refrigerated (2–8 °C)</value></data>
+  <data name="Storage_FROZEN_BELOW_MINUS_20" xml:space="preserve"><value>Frozen (below −20 °C)</value></data>
+  <data name="Storage_PROTECT_FROM_LIGHT" xml:space="preserve"><value>Protect from light</value></data>
+  <data name="Storage_PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Protect from moisture</value></data>
+  <data name="OptionsUnavailable" xml:space="preserve"><value>The lists of units and storage conditions cannot be loaded right now, so these fields cannot be changed. The other fields can still be saved; try again in a moment.</value></data>
+  <data name="OptionsUnavailableCreate" xml:space="preserve"><value>The item cannot be created until the list arrives.</value></data>
+  <data name="TemperatureOnlyOne" xml:space="preserve"><value>Only one temperature condition can be chosen. Remove the one already chosen first.</value></data>
+  <data name="SelectUnit" xml:space="preserve"><value>Select a unit</value></data>
+</root>
