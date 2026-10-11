@@ -8398,6 +8398,20 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-613
+
+**MDM ürün kimlik akışları: yedi akış açık onayı düz `now + retryDelay` ile yokluyor (BL-607'nin geri çekilmesi yalnız LSKU kimlikte)**
+
+DURUM: AÇIK · SAHİP: CT (MDM ürün devralma, MOD-0290) · BULAN: BL-607 raporu §1 (WF sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`b650e4589`): GSKU kimlik (`GlobalProductIdentityWorkflowProcessor.cs:1572`), ilk GSKU kimlik (`FirstGskuIdentityWorkflowProcessor.cs:1296`), GSKU düzeltme (`:415`), GSKU emeklilik talebi (`:381`), LSKU emeklilik talebi (`:393`), global ürün düzeltme (`:507`), global ürün emeklilik (`:489`). Hiçbiri açık onayı deneme sınırına SAYMIYOR (doğru), ama hepsi her `retryDelay`'de (30 sn) yeniden soruyor.
+
+Yapılacak: aynı `ProductIdentityOpenApprovalBackoff` (BL-607, `54b9562a0`) yedi akışa; akış başına açık onay yaşı göstergesi; HTTP testi + sabotaj. S5b / stock-gate dosyalarına çarpmaz.
+
+Gelecek regresyon riski: 🟡 canlıda binlerce açık onay olursa motor her 30 sn'de sorgulanır ve karara bağlanmış onaylar sırada geride kalır.
+
+---
+
 ### BL-612
 
 **Enterprise Strategy izin denetimi varsayılanda AÇIK başarısız: iki ortam değişkeni tanımsızsa her izin, kimlik denetiminden önce, kimliksiz kullanıcıya veriliyor (güvenlik)**
