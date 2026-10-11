@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
@@ -20,6 +21,8 @@ public sealed class GetLskuByIdHandler
     private readonly IGlobalProductRepository _globalProducts;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
     private readonly IProductIdentityLifecycleActorContext _actorContext;
+    // S5-FIX1 (1): the stock write's own "held by an operation" predicates, for the section's editable flag.
+    private readonly IProductStockBehaviourRepository _stockBehaviour;
 
     public GetLskuByIdHandler(
         ILskuRepository lskus,
@@ -30,8 +33,11 @@ public sealed class GetLskuByIdHandler
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
         ITenantContext tenantContext,
+        // S5b-FIX2: required — the detail's editable flag always asks the write's own predicates.
+        IProductStockBehaviourRepository stockBehaviour,
         IProductIdentityLifecycleActorContext? actorContext = null)
     {
+        _stockBehaviour = stockBehaviour;
         _lskus = lskus;
         _gskus = gskus;
         _revisions = revisions;
@@ -91,18 +97,26 @@ public sealed class GetLskuByIdHandler
             lsku.Version,
             lsku.CreatedAt,
             lsku.UpdatedAt,
-            BuildAvailableActions(lsku, _actorContext)));
+            BuildAvailableActions(lsku, gsku, _actorContext))
+        {
+            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForLsku(gsku, lsku,
+                await _stockBehaviour.LskuHeldAsync(lsku, cancellationToken))
+        });
     }
 
     internal static IReadOnlyList<string> BuildAvailableActions(
         Lsku lsku,
+        Gsku gsku,
         IProductIdentityLifecycleActorContext actorContext)
     {
         var actions = new List<string> { "DETAILS" };
         if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
             && actorContext.HasPermission(LskuIdentityLifecyclePermissions.Submit))
         {
-            actions.Add("SUBMIT");
+            // S3b FIX1 (R2): the gate's own rule — a submit it would refuse is not offered; its reason is.
+            actions.Add(StockFlagGate.MissingForLsku(lsku, gsku).Count > 0
+                ? StockFlagGate.SubmitNeedsStockFlagsAction
+                : "SUBMIT");
         }
 
         if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval

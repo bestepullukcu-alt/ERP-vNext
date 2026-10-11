@@ -119,6 +119,8 @@ public sealed class PlatformContainerValidationTests : IClassFixture<PlatformCon
         services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource());
         services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
             Diten.Platform.API.Security.ClaimsActorPermissionContext>();
+        // BL-521 — the partner tenant scope, through THE registration method Program.cs calls (FIX1 F8-7), not a copy.
+        Diten.Platform.API.Security.PlatformActorTenantScopeRegistration.AddPlatformActorTenantScope(services);
         services.Configure<TrustedWorkflowStartAuthorizationOptions>(
             configuration.GetSection(TrustedWorkflowStartAuthorizationOptions.SectionName));
         services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier,
@@ -767,6 +769,8 @@ public sealed class PlatformContainerValidationTests : IClassFixture<PlatformCon
                 services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource());
                 services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
                     Diten.Platform.API.Security.ClaimsActorPermissionContext>();
+                // BL-521 — the partner tenant scope, through THE registration method Program.cs calls (FIX1 F8-7), not a copy.
+                Diten.Platform.API.Security.PlatformActorTenantScopeRegistration.AddPlatformActorTenantScope(services);
                 // …and what the takeover's composition adds from Program.cs (the org data-scope classifier, the trusted
                 // workflow start policy): the same set ValidateContainerAsync registers, so both compositions are the app's.
                 services.Configure<TrustedWorkflowStartAuthorizationOptions>(

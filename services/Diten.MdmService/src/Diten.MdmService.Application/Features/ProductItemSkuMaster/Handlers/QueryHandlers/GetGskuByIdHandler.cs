@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
@@ -23,6 +24,8 @@ public sealed class GetGskuByIdHandler
     private readonly IFirstGskuIdentityWorkflowOperationRepository? _identityOperations;
     private readonly IGskuCorrectionWorkflowOperationRepository? _corrections;
     private readonly IGskuRetirementRequestOperationRepository? _retirementRequests;
+    // S5-FIX1 (1): the stock write's own "held by an operation" predicates, for the section's editable flag.
+    private readonly IProductStockBehaviourRepository _stockBehaviour;
 
     public GetGskuByIdHandler(
         IGskuRepository gskus,
@@ -32,11 +35,14 @@ public sealed class GetGskuByIdHandler
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
         ITenantContext tenantContext,
+        // S5b-FIX2: required — the detail's editable flag always asks the write's own predicates.
+        IProductStockBehaviourRepository stockBehaviour,
         IProductIdentityLifecycleActorContext? actorContext = null,
         IFirstGskuIdentityWorkflowOperationRepository? identityOperations = null,
         IGskuCorrectionWorkflowOperationRepository? corrections = null,
         IGskuRetirementRequestOperationRepository? retirementRequests = null)
     {
+        _stockBehaviour = stockBehaviour;
         _identityOperations = identityOperations;
         _corrections = corrections;
         _retirementRequests = retirementRequests;
@@ -119,7 +125,11 @@ public sealed class GetGskuByIdHandler
                 ? await _identityOperations.LatestApprovalNoteAsync(gsku.Id, cancellationToken)
                 : null,
             stuckRequest is null ? null : "STUCK",
-            stuckRequest is { Requester: true } ? stuckRequest.Request : null));
+            stuckRequest is { Requester: true } ? stuckRequest.Request : null)
+        {
+            StockBehaviour = global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourView.ForGsku(gsku,
+                await _stockBehaviour.GskuHeldAsync(gsku, cancellationToken))
+        });
     }
 
     /*
@@ -210,7 +220,13 @@ public sealed class GetGskuByIdHandler
             if ((submit is FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.ResubmitRequired
                  || submit == FirstGskuIdentitySubmitStateKind.ReconciliationRequired
                     && actorContext.TryResolveCanonicalHumanSubject(out var submitterSubject) && submitterSubject == submitter)
-                && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit)) actions.Add("SUBMIT");
+                && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit))
+                // S3b FIX1 (R2): a NEW submit the gate would refuse is not offered — its reason is (the reconciling repeat
+                // of an existing operation is not a new submit and stays offered).
+                actions.Add(submit != FirstGskuIdentitySubmitStateKind.ReconciliationRequired
+                            && StockFlagGate.SubmitRefusalForGsku(gsku) is not null
+                    ? StockFlagGate.SubmitNeedsStockFlagsAction
+                    : "SUBMIT");
         }
 
         if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval

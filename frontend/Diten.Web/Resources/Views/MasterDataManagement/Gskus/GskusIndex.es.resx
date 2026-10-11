@@ -55,4 +55,23 @@
   <data name="CurrentPageOnly" xml:space="preserve">
     <value>Solo la página actual</value>
   </data>
+  <data name="StockFlagLotControlled" xml:space="preserve">
+    <value>el control por lote</value>
+  </data>
+  <data name="StockDayRetest" xml:space="preserve">
+    <value>el intervalo de reanálisis</value>
+  </data>
+  <data name="StockDayMinRemaining" xml:space="preserve">
+    <value>la vida útil residual mínima</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>El comportamiento de stock está incompleto o es incoherente, por lo que aún no se puede enviar a aprobación. Complételo en Comportamiento de stock.</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} y {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="StockDaysExceedShelfLife" xml:space="preserve"><value>La vida útil debe ser de al menos {1} días: {0} no puede superarla.</value></data>
 </root>

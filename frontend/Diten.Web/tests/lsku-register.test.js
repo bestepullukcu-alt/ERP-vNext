@@ -5,12 +5,14 @@ describe('LSKU executable UI contracts', () => {
   const id = '10000000-0000-0000-0000-000000000001';
   const detail = (state, version, actions) => ({ id, lifecycleStatus: state, version, availableActions: actions });
   const response = (status, body) => ({ status, ok: status >= 200 && status < 300, json: async () => body });
-  function harness(personalizationClient) {
+  // stock: 'key' = the stock-behaviour module and its offcanvas (a user with the stock-edit key); '' = neither.
+  function harness(personalizationClient, { stock = '' } = {}) {
     document.body.innerHTML = '<table class="datatables-lskus"></table><div id="offcanvasDetailsPreview"></div>' +
       '<span id="oc-status"></span><span id="oc-version"></span><form id="lskuLifecycleToken">' +
       '<input name="__RequestVerificationToken" value="test-csrf"></form>' +
       '<select id="filterLifecycleStatus"><option value=""></option><option value="Draft">Draft</option></select>' +
-      '<button id="btnFilterApply"></button><button id="btnFilterReset"></button>';
+      '<button id="btnFilterApply"></button><button id="btnFilterReset"></button>' +
+      (stock === 'key' ? '<div id="offcanvasStockBehaviour"><script id="stock-behaviour-l10n" type="application/json">{"FillIn":"FillIn"}</script></div>' : '');
     const L = new Proxy({}, { get: (_, key) => key });
     const toast = vi.fn(), http = vi.fn(), reload = vi.fn();
     const confirm = vi.fn((_, callback) => callback('Obsolete'));
@@ -31,11 +33,23 @@ describe('LSKU executable UI contracts', () => {
     source = source.replace("return { init: async () => { bindEvents(); bindFilter(); await initDataTable(); } };",
       'return { readAvailableActions, postLifecycle, requestRetirement, bindEvents, bindFilter, normalizeView, getCurrentView, applySavedTableState, getResetBaselineState, saveDefaultView, loadDefaultView, setTable: value => { dt = value; } };')
       .replace("document.addEventListener('DOMContentLoaded', () => LskusList.init());", '');
+    if (stock) {
+      const stockSource = fs.readFileSync(path.join(__dirname, '../wwwroot/assets/js/MasterDataManagement/StockBehaviour/stock-behaviour.js'), 'utf8');
+      new Function('window','document','bootstrap','fetch','FormData','crypto', stockSource)(w, document, bootstrap, http, FormData, globalThis.crypto);
+    }
     const module = new Function('window','document','$','bootstrap','fetch','FormData', source + ';return LskusList;')(
       w, document, jquery, bootstrap, http, FormData);
     module.setTable(api);
     return { module, http, toast, reload, api, w };
   }
+
+  // MOD-0290-FU04 S5: STOCK_FLAGS_REQUIRED is kept as the "Fill in stock behaviour" shortcut only for a user with the
+  // stock-edit key (the offcanvas is in the page); without it the projection drops it, as before.
+  it('S5: the stock-flag reason is a shortcut only with the stock-edit key', () => {
+    const actions = ['DETAILS', 'STOCK_FLAGS_REQUIRED'];
+    expect(harness(undefined, { stock: 'key' }).module.readAvailableActions(detail(1, 1, actions))).toEqual(actions);
+    expect(harness().module.readAvailableActions(detail(1, 1, actions))).toEqual(['DETAILS']);
+  });
 
   it('saves and reloads applied lifecycle state using the existing personalization contract', async () => {
     let saved;
@@ -163,7 +177,8 @@ describe('MOD-0290 LSKU lifecycle UX', () => {
 
   it('uses only ordered server-owned available actions and never renders direct retire', () => {
     const source = script();
-    expect(source).toContain("const actionOrder = ['DETAILS', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_RETIREMENT'];");
+    // MOD-0290-FU04 S5: STOCK_FLAGS_REQUIRED (the stock-behaviour shortcut, kept only with the stock-edit key) before SUBMIT.
+    expect(source).toContain("const actionOrder = ['DETAILS', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_RETIREMENT'];");
     expect(source).toContain('const readAvailableActions = detail =>');
     expect(source).toContain('.filter(value => supportedActions.has(value))');
     expect(source).toContain('actionOrder.filter(value => actions.includes(value))');

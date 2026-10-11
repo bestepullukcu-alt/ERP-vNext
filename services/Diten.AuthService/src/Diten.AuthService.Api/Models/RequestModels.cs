@@ -14,19 +14,28 @@ public sealed record PlatformForgotPasswordRequest(string Email);
 public sealed record PlatformResetPasswordRequest(string Email, string Token, string NewPassword);
 // BL-529 — a platform administrator resets another platform administrator's password (by e-mail, the account's key here).
 public sealed record PlatformAdministratorResetRequest(string Email);
+// BL-521 FIX5 item 11 — Status: the Platform record's status. An EXISTING account is switched on only for "Active" (the
+// sync's rule) and its address is never confirmed here; none (an older Platform) leaves the account's state alone. A new
+// account is created active and confirmed, as before.
 public sealed record PlatformAdminProvisioningRequest(
     string Email,
     string UserName,
     string DisplayName,
     string ActorType,
     IReadOnlyList<string> Roles,
-    bool RequirePasswordChange = true);
+    bool RequirePasswordChange = true,
+    string? Status = null);
+// BL-521 FIX4 item 1 — Email only FINDS the account: a platform administrator's e-mail never changes, so the sync never
+// moves an account (FIX3's PreviousEmail is gone; a body that still carries it is not read).
+// Item 5 — Status: the Platform record's status; the account is switched on only for "Active". Optional: an older Platform
+// does not send it, and then the account's state is left alone.
 public sealed record PlatformAdminSyncRequest(
     string Email,
     string UserName,
     string DisplayName,
     string ActorType,
-    IReadOnlyList<string> Roles);
+    IReadOnlyList<string> Roles,
+    string? Status = null);
 public sealed record AssignRoleRequest(Guid RoleId);
 public sealed record AssignPermissionRequest(Guid PermissionId);
 // Password is optional: omit it to create the user as an invitation (set-password link emailed).

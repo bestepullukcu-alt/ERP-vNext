@@ -511,6 +511,11 @@
   <data name="AdminLastSuperAdminDenied" xml:space="preserve"><value>At least one active Super Admin must remain in the system.</value></data>
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>The system seed administrator cannot be deleted.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>The system seed administrator cannot be suspended.</value></data>
+  <data name="AdminSeedEmailChangeDenied" xml:space="preserve"><value>The system seed administrator's e-mail cannot be changed.</value></data>
+  <data name="AdminChangeUnavailable" xml:space="preserve"><value>The administrator change could not be saved right now. Nothing was written. Please try again.</value></data>
+  <data name="AdminEmailImmutable" xml:space="preserve"><value>An administrator's e-mail cannot be changed. Invite the new address as a new administrator and remove the old one.</value></data>
+  <data name="AdminBulkDuplicateIds" xml:space="preserve"><value>The same administrator is listed more than once. Nothing was deleted.</value></data>
+  <data name="AdminBulkDeletePartial" xml:space="preserve"><value>Some administrators were deleted, but the request stopped at one that could not be deleted. Reload the list to see what remains.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Administrator was created, but the invitation email could not be sent. Check SMTP settings and use Resend Invitation.</value></data>
   <data name="AccessGovernance" xml:space="preserve"><value>Access Governance</value></data>
   <data name="UsersMenu" xml:space="preserve"><value>Users</value></data>
@@ -696,6 +701,9 @@
   </data>
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKUs</value>
+  </data>
+  <data name="Nav.Page.ITEMS" xml:space="preserve">
+    <value>Items</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Task Types</value>

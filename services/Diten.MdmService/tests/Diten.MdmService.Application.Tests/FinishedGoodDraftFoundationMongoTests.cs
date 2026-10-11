@@ -354,7 +354,8 @@ public sealed class FinishedGoodDraftFoundationMongoTests(
             new GetFinishedGoodsQuery { Search = approved.CanonicalCode, PageSize = 20 }, CancellationToken.None);
         var detail = await new GetFinishedGoodByIdHandler(
             repositories.FinishedGoods, repositories.Gskus, revisions, products,
-            access.Rollouts, access.Policies, access.Candidates, context).Handle(
+            access.Rollouts, access.Policies, access.Candidates, context,
+            new ProductStockBehaviourRepository(scope.Database, context)).Handle(
             new GetFinishedGoodByIdQuery(first.Data!.FinishedGoodId), CancellationToken.None);
         var selector = await new GetFinishedGoodGskuSelectorHandler(
             repositories.Gskus, revisions, products,

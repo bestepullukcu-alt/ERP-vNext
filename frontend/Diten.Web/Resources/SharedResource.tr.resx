@@ -511,6 +511,11 @@
   <data name="AdminLastSuperAdminDenied" xml:space="preserve"><value>Sistemde en az bir aktif Super Admin kalmalıdır.</value></data>
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>Sistem seed yoneticisi silinemez.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>Sistem seed yoneticisi askıya alınamaz.</value></data>
+  <data name="AdminSeedEmailChangeDenied" xml:space="preserve"><value>Sistem seed yöneticisinin e-posta adresi değiştirilemez.</value></data>
+  <data name="AdminChangeUnavailable" xml:space="preserve"><value>Yönetici değişikliği şu anda kaydedilemedi; hiçbir şey yazılmadı. Lütfen yeniden deneyin.</value></data>
+  <data name="AdminEmailImmutable" xml:space="preserve"><value>Bir yöneticinin e-posta adresi değiştirilemez. Yeni adresi yeni bir yönetici olarak davet edin ve eski yöneticiyi kaldırın.</value></data>
+  <data name="AdminBulkDuplicateIds" xml:space="preserve"><value>Aynı yönetici birden fazla kez listelenmiş. Hiçbir şey silinmedi.</value></data>
+  <data name="AdminBulkDeletePartial" xml:space="preserve"><value>Bazı yöneticiler silindi, ancak istek silinemeyen bir yöneticide durdu. Kalanları görmek için listeyi yeniden yükleyin.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Yonetici olusturuldu ancak davet e-postasi gonderilemedi. SMTP ayarlarini kontrol edip Daveti Yeniden Gonder islemini kullanin.</value></data>
   <data name="AccessGovernance" xml:space="preserve"><value>Erişim Yönetişimi</value></data>
   <data name="UsersMenu" xml:space="preserve"><value>Kullanıcılar</value></data>
@@ -696,6 +701,9 @@
   </data>
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU’lar</value>
+  </data>
+  <data name="Nav.Page.ITEMS" xml:space="preserve">
+    <value>Kalemler</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Görev Türleri</value>

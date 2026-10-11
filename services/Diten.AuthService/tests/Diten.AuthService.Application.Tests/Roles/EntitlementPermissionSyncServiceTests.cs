@@ -1914,6 +1914,216 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.Contains(rolePerms.Rows, grant => grant.SourceModuleCode == "goldenslim");
     }
 
+    // ------------------------------------------------------------------------------------------------ BL-592
+    // WP-MDM-PERMS-01 (CT decision): the item master keys (all six or none) and the product-master read contract (alone
+    // or none). Written out — never read from the production constants.
+    private static readonly string[] ItemKeys =
+    [
+        "mdm.items.read", "mdm.items.create", "mdm.items.update", "mdm.items.submit", "mdm.items.deactivate",
+        "mdm.items.retire"
+    ];
+
+    private const string ProductMasterReadKey = "mdm.product-master.read";
+
+    private static List<Permission> WithItemAndProductMasterKeys(List<Permission> catalog, IEnumerable<string>? itemKeys = null,
+        bool productMaster = true)
+    {
+        catalog.AddRange((itemKeys ?? ItemKeys).Select(PermissionFor));
+        if (productMaster) catalog.Add(PermissionFor(ProductMasterReadKey));
+        return catalog;
+    }
+
+    private static IReadOnlyList<string> NewKeysHeldBy(FakeRolePermissionRepository rolePerms, List<Permission> catalog, Guid roleId)
+        => rolePerms.Rows
+            .Where(grant => grant.RoleId == roleId)
+            .Select(grant => catalog.Single(permission => permission.Id == grant.PermissionId).Key)
+            .Where(key => key.StartsWith("mdm.items.", StringComparison.Ordinal) || key == ProductMasterReadKey)
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+    [Fact]
+    public async Task BL592_Todays_declaration_without_item_or_product_master_keys_reconciles_and_nobody_gets_them()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        Assert.Contains(rolePerms.Rows, grant => grant.RoleId == roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole));
+        Assert.DoesNotContain(rolePerms.Rows, grant =>
+            catalog.Single(p => p.Id == grant.PermissionId).Key is var key && (key.StartsWith("mdm.items.") || key == ProductMasterReadKey));
+    }
+
+    // CT decision: with the module's entitlement the Admin receives all six item keys and the read contract; the Viewer
+    // the two read keys only — never a write.
+    [Fact]
+    public async Task BL592_Declared_item_keys_and_read_contract_go_to_admin_in_full_and_to_viewer_as_reads()
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog());
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        Assert.Equal(ItemKeys.Append(ProductMasterReadKey).Order(StringComparer.Ordinal),
+            NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole)));
+        Assert.Equal(new[] { "mdm.items.read", ProductMasterReadKey }.Order(StringComparer.Ordinal),
+            NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.ViewerRole)));
+    }
+
+    [Theory]
+    [InlineData("mdm.items.read")]
+    [InlineData("mdm.items.read", "mdm.items.create", "mdm.items.update", "mdm.items.submit", "mdm.items.deactivate")]
+    [InlineData("mdm.items.retire", "mdm.items.deactivate")]
+    public async Task BL592_One_to_five_item_keys_are_refused_like_any_partial_set(params string[] partial)
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), partial);
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, ProductIdentityDeclaredKeys(catalog), Actor));
+
+        // FIX1: the refusal names the missing keys — not a fixed text that every refusal shares.
+        Assert.Contains($"Missing: [{string.Join(", ", ItemKeys.Except(partial).Order(StringComparer.Ordinal))}].",
+            refused.Message, StringComparison.Ordinal);
+        Assert.Contains("Unexpected: [].", refused.Message, StringComparison.Ordinal);
+        Assert.Empty(rolePerms.Rows);
+    }
+
+    // An action the code does not check is a stale or wrong manifest, never a key the rule ignores.
+    [Theory]
+    [InlineData("mdm.items.reactivate")]
+    [InlineData("mdm.product-master.write")]
+    public async Task BL592_An_unknown_item_or_product_master_action_is_refused(string unknown)
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog());
+        catalog.Add(PermissionFor(unknown));
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, ProductIdentityDeclaredKeys(catalog), Actor));
+        Assert.Contains($"Unexpected: [{unknown}].", refused.Message, StringComparison.Ordinal);
+        Assert.Contains("Missing: [].", refused.Message, StringComparison.Ordinal);
+        Assert.Empty(rolePerms.Rows);
+    }
+
+    // The two optional parts are independent: the item keys without the read contract (S5 before S4's manifest) and the
+    // read contract without the item keys both reconcile.
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task BL592_Item_keys_and_the_read_contract_are_independent_optional_parts(bool items, bool productMaster)
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), items ? ItemKeys : [], productMaster);
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        var expected = (items ? ItemKeys : []).Concat(productMaster ? [ProductMasterReadKey] : Array.Empty<string>())
+            .Order(StringComparer.Ordinal);
+        Assert.Equal(expected, NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole)));
+    }
+
+    // CT decision A: the key reaches roles ONLY through the module's declaration (manifest → Platform catalog → Auth sync;
+    // the MDM manifest step after S4 / S5). For this module the catalog IS the declaration — the sync refuses a declared
+    // set that differs from the active module catalog (EntitlementPermissionSyncService "complete active module descriptor
+    // set") — so "not yet declared" means "not in the module catalog". In that state, today's: the read contract is
+    // granted to nobody, nothing is refused, and the item keys still reach Admin and Viewer.
+    [Fact]
+    public async Task BL592_An_undeclared_read_contract_is_granted_to_nobody_and_refuses_nothing()
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), ItemKeys, productMaster: false);
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, grant =>
+            catalog.Single(p => p.Id == grant.PermissionId).Key.StartsWith("mdm.product-master.", StringComparison.Ordinal));
+        Assert.Equal(ItemKeys.Order(StringComparer.Ordinal),
+            NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole)));
+        Assert.Equal(["mdm.items.read"], NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.ViewerRole)));
+    }
+
+    // ------------------------------------------------------------------------------------------- BL-592 FIX1
+    private const string ItemsWithdrawKey = "mdm.items.withdraw";
+
+    // Item 1 (CT decision): S2 adds mdm.items.withdraw. The six + withdraw reconcile; Admin holds all seven item keys and
+    // the read contract (8), Viewer the two reads only — withdraw is not a read. (Only-the-maker-withdraws is MDM's rule.)
+    [Fact]
+    public async Task BL592_FIX1_Six_item_keys_and_withdraw_reconcile_admin_eight_and_viewer_two()
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), ItemKeys.Append(ItemsWithdrawKey));
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        var admin = NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole));
+        Assert.Equal(ItemKeys.Append(ItemsWithdrawKey).Append(ProductMasterReadKey).Order(StringComparer.Ordinal), admin);
+        Assert.Equal(8, admin.Count);
+        Assert.Equal(new[] { "mdm.items.read", ProductMasterReadKey }.Order(StringComparer.Ordinal),
+            NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.ViewerRole)));
+    }
+
+    // absent: the item keys left out next to withdraw; "all" = withdraw alone.
+    [Theory]
+    [InlineData("all")]
+    [InlineData("mdm.items.retire")]
+    [InlineData("mdm.items.read mdm.items.create")]
+    public async Task BL592_FIX1_Withdraw_without_all_six_item_keys_is_refused_by_name(string absent)
+    {
+        var expectedMissing = absent == "all" ? ItemKeys : absent.Split(' ');
+        var declaredItems = ItemKeys.Except(expectedMissing).Append(ItemsWithdrawKey).ToArray();
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), declaredItems);
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, ProductIdentityDeclaredKeys(catalog), Actor));
+
+        Assert.Contains($"Missing: [{string.Join(", ", expectedMissing.Order(StringComparer.Ordinal))}].",
+            refused.Message, StringComparison.Ordinal);
+        Assert.Empty(rolePerms.Rows);
+    }
+
+    // Item 2: the read contract catalogued under ANOTHER module (brand-product-master) while the product module declares
+    // the six item keys only. The product sync succeeds and no role holds the key — this goes red the day the grant is
+    // made by key prefix instead of by the module's declaration (mutation P3).
+    [Fact]
+    public async Task BL592_FIX1_A_read_contract_catalogued_under_another_module_is_granted_to_nobody_by_the_product_sync()
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog(), ItemKeys, productMaster: false);
+        var foreign = new Permission("mdm", "product-master", "read", "Read Product Master", null,
+            moduleOverride: "brand-product-master", scope: PermissionScope.Tenant);
+        catalog.Add(foreign);
+        Assert.DoesNotContain(ProductMasterReadKey, ProductIdentityDeclaredKeys(catalog));
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, grant => grant.PermissionId == foreign.Id);
+        Assert.Equal(ItemKeys.Order(StringComparer.Ordinal),
+            NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole)));
+        Assert.Equal(["mdm.items.read"], NewKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.ViewerRole)));
+    }
+
+    [Fact]
+    public async Task BL592_A_tenant_without_the_product_module_entitlement_gets_neither()
+    {
+        var catalog = WithItemAndProductMasterKeys(ProductIdentityLifecycleCompositeCatalog());
+        catalog.Add(new("goldenslim", "records", "read", "", null));
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        await svc.SyncTenantModulesAsync(TenantB, new[] { "goldenslim" }, Actor, CancellationToken.None);
+
+        var newIds = catalog.Where(p => ItemKeys.Contains(p.Key) || p.Key == ProductMasterReadKey).Select(p => p.Id).ToHashSet();
+        Assert.DoesNotContain(rolePerms.Rows, grant => newIds.Contains(grant.PermissionId));
+        Assert.Contains(rolePerms.Rows, grant => grant.SourceModuleCode == "goldenslim");
+    }
+
     private static IReadOnlyList<string> ProductRoleKeys(
         FakeRoleRepository roles,
         FakeRolePermissionRepository rolePerms,

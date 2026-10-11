@@ -60,6 +60,26 @@ public sealed class InternalItemUniversalReferenceDataController : CustomBaseCon
             return CreateActionResultInstance(await _mediator.Send(query, token));
         }, Failure);
 
+    // MOD-0290-FU04 S5b (BL-600): the values of the asked sets (only the three item sets) for MDM's item / stock forms —
+    // the SAME executor, credential and audience as the resolve (no new trust path); a list to choose from, never the
+    // proof of a choice (MDM resolves each chosen code exactly).
+    [HttpPost("enumerate")]
+    [RequestSizeLimit(MaximumRequestBytes)]
+    public Task<IActionResult> Enumerate([FromBody] ItemUniversalEnumerateRequest? request, CancellationToken cancellationToken) =>
+        _requestExecutor.ExecuteAsync(HttpContext, cancellationToken, async (_, token) =>
+        {
+            if (Request.Query.Count > 0 || request?.SetCodes is null || request.AdditionalFields is { Count: > 0 })
+            {
+                return EnumerationFailure(400, ResolveItemUniversalReferenceDataHandler.ContractInvalid);
+            }
+
+            return CreateActionResultInstance(await _mediator.Send(
+                new EnumerateItemUniversalReferenceDataQuery(request.SetCodes), token));
+        }, EnumerationFailure);
+
+    private IActionResult EnumerationFailure(int statusCode, string code) => CreateActionResultInstance(
+        Response<ItemUniversalEnumerationResult>.Fail(code, statusCode, code, HttpContext.TraceIdentifier));
+
     private IActionResult Failure(int statusCode, string code) => CreateActionResultInstance(
         Response<ItemUniversalResolveResult>.Fail(code, statusCode, code, HttpContext.TraceIdentifier));
 }

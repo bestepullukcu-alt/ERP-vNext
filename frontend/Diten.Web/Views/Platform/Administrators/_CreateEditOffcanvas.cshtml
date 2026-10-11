@@ -40,12 +40,8 @@
                     <label for="administratorEmail" class="form-label fw-medium">
                         @Localizer["Email"] <span class="text-danger">*</span>
                     </label>
-                    <div class="input-group">
-                        <input type="email" id="administratorEmail" name="Email" class="form-control" maxlength="256" placeholder="@Localizer["EmailPlaceholder"]" required />
-                        <button type="button" class="btn btn-outline-secondary d-none" id="btnUnlockEmail" data-bs-toggle="tooltip" title="@Localizer["EmailUnlockTooltip"]">
-                            <i class="bx bx-lock-alt"></i>
-                        </button>
-                    </div>
+                    <input type="email" id="administratorEmail" name="Email" class="form-control" maxlength="256" placeholder="@Localizer["EmailPlaceholder"]" required />
+                    <div id="administratorEmailImmutableHelp" class="form-text d-none">@SharedLocalizer["AdminEmailImmutable"]</div>
                     <div class="invalid-feedback"></div>
                 </div>
 

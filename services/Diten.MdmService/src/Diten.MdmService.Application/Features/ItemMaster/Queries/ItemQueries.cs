@@ -8,3 +8,6 @@ public sealed record GetItemByIdQuery(Guid Id) : IRequest<Response<ItemModels.It
 
 public sealed record GetItemListQuery(int? Page, int? PageSize, string? Q, string? MaterialType, string? Status)
     : IRequest<Response<ItemModels.ItemListDto>>;
+
+// MOD-0290-FU04 S5b (BL-600): the choices the item form and the GSKU / LSKU / Finished Good stock forms offer.
+public sealed record GetItemOptionsQuery : IRequest<Response<ItemModels.ItemOptionsDto>>;

@@ -4,21 +4,37 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Application.Features.Users.Services;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Api.Controllers;
 
 [Route("api/platform-auth")]
 public sealed class PlatformAuthController : CustomBaseController
 {
-    private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    private static readonly Guid PlatformTenantId = PlatformSystemTenant.Id;
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
+
+    /// <summary>BL-521 FIX3 item 4 — 403: the forced change door takes only a platform actor's token (platform or partner
+    /// administrator, platform tenant).</summary>
+    public const string ForcedChangeRequiresPlatformActorCode = "PLATFORM_FORCED_CHANGE_PLATFORM_ACTOR_REQUIRED";
+
+    /// <summary>BL-521 FIX3 item 4 — 409: no forced change is pending on the account; an ordinary change has its own door.</summary>
+    public const string ForcedChangeNotPendingCode = "PLATFORM_FORCED_CHANGE_NOT_PENDING";
+
+    /// <summary>BL-521 FIX3 item 4 — 401: the temporary password has expired; a password reset replaces it.</summary>
+    public const string TemporaryPasswordExpiredCode = "PLATFORM_TEMPORARY_PASSWORD_EXPIRED";
+
+    /// <summary>BL-521 FIX4 item 5 — the Platform record status (its enum name) for which the sync switches the account on.</summary>
+    private const string PlatformActiveStatus = "Active";
 
     private readonly IMediator _mediator;
     private readonly IUserRepository _userRepository;
@@ -37,6 +53,7 @@ public sealed class PlatformAuthController : CustomBaseController
     private readonly Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter _passwordDoors;
     private readonly Diten.AuthService.Infrastructure.Security.ClientAddressResolver _clientAddress;
     private readonly IWebHostEnvironment _environment;
+    private readonly ILogger<PlatformAuthController> _logger;
 
     public PlatformAuthController(
         IMediator mediator,
@@ -55,7 +72,8 @@ public sealed class PlatformAuthController : CustomBaseController
         IWebHostEnvironment environment,
         IUserAuditRecorder audit,
         Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors,
-        Diten.AuthService.Infrastructure.Security.ClientAddressResolver clientAddress)
+        Diten.AuthService.Infrastructure.Security.ClientAddressResolver clientAddress,
+        ILogger<PlatformAuthController> logger)
     {
         _clientAddress = clientAddress;
         _audit = audit;
@@ -74,6 +92,7 @@ public sealed class PlatformAuthController : CustomBaseController
         _emailService = emailService;
         _platformAdministratorStatusClient = platformAdministratorStatusClient;
         _environment = environment;
+        _logger = logger;
     }
 
     [HttpPost("login")]
@@ -134,15 +153,25 @@ public sealed class PlatformAuthController : CustomBaseController
                 {
                     u.SetUserName(request.UserName);
                     u.UpdateProfile(firstName, lastName);
-                    u.ActivateByAdministrator();
-                    u.ConfirmEmail();
+                    // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521 FIX5 item 11 inside BL-529's reset: an EXISTING account follows
+                    // the sync's rule, not "provision means switch on and confirm". It is switched on only for an Active record
+                    // (none — an older Platform — leaves its state alone), as an administrator switches it on (BL-529 FIX5:
+                    // the deactivation mark goes with it); its address is never confirmed here — only accepting the
+                    // invitation does (reset-password). The reset itself (old password unusable, sessions ended, audit row,
+                    // targeted conditional write) is BL-529's, unchanged.
+                    if (string.Equals(request.Status, PlatformActiveStatus, StringComparison.OrdinalIgnoreCase))
+                    {
+                        u.ActivateByAdministrator();
+                    }
+
                     u.SetPlatformActorType(NormalizeActorType(request.ActorType));
                     u.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.AddHours(24));
                 },
                 c => _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, c),
                 async (u, c) =>
                 {
-                    await SyncPlatformRolesAsync(u.Id, request.Roles, c);
+                    // BL-521 FIX4/FIX5 — the roles follow the record (the convergence that replaced SyncPlatformRolesAsync).
+                    await PlatformAdministratorRoleConvergence.ConvergeProvisionedAsync(_userRoleRepository, _roleRepository, u.Id, PlatformTenantId, request.Roles, c);
                     delivery = await SendSetupLinkAsync(u.Email, setupToken, c);
                     return delivery.EmailSent;
                 },
@@ -178,7 +207,10 @@ public sealed class PlatformAuthController : CustomBaseController
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
         user.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.AddHours(24));
         await _userRepository.CreateAsync(user, ct);
-        await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
+        await PlatformAdministratorRoleConvergence.ConvergeProvisionedAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, request.Roles, ct);
+        // Merge WP-CT-LANE-BL521-MERGE-01 — no session sweep here: an account created on this line has none. BL-529 (7935b8143)
+        // took the old shared tail's RevokeAllByUserAsync out of this path; an EXISTING account's sessions are ended above, by
+        // AdminPasswordReset (RevokeLiveSessionsAsync).
         var setupDelivery = await SendSetupLinkAsync(user.Email, setupToken, ct);
 
         return Ok(new
@@ -300,6 +332,10 @@ public sealed class PlatformAuthController : CustomBaseController
             return BadRequest(new { message = "email and userName are required" });
         }
 
+        // BL-521 FIX4 item 1 — THE ADDRESS ONLY FINDS THE ACCOUNT. A platform administrator's e-mail never changes on
+        // Platform (the identity key both services match the administrator by), so this sync never moves an account to
+        // another address. FIX3's move (found by a previousEmail, then renamed) is gone; a body that still carries
+        // previousEmail is not read, and an address no account has is 404 — nothing is renamed, nothing adopted.
         var user = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
         if (user is null)
         {
@@ -318,23 +354,30 @@ public sealed class PlatformAuthController : CustomBaseController
         var wasActive = user.IsActive;
         var wasMarked = user.DeactivatedByAdministrator;
         user.UpdateProfile(firstName, lastName);
-        // BL-529 FIX5 — Platform's sync switches the account on as an administrator does: the deactivation mark goes with it
-        // (Activate() alone left a stored passive, marked account "active AND marked").
-        user.ActivateByAdministrator();
-        user.ConfirmEmail();
+
+        // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521 FIX4 item 5 with BL-529 FIX5: the account's state follows the RECORD's (an
+        // Active record switches it on; any other status — or none, from an older Platform — leaves it alone), and when it
+        // is switched on it is switched on as an administrator does (the deactivation mark goes with it). The address is
+        // confirmed only by accepting the invitation (reset-password), never here.
+        if (string.Equals(request.Status, PlatformActiveStatus, StringComparison.OrdinalIgnoreCase))
+        {
+            user.ActivateByAdministrator();
+        }
+
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
 
-        // BL-529 FIX3 — only the fields this sync changes (name, profile, switch, actor type): a whole write from the copy
-        // read above could put back a password hash an administrator's reset replaced meanwhile. FIX5 — and only while the
-        // switch is still the one read (a deactivation that landed meanwhile is not switched back on). FIX6 — the switch is
-        // the flag AND the administrator's mark: a deactivation of an already passive account changes only the mark.
+        // BL-521 FIX4 item 4 — ROLES FIRST, THE ACCOUNT LAST: if the account write then fails, the roles the record took away
+        // are already gone and the account was not switched back on — never an account re-enabled with roles it is losing.
+        await PlatformAdministratorRoleConvergence.ConvergeProvisionedAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, request.Roles, ct);
+
+        // BL-529 FIX3/5/6 — and the account write is only the fields this sync changes (name, profile, switch, actor type), only
+        // while the switch is still the one read: a whole write from the copy read above could put back a password hash an
+        // administrator's reset replaced meanwhile, or switch back on an account deactivated meanwhile.
         if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId,
                 new UserWriteCondition(IsActive: wasActive, DeactivatedByAdministrator: wasMarked), ct))
         {
             return Conflict(new { message = "the account changed while it was being synced; try again" });
         }
-
-        await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
 
         return NoContent();
     }
@@ -343,13 +386,55 @@ public sealed class PlatformAuthController : CustomBaseController
     [Authorize]
     public async Task<IActionResult> ForcedChangePassword([FromBody] PlatformForcedChangePasswordRequest request, CancellationToken ct)
     {
+        // BL-521 FIX3 item 4 — this door MINTS a platform session, so it is never wider than login. Before, it accepted any
+        // valid JWT (a tenant_user token of a user in the platform tenant included) and looked at neither the account's own
+        // state nor whether a change was pending: an account disabled in Auth but with a live Platform record could mint
+        // itself a fresh platform session with every new token, indefinitely.
+        if (!IsPlatformActorToken(User))
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(
+                "A platform administrator token is required.", [new ResponseError(ForcedChangeRequiresPlatformActorCode)], 403));
+        }
+
         var user = await ResolveCurrentPlatformUserAsync(ct);
         if (user is null)
         {
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", 401));
         }
 
-        if (!await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
+        if (!user.IsActive)
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+        }
+
+        // Only a pending FORCED change opens this door (the flag login sets on the token); an ordinary change has its own.
+        if (!user.MustChangePassword)
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(
+                "No password change is pending for this account. Use the regular password change.",
+                [new ResponseError(ForcedChangeNotPendingCode)], 409));
+        }
+
+        // The same rule (and sentence) as login: an expired temporary password is replaced through a reset, not here.
+        if (user.TemporaryPasswordExpiresAt is { } temporaryExpiry && temporaryExpiry <= DateTime.UtcNow)
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(
+                "Temporary password has expired. Please reset your password.",
+                [new ResponseError(TemporaryPasswordExpiredCode)], 401));
+        }
+
+        // BL-521 FIX2 item 1 — this door MINTS a platform token, so the actor type comes from the administrator's Platform
+        // RECORD (the same answer login and refresh use), never from Auth's copy on the user. Before: the copy went
+        // through NormalizeActorType, which knew only "PartnerAdmin" — the stored "partner_admin" came out as
+        // platform_admin, so a partner calling this with its own password got a platform_admin token and refresh row.
+        // Item 3 — Platform's definitive no ends the sessions; no answer (503) ends nothing.
+        var record = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
+        if (record.Verdict == PlatformAdministratorRecordVerdict.Unavailable)
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, 503));
+        }
+
+        if (record.Verdict != PlatformAdministratorRecordVerdict.Confirmed)
         {
             await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401));
@@ -360,14 +445,39 @@ public sealed class PlatformAuthController : CustomBaseController
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Current password is incorrect.", 401));
         }
 
+        // BL-521 FIX5 item 12 — the new password is checked FIRST: a change the policy refuses must not have rewritten the
+        // account's roles on its way out (the convergence is a write; it belongs to the change that is actually made).
         await _passwordPolicyService.ValidateTenantPasswordAsync(PlatformTenantId, user.Id, request.NewPassword, "platform_forced_change", ct);
+
+        // BL-521 FIX4 item 2 — as login and refresh: the roles the token will be minted with follow the record first (an
+        // older Platform that sends no roles converges nothing). FIX5 item 3 — no provisioning default at mint.
+        if (record.Roles is not null)
+        {
+            await PlatformAdministratorRoleConvergence.ConvergeAtMintAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
+        }
+
+        // BL-521 FIX7 item 1 - Auth's copy of the actor type follows the record at every platform mint (see PlatformLoginCommandHandler);
+        // the in-memory user is healed too: the replace of the document below would otherwise write the old value back.
+        await PlatformAccountDiscriminator.EnsureAsync(_userRepository, user, record.ActorType!, _logger, ct);
+
+        // BL-529 FIX2 — the state is taken AFTER the record convergence above, so the write below carries only the password
+        // change, and only over the password just verified.
         var verifiedHash = user.PasswordHash;
         var state = _userRepository.CaptureState(user);
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement();
         // BL-529 FIX2 — only over the password just verified: never over an administrator's reset that landed meanwhile.
-        if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId, new UserWriteCondition(PasswordHash: verifiedHash), ct))
+        // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 6) — and only while the account is still ACTIVE: a deactivation that
+        // landed during this request is not written over, and no session is issued.
+        if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId,
+                new UserWriteCondition(PasswordHash: verifiedHash, IsActive: true), ct))
         {
+            var now = await _userRepository.GetByIdAndTenantAsync(user.Id, PlatformTenantId, ct);
+            if (now is null || !now.IsActive)
+            {
+                return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+            }
+
             return CreateActionResultInstance(Response<AuthResponse>.Fail(
                 "The password changed while this request ran (for example an administrator reset it). Sign in again.",
                 [new ResponseError(AuthRefusalCodes.PasswordChangedMeanwhile)],
@@ -375,7 +485,19 @@ public sealed class PlatformAuthController : CustomBaseController
         }
         await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, PlatformTenantId, SessionRevocationReasons.PasswordChanged, ct);
 
-        var authResponse = await BuildPlatformAuthResponseAsync(user, request.RememberMe, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), false, ct);
+        var authResponse = await BuildPlatformAuthResponseAsync(user, record.ActorType!, request.RememberMe, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), false, ct);
+        // FIX1 (small 6) — the doors' IssuedSessionGuard, here too, and with "still active": a reset or a deactivation that
+        // landed between the write and the token's write ends the token just issued; nothing is answered with it.
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, PlatformTenantId,
+                user.PasswordHash, authResponse.RefreshToken!, ct))
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401));
+        }
+        if (await _userRepository.GetByIdAndTenantAsync(user.Id, PlatformTenantId, ct) is not { IsActive: true })
+        {
+            await _refreshTokenRepository.RevokeIfLiveAsync(authResponse.RefreshToken!, SessionRevocationReasons.PasswordChanged, ct);
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+        }
         return CreateActionResultInstance(Response<AuthResponse>.Success(authResponse));
     }
 
@@ -481,6 +603,21 @@ public sealed class PlatformAuthController : CustomBaseController
         => stored is not null && System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
             System.Text.Encoding.UTF8.GetBytes(stored), System.Text.Encoding.UTF8.GetBytes(presented));
 
+    /// <summary>
+    /// BL-521 FIX3 item 4 — the token is a platform actor's: <c>actor_type</c> platform_admin or partner_admin (the only two
+    /// a platform token is minted with) and the platform tenant. A tenant_user token — even of a user that lives in the
+    /// platform tenant — is not.
+    /// </summary>
+    private static bool IsPlatformActorToken(System.Security.Claims.ClaimsPrincipal principal)
+    {
+        var actorType = principal.FindFirst("actor_type")?.Value;
+        var isPlatformActor = string.Equals(actorType, PlatformAdministratorRecordAnswer.PlatformAdminActorType, StringComparison.Ordinal)
+                              || string.Equals(actorType, PlatformAdministratorRecordAnswer.PartnerAdminActorType, StringComparison.Ordinal);
+        return isPlatformActor
+               && Guid.TryParse(principal.FindFirst("tenant_id")?.Value, out var tenantId)
+               && tenantId == PlatformTenantId;
+    }
+
     private async Task<User?> ResolveCurrentPlatformUserAsync(CancellationToken ct)
     {
         var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
@@ -490,7 +627,9 @@ public sealed class PlatformAuthController : CustomBaseController
             : null;
     }
 
-    private async Task<AuthResponse> BuildPlatformAuthResponseAsync(User user, bool rememberMe, string requestIp, string? userAgent, bool requiresPasswordChange, CancellationToken ct)
+    /// <param name="actorType">The actor type the administrator's Platform record names (BL-521 FIX2 item 1) — never
+    /// read from <c>user.PlatformActorType</c>.</param>
+    private async Task<AuthResponse> BuildPlatformAuthResponseAsync(User user, string actorType, bool rememberMe, string requestIp, string? userAgent, bool requiresPasswordChange, CancellationToken ct)
     {
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, PlatformTenantId, ct))
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -501,7 +640,6 @@ public sealed class PlatformAuthController : CustomBaseController
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var actorType = NormalizeActorType(user.PlatformActorType ?? "platform_admin");
         var accessToken = _tokenService.GeneratePlatformAccessToken(
             user.Id,
             user.Email,
@@ -565,45 +703,16 @@ public sealed class PlatformAuthController : CustomBaseController
     private static string NormalizeEmail(string email) => (email ?? string.Empty).Trim().ToLowerInvariant();
     private static string NormalizeUserName(string userName) => (userName ?? string.Empty).Trim().ToLowerInvariant();
 
+    /// <summary>
+    /// Auth's copy of the record's actor type, written by provision / sync (Platform sends the enum name). BL-521 FIX2
+    /// item 1 — informational only: no door takes a token's actor type from this copy any more (each asks the Platform
+    /// record). Both spellings are recognised, so the copy never turns a partner into platform_admin.
+    /// </summary>
     private static string NormalizeActorType(string actorType) =>
-        string.Equals(actorType, "PartnerAdmin", StringComparison.OrdinalIgnoreCase) ? "partner_admin" : "platform_admin";
-
-    private static IEnumerable<string> NormalizeRoles(IEnumerable<string>? roles)
-    {
-        var normalized = (roles ?? [])
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Select(x => x.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        return normalized.Length == 0 ? ["ReadOnly"] : normalized;
-    }
-
-    private async Task SyncPlatformRolesAsync(Guid userId, IEnumerable<string>? requestedRoles, CancellationToken ct)
-    {
-        var desired = NormalizeRoles(requestedRoles).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var platformRoleNames = new HashSet<string>(["SuperAdmin", "BillingAdmin", "SupportAdmin", "ReadOnly"], StringComparer.OrdinalIgnoreCase);
-        var current = (await _userRoleRepository.GetRolesByUserAsync(userId, PlatformTenantId, ct))
-            .Where(role => platformRoleNames.Contains(role))
-            .ToArray();
-
-        foreach (var roleName in desired)
-        {
-            var role = await _roleRepository.UpsertSystemRoleAsync(roleName, roleName, "Platform administrator role", PlatformTenantId, ct);
-            if (!await _userRoleRepository.ExistsAsync(userId, role.Id, PlatformTenantId, ct))
-            {
-                await _userRoleRepository.AssignAsync(new UserRole(userId, role.Id, PlatformTenantId, "system"), ct);
-            }
-        }
-
-        foreach (var roleName in current.Where(role => !desired.Contains(role)))
-        {
-            var role = await _roleRepository.GetByNameAndTenantAsync(roleName, PlatformTenantId, ct);
-            if (role is not null)
-            {
-                await _userRoleRepository.RevokeAsync(userId, role.Id, PlatformTenantId, ct);
-            }
-        }
-    }
+        string.Equals(actorType, "PartnerAdmin", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(actorType, PlatformAdministratorRecordAnswer.PartnerAdminActorType, StringComparison.OrdinalIgnoreCase)
+            ? PlatformAdministratorRecordAnswer.PartnerAdminActorType
+            : PlatformAdministratorRecordAnswer.PlatformAdminActorType;
 
     private async Task<(string? SetupUrl, bool EmailSent)> SendSetupLinkAsync(string email, string setupToken, CancellationToken ct)
     {

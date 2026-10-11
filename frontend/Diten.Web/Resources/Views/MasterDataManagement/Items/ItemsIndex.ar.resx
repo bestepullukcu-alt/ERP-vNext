@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ItemsTitle" xml:space="preserve"><value>الأصناف</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>المواد المحفوظة في المخزون: الهوية ونوع المادة وسلوك المخزون.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة صنف</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="CanonicalCode" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="MaterialType" xml:space="preserve"><value>نوع المادة</value></data>
+  <data name="BaseUomCode" xml:space="preserve"><value>الوحدة الأساسية</value></data>
+  <data name="UnitCode" xml:space="preserve"><value>رمز الوحدة</value></data>
+  <data name="Stockable" xml:space="preserve"><value>قابل للتخزين</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>متابعة بالدفعة</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ShelfLifeDays" xml:space="preserve"><value>مدة الصلاحية (أيام)</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>فترة إعادة الاختبار (أيام)</value></data>
+  <data name="MinRemainingShelfLifeDays" xml:space="preserve"><value>الحد الأدنى للصلاحية المتبقية (أيام)</value></data>
+  <data name="StorageConditionCodes" xml:space="preserve"><value>شروط التخزين</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>تحويلات الوحدات</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>آخر تعديل</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="MaterialType_ACTIVE_INGREDIENT" xml:space="preserve"><value>مادة فعالة</value></data>
+  <data name="MaterialType_EXCIPIENT" xml:space="preserve"><value>سواغ</value></data>
+  <data name="MaterialType_RAW_MATERIAL" xml:space="preserve"><value>مادة خام أخرى</value></data>
+  <data name="MaterialType_PACKAGING_PRIMARY" xml:space="preserve"><value>تغليف أولي</value></data>
+  <data name="MaterialType_PACKAGING_SECONDARY" xml:space="preserve"><value>تغليف ثانوي</value></data>
+  <data name="MaterialType_INTERMEDIATE" xml:space="preserve"><value>منتج وسيط</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="LifecyclePendingActivation" xml:space="preserve"><value>بانتظار الموافقة</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="LifecycleDeactivated" xml:space="preserve"><value>معطّل</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>متقاعد</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>صنف جديد</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الصنف</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>تفاصيل الصنف</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="StockBehaviourSection" xml:space="preserve"><value>سلوك المخزون</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>مثال: باراسيتامول</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>ما هذه المادة وأين تُستخدم</value></data>
+  <data name="MaterialTypePlaceholder" xml:space="preserve"><value>اختر نوع المادة</value></data>
+  <data name="BaseUomPlaceholder" xml:space="preserve"><value>اختر وحدة</value></data>
+  <data name="UnitCodeHint" xml:space="preserve"><value>اختر الوحدة من القائمة.</value></data>
+  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>اختر ظروف التخزين</value></data>
+  <data name="StorageConditionHint" xml:space="preserve"><value>اختر شرطاً واحداً أو أكثر من القائمة. شرط حرارة واحد على الأكثر.</value></data>
+  <data name="DaysPlaceholder" xml:space="preserve"><value>أيام</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>من الوحدة</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>إلى الوحدة</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>البسط</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>المقام</value></data>
+  <data name="ConversionHint" xml:space="preserve"><value>1 من الوحدة = البسط / المقام إلى الوحدة. أعداد عشرية بنقطة، أكبر من الصفر.</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>إضافة تحويل</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>إزالة</value></data>
+  <data name="NoConversions" xml:space="preserve"><value>لا توجد تحويلات بعد.</value></data>
+  <data name="ActiveLockedNote" xml:space="preserve"><value>هذا الصنف نشط: يمكن تعديل الاسم والوصف فقط بحرية. لا يتغير حقل مخزون معبأ إلا بتصحيح معتمد؛ ويمكن تعبئة الحقل الفارغ مرة واحدة.</value></data>
+  <data name="EditNotAvailable" xml:space="preserve"><value>لا يمكن تعديل هذا الصنف في حالته الحالية.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>تم إنشاء الصنف كمسودة.</value></data>
+  <data name="UpdateSuccess" xml:space="preserve"><value>تم حفظ الصنف.</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>انتهت صلاحية هذا النموذج. أعد تحميل الصفحة وأدخل الصنف مجددًا.</value></data>
+  <data name="ErrorValidation" xml:space="preserve"><value>لم تُقبل بعض القيم. تحقق من الحقول وحاول مجددًا.</value></data>
+  <data name="ErrorForbidden" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مجددًا.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>لم يُعثر على هذا الصنف. ربما أُزيل أو ليس لديك وصول إليه.</value></data>
+  <data name="ErrorConflict" xml:space="preserve"><value>تم تغيير هذا الصنف في هذه الأثناء. أعد تحميله وحاول مجددًا.</value></data>
+  <data name="ErrorProviderUnavailable" xml:space="preserve"><value>خدمة الأصناف غير متاحة حاليًا. حاول بعد قليل.</value></data>
+  <data name="ErrorProviderTimeout" xml:space="preserve"><value>لم تستجب خدمة الأصناف في الوقت المحدد. حاول بعد قليل.</value></data>
+  <data name="ErrorGateway" xml:space="preserve"><value>تعذرت قراءة الرد. حاول بعد قليل.</value></data>
+  <data name="ErrorExportTooLarge" xml:space="preserve"><value>عدد الصفوف أكبر من أن يُصدَّر دفعة واحدة (أكثر من 50,000). ضيّق القائمة أولًا بعامل تصفية أو بحث.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>تغيرت حالة الصنف في هذه الأثناء. تم تحديث القائمة.</value></data>
+  <data name="Submit" xml:space="preserve"><value>إرسال للموافقة</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>تعطيل</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>طلب إعادة التفعيل</value></data>
+  <data name="Retire" xml:space="preserve"><value>إحالة إلى التقاعد</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>هل تريد إرسال هذه المسودة لموافقة التفعيل؟</value></data>
+  <data name="DeactivateConfirmation" xml:space="preserve"><value>هل تريد تعطيل هذا الصنف؟ لن يمكن اختياره لإدخالات مخزون جديدة؛ ويظل بالإمكان صرف المخزون الحالي.</value></data>
+  <data name="ReactivateConfirmation" xml:space="preserve"><value>هل تطلب إعادة تفعيل هذا الصنف؟ تمر إعادة التفعيل بنفس موافقة التفعيل الأول.</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>هل تريد إحالة هذا الصنف إلى التقاعد؟ هذا نهائي: يجب أن يكون المخزون صفرًا ولا يُعاد استخدام الرمز.</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>تم إرسال الصنف للموافقة.</value></data>
+  <data name="DeactivateSuccess" xml:space="preserve"><value>تم تعطيل الصنف.</value></data>
+  <data name="ReactivateSuccess" xml:space="preserve"><value>تم طلب إعادة التفعيل.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>تمت إحالة الصنف إلى التقاعد.</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>السبب</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>أدخل سببًا (حتى 500 حرف، في سطر واحد).</value></data>
+  <data name="ListSeparator" xml:space="preserve"><value>، </value></data>
+  <data name="RefusalNameInvalid" xml:space="preserve"><value>أدخل اسمًا من 1 إلى 200 حرف.</value></data>
+  <data name="RefusalDescriptionInvalid" xml:space="preserve"><value>يمكن أن يتكون الوصف من 2,000 حرف على الأكثر.</value></data>
+  <data name="RefusalMaterialTypeRequired" xml:space="preserve"><value>اختر نوع المادة.</value></data>
+  <data name="RefusalMaterialTypeInvalid" xml:space="preserve"><value>نوع المادة هذا ليس من الأنواع الستة المسموح بها.</value></data>
+  <data name="RefusalBaseUomRequired" xml:space="preserve"><value>أدخل رمز الوحدة الأساسية.</value></data>
+  <data name="RefusalBaseUomInvalid" xml:space="preserve"><value>رمز الوحدة الأساسية طويل جدًا؛ أدخل رمزًا مثل KGM.</value></data>
+  <data name="RefusalFlagsRequired" xml:space="preserve"><value>حدد كلًا من «متابعة بالدفعة» و«قابل للتخزين».</value></data>
+  <data name="RefusalShelfLifeInvalid" xml:space="preserve"><value>يجب أن تكون مدة الصلاحية بين 1 و3650 يومًا.</value></data>
+  <data name="RefusalRetestInvalid" xml:space="preserve"><value>يجب أن تكون فترة إعادة الاختبار بين 1 و3650 يومًا.</value></data>
+  <data name="RefusalMinRemainingInvalid" xml:space="preserve"><value>يجب أن يكون الحد الأدنى للصلاحية المتبقية بين 0 و3650 يومًا وألا يتجاوز مدة الصلاحية.</value></data>
+  <data name="RefusalStorageInvalid" xml:space="preserve"><value>يجب أن تكون شروط التخزين رموزًا (10 على الأكثر).</value></data>
+  <data name="RefusalReasonRequired" xml:space="preserve"><value>السبب مطلوب (حتى 500 حرف، في سطر واحد).</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>لم يكن الطلب بالشكل المتوقع. أعد تحميل الصفحة وحاول مجددًا.</value></data>
+  <data name="RefusalListParameter" xml:space="preserve"><value>تعذر تطبيق البحث أو عامل التصفية (البحث 200 حرف على الأكثر). غيّره وحاول مجددًا.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>لم يُعثر على هذا الصنف. ربما أُزيل أو ليس لديك وصول إليه.</value></data>
+  <data name="RefusalNameConflict" xml:space="preserve"><value>يوجد بالفعل صنف بهذا الاسم ونوع المادة.</value></data>
+  <data name="RefusalReferenceValueInvalid" xml:space="preserve"><value>أحد الرموز المُدخلة ليس قيمة نشطة في قائمته. تحقق من نوع المادة ورموز الوحدات وشروط التخزين.</value></data>
+  <data name="RefusalReferenceValueInvalidNamed" xml:space="preserve"><value>هذه القيم ليست قيمًا نشطة في قوائمها: {0}.</value></data>
+  <data name="RefusalStorageConflict" xml:space="preserve"><value>شروط التخزين غير متوافقة مع بعضها.</value></data>
+  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>اختر شرط حرارة واحداً على الأكثر.</value></data>
+  <data name="RefusalStorageRepeated" xml:space="preserve"><value>تم إدخال شرط تخزين مرتين.</value></data>
+  <data name="RefusalUomConversion" xml:space="preserve"><value>أحد تحويلات الوحدات غير صالح.</value></data>
+  <data name="RefusalUomConversionUnitMissing" xml:space="preserve"><value>يحتاج كل تحويل إلى وحدة مصدر ووحدة هدف.</value></data>
+  <data name="RefusalUomConversionSameUnit" xml:space="preserve"><value>لا يمكن للتحويل أن يحوّل وحدة إلى نفسها.</value></data>
+  <data name="RefusalUomConversionFactor" xml:space="preserve"><value>يجب أن يكون البسط والمقام عددين عشريين أكبر من الصفر، مكتوبين بنقطة (مثل 0.001)، بلا أس أو إشارة.</value></data>
+  <data name="RefusalUomConversionPairRepeated" xml:space="preserve"><value>تم إدخال زوج وحدات مرتين (يُشتق الاتجاه العكسي؛ أدخل كل زوج مرة واحدة).</value></data>
+  <data name="RefusalStockBehaviourIncomplete" xml:space="preserve"><value>يحتاج الصنف القابل للتخزين إلى حقول المخزون: لغير مواد التغليف شرط تخزين واحد على الأقل، ومدة صلاحية أو فترة إعادة اختبار.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>قام شخص آخر بتغيير هذا الصنف في هذه الأثناء. أعد تحميله وحاول مجددًا.</value></data>
+  <data name="RefusalCriticalFieldLocked" xml:space="preserve"><value>في صنف نشط، لا يمكن تغيير حقل مخزون معبأ دون تصحيح معتمد.</value></data>
+  <data name="RefusalCriticalFieldLockedNamed" xml:space="preserve"><value>في صنف نشط، لا يمكن تغيير «{0}» دون تصحيح معتمد.</value></data>
+  <data name="RefusalTransitionInvalid" xml:space="preserve"><value>هذا الإجراء غير ممكن في الحالة الحالية للصنف. أعد تحميل القائمة.</value></data>
+  <data name="RefusalDeactivatedNotEditable" xml:space="preserve"><value>لا يمكن تعديل صنف معطّل.</value></data>
+  <data name="RefusalRetireRequiresDeactivation" xml:space="preserve"><value>يُعطَّل الصنف النشط أولًا؛ ولا يُحال إلى التقاعد إلا صنف معطّل.</value></data>
+  <data name="RefusalRetireStockNotZero" xml:space="preserve"><value>لا يزال لهذا الصنف مخزون، لذا لا يمكن إحالته إلى التقاعد. يبقى معطّلًا.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>أُرسل هذا النموذج سابقًا بقيم مختلفة. أعد تحميل الصفحة وأدخل الصنف مجددًا.</value></data>
+  <data name="RefusalReferenceListUnavailable" xml:space="preserve"><value>يتعذر التحقق من القوائم المرجعية (الوحدات، شروط التخزين، أنواع المواد) حاليًا. حاول بعد قليل.</value></data>
+  <data name="RefusalRetireStockCheckUnavailable" xml:space="preserve"><value>تعذر إكمال فحص المخزون، لذا لم يُحَل الصنف إلى التقاعد. يبقى معطّلًا؛ حاول لاحقًا.</value></data>
+  <data name="RefusalActivationApprovalUnavailable" xml:space="preserve"><value>موافقة التفعيل غير متاحة بعد: لا يمكن إرسال الأصناف للموافقة أو إعادة تفعيلها حتى يُفعَّل مسار الموافقة. لم يتغير شيء.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>خدمة يحتاجها هذا الإجراء غير متاحة حاليًا. حاول بعد قليل.</value></data>
+  <data name="RefusalCreatePending" xml:space="preserve"><value>تم حفظ الصنف لكنه لم يكتمل بعد. احفظ النموذج نفسه مجددًا لإكماله.</value></data>
+  <data name="RefusalTryAgain" xml:space="preserve"><value>تعذر إكمال الطلب. أعد تحميل الصفحة وحاول مجددًا.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>أبلغت خدمة الأصناف عن عدم اتساق داخلي. يُرجى إبلاغ المسؤول.</value></data>
+  <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>تعذر تحميل قوائم أنواع المواد والوحدات وظروف التخزين الآن، لذا لا يمكن اختيار هذه الحقول. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="RefusalOptionsTimeout" xml:space="preserve"><value>لم يتم تحميل قوائم أنواع المواد والوحدات وظروف التخزين في الوقت المحدد، لذا لا يمكن اختيار هذه الحقول. حاول مرة أخرى بعد قليل.</value></data>
+</root>

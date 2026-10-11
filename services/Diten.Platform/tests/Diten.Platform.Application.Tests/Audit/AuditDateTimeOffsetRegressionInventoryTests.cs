@@ -34,13 +34,17 @@ public sealed class AuditDateTimeOffsetRegressionInventoryTests
         Assert.Equal(
             MainAdditionsReviewed20261001.OrderBy(value => value, StringComparer.Ordinal).ToArray(),
             actualMainAdditions);
+        Assert.Equal(
+            Bl521AdditionsReviewed20261009,
+            inventory.Where(item => Bl521AdditionsReviewed20261009.Contains(item, StringComparer.Ordinal)).ToArray());
 
         // The current-main remainder is an inventory baseline, not FU02 semantic review or migration scope.
         // The count and fingerprint are the ORIGINAL ones: the named additions above are taken out first, so a
         // 34th member — or a change to any of the 413 — still fails here.
         var currentMainBaseline = inventory
             .Where(item => !reviewedAuditOutboxMembers.Contains(item, StringComparer.Ordinal)
-                           && !MainAdditionsReviewed20261001.Contains(item, StringComparer.Ordinal))
+                           && !MainAdditionsReviewed20261001.Contains(item, StringComparer.Ordinal)
+                           && !Bl521AdditionsReviewed20261009.Contains(item, StringComparer.Ordinal))
             .OrderBy(value => value, StringComparer.Ordinal)
             .ToArray();
         Assert.Equal(413, currentMainBaseline.Length);
@@ -48,10 +52,10 @@ public sealed class AuditDateTimeOffsetRegressionInventoryTests
             "2096BAAC2D48491C021D155B4F8CF603D1DAF13A8B48A03856561D1CE227BA13",
             Fingerprint(currentMainBaseline));
 
-        Assert.Equal(413 + reviewedAuditOutboxMembers.Length + MainAdditionsReviewed20261001.Length, inventory.Length);
-        Assert.Equal(448, inventory.Length);
+        Assert.Equal(413 + reviewedAuditOutboxMembers.Length + MainAdditionsReviewed20261001.Length + Bl521AdditionsReviewed20261009.Length, inventory.Length);
+        Assert.Equal(449, inventory.Length);
         Assert.Equal(
-            "B74D9BE71C32FD533FC2D29D65EC418170EECE2C02C11103452F212F63CCB58A",
+            "7716A8B5C0FD2588F09F9356A3B07D524228D570F135D574DEBC83070A866E8F",
             Fingerprint(inventory));
     }
 
@@ -69,6 +73,16 @@ public sealed class AuditDateTimeOffsetRegressionInventoryTests
      * This list is a review record, not a licence: a new member is added here only after its stored form is written
      * down, exactly as above.
      */
+    /// <summary>
+    /// Merge WP-CT-LANE-BL521-MERGE-01 (2026-10-09) — the ONE member BL-521 added, named as the 33 above are: FIX4 796c5a592,
+    /// PlatformAdministrator.AuthSyncPendingSinceUtc (nullable; set while an Auth sync of the record is outstanding, cleared
+    /// when it converges). Measured: the lane (bc1c92e41) has 448 members and B74D9BE7…; the merge adds exactly this one.
+    /// </summary>
+    private static readonly string[] Bl521AdditionsReviewed20261009 =
+    [
+        "Diten.Platform.Domain/Entities/PlatformAdministrator.cs:AuthSyncPendingSinceUtc"
+    ];
+
     private static readonly string[] MainAdditionsReviewed20261001 =
     [
         "Diten.Platform.Domain/Entities/DocumentManagement/DocumentRegisterImportBatch.cs:AppliedAt",
@@ -111,7 +125,8 @@ public sealed class AuditDateTimeOffsetRegressionInventoryTests
     {
         var src = PlatformSourceRoot();
         var attributed = new List<string>();
-        foreach (var item in MainAdditionsReviewed20261001)
+        // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 4): the BL-521 member is held to the same rule (CT sabotage M5).
+        foreach (var item in MainAdditionsReviewed20261001.Concat(Bl521AdditionsReviewed20261009))
         {
             var separator = item.LastIndexOf(':');
             var lines = File.ReadAllLines(Path.Combine(src, item[..separator].Replace('/', Path.DirectorySeparatorChar)));

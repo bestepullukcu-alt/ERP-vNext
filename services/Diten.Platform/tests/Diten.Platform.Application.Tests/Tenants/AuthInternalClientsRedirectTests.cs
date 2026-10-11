@@ -86,7 +86,7 @@ public sealed class AuthInternalClientsRedirectTests
                     new PlatformAdministratorProvisioningRequest("ops@di10.test", "ops", "Ops", "platform_admin", ["PlatformAdmin"], true), ct); break;
             case "PlatformAdministratorProvisioningService.Sync":
                 await Make<PlatformAdministratorProvisioningService>().SyncAsync(
-                    new PlatformAdministratorProvisioningSyncRequest("ops@di10.test", "ops", "Ops", "platform_admin", ["PlatformAdmin"]), ct); break;
+                    new PlatformAdministratorProvisioningSyncRequest("ops@di10.test", "ops", "Ops", "platform_admin", ["PlatformAdmin"], "Active"), ct); break; // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521 FIX4 item 5: the record's status travels
             case "AdminUserInvitationService":
                 var tenant = new Tenant { Code = "DITEN", Slug = "diten", Name = "diten", DisplayName = "Diten", Domain = "diten.test" };
                 var admin = new TenantAdminUser { Id = Guid.NewGuid(), Name = "Admin", Email = "admin@diten.test" };

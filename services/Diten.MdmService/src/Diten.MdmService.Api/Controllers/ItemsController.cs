@@ -38,6 +38,16 @@ public sealed class ItemsController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new GetItemListQuery(page, pageSize, q, materialType, status), cancellationToken));
 
+    // MOD-0290-FU04 S5b (BL-600): the choices of the item form and of the GSKU / LSKU / Finished Good stock forms — open to
+    // whoever may open one of those forms (the narrowest set: no read-only key).
+    [HttpGet("options")]
+    [HasPermission(CreatePermission, UpdatePermission,
+        Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourPermissions.EditGsku,
+        Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourPermissions.EditLsku,
+        Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourPermissions.EditFinishedGood)]
+    public async Task<IActionResult> GetOptions(CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetItemOptionsQuery(), cancellationToken));
+
     [HttpGet("{id:guid}")]
     [HasPermission(ReadPermission)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)

@@ -8,6 +8,8 @@
     var canSubmit = ViewData["CanSubmitLsku"] as bool? == true;
     var canWithdraw = ViewData["CanWithdrawLsku"] as bool? == true;
     var canRequestRetirement = ViewData["CanRequestRetirementLsku"] as bool? == true;
+    // MOD-0290-FU04 S5 (O-12, UAS-001): the stock-behaviour offcanvas and its script exist only with the stock-edit key.
+    var canEditStock = Diten.Web.Security.PermissionClaims.HasPermission(User, Diten.Web.Services.MasterData.StockBehaviourAccess.Lsku);
 }
 
 @*
@@ -38,4 +40,5 @@
 @* id="offcanvasDetailsPreview" is rendered by the real details partial. *@
 <partial name="~/Views/MasterDataManagement/Lskus/_DetailsQuickView.cshtml" />
 @if (canCreate) { <partial name="~/Views/MasterDataManagement/Lskus/_CreateEditOffcanvas.cshtml" /> }
-@section Scripts { @* <partial name="_IndexL10n" /> *@ <partial name="~/Views/MasterDataManagement/Lskus/_IndexL10n.cshtml" /><script src="~/assets/js/MasterDataManagement/Lskus/index.l10n.js" asp-append-version="true"></script><script src="~/assets/js/MasterDataManagement/Lskus/index.js" asp-append-version="true"></script> }
+@if (canEditStock) { <partial name="~/Views/MasterDataManagement/Lskus/_StockBehaviourOffcanvas.cshtml" /> }
+@section Scripts { @* <partial name="_IndexL10n" /> *@ <partial name="~/Views/MasterDataManagement/Lskus/_IndexL10n.cshtml" /><script src="~/assets/js/MasterDataManagement/Lskus/index.l10n.js" asp-append-version="true"></script>@if (canEditStock) { <script src="~/assets/js/MasterDataManagement/StockBehaviour/stock-behaviour.js" asp-append-version="true"></script> }<script src="~/assets/js/MasterDataManagement/Lskus/index.js" asp-append-version="true"></script> }

@@ -126,26 +126,14 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         var current = await _gskus.Find(target).FirstOrDefaultAsync(cancellationToken);
         if (current is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(current.StockBehaviourCommand, write) is { } replay) return replay;
-        if (current.Version == write.ExpectedVersion)
-        {
-            var latest = await FirstGskuIdentityWorkflowOperationRepository.LatestForGsku(
-                    _gskuIdentity, OperationTenant<FirstGskuIdentityWorkflowOperation>(), current.Id)
-                .FirstOrDefaultAsync(cancellationToken);
-            // The draft edit's own rule (FirstGskuIdentitySubmitState): only no submit, or a finished / ended one, frees
-            // the record.
-            if (FirstGskuIdentitySubmitState.Of(latest, current.Version).Kind is not
-                (FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.Ended))
-                return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
-        }
+        if (current.Version == write.ExpectedVersion && await GskuSubmitHoldsAsync(current, cancellationToken))
+            return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
         var reservations = current.IdentitySubmitReservations == 0
             ? Builders<Gsku>.Filter.Exists(x => x.IdentitySubmitReservations, false)
               | Builders<Gsku>.Filter.Eq(x => x.IdentitySubmitReservations, 0)
             : Builders<Gsku>.Filter.Eq(x => x.IdentitySubmitReservations, current.IdentitySubmitReservations);
-        var filter = Conditions(target, write)
-            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
-            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
-            & reservations;
+        var filter = Conditions(target, write) & LocksFree<Gsku>(GskuLocks) & reservations;
         if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
         var written = await _gskus.FindOneAndUpdateAsync(filter,
             Update<Gsku>(write, nameof(Gsku.StockBehaviourCommand)),
@@ -154,7 +142,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
 
         var now = await _gskus.Find(target).FirstOrDefaultAsync(cancellationToken);
         return Classify(now, now?.StockBehaviourCommand, now?.Version, now?.LifecycleStatus, write,
-            now is not null && (now.ActiveLifecycleOperation is not null || now.RetirementOperationId is not null
+            now is not null && (LocksHeld(now, GskuLocks)
                                 || now.IdentitySubmitReservations != current.IdentitySubmitReservations));
     }
 
@@ -166,25 +154,10 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         var current = await _lskus.Find(target).FirstOrDefaultAsync(cancellationToken);
         if (current is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(current.StockBehaviourCommand, write) is { } replay) return replay;
-        if (current.Version == write.ExpectedVersion
-            && (await _lskuIdentity.Find(OperationTenant<LskuIdentityWorkflowOperation>()
-                        & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LskuId, current.Id)
-                        & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, LskuFinished))
-                    .AnyAsync(cancellationToken)
-                // S3 FIX1 B1: an ACTIVE retirement request — after its decision the request gives the LSKU's lock back
-                // and only THEN reads the LSKU at base + 2 to complete; a stock edit in that window moved it to base + 3
-                // and the request was stuck for good (still active, so ux_lsku_active_retirement refused every new
-                // request). Active = IsActive not false (a document without the flag counts as active — the safe side)
-                // and not Completed (an old completed request without the flag never blocks).
-                || await _lskuRetirement.Find(OperationTenant<LskuRetirementRequestOperation>()
-                        & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.LskuId, current.Id)
-                        & Builders<LskuRetirementRequestOperation>.Filter.Ne(x => x.IsActive, false)
-                        & Builders<LskuRetirementRequestOperation>.Filter.Ne(
-                            x => x.Checkpoint, LskuRetirementRequestCheckpoint.Completed))
-                    .AnyAsync(cancellationToken)))
+        if (current.Version == write.ExpectedVersion && await LskuOperationHoldsAsync(current, cancellationToken))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
-        var filter = Conditions(target, write) & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null);
+        var filter = Conditions(target, write) & LocksFree<Lsku>(LskuLocks);
         if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
         var written = await _lskus.FindOneAndUpdateAsync(filter,
             Update<Lsku>(write, nameof(Lsku.StockBehaviourCommand)),
@@ -193,7 +166,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
 
         var now = await _lskus.Find(target).FirstOrDefaultAsync(cancellationToken);
         return Classify(now, now?.StockBehaviourCommand, now?.Version, now?.LifecycleStatus, write,
-            now?.ActiveLifecycleOperation is not null);
+            now is not null && LocksHeld(now, LskuLocks));
     }
 
     public async Task<StockBehaviourWriteResult> WriteFinishedGoodAsync(
@@ -205,17 +178,14 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         if (current is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(write.MarksGtin ? current.GtinCommand : current.StockBehaviourCommand, write) is { } replay)
             return replay;
-        // S3 FIX1 M4: a cancelled draft is not editable at all.
-        if (current.DraftCancellation is not null)
+        // S3 FIX1 M4: a cancelled draft is not editable at all. S5b-FIX3: its lock (the draft cancellation) is read
+        // from the Finished Good's lock list, as the filter below and the detail's editable flag read it.
+        if (LocksHeld(current, FinishedGoodLocks))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.RecordNotEditable);
-        if (current.Version == write.ExpectedVersion
-            && (await _finishedGoodIdentity.Find(OperationTenant<FinishedGoodIdentityWorkflowOperation>()
-                        & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Eq(x => x.FinishedGoodId, current.Id)
-                        & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, FinishedGoodFinished))
-                    .AnyAsync(cancellationToken)))
+        if (current.Version == write.ExpectedVersion && await FinishedGoodOperationHoldsAsync(current, cancellationToken))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
-        var filter = Conditions(target, write) & Builders<FinishedGood>.Filter.Eq(x => x.DraftCancellation, null);
+        var filter = Conditions(target, write) & LocksFree<FinishedGood>(FinishedGoodLocks);
         var update = Update<FinishedGood>(write,
             write.MarksGtin ? nameof(FinishedGood.GtinCommand) : nameof(FinishedGood.StockBehaviourCommand));
         if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
@@ -236,12 +206,73 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
 
         var now = await _finishedGoods.Find(target).FirstOrDefaultAsync(cancellationToken);
         // A cancellation that landed between the pre-read and the write (the write's own condition refused it).
-        if (now?.DraftCancellation is not null
+        if (now is not null && LocksHeld(now, FinishedGoodLocks)
             && Replay(write.MarksGtin ? now.GtinCommand : now.StockBehaviourCommand, write) is null)
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.RecordNotEditable);
         return Classify(now, write.MarksGtin ? now?.GtinCommand : now?.StockBehaviourCommand, now?.Version,
             now?.LifecycleStatus, write, heldByOperation: false);
     }
+
+    // ------------------------------------------------------------------------------------------- operation holds
+    // S5-FIX1 (1): ONE definition per level, read by the write above AND by the detail's editable flag.
+    // S5b-FIX2 (1): the lifecycle locks a record carries are ONE list per level. The write's Mongo filter (LocksFree:
+    // each field Eq null — a missing field matches too) and the in-memory reading (LocksHeld: Classify and *HeldAsync)
+    // are both generated from it; a pinned theory proves the two translations agree on every lock, set and unset, on a
+    // real store. S5b-FIX3 (CT decision): the lists are built by reflection from [StockWriteLock] on the entities
+    // (StockWriteLocks.Of) — no list is written by hand, the Finished Good's draft cancellation included.
+
+    internal static readonly IReadOnlyList<string> GskuLocks = StockWriteLocks.Of<Gsku>();
+    internal static readonly IReadOnlyList<string> LskuLocks = StockWriteLocks.Of<Lsku>();
+    internal static readonly IReadOnlyList<string> FinishedGoodLocks = StockWriteLocks.Of<FinishedGood>();
+
+    internal static FilterDefinition<T> LocksFree<T>(IEnumerable<string> locks) =>
+        locks.Aggregate(Builders<T>.Filter.Empty, (filter, field) => filter & new BsonDocument(field, BsonNull.Value));
+
+    internal static bool LocksHeld<T>(T record, IEnumerable<string> locks) =>
+        locks.Any(field => (typeof(T).GetProperty(field)
+                            ?? throw new InvalidOperationException($"{typeof(T).Name} has no lock field {field}."))
+            .GetValue(record) is not null);
+
+    public async Task<bool> GskuHeldAsync(Gsku gsku, CancellationToken cancellationToken = default) =>
+        LocksHeld(gsku, GskuLocks) || await GskuSubmitHoldsAsync(gsku, cancellationToken);
+
+    public async Task<bool> LskuHeldAsync(Lsku lsku, CancellationToken cancellationToken = default) =>
+        LocksHeld(lsku, LskuLocks) || await LskuOperationHoldsAsync(lsku, cancellationToken);
+
+    public Task<bool> FinishedGoodHeldAsync(FinishedGood finishedGood, CancellationToken cancellationToken = default) =>
+        FinishedGoodOperationHoldsAsync(finishedGood, cancellationToken);
+
+    // The draft edit's own rule (FirstGskuIdentitySubmitState): only no submit, or a finished / ended one, frees the record.
+    private async Task<bool> GskuSubmitHoldsAsync(Gsku current, CancellationToken cancellationToken)
+    {
+        var latest = await FirstGskuIdentityWorkflowOperationRepository.LatestForGsku(
+                _gskuIdentity, OperationTenant<FirstGskuIdentityWorkflowOperation>(), current.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        return FirstGskuIdentitySubmitState.Of(latest, current.Version).Kind is not
+            (FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.Ended);
+    }
+
+    private async Task<bool> LskuOperationHoldsAsync(Lsku current, CancellationToken cancellationToken) =>
+        await _lskuIdentity.Find(OperationTenant<LskuIdentityWorkflowOperation>()
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LskuId, current.Id)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, LskuFinished))
+            .AnyAsync(cancellationToken)
+        // S3 FIX1 B1: an ACTIVE retirement request — after its decision the request gives the LSKU's lock back and only
+        // THEN reads the LSKU at base + 2 to complete; a stock edit in that window moved it to base + 3 and the request
+        // was stuck for good (still active, so ux_lsku_active_retirement refused every new request). Active = IsActive
+        // not false (a document without the flag counts as active — the safe side) and not Completed (an old completed
+        // request without the flag never blocks).
+        || await _lskuRetirement.Find(OperationTenant<LskuRetirementRequestOperation>()
+                & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.LskuId, current.Id)
+                & Builders<LskuRetirementRequestOperation>.Filter.Ne(x => x.IsActive, false)
+                & Builders<LskuRetirementRequestOperation>.Filter.Ne(x => x.Checkpoint, LskuRetirementRequestCheckpoint.Completed))
+            .AnyAsync(cancellationToken);
+
+    private Task<bool> FinishedGoodOperationHoldsAsync(FinishedGood current, CancellationToken cancellationToken) =>
+        _finishedGoodIdentity.Find(OperationTenant<FinishedGoodIdentityWorkflowOperation>()
+                & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Eq(x => x.FinishedGoodId, current.Id)
+                & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, FinishedGoodFinished))
+            .AnyAsync(cancellationToken);
 
     public Task<bool> GtinHeldByAnotherAsync(string gtin, Guid finishedGoodId, CancellationToken cancellationToken = default) =>
         _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)

@@ -41,6 +41,18 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string GskusEditStockBehaviour = "mdm.gskus.edit-stock-behaviour";
     public const string LskusEditStockBehaviour = "mdm.lskus.edit-stock-behaviour";
     public const string FinishedGoodsEditStockBehaviour = "mdm.finished-goods.edit-stock-behaviour";
+    // BL-592 (WP-MDM-PERMS-01): the item master keys MDM's ItemsController checks (measured on the CT line, FU04 S4 and
+    // S5: the same six; reactivation is gated by .submit — there is no .reactivate key) and the stock team's read
+    // contract (S4 ProductMasterContract.ReadPermission).
+    public const string ItemsRead = "mdm.items.read";
+    public const string ItemsCreate = "mdm.items.create";
+    public const string ItemsUpdate = "mdm.items.update";
+    public const string ItemsSubmit = "mdm.items.submit";
+    public const string ItemsDeactivate = "mdm.items.deactivate";
+    public const string ItemsRetire = "mdm.items.retire";
+    // BL-592 FIX1 (CT decision): FU04 S2 (b2bd59538) adds withdraw; the manifest may declare the six or the six + withdraw.
+    public const string ItemsWithdraw = "mdm.items.withdraw";
+    public const string ProductMasterRead = "mdm.product-master.read";
     public const string ProductIdentityLifecycleOperationRecover =
         DefaultRolePermissionTemplate.ProductIdentityLifecycleRecoveryPermission;
 
@@ -103,6 +115,40 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             GskusEditStockBehaviour,
             LskusEditStockBehaviour,
             FinishedGoodsEditStockBehaviour
+        };
+
+    /// <summary>
+    /// BL-592 (CT decision, the BL-573 pattern) — the item master keys are an ALL-OR-NOTHING optional set: today's
+    /// manifest declares none, FU04 S5's declares all six, and once S2 ships, the six + <see cref="ItemsWithdraw"/>
+    /// (<see cref="ItemPermissionKeysWithWithdraw"/>, FIX1). Any other subset — one to five of the six, withdraw alone or
+    /// without all six, or any other <c>mdm.items.*</c> key — is refused. Generic keys (not dedicated-only): with the
+    /// module's entitlement the tenant Admin receives every declared item key and the Viewer the read action only
+    /// (<see cref="DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions"/>); withdraw is not a read. S2's "only
+    /// the maker withdraws" rule is MDM's; Auth only grants the key.
+    /// </summary>
+    public static readonly IReadOnlySet<string> ItemPermissionKeys =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            ItemsRead,
+            ItemsCreate,
+            ItemsUpdate,
+            ItemsSubmit,
+            ItemsDeactivate,
+            ItemsRetire
+        };
+
+    /// <summary>BL-592 FIX1 — the second allowed item set: the six + <see cref="ItemsWithdraw"/>.</summary>
+    public static readonly IReadOnlySet<string> ItemPermissionKeysWithWithdraw =
+        new HashSet<string>(ItemPermissionKeys, StringComparer.Ordinal) { ItemsWithdraw };
+
+    /// <summary>
+    /// BL-592 — the product-master read contract is an optional single key: declared or not; any other
+    /// <c>mdm.product-master.*</c> key is refused. Generic: Admin and (read action) Viewer receive it with the entitlement.
+    /// </summary>
+    public static readonly IReadOnlySet<string> ProductMasterPermissionKeys =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            ProductMasterRead
         };
 
     public static readonly IReadOnlySet<string> SharedDependencyKeys =
@@ -209,6 +255,12 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         return StockBehaviourPermissionKeys.All(declared.Contains) ? StockBehaviourPermissionKeys.ToList() : [];
     }
 
+    public static bool IsItemPermissionKey(string? permissionKey)
+        => !string.IsNullOrWhiteSpace(permissionKey) && ItemPermissionKeysWithWithdraw.Contains(permissionKey);
+
+    public static bool IsProductMasterPermissionKey(string? permissionKey)
+        => !string.IsNullOrWhiteSpace(permissionKey) && ProductMasterPermissionKeys.Contains(permissionKey);
+
     public static bool IsBasePermissionKey(string? permissionKey)
         => !string.IsNullOrWhiteSpace(permissionKey) && BasePermissionKeys.Contains(permissionKey);
 
@@ -235,29 +287,69 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         var crossModuleDependencies = supplied
             .Where(IsDeclaredCrossModuleDependencyKey)
             .ToHashSet(StringComparer.Ordinal);
+        // BL-592: every key of the two resources, so an unknown action (mdm.items.reactivate, mdm.product-master.write) is
+        // a mismatch, not a key the rule never looked at.
+        var items = supplied.Where(key => key.StartsWith("mdm.items.", StringComparison.OrdinalIgnoreCase))
+            .ToHashSet(StringComparer.Ordinal);
+        var productMaster = supplied.Where(key => key.StartsWith("mdm.product-master.", StringComparison.OrdinalIgnoreCase))
+            .ToHashSet(StringComparer.Ordinal);
         var relevantCount = supplied.Count(key =>
             IsLifecycleCandidateKey(key)
             || IsBasePermissionKey(key)
             || IsNonHumanPermissionKey(key)
             || IsDeclaredCrossModuleDependencyKey(key));
 
-        if (!lifecycle.SetEquals(PermissionKeys)
-            // BL-573 (CT decision A): none of the three, or all three — never one or two.
-            || (stockBehaviour.Count != 0 && !stockBehaviour.SetEquals(StockBehaviourPermissionKeys))
-            || !basePermissions.SetEquals(BasePermissionKeys)
-            || !nonHumanPermissions.SetEquals(NonHumanPermissionKeys)
-            || !crossModuleDependencies.SetEquals(DeclaredCrossModuleDependencyKeys)
-            || relevantCount != PermissionKeys.Count
-                + stockBehaviour.Count
-                + BasePermissionKeys.Count
-                + NonHumanPermissionKeys.Count
-                + DeclaredCrossModuleDependencyKeys.Count
-            || supplied.Any(key => key.StartsWith("mdm.product-definition-revisions.", StringComparison.OrdinalIgnoreCase))
+        // BL-592 FIX1: every mismatch is collected and NAMED in the refusal — the missing and the unexpected keys.
+        var missing = new SortedSet<string>(StringComparer.Ordinal);
+        var unexpected = new SortedSet<string>(StringComparer.Ordinal);
+        void Compare(IReadOnlySet<string> expected, IReadOnlySet<string> actual)
+        {
+            missing.UnionWith(expected.Where(key => !actual.Contains(key)));
+            unexpected.UnionWith(actual.Where(key => !expected.Contains(key)));
+        }
+
+        Compare(PermissionKeys, lifecycle);
+        // BL-573 (CT decision A): none of the three, or all three — never one or two.
+        if (stockBehaviour.Count != 0)
+        {
+            Compare(StockBehaviourPermissionKeys, stockBehaviour);
+        }
+        // BL-592: none of the item keys, all six, or (FIX1, CT decision) all six + withdraw — never another subset.
+        if (items.Count != 0 && !items.SetEquals(ItemPermissionKeys) && !items.SetEquals(ItemPermissionKeysWithWithdraw))
+        {
+            Compare(items.Contains(ItemsWithdraw) ? ItemPermissionKeysWithWithdraw : ItemPermissionKeys, items);
+        }
+        // BL-592: the product-master read key alone, or nothing of that resource.
+        if (productMaster.Count != 0)
+        {
+            Compare(ProductMasterPermissionKeys, productMaster);
+        }
+        Compare(BasePermissionKeys, basePermissions);
+        Compare(NonHumanPermissionKeys, nonHumanPermissions);
+        Compare(DeclaredCrossModuleDependencyKeys, crossModuleDependencies);
+        unexpected.UnionWith(supplied.Where(key =>
+            key.StartsWith("mdm.product-definition-revisions.", StringComparison.OrdinalIgnoreCase)
             // FIX2 (item 1) — a Brand key in this module's descriptor is a stale manifest (Brand is brand-product-master).
-            || supplied.Any(IsBrandModuleKey))
+            || IsBrandModuleKey(key)));
+        var countMismatch = relevantCount != PermissionKeys.Count
+            + stockBehaviour.Count
+            + BasePermissionKeys.Count
+            + NonHumanPermissionKeys.Count
+            + DeclaredCrossModuleDependencyKeys.Count;
+
+        var duplicated = supplied.GroupBy(key => key, StringComparer.Ordinal)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        if (missing.Count != 0 || unexpected.Count != 0 || countMismatch)
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle and one non-human recovery key — either without the three stock-behaviour edit keys or with exactly all three (mdm.gskus / mdm.lskus / mdm.finished-goods .edit-stock-behaviour) — with no Brand, Revision or product approve/reject key.");
+                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle and one non-human recovery key — either without the three stock-behaviour edit keys or with exactly all three (mdm.gskus / mdm.lskus / mdm.finished-goods .edit-stock-behaviour), either without the item keys or with exactly all six (mdm.items .read / .create / .update / .submit / .deactivate / .retire) or those six and .withdraw, and mdm.product-master.read alone or nothing of that resource — with no Brand, Revision or product approve/reject key."
+                + $" Missing: [{string.Join(", ", missing)}]."
+                + $" Unexpected: [{string.Join(", ", unexpected)}]."
+                + $" Duplicated: [{string.Join(", ", duplicated)}].");
         }
     }
 
@@ -272,6 +364,8 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                      IsBasePermissionKey(permission.Key)
                      || IsOwnedPermissionKey(permission.Key)
                      || IsStockBehaviourPermissionKey(permission.Key)
+                     || IsItemPermissionKey(permission.Key)
+                     || IsProductMasterPermissionKey(permission.Key)
                      || IsNonHumanPermissionKey(permission.Key)))
         {
             var separator = permission.Key.LastIndexOf('.');

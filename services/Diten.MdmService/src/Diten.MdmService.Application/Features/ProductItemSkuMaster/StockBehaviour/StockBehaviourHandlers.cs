@@ -70,6 +70,12 @@ public sealed class StockBehaviourContext(
     public static bool Editable(ProductIdentityLifecycleStatus status) =>
         status is ProductIdentityLifecycleStatus.Draft or ProductIdentityLifecycleStatus.IdentityApproved;
 
+    // S5-FIX1 (1): a cancelled (or cancelling) Finished Good draft is not editable at all (S3 FIX1 M4) — one rule, read by
+    // the write and by the detail's editable flag.
+    public static bool FinishedGoodEditable(FinishedGood finishedGood) =>
+        // S5b-FIX3: the record's write locks ([StockWriteLock] — today the draft cancellation), the list the write reads.
+        Editable(finishedGood.LifecycleStatus) && !StockWriteLocks.Held(finishedGood);
+
     public static Response<StockBehaviourResult> Done(Guid recordId, StockBehaviourWriteResult written)
     {
         if (written.Succeeded)
@@ -116,12 +122,15 @@ public sealed class SetGskuStockBehaviourHandler(
             return StockBehaviourContext.Fail(StockBehaviourErrors.Forbidden, 403);
         if (!StockBehaviourContext.ValidCommand(command.GskuId, command.ExpectedVersion, command.OperationId)
             || command is { BaseUomCode: null, UomConversions: null, ShelfLifeDays: null, StorageConditionCodes: null,
-                LotControlled: null, Stockable: null }
+                LotControlled: null, Stockable: null, RetestDays: null, MinRemainingShelfLifeDays: null }
             || command.BaseUomCode is { Length: 0 })
             return StockBehaviourContext.Fail(StockBehaviourErrors.Invalid, 400);
         if (StockBehaviourContext.ShapeError(command.UomConversions, command.StorageConditionCodes, command.ShelfLifeDays)
             is { } shape)
             return StockBehaviourContext.Fail(shape, 422);
+        if (!StockBehaviourRules.IsValidOptionalDays(command.RetestDays)
+            || !StockBehaviourRules.IsValidOptionalDays(command.MinRemainingShelfLifeDays))
+            return StockBehaviourContext.Fail(StockBehaviourRules.DaysInvalid, 422);
 
         var (gsku, scopeCode, scopeStatus) = await context.ResolveGskuAsync(
             StockBehaviourPermissions.EditGsku, command.GskuId, cancellationToken);
@@ -130,7 +139,7 @@ public sealed class SetGskuStockBehaviourHandler(
         var fingerprint = StockBehaviourPlan.Fingerprint("gsku", gsku.Id, command.ExpectedVersion, new
         {
             command.BaseUomCode, command.UomConversions, command.ShelfLifeDays, command.StorageConditionCodes,
-            command.LotControlled, command.Stockable
+            command.LotControlled, command.Stockable, command.RetestDays, command.MinRemainingShelfLifeDays
         });
         if (StockBehaviourContext.Stale(gsku.Id, gsku.Version, command.ExpectedVersion, gsku.StockBehaviourCommand,
                 command.OperationId, fingerprint) is { } stale)
@@ -145,8 +154,36 @@ public sealed class SetGskuStockBehaviourHandler(
         plan.Field(StockBehaviourFields.StorageConditionCodes, command.StorageConditionCodes, gsku.StorageConditionCodes);
         plan.Field(StockBehaviourFields.LotControlled, command.LotControlled, gsku.LotControlled);
         plan.Field(StockBehaviourFields.Stockable, command.Stockable, gsku.Stockable);
+        // S3b: the same O-8 rule — free on a Draft, a first fill on an approved GSKU, locked once filled.
+        plan.Field(StockBehaviourFields.RetestDays, command.RetestDays, gsku.RetestDays);
+        plan.Field(StockBehaviourFields.MinRemainingShelfLifeDays, command.MinRemainingShelfLifeDays,
+            gsku.MinRemainingShelfLifeDays);
         if (plan.LockedField is not null)
             return StockBehaviourContext.Fail(StockBehaviourStoreCodes.FieldLocked, 409);
+        var shelfLifeAfter = plan.After(StockBehaviourFields.ShelfLifeDays, gsku.ShelfLifeDays);
+        // S3b FIX2 (R-3, CT decision): no first fill of the retest / minimum-remaining days on a non-Draft GSKU before its
+        // shelf life (in this request or already on it). A Draft stays free. The refusal names the fields after the code.
+        var needShelfLife = new List<string>();
+        if (shelfLifeAfter is null && plan.FirstFills.Contains(StockBehaviourFields.RetestDays))
+            needShelfLife.Add("retestDays");
+        if (shelfLifeAfter is null && plan.FirstFills.Contains(StockBehaviourFields.MinRemainingShelfLifeDays))
+            needShelfLife.Add("minRemainingShelfLifeDays");
+        if (needShelfLife.Count > 0)
+            return Response<StockBehaviourResult>.Fail([StockBehaviourRules.DaysRequireShelfLife, .. needShelfLife], 422);
+        // S3b FIX1 (CT decision): the retest interval and the minimum remaining shelf life never exceed the shelf life,
+        // when it is known — checked on the record as it will be (a value once filled is locked, so a wrong one would stay).
+        // S3b FIX2 (R-2): only when this request sets one of the three day fields — an older record already outside the
+        // rule is not locked against every other edit (a flag's first fill, a storage code).
+        if ((plan.Sets.ContainsKey(StockBehaviourFields.ShelfLifeDays)
+             || plan.Sets.ContainsKey(StockBehaviourFields.RetestDays)
+             || plan.Sets.ContainsKey(StockBehaviourFields.MinRemainingShelfLifeDays))
+            && StockFlagGate.DaysDetail(
+                shelfLifeAfter,
+                plan.After(StockBehaviourFields.RetestDays, gsku.RetestDays),
+                plan.After(StockBehaviourFields.MinRemainingShelfLifeDays, gsku.MinRemainingShelfLifeDays)) is { } daysDetail)
+            // S5 (D-15): the refusal says which days exceed and the bound the shelf life must reach — the way out of an
+            // older record whose days were filled before its shelf life.
+            return Response<StockBehaviourResult>.Fail([StockBehaviourRules.DaysInvalid, .. daysDetail], 422);
 
         var baseUom = plan.After(StockBehaviourFields.BaseUomCode, gsku.BaseUomCode);
         var conversions = plan.After<List<ItemUomConversion>>(StockBehaviourFields.UomConversions, gsku.UomConversions);
@@ -270,7 +307,7 @@ public sealed class SetFinishedGoodStockBehaviourHandler(
         if (StockBehaviourContext.Stale(finishedGood.Id, finishedGood.Version, command.ExpectedVersion,
                 finishedGood.StockBehaviourCommand, command.OperationId, fingerprint) is { } stale)
             return stale;
-        if (!StockBehaviourContext.Editable(finishedGood.LifecycleStatus) || finishedGood.DraftCancellation is not null)
+        if (!StockBehaviourContext.FinishedGoodEditable(finishedGood))
             return StockBehaviourContext.Fail(StockBehaviourStoreCodes.RecordNotEditable, 409);
 
         var plan = new StockBehaviourPlan(finishedGood.LifecycleStatus);
@@ -369,7 +406,7 @@ public sealed class AssignFinishedGoodGtinHandler(
         if (StockBehaviourContext.Stale(finishedGood.Id, finishedGood.Version, command.ExpectedVersion,
                 finishedGood.GtinCommand, command.OperationId, fingerprint) is { } stale)
             return stale;
-        if (!StockBehaviourContext.Editable(finishedGood.LifecycleStatus) || finishedGood.DraftCancellation is not null)
+        if (!StockBehaviourContext.FinishedGoodEditable(finishedGood))
             return StockBehaviourContext.Fail(StockBehaviourStoreCodes.RecordNotEditable, 409);
 
         var plan = new StockBehaviourPlan(finishedGood.LifecycleStatus);

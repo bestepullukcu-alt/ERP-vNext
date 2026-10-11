@@ -63,6 +63,7 @@ public static class DependencyInjection
 
         // Services
         services.AddScoped<Diten.AuthService.Application.Common.Interfaces.ICurrentUserAccessor, Services.CurrentUserAccessor>(); // FEAT-AUDIT-RBAC
+        services.AddScoped<IPlatformAccountVisibility, Services.HttpPlatformAccountVisibility>(); // BL-521 FIX6 item 13 (D')
         services.AddScoped<PasswordHasher>(); // concrete class registration
         services.AddScoped<IPasswordHasher>(sp => sp.GetRequiredService<PasswordHasher>());
         services.AddScoped<ITokenService, TokenService>();
@@ -92,13 +93,17 @@ public static class DependencyInjection
         // out under the product's name. The cache is a singleton; the typed client is not.
         // It never follows a redirect: the internal API key must not travel to another host.
         PlatformTenantEmailIdentityClient.Register(services);
+        // BL-521 FIX5 item 1 — this client carries the internal API key in a CUSTOM header (X-Internal-Api-Key), which
+        // HttpClient keeps across a redirect (it drops only Authorization): a 302 would hand the key to whatever host the
+        // answer named, and the answer now decides the roles a token is minted with. A redirect is an answer like any other
+        // non-success — no answer (503), never followed. The timeout bounds a Platform that never answers (1–30 s).
         services.AddHttpClient<IPlatformAdministratorStatusClient, PlatformAdministratorStatusClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
         })
-            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
+            .WithoutRedirects(); // BL-454 / BL-521 FIX5 item 1 — carries the internal API key: never follows a redirect.
         services.AddHttpClient<ITenantEntitlementClient, PlatformTenantEntitlementClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;

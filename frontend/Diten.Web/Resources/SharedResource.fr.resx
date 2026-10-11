@@ -637,6 +637,9 @@
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU</value>
   </data>
+  <data name="Nav.Page.ITEMS" xml:space="preserve">
+    <value>Articles</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Types de tâche</value>
   </data>

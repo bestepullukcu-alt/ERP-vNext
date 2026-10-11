@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Application.Features.Auth.Services;
@@ -80,7 +81,22 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         }
 
         var user = await _userRepository.GetByEmailAndTenantAsync(request.Email, _tenantContext.TenantId, ct);
+
+        // BL-521 FIX6 item 13 (A') — A PLATFORM ACCOUNT NEVER SIGNS IN AT THE TENANT DOOR. A platform administrator's account
+        // sits in the platform system tenant, which is also a business tenant; asked at this door it used to verify the
+        // password and mint a tenant_user token carrying the account's platform roles' whole permission set (measured on
+        // FIX5: it opened the user list and let the token disable, reset the password of and assign roles to ANOTHER
+        // administrator) — without ever asking Platform's administrator record, which the platform door asks every time. The
+        // answer is this door's own generic 401, given BEFORE the password is looked at: an account of that kind and a
+        // stranger's address are the same answer, no failed-attempt count, no audit row, nothing to tell them apart. The
+        // ordinary users of the same tenant are untouched.
         if (user == null) return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+        if (user.IsPlatformAccount)
+        {
+            // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
+            TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.SignInDoor, _tenantContext.TenantId);
+            return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+        }
 
         var lockoutFailure = await CheckLockout(user, ct);
         if (lockoutFailure is not null)

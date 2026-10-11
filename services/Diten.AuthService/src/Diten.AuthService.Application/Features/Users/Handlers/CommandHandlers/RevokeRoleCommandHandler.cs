@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Roles;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
@@ -9,6 +10,7 @@ namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 
 public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand, Response<NoContent>>
 {
+    private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -18,6 +20,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
     private readonly ILogger<RevokeRoleCommandHandler> _logger;
 
     public RevokeRoleCommandHandler(
+        IUserRepository userRepository,
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
         IRefreshTokenRepository refreshTokenRepository,
@@ -26,6 +29,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         IUserAuditRecorder userAudit,
         ILogger<RevokeRoleCommandHandler> logger)
     {
+        _userRepository = userRepository;
         _roleRepository = roleRepository;
         _userRoleRepository = userRoleRepository;
         _refreshTokenRepository = refreshTokenRepository;
@@ -37,6 +41,17 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
 
     public async Task<Response<NoContent>> Handle(RevokeRoleCommand request, CancellationToken ct)
     {
+        // BL-521 FIX6 item 13 (D') — the user is asked for FIRST, as the assignment does. Before, a revoke answered 204 for any
+        // id — a user that does not exist included — and closed the user's refresh path; a tenant actor could therefore strip
+        // the roles of, and end the sessions of, an account it cannot see. Now an id that is not a user of this tenant — and,
+        // for a tenant actor, a platform account (the repository does not show one) — is 404 like any absent user, so the answer
+        // cannot tell the two apart.
+        var user = await _userRepository.GetByIdAndTenantAsync(request.UserId, _tenantContext.TenantId, ct);
+        if (user is null)
+        {
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.UserRoleUserNotFound, "User not found.", 404);
+        }
+
         // FIX-USERROLE-REVOKE-SYSTEMROLE — no system-role block: removing a user↔role assignment only NARROWS
         // the user's effective permissions (no escalation), and AssignRoleCommandHandler is itself unguarded, so
         // the revoke must be symmetric. The role is still loaded for the audit's roleName below.

@@ -32,8 +32,12 @@ const GskusList = (function () {
     const L = window.L10n || {};
     const permissionHost = document.querySelector('[data-can-create]');
     const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
-    const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'];
-    const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']);
+    // S3b FIX2 (B1): STOCK_FLAGS_REQUIRED stands where SUBMIT would (after EDIT, before SUBMIT) when the stock-flag gate
+    // would refuse the submit. Its reason is said in the quick view; S5: for a user with the stock-edit key it is also a
+    // menu item, "Fill in stock behaviour", that opens the stock-behaviour offcanvas. An action this screen does not know
+    // is still refused (the server's action list is a contract, pinned by the register test).
+    const actionOrder = ['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'];
+    const supportedActions = new Set(['DETAILS', 'EDIT', 'STOCK_FLAGS_REQUIRED', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']);
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -141,6 +145,21 @@ const GskusList = (function () {
         }
         return detail;
     };
+    /*
+     * MOD-0290-FU04 S5 (O-12) — the "Stock behaviour" section and its own offcanvas (StockBehaviour/stock-behaviour.js).
+     * Both are in the page only for a user with the GSKU's stock-edit key (UAS-001, decided in the cshtml): without them
+     * there is no module, no section and no shortcut. Created on first use; the version it sends is the gskuVersion.
+     */
+    let stockBehaviour;
+    const stock = () => {
+        if (stockBehaviour === undefined) {
+            stockBehaviour = window.DitenStockBehaviour?.create?.({
+                level: 'gsku', endpoint, versionField: 'gskuVersion', fetchDetail,
+                onSaved: () => dt?.ajax.reload(null, false)
+            }) || null;
+        }
+        return stockBehaviour;
+    };
     const renderDetail = (detail, expectedId) => {
         const detailId = valueOf(detail, 'id', 'Id');
         const detailVersion = readVersion(detail, 'gskuVersion', 'GskuVersion');
@@ -180,7 +199,11 @@ const GskusList = (function () {
                 ? L.IdentityStateReconciliationRequired : L.IdentityStateReconciliationOtherUser,
             SUBMISSION_ENDED: L.IdentityStateSubmissionEnded
         }[submitState] || '';
-        const notAppliedText = submitStateText || (!notApplied ? ''
+        // S3b FIX1 (R2): the server offers STOCK_FLAGS_REQUIRED instead of SUBMIT when the gate would refuse — say why.
+        const rawActions = valueOf(detail, 'availableActions', 'AvailableActions');
+        const stockFlagsText = Array.isArray(rawActions) && rawActions.includes('STOCK_FLAGS_REQUIRED')
+            ? L.SubmitNeedsStockFlags : '';
+        const notAppliedText = submitStateText || stockFlagsText || (!notApplied ? ''
             : notApplied === 'FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED' ? L.IdentityNotAppliedParent
             : notApplied === 'REFERENCE_DATA_CONTRACT_CONFLICT' || notApplied === 'REFERENCE_NOT_SELECTABLE'
                 ? L.IdentityNotAppliedReference
@@ -202,6 +225,7 @@ const GskusList = (function () {
         if (!statusElement) throw new Error(L.ErrorGateway);
         statusElement.outerHTML = renderLifecycle(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'))
             .replace('<span ', '<span id="oc-status" ');
+        stock()?.render(detail);
         bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show();
         return detailState;
     };
@@ -239,6 +263,8 @@ const GskusList = (function () {
     const actionPresentation = {
         DETAILS: { key: 'quickView', className: 'js-quick-view', icon: 'bx bx-show', label: () => L.ViewDetails },
         EDIT: { key: 'editDraft', className: 'js-edit-draft', icon: 'bx bx-edit', label: () => L.EditDraft },
+        // S5: the stock-flag reason as a shortcut to the stock-behaviour offcanvas — drawn only when that offcanvas exists.
+        STOCK_FLAGS_REQUIRED: { key: 'fillStockBehaviour', className: 'js-fill-stock-behaviour', icon: 'bx bx-package', label: () => stock()?.words?.FillIn || '' },
         SUBMIT: { key: 'submitIdentity', className: 'js-lifecycle-action', icon: 'bx bx-send', label: () => L.SubmitIdentity },
         WITHDRAW_APPROVAL: { key: 'withdrawApproval', className: 'js-lifecycle-action', icon: 'bx bx-undo', label: () => L.WithdrawApproval },
         REQUEST_CORRECTION: { key: 'requestCorrection', className: 'js-request-correction', icon: 'bx bx-revision', label: () => L.RequestCorrection },
@@ -247,7 +273,9 @@ const GskusList = (function () {
         REPEAT_REQUEST: { key: 'repeatRequest', className: 'js-repeat-request', icon: 'bx bx-refresh', label: () => L.RepeatRequest }
     };
     const renderFreshActionMenu = (menu, id, actions) => {
-        menu.innerHTML = actions.filter((action) => supportedActions.has(action)).map((action) => {
+        // Only actions with a menu item are drawn; STOCK_FLAGS_REQUIRED only for a user with the stock-edit key (S5).
+        menu.innerHTML = actions.filter((action) => supportedActions.has(action) && actionPresentation[action]
+            && (action !== 'STOCK_FLAGS_REQUIRED' || !!stock())).map((action) => {
             const { key, className, icon, label } = actionPresentation[action];
             return `<a href="javascript:void(0);" class="dropdown-item dt-action-item ${className}" data-row-action="${key}" data-id="${escapeHtml(id)}" data-action="${action}"><i class="${icon} dt-action-icon"></i>${escapeHtml(label())}</a>`;
         }).join('');
@@ -260,6 +288,7 @@ const GskusList = (function () {
     const rowActionHandlers = () => ({
         quickView: rowAction((id) => populateDetails(id)),
         editDraft: rowAction((id, trigger) => openEdit(id, trigger)),
+        fillStockBehaviour: rowAction((id) => stock()?.open(id)),
         submitIdentity: rowAction((id, trigger) => requestLifecycle(id, 'SUBMIT', trigger)),
         withdrawApproval: rowAction((id, trigger) => requestLifecycle(id, 'WITHDRAW_APPROVAL', trigger)),
         requestCorrection: rowAction((id, trigger) => openCorrection(id, trigger)),

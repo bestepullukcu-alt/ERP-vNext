@@ -20,7 +20,7 @@ namespace Diten.MdmService.Application.Tests.ReferenceData;
 /// Platform's handler test produces) is trusted; anything that does not exactly cover the request is UNTRUSTED_ANSWER;
 /// every failure is fail-closed; the production wiring and its named start refusal.
 /// </summary>
-public sealed class PlatformItemReferenceResolverClientTests
+public sealed partial class PlatformItemReferenceResolverClientTests
 {
     private static readonly ItemReferenceRequest[] ContractRequest =
     [

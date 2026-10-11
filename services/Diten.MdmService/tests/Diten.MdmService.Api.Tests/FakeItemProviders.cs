@@ -34,9 +34,14 @@ public sealed class FakeItemReferences : IItemReferenceResolver
     public HashSet<string> Retired { get; } = new(StringComparer.Ordinal);
     // WP-PLT-ITEM-LISTS-01: the REAL Platform client a test puts in (the host's resolver is this fake).
     public IItemReferenceResolver? Override { get; set; }
+    // S5b-FIX2 (2): an enumeration naming its first set twice; a set listed under its own catalog version.
+    public bool RepeatEnumeratedSet { get; set; }
+    public Dictionary<string, string> EnumeratedVersions { get; } = new(StringComparer.Ordinal);
 
     public void Reset()
     {
+        RepeatEnumeratedSet = false;
+        EnumeratedVersions.Clear();
         Outage = false;
         Throw = false;
         OmitConditionKind = false;
@@ -67,6 +72,28 @@ public sealed class FakeItemReferences : IItemReferenceResolver
                     ? new Dictionary<string, string?>()
                     : new Dictionary<string, string?> { [ItemReferenceSets.ConditionKindAttribute] = kind });
         }).ToList()));
+    }
+
+    // S5b (BL-600): the lists to choose from, in their order, with the attributes the forms read; an outage is an outage.
+    public ConcurrentQueue<IReadOnlyList<string>> EnumerationCalls { get; } = new();
+
+    public Task<ItemReferenceEnumerationResult> EnumerateLatestAsync(IReadOnlyList<string> setCodes,
+        CancellationToken cancellationToken = default)
+    {
+        if (Override is { } real) return real.EnumerateLatestAsync(setCodes, cancellationToken);
+        EnumerationCalls.Enqueue(setCodes);
+        if (Throw) throw new HttpRequestException("item list provider down (test)");
+        if (Outage) return Task.FromResult(ItemReferenceEnumerationResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
+        var asked = RepeatEnumeratedSet ? [.. setCodes, setCodes[0]] : setCodes;
+        return Task.FromResult(ItemReferenceEnumerationResult.Success(asked.Select(set => new ItemReferenceEnumeratedSet(
+            set, EnumeratedVersions.GetValueOrDefault(set, "ITEM-UNIVERSAL-V1"), VersionId, 1,
+            Sets[set].Select((pair, index) => new ItemReferenceEnumeratedValue(pair.Key, pair.Key, (index + 1) * 10,
+                set == ItemReferenceSets.ItemUom
+                    ? new Dictionary<string, string?> { ["DimensionCode"] = "COUNT", ["MaximumDecimalPrecision"] = "0" }
+                    : pair.Value is null
+                        ? new Dictionary<string, string?>()
+                        : new Dictionary<string, string?> { [ItemReferenceSets.ConditionKindAttribute] = pair.Value }))
+                .ToList())).ToList()));
     }
 }
 

@@ -5,15 +5,21 @@ on:
     branches: ["**"]
   pull_request:
 
+# WP-CI-SERVICE-TESTS-03 (CT decision): the same rule as service-tests.yml — read-only token, no secret, and every action
+# one of the allowed ones pinned to a COMMIT SHA (a tag can be moved). The SHAs are what the floating @v4 tags resolved
+# to on 2026-10-10 (git ls-remote: checkout v4 = v4.4.0, setup-dotnet v4 = v4.3.1), so the gates run exactly as before.
+permissions:
+  contents: read
+
 jobs:
   phase1:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: '8.0.x'
 

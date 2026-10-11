@@ -12,7 +12,7 @@ public sealed class FinishedGood : EntityBase, IAuditIntentAggregate
     public ProductIdentityLifecycleStatus LifecycleStatus { get; set; } = ProductIdentityLifecycleStatus.Draft;
     // FG FIX1 item 1: the audited Draft cancellation (null: none). The FG stays Draft in storage; its disposition is
     // derived from this decision and the central receipt of its intent (FinishedGoodDraftCancellationProof).
-    public FinishedGoodDraftCancellation? DraftCancellation { get; set; }
+    [StockWriteLock] public FinishedGoodDraftCancellation? DraftCancellation { get; set; }
     public List<LocalAuditIntent> AuditIntents { get; set; } = [];
     public List<LocalAuditIntentReceipt> AuditIntentReceipts { get; set; } = [];
 

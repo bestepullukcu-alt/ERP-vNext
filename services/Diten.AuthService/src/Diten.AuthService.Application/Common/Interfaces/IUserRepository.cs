@@ -57,6 +57,17 @@ public interface IUserRepository
     /// lockout. Returns the stored count and lockout end after the attempt.
     /// </summary>
     Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct);
+
+    // BL-521 FIX7 item 1 - the platform door's maintenance write: sets ONLY the account's platform actor type (and the update
+    // time), by id and tenant. Never the whole document - a replace of an object loaded earlier would undo a concurrent change.
+    // FIX8 item 1 - returns whether the write MATCHED a live account of that id and tenant (false: the account is gone or
+    // was moved since it was read, nothing was written). The caller must treat false as a failed mint.
+    Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct);
+
+    // BL-521 FIX7 item 3 - of these user ids (a role's holders), the ones the CURRENT CALLER may see and act on: for a tenant
+    // actor the platform accounts are not among them, so a role-level action (ending sessions, counting holders) never reaches
+    // them. A caller that is not a tenant actor gets every id back. The concrete Mongo repository applies no caller scope.
+    Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct);
 }
 
 public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd);
@@ -68,7 +79,11 @@ public sealed record UserWriteCondition(
     string? PasswordHash = null,
     bool? IsActive = null,
     bool? DeactivatedByAdministrator = null,
-    string? PasswordResetTokenHash = null)
+    string? PasswordResetTokenHash = null,
+    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2) — false: the STORED account must not be a platform account (the one
+    // shared filter, PlatformAccountFilter; never the copy in memory), so a write that a tenant actor prepared against an
+    // ordinary user cannot land on an account Platform made a platform account meanwhile.
+    bool? IsPlatformAccount = null)
 {
     public static UserWriteCondition None { get; } = new();
 }

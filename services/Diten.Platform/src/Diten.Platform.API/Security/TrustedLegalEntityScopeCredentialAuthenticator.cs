@@ -10,7 +10,9 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticator : ITrustedLeg
 {
     public const string ConsumerService = "DITENMDMSERVICE";
     public const string Audience = "TRUSTED_LEGAL_ENTITY_SCOPE_RESOLVE";
-    public const int MaxAllowedPairs = 37;
+    // BL-592 (WP-MDM-PERMS-01): 37 → 38 — mdm.product-master.read, the stock team's read contract (FU04 S4), is the one
+    // new pair. The configured list may hold at most every allowlisted key once.
+    public const int MaxAllowedPairs = 38;
 
     private readonly TrustedLegalEntityScopeCredentialBinding _credential;
     private readonly TimeProvider _timeProvider;
@@ -47,7 +49,10 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticator : ITrustedLeg
         "mdm.product-abbreviations.retire", "mdm.product-abbreviations.audit",
         "mdm.product-legal-entity-scopes.read", "mdm.product-legal-entity-scopes.configure",
         "mdm.product-legal-entity-scopes.replace", "mdm.product-legal-entity-scopes.end",
-        "mdm.product-legal-entity-scope-rollout.activate", "mdm.product-legal-entity-scope-rollout.rollback"
+        "mdm.product-legal-entity-scope-rollout.activate", "mdm.product-legal-entity-scope-rollout.rollback",
+        // BL-592: the product-master read contract (/api/product-master/*) resolves each product row's legal-entity
+        // scope under this key — without it every product row is 403 in an Enforced tenant.
+        "mdm.product-master.read"
     };
 
     public TrustedLegalEntityScopeCredentialResult Authenticate(

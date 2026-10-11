@@ -166,6 +166,25 @@ public static class StockBehaviourRules
 
     public static bool IsValidShelfLife(int? days) => days is null or >= 1 and <= MaximumShelfLifeDays;
 
+    /// <summary>
+    /// S3b (R-06): a GSKU's retest interval / minimum remaining shelf life at receipt — 0 to the shelf-life ceiling
+    /// (<see cref="MaximumShelfLifeDays"/>, the same bound as the shelf life); 0 = "no minimum" / "retest at once" is
+    /// the stock team's to read.
+    /// </summary>
+    public static bool IsValidOptionalDays(int? days) => days is null or >= 0 and <= MaximumShelfLifeDays;
+
+    public const string DaysInvalid = "STOCK_DAYS_INVALID";
+
+    // S3b FIX2 (R-3, CT decision): on a non-Draft GSKU the retest interval / minimum remaining shelf life is filled only
+    // once the shelf life is known — a first fill is locked, and a shelf life entered later below it would be refused,
+    // leaving the record with no way to get its shelf life (and Stockable). The fields it names follow the code.
+    public const string DaysRequireShelfLife = "STOCK_DAYS_REQUIRE_SHELF_LIFE";
+
+    /// <summary>S3b FIX1: retest and minimum remaining shelf life are within the shelf life when it is known.</summary>
+    public static bool DaysWithinShelfLife(int? shelfLifeDays, int? retestDays, int? minRemainingShelfLifeDays) =>
+        shelfLifeDays is not { } shelf
+        || (retestDays is null || retestDays <= shelf) && (minRemainingShelfLifeDays is null || minRemainingShelfLifeDays <= shelf);
+
     /// <summary>O-15: a Finished Good's own shelf life never exceeds its GSKU's registered one.</summary>
     public static bool FinishedGoodShelfLifeWithinGsku(int? finishedGoodDays, int? gskuDays)
         => finishedGoodDays is null || gskuDays is null || finishedGoodDays <= gskuDays;

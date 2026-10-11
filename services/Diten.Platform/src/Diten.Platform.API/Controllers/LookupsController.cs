@@ -10,6 +10,8 @@ namespace Diten.Platform.API.Controllers;
 [ApiController]
 [Route("api/lookups")]
 [Authorize(Policy = "PlatformActor")]
+// BL-521 — read-only reference values the tenant forms need (countries, currencies …): no tenant data, partners keep them.
+[PartnerAdminScope(PartnerAdminScopeAttribute.NoTenant)]
 public sealed class LookupsController : CustomBaseController
 {
     private readonly IMediator _mediator;

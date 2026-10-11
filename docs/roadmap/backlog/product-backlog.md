@@ -8398,6 +8398,94 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-613
+
+**MDM ürün kimlik akışları: yedi akış açık onayı düz `now + retryDelay` ile yokluyor (BL-607'nin geri çekilmesi yalnız LSKU kimlikte)**
+
+DURUM: AÇIK · SAHİP: CT (MDM ürün devralma, MOD-0290) · BULAN: BL-607 raporu §1 (WF sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`b650e4589`): GSKU kimlik (`GlobalProductIdentityWorkflowProcessor.cs:1572`), ilk GSKU kimlik (`FirstGskuIdentityWorkflowProcessor.cs:1296`), GSKU düzeltme (`:415`), GSKU emeklilik talebi (`:381`), LSKU emeklilik talebi (`:393`), global ürün düzeltme (`:507`), global ürün emeklilik (`:489`). Hiçbiri açık onayı deneme sınırına SAYMIYOR (doğru), ama hepsi her `retryDelay`'de (30 sn) yeniden soruyor.
+
+Yapılacak: aynı `ProductIdentityOpenApprovalBackoff` (BL-607, `54b9562a0`) yedi akışa; akış başına açık onay yaşı göstergesi; HTTP testi + sabotaj. S5b / stock-gate dosyalarına çarpmaz.
+
+Gelecek regresyon riski: 🟡 canlıda binlerce açık onay olursa motor her 30 sn'de sorgulanır ve karara bağlanmış onaylar sırada geride kalır.
+
+---
+
+### BL-612
+
+**Enterprise Strategy izin denetimi varsayılanda AÇIK başarısız: iki ortam değişkeni tanımsızsa her izin, kimlik denetiminden önce, kimliksiz kullanıcıya veriliyor (güvenlik)**
+
+DURUM: AÇIK · SAHİP: Enterprise Strategy ekibi (XMC-001) + sahip (canlı ölçüm) · BULAN: BL-604 B sınıfı notları (Roller sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🔴
+
+Ölçüm (kaynak `61b860012`):
+- `EnterpriseStrategyPlatform.cs:218-255`: `DITEN_ESBP_ENFORCE_PERMISSIONS` ve `DITEN_ESBP_DEV_PERMISSION_BOOTSTRAP` ikisi de tanımsızsa geliştirme izin önyüklemesi AÇIK.
+- ES testlerindeki 3 RBAC kırmızısı bunun sonucu (yetkisiz istek reddedilmiyor).
+- Hafıza notu: ES'de genel olarak kimlik doğrulama / TenantId yok.
+
+Yapılacak:
+- sahip: canlı ES ortam değişkenlerini ölçer (kontrol listesi `is-es-canli-izin`);
+- ES ekibi: varsayılan kapalı başarısız (değişken yoksa izin yok), RBAC testleri yeşil;
+- ekip mesajı sahip üzerinden (`ekiplere-ci-test-mesaji.md`).
+
+Gelecek regresyon riski: 🔴 canlıda değişken unutulursa ES uçları herkese açık.
+
+---
+
+### BL-611
+
+**Auth: `OperationalSingleInstanceLockTests.An_abandoned_lock_is_taken_over_by_the_next_run_by_name` tam süitte ara sıra kırmızı**
+
+DURUM: AÇIK · SAHİP: CT (Auth, BL-570 hattı) · BULAN: hat doğrulaması BL-521 sonrası (2026-10-11) · KAYIT: 2026-10-11
+
+Ölçüm:
+- Hat `404685da0`'da tam Auth App 2591 / 2592: tek kırmızı bu test (mesaj günlüğe düşmedi). Aynı sınıf tek başına 6 / 6 yeşil.
+- Test, sahibi iş parçacığı bitince adlı mutex'in "terk edildi" işaretine dayanıyor. Olası sebep: yük altında GC / sonlandırıcı tutamağı iş parçacığı bitmeden kapatıyor ve terk işareti oluşmuyor.
+
+Yapılacak:
+- mutex nesnesini iş parçacığı bitene kadar canlı tut (`GC.KeepAlive`) ya da terk durumunu belirlenimci kur;
+- başarısızlık mesajı iddia metnine (hangi iddia kızardı).
+
+Gelecek regresyon riski: 🟡 CI'da (auth-app) ara sıra kırmızı.
+
+---
+
+### BL-610
+
+**Modal pencerelerde Enter yerel form gönderimi yapıyor: ortak klavye katmanı (UXH-001) yalnız yan panelleri kapsıyor**
+
+DURUM: AÇIK · SAHİP: CT (Web kabuğu) + ekran sahipleri · BULAN: UX-COMMON FIX1 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `diten-enter-primary.js` yalnız offcanvas yan panellerinde çalışıyor. `.modal` içindeki formlarda Enter tarayıcının örtük gönderimini tetikliyor.
+- Adlı örnekler: `gateEvidenceModal`, Platform Administrators `suspendModal` (askıya alma: sonuçlu işlem).
+
+Yapılacak:
+- modal içi sonuçlu birincillerin envanteri (yan panel sınıflandırmasının deseni);
+- modallara da chord / enter işareti, ya da modal formlarında örtük gönderimin kapatılması;
+- UXH-001'e satır.
+
+Gelecek regresyon riski: 🟡 modal içinde yanlışlıkla Enter, onay sorusu olmayan sonuçlu bir işlemi gönderebilir.
+
+---
+
+### BL-609
+
+**Sayfa yardım defteri mandalı: tavan defterin kendi başlığında; bir PR tavanı sessizce yükseltebilir (ana dala karşı CI denetimi yok)**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / CI) · BULAN: UX-COMMON FIX1 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `page-help-ledger.test.js` satır sayısını defter başlığındaki tavanla karşılaştırıyor (FIX2 ile eşitlik). Aynı dosya hem bekçi hem tavan; PR ikisini birlikte yükseltirse test yeşil kalır.
+
+Yapılacak:
+- phase1'de (`run_phase1_gates.sh`, PR'da taban dalı zaten çekiliyor) defter başlığını `git show origin/$GITHUB_BASE_REF:docs/roadmap/backlog/page-help-ledger.md` ile karşılaştır; tavan artışı kırmızı (bilinçli artış için adlı istisna satırı).
+- ci-followup2 hatta girdikten sonra (aynı betik).
+
+Gelecek regresyon riski: 🟢 yardım metni borcu sessizce büyüyebilir.
+
+---
+
 ### BL-608
 
 **İş akışı şablonu kendi adaylarını tanımlarsa tüketicinin (MDM) verdiği onaycı adayını eziyor; tüketici bunu göremiyor**
@@ -8689,6 +8777,8 @@ Ek ölçüm (2026-10-10, BL-598 + BL-604):
 - HCM `EmployeeDraftSessionRepositoryMongoTests` de ortak 27017'ye bağlanıyor (BL-604).
 - Yapılacak: Auth deseni (`DITEN_TEST_MONGOD` → teste ait mongod; değişken verilmiş ama geçersizse kırmızı); CI'da mdm-app satırı aynı yolu kullanır. MDM için CT işi; HCM için sahibine (XMC-001).
 
+- Platform: uykudan uyanınca 8 Platform testi `localhost:27017` zaman aşımına düştü (2026-10-11) → Platform test sınıflarının bir kısmı da ortak Mongo kullanıyor; iş Roller sohbetinde (`platform-owned-mongo`).
+
 Gelecek regresyon riski: 🟡 bir sonraki boş URI ortak dev verisine yazabilir.
 
 ---
@@ -8768,6 +8858,7 @@ CT kararı (2026-10-10, Roller ölçümü üzerine): Auth'a MDM anahtarları TOH
 - **BL-592 ilerleme (2026-10-10):** Auth / Platform işi `0fefface3` (mdm-perms). Platform listesi artık 38 anahtar (`mdm.product-master.read` eklendi; yukarıdaki "sabit 37" ölçümü o günün durumu). İnceleme 0 / 3 gerekli → FIX1:
   - S2'nin `mdm.items.withdraw`'ı için profil {altı} ya da {altı + withdraw} kabul eder, yoksa S2 birleşince modülün rol eşitlemesi durur;
   - post-deploy sırası: önce Platform kodu, sonra 38 çift; Auth BL-592, kalem anahtarlarını ilk beyan eden manifestten ÖNCE.
+- **BL-592 Auth / Platform KABUL (2026-10-11):** hatta `7f8dba829` (`432c639ac`). Kalan: manifest adımı. Manifest adımına taşınan küçükler: post-deploy §7'de adım 3'e "Auth ≥ 432c639ac", adım 1'e "bütün Platform kopyaları", Viewer denetimi adım 4'ten sonra (hak almayan kiracıda Viewer ve Admin); "Duplicated:" iddiası; tek başına bilinmeyen `mdm.product-master.*` eylemi testi.
 - **MDM manifest adımı (S4 ve stock-gate hatta birleştikten SONRA, tek küçük iş):** (1) `mdm.product-master.read` sayfasız API eylemi olarak beyan (`ACTIVATE_ROLLOUT` deseni; "enforced" listesine `ProductMasterController`); (2) BL-573 ikinci yarısı: `mdm.{gskus,lskus,finished-goods}.edit-stock-behaviour` beyan + kontrolcülerin bağlanması. Bu üç anahtar Platform güvenilir kapsam listesine de girer (38 → 41). S4 / S5b'ye eklenmedi: iki dal aynı manifest dosyasını değiştirse birleştirmede çakışırdı.
 - Stok ekibine "hazır" haberi manifest adımından SONRA gider. Gelecek regresyon riski: 🟡 adım unutulursa anahtar beyan edilmez, rol verimi sessizce boş kalır, stok ekibi canlıda 403 alır.
 

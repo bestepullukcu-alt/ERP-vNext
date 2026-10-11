@@ -328,6 +328,8 @@ public sealed class UserLifecycleTests
         public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct) { Writes++; return _inner.TryWriteChangesAsync(user, capturedState, tenantId, condition, ct); }
         public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
         public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => _inner.VisibleUserIdsAsync(tenantId, userIds, ct);
     }
 
     private sealed class NoRefreshTokens : IRefreshTokenRepository

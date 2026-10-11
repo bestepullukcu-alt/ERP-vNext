@@ -278,15 +278,34 @@ const FinishedGoodsList = (function () {
         }).format(new Date(dateValue))
         : L.NotAvailable;
 
+    const fetchDetail = async (id) => {
+        const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
+            credentials: 'same-origin',
+            headers: getAuthHeaders()
+        });
+        if (response.status === 401) handleUnauthorized();
+        if (!response.ok) throw new Error(await getErrorMessage(response));
+        return unwrapData(await response.json());
+    };
+    /*
+     * MOD-0290-FU04 S5 (O-12) — the "Stock behaviour" section and its own offcanvas (StockBehaviour/stock-behaviour.js),
+     * GTIN included. In the page only for a user with the Finished Good's stock-edit key (UAS-001, decided in the
+     * cshtml): without them there is no module and no section. Created on first use.
+     */
+    let stockBehaviour;
+    const stock = () => {
+        if (stockBehaviour === undefined) {
+            stockBehaviour = window.DitenStockBehaviour?.create?.({
+                level: 'fg', endpoint, versionField: 'version', fetchDetail,
+                onSaved: () => dt?.ajax.reload(null, false)
+            }) || null;
+        }
+        return stockBehaviour;
+    };
+
     const populateDetails = async (id) => {
         try {
-            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
-                credentials: 'same-origin',
-                headers: getAuthHeaders()
-            });
-            if (response.status === 401) handleUnauthorized();
-            if (!response.ok) throw new Error(await getErrorMessage(response));
-            const detail = unwrapData(await response.json());
+            const detail = await fetchDetail(id);
             const value = (camel, pascal) => valueOf(detail, camel, pascal);
             const setText = (elementId, fieldValue) => {
                 const element = document.getElementById(elementId);
@@ -312,6 +331,7 @@ const FinishedGoodsList = (function () {
                 statusElement.className = `badge ${item.class}`;
                 statusElement.textContent = item.title || L.Unknown;
             }
+            stock()?.render(detail);
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
         } catch (error) {
             if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');

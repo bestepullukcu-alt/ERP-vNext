@@ -131,7 +131,12 @@ public static class DefaultRolePermissionTemplate
             "mdm.product-legal-entity-scopes.replace",
             "mdm.product-legal-entity-scopes.end",
             "mdm.product-legal-entity-scope-rollout.activate",
-            "mdm.product-legal-entity-scope-rollout.rollback"
+            "mdm.product-legal-entity-scope-rollout.rollback",
+            // BL-592 (WP-MDM-PERMS-01, CT decision): the Items page and the stock team's product-master read contract.
+            // Viewer receives these two read keys through the product module's entitlement — never from the general
+            // read baseline (a tenant without the module must not get them).
+            "mdm.items.read",
+            "mdm.product-master.read"
         };
 
     /// <summary>

@@ -59,6 +59,16 @@ internal sealed class RoleEndpointWorld
     public async Task<List<Permission>> AllPermissionsAsync()
         => await _host.Database.GetCollection<Permission>("permissions").Find(p => p.IsDeleted == false).ToListAsync();
 
+    // TKO review, small item 3 — a catalog row the test owns (inserted into the test-owned mongod, removed by the same test).
+    public async Task<Permission> AddPermissionAsync(Permission permission)
+    {
+        await _host.Database.GetCollection<Permission>("permissions").InsertOneAsync(permission);
+        return permission;
+    }
+
+    public Task RemovePermissionAsync(Guid permissionId)
+        => _host.Database.GetCollection<Permission>("permissions").DeleteOneAsync(p => p.Id == permissionId);
+
     public Task InsertGrantAsync(RolePermission grant)
         => _host.Database.GetCollection<RolePermission>("rolePermissions").InsertOneAsync(grant);
 
