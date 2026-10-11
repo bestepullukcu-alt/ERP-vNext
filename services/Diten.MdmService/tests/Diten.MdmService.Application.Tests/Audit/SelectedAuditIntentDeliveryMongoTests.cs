@@ -1,4 +1,3 @@
-using Diten.MdmService.Application.Tests;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;

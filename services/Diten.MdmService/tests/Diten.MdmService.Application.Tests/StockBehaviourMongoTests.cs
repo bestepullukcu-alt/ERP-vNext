@@ -43,8 +43,8 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
 
     public async Task InitializeAsync()
     {
-        // Test-owned replica set only — never the shared dev Mongo on 27017.
-        Assert.All(_database.Client.Settings.Servers, server => Assert.NotEqual(27017, server.Port));
+        // Test-owned replica set only — never the shared dev Mongo.
+        Assert.All(_database.Client.Settings.Servers, server => Assert.NotEqual(MdmTestMongo.SharedPort, server.Port));
         await ProductStockBehaviourRepository.EnsureGtinIndexAsync(_database);
     }
 

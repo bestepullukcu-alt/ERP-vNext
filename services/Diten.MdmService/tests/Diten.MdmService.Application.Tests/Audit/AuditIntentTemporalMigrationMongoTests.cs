@@ -807,6 +807,10 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
 
     private static string ResolveMongodPath()
     {
+        // BL-595 FIX1: DITEN_TEST_MONGOD first, by the helper's rule (given but not an installed mongod → red by name);
+        // only when it is absent does the older discovery below apply.
+        if (Environment.GetEnvironmentVariable(MdmTestMongo.Variable) is not null)
+            return MdmTestMongo.ConnectionFor(MdmTestMongo.ResolveOwned(), executable => executable);
         var configured = Environment.GetEnvironmentVariable(MongodPathVariable);
         if (!string.IsNullOrWhiteSpace(configured) && File.Exists(configured)) return Path.GetFullPath(configured);
         var executable = OperatingSystem.IsWindows() ? "mongod.exe" : "mongod";
