@@ -8398,6 +8398,27 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-616
+
+**İTS karekod / seri numarası bildirimi ve barkod etiketi basımı için modül yok (MOD-0290 yalnız GTIN numarasını tutar)**
+
+DURUM: AÇIK — sahip kararı bekliyor (kapsam ve sıra) · SAHİP: sahip + CT · BULAN: sahip sorusu "GTIN / barkod yapılmayacak mı?" (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`fbe8b47d6`):
+- MOD-0290'da GTIN bugün yalnız Bitmiş Ürün satış kutusu düzeyinde. Stok davranışı panelinde alan, kontrol hanesi denetimi ve tekillik var (`FG_GTIN_INVALID`, `FG_GTIN_CONFLICT`; stock-gate S3 / S5).
+- Planlı (ürün ana verisi tamamlama planı, BL-518):
+  - P6 Tanımlayıcılar: GSKU / LSKU / kalem düzeyinde GTIN ve diğer kodlar, yaşam döngüsü ve geçmişiyle;
+  - P9 Ambalaj hiyerarşisi: kutu → koli → palet, her düzeyin adedi ve GTIN'i; MOD-0178 depo dalgasıyla.
+- Modül kataloğunda OLMAYAN: İTS'ye (İlaç Takip Sistemi) üretim / satış / iade bildirimi, karekod (GS1 DataMatrix: (01) GTIN + (21) seri + (10) lot + (17) son kullanma), seri numarası havuzu, etiket / barkod basımı ve el terminaliyle okuma. Planda "seri takibi pazara bağlı (İTS)" notu var, modül yok.
+
+Karşılaştırma: SAP'de GTIN malzeme kaydında birim başına (EAN / UPC), serileştirme ve ülke bildirimi ayrı üründe (SAP ATTP). Oracle'da GTIN kalem çapraz başvurusu (PIM / GDSN), serileştirme ayrı bulut ürününde (Serialization and Traceability).
+
+Yapılacak: sahip kapsamı ve sırayı seçer. Öneri: MOD-0290 P6 + P9 önce, İTS / etiket ayrı modül (stok ve depo sevkiyatına bağlanır).
+
+Gelecek regresyon riski: 🟡 Türkiye'de beşeri ilaç satışı İTS bildirimi olmadan yapılamaz; modül geç başlarsa stok / sevkiyat akışlarına sonradan seri numarası eklemek gerekir.
+
+---
+
 ### BL-615
 
 **origin/main'in kendi phase1 mimari testi kırmızı (8): CRM ve SCE / MVP-6 denetimsiz yazma komutları, SCE defteri yok, shipment-bundle sözleşme pin'i bayat**
