@@ -473,9 +473,7 @@ internal sealed class ProductScopeMongoScope : IAsyncDisposable
 
     public static async Task<ProductScopeMongoScope> CreateAsync()
     {
-        var connectionString = Environment.GetEnvironmentVariable("MDM_TEST_MONGO")
-            ?? Environment.GetEnvironmentVariable("MONGO_TEST_URI")
-            ?? "mongodb://localhost:27017";
+        var connectionString = MdmTestMongo.ConnectionString;
         var settings = MongoClientSettings.FromConnectionString(connectionString);
 #pragma warning disable CS0618
         settings.GuidRepresentation = GuidRepresentation.Standard;

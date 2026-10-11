@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Tests;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
@@ -45,7 +46,7 @@ public sealed class SelectedAuditIntentDeliveryMongoTests(AuditIntentTemporalMon
 #pragma warning restore CS0618
         Assert.Single(settings.Servers);
         Assert.Equal("127.0.0.1", settings.Server.Host);
-        Assert.NotEqual(27017, settings.Server.Port);
+        Assert.NotEqual(MdmTestMongo.SharedPort, settings.Server.Port);
         Assert.False(string.IsNullOrWhiteSpace(settings.ReplicaSetName));
         settings.ClusterConfigurator = builder => builder.Subscribe<CommandStartedEvent>(e => _commands.Enqueue(e.CommandName));
         _database = new MongoClient(settings).GetDatabase(DatabaseName);

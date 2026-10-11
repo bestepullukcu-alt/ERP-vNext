@@ -26,9 +26,7 @@ public sealed class GskuChildAdmissionRetirementMongoTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var settings = MongoClientSettings.FromConnectionString(
-            Environment.GetEnvironmentVariable("MDM_TEST_MONGO")
-            ?? Environment.GetEnvironmentVariable("MONGO_TEST_URI")
-            ?? "mongodb://localhost:27017");
+            MdmTestMongo.ConnectionString);
 #pragma warning disable CS0618
         settings.GuidRepresentation = GuidRepresentation.Standard;
 #pragma warning restore CS0618
