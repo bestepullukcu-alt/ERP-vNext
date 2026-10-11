@@ -16,7 +16,8 @@ public sealed class LoadAtomicityTests
             { "data", new MongoDB.Bson.BsonDocument
                 {
                     { "failCommands", new MongoDB.Bson.BsonArray { "commitTransaction" } },
-                    { "errorCode", 91 },
+                    { "appName", f.AppName },
+                    { "errorCode", 8 },
                     { "errorLabels", new MongoDB.Bson.BsonArray { "UnknownTransactionCommitResult" } }
                 }
             }
