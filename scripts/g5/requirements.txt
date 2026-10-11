@@ -1,0 +1,6 @@
+# Pinned so a missing dependency fails at install time, not inside conform() at line 136.
+# Floors, not exact pins: the walker needs the modern referencing-based resolver API
+# (jsonschema >= 4.18 dropped RefResolver in favour of it) and a working format_checker.
+PyYAML>=6.0
+jsonschema>=4.18
+referencing>=0.30
