@@ -436,7 +436,13 @@ public sealed class FakePlatformReferenceEndpoint : HttpMessageHandler
 /// <summary>The service token the resolver presents — issued here, in this process, for the test host only.</summary>
 public sealed class FakeServiceIdentity : IWorkflowVerifiedMarketServiceIdentityProvider
 {
+    // S2 FIX2 X2: the tenant each identity was asked for (the token's tenant claim at Auth).
+    public System.Collections.Concurrent.ConcurrentQueue<Guid> Tenants { get; } = new();
+
     public Task<WorkflowVerifiedMarketServiceIdentity> GetAsync(Guid tenantId, bool forceRefresh,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult(new WorkflowVerifiedMarketServiceIdentity("http-host-service-token", DateTimeOffset.UtcNow.AddMinutes(5)));
+        CancellationToken cancellationToken = default)
+    {
+        Tenants.Enqueue(tenantId);
+        return Task.FromResult(new WorkflowVerifiedMarketServiceIdentity("http-host-service-token", DateTimeOffset.UtcNow.AddMinutes(5)));
+    }
 }

@@ -26,6 +26,7 @@ public sealed class ApplyItemActivationDecisionHandler(IItemWorkflowOperationRep
         {
             // S2 FIX1 item 5: the worker puts the item pending on its approval (the start's answer was learnt later).
             audit.Set(ItemAudit.Decision, "Pending");
+            audit.Set(ItemAudit.MakerId, operation.MakerSubjectId.ToString("D"));
             source = target;
             target = ItemLifecycleStatus.PendingActivation;
             written = await operations.ApplyLocalPendingAsync(command.Claim, operation, binding, command.UpdatedAtUtcTicks,
@@ -35,6 +36,7 @@ public sealed class ApplyItemActivationDecisionHandler(IItemWorkflowOperationRep
         {
             // S2 FIX1 item 5: the worker finishes the maker's withdrawal (the engine's cancel was answered later).
             audit.Set(ItemAudit.Decision, "Withdrawn");
+            audit.Set(ItemAudit.RequesterId, withdrawal.RequesterSubjectId.ToString("D"));
             audit.Set(ItemAudit.ApprovalTaskId, withdrawal.ApprovalTaskId.ToString("D"));
             audit.Set(ItemAudit.TransitionSequence, withdrawal.TransitionSequence);
             audit.Set(ItemAudit.OutcomeCode, withdrawal.ReasonCode);

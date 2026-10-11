@@ -21,7 +21,10 @@ public sealed record ItemWorkflowClaimRequest(
     IReadOnlyCollection<ItemWorkflowCheckpoint> EligibleCheckpoints,
     string LeaseOwner,
     long NowUtcTicks,
-    long LeaseUntilUtcTicks);
+    long LeaseUntilUtcTicks,
+    // S2 FIX2 (minor M7): the maker's withdrawal does not wait for a scheduled ask of an open approval — only a lease
+    // actually held elsewhere keeps it out.
+    bool IgnoreNextAttempt = false);
 
 public sealed record ItemWorkflowCheckpointMutation(
     ItemWorkflowCheckpoint NextCheckpoint,

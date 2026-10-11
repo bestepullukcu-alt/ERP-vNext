@@ -104,7 +104,10 @@ public sealed class ItemActivationRequests(
         audit.Set(ItemAudit.OutcomeCode, result.Operation.Checkpoint.ToString());
         var after = await items.GetByIdAsync(itemId, cancellationToken);
         if (after is null) return Fail(ItemErrors.NotFound, 404);
-        if (after.LifecycleStatus != item.LifecycleStatus)
+        // S2 FIX2 item 1: the request's record says only its OWN move (source → PendingActivation). A repeat that applied
+        // the approver's decision (→ Active / back) is not the maker's act: that move is recorded once, by the system, on
+        // ApplyItemActivationDecisionCommand (the decider in its metadata).
+        if (after.LifecycleStatus == ItemLifecycleStatus.PendingActivation && item.LifecycleStatus != after.LifecycleStatus)
             audit.Change(nameof(Item.LifecycleStatus), item.LifecycleStatus.ToString(), after.LifecycleStatus.ToString());
         return Response<ItemModels.ItemDto>.Success(ItemRules.ToDto(after),
             result.Operation.Checkpoint == ItemWorkflowCheckpoint.Completed ? 200 : 202);
@@ -137,7 +140,10 @@ public sealed class ItemActivationRequests(
         audit.Set(ItemAudit.OutcomeCode, result.Operation.Checkpoint.ToString());
         var after = await items.GetByIdAsync(itemId, cancellationToken);
         if (after is null) return Fail(ItemErrors.NotFound, 404);
-        if (after.LifecycleStatus != item.LifecycleStatus)
+        // S2 FIX2 item 1: the withdrawal's record says only its OWN move (PendingActivation → back, by this withdrawal);
+        // a decision applied meanwhile is the system's record, never the requester's.
+        if (item.LifecycleStatus == ItemLifecycleStatus.PendingActivation && result.Operation.WithdrawalCommandId == commandId
+            && after.LifecycleStatus == ItemActivationWorkflowProcessor.SourceStatus(result.Operation.ActivationKind))
             audit.Change(nameof(Item.LifecycleStatus), item.LifecycleStatus.ToString(), after.LifecycleStatus.ToString());
         return Response<ItemModels.ItemDto>.Success(ItemRules.ToDto(after),
             result.Operation.Checkpoint == ItemWorkflowCheckpoint.Completed ? 200 : 202);

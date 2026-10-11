@@ -157,6 +157,8 @@ public sealed class ItemActivationGauge(IServiceScopeFactory scopes, TimeProvide
     public const string OrphanCodeFlow = "ITEM_ORPHAN_CODE";
     // S2 FIX1 item 2: approvals nobody is processing (the flow on, no worker carrying them) — counted, never silent.
     public const string UnprocessedFlow = "ITEM_ACTIVATION_UNPROCESSED";
+    // S2 FIX2 item 2: the age (seconds) of the oldest approval still waiting for its decision — a number, no tenant.
+    public const string OldestOpenApprovalFlow = "ITEM_ACTIVATION_OLDEST_OPEN_APPROVAL_SECONDS";
 
     public async Task RecordAsync(CancellationToken ct)
     {
@@ -184,8 +186,11 @@ public sealed class ItemActivationGauge(IServiceScopeFactory scopes, TimeProvide
         {
             var after = (options?.Value ?? new ItemActivationGaugeOptions()).UnprocessedAfter;
             await using var scope = scopes.CreateAsyncScope();
-            var unprocessed = await scope.ServiceProvider.GetRequiredService<IItemWorkflowTenantPartitionDiscovery>()
-                .CountUnprocessedAsync((now - after).UtcTicks, ct);
+            var discovery = scope.ServiceProvider.GetRequiredService<IItemWorkflowTenantPartitionDiscovery>();
+            var unprocessed = await discovery.CountUnprocessedAsync((now - after).UtcTicks, ct);
+            var oldest = await discovery.OldestOpenApprovalStartedAtAsync(ct);
+            metrics?.Record(OldestOpenApprovalFlow,
+                oldest is { } started ? Math.Max(0, (now.UtcTicks - started) / TimeSpan.TicksPerSecond) : 0);
             metrics?.Record(UnprocessedFlow, unprocessed);
             metrics?.RecordCountFailed(UnprocessedFlow, false);
             if (unprocessed > 0)

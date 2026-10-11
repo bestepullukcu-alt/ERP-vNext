@@ -59,10 +59,18 @@ public sealed class ItemActivationGaugeOptions
     public const string SectionName = "ItemActivationGauge";
     public bool Enabled { get; set; } = true;
     public int IntervalSeconds { get; set; } = 300;
-    // S2 FIX1 item 2: an approval the worker should be carrying, untouched this long, is counted as unprocessed. A running
-    // worker touches every one at least once per retry ceiling (15 min, ProductIdentityRecoveryStreak.DefaultMaxRetryDelay)
-    // plus its poll interval; 60 leaves a wide margin. Bounds 20–1440 (below 20 a healthy worker could be counted).
+    // S2 FIX1 item 2 / FIX2 item 2: an approval the worker should be carrying with no real move (ProgressAt) this long is
+    // counted as unprocessed. A running worker moves every one at least once per DecisionPollCeiling (15 min) plus its
+    // poll interval and lease; 60 leaves a wide margin. Validated at start against the worker's own settings (never
+    // clamped silently): 20–1440 and above ceiling + poll interval + lease.
     public int UnprocessedAfterMinutes { get; set; } = 60;
 
-    public TimeSpan UnprocessedAfter => TimeSpan.FromMinutes(Math.Clamp(UnprocessedAfterMinutes, 20, 1440));
+    public TimeSpan UnprocessedAfter => TimeSpan.FromMinutes(UnprocessedAfterMinutes);
+
+    public bool IsValid(ItemActivationWorkflowWorkerOptions worker) =>
+        UnprocessedAfterMinutes is >= 20 and <= 1440
+        && UnprocessedAfter > ItemActivationWorkflowProcessor.DecisionPollCeiling
+            + TimeSpan.FromSeconds(Math.Max(worker.PollIntervalSeconds, 0)) + TimeSpan.FromSeconds(Math.Max(worker.LeaseSeconds, 0));
+
+    public const string ConfigurationInvalid = "ITEM_ACTIVATION_GAUGE_CONFIGURATION_INVALID";
 }

@@ -94,6 +94,7 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
         operation.Version = 0;
         operation.CreatedAtUtcTicksV1 = operation.CreatedAtUtcTicksV1 > 0 ? operation.CreatedAtUtcTicksV1 : DateTimeOffset.UtcNow.UtcTicks;
         operation.UpdatedAtUtcTicksV1 = operation.CreatedAtUtcTicksV1;
+        operation.ProgressAtUtcTicksV1 = operation.CreatedAtUtcTicksV1;
         operation.CreatedAt = new DateTimeOffset(operation.CreatedAtUtcTicksV1, TimeSpan.Zero);
         operation.UpdatedAt = operation.CreatedAt;
         try
@@ -137,7 +138,9 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
                      & Op.Eq(x => x.OperationFingerprint, request.OperationFingerprint)
                      & Op.Eq(x => x.TemporalStorageVersion, ItemWorkflowOperation.CurrentTemporalStorageVersion)
                      & Op.In(x => x.Checkpoint, request.EligibleCheckpoints)
-                     & Op.Or(Op.Eq(x => x.NextAttemptAtUtcTicksV1, null), Op.Lte(x => x.NextAttemptAtUtcTicksV1, request.NowUtcTicks))
+                     & (request.IgnoreNextAttempt
+                         ? Op.Empty
+                         : Op.Or(Op.Eq(x => x.NextAttemptAtUtcTicksV1, null), Op.Lte(x => x.NextAttemptAtUtcTicksV1, request.NowUtcTicks)))
                      & Op.Or(Op.Eq(x => x.LeaseOwner, null), Op.Lte(x => x.LeaseUntilUtcTicksV1, request.NowUtcTicks));
         var update = Builders<ItemWorkflowOperation>.Update
             .Set(x => x.LeaseOwner, request.LeaseOwner)
@@ -223,6 +226,7 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
             .Set(x => x.RetryLimitCauseCode, mutation.RetryLimitCauseCode)
             .Set(x => x.UpdatedAtUtcTicksV1, mutation.UpdatedAtUtcTicks)
             .Set(x => x.UpdatedAt, new DateTimeOffset(mutation.UpdatedAtUtcTicks, TimeSpan.Zero))
+            .Set(x => x.ProgressAtUtcTicksV1, mutation.UpdatedAtUtcTicks)
             .Inc(x => x.Version, 1);
         if (mutation.WorkflowInstanceId.HasValue) update = update.Set(x => x.WorkflowInstanceId, mutation.WorkflowInstanceId);
         if (mutation.WorkflowTemplateId.HasValue) update = update.Set(x => x.WorkflowTemplateId, mutation.WorkflowTemplateId);
@@ -405,6 +409,9 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
                 Builders<Item>.Update
                     .Set(x => x.LifecycleStatus, target)
                     .Set(x => x.ActivationWorkflowBinding!.TerminalDecision, evidence)
+                    // S2 FIX2 (minor M6): the request's free text leaves the item with its end (data minimisation); the
+                    // operation keeps it in its fingerprint.
+                    .Set(x => x.ActivationRequestReason, null)
                     .Set(x => x.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
                     .Inc(x => x.Version, 1),
                 new FindOneAndUpdateOptions<Item> { ReturnDocument = ReturnDocument.After }, cancellationToken);
@@ -446,7 +453,8 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.SubmitterSubjectId, cancellationEvidence.RequesterSubjectId)
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.TerminalDecision, null),
             Builders<Item>.Update.Set(x => x.LifecycleStatus, target)
-                .Set(x => x.ActivationWorkflowBinding!.CancellationEvidence, cancellationEvidence),
+                .Set(x => x.ActivationWorkflowBinding!.CancellationEvidence, cancellationEvidence)
+                .Set(x => x.ActivationRequestReason, null),
             current => current.LifecycleStatus == target && current.Version == operation.WithdrawalExpectedItemVersion + 1
                        && current.ActivationWorkflowBinding?.CancellationEvidence?.IdempotencyKey == commandId.ToString("D"),
             operation.WithdrawalExpectedItemVersion.Value, cancellationToken);
@@ -491,7 +499,7 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.WorkflowInstanceId, operation.WorkflowInstanceId)
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.StartIdempotencyKey, operation.StartIdempotencyKey)
             & Builders<Item>.Filter.Eq(x => x.ActivationWorkflowBinding!.TerminalDecision, null),
-            Builders<Item>.Update.Set(x => x.LifecycleStatus, target),
+            Builders<Item>.Update.Set(x => x.LifecycleStatus, target).Set(x => x.ActivationRequestReason, null),
             current => current.Version == operation.ExpectedItemVersion + 2 && current.LifecycleStatus == target,
             operation.ExpectedItemVersion + 1, cancellationToken);
     }
@@ -544,6 +552,7 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
                 .Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null)
                 .Set(x => x.UpdatedAtUtcTicksV1, updatedAtUtcTicks)
                 .Set(x => x.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
+                .Set(x => x.ProgressAtUtcTicksV1, updatedAtUtcTicks)
                 .Inc(x => x.Version, 1);
             var operationResult = await _operations.UpdateOneAsync(session,
                 ClaimFilter(claim, updatedAtUtcTicks) & (operationGuard ?? Op.Empty), operationUpdate,
@@ -869,8 +878,12 @@ public sealed class ItemWorkflowTenantPartitionDiscoveryRepository : IItemWorkfl
             & Op.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
            | Op.Eq(x => x.Checkpoint, ItemWorkflowCheckpoint.AwaitingMakerReplay)
            | (Op.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
-              & Op.Eq(x => x.LastFailureCode,
-                  Diten.MdmService.Application.Features.ItemMaster.Activation.ItemActivationWorkflowProcessor.RetryLimitReached)));
+              & Op.In(x => x.LastFailureCode, new[]
+              {
+                  Diten.MdmService.Application.Features.ItemMaster.Activation.ItemActivationWorkflowProcessor.RetryLimitReached,
+                  // S2 FIX2 (minor M4): a configuration refusal waits on its long retry — still stuck, still a person's.
+                  Diten.MdmService.Application.Features.ItemMaster.Activation.ItemReferenceEvidence.ProviderConfigurationError
+              })));
 
     // needing_a_person: a stuck cause the requester's repeat cannot settle, or an unanswered withdrawal past the threshold.
     public static FilterDefinition<ItemWorkflowOperation> NeedingAPerson(long nowUtcTicks)
@@ -880,6 +893,11 @@ public sealed class ItemWorkflowTenantPartitionDiscoveryRepository : IItemWorkfl
                 & Op.Eq(x => x.Checkpoint, ItemWorkflowCheckpoint.ManualReconciliationRequired)
                 & Op.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
                 & Op.Nin(x => x.LastFailureCode, SettledByTheRequestersRepeat))
+               // S2 FIX2 (minor M4): an identity / configuration refusal on its long retry — a person fixes the configuration.
+               | (Op.Ne(x => x.IsDeleted, true)
+                  & Op.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
+                  & Op.Eq(x => x.LastFailureCode,
+                      Diten.MdmService.Application.Features.ItemMaster.Activation.ItemReferenceEvidence.ProviderConfigurationError))
                | (Op.Ne(x => x.IsDeleted, true) & Op.Ne(x => x.WithdrawalCommandId, null)
                   & Op.In(x => x.Checkpoint, new[] { ItemWorkflowCheckpoint.AwaitingMakerReplay, ItemWorkflowCheckpoint.WithdrawalOutcomeUnknown })
                   & (Op.Lt(x => x.WithdrawalUnansweredSinceUtcTicksV1, cutoff)
@@ -895,10 +913,24 @@ public sealed class ItemWorkflowTenantPartitionDiscoveryRepository : IItemWorkfl
 
     // S2 FIX1 item 2: what the worker scans (the recovery filter's checkpoints), untouched since the cutoff. A running
     // worker touches each of them at least every retry ceiling (15 min) — so an old one means nobody is processing.
+    // S2 FIX2 item 2: by the last real move (ProgressAt), not the last claim; a document written before FIX2 has no
+    // ProgressAt and ages from its last update (never Eq on a missing field alone).
     public static FilterDefinition<ItemWorkflowOperation> Unprocessed(long untouchedSinceUtcTicks) =>
         Op.Ne(x => x.IsDeleted, true)
         & Op.Nin(x => x.Checkpoint, ItemWorkflowOperationRepository.NotScanned)
-        & Op.Lt(x => x.UpdatedAtUtcTicksV1, untouchedSinceUtcTicks);
+        & (Op.Lt(x => x.ProgressAtUtcTicksV1, untouchedSinceUtcTicks)
+           | (Op.Eq(x => x.ProgressAtUtcTicksV1, null) & Op.Lt(x => x.UpdatedAtUtcTicksV1, untouchedSinceUtcTicks)));
+
+    // S2 FIX2 item 2: the oldest approval still open (waiting for its decision) — when it started (null: none open).
+    public async Task<long?> OldestOpenApprovalStartedAtAsync(CancellationToken cancellationToken = default)
+    {
+        var oldest = await _operations.Find(Op.Ne(x => x.IsDeleted, true)
+                & Op.Eq(x => x.Checkpoint, ItemWorkflowCheckpoint.AwaitingDecision)
+                & Op.Ne(x => x.WorkflowStartedAtUtcTicksV1, null))
+            .SortBy(x => x.WorkflowStartedAtUtcTicksV1).Limit(1).Project(x => x.WorkflowStartedAtUtcTicksV1)
+            .FirstOrDefaultAsync(cancellationToken);
+        return oldest;
+    }
 
     public Task<long> CountUnprocessedAsync(long untouchedSinceUtcTicks, CancellationToken cancellationToken = default) =>
         _operations.CountDocumentsAsync(Unprocessed(untouchedSinceUtcTicks), cancellationToken: cancellationToken);

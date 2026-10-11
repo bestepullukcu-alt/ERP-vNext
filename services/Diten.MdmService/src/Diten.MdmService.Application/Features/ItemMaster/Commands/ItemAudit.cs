@@ -41,6 +41,9 @@ public static class ItemAudit
     public const string ActivationKind = "activationKind";
     public const string Decision = "decision";
     public const string DecisionActorId = "decisionActorId";
+    // S2 FIX2 (minor M2): whose request a worker's move completes — the maker (pending) or the requester (withdrawal).
+    public const string MakerId = "makerId";
+    public const string RequesterId = "requesterId";
     public const string DecisionAt = "decisionAt";
     public const string ApprovalTaskId = "approvalTaskId";
     public const string TransitionSequence = "transitionSequence";
@@ -50,7 +53,7 @@ public static class ItemAudit
     public static readonly IReadOnlySet<string> MetadataKeys = new HashSet<string>(StringComparer.Ordinal)
     {
         FirstFill, ReasonProvided, ReasonLength, Replay, Lifecycle, StockCheck, AuditDetails.RefusalCodeKey,
-        OperationId, ActivationKind, Decision, DecisionActorId, DecisionAt, ApprovalTaskId, TransitionSequence, OutcomeCode,
+        OperationId, ActivationKind, Decision, DecisionActorId, MakerId, RequesterId, DecisionAt, ApprovalTaskId, TransitionSequence, OutcomeCode,
         MissingFields
     };
 

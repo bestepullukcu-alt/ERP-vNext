@@ -23,6 +23,10 @@ public sealed class ItemWorkflowOperation : EntityBase
     // S2 FIX1 item 6: the requester's free-text reason (a reactivation's is required), kept with its request — written
     // once at the reservation, part of the operation's fingerprint. Never in an audit record (FIX1-EK).
     public string? RequestReason { get; set; }
+    // S2 FIX2 item 2: when the operation last really moved (any checkpoint write — never a claim or a lease release). The
+    // "unprocessed" gauge reads it: a worker that claims and drops every cycle no longer looks like progress. Null on a
+    // document written before FIX2 (its UpdatedAt stands in).
+    public long? ProgressAtUtcTicksV1 { get; set; }
     // S2 FIX1 (minor): the reference evidence frozen at the submit (null on an operation reserved before FIX1).
     public List<Diten.MdmService.Domain.ValueObjects.ItemReferenceEvidenceEntry>? ReferenceEvidence { get; set; }
     public bool EvidenceRequired { get; set; }

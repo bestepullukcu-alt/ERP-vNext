@@ -307,8 +307,29 @@ builder.Services.AddSingleton<ItemActivationWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<ItemActivationWorkflowRecoveryWorker>();
 builder.Services.AddSingleton<ItemActivationGauge>();
 builder.Services.AddOptions<ItemActivationGaugeOptions>()
-    .Bind(builder.Configuration.GetSection(ItemActivationGaugeOptions.SectionName));
+    .Bind(builder.Configuration.GetSection(ItemActivationGaugeOptions.SectionName))
+    // S2 FIX2 item 2: the threshold is checked against the worker's poll and lease at start — invalid stops the start.
+    .Validate<IOptions<ItemActivationWorkflowWorkerOptions>>((gauge, worker) => gauge.IsValid(worker.Value),
+        ItemActivationGaugeOptions.ConfigurationInvalid)
+    .ValidateOnStart();
 builder.Services.AddHostedService<ItemActivationGaugeWorker>();
+// S2 FIX2 (minor M4): an instance that runs the item approval worker needs MDM's service identity for the item lists —
+// its configuration is checked at start (invalid stops the start, by name), never first at an approved item.
+builder.Services.AddOptions<Diten.MdmService.Infrastructure.ReferenceData.AuthWorkflowVerifiedMarketServiceIdentityProviderOptions>()
+    .Validate<IOptions<ItemActivationWorkflowOptions>, IOptions<ItemActivationWorkflowWorkerOptions>>((identity, approval, worker) =>
+    {
+        if (!approval.Value.Enabled || !worker.Value.Enabled) return true;
+        try
+        {
+            Diten.MdmService.Infrastructure.ReferenceData.AuthWorkflowVerifiedMarketServiceIdentityProvider.EnsureValidConfiguration(identity);
+            return true;
+        }
+        catch (Diten.MdmService.Application.Contracts.ReferenceData.WorkflowVerifiedMarketServiceIdentityException)
+        {
+            return false;
+        }
+    }, "ITEM_ACTIVATION_SERVICE_IDENTITY_CONFIGURATION_INVALID")
+    .ValidateOnStart();
 // S2 FIX1 item 2: the approval on with this instance's worker off is said at start (not refused).
 builder.Services.AddHostedService<ItemActivationWorkerOffWarning>();
 builder.Services.AddOptions<LskuRetirementRequestWorkflowOptions>()

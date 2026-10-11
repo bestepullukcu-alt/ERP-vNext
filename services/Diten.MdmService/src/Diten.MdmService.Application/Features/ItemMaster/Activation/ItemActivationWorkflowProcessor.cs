@@ -72,6 +72,9 @@ public sealed class ItemActivationWorkflowProcessor(
     IItemActivationDecisionWriter decisionWriter,
     // S2 FIX1 item 1: the worker has no user request — the lists are read with MDM's service identity for the tenant.
     Diten.MdmService.Application.Contracts.ReferenceData.IWorkflowItemReferenceResolver references,
+    // S2 FIX2 (minor M1, CT decision: least privilege): a user's request (the maker's repeat) reads them with the user's
+    // own token; the service identity is the worker's only.
+    Diten.MdmService.Application.Contracts.ReferenceData.IItemReferenceResolver userReferences,
     TimeProvider timeProvider,
     ILogger<ItemActivationWorkflowProcessor>? logger = null,
     ItemActivationWorkflowExecutionConfiguration? execution = null)
@@ -94,6 +97,24 @@ public sealed class ItemActivationWorkflowProcessor(
     public const string MakerReplayRequired = "ITEM_ACTIVATION_WORKFLOW_MAKER_REPLAY_REQUIRED";
     public const string DecisionPendingCode = "ITEM_ACTIVATION_WORKFLOW_DECISION_PENDING";
     public const string IdempotencyConflict = "ITEM_ACTIVATION_WORKFLOW_IDEMPOTENCY_CONFLICT";
+
+    /// <summary>S2 FIX2 item 2: the longest wait between two asks of an open approval (the gauge's thresholds build on it).</summary>
+    public static readonly TimeSpan DecisionPollCeiling = TimeSpan.FromMinutes(15);
+
+    /// <summary>S2 FIX2 (minor M4): how long a configuration refusal of the item lists waits before it is asked again.</summary>
+    public static readonly TimeSpan ConfigurationRetryDelay = TimeSpan.FromHours(1);
+
+    // Half the approval's age, within [retry delay, ceiling]: the waits roughly double, with no extra state to keep.
+    public static TimeSpan DecisionPollDelay(ItemWorkflowOperation operation, DateTimeOffset now, TimeSpan retryDelay)
+    {
+        var floor = retryDelay > TimeSpan.Zero ? retryDelay : TimeSpan.FromSeconds(1);
+        if (floor >= DecisionPollCeiling) return DecisionPollCeiling;
+        var age = operation.WorkflowStartedAtUtcTicksV1 is { } started && started > 0
+            ? TimeSpan.FromTicks(Math.Max(0, now.UtcTicks - started))
+            : TimeSpan.Zero;
+        var half = TimeSpan.FromTicks(age.Ticks / 2);
+        return half < floor ? floor : half > DecisionPollCeiling ? DecisionPollCeiling : half;
+    }
     // The engine cancel's reason code for a maker's withdrawal (the free text, if any, travels as the comment).
     public const string WithdrawalReasonCode = "ITEM_ACTIVATION_WITHDRAWN_BY_MAKER";
 
@@ -218,8 +239,11 @@ public sealed class ItemActivationWorkflowProcessor(
             if (string.IsNullOrWhiteSpace(token) && operation.Checkpoint == ItemWorkflowCheckpoint.AwaitingMakerReplay)
                 return Fail(operation, MakerReplayRequired, 409);
             var now = timeProvider.GetUtcNow();
+            // S2 FIX2 (minor M7): the requester's own withdrawal does not wait for a scheduled ask of the open approval —
+            // only a lease held elsewhere keeps it out.
             var claim = await operations.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
-                [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
+                [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks,
+                IgnoreNextAttempt: !string.IsNullOrWhiteSpace(token)), cancellationToken);
             if (claim is null) return Fail(operation, "ITEM_ACTIVATION_WORKFLOW_BUSY", 409);
             // Every decision of this step is made on the document as it is UNDER the claim.
             if (await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken) is not { } underClaim
@@ -675,10 +699,16 @@ public sealed class ItemActivationWorkflowProcessor(
         // open is not a failure — the person has not decided yet. It is asked again after the retry delay, its streak
         // reset; it never counts toward the retry limit (counted, a day's wait used to reach RETRY_LIMIT_REACHED in ~6.5 h
         // of 15-minute polls and the gauge called it stuck).
+        // S2 FIX2 item 2: the next ask backs off with the approval's age (half of it), from the retry delay up to
+        // DecisionPollCeiling — an approval open for a day is asked every 15 minutes, not every 30 s (each ask is two
+        // operation writes and an engine read, and due work is served in NextAttempt order). The streak is kept, never
+        // counted (an open approval is not a failure).
         if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal)
             return await operations.AdvanceAsync(claim, new(ItemWorkflowCheckpoint.AwaitingDecision,
-                ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks, now.Add(retryDelay).UtcTicks,
-                BoundedCode(result.ErrorCode, DecisionPendingCode), ReleaseLease: true), cancellationToken);
+                ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
+                now.Add(DecisionPollDelay(operation, now, retryDelay)).UtcTicks,
+                BoundedCode(result.ErrorCode, DecisionPendingCode), ReleaseLease: true, Streak: RecoveryStreakWrite.Keep),
+                cancellationToken);
         if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
                 or ProductIdentityWorkflowTransportOutcome.Incomplete
             || Retryable(result.Outcome)
@@ -747,9 +777,11 @@ public sealed class ItemActivationWorkflowProcessor(
         // its list, same kind), never with a fresh version number.
         var item = await items.GetByIdAsync(operation.ItemId, cancellationToken);
         if (item is null) return await QuarantineAsync(claim, ItemErrors.NotFound, now, cancellationToken);
-        var held = await ItemReferenceEvidence.CheckAsync(
-            new Diten.MdmService.Application.Contracts.ReferenceData.TenantBoundItemReferenceResolver(references,
-                operation.TenantId), item, cancellationToken, operation.ReferenceEvidence);
+        var resolver = counted
+            ? new Diten.MdmService.Application.Contracts.ReferenceData.TenantBoundItemReferenceResolver(references,
+                operation.TenantId)
+            : userReferences;
+        var held = await ItemReferenceEvidence.CheckAsync(resolver, item, cancellationToken, operation.ReferenceEvidence);
         switch (held.Verdict)
         {
             case ItemReferenceEvidence.Verdict.Wait:
@@ -758,10 +790,16 @@ public sealed class ItemActivationWorkflowProcessor(
             case ItemReferenceEvidence.Verdict.NotApplicable:
                 return await DecisionNotApplicableAsync(operation, claim, held.Code!, now, retryDelay, counted,
                     cancellationToken);
+            case ItemReferenceEvidence.Verdict.Stuck when held.Code == ItemReferenceEvidence.ProviderConfigurationError:
+                // S2 FIX2 (minor M4): a refused identity / configuration heals when it is fixed — asked again after a long,
+                // uncounted interval (the maker may be gone); until then the item stays pending and needing_a_person
+                // counts it.
+                log.LogError("Item activation operation {OperationId} of tenant {TenantId}: the item list provider refused MDM's service identity or configuration ({ResultCode}); the approved item stays pending and is asked again in {Minutes} minutes.",
+                    operation.OperationId, operation.TenantId, held.Code, (int)ConfigurationRetryDelay.TotalMinutes);
+                return await operations.AdvanceAsync(claim, new(operation.Checkpoint,
+                    ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks, now.Add(ConfigurationRetryDelay).UtcTicks,
+                    held.Code, ReleaseLease: true, Streak: RecoveryStreakWrite.Keep), cancellationToken);
             case ItemReferenceEvidence.Verdict.Stuck:
-                if (held.Code == ItemReferenceEvidence.ProviderConfigurationError)
-                    log.LogError("Item activation operation {OperationId} of tenant {TenantId}: the item list provider refused MDM's service identity or configuration ({ResultCode}); the approved item stays pending until this is fixed and the requester submits again.",
-                        operation.OperationId, operation.TenantId, held.Code);
                 return await QuarantineAsync(claim, held.Code, now, cancellationToken);
         }
         return await operations.AdvanceAsync(claim, new(ItemWorkflowCheckpoint.ApprovalValidated,
@@ -812,7 +850,9 @@ public sealed class ItemActivationWorkflowProcessor(
         if (!TryRehydrateEvidence(operation, out var evidence))
             return await QuarantineAsync(claim, "ITEM_ACTIVATION_WORKFLOW_EVIDENCE_CONFLICT", now, cancellationToken);
         var item = await items.GetByIdAsync(operation.ItemId, cancellationToken);
-        if (!ExactDecisionResult(item, operation, evidence))
+        // S2 FIX2 (minor M3): the decision is already on the item — checked by what it wrote, not by the item's status now
+        // (a deactivation after an approval, or a new submit after a rejection, inside the audit window is not a conflict).
+        if (!DecisionWritten(item, operation, evidence) && !MovedOnToALaterApproval(item, operation))
             return await QuarantineAsync(claim, "ITEM_ACTIVATION_WORKFLOW_DECISION_INCONSISTENT", now, cancellationToken);
         return await AdvanceAsync(claim, ItemWorkflowCheckpoint.Completed, ProductIdentityWorkflowRecoveryDisposition.None,
             now, releaseLease: true, cancellationToken: cancellationToken);
@@ -830,10 +870,21 @@ public sealed class ItemActivationWorkflowProcessor(
     // an exact version would then fail every replay and the reconciliation after it.
     private static bool ExactDecisionResult(Item? item, ItemWorkflowOperation operation,
         ProductIdentityWorkflowDecisionEvidence evidence) =>
+        DecisionWritten(item, operation, evidence)
+        && item!.LifecycleStatus == DecisionTarget(operation.ActivationKind, evidence.Decision);
+
+    // DecisionApplied is reached only after this operation's decision write was seen exact; an item now bound to ANOTHER
+    // approval (a new submit after a rejection) at a later version has moved on from it — nothing is left to verify.
+    private static bool MovedOnToALaterApproval(Item? item, ItemWorkflowOperation operation) =>
+        item is not null && item.Version > operation.ExpectedItemVersion + 2
+        && item.ActivationWorkflowBinding is { } binding
+        && !string.Equals(binding.StartIdempotencyKey, operation.StartIdempotencyKey, StringComparison.Ordinal);
+
+    private static bool DecisionWritten(Item? item, ItemWorkflowOperation operation,
+        ProductIdentityWorkflowDecisionEvidence evidence) =>
         item is not null && item.Version >= operation.ExpectedItemVersion + 2
         && item.ActivationWorkflowBinding is { } binding && ExactOperationBinding(binding, operation)
-        && binding.TerminalDecision is { } persisted && ExactTerminalDecision(persisted, evidence)
-        && item.LifecycleStatus == DecisionTarget(operation.ActivationKind, evidence.Decision);
+        && binding.TerminalDecision is { } persisted && ExactTerminalDecision(persisted, evidence);
 
     // Write classes (§8.4 B): the store and a lease held elsewhere wait (never stuck); a concurrent write is retried and
     // counted (stuck with its cause at the limit); anything else is stuck at once — its requester's repeat is the exit.

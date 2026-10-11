@@ -95,6 +95,7 @@ public class MdmHttpHost : IAsyncLifetime
     public FakeMarkets Markets { get; } = new();
     // MOD-0290-FU04 S1: the three item lists (MOD-0048-FU01 §4) and the tenant-wide stock answer (O-11).
     public FakeItemReferences ItemReferences { get; } = new();
+    public FakeServiceIdentity ServiceIdentity { get; } = new();
     public FakeItemListPlatform ItemListPlatform => _itemListPlatform ??= new(ItemReferences);
     private FakeItemListPlatform? _itemListPlatform;
     public FakeStockAvailability Stock { get; } = new();
@@ -273,7 +274,7 @@ public class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IVerifiedGskuReferenceResolver>(References);
                     // The approval-time reference check stays the REAL client; only Platform's answer is faked.
                     services.RemoveAll<IWorkflowVerifiedMarketServiceIdentityProvider>();
-                    services.AddSingleton<IWorkflowVerifiedMarketServiceIdentityProvider, FakeServiceIdentity>();
+                    services.AddSingleton<IWorkflowVerifiedMarketServiceIdentityProvider>(ServiceIdentity);
                     services.AddHttpClient(nameof(Diten.MdmService.Infrastructure.ReferenceData.PlatformWorkflowVerifiedGskuResolverClient))
                         .ConfigurePrimaryHttpMessageHandler(() => PlatformReference);
                     services.RemoveAll<IProductIdentityWorkflowTransportReadiness>();

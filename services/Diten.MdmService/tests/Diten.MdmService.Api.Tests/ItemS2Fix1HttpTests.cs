@@ -75,6 +75,7 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
     {
         var id = await PendingAsync("Microcrystalline cellulose");
         host.ItemListPlatform.Bearers.Clear();
+        host.ServiceIdentity.Tenants.Clear();
 
         host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
         await CycleAsync();
@@ -83,6 +84,9 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
         Assert.Equal(ItemWorkflowCheckpoint.Completed, (await OperationAsync(id)).Checkpoint);
         Assert.NotEmpty(host.ItemListPlatform.Bearers);
         Assert.All(host.ItemListPlatform.Bearers, bearer => Assert.Equal(FakeItemListPlatform.ServiceToken, bearer));
+        // S2 FIX2 X2: the identity is the OPERATION's tenant's (never another id of the operation).
+        Assert.NotEmpty(host.ServiceIdentity.Tenants);
+        Assert.All(host.ServiceIdentity.Tenants, tenant => Assert.Equal(_tenant, tenant));
     }
 
     // Platform refuses MDM's service identity: a named CONFIGURATION error — stuck (needing_a_person), never a wait — and
@@ -103,12 +107,21 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
         await CycleAsync();
 
         var operation = await OperationAsync(id);
-        Assert.Equal(ItemWorkflowCheckpoint.ManualReconciliationRequired, operation.Checkpoint);
-        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired, operation.RecoveryDisposition);
+        // S2 FIX2 (minor M4): held on a long, uncounted retry (not parked for the maker), still a person's.
+        Assert.Equal(ItemWorkflowCheckpoint.DecisionObserved, operation.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
         Assert.Equal(ItemReferenceEvidence.ProviderConfigurationError, operation.LastFailureCode);
+        Assert.Equal(0, operation.FailedAttemptCount);
+        Assert.InRange(operation.NextAttemptAtUtcTicksV1!.Value - host.Clock.GetUtcNow().UtcTicks,
+            TimeSpan.FromMinutes(59).Ticks, TimeSpan.FromMinutes(61).Ticks);
         Assert.Equal(ItemLifecycleStatus.PendingActivation, (await ItemAsync(id)).LifecycleStatus);
         Assert.Equal(calls, host.ItemListPlatform.Bearers.Count);
         Assert.Equal(personBefore + 1, await discovery.CountNeedingAPersonAsync(host.Clock.GetUtcNow().UtcTicks));
+
+        // The configuration is fixed: the next ask, an hour on, applies the approval — no one had to submit again.
+        host.ItemListPlatform.RefuseServiceToken = null;
+        using (host.Clock.Shift(TimeSpan.FromMinutes(61))) await CycleAsync();
+        Assert.Equal(ItemLifecycleStatus.Active, (await ItemAsync(id)).LifecycleStatus);
     }
 
     // ------------------------------------------------------------------------------------------ item 2
@@ -237,6 +250,7 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
         Assert.Equal(1, record.Outcome);
         Assert.True(record.SystemActor);
         Assert.Equal("Pending", record.Metadata![ItemAudit.Decision]);
+        Assert.Equal(_maker.ToString("D"), record.Metadata[ItemAudit.MakerId]);
         Assert.Equal(("Draft", "PendingActivation"),
             ((string?)record.BeforeState![nameof(Item.LifecycleStatus)], (string?)record.AfterState![nameof(Item.LifecycleStatus)]));
     }
@@ -278,6 +292,7 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
         Assert.Equal(1, record.Outcome);
         Assert.True(record.SystemActor);
         Assert.Equal("Withdrawn", record.Metadata![ItemAudit.Decision]);
+        Assert.Equal(_maker.ToString("D"), record.Metadata[ItemAudit.RequesterId]);
     }
 
     // The decision's write is refused attempt after attempt (the item moved under it): ONE failed record for the
@@ -364,6 +379,9 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
         await CycleAsync();
         Assert.Equal(ItemLifecycleStatus.Active, (await ItemAsync(id)).LifecycleStatus);
         Assert.Null(await DetailReasonAsync(Client(), id));
+        // S2 FIX2 (minor M6): the text leaves the item document with the decision; the operation keeps it.
+        Assert.Null((await ItemAsync(id)).ActivationRequestReason);
+        Assert.Equal(reason, (await OperationAsync(id)).RequestReason);
     }
 
     [Fact]
@@ -480,6 +498,231 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
 
         Assert.Equal("ITEM_ACTIVATION_WITHDRAWAL_CONTRACT_INVALID", refused.ErrorCode);
         Assert.Equal(ItemLifecycleStatus.PendingActivation, (await ItemAsync(id)).LifecycleStatus);
+    }
+
+    // ================================================================================== S2 FIX2 (P-2026-10-10-FU04-S2-FIX2)
+
+    // Item 1: the maker's repeat that applies the approver's decision — the request's record never says the decision's
+    // move (Pending → Active); that move is the system's record only.
+    [Fact]
+    public async Task Fix2_Item1_A_request_record_never_carries_the_approvers_decision()
+    {
+        var id = await PendingAsync("Croscarmellose sodium");
+        await RawItems().UpdateOneAsync(Filter(id), new BsonDocument("$inc", new BsonDocument(nameof(Item.Version), 5)));
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        await RawItems().UpdateOneAsync(Filter(id), new BsonDocument("$inc", new BsonDocument(nameof(Item.Version), -5)));
+        using (host.Clock.Shift(TimeSpan.FromMinutes(1)))
+            Assert.True((await PostAsync(id, "submit", Lifecycle(0))).IsSuccessStatusCode);
+        Assert.Equal(ItemLifecycleStatus.Active, (await ItemAsync(id)).LifecycleStatus);
+
+        var requests = Trail(id, nameof(SubmitItemCommand)).ToList();
+        Assert.True(requests.Count >= 2);
+        Assert.All(requests, record =>
+        {
+            var after = record.AfterState?.GetValueOrDefault(nameof(Item.LifecycleStatus)) as string;
+            Assert.True(after is null or "PendingActivation", $"a request record says {after}");
+        });
+        Assert.Single(Trail(id, nameof(ApplyItemActivationDecisionCommand)), x => x.Outcome == 1 && x.SystemActor);
+    }
+
+    // Item 2: an open approval is asked less often as it ages — half its age, from the retry delay up to the 15-minute
+    // ceiling — never counted.
+    [Fact]
+    public async Task Fix2_Item2_An_open_approval_is_asked_less_often_as_it_ages_up_to_the_ceiling()
+    {
+        var id = await PendingAsync("Sodium lauryl sulfate");
+        var started = (await OperationAsync(id)).WorkflowStartedAtUtcTicksV1!.Value;
+
+        using (host.Clock.Shift(TimeSpan.FromSeconds(40))) await CycleAsync();
+        var young = await OperationAsync(id);
+        var youngAge = young.UpdatedAtUtcTicksV1 - started;
+        Assert.InRange(young.NextAttemptAtUtcTicksV1!.Value - young.UpdatedAtUtcTicksV1, youngAge / 2 - TimeSpan.TicksPerSecond,
+            youngAge / 2 + TimeSpan.TicksPerSecond);
+
+        using (host.Clock.Shift(TimeSpan.FromHours(3))) await CycleAsync();
+        var old = await OperationAsync(id);
+        Assert.Equal(ItemActivationWorkflowProcessor.DecisionPollCeiling.Ticks,
+            old.NextAttemptAtUtcTicksV1!.Value - old.UpdatedAtUtcTicksV1);
+        Assert.Equal(0, old.FailedAttemptCount);
+        Assert.Equal(ItemWorkflowCheckpoint.AwaitingDecision, old.Checkpoint);
+    }
+
+    // Item 2: the unprocessed threshold is checked against the worker's poll and lease at start (never clamped).
+    [Fact]
+    public void Fix2_Item2_The_unprocessed_threshold_is_validated_against_the_worker_at_start()
+    {
+        var worker = new ItemActivationWorkflowWorkerOptions { PollIntervalSeconds = 3600, LeaseSeconds = 10 };
+        Assert.False(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 60 }.IsValid(worker));
+        Assert.True(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 90 }.IsValid(worker));
+        Assert.False(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 19 }.IsValid(new()));
+        Assert.False(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 1441 }.IsValid(new()));
+
+        // The host's own start validation holds the same rule (a bad value would stop the start).
+        var validators = host.Factory.Services.GetServices<IValidateOptions<ItemActivationGaugeOptions>>().ToList();
+        Assert.Contains(validators, validator =>
+            validator.Validate(Options.DefaultName, new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 60 }).Failed);
+    }
+
+    // Item 2: a worker that claims and drops (crashes) every cycle is not progress — the operation is still counted.
+    [Fact]
+    public async Task Fix2_Item2_A_claim_without_a_move_is_not_progress()
+    {
+        var id = await PendingAsync("Cetyl alcohol");
+        var after = TimeSpan.FromMinutes(90);
+        using (host.Clock.Shift(after + TimeSpan.FromMinutes(1)))
+        {
+            var operation = await OperationAsync(id);
+            var store = new ItemWorkflowOperationRepository(host.Database, new Tenant(_tenant));
+            var now = host.Clock.GetUtcNow();
+            Assert.NotNull(await store.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+                [operation.Checkpoint], "crashing-worker", now.UtcTicks, now.AddSeconds(10).UtcTicks)));
+
+            Assert.Equal(1, await UnprocessedOfThisTenantAsync(after));
+        }
+    }
+
+    // Item 2 / X1: the gauge records the unprocessed count (cutoff = now − threshold) and the oldest open approval's age.
+    [Fact]
+    public async Task Fix2_Item2_The_gauge_records_unprocessed_and_the_oldest_open_approvals_age()
+    {
+        var id = await PendingAsync("Glyceryl monostearate");
+        var started = (await OperationAsync(id)).WorkflowStartedAtUtcTicksV1!.Value;
+        var metrics = host.Factory.Services.GetRequiredService<Diten.MdmService.Api.Services.ProductItemSkuMaster.ProductIdentityRecoveryMetrics>();
+        var after = host.Factory.Services.GetRequiredService<IOptions<ItemActivationGaugeOptions>>().Value.UnprocessedAfter;
+        var discovery = new ItemWorkflowTenantPartitionDiscoveryRepository(host.Database);
+
+        await host.RunAsync<ItemActivationGauge>(gauge => gauge.RecordAsync(CancellationToken.None));
+
+        var now = host.Clock.GetUtcNow();
+        Assert.Equal(await discovery.CountUnprocessedAsync((now - after).UtcTicks), metrics.Current(ItemActivationGauge.UnprocessedFlow));
+        Assert.True(metrics.Current(ItemActivationGauge.OldestOpenApprovalFlow) >= (now.UtcTicks - started) / TimeSpan.TicksPerSecond - 1);
+    }
+
+    // M1 (CT decision: least privilege): the maker's HTTP repeat reads the lists with the USER's token — the service
+    // identity is the worker's only.
+    [Fact]
+    public async Task Fix2_M1_The_makers_repeat_reads_the_lists_with_the_users_token_never_the_service_identity()
+    {
+        var id = await PendingAsync("Calcium carbonate");
+        host.ItemReferences.Outage = true;
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        Assert.Equal(ItemWorkflowCheckpoint.DecisionObserved, (await OperationAsync(id)).Checkpoint);
+        host.ItemReferences.Outage = false;
+        host.ItemListPlatform.Bearers.Clear();
+        var userCalls = host.ItemReferences.Calls.Count;
+
+        using (host.Clock.Shift(TimeSpan.FromMinutes(1)))
+            Assert.True((await PostAsync(id, "submit", Lifecycle(0))).IsSuccessStatusCode);
+
+        Assert.Equal(ItemLifecycleStatus.Active, (await ItemAsync(id)).LifecycleStatus);
+        Assert.Empty(host.ItemListPlatform.Bearers);
+        Assert.True(host.ItemReferences.Calls.Count > userCalls);
+    }
+
+    // M3: the item is deactivated right after the decision's write (inside the audit window) — still completes.
+    [Fact]
+    public async Task Fix2_M3_A_deactivation_right_after_the_decision_write_still_completes()
+    {
+        var id = await PendingAsync("Ascorbyl palmitate");
+        host.AfterDecisionWrite = async (_, written) =>
+        {
+            host.AfterDecisionWrite = null;
+            var deactivated = await PostAsync(id, "deactivate", Lifecycle(2, "withdrawn from use"));
+            Assert.True(deactivated.IsSuccessStatusCode, await deactivated.Content.ReadAsStringAsync());
+            return written;
+        };
+
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+
+        Assert.Equal(ItemLifecycleStatus.Deactivated, (await ItemAsync(id)).LifecycleStatus);
+        Assert.Equal(ItemWorkflowCheckpoint.Completed, (await OperationAsync(id)).Checkpoint);
+    }
+
+    // M7: the maker's withdrawal does not wait for a scheduled ask of the open approval (no 409 BUSY).
+    [Fact]
+    public async Task Fix2_M7_The_makers_withdrawal_does_not_wait_for_a_scheduled_ask()
+    {
+        var id = await PendingAsync("Shellac glaze");
+        using (host.Clock.Shift(TimeSpan.FromMinutes(20)))
+        {
+            await CycleAsync();
+            Assert.True((await OperationAsync(id)).NextAttemptAtUtcTicksV1 > host.Clock.GetUtcNow().UtcTicks);
+
+            var withdrawn = await PostAsync(id, "withdraw", Lifecycle(1));
+
+            Assert.True(withdrawn.IsSuccessStatusCode, await withdrawn.Content.ReadAsStringAsync());
+            Assert.Equal(ItemLifecycleStatus.Draft, (await ItemAsync(id)).LifecycleStatus);
+        }
+    }
+
+    // M8: the repair age's upper bound itself is allowed.
+    [Fact]
+    public async Task Fix2_M8_The_orphan_repair_age_at_its_upper_bound_is_allowed()
+    {
+        var repair = await Client().PostAsync($"{Items}/operator/orphan-code-repairs?limit=10&minimumAgeMinutes=525600", null);
+
+        Assert.True(repair.IsSuccessStatusCode, await repair.Content.ReadAsStringAsync());
+    }
+
+    // X4: a replay is only THIS decision — another actor, task or approval under the same item is not a replay.
+    [Theory]
+    [InlineData("actor")]
+    [InlineData("task")]
+    [InlineData("start-key")]
+    public async Task Fix2_X4_A_different_decision_is_never_taken_for_a_replay(string differs)
+    {
+        var id = await PendingAsync("Polyvinyl alcohol " + differs);
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        var item = await ItemAsync(id);
+        var operation = await OperationAsync(id);
+        var written = item.ActivationWorkflowBinding!.TerminalDecision!;
+        var evidence = Decision(operation, written.DecisionActorSubjectId);
+        evidence.ApprovalTaskId = written.ApprovalTaskId;
+        evidence.TransitionSequence = written.TransitionSequence;
+        if (differs == "actor") evidence.DecisionActorSubjectId = Guid.NewGuid();
+        if (differs == "task") evidence.ApprovalTaskId = Guid.NewGuid();
+        if (differs == "start-key") operation.StartIdempotencyKey = "item-activation:another-request";
+        var store = new ItemWorkflowOperationRepository(host.Database, new Tenant(_tenant));
+        var claim = new ItemWorkflowClaim(_tenant, operation.OperationId, id, operation.OperationFingerprint, "store-test", 1,
+            ItemWorkflowCheckpoint.ApprovalValidated, host.Clock.GetUtcNow().AddMinutes(1).UtcTicks);
+
+        var replay = await store.ApplyDecisionAsync(claim, operation, evidence, host.Clock.GetUtcNow().UtcTicks);
+
+        Assert.False(replay.Succeeded);
+        Assert.False(replay.IsReplay);
+    }
+
+    // X3: a system record never carries the request's user e-mail.
+    [Fact]
+    public async Task Fix2_X3_A_system_record_carries_no_user_email()
+    {
+        var wire = new ConcurrentQueue<string>();
+        var http = new DefaultHttpContext
+        {
+            User = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity(
+            [
+                new System.Security.Claims.Claim("sub", _maker.ToString("D")),
+                new System.Security.Claims.Claim("actor_type", "tenant_user"),
+                new System.Security.Claims.Claim("tenant_id", _tenant.ToString("D")),
+                new System.Security.Claims.Claim("email", "maker@example.test")
+            ], "Bearer"))
+        };
+        var forwarder = new PlatformAuditForwarder(new CapturingFactory(wire),
+            Options.Create(new PlatformRegistrationOptions { BaseUrl = "http://platform.test", InternalApiKey = "test-only" }),
+            new HttpContextAccessor { HttpContext = http }, NullLogger<PlatformAuditForwarder>.Instance);
+
+        await forwarder.ForwardAsync(new Diten.MdmService.Application.Contracts.Audit.AuditForwardRequest(
+            nameof(ApplyItemActivationDecisionCommand), 1, 4, "Item", "product-item-sku-master", Guid.NewGuid(), 1,
+            SystemActor: true));
+
+        var body = JsonDocument.Parse(Assert.Single(wire)).RootElement;
+        Assert.Equal(4, body.GetProperty("actorType").GetInt32());
+        Assert.Equal(JsonValueKind.Null, body.GetProperty("actorId").ValueKind);
+        Assert.Equal(JsonValueKind.Null, body.GetProperty("actorEmail").ValueKind);
     }
 
     // ------------------------------------------------------------------------------------------ helpers

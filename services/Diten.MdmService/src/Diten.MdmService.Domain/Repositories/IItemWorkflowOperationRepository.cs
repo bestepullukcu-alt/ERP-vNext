@@ -69,4 +69,7 @@ public interface IItemWorkflowTenantPartitionDiscovery
     // S2 FIX1 item 2: approvals the worker should be carrying (not ended, not parked for a person or the maker) that nobody
     // has touched since the cutoff — the flow is on and no worker is processing it.
     Task<long> CountUnprocessedAsync(long untouchedSinceUtcTicks, CancellationToken cancellationToken = default);
+
+    // S2 FIX2 item 2: when the oldest approval still waiting for its decision started (null: none).
+    Task<long?> OldestOpenApprovalStartedAtAsync(CancellationToken cancellationToken = default);
 }

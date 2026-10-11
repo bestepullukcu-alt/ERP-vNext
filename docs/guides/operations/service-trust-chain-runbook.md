@@ -417,15 +417,21 @@ A non-default `--client-code` gets no Platform `Item` entry from the bootstrap (
 applied, so the reference check runs with the trusted service token for the tenant (audience
 `TRUSTED_REFERENCE_DATA_CONSUMER`, the GSKU workflow resolver's identity provider `AuthWorkflowVerifiedMarketServiceIdentityProvider`
 and the `VerifiedGskuResolver` credential). Platform's item-universal endpoint accepts it. If Platform or Auth refuses it
-(401 after one refresh, 403, or no identity issued), the approval is stuck with
-`ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR` (an error line, `needing_a_person`) and the item stays PendingActivation —
-fix the identity / credential configuration, then the maker submits again. An outage (5xx, timeout) only waits.
+(401 after one refresh, 403, or no identity issued), the approval waits with `ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR`
+(an error line, `needing_a_person`) and the item stays PendingActivation; it is asked again every hour, uncounted, so it
+heals by itself once the identity / credential configuration is fixed (no one has to submit again). An outage (5xx,
+timeout) only waits. An instance that runs the item approval worker checks this identity's configuration at start
+(`ITEM_ACTIVATION_SERVICE_IDENTITY_CONFIGURATION_INVALID` stops the start). A user's request (the maker's repeat) reads
+the lists with the user's own token — the service identity is the worker's only.
 
 **Approval on, worker off** (S2 FIX1): not refused at start (in a multi-instance deployment one instance carries the
 worker). Each instance with the approval on and its worker off says so once at start (Warning). The gauge
-`ITEM_ACTIVATION_UNPROCESSED` (flow tag on the recovery gauges) counts approvals the worker should be carrying that nobody
-has touched for `ItemActivationGauge:UnprocessedAfterMinutes` (default 60, 20–1440; a running worker touches each at
-least every 15 minutes).
+`ITEM_ACTIVATION_UNPROCESSED` (flow tag on the recovery gauges) counts approvals the worker should be carrying with no real
+move (a checkpoint write — a claim alone is not progress) for `ItemActivationGauge:UnprocessedAfterMinutes` (default 60,
+20–1440, and above 15 minutes + the worker's poll interval + lease — checked at start, an invalid value stops the start).
+An open approval is asked again at half its age, from the retry delay up to every 15 minutes (never counted toward the
+retry limit). `ITEM_ACTIVATION_OLDEST_OPEN_APPROVAL_SECONDS` is the age of the oldest approval still waiting for its
+decision (a number, no tenant).
 
 **The activation gate** (contract draft.11 "Etkinleştirme kuralı", R-04): at the submit and again when the approval is
 applied, the item needs `lotControlled` filled, a base unit, at least one storage condition unless it is packaging (O-25),
