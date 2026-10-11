@@ -125,7 +125,8 @@ public sealed class AuditDateTimeOffsetRegressionInventoryTests
     {
         var src = PlatformSourceRoot();
         var attributed = new List<string>();
-        foreach (var item in MainAdditionsReviewed20261001)
+        // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 4): the BL-521 member is held to the same rule (CT sabotage M5).
+        foreach (var item in MainAdditionsReviewed20261001.Concat(Bl521AdditionsReviewed20261009))
         {
             var separator = item.LastIndexOf(':');
             var lines = File.ReadAllLines(Path.Combine(src, item[..separator].Replace('/', Path.DirectorySeparatorChar)));

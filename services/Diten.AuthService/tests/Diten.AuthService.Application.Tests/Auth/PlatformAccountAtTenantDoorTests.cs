@@ -239,6 +239,129 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         Assert.Equal(recordType, new JwtSecurityTokenHandler().ReadJwtToken(accessToken).Claims.Single(c => c.Type == "actor_type").Value);
     }
 
+    /// <summary>FIX1 (small 1) — a hidden caller can neither mark an account a platform account nor create one; a caller that
+    /// is not hidden (the platform door, provisioning) can.</summary>
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_hidden_caller_neither_marks_nor_creates_a_platform_account(string actorType)
+    {
+        var tenant = Guid.NewGuid();
+        var ct = CancellationToken.None;
+        using var scope = _host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(tenant);
+        var inner = sp.GetRequiredService<UserRepository>();
+        var hidden = new PlatformAccountScopedUserRepository(inner, new HideAccountsFromCaller());
+        var visible = new PlatformAccountScopedUserRepository(inner, new ShowEveryAccount());
+        var ordinary = await inner.CreateAsync(new User($"m.{Guid.NewGuid():N}@bl521.test", "hash:x", "Mark", "Target", tenant), ct);
+
+        Assert.False(await hidden.SetPlatformActorTypeAsync(ordinary.Id, tenant, actorType, ct));
+        Assert.False((await inner.GetByIdAndTenantAsync(ordinary.Id, tenant, ct))!.IsPlatformAccount);
+        Assert.True(await visible.SetPlatformActorTypeAsync(ordinary.Id, tenant, actorType, ct));
+        Assert.Equal(actorType, (await inner.GetByIdAndTenantAsync(ordinary.Id, tenant, ct))!.PlatformActorType);
+
+        var marked = new User($"c.{Guid.NewGuid():N}@bl521.test", "hash:x", "Create", "Platform", tenant);
+        marked.SetPlatformActorType(actorType);
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => hidden.CreateAsync(marked, ct));
+        Assert.Equal(PlatformAccountScopedUserRepository.PlatformAccountNotCreatable, refused.Message);
+        Assert.Null(await inner.GetByEmailAndTenantAsync(marked.Email, tenant, ct));
+        Assert.NotNull(await hidden.CreateAsync(new User($"o.{Guid.NewGuid():N}@bl521.test", "hash:x", "Create", "Ordinary", tenant), ct));
+        Assert.NotNull(await visible.CreateAsync(marked, ct));
+    }
+
+    /// <summary>FIX1 (small 2) — THE STORED ROW DECIDES, NOT THE COPY. A tenant actor loads an ORDINARY user; Platform makes the
+    /// same account a platform account before the actor's write lands: every one of BL-529's targeted writes, for the hidden
+    /// caller, writes nothing (0 rows) — the copy in memory still says "ordinary".</summary>
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_hidden_callers_write_prepared_against_an_ordinary_user_does_not_land_once_the_stored_account_is_a_platform_one(string actorType)
+    {
+        var tenant = Guid.NewGuid();
+        var ct = CancellationToken.None;
+        using var scope = _host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(tenant);
+        var inner = sp.GetRequiredService<UserRepository>();
+        var hidden = new PlatformAccountScopedUserRepository(inner, new HideAccountsFromCaller());
+        var target = await inner.CreateAsync(new User($"r.{Guid.NewGuid():N}@bl521.test", "hash:before", "Race", "Target", tenant), ct);
+
+        var loaded = (await hidden.GetByIdAndTenantAsync(target.Id, tenant, ct))!;      // ordinary when the actor reads it
+        var state = hidden.CaptureState(loaded);
+        loaded.UpdateProfile("Changed", "ByTenantActor");
+        var signIn = (await hidden.GetByIdAndTenantAsync(target.Id, tenant, ct))!;
+        signIn.RecordLoginSuccess();
+        Assert.True(await inner.SetPlatformActorTypeAsync(target.Id, tenant, actorType, ct)); // Platform, in between
+
+        Assert.False(await hidden.TryWriteChangesAsync(loaded, state, tenant, UserWriteCondition.None, ct));
+        await hidden.RecordLoginOutcomeAsync(signIn, tenant, ct);
+        Assert.False(await inner.SetPasswordResetTokenAsync(target.Id, tenant, "link", DateTime.UtcNow.AddHours(1), excludePlatformAccounts: true, ct));
+        Assert.Equal(0, (await inner.RecordLoginFailureAsync(target.Id, tenant, 5, 15, excludePlatformAccounts: true, ct)).FailedLoginAttempts);
+
+        var stored = (await inner.GetByIdAndTenantAsync(target.Id, tenant, ct))!;
+        Assert.Equal(("Race", 0), (stored.FirstName, stored.FailedLoginAttempts));
+        Assert.Null(stored.LastLoginAt);
+        Assert.Null(stored.PasswordResetTokenHash);
+        Assert.Equal(actorType, stored.PlatformActorType);
+    }
+
+    /// <summary>
+    /// Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (CT survivor M3) — BL-529's binding holds for PLATFORM actors too: a platform
+    /// session that is not bound to the current password (minted before the binding, or the password changed since) is
+    /// "The session was ended." — no token, no BL-521 record question decides it instead.
+    /// </summary>
+    [Theory]
+    [InlineData("platform_admin", false)]
+    [InlineData("partner_admin", false)]
+    [InlineData("platform_admin", true)]
+    [InlineData("partner_admin", true)]
+    public async Task A_platform_session_not_bound_to_the_current_password_is_ended_and_mints_nothing(string actorType, bool passwordChangedSince)
+    {
+        var account = await SeedAsync(BusinessAndPlatformTenant, platform: true, roles: ["SuperAdmin"], actorType: actorType);
+        Host.Records[account.Email] = PlatformAdministratorRecordAnswer.ConfirmedAs(actorType);
+        if (passwordChangedSince)
+        {
+            // bound now …
+            var bound = await RefreshRowBoundNowAsync(account, actorType);
+            // … then the password changes (an administrator's reset, a change elsewhere): the fingerprint no longer matches.
+            await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == account.Id,
+                Builders<User>.Update.Set(u => u.PasswordHash, "hash:changed-since-" + Guid.NewGuid().ToString("N")));
+            var answer = await RefreshWithRowAsync(account, actorType, bound);
+            Assert.Equal(HttpStatusCode.Unauthorized, answer.StatusCode);
+            Assert.Contains("The session was ended.", await answer.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+            return;
+        }
+
+        var unbound = await RefreshAsync(account, BusinessAndPlatformTenant, actorType, bindToPassword: false);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, unbound.Response.StatusCode);
+        Assert.Contains("The session was ended.", unbound.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("accessToken", unbound.Body, StringComparison.Ordinal);
+    }
+
+    private async Task<string> RefreshRowBoundNowAsync(Account account, string actorType)
+    {
+        var raw = $"refresh-{Guid.NewGuid():N}";
+        using var scope = _host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(BusinessAndPlatformTenant);
+        var hasher = sp.GetRequiredService<IRefreshTokenHasher>();
+        var row = new RefreshToken(account.Id, hasher.Hash(raw), DateTime.UtcNow.AddDays(7), "127.0.0.1",
+            BusinessAndPlatformTenant, actorType, "bl521-merge-fix1");
+        Diten.AuthService.Application.Features.Auth.Services.SessionPasswordBinding.Bind(
+            row, hasher, await _host.Database.GetCollection<User>("users").Find(u => u.Id == account.Id).FirstAsync());
+        await sp.GetRequiredService<IRefreshTokenRepository>().CreateAsync(row, CancellationToken.None);
+        return raw;
+    }
+
+    private async Task<HttpResponseMessage> RefreshWithRowAsync(Account account, string actorType, string raw)
+    {
+        var accessToken = await MintPlatformTokenAsync(account, actorType);
+        using var client = _host.Client(tenantHeader: BusinessAndPlatformTenant);
+        return await client.PostAsJsonAsync("api/auth/refresh-token", new { accessToken, refreshToken = raw });
+    }
+
     /// <summary>Registration mints a token only for the account it CREATES. An address that belongs to a platform account is
     /// "already in use" — the same 409 an ordinary user's address gets — and creates, mints and writes nothing.</summary>
     [Theory]

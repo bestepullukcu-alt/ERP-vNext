@@ -46,11 +46,20 @@ public static class EntitlementReconciliationOperationalMode
             Console.WriteLine(result);
             return result.StartsWith("SUCCESS", StringComparison.Ordinal) || result.StartsWith("PLAN", StringComparison.Ordinal) ? 0 : 2;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            // Never emit exceptions containing JWTs, connection strings, credentials or HTTP bodies.
-            Console.Error.WriteLine("ENTITLEMENT_OPERATION_FAILED_CLOSED");
+            // Never emit exceptions containing JWTs, connection strings, credentials or HTTP bodies — only a fixed code.
+            Console.Error.WriteLine(FailureLine(exception));
             return 2;
         }
     }
+
+    public const string FailedClosed = "ENTITLEMENT_OPERATION_FAILED_CLOSED";
+
+    /// <summary>
+    /// The stderr line (BL570 FIX2 item 2): the same first token as before, plus <c>reason=CODE</c> when the failure is a
+    /// named one (OperationalReason). Exit code unchanged (2).
+    /// </summary>
+    public static string FailureLine(Exception exception) =>
+        OperationalReason.From(exception) is { } reason ? FailedClosed + " reason=" + reason : FailedClosed;
 }

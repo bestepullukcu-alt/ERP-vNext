@@ -228,11 +228,84 @@ public sealed class ProductLegalEntityScopeConsumerGuard
         try
         {
             var policy = await _policies.GetByGlobalProductIdAsync(globalProductId, cancellationToken);
-            if (context.RolloutState is null)
-            {
-                return ProductLegalEntityScopeConsumerDecision.Denied(
+            return Decide(context, globalProductId, policy);
+        }
+        catch (Exception exception) when (IsInvalidEvidence(exception))
+        {
+            return ProductLegalEntityScopeConsumerDecision.Denied(
+                ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
+        }
+    }
+
+    /// <summary>
+    /// MOD-0290-FU04 S4 FIX1 (R4) — <see cref="EvaluateAsync"/> for many Global Products with ONE policy read: the same
+    /// decision per product (the same evaluator, the same refusals). When the batch read cannot be read, each product is
+    /// decided by the single path (S4 FIX2 R2) — never the whole batch denied for one product's evidence.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<Guid, ProductLegalEntityScopeConsumerDecision>> EvaluateManyAsync(
+        ProductLegalEntityScopeConsumerContext context,
+        IReadOnlyCollection<Guid> globalProductIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        var ids = globalProductIds.Distinct().ToArray();
+        var decisions = new Dictionary<Guid, ProductLegalEntityScopeConsumerDecision>();
+        if (context.TenantId != _tenantContext.TenantId || ids.Any(id => id == Guid.Empty))
+        {
+            foreach (var id in ids)
+                decisions[id] = ProductLegalEntityScopeConsumerDecision.Denied(
                     ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
+            return decisions;
+        }
+        if (context.RolloutMode != ProductLegalEntityScopeRolloutMode.Enforced || ids.Length == 0)
+        {
+            foreach (var id in ids) decisions[id] = await EvaluateAsync(context, id, cancellationToken);
+            return decisions;
+        }
+        IReadOnlyDictionary<Guid, ProductLegalEntityScopePolicy> policies;
+        try
+        {
+            policies = await _policies.GetByGlobalProductIdsAsync(ids, cancellationToken);
+        }
+        catch (Exception exception) when (IsInvalidEvidence(exception))
+        {
+            // S4 FIX2 (R2): one unreadable policy must not deny the whole batch — the single path denies only its own
+            // product. S4 FIX3: the batch is read again in groups of FallbackGroupSize; only a group that fails again is
+            // decided the single way (the same decision per product) — 200 ids with one bad policy: 1 + 10 group reads +
+            // 20 single ones, not 1 + 200.
+            foreach (var group in ids.Chunk(FallbackGroupSize))
+            {
+                IReadOnlyDictionary<Guid, ProductLegalEntityScopePolicy> groupPolicies;
+                try
+                {
+                    groupPolicies = await _policies.GetByGlobalProductIdsAsync(group, cancellationToken);
+                }
+                catch (Exception groupException) when (IsInvalidEvidence(groupException))
+                {
+                    foreach (var id in group) decisions[id] = await EvaluateAsync(context, id, cancellationToken);
+                    continue;
+                }
+                foreach (var id in group) decisions[id] = Decide(context, id, groupPolicies.GetValueOrDefault(id));
             }
+            return decisions;
+        }
+        foreach (var id in ids) decisions[id] = Decide(context, id, policies.GetValueOrDefault(id));
+        return decisions;
+    }
+
+    /// <summary>S4 FIX3: the group a failed batch policy read is retried in (measured: 31 reads vs 201 for 200 ids).</summary>
+    public const int FallbackGroupSize = 20;
+
+    private ProductLegalEntityScopeConsumerDecision Decide(
+        ProductLegalEntityScopeConsumerContext context, Guid globalProductId, ProductLegalEntityScopePolicy? policy)
+    {
+        if (context.RolloutState is null)
+        {
+            return ProductLegalEntityScopeConsumerDecision.Denied(
+                ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
+        }
+        try
+        {
             var evaluation = _evaluator.Evaluate(new ProductLegalEntityScopeEvaluationRequest(
                 context.TenantId,
                 globalProductId,
@@ -244,36 +317,20 @@ public sealed class ProductLegalEntityScopeConsumerGuard
                 context.EffectiveCandidateLegalEntityIds));
             return new(evaluation.Allowed, evaluation.Reason);
         }
-        catch (InvalidOperationException)
-        {
-            return ProductLegalEntityScopeConsumerDecision.Denied(
-                ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
-        }
-        catch (ArgumentException)
-        {
-            return ProductLegalEntityScopeConsumerDecision.Denied(
-                ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
-        }
-        catch (FormatException)
-        {
-            return ProductLegalEntityScopeConsumerDecision.Denied(
-                ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
-        }
-        catch (OverflowException)
-        {
-            return ProductLegalEntityScopeConsumerDecision.Denied(
-                ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
-        }
-        catch (Exception exception) when (
-            string.Equals(
-                exception.GetType().FullName,
-                "MongoDB.Bson.Serialization.BsonSerializationException",
-                StringComparison.Ordinal))
+        catch (Exception exception) when (IsInvalidEvidence(exception))
         {
             return ProductLegalEntityScopeConsumerDecision.Denied(
                 ProductLegalEntityScopeDecisionReason.InvalidScopeEvidence);
         }
     }
+
+    // The evidence a decision cannot rest on: the same five families the single read always denied on.
+    private static bool IsInvalidEvidence(Exception exception) =>
+        exception is InvalidOperationException or ArgumentException or FormatException or OverflowException
+        || string.Equals(
+            exception.GetType().FullName,
+            "MongoDB.Bson.Serialization.BsonSerializationException",
+            StringComparison.Ordinal);
 }
 
 public sealed record ProductLegalEntityScopeConsumerContext(

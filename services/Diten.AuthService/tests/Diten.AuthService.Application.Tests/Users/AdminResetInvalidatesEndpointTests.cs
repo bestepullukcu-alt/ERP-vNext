@@ -1108,6 +1108,33 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(HttpStatusCode.Unauthorized, (await PlatformLoginAsync(email, WrongPassword)).StatusCode);
     }
 
+    /// <summary>Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 6) — the platform forced change, held right after it verified the
+    /// password, while an administrator DEACTIVATES the account: the new password is not written (the write is conditional
+    /// on IsActive as well), the answer is the existing 401 "User is inactive.", and no session is issued.</summary>
+    [Fact]
+    public async Task A_platform_forced_change_racing_a_deactivation_writes_nothing_and_issues_no_session()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        await WriteAccountAsync(await PlatformUserAsync(email), a => a.RequirePasswordChange(null));
+        var session = await PlatformSessionAsync(email, OldPassword);
+        using var client = _host.Client(session.AccessToken);
+        var admin = await PlatformUserAsync(email);
+        var liveBefore = (await LiveRefreshTokensAsync(admin.Id, PlatformTenantId)).Select(t => t.Id).ToHashSet();
+
+        var change = await RaceAsync("verify:" + OldPassword,
+            () => client.PostAsJsonAsync("api/platform-auth/change-password/forced", new { currentPassword = OldPassword, newPassword = NewPassword, rememberMe = false }),
+            async () => await WriteAccountAsync(await PlatformUserAsync(email), a => a.DeactivateByAdministrator()));
+
+        var body = await change.Content.ReadAsStringAsync();
+        Assert.True(change.StatusCode == HttpStatusCode.Unauthorized, $"{(int)change.StatusCode}: {body}");
+        Assert.Contains("User is inactive.", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("accessToken\":\"ey", body, StringComparison.Ordinal);
+        var after = await PlatformUserAsync(email);
+        Assert.Equal(admin.PasswordHash, after.PasswordHash);                       // the new password was not written
+        Assert.True(after.MustChangePassword);
+        Assert.Empty((await LiveRefreshTokensAsync(admin.Id, PlatformTenantId)).Where(t => !liveBefore.Contains(t.Id))); // no new session
+    }
+
     [Fact]
     public async Task A_link_redeemed_while_a_newer_reset_replaced_it_writes_nothing()
     {

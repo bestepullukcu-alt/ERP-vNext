@@ -764,7 +764,7 @@ HTTP taklidiyle (bütçe, 5xx, kısmi kapsam) ölçülür. Sözleşme testi ceva
 - [x] MOD-0048 yeni liste tanımları (MOD-0048-FU01 §4)
 - [ ] CT: sözleşme v1.1'i dondurur (FROZEN v1.1)
 - [x] CT kararları (2026-10-07, §25.1): O-1 … O-6, O-8, O-9, O-12 … O-15 kabul; O-7, O-10, O-11, O-16 … O-24 karara bağlandı
-- [x] O-21 (birim kodları) — S1'de ölçüldü (XBX / XCS / XRO geçerli; IU için tek kod yok → stok + kaliteye soru)
+- [x] O-21 (birim kodları) — S1'de ölçüldü (XBX / XCS / XRO geçerli; IU için tek kod yok → stok + kaliteye soru) → kalite birimi kararıyla yerel `IU` yayımlandı (2026-10-09, ITEM-UNIVERSAL-V2)
 - [ ] **MOD-0048-FU01 adlı adımı (üç listenin Platform sağlayıcısı)** — S1'in canlıda kullanılabilmesinin ön koşulu. Bugün sağlayıcı yok; kalem oluşturma 503 `ITEM_REFERENCE_LIST_UNAVAILABLE` (kapalı başarısızlık). CT'nin ayrı Platform işi; girdi: S1 raporu §5
 - [ ] S5 ön koşulu: Auth `EntitlementOnlyViewerPermissions` + `mdm.items.read` (§23 #7)
 - [ ] **FG kimlik işlemcisi dilimi önkoşulu (S3 incelemesi M1):** FG kimlik rezervasyonu FG'ye aynı işlemde dokunmalı (GSKU deseni, `FirstGskuIdentityWorkflowOperationRepository` rezervasyon dokunuşu); yoksa stok düzenlemesi açık FG kimlik işleminin sabitlediği sürümü kaydırabilir
@@ -915,7 +915,7 @@ bağlayıcı olan "CT kararı" sütunudur.
 | O-18 | RCS-001 §3 tablosunda kalem satırı yok | Kurala satır: "Kalem / Malzeme (MDM ürün kimliği ailesi) · KALSIN · `IT-` + 12 hane" | **CT satırı kendisi ekler**; bu paket kural dosyasını değiştirmez | CT | 🟢 |
 | O-19 | BOM'un (MOD-0193) sahibi kişi / dal | MVP-3'e sorulur | **Sahip** | sahip → MVP-3 | 🟢 |
 | O-20 | Kullanım dışı durumda hangi stok hareket türü giriş / çıkış / iade sayılır | Stok ekibinin DEC-INV-17 güncellemesinde | **Stok tarafı** (DEC-INV-17 güncellemesi) | stok ekibi | 🟢 |
-| O-21 | `item-uom` ayrıntıları: kutu / koli için güncel UN/ECE Rec 20 kodu (`XBX` / `XCS`), uluslararası ünite, rulo | S1 tohumundan önce ölçülür | **S1'de tohumdan önce doğrulanır** | S1 | 🟢 |
+| O-21 | `item-uom` ayrıntıları: kutu / koli için güncel UN/ECE Rec 20 kodu (`XBX` / `XCS`), uluslararası ünite, rulo | S1 tohumundan önce ölçülür | **Kapandı (2026-10-09):** XBX / XCS / XRO S1'de doğrulandı; uluslararası ünite yerel `IU` kodu olarak yayımlandı (`BIOLOGICAL_ACTIVITY`, hassasiyet 0, `CodeStandard = LOCAL`, Rec 20 `HIU` kullanılmaz; ITEM-UNIVERSAL-V2, WP-PLT-ITEM-LISTS-02, hat `a10bfbf5c`) | S1 / ITEM-LISTS-02 | 🟢 |
 | O-22 | Evrensel listelerin yedi dilde ekran etiketi | Etiket MDM resx'inden kararlı kodla | **S5'te ölçülür** | S5 | 🟢 |
 | O-23 | Stok ekibinin istek listeleri (R-01 … R-09) bizim git'te yok | Stok ekibinden itmesi istenir | **Sahip** | sahip → stok ekibi | 🟢 |
 | O-24 | Emekli kalemde ters kayıtla (REVERSAL) geri gelen stok | Stok yalnız hurda / silme ile kapatır (istisna kaydıyla); MDM tarafı değişmez | **Stok tarafı** (DEC-INV-17 güncellemesi) | stok ekibi | 🟡 kapatılamayan stok |

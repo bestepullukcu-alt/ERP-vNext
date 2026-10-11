@@ -8398,6 +8398,275 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-608
+
+**İş akışı şablonu kendi adaylarını tanımlarsa tüketicinin (MDM) verdiği onaycı adayını eziyor; tüketici bunu göremiyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform iş akışı motoru) · BULAN: FU04 S2 incelemesi + FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- MDM kalem onayı başlatmada aday olarak `position:{ApproverPositionId}` (QA Müdürü) gönderiyor. Yayımlanmış şablonun adımı kendi adaylarını taşıyorsa motor onları kullanıyor.
+- `TrustedWorkflowStartResult` etkin adayları ya da aday kaynağını taşımıyor; MDM başlatmada doğrulayamıyor (S2 FIX1: UYGULANAMAZ).
+- Bugünkü önlem yalnız runbook: "`ITEM-ACTIVATION` tanımı aday TANIMLAMAZ".
+
+Yapılacak (seç, SAP / Oracle karşılaştırmasıyla):
+- (a) güvenilir tüketici aday verdiyse ve şablon adımı da aday taşıyorsa başlatmayı adlı kodla reddet;
+- (b) başlatma sonucunda aday kaynağı (`consumer` / `template`) ve etkin aday kümesi; tüketici kendisi karar verir.
+- Tüketiciler: MDM kalem, GSKU, LSKU, Global Ürün onayları.
+
+Gelecek regresyon riski: 🟡 yanlış yayımlanmış bir şablon, QA dışı birinin GMP onayını vermesine yol açar (yönetici hatası gerekir; sızıntı yok).
+
+---
+
+### BL-607
+
+**LSKU kimlik onayı: yalnız insan kararını bekleyen açık onay deneme sınırına sayılıyor; ~6,5 saat sonra "takılı" görünüyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM, LSKU) · BULAN: FU04 S2 FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10 · CANLI ÖN KOŞULU (LSKU onayı canlıda kullanılacaksa)
+
+Ölçüm:
+- `LskuIdentityWorkflowProcessor.cs:959`: motor "henüz karar yok" (NonTerminal) dediğinde `ScheduleRetryAsync(counted)` çağrılıyor. 30 denemede `RETRY_LIMIT_REACHED` → işlem takılı / el ile uzlaştırma göstergesine düşüyor.
+- 15 dk geri çekilme tavanıyla ~6,5 saat. Onaycı aynı gün içinde karar vermezse sağlıklı bir onay "takılı" olur.
+- S2 (kalem) FIX1'de düzeltildi: GSKU düzeltme akışının kabul edilmiş kuralı ("açık onay başarısızlık değildir"; yeniden deneme gecikmesiyle tekrar sorulur, seri sıfırlanır, sınıra sayılmaz). LSKU'ya dokunulmadı.
+
+Yapılacak:
+- aynı kural LSKU'ya; uçtan uca test (30+ "karar yok" cevabı → takılı değil);
+- çok eski açık onay için ayrı gösterge (S2'nin `ITEM_ACTIVATION_UNPROCESSED` deseni);
+- GSKU kimlik akışı ve FG'de de ölç.
+
+Gelecek regresyon riski: 🔴 canlıda LSKU onayı açılırsa her yavaş onay operatör alarmı üretir ve el ile uzlaştırma ister.
+
+---
+
+### BL-606
+
+**Güvenilir iş akışı başlatma sözleşmesinde serbest metin gerekçe yok: onaycı, yeniden etkinleştirme gerekçesini Görev Merkezi'nde göremiyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform iş akışı motoru + Görev Merkezi) · BULAN: FU04 S2 FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `TrustedWorkflowStartTransportRequest` (`Platform.API/Models/Workflow/TrustedWorkflowConsumerRequestModels.cs:3`) ve `TrustedWorkflowStartRequest` (`WorkflowModels.cs:315`) yalnız şablon, nesne, aday kimlikleri, `ReasonCode` (yapılandırılmış kod), yorum / kanıt bayrakları ve son tarih taşıyor. Serbest metin yok.
+- S2 FIX1 kararı (A): kalem yeniden etkinleştirme gerekçesi MDM işlemine yazılıyor ve kalem detayında görünüyor; onaycı MDM sayfasında okuyor.
+
+Yapılacak:
+- başlatma sözleşmesine isteğe bağlı `requestComment` (uzunluk sınırı, kontrol karakteri reddi; denetime metin değil "verildi + uzunluk");
+- Görev Merkezi görev detayında gösterim (7 dil etiket);
+- tüketiciler: MDM kalem / LSKU / GSKU yeniden etkinleştirme ve emeklilik talepleri.
+
+Gelecek regresyon riski: 🟡 onaycı bağlamı ayrı ekranda arar; veri riski yok.
+
+---
+
+### BL-605
+
+**Kalem onayı (S2): onaycı pozisyonu tek küresel yapılandırma değeri; ikinci kiracıda kalem onayı kapalı başarısız**
+
+DURUM: AÇIK · SAHİP: CT (MDM, kalem onayı) · BULAN: FU04 S2 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10 · ÇOK KİRACILI CANLIDAN ÖNCE
+
+Ölçüm:
+- `ItemActivationWorkflow:ApproverPositionId` servis yapılandırmasında tek değer. Aday `position:{id}` olarak motora gidiyor; motor pozisyonu kiracı başına çözüyor.
+- Başka kiracıda o kimlikte pozisyon yok → başlatma reddi (kapalı başarısız; sızıntı yok). Yani bugün kalem onayı yalnız bir kiracıda çalışabilir.
+- GP-1b (Global Ürün) aynı desende mi? Ölç; aynıysa bu satır onu da kapsar.
+
+Yapılacak:
+- kiracı başına onaycı pozisyonu: kiracı ayarı (Platform iş ayarları ya da MDM kiracı yapılandırması; SAP / Oracle karşılaştırmasıyla seç);
+- yoksa adlı ret (`ITEM_ACTIVATION_APPROVER_NOT_CONFIGURED`), 7 dilde cümle.
+
+Gelecek regresyon riski: 🟡 ikinci kiracı canlıya çıkınca kalem onayı çalışmaz (kapalı başarısız, veri riski yok).
+
+---
+
+### BL-604
+
+**CI: Platform / Auth / MDM dışındaki servislerin testleri ne derleniyor ne koşuluyor (Crm, Hcm, DevEnablement, ManagementGovernance, Ppm, Pvg, Procurement)**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / CI) + servis sahipleri · BULAN: WP-CI-SERVICE-TESTS-03 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10 · TEK PR'DAN ÖNCE KARAR
+
+Ölçüm:
+- BL-577 / BL-590 / CI takibi 2 yalnız Platform, Auth ve MDM test projelerini `service-tests.yml`'a ve phase1 derlemesine aldı.
+- Test projesi sayıları (`*Tests.csproj`):
+  - CrmService 1, DevEnablementService 1, HcmService 1, ProcurementService 1;
+  - ManagementGovernanceService 3, PpmService 2, PvgService 5;
+  - EnterpriseStrategyService 2, Building.Blocks 2.
+- İnceleme: Crm, Hcm, DevEnablement, ManagementGovernance, Ppm, Pvg ve Procurement testleri CI'da ne derleniyor ne koşuluyor. EnterpriseStrategy ve Building.Blocks: ölç (çözümde olabilirler).
+- Bu servislerin sahibi başka ekipler; CT onların test kırmızılarını düzeltmez (XMC-001).
+
+Yapılacak:
+- her servis için: çözümde mi (phase1 derliyor mu), testleri yerelde yeşil mi, dış bağımlılığı (mongod, RabbitMQ) ne?;
+- yeşil olanlar `service-tests.yml` matrisine satır; kırmızı olanlar sahibine iş (XMC-001: "bunu da düzeltelim mi?");
+- PPM: kendi ekibinin onayı (PPM dosyalarına CT dokunmaz).
+
+Gelecek regresyon riski: 🟡 bu servislerde kırılan test CI'da görünmez; tek PR'da main'e kırmızı test girebilir.
+
+Ölçüm sonucu (2026-10-10, WP-CI-COVERAGE-MEASURE-01, 26 test projesi; rapor WF sohbeti scratchpad `ci-coverage-report.md`):
+- **A, yeşil → satır:** Building.Blocks Secrets 5/5 + Email 109/109 · DevEnablement 92/92 · ManagementGovernance Tests 87/87 · Procurement 147/147 · PVG ×5 (36 / 23 / 40 / 88 / 43) · PPM Tests 381/381 (PPM ekibinin onayıyla). Çözüm dışındakiler (Secrets, Crm, Procurement, PVG ×5) phase1 "yalnız derle" adımı da ister. Satırlar ci-followup2 hatta girdikten sonra (Roller).
+- **B, kırmızı → sahibine (XMC-001):** Crm 1 (PdfSharp sistem fontu yok) · EnterpriseStrategy 8 (RBAC iddiaları: yetkisiz istek reddedilmiyor; hafıza: ES'de güvenlik yok) · ManagementGovernance Architecture 2 · PPM Integration 10 (9'u `ppm.audit-intent.submitted.v1` olay adı Building.Blocks kuralından geçmiyor, 1'i 503 yerine 401).
+- **C, altyapı:** HCM `EmployeeDraftSessionRepositoryMongoTests` ORTAK `localhost:27017` kullanıyor (koşulmadı; HCM'nin kalanı 59/59) · MG ve PPM entegrasyon testleri mongod yolunu sabit `/opt/homebrew/bin/mongod` yazmış (Linux CI'da yok; MG Integration 95/95 dahil).
+- Eventing hatta derlenmiyor (CS0246); ci-followup2 `fd8acd7d4` düzeltiyor.
+- Ekiplere giden mesaj sahip üzerinden (CT taslağı).
+
+---
+
+### BL-603
+
+**S4 okuma sözleşmesi: okunamayan satır yer tutucusunun BSON tür sırası — MinKey / Symbol kolları ve tür başına teori testi eksik (FIX4 küçükleri)**
+
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (MDM, product-master) · BULAN: FU04 S4 FIX4 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- S4 FIX4 (`75c128b33`, hatta `717775d59`) yer tutucuyu deponun BSON tür sırasına göre diziyor: eksik / null / sayı, sonra dize, sonra diğer; diziler en küçük öğeyle (en iyi çaba).
+- MinKey (her şeyden önce) ve Symbol (dizeyle aynı sınıf) kolları açıkça ele alınmıyor. Bozuk bir kod alanı bu türlerden biriyse yer tutucunun yeri Mongo'nun sırasından sapabilir.
+- Tür başına sıra tek bir teoriyle sabitlenmemiş (her tür için "yer tutucu, depo sırasıyla aynı yerde").
+
+Yapılacak:
+- MinKey / MaxKey / Symbol kolları;
+- `BsonType` değerleri üzerinden tek teori: gerçek Mongo sıralamasıyla yer tutucu sırası aynı.
+
+Gelecek regresyon riski: 🟢 yalnız bozuk (tür dışı) kod alanında sayfa kayması; sızıntı yok.
+
+---
+
+### BL-602
+
+**MDM kapsam yazımı: `A_replace_under_constant_lease_traffic_on_other_products_succeeds` makine yükünde kararsız**
+
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (MDM kapsam, MOD-0021-FU02 hattı) · BULAN: CT S4 FIX4 sabotaj tabanı (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `ProductLegalEntityScopeWriteAdmissionMongoTests.cs:387`. S4 FIX4 (`75c128b33`) sabotaj tabanında MDM Application 336 / 337: tek kırmızı bu test. Test S4 dosyası değil; kapsam yazımı FIX3 / FIX4'ten (hat).
+- Olasılıksal: arka planda başka ürünlere sürekli kira alan bir döngü varken bir Replace'in başarmasını bekliyor. Belirlenimci eşi `A_replace_aborted_as_a_transient_write_conflict_is_run_again_not_answered_409` (kancalı WriteConflict) yeşil.
+- Makine yükü yüksekti (ct-heavy kuyruğunda 7 iş, dev sunucuları açık).
+
+Yapılacak:
+- ölç: başarısızlık mesajı `conflict` mı, `retain` mı (yeniden deneme bütçesi mi tükeniyor, gerçek açlık mı?);
+- açlıksa: bütçe / geri çekilme kuralı; değilse test belirlenimci hâle (döngü sayısı sınırlı, kanca ile çakışma) ya da adlı `[Trait("Category","Probabilistic")]` + CI süzgeci.
+
+Gelecek regresyon riski: 🟡 CI ara sıra kırmızı; gerçek açlıksa yoğun kapsam yazımında 503.
+
+---
+
+### BL-601
+
+**E-posta / ekran dili: yeni tarayıcıda girişte dil çerezi kullanıcının tercihinden dolsun; Ctrl+K'da "Profilim"**
+
+DURUM: AÇIK · SAHİP: CT (kiracı kabuğu) · BULAN: WP-EMAIL-LANG-01 Teslim 1–2 (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `/Profile`'da kaydedilen dil `.AspNetCore.Culture` çerezini yalnız KAYDEDEN tarayıcıda yazıyor. Kullanıcı başka bir tarayıcıda giriş yapınca ekran kuruluş dilinde açılıyor, e-postalar ise tercih edilen dilde gidiyor (tutarsız).
+- Ctrl+K yalnız gezinme menüsünden besleniyor; "Profilim" kullanıcı menüsünde, Ctrl+K'da yok (Platform manifesti gerekir).
+
+Yapılacak:
+- girişte (tenant_user) çerez yoksa tercihten doldur; tercih yoksa dokunma;
+- Ctrl+K'ya "Profilim" (manifest ya da kabuk girişi; ölç).
+
+Gelecek regresyon riski: 🟢 kullanım kolaylığı.
+
+---
+
+### BL-600
+
+**Kalem birim / saklama koşulu seçenek listesi: Platform'da item-universal listeleme ucu yok (S5'te geçici kod girişi)**
+
+DURUM: AÇIK · SAHİP: CT (Platform + MDM) · BULAN: FU04 S5 ön koşul ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (S5 sohbeti):
+- GSKU `uom` listesi Platform'un özel ucundan geliyor: `api/internal/v1/reference-data/verified-gsku/enumerate-uom` (5 sabit kod).
+- item-universal için Platform'da YALNIZ çözüm ucu var (`InternalItemUniversalReferenceDataController` `POST resolve`). Küme listeleme yok.
+- Genel ekran liste ucunun (`api/lookups/reference-data/consumable-sets/{setCode}/published-values`) izin listesinde `item-uom` / `storage-condition` / `material-type` yok. Ayrıca o uç BRD yayınlı değerleri içindir, kod sahipli katalog için değil.
+- Sonuç: kalem formu ve GSKU / FG "Stok davranışı" formu birim (XBX, XCS, MGM, IU …) ve saklama koşulunu listeden seçtiremiyor. S5 geçici olarak kod alanı + MDM doğrulaması (`STOCK_UOM_INVALID` / `STOCK_STORAGE_CONDITION_INVALID`) kullanıyor; malzeme tipi sabit 6 kod.
+
+Yapılacak:
+- Platform: iç `enumerate-item-universal` ucu (kiracıdan bağımsız, salt okur, aynı güven yolu, sürüm kimliği / numarası ile);
+- MDM: `GET api/mdm/items/options` (material-type, item-uom kod + sıra + boyut + hassasiyet + `CodeStandard`, storage-condition + `ConditionKind`), kesinti = ret;
+- Web: kalem ve stok formlarında seçim listesi (seçim yine tam-kod çözümüyle doğrulanır).
+
+Gelecek regresyon riski: 🟡 kullanım kolaylığı; yanlış kod MDM'de reddedilir (veri riski yok).
+
+---
+
+### BL-599
+
+**Sessiz tarih yanlış ayrıştırma koruması olmayan ~10 ekran (31.02 → 03.03 uyarısız kaydedilir)**
+
+DURUM: AÇIK · SAHİP: CT (ortak bileşen) + ekran sahipleri (XMC-001) · BULAN: WP-WCN-FIX-01 FIX3 incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (FIX3 incelemesi, `487bc7998`):
+- `allowInput: true` ile flatpickr kullanan ve paylaşılan BL-391 korumasını (`DitenDateField.guardAgainstSilentMisparse`) çağırmayan ekranlar. Örnekler:
+  - `CRM/Claims/country-version.js:144`, `CRM/Knowledge/form.js:120` (CRM ekibi);
+  - `Platform/Tenants/details.js:1929` (Platform, CT hattı);
+  - `esbp-horizon-dates.js:100`;
+  - diğerleri.
+- Korunanlar (WCN-FIX-01): ortak `diten-datefield` alanları, PositionAssignments, Organizasyon Birimleri, Pozisyonlar, Tüzel Kişi sihirbazı ve liste süzgeci.
+
+Yapılacak:
+- tam liste (`git grep allowInput`);
+- CT hattı ekranları (Platform Tenants) WCN-FIX-01 kabulünden sonra mekanik olarak bağlanır (koruma + görünüm betiği + korumasızsa `allowInput: false` + ekran başına test + isteğe bağlı tarih reddinde kayıt durur);
+- CRM / diğer ekiplerin ekranları için sahiplerine sorulur.
+
+Gelecek regresyon riski: 🟡 GxP tarihleri (yürürlük, fesih, hasar) uyarısız yanlış kaydedilebilir.
+
+---
+
+### BL-598
+
+**MDM depoları kurucuda eşzamanlı Mongo çağrısı yapıyor (dizin oluşturma): Mongo kapalıyken istek 503 yerine 500**
+
+DURUM: AÇIK · SAHİP: CT (MDM altyapı) · BULAN: FU04 S4 FIX2 incelemesi + FIX3 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (S4 FIX3, `3c71bb496`):
+- `ProductLegalEntityScopePolicyRepository` kurucusu `Indexes.CreateMany`'yi eşzamanlı çağırıyor. Depo scoped; isteğin DI çözümü sırasında Mongo'ya gidiliyor. Mongo kapalıysa `TimeoutException` → 500 (işleyicinin 503 eşlemesine varılmıyor). Veri riski yok.
+- İki dizin UNIQUE (ürün başına bir politika). Barındırılan başlatıcıya taşımak, dizin yokken çift politika yazma penceresi açar (🔴); bu yüzden taşınmadı.
+- Benzer desen yaklaşık 29 MDM deposunda var.
+
+Öneri (S4 FIX3 raporu §5): süreç başına `Lazy<Task>` ile dizin hazırlığı; yazmalar hazırlığı bekler ve hazır değilse 503 ile kapanır; okumalar DI'da Mongo'ya gitmez. Önce tek depo (politika), ölç, sonra diğerleri.
+
+Gelecek regresyon riski: 🟡 Mongo kesintisinde tüketiciler kodsuz 500 görür (stok "cevap yok" sayar, kapalı başarısız).
+
+---
+
+### BL-597
+
+**Zaman Çizelgesi onay listesi deposunun kiracı süzgeci testle sabitlenmemiş (takeover kodu, savunma katmanı)**
+
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (Zaman Çizelgesi) · BULAN: hat birleşmesi CT sabotajı M5 (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `TimeEntryRepositories.ListSubmittedInApprovalAsync`'ten `ExecutionFilter` (TenantId + IsDeleted) kaldırıldığında 353 Zaman Çizelgesi testinin hepsi yeşil kaldı.
+- Bugün sızıntı yok: `GetApprovalListHandler` sonucu MOD-0023 `DecidableInstanceIdsAsync` ile süzüyor; başka kiracının iş akışı kimliği bu kümede olmaz.
+- Ama "her sorgu TenantId ile sınırlanır" kuralının depo düzeyinde testi yok. Takeover'ın D1-FIX1 kodu; birleşmenin yarattığı bir boşluk değil.
+
+Yapılacak:
+- Depo testi: iki kiracıda Submitted haftalar → A'nın çağrısı yalnız A'nınkileri döner (weekIds null ve dolu iki yol);
+- sabotaj: `ExecutionFilter` kalkar → test kızarır.
+- Zaman Çizelgesi'nin bir sonraki turuna ya da küçük bir CT işine.
+
+Gelecek regresyon riski: 🟡 işleyici süzgeci değişirse depo düzeyinde koruma kalmaz.
+
+---
+
+### BL-596
+
+**S3b stok kapısı ile S5 Web "Stok davranışı" bölümü aynı sürümde çıkmalı; Bitmiş Ürün kimlik gönderimi yok (canlı ön koşulu)**
+
+DURUM: AÇIK · SAHİP: CT (sıralama) · BULAN: FU04 S3b bağımsız incelemesi (2026-10-09) · KAYIT: 2026-10-09 · CANLI ÖN KOŞULU
+
+Ölçüm:
+- S3b (`7611c62e9`) lot / seri bayrağı eksik GSKU / LSKU taslağının onaya gönderimini 409 `STOCK_FLAGS_REQUIRED_FOR_APPROVAL` ile reddediyor (stok ekibinin R-04 şartı).
+- Bayrakları girecek Web kapısı yok (`git grep -i stock-behaviour -- frontend` boş; S5 işi).
+- S5'siz sürümde ekrandan yaratılan her GSKU / LSKU taslağı gönderilemez.
+- Bitmiş Ürün için kimlik gönderimi / onayı bugün yok. Kural (`StockFlagGate.MissingForFinishedGood`) hazır, bağlanacak yer yok.
+
+CT kararı (2026-10-09):
+- kapı açık kalır, anahtar yok;
+- S3b FIX1'de bayraksız taslakta SUBMIT eylemi gizlenir ya da nedenli pasif olur;
+- S5 aynı sohbetin bir sonraki işi;
+- S3b ve S5 birlikte canlıya çıkar.
+- FG kimlik gönderimi yazıldığında kapı çağrısı tarama testiyle zorunlu (S3b FIX1 R4).
+
+Gelecek regresyon riski: 🔴 S5'siz canlıya çıkarsa ürün SKU onayı ekrandan yapılamaz.
+
+---
+
 ### BL-595
 
 **Ortak dev Mongo'da 79 eski test veritabanı; yerel test betikleri ortak Mongo'ya düşebiliyor**
@@ -8486,6 +8755,16 @@ Yapılacak (tek iş, üç servis):
 Gelecek regresyon riski: 🔴 canlı ön koşulu. Okuma sözleşmesi Enforced kiracıda ürün satırı veremez.
 
 Kardeş canlı ön koşulu (2026-10-09, stok ekibinin R-02 hatırlatması): ağ geçidinde `/api/product-master` rotası yoktu. S4 FIX1'e eklendi (FU04 §25.1 R-02). İkisi birlikte kapanmadan stoğun üretimdeki ürün seçicisi çalışmaz.
+
+Kapsam genişledi (2026-10-10, FU04 S5 ön koşul ölçümü): aynı iş `mdm.items.*` izinlerini de sağlar — Auth `DefaultRolePermissionTemplate` / `EntitlementOnlyViewerPermissions`'ta `mdm.items.*` yok (`:92-130`); paket §23 #7 "S5 ön koşulu". Ayrıca GSKU / LSKU / FG "stok davranışı düzenleme" eylemi bugün mevcut anahtarlarla (`mdm.gskus.update`, `mdm.finished-goods.create`, `mdm.lskus.create`) bağlı; kendi anahtarları Auth ürün kimliği profilinin tam-küme denetimiyle birlikte bu işte. Tek iş: Auth (şablon + Viewer + profil) + Platform izin listesi + MDM manifest.
+
+CT kararı (2026-10-10, Roller ölçümü üzerine): Auth'a MDM anahtarları TOHUMLA girmez; mevcut yol manifest → Platform kataloğu → Auth `/internal/permissions/sync`. Entitlement eşitlemesi yalnız modülün BEYAN ettiği anahtarları verir. Bu yüzden iş ikiye bölündü:
+- **BL-592 (Roller, `feature/auth/mdm-perms`):** Auth profili (6 kalem anahtarı hepsi-ya-hiçbiri; `mdm.product-master.read` tekil isteğe bağlı), Viewer'ın hak gerektiren okuma kümesine `mdm.items.read` + `mdm.product-master.read`, Platform izin listesi 37 → 38 + gerçek doğrulayıcı testi + post-deploy yapılandırma satırı. `mdm.items.reactivate` yok (yeniden etkinleştirme `submit`). Tohum yok.
+- **BL-592 ilerleme (2026-10-10):** Auth / Platform işi `0fefface3` (mdm-perms). Platform listesi artık 38 anahtar (`mdm.product-master.read` eklendi; yukarıdaki "sabit 37" ölçümü o günün durumu). İnceleme 0 / 3 gerekli → FIX1:
+  - S2'nin `mdm.items.withdraw`'ı için profil {altı} ya da {altı + withdraw} kabul eder, yoksa S2 birleşince modülün rol eşitlemesi durur;
+  - post-deploy sırası: önce Platform kodu, sonra 38 çift; Auth BL-592, kalem anahtarlarını ilk beyan eden manifestten ÖNCE.
+- **MDM manifest adımı (S4 ve stock-gate hatta birleştikten SONRA, tek küçük iş):** (1) `mdm.product-master.read` sayfasız API eylemi olarak beyan (`ACTIVATE_ROLLOUT` deseni; "enforced" listesine `ProductMasterController`); (2) BL-573 ikinci yarısı: `mdm.{gskus,lskus,finished-goods}.edit-stock-behaviour` beyan + kontrolcülerin bağlanması. Bu üç anahtar Platform güvenilir kapsam listesine de girer (38 → 41). S4 / S5b'ye eklenmedi: iki dal aynı manifest dosyasını değiştirse birleştirmede çakışırdı.
+- Stok ekibine "hazır" haberi manifest adımından SONRA gider. Gelecek regresyon riski: 🟡 adım unutulursa anahtar beyan edilmez, rol verimi sessizce boş kalır, stok ekibi canlıda 403 alır.
 
 Stok ekibine söz (2026-10-09, yazılı cevapları): iki ön koşul kapanıp CT yazılı haber verene kadar canlı bağ kurulmaz; stok yerel taklitle sürer. Kapanış haberinde izni **varsayılan olarak hangi rollerin aldığı** da yazılır (stok kullanıcı rollerini buna göre planlayacak). Rol seçimi canlı rol önerisiyle (`docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`) hizalanır.
 

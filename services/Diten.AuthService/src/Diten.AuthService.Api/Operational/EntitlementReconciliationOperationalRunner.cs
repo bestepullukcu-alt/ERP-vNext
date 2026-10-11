@@ -11,6 +11,17 @@ namespace Diten.AuthService.Api.Operational;
 
 public sealed class EntitlementReconciliationOperationalRunner
 {
+    public static readonly string LockName = OperationalSingleInstanceLock.MachineWide("Diten.Auth.ProductIdentityEntitlementReconciliation");
+    public const string LockRecoveredWarning = "WARNING OPERATION_LOCK_RECOVERED_FROM_ABANDONED_RUN";
+
+    /// <summary>
+    /// Where the named warnings go (BL570 FIX1 M8): stderr by default — never stdout, whose single result line
+    /// ("PLAN …", "SUCCESS …") is the command's contract. Carries no token, secret or connection string.
+    /// </summary>
+    public TextWriter Warnings { get; init; } = Console.Error;
+
+    // How the lock is taken (tests only, via InternalsVisibleTo): the production default is the real machine-wide lock.
+    internal Func<string, OperationalSingleInstanceLock> AcquireLock { get; init; } = OperationalSingleInstanceLock.TryAcquire;
     private readonly IEntitlementReconciliationOperationStore _store;
     private readonly ITokenService _tokens;
     private readonly ITenantEntitlementClient _source;
@@ -30,9 +41,12 @@ public sealed class EntitlementReconciliationOperationalRunner
         var deadline = DateTimeOffset.UtcNow.AddMinutes(2);
         var actorId = ValidateOperatorToken(token, deadline);
         var provenance = await VerifyProvenanceAsync(options, ct);
-        using var mutex = new Semaphore(1, 1, "Diten.Auth.ProductIdentityEntitlementReconciliation");
-        var owns = mutex.WaitOne(0);
-        if (!owns) throw new InvalidOperationException("OPERATION_ALREADY_RUNNING");
+        // WP-AUTH-BL570-01: the same single-instance lock on every OS (the named Semaphore was Windows-only); machine-local
+        // across sessions (Global\, FIX1 R4 measured) — see OperationalSingleInstanceLock.
+        using var instance = AcquireLock(LockName);
+        if (!instance.Acquired) throw new InvalidOperationException("OPERATION_ALREADY_RUNNING");
+        // The previous run ended without releasing (it crashed): say so — its plan / receipt state is the store's to tell.
+        if (instance.RecoveredFromAbandonedRun) await Warnings.WriteLineAsync(LockRecoveredWarning);
         try
         {
             var processFingerprint = await _observeProcesses(ct);
@@ -86,7 +100,7 @@ public sealed class EntitlementReconciliationOperationalRunner
             if (commit.Receipt is null) return commit.State;
             return await FinalizeAfterCommitAsync(saved, commit.Receipt, token, deadline, processFingerprint, ct);
         }
-        finally { mutex.Release(); }
+        finally { instance.Dispose(); }
     }
 
     public Guid ValidateOperatorToken(string token, DateTimeOffset deadline)
@@ -229,6 +243,9 @@ public sealed class EntitlementReconciliationOperationalRunner
         "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalMode.cs",
         "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationCommandOptions.cs",
         "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalRunner.cs",
+        // WP-AUTH-BL570-01 FIX1 M7: the lock and the Unix observation are part of the command's runtime.
+        "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/OperationalSingleInstanceLock.cs",
+        "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/UnixProcessObservation.cs",
         "services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/EntitlementReconciliationOperationStore.cs",
     ];
     private static async Task<Provenance> VerifyProvenanceAsync(EntitlementReconciliationCommandOptions options, CancellationToken ct)
@@ -300,7 +317,9 @@ public sealed class EntitlementReconciliationOperationalRunner
     // Actual OS observations, not an "I stopped the host" input. No commandline or owner is printed.
     public static async Task<string> ObserveProcessesAsync(CancellationToken ct)
     {
-        if (!OperatingSystem.IsWindows()) throw new InvalidOperationException("WINDOWS_PROCESS_OBSERVATION_REQUIRED");
+        // WP-AUTH-BL570-01 FIX1 R3: the same quiescence proof on Unix (UnixProcessObservation); any other OS is refused
+        // by name there. The Windows observation below is unchanged.
+        if (!OperatingSystem.IsWindows()) return await UnixProcessObservation.ObserveAsync(ct);
         using var process = new Process { StartInfo = new ProcessStartInfo
         {
             FileName = "powershell.exe", UseShellExecute = false, CreateNoWindow = true,

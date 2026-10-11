@@ -179,7 +179,8 @@ public sealed class PlatformAdminSyncTests : IClassFixture<PlatformAdminSyncTest
         string displayName = "Sync Probe",
         string? status = "Active",
         string[]? roles = null,
-        string? userName = null)
+        string? userName = null,
+        string actorType = "PlatformAdmin")
     {
         // As Platform calls it: the internal key and the platform tenant (Auth's tenant resolution requires one here).
         using var client = _host.Client(tenantHeader: PlatformTenantId);
@@ -191,13 +192,62 @@ public sealed class PlatformAdminSyncTests : IClassFixture<PlatformAdminSyncTest
             previousEmail,
             userName = userName ?? $"sync{Guid.NewGuid():N}"[..20],
             displayName,
-            actorType = "PlatformAdmin",
+            actorType,
             roles = roles ?? ["SupportAdmin"],
             status
         });
     }
 
-    private async Task<User> SeedAsync(bool active = true, bool emailConfirmed = true, string[]? roles = null, Guid? tenantId = null, string? userName = null)
+    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (CT survivors M1 / M2) — the provision of a NEW account, as Platform calls it.
+    private async Task<HttpResponseMessage> ProvisionAsync(string email, string actorType)
+    {
+        using var client = _host.Client(tenantHeader: PlatformTenantId);
+        client.DefaultRequestHeaders.Add("X-Internal-Api-Key",
+            _host.Factory.Services.GetRequiredService<IOptions<InternalEventAuthSettings>>().Value.ApiKey);
+        return await client.PostAsJsonAsync("api/platform-auth/platform-admins/provision", new
+        {
+            email,
+            userName = $"prov{Guid.NewGuid():N}"[..20],
+            displayName = "Provision Probe",
+            actorType,
+            roles = new[] { "SupportAdmin" },
+            requirePasswordChange = true,
+            status = "Active"
+        });
+    }
+
+    /// <summary>FIX1 (M1) — a NEW platform account carries the record's actor type in the STORED row from its creation:
+    /// read before any sign-in, so a later sign-in's repair cannot hide a provision that forgot it.</summary>
+    [Theory]
+    [InlineData("PlatformAdmin", "platform_admin")]
+    [InlineData("PartnerAdmin", "partner_admin")]
+    public async Task A_new_provisioned_account_is_stored_with_the_records_actor_type_before_any_sign_in(string recordType, string stored)
+    {
+        var email = $"prov.{Guid.NewGuid():N}@bl521.test";
+
+        var response = await ProvisionAsync(email, recordType);
+
+        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        Assert.Equal(stored, (await ByEmailAsync(email))!.PlatformActorType);
+    }
+
+    /// <summary>FIX1 (M2) — the sync writes the record's actor type onto the STORED account (a different one, and none at
+    /// all), read before any sign-in.</summary>
+    [Theory]
+    [InlineData("platform_admin", "PartnerAdmin", "partner_admin")]
+    [InlineData(null, "PlatformAdmin", "platform_admin")]
+    public async Task The_sync_stores_the_records_actor_type_on_the_account_before_any_sign_in(string? before, string recordType, string after)
+    {
+        var user = await SeedAsync(storedActorType: before);
+
+        var response = await SyncAsync(user.Email, actorType: recordType);
+
+        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        Assert.Equal(after, (await ByIdAsync(user.Id))!.PlatformActorType);
+    }
+
+    private async Task<User> SeedAsync(bool active = true, bool emailConfirmed = true, string[]? roles = null, Guid? tenantId = null, string? userName = null,
+        string? storedActorType = "platform_admin")
     {
         var tenant = tenantId ?? PlatformTenantId;
         using var scope = _host.Factory.Services.CreateScope();
@@ -219,7 +269,11 @@ public sealed class PlatformAdminSyncTests : IClassFixture<PlatformAdminSyncTest
             user.SetUserName(userName);
         }
 
-        user.SetPlatformActorType("platform_admin");
+        if (storedActorType is not null)
+        {
+            user.SetPlatformActorType(storedActorType);
+        }
+
         user = await sp.GetRequiredService<IUserRepository>().CreateAsync(user, CancellationToken.None);
         foreach (var roleName in roles ?? [])
         {

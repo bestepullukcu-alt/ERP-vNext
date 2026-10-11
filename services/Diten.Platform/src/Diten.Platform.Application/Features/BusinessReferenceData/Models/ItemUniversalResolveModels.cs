@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Diten.Platform.Application.Features.BusinessReferenceData.Models;
 
-// WP-PLT-ITEM-LISTS-01: one value of ITEM-UNIVERSAL-V1. DisplayName is the English technical label (FU01 §4); tenant
+// WP-PLT-ITEM-LISTS-01: one value of the item universal catalog (ITEM-UNIVERSAL-Vn). DisplayName is the English technical label (FU01 §4); tenant
 // screen labels in seven languages are MOD-0290's (S5).
 public sealed record ItemUniversalValue(
     string SetCode,

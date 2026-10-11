@@ -180,6 +180,7 @@ This is the **provisional exhaustive runtime/test allow-list**. Phase 1.5 owner 
 - Access Governance transition budget is frozen at no more than five collections and twenty logical indexes,
   counting each collection's implicit `_id` index. This permits exactly one migration-state collection and one
   owner-selected scalar claim index while legacy indexes remain for rollback.
+  **Ek (2026-10-09, CT kararı — sahip ürün kararlarını CT'ye devretti, 2026-10-06; WP-CT-LANE-TKO-MERGE-01):** tavan 20 → **21** mantıksal dizin, koleksiyon sayısı 5 kalır. 21. dizin bu paketin değil, CT hattının `audit_events.ix_audit_events_outbox_idempotency_key` dizinidir (seyrek; WP-PLATFORM-AUDIT-INTX-01, işlem içi denetim kapısının teslim kimliği). Bu paketin 20'si o dizin yokken onaylanmıştı; iki dal birleşince ikisi de gerekli. Test adı ve iddiası: `AccessGovernanceTemporalCutover_UsesExactApprovedFiveCollectionTwentyOneIndexBudget` (dizin adıyla). Bu paketin Candidate A kararı ve sonraki dizin değişikliği için ölçüm + onay kuralı aynen geçerli.
 - MongoDB atomic update/CAS behavior and real `localhost:27017` evidence.
 - Audit owner approval of scalar semantics and final index candidate.
 - Persistence owner approval of migration-state storage and schema budget.
@@ -348,6 +349,7 @@ Decision: Gateway/API changes are unnecessary and forbidden.
 - [ ] Audit owner approves exact scalar fields/version and fail-closed compatibility semantics.
 - [x] User approved the migration-state collection and Access Governance transition ceiling of five collections / twenty logical indexes on 2026-08-28.
 - [x] Candidate A was selected only after the real-Mongo explain matrix; the Access Governance profile is exactly 5 collections / 20 logical indexes.
+- [x] 2026-10-09: profile is 5 collections / 21 logical indexes after the CT-lane merge — the 21st is the lane's INTX idempotency index (CT decision under the owner's 2026-10-06 delegation; see §7 note).
 - [ ] Operations owner approves default-disabled explicit invocation and worker fence behavior.
 - [ ] Backlog owner assigns/reconciles a collision-free debt identity; existing `BL-030` is not reused.
 - [x] Exact allow-list was frozen and the pack promoted to `ready-for-dev` by explicit user Phase 1.5 approval on 2026-08-28.

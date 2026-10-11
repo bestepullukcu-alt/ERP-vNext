@@ -5,7 +5,7 @@ using Diten.MdmService.Application.Contracts.ReferenceData;
 namespace Diten.MdmService.Api.Tests;
 
 /// <summary>
-/// MOD-0290-FU04 S1: the three universal item lists as MOD-0048-FU01 §4 plans them (ITEM-UNIVERSAL-V1), answering like
+/// MOD-0290-FU04 S1: the three universal item lists as MOD-0048-FU01 §4 plans them (ITEM-UNIVERSAL-Vn), answering like
 /// the verified-reference provider: exact LATEST selections with ConditionKind on storage conditions; an unknown code
 /// is REFERENCE_VALUE_NOT_FOUND; an outage is an outage.
 /// </summary>
@@ -16,13 +16,11 @@ public sealed class FakeItemReferences : IItemReferenceResolver
 
     private static readonly Dictionary<string, Dictionary<string, string?>> Sets = new()
     {
-        [ItemReferenceSets.ItemUom] = new() { ["C62"] = null, ["MGM"] = null, ["GRM"] = null, ["KGM"] = null,
-            ["MLT"] = null, ["LTR"] = null, ["XBX"] = null, ["XCS"] = null },
-        [ItemReferenceSets.StorageCondition] = new() { ["AMBIENT_15_25"] = "TEMPERATURE", ["COOL_2_8"] = "TEMPERATURE",
-            ["FROZEN_BELOW_MINUS_20"] = "TEMPERATURE", ["PROTECT_FROM_LIGHT"] = "PROTECTION",
-            ["PROTECT_FROM_MOISTURE"] = "PROTECTION" },
-        [ItemReferenceSets.MaterialType] = new() { ["ACTIVE_INGREDIENT"] = null, ["EXCIPIENT"] = null,
-            ["RAW_MATERIAL"] = null, ["PACKAGING_PRIMARY"] = null, ["PACKAGING_SECONDARY"] = null, ["INTERMEDIATE"] = null }
+        // WP-PLT-ITEM-LISTS-02 (the FIX1 M5 pattern): the units are Platform's, from the shared contract fixture.
+        [ItemReferenceSets.ItemUom] = ItemListContract.ItemUoms().ToDictionary(code => code, _ => (string?)null),
+        // FIX1: the storage conditions (with their kind) and material types too.
+        [ItemReferenceSets.StorageCondition] = ItemListContract.StorageConditions(),
+        [ItemReferenceSets.MaterialType] = ItemListContract.MaterialTypes().ToDictionary(code => code, _ => (string?)null)
     };
 
     public ConcurrentQueue<IReadOnlyList<ItemReferenceRequest>> Calls { get; } = new();
@@ -70,6 +68,43 @@ public sealed class FakeItemReferences : IItemReferenceResolver
                     : new Dictionary<string, string?> { [ItemReferenceSets.ConditionKindAttribute] = kind });
         }).ToList()));
     }
+}
+
+/// <summary>
+/// WP-PLT-ITEM-LISTS-02: the shared Platform ↔ MDM contract fixture (Platform's tests produce it from the real handler).
+/// The fakes read their item-uom codes here, so a unit Platform adds or drops reaches them without a second list.
+/// </summary>
+internal static class ItemListContract
+{
+    public const string RelativeFixturePath =
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/Fixtures/item-universal-resolve.contract.json";
+
+    // FIX1: read in a static initializer — a moved or missing file must say WHICH file, not fail the host with a bare
+    // TypeInitializationException.
+    public static string FixturePath()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "services")))
+            directory = directory.Parent;
+        var path = directory is null ? null : Path.Combine(directory.FullName, RelativeFixturePath);
+        return path is not null && File.Exists(path)
+            ? path
+            : throw new InvalidOperationException(
+                $"The Platform ↔ MDM item-list contract fixture was not found: {RelativeFixturePath} (searched upward from "
+                + $"{AppContext.BaseDirectory}). MDM's item fakes read their lists from it; if it moved, move this path too.");
+    }
+
+    private static System.Text.Json.Nodes.JsonNode Fixture() =>
+        System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(FixturePath()))!;
+
+    public static IReadOnlyList<string> ItemUoms() =>
+        Fixture()["item_uoms"]!.AsArray().Select(code => (string)code!).ToList();
+
+    public static IReadOnlyList<string> MaterialTypes() =>
+        Fixture()["material_types"]!.AsArray().Select(code => (string)code!).ToList();
+
+    public static Dictionary<string, string?> StorageConditions() =>
+        Fixture()["storage_conditions"]!.AsObject().ToDictionary(pair => pair.Key, pair => (string?)pair.Value);
 }
 
 /// <summary>MOD-0290-FU04 §8.3: the inventory team's tenant-wide "non-zero stock?" answer, as a test sets it.</summary>

@@ -383,35 +383,63 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
         public Task<IReadOnlyList<Guid>> GetConfiguredGlobalProductIdsAsync(IReadOnlyCollection<Guid> globalProductIds, CancellationToken cancellationToken = default) => inner.GetConfiguredGlobalProductIdsAsync(globalProductIds, cancellationToken);
     }
 
+    // BL-602 (WP-CT-LANE-DEBT-01) — THE LEASE TRAFFIC IS STAGED, NOT RACED. This test used to run an unbounded loop acquiring
+    // leases for other products while one Replace ran, and expect success. Measured (b7b53e01c + exhaustion flags in the
+    // message, ct-heavy, own CPU load): idle 10/10 green; under load 18/20 green, both reds `exhausted=True` (conflict=False,
+    // retain=False) — the loop rewrote the tenant's rollout record faster than the five transient attempts could commit,
+    // and the production rule answered exactly as designed (FIX4 4b: nothing written, named, counted, 503). Not a starvation
+    // of real traffic (a product writer's lease is one command, not a tight loop), so the production budget is unchanged;
+    // the two outcomes are pinned deterministically instead, with the same hook as
+    // A_replace_aborted_as_a_transient_write_conflict_is_run_again_not_answered_409: another product's lease is acquired
+    // INSIDE the Replace's transaction snapshot, a real WriteConflict on the rollout record.
     [Fact]
     public async Task A_replace_under_constant_lease_traffic_on_other_products_succeeds()
     {
+        // Every attempt but the last meets another product's lease: the Replace still lands, on its last attempt.
         await using var scope = await ProductScopeMongoScope.CreateAsync();
         var scenario = await CreateGuardedReplaceScenarioAsync(scope);
-        using var stop = new CancellationTokenSource();
-        var churn = Task.Run(async () =>
+        var tenant = new TenantContext();
+        tenant.SetTenant(scope.TenantId);
+        var attempts = 0;
+        var session = new ProductLegalEntityScopeGuardedWriteSession(scope.Database, tenant);
+        session.AfterRolloutRead = async () =>
         {
-            var rollouts = scope.RolloutRepository();
-            while (!stop.IsCancellationRequested)
-            {
-                var now = DateTimeOffset.UtcNow;
-                var acquired = await rollouts.AcquireProductWriterLeaseAsync(new ProductLegalEntityScopeWriterLease
-                {
-                    Token = Guid.NewGuid(), Generation = 1, CommandId = Guid.NewGuid(), ActorId = Guid.NewGuid(),
-                    MutationKind = "Churn", PayloadFingerprint = new string('E', 64), Owner = "Diten.MDM:Churn",
-                    AcquiredAtUtc = now, ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
-                    ObjectKeys = [$"GlobalProductId:{Guid.NewGuid():D}"]
-                });
-                if (acquired.Acquired) await rollouts.ReleaseProductWriterLeaseAsync(acquired.Lease!.Token, acquired.Lease.Generation);
-            }
-        });
-        await Task.Delay(50);
+            if (++attempts < ProductLegalEntityScopeGuardedWriteSession.MaximumTransientAttempts)
+                Assert.True((await scope.RolloutRepository().AcquireProductWriterLeaseAsync(OtherProductLease())).Acquired);
+        };
 
-        var result = await scenario.Repository.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
-        stop.Cancel();
-        await churn;
+        var result = await session.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
 
-        Assert.True(result.Succeeded, $"conflict={result.VersionConflict}, retain={result.LeaseRetentionRequired}");
+        Assert.True(result.Succeeded, $"conflict={result.VersionConflict}, retain={result.LeaseRetentionRequired}, exhausted={result.TransientRetriesExhausted}, ambiguous={result.WriteOutcomeAmbiguous}");
+        Assert.Equal(ProductLegalEntityScopeGuardedWriteSession.MaximumTransientAttempts, attempts);
+        Assert.Equal(1, (await scope.PolicyRepository().GetByGlobalProductIdAsync(scenario.Initial.GlobalProductId))!.Version);
+    }
+
+    [Fact]
+    public async Task A_replace_meeting_other_products_lease_traffic_on_every_attempt_writes_nothing_and_says_exhausted()
+    {
+        // The other outcome of the same traffic (BL-602's two measured reds): every attempt conflicts, the budget is used
+        // up — nothing written, the named "exhausted" answer (503 upstream), never a 409 conflict, never a kept slot.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        var tenant = new TenantContext();
+        tenant.SetTenant(scope.TenantId);
+        var attempts = 0;
+        var session = new ProductLegalEntityScopeGuardedWriteSession(scope.Database, tenant);
+        session.AfterRolloutRead = async () =>
+        {
+            attempts++;
+            Assert.True((await scope.RolloutRepository().AcquireProductWriterLeaseAsync(OtherProductLease())).Acquired);
+        };
+
+        var result = await session.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
+
+        Assert.False(result.Succeeded);
+        Assert.True(result.TransientRetriesExhausted && result.VerifiedZeroMutation, $"exhausted={result.TransientRetriesExhausted}, zero={result.VerifiedZeroMutation}");
+        Assert.False(result.VersionConflict);
+        Assert.False(result.LeaseRetentionRequired);
+        Assert.Equal(ProductLegalEntityScopeGuardedWriteSession.MaximumTransientAttempts, attempts);
+        Assert.Equal(0, (await scope.PolicyRepository().GetByGlobalProductIdAsync(scenario.Initial.GlobalProductId))!.Version);
     }
 
     [Fact]

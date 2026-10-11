@@ -586,6 +586,8 @@ is MOD-0290 / `Diten.MdmService`. Open items named `O-n` below are MOD-0290-FU04
 
 #### `item-uom` (UN/ECE Recommendation 20 codes)
 
+> **CT notu (2026-10-09, WP-PLT-ITEM-LISTS-02, `b3e74ef26` → hat `a10bfbf5c`):** `ITEM-UNIVERSAL-V2`. Yalnız `item-uom` yeni sürüm kimliği (…0004) ve numara 2 aldı; `storage-condition` ve `material-type` kimlik / numaralarını korudu (V1 kanıtları aynen geçerli). Her `item-uom` değerine `CodeStandard` özniteliği eklendi (`IU` = `LOCAL`, diğerleri `UNECE_REC20`). Kural: bir kod emekliye ayrılır, asla kaldırılmaz ya da yeniden tanımlanmaz; dondurulmuş V1 anlık görüntüsü testi bunu sabitler. Dağıtım sırası: Platform, MDM'den önce (post-deploy §6). Aşağıdaki tablonun `ACTIVITY` önerisi yerine `BIOLOGICAL_ACTIVITY` kullanıldı.
+
 Attributes: `DimensionCode` (`COUNT`, `MASS`, `VOLUME`, `LENGTH`, `AREA`, `PACKAGE`; `ACTIVITY` only if O-21 confirms an
 international-unit value), `MaximumDecimalPrecision` (non-negative integer; limits stock quantities, not conversion
 factors), `FactorToDimensionBase` (exact decimal string; null for `PACKAGE` and `ACTIVITY`).
@@ -603,7 +605,7 @@ factors), `FactorToDimensionBase` (exact decimal string; null for `PACKAGE` and 
 | `MC` | microgram | `MASS` | 3 | `0.000000001` | proposed; needs quality / inventory confirmation |
 | `MTR` | metre | `LENGTH` | 3 | `1` | proposed |
 | `MTK` | square metre | `AREA` | 3 | `1` | proposed |
-| (international unit) | — | `ACTIVITY` | — | — | proposed; Rec 20 code to be verified (O-21); never converted |
+| `IU` | international unit | `BIOLOGICAL_ACTIVITY` | 0 | `1` (alone in its dimension) | **published 2026-10-09 (ITEM-UNIVERSAL-V2)**; local code, `CodeStandard = LOCAL` (UN/ECE Rec 20 has no single-unit code; its `HIU` = 100 IU is NOT used — quality unit's decision, OD-7). Never derived from a mass unit: IU ↔ mg is substance-specific and entered as an explicit conversion on the item |
 | (roll) | — | `PACKAGE` | 0 | — | proposed; Rec 20 code to be verified (O-21) |
 
 - The five `uom` values appear in `item-uom` with identical `DimensionCode` and `MaximumDecimalPrecision`

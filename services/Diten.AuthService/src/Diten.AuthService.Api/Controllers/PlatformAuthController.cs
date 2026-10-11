@@ -467,8 +467,17 @@ public sealed class PlatformAuthController : CustomBaseController
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement();
         // BL-529 FIX2 — only over the password just verified: never over an administrator's reset that landed meanwhile.
-        if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId, new UserWriteCondition(PasswordHash: verifiedHash), ct))
+        // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 6) — and only while the account is still ACTIVE: a deactivation that
+        // landed during this request is not written over, and no session is issued.
+        if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId,
+                new UserWriteCondition(PasswordHash: verifiedHash, IsActive: true), ct))
         {
+            var now = await _userRepository.GetByIdAndTenantAsync(user.Id, PlatformTenantId, ct);
+            if (now is null || !now.IsActive)
+            {
+                return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+            }
+
             return CreateActionResultInstance(Response<AuthResponse>.Fail(
                 "The password changed while this request ran (for example an administrator reset it). Sign in again.",
                 [new ResponseError(AuthRefusalCodes.PasswordChangedMeanwhile)],
@@ -477,6 +486,18 @@ public sealed class PlatformAuthController : CustomBaseController
         await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, PlatformTenantId, SessionRevocationReasons.PasswordChanged, ct);
 
         var authResponse = await BuildPlatformAuthResponseAsync(user, record.ActorType!, request.RememberMe, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), false, ct);
+        // FIX1 (small 6) — the doors' IssuedSessionGuard, here too, and with "still active": a reset or a deactivation that
+        // landed between the write and the token's write ends the token just issued; nothing is answered with it.
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, PlatformTenantId,
+                user.PasswordHash, authResponse.RefreshToken!, ct))
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401));
+        }
+        if (await _userRepository.GetByIdAndTenantAsync(user.Id, PlatformTenantId, ct) is not { IsActive: true })
+        {
+            await _refreshTokenRepository.RevokeIfLiveAsync(authResponse.RefreshToken!, SessionRevocationReasons.PasswordChanged, ct);
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+        }
         return CreateActionResultInstance(Response<AuthResponse>.Success(authResponse));
     }
 

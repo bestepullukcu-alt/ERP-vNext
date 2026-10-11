@@ -79,7 +79,11 @@ public sealed record UserWriteCondition(
     string? PasswordHash = null,
     bool? IsActive = null,
     bool? DeactivatedByAdministrator = null,
-    string? PasswordResetTokenHash = null)
+    string? PasswordResetTokenHash = null,
+    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2) — false: the STORED account must not be a platform account (the one
+    // shared filter, PlatformAccountFilter; never the copy in memory), so a write that a tenant actor prepared against an
+    // ordinary user cannot land on an account Platform made a platform account meanwhile.
+    bool? IsPlatformAccount = null)
 {
     public static UserWriteCondition None { get; } = new();
 }

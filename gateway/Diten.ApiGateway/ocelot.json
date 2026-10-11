@@ -446,6 +446,23 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/product-master/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/product-master/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/golden-reference-slim",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

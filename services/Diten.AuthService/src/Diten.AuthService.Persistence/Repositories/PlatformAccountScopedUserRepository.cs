@@ -16,8 +16,13 @@ namespace Diten.AuthService.Persistence.Repositories;
 ///
 /// <para>What is deliberately NOT hidden: the lookups by e-mail and by user name (they enforce the uniqueness of an address /
 /// a user name — hiding them would let a duplicate through to the unique index), the by-reset-token lookup (the anonymous
-/// set-password door holds the token) and the tenant's user COUNT (quota). (Since the BL-521 / BL-529 merge every WRITE is
-/// guarded too — BL-529's targeted writes — so an object a hidden caller loaded through an unhidden lookup is still not written.)
+/// set-password door holds the token) and the tenant's user COUNT (quota).</para>
+///
+/// <para>EVERY WRITE IS GUARDED (BL-521 / BL-529 merge, FIX1): for a hidden caller no write reaches a platform account —
+/// BL-529's targeted writes (the conditional write, the sign-in record, the failed-attempt count, the link) carry "not a
+/// platform account" IN THE MONGO FILTER, on the stored row (an account Platform made a platform account after the caller
+/// loaded it is not written either); the platform marker write answers false; a create of a platform-marked account is
+/// refused; a delete by id is a no-op. An object a hidden caller loaded through an unhidden lookup is not written.
 /// A caller that is not hidden — platform door, anonymous door, internal service call, background work — sees everything.</para>
 ///
 /// <para>FIX7 item 2 — THE FILTER IS IN THE QUERY. A list or a search that dropped the platform accounts AFTER the database
@@ -84,14 +89,23 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
     public Task<User?> GetByUserNameAndTenantAsync(string normalizedUserName, Guid tenantId, CancellationToken ct) => _inner.GetByUserNameAndTenantAsync(normalizedUserName, tenantId, ct);
     public Task<User?> GetByPasswordResetTokenHashAsync(string tokenHash, CancellationToken ct) => _inner.GetByPasswordResetTokenHashAsync(tokenHash, ct);
     public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => _inner.GetCountByTenantAsync(tenantId, ct);
-    public Task<User> CreateAsync(User user, CancellationToken ct) => _inner.CreateAsync(user, ct);
+    /// <summary>FIX1 (small 1): a hidden caller (a tenant actor) cannot CREATE a platform account — only the platform door and the
+    /// provisioning call (not hidden) do.</summary>
+    public Task<User> CreateAsync(User user, CancellationToken ct)
+        => Hides && user.IsPlatformAccount
+            ? throw new InvalidOperationException(PlatformAccountNotCreatable)
+            : _inner.CreateAsync(user, ct);
+
+    public const string PlatformAccountNotCreatable = "PLATFORM_ACCOUNT_NOT_CREATABLE_BY_THIS_CALLER";
     // Merge WP-CT-LANE-BL521-MERGE-01 — BL-529 FIX4 removed the whole-document UpdateAsync / UpdateForTenantAsync; BL-529's
     // TARGETED writes take their place, and each of them keeps this class's rule (CT decision A, condition 1): a hidden caller's
     // write never reaches a platform account — it writes nothing and answers as for an account that is not there. The writes of
     // a loaded object are checked on the object (it may have been loaded through a lookup that is deliberately NOT hidden — by
     // e-mail or user name); the writes by id load first, as SoftDeleteAsync does.
     public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
-        => Hides && user.IsPlatformAccount ? Task.CompletedTask : _inner.RecordLoginOutcomeAsync(user, tenantId, ct);
+        => Hides && user.IsPlatformAccount
+            ? Task.CompletedTask
+            : _inner.RecordLoginOutcomeAsync(user, tenantId, excludePlatformAccounts: Hides, ct);
 
     public object CaptureState(User user) => _inner.CaptureState(user);
 
@@ -99,7 +113,8 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
     public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
         => Hides && user.IsPlatformAccount
             ? Task.FromResult(false)
-            : _inner.TryWriteChangesAsync(user, capturedState, tenantId, condition, ct);
+            : _inner.TryWriteChangesAsync(user, capturedState, tenantId,
+                Hides ? condition with { IsPlatformAccount = false } : condition, ct); // FIX1: the STORED row, not the copy
 
     public async Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
     {
@@ -108,7 +123,8 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
             return new LoginFailureOutcome(0, null); // nothing counted on an account this caller may not reach
         }
 
-        return await _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);
+        return await _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes,
+            excludePlatformAccounts: Hides, ct);
     }
 
     /// <summary>BL-529's link write goes by id WITHOUT a load, so — the rule <see cref="SoftDeleteAsync"/> follows — a hidden
@@ -120,11 +136,14 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
             return false;
         }
 
-        return await _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
+        return await _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, excludePlatformAccounts: Hides, ct);
     }
 
     private async Task<bool> IsPlatformAccountOrAbsentAsync(Guid userId, Guid tenantId, CancellationToken ct)
         => await _inner.GetByIdAndTenantAsync(userId, tenantId, ct) is not { IsPlatformAccount: false };
 
-    public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+    /// <summary>FIX1 (small 1): the platform marker is written only by the platform door's mint and the provisioning / sync
+    /// calls (not hidden); a hidden caller's marker write matches nothing (false), as for an account that is not there.</summary>
+    public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
+        => Hides ? Task.FromResult(false) : _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
 }

@@ -20,6 +20,8 @@ using MongoDB.Driver.Core.Events;
 using Xunit;
 using Xunit.Abstractions;
 
+using Diten.AuthService.Application.Tests.Persistence;
+
 namespace Diten.AuthService.Application.Tests.ServiceIdentityTokens;
 
 [CollectionDefinition(Name, DisableParallelization = true)]
@@ -31,7 +33,7 @@ public sealed class OperationalMongoCollection : ICollectionFixture<OperationalM
 [Collection(OperationalMongoCollection.Name)]
 public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMongoFixture fixture, ITestOutputHelper output)
 {
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task Rotation_preserves_ticks_and_replay_after_second_rotation_returns_recorded_old_outcome(bool legacyAbsentVersion)
@@ -63,7 +65,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         Assert.False(raw.ToJson().Contains(sink.LastSecret!, StringComparison.Ordinal), "Journal must never contain raw credential.");
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Same_key_drift_and_stale_version_do_not_mutate_again()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -77,7 +79,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         Assert.Equal(1, (await scope.Identities.Find(x => x.Id == scope.Identity.Id).SingleAsync()).OperationalVersion);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("client")]
     [InlineData("service")]
     [InlineData("purpose")]
@@ -115,7 +117,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         if (drift == "client") await scope.Identities.UpdateOneAsync(x => x.Id == before.Id, update.Set(x => x.ClientCode, before.ClientCode));
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Concurrent_different_commands_have_one_CAS_winner_and_zero_automatic_retry()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -133,7 +135,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         Assert.Equal(1, (await scope.Identities.Find(x => x.Id == scope.Identity.Id).SingleAsync()).OperationalVersion);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Pending_and_ambiguous_outcome_are_manual_reconciliation_without_secret_retry()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -153,7 +155,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         Assert.Equal(0, replaySink.Deliveries);
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("insert", 0, ServiceClientOperationalProvisioningState.Pending)]
     [InlineData("findAndModify", 1, ServiceClientOperationalProvisioningState.RecoveryRequired)]
     public async Task Real_server_lost_write_concern_acknowledgement_never_resumes_or_delivers_secret(
@@ -206,7 +208,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         }
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Tombstoned_completed_command_cannot_be_replayed_or_reserved_as_new()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -228,13 +230,13 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         Assert.DoesNotContain(fixture.Commands, IsWriteCommand);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Actual_pipe_peer_closing_after_preflight_preserves_completed_outcome_but_reports_secret_uncertainty()
     {
         await using var scope = await fixture.ScopeAsync(output);
         using var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
         await using var sink = new ServiceClientSecretOutputSink();
-        var request = scope.Request() with { InheritedPipeHandle = pipe.GetClientHandleAsString() };
+        var request = scope.Request() with { InheritedPipeHandle = PipeHandles.ForSink(pipe) };
         await sink.PreflightAsync(request.InheritedPipeHandle!, CancellationToken.None);
         pipe.SafePipeHandle.Dispose();
         await Assert.ThrowsAsync<ServiceClientOperationalSecretDeliveryException>(() => scope.Service(sink).ExecuteAsync(request, OperationalTestData.Actor, CancellationToken.None));
@@ -246,7 +248,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         Assert.Equal(0, replaySink.Deliveries);
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Sanitized_grant_read_is_tenant_purpose_enabled_and_soft_delete_scoped_with_zero_writes()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -263,7 +265,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         await Assert.ThrowsAsync<ServiceClientOperationalNotFoundException>(() => scope.Service(new OperationalRecordingSink()).ExecuteAsync(request, OperationalTestData.Actor, CancellationToken.None));
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task Journal_UUID_fence_prevents_implicit_create_or_insert_into_replaced_collection(bool recreate)
@@ -296,7 +298,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         finally { await fixture.EnsureJournalAsync(); }
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Missing_or_changed_index_metadata_fails_before_any_reservation_or_DDL()
     {
         await using var scope = await fixture.ScopeAsync(output);
@@ -310,7 +312,7 @@ public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMo
         finally { await fixture.EnsureJournalAsync(); }
     }
 
-    [Theory]
+    [OwnedMongoTheory]
     [InlineData("key")]
     [InlineData("order")]
     [InlineData("unique")]
@@ -395,8 +397,10 @@ public sealed class OperationalMongoFixture : IAsyncLifetime
         ConventionRegistry.Register("OwnedServiceClientOperationalIgnoreExtraElements",
             new ConventionPack { new IgnoreExtraElementsConvention(true) },
             type => type.Namespace == "Diten.AuthService.Domain.Entities");
-        var executable = @"C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe";
-        if (!File.Exists(executable)) throw new InvalidOperationException("The installed Mongo test executable is unavailable; no fallback is allowed.");
+        // WP-AUTH-BL570-01: the installed mongod named by DITEN_TEST_MONGOD (the repo's owned-Mongo convention); the
+        // Windows install path stays the default on Windows only. Never a running or shared Mongo.
+        // BL570 FIX2 item 6: the one resolver; none → every test of this fixture is skipped by name — start nothing.
+        if (Diten.AuthService.Application.Tests.Persistence.DisposableAuthMongoReplicaSet.ResolveExecutable() is not { } executable) return;
         using (var listener = new TcpListener(IPAddress.Loopback, 0)) { listener.Start(); Port = ((IPEndPoint)listener.LocalEndpoint).Port; }
         if (Port == 27017) throw new InvalidOperationException("Forbidden application port.");
         _directory = Path.Combine(Path.GetTempPath(), "diten-auth-operational-owned-" + Guid.NewGuid().ToString("N"));

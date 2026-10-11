@@ -5,6 +5,7 @@ using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
+using Diten.AuthService.Application.Tests.Persistence;
 using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -12,14 +13,16 @@ using Xunit;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
-[Collection(AuthPermissionOnboardingMongoCollectionDefinition.Name)]
-public sealed class ProductAbbreviationPermissionOnboardingMongoTests
+// WP-AUTH-BL570-01: on the OWNED disposable mongod (DITEN_TEST_MONGOD, the AuthReconciliationMongoCollection child), never
+// a shared or application Mongo. Without the variable each test is SKIPPED BY NAME (OwnedMongoFact), not silently passed.
+[Collection(AuthReconciliationMongoCollection.Name)]
+public sealed class ProductAbbreviationPermissionOnboardingMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
     private const string DatabaseName = "diten_auth_fu20_itest";
     private readonly Guid TenantA = Guid.NewGuid();
     private readonly Guid TenantB = Guid.NewGuid();
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Real_mongo_reconciles_replays_revokes_and_restores_exact_tenant_scoped_profile()
     {
         var database = OpenOwnedTestDatabase();
@@ -143,7 +146,7 @@ public sealed class ProductAbbreviationPermissionOnboardingMongoTests
         }
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Real_mongo_preserves_production_unique_indexes_and_idempotent_schema()
     {
         var database = OpenOwnedTestDatabase();
@@ -193,10 +196,10 @@ public sealed class ProductAbbreviationPermissionOnboardingMongoTests
         }
     }
 
-    private static IMongoDatabase OpenOwnedTestDatabase()
+    private IMongoDatabase OpenOwnedTestDatabase() => OpenOwnedTestDatabase(ownedMongo.ConnectionString);
+
+    private static IMongoDatabase OpenOwnedTestDatabase(string uri)
     {
-        var uri = Environment.GetEnvironmentVariable("MONGO_TEST_URI")
-            ?? throw new InvalidOperationException("An explicit owned-test Mongo URI is required.");
         var url = new MongoUrl(uri);
         if (url.Servers.Count() != 1 || url.Server.Host != "127.0.0.1" || url.Server.Port == 27017
             || url.Username is not null || url.Password is not null)

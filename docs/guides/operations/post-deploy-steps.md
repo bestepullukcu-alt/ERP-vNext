@@ -166,6 +166,19 @@ Geçiş sırasında beklenen, **zararsız** eşitleme hataları:
 `BrandProductPermissionKeys`) dokunulmadan kalır; ekleme sonrası o kiracıda aynı anahtar
 hem sabit hem plan kaynaklı görünebilir — yinelenen yetki, fazladan erişim değildir.
 
+### 6 · Kalem birim listesinde IU (ITEM-UNIVERSAL-V2): Platform ÖNCE
+
+| | |
+|---|---|
+| **Modül** | MOD-0048-FU01 §4 evrensel kalem listeleri (Platform) → MOD-0290-FU04 kalem (MDM) — WP-PLT-ITEM-LISTS-02 |
+| **Ne zaman** | IU'yu (ITEM-UNIVERSAL-V2) taşıyan deploy'da — **Platform, MDM'den ÖNCE** |
+| **Yapılmazsa** | Eski Platform IU'yu tanımaz: MDM'nin sorusuna 404 `REFERENCE_VALUE_NOT_FOUND`, kullanıcıya 422 `ITEM_REFERENCE_VALUE_INVALID`. Kayıt saklanmaz (kapalı başarısızlık), yalnız IU'lu kalem / çevrim girilemez. IU'suz kalemler etkilenmez. |
+| **Geri alma** | Güvenli. V1 kanıtı taşıyan kalemler V2'de geçerli kalır (değişmeyen listelerin kimliği aynı; item-uom V1 kodları aynı anlamda). V2'ye geçmiş Platform geri alınırsa yalnız IU yeniden reddedilir; IU ile kaydedilmiş kalemlerin saklı kanıtı yeniden çözülmez, kalem okunur. |
+| **Kim** | Deploy operatörü |
+
+**Kontrol:** Platform deploy edildikten sonra MDM'de IU'lu bir kalem (ör. GRM → IU açık çevrim) oluşturulabilmeli; 422
+`ITEM_REFERENCE_VALUE_INVALID … item-uom:IU` alınıyorsa Platform henüz V2'de değildir.
+
 ---
 
 ### 3 · BL-529 — Auth: güvenilir vekiller ve herkes bir kez yeniden oturum açar
