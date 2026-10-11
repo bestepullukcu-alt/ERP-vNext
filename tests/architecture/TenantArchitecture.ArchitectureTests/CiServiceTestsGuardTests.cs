@@ -45,6 +45,11 @@ namespace TenantArchitecture.ArchitectureTests;
  * script starts with `set -euo pipefail`; every if: in a file is one of an expected list; no matrix exclude, no
  * --filter; the Release prerequisite steps (mdm-app, platform-bgjobs) are pinned; the skip allow-list caps each code.
  *
+ * WP-CI-SERVICE-TESTS-04 (BL-604): EVERY test project under services/ (all services, Building Blocks included; pattern
+ * *Tests.csproj, so ArchitectureTests / IntegrationTests count) is a matrix row or named in NotInThisJob with its reason —
+ * the "not yet" list (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
+ * solution under services/ is compiled by phase1 (both ways, as before).
+ *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
  */
 public class CiServiceTestsGuardTests
@@ -53,15 +58,32 @@ public class CiServiceTestsGuardTests
     private const string ScriptPath = "scripts/check_trx_no_skipped.py";
 
     /// <summary>
-    /// Service test projects deliberately NOT in the job — each a Control Tower decision, with its reason. Empty since
-    /// BL-590 (Platform.Eventing and the account-kind acceptance host got their rows).
+    /// Service test projects NOT (yet) in the job — each a Control Tower decision, with its reason (WP-CI-SERVICE-TESTS-04,
+    /// BL-604 measurement: B = red, its owner fixes it (XMC-001); C = the test infrastructure first). Removing a name
+    /// without adding its row is red; a row gained removes the name (the two lists may not overlap).
     /// </summary>
-    private static readonly Dictionary<string, string> NotInThisJob = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, string> NotInThisJob = new(StringComparer.Ordinal)
+    {
+        ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
+            "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
+        ["services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj"] =
+            "B (Enterprise Strategy): 6 red, RBAC assertions among them",
+        ["services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/Diten.EnterpriseStrategy.EndToEnd.Tests.csproj"] =
+            "B (Enterprise Strategy): 2 red",
+        ["services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj"] =
+            "C → B (HCM): EmployeeDraftSessionRepositoryMongoTests uses the SHARED mongodb://localhost:27017",
+        ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
+            "C (MG): its own mongod at a fixed /opt/homebrew/bin/mongod — must read DITEN_TEST_MONGOD",
+        ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
+            "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)",
+        ["services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj"] =
+            "green, but waits for the PPM team's approval (owner relays it)",
+        ["services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj"] =
+            "B + C (PPM): 10 red, fixed /opt/homebrew/bin/mongod; and the PPM team's approval"
+    };
 
-    private static readonly string[] ServiceTestRoots =
-    [
-        "services/Diten.Platform/tests", "services/Diten.AuthService/tests", "services/Diten.MdmService/tests"
-    ];
+    /// <summary>WP-CI-SERVICE-TESTS-04: every service and Building Blocks — the whole services/ tree.</summary>
+    private static readonly string[] ServiceTestRoots = ["services"];
 
     [Fact]
     public void Every_service_test_project_is_a_matrix_row_or_named_with_its_reason()
@@ -76,7 +98,9 @@ public class CiServiceTestsGuardTests
         var gone = rows.Where(row => !File.Exists(Path.Combine(root, row))).ToArray();
         Assert.True(gone.Length == 0, "Matrix rows whose project does not exist: " + string.Join(", ", gone));
         Assert.Empty(rows.Intersect(NotInThisJob.Keys));
-        Assert.True(rows.Count >= 8, $"only {rows.Count} matrix rows read — the guard is blind");
+        Assert.True(rows.Count >= 18, $"only {rows.Count} matrix rows read — the guard is blind");
+        var stale = NotInThisJob.Keys.Where(project => !File.Exists(Path.Combine(root, project))).ToArray();
+        Assert.True(stale.Length == 0, "NotInThisJob names projects that do not exist: " + string.Join(", ", stale));
         Assert.All(NotInThisJob, entry => Assert.False(string.IsNullOrWhiteSpace(entry.Value), entry.Key));
     }
 
@@ -90,20 +114,19 @@ public class CiServiceTestsGuardTests
     public void Every_service_test_project_outside_its_solution_is_built_by_phase1()
     {
         var root = RepoRoot();
-        var gates = File.ReadAllText(Path.Combine(root, "scripts", "run_phase1_gates.sh")).Replace("\r\n", "\n");
-        var outside = new List<string>();
-        foreach (var dir in ServiceTestRoots)
-        {
-            var service = Path.GetDirectoryName(dir)!.Replace('\\', '/');
-            var solution = Path.Combine(root, service, Path.GetFileName(service) + ".sln");
-            Assert.True(File.Exists(solution), "no solution at " + solution);
-            var listed = File.ReadAllText(solution);
-            outside.AddRange(UnrunProjects(root, new HashSet<string>(StringComparer.Ordinal), [])
-                .Where(project => project.StartsWith(dir + "/", StringComparison.Ordinal))
-                .Where(project => !listed.Contains(Path.GetFileName(project), StringComparison.Ordinal)));
-        }
+        var gates = GatesText();
+        // WP-CI-SERVICE-TESTS-04: "outside" = a matrix row's project that NO solution under services/ lists (Building
+        // Blocks has none; Email.Tests is in Diten.Platform.sln, Secrets.Tests in none).
+        var solutions = Directory.EnumerateFiles(Path.Combine(root, "services"), "*.sln", SearchOption.AllDirectories)
+            .Select(File.ReadAllText).ToList();
+        Assert.True(solutions.Count >= 3, $"only {solutions.Count} solutions found — the scan is blind");
+        var outside = MatrixProjects(Workflow())
+            .Where(project => !solutions.Any(solution => solution.Contains(Path.GetFileName(project), StringComparison.Ordinal)))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+        Assert.True(outside.Count >= 10, $"only {outside.Count} out-of-solution rows found — the scan is blind");
 
-        var built = Regex.Matches(gates, @"(?m)^dotnet build (services/[^ ]+/tests/[^ ]+\.csproj) -c Debug\s*$")
+        var built = Regex.Matches(gates, @"(?m)^dotnet build (services/[^ ]+Tests\.csproj) -c Debug\s*$")
             .Select(match => match.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
         var unbuilt = outside.Except(built).ToArray();
         var surplus = built.Except(outside).ToArray();
@@ -192,7 +215,7 @@ public class CiServiceTestsGuardTests
         var jobs = Jobs(workflow);
         Assert.NotEmpty(jobs);
         foreach (var (name, body) in jobs)
-            Assert.True(Regex.IsMatch(body, @"^    timeout-minutes: *\d+\s*$", RegexOptions.Multiline),
+            Assert.True(Regex.IsMatch(body, @"^    timeout-minutes: *[1-9]\d*\s*$", RegexOptions.Multiline),
                 $"job '{name}' has no timeout-minutes — a hung job holds a runner for six hours");
 
         // A command continued with "\" is one command; a comment that mentions dotnet test is not one.
@@ -205,10 +228,13 @@ public class CiServiceTestsGuardTests
             Assert.Contains("--logger \"trx;", run, StringComparison.Ordinal);
         });
         // FIX1: the check runs with the job's suite, so only that suite's allow-list codes can pass.
-        Assert.Matches(@"- name: Skipped = 0\s+if: always\(\)\s+run: python3 scripts/check_trx_no_skipped\.py --suite ""\$SUITE"" ", workflow);
+        // Hardening: the whole step, exact — ` | cat` (no pipefail in the default bash -e) would turn its red green.
+        Assert.Equal(
+            "- name: Skipped = 0\n        if: always()\n"
+            + "        run: python3 scripts/check_trx_no_skipped.py --suite \"$SUITE\" \"$RUNNER_TEMP/test-results/$SUITE.trx\"\n",
+            Step(Code(workflow), "Skipped = 0"));
         // …and phase1 runs the allow-list's own tests (scripts/tests) on every push.
-        Assert.Matches(@"(?m)^python3 -m unittest discover -s scripts/tests -p 'test_\*\.py'$",
-            File.ReadAllText(Path.Combine(RepoRoot(), "scripts", "run_phase1_gates.sh")));
+        Assert.Matches(@"(?m)^python3 -m unittest discover -s scripts/tests -p 'test_\*\.py'$", GatesText());
     }
 
     [Fact]
@@ -236,15 +262,38 @@ public class CiServiceTestsGuardTests
     [Fact]
     public void Phase1_has_a_read_only_token_and_every_action_pinned_to_a_commit()
     {
-        AssertReadOnlyAndPinned(File.ReadAllText(Path.Combine(RepoRoot(), ".github", "workflows", "phase1-gates.yml"))
-            .Replace("\r\n", "\n"));
+        AssertReadOnlyAndPinned(WorkflowText("phase1-gates.yml"));
+    }
+
+    /// <summary>
+    /// A secret or token reference, any case: `secrets` as a context (`${{ secrets.X }}`, `secrets['X']`, `secrets: inherit`,
+    /// `toJSON(secrets)`) — not a path segment or a suite name (`Security.Secrets.Tests`, `bb-secrets`; WP-CI-SERVICE-TESTS-04
+    /// rows), so a word preceded by a letter, `.`, `/` or `-` is not one; `github.token`, `github_token`, `github['token']`,
+    /// and any `toJSON(` (it can dump a whole context).
+    /// </summary>
+    private const string SecretReference = @"(?i)(?<![\w./-])secrets\b|\bgithub[._]token\b|\bgithub\s*\[|\btoJSON\s*\(";
+
+    [Theory]
+    [InlineData("TOKEN: \"#${{ secrets.X }}\"", true)]
+    [InlineData("TOKEN: ${{ SECRETS.X }}", true)]
+    [InlineData("TOKEN: ${{secrets.X}}", true)]
+    [InlineData("secrets: inherit", true)]
+    [InlineData("X: ${{ toJSON(secrets) }}", true)]
+    [InlineData("T: ${{ Secrets['X'] }}", true)]
+    [InlineData("T: ${{ github['token'] }}", true)]
+    [InlineData("T: ${{ github.token }}", true)]
+    [InlineData("- suite: bb-secrets", false)]
+    [InlineData("project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/x.csproj", false)]
+    public void A_secret_reference_is_recognised_and_a_project_name_is_not(string line, bool reference)
+    {
+        Assert.Equal(reference, Regex.IsMatch(line, SecretReference));
     }
 
     private static void AssertReadOnlyAndPinned(string workflow)
     {
         var code = Code(workflow);
         AssertOneReadOnlyToken(code);
-        Assert.DoesNotMatch(@"(?i)\bsecrets\b|\bgithub[._]token\b", code);
+        Assert.DoesNotMatch(SecretReference, code);
 
         var uses = Uses(workflow);
         Assert.NotEmpty(uses);
@@ -307,7 +356,7 @@ public class CiServiceTestsGuardTests
         {
             var code = Code(WorkflowText(name));
             Assert.True(!Regex.IsMatch(code, @"(?i)\b(pull_request_target|workflow_run|issue_comment)\b"), $"{name}: privileged trigger");
-            Assert.True(!Regex.IsMatch(code, @"(?i)\bsecrets\b|\bgithub[._]token\b"), $"{name}: reads a secret");
+            Assert.True(!Regex.IsMatch(code, SecretReference), $"{name}: reads a secret");
             Assert.True(KeyCount(code, "on") == 1, $"{name}: {KeyCount(code, "on")} on: keys");
         }
     }
@@ -346,6 +395,13 @@ public class CiServiceTestsGuardTests
         ]
     };
 
+    /// <summary>Hardening: the $GITHUB_ENV writes each file makes (measured; a new one is a deliberate edit here).</summary>
+    private static readonly Dictionary<string, int> ExpectedGithubEnvWrites = new(StringComparer.Ordinal)
+    {
+        ["phase1-gates.yml"] = 0,
+        ["service-tests.yml"] = 9
+    };
+
     [Fact]
     public void Nothing_can_turn_a_red_test_or_build_green()
     {
@@ -360,11 +416,22 @@ public class CiServiceTestsGuardTests
 
             var runs = RunBlocks(code);
             Assert.True(runs.Count == KeyCount(code, "run"), $"{name}: {KeyCount(code, "run")} run: keys but {runs.Count} blocks read");
-            foreach (var run in runs)
+            // Hardening: the ban applies to the WHOLE text (a `run: | # x`, `|2`, `&a |`, `!!str |` or a plain multi-line
+            // scalar no longer escapes a run-value reader), except the if: lines — the one legitimate `||` is in an if:.
+            var lines = code.Split('\n').Where(line => !Regex.IsMatch(line, @"(?i)^\s*(?:-\s*)?[""']?if[""']?[ \t]*:")).ToArray();
+            foreach (var line in lines)
             {
-                var neutraliser = Regex.Match(run, @"(?i)\|\||;\s*true\b|\bexit\s+0\b|\bset\s+\+[a-z]*e");
-                Assert.True(!neutraliser.Success, $"{name}: a run: block can turn a failure green ('{neutraliser.Value}'): {run}");
+                var neutraliser = Regex.Match(line, @"(?i)\|\||;\s*true\b|\bexit\s+0\b|\bset\s+\+|\btrap\b");
+                Assert.True(!neutraliser.Success, $"{name}: a line can turn a failure green ('{neutraliser.Value}'): {line}");
             }
+            // Hardening: no shell override (`defaults.run.shell: true {0}` ends every run: with 0), no PATH injection.
+            Assert.True(KeyCount(code, "shell") == 0 && KeyCount(code, "defaults") == 0, $"{name}: shell: / defaults:");
+            Assert.True(!Regex.IsMatch(code, @"(?i)GITHUB_PATH"), $"{name}: writes GITHUB_PATH");
+            Assert.True(Regex.Matches(code, @"(?i)GITHUB_ENV").Count == ExpectedGithubEnvWrites[name],
+                $"{name}: {Regex.Matches(code, @"(?i)GITHUB_ENV").Count} GITHUB_ENV writes, expected {ExpectedGithubEnvWrites[name]}");
+            // Hardening (cheap, fail-closed): no YAML node properties (&anchor, *alias, !tag), no `? key`, no hex escapes.
+            var property = Regex.Match(code, @"(?m)(?:^[ \t]*-|:)[ \t]+[&*!]|^[ \t]*\?[ \t]|\\[xuU][0-9A-Fa-f]");
+            Assert.True(!property.Success, $"{name}: a YAML anchor / alias / tag / complex key / escape ('{property.Value}')");
         }
 
         foreach (var (file, step) in new[]
@@ -380,11 +447,28 @@ public class CiServiceTestsGuardTests
             + "            --logger \"trx;LogFileName=$SUITE.trx\" --results-directory \"$RUNNER_TEMP/test-results\"\n",
             Step(Code(WorkflowText("service-tests.yml")), "Test"));
         Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
+        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[""\*\*""\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
+        // Hardening: the job-level SUITE / PROJECT the test and skip steps read are exactly the matrix values.
+        Assert.Single(Regex.Matches(Code(WorkflowText("service-tests.yml")),
+            @"(?m)^    env:\n      SUITE: \$\{\{ matrix\.suite \}\}\n      PROJECT: \$\{\{ matrix\.project \}\}\n    steps:\n"));
+        Assert.Equal(2, Regex.Matches(Code(WorkflowText("service-tests.yml")), @"(?<![\w.$-])[""']?(?:SUITE|PROJECT)[""']?[ \t]*:").Count);
 
-        var gates = File.ReadAllText(Path.Combine(RepoRoot(), "scripts", "run_phase1_gates.sh")).Replace("\r\n", "\n");
+        var gates = GatesText();
+        Assert.Equal("#!/usr/bin/env bash", gates.Split('\n')[0]);
         Assert.Equal("set -euo pipefail",
             gates.Split('\n').Skip(1).First(line => line.Trim().Length > 0 && !line.TrimStart().StartsWith('#')));
-        Assert.DoesNotMatch(@"(?im)^\s*set\s+\+[a-z]*[eu]", gates);
+        // Hardening: the two legitimate `|| true` (the audit-ledger greps that may match nothing — measured lines 74 and
+        // 86) and nothing else; no exit 0, no trap, no `set +` of any form, no --filter.
+        Assert.Equal(2, Regex.Matches(gates, @"\|\|").Count);
+        Assert.Equal(2, Regex.Matches(gates, @"\| grep -E '\^(?:-|\\\+)- '[^\n]*\|\| true\)").Count);
+        Assert.DoesNotMatch(@"(?i)\bexit\s+0\b|\btrap\b|\bset\s+\+|--filter\b", gates);
+        foreach (var project in new[]
+                 {
+                     "tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.TenancyTests.csproj",
+                     "tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj",
+                     "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj"
+                 })
+            Assert.Single(Regex.Matches(gates, $@"(?m)^dotnet test {Regex.Escape(project)} -c Debug$"));
     }
 
     // The Release assemblies a row's tests load from bin/Release (FIX1 mdm-app; FIX2 platform-bgjobs: its child-host test
@@ -419,7 +503,7 @@ public class CiServiceTestsGuardTests
         foreach (var variable in new[] { "DITEN_TEST_MONGOD", "DITEN_ITEST_MONGOD_BIN_DIR" })
             Assert.True(KeyCount(code, variable) == 0, $"an env: key (block or flow, any case) overrides {variable}");
         // FIX2: the only assignments — export, $GITHUB_ENV, anything with "=" — are the install step's two lines.
-        var assignments = Regex.Matches(code, @"(?i)DITEN_I?TEST_MONGOD(?:_BIN_DIR)?[ \t]*=").ToArray();
+        var assignments = Regex.Matches(code, @"(?i)DITEN_I?TEST_MONGOD(?:_BIN_DIR)?[ \t]*(?:=|<<)").ToArray();
         Assert.True(assignments.Length == 2, $"{assignments.Length} assignments of a mongod variable, expected the install step's 2");
         var installAt = code.IndexOf("- name: Install mongod (pinned version and digest)\n", StringComparison.Ordinal);
         Assert.All(assignments, assignment =>
@@ -456,6 +540,7 @@ public class CiServiceTestsGuardTests
     [InlineData("[Collection(LiveRabbitMqCollection.Name)]\npublic class A { void M() { } }\npublic class B { void M() { Bus.Factory.CreateUsingRabbitMq(c => {}); } }\n", 1)]
     [InlineData("[Collection(LiveRabbitMqCollection.Name)]\npublic class A { private sealed class Inner { void M() { new ConnectionFactory(); } } }\n", 0)]
     [InlineData("public class A { [Collection(LiveRabbitMqCollection.Name)]\n private class Inner { void M() { new ConnectionFactory(); } } }\n", 1)]
+    [InlineData("// [Collection(LiveRabbitMqCollection.Name)]\npublic class A { void M() { Bus.Factory.CreateUsingRabbitMq(c => {}); } }\n", 1)]
     public void A_live_broker_call_is_checked_against_its_outermost_class(string source, int problems)
     {
         Assert.Equal(problems, LiveBrokerCallsOutsideTheCollection(source).Count);
@@ -465,6 +550,8 @@ public class CiServiceTestsGuardTests
 
     private static List<string> LiveBrokerCallsOutsideTheCollection(string text)
     {
+        // Hardening: a `// [Collection(...)]` comment is not the attribute — full-line // comments are removed first.
+        text = Regex.Replace(text, @"(?m)^[ \t]*//.*$", "");
         var classes = Regex.Matches(text,
                 @"(?m)^[ \t]*(?:(?:public|internal|private|protected|sealed|abstract|partial|static|file|unsafe|new)\s+)*(?:class|record(?:\s+class)?|struct)\s+\w+")
             .Select(declaration =>
@@ -498,8 +585,22 @@ public class CiServiceTestsGuardTests
         return problems;
     }
 
-    private static string WorkflowText(string name)
-        => File.ReadAllText(Path.Combine(RepoRoot(), ".github", "workflows", name)).Replace("\r\n", "\n");
+    private static string WorkflowText(string name) => Text(Path.Combine(".github", "workflows", name));
+
+    private static string GatesText() => Text(Path.Combine("scripts", "run_phase1_gates.sh"));
+
+    /// <summary>
+    /// Hardening (CT, last round): a repository text file with CRLF normalised — and then NO other YAML line break left
+    /// (lone CR, NEL U+0085, LS U+2028, PS U+2029): YAML would break the line there, this reader (and Code) would not, so
+    /// `# x&lt;CR&gt;  actions: write` would read as one comment line.
+    /// </summary>
+    private static string Text(string relative)
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), relative)).Replace("\r\n", "\n");
+        var odd = Regex.Match(text, "[\r\u0085\u2028\u2029]");
+        Assert.True(!odd.Success, $"{relative}: a line break other than LF (U+{(odd.Success ? (int)odd.Value[0] : 0):X4}) at {odd.Index}");
+        return text;
+    }
 
     /// <summary>
     /// FIX2 (CT decision): the text without its FULL-LINE comments. An inline `#` is NOT cut — YAML lets `#` stand inside a
@@ -668,13 +769,13 @@ public class CiServiceTestsGuardTests
 
     // ------------------------------------------------------------------------------------------------- reading
 
-    private static string Workflow() => File.ReadAllText(Path.Combine(RepoRoot(), WorkflowPath)).Replace("\r\n", "\n");
+    private static string Workflow() => Text(WorkflowPath);
 
     /// <summary>Service test projects on disk under <paramref name="root"/> that no matrix row runs and no entry excuses.</summary>
     private static string[] UnrunProjects(string root, IReadOnlySet<string> rows, IEnumerable<string> excused) =>
         ServiceTestRoots
             .Where(dir => Directory.Exists(Path.Combine(root, dir)))
-            .SelectMany(dir => Directory.EnumerateFiles(Path.Combine(root, dir), "*.Tests.csproj", SearchOption.AllDirectories))
+            .SelectMany(dir => Directory.EnumerateFiles(Path.Combine(root, dir), "*Tests.csproj", SearchOption.AllDirectories))
             .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
             .Where(path => !path.Contains("/bin/", StringComparison.Ordinal) && !path.Contains("/obj/", StringComparison.Ordinal))
             .Except(rows)
