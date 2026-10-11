@@ -1476,7 +1476,7 @@ public sealed class ProductItemSkuMasterMongoTests
 
         public static async Task<MongoTestScope> CreateAsync()
         {
-            var uri = Environment.GetEnvironmentVariable("MONGO_TEST_URI") ?? "mongodb://localhost:27017";
+            var uri = MdmTestMongo.ConnectionString;
             var settings = MongoClientSettings.FromConnectionString(uri);
             settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
             settings.ConnectTimeout = TimeSpan.FromSeconds(5);
@@ -1503,7 +1503,7 @@ public sealed class ProductItemSkuMasterMongoTests
             var settings = MongoClientSettings.FromConnectionString(fixture.ReplicaConnectionString);
             var server = settings.Servers.SingleOrDefault();
             if (server is null || !string.Equals(server.Host, "127.0.0.1", StringComparison.Ordinal) ||
-                server.Port == 27017 || string.IsNullOrWhiteSpace(settings.ReplicaSetName))
+                server.Port == MdmTestMongo.SharedPort || string.IsNullOrWhiteSpace(settings.ReplicaSetName))
             {
                 throw new InvalidOperationException("GSKU_TEST_OWNED_REPLICA_TOPOLOGY_REQUIRED");
             }

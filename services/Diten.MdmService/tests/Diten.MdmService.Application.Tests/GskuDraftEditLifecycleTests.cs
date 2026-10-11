@@ -21,9 +21,7 @@ public sealed class GskuDraftEditLifecycleTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        var client = new MongoClient(Environment.GetEnvironmentVariable("MDM_TEST_MONGO")
-            ?? Environment.GetEnvironmentVariable("MONGO_TEST_URI")
-            ?? "mongodb://localhost:27017");
+        var client = new MongoClient(MdmTestMongo.ConnectionString);
         _database = client.GetDatabase(ProductLegalEntityScopeMongoCollection.DatabaseName);
         await _database.RunCommandAsync<MongoDB.Bson.BsonDocument>(
             new MongoDB.Bson.BsonDocument("ping", 1));

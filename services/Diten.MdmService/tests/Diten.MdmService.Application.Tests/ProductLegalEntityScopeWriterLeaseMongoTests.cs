@@ -25,15 +25,15 @@ public sealed class ProductLegalEntityScopeWriterLeaseMongoTests
 
     /// <summary>Seconds after a lease's start at which another command may take it: expiry plus the clock-drift margin.</summary>
     private const int Gone = ProductLegalEntityScopeWriterLease.DurationSeconds + ProductLegalEntityScopeWriterLease.ClockSkewSeconds + 1;
-    private readonly string? _previousMongoConnection;
+    // BL-595 FIX2: the shared helpers follow this class's own replica set, in-process (never the environment).
+    private readonly IDisposable _ownedRedirect;
 
     public ProductLegalEntityScopeWriterLeaseMongoTests(AuditIntentTemporalMongoFixture fixture)
     {
-        _previousMongoConnection = Environment.GetEnvironmentVariable("MDM_TEST_MONGO");
-        Environment.SetEnvironmentVariable("MDM_TEST_MONGO", fixture.ReplicaConnectionString);
+        _ownedRedirect = MdmTestMongo.UseOwnedRedirect(fixture.ReplicaConnectionString);
     }
 
-    public void Dispose() => Environment.SetEnvironmentVariable("MDM_TEST_MONGO", _previousMongoConnection);
+    public void Dispose() => _ownedRedirect.Dispose();
 
     [Fact]
     public async Task A_write_answered_202_is_finished_by_the_same_command_even_after_its_product_moved()

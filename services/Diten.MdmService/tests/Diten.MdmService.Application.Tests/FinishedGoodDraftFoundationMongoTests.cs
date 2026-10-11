@@ -854,7 +854,7 @@ public sealed class FinishedGoodDraftFoundationMongoTests(
             var database = client.GetDatabase(ProductLegalEntityScopeMongoCollection.DatabaseName);
             var hello = await database.RunCommandAsync<BsonDocument>(new BsonDocument("hello", 1));
             Assert.True(hello.Contains("setName") && hello["isWritablePrimary"].AsBoolean);
-            Assert.All(settings.Servers, server => Assert.NotEqual(27017, server.Port));
+            Assert.All(settings.Servers, server => Assert.NotEqual(MdmTestMongo.SharedPort, server.Port));
             output.WriteLine("Test-owned Mongo: replica set={0}; primary={1}; port={2}; database={3}",
                 hello["setName"], hello["isWritablePrimary"], settings.Server.Port, database.DatabaseNamespace.DatabaseName);
             return new(database, output);

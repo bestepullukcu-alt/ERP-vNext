@@ -705,24 +705,29 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
     public string ReplicaConnectionString { get; private set; } = string.Empty;
     public string StandaloneConnectionString { get; private set; } = string.Empty;
 
+    // BL-595 FIX3: the replica's directory and PID (for the test of the owner record a real start writes).
+    internal (string Directory, int ProcessId) ReplicaIdentity => _replica!.Identity;
+
     public async Task InitializeAsync()
     {
         try
         {
             var mongod = ResolveMongodPath();
-            _standalone = await OwnedMongoProcess.StartAsync(mongod, null);
-            await WaitForHelloAsync(_standalone.DirectConnectionString, _standalone, hello => !hello.Contains("setName"));
+            _standalone = await StartReadyAsync(mongod, null, process =>
+                WaitForHelloAsync(process.DirectConnectionString, process, hello => !hello.Contains("setName")));
             StandaloneConnectionString = _standalone.DirectConnectionString;
 
             var setName = $"mdmfu02{Guid.NewGuid():N}";
-            _replica = await OwnedMongoProcess.StartAsync(mongod, setName);
-            await InitiateReplicaSetAsync(_replica, setName);
+            _replica = await StartReadyAsync(mongod, setName, async process =>
+            {
+                await InitiateReplicaSetAsync(process, setName);
+                await WaitForHelloAsync(
+                    process.ReplicaConnectionString(setName),
+                    process,
+                    hello => hello.TryGetValue("setName", out var name) && name.IsString &&
+                             hello.TryGetValue("isWritablePrimary", out var primary) && primary.ToBoolean());
+            });
             ReplicaConnectionString = _replica.ReplicaConnectionString(setName);
-            await WaitForHelloAsync(
-                ReplicaConnectionString,
-                _replica,
-                hello => hello.TryGetValue("setName", out var name) && name.IsString &&
-                         hello.TryGetValue("isWritablePrimary", out var primary) && primary.ToBoolean());
         }
         catch (Exception original)
         {
@@ -752,6 +757,29 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
         _standalone = null;
         if (failures.Count == 1) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failures[0]).Throw();
         if (failures.Count > 1) throw new AggregateException(failures);
+    }
+
+    // BL-595 FIX2: a port lost between its pick and mongod's bind (the process exits) is retried on a fresh one, as the
+    // helper's own start does (MdmTestMongo.StartAttempts).
+    private static async Task<OwnedMongoProcess> StartReadyAsync(string mongod, string? setName,
+        Func<OwnedMongoProcess, Task> ready)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            var process = await OwnedMongoProcess.StartAsync(mongod, setName);
+            try
+            {
+                await ready(process);
+                return process;
+            }
+            catch (Exception exception)
+            {
+                // Every failed attempt is disposed (it is not yet the fixture's); only an exited one is retried.
+                var retry = exception is InvalidOperationException && process.HasExited && attempt < MdmTestMongo.StartAttempts;
+                await process.DisposeAsync();
+                if (!retry) throw;
+            }
+        }
     }
 
     private static async Task InitiateReplicaSetAsync(OwnedMongoProcess process, string setName)
@@ -807,6 +835,10 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
 
     private static string ResolveMongodPath()
     {
+        // BL-595 FIX1: DITEN_TEST_MONGOD first, by the helper's rule (given but not an installed mongod → red by name);
+        // only when it is absent does the older discovery below apply.
+        if (Environment.GetEnvironmentVariable(MdmTestMongo.Variable) is not null)
+            return MdmTestMongo.ConnectionFor(MdmTestMongo.ResolveOwned(), executable => executable);
         var configured = Environment.GetEnvironmentVariable(MongodPathVariable);
         if (!string.IsNullOrWhiteSpace(configured) && File.Exists(configured)) return Path.GetFullPath(configured);
         var executable = OperatingSystem.IsWindows() ? "mongod.exe" : "mongod";
@@ -849,11 +881,16 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
             listener.Start();
             var port = ((IPEndPoint)listener.LocalEndpoint).Port;
             listener.Stop();
-            var directory = Path.Combine(Path.GetTempPath(), $"diten_mdm_temporal_{Guid.NewGuid():N}");
+            // BL-595 FIX2: the helper's prefix and owner record, so a run killed before its dispose is swept like the
+            // helper's own (MdmTestMongo.Sweep: PID + start time + executable path, in doubt Keep).
+            var directory = Path.Combine(Path.GetTempPath(), $"{MdmTestMongo.DirectoryPrefix}temporal_{Guid.NewGuid():N}");
             var owned = new OwnedMongoProcess(port, directory);
             try
             {
                 Directory.CreateDirectory(directory);
+                using var host = Process.GetCurrentProcess();
+                var hostStarted = host.StartTime.ToUniversalTime();
+                MdmTestMongo.WriteOwner(directory, new MdmTestMongo.OwnerRecord(null, null, Environment.ProcessId, hostStarted));
                 var start = new ProcessStartInfo
                 {
                     FileName = mongod,
@@ -872,6 +909,10 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
                 if (!owned._process.Start()) throw new InvalidOperationException("MDM_TEMPORAL_MONGO_START_FAILED");
                 owned._process.BeginOutputReadLine();
                 owned._process.BeginErrorReadLine();
+                var path = MdmTestMongo.Probe(owned._process.Id).Path;
+                if (path is null) Console.WriteLine($"OWNED_MDM_MONGO_RECORD_WITHOUT_PATH pid={owned._process.Id} (temporal)");
+                MdmTestMongo.WriteOwner(directory, new MdmTestMongo.OwnerRecord(owned._process.Id,
+                    owned._process.StartTime.ToUniversalTime(), Environment.ProcessId, hostStarted, path));
                 return owned;
             }
             catch (Exception original)
@@ -882,6 +923,9 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
                 throw;
             }
         }
+
+        public bool HasExited => _process is { HasExited: true };
+        public (string Directory, int ProcessId) Identity => (_directory!, _process!.Id);
 
         public void ThrowIfExited()
         {
@@ -911,7 +955,7 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
                 var root = Path.GetFullPath(Path.GetTempPath());
                 var scoped = root.EndsWith(Path.DirectorySeparatorChar) ? root : root + Path.DirectorySeparatorChar;
                 if (!target.StartsWith(scoped, StringComparison.OrdinalIgnoreCase)
-                    || !Path.GetFileName(target).StartsWith("diten_mdm_temporal_", StringComparison.Ordinal))
+                    || !Path.GetFileName(target).StartsWith(MdmTestMongo.DirectoryPrefix, StringComparison.Ordinal))
                     failures.Add(new InvalidOperationException("MDM_TEMPORAL_CLEANUP_SCOPE_INVALID"));
                 else
                 {
