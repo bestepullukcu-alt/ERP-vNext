@@ -387,7 +387,9 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
         if (current is null) return new(false, false, null, "ITEM_NOT_FOUND");
         // The replay is recognised by the decision it wrote (S2 FIX1 item 3), not by an exact version: a later edit of the
         // Active item moves the version on and must not turn the replay into a conflict.
-        if (current.Version >= expectedVersion + 1 && current.LifecycleStatus == target
+        // S2 FIX3 (minor, the M3 rule): the replay is recognised by what the decision wrote, not by the item's status now
+        // (a deactivation after the approval inside the audit window is not a different decision).
+        if (current.Version >= expectedVersion + 1
             && current.ActivationWorkflowBinding?.WorkflowInstanceId == operation.WorkflowInstanceId
             && current.ActivationWorkflowBinding.StartIdempotencyKey == operation.StartIdempotencyKey
             && current.ActivationWorkflowBinding.TerminalDecision is { } done
@@ -829,7 +831,11 @@ public sealed class ItemWorkflowOperationRepository : IItemWorkflowOperationRepo
                 Builders<ItemWorkflowOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.IsDeleted)
                     .Ascending(x => x.NextAttemptAtUtcTicksV1).Ascending(x => x.OperationId)
                     .Ascending(x => x.Checkpoint).Ascending(x => x.LeaseUntilUtcTicksV1),
-                new CreateIndexOptions { Name = "ix_mdm_item_workflow_recovery" })
+                new CreateIndexOptions { Name = "ix_mdm_item_workflow_recovery" }),
+            // S2 FIX3 (minor): the oldest-open-approval gauge reads by checkpoint, oldest start first (no full scan).
+            new CreateIndexModel<ItemWorkflowOperation>(
+                Builders<ItemWorkflowOperation>.IndexKeys.Ascending(x => x.Checkpoint).Ascending(x => x.WorkflowStartedAtUtcTicksV1),
+                new CreateIndexOptions { Name = "ix_mdm_item_workflow_open_age" })
         ]);
     }
 }

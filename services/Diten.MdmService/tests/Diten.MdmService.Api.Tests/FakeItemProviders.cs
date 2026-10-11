@@ -28,6 +28,8 @@ public sealed class FakeItemReferences : IItemReferenceResolver
     public ConcurrentQueue<IReadOnlyList<ItemReferenceRequest>> Calls { get; } = new();
     public bool Outage { get; set; }
     public bool Throw { get; set; }
+    // S2 FIX3: the provider refusing the caller's token (401 / 403).
+    public int? RefuseStatus { get; set; }
     // FIX1 item 1: an answer whose storage conditions lack ConditionKind / carry no attributes at all.
     public bool OmitConditionKind { get; set; }
     public bool NullAttributes { get; set; }
@@ -46,6 +48,7 @@ public sealed class FakeItemReferences : IItemReferenceResolver
     {
         Outage = false;
         Throw = false;
+        RefuseStatus = null;
         OmitConditionKind = false;
         NullAttributes = false;
         NullNotFoundEntry = false;
@@ -63,6 +66,9 @@ public sealed class FakeItemReferences : IItemReferenceResolver
         Calls.Enqueue(requests);
         if (Throw) throw new HttpRequestException("item list provider down (test)");
         if (Outage) return Task.FromResult(ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
+        if (RefuseStatus is { } refused)
+            return Task.FromResult(ItemReferenceResolveResult.Fail(refused,
+                refused == 403 ? ItemReferenceResolveResult.Forbidden : ItemReferenceResolveResult.Unauthenticated));
         var missing = requests.Where(request => Removed.Contains(request.ValueCode)
             || !Sets.TryGetValue(request.SetCode, out var set) || !set.ContainsKey(request.ValueCode)).ToList();
         if (NullNotFoundEntry) return Task.FromResult(ItemReferenceResolveResult.Missing([null!]));

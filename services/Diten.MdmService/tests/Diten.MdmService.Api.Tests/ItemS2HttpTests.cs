@@ -672,8 +672,9 @@ public sealed class ItemActivationHttpHost : MdmHttpHost
         ["ItemActivationWorkflowWorker__LeaseSeconds"] = "10",
         ["ItemActivationWorkflowWorker__RetryDelaySeconds"] = "1",
         ["ItemActivationWorkflowWorker__StartSettleSeconds"] = "2",
-        // S2 FIX2 item 2: above the decision-poll ceiling + this host's hourly poll + lease (validated at start).
-        ["ItemActivationGauge__UnprocessedAfterMinutes"] = "90",
+        // S2 FIX2 / FIX3 item 2: above the longest planned wait (the 1-hour configuration retry) + this host's hourly poll +
+        // lease (validated at start).
+        ["ItemActivationGauge__UnprocessedAfterMinutes"] = "150",
         // S2 FIX2 (minor M4): the worker's service identity is checked at start — disposable test values (the provider
         // itself is the host's FakeServiceIdentity).
         ["AuthWorkflowVerifiedMarketServiceIdentityProvider__AuthBaseUrl"] = "http://auth.test/",

@@ -108,7 +108,8 @@ public sealed class ItemActivationWorkflowProcessor(
     public static TimeSpan DecisionPollDelay(ItemWorkflowOperation operation, DateTimeOffset now, TimeSpan retryDelay)
     {
         var floor = retryDelay > TimeSpan.Zero ? retryDelay : TimeSpan.FromSeconds(1);
-        if (floor >= DecisionPollCeiling) return DecisionPollCeiling;
+        // S2 FIX3 (minor): a configured retry delay above the ceiling is honoured (never shortened to it).
+        if (floor >= DecisionPollCeiling) return floor;
         var age = operation.WorkflowStartedAtUtcTicksV1 is { } started && started > 0
             ? TimeSpan.FromTicks(Math.Max(0, now.UtcTicks - started))
             : TimeSpan.Zero;
@@ -707,7 +708,12 @@ public sealed class ItemActivationWorkflowProcessor(
             return await operations.AdvanceAsync(claim, new(ItemWorkflowCheckpoint.AwaitingDecision,
                 ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
                 now.Add(DecisionPollDelay(operation, now, retryDelay)).UtcTicks,
-                BoundedCode(result.ErrorCode, DecisionPendingCode), ReleaseLease: true, Streak: RecoveryStreakWrite.Keep),
+                BoundedCode(result.ErrorCode, DecisionPendingCode), ReleaseLease: true,
+                // S2 FIX3 (minor): the fault streak decays — one quiet ask keeps it, the second in a row (the last
+                // attempt was an ask too) resets it: an old fault no longer brings a later one to the limit early.
+                Streak: operation.LastFailureCode == BoundedCode(result.ErrorCode, DecisionPendingCode)
+                    ? RecoveryStreakWrite.Reset
+                    : RecoveryStreakWrite.Keep),
                 cancellationToken);
         if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
                 or ProductIdentityWorkflowTransportOutcome.Incomplete
@@ -790,6 +796,12 @@ public sealed class ItemActivationWorkflowProcessor(
             case ItemReferenceEvidence.Verdict.NotApplicable:
                 return await DecisionNotApplicableAsync(operation, claim, held.Code!, now, retryDelay, counted,
                     cancellationToken);
+            // S2 FIX3 item 1: a user's request (the maker's repeat) reads the lists with the USER's token — its 401 / 403 is
+            // that token's, not MDM's configuration: the operation stays where it is on an ordinary uncounted retry and
+            // the maker is answered 503, as before FIX2 (never the hour, never blamed on the service identity).
+            case ItemReferenceEvidence.Verdict.Stuck when held.Code == ItemReferenceEvidence.ProviderConfigurationError && !counted:
+                return await ScheduleRetryAsync(operation, claim, operation.Checkpoint, ItemReferenceEvidence.ProviderUnavailable,
+                    now, retryDelay, counted, cancellationToken);
             case ItemReferenceEvidence.Verdict.Stuck when held.Code == ItemReferenceEvidence.ProviderConfigurationError:
                 // S2 FIX2 (minor M4): a refused identity / configuration heals when it is fixed — asked again after a long,
                 // uncounted interval (the maker may be gone); until then the item stays pending and needing_a_person
@@ -838,7 +850,9 @@ public sealed class ItemActivationWorkflowProcessor(
         var result = await decisionWriter.ApplyDecisionAsync(claim, operation, evidence, now.UtcTicks, cancellationToken);
         if (!result.Succeeded)
             return await WriteRefusedAsync(operation, claim, result.ErrorCode, now, retryDelay, counted, cancellationToken);
-        if (!ExactDecisionResult(result.Item, operation, evidence))
+        // A fresh write shows its target status; a replay is recognised by what it wrote (S2 FIX3, the M3 rule — the item
+        // may have moved on, e.g. deactivated, inside the audit window).
+        if (!(result.IsReplay ? DecisionWritten(result.Item, operation, evidence) : ExactDecisionResult(result.Item, operation, evidence)))
             return await QuarantineAsync(claim, "ITEM_ACTIVATION_WORKFLOW_DECISION_INCONSISTENT", now, cancellationToken);
         return await AdvanceAsync(claim, ItemWorkflowCheckpoint.DecisionApplied, ProductIdentityWorkflowRecoveryDisposition.None,
             now, releaseLease: true, cancellationToken: cancellationToken);

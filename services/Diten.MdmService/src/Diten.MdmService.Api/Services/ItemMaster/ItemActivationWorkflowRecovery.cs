@@ -115,7 +115,9 @@ public sealed class ItemActivationWorkflowRecoveryRunner(
         || operation.Checkpoint == ItemWorkflowCheckpoint.ManualReconciliationRequired
            && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
         || operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable
-           && operation.LastFailureCode == ItemActivationWorkflowProcessor.RetryLimitReached;
+           && operation.LastFailureCode is ItemActivationWorkflowProcessor.RetryLimitReached
+               // S2 FIX3 (minor): the configuration refusal on its long retry — stuck, as the gauge counts it.
+               or ItemReferenceEvidence.ProviderConfigurationError;
 
     private static string Safe(string? value) => !string.IsNullOrWhiteSpace(value) && value.Length <= 100
         && value.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_') ? value : "UNEXPECTED_FAILURE";
@@ -188,9 +190,6 @@ public sealed class ItemActivationGauge(IServiceScopeFactory scopes, TimeProvide
             await using var scope = scopes.CreateAsyncScope();
             var discovery = scope.ServiceProvider.GetRequiredService<IItemWorkflowTenantPartitionDiscovery>();
             var unprocessed = await discovery.CountUnprocessedAsync((now - after).UtcTicks, ct);
-            var oldest = await discovery.OldestOpenApprovalStartedAtAsync(ct);
-            metrics?.Record(OldestOpenApprovalFlow,
-                oldest is { } started ? Math.Max(0, (now.UtcTicks - started) / TimeSpan.TicksPerSecond) : 0);
             metrics?.Record(UnprocessedFlow, unprocessed);
             metrics?.RecordCountFailed(UnprocessedFlow, false);
             if (unprocessed > 0)
@@ -202,6 +201,24 @@ public sealed class ItemActivationGauge(IServiceScopeFactory scopes, TimeProvide
         {
             metrics?.RecordCountFailed(UnprocessedFlow, true);
             logger.LogError("{Flow}: the count failed with {ExceptionType}.", UnprocessedFlow, exception.GetType().Name);
+        }
+        // S2 FIX3 item 3: the oldest open approval's age — its own gauge (seconds) and its own failure handling (a failing
+        // query never stales the unprocessed count, nor the other way round).
+        try
+        {
+            await using var scope = scopes.CreateAsyncScope();
+            var oldest = await scope.ServiceProvider.GetRequiredService<IItemWorkflowTenantPartitionDiscovery>()
+                .OldestOpenApprovalStartedAtAsync(ct);
+            metrics?.RecordOldestOpenApproval(ItemActivationWorkflowRecoveryRunner.Flow,
+                oldest is { } started ? Math.Max(0, (now.UtcTicks - started) / TimeSpan.TicksPerSecond) : 0);
+            metrics?.RecordCountFailed(OldestOpenApprovalFlow, false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception exception)
+        {
+            metrics?.RecordCountFailed(OldestOpenApprovalFlow, true);
+            logger.LogError("{Flow}: the oldest open approval could not be read ({ExceptionType}).", OldestOpenApprovalFlow,
+                exception.GetType().Name);
         }
         try
         {

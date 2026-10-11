@@ -419,7 +419,9 @@ applied, so the reference check runs with the trusted service token for the tena
 and the `VerifiedGskuResolver` credential). Platform's item-universal endpoint accepts it. If Platform or Auth refuses it
 (401 after one refresh, 403, or no identity issued), the approval waits with `ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR`
 (an error line, `needing_a_person`) and the item stays PendingActivation; it is asked again every hour, uncounted, so it
-heals by itself once the identity / credential configuration is fixed (no one has to submit again). An outage (5xx,
+heals by itself once the identity / credential configuration is fixed (no one has to submit again). This wait is the
+worker's only: a refusal of the maker's own token on their repeat answers the maker 503 and the operation stays on its
+ordinary retry. An outage (5xx,
 timeout) only waits. An instance that runs the item approval worker checks this identity's configuration at start
 (`ITEM_ACTIVATION_SERVICE_IDENTITY_CONFIGURATION_INVALID` stops the start). A user's request (the maker's repeat) reads
 the lists with the user's own token — the service identity is the worker's only.
@@ -427,11 +429,12 @@ the lists with the user's own token — the service identity is the worker's onl
 **Approval on, worker off** (S2 FIX1): not refused at start (in a multi-instance deployment one instance carries the
 worker). Each instance with the approval on and its worker off says so once at start (Warning). The gauge
 `ITEM_ACTIVATION_UNPROCESSED` (flow tag on the recovery gauges) counts approvals the worker should be carrying with no real
-move (a checkpoint write — a claim alone is not progress) for `ItemActivationGauge:UnprocessedAfterMinutes` (default 60,
-20–1440, and above 15 minutes + the worker's poll interval + lease — checked at start, an invalid value stops the start).
+move (a checkpoint write — a claim alone is not progress) for `ItemActivationGauge:UnprocessedAfterMinutes` (default 90,
+20–1440, and above the longest planned wait — the 1-hour configuration retry — + the worker's poll interval + lease;
+checked at start, an invalid value stops the start).
 An open approval is asked again at half its age, from the retry delay up to every 15 minutes (never counted toward the
-retry limit). `ITEM_ACTIVATION_OLDEST_OPEN_APPROVAL_SECONDS` is the age of the oldest approval still waiting for its
-decision (a number, no tenant).
+retry limit). `mdm.product_identity.recovery.oldest_open_approval_age` (unit `s`) is the age of the oldest approval still waiting
+for its decision (a number, no tenant).
 
 **The activation gate** (contract draft.11 "Etkinleştirme kuralı", R-04): at the submit and again when the approval is
 applied, the item needs `lotControlled` filled, a base unit, at least one storage condition unless it is packaging (O-25),
@@ -695,8 +698,13 @@ applied (production runs with background jobs off — decide it with the owner).
     `mdm.product-identity.lifecycle-operations.recover`): a consumed code is burned (never reused); a reserved-but-never-
     consumed code is counted, not burned. `minimumAgeMinutes` is 15–525600 (the gauge's own age is the floor: a younger
     code may still be consumed by its create's repeat); outside → 400 `ITEM_ORPHAN_CODE_REPAIR_INVALID`.
-  - `flow=ITEM_ACTIVATION_UNPROCESSED` `…manual_reconciliation` — approvals the worker should be carrying that nobody has
-    touched for `ItemActivationGauge:UnprocessedAfterMinutes` (default 60): the approval is on and no worker runs it.
+  - `flow=ITEM_ACTIVATION_UNPROCESSED` `…manual_reconciliation` — approvals the worker should be carrying with no real move
+    for `ItemActivationGauge:UnprocessedAfterMinutes` (default 90; above the 1-hour configuration retry + poll + lease,
+    checked at start): the approval is on and no worker runs it.
+  - `mdm.product_identity.recovery.oldest_open_approval_age` (`flow=ITEM_ACTIVATION`, unit `s`) — the age of the oldest
+    approval still waiting for its decision (0: none). Its own gauge, never on `manual_reconciliation`; a failed read sets
+    `count_failed` for `flow=ITEM_ACTIVATION_OLDEST_OPEN_APPROVAL_SECONDS`. Alert on an age past what the QA Manager seat
+    should take (e.g. several days).
   - `…count_failed` = 1 for a flow: its last count failed, the numbers above are stale.
 - Newly stuck operations are logged once (Error) by the recovery cycle: `ITEM_ACTIVATION operation … is stuck (…)`.
 

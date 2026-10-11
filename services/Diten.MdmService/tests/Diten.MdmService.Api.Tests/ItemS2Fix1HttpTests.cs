@@ -133,7 +133,8 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
     {
         var id = await PendingAsync("Colloidal silica");
         var after = new ItemActivationGaugeOptions().UnprocessedAfter;
-        Assert.Equal(TimeSpan.FromMinutes(60), after);
+        // S2 FIX3 item 2: the default covers the 1-hour configuration retry.
+        Assert.Equal(TimeSpan.FromMinutes(90), after);
 
         using (host.Clock.Shift(after + TimeSpan.FromMinutes(1)))
         {
@@ -553,15 +554,18 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
     public void Fix2_Item2_The_unprocessed_threshold_is_validated_against_the_worker_at_start()
     {
         var worker = new ItemActivationWorkflowWorkerOptions { PollIntervalSeconds = 3600, LeaseSeconds = 10 };
-        Assert.False(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 60 }.IsValid(worker));
-        Assert.True(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 90 }.IsValid(worker));
+        Assert.False(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 120 }.IsValid(worker));
+        Assert.True(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 150 }.IsValid(worker));
+        // S2 FIX3 item 2: with the default worker, the threshold must cover the 1-hour configuration retry.
+        Assert.False(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 60 }.IsValid(new()));
+        Assert.True(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 90 }.IsValid(new()));
         Assert.False(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 19 }.IsValid(new()));
         Assert.False(new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 1441 }.IsValid(new()));
 
         // The host's own start validation holds the same rule (a bad value would stop the start).
         var validators = host.Factory.Services.GetServices<IValidateOptions<ItemActivationGaugeOptions>>().ToList();
         Assert.Contains(validators, validator =>
-            validator.Validate(Options.DefaultName, new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 60 }).Failed);
+            validator.Validate(Options.DefaultName, new ItemActivationGaugeOptions { UnprocessedAfterMinutes = 120 }).Failed);
     }
 
     // Item 2: a worker that claims and drops (crashes) every cycle is not progress — the operation is still counted.
@@ -596,7 +600,10 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
 
         var now = host.Clock.GetUtcNow();
         Assert.Equal(await discovery.CountUnprocessedAsync((now - after).UtcTicks), metrics.Current(ItemActivationGauge.UnprocessedFlow));
-        Assert.True(metrics.Current(ItemActivationGauge.OldestOpenApprovalFlow) >= (now.UtcTicks - started) / TimeSpan.TicksPerSecond - 1);
+        // S2 FIX3 item 3: on its own gauge (seconds), never on the stuck-operations series.
+        Assert.True(metrics.OldestOpenApproval(ItemActivationWorkflowRecoveryRunner.Flow)
+            >= (now.UtcTicks - started) / TimeSpan.TicksPerSecond - 1);
+        Assert.Null(metrics.Current(ItemActivationGauge.OldestOpenApprovalFlow));
     }
 
     // M1 (CT decision: least privilege): the maker's HTTP repeat reads the lists with the USER's token — the service
@@ -723,6 +730,153 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
         Assert.Equal(4, body.GetProperty("actorType").GetInt32());
         Assert.Equal(JsonValueKind.Null, body.GetProperty("actorId").ValueKind);
         Assert.Equal(JsonValueKind.Null, body.GetProperty("actorEmail").ValueKind);
+    }
+
+    // ================================================================================== S2 FIX3 (P-2026-10-11-MDM-S2-LANE-MERGE-01 A)
+
+    // Item 1: the maker's OWN token refused on their repeat is not MDM's configuration — the maker is answered 503, the
+    // operation stays on its ordinary retry (never parked for the hour, never blamed on the service identity).
+    [Fact]
+    public async Task Fix3_Item1_The_makers_own_token_refused_is_503_and_the_operation_is_not_parked()
+    {
+        var id = await PendingAsync("Sodium benzoate");
+        host.ItemReferences.Outage = true;
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        Assert.Equal(ItemWorkflowCheckpoint.DecisionObserved, (await OperationAsync(id)).Checkpoint);
+        host.ItemReferences.Outage = false;
+        host.ItemReferences.RefuseStatus = 401;
+
+        using (host.Clock.Shift(TimeSpan.FromMinutes(1)))
+        {
+            var replay = await PostAsync(id, "submit", Lifecycle(0));
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, replay.StatusCode);
+            var operation = await OperationAsync(id);
+            Assert.Equal(ItemWorkflowCheckpoint.DecisionObserved, operation.Checkpoint);
+            Assert.Equal(ItemReferenceEvidence.ProviderUnavailable, operation.LastFailureCode);
+            Assert.True(operation.NextAttemptAtUtcTicksV1!.Value - host.Clock.GetUtcNow().UtcTicks < TimeSpan.FromMinutes(5).Ticks);
+        }
+        Assert.Equal(ItemLifecycleStatus.PendingActivation, (await ItemAsync(id)).LifecycleStatus);
+    }
+
+    // Item 3: the gauge is the OLDEST open approval's age, in seconds. (The fake engine stamps its start with the real
+    // clock, so the old one's start is set back five days — every other open approval in this host is younger.)
+    [Fact]
+    public async Task Fix3_Item3_The_oldest_open_approvals_age_is_the_oldest_in_seconds()
+    {
+        var oldId = await PendingAsync("Benzalkonium chloride");
+        var old = await OperationAsync(oldId);
+        var fiveDaysAgo = host.Clock.GetUtcNow().AddDays(-5).UtcTicks;
+        await RawOperations().UpdateOneAsync(x => x.Id == old.Id,
+            Builders<ItemWorkflowOperation>.Update.Set(x => x.WorkflowStartedAtUtcTicksV1, fiveDaysAgo));
+        await PendingAsync("Chlorhexidine");
+        var metrics = host.Factory.Services.GetRequiredService<Diten.MdmService.Api.Services.ProductItemSkuMaster.ProductIdentityRecoveryMetrics>();
+
+        await host.RunAsync<ItemActivationGauge>(gauge => gauge.RecordAsync(CancellationToken.None));
+
+        var age = metrics.OldestOpenApproval(ItemActivationWorkflowRecoveryRunner.Flow);
+        Assert.InRange(age!.Value, (long)TimeSpan.FromDays(5).TotalSeconds - 60, (long)TimeSpan.FromDays(5).TotalSeconds + 600);
+    }
+
+    // Minor: a configured retry delay above the ceiling is honoured; the configuration wait counts as stuck.
+    [Fact]
+    public void Fix3_Minor_A_long_retry_delay_is_honoured_and_a_configuration_wait_is_stuck()
+    {
+        Assert.Equal(TimeSpan.FromMinutes(20),
+            ItemActivationWorkflowProcessor.DecisionPollDelay(new ItemWorkflowOperation(), DateTimeOffset.UtcNow, TimeSpan.FromMinutes(20)));
+        Assert.True(ItemActivationWorkflowRecoveryRunner.IsStuck(new ItemWorkflowOperation
+        {
+            Checkpoint = ItemWorkflowCheckpoint.DecisionObserved,
+            RecoveryDisposition = ProductIdentityWorkflowRecoveryDisposition.Retryable,
+            LastFailureCode = ItemReferenceEvidence.ProviderConfigurationError
+        }));
+    }
+
+    // Minor: the fault streak decays — one quiet ask keeps it, the second in a row resets it.
+    [Fact]
+    public async Task Fix3_Minor_Two_quiet_asks_in_a_row_reset_the_fault_streak()
+    {
+        var id = await PendingAsync("Propylparaben");
+        var before = await OperationAsync(id);
+        await RawOperations().UpdateOneAsync(x => x.Id == before.Id, Builders<ItemWorkflowOperation>.Update
+            .Set(x => x.FailedAttemptCount, 3).Set(x => x.LastFailureCode, "FAKE_EARLIER_FAULT"));
+
+        using (host.Clock.Shift(TimeSpan.FromMinutes(1))) await CycleAsync();
+        Assert.Equal(3, (await OperationAsync(id)).FailedAttemptCount);
+        using (host.Clock.Shift(TimeSpan.FromHours(1))) await CycleAsync();
+        Assert.Equal(0, (await OperationAsync(id)).FailedAttemptCount);
+    }
+
+    // Minor (the M3 rule in the store): the decision's replay after the item was deactivated is still recognised.
+    [Fact]
+    public async Task Fix3_Minor_A_replay_after_a_deactivation_is_still_this_decision()
+    {
+        var id = await PendingAsync("Methylparaben");
+        host.Engine.Approve(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+        Assert.True((await PostAsync(id, "deactivate", Lifecycle(2, "withdrawn from use"))).IsSuccessStatusCode);
+        var item = await ItemAsync(id);
+        var operation = await OperationAsync(id);
+        var written = item.ActivationWorkflowBinding!.TerminalDecision!;
+        var store = new ItemWorkflowOperationRepository(host.Database, new Tenant(_tenant));
+        var claim = new ItemWorkflowClaim(_tenant, operation.OperationId, id, operation.OperationFingerprint, "store-test", 1,
+            ItemWorkflowCheckpoint.ApprovalValidated, host.Clock.GetUtcNow().AddMinutes(1).UtcTicks);
+
+        var replay = await store.ApplyDecisionAsync(claim, operation, written, host.Clock.GetUtcNow().UtcTicks);
+
+        Assert.True(replay.Succeeded);
+        Assert.True(replay.IsReplay);
+    }
+
+    // Minor (M3's other branch): a rejection, then the maker's new submit inside the audit window — the rejected
+    // operation still completes (the item has moved on to a later approval).
+    [Fact]
+    public async Task Fix3_Minor_A_new_submit_right_after_a_rejection_still_completes_the_rejected_operation()
+    {
+        var id = await PendingAsync("Butylated hydroxytoluene");
+        var rejected = await OperationAsync(id);
+        host.AfterDecisionWrite = async (_, written) =>
+        {
+            host.AfterDecisionWrite = null;
+            var resubmit = await PostAsync(id, "submit", Lifecycle(2));
+            Assert.True(resubmit.IsSuccessStatusCode, await resubmit.Content.ReadAsStringAsync());
+            return written;
+        };
+
+        host.Engine.Reject(host.Engine.Open("Item", id.ToString("D")), _approver);
+        await CycleAsync();
+
+        var first = await RawOperations().Find(x => x.Id == rejected.Id).SingleAsync();
+        Assert.Equal(ItemWorkflowCheckpoint.Completed, first.Checkpoint);
+        Assert.Equal(ItemLifecycleStatus.PendingActivation, (await ItemAsync(id)).LifecycleStatus);
+    }
+
+    // Minor: the withdrawal skips a scheduled ask, never a lease held elsewhere.
+    [Fact]
+    public async Task Fix3_Minor_A_withdrawal_never_takes_a_lease_held_elsewhere()
+    {
+        var id = await PendingAsync("Sodium metabisulfite");
+        var operation = await OperationAsync(id);
+        var store = new ItemWorkflowOperationRepository(host.Database, new Tenant(_tenant));
+        var now = host.Clock.GetUtcNow();
+        Assert.NotNull(await store.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+            [operation.Checkpoint], "another-worker", now.UtcTicks, now.AddMinutes(2).UtcTicks)));
+
+        var withdrawn = await PostAsync(id, "withdraw", Lifecycle(1));
+
+        Assert.Equal(HttpStatusCode.Conflict, withdrawn.StatusCode);
+        Assert.Equal("another-worker", (await OperationAsync(id)).LeaseOwner);
+    }
+
+    // Minor (survivor): the worker's service identity is checked at start on an instance that runs the worker.
+    [Fact]
+    public void Fix3_Minor_The_service_identity_configuration_is_checked_at_start()
+    {
+        var validators = host.Factory.Services.GetServices<IValidateOptions<
+            Diten.MdmService.Infrastructure.ReferenceData.AuthWorkflowVerifiedMarketServiceIdentityProviderOptions>>().ToList();
+
+        Assert.Contains(validators, validator => validator.Validate(Options.DefaultName,
+            new Diten.MdmService.Infrastructure.ReferenceData.AuthWorkflowVerifiedMarketServiceIdentityProviderOptions()).Failed);
     }
 
     // ------------------------------------------------------------------------------------------ helpers

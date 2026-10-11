@@ -80,6 +80,10 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
     // FIX3 M4: 1 while the last count of a flow FAILED (a gauge that silently stops is no gauge) — alert on it.
     public const string CountFailedGauge = "mdm.product_identity.recovery.count_failed";
     private readonly ConcurrentDictionary<string, long> _countFailed = new(StringComparer.Ordinal);
+    // S2 FIX3 item 3: an AGE (seconds), never on the "stuck operations" series — a filterless alert on
+    // manual_reconciliation > 0 must not ring for a waiting approval.
+    public const string OldestOpenApprovalGauge = "mdm.product_identity.recovery.oldest_open_approval_age";
+    private readonly ConcurrentDictionary<string, long> _oldestOpenSeconds = new(StringComparer.Ordinal);
 
     public ProductIdentityRecoveryMetrics()
     {
@@ -95,7 +99,15 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
             () => _countFailed.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
             unit: "{flow}",
             description: "1 while the last count of a flow failed (its other gauges are stale), per flow.");
+        _meter.CreateObservableGauge(OldestOpenApprovalGauge,
+            () => _oldestOpenSeconds.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "s",
+            description: "Age of the oldest approval still waiting for its decision, per flow (0: none open).");
     }
+
+    public void RecordOldestOpenApproval(string flow, long seconds) => _oldestOpenSeconds[flow] = seconds;
+
+    public long? OldestOpenApproval(string flow) => _oldestOpenSeconds.TryGetValue(flow, out var value) ? value : null;
 
     public void RecordCountFailed(string flow, bool failed) => _countFailed[flow] = failed ? 1 : 0;
 
