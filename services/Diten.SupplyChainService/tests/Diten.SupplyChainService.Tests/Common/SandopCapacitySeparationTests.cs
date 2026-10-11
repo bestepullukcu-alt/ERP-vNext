@@ -76,6 +76,45 @@ public sealed class SandopCapacitySeparationTests
         Assert.DoesNotContain(capacity, n => n.StartsWith("sandop", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// The other half of :202 — "and runs against frozen mocks". The separation tests above say nothing about
+    /// it, so this one does: neither module reaches a live producer, and every fixture reader they depend on
+    /// answers from memory. Measured 2026-10-12: zero HttpClient in either feature tree, and none of the three
+    /// readers touches HttpClient, MongoClient or GetCollection.
+    /// </summary>
+    [Theory]
+    [InlineData(Sandop)]
+    [InlineData(Capacity)]
+    public void Neither_module_reaches_a_live_producer(string feature)
+    {
+        var offenders = FeatureFiles(feature)
+            .Where(f => Regex.IsMatch(File.ReadAllText(f), @"\b(HttpClient|IHttpClientFactory)\b"))
+            .Select(Path.GetFileName)
+            .ToArray();
+        Assert.True(offenders.Length == 0,
+            feature + " must read demand and constraints from a fixture reader, not a live client: " + string.Join(", ", offenders));
+    }
+
+    [Fact]
+    public void Every_fixture_reader_answers_from_memory()
+    {
+        var readers = FeatureFiles(Sandop).Concat(FeatureFiles(Capacity))
+            .Where(f => Regex.IsMatch(File.ReadAllText(f), @"class\s+\w*FixtureReader\b"))
+            .ToArray();
+        Assert.Equal(3, readers.Length);
+        foreach (var reader in readers)
+        {
+            var body = File.ReadAllText(reader);
+            foreach (var marker in new[] { "HttpClient", "MongoClient", "GetCollection" })
+                Assert.False(body.Contains(marker, StringComparison.Ordinal),
+                    Path.GetFileName(reader) + " is not a frozen mock: it names " + marker);
+        }
+    }
+
+    private static IEnumerable<string> FeatureFiles(string feature) => Directory.EnumerateFiles(
+            Path.Combine(RepositoryRoot(), "services", "Diten.SupplyChainService", "src"), "*.cs", SearchOption.AllDirectories)
+        .Where(f => f.Contains(Path.Combine("Features", feature), StringComparison.Ordinal));
+
     private static HashSet<string> CollectionNames(string feature)
     {
         var root = RepositoryRoot();
