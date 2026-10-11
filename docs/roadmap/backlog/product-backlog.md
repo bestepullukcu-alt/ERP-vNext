@@ -8398,6 +8398,44 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-612
+
+**Enterprise Strategy izin denetimi varsayılanda AÇIK başarısız: iki ortam değişkeni tanımsızsa her izin, kimlik denetiminden önce, kimliksiz kullanıcıya veriliyor (güvenlik)**
+
+DURUM: AÇIK · SAHİP: Enterprise Strategy ekibi (XMC-001) + sahip (canlı ölçüm) · BULAN: BL-604 B sınıfı notları (Roller sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🔴
+
+Ölçüm (kaynak `61b860012`):
+- `EnterpriseStrategyPlatform.cs:218-255`: `DITEN_ESBP_ENFORCE_PERMISSIONS` ve `DITEN_ESBP_DEV_PERMISSION_BOOTSTRAP` ikisi de tanımsızsa geliştirme izin önyüklemesi AÇIK.
+- ES testlerindeki 3 RBAC kırmızısı bunun sonucu (yetkisiz istek reddedilmiyor).
+- Hafıza notu: ES'de genel olarak kimlik doğrulama / TenantId yok.
+
+Yapılacak:
+- sahip: canlı ES ortam değişkenlerini ölçer (kontrol listesi `is-es-canli-izin`);
+- ES ekibi: varsayılan kapalı başarısız (değişken yoksa izin yok), RBAC testleri yeşil;
+- ekip mesajı sahip üzerinden (`ekiplere-ci-test-mesaji.md`).
+
+Gelecek regresyon riski: 🔴 canlıda değişken unutulursa ES uçları herkese açık.
+
+---
+
+### BL-611
+
+**Auth: `OperationalSingleInstanceLockTests.An_abandoned_lock_is_taken_over_by_the_next_run_by_name` tam süitte ara sıra kırmızı**
+
+DURUM: AÇIK · SAHİP: CT (Auth, BL-570 hattı) · BULAN: hat doğrulaması BL-521 sonrası (2026-10-11) · KAYIT: 2026-10-11
+
+Ölçüm:
+- Hat `404685da0`'da tam Auth App 2591 / 2592: tek kırmızı bu test (mesaj günlüğe düşmedi). Aynı sınıf tek başına 6 / 6 yeşil.
+- Test, sahibi iş parçacığı bitince adlı mutex'in "terk edildi" işaretine dayanıyor. Olası sebep: yük altında GC / sonlandırıcı tutamağı iş parçacığı bitmeden kapatıyor ve terk işareti oluşmuyor.
+
+Yapılacak:
+- mutex nesnesini iş parçacığı bitene kadar canlı tut (`GC.KeepAlive`) ya da terk durumunu belirlenimci kur;
+- başarısızlık mesajı iddia metnine (hangi iddia kızardı).
+
+Gelecek regresyon riski: 🟡 CI'da (auth-app) ara sıra kırmızı.
+
+---
+
 ### BL-610
 
 **Modal pencerelerde Enter yerel form gönderimi yapıyor: ortak klavye katmanı (UXH-001) yalnız yan panelleri kapsıyor**
@@ -8724,6 +8762,8 @@ Ek ölçüm (2026-10-10, BL-598 + BL-604):
 - MDM Application Mongo testleri (`ProductScopeMongoScope` ve kardeşleri) varsayılan olarak ORTAK `localhost:27017` + `*_itest` veritabanlarını kullanıyor. 79 test veritabanının kaynağı bu; her yerel MDM App koşusu ortak dev Mongo'ya yazıyor.
 - HCM `EmployeeDraftSessionRepositoryMongoTests` de ortak 27017'ye bağlanıyor (BL-604).
 - Yapılacak: Auth deseni (`DITEN_TEST_MONGOD` → teste ait mongod; değişken verilmiş ama geçersizse kırmızı); CI'da mdm-app satırı aynı yolu kullanır. MDM için CT işi; HCM için sahibine (XMC-001).
+
+- Platform: uykudan uyanınca 8 Platform testi `localhost:27017` zaman aşımına düştü (2026-10-11) → Platform test sınıflarının bir kısmı da ortak Mongo kullanıyor; iş Roller sohbetinde (`platform-owned-mongo`).
 
 Gelecek regresyon riski: 🟡 bir sonraki boş URI ortak dev verisine yazabilir.
 
