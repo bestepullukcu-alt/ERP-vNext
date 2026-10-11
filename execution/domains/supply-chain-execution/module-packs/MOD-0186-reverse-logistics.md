@@ -118,11 +118,11 @@ Use frozen `SHIPMENT-BUNDLE` `/returns**`; route publication is a separate integ
 
 ## 16. Acceptance Criteria
 
-- [ ] Runtime remains absent while `draft`.
-- [ ] Future code consumes MOD-0183/INVENTORY strictly by frozen contract/mock.
-- [ ] Return quantity invariants and lifecycle are atomic and deterministic.
-- [ ] No stock collection, projection or movement SoR exists in MOD-0186.
-- [ ] Correlation ID remains unchanged through reverse lifecycle events.
+- [x] Runtime remains absent while `draft`. — SUPERSEDED, wording kept so the transition stays visible: the pack's status is `ready-for-dev` and the Returns runtime merged to main in PR #134 (`a814bad0f`).
+- [x] Future code consumes MOD-0183/INVENTORY strictly by frozen contract/mock. — measured 2026-10-11: `ReturnReferenceReader` reads the shipment over HTTP through `api/shipment-bundle/shipments/{id}` and validates the frozen wire shape; inventory is never read at all — `inventoryReferenceId` is only validated as an opaque string, and the one `IInventoryReadClient` lives in the uncomposed SourceIntake and is not registered.
+- [x] Return quantity invariants and lifecycle are atomic and deterministic. — measured 2026-10-11: a return for more than the shipped quantity answers 422 `RETURN_QUANTITY_EXCEEDED`; a negative quantity answers 422 `INVALID_RETURN_QUANTITY` (422 is declared for this operation); a valid return returns 201. Rejections wrote nothing.
+- [x] No stock collection, projection or movement SoR exists in MOD-0186. — measured 2026-10-11: the module's only collections are `returns`, `returns_audit`, `returns_outbox`, `returns_receipts`. No stock, inventory, balance or movement collection exists, and no such class exists in the source.
+- [x] Correlation ID remains unchanged through reverse lifecycle events. — measured 2026-10-11: one correlation found across `returns_outbox` (`Envelope.correlationId`) and `returns_audit` (`CorrelationRoot`), unchanged from the command.
 
 ## 17. Test Expectations
 
@@ -134,8 +134,8 @@ outbox and explicit no-shadow-balance architecture tests.
 - [x] Canonical ID/name passed DCP-002.
 - [x] MOD-0183 and INVENTORY consumption boundaries are explicit.
 - [x] Frozen contract defines reverse lifecycle and mock examples; receiving semantics are not thereby complete.
-- [ ] MOD-0183 dependency has executable verified evidence.
-- [ ] Owner approval changed status from `draft`.
+- [x] MOD-0183 dependency has executable verified evidence. — measured 2026-10-11: the Shipment runtime is live and Returns resolves a real shipment through the frozen contract; the full chain shipment -> load -> POD -> return ran end to end (docs/records/audits/2026-10/mvp6-g5-logistics-golden-flow-01/).
+- [x] Owner approval changed status from `draft`. — the pack's `status` is `ready-for-dev`; the runtime was dispatched and merged in PR #134.
 
 ## 19. Implementation Notes
 

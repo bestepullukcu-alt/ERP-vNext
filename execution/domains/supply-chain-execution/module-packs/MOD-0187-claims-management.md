@@ -118,12 +118,12 @@ Use frozen `SHIPMENT-BUNDLE` `/claims**`; only a separate integration-agent WP m
 
 ## 16. Acceptance Criteria
 
-- [ ] No runtime implementation exists while status is `draft`.
-- [ ] Future payloads, responses, errors and events match frozen v1.
-- [ ] Shipment/POD is consumed through MOD-0183 contract/reference only.
-- [ ] Amount precision and lifecycle transitions are deterministic and atomic.
-- [ ] Settled status does not create a payment/AP/AR record.
-- [ ] Correlation ID remains unchanged through all claim events.
+- [x] No runtime implementation exists while status is `draft`. — SUPERSEDED, wording kept so the transition stays visible: the pack's status is `ready-for-dev` and the Claims runtime merged to main in PR #134 (`a814bad0f`).
+- [ ] Future payloads, responses, errors and events match frozen v1. — PARTIAL, so left open: `createClaim` and `queryClaims` were validated live against `SHIPMENT-BUNDLE` 3.2.1 with zero schema violations (docs/records/audits/2026-10/mvp6-g5-logistics-golden-flow-01/), but "all payloads, responses, errors and events" was not exhaustively checked. Same reason MOD-0184:119 and MOD-0185:125 stay open.
+- [x] Shipment/POD is consumed through MOD-0183 contract/reference only. — measured 2026-10-11: `ClaimReferenceReader` reads the shipment and the carrier list over HTTP through `api/shipment-bundle/...` and validates the frozen wire shape; there is no shared type, collection or project reference.
+- [x] Amount precision and lifecycle transitions are deterministic and atomic. — measured 2026-10-11: `0.00` and `-5.00` answer 422 `CLAIM_AMOUNT_INVALID`; the contract's `Decimal` places no limit on decimal places and `10.005` is accepted, parsed by `ExactClaimAmount` with no floating point. Lifecycle: Open->Approved 422 `INVALID_CLAIM_TRANSITION`, Open->Investigating 200, an approved amount above the claimed amount 422 `CLAIM_APPROVAL_AMOUNT_INVALID`, Investigating->Approved 200.
+- [x] Settled status does not create a payment/AP/AR record. — measured 2026-10-11: after Approved->Settled returned 200, the database has no payment, invoice, AP, AR, ledger or settlement collection, and the source declares no such type anywhere in the service.
+- [x] Correlation ID remains unchanged through all claim events. — measured 2026-10-11: one correlation found in ten claim records across `claims_outbox` (`Envelope.correlationId`) and `claims_audit` (`CorrelationRoot`), spanning create and every transition.
 
 ## 17. Test Expectations
 
@@ -135,8 +135,8 @@ RBAC, evidence reference, atomic outbox and no-finance-SoR architecture tests.
 - [x] Canonical ID/name passed DCP-002.
 - [x] MOD-0183 dependency and frozen contract authority are explicit.
 - [x] Backend-only slice and ownership boundaries are bounded.
-- [ ] MOD-0183 executable verification is available.
-- [ ] Owner approval changed status from `draft`.
+- [x] MOD-0183 executable verification is available. — measured 2026-10-11: the Shipment runtime is live, Claims resolves a real shipment and a real carrier through the frozen contract, and the chain shipment -> load -> POD -> claim ran end to end (docs/records/audits/2026-10/mvp6-g5-logistics-golden-flow-01/).
+- [x] Owner approval changed status from `draft`. — the pack's `status` is `ready-for-dev`; the runtime was dispatched and merged in PR #134.
 
 ## 19. Implementation Notes
 

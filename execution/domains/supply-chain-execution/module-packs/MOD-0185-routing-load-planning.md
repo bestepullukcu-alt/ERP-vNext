@@ -120,11 +120,11 @@ Use the `SHIPMENT-BUNDLE` `/loads**` surface. Gateway changes belong only to a l
 
 ## 16. Acceptance Criteria
 
-- [ ] No runtime code exists while this pack is `draft`.
-- [ ] Future implementation consumes verified MOD-0184 and MOD-0183 seams by contract.
-- [ ] Load commands/responses/events match frozen v1 examples and schemas.
-- [ ] Invalid transitions and duplicate assignment are atomic failures.
-- [ ] Correlation UUID is preserved from command through all load events.
+- [x] No runtime code exists while this pack is `draft`. — SUPERSEDED, wording kept so the transition stays visible: the pack's status is `ready-for-dev` and the Load runtime merged to main in PR #134 (`a814bad0f`).
+- [x] Future implementation consumes verified MOD-0184 and MOD-0183 seams by contract. — measured 2026-10-11: `LoadReferenceReader` reads both seams over HTTP (`api/shipment-bundle/carriers`, `api/shipment-bundle/shipments`) and validates the frozen wire shape; Loads persistence shares no Carrier domain type. A live load create against a real carrier and a real shipment returned 201.
+- [ ] Load commands/responses/events match frozen v1 examples and schemas. — PARTIAL, so left open: `createLoad` and `queryLoads` were validated live against `SHIPMENT-BUNDLE` 3.2.1 with zero schema violations (docs/records/audits/2026-10/mvp6-g5-logistics-golden-flow-01/), but "all examples and schemas" was not exhaustively checked. Same reason MOD-0184:119 stays open.
+- [x] Invalid transitions and duplicate assignment are atomic failures. — measured 2026-10-11: a load moved to `Cancelled` then offered `Planned` answers 422 `INVALID_LOAD_TRANSITION`; a second load naming a shipment already assigned answers 409 `SHIPMENT_ALREADY_ASSIGNED` (enforced by the Loads `assignments` collection, `LoadRepository.cs:54`); the rejected create wrote nothing — `loads` count unchanged before and after.
+- [x] Correlation UUID is preserved from command through all load events. — measured 2026-10-11: one correlation found across `loads_outbox` (`Envelope.correlationId`), `loads_audit` and `loads_receipts` (`CorrelationRoot`).
 
 ## 17. Test Expectations
 
@@ -136,8 +136,8 @@ outbox atomicity and dependency contract tests with MOD-0184/MOD-0183 mocks.
 - [x] Canonical ID/name passed DCP-002.
 - [x] Frozen contract and MOD-0184/MOD-0183 dependency edges are explicit.
 - [x] Backend-only slice and paths are bounded.
-- [ ] MOD-0184 executable dependency gate is satisfied.
-- [ ] Owner changed this draft to `ready-for-dev`.
+- [x] MOD-0184 executable dependency gate is satisfied. — measured 2026-10-11: Carrier runtime is merged and live; Loads resolves a real carrier over the frozen contract and a load create against it returned 201.
+- [x] Owner changed this draft to `ready-for-dev`. — the pack's `status` is `ready-for-dev`; the runtime was dispatched and merged in PR #134.
 
 ## 19. Implementation Notes
 
