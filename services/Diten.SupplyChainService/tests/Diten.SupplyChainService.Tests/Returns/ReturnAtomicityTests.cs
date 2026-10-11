@@ -25,9 +25,9 @@ public sealed class ReturnAtomicityTests
  [Fact] public async Task UnknownCommit_Unresolved503_AllOrNoneThenSameKeyRecovery()
  {
   var f=await ReturnTestFixture.New();var admin=f.Db.Client.GetDatabase("admin");
-  await admin.RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode",new BsonDocument("times",5)},{"data",new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"appName",f.AppName},{"errorCode",8},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}}}});
+  var armed=(await admin.RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode",new BsonDocument("times",5)},{"data",new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"appName",f.AppName},{"errorCode",8},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}}}})).GetValue("count",0).ToInt32();
   ReturnMutationResult result;
-  try{result=await f.Create();}finally{await admin.RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode","off"}});}
+  try{result=await f.Create();}finally{var off=await admin.RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode","off"}});var hits=off.GetValue("count",0).ToInt32()-armed;Console.WriteLine($"Returns commit fail point fired {hits} time(s)");Assert.Equal(3,hits);}
   Assert.Equal(503,result.StatusCode);var counts=await f.Counts();Assert.True(counts.All(x=>x==0)||counts.All(x=>x==1));
   var deadline=DateTimeOffset.UtcNow.AddSeconds(90);ReturnMutationResult recovered;
   do{recovered=await f.Create();Console.WriteLine("Unknown commit same-key recovery status="+recovered.StatusCode);if(recovered.StatusCode==201)break;Assert.Equal(503,recovered.StatusCode);await Task.Delay(1000);}while(DateTimeOffset.UtcNow<deadline);

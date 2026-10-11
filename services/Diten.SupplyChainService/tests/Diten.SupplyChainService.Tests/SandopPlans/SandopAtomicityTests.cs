@@ -36,7 +36,7 @@ public sealed class SandopAtomicityTests
  var configured=await Configure(db,data);BsonDocument disabled;SandopResult failed;
  try{failed=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);}
  finally{disabled=await Disable(db);}
- Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());Assert.Equal(503,failed.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",failed.Code);
+ var hits=disabled["count"].ToInt32()-configured["count"].ToInt32();Console.WriteLine($"Sandop fail point fired {hits} time(s)");Assert.Equal(1,hits);Assert.Equal(503,failed.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",failed.Code);
  Assert.Equal(before,await Counts(db,s));
  var retried=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);Assert.Equal(201,retried.Status);
  Assert.Equal(new long[]{1,0,1,1,1},await Counts(db,s));
@@ -56,7 +56,7 @@ public sealed class SandopAtomicityTests
  var configured=await Configure(db,data,3);BsonDocument disabled;SandopResult uncertain;
  try{uncertain=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);}
  finally{disabled=await Disable(db);}
- Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());Assert.Equal(503,uncertain.Status);Assert.Equal("COMMIT_RESULT_UNRESOLVED",uncertain.Code);
+ var hits=disabled["count"].ToInt32()-configured["count"].ToInt32();Console.WriteLine($"Sandop fail point fired {hits} time(s)");Assert.Equal(1,hits);Assert.Equal(503,uncertain.Status);Assert.Equal("COMMIT_RESULT_UNRESOLVED",uncertain.Code);
  // A failed commit can leave an inactive server transaction. Resolve the isolated test session before retrying.
  await db.Client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("killAllSessions",new BsonArray()));
  var recoveredDb=FreshDatabase();
@@ -73,7 +73,7 @@ public sealed class SandopAtomicityTests
  var configured=await Configure(db,data);BsonDocument disabled;SandopResult resolved;
  try{resolved=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body,originalCorrelation);}
  finally{disabled=await Disable(db);}
- Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());
+ var hits=disabled["count"].ToInt32()-configured["count"].ToInt32();Console.WriteLine($"Sandop fail point fired {hits} time(s)");Assert.Equal(1,hits);
  Assert.True(resolved.Status is 201 or 503,$"Expected visible receipt replay or unresolved commit, got {resolved.Status} {resolved.Code}");
  if(resolved.Status==503)Assert.Equal("COMMIT_RESULT_UNRESOLVED",resolved.Code);
  var recoveredDb=FreshDatabase();
