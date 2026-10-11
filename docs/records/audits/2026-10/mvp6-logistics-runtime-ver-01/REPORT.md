@@ -53,8 +53,15 @@ CT first recorded that the fix for it was reverted in `e9b0f3b19`. **That was wr
 (`63c7c42da`, pushed) — moved out of PR #134 on scope grounds, not rejected. Reinstating it would not change
 this 503. SupplyChain's own mapping is not obviously wrong either: `MdmLegalEntityScopeValidator.cs:55-58`
 reasons that 403 is the caller's authorization problem and that `NotReferenceable` would report a permission
-gap as a missing record. The candidate Q470's own text points at is the missing `mdm.legal-entities.read` in
-the SupplyChain default role template. The acceptance line stays open until the owner chooses.
+gap as a missing record. The role-template candidate is wrong too, and the ledger had already said so twice. **Q477**: *"NO
+ROLE-TEMPLATE CHANGE IS NEEDED, THE DEFAULT ROLES ALREADY HOLD `mdm.legal-entities.read`"*. CT re-measured
+rather than quoting: `DefaultRolePermissionTemplate.cs:41` puts `legal-entity` in `AdminModules`, `ClassifyScope`
+returns `Tenant`, so the AdminRole breadth clause grants the whole family, and ViewerRole grants the read as
+well. **A user provisioned from the default template never sees this 503.** The lane produced it with a
+hand-built zero-permission identity that no provisioning path creates. The real exposure is the narrow caveat
+Q477 already recorded: a tenant whose custom roles exclude the legal-entity module would get 503 rather than
+403. What stays open for the acceptance line is only the design question — whether `Forbidden` should surface
+as 503 or as a distinct caller-forbidden outcome.
 
 ## Findings that need an owner or a work package
 
