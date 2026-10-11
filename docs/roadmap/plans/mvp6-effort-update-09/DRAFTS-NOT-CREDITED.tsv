@@ -1,0 +1,10 @@
+draft	module	record	record_sha256	overlay_seal	category	future_credit_potential_omp	credit_trigger	note
+Q64a Claims UI	0187	docs/records/audits/2026-09/mvp6-ct-verdicts-q64a-q77a-q78-2026-09-26.md	356cd273ef994c9ac46767c8767b8d209ecb8602d727b2f477fd6df7b3c805f3	mvp6-claims-ui-draft-01/SHA256SUMS 80da27c9 (45/45)	Frontend	30/50/84	Q64b Mac build+test+runtime (writer complete), then independent UI VER + CT	Forecast view of 0187-4 (08 FC-0187-4)
+Q64a Claims UI	0187	same		same	Backend	3/5/9	same	ClaimsManagement provider + M-01..M-08 = FC-SR-0187
+Q64a Claims UI	0187	same		same	Entegrasyon	part of 8/16/28 (no split)	integration owner applies _shared-integration/ at final integration	Proposals only
+Q77a Loads uptake + F-1	0185	docs/records/audits/2026-09/mvp6-ct-verdicts-q64a-q77a-q78-2026-09-26.md	356cd273ef994c9ac46767c8767b8d209ecb8602d727b2f477fd6df7b3c805f3	mvp6-loads-uptake-draft-01/SHA256SUMS 8c472c27 (19/19)	Backend	3.5/6/11	Q77b Mac build+test+runtime	EST-01 3/5/9 + F-1 0.5/1/2
+Q77a Loads uptake + F-1	0185	same		same	Test/VER	4/7/11	Q77b (writer tests); runtime VER EST-03 4/6/12 is separate	EST-02 3/5/8 + F-1 tests 1/2/3
+Q84 S&OP UI	0190	docs/records/audits/2026-09/mvp6-ct-verdicts-q83-q84-2026-09-26.md	06e054adf27cdc379b72228fa450b0284a3a9bd9ef8e128b2f2b94c4be913cd8	mvp6-sop-ui-draft-01/SHA256SUMS 0aafc340 (55/55)	Frontend	28/44/72	Q84b Mac build+test+runtime	Forecast view of 0190-4 (Q78)
+Q84 S&OP UI	0190	same		same	Entegrasyon	part of 8/14/24 (no split)	integration owner (SR-D4)	Provider + nav keys inside the Q78 integration sub-item
+Q88 Capacity UI	0192	docs/records/audits/2026-09/mvp6-ct-verdict-q88-2026-09-26.md	a320af9baabd8e6105abdf232640d8b87d84e4e07f01058bb18d39c400476a79	mvp6-capacity-ui-draft-01/SHA256SUMS f4e18ab9 (55/55)	Frontend	32/52/88	Q88c revision (IDs in address), then Q88b	Forecast view of 0192-4 (Q78)
+Q88 Capacity UI	0192	same		same	Entegrasyon	part of 8/14/24 (no split)	integration owner (SR-D4)	Provider + nav keys inside the Q78 integration sub-item

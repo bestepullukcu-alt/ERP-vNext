@@ -1,0 +1,8 @@
+# verify from: repository root
+62800b2c86c754d8dab05060b0f79549670f1483a6a6d840e5a8c18e20f4791f  execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+85eb06185409e4156be9a075798d4205f0e976f85cb2d61fb2032cd4a0cc9084  execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+4101b044b953a809607d856b215214f480ded7d4df92484cc72f8c425d9a4acf  execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+6891d8abf3b2d808ae8f527d6274f2732a779106a6cce42f478dc2eacfda575a  execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
+ce0b1eee43d2abca0752563b6a0f60ccd04525ce26896031efa723574aa36639  docs/records/audits/2026-10/mvp6-q403-intent-definition-01/REPORT.md
+494bd503fcbff0aa0f3956a4c792661230446bd62936fa6826e9a2b07dfa6a03  docs/records/audits/2026-10/mvp6-q403-intent-definition-01/evidence/before-after.json
+d78ecee563b4fb461c0204f47b0c4664ba842ec419c40151927aa6f8954af86c  docs/records/audits/2026-10/mvp6-q403-intent-definition-01/evidence/packs.diff

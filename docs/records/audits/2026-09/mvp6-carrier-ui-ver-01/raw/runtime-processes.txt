@@ -1,0 +1,5 @@
+58820 58785 Wed Sep 23 18:28:50 2026     dotnet bin/Debug/net8.0/Diten.Platform.API.dll
+58900 58865 Wed Sep 23 18:29:33 2026     dotnet bin/Debug/net8.0/Diten.AuthService.Api.dll
+58949 58909 Wed Sep 23 18:29:59 2026     dotnet bin/Debug/net8.0/Diten.SupplyChainService.Api.dll
+58993 58958 Wed Sep 23 18:30:15 2026     dotnet bin/Debug/net8.0/Diten.ApiGateway.dll
+59032 58997 Wed Sep 23 18:30:34 2026     dotnet bin/Debug/net8.0/Diten.Web.dll

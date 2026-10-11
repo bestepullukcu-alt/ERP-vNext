@@ -1,0 +1,140 @@
+{
+  "phase": "ui-flows",
+  "startedAt": "2026-09-26T21:17:10.841Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "D-02-single-shell": {
+      "result": "PASS",
+      "dom": {
+        "layoutWrappers": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "menuJs": 1,
+        "htmlInBody": 0
+      },
+      "newJsErrors": 0
+    },
+    "D-01-create-then-reload": {
+      "result": "PASS",
+      "createStatus": 201,
+      "reloadRequestAfterCreate": true,
+      "rowShowsAmount": true,
+      "newJsErrors": 0
+    },
+    "CU-02-filter": {
+      "result": "PASS",
+      "applyRequestSent": true,
+      "queryKeys": [
+        "shipmentId"
+      ],
+      "resetReloaded": true,
+      "resetQuery": "",
+      "newJsErrors": 0
+    },
+    "CU-31-quickview": {
+      "result": "PASS",
+      "adapterCallsDuringQuickView": 0
+    },
+    "CU-08-open-to-investigating": {
+      "result": "PASS",
+      "claimId": "6057b1c3-d4a9-4b8c-b776-2c63c9afa863",
+      "status": 200,
+      "sentBody": "{\"targetStatus\":\"Investigating\",\"occurredAt\":\"2026-09-26T21:17:20+00:00\"}",
+      "approvedFieldVisibleForInvestigating": false,
+      "occurredAtHasOffset": true,
+      "reloadAfter": true,
+      "newJsErrors": 0
+    },
+    "CU-21-stale-transition": {
+      "result": "PASS",
+      "claimId": "37a24741-f3a6-4e9b-b2b0-fa26234ae8bb",
+      "approve": 200,
+      "approvedAmountInResponse": "10.00",
+      "stale": 422,
+      "code": "INVALID_CLAIM_TRANSITION",
+      "supportRefShown": true,
+      "messageSeen": " The claim has changed in the meantime and this status change is no longer possible. The list has been reloaded. Support reference: 106d8f88-f33d-4e01-a8a6-fbef60cc8d8f",
+      "reloadAfter": true
+    }
+  },
+  "png": [
+    {
+      "name": "d02-single-shell-en.png",
+      "sha256": "8d0926f37ca3fe6d9163489d3d1e5bdcf61aa2e9a20094b9d59d54b777f16c72",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:17:12.256Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "d01-create-reload-en.png",
+      "sha256": "ce342e7cf0537844b6a8002452e7d239b7c17d6f0226590bcf65f3cd87f4bec1",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:17:14.698Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu31-quickview-en.png",
+      "sha256": "09f6aee63e2cd778bff14b236839fe43ed204e61e671e8dc4730d77e72148210",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:17:18.214Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu08-transition-investigating-en.png",
+      "sha256": "50bd5e8503a92ee528d20fe43d9fb2431d0ed4bdd69dc0378af06a385dd9b860",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:17:21.388Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu21-stale-transition-422-en.png",
+      "sha256": "b4ae96f9268940f676be4f5e836997479a5f98f40e0f5bcbbf73e3997132c05e",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:17:26.710Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "stale-b",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "create",
+      "text": "Claim created.",
+      "type": "success",
+      "at": "2026-09-26T21:17:13.754Z"
+    },
+    {
+      "tag": "transition",
+      "text": "Claim status updated.",
+      "type": "success",
+      "at": "2026-09-26T21:17:20.832Z"
+    },
+    {
+      "tag": "stale-a",
+      "text": "Claim status updated. Approved amount: 10.00",
+      "type": "success",
+      "at": "2026-09-26T21:17:25.414Z"
+    },
+    {
+      "tag": "stale-b",
+      "text": "The claim has changed in the meantime and this status change is no longer possible. The list has been reloaded. Support reference: 106d8f88-f33d-4e01-a8a6-fbef60cc8d8f",
+      "type": "warning",
+      "at": "2026-09-26T21:17:25.837Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:17:26.741Z"
+}

@@ -1,0 +1,41 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+@@ -1,3 +1,7 @@
++using Diten.SupplyChainService.Api.Features.Returns;
++using Diten.SupplyChainService.Application.Features.Returns;
++using Diten.SupplyChainService.Persistence.Features.Returns;
++using Diten.SupplyChainService.Infrastructure.Features.Returns;
+ using Diten.SupplyChainService.Api.Features.Claims;
+ using Diten.SupplyChainService.Application.Features.Claims;
+ using Diten.SupplyChainService.Persistence.Features.Claims;
+@@ -50,6 +54,8 @@
+ builder.Services.AddCarrierPersistence();
+ builder.Services.AddLoadPersistence();
+ builder.Services.AddClaimPersistence();
++builder.Services.AddReturnPersistence();
++builder.Services.AddHttpClient<IReturnReferenceReader, ReturnReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHttpClient<IClaimReferenceReader, ClaimReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHttpClient<ILoadReferenceReader, LoadReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHostedService<ShipmentOutboxWorker>();
+@@ -60,6 +66,8 @@
+ });
+ builder.Services.Configure<ApiBehaviorOptions>(o => o.InvalidModelStateResponseFactory = c =>
+ {
++    if (ReturnContextMiddleware.IsReturnPath(c.HttpContext))
++        return new BadRequestObjectResult(ReturnContractError.Create("INVALID_REQUEST", 400, c.HttpContext.RequestServices.GetRequiredService<ReturnRequestContext>().CorrelationId));
+     if (ClaimContextMiddleware.IsClaimPath(c.HttpContext))
+         return new BadRequestObjectResult(ClaimContractError.Create("INVALID_REQUEST", 400, c.HttpContext.RequestServices.GetRequiredService<ClaimRequestContext>().CorrelationId));
+     if (LoadContextMiddleware.IsLoadPath(c.HttpContext))
+@@ -71,10 +79,11 @@
+ });
+ var app = builder.Build();
+ app.UseAuthentication();
++app.UseWhen(ReturnContextMiddleware.IsReturnPath, branch => branch.UseMiddleware<ReturnContextMiddleware>());
+ app.UseWhen(ClaimContextMiddleware.IsClaimPath, branch => branch.UseMiddleware<ClaimContextMiddleware>());
+ app.UseWhen(CarrierContextMiddleware.IsCarrierPath, branch => branch.UseMiddleware<CarrierContextMiddleware>());
+ app.UseWhen(LoadContextMiddleware.IsLoadPath, branch => branch.UseMiddleware<LoadContextMiddleware>());
+-app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context) && !ClaimContextMiddleware.IsClaimPath(context), branch => branch.UseMiddleware<ShipmentContextMiddleware>());
++app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context) && !ClaimContextMiddleware.IsClaimPath(context) && !ReturnContextMiddleware.IsReturnPath(context), branch => branch.UseMiddleware<ShipmentContextMiddleware>());
+ app.UseAuthorization();
+ app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0183", warehouseIntake = "unimplemented", outboxTransport = "integration-owned" })).AllowAnonymous();
+ app.MapControllers();

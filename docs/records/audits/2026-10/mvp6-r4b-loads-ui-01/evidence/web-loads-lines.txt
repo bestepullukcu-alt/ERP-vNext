@@ -1,0 +1,59 @@
+# Web adapter lines (SupplyChainLoadsController), each with its correlation
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 82e99eb4-34e9-4d6c-90e8-bd048c071529.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 503 for POST http://localhost:5000/api/shipment-bundle/loads; correlation f44306eb-7d57-42f2-baf2-ba4b8d6541db.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/loads; correlation f44306eb-7d57-42f2-baf2-ba4b8d6541db.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 1e856590-5e26-43a0-9cf8-d9263c15459d.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 4604cfc6-ae51-49dd-982f-f3545f713690.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/loads; correlation 07855f3a-d367-4d0e-a4c3-c649d9cdb96e.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 5e18d23b-acde-41ba-8baf-c136c1bff195.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 01699716-2f2d-4421-a8fd-96ee2be7d556.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads?status=Draft&carrierId=1195039d-0af7-4724-bd6c-c0007c545be6; correlation 1c6bdbd5-53b7-4f6b-906d-37dbe27ee062.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads?status=Completed; correlation 2defa94f-443a-4c94-84dc-4de53c7b3f30.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/loads; correlation 3471bc37-a11f-4984-87e0-560e52802bdf.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/loads; correlation 3471bc37-a11f-4984-87e0-560e52802bdf.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads?status=Completed; correlation 50fa8ee2-a651-47c9-bc58-27530694410e.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/loads; correlation bf1af4c0-a2ca-40ae-897d-072c38d70b54.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 409 for POST http://localhost:5000/api/shipment-bundle/loads; correlation bf1af4c0-a2ca-40ae-897d-072c38d70b54.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 9397118b-bbb4-434e-b698-70d9dbdf7dc5.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 836e619a-1616-464a-9a9e-8ba3f874c501.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/loads; correlation 56eafd56-006f-43c4-a371-ab09f42cd5d4.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 409 for POST http://localhost:5000/api/shipment-bundle/loads; correlation ebb3dabd-ea66-4ab5-a81d-b4305f9c5d63.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation f1a41fb8-128c-43f1-ae74-b3f175c85735.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/loads; correlation 9aa74fe7-0980-4358-9a6e-012f3a559d36.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 409 for POST http://localhost:5000/api/shipment-bundle/loads; correlation 9aa74fe7-0980-4358-9a6e-012f3a559d36.
+warn: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 502 without a contract error for http://localhost:5000/api/shipment-bundle/loads; correlation 172e76ef-1a71-4747-bdcb-7647f59251ee.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 53214aaf-13d5-4437-8307-4c1db1aedcb7.
+warn: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 502 without a contract error for http://localhost:5000/api/shipment-bundle/loads; correlation de89b1dc-1fbc-4362-a053-56071228dfb1.
+warn: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway request timed out for http://localhost:5000/api/shipment-bundle/loads; correlation 54546295-2518-4324-8fe9-dc9222af32ea.
+warn: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway request timed out for http://localhost:5000/api/shipment-bundle/loads; correlation 6326754f-0d3e-4d21-97cd-1de0fb5b685b.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads; correlation 9ebc323f-1087-4eb7-9923-28db09183afd.
+info: Diten.Web.Controllers.SupplyChainLoadsController[0]
+Loads Gateway answered 200 for GET http://localhost:5000/api/shipment-bundle/loads?status=Draft; correlation 60f68d7e-2055-4ae3-8b45-ad561c063526.

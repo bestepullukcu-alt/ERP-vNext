@@ -1,0 +1,8 @@
+3e30d1bb8ea75d212632133ff55c28ce48f072d927030a4c85a9b5e73522709d  mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py
+8255831b4510abdcc60a29ebc3d860df7a37e2d9f77305a1da00df180f82aa9c  mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json
+8255831b4510abdcc60a29ebc3d860df7a37e2d9f77305a1da00df180f82aa9c  mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json
+1a1960f82e052c4cd41923e5b95c4bc7834fab19d462f7e73d55b6bf4db553c1  mvp6-loads-root-amendment-independent-rever-01/verify_rever.py
+77c89743329fc9bfe7837b2fa7a8de35e42f50917c29f1ca3bbc339ba427bf17  mvp6-loads-root-amendment-independent-rever-01/raw/results.json
+b359cfdec8579b610fcb63774b184eb91d9d06dabd0a852eb84cbd517b074572  mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py
+a9c20c25e05117c24e473594f33bc7b3cd4ba0e2fffe9a598e859355895532eb  mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json
+a9c20c25e05117c24e473594f33bc7b3cd4ba0e2fffe9a598e859355895532eb  mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json

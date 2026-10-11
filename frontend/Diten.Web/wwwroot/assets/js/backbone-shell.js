@@ -88,6 +88,10 @@ window.BackboneShell = (function () {
         if (tempData.errorMessage && window.showToast) {
             window.showToast(tempData.errorMessage, 'error');
         }
+        // WP-E2E-FIX-3 (E5-B1) — e.g. "saved, not activated: <reason>".
+        if (tempData.warningMessage && window.showToast) {
+            window.showToast(tempData.warningMessage, 'warning');
+        }
     }
 
     /*

@@ -1,0 +1,4 @@
+auth permissions total=411 supplychain.*=0 []
+tenant 000000000001 Admin      holds 0/5  
+tenant 000000000001 SuperAdmin holds 0/5  
+tenant 000000000001 Viewer     holds 0/5  

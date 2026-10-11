@@ -1,0 +1,31 @@
+--- /private/tmp/mvp6-root-guard-fixture-rework-01/DocsPathGuardTests.before.cs	2026-09-20 12:10:00
++++ /private/tmp/mvp6-root-guard-fixture-rework-01/DocsPathGuardTests.after.cs	2026-09-20 12:10:00
+@@ -280,6 +280,28 @@
+             Directory.CreateDirectory(Root);
+             var source = RepoRoot();
+             Record = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(source, AuthorityPath)))!.AsObject();
++            // Fixture-only recovery binding: copy the three exact historical manifests and
++            // bind their computed hashes/provenance. Production authority is never changed.
++            var recoveryProvenance = "docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/provenance.md";
++            var recovery = new[]
++            {
++                (Path: "docs/records/audits/2026-09/mod-0185-dev-02/changed-files.json", Line: 3),
++                (Path: "docs/records/audits/2026-09/mod-0185-dev-03/changed-files.json", Line: 4),
++                (Path: "docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json", Line: 5)
++            };
++            var recoveryProvenanceSha = Hash(File.ReadAllBytes(Path.Combine(source, recoveryProvenance)));
++            foreach (var item in recovery)
++            {
++                var bytes = File.ReadAllBytes(Path.Combine(source, item.Path));
++                Write(item.Path, Encoding.UTF8.GetString(bytes));
++                Record["sealedInputs"]!.AsArray().Add(new System.Text.Json.Nodes.JsonObject
++                {
++                    ["path"] = item.Path, ["sha256"] = Hash(bytes), ["kind"] = "historical-data",
++                    ["provenancePath"] = recoveryProvenance, ["provenanceSha256"] = recoveryProvenanceSha,
++                    ["provenanceLine"] = item.Line, ["targets"] = new System.Text.Json.Nodes.JsonArray()
++                });
++            }
++            Write(recoveryProvenance, File.ReadAllText(Path.Combine(source, recoveryProvenance)));
+             var paths = Record["canonicalTargets"]!.AsArray().Select(x => x!["path"]!.GetValue<string>())
+                 .Concat(Record["sealedInputs"]!.AsArray().Select(x => x!["path"]!.GetValue<string>()))
+                 .Concat(Record["sealedInputs"]!.AsArray().Select(x => x!["provenancePath"]!.GetValue<string>())).Distinct();

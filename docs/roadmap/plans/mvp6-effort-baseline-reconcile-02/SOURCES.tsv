@@ -1,0 +1,13 @@
+kind	path	sha256	use
+r0_method	docs/roadmap/plans/mvp6-effort-baseline-01/METHOD.md	83648342c0ec5297d6d2d3d1d9a8eb3dd15177c79b3729071867ce6705a63d64	unit and scoring method
+r0_effort	docs/roadmap/plans/mvp6-effort-baseline-01/EFFORT.tsv	d7b08e03aa8e81d5e676e3e079643ca064b9040995bb33bb6ec81d4c168daa68	103-row immutable predecessor
+r0_report	docs/roadmap/plans/mvp6-effort-baseline-01/REPORT.md	ed50690dc4b4da6d5c76fd99f1b0412602367307f0581adc8b8df44ca392c4ba	module/category table predecessor
+r0_sources	docs/roadmap/plans/mvp6-effort-baseline-01/SOURCES.tsv	76f222ee460365231554720fbbfe62bc70e57a7002b0d11349d05079e6730766	predecessor evidence list
+shipment_effort	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/EFFORT.md	42f3d7443a78649f9357f3f6077289df2aa80cd42c4065e5e43278f7c408ae19	9.5/16.5/28 person-day source
+shipment_acceptance	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/ACCEPTANCE.md	83d0db58eff28b0ac56af7c0299fd775aa575615fc1d80d8ad6f57d0630eefa1	frontend and independent VER deliverable boundary
+shipment_shared	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/SHARED-INTEGRATION-HANDOFF.md	2c9c38d707e499e0e0a57faf4223a228c17cb1fff99380f9d3e140182c7d9171	integration boundary and double-count control
+shipment_sop	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/SOP-22.md	03d8b6130950a2ab3b809d7ae8fc59d880e5c6e5e7401c4bf0bad0f40ea30c8d	completed preparation vs HELD work
+readiness_r1_report	docs/roadmap/plans/mvp6-readiness-rebaseline-reconcile-02/REPORT.md	7e8822ccb58e638073d46262a46dc7a7f4ed0d95d1e9658d2a3c420063eef4e0	69.8/31.1 separation
+readiness_r1_calc	docs/roadmap/plans/mvp6-readiness-rebaseline-reconcile-02/RECALCULATION.tsv	8071eea6725ab3f2319f3f243f368ea97026424362edb998c78bc98b60444b7e	44/63 and 14/45 arithmetic
+readiness_r1_manifest	docs/roadmap/plans/mvp6-readiness-rebaseline-reconcile-02/ARTIFACTS.sha256	3e9faebe20d5cafbb752d0a0192835d0b3c19e2af7a3d0f28bbb0833ca97cd12	readiness successor integrity
+

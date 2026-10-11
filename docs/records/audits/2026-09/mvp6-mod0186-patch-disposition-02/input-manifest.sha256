@@ -1,0 +1,14 @@
+07a8a0159b5ab02fecc7b1aa6314106d81b1584150169f457cb9a395614a04b7  execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+2a1843eb52b8fd0b61a553c06a75d07b32dda57bf020734d946c004b82893709  docs/roadmap/plans/mvp6-mod0186-pack-patch-repair-01/proposed-pack-v2.patch
+51d92c75b761e5c7195eda102d08f2b7f472b979d9940bdf21ae72cb7cab7fcb  AGENTS.md
+e85854bd1ecb4895406d8e5a1276adbc82a2af250dc304abad796a2ae7a4de36  docs/guides/operations/control-tower-sop.md
+5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c  docs/analysis/contracts/shipment-bundle.openapi.yaml
+00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11  docs/analysis/contracts/returns-semantics-v3.0.0.md
+7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af  docs/analysis/contracts/shipment-root-semantics-v3.0.0.md
+768757bb1fb9e39a324960e25c0e3943adb4bd6231d3dd50bf098915274406fb  docs/reference/architecture/docs-path-authority.json
+39683e6c94472eb0a1073b6a4fa90440e4a43877818d346f75d99351a19cb20d  docs/roadmap/plans/mvp6-mod0186-pack-patch-repair-01/SOP-22.md
+23cc7ffbacac41736c0a720d6261601496f17db419670359e691735a48a2e8bb  docs/roadmap/plans/mod-0186-runtime-dispatch-01/SOP-22-PACK-ACTIVATE.md
+ad9c8f72c254fa6cb85ec89bcf925db92216a214b148c405ff0ec7446885d675  docs/roadmap/plans/mvp6-final-pack-delta-01/README.md
+c13c590d59938521c532e1eb284ed7ce154b2e289ad1e9d94126a5198e8563e4  docs/roadmap/plans/mvp6-final-pack-delta-01/owned-paths-v1.0.md
+8a89e5d040a1c2fde4d4053a0226542786c79e28011a09211780dce9f72212c6  docs/roadmap/plans/mod-0187-runtime-dispatch-01/owner-authority.md
+2233199f6b5e00180719b82ce1a045c4b08b8466b7e74738085a024e43c3052e  docs/records/audits/2026-09/mvp6-final-publication-execution-01/SOP-22.md

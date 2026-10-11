@@ -1,0 +1,4 @@
+option	description	accepted_behavior	risk	verdict
+A	Transfer the 258 files that are ABSENT from the independently accepted 422-entry BC source archive; preserve 161 byte-identical files and the three Shipment successor files.	Preserves accepted Capacity/S&OP/Returns/Claims/Loads/Carriers registrations, middleware, persistence, readers, executor and tests.	Requires an exact transfer authorization for this new target checkout.	RECOMMENDED
+B	Delete or conditionally remove Program.cs references and registrations until the reduced checkout compiles.	Removes accepted module behavior from the composed host.	A passing build would be obtained by regression and would invalidate the accepted composition provenance.	REJECTED
+C	Reconstruct a new narrow set from individual feature lanes.	Could preserve behavior if reconstructed perfectly.	Duplicates an already accepted source closure and creates a new, unverified composition artifact.	REJECTED

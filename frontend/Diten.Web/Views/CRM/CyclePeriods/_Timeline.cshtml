@@ -1,0 +1,34 @@
+@using Diten.Web.Views.CRM.CyclePeriods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-CYC-UI-1 — the year timeline. One lane per scope address; the axis is the filtered year ± 1 (E10). Bars are
+   positioned with logical properties (inset-inline-start / inline-size), so a right-to-left page mirrors the whole
+   chart without a second code path. Colours come from theme variables only. *@
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center gap-3 mb-3 small" aria-hidden="true">
+            <span class="cp-legend"><span class="cp-swatch cp-bar--active"></span>@Localizer["StatusActive"]</span>
+            <span class="cp-legend"><span class="cp-swatch cp-bar--draft"></span>@Localizer["StatusDraft"]</span>
+            <span class="cp-legend"><span class="cp-swatch cp-bar--closed"></span>@Localizer["StatusClosed"]</span>
+            <span class="cp-legend"><span class="cp-swatch cp-mark--conflict"></span>@Localizer["TimelineConflict"]</span>
+            <span class="cp-legend"><span class="cp-swatch cp-mark--overlap"></span>@Localizer["TimelineOverlap"]</span>
+            <span class="cp-legend"><span class="cp-swatch cp-mark--gap"></span>@Localizer["TimelineGap"]</span>
+            <span class="cp-legend"><span class="cp-swatch cp-today-swatch"></span>@Localizer["TimelineToday"]</span>
+        </div>
+
+        <div id="timelineLoading" class="text-muted">@SharedLocalizer["Loading"]</div>
+        <div id="timelineError" class="alert alert-danger d-none" role="alert">
+            <span id="timelineErrorText">@Localizer["LoadFailed"]</span>
+            <button type="button" id="timelineRetry" class="btn btn-sm btn-label-danger ms-2">@Localizer["Retry"]</button>
+        </div>
+        <div id="timelineEmpty" class="text-muted d-none">@Localizer["TimelineEmpty"]</div>
+
+        <div class="cp-timeline-scroll">
+            <div id="timelineGrid" class="cp-timeline d-none" role="list" aria-label="@Localizer["ViewTimeline"]"></div>
+        </div>
+
+        <p class="text-muted small mt-3 mb-0">@Localizer["TimelineFootnote"]</p>
+    </div>
+</div>

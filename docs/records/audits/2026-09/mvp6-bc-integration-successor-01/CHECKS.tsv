@@ -1,0 +1,13 @@
+check	result	detail
+Permanent input checksums	PASS	12 exact input artifacts matched INPUTS.tsv
+B reconstruction	PASS	422 rows; 74155 bytes; cdc6228aa3d215f34f2f2f9d5b784cf57ac20b6eb8f2c2f26bdcace9dcd4d76c
+C preimages on B	PASS	3/3 exact preimages matched
+Disposable patch check/apply	PASS	git apply --check and apply succeeded for the exact C patch
+BC successor	PASS	422 rows; 74155 bytes; dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634
+Delta scope	PASS	3 changed; 419 unchanged
+B hosted/read-fault preservation	PASS	CapacityAtomicityTests.cs 2c133ac1b6b431db074b0054b0337bbc3957fce5869c7aca9291454a53681c43
+Program.cs preservation	PASS	50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0
+S&OP accepted test preservation	PASS	eba2da6f47a4935b61857a95534b3d1697635910190e3838494d96d956af7f43
+C Capacity subset comparison	PASS	42 exact matches plus 1 intentional B hosted-test supersession
+Combined build/runtime	NOT RUN	Target-bound application authority is absent; dispatch remains HELD
+

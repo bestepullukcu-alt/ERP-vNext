@@ -1,0 +1,15 @@
+cap-get-noauth         GET  /api/supply-chain/capacity-plans/ed2a62dc-d45b-4c31-a56f-f60c92d89bbc 401 
+cap-get-auth           GET  /api/supply-chain/capacity-plans/ed2a62dc-d45b-4c31-a56f-f60c92d89bbc 500 System.InvalidOperationException: Unable to resolve service for type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityRequestContext' while 
+cap-post-noauth        POST /api/supply-chain/capacity-plans                     401 
+cap-post-auth          POST /api/supply-chain/capacity-plans                     500 System.InvalidOperationException: Unable to resolve service for type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityRequestContext' while 
+sop-get-noauth         GET  /api/supply-chain/sandop-plans/ed2a62dc-d45b-4c31-a56f-f60c92d89bbc 401 
+sop-get-auth           GET  /api/supply-chain/sandop-plans/ed2a62dc-d45b-4c31-a56f-f60c92d89bbc 500 System.InvalidOperationException: No service for type 'MediatR.IRequestHandler`2[Diten.SupplyChainService.Application.Features.SandopPlans.Queries.GetSandopPlan
+sop-post-noauth        POST /api/supply-chain/sandop-plans                       401 
+sop-post-auth          POST /api/supply-chain/sandop-plans                       500 System.InvalidOperationException: No service for type 'MediatR.IRequestHandler`2[Diten.SupplyChainService.Application.Features.SandopPlans.Commands.CreateSandop
+ship-list-auth         GET  /api/shipment-bundle/shipments                       200 {"items":[],"page":1,"pageSize":50,"total":0,"contractVersion":"v1"}
+ship-list-noauth       GET  /api/shipment-bundle/shipments                       401 {"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"7585176d-dc3e-464a-b85c-9331dacbf83d"},"contractVersion":"v1"}
+carriers-auth          GET  /api/shipment-bundle/carriers                        403 {"error":{"code":"INVALID_REQUEST","message":"Required authorization context or permission is missing.","correlationId":"76ef5aa1-17f5-448d-9113-cd672be7ca37"},
+loads-noauth           GET  /api/shipment-bundle/loads                           401 {"error":{"code":"INVALID_REQUEST","message":"Load request could not be completed.","correlationId":"b0c3f02b-c38e-4ebc-a26f-ce0db486cfae"},"contractVersion":"v
+returns-noauth         GET  /api/shipment-bundle/returns                         401 {"error":{"code":"INVALID_REQUEST","message":"INVALID REQUEST","correlationId":"ddf4e4fd-65e7-4ae0-b61d-d91bd6bc4ef8"},"contractVersion":"v1"}
+claims-noauth          GET  /api/shipment-bundle/claims                          401 {"error":{"code":"UNAUTHENTICATED","message":"Authentication is required.","correlationId":"8ded56de-60ce-442a-be3e-4f43280334db"},"contractVersion":"v1"}
+unknown-noauth         GET  /api/supply-chain/nothing-here                       404 

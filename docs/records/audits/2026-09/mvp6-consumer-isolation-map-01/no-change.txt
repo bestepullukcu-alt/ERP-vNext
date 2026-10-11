@@ -1,0 +1,6 @@
+Inspected files: 403
+Input hash drift: 0
+
+Branch unchanged: True
+HEAD unchanged: True
+No checkout, fetch, staging, commit, push or stash executed.

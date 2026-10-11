@@ -1,0 +1,20 @@
+@model Diten.Web.Models.CRM.LegalProfileEditViewModel
+@using Diten.Web.Views.CRM.LegalProfiles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalProfilesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/CRM/LegalProfiles/_Form.cshtml" model="Model" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/regulatory-texts.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/CRM/LegalProfiles/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/LegalProfiles/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/RegulatoryTexts/form.js" asp-append-version="true"></script>
+}

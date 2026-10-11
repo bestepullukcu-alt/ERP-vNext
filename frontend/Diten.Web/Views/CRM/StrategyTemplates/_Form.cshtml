@@ -19,6 +19,8 @@
 }
 
 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+@* WP-SB-3-UIa — refusals about the whole play (e.g. bindings_frozen), localised by form.js from FormErrorsJson. *@
+<div id="stFormErrors" class="alert alert-danger d-none" role="alert"></div>
 @if (!string.IsNullOrWhiteSpace(Model.ContractError))
 {
     <div class="alert alert-danger" role="alert">@Localizer[Model.ContractError]</div>
@@ -287,6 +289,9 @@
                 @* WP-ST-EDIT-R — column header row (mockup ÜRÜN | SKU | YÜZDE). Its column widths track the .st-prod-row
                    layout so the labels sit over their inputs; it is hidden while there are no lines (form.js toggles it
                    with the empty-state). The trailing spacer keeps the labels clear of the remove icon column. *@
+                @* WP-SB-3-UIa — each line also carries its ROLE (promo / non-promo) and the product's published JOURNEY in a
+                   sub-row under it (form.js); a refusal that names a line shows under that line, one that names none here. *@
+                <div id="productSectionErrors" class="alert alert-danger py-2 small d-none" role="alert"></div>
                 <div id="productLineHead" class="st-prod-head d-none">
                     <span class="st-prod-head-product">@Localizer["ProductColProduct"]</span>
                     <span class="st-prod-head-sku">@Localizer["ProductColSku"]</span>
@@ -300,19 +305,17 @@
             </div>
         </section>
 
-        @* BINDING 4 — "which story". Typed and published-only. *@
-        @* WP-ST-EDIT-V — the content section is a CHECKBOX CARD GRID (mockup), replacing the EDIT-U inline picker. form.js
-           paints one card per knowledge-path + engagement-journey (name + kind·code + status badge); only published refs
-           are selectable (their checkbox toggles the binding), draft/archived cards are disabled and greyed. The footer
-           note states the ship invariant (no delete — plays are only archived, active versions are immutable). The
-           ContentBindingsJson contract (contentRefType / contentRefId / sortOrder — an automatic index — / notes) and the
-           typed + published + pinned invariant are unchanged; only the markup + form.js changed. *@
+        @* BINDING 4 — "which story". WP-SB-3-UIa (SB-3a, DESIGN-SB-3 S3-2): template-level content bindings are RETIRED —
+           the visit tells each product with the journey chosen on its product line. There is no picker and no card grid
+           any more (CRM refuses a new binding with 409 content_binding_type_retired); form.js lists the bindings the play
+           already carries READ-ONLY as "eski bağ", each removable on a draft, and ContentBindingsJson posts only what is
+           left. The section keeps its place so Details and the editor share the same section map. *@
         <section class="card mb-4" id="contentSection">
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-1 d-flex align-items-center gap-2"><i class="bx bx-book-content dt-card-icon" aria-hidden="true"></i>@Localizer["ContentSection"]</h6>
-                <small class="text-muted d-block mb-3">@Localizer["ContentPublishedOnlyHelp"]</small>
+                <small class="text-muted d-block mb-3">@Localizer["RetiredBindingsHelp"]</small>
+                <div id="contentSectionErrors" class="alert alert-danger py-2 small d-none" role="alert"></div>
                 <div id="contentBindingList" class="st-content-grid"></div>
-                <p class="st-content-nodelete mt-3 mb-0">@Localizer["ContentNoDeleteNote"]</p>
                 <input type="hidden" asp-for="ContentBindingsJson" id="ContentBindingsJson" />
             </div>
         </section>
@@ -342,5 +345,10 @@
     requiredAllocationTotal = Model.RequiredAllocationTotal,
     availablePickers = Model.AvailablePickers,
     canPickGlobalProducts = Model.CanPickGlobalProducts,
-    canPickGskus = Model.CanPickGskus
+    canPickGskus = Model.CanPickGskus,
+    // WP-SB-3-UIa — the SB-3a line roles (first = the default of a new line) and the refusals anchored to a place.
+    productLineRoles = Model.ProductLineRoles,
+    formErrors = string.IsNullOrWhiteSpace(Model.FormErrorsJson)
+        ? null
+        : JsonSerializer.Deserialize<List<Diten.Web.Models.CRM.StrategyTemplateFormError>>(Model.FormErrorsJson, jsonOpts)
 }, jsonOpts))</script>

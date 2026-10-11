@@ -1,0 +1,16 @@
+check	result	detail
+native SDK	PASS	/Users/natig/.dotnet/dotnet 8.0.417
+frontend focused tests	PASS	14/14 Shipment controller/form/JS tests
+frontend build	PASS	0 errors; inherited warnings only
+Gateway build	PASS	0 warnings; 0 errors
+Gateway Shipment route test	PASS	1/1; four descriptors/five operations on 5061
+Gateway Carrier route test	FAIL	expected 5061, exact port patch target routes to 5065
+CRM build	PASS	0 errors; 2 inherited warnings
+SupplyChain build	FAIL	23 CS0234 missing namespace errors caused by exact predecessor Program outside 40+18 scope
+JSON parse	PASS	ocelot.json
+RESX XML parse	PASS	seven Shipment view resources plus seven shared resources
+UI focused static scan	PASS	no browser service-port URL, bearer/cookie storage, native alert/confirm, raw Swal, unsupported verbs/bulk/upload or tenant/LE fields
+DataTable verifier	CONSTRAINED FAIL	51 PASS / 33 FAIL; remaining failures include prohibited Edit/bulk/direct-gateway expectations
+runtime/browser	NOT RUN	blocked before process start by B-01/B-02
+independent VER	NOT DISPATCHED	writer-complete gate not reached
+cleanup	PASS	no application, Mongo or browser processes were started; no DB created

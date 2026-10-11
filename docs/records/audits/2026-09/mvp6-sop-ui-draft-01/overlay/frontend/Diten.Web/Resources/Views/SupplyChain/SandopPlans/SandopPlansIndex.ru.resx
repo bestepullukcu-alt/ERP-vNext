@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>Планы S&amp;OP</value></data>
+  <data name="PlanId" xml:space="preserve"><value>ID плана</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Название плана</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Начало горизонта</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Конец горизонта</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>ID плана спроса</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Версия плана спроса</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус плана</value></data>
+  <data name="Status.Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status.InReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="Status.Approved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="Status.Rejected" xml:space="preserve"><value>Отклонён</value></data>
+  <data name="Status.Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Не указано</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Номер обращения в поддержку</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Скопировано в буфер обмена.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Предыдущий запрос ещё обрабатывается.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Заполните все обязательные поля.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Запрос недействителен. Проверьте введённые данные и повторите попытку.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>Не удалось отследить запрос. Обновите страницу и повторите попытку.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
+  <data name="ErrUnknownSandopPlan" xml:space="preserve"><value>План S&amp;OP не найден или недоступен для вас.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>План S&amp;OP для этого горизонта и версии плана спроса уже существует.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>Статус плана больше не позволяет создать снимок. План перезагружен.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>Статус плана больше не позволяет согласование. План перезагружен.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>Для этой роли и этого снимка решение уже записано.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже использовался с другими значениями. Измените данные, чтобы отправить новый запрос.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>Ссылка на план спроса неизвестна или не опубликована.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>Выбранный снимок не относится к этому плану.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Сервис временно недоступен. Повторите попытку — будет отправлен тот же запрос.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Не удалось подтвердить результат. Повторите попытку — будет отправлен тот же запрос, повторной записи не будет.</value></data>
+  <data name="SandopPlansPageDescription" xml:space="preserve"><value>Создайте план S&amp;OP или откройте существующий план по его ID.</value></data>
+  <data name="NoPlanListNote" xml:space="preserve"><value>Планы здесь не перечисляются. Сохраните ID плана, показанный после создания, чтобы открыть план позже.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Создать план</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Открыть план</value></data>
+  <data name="OpenPlanTitle" xml:space="preserve"><value>Открыть план по ID</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Введите UUID плана в том виде, в каком он был показан после создания.</value></data>
+  <data name="PlanIdInvalid" xml:space="preserve"><value>Введите корректный ID плана (UUID).</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новый план S&amp;OP</value></data>
+  <data name="HorizonOrderInvalid" xml:space="preserve"><value>Конец горизонта не может быть раньше его начала.</value></data>
+  <data name="DemandReferenceHelp" xml:space="preserve"><value>Введите ссылку на план DEMAND точно так, как она опубликована.</value></data>
+  <data name="RequiredFilled" xml:space="preserve"><value>Заполнено обязательных полей</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>План создан.</value></data>
+</root>

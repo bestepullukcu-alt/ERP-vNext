@@ -1,3 +1,4 @@
+using Diten.Platform.Tests.Shared;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -897,8 +898,8 @@ public sealed class PlatformContainerValidationTests : IClassFixture<PlatformCon
 
     private sealed class OwnedMongoProcess : IAsyncDisposable
     {
-        private readonly Process _process;
-        private readonly string _root;
+        private readonly Process? _process;
+        private readonly string? _root;
 
         private OwnedMongoProcess(Process process, string root, int port)
         {
@@ -907,23 +908,31 @@ public sealed class PlatformContainerValidationTests : IClassFixture<PlatformCon
             ConnectionString = $"mongodb://127.0.0.1:{port}/?directConnection=true";
         }
 
+        // A given lane URI: nothing was started here, so nothing is stopped or removed.
+        private OwnedMongoProcess(string laneUri) => ConnectionString = laneUri;
+
         public string ConnectionString { get; }
 
+        /// <summary>
+        /// Main sync (CT decision C): the ONE Platform test Mongo rule (PlatformTestMongo, linked). A lane URI
+        /// (DITEN_PLATFORM_TEST_MONGO_URI, main's Q131a check) is used as given — nothing to stop, the database name is
+        /// fixed and reused; otherwise a mongod THIS test starts from DITEN_TEST_MONGOD (an empty / relative / missing
+        /// value is red); with neither, red by name. Never the application MongoDB, never 27017.
+        /// </summary>
         public static async Task<OwnedMongoProcess> StartAsync()
         {
-            var binary = new[]
-                {
-                    Environment.GetEnvironmentVariable("DITEN_TEST_MONGOD"),
-                    @"C:\Program Files\MongoDB\Server\8.0\bin\mongod.exe",
-                    @"C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe",
-                    @"C:\Program Files\MongoDB\Server\6.0\bin\mongod.exe",
-                    "/opt/homebrew/bin/mongod",
-                    "/usr/local/bin/mongod",
-                    "/opt/local/bin/mongod"
-                }
-                .FirstOrDefault(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
-                ?? throw new InvalidOperationException(
-                    "A local mongod binary is required; this test never uses the application MongoDB.");
+            var choice = PlatformTestMongo.ChooseFromEnvironment();
+            if (choice.Failure is { } failure)
+            {
+                throw new InvalidOperationException(failure);
+            }
+
+            if (choice.Uri is { } laneUri)
+            {
+                return new OwnedMongoProcess(laneUri);
+            }
+
+            var binary = choice.Executable!;
             var port = ReservePort();
             var root = Path.Combine(
                 Path.GetTempPath(),
@@ -997,6 +1006,11 @@ public sealed class PlatformContainerValidationTests : IClassFixture<PlatformCon
 
         public ValueTask DisposeAsync()
         {
+            if (_process is null || _root is null)
+            {
+                return ValueTask.CompletedTask;
+            }
+
             Stop(_process);
             if (Directory.Exists(_root))
             {

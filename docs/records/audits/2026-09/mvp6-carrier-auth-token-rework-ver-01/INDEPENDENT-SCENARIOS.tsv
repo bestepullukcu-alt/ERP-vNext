@@ -1,0 +1,30 @@
+id	finding	scenario	expected_observable	candidate_28_coverage	phase2_status
+F01-01	F-01	valid exact single audience and single required claims	200/authorized and expected single repository read	COVERED_E2	NOT RUN
+F01-02	F-01	identical duplicate sub scope tenant actor LE jti iat nbf exp	401 before mediator/repository for each claim	MISSING	NOT RUN
+F01-03	F-01	conflicting duplicate sub scope tenant actor LE jti iat	401 before mediator/repository	COVERED_E2	NOT RUN
+F01-04	F-01	conflicting duplicate nbf and exp	401 before mediator/repository	MISSING	NOT RUN
+F01-05	F-01	duplicate expected audience value	401 before mediator/repository	MISSING	NOT RUN
+F01-06	F-01	expected plus different audience	401 before mediator/repository	COVERED_E2	NOT RUN
+F01-07	F-01	wrong-only audience	401 before mediator/repository	MISSING	NOT RUN
+F01-08	F-01	missing sub scope tenant actor LE jti iat	401 before mediator/repository	COVERED_E2	NOT RUN
+F01-09	F-01	missing nbf or exp	401 before mediator/repository	MISSING	NOT RUN
+F01-10	F-01	malformed/non-numeric iat nbf or exp	401 before mediator/repository	MISSING	NOT RUN
+F01-11	F-01	reversed duplicate order expected/conflicting and conflicting/expected	both orders reject; first-value selection impossible	MISSING	NOT RUN
+F01-12	F-01	header tuple without valid signed identity	401 and zero mediator/repository reads	PRIOR_EVIDENCE_ONLY	NOT RUN
+F02-01	F-02	iat equals nbf at current time	accepted if all other fields exact	COVERED_E2_VALID	NOT RUN
+F02-02	F-02	future iat with current nbf	reject specifically for policy mismatch/future issuance	MIXED_CAUSE_E2	NOT RUN
+F02-03	F-02	future iat equals nbf inside configured skew	accepted under proposed owner policy	MISSING	NOT RUN
+F02-04	F-02	future iat equals nbf just outside configured skew	401	MISSING	NOT RUN
+F02-05	F-02	iat differs from nbf without other invalidity	401	COVERED_E2	NOT RUN
+F02-06	F-02	future nbf outside skew	401; identify whether standard lifetime or custom rule rejects	MIXED_ORDER_E2	NOT RUN
+F02-07	F-02	expiry inside configured skew	accepted under proposed owner policy	COVERED_E2	NOT RUN
+F02-08	F-02	expiry outside configured skew	401	COVERED_E2	NOT RUN
+F02-09	F-02	lifetime exactly MaximumTokenLifetimeSeconds	accepted	MISSING	NOT RUN
+F02-10	F-02	lifetime MaximumTokenLifetimeSeconds plus one	401	MISSING; only plus 60 tested	NOT RUN
+F02-11	F-02	exp equals iat or exp before iat	401	MISSING	NOT RUN
+F02-12	F-02	raw signed payload uses digit-only JSON strings for iat nbf or exp	401 because NumericDate must be a JSON numeric value; do not accept by string parsing	MISSING; helper cannot produce this distinction	NOT RUN
+ORD-01	F-01/F-02	every rejected service token	mediator and repository invocation count both zero	MISSING_RUNTIME	NOT RUN
+CHAIN-01	chain	real Platform-issued exact token to MDM	valid exact tuple succeeds on final validator	NOT_IN_28	NOT RUN
+CHAIN-02	chain	login and refresh re-resolution	one active LE emitted; revoked scope removed on refresh	PRIOR_WRITER_ONLY	NOT RUN
+CHAIN-03	chain	MFA and forced-password issuance	exact claim or omission follows same final validator seam	PRIOR_WRITER_ONLY	NOT RUN
+CHAIN-04	chain	refusal timeout disabled identity and rotation	fail closed; no stale LE and no unauthorized read	PARTIAL_PRIOR_WRITER	NOT RUN

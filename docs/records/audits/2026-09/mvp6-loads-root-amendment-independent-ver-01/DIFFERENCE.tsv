@@ -1,0 +1,11 @@
+parsed_path	classification	result
+$/info/version	candidate_metadata	EXPECTED
+$/info/x-status	candidate_metadata	EXPECTED
+$/paths//loads/get/description	loads_annex_pointer	EXPECTED
+$/paths//loads/get/x-loads-semantics	loads_annex_pointer	EXPECTED
+$/paths//loads/get/responses/200/content/application/json/example/items/0/lifecycleCorrelationId	queryLoads_example	EXPECTED
+$/paths//loads/post/description	loads_annex_pointer	EXPECTED
+$/paths//loads/post/x-loads-semantics	loads_annex_pointer	EXPECTED
+$/paths//loads/{loadId}/transition/post/description	loads_annex_pointer	EXPECTED
+$/paths//loads/{loadId}/transition/post/x-loads-semantics	loads_annex_pointer	EXPECTED
+$/components/schemas/LoadSummary/properties/lifecycleCorrelationId	optional_nullable_uuid_field	EXPECTED

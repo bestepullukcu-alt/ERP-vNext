@@ -595,7 +595,7 @@ oturum davranışı **değişmez**.
 
 ## 8. Runtime Constraints
 
-- **Servis:** `Diten.CrmService` (port **5061**), **yeni servis yaratılmaz** — Account/Contact ile aynı serviste,
+- **Servis:** `Diten.CrmService` (port **5065**), **yeni servis yaratılmaz** — Account/Contact ile aynı serviste,
   çünkü kriter **onların üzerinde** çalışır (kullanıcı kararı; Faz-1 pushdown'ı ancak aynı DB'de mümkündür, §8.5).
 - **Gateway:** tüm çağrılar `:5000` üzerinden; browser JS **servis portuna gitmez** (same-origin MVC proxy).
 - **Soft delete:** `DELETE` ve `PATCH` **yoktur** — kaldırma = archive (segment **ve** target customer);
@@ -1051,14 +1051,14 @@ döner (`gateway-404-empty-body-signature`).
 Gerekli çiftler (`campaigns` bloğu birebir şablon; `OPTIONS` **dâhil**):
 
 ```text
-/api/crm/segments                 ↔ 5061   (GET, POST, OPTIONS)
-/api/crm/segments/{everything}    ↔ 5061   (GET, POST, PUT, OPTIONS)
-/api/crm/subjects/{everything}    ↔ 5061   (GET, OPTIONS)
+/api/crm/segments                 ↔ 5065   (GET, POST, OPTIONS)
+/api/crm/segments/{everything}    ↔ 5065   (GET, POST, PUT, OPTIONS)
+/api/crm/subjects/{everything}    ↔ 5065   (GET, OPTIONS)
 ```
 
 - `ocelot.json` **protected path**'tir; **bu pack yazmaz** (§6). Ayrı bir `integration-agent` task'ı olarak
   yürütülür → **§20/F-GATEWAY**.
-- Frontend (5001) **doğrudan 5061'e gitmez**; `frontend/Diten.Web/Controllers/CRM/SegmentsController.cs`
+- Frontend (5001) **doğrudan 5065'e gitmez**; `frontend/Diten.Web/Controllers/CRM/SegmentsController.cs`
   same-origin proxy'dir. Proxy'nin `ForwardAsync`'i **204/205/304/1xx için gövdesiz** dönmelidir
   (`proxy-forward-204-content-length-crash`) — bu FU'da `archive`/`activate` 204 dönebilir.
 - **Kabul kapısı:** route eklenmeden authenticated smoke (§17.3) çalıştırılmaz; 404 + `{}` görülürse **kod hatası

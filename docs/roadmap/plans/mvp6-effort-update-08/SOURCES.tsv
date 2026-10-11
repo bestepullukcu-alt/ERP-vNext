@@ -1,0 +1,19 @@
+path	sha256	use
+docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/ARTIFACTS.sha256	e597e3d83082f1b5aa19c9fc1ec5dccd94c06ed8be2925ded4c458718d362c24	Predecessor seal
+docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/EFFORT.tsv	0b643ca95e2c05de144952d1505efdc2321e0a2d56c8ec3603dd00e5f3162ad3	Frozen baseline ledger (106 rows)
+docs/records/audits/2026-09/mvp6-ct-disposition-a12-ver02-2026-09-26.md	f66712b688a66e074ab2335bd4532d3f5e1a9b43bde020b5dedd426212f647fb	CT decision 1 (A12, A08/A09, PNG)
+docs/records/audits/2026-09/mvp6-shipment-root-r2-ct-disposition-01/EFFORT-ROW-MAPPING.tsv	9d0eba9a289423259efc9c00397aa3f8094b0cd95fba3d451847c694b36b6b5e	Existing 0183-R2-04 allocation 2/4/8
+docs/records/audits/2026-09/mvp6-shipment-ui-functional-ct-consolidation-01/EFFORT-DISPOSITION.tsv	4094c8064a74764346650eb4f8561afa8acb19b7be358cc87af5eaa7696ca4ac	Why R2-04 was retained until now
+docs/records/audits/2026-09/mvp6-ct-disposition-q25-q32-2026-09-26.md	be4610f8a5173fb1b5ef989d3e9f6ad226031c17a94e67fb890b885b1085f768	CT decision 2 (Loads 3.1.0 publication)
+docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/REPORT.md	c580f62b0a9351d260e7c5cc930b0ec4882758d43d3c19bd27e0ad9b1a67460f	Root seam work mapped to 0185-2-REMAINING
+docs/records/audits/2026-09/mvp6-claims-pack-apply-01/SOP-22.md	dd8936d9eea1822054dad544d0b95caf833968bacd327e835047d176e102c2fd	CT decision 3 (Claims pack apply)
+docs/records/audits/2026-09/mvp6-ct-disposition-q46-q47-q49-2026-09-26.md	798d3c78655c989162365a8349e649fc3e5649ed9b709939b6b5065ea7e96b47	CT decision 3 (Returns apply, self-registration sections; no product credit)
+docs/records/audits/2026-09/mvp6-ct-disposition-q53-q54-2026-09-26.md	d6dcb0120a828617b19c0b1b031d7cc8a4b92a339a2d4131e71e724cf82ef2ba	CT decision 3 (patch 05; no effort credit)
+docs/records/decisions/2026-09/mvp6-png-method-owner-decision-01.md	b43158b1938113d34d1e1a910783666c14f5355c5260835ebb3ebf2b318e5b08	Decision 4 (PNG method)
+docs/records/audits/2026-09/mvp6-ct-disposition-q40-q41-2026-09-26.md	a89a70ec6438f4959148da7cde4f206ea28c2fd7e773b335373c78b29beef043	Decision 5 (backlog; no product credit)
+docs/records/audits/2026-09/mvp6-ct-audit-2026-09-25.md	57113cfacf22b87d0e7c79b8ea6e6d250317591330eddb4c192f685f2cd4edf2	CT-accepted baseline 1,128 h (line 54)
+docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/EFFORT.md	2a33ab5285c0fe11d982698298c2375bf1f6fc016cdccb9b1a20c046f3b320bb	Forecast: Returns UI
+docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/EFFORT.md	3fc7c2e160c15c2d16c1671b9084c38f12b16ea589005605fb2e7a85237e86e3	Forecast: Claims UI
+docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	a28c93003b0784a6b96e4eaea395a32998518da87ba38dd765f273af9ee00c6f	Forecast: self-registration 38/70/127
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-disposition-01/OWNER-DECISION-PACK.md	ce972cb23b67975ee8b0c641c0ba7fc3d1766a161dad278965f298915637a3ae	Open multi-root grouping boundary (RS-08)
+docs/roadmap/plans/mvp6-module-readiness-01/MODULE-READINESS.tsv	83c5db9286b2a1be76037dd0e87ca0ea817489968f4dd1b7ddb4c945e7f16301	Readiness cross-check

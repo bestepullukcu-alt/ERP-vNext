@@ -1,0 +1,16 @@
+phase	command	exit	evidence
+baseline	sha256 verify 341-file source inventory	0	manifests/source-final-341.tsv; manifests/combined-97-drift.tsv
+restore	dotnet restore Diten.SupplyChainService.Tests.csproj --disable-parallel --ignore-failed-sources -v minimal	0	raw/fresh-restore.log; raw/fresh-restore.exit
+red	DOTNET_ROLL_FORWARD=Major dotnet test ... --filter ProducerShipmentRootInvalid500_MapsToReturnsRootInvalid	1	raw/red/unit-r01.log; raw/red/unit-r01.exit
+green-targeted	DOTNET_ROLL_FORWARD=Major dotnet test ... --filter R01 mapping/refusal/timeout/malformed-success controls	0	raw/green/unit-r01.log; raw/green/unit-r01.exit
+build	DOTNET_ROLL_FORWARD=Major dotnet build Diten.SupplyChainService.Api.csproj -c Release --no-restore -m:1 /nr:false	0	raw/fresh-build.log; raw/fresh-build.exit
+mongo-start	scripts/start-mongo.sh (127.0.0.1:27187; returns_r01_rework; enableTestCommands=1)	0	scripts/start-mongo.sh; raw/mongo-process.txt; raw/mongod.log
+mongo-init	scripts/init-mongo.sh	0	raw/mongo-reinit.stdout; raw/mongo-reinit.stderr; raw/mongo-reinit.exit
+api-process-1	scripts/start-api.sh (127.0.0.1:51862)	0	scripts/start-api.sh; scripts/launch-command.redacted.sh; raw/api-process-before-main.txt
+http-main	python3 scripts/http_probe.py --phase main	0	raw/main.stdout; raw/main.stderr; raw/main.exit; raw/main-results.json; raw/http/
+api-process-2	scripts/start-api.sh (same binary, same DB, new PID)	0	raw/api-process-after-restart.txt
+http-restart	python3 scripts/http_probe.py --phase restart	0	raw/restart.stdout; raw/restart.stderr; raw/restart.exit; raw/restart-results.json
+returns-regression	DOTNET_ROLL_FORWARD=Major dotnet test ... --filter FullyQualifiedName~Diten.SupplyChainService.Tests.Returns	0	raw/green/returns-regression.log; raw/green/returns-regression.exit
+db-final	mongosh final collection/count/no-write query	0	raw/db-final-state.json; raw/db-final-state.exit
+patch-apply	patch -p1 against exact two-file baseline	0	raw/patch-apply.log; raw/patch-apply.exit; raw/patch-target-hashes.txt
+shutdown	lsof listener checks for 51862 and 27187	1=no listener	raw/api-listener-after-shutdown.*; raw/mongo-listener-after-shutdown.*

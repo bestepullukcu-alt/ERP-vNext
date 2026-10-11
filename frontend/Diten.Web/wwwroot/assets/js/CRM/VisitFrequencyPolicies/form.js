@@ -734,13 +734,59 @@
     };
 
     // ── validation ─────────────────────────────────────────────────────────────
+    // WP-E2E-FIX-3 (E6-B1) — ONE error routine for every validated field: the message box AND the field itself are
+    // marked. A single control gets Bootstrap's `is-invalid`; a radio-card GROUP (priority bands, target type) gets
+    // `vfp-group-invalid` (red frame). The first marked field is scrolled to and focused on submit.
+    const ERROR_FIELDS = {
+        vfpPolicyCodeError: 'vfpPolicyCode',
+        vfpPolicyNameError: 'vfpPolicyName',
+        vfpTargetError: 'vfpTargetTypeCards',
+        vfpFreqError: 'vfpFrequencyType',
+        vfpCountError: 'vfpRequiredVisitCount',
+        vfpPeriodError: 'vfpPeriodType',
+        vfpPriorityError: 'vfpBandCards',
+        vfpSourceError: 'vfpSource',
+        vfpEffectiveError: 'vfpEffectiveFrom',
+        vfpCyclePeriodError: 'vfpCyclePeriod',
+        vfpCampaignError: 'vfpCampaign',
+        vfpSegmentError: 'vfpSegment',
+        vfpNotesError: 'vfpNotes'
+    };
+    const GROUP_FIELDS = ['vfpBandCards', 'vfpTargetTypeCards'];
+    const markField = (fieldId, invalid) => {
+        const field = el(fieldId);
+        if (!field) return;
+        field.classList.toggle(GROUP_FIELDS.includes(fieldId) ? 'vfp-group-invalid' : 'is-invalid', invalid);
+        if (!GROUP_FIELDS.includes(fieldId)) field.setAttribute('aria-invalid', invalid ? 'true' : 'false');
+    };
     const setError = (id, message) => {
         const box = el(id);
         if (!box) return;
         box.textContent = message || '';
         box.classList.toggle('is-shown', !!message);
+        if (ERROR_FIELDS[id]) markField(ERROR_FIELDS[id], !!message);
     };
-    const clearErrors = () => FORM.querySelectorAll('.vfp-error').forEach(b => { b.textContent = ''; b.classList.remove('is-shown'); });
+    const clearErrors = () => {
+        FORM.querySelectorAll('.vfp-error').forEach(b => { b.textContent = ''; b.classList.remove('is-shown'); });
+        Object.values(ERROR_FIELDS).forEach(f => markField(f, false));
+    };
+    /** The first field (in page order) carrying an error: scroll it into view and focus it (a group → its checked or
+     *  first radio; a select2 select → its visible selection box). */
+    const focusFirstError = () => {
+        const marked = Object.values(ERROR_FIELDS)
+            .map(id => el(id))
+            .filter(f => f && (f.classList.contains('is-invalid') || f.classList.contains('vfp-group-invalid')));
+        if (marked.length === 0) return null;
+        const first = marked.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))[0];
+        first.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        const target = GROUP_FIELDS.includes(first.id)
+            ? (first.querySelector('input:checked') || first.querySelector('input'))
+            : (first.classList.contains('select2-hidden-accessible')
+                ? first.nextElementSibling?.querySelector('.select2-selection')
+                : first);
+        target?.focus?.({ preventScroll: true });
+        return first;
+    };
     const isGuid = v => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(norm(v));
 
     const validate = () => {
@@ -948,7 +994,7 @@
     const submit = async status => {
         if (busy) return;
         setLifecycle(status);
-        if (!validate()) { setFormError(t('FixErrors', 'Please fix the highlighted fields.')); return; }
+        if (!validate()) { setFormError(t('FixErrors', 'Please fix the highlighted fields.')); focusFirstError(); return; }
         setFormError('');
         setBusy(true);
         const payload = buildPayload();

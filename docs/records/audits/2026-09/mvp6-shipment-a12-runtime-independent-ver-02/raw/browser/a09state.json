@@ -1,0 +1,126 @@
+{
+  "phase": "a09state",
+  "startedAt": "2026-09-26T07:45:37.893Z",
+  "cases": {
+    "login-actor-a": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "login-actor-b": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "A09-stale-eligibility-422": {
+      "verdict": "PASS",
+      "checks": {
+        "bothRenderedDispatched": true,
+        "actorACommitted": true,
+        "actorBExactError": true,
+        "actorBRootReference": true,
+        "actorBRefreshed": true,
+        "actorBPodActionGone": true,
+        "authoritativePod": true,
+        "db": true
+      },
+      "initial": {
+        "a": "Dispatched",
+        "b": "Dispatched"
+      },
+      "actorBAlert": "The current status no longer permits this transition. Support reference: cafff9d3-4fc0-4455-86b2-b83a312050d8",
+      "actorBRequest": {
+        "at": "2026-09-26T07:45:44.644Z",
+        "method": "POST",
+        "path": "/SupplyChain/Shipments/api/8140c050-6ca5-47c3-88ab-1158bae0f0fb/pod",
+        "status": 422,
+        "requestCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+        "idempotencyKey": "54c02b29-6e2e-453c-87a0-e6db0a59351b",
+        "responseCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+        "errorCode": "INVALID_SHIPMENT_TRANSITION",
+        "bodyCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+        "okShape": null
+      },
+      "actorAStatus": 200,
+      "actorBActionsAfter": [
+        "Change Status"
+      ],
+      "db": {
+        "s0": {
+          "status": "Dispatched",
+          "version": 3,
+          "isDeleted": false,
+          "legalEntityId": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+          "lifecycleCorrelationId": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+          "pod": null,
+          "updatedAt": "2026-09-26T07:37:30.299335+00:00"
+        },
+        "s1": {
+          "status": "Exception",
+          "version": 4,
+          "isDeleted": false,
+          "legalEntityId": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+          "lifecycleCorrelationId": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+          "pod": null,
+          "updatedAt": "2026-09-26T07:45:42.859976+00:00"
+        },
+        "s2": {
+          "status": "Exception",
+          "version": 4,
+          "isDeleted": false,
+          "legalEntityId": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+          "lifecycleCorrelationId": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+          "pod": null,
+          "updatedAt": "2026-09-26T07:45:42.859976+00:00"
+        }
+      }
+    }
+  },
+  "db": [
+    {
+      "name": "a09state-actor-a-commit",
+      "before": "a09state-before-actor-a",
+      "after": "a09state-after-actor-a",
+      "expect": "{\"counts\":{\"sce_shipment_history\":1,\"sce_shipment_receipts\":1,\"sce_shipment_audit\":1,\"sce_shipment_outbox\":1},\"state\":{\"status\":\"Exception\"}}",
+      "result": "PASS",
+      "detail": "{\"counts\":{\"sce_shipment_history\":1,\"sce_shipment_receipts\":1,\"sce_shipment_audit\":1,\"sce_shipment_outbox\":1},\"state\":{\"status\":\"Exception\"}}"
+    },
+    {
+      "name": "a09state-actor-b-stale-zero-write",
+      "before": "a09state-after-actor-a",
+      "after": "a09state-after-actor-b",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    }
+  ],
+  "png": [
+    {
+      "file": "png/a09state-actor-b-after-stale-pod.png",
+      "sha256": "bd5cd00358991c5c7162c3ae19e3b5ab05a1d9a5588b7be648036e87d19da5d7",
+      "bytes": 140717,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/8140c050-6ca5-47c3-88ab-1158bae0f0fb",
+      "capturedAt": "2026-09-26T07:45:45.480Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    }
+  ],
+  "console": [
+    {
+      "actor": "actor-b",
+      "tag": "a09state-b",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "finishedAt": "2026-09-26T07:45:46.303Z"
+}

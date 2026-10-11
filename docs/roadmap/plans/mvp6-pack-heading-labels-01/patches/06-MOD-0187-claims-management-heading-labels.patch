@@ -1,0 +1,25 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+@@ -516,7 +516,9 @@ This section supersedes older draft/HELD/publication-pending wording only for th
+ 
+ Isolated DEV GO applies only to the47 Claims paths in the dispatch allowlist; no worker/publisher, finance posting or shared edits. R01–R30 acceptance remains mandatory and UNEXECUTED at activation. Actual HTTP/JWT/Mongo/concurrency/restart and consumer uptake are DEV/VER outputs, not prerequisites requiring a finished consumer. Root producer isolated acceptance does not prove final-target uptake. Program.cs remains integration-owner-only; HTTP integration requiring its separately approved exact diff remains gated. Independent VER starts after writer-complete. No rollout/migration/backfill/E5/G5/full-module acceptance. Common checkout pack is not promoted by this isolated copy.
+ 
+-## 31. Accepted bounded scope binding (PACK-ALIGNMENT-02 proposal — NOT APPROVED)
++## 31. Accepted bounded scope binding
++
++Approved: `docs/records/decisions/2026-09/mvp6-claims-pack-signoff-owner-decision-01.md`
+ 
+ This section records, without changing any business rule above, the Control Tower acceptance of the bounded work package built under this pack. It is a proposal until the owner decision in `docs/roadmap/plans/mvp6-pack-alignment-02-claims/PROMOTION-DECISION.md` is recorded.
+ 
+@@ -734,7 +736,9 @@ frontend 30/50/84; shared integration 8/16/28; independent UI VER 14/24/40; **to
+ Not authorized by this section: UI code until an integrated target exists and a versioned UI dispatch is released; gateway, permission,
+ navigation, L10n or icon-map edits except by the single integration owner; contract changes; `done` status; commit or push.
+ 
+-## 33. Self-registration (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++## 33. Self-registration
++
++Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff-owner-decision-01.md`
+ 
+ **Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
+ **Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).

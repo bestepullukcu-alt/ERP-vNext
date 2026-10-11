@@ -1,0 +1,74 @@
+@using Diten.Web.Models.SupplyChain.CapacityPlans
+@using Diten.Web.Views.SupplyChain.CapacityPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CapacityPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    // MOD-0192 Capacity entry page (pack §23.4/§23.5, GoldenReferenceSlim). DRAFT overlay — not built, not writer-complete.
+    ViewData["Title"] = Localizer["CapacityPlansTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@* UAS-001: without read, only the shared denial surface inside the shell — no title, form, table, skeleton, button,
+   toast or redirect (pack §23.9). *@
+@if (!Perms.Has(CapacityUiPermissions.Read))
+{
+    <partial name="_AccessDenied" model="@Localizer["CapacityPlansTitle"].Value" />
+    return;
+}
+@{
+    var permissions = CapacityPagePermissions.From(Perms.Has);
+}
+
+@* No DataTable, no list and no list request on this page: the contract has no list operation (F192-LIST). *@
+<div id="capacity-plans-entry">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-3">
+        <div>
+            <h5 class="mb-1">@Localizer["CapacityPlansTitle"]</h5>
+            <p class="mb-0 text-muted">@Localizer["CapacityPlansPageDescription"]</p>
+        </div>
+        @if (permissions.CanCreate)
+        {
+            <button type="button" class="btn btn-primary" id="btnOpenCreatePlan" aria-controls="offcanvasCreatePlan">
+                <i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["CreatePlan"]
+            </button>
+        }
+    </div>
+
+    <div class="row g-6">
+        <div class="col-12 col-lg-8 col-xl-6">
+            <section class="card p-4" aria-labelledby="openPlanTitle">
+                <h6 class="card-title mb-3" id="openPlanTitle">@Localizer["OpenPlanTitle"]</h6>
+                <form id="formOpenPlan" novalidate>
+                    <label for="openPlanId" class="form-label fw-medium">@Localizer["PlanId"] <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <div class="diten-field flex-grow-1">
+                            <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" id="openPlanId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false"
+                                   aria-describedby="openPlanIdHelp openPlanIdError" />
+                        </div>
+                        <button type="submit" class="btn btn-label-primary" id="btnOpenPlan">@Localizer["OpenPlan"]</button>
+                    </div>
+                    <div id="openPlanIdHelp" class="form-text">@Localizer["PlanIdHelp"]</div>
+                    <div id="openPlanIdError" class="invalid-feedback d-block d-none" role="alert">@Localizer["PlanIdInvalid"]</div>
+                </form>
+                <p class="small text-muted mt-3 mb-0">@Localizer["NoPlanListNote"]</p>
+            </section>
+        </div>
+    </div>
+</div>
+
+@if (permissions.CanCreate)
+{
+    <partial name="~/Views/SupplyChain/CapacityPlans/_CreatePlanOffcanvas.cshtml" />
+}
+
+@* Display decision only (UAS-001 §4); the backend permission gate stays the authority. *@
+<script id="capacity-plans-permissions" type="application/json">@Json.Serialize(new { canCreate = permissions.CanCreate })</script>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/SupplyChain/CapacityPlans/_IndexL10n.cshtml" />
+    <script src="~/assets/js/SupplyChain/CapacityPlans/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/SupplyChain/CapacityPlans/index.js" asp-append-version="true"></script>
+}

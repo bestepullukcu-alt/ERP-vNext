@@ -1,0 +1,14 @@
+service	key	value
+auth	TenantResolution__DevBypassEnabled	false
+platform	TenantResolution__DevBypassEnabled	false
+platform	DocumentRegisterSeed__Enabled	false
+platform	BusinessReferenceData__CatalogLoad__Enabled	false
+platform	MdmServiceIdentity__Enabled	true
+platform	MdmServiceIdentity__KeyId	lane-a12-rtver02
+platform	MdmServiceIdentity__Secret	@@LANE:svcid@@
+mdm	PlatformServiceIdentity__Enabled	true
+mdm	PlatformServiceIdentity__KeyId	lane-a12-rtver02
+mdm	PlatformServiceIdentity__Secret	@@LANE:svcid@@
+platform	BackgroundJobs__Enabled	true
+platform	BackgroundJobs__RegisterStandardJobs	false
+platform	BackgroundJobs__DashboardEnabled	false

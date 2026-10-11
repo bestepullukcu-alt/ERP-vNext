@@ -1,0 +1,63 @@
+27:      System.InvalidOperationException: The partial view '_Filter' was not found. The following locations were searched:
+28-      /Views/SupplyChainCarriers/_Filter.en.cshtml
+29-      /Views/SupplyChainCarriers/_Filter.cshtml
+30-      /Views/Shared/_Filter.en.cshtml
+31-      /Views/Shared/_Filter.cshtml
+32-      /Views/MDM/SupplyChainCarriers/_Filter.en.cshtml
+33-      /Views/MDM/SupplyChainCarriers/_Filter.cshtml
+34-      /Views/Platform/SupplyChainCarriers/_Filter.en.cshtml
+35-      /Views/Platform/SupplyChainCarriers/_Filter.cshtml
+36-      /Views/Organization/SupplyChainCarriers/_Filter.en.cshtml
+37-      /Views/Organization/SupplyChainCarriers/_Filter.cshtml
+38-      /Views/MasterData/SupplyChainCarriers/_Filter.en.cshtml
+39-      /Views/MasterData/SupplyChainCarriers/_Filter.cshtml
+40-      /Views/Governance/SupplyChainCarriers/_Filter.en.cshtml
+41-      /Views/Governance/SupplyChainCarriers/_Filter.cshtml
+42-      /Views/SupplyChainCarriers/_Filter.en.cshtml
+43-      /Views/SupplyChainCarriers/_Filter.cshtml
+44-      /Views/Archive/SupplyChainCarriers/_Filter.en.cshtml
+45-      /Views/Archive/SupplyChainCarriers/_Filter.cshtml
+46-         at Microsoft.AspNetCore.Mvc.TagHelpers.PartialTagHelper.ProcessAsync(TagHelperContext context, TagHelperOutput output)
+47-         at Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner.<RunAsync>g__Awaited|0_0(Task task, TagHelperExecutionContext executionContext, Int32 i, Int32 count)
+48-         at AspNetCoreGeneratedDocument.Views_SupplyChain_Carriers_Index.ExecuteAsync() in /private/tmp/mvp6-carrier-ui-ver-01/snapshot/frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml:line 14
+49-         at Microsoft.AspNetCore.Mvc.Razor.RazorView.RenderPageCoreAsync(IRazorPage page, ViewContext context)
+50-         at Microsoft.AspNetCore.Mvc.Razor.RazorView.RenderPageAsync(IRazorPage page, ViewContext context, Boolean invokeViewStarts)
+51-         at Microsoft.AspNetCore.Mvc.Razor.RazorView.RenderAsync(ViewContext context)
+52-         at Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(ViewContext viewContext, String contentType, Nullable`1 statusCode)
+53-         at Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(ViewContext viewContext, String contentType, Nullable`1 statusCode)
+54-         at Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(ActionContext actionContext, IView view, ViewDataDictionary viewData, ITempDataDictionary tempData, String contentType, Nullable`1 statusCode)
+55-         at Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ExecuteAsync(ActionContext context, ViewResult result)
+56-         at Microsoft.AspNetCore.Mvc.ViewResult.ExecuteResultAsync(ActionContext context)
+57-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResultFilterAsync>g__Awaited|30_0[TFilter,TFilterAsync](ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+58-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+59-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+60-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+61-      --- End of stack trace from previous location ---
+62-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResourceFilter>g__Awaited|25_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+63-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)
+64-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+65-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeFilterPipelineAsync()
+66-      --- End of stack trace from previous location ---
+67-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+68-         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+69-         at Program.<>c.<<<Main>$>b__0_18>d.MoveNext() in /private/tmp/mvp6-carrier-ui-ver-01/snapshot/frontend/Diten.Web/Program.cs:line 337
+70-      --- End of stack trace from previous location ---
+71-         at Program.<>c.<<<Main>$>b__0_17>d.MoveNext() in /private/tmp/mvp6-carrier-ui-ver-01/snapshot/frontend/Diten.Web/Program.cs:line 324
+72-      --- End of stack trace from previous location ---
+73-         at Program.<>c.<<<Main>$>b__0_16>d.MoveNext() in /private/tmp/mvp6-carrier-ui-ver-01/snapshot/frontend/Diten.Web/Program.cs:line 313
+74-      --- End of stack trace from previous location ---
+75-         at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+76-         at Program.<>c__DisplayClass0_0.<<<Main>$>b__15>d.MoveNext() in /private/tmp/mvp6-carrier-ui-ver-01/snapshot/frontend/Diten.Web/Program.cs:line 286
+77-      --- End of stack trace from previous location ---
+78-         at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+79-         at Microsoft.AspNetCore.Diagnostics.StatusCodePagesMiddleware.Invoke(HttpContext context)
+80-         at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+81-info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+82-      Start processing HTTP request POST http://127.0.0.1:5000/api/tenant-auth/login
+83-info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+84-      Sending HTTP request POST http://127.0.0.1:5000/api/tenant-auth/login
+85-info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+86-      Received HTTP response headers after 891.737ms - 200
+87-info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+88-      End processing HTTP request after 892.4753ms - 200
+89-info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]

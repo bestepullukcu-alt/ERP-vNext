@@ -1,0 +1,7 @@
+combined_manifest_rows=360
+combined_manifest_result=PASS
+changed_paths=12
+changed_target_result=PASS
+accessibility_paths=3
+accessibility_preservation_result=PASS
+independent_ver_status=REQUIRED

@@ -146,6 +146,21 @@
 
     // ---------------------------------------------------------------- option sources (P1a)
 
+    /** WP-E2E-FIX-3 (E1-B1) — one published reference item → an option. The consumable-sets reader answers
+     *  { code, label, isActive, sortOrder } (MOD-0048 published-values); the older value / valueCode / text / displayName
+     *  shape is still read (backward compatible). A passive value (isActive === false) is not offered, and the list is in
+     *  the set's own sortOrder (then label). */
+    const toReferenceOptions = items => (Array.isArray(items) ? items : [])
+        .map(x => ({
+            value: x.code ?? x.value ?? x.valueCode,
+            text: x.label || x.text || x.displayName || x.code || x.value || x.valueCode,
+            sortOrder: Number.isFinite(Number(x.sortOrder)) ? Number(x.sortOrder) : Number.MAX_SAFE_INTEGER,
+            active: x.isActive !== false
+        }))
+        .filter(o => o.active && o.value !== undefined && o.value !== null && String(o.value).trim() !== '')
+        .sort((a, b) => (a.sortOrder - b.sortOrder) || String(a.text).localeCompare(String(b.text), 'tr'))
+        .map(o => ({ value: String(o.value), text: String(o.text) }));
+
     /** Published MOD-0048 values for one set. An unpublished set yields an EMPTY list — never a local fallback. */
     const loadReferenceValues = async setCode => {
         const key = `set:${setCode}`;
@@ -153,15 +168,30 @@
         let options = [];
         try {
             const data = await getJson(`/reference-values/${encodeURIComponent(setCode)}`);
-            const items = data?.items || data || [];
-            options = items
-                .filter(x => x.isActive !== false && (x.value || x.valueCode))
-                .map(x => ({ value: x.value || x.valueCode, text: x.text || x.displayName || x.value || x.valueCode }));
+            options = toReferenceOptions(data?.items || data || []);
         } catch (e) {
             options = [];
         }
         optionCache.set(key, options);
         return options;
+    };
+
+    /** WP-E2E-FIX-3 (E1-B3) — the MDM selectors cap pageSize at 100 (a 200 was a 400): read every page of 100, the
+     *  StrategyTemplates loadAll pattern. Bounded by PICKER_MAX_PAGES; the item shape is unchanged for the mapper. */
+    const PICKER_PAGE_SIZE = 100;
+    const PICKER_MAX_PAGES = 50;
+    const getAllPages = async path => {
+        const sep = path.indexOf('?') >= 0 ? '&' : '?';
+        const page = n => getJson(`${path}${sep}pageSize=${PICKER_PAGE_SIZE}&pageNumber=${n}`);
+        const first = await page(1);
+        const items = (Array.isArray(first) ? first : (first?.items || first?.Items || [])).slice();
+        const total = Number(first?.totalCount ?? first?.TotalCount);
+        if (Number.isFinite(total) && total > items.length && items.length > 0) {
+            const pages = Math.min(Math.ceil(total / PICKER_PAGE_SIZE), PICKER_MAX_PAGES);
+            const rest = await Promise.all(Array.from({ length: Math.max(0, pages - 1) }, (_, k) => page(k + 2)));
+            rest.forEach(p => items.push(...(Array.isArray(p) ? p : (p?.items || p?.Items || []))));
+        }
+        return { items };
     };
 
     /** The existing selector for an id-valued attribute. Nothing new is opened here. */
@@ -170,7 +200,7 @@
         if (optionCache.has(key)) return optionCache.get(key);
 
         const readers = {
-            'global-product': () => getJson('/global-products?pageSize=200'),
+            'global-product': () => getAllPages('/global-products'),
             'account': () => getJson('/accounts?pageSize=200'),
             'territory-model': () => getJson('/territory-models?pageSize=200'),
             'territory-node': () => context ? getJson(`/territory-models/${context}/nodes`) : Promise.resolve([]),

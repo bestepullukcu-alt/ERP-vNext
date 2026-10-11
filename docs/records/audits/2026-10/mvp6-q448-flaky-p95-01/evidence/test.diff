@@ -1,0 +1,19 @@
+--- /Users/natig/mvp6-env/q448-20261005-0109/ShipmentTelemetryTests.before.cs	2026-10-05 01:09:18
++++ /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Shipments/ShipmentTelemetryTests.cs	2026-10-05 01:23:15
+@@ -68,7 +68,15 @@
+         Assert.Equal("ms", recorder.Unit("shipment.operation.duration"));
+         var p95 = values.OrderBy(value => value).ElementAt((int)Math.Ceiling(0.95 * values.Length) - 1);
+         output.WriteLine($"p95 over {values.Length} recorded operations = {p95:F1} ms");
+-        Assert.True(p95 >= delays.OrderBy(d => d).ElementAt(18), $"p95 {p95:F1} ms is below the 19th slowest delay; durations are not being recorded.");
++        // Q448: the measurement may sit slightly below the requested delay. Task.Delay schedules its due time on
++        // Environment.TickCount64, which advances in whole OS timer ticks (1 ms on macOS/Linux, about 15.6 ms by default on
++        // Windows), while the Stopwatch in PerformanceBehavior is high-resolution — so a delay can complete up to one tick
++        // early. Measured on macOS: Task.Delay up to 0.835 ms early (10 of 1,200 delays), and this p95 as low as 56.4 ms
++        // for a requested 57 ms (3 of 200 runs before this tolerance). The tolerance is one Windows tick. It still fails
++        // when durations are missing, zero or recorded in seconds, which is what this assertion is for.
++        const double timerGranularityMs = 16;
++        var floor = delays.OrderBy(d => d).ElementAt(18) - timerGranularityMs;
++        Assert.True(p95 >= floor, $"p95 {p95:F1} ms is below {floor:F1} ms (the 19th slowest delay minus one timer tick); durations are not being recorded.");
+     }
+ 
+     [Fact]

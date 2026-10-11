@@ -14,8 +14,14 @@ public sealed class ListVisitReportsHandler : IRequestHandler<ListVisitReportsQu
     private readonly ITenantContext _tenant;
     private readonly IVisitReportRepository _repository;
 
-    public ListVisitReportsHandler(ITenantContext tenant, IVisitReportRepository repository)
+    private readonly IPlannedVisitRepository _plannedVisits;
+    private readonly ICallerScope _caller;
+
+    public ListVisitReportsHandler(
+        ITenantContext tenant, IVisitReportRepository repository, IPlannedVisitRepository plannedVisits, ICallerScope caller)
     {
+        _plannedVisits = plannedVisits;
+        _caller = caller;
         _tenant = tenant;
         _repository = repository;
     }
@@ -30,6 +36,16 @@ public sealed class ListVisitReportsHandler : IRequestHandler<ListVisitReportsQu
 
         var rows = await _repository.ListAsync(tenantId, cancellationToken);
         IEnumerable<Domain.Entities.VisitReport> query = rows;
+
+        // WP-VP-2 (B-1) — without read-all only the reports on the caller's own planned visits are listed.
+        if (!_caller.HasPermission(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll))
+        {
+            var own = (await _plannedVisits.ListAsync(tenantId, cancellationToken))
+                .Where(v => _caller.MayAccess(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, v.Resource.ResourceId))
+                .Select(v => v.Id)
+                .ToHashSet();
+            query = query.Where(r => own.Contains(r.PlannedVisitId));
+        }
 
         if (request.PlannedVisitId is { } plannedVisitId && plannedVisitId != Guid.Empty)
         {

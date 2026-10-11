@@ -1,0 +1,6 @@
+L5 module files placed: 23 (all new paths)
+L6 ocelot confirm /api/shipment-bundle/shipments/{shipmentId} GET: present
+L6 ocelot routes 275 -> 277
+L6 env-integration files 9
+derived overlay claims-v3-module: 23 files tar=56b5b184e0811c1fda8b44b410ca144158985cd3f5ccaba30dcbf6dde977a740 manifest=558308739c7596b74c83bb6b321837523890ea9ff26308fd8046cb89c12cc50b
+derived overlay claims-v3-env-integration: 9 files tar=bc398cb82fe22587a5e797b481d942b15438df4d690347cef1d88c779b0dcfa3 manifest=b45b83ff4d2cffc4d2bae3a712c1b89ee6743fc275fc330c3085477e4fd6d225

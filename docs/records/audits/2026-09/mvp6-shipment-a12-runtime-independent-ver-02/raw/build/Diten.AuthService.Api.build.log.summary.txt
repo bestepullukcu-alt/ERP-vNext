@@ -1,0 +1,13 @@
+  Diten.AuthService.Domain -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.AuthService/src/Diten.AuthService.Domain/bin/Release/net8.0/Diten.AuthService.Domain.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.Platform.Common -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Release/net8.0/Diten.Platform.Common.dll
+  Diten.AuthService.Application -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.AuthService/src/Diten.AuthService.Application/bin/Release/net8.0/Diten.AuthService.Application.dll
+  Diten.Platform.Contracts -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Platform.Contracts/bin/Release/net8.0/Diten.Platform.Contracts.dll
+  Diten.AuthService.Persistence -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.AuthService/src/Diten.AuthService.Persistence/bin/Release/net8.0/Diten.AuthService.Persistence.dll
+  Diten.AuthService.Infrastructure -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/bin/Release/net8.0/Diten.AuthService.Infrastructure.dll
+  Diten.AuthService.Api -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.AuthService/src/Diten.AuthService.Api/bin/Release/net8.0/Diten.AuthService.Api.dll
+Build succeeded.
+    1 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:15.79

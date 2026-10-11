@@ -190,4 +190,35 @@
   <data name="LinkedClaims" xml:space="preserve"><value>Allégations liées</value></data>
   <data name="NoLinkedClaims" xml:space="preserve"><value>Aucune allégation n'est liée à ce contenu.</value></data>
   <data name="ClaimNeedsReview" xml:space="preserve"><value>À revoir — l'allégation a changé après l'approbation de ce lien.</value></data>
+  <data name="ContentType_presentation" xml:space="preserve"><value>Présentation</value></data>
+  <data name="ContentType_brochure" xml:space="preserve"><value>Brochure</value></data>
+  <data name="ContentType_lesson" xml:space="preserve"><value>Leçon</value></data>
+  <data name="ContentType_faq" xml:space="preserve"><value>FAQ</value></data>
+  <data name="ContentType_clinical-summary" xml:space="preserve"><value>Résumé clinique</value></data>
+  <data name="ContentType_objection-handling" xml:space="preserve"><value>Gestion des objections</value></data>
+  <data name="ContentType_quiz" xml:space="preserve"><value>Quiz</value></data>
+  <data name="ContentType_video" xml:space="preserve"><value>Vidéo</value></data>
+  <data name="ContentType_pdf" xml:space="preserve"><value>Document PDF</value></data>
+  <data name="ContentType_html-detail" xml:space="preserve"><value>Détail HTML</value></data>
+  <data name="ContentType_sop" xml:space="preserve"><value>Procédure opératoire standard</value></data>
+  <data name="ContentType_training-material" xml:space="preserve"><value>Support de formation</value></data>
+  <data name="ContentType_message-script" xml:space="preserve"><value>Script de message</value></data>
+  <data name="ContentType_knowledge-article" xml:space="preserve"><value>Article de connaissance</value></data>
+  <data name="ContentType_assembled-presentation" xml:space="preserve"><value>Présentation assemblée</value></data>
+  <data name="ContentStatus_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="ContentStatus_review" xml:space="preserve"><value>En revue</value></data>
+  <data name="ContentStatus_approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="ContentStatus_published" xml:space="preserve"><value>Publié</value></data>
+  <data name="ContentStatus_inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="ContentStatus_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="ContentSource_manual" xml:space="preserve"><value>Manuel</value></data>
+  <data name="ContentSource_campaign" xml:space="preserve"><value>Campagne</value></data>
+  <data name="ContentSource_legacy-import" xml:space="preserve"><value>Import hérité</value></data>
+  <data name="ContentSource_training" xml:space="preserve"><value>Formation</value></data>
+  <data name="ContentSource_external" xml:space="preserve"><value>Externe</value></data>
+  <data name="ContentSource_other" xml:space="preserve"><value>Autre</value></data>
+  <data name="ContentSource_content-studio" xml:space="preserve"><value>Content Studio</value></data>
+  <data name="ContentConcurrencyConflict" xml:space="preserve"><value>Ce contenu a été modifié par quelqu’un d’autre pendant votre édition. Rechargez la page et appliquez de nouveau vos modifications.</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>La liste des produits est indisponible pour le moment.</value></data>
+  <data name="ProductSearchPlaceholder" xml:space="preserve"><value>Saisissez le nom ou le code du produit…</value></data>
 </root>

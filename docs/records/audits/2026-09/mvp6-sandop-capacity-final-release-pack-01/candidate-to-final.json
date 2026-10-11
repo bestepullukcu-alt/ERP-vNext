@@ -1,0 +1,87 @@
+{
+  "r2YamlSha256": "5dc5e9750797ea687fce2e959b17d9b3312231b5701238815cab48e7ca3b661c",
+  "r2AnnexSha256": "9f7d87fc72934dc204fb6dffba1a6646ef583dea3c24d996974e716a9add9b20",
+  "finalYamlSha256": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+  "finalAnnexSha256": "78113fa0e4c220b011f6c6334c80a8e2b638acc831e760171d0f0011f4e63d64",
+  "publicationPatchSha256": "03a4df276e29f3b33a54fb6900eacd9f8a56855318a5e97502312571c6a91822",
+  "replacements": [
+    {
+      "file": "docs/analysis/contracts/sandop-capacity.openapi.yaml",
+      "before": "  version: 2.0.0-rc.2\n",
+      "after": "  version: 2.0.0\n",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity.openapi.yaml",
+      "before": "  x-status: CANDIDATE\n",
+      "after": "  x-status: FROZEN\n",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity.openapi.yaml",
+      "before": "  x-semantics-annex: sandop-capacity-semantics-v2.0.0-rc.2.md\n",
+      "after": "  x-semantics-annex: sandop-capacity-semantics-v2.0.0.md\n",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "# SANDOP-CAPACITY semantics v2.0.0-rc.2 \u2014 unpublished candidate",
+      "after": "# SANDOP-CAPACITY semantics v2.0.0 \u2014 proposed final publication artifact",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "This annex belongs to the R2 candidate YAML only. Proposed metadata `info.version: 2.0.0-rc.2`, `x-status: CANDIDATE`, wire `contractVersion: v1`.",
+      "after": "This annex belongs to the proposed final YAML only. Prepared metadata is `info.version: 2.0.0`, `x-status: FROZEN`, wire `contractVersion: v1`; these bytes are not canonical until separately approved and published.",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "The newly proposed wire dispositions and final 2.0.0 version remain UNAPPROVED for publication;",
+      "after": "The 2.0.0 final-artifact preparation is approved, while exact-hash consumer consent and canonical publication remain UNAPPROVED;",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "Precedence candidate:",
+      "after": "Proposed precedence:",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "Exact code/message text in candidate YAML examples is proposed, not published.",
+      "after": "Exact code/message text in the accompanying YAML is proposed for publication, not yet canonical.",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "Candidate added/special failure",
+      "after": "Proposed final added/special failure",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "## Lifecycle/fixture boundary that candidate wire errors depend on",
+      "after": "## Lifecycle/fixture boundary that proposed final wire errors depend on",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "New 400/409/422/503 wire cases remain amendment **proposals**, while executor/lifecycle/replay are approved only as candidate-preparation design. No candidate result is canonical contract authority.",
+      "after": "New 400/409/422/503 wire cases remain **proposed final publication bytes**; executor/lifecycle/replay design approval and final-artifact preparation grant no runtime authority. This artifact is not canonical until separately published.",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "approves **that exact payload as design for this candidate only**.",
+      "after": "approved **that exact payload for R2 candidate design**; final-artifact preparation does not grant runtime authority.",
+      "count": 1
+    },
+    {
+      "file": "docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "before": "Verify baseline and candidate hashes, exact patch application and only this YAML/annex candidate scope;",
+      "after": "Verify baseline and final-artifact hashes, exact patch application and only this YAML/annex publication scope;",
+      "count": 1
+    }
+  ]
+}

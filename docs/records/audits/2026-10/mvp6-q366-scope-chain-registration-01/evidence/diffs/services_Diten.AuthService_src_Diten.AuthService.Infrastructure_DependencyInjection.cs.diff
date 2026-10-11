@@ -1,0 +1,22 @@
+diff --git a/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs b/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs
+index 5a128d44a..64e54e9c3 100644
+--- a/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs
++++ b/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs
+@@ -76,6 +76,17 @@ public static class DependencyInjection
+             client.BaseAddress = new Uri(options.BaseUrl);
+             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
+         });
++        // Q366 (2026-10-03): LoginCommandHandler, RefreshTokenCommandHandler, ForcedChangeTenantPasswordCommandHandler and
++        // VerifyMfaCommandHandler take ITenantLegalEntityScopeClient as OPTIONAL (= null). With no registration every
++        // tenant token was minted without legal_entity_id and nothing reported it: the Web Shipment adapter then refused
++        // every call with 403 for a user holding all five keys (Q362). This makes the handlers ask Platform for the
++        // user's single legal entity. Restored verbatim from the Q185 lane tree (Q362, Q363).
++        services.AddHttpClient<ITenantLegalEntityScopeClient, PlatformTenantLegalEntityScopeClient>((sp, client) =>
++        {
++            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
++            client.BaseAddress = new Uri(options.BaseUrl);
++            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
++        });
+         services.AddHttpClient<IPlatformAdministratorStatusClient, PlatformAdministratorStatusClient>((sp, client) =>
+         {
+             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;

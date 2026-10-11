@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Q-series work packages, CT verdicts and BASE-STACK (2026-09) (part f)
+
+3 folders/items, first 'mvp6-q84b-sop-mac-01', last 'mvp6-q95-ver-q93-apply'.
+Work packages: Q84B, Q87, Q95.
+275 files from pathspec/R7f.txt (Q230 commit plan).

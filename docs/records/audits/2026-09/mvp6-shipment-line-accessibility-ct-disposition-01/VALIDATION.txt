@@ -1,0 +1,4 @@
+PASS controlling artifact hashes 7/7
+PASS successor manifest rows 354
+PASS exact changed paths and successor hashes 3/3
+PASS no new delivered hours and remaining reserve retained

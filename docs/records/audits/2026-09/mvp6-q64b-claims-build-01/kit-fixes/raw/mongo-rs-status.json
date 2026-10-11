@@ -1,0 +1,1 @@
+{"set":"rsClaimsFixQ64b01","members":[{"name":"127.0.0.1:36994","stateStr":"PRIMARY"}],"version":"8.0.18","port":36994,"operational27017Used":false,"databasesAtStart":["admin","config","local"]}

@@ -1,0 +1,37 @@
+[00:53:20 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[00:53:20 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[00:53:20 INF] Now listening on: http://127.0.0.1:56392
+[00:53:20 INF] Application started. Press Ctrl+C to shut down.
+[00:53:20 INF] Hosting environment: Testing
+[00:53:20 INF] Content root path: /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923
+[00:53:21 INF] Request starting HTTP/1.1 GET http://127.0.0.1:56392/health - null null
+[00:53:21 INF] Executing endpoint 'HTTP: GET /health'
+[00:53:21 INF] Setting HTTP status code 200.
+[00:53:21 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[00:53:21 INF] Executed endpoint 'HTTP: GET /health'
+[00:53:21 INF] Request finished HTTP/1.1 GET http://127.0.0.1:56392/health - 200 null application/json; charset=utf-8 49.9546ms
+[00:53:21 INF] Request starting HTTP/1.1 POST http://127.0.0.1:56392/api/supply-chain/capacity-plans - application/json 206
+[00:53:21 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api)'
+[00:53:21 INF] Route matched with {action = "Create", controller = "CapacityPlans"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.CapacityPlans.CreateCapacityPlanRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController (Diten.SupplyChainService.Api).
+[00:53:21 INF] Handling CreateCapacityPlanCommand
+[00:53:21 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityPlanResponse'.
+[00:53:21 INF] Executed action Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api) in 138.284ms
+[00:53:21 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api)'
+[00:53:21 INF] Request finished HTTP/1.1 POST http://127.0.0.1:56392/api/supply-chain/capacity-plans - 201 null application/json; charset=utf-8 193.0436ms
+[00:53:21 INF] Request starting HTTP/1.1 POST http://127.0.0.1:56392/api/supply-chain/capacity-plans/dc65a9d1-bfb1-4129-a21c-0364929177a1/scenarios - application/json 235
+[00:53:21 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.CreateScenario (Diten.SupplyChainService.Api)'
+[00:53:21 INF] Route matched with {action = "CreateScenario", controller = "CapacityPlans"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] CreateScenario(System.Guid, Diten.SupplyChainService.Application.Features.CapacityPlans.CreateCapacityScenarioRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController (Diten.SupplyChainService.Api).
+[00:53:21 INF] Handling CreateCapacityScenarioCommand
+[00:53:21 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityScenarioResponse'.
+[00:53:21 INF] Executed action Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.CreateScenario (Diten.SupplyChainService.Api) in 52.7711ms
+[00:53:21 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.CreateScenario (Diten.SupplyChainService.Api)'
+[00:53:21 INF] Request finished HTTP/1.1 POST http://127.0.0.1:56392/api/supply-chain/capacity-plans/dc65a9d1-bfb1-4129-a21c-0364929177a1/scenarios - 201 null application/json; charset=utf-8 59.8707ms
+[00:53:21 INF] Request starting HTTP/1.1 POST http://127.0.0.1:56392/api/supply-chain/capacity-plans/dc65a9d1-bfb1-4129-a21c-0364929177a1/scenarios/7501c283-2b74-40b4-ac59-42d442863594/evaluations - application/json 53
+[00:53:21 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Evaluate (Diten.SupplyChainService.Api)'
+[00:53:21 INF] Route matched with {action = "Evaluate", controller = "CapacityPlans"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Evaluate(System.Guid, System.Guid, Diten.SupplyChainService.Application.Features.CapacityPlans.EvaluateCapacityScenarioRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController (Diten.SupplyChainService.Api).
+[00:53:21 INF] Handling EvaluateCapacityScenarioCommand
+[00:53:21 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityEvaluationResponse'.
+[00:53:21 INF] Executed action Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Evaluate (Diten.SupplyChainService.Api) in 35.6395ms
+[00:53:21 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Evaluate (Diten.SupplyChainService.Api)'
+[00:53:21 INF] Request finished HTTP/1.1 POST http://127.0.0.1:56392/api/supply-chain/capacity-plans/dc65a9d1-bfb1-4129-a21c-0364929177a1/scenarios/7501c283-2b74-40b4-ac59-42d442863594/evaluations - 202 null application/json; charset=utf-8 40.1012ms
+[00:53:21 INF] Application is shutting down...

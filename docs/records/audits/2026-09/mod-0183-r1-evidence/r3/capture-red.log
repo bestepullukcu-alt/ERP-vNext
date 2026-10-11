@@ -1,0 +1,16 @@
+test_absent_body_remains_null (__main__.RuntimeCaptureTests) ... ok
+test_nested_request_snapshot_matches_sent_bytes_after_caller_mutation (__main__.RuntimeCaptureTests) ... FAIL
+
+======================================================================
+FAIL: test_nested_request_snapshot_matches_sent_bytes_after_caller_mutation (__main__.RuntimeCaptureTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/test_runtime_capture.py", line 36, in test_nested_request_snapshot_matches_sent_bytes_after_caller_mutation
+    self.assertEqual(sent, self.scope["records"][-1]["request"])
+AssertionError: {'lin[15 chars]y': '٣٠.٠٠٠'}], 'note': '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀[977 chars]😀😀😀'} != {'lin[15 chars]y': '30.000'}], 'note': '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀[976 chars]😀😀😀'}
+Diff is 2192 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.010s
+
+FAILED (failures=1)

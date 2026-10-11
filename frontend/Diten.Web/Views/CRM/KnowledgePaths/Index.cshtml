@@ -1,26 +1,71 @@
 @using Diten.Web.Views.CRM.KnowledgePaths
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<KnowledgePathsIndex> Localizer
+@inject IHtmlLocalizer<KnowledgePathStudio> Localizer
 @{
-    ViewData["Title"] = Localizer["KnowledgePathsTitle"].Value;
+    ViewData["Title"] = Localizer["StudioTitle"].Value;
     Layout = "_LayoutTenantShell";
+    var canManage = ViewData["CanManage"] is true;
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
 <partial name="~/Views/CRM/KnowledgePaths/_Filter.cshtml" />
 
 <div class="mb-3">
-    <h5 class="mb-0">@Localizer["KnowledgePathsTitle"]</h5>
+    <h5 class="mb-0">@Localizer["StudioTitle"]</h5>
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
-@* The primary "Create Path" action is rendered inside the DataTable toolbar (.add-new) by index.js — Golden pattern. *@
+@* WP-KP-UI-1 — summary cards (mockup v2); a click applies the matching filter. *@
+<div class="row g-4 mb-4" id="kpSummary" data-can-manage="@(canManage ? "true" : "false")">
+    <div class="col-6 col-lg-3">
+        <button type="button" class="card h-100 w-100 text-start border-0 js-summary" data-filter="all">
+            <span class="card-body d-block">
+                <span class="d-block text-muted small">@Localizer["SumTotal"]</span>
+                <span class="d-block h4 mb-0" id="kpSumTotal">–</span>
+                <span class="d-block small text-muted">@Localizer["SumTotalSub"]</span>
+            </span>
+        </button>
+    </div>
+    <div class="col-6 col-lg-3">
+        <button type="button" class="card h-100 w-100 text-start border-0 js-summary" data-filter="draft">
+            <span class="card-body d-block">
+                <span class="d-block text-muted small">@Localizer["SumDraft"]</span>
+                <span class="d-block h4 mb-0" id="kpSumDraft">–</span>
+                <span class="d-block small text-muted">@Localizer["SumDraftSub"]</span>
+            </span>
+        </button>
+    </div>
+    <div class="col-6 col-lg-3">
+        <button type="button" class="card h-100 w-100 text-start border-0 js-summary" data-filter="published">
+            <span class="card-body d-block">
+                <span class="d-block text-muted small">@Localizer["SumPublished"]</span>
+                <span class="d-block h4 mb-0 text-success" id="kpSumPublished">–</span>
+                <span class="d-block small text-muted">@Localizer["SumPublishedSub"]</span>
+            </span>
+        </button>
+    </div>
+    <div class="col-6 col-lg-3">
+        <button type="button" class="card h-100 w-100 text-start border-0 js-summary" data-filter="legacy">
+            <span class="card-body d-block">
+                <span class="d-block text-muted small">@Localizer["SumLegacy"]</span>
+                <span class="d-block h4 mb-0 text-warning" id="kpSumLegacy">–</span>
+                <span class="d-block small text-muted">@Localizer["SumLegacySub"]</span>
+            </span>
+        </button>
+    </div>
+</div>
+
+@* The primary "New path" action is rendered inside the DataTable toolbar (.add-new) by index.js — Golden pattern. *@
 @* Contract markers rendered by _DataTable: skeleton-loader + data-dt-standard=v2 *@
 <partial name="~/Views/CRM/KnowledgePaths/_DataTable.cshtml" />
+<partial name="~/Views/CRM/KnowledgePaths/_LegacyWizard.cshtml" />
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/CRM/KnowledgePaths/_IndexL10n.cshtml" />
     <script src="~/assets/js/CRM/KnowledgePaths/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/CRM/KnowledgePaths/_StudioL10n.cshtml" />
+    <script src="~/assets/js/CRM/KnowledgePaths/studio-common.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgePaths/legacy-wizard.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/KnowledgePaths/index.js" asp-append-version="true"></script>
 }

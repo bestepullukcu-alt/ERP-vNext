@@ -1,0 +1,5 @@
+docs(scm): publish MVP6 contracts and annexes with the docs-path guard authority
+
+Contracts (2 changed YAMLs, 8 annexes), docs-path-authority.json, DocsPathGuardTests.cs, the docs-organization.md candidate rule and the sealed inputs the authority pins by SHA-256. Same file set as C01 of the Q69 prep plan.
+Work packages: Q69 (plan), Q62/Q72-Q76 publication WPs as recorded in the folders.
+57 files from pathspec/C01.txt (Q230 commit plan).

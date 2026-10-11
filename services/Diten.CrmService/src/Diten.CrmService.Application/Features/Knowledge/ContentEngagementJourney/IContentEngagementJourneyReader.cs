@@ -26,6 +26,27 @@ public interface IContentEngagementJourneyReader
 
     Task<IReadOnlyList<ContentEngagementJourneyStageDto>> GetOrderedStagesAsync(
         Guid journeyId, DateTimeOffset effectiveAt, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// WP-VP-3C (K-7f) — the published, effective journeys that tell each of <paramref name="productIds"/>: the journeys
+    /// whose Subject has the product as its PRIMARY MDM Global Product link (<c>ChainContextResolver.PrimaryGlobalProduct</c>,
+    /// the single definition), narrowed by the criteria's language / audience. Every requested product is a key (an empty
+    /// list when nothing tells it). The default answers nothing (a reader that cannot tell products apart); the production
+    /// reader costs three reads for any number of products (subjects, journeys, paths).
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<ContentEngagementJourneyDto>>> ResolvePublishedJourneysForProductsAsync(
+        IReadOnlyCollection<Guid> productIds, ContentEngagementJourneyCriteria criteria, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<ContentEngagementJourneyDto>>>(
+            productIds.Distinct().ToDictionary(id => id, _ => (IReadOnlyList<ContentEngagementJourneyDto>)Array.Empty<ContentEngagementJourneyDto>()));
+
+    /// <summary>WP-VP-3C (K-7f) — <see cref="ResolvePublishedJourneysForProductsAsync"/> for one product.</summary>
+    async Task<IReadOnlyList<ContentEngagementJourneyDto>> ResolvePublishedJourneysForProductAsync(
+        Guid productId, string? language, Guid? audienceProfileId, DateTimeOffset? effectiveAt, CancellationToken cancellationToken)
+        => (await ResolvePublishedJourneysForProductsAsync(
+                new[] { productId },
+                new ContentEngagementJourneyCriteria(AudienceProfileId: audienceProfileId, Language: language, EffectiveAt: effectiveAt),
+                cancellationToken))
+            .TryGetValue(productId, out var rows) ? rows : Array.Empty<ContentEngagementJourneyDto>();
 }
 
 /// <summary>Default seam implementation. Read-only: it never mutates a journey, a stage or a FU04 KnowledgePath.</summary>
@@ -34,10 +55,14 @@ public sealed class ContentEngagementJourneyReader : IContentEngagementJourneyRe
     private readonly ITenantContext _tenant;
     private readonly IContentEngagementJourneyRepository _journeys;
     private readonly IKnowledgePathRepository _paths;
+    private readonly ISubjectRepository? _subjects;
 
     public ContentEngagementJourneyReader(
-        ITenantContext tenant, IContentEngagementJourneyRepository journeys, IKnowledgePathRepository paths)
+        ITenantContext tenant, IContentEngagementJourneyRepository journeys, IKnowledgePathRepository paths,
+        // WP-VP-3C — the product → subject link (optional: without it no journey is found by product).
+        ISubjectRepository? subjects = null)
     {
+        _subjects = subjects;
         _tenant = tenant;
         _journeys = journeys;
         _paths = paths;
@@ -81,6 +106,48 @@ public sealed class ContentEngagementJourneyReader : IContentEngagementJourneyRe
             await _paths.ListAsync(tenantId, cancellationToken));
 
         return list.Select(j => ContentEngagementJourneyMapper.ToDto(j, ctx, effectiveAt)).ToList();
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<ContentEngagementJourneyDto>>> ResolvePublishedJourneysForProductsAsync(
+        IReadOnlyCollection<Guid> productIds, ContentEngagementJourneyCriteria criteria, CancellationToken cancellationToken)
+    {
+        var wanted = productIds.Where(id => id != Guid.Empty).Distinct().ToList();
+        var result = wanted.ToDictionary(id => id, _ => (IReadOnlyList<ContentEngagementJourneyDto>)Array.Empty<ContentEngagementJourneyDto>());
+        if (wanted.Count == 0 || _subjects is null || _tenant.TenantId is not { } tenantId)
+        {
+            return result;
+        }
+
+        // ONE subject read: subject → its primary product (the single definition), only for the products asked about.
+        var productOfSubject = new Dictionary<Guid, Guid>();
+        foreach (var subject in await _subjects.ListAsync(tenantId, cancellationToken))
+        {
+            if (subject.IsDeleted || subject.IsArchived())
+            {
+                continue;
+            }
+
+            if (Chain.ChainContextResolver.PrimaryGlobalProduct(subject) is { } product && result.ContainsKey(product.Id))
+            {
+                productOfSubject[subject.Id] = product.Id;
+            }
+        }
+
+        if (productOfSubject.Count == 0)
+        {
+            return result;
+        }
+
+        // ONE journey read + ONE path read (the published / effective / language / audience rules of the existing read).
+        var journeys = await ResolvePublishedJourneysAsync(criteria with { SubjectId = null, TopicId = null }, cancellationToken);
+        foreach (var group in journeys
+                     .Where(j => productOfSubject.ContainsKey(j.SubjectId))
+                     .GroupBy(j => productOfSubject[j.SubjectId]))
+        {
+            result[group.Key] = group.OrderBy(j => j.JourneyCode, StringComparer.Ordinal).ToList();
+        }
+
+        return result;
     }
 
     public async Task<IReadOnlyList<ContentEngagementJourneyStageDto>> GetOrderedStagesAsync(

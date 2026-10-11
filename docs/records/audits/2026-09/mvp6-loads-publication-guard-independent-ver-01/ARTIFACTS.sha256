@@ -1,0 +1,17 @@
+ef579c5768a8be412ac68393d3dbced4b7668b4c6047facfa4385a980128f4ee  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/COMMANDS.tsv
+edcddc3e22fd2a136b0fed51fcdee15118f3c6696d052d6b4596bb12d64bbae0  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check1-decisions-sums.txt
+37618b7855cb182a5c4978789144d1959556f047564076b3f896440a1f04b5bb  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check2-w1-w5-payload-binding.txt
+6db7a03eadadb695ec8468ef6a4bad871d31fcb699381815250f7ac474589ff6  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check3-mtimes.txt
+e2ae0541edcee2f37ba82b8c9a05f58ba9e3783aff43eb50ca55817bee14d9c8  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check3-porcelain.txt
+8400d9aaf56adb7ab291b6f77201a2e5e8c3e6604da3f9dfca77c8087c1497fd  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check4-architecture-full-ver-attempt1.txt
+88b116eb3b902f5b7f7c12cc17eefd292257a73b8d4cfe3ffa38fad760718b35  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check4-docs-path-guard-ver-attempt1.txt
+b187078da4427a36fcaf8c52a6057ced8c7d3f034c1a2527c5cd6dcf42c8e132  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check4-environment.txt
+d94bba76f77633ed02e10439150ec2df0e8194e00c26d83f440333813edd3e60  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check4-trx-comparison.txt
+cd3d436c9fd9090a88bece8bb4ccc508e300ecd2c809eed577cbbabb5036c2d0  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check4-trx-identity-and-failure-messages.txt
+ac8ba21552bc68d71c176aa745cf9a272172858327a4d190ad2e6888f93e0dae  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/check5-deviations.txt
+31f4ddd4240abe0910e0b24f1b188075cdc9c8be6d0ce420c2d50c5c16662975  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/run.sh.txt
+ebc9abe6da02f5ba393b94c47a55d07a4cf849eaff91b11a68c606ab232d5306  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/trx_sum.sh.txt
+ec90b2085b928cc331a2a9d7d83d33cca4d9dbacc92b98ef012630b80a3fc477  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/raw/ver_check2.py.txt
+2b219f83fbc62a83b3e98f8fba4ebc8a39939e312d66901b67bb4f4deb97f66e  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/SOP-22-VER.md
+4e2081b7a96eb35f01a5523b0656c6b9246e9f6d5af15698657a058f2320c6fe  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/VER-ARCHITECTURE-FULL-attempt1.trx
+ffc09dc805066184c8dca5c1d84bfad38977b1d9903057eb155b43bb4a4e30dd  docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/VER-DOCS-PATH-GUARD-attempt1.trx

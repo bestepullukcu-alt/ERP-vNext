@@ -1,8 +1,18 @@
 @model Diten.Web.Models.CRM.KnowledgeContentEditViewModel
+@using Diten.Web.Controllers.CRM
 @using Diten.Web.Views.CRM.Knowledge
 @using Microsoft.AspNetCore.Mvc.Localization
 @using System.Text.Json
 @inject IHtmlLocalizer<KnowledgeIndex> Localizer
+@functions {
+    // WP-E2E-FIX-2 (E2-B3) — a vocabulary option shows its localized label (value stays the code); an unknown code
+    // (a new contract value with no key yet) shows the code, never an empty option.
+    private string CodeLabel(string prefix, string code)
+    {
+        var label = Localizer[prefix + code];
+        return label.IsResourceNotFound ? code : label.Value;
+    }
+}
 @{
     // Convenience source-system suggestions for the external-reference picker (Select2 is in tags mode — any custom value
     // is still allowed). Not a canonical vocabulary.
@@ -14,6 +24,10 @@
 }
 
 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+@if (!string.IsNullOrWhiteSpace(Model.WriteErrorKey))
+{
+    <div class="alert alert-danger" role="alert">@Localizer[Model.WriteErrorKey]</div>
+}
 @if (!string.IsNullOrWhiteSpace(Model.ContractError))
 {
     <div class="alert alert-danger" role="alert">@Localizer[Model.ContractError]</div>
@@ -41,7 +55,7 @@
                         <label asp-for="ContentType" class="form-label fw-medium">@Localizer["ContentType"] <span class="text-danger">*</span></label>
                         <select asp-for="ContentType" class="select2 form-select" required>
                             <option value="">@Localizer["SelectOption"]</option>
-                            @foreach (var x in Model.ContentTypes) { <option value="@x">@x</option> }
+                            @foreach (var x in Model.ContentTypes) { <option value="@x">@CodeLabel("ContentType_", x)</option> }
                         </select>
                         <span asp-validation-for="ContentType" class="text-danger small mt-1"></span>
                     </div>
@@ -49,7 +63,7 @@
                         <label asp-for="ContentStatus" class="form-label fw-medium">@Localizer["ContentStatus"] <span class="text-danger">*</span></label>
                         <select asp-for="ContentStatus" class="select2 form-select" required>
                             <option value="">@Localizer["SelectOption"]</option>
-                            @foreach (var x in Model.ContentStatuses) { <option value="@x">@x</option> }
+                            @foreach (var x in Model.ContentStatuses) { <option value="@x">@CodeLabel("ContentStatus_", x)</option> }
                         </select>
                         <span asp-validation-for="ContentStatus" class="text-danger small mt-1"></span>
                     </div>
@@ -57,7 +71,7 @@
                         <label asp-for="Source" class="form-label fw-medium">@Localizer["Source"] <span class="text-danger">*</span></label>
                         <select asp-for="Source" class="select2 form-select" required>
                             <option value="">@Localizer["SelectOption"]</option>
-                            @foreach (var x in Model.ContentSources) { <option value="@x">@x</option> }
+                            @foreach (var x in Model.ContentSources) { <option value="@x">@CodeLabel("ContentSource_", x)</option> }
                         </select>
                         <span asp-validation-for="Source" class="text-danger small mt-1"></span>
                     </div>
@@ -72,7 +86,7 @@
                         }
                         <select asp-for="LanguageCode" class="select2 form-select" required>
                             <option value="">@Localizer["SelectOption"]</option>
-                            @foreach (var c in languageValues) { <option value="@c">@c</option> }
+                            @foreach (var c in languageValues) { <option value="@c">@(ClaimDisplayNames.LanguageName(c) ?? c)</option> }
                         </select>
                         <span asp-validation-for="LanguageCode" class="text-danger small mt-1"></span>
                     </div>
@@ -316,10 +330,16 @@
                     <input type="hidden" asp-for="BrandId" />
                     <div class="col-12">
                         <label asp-for="ProductId" class="form-label fw-medium">@Localizer["ProductId"]</label>
-                        <select asp-for="ProductId" class="select2 form-select">
+                        @* WP-E2E-FIX-2 (E2-B1) — searched in the browser over the MDM selector (form.js, Select2 ajax); only the
+                           stored product is rendered here, resolved by a single read. *@
+                        <select asp-for="ProductId" class="select2 form-select"
+                                data-ajax-url="/CRM/Knowledge/api/global-product-options"
+                                data-placeholder="@Localizer["ProductSearchPlaceholder"].Value"
+                                data-unavailable="@Localizer["ProductPickerUnavailable"].Value">
                             <option value="">@Localizer["SelectOption"]</option>
                             @foreach (var o in Model.ProductOptions) { <option value="@o.Value">@o.Label@(o.IsInactive ? $" ({archivedTag})" : "")</option> }
                         </select>
+                        <small class="text-muted d-none" id="productPickerNote"></small>
                     </div>
                     <div class="col-12">
                         <label asp-for="CampaignId" class="form-label fw-medium">@Localizer["CampaignId"]</label>

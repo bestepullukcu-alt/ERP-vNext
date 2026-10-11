@@ -1,0 +1,58 @@
+[
+  {
+    "path": "/api/shipment-bundle/shipments/222be1fa-cbad-4659-8230-fef83c66aeef",
+    "xCorrelationId": "4548ac53-352d-4e2a-8952-ea0c6dd5f09e",
+    "xTenantId": "c0ca5168-547c-4926-89aa-a57182e42ac8",
+    "xLegalEntityId": "64c95fdf-3608-408b-a4a2-ea2b545b07f4",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/7fffb1f9-895f-4915-8063-267734971b24",
+    "xCorrelationId": "f66aa239-aaee-41dd-a62a-eeee60a2afe6",
+    "xTenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+    "xLegalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/09967741-4f7b-45d7-bda9-2b94c2657141",
+    "xCorrelationId": "f79f4463-fb87-4bed-a8fc-00660f100f28",
+    "xTenantId": "98a00349-2151-4b7a-be32-85157c042f28",
+    "xLegalEntityId": "2d25a1b1-1ea8-4e94-b7aa-5a53804e21f4",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/59620126-84c1-4a90-956e-9848ca1e8d50",
+    "xCorrelationId": "729583ea-15b2-4c7b-a73b-485599f3e23e",
+    "xTenantId": "08fe5b60-764b-47a9-93a9-5cf22abd4d93",
+    "xLegalEntityId": "63f15ff6-45b7-4b19-9cac-1e05fef6e019",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/182235ad-9328-4986-b678-e8e84ebc9819",
+    "xCorrelationId": "b5a9e16b-3466-4302-a982-3a6ebe540032",
+    "xTenantId": "3ba7666a-e3e4-4274-a592-dd43c74aa1f2",
+    "xLegalEntityId": "ecd703b4-716e-48ed-8624-10b4c78035a2",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/3ca86d37-2268-4bf9-82b9-ec2490b246c1",
+    "xCorrelationId": "65250806-1290-45ce-aa33-17264c74dfdb",
+    "xTenantId": "1324d968-9d23-4cc5-8b5d-ebc013af5a91",
+    "xLegalEntityId": "279061ad-c2fb-4e85-b6ae-e5559fad4182",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/655cda0b-a169-4d10-8d20-f3a7249c0798",
+    "xCorrelationId": "b07e3bf7-8cd8-43a7-ad96-6ae5da7b083a",
+    "xTenantId": "2e0590c0-5dbb-4edc-8a02-c290397de78e",
+    "xLegalEntityId": "acd8f103-d568-428f-a19b-fea7d030076c",
+    "authorizationPresent": true
+  },
+  {
+    "path": "/api/shipment-bundle/shipments/655cda0b-a169-4d10-8d20-f3a7249c0798",
+    "xCorrelationId": "7f621b48-6ae5-4226-b2f1-bd79e79409ac",
+    "xTenantId": "9ca961de-2804-4c82-af06-60638f22d755",
+    "xLegalEntityId": "b9110b45-6b07-4d95-9e1f-203e48efa6fd",
+    "authorizationPresent": true
+  }
+]

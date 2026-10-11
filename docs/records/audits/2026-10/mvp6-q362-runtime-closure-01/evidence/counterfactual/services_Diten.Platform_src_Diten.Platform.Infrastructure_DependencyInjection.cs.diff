@@ -1,0 +1,27 @@
+--- /Users/natig/Projects/ERP-vNext-recovery/services/Diten.Platform/src/Diten.Platform.Infrastructure/DependencyInjection.cs	2026-09-15 19:47:33
++++ /Users/natig/mvp6-env/q185/treeB/src/services/Diten.Platform/src/Diten.Platform.Infrastructure/DependencyInjection.cs	1970-01-01 02:00:00
+@@ -11,6 +11,7 @@
+ using Diten.Platform.Application.Features.WorkingCalendarImport;
+ using Diten.Platform.Application.Features.TenantOrganization.Services;
+ using Diten.Platform.Application.Contracts.Eventing;
++using Diten.Platform.Application.Common;
+ using Diten.Platform.Application.Services;
+ using Diten.Platform.Application.Services.Eventing;
+ using Diten.Platform.Domain.Repositories;
+@@ -155,6 +156,7 @@
+             configuration.GetSection(
+                 Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions.SectionName));
+         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
++        services.Configure<MdmServiceIdentityOptions>(configuration.GetSection(MdmServiceIdentityOptions.SectionName));
+         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
+         services.AddOptions<SmtpProviderOptions>()
+             .Bind(configuration.GetSection(SmtpProviderOptions.SectionName))
+@@ -199,6 +201,8 @@
+             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementSuspension.DocumentWithdrawalOptions.SectionName));
+ 
+         services.AddScoped<ITenantContext, TenantContext>();
++        services.AddScoped<IInternalScopeResolutionContext, InternalScopeResolutionContext>();
++        services.AddSingleton<IMdmServiceIdentityTokenProvider, MdmServiceIdentityTokenProvider>();
+         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+         services.AddTenantAuthorizationContext();
+         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();

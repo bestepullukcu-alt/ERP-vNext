@@ -1,0 +1,10 @@
+surface	state	note
+product source	UNCHANGED	No source edit or application
+Auth/Platform/MDM	UNCHANGED	NumericDate candidate not applied
+Carrier UI	UNCHANGED	Read-only 21-path rehash only
+Program.cs/gateway/permissions	UNCHANGED	No integration mutation
+runtime processes	NOT STARTED	Start prerequisite failed
+Mongo databases	NOT CREATED	No runtime evidence run
+browser	NOT STARTED	No smoke or screenshot capture
+git	UNCHANGED	No commit push stash branch or index operation
+audit output	CREATED	docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-successor-01/

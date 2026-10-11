@@ -1,0 +1,11 @@
+check	result	evidence	boundary
+Accepted BC archive provenance	PASS	INPUTS.tsv; SOURCE-CLOSURE-PLAN.tsv	Hash binding only; no new acceptance
+Closure classification	PASS	258 TRANSFER; 161 PRESERVE_IDENTICAL; 3 PRESERVE_SUCCESSOR	Three successor files are csproj, Program.cs and appsettings
+Shipment UI preservation	PASS	UI-PRESERVATION.tsv: 28/28 exact	No UI source was rewritten
+SupplyChain fresh build	PASS	raw/supplychain-build.log; exit 0	Disposable composition only
+Gateway fresh build	PASS	raw/gateway-build.log; exit 0	Disposable composition only
+CRM fresh build	PASS	raw/crm-build.log; exit 0; two inherited warnings	Disposable composition only
+Route ownership	PASS	ROUTE-OWNERSHIP.tsv: 35 CRM@5065 and 6 ShipmentBundle@5061	No global replacement
+Focused gateway tests final	PASS	raw/shipment-integration-route-tests-final.trx; 22/22	raw first sandbox abort and stale allowlist failure retained
+Successor patch scope	PASS	SUCCESSOR-MANIFEST.tsv; two gateway files only	Patch remains unapplied to integration target
+Runtime/browser acceptance	NOT_RUN	Preparation lane	No runtime, JWT or browser claim

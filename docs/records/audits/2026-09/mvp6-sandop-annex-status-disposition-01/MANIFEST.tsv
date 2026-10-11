@@ -1,0 +1,11 @@
+role	sha256	path
+input	9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3	docs/analysis/contracts/sandop-capacity.openapi.yaml
+input	e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442	docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+input	ec5d4bb2a86102cf9769a7fd34da5188e3743ddd8294d26d930ed74e948e219d	docs/records/audits/2026-09/mvp6-sandop-capacity-publication-exec-01/SOP-22.md
+input	c7e78b660dc3a74430fc0a0196bae2cf1e375dd3b3a8b27064948cd380b03006	docs/records/audits/2026-09/mvp6-sandop-capacity-publication-exec-01/PUBLICATION-HANDOFF.md
+input	0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04	docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/publication-proposed.patch
+output	eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda	docs/records/audits/2026-09/mvp6-sandop-annex-status-disposition-01/candidate-annex.md
+output	5d66663f0983e0022f5d8f1b1aaaf6e28148c417be29217f54b48edfc82204b0	docs/records/audits/2026-09/mvp6-sandop-annex-status-disposition-01/annex-status.patch
+output	eac4aff8a401f8e26643972399173fed76bdc3a1c5fbe375ff7814183ec7c666	docs/records/audits/2026-09/mvp6-sandop-annex-status-disposition-01/VALIDATION.md
+output	694df00ace5c6d7c59f9cdb2a214cafa9cc1555456690b18d6dff94cee23eb2b	docs/records/audits/2026-09/mvp6-sandop-annex-status-disposition-01/OWNER-DECISION-UNAPPROVED.md
+output	2893fa831f29d6f87a5b094adde4ab17e26f7a5a2c90a652a8a2fe2809c6bb15	docs/records/audits/2026-09/mvp6-sandop-annex-status-disposition-01/SOP-22.md

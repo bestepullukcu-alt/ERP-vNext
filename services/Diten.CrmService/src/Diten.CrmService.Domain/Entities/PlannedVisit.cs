@@ -126,6 +126,12 @@ public sealed class PlannedVisit : EntityBase
     /// <summary>Per-contact availability snapshot at plan time (D13). A WARNING signal in FU01, not a hard block.</summary>
     public PlannedVisitAvailabilitySnapshot? Availability { get; set; }
 
+    /// <summary>WP-SB-3b (DESIGN-SB-3 §3.4) — the products the visit tells, each with its journey stage, the path
+    /// version and its steps / claims, FROZEN when the plan is made: a later release of the path does not change a plan.
+    /// Empty on a plan written before SB-3b (and on a plan with no resolvable content). <see cref="Content"/> stays the
+    /// first promo item for the existing (mobile) contract. No play / campaign id is carried here (ARCH GATE S3-9).</summary>
+    public List<PlannedVisitContentItem> ContentItems { get; set; } = new();
+
     // ── Lifecycle helpers ────────────────────────────────────────────────────────────────────────────────────────────
 
     public bool IsDraft() => string.Equals(PlanStatus, PlannedVisitStatus.Draft, StringComparison.Ordinal);
@@ -230,6 +236,77 @@ public sealed class PlannedVisitContentRef
     public string? JourneyDisplayName { get; set; }
     public string? StageDisplayName { get; set; }
     public DateTimeOffset ResolvedAt { get; set; }
+}
+
+/// <summary>WP-SB-3b — one product of a planned visit (frozen snapshot of the visit content resolver's item). Every Guid
+/// takes the string-Guid class map.</summary>
+public sealed class PlannedVisitContentItem
+{
+    public Guid ProductId { get; set; }
+    public string? ProductCode { get; set; }
+
+    /// <summary><c>promo</c> | <c>non-promo</c> (the strategy line's role).</summary>
+    public string Role { get; set; } = string.Empty;
+
+    public Guid JourneyId { get; set; }
+    public string? JourneyCode { get; set; }
+    public Guid StageId { get; set; }
+    public int StageIndex { get; set; }
+    public string? StageCode { get; set; }
+    public string? StageName { get; set; }
+    public Guid PathId { get; set; }
+    public string? PathCode { get; set; }
+    public string? PathVersion { get; set; }
+    public List<PlannedVisitContentStep> Steps { get; set; } = new();
+    public List<PlannedVisitContentClaim> Claims { get; set; } = new();
+
+    /// <summary>Non-blocking notes (e.g. <c>journey_audience_mismatch</c>, <c>stage_index_reset</c>).</summary>
+    public List<string> Warnings { get; set; } = new();
+
+    /// <summary>WP-VP-3C (K-7) — where the product came from: <see cref="PlannedVisitContentItemSources"/>
+    /// (<c>play</c> · <c>rep-pick</c> · <c>last-visit</c> · <c>portfolio</c>). Null on a plan written before 3C — read as
+    /// <c>play</c> (<see cref="EffectiveSource"/>). <c>play</c> only means "suggested"; no play id is ever carried.</summary>
+    public string? Source { get; set; }
+
+    /// <summary>WP-VP-3C (K-7e) — the item's 1-based position in the visit's final (rotated) list; 0 on an older plan.</summary>
+    public int Order { get; set; }
+
+    /// <summary>WP-VP-4G (F4-4) — the MDM product name AT APPROVAL (a snapshot, like the code); null on an older plan, which
+    /// a read fills from the master. Never taken from a client.</summary>
+    public string? ProductName { get; set; }
+
+    /// <summary>The source, an older (null) item reading as <c>play</c>.</summary>
+    public string EffectiveSource() => string.IsNullOrWhiteSpace(Source) ? PlannedVisitContentItemSources.Play : Source;
+}
+
+/// <summary>WP-VP-3C (K-7) — the sources of a visit's product list, in priority order (an earlier source wins a product
+/// two sources name).</summary>
+public static class PlannedVisitContentItemSources
+{
+    public const string Play = "play";
+    public const string RepPick = "rep-pick";
+    public const string LastVisit = "last-visit";
+    public const string Portfolio = "portfolio";
+
+    public static readonly IReadOnlyList<string> All = new[] { Play, RepPick, LastVisit, Portfolio };
+}
+
+/// <summary>WP-SB-3b — one step of the path version the visit tells.</summary>
+public sealed class PlannedVisitContentStep
+{
+    public Guid StepId { get; set; }
+    public Guid ContentId { get; set; }
+    public string? ContentCode { get; set; }
+    public string? Title { get; set; }
+    public string? Type { get; set; }
+    public int? Minutes { get; set; }
+}
+
+/// <summary>WP-SB-3b — one claim of the path version the visit tells.</summary>
+public sealed class PlannedVisitContentClaim
+{
+    public Guid ClaimId { get; set; }
+    public string? ClaimCode { get; set; }
 }
 
 /// <summary>Selection origin (D11): a snapshot of where this target was selected from. Segment FILTERS, selection is

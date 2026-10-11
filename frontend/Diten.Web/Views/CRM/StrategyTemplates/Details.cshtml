@@ -55,7 +55,8 @@
     }
     @if (t.Superseded)
     {
-        <div class="alert alert-info" role="alert"><i class="bx bx-git-branch me-1"></i>@Localizer["Superseded"]</div>
+        @* WP-E2E-FIX-3 (E5-B2) — "Yerini v{n} aldı" when the successor's version is known. *@
+        <div class="alert alert-info" role="alert"><i class="bx bx-git-branch me-1"></i>@(t.SupersededByTemplateVersion is { } nextVersion ? Localizer["SupersededByVersion", nextVersion] : Localizer["Superseded"])</div>
     }
 
     @* WP-ST-DETAIL-3 — stat tiles (mockup). Every number is computed from the DetailDto server-side, so it always matches
@@ -281,6 +282,16 @@
                         @* WP-ST-DETAIL-4 — mockup row: colour bar + product NAME (details.js via data-resolve; code fallback)
                            + "MDM-GP code · SKU code" sub-line (first SKU allocation; "SKU belirtilmedi" when none) + the plain
                            line weight % on the right. *@
+                        @* WP-SB-3-UIa — SB-3a summary counters: lines told as promo / non-promo (a pre-SB-3a line counts as
+                           promo) and lines still without a journey (fixed through a new version). *@
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 small" id="stLineRoleSummary">
+                            <span class="badge bg-label-primary rounded-pill">@t.PromoLineCount @Localizer["LineRole_promo"]</span>
+                            <span class="badge bg-label-info rounded-pill">@t.NonPromoLineCount @Localizer["LineRole_non-promo"]</span>
+                            @if (t.LinesWithoutJourneyCount > 0)
+                            {
+                                <span class="badge bg-label-warning rounded-pill">@Localizer["LinesWithoutJourneyTpl"].Value.Replace("{n}", t.LinesWithoutJourneyCount.ToString())</span>
+                            }
+                        </div>
                         <div class="d-flex flex-column gap-2">
                             @foreach (var line in t.ProductLines.OrderBy(x => x.SortOrder))
                             {
@@ -290,13 +301,37 @@
                                 var metaParts = new List<string>();
                                 if (!string.IsNullOrWhiteSpace(line.GlobalProductCodeDisplay)) { metaParts.Add(line.GlobalProductCodeDisplay); }
                                 metaParts.Add(string.IsNullOrWhiteSpace(skuCode) ? Localizer["NoSkuSpecified"].Value : skuCode);
-                                <div class="d-flex align-items-center gap-3 border rounded p-2">
-                                    <span class="d-inline-block rounded flex-shrink-0" style="width: 10px; height: 34px; background: var(--bs-primary);"></span>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-medium" data-resolve="global-product" data-id="@line.GlobalProductId">@prodFallback</div>
-                                        <div class="text-muted small font-monospace">@string.Join(" · ", metaParts)</div>
+                                var lineRole = string.IsNullOrWhiteSpace(line.Role) ? "promo" : line.Role;
+                                var journeyLabel = string.Join(" — ", new[] { line.JourneyCode, line.JourneyName }.Where(x => !string.IsNullOrWhiteSpace(x)));
+                                <div class="border rounded p-2" data-line-role="@lineRole">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span class="d-inline-block rounded flex-shrink-0" style="width: 10px; height: 34px; background: var(@(lineRole == "non-promo" ? "--bs-info" : "--bs-primary"));"></span>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-medium" data-resolve="global-product" data-id="@line.GlobalProductId">@prodFallback</div>
+                                            <div class="text-muted small font-monospace">@string.Join(" · ", metaParts)</div>
+                                        </div>
+                                        <span class="badge @(lineRole == "non-promo" ? "bg-label-info" : "bg-label-primary") rounded-pill">@Localizer["LineRole_" + lineRole]</span>
+                                        <div class="fw-semibold fs-5 text-end">@((line.LineWeightPercentage ?? 0m).ToString("0.##"))%</div>
                                     </div>
-                                    <div class="fw-semibold fs-5 text-end">@((line.LineWeightPercentage ?? 0m).ToString("0.##"))%</div>
+                                    <div class="d-flex flex-wrap align-items-center gap-2 small mt-2 ps-4">
+                                        <span class="text-muted">@Localizer["ProductColJourney"]:</span>
+                                        @if (line.JourneyMissing || line.JourneyId is null)
+                                        {
+                                            <span class="badge bg-label-warning rounded-pill">@Localizer["LineJourneyMissingBadge"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-medium">@(string.IsNullOrWhiteSpace(journeyLabel) ? line.JourneyId.ToString() : journeyLabel)</span>
+                                            @if (!string.IsNullOrWhiteSpace(line.JourneyStatus))
+                                            {
+                                                <span class="badge @(line.JourneyStatus == "published" ? "bg-label-success" : "bg-label-secondary") rounded-pill">@Localizer["JourneyStatus_" + line.JourneyStatus]</span>
+                                            }
+                                        }
+                                        @foreach (var warning in line.JourneyWarnings ?? new List<string>())
+                                        {
+                                            <span class="badge bg-label-warning rounded-pill" data-journey-warning="@warning">@Localizer["JourneyWarning_" + warning]</span>
+                                        }
+                                    </div>
                                 </div>
                             }
                         </div>
@@ -314,6 +349,8 @@
                     }
                     else
                     {
+                        @* WP-SB-3-UIa — template-level bindings are retired by SB-3a: the visit uses the product line's journey. *@
+                        <p class="text-muted small mb-3">@Localizer["RetiredBindingsHelp"]</p>
                         @* WP-ST-DETAIL-3/4 — compact cards (mockup), two per row (col-md-6): the content NAME (details.js via
                            data-resolve; code fallback) + kind·code + "sabitlenmiş" pin. The kind label reuses the Edit labels. *@
                         <div class="row g-3">
@@ -329,6 +366,10 @@
                                             <div class="fw-medium" data-resolve="content" data-id="@c.ContentRefId">@contentFallback</div>
                                             <div class="text-muted small font-monospace text-uppercase">@contentMeta</div>
                                         </div>
+                                        @if (c.Retired || hint?.Retired == true)
+                                        {
+                                            <span class="badge bg-label-warning rounded-pill">@Localizer["RetiredBindingBadge"]</span>
+                                        }
                                         <span class="badge bg-label-secondary rounded-pill">@Localizer["ContentPinned"]</span>
                                         @if (hint?.Archived == true) { <span class="badge bg-label-danger rounded-pill">@Localizer["Archived"]</span> }
                                     </div>
@@ -348,6 +389,11 @@
                 <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bulb dt-card-icon" aria-hidden="true"></i>@Localizer["WhatTitle"]</h6>
                     <p id="stDetailSummary" class="mb-0 d-none"></p>
+                    @if (t.ProductLines.Count > 0)
+                    {
+                        @* WP-SB-3-UIa — the recipe's role split ("2 promo · 1 non-promo"). *@
+                        <p class="mb-0 mt-2 small" id="stDetailRoleSplit">@Localizer["RoleSplitTpl"].Value.Replace("{promo}", t.PromoLineCount.ToString()).Replace("{nonpromo}", t.NonPromoLineCount.ToString())</p>
+                    }
                     <p class="text-muted small mb-0 mt-2">@Localizer["DetailReadOnlyNote"]</p>
                 </div>
             </section>

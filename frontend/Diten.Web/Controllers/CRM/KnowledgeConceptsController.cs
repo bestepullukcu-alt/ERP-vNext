@@ -247,6 +247,15 @@ public sealed class KnowledgeConceptsController : Controller
     public Task<IActionResult> TemplateGet(Guid templateId, CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/knowledge/concept-chain-templates/{templateId}", ReadPermission, ct, ReadFallback);
 
+    /// <summary>WP-KP-CH-1 — the right panel "Outputs" read (paths built from this chain, journeys using them, the
+    /// upcoming planned visit COUNT). Read only; CRM decides what detail the actor may see (count-only + restricted).
+    /// Only <c>includeOtherVersions</c> is forwarded — the query is composed here, never passed through.</summary>
+    [HttpGet("api/concept-chain-templates/{templateId:guid}/outputs")]
+    public Task<IActionResult> TemplateOutputs(Guid templateId, [FromQuery] bool includeOtherVersions, CancellationToken ct) =>
+        ProxyGetAsync(
+            $"/api/crm/knowledge/concept-chain-templates/{templateId}/outputs?includeOtherVersions={(includeOtherVersions ? "true" : "false")}",
+            ReadPermission, ct, ReadFallback);
+
     // ForWhom / audience picker source for the Chain Template Identity & Classification section (SCMM-10-MOD-C:
     // template-level ForWhom = AudienceProfile refs) — read-only FU02 reference, same allowlist pattern as subjects /
     // concept-types.

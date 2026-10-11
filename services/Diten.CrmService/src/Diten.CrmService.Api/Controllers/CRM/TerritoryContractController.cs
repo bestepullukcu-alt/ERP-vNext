@@ -9,7 +9,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
 
 /// <summary>
 /// MOD-0151 Territory Management contract surface (FU01). Reports bundle version, feature flags (only model+node
-/// are true), required MOD-0048 reference-set readiness and the FU01 limitations. Gateway-only; browser never hits 5061.
+/// are true), required MOD-0048 reference-set readiness and the FU01 limitations. Gateway-only; browser never hits 5065.
 /// </summary>
 [Authorize]
 [Route("api/crm/territory-management")]

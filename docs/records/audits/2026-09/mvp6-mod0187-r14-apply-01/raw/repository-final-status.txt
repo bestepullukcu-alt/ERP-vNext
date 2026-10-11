@@ -1,0 +1,5 @@
+feature/mvp6-logistics
+4a8d4d4b339528a88e6220fb8402e5a2c771136c
+7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+ M services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+?? docs/records/audits/2026-09/mvp6-mod0187-r14-apply-01/

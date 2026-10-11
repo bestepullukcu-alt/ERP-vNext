@@ -1,0 +1,15 @@
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api: bin
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api: obj
+Files /private/tmp/mvp6-shipment-root-r2-emission-rework-01/apply-check/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CreateShipmentHandler.cs and /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CreateShipmentHandler.cs differ
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application: bin
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application: obj
+Files /private/tmp/mvp6-shipment-root-r2-emission-rework-01/apply-check/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs and /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs differ
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain: bin
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain: obj
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure: bin
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure: obj
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence: bin
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence: obj
+Files /private/tmp/mvp6-shipment-root-r2-emission-rework-01/apply-check/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentTests.cs and /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentTests.cs differ
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests: bin
+Only in /private/tmp/mvp6-shipment-root-r2-emission-rework-01/target/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests: obj

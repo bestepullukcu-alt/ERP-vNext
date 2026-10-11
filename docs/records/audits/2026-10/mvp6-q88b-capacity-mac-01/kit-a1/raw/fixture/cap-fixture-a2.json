@@ -1,0 +1,244 @@
+{
+  "run": "ff8c09",
+  "tenants": {
+    "T1": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+    "T2": "00000000-0000-0000-0000-000000000001"
+  },
+  "steps": [
+    {
+      "step": "mdm-create-le-A",
+      "status": 201,
+      "ok": true,
+      "id": "37c7f0a2-00bc-4d3a-8416-fd07ecc05d07"
+    },
+    {
+      "step": "mdm-activate-le-A",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "mdm-get-fixture-le",
+      "status": 200,
+      "ok": true,
+      "id": null
+    },
+    {
+      "step": "platform-create-ou-A",
+      "status": 201,
+      "ok": true,
+      "id": "3d27ddce-17ec-4542-a294-167fce86873b"
+    },
+    {
+      "step": "platform-create-position-capfull",
+      "status": 201,
+      "ok": true,
+      "id": "d2ee3abb-eab9-423a-be6e-a0d63d83584e"
+    },
+    {
+      "step": "platform-assign-capfull-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "bf1691b0-d929-42f2-9cf7-c37b6f76ce0c"
+    },
+    {
+      "step": "platform-create-position-capro",
+      "status": 201,
+      "ok": true,
+      "id": "c47f1775-a6c6-4e07-bb74-b36b4b083a5a"
+    },
+    {
+      "step": "platform-assign-capro-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "1f115405-6824-423e-b7cb-3e68bbf3caa2"
+    },
+    {
+      "step": "platform-create-position-capnoread",
+      "status": 201,
+      "ok": true,
+      "id": "ee2a3ac8-9349-42c2-82b6-d93e6f234cde"
+    },
+    {
+      "step": "platform-assign-capnoread-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "52d8c0e9-6dfa-451c-ae32-ce9232179acf"
+    },
+    {
+      "step": "platform-create-position-capadmin",
+      "status": 201,
+      "ok": true,
+      "id": "3aca798d-c037-441f-bf11-9aa425c6dc36"
+    },
+    {
+      "step": "platform-assign-capadmin-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "8c19b70c-49b7-4f7e-817e-244d961f25c4"
+    }
+  ],
+  "catalogWaitSeconds": 1.2,
+  "catalogMissing": [],
+  "authRoles": {
+    "Q88bCapacityFull@19200000": {
+      "reused": true,
+      "keys": [
+        "supplychain.capacity-plans.read",
+        "supplychain.capacity-plans.create",
+        "supplychain.capacity-plans.scenario.create",
+        "supplychain.capacity-plans.evaluate"
+      ],
+      "grantsAdded": 0,
+      "members": [
+        "capfull"
+      ]
+    },
+    "Q88bCapacityReadOnly@19200000": {
+      "reused": true,
+      "keys": [
+        "supplychain.capacity-plans.read"
+      ],
+      "grantsAdded": 0,
+      "members": [
+        "capro"
+      ]
+    },
+    "Q88bNoCapacity@19200000": {
+      "reused": true,
+      "keys": [
+        "supplychain.shipments.read"
+      ],
+      "grantsAdded": 0,
+      "members": [
+        "capnoread"
+      ]
+    },
+    "Q88bFixtureAdmin@19200000": {
+      "reused": true,
+      "keys": [
+        "mdm.legal-entities.create",
+        "mdm.legal-entities.read",
+        "mdm.legal-entities.update",
+        "platform.organization-units.create",
+        "platform.organization-units.read",
+        "platform.positions.create",
+        "platform.positions.read",
+        "platform.position-assignments.create",
+        "platform.position-assignments.read",
+        "auth.users.lookup-validation"
+      ],
+      "grantsAdded": 0,
+      "members": [
+        "capadmin"
+      ]
+    },
+    "Q88bCapacityFull@00000000": {
+      "reused": true,
+      "keys": [
+        "supplychain.capacity-plans.read",
+        "supplychain.capacity-plans.create",
+        "supplychain.capacity-plans.scenario.create",
+        "supplychain.capacity-plans.evaluate"
+      ],
+      "grantsAdded": 0,
+      "members": [
+        "navfull"
+      ]
+    }
+  },
+  "userIds": {
+    "capfull": "fe4b3d8b-7958-412c-9986-6a5c510af1c3",
+    "capro": "d3b509ad-8cdb-4d05-bc0f-0342b6b1ca99",
+    "capnoread": "7618fb80-d631-48f2-8582-d7c8d6c1c5f4",
+    "capadmin": "f078a560-33b7-4b01-86fd-208fd11ed0d4",
+    "navfull": "5367c380-cd6c-4c1e-8ffc-35a5d5b1e6b0"
+  },
+  "adminLoginsBeforeOrg": [
+    {
+      "actor": "capadmin",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "sandopPermissions": [],
+      "shipmentsRead": false,
+      "permissionCount": 10
+    }
+  ],
+  "laneMdmLegalEntityClone": {
+    "dst": "19200000-0000-4000-8000-000000000002",
+    "collection": "mdm_legal_entities",
+    "idType": "uuid",
+    "before": 1,
+    "removedExtraField": 1,
+    "after": 1
+  },
+  "organization": {
+    "legalEntities": {
+      "A": "19200000-0000-4000-8000-000000000002",
+      "apiCreated": "37c7f0a2-00bc-4d3a-8416-fd07ecc05d07"
+    },
+    "orgUnits": {
+      "A": "3d27ddce-17ec-4542-a294-167fce86873b"
+    },
+    "positions": {
+      "capfull": "d2ee3abb-eab9-423a-be6e-a0d63d83584e",
+      "capro": "c47f1775-a6c6-4e07-bb74-b36b4b083a5a",
+      "capnoread": "ee2a3ac8-9349-42c2-82b6-d93e6f234cde",
+      "capadmin": "3aca798d-c037-441f-bf11-9aa425c6dc36"
+    }
+  },
+  "actorLogins": {
+    "capfull": {
+      "actor": "capfull",
+      "tenantMatches": true,
+      "legalEntityId": "19200000-0000-4000-8000-000000000002",
+      "sandopPermissions": [
+        "supplychain.capacity-plans.create",
+        "supplychain.capacity-plans.evaluate",
+        "supplychain.capacity-plans.read",
+        "supplychain.capacity-plans.scenario.create"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 4
+    },
+    "capro": {
+      "actor": "capro",
+      "tenantMatches": true,
+      "legalEntityId": "19200000-0000-4000-8000-000000000002",
+      "sandopPermissions": [
+        "supplychain.capacity-plans.read"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 1
+    },
+    "capnoread": {
+      "actor": "capnoread",
+      "tenantMatches": true,
+      "legalEntityId": "19200000-0000-4000-8000-000000000002",
+      "sandopPermissions": [],
+      "shipmentsRead": true,
+      "permissionCount": 1
+    },
+    "capadmin": {
+      "actor": "capadmin",
+      "tenantMatches": true,
+      "legalEntityId": "19200000-0000-4000-8000-000000000002",
+      "sandopPermissions": [],
+      "shipmentsRead": false,
+      "permissionCount": 10
+    },
+    "navfull": {
+      "actor": "navfull",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "sandopPermissions": [
+        "supplychain.capacity-plans.create",
+        "supplychain.capacity-plans.evaluate",
+        "supplychain.capacity-plans.read",
+        "supplychain.capacity-plans.scenario.create"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 4
+    }
+  },
+  "result": "PASS"
+}

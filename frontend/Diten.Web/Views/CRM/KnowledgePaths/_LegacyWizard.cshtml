@@ -1,0 +1,75 @@
+@using Diten.Web.Views.CRM.KnowledgePaths
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgePathStudio> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-KP-UI-2 — the legacy-path wizard (K4; replaces the KP-UI-1 bind modal): 1 chain + country + language
+   (bind-chain) → 2 map the old steps onto the chain steps (step update with arrangement; unmapped steps warned) →
+   3 claim SUGGESTIONS from the step contents' claim references, each accepted or rejected by the user ("Next" stays
+   closed until every one is decided; accepted → POST claims; nothing is bound automatically) → 4 summary + optional
+   "Send for approval". Driven by legacy-wizard.js. *@
+<div class="modal fade" id="kpWizardModal" tabindex="-1" aria-labelledby="kpWizardTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="kpWizardTitle">@Localizer["WizardTitle"]</h5>
+                    <small class="text-muted" id="kpWizardPath"></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <ol class="d-flex flex-wrap gap-2 list-unstyled mb-3" id="kpWizardSteps" aria-label="@Localizer["WizardTitle"]">
+                    <li><span class="badge bg-label-primary" data-wizard-label="1">1 · @Localizer["WizardStepChain"]</span></li>
+                    <li><span class="badge bg-label-secondary" data-wizard-label="2">2 · @Localizer["WizardStepMap"]</span></li>
+                    <li><span class="badge bg-label-secondary" data-wizard-label="3">3 · @Localizer["WizardStepClaims"]</span></li>
+                    <li><span class="badge bg-label-secondary" data-wizard-label="4">4 · @Localizer["WizardStepSummary"]</span></li>
+                </ol>
+                <div id="kpWizardAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <section data-wizard-step="1">
+                    <p class="mb-3">@Localizer["WizardChainIntro"]</p>
+                    <div class="mb-3">
+                        <label class="form-label" for="kpWizardChain">@Localizer["FieldChain"] <span class="text-danger" aria-hidden="true">*</span></label>
+                        <select id="kpWizardChain" class="form-select" required aria-required="true"></select>
+                        <small class="text-muted d-none" id="kpWizardNoChain">@Localizer["BindNoChain"]</small>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="kpWizardCountry">@Localizer["FieldCountry"] <span class="text-danger" aria-hidden="true">*</span></label>
+                            <select id="kpWizardCountry" class="form-select" required aria-required="true"></select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="kpWizardLanguage">@Localizer["FieldLanguage"] <span class="text-danger" aria-hidden="true">*</span></label>
+                            <select id="kpWizardLanguage" class="form-select" required aria-required="true" disabled></select>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-3"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>@Localizer["WizardBindNote"]</small>
+                </section>
+
+                <section data-wizard-step="2" class="d-none">
+                    <p class="mb-3">@Localizer["WizardMapIntro"]</p>
+                    <ul class="list-group mb-2" id="kpWizardMap"></ul>
+                    <div class="alert alert-warning d-none" id="kpWizardUnmapped" role="status"></div>
+                </section>
+
+                <section data-wizard-step="3" class="d-none">
+                    <p class="mb-2">@Localizer["WizardClaimsIntro"]</p>
+                    <p class="small text-muted mb-3"><i class="bx bx-info-circle me-1" aria-hidden="true"></i>@Localizer["WizardClaimsNote"]</p>
+                    <ul class="list-group mb-2" id="kpWizardClaims" aria-live="polite"></ul>
+                    <small class="text-muted" id="kpWizardUndecided" role="status"></small>
+                </section>
+
+                <section data-wizard-step="4" class="d-none">
+                    <dl class="row mb-3" id="kpWizardSummary"></dl>
+                    <p class="small text-muted mb-0">@Localizer["WizardSummaryNote"]</p>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal" id="kpWizardClose">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-label-primary d-none" id="kpWizardSubmit"><i class="bx bx-send me-1" aria-hidden="true"></i>@Localizer["SubmitOpen"]</button>
+                <button type="button" class="btn btn-primary" id="kpWizardNext" disabled></button>
+            </div>
+        </div>
+    </div>
+</div>

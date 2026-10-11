@@ -1,0 +1,121 @@
+{
+  "phase": "nav",
+  "locale": "ar",
+  "startedAt": "2026-10-01T11:48:40.396Z",
+  "web": "http://127.0.0.1:5601",
+  "playwright": "1.59.1",
+  "cases": {
+    "N1": {
+      "result": "PASS",
+      "sidebarEntryHref": "/SupplyChain/SandopPlans",
+      "sidebarText": "سير عمل S&OP والاعتمادات",
+      "expectedFromV3Fragment": "سير عمل S&OP والاعتمادات",
+      "fragmentKeyShown": "Nav.Module.SOPWORKFLOWSIGNOFFS (single-page module: module name shown, page name hidden — product design)",
+      "rawKeyShown": false,
+      "englishFallbackInAr": false,
+      "pageNameFromV3Fragment": "خطط S&OP",
+      "sidebarLinkCount": 3,
+      "htmlDir": "rtl",
+      "htmlLang": "ar",
+      "note": "ar: text equals the ar fragment value and differs from the manifest/English name",
+      "evidence": [
+        "png/n1-sidebar-ar.png"
+      ]
+    },
+    "N2": {
+      "result": "PASS",
+      "query": "خطط S&OP",
+      "queryKey": "Nav.Page.SANDOPPLANS (v3 fragment value for the locale)",
+      "hitText": "سير عمل S&OP والاعتمادات",
+      "searchDataStatus": 200,
+      "localizedNameInSearchData": true,
+      "results": [
+        {
+          "text": "سير عمل S&OP والاعتمادات",
+          "href": "/SupplyChain/SandopPlans"
+        }
+      ],
+      "hitIndex": 0,
+      "openedPath": "/SupplyChain/SandopPlans",
+      "startPage": "/SupplyChain/Shipments",
+      "evidence": [
+        "png/n2-ctrlk-results-ar.png",
+        "png/n2-ctrlk-opened-ar.png"
+      ]
+    },
+    "N3": {
+      "result": "PASS",
+      "status": 200,
+      "title": "خطط S&OP",
+      "entryMarkup": 1,
+      "openForm": 1,
+      "pageErrors": 0,
+      "consoleErrors": [],
+      "nativeDialogs": 0,
+      "shell": {
+        "layoutWrappers": 1,
+        "layoutMenus": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "htmlDir": "rtl",
+        "htmlLang": "ar"
+      },
+      "activeMenuItem": "سير عمل S&OP والاعتمادات",
+      "evidence": [
+        "png/n3-sop-list-page-ar.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "n1-sidebar-ar.png",
+      "sha256": "8f1aa7bf6edfcfbcfc406969b9fe8b69e9c7e49fc90374b5d08a57edd4bd219f",
+      "url": "/SupplyChain/Shipments",
+      "capturedAt": "2026-10-01T11:48:43.293Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "n2-ctrlk-results-ar.png",
+      "sha256": "c0a7f069d1bef7368744dfde19ed39d9ce91ff39fce458af61f58f8713d1d2ef",
+      "url": "/SupplyChain/Shipments",
+      "capturedAt": "2026-10-01T11:48:44.432Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "n2-ctrlk-opened-ar.png",
+      "sha256": "c94159f908fadadd1e2d6649d52548c077ee2ac51af373967a9da397264502ca",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-10-01T11:48:46.030Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "n3-sop-list-page-ar.png",
+      "sha256": "c94159f908fadadd1e2d6649d52548c077ee2ac51af373967a9da397264502ca",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-10-01T11:48:47.724Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "info-tenant97c5-sidebar-ar.png",
+      "sha256": "6f7334857d14fbe4119e44500e50de648174a752b81795a8ec5cdd0862a43cec",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-10-01T11:48:49.991Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [],
+  "shellFonts": 8,
+  "info": {
+    "contrast tenant 97c5 (no entitlement; informational)": {
+      "sopEntryInSidebar": false,
+      "sidebarLinkCount": 2,
+      "pageTitle": "خطط S&OP"
+    }
+  },
+  "endedAt": "2026-10-01T11:48:50.013Z"
+}

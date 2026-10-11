@@ -1,0 +1,369 @@
+{
+  "phase": "l10n",
+  "extra": null,
+  "startedAt": "2026-09-27T12:12:49.587Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-24-seven-languages-rtl": {
+      "result": "FAIL",
+      "perLanguage": {
+        "en": {
+          "dir": "ltr",
+          "lang": "en",
+          "title": "Claims",
+          "addNew": "Add Claim",
+          "firstStatus": "Approved",
+          "headers": [
+            "CLAIM NUMBER",
+            "SHIPMENT ID",
+            "STATUS",
+            "CLAIMED AMOUNT",
+            "Currency",
+            "ACTIONS"
+          ],
+          "ltrIsolated": true,
+          "englishLeft": [
+            "Claims",
+            "Record, investigate and decide carrier claims for shipments.",
+            "Add Claim",
+            "Approved",
+            "CLAIM NUMBER",
+            "SHIPMENT ID",
+            "STATUS",
+            "CLAIMED AMOUNT",
+            "Currency",
+            "ACTIONS"
+          ]
+        },
+        "tr": {
+          "dir": "ltr",
+          "lang": "tr",
+          "title": "Hasar Talepleri",
+          "addNew": "Talep Ekle",
+          "firstStatus": "Onaylandı",
+          "headers": [
+            "TALEP NUMARASI",
+            "SEVKİYAT KİMLİĞİ",
+            "DURUM",
+            "TALEP EDİLEN TUTAR",
+            "Para Birimi",
+            "İŞLEMLER"
+          ],
+          "ltrIsolated": true,
+          "englishLeft": []
+        },
+        "fr": {
+          "dir": "ltr",
+          "lang": "fr",
+          "title": "Réclamations",
+          "addNew": "Ajouter une réclamation",
+          "firstStatus": "Approuvée",
+          "headers": [
+            "NUMÉRO DE RÉCLAMATION",
+            "IDENTIFIANT DE L’EXPÉDITION",
+            "STATUT",
+            "MONTANT RÉCLAMÉ",
+            "Devise",
+            "ACTIONS"
+          ],
+          "ltrIsolated": true,
+          "englishLeft": [
+            "ACTIONS"
+          ]
+        },
+        "es": {
+          "dir": "ltr",
+          "lang": "es",
+          "title": "Reclamaciones",
+          "addNew": "Añadir reclamación",
+          "firstStatus": "Aprobada",
+          "headers": [
+            "NÚMERO DE RECLAMACIÓN",
+            "ID DE ENVÍO",
+            "ESTADO",
+            "IMPORTE RECLAMADO",
+            "Moneda",
+            "ACCIONES"
+          ],
+          "ltrIsolated": true,
+          "englishLeft": []
+        },
+        "zh": {
+          "dir": "ltr",
+          "lang": "zh",
+          "title": "索赔",
+          "addNew": "新增索赔",
+          "firstStatus": "已批准",
+          "headers": [
+            "索赔编号",
+            "货运 ID",
+            "状态",
+            "索赔金额",
+            "币种",
+            "操作"
+          ],
+          "ltrIsolated": true,
+          "englishLeft": []
+        },
+        "ar": {
+          "dir": "rtl",
+          "lang": "ar",
+          "title": "المطالبات",
+          "addNew": "إضافة مطالبة",
+          "firstStatus": "معتمدة",
+          "headers": [
+            "رقم المطالبة",
+            "معرّف الشحنة",
+            "الحالة",
+            "المبلغ المطالب به",
+            "العملة",
+            "الإجراءات"
+          ],
+          "ltrIsolated": true,
+          "englishLeft": []
+        },
+        "ru": {
+          "dir": "ltr",
+          "lang": "ru",
+          "title": "Претензии",
+          "addNew": "Добавить претензию",
+          "firstStatus": "Утверждена",
+          "headers": [
+            "НОМЕР ПРЕТЕНЗИИ",
+            "ИДЕНТИФИКАТОР ОТГРУЗКИ",
+            "СТАТУС",
+            "ЗАЯВЛЕННАЯ СУММА",
+            "Валюта",
+            "ДЕЙСТВИЯ"
+          ],
+          "ltrIsolated": true,
+          "englishLeft": []
+        }
+      }
+    },
+    "CU-25a-responsive-no-overflow": {
+      "result": "PASS",
+      "overflow": {
+        "en": {
+          "390": false,
+          "768": false,
+          "1024": false,
+          "1280": false,
+          "1440": false
+        },
+        "tr": {
+          "1280": false
+        },
+        "fr": {
+          "1280": false
+        },
+        "es": {
+          "1280": false
+        },
+        "zh": {
+          "1280": false
+        },
+        "ar": {
+          "390": false,
+          "768": false,
+          "1024": false,
+          "1280": false,
+          "1440": false
+        },
+        "ru": {
+          "1280": false
+        }
+      }
+    }
+  },
+  "png": [
+    {
+      "name": "l10n-en-390.png",
+      "sha256": "222bc33319bf8d66f260eb8bd8149f9020596059f3d19e4b1bf2ae14009855cf",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T12:12:52.578Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-en-768.png",
+      "sha256": "03337ca085c8e70192447ec07fce042364294645e08ebda3fb8e01002894ec0d",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T12:12:53.087Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-en-1024.png",
+      "sha256": "5b6ba6954911628ffea78599fe9977cffa571e210a2f42867fa1cd725141bc17",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T12:12:53.622Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-en-1280.png",
+      "sha256": "c525ad1fca8ee68406a45a39ec0a6425943d82f2426ed2613cc266cf01c900bf",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T12:12:54.179Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-en-1440.png",
+      "sha256": "d180f9d592196904a3dd4920aab3b00344817806eef4b64f72b78028aca34fbb",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T12:12:54.725Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-tr-1280.png",
+      "sha256": "e468a935c5ac00a4a53b732f0330e8aa03d10e33dd7a1aa2cf7726496539a32a",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=tr&ui-culture=tr",
+      "capturedAt": "2026-09-27T12:12:57.296Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-fr-1280.png",
+      "sha256": "710f5e19f9a7875e4036e0a547121414abac92db5042ae41c8fd28e3e6ca8b7c",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=fr&ui-culture=fr",
+      "capturedAt": "2026-09-27T12:12:59.837Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-es-1280.png",
+      "sha256": "42c7ac83c6e9021cfca94d7d42d51a81d5d78b7924e09e704cc4a5af3bf50135",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=es&ui-culture=es",
+      "capturedAt": "2026-09-27T12:13:02.366Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-zh-1280.png",
+      "sha256": "2d1b339d3f1d9d115b4d413d20774411b11d3ab3a4473ef73905bbf58c9e24d6",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=zh&ui-culture=zh",
+      "capturedAt": "2026-09-27T12:13:05.333Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-ar-390.png",
+      "sha256": "4f32cfdcf26d76d9f206c0ace3694f25e55600e4bf0ecec2bcd07c25d92ce2e1",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T12:13:07.958Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-ar-768.png",
+      "sha256": "4961f88cceb464987ce7ecf1e3c972014cf22456327a862d209fab97cf39bd0c",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T12:13:08.486Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-ar-1024.png",
+      "sha256": "938aa0e9a9944a46da53fefda40261beef2d5810b4dc77f676257c98c1fed0f1",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T12:13:09.011Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-ar-1280.png",
+      "sha256": "7dab98f3307e8b337f139b47a6aa1aa775a2fab4b360a3130b783423c5f448dd",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T12:13:09.564Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-ar-1440.png",
+      "sha256": "770d19360bcbba910fff606c9a6c914fcc67ed9d85f626e336246c886984c9c8",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T12:13:10.121Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "l10n-ru-1280.png",
+      "sha256": "661bf1300d6b937a2e5a578692646294473ecef64e943724535015b16c8fb83c",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims?culture=ru&ui-culture=ru",
+      "capturedAt": "2026-09-27T12:13:12.701Z",
+      "phase": "l10n",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "l10n-en",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "l10n-en",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "l10n-tr",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "l10n-tr",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "l10n-tr",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNIfJ7QwOk1Fig.woff2"
+    },
+    {
+      "tag": "l10n-fr",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "l10n-fr",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "l10n-es",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "l10n-es",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "l10n-zh",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "l10n-zh",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "l10n-ar",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "l10n-ar",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "l10n-ru",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "l10n-ru",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T12:13:12.723Z"
+}

@@ -1,0 +1,4 @@
+entitle CARRIER-MANAGEMENT 201 {"data":"ddf5e4bd-db9a-4991-8e6d-495bfecc735c","statusCode":201,"isSuccessful":true,"errors":[],"reason_code":null,"correlation_id":null}
+tenant-activated 200 {"status":"processed"}
+entitle ROUTING-LOAD-PLANNING 201 {"data":"2e69be76-02bc-4d71-8ef6-2523c11efec4","statusCode":201,"isSuccessful":true,"errors":[],"reason_code":null,"correlation_id":null}
+tenant-activated 200 {"status":"processed"}

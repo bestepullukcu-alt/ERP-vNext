@@ -1,0 +1,543 @@
+{
+  "service": "platform",
+  "environment": "Development",
+  "contentRoot": "/Users/natig/mvp6-env/q64e/ek-work/source/services/Diten.Platform/src/Diten.Platform.API/bin/Release/net8.0",
+  "externalUrlKeysForReview": [
+    "TenantManagement:AppUrlTemplate",
+    "WorkingCalendar:HolidayProvider:BaseUrl"
+  ],
+  "keys": {
+    "//secretRefNote": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "//workAggregationRemoteProvidersNote": {
+      "value": "WC-D1 (DCP-004 D1) \u2014 modules that live in their own service reach the Task Center through ONE bridge class multiplied by these rows. A new module is a NEW ROW, never a new class. The address is written HERE, by an operator, in the same shape as MdmService:BaseUrl \u2014 it is deliberately NOT read from the self-registration manifest, because a manifest is client-supplied and an address inside it would be the party being called telling Platform where to send a caller's JWT.",
+      "layer": "appsettings.Development.json"
+    },
+    "AllowedHosts": {
+      "value": "*",
+      "layer": "appsettings.json"
+    },
+    "ASPNETCORE_ENVIRONMENT": {
+      "value": "Development",
+      "layer": "environment"
+    },
+    "AuditRetentionSeed:AllowTenantOverride": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "AuditRetentionSeed:ColdStoragePrepared": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "AuditRetentionSeed:DefaultRetentionDays": {
+      "value": "730",
+      "layer": "appsettings.Development.json"
+    },
+    "AuditRetentionSeed:HotStorageDays": {
+      "value": "90",
+      "layer": "appsettings.Development.json"
+    },
+    "AuditRetentionSeed:MaximumRetentionDays": {
+      "value": "2555",
+      "layer": "appsettings.Development.json"
+    },
+    "AuditRetentionSeed:MinimumRetentionDays": {
+      "value": "30",
+      "layer": "appsettings.Development.json"
+    },
+    "Authorization:CacheTtlSeconds": {
+      "value": "300",
+      "layer": "appsettings.json"
+    },
+    "AuthService:BaseUrl": {
+      "value": "http://127.0.0.1:5856",
+      "layer": "environment"
+    },
+    "AuthService:FrontendBaseUrl": {
+      "value": "http://127.0.0.1:5801",
+      "layer": "environment"
+    },
+    "AuthService:InternalApiKey": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "AuthService:TenantLoginUrlTemplate": {
+      "value": "http://127.0.0.1:5801/account/login?tenantId={tenantId}",
+      "layer": "environment"
+    },
+    "BackgroundJobs:DashboardAllowAnonymousInDevelopment": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "BackgroundJobs:DashboardEnabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "BackgroundJobs:DashboardPath": {
+      "value": "/hangfire",
+      "layer": "appsettings.Development.json"
+    },
+    "BackgroundJobs:DefaultRetryAttempts": {
+      "value": "5",
+      "layer": "appsettings.Development.json"
+    },
+    "BackgroundJobs:Enabled": {
+      "value": "true",
+      "layer": "environment"
+    },
+    "BackgroundJobs:EnabledJobs:Diten.Platform.MOD-0023.WorkflowEscalationSweepJob": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "BackgroundJobs:EnabledJobs:Diten.Platform.MOD-0024.TaskDueSoonSweepJob": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "BackgroundJobs:EnabledJobs:Diten.Platform.MOD-0024.TaskRecurrenceSweepJob": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "BackgroundJobs:EnabledJobs:Diten.Platform.MOD-0027.EmailDispatchJob": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "BackgroundJobs:RegisterStandardJobs": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "BackgroundJobs:ServiceName": {
+      "value": "Diten.Platform",
+      "layer": "appsettings.Development.json"
+    },
+    "BackgroundJobs:StorageDatabaseName": {
+      "value": "DitenHangfire_ClaimsQ64e01",
+      "layer": "environment"
+    },
+    "BusinessReferenceData:CatalogLoad:ActorId": {
+      "value": "mod-0028-qms-brd-seed",
+      "layer": "appsettings.Development.json"
+    },
+    "BusinessReferenceData:CatalogLoad:CatalogPath": {
+      "value": "Seed/business-reference-data/document-management-qms.json",
+      "layer": "appsettings.Development.json"
+    },
+    "BusinessReferenceData:CatalogLoad:Enabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "BusinessReferenceData:CatalogLoad:FailOnBlockedConflicts": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "BusinessReferenceData:CatalogLoad:RequiredSetCodes:0": {
+      "value": "qms-document-class",
+      "layer": "appsettings.Development.json"
+    },
+    "BusinessReferenceData:CatalogLoad:RequiredSetCodes:1": {
+      "value": "qms-document-classification",
+      "layer": "appsettings.Development.json"
+    },
+    "BusinessReferenceData:CatalogLoad:RequiredSetCodes:2": {
+      "value": "qms-document-retention",
+      "layer": "appsettings.Development.json"
+    },
+    "BusinessReferenceData:CatalogLoad:RequiredSetCodes:3": {
+      "value": "qms-owner-function",
+      "layer": "appsettings.Development.json"
+    },
+    "BusinessReferenceData:CatalogLoad:RequiredSetCodes:4": {
+      "value": "business-unit",
+      "layer": "appsettings.Development.json"
+    },
+    "BusinessReferenceData:CatalogLoad:TenantId": {
+      "value": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+      "layer": "appsettings.Development.json"
+    },
+    "DocumentRegisterSeed:CsvPath": {
+      "value": "Seed/document-management/GMG_ERP_Document_Reference_List_2026-08-24.csv",
+      "layer": "appsettings.Development.json"
+    },
+    "DocumentRegisterSeed:Enabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "DocumentRegisterSeed:TenantId": {
+      "value": "00000000-0000-0000-0000-000000000001",
+      "layer": "appsettings.Development.json"
+    },
+    "DOTNET_ROLL_FORWARD": {
+      "value": "LatestPatch",
+      "layer": "environment"
+    },
+    "Eventing:BatchSize": {
+      "value": "25",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:DeadLetterRetentionDays": {
+      "value": "30",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:Host": {
+      "value": "localhost",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:InitialRetryDelaySeconds": {
+      "value": "10",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:MaxRetryDelaySeconds": {
+      "value": "300",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:PollIntervalSeconds": {
+      "value": "5",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:Port": {
+      "value": "5672",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:PublishingStaleAfterSeconds": {
+      "value": "300",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:RetryCount": {
+      "value": "5",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:Transport": {
+      "value": "InMemory",
+      "layer": "environment"
+    },
+    "Eventing:UseTls": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:VirtualHost": {
+      "value": "/",
+      "layer": "appsettings.Development.json"
+    },
+    "Eventing:WorkerEnabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "JwtSettings:Audience": {
+      "value": "diten-erp",
+      "layer": "environment"
+    },
+    "JwtSettings:Issuer": {
+      "value": "diten-auth-service",
+      "layer": "environment"
+    },
+    "JwtSettings:PreviousSecrets:0": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:1": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:2": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:3": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:4": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:Secret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "Logging:LogLevel:Default": {
+      "value": "Debug",
+      "layer": "appsettings.Development.json"
+    },
+    "Logging:LogLevel:Microsoft.AspNetCore": {
+      "value": "Information",
+      "layer": "appsettings.Development.json"
+    },
+    "MdmService:BaseUrl": {
+      "value": "http://127.0.0.1:5859",
+      "layer": "environment"
+    },
+    "MdmServiceIdentity:Enabled": {
+      "value": "true",
+      "layer": "environment"
+    },
+    "MdmServiceIdentity:KeyId": {
+      "value": "lane-ClaimsQ64e01",
+      "layer": "environment"
+    },
+    "MdmServiceIdentity:Secret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "MessagingProviders:Smtp:AllowInsecureTlsInDevelopment": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "MessagingProviders:Smtp:MaxRecipientsPerMessage": {
+      "value": "100",
+      "layer": "appsettings.Development.json"
+    },
+    "MessagingProviders:Smtp:SendTimeoutSeconds": {
+      "value": "30",
+      "layer": "appsettings.Development.json"
+    },
+    "MessagingProviders:Smtp:SubjectLogPreviewLength": {
+      "value": "80",
+      "layer": "appsettings.Development.json"
+    },
+    "ModuleRegistrationCredentials:Mdm:ActiveSecret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "ModuleRegistrationCredentials:Mdm:Identifier": {
+      "value": "ditenmdmservice",
+      "layer": "appsettings.Development.json"
+    },
+    "ModuleRegistrationCredentials:Mdm:PreviousSecret": {
+      "value": "[REDACTED inherited:appsettings.json]",
+      "layer": "appsettings.json"
+    },
+    "MongoDbSettings:ConnectionString": {
+      "value": "mongodb://127.0.0.1:38994/?replicaSet=rsClaimsQ64e01&serverSelectionTimeoutMS=5000",
+      "layer": "environment"
+    },
+    "MongoDbSettings:DatabaseName": {
+      "value": "DitenPlatform_ClaimsQ64e01",
+      "layer": "environment"
+    },
+    "Observability:Correlation:HeaderName": {
+      "value": "X-Correlation-Id",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Correlation:MaxLength": {
+      "value": "128",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Health:LivePath": {
+      "value": "/health/live",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Health:Path": {
+      "value": "/health",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Health:ReadyPath": {
+      "value": "/health/ready",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Metrics:Enabled": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Metrics:Path": {
+      "value": "/metrics",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Redaction:RedactedText": {
+      "value": "[REDACTED]",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Seq:ApiKey": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Seq:Enabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "Observability:Seq:SafeDisableWhenUrlMissing": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Seq:Url": {
+      "value": "http://127.0.0.1:5899",
+      "layer": "environment"
+    },
+    "Observability:ServiceName": {
+      "value": "Diten.Platform",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Tracing:DisabledReason": {
+      "value": "OTLP exporter is disabled in local development until an OTLP collector is running.",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Tracing:Enabled": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Tracing:OtlpEndpoint": {
+      "value": "",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Tracing:OtlpExporterEnabled": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "PublicBaseUrl": {
+      "value": "http://127.0.0.1:5800/api/personalization",
+      "layer": "environment"
+    },
+    "Smtp:Enabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "Smtp:EnableSsl": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "Smtp:FromEmail": {
+      "value": "no-reply@yourcompany.com",
+      "layer": "appsettings.Development.json"
+    },
+    "Smtp:FromName": {
+      "value": "Diten PPM",
+      "layer": "appsettings.Development.json"
+    },
+    "Smtp:Host": {
+      "value": "localhost",
+      "layer": "appsettings.Development.json"
+    },
+    "Smtp:Password": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "Smtp:Port": {
+      "value": "1025",
+      "layer": "appsettings.Development.json"
+    },
+    "Smtp:Username": {
+      "value": "devsmtp",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantManagement:AppUrlTemplate": {
+      "value": "https://{tenant}.dev.diten.tech",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantManagement:DefaultCurrency": {
+      "value": "USD",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantManagement:DefaultEnvironment": {
+      "value": "Development",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantManagement:DefaultLanguage": {
+      "value": "en",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantManagement:DefaultRegion": {
+      "value": "US",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantManagement:DefaultTier": {
+      "value": "Standard",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantManagement:DefaultTimezone": {
+      "value": "UTC",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantResolution:DevBypassEnabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "TenantResolution:DevBypassTenantId": {
+      "value": "00000000-0000-0000-0000-000000000001",
+      "layer": "appsettings.Development.json"
+    },
+    "urls": {
+      "value": "http://127.0.0.1:5857",
+      "layer": "command-line"
+    },
+    "WorkAggregation:RemoteProviders:0://": {
+      "value": "TEMPORARY (BL-310). The reference consumer that proves the bridge end to end while no real module has opened its projection endpoint yet. It answers from Diten.DevEnablementService and is itself gated behind WorkItemReferenceProvider:Enabled there. DELETE this row and that controller the day a real module opens its own endpoint.",
+      "layer": "appsettings.Development.json"
+    },
+    "WorkAggregation:RemoteProviders:0:Actions:accept": {
+      "value": "platform.dev-reference.act",
+      "layer": "appsettings.Development.json"
+    },
+    "WorkAggregation:RemoteProviders:0:Actions:complete": {
+      "value": "platform.dev-reference.act",
+      "layer": "appsettings.Development.json"
+    },
+    "WorkAggregation:RemoteProviders:0:BaseUrl": {
+      "value": "http://127.0.0.1:5899",
+      "layer": "environment"
+    },
+    "WorkAggregation:RemoteProviders:0:ContractVersion": {
+      "value": "1.0",
+      "layer": "appsettings.Development.json"
+    },
+    "WorkAggregation:RemoteProviders:0:ProviderCode": {
+      "value": "dev-reference",
+      "layer": "appsettings.Development.json"
+    },
+    "WorkAggregation:RemoteProviders:0:Temporary": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "WorkAggregation:Resilience:ProviderTimeout": {
+      "value": "00:00:10",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:AllowedHosts:0": {
+      "value": "date.nager.at",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:BaseUrl": {
+      "value": "https://date.nager.at",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:Enabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "WorkingCalendar:HolidayProvider:MaxResponseItems": {
+      "value": "400",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:Provider": {
+      "value": "nager-date",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:Schedule:CronExpression": {
+      "value": "0 1 * * *",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:Schedule:Enabled": {
+      "value": "false",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:Schedule:IncludeNonPublicTypes": {
+      "value": "false",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:Schedule:MaxTargetsPerRun": {
+      "value": "100",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:Schedule:YearOffsets:0": {
+      "value": "0",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:Schedule:YearOffsets:1": {
+      "value": "1",
+      "layer": "appsettings.json"
+    },
+    "WorkingCalendar:HolidayProvider:TimeoutSeconds": {
+      "value": "10",
+      "layer": "appsettings.json"
+    }
+  }
+}

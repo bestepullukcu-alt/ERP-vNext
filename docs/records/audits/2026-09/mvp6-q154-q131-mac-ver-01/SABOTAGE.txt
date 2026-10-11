@@ -1,0 +1,17 @@
+Q154 SABOTAGE — tree B; one bad value set in DITEN_PLATFORM_TEST_MONGO_URI and MVP6_MOD0192_MONGO_URI at a time (fake values only; "x:y" is not a real credential).
+Platform set = PlatformSchemaContractMongoTests + WorkflowTransitionGateMongoRepositoryTests + BusinessReferenceDataTenantAssignmentMongoTests + TaskCommentOrderMongoTests (18 tests);
+Capacity set = CapacityIsolation + CapacityLease + CapacityConcurrency (5 tests); plus BackgroundJobs (PlatformContainerValidationTests).
+
+case                         Platform (18)              BackgroundJobs container    Capacity (5)
+S1 port 27017                18 × PROTECTED-PORT        PROTECTED-PORT              5 × PROTECTED-PORT
+S2 port omitted (=27017)     18 × PROTECTED-PORT        PROTECTED-PORT              5 × PROTECTED-PORT
+S3 credentials (x:y@…)       18 × CREDENTIALS           CREDENTIALS                 5 × CREDENTIALS
+S4 non-loopback host         18 × NON-LOOPBACK          NON-LOOPBACK                5 × NON-LOOPBACK
+S5 mongodb+srv://            18 × NOT-PLAIN-MONGODB     NON-LOOPBACK (see O-4)      5 × NOT-PLAIN-MONGODB
+S6 Capacity without replicaSet   —                      —                           5 × NO-REPLICASET
+
+(BackgroundJobs also shows its 2 pre-existing BackgroundJobContractsTests failures in every case.)
+No URI echoed: 0 occurrences of "x:y@", the non-loopback host, the srv host or "127.0.0.1:27017" in any sabotage TRX/log.
+0 connection attempts (no timeout/socket messages; ms runtimes); 0 new 27017 connections (NETCHECK-27017.txt).
+Env script refusals (logs/S0-env-script-refusals.txt): slot 0/10, missing/invalid --rs, --port 27017/27021 (operational band), 57192 (≥ 49152), non-numeric → exit 2, empty stdout.
+RESULT: PASS — every sabotage value is rejected before any connection.

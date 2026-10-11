@@ -1,0 +1,90 @@
+@using Diten.Web.Views.SupplyChain.Loads
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LoadsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@* Partial view: no Layout. Create-only Slim offcanvas (scope: 7 field types — carrierId, shipmentIds, mode, plannedDepartAt,
+   stops[].sequence, stops[].locationReferenceId, stops[].action). References are typed UUIDs, never a lookup. Correlation,
+   idempotency key, tenant/LE, number, audit and version are not user fields. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["AddNewLoad"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formLoadAlert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formLoad" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                @* R-2: the company travels on the query, never in the body — the service rejects
+                   tenantId/legalEntityId body fields — so this select is not model-bound. *@
+                <div class="col-12">
+                    <label for="formLegalEntity" class="form-label fw-medium">
+                        @SharedLocalizer["LegalEntity"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="formLegalEntity" class="form-select" required></select>
+                </div>
+                <div class="col-12">
+                    <label for="carrierId" class="form-label fw-medium">@Localizer["CarrierId"] <span class="text-danger">*</span></label>
+                    <input id="carrierId" type="text" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" aria-describedby="carrierIdHelp" />
+                    <div id="carrierIdHelp" class="form-text">@Localizer["CarrierIdHelp"]</div>
+                </div>
+                <div class="col-12">
+                    <label for="mode" class="form-label fw-medium">@Localizer["Mode"] <span class="text-danger">*</span></label>
+                    <select id="mode" class="form-select">
+                        <option value="Road">@Localizer["ModeRoad"]</option>
+                        <option value="Air">@Localizer["ModeAir"]</option>
+                        <option value="Sea">@Localizer["ModeSea"]</option>
+                        <option value="Rail">@Localizer["ModeRail"]</option>
+                        <option value="Parcel">@Localizer["ModeParcel"]</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label for="plannedDepartAt" class="form-label fw-medium">@Localizer["PlannedDepartAt"] <span class="text-danger">*</span></label>
+                    <input id="plannedDepartAt" type="datetime-local" class="form-control" dir="ltr" aria-describedby="plannedDepartAtHelp plannedDepartAtZone" />
+                    <div id="plannedDepartAtHelp" class="form-text">@Localizer["PlannedDepartAtHelp"]</div>
+                    <div id="plannedDepartAtZone" class="form-text" dir="ltr"></div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="form-label fw-medium mb-0">@Localizer["ShipmentIds"] <span class="text-danger">*</span></span>
+                        <button type="button" id="btnAddShipment" class="btn btn-sm btn-label-secondary">@Localizer["AddShipment"]</button>
+                    </div>
+                    <div id="loadShipmentList" class="d-flex flex-column gap-2" aria-describedby="shipmentIdsHelp"></div>
+                    <div id="shipmentIdsHelp" class="form-text">@Localizer["ShipmentIdsHelp"]</div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="form-label fw-medium mb-0">@Localizer["Stops"] <span class="text-danger">*</span></span>
+                        <button type="button" id="btnAddStop" class="btn btn-sm btn-label-secondary">@Localizer["AddStop"]</button>
+                    </div>
+                    <div id="loadStopList" class="d-flex flex-column gap-2" aria-describedby="stopsHelp"></div>
+                    <div id="stopsHelp" class="form-text">@Localizer["StopsHelp"]</div>
+                </div>
+            </div>
+        </form>
+        <template id="loadShipmentTemplate">
+            <div class="input-group js-shipment-row">
+                <input type="text" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                <button type="button" class="btn btn-label-secondary js-remove-shipment"><i class="bx bx-x" aria-hidden="true"></i></button>
+            </div>
+        </template>
+        <template id="loadStopTemplate">
+            <div class="row g-2 align-items-center js-stop-row">
+                <div class="col-3"><input type="text" inputmode="numeric" class="form-control" dir="ltr" data-field="sequence" data-label="StopSequence" /></div>
+                <div class="col-5"><input type="text" class="form-control" dir="ltr" autocomplete="off" data-field="locationReferenceId" data-label="StopLocationReferenceId" /></div>
+                <div class="col-3">
+                    <select class="form-select" data-field="action" data-label="StopAction">
+                        <option value="Pickup">@Localizer["ActionPickup"]</option>
+                        <option value="Delivery">@Localizer["ActionDelivery"]</option>
+                        <option value="Return">@Localizer["ActionReturn"]</option>
+                    </select>
+                </div>
+                <div class="col-1 text-end"><button type="button" class="btn btn-icon btn-text-secondary js-remove-stop"><i class="bx bx-x" aria-hidden="true"></i></button></div>
+            </div>
+        </template>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveLoad" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

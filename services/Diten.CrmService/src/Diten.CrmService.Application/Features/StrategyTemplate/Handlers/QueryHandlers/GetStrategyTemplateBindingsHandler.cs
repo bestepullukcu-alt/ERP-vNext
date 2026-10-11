@@ -27,6 +27,7 @@ public sealed class GetStrategyTemplateBindingsHandler
     private readonly IVisitFrequencyPolicyRepository _policies;
     private readonly IKnowledgePathRepository _paths;
     private readonly IContentEngagementJourneyRepository _journeys;
+    private readonly StrategyTemplateLineJourneyReader _lineJourneys;
 
     public GetStrategyTemplateBindingsHandler(
         ITenantContext tenant,
@@ -34,7 +35,8 @@ public sealed class GetStrategyTemplateBindingsHandler
         ISegmentRepository segments,
         IVisitFrequencyPolicyRepository policies,
         IKnowledgePathRepository paths,
-        IContentEngagementJourneyRepository journeys)
+        IContentEngagementJourneyRepository journeys,
+        StrategyTemplateLineJourneyReader? lineJourneys = null)
     {
         _tenant = tenant;
         _templates = templates;
@@ -42,6 +44,8 @@ public sealed class GetStrategyTemplateBindingsHandler
         _policies = policies;
         _paths = paths;
         _journeys = journeys;
+        // WP-SB-3a — each product line's journey (name / status / hints). Without a catalog reader no language hint.
+        _lineJourneys = lineJourneys ?? new StrategyTemplateLineJourneyReader(journeys);
     }
 
     public async Task<Response<StrategyTemplateBindingsDto>> Handle(
@@ -117,8 +121,12 @@ public sealed class GetStrategyTemplateBindingsHandler
 
             contentViews.Add(new StrategyTemplateContentBindingViewDto(
                 binding.BindingId, binding.ContentRefType, binding.ContentRefId, binding.ContentCodeDisplay,
-                binding.ContentVersionAtBinding, status, archived, published, binding.SortOrder));
+                binding.ContentVersionAtBinding, status, archived, published, binding.SortOrder,
+                Retired: StrategyContentRefTypes.IsRetired(binding.ContentRefType)));
         }
+
+        var lineJourneys = await _lineJourneys.ReadAsync(tenantId, template, cancellationToken);
+        var summary = StrategyTemplateLineJourneyReader.Summary(template);
 
         var dto = new StrategyTemplateBindingsDto(
             template.Id,
@@ -141,23 +149,37 @@ public sealed class GetStrategyTemplateBindingsHandler
                 // Only a policy reference binds. A declared rhythm is documentation: MOD-0165 does not read it.
                 Binding: intent.IsPolicyReference()),
             StrategyTemplateMapper.OrderedProductLines(template)
-                .Select(line => new StrategyTemplateProductLineViewDto(
-                    line.LineId,
-                    line.GlobalProductId,
-                    line.GlobalProductCodeDisplay,
-                    line.LineWeightPercentage,
-                    line.SkuAllocationMode,
-                    line.SkuAllocations
-                        .OrderBy(a => a.SortOrder).ThenBy(a => a.AllocationId)
-                        .Select(StrategyTemplateMapper.ToDto)
-                        .ToList(),
-                    StrategyTemplateAllocationRules.TotalOf(line),
-                    // ALWAYS false: MDM's Gsku carries no GlobalProductId and this FU may not open a new read surface,
-                    // so containment is the author's word. Saying "verified" here would be a lie with consequences.
-                    ContainmentVerified: false,
-                    line.SortOrder))
+                .Select(line =>
+                {
+                    var journey = lineJourneys.GetValueOrDefault(line.LineId) ?? StrategyTemplateMapper.StoredJourney(line);
+                    return new StrategyTemplateProductLineViewDto(
+                        line.LineId,
+                        line.GlobalProductId,
+                        line.GlobalProductCodeDisplay,
+                        line.LineWeightPercentage,
+                        line.SkuAllocationMode,
+                        line.SkuAllocations
+                            .OrderBy(a => a.SortOrder).ThenBy(a => a.AllocationId)
+                            .Select(StrategyTemplateMapper.ToDto)
+                            .ToList(),
+                        StrategyTemplateAllocationRules.TotalOf(line),
+                        // ALWAYS false: MDM's Gsku carries no GlobalProductId and this FU may not open a new read
+                        // surface, so containment is the author's word. Saying "verified" here would be a lie.
+                        ContainmentVerified: false,
+                        line.SortOrder,
+                        line.EffectiveRole(),
+                        journey.JourneyId,
+                        journey.JourneyCode,
+                        journey.JourneyName,
+                        journey.JourneyStatus,
+                        journey.JourneyMissing,
+                        journey.Warnings);
+                })
                 .ToList(),
-            contentViews);
+            contentViews,
+            PromoLineCount: summary.Promo,
+            NonPromoLineCount: summary.NonPromo,
+            LinesWithoutJourneyCount: summary.WithoutJourney);
 
         return Response<StrategyTemplateBindingsDto>.Success(dto);
     }

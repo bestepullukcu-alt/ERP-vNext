@@ -1,0 +1,2 @@
+scope	module	status	description	why_not_numeric	denominator_treatment	next_trigger
+LOADS-TRANSITION-ROOT-UI	0185	OPEN_UNESTIMATED	Transition/detail/lookup and root-driven Loads UI beyond the bounded list/create first slice	Exact root decision and resulting UI acceptance are not fixed; assigning hours would invent precision	Retained as full-MVP scope outside the 2814-hour numeric subtotal; subtotal is a lower bound	Approved exact root/transition scope followed by successor rebaseline

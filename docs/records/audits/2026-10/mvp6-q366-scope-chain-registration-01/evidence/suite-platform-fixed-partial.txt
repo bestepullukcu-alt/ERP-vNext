@@ -1,0 +1,2 @@
+Passed!  - Failed:     0, Passed:     2, Skipped:     0, Total:     2, Duration: 9 ms - Diten.Platform.CompositionGuard.Tests.dll (net8.0)
+Failed!  - Failed:   250, Passed:  4158, Skipped:     0, Total:  4408, Duration: 3 m 30 s - Diten.Platform.Application.Tests.dll (net8.0)

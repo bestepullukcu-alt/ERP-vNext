@@ -1,0 +1,43 @@
+# MVP6-MOD0192-EXECUTOR-DESIGN-CHECK-01
+
+**Verdict: CONDITIONAL / NOT IMPLEMENTATION-READY.** The proposed module-owned durable executor has a viable single-*commit* design if the acceptance below is enforced. It does **not** establish exactly-once execution. More importantly, no exact owner approval of this executor was found: `mod-0192-exact-policy-01/DECISION-PACK.md` calls it UNAPPROVED, and `mvp6-mod0190-0192-scope-disposition-01/README.md` expressly leaves the executor mechanism undecided. The present task calls it approved, but supplies no decision text, artifact hash or approval record. Do not treat the proposal's sample approval wording as an executed decision. This check neither selects a new executor nor grants runtime GO.
+
+## Inspected authority and existing patterns
+
+The published `SANDOP-CAPACITY` v1 (SHA-256 `c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c`) exposes evaluation POST `202 Accepted`, GET `Accepted/Running/Completed/Failed`, and a terminal event payload; it does not prescribe a worker, lease or retry policy (`/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations`, `CapacityEvaluation`, `CapacityEvaluationCompletedEvent`). The Capacity proposal (SHA-256 `acb1b8f0ec1756aa72782c02b0a8af8eb067289a6770a9ca6bef5ccde46c7f6b`) proposes a commit-trigger plus startup/10-second scan, 30-second fenced lease and three tries. Its fixture oracle (SHA-256 `d4af417d50ff038fa0db7cc3a8bbaa80143ddf4ce550edd2781fba96c00fed9a`) is a literal synthetic lookup, **not** an optimizer.
+
+Existing Shipment persistence uses majority-write Mongo transaction, version-filtered replacement, and receipt/audit/Pending-outbox writes together (`ShipmentRepository.cs:48–135`). `ShipmentOutboxWorker.cs` is a publisher: with no transport it logs and returns, leaving events Pending. `Program.cs:49` registers that publisher but no Capacity executor. These are implementation precedents, not MOD-0192 authorization. A Capacity executor must be independent of any Event Bus publisher. Capacity-owned domain/application/persistence code and tests belong under `Features/CapacityPlans/**`; registration in shared `Program.cs`, shared DI, permission and gateway paths needs a separate exact integration owner/patch. A module-local type alone will not run at process start.
+
+## Failure and restart acceptance schedule
+
+Each scenario needs a fresh scoped Mongo database, real process boundaries, raw persisted evaluation/receipt/audit/outbox/active-slot evidence, and GET/POST traces. “One result” means **one durable terminal effect**, not one invocation of the fixture oracle.
+
+| Boundary / action | Required observation after authorized implementation |
+|---|---|
+| POST before response; crash before Accepted transaction commits | No 202 was legitimately completed; no evaluation, receipt, active slot, audit or event survives. Retry with same key can create one Accepted record. Commit outcome must be queried when acknowledgment is uncertain. |
+| Accepted commit acknowledged; kill before claim or before 202 bytes arrive | Evaluation plus original 202 receipt and active slot survive. Restart scan claims it. Same-key retry returns the stored 202 business response with no second evaluation; GET may already show terminal. A lost HTTP response cannot be used to infer that the transaction rolled back. |
+| Kill just after claim | Persisted Running/version/fence/lease/attempt state is visible. Until lease expiry, another claimant cannot take it. After expiry, one claimant wins; original claimant's stale fence cannot commit. Exact attempt-count result remains an owner-policy gap below. |
+| Two processes observe expired lease together | At most one CAS claim wins; loser rereads. If the first worker is merely slow, both may *execute* the fixture, but only the current fence/version can persist a terminal result. Test with delayed first worker and second claimant. |
+| Stale worker finishes after lease was reclaimed | Terminal CAS matches current status + version + fence + lease validity; stale write modifies zero records and inserts no event/audit. The winner commits one terminal result. A version check without fence/expiry is insufficient after reclaim. |
+| Kill during terminal transaction, before acknowledged commit | Either the whole terminal state, active-slot release, audit and single Pending event commits, or none does. On unknown commit result, read by evaluation ID and stable terminal event ID before retry; do not assume zero writes. |
+| Kill after terminal commit, before worker acknowledgement | GET remains Completed or Failed after restart; active slot is released; one terminal audit and one Pending event exist. Re-scan sees terminal and does nothing. A new key can submit another evaluation only after this committed release. |
+| Three unsuccessful claims/attempts | If owner policy counts these as the three tries, transition once to Failed and release slot atomically with audit and `capacity.evaluation.completed.v1` Pending event carrying status Failed. A fourth execution must not start. Whether crash-at-claim consumes a try is unresolved. |
+| Publisher missing or stopped | Executor still reaches the fixture-oracle terminal state. One event remains Pending. Starting publisher later may deliver/retry the same event ID; it must not launch evaluation again. |
+
+For both Completed and Failed, verify the event's `occurredAt` equals persisted `completedAt`, its correlation is the original submit correlation and its causation refers to the scenario-created event, **only if the proposed C192-06 policy receives exact owner approval**. Verify Finite's one literal bottleneck and Infinite's empty list against `FIXTURE-ORACLE.json`; this is fixture conformance, not production capacity calculation. GET must remain read-only.
+
+## What 10s / 30s / 3 does and does not guarantee
+
+- A 10-second scan is a **configured polling interval**, not a 10-second recovery SLA. Startup, DB availability, scheduling and process outage add unbounded delay. The commit signal is an optimization; durable scan is the recovery path.
+- A 30-second lease is the **earliest intended reclaim boundary** after a claim. With a healthy 10-second scan, detection is nominally within the next scan, not guaranteed within 40 seconds. Long work may exceed the lease; fencing must prevent the old worker from writing. Lease renewal/maximum runtime and clock authority are not specified.
+- Three tries bound claimed attempts only after the increment point and crash accounting are specified. They do not guarantee success, exactly-once execution, delivery, or a terminal result while every process is stopped. A worker killed three times may reach Failed if each claim consumes a try; that is currently undecided.
+
+## Exact remaining technical risks / disposition needed
+
+1. **Approval provenance:** locate an executed owner decision bound to the exact proposal/oracle hashes and the 10s/30s/3 values. Current inspected record says 192-EXEC undecided. Until then, the design remains conditional.
+2. **Attempt and lease semantics:** decide whether an attempt increments atomically on claim or on execution/failure; whether a crashed/expired claim consumes one; how the third attempt becomes Failed; lease renewal or a maximum fixture execution duration; and DB-server versus application clock for expiry. These choices determine the expected restart verdict and cannot be silently supplied by implementation.
+3. **Atomic active uniqueness:** prove a durable scope-keyed unique active slot (or equivalent enforced invariant), and make terminal state plus slot release atomic. CAS-only application checks are insufficient for two POSTs on different processes. A second submit must fail with frozen `EVALUATION_ALREADY_ACTIVE` until the committed terminal release, then succeed.
+4. **Unknown commit and replay:** use stable receipt/evaluation/event identities across retries, read persisted outcome after uncertain commit, and distinguish original 202 receipt from current GET terminal state. The proposed changed-payload 409 is not in published v1 and belongs to the separate contract amendment lane.
+5. **Composition:** module-owned evaluator/storage code needs an authorized shared registration/startup change. Existing Shipment publisher registration neither runs Capacity evaluation nor grants that change. Pending-outbox-only approval permits terminal event persistence but supplies no executor.
+
+No source, pack, canonical contract, `Program.cs`, or git state was changed by this check. No prototype, build or runtime test was run; this is an E1 design review and the schedule is future acceptance, not PASS evidence.

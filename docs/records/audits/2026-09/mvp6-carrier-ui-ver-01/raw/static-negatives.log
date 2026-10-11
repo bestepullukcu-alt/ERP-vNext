@@ -1,0 +1,60 @@
+STATIC NEGATIVE / CONTRACT CHECKS
+direct service/Gateway/browser API tokens (expect no matches)
+browser bearer/cookie/token storage (expect no matches)
+native alert/confirm/direct Swal setup (expect no matches)
+forbidden mutation/CRUD endpoint tokens (expect no matches)
+controller HTTP surface
+42:    [HttpGet("")]
+45:    [HttpGet("api")]
+58:    [HttpPost("api")]
+75:    [HttpPost("api/{carrierId:guid}/status")]
+same-origin fetch surface
+8:    const endpoint = '/SupplyChain/Carriers/api';
+265:            const response = await fetch(buildListUrl(), { credentials: 'same-origin', headers: getAuthHeaders() });
+350:            const response = await fetch(endpoint, {
+392:                const response = await fetch(`${endpoint}/${encodeURIComponent(carrierId)}/status`, {
+permission literals
+frontend/Diten.Web/Controllers/SupplyChainCarriersController.cs:17:    internal const string ReadPermission = "supplychain.carriers.read";
+frontend/Diten.Web/Controllers/SupplyChainCarriersController.cs:18:    internal const string CreatePermission = "supplychain.carriers.create";
+frontend/Diten.Web/Controllers/SupplyChainCarriersController.cs:19:    internal const string StatusPermission = "supplychain.carriers.status.change";
+frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml:11:@if (!Perms.Has("supplychain.carriers.read"))
+frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml:49:@if (Perms.Has("supplychain.carriers.create"))
+frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml:53:@if (Perms.Has("supplychain.carriers.status.change"))
+frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml:61:        canCreate = Perms.Has("supplychain.carriers.create"),
+frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml:62:        canChangeStatus = Perms.Has("supplychain.carriers.status.change")
+payload field literals
+337:            carrierCode: document.getElementById('carrierCode').value,
+338:            displayName: document.getElementById('displayName').value,
+339:            supportedModes: Array.from(modes),
+340:            externalReference: document.getElementById('externalReference').value
+379:            targetStatus: document.getElementById('targetStatus').value,
+380:            reasonCode: document.getElementById('reasonCode').value
+shared confirmation/toast
+256:        window.showToast?.(message, response.status >= 500 ? 'error' : 'warning');
+275:            window.showToast?.(L.PersistenceUnavailable, 'error');
+362:            window.showToast?.(result.idempotentReplay ? L.CreateReplaySuccess : L.CreateSuccess, 'success');
+368:            window.showToast?.(`${L.PersistenceUnavailable} ${L.RetrySameRequest}`, 'error');
+402:                window.showToast?.(result.idempotentReplay ? L.StatusReplaySuccess : L.StatusSuccess, 'success');
+408:                window.showToast?.(`${L.PersistenceUnavailable} ${L.RetrySameRequest}`, 'error');
+413:        window.showConfirm?.(L.StatusChangeConfirm, run, {
+451:                        window.showToast?.(L.RecordSaved, 'success');
+453:                        if (!error?.authHandled) window.showToast?.(L.ErrorOccurred, 'error');
+DataTables v2 markers
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.js:473:        dt = new DataTable(tableElement, window.DtDefaults.create({
+frontend/Diten.Web/Views/SupplyChain/Carriers/_DataTable.cshtml:15:        <table id="dt-carriers" data-dt-standard="v2" class="datatables-carriers table border-top">
+tenant shell and RTL mechanism
+frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml:8:    Layout = "_LayoutTenantShell";
+frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml:26:    var layoutDirection = string.Equals(currentCulture, "ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
+frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml:33:<html lang="@currentCulture" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="@layoutDirection" data-skin="default"
+l10n key parity
+tr keys=44 diff_exit=0
+fr keys=44 diff_exit=0
+es keys=44 diff_exit=0
+zh keys=44 diff_exit=0
+ar keys=44 diff_exit=0
+ru keys=44 diff_exit=0
+en keys=44
+personalization protected/unmodified
+personalization_git_diff_exit=0
+e80cd857881aee96004bf02dba69d6c17d6b4bf48d24ce9fdf90a62a1caef8de  frontend/Diten.Web/wwwroot/assets/js/personalization-client.js
+e80cd857881aee96004bf02dba69d6c17d6b4bf48d24ce9fdf90a62a1caef8de  -

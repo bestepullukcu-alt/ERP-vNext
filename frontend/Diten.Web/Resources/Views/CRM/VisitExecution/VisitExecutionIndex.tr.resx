@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Ziyaret Raporu</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Ziyaret Yürütme</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Gerçekte ne olduğunu kaydedin — her planlı ziyareti tamamlandı, kaçırıldı veya ertelendi olarak işaretleyin ve değiştirilemez ziyaret raporunu doldurun.</value></data>
   <data name="ExecutionNotice" xml:space="preserve"><value>Bu, uygulama takvimidir. Sonuçları ve raporları kaydeder; plan üretmez ve içerik aşamasını ilerletmez — burada kaydettiğiniz gerçek aşama bir sonraki döngünün okuduğu değerdir.</value></data>
   <data name="View" xml:space="preserve"><value>Görünüm</value></data>
@@ -16,13 +16,10 @@
   <data name="Refresh" xml:space="preserve"><value>Yenile</value></data>
   <data name="NoVisits" xml:space="preserve"><value>Bu aralıkta planlı ziyaret yok.</value></data>
   <data name="ReportTitle" xml:space="preserve"><value>Ziyaret raporu</value></data>
-  <data name="PlannedContent" xml:space="preserve"><value>Planlanan içerik (FU04)</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>Planlanan içerik</value></data>
   <data name="ActualStage" xml:space="preserve"><value>Sunulan gerçek aşama</value></data>
-  <data name="StageIndex" xml:space="preserve"><value>Aşama #</value></data>
-  <data name="MatchedPlan" xml:space="preserve"><value>Planlanan aşamayla eşleşti</value></data>
   <data name="OutcomeCode" xml:space="preserve"><value>Sonuç kodu</value></data>
   <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>örn. positive</value></data>
-  <data name="ReferenceDataHint" xml:space="preserve"><value>Sonuç kodları referans verilerinden gelir.</value></data>
   <data name="DoctorFeedback" xml:space="preserve"><value>Doktor geri bildirimi</value></data>
   <data name="Samples" xml:space="preserve"><value>Verilen numuneler / materyaller</value></data>
   <data name="AddSample" xml:space="preserve"><value>Numune ekle</value></data>
@@ -49,4 +46,37 @@
   <data name="Quantity" xml:space="preserve"><value>Adet</value></data>
   <data name="ItemType" xml:space="preserve"><value>Öğe türü</value></data>
   <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="NoPlannedContent" xml:space="preserve"><value>Bu ziyaret için planlanmış içerik yok.</value></data>
+  <data name="StageFallback" xml:space="preserve"><value>Aşama {0}</value></data>
+  <data name="PlannedStageSuffix" xml:space="preserve"><value>(plandaki)</value></data>
+  <data name="StageNotPresented" xml:space="preserve"><value>Plandaki aşama sunulmadı</value></data>
+  <data name="StageMatchesPlan" xml:space="preserve"><value>Planla eşleşiyor.</value></data>
+  <data name="StageDiffersFromPlan" xml:space="preserve"><value>Plandan farklı.</value></data>
+  <data name="NotYetDueHint" xml:space="preserve"><value>Ziyaret günü gelmedi</value></data>
+  <data name="ConfirmCompleted" xml:space="preserve"><value>Bu ziyaret tamamlandı olarak işaretlensin mi?</value></data>
+  <data name="ConfirmCompletedButton" xml:space="preserve"><value>Evet, tamamlandı</value></data>
+  <data name="OutcomeCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="OutcomeMissed" xml:space="preserve"><value>Kaçırıldı</value></data>
+  <data name="OutcomeRescheduled" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="OutcomeCodeHint" xml:space="preserve"><value>Serbest metin: kısa bir sonuç kodu yazın (henüz referans listesi yok).</value></data>
+  <data name="ErrOutcomeCodeRequired" xml:space="preserve"><value>Sonuç kodu zorunludur.</value></data>
+  <data name="ErrNotYetDue" xml:space="preserve"><value>Ziyaret günü gelmedi; o günden önce tamamlanamaz ve raporlanamaz.</value></data>
+  <data name="ErrPlannedVisitRequired" xml:space="preserve"><value>Planlı ziyaret seçilmedi.</value></data>
+  <data name="ErrPlannedVisitNotFound" xml:space="preserve"><value>Planlı ziyaret bulunamadı.</value></data>
+  <data name="ErrOutcomeRequired" xml:space="preserve"><value>Bir sonuç seçin.</value></data>
+  <data name="ErrReasonCodeRequired" xml:space="preserve"><value>Kaçırılan veya ertelenen ziyaret için neden kodu zorunludur.</value></data>
+  <data name="ErrRescheduleDateInvalid" xml:space="preserve"><value>Yeni tarihi yyyy-AA-gg biçiminde girin.</value></data>
+  <data name="ErrResourceRequired" xml:space="preserve"><value>Raporlayan temsilci eksik.</value></data>
+  <data name="ErrSampleInvalid" xml:space="preserve"><value>Numuneleri kontrol edin: her birinin türü ve geçerli bir adedi olmalı.</value></data>
+  <data name="ErrContentActualsInvalid" xml:space="preserve"><value>Sunulan aşama geçerli değil.</value></data>
+  <data name="ErrFreeTextTooLong" xml:space="preserve"><value>Bir metin alanı çok uzun.</value></data>
+  <data name="ErrReportNotFound" xml:space="preserve"><value>Rapor bulunamadı.</value></data>
+  <data name="ErrReportAlreadyExists" xml:space="preserve"><value>Bu ziyaret için zaten bir rapor var.</value></data>
+  <data name="ErrNotCompleted" xml:space="preserve"><value>Yalnız tamamlanan ziyaret raporlanabilir.</value></data>
+  <data name="ErrEditWindowClosed" xml:space="preserve"><value>Düzeltme süresi doldu; bunun yerine düzeltme kaydı girin.</value></data>
+  <data name="ErrNotFinalised" xml:space="preserve"><value>Rapor henüz gönderilmedi.</value></data>
+  <data name="ErrAmendmentReasonRequired" xml:space="preserve"><value>Düzeltme nedeni girin.</value></data>
+  <data name="ErrInvalidTransition" xml:space="preserve"><value>Raporun mevcut durumunda bu değişikliğe izin verilmiyor.</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>Rapor bu arada değişti. Sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="ErrUnsupportedValue" xml:space="preserve"><value>Seçilen bir değer desteklenmiyor.</value></data>
 </root>

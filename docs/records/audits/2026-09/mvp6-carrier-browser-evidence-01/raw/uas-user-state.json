@@ -1,0 +1,8 @@
+{
+  userFound: true,
+  email: 'john.doe.def@diten.com',
+  tenantId: UUID('00000000-0000-0000-0000-000000000001'),
+  isActive: true,
+  isDeleted: false,
+  userRoleCount: 0
+}

@@ -1,0 +1,21 @@
+id	requirement	successor_disposition	controlling_evidence	boundary
+A01	Scoped Draft create against exact Published DEMAND fixture	PASS	Prior independent 22-record HTTP/DB archive plus unchanged final production source	Fixture-only; no live DEMAND producer claim
+A02	Immutable snapshot provenance, InReview transition and older snapshot preservation	PASS	Prior HTTP capture/list plus final 19/19 core successor	Bounded fixture provenance only
+A03	Same-plan immutable snapshot sign-off, duplicate-role protection and no automatic approval	PASS	Prior HTTP sign-off/list/replay plus direct-Mongo lifecycle/concurrency evidence	No Workflow/quorum integration
+A04	Durable receipt, exact key/fingerprint, atomic audit and at-most-one Pending event	PASS	Replay/concurrency/rollback/recovery HTTP evidence and final core/direct-Mongo results	Publisher/delivery excluded
+A05	Current response correlation, original audit/event correlation, invalid-correlation fallback and conditional application 401	PASS	Prior replay evidence plus F04 missing/malformed/duplicate 3/3; 401 applicability disposition in SOP §22	Application-generated 401 is NOT_APPLICABLE because final pipeline exposes only parser challenge
+A06	Tenant/LE isolation 404 and missing permission 403	PASS	Prior independent direct-service HTTP evidence	Gateway excluded
+A07	Six operations, three events and published 400/401/409/422/503 behavior	PASS_BOUNDARY	Prior operation/event/schema evidence; F01 3/3, F02 4/4, F03 1/1, F04 correlation 3/3; parser 401 observed	Bounded exercised matrix; no repository-wide PASS
+A08	No MOD-0192 persistence/internal DTO sharing; frozen mock boundary	PASS	38/43 disjoint ownership and final 379-entry manifest	No live producer uptake
+A09	Bounded E4 decision-to-fixture provenance	PASS_BOUNDARY	HTTP/DB provenance and Pending audit/outbox evidence	Not E5/G5 or full-module acceptance
+F01	Approved/Rejected/Archived capture → 409 SANDOP_PLAN_STATE_CONFLICT	CLOSED	Independent F01–F04 raw archive: 3/3 with six-collection zero delta	Terminal status seeded explicitly, not claimed as lifecycle transition
+F02	Non-InReview sign-off → 409 SANDOP_SIGN_OFF_STATE_CONFLICT	CLOSED	Independent F01–F04 raw archive: Draft/Approved/Rejected/Archived 4/4 with zero delta	Exact controlling states
+F03	Wrong-plan snapshot → 422 INVALID_SNAPSHOT_REFERENCE	CLOSED	Independent F01–F04 raw archive: 1/1 real persisted other-plan snapshot with zero delta	Same tenant/LE, different plan
+F04A	Missing/malformed/duplicate correlation → 400 fallback UUID and zero write	CLOSED	Independent F01–F04 raw archive: 3/3; 24 Mongo queries exit 0 across all negative scenarios	Header/body UUID parity proven
+F04B	Application-generated 401 correlation fallback	NOT_APPLICABLE	Final source pipeline and published conditional rule; parser-level 401 independently observed	No reachable application-generated 401 path; parser response is not relabelled
+T01	Final Sandop core suite	PASS	Independent successor 19/19	Isolated 1/1 is included, not additive
+T02	Committed-acknowledgement oracle regression	PASS	Independent isolated 1/1 and full 19/19	Executed receipt-visible branch; unresolved branch assertions reviewed separately
+T03	Broad same-host suite	NON_PASS	Historical 271/276	No repository PASS or waiver
+T04	Loads UnknownCommitResultRetriesAndCommitsExactlyOnce	NON_PASS	Historical isolated 0/1	Not attributed to MOD-0190; no waiver
+R01	Native ASP.NET Core 8 runtime	PASS	Prior native 8.0.23 process and F01–F04 fresh native .NET 8 DLL provenance	Historical major-roll-forward failure remains non-controlling
+

@@ -1,0 +1,67 @@
+--- docs/reference/architecture/docs-path-authority.json	2026-09-18 07:27:00
++++ /private/tmp/mvp6-guard-complete-disposition-01/authority-candidate.json	2026-09-20 12:24:03
+@@ -1,7 +1,10 @@
+ {
+   "schemaVersion": 1,
+-  "status": "APPROVED",
+-  "decision": {"path": "docs/records/decisions/2026-09/mvp6-loads-docs-path-owner-binding-01.json", "sha256": "170ea3c5e47af103aeeceda471606d60fc31e69bff233279cb9ecd4cd6c805e7"},
++  "status": "UNAPPROVED",
++  "decision": {
++    "path": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/decision-candidate.json",
++    "sha256": "462f5e94ffbecce1290fa4fea7e4cd69d3aa240ed0a0aa98809401d90e4fd5ec"
++  },
+   "canonicalTargets": [
+     {
+       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+@@ -178,6 +181,51 @@
+       "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+       "provenanceLine": 72,
+       "targets": []
++    },
++    {
++      "path": "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json",
++      "sha256": "a70f79d7892d83ddbe772653a06cb009ebfe7e2b72549d11dd956f72ab9f83fe",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 3,
++      "targets": []
++    },
++    {
++      "path": "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json",
++      "sha256": "74e31359aaeb662645d224d9602cb801f8f81a433cc75cf09840d852fd2e878e",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 4,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mod-0185-dev-02/changed-files.json",
++      "sha256": "f9eb90fa8fdf341f92540cbb12acb0f281be504be98ce612f93530d9efd4ddf0",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 5,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mod-0185-dev-03/changed-files.json",
++      "sha256": "f3343d7f963841988e55a4a20a51524fc8dcc2c87a2d6f046f1cf5968ba8316a",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 6,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json",
++      "sha256": "9557f3499533dbcb9477e1f16d5f455e495702e7ace10e13d2bee8299bbe68bb",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 7,
++      "targets": []
+     }
+   ]
+ }

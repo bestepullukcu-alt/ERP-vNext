@@ -1,0 +1,10 @@
+# Spec doğrulaması
+
+- Mevcut Loads UI hazırlığı için docs/roadmap/plans ve frontend path/content araması yapıldı; bu paket öncesinde modüle özgü UI paketi/dosyası bulunmadı. Aktif task envanteri okundu; kısa task metadata'sı kesin writer yokluğu kanıtı değildir. Dispatch öncesi CT ownership kontrolü açık tutuldu.
+- Kabul authority: `docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-02/SOP-22.md` açıkça bounded Loads WP ACCEPTED; root uptake/live producers/multi-Shipment roots/UI/gateway/E5/G5 hariç. CT-review03 yalnız A04 kapanışı olarak kullanıldı, full acceptance'a genişletilmedi.
+- Kabul47path manifesti güncel kaynaklarla **47/47 MATCH**, Program.cs dahil. Bu statik eşitlik yeni runtime PASS değildir.
+- Historical Loads publication YAML2.0.0 SHA93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571; current canonical-location YAML3.0.0 SHA5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c. İkisi aynı dosya byte'ı diye gösterilmedi. Current file'daki Loads3operation ve request/response definitions doğrudan okundu; immutable Loads annex a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1 aynı. Current3.0.0 publication/authority kararının exact zinciri bu UI hazırlığında yeniden kabul edilmedi; final dispatch integration owner tarafından bağlanmalı. Eski2.0.0 publication grant'i yeni aggregate hash'e taşınmaz.
+- Sayım:4 top-level editable types+3 stop leaf types=7; minimum2stop ile4+6=10control. Stops container/IDs/audit/context çift sayılmadı.
+- O/M/P replacement: önceki6remaining toplam80.4/134/233.6; öneri82.4/144/242.4; net2/10/8.8. UI bounded48/84/144; remaining live/contract/backend34.4/60/98.4. Delivered unchanged.
+- U01–U19,20 exact UI paths ve HELD promptlar kontrol edildi. Test/build/browser/persistence/restart koşulmadı. PNG veya liveAuth PASS iddiası yok.
+- SOURCE-HASHES.tsv final read-only input pinlerini, SHA256SUMS paket byte'larını bağlar. `.antigravity` sadece okundu; rules değişmedi. Bu doküman runtime code/contract uygulamaz.

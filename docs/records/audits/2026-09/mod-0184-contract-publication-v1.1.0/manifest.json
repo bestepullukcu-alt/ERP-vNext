@@ -1,0 +1,53 @@
+{
+  "kind": "unpublished review package; self excluded",
+  "files": [
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/README.md",
+      "sha256": "5951e8062375b3c807645c72fc7238dcaebac80720723ed5f597b951546119e7"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/baseline.json",
+      "sha256": "ff1572a639462be6914bbfcb31ea3b90a243384196a832fc123d805be6ab2f0d"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/carrier-semantics-v1.1.0.md",
+      "sha256": "87557ef9f5b5a4427862effbece2bb528ebc1b95361c29416373709223021fee"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/error-matrix.json",
+      "sha256": "af3fc12b4414ec096c623001805d7e8c7bfe36249fde232e2155a0c359401886"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/examples.json",
+      "sha256": "fc4084e1c69910a640711bef105e8fd07763f90e9087c759d0ff1c0be94dd051"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/preservation-results.json",
+      "sha256": "16525762aad97cde3eb1a30bd9cebe4116f17c6a59e6c81089e4a2d680032134"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/proposed-publication-hashes.json",
+      "sha256": "62db411da5bfd1587a72b853ab03d89b9f85cdf5bfdce9f16960bc840b312e7c"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/publication-after-approval.patch",
+      "sha256": "2cbcf65b4909419a2d0a79d688b3ed95ee33f0993fc666ef5c5edda246f0920f"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/shipment-bundle-1.0.0-to-1.1.0.candidate.diff",
+      "sha256": "2fde61c87b029f42cf721875541f531595d84c3a9a09ff56cd783af7b705b0d2"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/shipment-bundle.openapi.candidate.yaml",
+      "sha256": "c650bf44d3fd813bfd2424f48141ff4aed5decda7b4d49e3a945426678e8ee1e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py",
+      "sha256": "145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validation-results.json",
+      "sha256": "d7a3e530da889ec4754aaf66952913f058008800d3b584ce163668b38e76bfc3"
+    }
+  ]
+}

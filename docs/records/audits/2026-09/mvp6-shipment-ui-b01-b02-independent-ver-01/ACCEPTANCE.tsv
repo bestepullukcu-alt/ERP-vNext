@@ -1,0 +1,21 @@
+id	result	evidence_or_reason
+ARTIFACTS	PASS	13/13 checksums pass from repository root
+SOURCE-354	PASS	354/354 exact hashes; manifest e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3
+AUTH-22	PASS	22/22 exact hashes; manifest b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731
+BUILD-3333	PASS	3333/3333 exact hashes; manifest 516ba828bed602e4355a5cc6871501cbb3b3c72d60473fa7ec73d135bbadf911
+PATCH-ROUNDTRIP	PASS	reverse/forward apply and final manifest recheck
+B01-STATIC	PASS	focused test Index_UsesExplicitNestedPartialPaths
+B02-STATIC	PASS	focused tests MutationsUseOnlyValidatedAuthoritativeRoot and related root separation/replay intent
+FOCUSED-TESTS	PASS	9 passed, 0 failed, 0 skipped
+FRESH-BUILDS	PASS	Auth/Platform/MDM/SupplyChain/Gateway/Web all 0 errors
+RUNTIME-ENV	PASS	isolated Mongo PRIMARY and six lane services started; no port 27017
+B01-RUNTIME	OPEN	fresh real-Auth browser list render/filter not completed by this verifier
+B02-TRANSITION	OPEN	fresh browser request capture/root equality not completed
+B02-POD	OPEN	fresh browser POD request capture/root equality not completed
+B02-REPLAY	OPEN	fresh browser/API replay not completed
+B02-CONFLICT	OPEN	fresh changed-payload conflict not completed
+B02-ZERO-WRITE	OPEN	fresh scoped before/after persistence measurements not completed
+B02-RESTART	OPEN	fresh same-binary/database browser restart not completed
+PNG	OPEN	no supported persistent PNG export used
+PLATFORM-AGGREGATE-HEALTH	OBSERVED-503	aggregate dependency health; not represented as PASS
+

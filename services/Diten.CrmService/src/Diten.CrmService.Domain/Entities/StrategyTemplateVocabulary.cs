@@ -100,14 +100,54 @@ public static class StrategySkuAllocationModes
         => string.IsNullOrWhiteSpace(value) ? ProductOnly : value.Trim().ToLowerInvariant();
 }
 
+/// <summary>WP-SB-3a (DESIGN-SB-3 §3.1) — how a product line is told in the visit. Non-promo products come from the
+/// template's non-promo lines (not from the whole portfolio).</summary>
+public static class StrategyProductLineRoles
+{
+    public const string Promo = "promo";
+    public const string NonPromo = "non-promo";
+
+    public static readonly IReadOnlyList<string> All = new[] { Promo, NonPromo };
+
+    public static bool IsValid(string? value)
+        => !string.IsNullOrWhiteSpace(value) && All.Contains(value.Trim().ToLowerInvariant());
+
+    /// <summary>Lower-cased, or null when blank (a blank role is "missing", never silently promo on a write).</summary>
+    public static string? Normalize(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToLowerInvariant();
+}
+
+/// <summary>WP-SB-3a — read-time journey hints of a product line (warnings, never blocks on a read).</summary>
+public static class StrategyProductLineJourneyWarnings
+{
+    /// <summary>The journey's language is not a content language of the template's country scope.</summary>
+    public const string LanguageNotInCountry = "journey_language_not_in_country";
+
+    /// <summary>The journey is no longer published (or was archived) since it was bound.</summary>
+    public const string NotPublished = "journey_not_published";
+
+    /// <summary>The journey row cannot be found any more.</summary>
+    public const string NotFound = "journey_not_found";
+}
+
 /// <summary>Which MOD-0162 presentation a content binding points at. A typed reference is required: a bare id cannot be
-/// resolved to an aggregate, and guessing is how a binding silently points at nothing.</summary>
+/// resolved to an aggregate, and guessing is how a binding silently points at nothing.
+/// <para><b>WP-SB-3a (DESIGN-SB-3 S3-2): both types are RETIRED for new writes.</b> The journey moved onto the product
+/// line, and a template no longer binds a knowledge path directly. Existing bindings stay readable (and the visit
+/// content resolver keeps reading them until SB-3b); a new one is refused with <c>content_binding_type_retired</c>.</para>
+/// </summary>
 public static class StrategyContentRefTypes
 {
     public const string KnowledgePath = "knowledge-path";
     public const string ContentEngagementJourney = "content-engagement-journey";
 
     public static readonly IReadOnlyList<string> All = new[] { KnowledgePath, ContentEngagementJourney };
+
+    /// <summary>WP-SB-3a — the types a NEW binding may no longer use (today: every type).</summary>
+    public static readonly IReadOnlyList<string> Retired = All;
+
+    public static bool IsRetired(string? value)
+        => !string.IsNullOrWhiteSpace(value) && Retired.Contains(value.Trim().ToLowerInvariant());
 
     public static bool IsValid(string? value)
         => !string.IsNullOrWhiteSpace(value) && All.Contains(value.Trim().ToLowerInvariant());
@@ -190,6 +230,26 @@ public static class StrategyTemplateErrorCodes
     public const string ReferenceFanoutExceeded = "strategy_reference_fanout_exceeded";
     public const string DependencyUnavailable = "strategy_dependency_unavailable";
     public const string BindingsFrozen = "bindings_frozen";
+
+    // ---- WP-SB-3a — product line role + journey (DESIGN-SB-3 §3.1) and the retired template-level content binding.
+
+    /// <summary>400 — a written product line carries no role.</summary>
+    public const string ProductLineRoleRequired = "product_line_role_required";
+
+    /// <summary>400 — the role is not one of <see cref="StrategyProductLineRoles"/>.</summary>
+    public const string ProductLineRoleInvalid = "product_line_role_invalid";
+
+    /// <summary>400 — a written product line carries no journey.</summary>
+    public const string ProductLineJourneyRequired = "product_line_journey_required";
+
+    /// <summary>409 — the line's journey is not in this tenant, archived, or not published.</summary>
+    public const string JourneyNotPublished = "journey_not_published";
+
+    /// <summary>409 — the journey's subject's primary global product is not the line's product.</summary>
+    public const string JourneyProductMismatch = "journey_product_mismatch";
+
+    /// <summary>409 — a NEW template-level knowledge-path / content-engagement-journey binding (retired by SB-3a).</summary>
+    public const string ContentBindingTypeRetired = "content_binding_type_retired";
 
     // ---- WP-ST-SCOPE - play scope. Nothing is silent: an unpublished SET and an unknown VALUE get different codes
     // because one is fixed by an operator and the other by retyping, and "the dependency said no" is never conflated

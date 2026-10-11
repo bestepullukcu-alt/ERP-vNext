@@ -1,0 +1,15 @@
+sha256	path	use
+c580f62b0a9351d260e7c5cc930b0ec4882758d43d3c19bd27e0ad9b1a67460f	docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/REPORT.md	Immediate predecessor totals and terminology
+5bf33e91688c2ef9917c2bbda2c7260332610158f9d0a2f600b6ff057426ae83	docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/EFFORT.tsv	Open Root R2 and Loads scope disposition
+daf1ff6df703ff4edd064c72e3aa03cf0c1355cc80018bd3d522d0a258628c15	docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/PORTFOLIO-IMPACT.tsv	Predecessor portfolio arithmetic
+83166fc47d245d53301997adaf99fa5a146b45945370067016f93a7e97a56403	docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/SCENARIOS.tsv	Still-undecided Load root/detail/lookup scenarios
+908483a2be197eb9bbe075ed2f8f71493ebcefbb15def67f027e5fd304e4c462	docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/ASSUMPTIONS.md	Planning convention and overlap rules
+81e08bfd7203cca434fdc6b0e49be8440e0dcf7b72e75fbac354122b99b00377	docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/ARTIFACTS.sha256	Predecessor evidence seal
+47db9c81f5ff4700cc3c09dd5c510eb0f0cebab1c0468f2f3605837b0b95e652	docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/EFFORT.tsv	Controlling Shipment backend and Test/VER reserves
+3f34ccc970b75513a49208b2a131c786fc622003902a254a0becf548eca4f670	docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/REPORT.md	Shipment module totals and reserve boundaries
+a66b3124c9abcd29ac7d709671e5f6bb590b753da5ec18cb787182aa2da8175e	docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/UNESTIMATED-SCOPE.tsv	Historical open scope baseline
+028e2dc0d35dba692efcfd5ffc9c223ef90c5315f3329bf605c9b5e6d5f9e9fd	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/SOP-22.md	Candidate state and remaining gates
+7d83cf3ff4a039d02ec0a9133fd86ef4614236b0a3cadccca8543924134670e1	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/ACCEPTANCE.tsv	Candidate evidence boundary and NOT_RUN independent VER
+b39d00079306f87500f280f4e9e2c5c6c270827503e5bb85992571c7b847cb5d	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/target-manifest.tsv	Exact three-path preimage/target binding
+5982e702afd7c7bcb28e8de23a159984afcfdcb665e7a612c6e5e1838f0ac028	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/ARTIFACTS.sha256	Candidate evidence seal
+32381634163a2acff440475f4582c05defc8261957386dfa43d5c8fc7eaf962e	execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md	Module acceptance and runtime boundaries

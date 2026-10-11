@@ -1,0 +1,15 @@
+phase	command	exit	evidence
+input	sha256 exact patch/archive; verify DEV artifact and evidence manifests	0	raw/input-package-verification.txt
+reconstruct	extract snapshot plus integration overlay; verify target manifest after patch	0	raw/source-target-verify.log
+red	dotnet test exact ProducerShipmentRootInvalid500 test against baseline reader	1 expected	raw/red/unit-r01.log
+green-targeted	dotnet test exact 10 R01 mapping/control cases	0	raw/green/unit-r01.log
+build	dotnet build API Release --no-restore --no-incremental	0	raw/fresh-build.log
+mongo	mongod 127.0.0.1:27286 replica set returns_r01_ind_ver enableTestCommands=1	0	raw/mongo-init.*; raw/mongod.log
+api-main	dotnet fresh Release DLL on 127.0.0.1:51863	0	raw/api-process-before-main.txt
+http-main	python3 scripts/http_probe.py --phase main	0	raw/main.*; raw/main-results.json; raw/http/
+api-restart	stop main; confirm empty port; launch same binary new PID	0	raw/api-listener-between-processes.*; raw/api-process-after-restart.txt
+http-restart	python3 scripts/http_probe.py --phase restart	0	raw/restart.*; raw/restart-results.json
+returns-regression	dotnet test exact Returns namespace with RETURNS_MONGO_URI lane DB	0	raw/green/returns-regression.log
+db-final	mongosh final count/no-stock query	0	raw/db-final-state.*
+secret-scan	existence-only Bearer/runtime-secret scan	1=no match	raw/secret-scan.rg-exit
+shutdown	lsof API 51863 and Mongo 27286	1=no listener	raw/*listener-after-shutdown*

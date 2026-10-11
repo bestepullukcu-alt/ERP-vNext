@@ -22,8 +22,8 @@ namespace Diten.CrmService.Application.Features.CycleCapacity.Handlers.QueryHand
 /// the saved capacity's endpoint. That is the point: a preview that used its own copy of the rule would eventually
 /// show a figure the saved record disagrees with, and the author would trust the wrong one.</para>
 ///
-/// <para><b>The FTE is server-stamped here too.</b> The query carries none, so the preview is built on the same
-/// configured average the save will store (D-FTE).</para>
+/// <para><b>FTE (WP-CAP-MODEL, K-5).</b> A month FTE the form holds is used as authored; an omitted one takes the same
+/// configured average the save would stamp.</para>
 ///
 /// <para>The PERIOD is still read, and read-only: the window it supplies decides which months exist, and a caller
 /// cannot invent one.</para>
@@ -85,7 +85,13 @@ public sealed class PreviewCycleCapacityCalculationHandler
     /// </summary>
     private static CapacityEntity ToTransientCapacity(
         PreviewCycleCapacityCalculationQuery request, Guid tenantId, decimal fte)
-        => new()
+    {
+        // WP-CAP-MODEL — a complete typical triple previews the typical model (per-day report 0, as the save stores
+        // it); anything less previews the legacy arithmetic. Validation is the write path's job, not the preview's.
+        var typical = new CycleCapacityValidation.TypicalVisit(
+            request.TypicalPromoCount, request.TypicalNonPromoCount, request.ReportMinutesPerVisit);
+
+        return new()
         {
             // EntityBase seeds a fresh Guid, and a preview must not carry one: an id in the answer is something a
             // caller could mistake for a record that exists, or try to save against.
@@ -97,8 +103,11 @@ public sealed class PreviewCycleCapacityCalculationHandler
             PromoProductTime = request.PromoProductTime,
             NonPromoProductTime = request.NonPromoProductTime,
             TravelingTime = request.TravelingTime,
-            ReportDuration = request.ReportDuration,
+            ReportDuration = typical.IsComplete ? 0 : request.ReportDuration,
             QuizDuration = request.QuizDuration,
+            TypicalPromoCount = typical.IsComplete ? Math.Max(0, typical.TypicalPromoCount!.Value) : null,
+            TypicalNonPromoCount = typical.IsComplete ? Math.Max(0, typical.TypicalNonPromoCount!.Value) : null,
+            ReportMinutesPerVisit = typical.IsComplete ? Math.Max(0, typical.ReportMinutesPerVisit!.Value) : null,
             Months = request.Months
                 .Where(m => m.MonthNumber is >= CycleCapacityLimits.MinMonthNumber
                                           and <= CycleCapacityLimits.MaxMonthNumber)
@@ -111,11 +120,14 @@ public sealed class PreviewCycleCapacityCalculationHandler
                     VacationDays = Math.Max(0, m.VacationDays),
                     MicroTargetingDayCount = Math.Max(0, m.MicroTargetingDayCount),
                     MicroTargetingDuration = Math.Max(0, m.MicroTargetingDuration),
-                    // FU07 — the same configured average the SAVE would stamp, on every month. A preview built on a
-                    // different FTE would show a figure the saved record then contradicts.
-                    Fte = fte,
-                    FteSource = CycleCapacityFteSources.InterimDefault
+                    // FU07 / WP-CAP-MODEL — the form's authored FTE when present, else the configured average the SAVE
+                    // would stamp. A preview built on a different FTE would show a figure the saved record contradicts.
+                    Fte = m.Fte is { } authored ? Math.Max(0m, authored) : fte,
+                    FteSource = m.Fte is null
+                        ? CycleCapacityFteSources.InterimDefault
+                        : CycleCapacityFteSources.Authored
                 })
                 .ToList()
         };
+    }
 }

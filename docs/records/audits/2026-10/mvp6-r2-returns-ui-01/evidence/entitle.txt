@@ -1,0 +1,2 @@
+entitle REVERSE-LOGISTICS 201 {"data":"2cf7282a-8ebf-4f59-9974-452159505e8d","statusCode":201,"isSuccessful":true,"errors":[],"reason_code":null,"correlation_id":null}
+tenant-activated 200 {"status":"processed"}

@@ -1,0 +1,70 @@
+--- control-tower-sop.md@814dc29d
++++ control-tower-sop.md@r2
+@@ -28,6 +28,14 @@
+ 4. **Dispatch workflow:** `.antigravity/workflows/dispatch-wp.md` selects the template and runs the dispatch gates
+    before CT issues a prompt.
+ 
++Revision r2 (WP Q162, findings of the independent VER Q142):
++
++- **F-Q142-1:** the Mac place name in T2 NEREDE, in the runtime branch of T3 NEREDE and in dispatch-wp G2 follows OD-PLACE:
++  "Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code)"; Terminal is not required.
++- **F-Q142-2:** no BASE-STACK version is fixed in the SOP. The §17.1 "Current at v2.5" pointer and the fixed layer chain in T2
++  are removed. T2 takes the record path, SHA256 and layer chain as written in the cited record. The rule is unchanged: one
++  versioned BASE-STACK record + SHA256 (K4).
++
+ ### 0.2 v2.4'te eklenen dispatch-adresleme kontrolleri
+ 
+ v2.3 korunmuş; prompt üretiminin **hedef ajanı adreslememesi** boşluğu kapatılmıştır.
+@@ -870,9 +878,6 @@
+ - `Base Stack` names one versioned BASE-STACK record and its SHA256 (K4: a changed stack is a new file, never an edit).
+   It is required for Mac build/test/runtime WPs; other WPs write `n/a`. The Mac lane checks the record folder's
+   `SHA256SUMS` and the quoted hash before composing, and writes any deviation in its report (R9).
+-  Current at v2.5: BASE-STACK v1 — `docs/records/audits/2026-09/mvp6-base-stack-v1/BASE-STACK-v1.md`
+-  sha256 `80e31c156f08747c934097dcd5a26add8581e357b9f20e9300f4a0fac33534fe`
+-  (BASE a8a236de → Q117 83e6322c → Q121 93bf1c07 → module draft).
+ 
+ ## 17.2 Prompt çekirdeği
+ 
+@@ -1989,7 +1994,7 @@
+ ### T2 — Mac build/test · v1
+ 
+ ```text
+-NEREDE: Mac → Claude Code (local session) in the repo. Not a Cowork LANE.
++NEREDE: Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code). Terminal is not required.
+ NE İLE: .antigravity → {@orchestrator + /test | testing-agent | …} ({§6 entry point}).
+ PLACEMENT GATE: `uname -s` must print Darwin. Anything else → STOP and write nothing.
+ 
+@@ -2004,8 +2009,7 @@
+   Risk Class: {…}
+   Target Branch / Expected Base HEAD: feature/mvp6-logistics / {sha}
+   Dirty-worktree baseline: {known baseline line}
+-  Base Stack (required): BASE-STACK v{n} — {record path} sha256 {sha256}
+-                         (BASE a8a236de → Q117 83e6322c → Q121 93bf1c07 → {module draft name + full sha256})
++  Base Stack (required): {BASE-STACK record path + SHA256 + layer chain as written in that record}
+   Ports: {ports assigned to this session}
+   Depends On / Parallel-Safe With: {…} / {…}
+   Authority Sources: {module pack, BASE-STACK record, kit version, .antigravity/rules/** paths}
+@@ -2041,7 +2045,8 @@
+ ### T3 — VER · v1
+ 
+ ```text
+-NEREDE: a chat that is NOT the writer's chat — Cowork LANE {n} for static VER, Mac Claude Code for runtime VER.
++NEREDE: a chat that is NOT the writer's chat — Cowork LANE {n} for static VER; for runtime VER
++        Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code). Terminal is not required.
+ NE İLE: .antigravity → read-only-auditor (/read-only-audit) {+ testing-agent for runtime VER}.
+ PLACEMENT GATE: static VER → `uname -s` = Linux; runtime VER → `uname -s` = Darwin. Wrong platform → STOP.
+         Same chat as the writer → STOP.
+--- dispatch-wp.md@614f33f0
++++ dispatch-wp.md@r2
+@@ -38,9 +38,9 @@
+ | Gate | Check | Source |
+ |---|---|---|
+ | G1 Ledger row (R8) | The WP row exists in `CT-QUEUE.tsv`, or the T4 dispatch that adds it is issued first. The row text is copied into `CT-QUEUE Row (exact text)`. | SOP v2.5 §17.1, §20, §20.1 |
+-| G2 Placement | The template matches the lane: T1/T4 → Cowork LANE (`uname -s` = Linux); T2 → Mac Claude Code (`uname -s` = Darwin); T3 → not the writer's chat. The prompt starts with NEREDE / NE İLE and the placement gate. | SOP §36.2; lane placement owner decision (MILESTONE-EVENTS L186) |
++| G2 Placement | The template matches the lane: T1/T4 → Cowork LANE (`uname -s` = Linux); T2 → Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code), Terminal not required (`uname -s` = Darwin); T3 → not the writer's chat. The prompt starts with NEREDE / NE İLE and the placement gate. | SOP §36.2; lane placement owner decision (MILESTONE-EVENTS L186) |
+ | G3 Target agent | `Target Agent / Entry Point` is set (§6) and every mandatory field of that agent from the §17.4 table is filled. Agent write scope ⊇ Allowed Paths, else `BLOCKED — agent/scope mismatch`. | SOP §17.4 |
+-| G4 Base stack (R9) | T2 and runtime T3: `Base Stack` names one BASE-STACK record + SHA256 (current: BASE-STACK v1, `80e31c15…`). Others: `n/a`. | SOP v2.5 §17.1 |
++| G4 Base stack (R9) | T2 and runtime T3: `Base Stack` names one BASE-STACK record + SHA256. Others: `n/a`. | SOP v2.5 §17.1 |
+ | G5 Pattern | Data-writing UI: `Pattern` + `Justification` (+ boundary) filled; else `n/a`. | SOP §17.3 |
+ | G6 Git preflight text | The prompt says: `GIT_OPTIONAL_LOCKS=0`; only `git status --porcelain` (no `git diff`); `.git/index.lock` exists → STOP. | Q147 D-1 (Q150 record CT-1) |
+ | G7 Known baseline | One baseline line is stated (current: 29 M + 2 untracked UC-01) and marked "known, not drift; do not touch". | OD-UC01 |

@@ -24,7 +24,7 @@ public sealed class StrategyTemplateAllocationRulesTests
     private CreateStrategyTemplateHandler Create() => new(
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),
         new NullActorContext(), _templates,
-        new StrategyTemplateBindingValidator(_segments, _policies, _paths, _journeys),
+        new StrategyTemplateBindingValidator(_segments, _policies, _paths, _journeys, _journeys.Subjects),
         _references, StrategyTemplateTestDoubles.DefaultScope());
 
     private Guid Segment() => _segments.Add(StrategyTemplateTestDoubles.TenantA).Id;

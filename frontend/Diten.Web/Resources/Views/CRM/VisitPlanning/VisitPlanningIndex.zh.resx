@@ -4,48 +4,19 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Visit Planning</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Turn a rep's selection into a scheduled plan — pick a period, accounts and doctors, preview a Day/Week grid, then apply.</value></data>
-  <data name="EngineNotice" xml:space="preserve"><value>The engine reads content, route, cadence, capacity, consent, availability and territory from the shipped modules. It computes nothing itself: preview is a dry-run, apply writes the plan atoms.</value></data>
-  <data name="SessionsPanel" xml:space="preserve"><value>My draft plans</value></data>
-  <data name="NewSession" xml:space="preserve"><value>New session</value></data>
-  <data name="PeriodPanel" xml:space="preserve"><value>Period</value></data>
-  <data name="CyclePeriod" xml:space="preserve"><value>Cycle period</value></data>
-  <data name="Resource" xml:space="preserve"><value>Rep (resource id)</value></data>
-  <data name="ResourcePlaceholder" xml:space="preserve"><value>e.g. rep-1</value></data>
-  <data name="Segment" xml:space="preserve"><value>Segment filter</value></data>
-  <data name="NoSegmentFilter" xml:space="preserve"><value>No segment filter</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>Segment narrows the eligible doctor universe; the pick stays manual.</value></data>
-  <data name="AccountsPanel" xml:space="preserve"><value>Accounts (clinics / hospitals)</value></data>
-  <data name="AccountsHint" xml:space="preserve"><value>Out-of-territory accounts are warned, never hidden.</value></data>
-  <data name="ContactsPanel" xml:space="preserve"><value>Doctors</value></data>
-  <data name="ContactsHint" xml:space="preserve"><value>Manual multi-select from the eligible universe.</value></data>
-  <data name="SaveSelection" xml:space="preserve"><value>Save selection</value></data>
-  <data name="Preview" xml:space="preserve"><value>Preview</value></data>
-  <data name="SupplyDemandPanel" xml:space="preserve"><value>Supply vs demand</value></data>
-  <data name="NoPreviewYet" xml:space="preserve"><value>Run a preview to see the plan.</value></data>
-  <data name="ContentPanel" xml:space="preserve"><value>Content preview (per doctor)</value></data>
-  <data name="Doctor" xml:space="preserve"><value>Doctor</value></data>
-  <data name="Stage" xml:space="preserve"><value>Next stage</value></data>
-  <data name="Duration" xml:space="preserve"><value>Duration</value></data>
-  <data name="Consent" xml:space="preserve"><value>Consent</value></data>
-  <data name="GridPanel" xml:space="preserve"><value>Day / Week grid</value></data>
-  <data name="Week" xml:space="preserve"><value>Week</value></data>
-  <data name="Date" xml:space="preserve"><value>Date</value></data>
-  <data name="Slot" xml:space="preserve"><value>Slot</value></data>
-  <data name="Target" xml:space="preserve"><value>Target</value></data>
-  <data name="Order" xml:space="preserve"><value>Order</value></data>
-  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
-  <data name="Replan" xml:space="preserve"><value>Re-plan</value></data>
-  <data name="SavedSession" xml:space="preserve"><value>Session saved.</value></data>
-  <data name="PreviewFailed" xml:space="preserve"><value>Preview failed.</value></data>
-  <data name="Applied" xml:space="preserve"><value>Plan applied.</value></data>
-  <data name="Replanned" xml:space="preserve"><value>Subset re-planned.</value></data>
-  <data name="SelectSession" xml:space="preserve"><value>Select a session first.</value></data>
-  <data name="NoContentResolved" xml:space="preserve"><value>No content resolved (report-only).</value></data>
-  <data name="OutOfTerritory" xml:space="preserve"><value>Out of territory</value></data>
-  <data name="Unscheduled" xml:space="preserve"><value>Unscheduled</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>我的草稿计划</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>规划您的一周：选择周期和周次，添加要拜访的诊所和医生，生成路线，然后保存为本周计划。</value></data>
+  <data name="NewSession" xml:space="preserve"><value>新建计划</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>周期</value></data>
+  <data name="AccountsPanel" xml:space="preserve"><value>机构（诊所 / 医院）</value></data>
+  <data name="AccountsHint" xml:space="preserve"><value>辖区外的客户会显示警告，但不会被隐藏。</value></data>
+  <data name="ContactsPanel" xml:space="preserve"><value>医生</value></data>
+  <data name="NoPreviewYet" xml:space="preserve"><value>生成路线以查看计划。</value></data>
+  <data name="Replan" xml:space="preserve"><value>重新规划</value></data>
+  <data name="PreviewFailed" xml:space="preserve"><value>无法生成路线。</value></data>
+  <data name="Applied" xml:space="preserve"><value>已保存为本周计划。</value></data>
+  <data name="Replanned" xml:space="preserve"><value>拜访已重新规划。</value></data>
+  <data name="OutOfTerritory" xml:space="preserve"><value>辖区外</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>我的计划</value></data>
   <data name="Plan" xml:space="preserve"><value>计划</value></data>
   <data name="Rep" xml:space="preserve"><value>代表</value></data>
   <data name="Targets" xml:space="preserve"><value>目标</value></data>
@@ -64,14 +35,9 @@
   <data name="TargetsSection" xml:space="preserve"><value>目标</value></data>
   <data name="RouteSection" xml:space="preserve"><value>路线</value></data>
   <data name="RepUser" xml:space="preserve"><value>代表（用户）</value></data>
-  <data name="StrategyTemplate" xml:space="preserve"><value>策略模板</value></data>
-  <data name="StrategyTemplateNone" xml:space="preserve"><value>无策略模板</value></data>
-  <data name="StrategyTemplatesUnavailable" xml:space="preserve"><value>策略模板不可用。</value></data>
-  <data name="UsersUnavailable" xml:space="preserve"><value>用户目录不可用；请在平台上输入代表。</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>周</value></data>
-  <data name="RouteHint" xml:space="preserve"><value>计划保存后可在详情中生成路线。</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>本周没有路线。</value></data>
-  <data name="SelectAccountFirst" xml:space="preserve"><value>请先选择诊所/医院</value></data>
+  <data name="SelectAccountFirst" xml:space="preserve"><value>请先选择诊所 / 医院</value></data>
   <data name="WeekScopeHint" xml:space="preserve"><value>此计划针对的周（路线视图的默认值）。</value></data>
   <data name="SaveTargets" xml:space="preserve"><value>保存目标</value></data>
   <data name="TargetsSaved" xml:space="preserve"><value>目标已保存。</value></data>
@@ -135,7 +101,6 @@
   <data name="ColType" xml:space="preserve"><value>类型</value></data>
   <data name="ColCity" xml:space="preserve"><value>城市 / 区域</value></data>
   <data name="ColContact" xml:space="preserve"><value>医生</value></data>
-  <data name="ColLinked" xml:space="preserve"><value>关联</value></data>
   <data name="ColSelected" xml:space="preserve"><value>已选</value></data>
   <data name="AddAccount" xml:space="preserve"><value>添加诊所/医院</value></data>
   <data name="RemoveTarget" xml:space="preserve"><value>移除</value></data>
@@ -143,22 +108,623 @@
   <data name="PickAccountForContacts" xml:space="preserve"><value>选择一个客户以查看其医生。</value></data>
   <data name="Country" xml:space="preserve"><value>国家</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>请先选择国家</value></data>
-  <data name="Segments" xml:space="preserve"><value>细分</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>目前仅应用第一个细分（后端单细分）。</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>第{0}周</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>专业</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>恢复最优路线</value></data>
   <data name="SaveWeekPlan" xml:space="preserve"><value>保存为本周计划</value></data>
-  <data name="SupplyLabel" xml:space="preserve">
-    <value>Supply</value>
+  <data name="SupplyLabel" xml:space="preserve"><value>供给</value></data>
+  <data name="DemandLabel" xml:space="preserve"><value>需求</value></data>
+  <data name="ScheduledLabel" xml:space="preserve"><value>已安排</value></data>
+  <data name="UnscheduledLabel" xml:space="preserve"><value>未安排</value></data>
+  <data name="TargetCountFormat" xml:space="preserve"><value>{0} 名医生 · {1} 家药房</value></data>
+  <data name="ReadOnlyNotice" xml:space="preserve"><value>此计划已确认，仅可查看。</value></data>
+  <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>无法读取工作日历；未考虑节假日。</value></data>
+  <data name="Status_generated" xml:space="preserve"><value>已生成</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="RepSelfHint" xml:space="preserve"><value>计划为当前登录的代表制定。</value></data>
+  <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>您尚未分配辖区；正在显示所有客户。请联系您的经理。</value></data>
+  <data name="AddOutOfTerritory" xml:space="preserve"><value>添加辖区外客户</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>将安排 {0} 次拜访，计划将被锁定。是否继续？</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>是，保存计划</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} 次拜访将保存为本周计划，本周将被锁定。是否继续？</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>本周没有可批准的拜访。</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>本周已批准，其拜访已锁定。</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>我的计划</value></data>
+  <data name="TeamView" xml:space="preserve"><value>团队</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>经理视图即将推出</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>计划视图</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>周</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} 已批准 · {1} 草稿</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} 已批准</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>空草稿</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>整个周期已批准（旧计划）</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>有 {0} 个空草稿（无目标）。每个周期只保留一个计划。</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>删除空草稿</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>将删除 {0} 个空草稿。</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>已删除 {0} 个空草稿。</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>您还没有计划。</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>为本周期创建计划</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>无法加载计划。</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>没有活动周期。由于没有开放的周期，无法创建新计划；请联系您的经理定义周期。</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>新计划</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>已选择活动周期。仅列出活动和未来的周期。</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>未找到活动周期</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>起始周</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>无法选择已过去的周。</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>创建计划</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>您在本周期已有计划。</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>前往计划</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>批准本周</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>仅将本周的拜访写入计划拜访。</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>重新开放本周</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>打开下一周</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>已过去</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>空</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>过去的周：只读。</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>此计划已在整个周期获批（旧计划），只读。</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>本周产能</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>本周已计划</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>周期产能</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>周期内已计划</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} 小时</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>该周期未定义产能；已使用默认工作时间。</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>重新开放{0}？</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>本周将恢复为草稿；没有报告的拜访将被取消。</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>原因</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>至少 10 个字符。原因将保存在本周历史中。</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>重新开放</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>本周已重新开放；原因已保存。</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>暂不支持重新开放。</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>无法加载计划。</value></data>
+  <data name="TargetsLockedBand" xml:space="preserve">
+    <value>所选周已批准或已过去；此处目标为只读。</value>
   </data>
-  <data name="DemandLabel" xml:space="preserve">
-    <value>Demand</value>
+  <data name="AddOutOfTerritoryShort" xml:space="preserve">
+    <value>添加区域外客户</value>
   </data>
-  <data name="ScheduledLabel" xml:space="preserve">
-    <value>Scheduled</value>
+  <data name="OutOfTerritoryDialogHint" xml:space="preserve">
+    <value>在此添加的客户会标记为“区域外”。</value>
   </data>
-  <data name="UnscheduledLabel" xml:space="preserve">
-    <value>Unscheduled</value>
+  <data name="BulkApplyProducts" xml:space="preserve">
+    <value>应用产品（{0}）</value>
+  </data>
+  <data name="QuickFiltersLabel" xml:space="preserve">
+    <value>快速筛选</value>
+  </data>
+  <data name="QuickFilterAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="QuickFilterDue" xml:space="preserve">
+    <value>本周应拜访</value>
+  </data>
+  <data name="QuickFilterNever" xml:space="preserve">
+    <value>从未拜访</value>
+  </data>
+  <data name="ColFrequency" xml:space="preserve">
+    <value>频率</value>
+  </data>
+  <data name="ColDoneRemaining" xml:space="preserve">
+    <value>已完成 / 剩余</value>
+  </data>
+  <data name="ColLastVisit" xml:space="preserve">
+    <value>上次拜访</value>
+  </data>
+  <data name="ColProducts" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="LegendPromo" xml:space="preserve">
+    <value>推广</value>
+  </data>
+  <data name="LegendNonPromo" xml:space="preserve">
+    <value>提醒</value>
+  </data>
+  <data name="LegendPlay" xml:space="preserve">
+    <value>推荐</value>
+  </data>
+  <data name="LegendLastVisit" xml:space="preserve">
+    <value>上次拜访</value>
+  </data>
+  <data name="LegendRepPick" xml:space="preserve">
+    <value>您的选择</value>
+  </data>
+  <data name="LegendPortfolio" xml:space="preserve">
+    <value>产品组合</value>
+  </data>
+  <data name="NoApprovedContent" xml:space="preserve">
+    <value>该产品没有已批准的内容</value>
+  </data>
+  <data name="FrequencyPerPeriod" xml:space="preserve">
+    <value>本期 {0} 次</value>
+  </data>
+  <data name="FrequencyNone" xml:space="preserve">
+    <value>无频率</value>
+  </data>
+  <data name="PlannedCountHint" xml:space="preserve">
+    <value>已计划 {0}</value>
+  </data>
+  <data name="LastVisitNever" xml:space="preserve">
+    <value>从未</value>
+  </data>
+  <data name="BadgeConsentBlocked" xml:space="preserve">
+    <value>无同意</value>
+  </data>
+  <data name="ConsentBlockedHint" xml:space="preserve">
+    <value>拜访同意被阻止；无法选择该医生。</value>
+  </data>
+  <data name="BadgeInactive" xml:space="preserve">
+    <value>停用</value>
+  </data>
+  <data name="SegmentBadgeHint" xml:space="preserve">
+    <value>细分（仅供参考）</value>
+  </data>
+  <data name="SpecialtyAll" xml:space="preserve">
+    <value>全部专科</value>
+  </data>
+  <data name="SpecialtySelected" xml:space="preserve">
+    <value>{0} 个专科</value>
+  </data>
+  <data name="NoDoctorsForFilter" xml:space="preserve">
+    <value>没有符合此筛选条件的医生。</value>
+  </data>
+  <data name="AccountSelectedOf" xml:space="preserve">
+    <value>已选 {0} / {1}</value>
+  </data>
+  <data name="AccountSelectedCount" xml:space="preserve">
+    <value>已选 {0}</value>
+  </data>
+  <data name="AccountDueThisWeek" xml:space="preserve">
+    <value>本周 {0}</value>
+  </data>
+  <data name="EstimatedWeek" xml:space="preserve">
+    <value>本周 ≈ {0}（按产品）</value>
+  </data>
+  <data name="EstimatedWeekShare" xml:space="preserve">
+    <value>占每周时间的 {0}%</value>
+  </data>
+  <data name="EstimatedOver" xml:space="preserve">
+    <value>超出每周时间 {0}。</value>
+  </data>
+  <data name="ProductDistribution" xml:space="preserve">
+    <value>产品分布</value>
+  </data>
+  <data name="DoctorsWithoutProducts" xml:space="preserve">
+    <value>{0} 位已选医生没有产品。</value>
+  </data>
+  <data name="NoProductBadge" xml:space="preserve">
+    <value>无产品</value>
+  </data>
+  <data name="PickProducts" xml:space="preserve">
+    <value>选择产品</value>
+  </data>
+  <data name="EditProducts" xml:space="preserve">
+    <value>更改产品</value>
+  </data>
+  <data name="DoctorPanelPeriod" xml:space="preserve">
+    <value>周期视图</value>
+  </data>
+  <data name="RolePromo" xml:space="preserve">
+    <value>推广</value>
+  </data>
+  <data name="RoleNonPromo" xml:space="preserve">
+    <value>提醒</value>
+  </data>
+  <data name="ProductsS1Note" xml:space="preserve">
+    <value>更改适用于该医生未批准的后续拜访。</value>
+  </data>
+  <data name="ProductsBulkNote" xml:space="preserve">
+    <value>所选产品将添加到 {0} 位医生的现有产品中，现有产品保留。</value>
+  </data>
+  <data name="ProductsSuggestedNote" xml:space="preserve">
+    <value>推荐产品来自系统。您可以在其旁添加产品。推荐产品只能在“计划拜访”页面针对单次拜访移除。</value>
+  </data>
+  <data name="ProductsNoneNote" xml:space="preserve">
+    <value>该医生没有产品，无法计算拜访时长。请在下方选择产品。</value>
+  </data>
+  <data name="PortfolioUndefinedNote" xml:space="preserve">
+    <value>您的产品组合未定义，列出全部产品。</value>
+  </data>
+  <data name="AllProducts" xml:space="preserve">
+    <value>全部产品</value>
+  </data>
+  <data name="ProductSearch" xml:space="preserve">
+    <value>搜索产品名称或代码</value>
+  </data>
+  <data name="ProductLimitLine" xml:space="preserve">
+    <value>推广 {0} / {1} · 提醒 {2} / {3}</value>
+  </data>
+  <data name="DurationLine" xml:space="preserve">
+    <value>{0} 推广 + {1} 提醒 + 报告 ≈ {2} 分钟</value>
+  </data>
+  <data name="DurationUnknown" xml:space="preserve">
+    <value>无法计算拜访时长（无法读取周期产能）。</value>
+  </data>
+  <data name="LimitExceeded" xml:space="preserve">
+    <value>超出上限：每次拜访最多 {0} 个推广 + {1} 个提醒产品（周期产能）。多余产品可能无法纳入。</value>
+  </data>
+  <data name="PlayLimitFull" xml:space="preserve">
+    <value>上限已满——您添加的产品放不下，将顺延到下次拜访。</value>
+  </data>
+  <data name="SuggestedLockHint" xml:space="preserve">
+    <value>推荐产品；只能在“计划拜访”页面移除</value>
+  </data>
+  <data name="NoProductMatches" xml:space="preserve">
+    <value>没有符合搜索的产品。</value>
+  </data>
+  <data name="ProductsDone" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="ApplyToSelected" xml:space="preserve">
+    <value>应用到 {0} 位已选医生</value>
+  </data>
+  <data name="BulkLimitExceeded" xml:space="preserve">
+    <value>{0} 位医生超出上限；多余产品顺延到下次拜访。</value>
+  </data>
+  <data name="ProductsSaved" xml:space="preserve">
+    <value>产品已保存。</value>
+  </data>
+  <data name="ProductsUnavailable" xml:space="preserve">
+    <value>暂时无法读取产品列表。</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>拜访的产品清单如何生成？</value>
+  </data>
+  <data name="RuleSourceOrder" xml:space="preserve">
+    <value>每次拜访的产品清单依次填充：推荐产品 → 您的选择 → 上次拜访展示的产品 → 您的产品组合。拜访时长据此清单计算。</value>
+  </data>
+  <data name="RuleMixedOrder" xml:space="preserve">
+    <value>混合顺序：后续拜访使用相同的产品组合，顺序依次后移一位（A、B、C → B、C、A）。</value>
+  </data>
+  <data name="RuleOverflow" xml:space="preserve">
+    <value>超出拜访上限的产品顺延到该医生的下次拜访。</value>
+  </data>
+  <data name="RuleUnknownFrequency" xml:space="preserve">
+    <value>频率未知的目标按“本期 1 次”计算，并显示“无频率”标记。</value>
+  </data>
+  <data name="StatusTextDraft" xml:space="preserve">
+    <value>草稿周——批准前可以修改。</value>
+  </data>
+  <data name="StatusTextApproved" xml:space="preserve">
+    <value>本周已批准，只读。</value>
+  </data>
+  <data name="StatusTextPast" xml:space="preserve">
+    <value>已过去的周，无法修改。</value>
+  </data>
+  <data name="StatusTextEmpty" xml:space="preserve">
+    <value>本周还没有草稿。</value>
+  </data>
+  <data name="GenerateWeek" xml:space="preserve">
+    <value>生成本周</value>
+  </data>
+  <data name="WeekCapacityNote" xml:space="preserve">
+    <value>已满 {0}% · 周期产能分摊到本周的部分。</value>
+  </data>
+  <data name="WeekCapacityHolidaysNote" xml:space="preserve">
+    <value>已扣除节假日和半天。</value>
+  </data>
+  <data name="PeriodCapacityNote" xml:space="preserve">
+    <value>{0}% · {1} 周中已计划 {2} 周</value>
+  </data>
+  <data name="CapacityMissingWeek" xml:space="preserve">
+    <value>周期产能未定义，无法计算占用率。</value>
+  </data>
+  <data name="CapacityMissingPeriod" xml:space="preserve">
+    <value>请联系管理员定义产能。</value>
+  </data>
+  <data name="PeriodWeeksTitle" xml:space="preserve">
+    <value>周期各周</value>
+  </data>
+  <data name="PeriodWeeksSummary" xml:space="preserve">
+    <value>{0} 周 · {1} 已批准 · {2} 草稿 · {3} 空 · {4} 已过</value>
+  </data>
+  <data name="AutoDraftRulesTitle" xml:space="preserve">
+    <value>自动草稿如何生成？</value>
+  </data>
+  <data name="AutoDraftRuleApprove" xml:space="preserve">
+    <value>一周批准后，后续各周按每个目标的拜访频率填充。</value>
+  </data>
+  <data name="AutoDraftRuleEven" xml:space="preserve">
+    <value>拜访在周期内均匀分布。</value>
+  </data>
+  <data name="AutoDraftRuleDays" xml:space="preserve">
+    <value>各日在每日上限内按区域均衡；周末和节假日不安排拜访。</value>
+  </data>
+  <data name="TodayLabel" xml:space="preserve">
+    <value>今天</value>
+  </data>
+  <data name="VisitCountShort" xml:space="preserve">
+    <value>{0} 次拜访</value>
+  </data>
+  <data name="LegacyWeekLabel" xml:space="preserve">
+    <value>已批准（旧计划）</value>
+  </data>
+  <data name="HalfDayLabel" xml:space="preserve">
+    <value>半天</value>
+  </data>
+  <data name="SlipTitle" xml:space="preserve">
+    <value>已顺延 / 未安排</value>
+  </data>
+  <data name="SlipTitleCount" xml:space="preserve">
+    <value>已顺延 / 未安排的目标和产品（{0}）</value>
+  </data>
+  <data name="NoSlips" xml:space="preserve">
+    <value>本周没有顺延的目标。</value>
+  </data>
+  <data name="MovedToWeek" xml:space="preserve">
+    <value>已移至 → {0}</value>
+  </data>
+  <data name="MovedToDay" xml:space="preserve">
+    <value>已移至 → {0}</value>
+  </data>
+  <data name="NotPlanned" xml:space="preserve">
+    <value>未计划</value>
+  </data>
+  <data name="ToNextVisit" xml:space="preserve">
+    <value>→ 下次拜访</value>
+  </data>
+  <data name="ReasonCapacityFull" xml:space="preserve">
+    <value>本周已满</value>
+  </data>
+  <data name="ReasonHoliday" xml:space="preserve">
+    <value>节假日</value>
+  </data>
+  <data name="ReasonHalfDay" xml:space="preserve">
+    <value>半天</value>
+  </data>
+  <data name="ReasonPinOverflow" xml:space="preserve">
+    <value>固定日已满，本周无空位</value>
+  </data>
+  <data name="ReasonConsentBlocked" xml:space="preserve">
+    <value>同意被阻止</value>
+  </data>
+  <data name="ReasonPeriodExhausted" xml:space="preserve">
+    <value>周期结束</value>
+  </data>
+  <data name="ReasonMissingLocation" xml:space="preserve">
+    <value>无位置</value>
+  </data>
+  <data name="ReasonNoAvailability" xml:space="preserve">
+    <value>不在医生可用时间内</value>
+  </data>
+  <data name="ReasonTooLong" xml:space="preserve">
+    <value>超过一个工作日</value>
+  </data>
+  <data name="ReasonPinDayFull" xml:space="preserve">
+    <value>固定日已满</value>
+  </data>
+  <data name="ReasonPinAvailability" xml:space="preserve">
+    <value>固定日不在可用时间内</value>
+  </data>
+  <data name="ReasonMaxPromo" xml:space="preserve">
+    <value>推广上限已满</value>
+  </data>
+  <data name="ReasonMaxNonPromo" xml:space="preserve">
+    <value>提醒上限已满</value>
+  </data>
+  <data name="ReasonOther" xml:space="preserve">
+    <value>其他原因</value>
+  </data>
+  <data name="DayByDay" xml:space="preserve">
+    <value>按日</value>
+  </data>
+  <data name="DayCapacityFormat" xml:space="preserve">
+    <value>{0} / {1} 次拜访</value>
+  </data>
+  <data name="IdleTime" xml:space="preserve">
+    <value>空闲 {0}</value>
+  </data>
+  <data name="OverCapacity" xml:space="preserve">
+    <value>超出产能</value>
+  </data>
+  <data name="NoVisitThisDay" xml:space="preserve">
+    <value>这一天没有拜访。</value>
+  </data>
+  <data name="HolidayNoVisit" xml:space="preserve">
+    <value>节假日——无拜访。</value>
+  </data>
+  <data name="NoVisitThisWeek" xml:space="preserve">
+    <value>本周没有计划。</value>
+  </data>
+  <data name="MoreDoctors" xml:space="preserve">
+    <value>另外 {0} 位</value>
+  </data>
+  <data name="ApproxMinutes" xml:space="preserve">
+    <value>≈ {0} 分钟</value>
+  </data>
+  <data name="PinnedHint" xml:space="preserve">
+    <value>您将其固定到这一天</value>
+  </data>
+  <data name="AutoPinnedHint" xml:space="preserve">
+    <value>已自动移至此处：固定日已满</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>取消固定</value>
+  </data>
+  <data name="MoveToDay" xml:space="preserve">
+    <value>移到某天…</value>
+  </data>
+  <data name="MoveInstitution" xml:space="preserve">
+    <value>将机构移到另一天…</value>
+  </data>
+  <data name="MoveHint" xml:space="preserve">
+    <value>将拜访或机构拖到另一天，或使用“移到某天…”。</value>
+  </data>
+  <data name="MoveLockedHint" xml:space="preserve">
+    <value>如需修改，请重新打开本周。</value>
+  </data>
+  <data name="MoveDayLabel" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="MoveAllQuestion" xml:space="preserve">
+    <value>是否同时移动该机构的其他拜访（{0} 位医生，{1} 家药房）？</value>
+  </data>
+  <data name="MoveAll" xml:space="preserve">
+    <value>全部移动</value>
+  </data>
+  <data name="MoveOnlyThis" xml:space="preserve">
+    <value>仅此医生</value>
+  </data>
+  <data name="MoveConfirm" xml:space="preserve">
+    <value>移动</value>
+  </data>
+  <data name="DayPinSaved" xml:space="preserve">
+    <value>日期已更改。</value>
+  </data>
+  <data name="PinOverflowMessage" xml:space="preserve">
+    <value>{0} 次拜访当天放不下 → 已移至 {1}</value>
+  </data>
+  <data name="PinOverflowNextWeek" xml:space="preserve">
+    <value>{0} 次拜访本周放不下 → 已顺延到后续周</value>
+  </data>
+  <data name="ProductVisitsTitle" xml:space="preserve">
+    <value>各产品每周拜访</value>
+  </data>
+  <data name="ProductVisitsSplit" xml:space="preserve">
+    <value>推广 {0} · 提醒 {1}</value>
+  </data>
+  <data name="NoProductVisits" xml:space="preserve">
+    <value>本周没有含产品的拜访。</value>
+  </data>
+  <data name="MixedOrderNote" xml:space="preserve">
+    <value>混合顺序：产品组合不变，每次拜访顺序后移一位。一次展示 A、B、C，下次为 B、C、A。</value>
+  </data>
+  <data name="OpenRoute" xml:space="preserve">
+    <value>打开路线</value>
+  </data>
+  <data name="RebuildWeek" xml:space="preserve">
+    <value>重新生成本周</value>
+  </data>
+  <data name="WeekDoctorsTitle" xml:space="preserve">
+    <value>本周医生（{0}）</value>
+  </data>
+  <data name="WeekDoctorsHint" xml:space="preserve">
+    <value>点击一行：打开该医生在周期内的计划周。</value>
+  </data>
+  <data name="NoDoctorsThisWeek" xml:space="preserve">
+    <value>本周没有计划的医生。</value>
+  </data>
+  <data name="StatePresented" xml:space="preserve">
+    <value>已展示</value>
+  </data>
+  <data name="StateApproved" xml:space="preserve">
+    <value>已批准</value>
+  </data>
+  <data name="StateDraft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="StateProjected" xml:space="preserve">
+    <value>预计</value>
+  </data>
+  <data name="WeekHistoryTitle" xml:space="preserve">
+    <value>本周历史</value>
+  </data>
+  <data name="HistoryApproved" xml:space="preserve">
+    <value>已批准</value>
+  </data>
+  <data name="HistoryReopened" xml:space="preserve">
+    <value>已重新打开</value>
+  </data>
+  <data name="HistoryYou" xml:space="preserve">
+    <value>您</value>
+  </data>
+  <data name="HistoryOtherUser" xml:space="preserve">
+    <value>其他用户</value>
+  </data>
+  <data name="FrequencyTarget" xml:space="preserve">
+    <value>频率目标</value>
+  </data>
+  <data name="DoneLabel" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="RemainingLabel" xml:space="preserve">
+    <value>剩余</value>
+  </data>
+  <data name="NextVisitProducts" xml:space="preserve">
+    <value>下次拜访的产品</value>
+  </data>
+  <data name="SourceLine" xml:space="preserve">
+    <value>来源：{0}</value>
+  </data>
+  <data name="NoProductsNoTime" xml:space="preserve">
+    <value>无法计算拜访时长。请选择产品。</value>
+  </data>
+  <data name="ProductHistoryTitle" xml:space="preserve">
+    <value>周期内 · 产品历史</value>
+  </data>
+  <data name="HistoryPresented" xml:space="preserve">
+    <value>已展示</value>
+  </data>
+  <data name="HistoryPlanned" xml:space="preserve">
+    <value>已计划</value>
+  </data>
+  <data name="HistoryProjected" xml:space="preserve">
+    <value>预计</value>
+  </data>
+  <data name="NoVisitsInPeriod" xml:space="preserve">
+    <value>该医生在本周期内没有计划拜访。</value>
+  </data>
+  <data name="MyAccountsTitle" xml:space="preserve">
+    <value>我的客户（辖区）</value>
+  </data>
+  <data name="AccountSearch" xml:space="preserve">
+    <value>搜索客户…</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="NoAccountsFound" xml:space="preserve">
+    <value>没有匹配的客户。</value>
+  </data>
+  <data name="DueThisWeekBadge" xml:space="preserve">
+    <value>本周</value>
+  </data>
+  <data name="EditWeekTargets" xml:space="preserve">
+    <value>编辑本周目标</value>
+  </data>
+  <data name="EmptyWeekHint" xml:space="preserve">
+    <value>上一周批准后会自动生成。现在可以按频率规则生成。</value>
+  </data>
+  <data name="FrequencyDefaultOne" xml:space="preserve">
+    <value>本期 1 次（默认）</value>
+  </data>
+  <data name="NextContentSoon" xml:space="preserve">
+    <value>下一个内容：即将推出</value>
+  </data>
+  <data name="NoTimeShort" xml:space="preserve">
+    <value>无时长</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>全部显示（{0}）</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>收起</value>
+  </data>
+  <data name="WeekDoctorsHeading" xml:space="preserve">
+    <value>本周医生</value>
+  </data>
+  <data name="HistoryStateDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="HistoryStateApproved" xml:space="preserve">
+    <value>已计划 · 已批准</value>
+  </data>
+  <data name="HistoryStateDraft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="HistoryStateProjected" xml:space="preserve">
+    <value>预计</value>
+  </data>
+  <data name="ReasonNoNearDay" xml:space="preserve">
+    <value>无就近日</value>
+  </data>
+  <data name="StateDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="WeekSubApproved" xml:space="preserve">
+    <value>已批准 · 已写入计划拜访 · 只读</value>
+  </data>
+  <data name="WeekSubEmpty" xml:space="preserve">
+    <value>尚未生成</value>
   </data>
 </root>

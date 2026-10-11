@@ -1,0 +1,93 @@
+{
+  "phase": "login",
+  "locale": "en",
+  "startedAt": "2026-10-01T13:15:10.785Z",
+  "web": "http://127.0.0.1:5501",
+  "playwright": "1.59.1",
+  "cases": {
+    "login-capfull": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/CapacityPlans",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.B4N73IJ6kow",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-capro": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/CapacityPlans",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.B4N73IJ6kow",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-capnoread": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/CapacityPlans",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.B4N73IJ6kow",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-navfull": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/CapacityPlans",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.B4N73IJ6kow",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [],
+  "shellFonts": 16,
+  "endedAt": "2026-10-01T13:15:25.485Z"
+}

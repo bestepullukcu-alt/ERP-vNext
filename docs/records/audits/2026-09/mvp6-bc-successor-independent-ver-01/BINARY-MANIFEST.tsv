@@ -1,0 +1,5 @@
+kind	path	sha256
+API_DLL	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll	fb6a73d7f3783facef11f638e220c887c3620ed49f87fd6f320513fee106146b
+TEST_DLL	services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll	559eff471815055158ff0edad12125da20ee46369bcd1aea52bf0811a88746da
+TRX	raw/capacity-ver.trx	027db6cb73222588daecdb0695135ff46f3be81a35ab74522f0cd6826fba9608
+HTTP_DB	raw/http-restart-evidence.json	7a5ce6478e9218ad31bc76d041270db23d835234cce59570b06c2b39c27ba9d2

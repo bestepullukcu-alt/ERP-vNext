@@ -1,0 +1,5 @@
+service	key	value
+auth	TenantResolution__DevBypassEnabled	false
+platform	TenantResolution__DevBypassEnabled	false
+platform	DocumentRegisterSeed__Enabled	false
+platform	BusinessReferenceData__CatalogLoad__Enabled	false

@@ -1,0 +1,4 @@
+boundary	pre_result	post_result	verdict
+v3 21-file UI manifest	21/21 PASS	21/21 PASS	NO_SOURCE_CHANGE
+CARRIER-OWNED.patch	57f90dadedd6e2304e3775fd1ea0bd7def29ad9d265ccbbeb892afdc04ba1adb	57f90dadedd6e2304e3775fd1ea0bd7def29ad9d265ccbbeb892afdc04ba1adb	UNCHANGED
+

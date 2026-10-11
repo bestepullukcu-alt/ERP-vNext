@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
 using Diten.CrmService.Application.Features.StrategyTemplate.Services;
@@ -28,6 +29,26 @@ internal static class StrategyTemplateTestDoubles
         context.SetTenant(id);
         return context;
     }
+
+    /// <summary>WP-SB-3a — the published journey of a product, for the builders: a deterministic id registered here, which
+    /// <see cref="FakeContentEngagementJourneyRepository"/> resolves to a PUBLISHED journey whose subject's primary global
+    /// product is <paramref name="globalProductId"/> (so a valid line stays valid without per-test seeding). An id that
+    /// was never registered is not found — exactly like a real repository.</summary>
+    public static Guid JourneyFor(Guid globalProductId)
+    {
+        var bytes = globalProductId.ToByteArray();
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            bytes[i] ^= 0x5A;
+        }
+
+        var journeyId = new Guid(bytes);
+        AutoJourneys[journeyId] = globalProductId;
+        return journeyId;
+    }
+
+    /// <summary>Journey id → the product it tells (see <see cref="JourneyFor"/>).</summary>
+    public static readonly ConcurrentDictionary<Guid, Guid> AutoJourneys = new();
 
     /// <summary>WP-ST-SCOPE — a default scope write validator for handler construction. With nothing published and a
     /// referenceable verdict, a tenant-scoped play (the builder default, no country/LE/BU) needs no I/O and passes, so
@@ -186,6 +207,9 @@ internal sealed class FakeStrategyTemplateRepository : IStrategyTemplateReposito
             SkuAllocationMode = l.SkuAllocationMode,
             SortOrder = l.SortOrder,
             Notes = l.Notes,
+            Role = l.Role,
+            JourneyId = l.JourneyId,
+            JourneyCodeDisplay = l.JourneyCodeDisplay,
             SkuAllocations = l.SkuAllocations.Select(a => new StrategyTemplateSkuAllocation
             {
                 AllocationId = a.AllocationId,
@@ -384,14 +408,44 @@ internal sealed class FakeKnowledgePathRepository : IKnowledgePathRepository
     }
 }
 
-/// <summary>ContentEngagementJourney store — READ-only from this FU.</summary>
+/// <summary>ContentEngagementJourney store — READ-only from this FU. WP-SB-3a: it carries the subjects its journeys tell
+/// (<see cref="Subjects"/>), and resolves a builder's <see cref="StrategyTemplateTestDoubles.JourneyFor"/> id to a
+/// published journey of that product.</summary>
 internal sealed class FakeContentEngagementJourneyRepository : IContentEngagementJourneyRepository
 {
     public List<ContentEngagementJourney> Rows { get; } = new();
     public int WriteCalls { get; private set; }
 
+    /// <summary>WP-SB-3a — the journeys' subjects (subject → primary global product).</summary>
+    public FakeSubjectReadRepository Subjects { get; } = new();
+
     public Task<ContentEngagementJourney?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken)
-        => Task.FromResult(Rows.FirstOrDefault(j => j.TenantId == tenantId && j.Id == id && !j.IsDeleted));
+    {
+        var row = Rows.FirstOrDefault(j => j.TenantId == tenantId && j.Id == id && !j.IsDeleted);
+        if (row is null && StrategyTemplateTestDoubles.AutoJourneys.TryGetValue(id, out var productId))
+        {
+            var subject = Subjects.ForProduct(tenantId, productId);
+            row = new ContentEngagementJourney
+            {
+                Id = id, TenantId = tenantId, JourneyCode = "journey-" + productId.ToString("N")[..6], JourneyName = "Journey",
+                SubjectId = subject.Id, Objective = "Tell the product", JourneyVersion = "1.0", LanguageCode = "tr",
+                JourneyStatus = ContentEngagementJourneyStatuses.Published, EffectiveFrom = StrategyTemplateTestDoubles.Past
+            };
+        }
+
+        return Task.FromResult(row);
+    }
+
+    /// <summary>WP-SB-3a — a journey of <paramref name="globalProductId"/> (its subject's primary product).</summary>
+    public ContentEngagementJourney AddFor(
+        Guid tenantId, Guid globalProductId, string status = ContentEngagementJourneyStatuses.Published,
+        string? languageCode = "tr", bool archived = false)
+    {
+        var journey = Add(tenantId, status, archived);
+        journey.SubjectId = Subjects.ForProduct(tenantId, globalProductId).Id;
+        journey.LanguageCode = languageCode;
+        return journey;
+    }
 
     public Task<IReadOnlyList<ContentEngagementJourney>> ListAsync(
         Guid tenantId, CancellationToken cancellationToken)
@@ -435,6 +489,51 @@ internal sealed class FakeContentEngagementJourneyRepository : IContentEngagemen
         Rows.Add(journey);
         return journey;
     }
+}
+
+/// <summary>WP-SB-3a — Subject store (read-only): a subject per product with that product as its primary
+/// <c>global-product</c> link.</summary>
+internal sealed class FakeSubjectReadRepository : ISubjectRepository
+{
+    public List<Subject> Rows { get; } = new();
+
+    public Subject ForProduct(Guid tenantId, Guid globalProductId)
+    {
+        var existing = Rows.FirstOrDefault(s => s.TenantId == tenantId && s.ExternalReferences.Any(r =>
+            r.IsPrimary && r.ExternalId == globalProductId.ToString()));
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var subject = new Subject
+        {
+            TenantId = tenantId, SubjectCode = "subj-" + globalProductId.ToString("N")[..6], SubjectName = "Subject",
+            ExternalReferences =
+            {
+                new KnowledgeExternalReference
+                {
+                    SourceSystem = "global-product", ExternalId = globalProductId.ToString(), ExternalCode = "GP",
+                    ExternalName = "Product", IsPrimary = true
+                }
+            }
+        };
+        Rows.Add(subject);
+        return subject;
+    }
+
+    public Task<Subject?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken)
+        => Task.FromResult(Rows.FirstOrDefault(s => s.TenantId == tenantId && s.Id == id));
+
+    public Task<IReadOnlyList<Subject>> ListAsync(Guid tenantId, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<Subject>>(Rows.Where(s => s.TenantId == tenantId).ToList());
+
+    public Task<Subject?> GetActiveByCodeAsync(Guid tenantId, string code, CancellationToken cancellationToken)
+        => Task.FromResult<Subject?>(null);
+
+    public Task InsertAsync(Subject subject, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public Task UpdateAsync(Subject subject, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 /// <summary>

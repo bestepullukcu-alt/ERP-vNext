@@ -1,0 +1,174 @@
+@model Diten.Web.Models.CRM.CyclePeriodScopeOptionsViewModel
+@using Diten.Web.Views.CRM.CyclePeriods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-CYC-UI-1 — the create / edit panel (mockup screen 02). A Bootstrap offcanvas: Esc closes it and focus stays
+   trapped inside while it is open. Which fields are editable is NOT decided here — panel.js asks /api/panel/state,
+   which answers from CyclePeriodScreenRules.FieldStates (new: all · draft: all but code and scope · active: name and
+   description only, plus "close and open a new period" · closed: nothing). The runtime enforces the same rules on save.
+   Exactly one scope reference is posted (the others are cleared), and the code is a SUGGESTION (K-2) until saved. *@
+<div class="offcanvas offcanvas-end cp-panel" tabindex="-1" id="cyclePeriodPanel" aria-labelledby="cyclePeriodPanelTitle"
+     data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="offcanvas-header border-bottom">
+        <div>
+            <h5 id="cyclePeriodPanelTitle" class="offcanvas-title mb-0">@Localizer["FormTitleCreate"]</h5>
+            <span id="panelStatusBadge" class="badge bg-label-warning mt-1">@Localizer["StatusDraft"]</span>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body">
+        <form id="cyclePeriodPanelForm" novalidate data-no-tracker>
+            <input type="hidden" id="pCyclePeriodId" />
+            <input type="hidden" id="pExpectedVersion" />
+
+            <div id="panelErrors" class="alert alert-danger d-none" role="alert"></div>
+            <div id="panelActiveNotice" class="alert alert-info d-none" role="status">
+                <div>@Localizer["ActiveWindowImmutableHint"]</div>
+                <button type="button" id="btnCloseAndReopen" class="btn btn-sm btn-label-warning mt-2">
+                    <i class="icon-base bx bx-lock-alt me-1"></i>@Localizer["CloseAndReopen"]
+                </button>
+            </div>
+            <div id="panelClosedNotice" class="alert alert-secondary d-none" role="status">@Localizer["ClosedReadOnly"]</div>
+
+            @* ── Identity ── *@
+            <h6 class="text-uppercase text-heading fw-semibold small mb-3">@Localizer["IdentitySection"]</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <label for="pYear" class="form-label">@Localizer["Year"] <span class="text-danger">*</span></label>
+                    <input id="pYear" type="number" class="form-control" min="2000" max="2100" required data-field="year" />
+                </div>
+                <div class="col-6">
+                    <label for="pSequence" class="form-label">@Localizer["SequenceInYear"] <span class="text-danger">*</span></label>
+                    <input id="pSequence" type="number" class="form-control" min="1" max="99" required data-field="sequence" />
+                    <div id="pSequenceHint" class="form-text"></div>
+                </div>
+                <div class="col-12">
+                    <label for="pName" class="form-label">@Localizer["CycleName"] <span class="text-danger">*</span></label>
+                    <input id="pName" type="text" class="form-control" maxlength="200" required data-field="name" />
+                    <div id="pNameHint" class="form-text d-none">
+                        <span id="pNameSuggestion"></span>
+                        <button type="button" id="pNameUseSuggestion" class="btn btn-link btn-sm p-0 align-baseline">@Localizer["UseSuggestion"]</button>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="pCode" class="form-label">@Localizer["CycleCode"] <span class="text-danger">*</span></label>
+                    <input id="pCode" type="text" class="form-control" maxlength="40" required data-field="code"
+                           placeholder="@Localizer["CycleCodePlaceholder"]" />
+                    <div id="pCodeHint" class="form-text"></div>
+                </div>
+                <div class="col-12">
+                    <label for="pDescription" class="form-label">@SharedLocalizer["Description"]</label>
+                    <textarea id="pDescription" class="form-control" rows="2" maxlength="2000" data-field="description"></textarea>
+                </div>
+            </div>
+
+            @* ── Dates ── *@
+            <h6 class="text-uppercase text-heading fw-semibold small mb-3">@Localizer["DatesSection"]</h6>
+            <div class="mb-4">
+                <div class="d-flex flex-wrap gap-2 mb-2" id="pDateTemplates" role="group" aria-label="@Localizer["DateTemplates"]">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-template="q1" data-field="dates">@Localizer["TemplateQ1"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-template="q2" data-field="dates">@Localizer["TemplateQ2"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-template="q3" data-field="dates">@Localizer["TemplateQ3"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-template="q4" data-field="dates">@Localizer["TemplateQ4"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-template="h1" data-field="dates">@Localizer["TemplateH1"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-template="h2" data-field="dates">@Localizer["TemplateH2"]</button>
+                </div>
+                <label for="pMonthTemplate" class="visually-hidden">@Localizer["TemplateMonth"]</label>
+                <select id="pMonthTemplate" class="form-select form-select-sm mb-3" data-field="dates">
+                    <option value="">@Localizer["TemplateMonth"]</option>
+                </select>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label for="pStart" class="form-label">@Localizer["StartDate"] <span class="text-danger">*</span></label>
+                        <input id="pStart" type="date" class="form-control" required data-field="dates" />
+                    </div>
+                    <div class="col-6">
+                        <label for="pEnd" class="form-label">@Localizer["EndDate"] <span class="text-danger">*</span></label>
+                        <input id="pEnd" type="date" class="form-control" required data-field="dates" />
+                    </div>
+                </div>
+                <div id="pDateSummary" class="d-flex flex-wrap align-items-center gap-2 mt-2 small" aria-live="polite"></div>
+            </div>
+
+            @* ── Scope ── *@
+            <h6 class="text-uppercase text-heading fw-semibold small mb-1">@Localizer["ScopeSection"]</h6>
+            <p id="pScopeLockedHint" class="text-muted small mb-2 d-none">@Localizer["ScopeTypeImmutableHint"]</p>
+            <div class="row g-2 mb-3" role="radiogroup" aria-label="@Localizer["ScopeType"]" id="pScopeGroup">
+                @foreach (var scope in new[] { "tenant", "country", "legal-entity", "business-unit" })
+                {
+                    <div class="col-6">
+                        <label class="cp-scope-card form-check-label w-100" for="pScope_@scope">
+                            <input class="form-check-input me-2" type="radio" name="pScopeType" id="pScope_@scope" value="@scope" data-field="scope" />
+                            <span class="fw-medium">@Localizer["ScopeType_" + scope]</span>
+                            <span class="d-block text-muted small">@Localizer["ScopeCardHint_" + scope]</span>
+                        </label>
+                    </div>
+                }
+            </div>
+
+            <div class="p-scope-ref mb-4" data-scope-ref="tenant">
+                <div class="alert alert-secondary mb-0 py-2 small">@Localizer["ScopeTenantHint"]</div>
+            </div>
+            <div class="p-scope-ref mb-4 d-none" data-scope-ref="country">
+                <label for="pCountry" class="form-label">@Localizer["CountryScope"]</label>
+                <select id="pCountry" class="form-select" data-field="scope">
+                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                    @foreach (var option in Model.Countries)
+                    {
+                        <option value="@option.Value">@option.Label</option>
+                    }
+                </select>
+                @if (!Model.CountryReady)
+                {
+                    <div class="alert alert-warning mt-2 mb-0 py-2 small">@Localizer["CountrySetUnavailable"] <code>@Model.CountrySetCode</code></div>
+                }
+            </div>
+            <div class="p-scope-ref mb-4 d-none" data-scope-ref="legal-entity">
+                <label for="pLegalEntity" class="form-label">@Localizer["LegalEntity"]</label>
+                <select id="pLegalEntity" class="form-select" data-field="scope">
+                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                    @foreach (var option in Model.LegalEntities)
+                    {
+                        <option value="@option.Value" data-code="@option.Hint">@option.Label</option>
+                    }
+                </select>
+                @if (!Model.LegalEntityReady)
+                {
+                    <div class="alert alert-warning mt-2 mb-0 py-2 small">@Localizer["LegalEntityListUnavailable"]</div>
+                }
+            </div>
+            <div class="p-scope-ref mb-4 d-none" data-scope-ref="business-unit">
+                @* The country is CONTEXT for the unit list (and stored as such), never the period's scope. *@
+                <label for="pBuCountry" class="form-label">@Localizer["BusinessUnitCountryFilter"]</label>
+                <select id="pBuCountry" class="form-select mb-2" data-field="scope" aria-controls="pBusinessUnit">
+                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                    @foreach (var option in Model.Countries)
+                    {
+                        <option value="@option.Value">@option.Label</option>
+                    }
+                </select>
+                <label for="pBusinessUnit" class="form-label">@Localizer["BusinessUnitId"]</label>
+                <select id="pBusinessUnit" class="form-select" data-field="scope">
+                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                    @foreach (var option in Model.BusinessUnits)
+                    {
+                        <option value="@option.Value" title="@option.Hint">@option.Label</option>
+                    }
+                </select>
+                <div id="pBusinessUnitHint" class="form-text">@Localizer["BusinessUnitCountryFirstHint"]</div>
+            </div>
+
+            @* ── Checks ── *@
+            <h6 class="text-uppercase text-heading fw-semibold small mb-2">@Localizer["ChecksSection"]</h6>
+            <div id="panelChecks" class="d-flex flex-column gap-2 mb-2" aria-live="polite"></div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="submit" form="cyclePeriodPanelForm" id="btnPanelSave" class="btn btn-primary flex-grow-1">@Localizer["SaveAsDraft"]</button>
+    </div>
+</div>

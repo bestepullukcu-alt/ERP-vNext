@@ -1,0 +1,20 @@
+# Q264 ARTIFACTS — sha256 · written 2026-10-03 12:58:50 +03
+# branch feature/mvp6-logistics @ 4a8d4d4b3 · porcelain at end: 675 entries (670 at preflight)
+75bc380765ca83b02817478fd6ba18f550bfb25eb4b87496ddb56b2e12b964bf  CORRELATION.tsv
+a5867ae1d465a9eaf4b48580fdb78fd322908675b00622a3fab8557847c66d64  R03-DENIED.tsv
+946cf049c1af01cfacbf546376b6ee356180de0ffe17d67e9a6eeca8e34a6a22  STACK.tsv
+4501356742c5d091578de541dc6c915b7d0d8afbad7085c6bf2825dfafca1c35  UX-STATES.tsv
+ab2dd4cced9b542ab77b1b9dec86cb5780f854d9579b0a3e1d26f9ed2ee6325c  VERDICT.md
+cc8c06a2dabdc0dc657ef5b6d4a32f08a895798d7d1ce88fbb2a2aec35d01f28  html/d2-index-supplychain-stopped.html
+07d3ae5db8fcc41445a6c637318183de678ae15aae7a3029f9572428b7b721cb  html/r03-create-denied.html
+2d5a6dcc79382c86db0075b351413b6615333d8596d91f789691fe0dad15f4a4  html/r03-details-denied.html
+21a0f55dfb5ae17e623f913e0a6d2a5f36e10f28275d09810c0130e9feef1af4  html/r03-index-denied.html
+9d3021b3bd4aba50abb6b39821ab8c40cdc0c79e6ace812f665901b9d3526b65  html/r05-index-denied-mobile-culture-ar.html
+079f5ee8cc30afa8dabb6260bb43240d0a0db59f9da8fd92d4741dc07e2b0690  html/r05-index-denied-mobile.html
+6be55a0730bb5f4987d817c5a9ca3ca9c62d60391a3800ee77cc2c70f55d23c1  logs/auth-run1.log
+ac0f392e0c17b4e5eb3d8c7c2ef6a432c480035653f6ca27b023fa4e8964ae04  logs/build-auth.log
+5ec2c61e88b322ab83394f4f89da332502a812b56df3ea55cc4b70bc9ffe8212  logs/build-web.log
+15e70527461c8208a69c0a2194a2ccb65c7a93be93c8281a82b719bebd915320  logs/gateway-run1.log
+0f6d481796145ef0afcc07dfa7bc517e205f6537d38497e861ac97f42ab92130  logs/platform-run1.log
+843744ecca57be2ab8587cbfca60c2011b0123e7de5d96e54887e3b9d80c6174  logs/supplychain-run1.log
+204ed1380502d8b1a0ce778fb52060c7fbdf826797d2f264ea60ceeb9bceaa7c  logs/web-run1.log

@@ -1,0 +1,10 @@
+check	result	evidence
+patch-apply-check	PASS	disposable baseline matched candidate bytes
+RED string NumericDate	28 PASS / 3 FAIL	red-results/numericdate-red.trx
+GREEN validator regression	33/33 PASS	green-results/numericdate-green.trx
+wire matrix	49/49 PASS	runtime/candidate-token-results.json
+string iat/nbf/exp	401 + zero scoped reads for each	runtime/candidate-token-results.json
+F-01 cardinality	CLOSED preserved	runtime/candidate-token-results.json
+native runtime	SDK 8.0.417 / runtime 8.0.23	runtime/dotnet-info.txt
+operational Mongo 27017	NOT USED	lane Mongo 37784 only
+DocsPathGuard	39/39 PASS	evidence.tar.gz::architecture/carrier-numericdate-docspath.trx

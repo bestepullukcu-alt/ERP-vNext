@@ -1,0 +1,321 @@
+{
+  "phase": "o3",
+  "locale": "ar",
+  "startedAt": "2026-09-30T19:53:52.451Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "O-3": {
+      "result": "PASS",
+      "out": {
+        "create": {
+          "focus": {
+            "id": "sandopPlansTitle",
+            "tag": "H5",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "ctaCount": 0,
+          "titleVisible": true,
+          "title": "خطط S&OP",
+          "rawErrorInPage": false,
+          "toasts": [
+            "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: 272d0809-379d-433e-a102-e3c9a686117b"
+          ]
+        },
+        "capture": {
+          "focus": {
+            "id": "planTitle",
+            "tag": "H4",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "openerCount": 0,
+          "titleVisible": true,
+          "workspaceVisible": true,
+          "rawErrorInPage": false,
+          "toasts": [
+            "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: 5e19d4b3-0fd4-4b62-bc1f-499d00c37fb1"
+          ]
+        },
+        "signOff": {
+          "focus": {
+            "id": "planTitle",
+            "tag": "H4",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "openerCount": 0,
+          "titleVisible": true,
+          "rawErrorInPage": false
+        },
+        "page": {
+          "focus": {
+            "id": "planAlert",
+            "tag": "DIV",
+            "inCreate": false,
+            "inCapture": false,
+            "inSignOff": false
+          },
+          "alert": "ليست لديك صلاحية لتنفيذ هذا الإجراء.\nمرجع الدعم: b1eca1c1-551d-4b2c-96c5-532cacdc9116",
+          "titleVisible": true,
+          "title": "خطة S&OP",
+          "workspaceHidden": true,
+          "rawErrorInPage": false
+        },
+        "readonly": {
+          "ctaCount": 0,
+          "titleVisible": true,
+          "directPostStatus": 403,
+          "directPostCode": "FORBIDDEN"
+        },
+        "noread": {
+          "entry": {
+            "entryMarkup": 0,
+            "skeletons": 0,
+            "forms": 0,
+            "rawErrorInPage": false,
+            "url": "/SupplyChain/SandopPlans"
+          },
+          "details": {
+            "entryMarkup": 0,
+            "skeletons": 0,
+            "forms": 0,
+            "rawErrorInPage": false,
+            "url": "/SupplyChain/SandopPlans/Details/1d899d0d-3165-46ed-949b-086316b7e8e3"
+          },
+          "directGet": 403
+        }
+      },
+      "parts": {
+        "create": true,
+        "capture": true,
+        "pageLevel": true,
+        "real403": true
+      },
+      "info": {
+        "signOffViaShowConfirm": true,
+        "note": "sign-off 403 recorded as information (showConfirm-reached submit, OD-F-Q145-1 exemption for focus)"
+      },
+      "evidence": [
+        "png/o3-create-403-ar.png",
+        "png/o3-capture-403-ar.png",
+        "png/o3-signoff-403-ar.png",
+        "png/o3-page-403-ar.png",
+        "png/o3-readonly-entry-ar.png",
+        "png/o3-noread-entry-ar.png",
+        "png/o3-noread-details-ar.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "o3-create-403-ar.png",
+      "sha256": "ddc25aa464b35dc798998e2f46c60cbaf2861d1a54421ec90c6e42a39ce445f3",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:53:56.338Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-capture-403-ar.png",
+      "sha256": "a6c18408bf29384b3ef4a7513cf70478899bd3e4ed361a0bf845f2e7448ef2f1",
+      "url": "/SupplyChain/SandopPlans/Details/1d899d0d-3165-46ed-949b-086316b7e8e3",
+      "capturedAt": "2026-09-30T19:54:00.456Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-signoff-403-ar.png",
+      "sha256": "315a4c615e1c7a744596377322c6338cd31bda86a66585a5aae883e73b649aa7",
+      "url": "/SupplyChain/SandopPlans/Details/1d899d0d-3165-46ed-949b-086316b7e8e3",
+      "capturedAt": "2026-09-30T19:54:05.242Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-page-403-ar.png",
+      "sha256": "20e1d9bf6028d97e295263d2867666c7b341a7a805dbb1a1ff62e2cae4c4a799",
+      "url": "/SupplyChain/SandopPlans/Details/1d899d0d-3165-46ed-949b-086316b7e8e3",
+      "capturedAt": "2026-09-30T19:54:07.212Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-readonly-entry-ar.png",
+      "sha256": "3f26d8e9ffdc2f298eae1ef7fdd0f20909da8e77aab872d0fcbf9102e3c23539",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:54:09.172Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-entry-ar.png",
+      "sha256": "404437cebe8ca0c1e45a9f9c15d05e8ba2b8e7e4e32ecfd429c8dd3c18e5cdfd",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-09-30T19:54:11.205Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-details-ar.png",
+      "sha256": "a5b3eaac9a4f33d5e5f689e9ec8ba445d4531646b94f37fd65704766f5abaa65",
+      "url": "/SupplyChain/SandopPlans/Details/1d899d0d-3165-46ed-949b-086316b7e8e3",
+      "capturedAt": "2026-09-30T19:54:12.490Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "o3-ar-create403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-ar-capture403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-ar-signoff403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-ar-page403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "o3-ar-create403",
+      "text": "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: 272d0809-379d-433e-a102-e3c9a686117b",
+      "type": "warning",
+      "at": "2026-09-30T19:53:55.199Z"
+    },
+    {
+      "tag": "o3-ar-capture403",
+      "text": "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: 5e19d4b3-0fd4-4b62-bc1f-499d00c37fb1",
+      "type": "warning",
+      "at": "2026-09-30T19:53:59.198Z"
+    },
+    {
+      "tag": "o3-ar-signoff403",
+      "text": "ليست لديك صلاحية لتنفيذ هذا الإجراء. مرجع الدعم: eb330b63-b15a-41b9-91c3-d4b9e9e41cd5",
+      "type": "warning",
+      "at": "2026-09-30T19:54:03.703Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "o3-ar-create403",
+      "at": "2026-09-30T19:53:55.199Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-ar-capture403",
+      "at": "2026-09-30T19:53:57.233Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-capture403",
+      "at": "2026-09-30T19:53:57.233Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-capture403",
+      "at": "2026-09-30T19:53:57.233Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-capture403",
+      "at": "2026-09-30T19:53:59.197Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3/snapshots",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-ar-signoff403",
+      "at": "2026-09-30T19:54:01.374Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-signoff403",
+      "at": "2026-09-30T19:54:01.374Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-signoff403",
+      "at": "2026-09-30T19:54:01.374Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-signoff403",
+      "at": "2026-09-30T19:54:03.702Z",
+      "method": "POST",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3/sign-offs",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-ar-page403",
+      "at": "2026-09-30T19:54:06.030Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-page403",
+      "at": "2026-09-30T19:54:06.036Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3/snapshots",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-ar-page403",
+      "at": "2026-09-30T19:54:06.040Z",
+      "method": "GET",
+      "path": "/SupplyChain/SandopPlans/api/1d899d0d-3165-46ed-949b-086316b7e8e3/sign-offs",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 14,
+  "endedAt": "2026-09-30T19:54:12.526Z"
+}

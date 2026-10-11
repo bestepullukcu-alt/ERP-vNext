@@ -1,0 +1,2 @@
+5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c  /private/tmp/mvp6-q25-loadspub.4mTLMX/snap/W1-pre.shipment-bundle.openapi.yaml
+6d3865f80707ff0e9ca7c9cf2e2343f34d2961be2916a3eceb37168d1b0a8167  /private/tmp/mvp6-q25-loadspub.4mTLMX/snap/W5-pre.docs-path-authority.json

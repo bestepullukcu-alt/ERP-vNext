@@ -4,48 +4,19 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Visit Planning</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Turn a rep's selection into a scheduled plan — pick a period, accounts and doctors, preview a Day/Week grid, then apply.</value></data>
-  <data name="EngineNotice" xml:space="preserve"><value>The engine reads content, route, cadence, capacity, consent, availability and territory from the shipped modules. It computes nothing itself: preview is a dry-run, apply writes the plan atoms.</value></data>
-  <data name="SessionsPanel" xml:space="preserve"><value>My draft plans</value></data>
-  <data name="NewSession" xml:space="preserve"><value>New session</value></data>
-  <data name="PeriodPanel" xml:space="preserve"><value>Period</value></data>
-  <data name="CyclePeriod" xml:space="preserve"><value>Cycle period</value></data>
-  <data name="Resource" xml:space="preserve"><value>Rep (resource id)</value></data>
-  <data name="ResourcePlaceholder" xml:space="preserve"><value>e.g. rep-1</value></data>
-  <data name="Segment" xml:space="preserve"><value>Segment filter</value></data>
-  <data name="NoSegmentFilter" xml:space="preserve"><value>No segment filter</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>Segment narrows the eligible doctor universe; the pick stays manual.</value></data>
-  <data name="AccountsPanel" xml:space="preserve"><value>Accounts (clinics / hospitals)</value></data>
-  <data name="AccountsHint" xml:space="preserve"><value>Out-of-territory accounts are warned, never hidden.</value></data>
-  <data name="ContactsPanel" xml:space="preserve"><value>Doctors</value></data>
-  <data name="ContactsHint" xml:space="preserve"><value>Manual multi-select from the eligible universe.</value></data>
-  <data name="SaveSelection" xml:space="preserve"><value>Save selection</value></data>
-  <data name="Preview" xml:space="preserve"><value>Preview</value></data>
-  <data name="SupplyDemandPanel" xml:space="preserve"><value>Supply vs demand</value></data>
-  <data name="NoPreviewYet" xml:space="preserve"><value>Run a preview to see the plan.</value></data>
-  <data name="ContentPanel" xml:space="preserve"><value>Content preview (per doctor)</value></data>
-  <data name="Doctor" xml:space="preserve"><value>Doctor</value></data>
-  <data name="Stage" xml:space="preserve"><value>Next stage</value></data>
-  <data name="Duration" xml:space="preserve"><value>Duration</value></data>
-  <data name="Consent" xml:space="preserve"><value>Consent</value></data>
-  <data name="GridPanel" xml:space="preserve"><value>Day / Week grid</value></data>
-  <data name="Week" xml:space="preserve"><value>Week</value></data>
-  <data name="Date" xml:space="preserve"><value>Date</value></data>
-  <data name="Slot" xml:space="preserve"><value>Slot</value></data>
-  <data name="Target" xml:space="preserve"><value>Target</value></data>
-  <data name="Order" xml:space="preserve"><value>Order</value></data>
-  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
-  <data name="Replan" xml:space="preserve"><value>Re-plan</value></data>
-  <data name="SavedSession" xml:space="preserve"><value>Session saved.</value></data>
-  <data name="PreviewFailed" xml:space="preserve"><value>Preview failed.</value></data>
-  <data name="Applied" xml:space="preserve"><value>Plan applied.</value></data>
-  <data name="Replanned" xml:space="preserve"><value>Subset re-planned.</value></data>
-  <data name="SelectSession" xml:space="preserve"><value>Select a session first.</value></data>
-  <data name="NoContentResolved" xml:space="preserve"><value>No content resolved (report-only).</value></data>
-  <data name="OutOfTerritory" xml:space="preserve"><value>Out of territory</value></data>
-  <data name="Unscheduled" xml:space="preserve"><value>Unscheduled</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>Mes plans provisoires</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Planifiez votre semaine : choisissez la période et la semaine, ajoutez les cliniques et les médecins à visiter, générez l'itinéraire puis enregistrez-le comme planning de la semaine.</value></data>
+  <data name="NewSession" xml:space="preserve"><value>Nouveau plan</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>Période de cycle</value></data>
+  <data name="AccountsPanel" xml:space="preserve"><value>Établissements (cliniques / hôpitaux)</value></data>
+  <data name="AccountsHint" xml:space="preserve"><value>Les comptes hors territoire sont signalés par un avertissement, jamais masqués.</value></data>
+  <data name="ContactsPanel" xml:space="preserve"><value>Médecins</value></data>
+  <data name="NoPreviewYet" xml:space="preserve"><value>Générez l'itinéraire pour voir le plan.</value></data>
+  <data name="Replan" xml:space="preserve"><value>Replanifier</value></data>
+  <data name="PreviewFailed" xml:space="preserve"><value>L'itinéraire n'a pas pu être généré.</value></data>
+  <data name="Applied" xml:space="preserve"><value>Enregistré comme planning de la semaine.</value></data>
+  <data name="Replanned" xml:space="preserve"><value>Visites replanifiées.</value></data>
+  <data name="OutOfTerritory" xml:space="preserve"><value>Hors territoire</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Mes plans</value></data>
   <data name="Plan" xml:space="preserve"><value>Plan</value></data>
   <data name="Rep" xml:space="preserve"><value>Représentant</value></data>
   <data name="Targets" xml:space="preserve"><value>Cibles</value></data>
@@ -64,14 +35,9 @@
   <data name="TargetsSection" xml:space="preserve"><value>Cibles</value></data>
   <data name="RouteSection" xml:space="preserve"><value>Itinéraire</value></data>
   <data name="RepUser" xml:space="preserve"><value>Représentant (utilisateur)</value></data>
-  <data name="StrategyTemplate" xml:space="preserve"><value>Modèle de stratégie</value></data>
-  <data name="StrategyTemplateNone" xml:space="preserve"><value>Aucun modèle de stratégie</value></data>
-  <data name="StrategyTemplatesUnavailable" xml:space="preserve"><value>Les modèles de stratégie ne sont pas disponibles.</value></data>
-  <data name="UsersUnavailable" xml:space="preserve"><value>L'annuaire des utilisateurs n'est pas disponible ; saisissez le représentant sur la plateforme.</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>Semaine</value></data>
-  <data name="RouteHint" xml:space="preserve"><value>L'itinéraire est généré depuis les détails après l'enregistrement du plan.</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>Aucun itinéraire pour cette semaine.</value></data>
-  <data name="SelectAccountFirst" xml:space="preserve"><value>Sélectionnez d'abord une clinique/un hôpital</value></data>
+  <data name="SelectAccountFirst" xml:space="preserve"><value>Sélectionnez d'abord une clinique / un hôpital</value></data>
   <data name="WeekScopeHint" xml:space="preserve"><value>La semaine ciblée par ce plan (par défaut pour l'itinéraire).</value></data>
   <data name="SaveTargets" xml:space="preserve"><value>Enregistrer les cibles</value></data>
   <data name="TargetsSaved" xml:space="preserve"><value>Cibles enregistrées.</value></data>
@@ -135,7 +101,6 @@
   <data name="ColType" xml:space="preserve"><value>Type</value></data>
   <data name="ColCity" xml:space="preserve"><value>Ville / Territoire</value></data>
   <data name="ColContact" xml:space="preserve"><value>Médecin</value></data>
-  <data name="ColLinked" xml:space="preserve"><value>Lien</value></data>
   <data name="ColSelected" xml:space="preserve"><value>Sélectionné</value></data>
   <data name="AddAccount" xml:space="preserve"><value>Ajouter clinique / hôpital</value></data>
   <data name="RemoveTarget" xml:space="preserve"><value>Retirer</value></data>
@@ -143,22 +108,623 @@
   <data name="PickAccountForContacts" xml:space="preserve"><value>Sélectionnez un compte pour voir ses médecins.</value></data>
   <data name="Country" xml:space="preserve"><value>Pays</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>Sélectionnez d'abord un pays</value></data>
-  <data name="Segments" xml:space="preserve"><value>Segments</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>Seul le premier segment est appliqué pour l'instant (backend mono-segment).</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>Semaine {0}</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>Spécialité</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>Revenir à l'itinéraire optimal</value></data>
   <data name="SaveWeekPlan" xml:space="preserve"><value>Enregistrer comme plan de la semaine</value></data>
-  <data name="SupplyLabel" xml:space="preserve">
-    <value>Supply</value>
+  <data name="SupplyLabel" xml:space="preserve"><value>Capacité</value></data>
+  <data name="DemandLabel" xml:space="preserve"><value>Demande</value></data>
+  <data name="ScheduledLabel" xml:space="preserve"><value>Planifiées</value></data>
+  <data name="UnscheduledLabel" xml:space="preserve"><value>Non planifiées</value></data>
+  <data name="TargetCountFormat" xml:space="preserve"><value>{0} médecins · {1} pharmacies</value></data>
+  <data name="ReadOnlyNotice" xml:space="preserve"><value>Ce plan est validé et en lecture seule.</value></data>
+  <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>Le calendrier de travail n'a pas pu être lu ; les jours fériés n'ont pas été pris en compte.</value></data>
+  <data name="Status_generated" xml:space="preserve"><value>Généré</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="RepSelfHint" xml:space="preserve"><value>Les plans sont établis pour le représentant connecté.</value></data>
+  <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>Aucun territoire ne vous est attribué ; tous les comptes sont affichés. Contactez votre responsable.</value></data>
+  <data name="AddOutOfTerritory" xml:space="preserve"><value>Ajouter un compte hors territoire</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>{0} visites seront planifiées et le plan sera verrouillé. Continuer ?</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>Oui, enregistrer le plan</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} visites seront enregistrées comme plan de cette semaine et la semaine sera verrouillée. Continuer ?</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>Cette semaine ne contient aucune visite à approuver.</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>Cette semaine est approuvée ; ses visites sont verrouillées.</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>Mes plans</value></data>
+  <data name="TeamView" xml:space="preserve"><value>Équipe</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>Vue manager bientôt disponible</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>Vue des plans</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>Semaines</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} approuvée(s) · {1} brouillon(s)</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} approuvée(s)</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>brouillon vide</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>Période entière approuvée (ancien plan)</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>{0} brouillon(s) vide(s) (aucune cible). Un seul plan est conservé par période.</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>Supprimer les brouillons vides</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>{0} brouillon(s) vide(s) seront supprimés.</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>{0} brouillon(s) vide(s) supprimé(s).</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>Vous n'avez pas encore de plan.</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>Créer un plan pour cette période</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>Les plans n'ont pas pu être chargés.</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>Aucune période active. Aucun nouveau plan ne peut être créé car aucune période n'est ouverte ; demandez à votre responsable d'en définir une.</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>Nouveau plan</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>La période active est sélectionnée. Seules les périodes actives et futures sont listées.</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>Aucune période active trouvée</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>Semaine d'ouverture</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>Les semaines déjà écoulées ne peuvent pas être sélectionnées.</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>Créer le plan</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>Vous avez déjà un plan pour cette période.</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>Aller au plan</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Approuver la semaine</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>Seules les visites de cette semaine sont inscrites dans les visites planifiées.</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Rouvrir la semaine</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Ouvrir la semaine suivante</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>Passée</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>Vide</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>Semaine passée : lecture seule.</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>Ce plan a été approuvé pour toute la période (ancien plan) ; il est en lecture seule.</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>Capacité de la semaine</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>Planifié cette semaine</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>Capacité de la période</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>Planifié sur la période</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} h</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>Aucune capacité n'est définie pour la période ; les heures de travail par défaut sont utilisées.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>Rouvrir {0} ?</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>La semaine repasse en brouillon ; ses visites sans rapport sont annulées.</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>Motif</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>Au moins 10 caractères. Le motif est enregistré dans l'historique de la semaine.</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>Rouvrir</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>La semaine a été rouverte ; le motif a été enregistré.</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>La réouverture n'est pas encore disponible.</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>Le plan n'a pas pu être chargé.</value></data>
+  <data name="TargetsLockedBand" xml:space="preserve">
+    <value>La semaine sélectionnée est approuvée ou passée ; les cibles sont en lecture seule ici.</value>
   </data>
-  <data name="DemandLabel" xml:space="preserve">
-    <value>Demand</value>
+  <data name="AddOutOfTerritoryShort" xml:space="preserve">
+    <value>Ajouter hors territoire</value>
   </data>
-  <data name="ScheduledLabel" xml:space="preserve">
-    <value>Scheduled</value>
+  <data name="OutOfTerritoryDialogHint" xml:space="preserve">
+    <value>Un compte ajouté ici est marqué « hors territoire ».</value>
   </data>
-  <data name="UnscheduledLabel" xml:space="preserve">
-    <value>Unscheduled</value>
+  <data name="BulkApplyProducts" xml:space="preserve">
+    <value>Appliquer des produits ({0})</value>
+  </data>
+  <data name="QuickFiltersLabel" xml:space="preserve">
+    <value>Filtres rapides</value>
+  </data>
+  <data name="QuickFilterAll" xml:space="preserve">
+    <value>Tous</value>
+  </data>
+  <data name="QuickFilterDue" xml:space="preserve">
+    <value>À voir cette semaine</value>
+  </data>
+  <data name="QuickFilterNever" xml:space="preserve">
+    <value>Jamais visités</value>
+  </data>
+  <data name="ColFrequency" xml:space="preserve">
+    <value>Fréquence</value>
+  </data>
+  <data name="ColDoneRemaining" xml:space="preserve">
+    <value>Faits / restants</value>
+  </data>
+  <data name="ColLastVisit" xml:space="preserve">
+    <value>Dernière visite</value>
+  </data>
+  <data name="ColProducts" xml:space="preserve">
+    <value>Produits</value>
+  </data>
+  <data name="LegendPromo" xml:space="preserve">
+    <value>promotion</value>
+  </data>
+  <data name="LegendNonPromo" xml:space="preserve">
+    <value>rappel</value>
+  </data>
+  <data name="LegendPlay" xml:space="preserve">
+    <value>suggéré</value>
+  </data>
+  <data name="LegendLastVisit" xml:space="preserve">
+    <value>dernière visite</value>
+  </data>
+  <data name="LegendRepPick" xml:space="preserve">
+    <value>votre choix</value>
+  </data>
+  <data name="LegendPortfolio" xml:space="preserve">
+    <value>portefeuille</value>
+  </data>
+  <data name="NoApprovedContent" xml:space="preserve">
+    <value>Aucun contenu approuvé pour ce produit</value>
+  </data>
+  <data name="FrequencyPerPeriod" xml:space="preserve">
+    <value>{0} sur la période</value>
+  </data>
+  <data name="FrequencyNone" xml:space="preserve">
+    <value>pas de fréquence</value>
+  </data>
+  <data name="PlannedCountHint" xml:space="preserve">
+    <value>{0} planifiées</value>
+  </data>
+  <data name="LastVisitNever" xml:space="preserve">
+    <value>jamais</value>
+  </data>
+  <data name="BadgeConsentBlocked" xml:space="preserve">
+    <value>Pas de consentement</value>
+  </data>
+  <data name="ConsentBlockedHint" xml:space="preserve">
+    <value>Le consentement de visite est bloqué ; ce médecin ne peut pas être sélectionné.</value>
+  </data>
+  <data name="BadgeInactive" xml:space="preserve">
+    <value>Inactif</value>
+  </data>
+  <data name="SegmentBadgeHint" xml:space="preserve">
+    <value>Segment (information uniquement)</value>
+  </data>
+  <data name="SpecialtyAll" xml:space="preserve">
+    <value>Toutes les spécialités</value>
+  </data>
+  <data name="SpecialtySelected" xml:space="preserve">
+    <value>{0} spécialités</value>
+  </data>
+  <data name="NoDoctorsForFilter" xml:space="preserve">
+    <value>Aucun médecin ne correspond à ce filtre.</value>
+  </data>
+  <data name="AccountSelectedOf" xml:space="preserve">
+    <value>{0} / {1} sélectionnés</value>
+  </data>
+  <data name="AccountSelectedCount" xml:space="preserve">
+    <value>{0} sélectionnés</value>
+  </data>
+  <data name="AccountDueThisWeek" xml:space="preserve">
+    <value>{0} cette semaine</value>
+  </data>
+  <data name="EstimatedWeek" xml:space="preserve">
+    <value>Cette semaine ≈ {0} (selon les produits)</value>
+  </data>
+  <data name="EstimatedWeekShare" xml:space="preserve">
+    <value>{0} % du temps hebdomadaire</value>
+  </data>
+  <data name="EstimatedOver" xml:space="preserve">
+    <value>Le temps hebdomadaire est dépassé de {0}.</value>
+  </data>
+  <data name="ProductDistribution" xml:space="preserve">
+    <value>Répartition des produits</value>
+  </data>
+  <data name="DoctorsWithoutProducts" xml:space="preserve">
+    <value>{0} médecins sélectionnés n'ont aucun produit.</value>
+  </data>
+  <data name="NoProductBadge" xml:space="preserve">
+    <value>aucun produit</value>
+  </data>
+  <data name="PickProducts" xml:space="preserve">
+    <value>Choisir des produits</value>
+  </data>
+  <data name="EditProducts" xml:space="preserve">
+    <value>Modifier les produits</value>
+  </data>
+  <data name="DoctorPanelPeriod" xml:space="preserve">
+    <value>Vue de la période</value>
+  </data>
+  <data name="RolePromo" xml:space="preserve">
+    <value>Promotion</value>
+  </data>
+  <data name="RoleNonPromo" xml:space="preserve">
+    <value>Rappel</value>
+  </data>
+  <data name="ProductsS1Note" xml:space="preserve">
+    <value>Les modifications s'appliquent aux prochaines visites non approuvées de ce médecin.</value>
+  </data>
+  <data name="ProductsBulkNote" xml:space="preserve">
+    <value>Les produits choisis sont ajoutés aux produits actuels de {0} médecins. Les produits existants sont conservés.</value>
+  </data>
+  <data name="ProductsSuggestedNote" xml:space="preserve">
+    <value>Les produits suggérés viennent du système. Vous pouvez en ajouter d'autres. Un produit suggéré ne se retire que pour une seule visite, depuis l'écran Visite planifiée.</value>
+  </data>
+  <data name="ProductsNoneNote" xml:space="preserve">
+    <value>Ce médecin n'a aucun produit ; la durée de visite ne peut pas être calculée. Choisissez des produits ci-dessous.</value>
+  </data>
+  <data name="PortfolioUndefinedNote" xml:space="preserve">
+    <value>Votre portefeuille de produits n'est pas défini. Tous les produits sont listés.</value>
+  </data>
+  <data name="AllProducts" xml:space="preserve">
+    <value>Tous les produits</value>
+  </data>
+  <data name="ProductSearch" xml:space="preserve">
+    <value>Rechercher un nom ou code de produit</value>
+  </data>
+  <data name="ProductLimitLine" xml:space="preserve">
+    <value>Promotion {0} / {1} · Rappel {2} / {3}</value>
+  </data>
+  <data name="DurationLine" xml:space="preserve">
+    <value>{0} promotion + {1} rappel + rapport ≈ {2} min</value>
+  </data>
+  <data name="DurationUnknown" xml:space="preserve">
+    <value>La durée de visite ne peut pas être calculée (capacité de la période illisible).</value>
+  </data>
+  <data name="LimitExceeded" xml:space="preserve">
+    <value>Limite dépassée : une visite compte au plus {0} produits promotion + {1} rappel (capacité de la période). Les produits en trop peuvent ne pas tenir.</value>
+  </data>
+  <data name="PlayLimitFull" xml:space="preserve">
+    <value>Limite atteinte — le produit ajouté ne tient pas ; il passe à la visite suivante.</value>
+  </data>
+  <data name="SuggestedLockHint" xml:space="preserve">
+    <value>Produit suggéré ; ne peut être retiré que depuis l'écran Visite planifiée</value>
+  </data>
+  <data name="NoProductMatches" xml:space="preserve">
+    <value>Aucun produit ne correspond à la recherche.</value>
+  </data>
+  <data name="ProductsDone" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="ApplyToSelected" xml:space="preserve">
+    <value>Appliquer aux {0} médecins sélectionnés</value>
+  </data>
+  <data name="BulkLimitExceeded" xml:space="preserve">
+    <value>Limite dépassée pour {0} médecins ; les produits en trop passent à la visite suivante.</value>
+  </data>
+  <data name="ProductsSaved" xml:space="preserve">
+    <value>Produits enregistrés.</value>
+  </data>
+  <data name="ProductsUnavailable" xml:space="preserve">
+    <value>La liste des produits est illisible pour le moment.</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>Comment se construit la liste de produits d'une visite ?</value>
+  </data>
+  <data name="RuleSourceOrder" xml:space="preserve">
+    <value>La liste de chaque visite se remplit dans l'ordre : produits suggérés → votre choix → ceux présentés à la dernière visite → votre portefeuille. La durée de visite est calculée à partir de cette liste.</value>
+  </data>
+  <data name="RuleMixedOrder" xml:space="preserve">
+    <value>Ordre mixte : les visites suivantes reprennent le même ensemble, décalé d'un rang (A, B, C → B, C, A).</value>
+  </data>
+  <data name="RuleOverflow" xml:space="preserve">
+    <value>Un produit qui dépasse les limites de la visite passe à la visite suivante du médecin.</value>
+  </data>
+  <data name="RuleUnknownFrequency" xml:space="preserve">
+    <value>Une cible de fréquence inconnue compte « 1 sur la période » et porte le badge sans fréquence.</value>
+  </data>
+  <data name="StatusTextDraft" xml:space="preserve">
+    <value>Semaine brouillon — modifiable jusqu'à son approbation.</value>
+  </data>
+  <data name="StatusTextApproved" xml:space="preserve">
+    <value>Cette semaine est approuvée et en lecture seule.</value>
+  </data>
+  <data name="StatusTextPast" xml:space="preserve">
+    <value>Semaine passée. Aucune modification possible.</value>
+  </data>
+  <data name="StatusTextEmpty" xml:space="preserve">
+    <value>Pas encore de brouillon pour cette semaine.</value>
+  </data>
+  <data name="GenerateWeek" xml:space="preserve">
+    <value>Générer cette semaine</value>
+  </data>
+  <data name="WeekCapacityNote" xml:space="preserve">
+    <value>{0} % rempli · part de la capacité de la période.</value>
+  </data>
+  <data name="WeekCapacityHolidaysNote" xml:space="preserve">
+    <value>Jours fériés et demi-journées déduits.</value>
+  </data>
+  <data name="PeriodCapacityNote" xml:space="preserve">
+    <value>{0} % · {2} semaines sur {1} planifiées</value>
+  </data>
+  <data name="CapacityMissingWeek" xml:space="preserve">
+    <value>La capacité de la période n'est pas définie ; le remplissage ne peut pas être calculé.</value>
+  </data>
+  <data name="CapacityMissingPeriod" xml:space="preserve">
+    <value>Demandez à votre responsable de définir la capacité.</value>
+  </data>
+  <data name="PeriodWeeksTitle" xml:space="preserve">
+    <value>Semaines de la période</value>
+  </data>
+  <data name="PeriodWeeksSummary" xml:space="preserve">
+    <value>{0} semaines · {1} approuvées · {2} brouillon · {3} vides · {4} passées</value>
+  </data>
+  <data name="AutoDraftRulesTitle" xml:space="preserve">
+    <value>Comment le brouillon automatique est-il construit ?</value>
+  </data>
+  <data name="AutoDraftRuleApprove" xml:space="preserve">
+    <value>Quand une semaine est approuvée, les suivantes sont remplies selon la fréquence de chaque cible.</value>
+  </data>
+  <data name="AutoDraftRuleEven" xml:space="preserve">
+    <value>Les visites sont réparties régulièrement sur la période.</value>
+  </data>
+  <data name="AutoDraftRuleDays" xml:space="preserve">
+    <value>Les jours sont équilibrés dans la limite quotidienne, par zone ; aucune visite le week-end ni les jours fériés.</value>
+  </data>
+  <data name="TodayLabel" xml:space="preserve">
+    <value>AUJOURD'HUI</value>
+  </data>
+  <data name="VisitCountShort" xml:space="preserve">
+    <value>{0} visites</value>
+  </data>
+  <data name="LegacyWeekLabel" xml:space="preserve">
+    <value>approuvée (ancien plan)</value>
+  </data>
+  <data name="HalfDayLabel" xml:space="preserve">
+    <value>demi-journée</value>
+  </data>
+  <data name="SlipTitle" xml:space="preserve">
+    <value>Déplacés / non placés</value>
+  </data>
+  <data name="SlipTitleCount" xml:space="preserve">
+    <value>Cibles et produits déplacés / non placés ({0})</value>
+  </data>
+  <data name="NoSlips" xml:space="preserve">
+    <value>Aucune cible déplacée cette semaine.</value>
+  </data>
+  <data name="MovedToWeek" xml:space="preserve">
+    <value>déplacé → {0}</value>
+  </data>
+  <data name="MovedToDay" xml:space="preserve">
+    <value>déplacé → {0}</value>
+  </data>
+  <data name="NotPlanned" xml:space="preserve">
+    <value>non planifié</value>
+  </data>
+  <data name="ToNextVisit" xml:space="preserve">
+    <value>→ visite suivante</value>
+  </data>
+  <data name="ReasonCapacityFull" xml:space="preserve">
+    <value>semaine pleine</value>
+  </data>
+  <data name="ReasonHoliday" xml:space="preserve">
+    <value>jour férié</value>
+  </data>
+  <data name="ReasonHalfDay" xml:space="preserve">
+    <value>demi-journée</value>
+  </data>
+  <data name="ReasonPinOverflow" xml:space="preserve">
+    <value>jour épinglé plein, plus de place dans la semaine</value>
+  </data>
+  <data name="ReasonConsentBlocked" xml:space="preserve">
+    <value>consentement bloqué</value>
+  </data>
+  <data name="ReasonPeriodExhausted" xml:space="preserve">
+    <value>fin de période</value>
+  </data>
+  <data name="ReasonMissingLocation" xml:space="preserve">
+    <value>pas de localisation</value>
+  </data>
+  <data name="ReasonNoAvailability" xml:space="preserve">
+    <value>hors disponibilité du médecin</value>
+  </data>
+  <data name="ReasonTooLong" xml:space="preserve">
+    <value>plus long qu'une journée de travail</value>
+  </data>
+  <data name="ReasonPinDayFull" xml:space="preserve">
+    <value>le jour épinglé était plein</value>
+  </data>
+  <data name="ReasonPinAvailability" xml:space="preserve">
+    <value>hors disponibilité le jour épinglé</value>
+  </data>
+  <data name="ReasonMaxPromo" xml:space="preserve">
+    <value>limite de promotion atteinte</value>
+  </data>
+  <data name="ReasonMaxNonPromo" xml:space="preserve">
+    <value>limite de rappel atteinte</value>
+  </data>
+  <data name="ReasonOther" xml:space="preserve">
+    <value>autre raison</value>
+  </data>
+  <data name="DayByDay" xml:space="preserve">
+    <value>Jour par jour</value>
+  </data>
+  <data name="DayCapacityFormat" xml:space="preserve">
+    <value>{0} / {1} visites</value>
+  </data>
+  <data name="IdleTime" xml:space="preserve">
+    <value>inactif {0}</value>
+  </data>
+  <data name="OverCapacity" xml:space="preserve">
+    <value>capacité dépassée</value>
+  </data>
+  <data name="NoVisitThisDay" xml:space="preserve">
+    <value>Aucune visite ce jour.</value>
+  </data>
+  <data name="HolidayNoVisit" xml:space="preserve">
+    <value>Jour férié — aucune visite.</value>
+  </data>
+  <data name="NoVisitThisWeek" xml:space="preserve">
+    <value>Aucun plan pour cette semaine.</value>
+  </data>
+  <data name="MoreDoctors" xml:space="preserve">
+    <value>+{0} de plus</value>
+  </data>
+  <data name="ApproxMinutes" xml:space="preserve">
+    <value>≈ {0} min</value>
+  </data>
+  <data name="PinnedHint" xml:space="preserve">
+    <value>Vous l'avez épinglée à ce jour</value>
+  </data>
+  <data name="AutoPinnedHint" xml:space="preserve">
+    <value>Déplacée automatiquement : le jour épinglé était plein</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>Retirer l'épingle</value>
+  </data>
+  <data name="MoveToDay" xml:space="preserve">
+    <value>Déplacer vers un jour…</value>
+  </data>
+  <data name="MoveInstitution" xml:space="preserve">
+    <value>Déplacer l'établissement vers un autre jour…</value>
+  </data>
+  <data name="MoveHint" xml:space="preserve">
+    <value>Faites glisser une visite ou un établissement vers un autre jour, ou utilisez Déplacer vers un jour….</value>
+  </data>
+  <data name="MoveLockedHint" xml:space="preserve">
+    <value>Pour la modifier, rouvrez la semaine.</value>
+  </data>
+  <data name="MoveDayLabel" xml:space="preserve">
+    <value>Jour</value>
+  </data>
+  <data name="MoveAllQuestion" xml:space="preserve">
+    <value>Déplacer aussi les autres visites de cet établissement ({0} médecins, {1} pharmacies) ?</value>
+  </data>
+  <data name="MoveAll" xml:space="preserve">
+    <value>Tout déplacer</value>
+  </data>
+  <data name="MoveOnlyThis" xml:space="preserve">
+    <value>Seulement ce médecin</value>
+  </data>
+  <data name="MoveConfirm" xml:space="preserve">
+    <value>Déplacer</value>
+  </data>
+  <data name="DayPinSaved" xml:space="preserve">
+    <value>Le jour a été modifié.</value>
+  </data>
+  <data name="PinOverflowMessage" xml:space="preserve">
+    <value>{0} visites ne tenaient pas ce jour → déplacées au {1}</value>
+  </data>
+  <data name="PinOverflowNextWeek" xml:space="preserve">
+    <value>{0} visites ne tenaient pas cette semaine → reportées à une semaine suivante</value>
+  </data>
+  <data name="ProductVisitsTitle" xml:space="preserve">
+    <value>Visites hebdomadaires par produit</value>
+  </data>
+  <data name="ProductVisitsSplit" xml:space="preserve">
+    <value>promotion {0} · rappel {1}</value>
+  </data>
+  <data name="NoProductVisits" xml:space="preserve">
+    <value>Aucune visite avec produits cette semaine.</value>
+  </data>
+  <data name="MixedOrderNote" xml:space="preserve">
+    <value>Ordre mixte : l'ensemble reste le même, son ordre se décale d'un cran à chaque visite. Si A, B, C ont été présentés, la suivante apporte B, C, A.</value>
+  </data>
+  <data name="OpenRoute" xml:space="preserve">
+    <value>Ouvrir l'itinéraire</value>
+  </data>
+  <data name="RebuildWeek" xml:space="preserve">
+    <value>Régénérer cette semaine</value>
+  </data>
+  <data name="WeekDoctorsTitle" xml:space="preserve">
+    <value>Médecins de la semaine ({0})</value>
+  </data>
+  <data name="WeekDoctorsHint" xml:space="preserve">
+    <value>Cliquez sur une ligne : les semaines du médecin sur la période s'ouvrent.</value>
+  </data>
+  <data name="NoDoctorsThisWeek" xml:space="preserve">
+    <value>Aucun médecin planifié cette semaine.</value>
+  </data>
+  <data name="StatePresented" xml:space="preserve">
+    <value>présenté</value>
+  </data>
+  <data name="StateApproved" xml:space="preserve">
+    <value>approuvé</value>
+  </data>
+  <data name="StateDraft" xml:space="preserve">
+    <value>brouillon</value>
+  </data>
+  <data name="StateProjected" xml:space="preserve">
+    <value>prévu</value>
+  </data>
+  <data name="WeekHistoryTitle" xml:space="preserve">
+    <value>Historique de la semaine</value>
+  </data>
+  <data name="HistoryApproved" xml:space="preserve">
+    <value>Approuvée</value>
+  </data>
+  <data name="HistoryReopened" xml:space="preserve">
+    <value>Rouverte</value>
+  </data>
+  <data name="HistoryYou" xml:space="preserve">
+    <value>vous</value>
+  </data>
+  <data name="HistoryOtherUser" xml:space="preserve">
+    <value>un autre utilisateur</value>
+  </data>
+  <data name="FrequencyTarget" xml:space="preserve">
+    <value>Fréquence cible</value>
+  </data>
+  <data name="DoneLabel" xml:space="preserve">
+    <value>Faites</value>
+  </data>
+  <data name="RemainingLabel" xml:space="preserve">
+    <value>Restantes</value>
+  </data>
+  <data name="NextVisitProducts" xml:space="preserve">
+    <value>Produits de la prochaine visite</value>
+  </data>
+  <data name="SourceLine" xml:space="preserve">
+    <value>Source : {0}</value>
+  </data>
+  <data name="NoProductsNoTime" xml:space="preserve">
+    <value>La durée de visite ne peut pas être calculée. Choisissez des produits.</value>
+  </data>
+  <data name="ProductHistoryTitle" xml:space="preserve">
+    <value>Sur la période · historique des produits</value>
+  </data>
+  <data name="HistoryPresented" xml:space="preserve">
+    <value>Présenté</value>
+  </data>
+  <data name="HistoryPlanned" xml:space="preserve">
+    <value>Planifié</value>
+  </data>
+  <data name="HistoryProjected" xml:space="preserve">
+    <value>Prévu</value>
+  </data>
+  <data name="NoVisitsInPeriod" xml:space="preserve">
+    <value>Aucune visite planifiée pour ce médecin sur la période.</value>
+  </data>
+  <data name="MyAccountsTitle" xml:space="preserve">
+    <value>Mes comptes (territoire)</value>
+  </data>
+  <data name="AccountSearch" xml:space="preserve">
+    <value>Rechercher un compte…</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="NoAccountsFound" xml:space="preserve">
+    <value>Aucun compte ne correspond.</value>
+  </data>
+  <data name="DueThisWeekBadge" xml:space="preserve">
+    <value>Cette semaine</value>
+  </data>
+  <data name="EditWeekTargets" xml:space="preserve">
+    <value>Modifier les cibles de la semaine</value>
+  </data>
+  <data name="EmptyWeekHint" xml:space="preserve">
+    <value>Elle se crée automatiquement à l'approbation de la semaine précédente. Vous pouvez la générer maintenant selon les règles de fréquence.</value>
+  </data>
+  <data name="FrequencyDefaultOne" xml:space="preserve">
+    <value>1 sur la période (par défaut)</value>
+  </data>
+  <data name="NextContentSoon" xml:space="preserve">
+    <value>Contenu suivant : bientôt</value>
+  </data>
+  <data name="NoTimeShort" xml:space="preserve">
+    <value>pas de durée</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Tout afficher ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Afficher moins</value>
+  </data>
+  <data name="WeekDoctorsHeading" xml:space="preserve">
+    <value>Médecins de la semaine</value>
+  </data>
+  <data name="HistoryStateDone" xml:space="preserve">
+    <value>Faite</value>
+  </data>
+  <data name="HistoryStateApproved" xml:space="preserve">
+    <value>Planifiée · approuvée</value>
+  </data>
+  <data name="HistoryStateDraft" xml:space="preserve">
+    <value>Brouillon</value>
+  </data>
+  <data name="HistoryStateProjected" xml:space="preserve">
+    <value>Prévue</value>
+  </data>
+  <data name="ReasonNoNearDay" xml:space="preserve">
+    <value>aucun jour proche</value>
+  </data>
+  <data name="StateDone" xml:space="preserve">
+    <value>faite</value>
+  </data>
+  <data name="WeekSubApproved" xml:space="preserve">
+    <value>Approuvée · écrite dans les visites planifiées · lecture seule</value>
+  </data>
+  <data name="WeekSubEmpty" xml:space="preserve">
+    <value>Pas encore générée</value>
   </data>
 </root>

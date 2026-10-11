@@ -21,7 +21,7 @@
         "TypeAlreadyInBranch",
         // WP-CT-FE-5: right panel (Connections / Non-conforming / Versions) + off-spine summary.
         "TabConnections", "TabNonConforming", "TabVersions", "Inputs", "Outputs", "TypesOnSpine", "Nodes", "Relationships",
-        "RelationshipsSummary", "KnowledgePaths", "Journeys", "Visits", "OutputsNoSource", "DataFlow", "FlowSubject",
+        "RelationshipsSummary", "KnowledgePaths", "Journeys", "Visits", "DataFlow", "FlowSubject",
         "FlowConceptGraph", "FlowChainTemplate", "FlowKnowledgePath", "FlowJourney", "FlowVisit", "ReasonNotOnSpine",
         "ReasonWrongOrder", "MissingTypes", "AddToBranch", "Ignore", "Undo", "UnresolvedCount", "NonConformingEmpty",
         "IgnoredSection", "OffSpineSummary", "VersionsEmpty", "ThisVersion", "UpdatedByLabel", "Loading",
@@ -31,7 +31,13 @@
         // WP-CT-FE-10: chain status display labels (status picker text, Versions timeline).
         "ChainStatusDraft", "ChainStatusPublished", "ChainStatusArchived",
         // WP-CT-FE-3-REFINE: lane header (DAL-X) + empty-branch dropzone + compact add-type.
-        "BranchLabelPrefix", "StepCountLabel", "DragTypeHerePlaceholder", "AddTypeCompact" };
+        "BranchLabelPrefix", "StepCountLabel", "DragTypeHerePlaceholder", "AddTypeCompact",
+        // WP-KP-CH-1: right panel Outputs (paths built from this chain, journeys using them, planned visit count).
+        "OutputsAfterSave", "OutputsRestricted", "OutputsChainVersion", "OutputsCurrentRelease", "OutputsStageCount",
+        "OutputsPathCount", "OutputsPlannedVisits", "OutputsAllVersions", "PathStatusDraft", "PathStatusReview",
+        "PathStatusApproved", "PathStatusPublished", "PathStatusInactive", "PathStatusArchived", "JourneyStatus_draft",
+        "JourneyStatus_review", "JourneyStatus_approved", "JourneyStatus_published", "JourneyStatus_inactive",
+        "JourneyStatus_archived" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
 }
 <script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

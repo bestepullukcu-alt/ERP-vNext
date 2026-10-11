@@ -1,0 +1,5 @@
+Build: PASS (dotnet build ...Diten.SupplyChainService.Tests.csproj -c Debug --no-restore -m:1 /nr:false), exit 0.
+Root storage filter: PASS, 6/6 (elevated dotnet test --filter FullyQualifiedName~ShipmentRootStorageTests).
+Root bounded filter: PASS, 7/7 (elevated dotnet test --filter FullyQualifiedName~ShipmentRoot).
+Existing Shipment regression: BLOCKED, 0/12; all require MOD0183_TEST_MONGO isolated replica set, which was not available. No operational Mongo was contacted.
+HTTP/JWT/BSON persistence/restart probes: NOT RUN; required isolated replica-set/API environment was unavailable. Probes fail closed when required variables are absent.

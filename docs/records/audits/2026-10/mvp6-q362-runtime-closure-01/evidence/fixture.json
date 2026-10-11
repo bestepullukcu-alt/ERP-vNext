@@ -1,0 +1,173 @@
+{
+ "steps": [
+  {
+   "step": "invite-admin",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "first-login-admin",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "forced-change-admin",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "invite-fix",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "first-login-fix",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "forced-change-fix",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "invite-nokey",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "first-login-nokey",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "forced-change-nokey",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "login-fix",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "mdm-create-le",
+   "status": 201,
+   "ok": true,
+   "id": "e5f15d4b-12ba-44d9-9009-6a16014fc4a1"
+  },
+  {
+   "step": "mdm-activate-le",
+   "status": 204,
+   "ok": true
+  },
+  {
+   "step": "platform-create-ou",
+   "status": 201,
+   "ok": true,
+   "id": "4ad7f8b2-3a29-4611-9f47-4e6956283717"
+  },
+  {
+   "step": "platform-create-position-admin",
+   "status": 201,
+   "ok": true,
+   "id": "305e6f68-8404-45e1-809d-6c4ed56625c9"
+  },
+  {
+   "step": "platform-assign-admin",
+   "status": 201,
+   "ok": true,
+   "id": "65d1bf98-2108-4744-b8b0-17691ff66f84"
+  },
+  {
+   "step": "platform-create-position-nokey",
+   "status": 201,
+   "ok": true,
+   "id": "d7287fc4-73a2-4c77-94cf-180de96bd03c"
+  },
+  {
+   "step": "platform-assign-nokey",
+   "status": 201,
+   "ok": true,
+   "id": "3b335c9e-908e-4973-b90c-f1a7dbd58950"
+  },
+  {
+   "step": "login-admin",
+   "status": 200,
+   "ok": true,
+   "id": null
+  },
+  {
+   "step": "login-nokey",
+   "status": 200,
+   "ok": true,
+   "id": null
+  }
+ ],
+ "firstLogin": {
+  "admin": {
+   "requiresPasswordChange": true
+  },
+  "fix": {
+   "requiresPasswordChange": true
+  },
+  "nokey": {
+   "requiresPasswordChange": true
+  }
+ },
+ "partA": {
+  "orgKeys": 10,
+  "nokeyAdminRolesRemoved": 1,
+  "nokeyRolesLeft": 0
+ },
+ "fixLogin": {
+  "legal_entity_id": null,
+  "pwd_change_required": "false",
+  "shipmentKeys": [
+   "supplychain.shipments.cancel",
+   "supplychain.shipments.create",
+   "supplychain.shipments.dispatch",
+   "supplychain.shipments.pod.capture",
+   "supplychain.shipments.read"
+  ],
+  "permissionCount": 87
+ },
+ "legalEntityId": "e5f15d4b-12ba-44d9-9009-6a16014fc4a1",
+ "orgUnitId": "4ad7f8b2-3a29-4611-9f47-4e6956283717",
+ "userIds": {
+  "admin": "eb7d34ec-8507-47d8-a13f-f90181549bd0",
+  "fix": "9d83403d-d2ba-4a3c-9583-e35a3df9d1fa",
+  "nokey": "65d65f90-5c7b-4b3b-9653-36a0934103b9"
+ },
+ "actorLogins": {
+  "admin": {
+   "legal_entity_id": null,
+   "pwd_change_required": "false",
+   "shipmentKeys": [
+    "supplychain.shipments.cancel",
+    "supplychain.shipments.create",
+    "supplychain.shipments.dispatch",
+    "supplychain.shipments.pod.capture",
+    "supplychain.shipments.read"
+   ],
+   "permissionCount": 81
+  },
+  "nokey": {
+   "legal_entity_id": null,
+   "pwd_change_required": "false",
+   "shipmentKeys": [],
+   "permissionCount": 0
+  }
+ },
+ "result": "CHECK"
+}

@@ -1,0 +1,18 @@
+# Q201 mvp6-q201-integration-dryrun-01 — ARTIFACTS.sha256 (last write)
+# start 2026-10-02 17:30:42 +03 · end 2026-10-02 17:40:53 +03 (Europe/Istanbul)
+# branch feature/mvp6-logistics · HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+# no-change: git status --porcelain before = after, byte-identical (sha256 06c28ae7fb6647c71a9cf3d592aaffc10c95ae4ce36fe37fc0079695892dbbf8); 565 lines = 32 M + 533 ?? + 0 staged; git diff not run
+# only new paths written by this lane: this folder (inside the already-untracked docs/records/audits/2026-10/); see F-Q201-12 for two git-ignored build files touched by another process
+# verify: cd docs/records/audits/2026-10/mvp6-q201-integration-dryrun-01 && grep -v '^#' ARTIFACTS.sha256 | shasum -a 256 -c
+2196733194bcfa7f191847238942bd33e788e4e70f82994f5fd5c50ee243d786  ADD-OVERWRITE-CONFLICT.tsv
+d13d0629b508fee704d1c8f2e7f3917282c14d8ef64f61a7a08f845202483a26  CHECKS.tsv
+d3f89cee2263ea1511a2d71bda165c73263947f86f7f775279b41549f7e7cc41  IDENTICAL-ROWS.tsv
+8ac58b1841629df21c198a01bf62f7e86fa80e7f1ee3a5372c6a57efdef40942  MODULE-OVERLAPS.tsv
+39313612bc9eef475ea7ed52180d0e13c4bcb1da39ef95f802015bcfc13d6bde  NEW-FILES-STATUS.tsv
+4c1b410dfc8b847db59589fc7498ab7d4e020c049cbcb5a788c0d6e765b74bed  Q131-APPLICATION-STATE.tsv
+e0f55c47ef92db93f1437e5c91ae7cec88086efa376d4cfe12230cfa9f57e393  SHARED-INTEGRATION-MEMBERS.tsv
+86fe86ac736a975a82d060fb7fb5036281af1e5685f76916f10617644fe1bd0d  SHARED-SEAM-PATCH-NEEDS.md
+2e8e6ca664ab74ee49266ca33f654dfde600f390952a61d199845d2a350ed90e  SHARED-SEAM-ROWS.tsv
+bf82ebb0c434d1195de12c20767db1adb39a4e631822fbf474b6a7bac246a437  SOP-22.md
+b17e86b57584f74d7f71ba4238edbafc5cb3c567a8ec54398ccbcf764360c2b1  TREE-ONLY-UNTRACKED.tsv
+ef1fc8bc9689a74ed56535494c1832ee3e44a48304ad88d50c1a4c429f896efa  tools/q201_dryrun.py

@@ -1,0 +1,54 @@
+{
+  "_comment": "MOD-0186 Returns — PROPOSED gateway routes (pack §32.10 'listed, not edited here'); NOT APPLIED. The integration owner merges these into gateway/Diten.ApiGateway/ocelot.json Routes[] of the integrated target (A12 360 overlay shape, where localhost:5061 is the Supply Chain service; the common checkout maps 5061 elsewhere — README F4). Explicit paths only, no catch-all, so /api/shipment-bundle/returnsXYZ is not matched (RU-26 family routing). OPTIONS per NET-001. Header passthrough required: Authorization, X-Correlation-Id, Idempotency-Key, X-Tenant-Id, X-Legal-Entity-Id (Ocelot forwards request headers by default; the owner confirms no header transform strips them). GET /api/shipment-bundle/shipments/{shipmentId} already exists in the A12 overlay and is only CONFIRMED here (no change).",
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/shipment-bundle/returns",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/shipment-bundle/returns",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}/transition",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}/transition",
+      "UpstreamHttpMethod": [
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    }
+  ],
+  "HeaderPassthrough": [
+    "Authorization",
+    "X-Correlation-Id",
+    "Idempotency-Key",
+    "X-Tenant-Id",
+    "X-Legal-Entity-Id"
+  ],
+  "Confirm": [
+    {
+      "UpstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "Source": "A12 360 overlay ocelot.json (existing)"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+2026-09-26T19:19:20Z	2026-09-26T19:22:31Z	Diten.SupplyChainService.Tests	1	Failed!  - Failed:    39, Passed:   378, Skipped:     0, Total:   417, Duration: 3 m 8 s - Diten.SupplyChainService.Tests.dll (net8.0)
+2026-09-26T19:22:31Z	2026-09-26T19:22:39Z	Diten.Web.Tests	0	Passed!  - Failed:     0, Passed:   241, Skipped:     0, Total:   241, Duration: 6 s - Diten.Web.Tests.dll (net8.0)
+2026-09-26T19:22:39Z	2026-09-26T19:22:40Z	Diten.ApiGateway.Tests	1	Failed!  - Failed:     1, Passed:    86, Skipped:     0, Total:    87, Duration: 164 ms - Diten.ApiGateway.Tests.dll (net8.0)
+2026-09-26T19:22:40Z	2026-09-26T19:22:44Z	TenantArchitecture.ArchitectureTests	1	Failed!  - Failed:     3, Passed:    15, Skipped:     0, Total:    18, Duration: 3 s - TenantArchitecture.ArchitectureTests.dll (net8.0)

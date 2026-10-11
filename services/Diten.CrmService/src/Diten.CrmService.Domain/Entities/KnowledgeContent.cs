@@ -317,6 +317,10 @@ public static class KnowledgeReasonCodes
 {
     public const string ContentCreated = "knowledge_content_created";
     public const string ContentUpdated = "knowledge_content_updated";
+
+    /// <summary>WP-E2E-FIX-2 — an update lost the optimistic race (the row changed since the handler read it): 409,
+    /// rendered as the <c>[code, message]</c> pair.</summary>
+    public const string ContentConcurrencyConflict = "knowledge_content_concurrency_conflict";
     public const string ContentArchived = "knowledge_content_archived";
     public const string ContentDuplicateCode = "knowledge_content_duplicate_code";
 

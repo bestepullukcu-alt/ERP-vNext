@@ -1,0 +1,34 @@
+check	id	item	expected	observed	result	evidence
+1	1a	v2 folder SHA256SUMS	4/4 OK; 6aba548d…	4/4 OK; 6aba548d8f4f7f44caa17bcea05929bf7d161a73685751490bea4c668349074e	PASS	sha256sum -c in mvp6-capacity-ui-draft-02/ (at 07:25Z and again at 10:32Z)
+1	1b	v2 archive	48b60b78…	48b60b782f1bbd84a74a95c3cbe01f90aec9d0062c528d748726b266db1028b3	PASS	sha256sum capacity-ui-draft-overlay-v2.tar.gz
+1	1c	v1 folder	55/55; f4e18ab9…	55/55 OK; f4e18ab9c4953870f2b6cf7deb7441c7daead673903672ab90e943c13933dbd7; archive dd290891…	PASS	sha256sum -c in mvp6-capacity-ui-draft-01/
+1	1d	other inputs	decision 52228ea7…; pack a1df34c1…; checklist 90247ddc…; Claims v4 2b34741a…	all equal	PASS	sha256sum of each input
+1	1e	archive recipe (extra)	CHANGES "recipe re-creates v1 byte-for-byte"	re-packing the v1 tree → dd290891…; re-packing the v2 tree → 48b60b78…	PASS	tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner --mode=u=rwX,go= --format=gnu | gzip -n -9
+2	2a	file set	47 = 47, same entry list	47/47 files, identical tar entry list	PASS	tar -tzf v1 vs v2
+2	2b	changed files = FILE-PLAN	9	diff -rq: 9 files, set-equal to FILE-PLAN.tsv; every v1/v2 hash and added/removed line count in FILE-PLAN matches	PASS	/tmp/q173 changed.txt vs FILE-PLAN.tsv
+2	2c	untouched areas	controllers, resx, services, _shared-integration unchanged	diff -rq identical for Controllers/, Resources/, services/, _shared-integration/	PASS	diff -rq
+3	3-01	UI-PM-01	PASS	0 "Layout *=" in the 5 partials; Index.cshtml:10, Details.cshtml:11	PASS	= CHECK-RUN
+3	3-02	UI-PM-02	PASS	0 @section / <script src in partials; @section Scripts Index.cshtml:69, Details.cshtml:245	PASS	= CHECK-RUN
+3	3-03	UI-PM-03	N/A	0 "ajax :" in both JS files; client table data: [] (js/SupplyChain/CapacityPlans/details.js:550) + rows.add (:571)	N/A (valid)	checklist: N/A when filled client-side
+3	3-04	UI-PM-04	PASS	read-back after scenario create (:779), state conflict (:785), evaluation accepted (:859), retry per section (:929-934)	PASS	= CHECK-RUN
+3	3-05	UI-PM-05	PASS	style.display (:214) + d-none (:213) in setSectionState for the 3 .backbone-skeleton sections (Details.cshtml:53, :114, :181)	PASS	= CHECK-RUN
+3	3-06	UI-PM-06	N/A	0 "skeleton-loader" in views/JS; section skeleton ids only	N/A (valid)	checklist: N/A when the skeleton id is not skeleton-loader
+3	3-07	UI-PM-07	N/A	3 offcanvas show() calls (js/SupplyChain/CapacityPlans/index.js:291, js/SupplyChain/CapacityPlans/details.js:748, :834), each behind a focused page button; 0 dropdown-item; Q88c opens page sections, not surfaces; shown listeners anyway (index.js:321, details.js:960)	N/A (valid)	checklist: N/A when every surface is opened by a focused button
+3	3-08	UI-PM-08	PASS	0 hits	PASS	= CHECK-RUN
+3	3-09	UI-PM-09	PASS	hidden → opener (index.js:322-325; details.js:961-966, fallback scenarioTitle)	PASS	= CHECK-RUN
+3	3-10	UI-PM-10	PASS	submits index.js:226, details.js:625; finally index.js:250-254, details.js:668-673; 0 showConfirm; details.js:491 is the Refresh button (not a surface submit)	PASS	= CHECK-RUN
+3	3-11	UI-PM-11	PASS	0 physical-direction hits; dir="ltr" only on <bdi> and ID/date/number/code inputs	PASS	= CHECK-RUN
+3	3-12	UI-PM-12	PASS	error states details.js:311, :316, :382-390, :502-510; retry :929-934; invalid address evaluationId → error, no retry (:991)	PASS	= CHECK-RUN
+4	4-01	UI-PM-01 fix	partial Layout removed	5 partials: Layout block → Razor comment (2 added / 4 removed each)	PASS	diff -u
+4	4-05	UI-PM-05 fix	display set	details.js:209-215	PASS	diff -u
+4	4-10	UI-PM-10 fix; focus never on a disabled control	re-enable, then focus	index.js:252-253 and details.js:670-672 re-enable before restorePanelFocus; target = invalid:not([disabled]) / submit only if !disabled / first field planName, scenarioName, evaluationMode (no disabled attribute in the partials)	PASS	index.js:201-209; details.js:598-607
+5	5a	query names and write	?scenarioId&evaluationId via history.replaceState (pack :321, :337-338; decision :9-10)	writeAddress js/SupplyChain/CapacityPlans/details.js:343-352 (UUID-only set, else delete; replaceState :352); scenario write on every successful loadScenario (:403: open-by-ID :468, create read-back :779, retry :933, address :984); evaluation write on every successful loadEvaluation (:517); 0 pushState	PASS	O-1
+5	5b	reload reopens, one request each (pack :338-339; CP-21 :464)	plan + 1 get-scenario + 1 get-evaluation	init: loadPlan (:1005) then openFromAddress (:1006); valid scenarioId → loadScenario once (:984); valid evaluationId queued (:983) and loaded once after the scenario succeeds (:400-405); without scenarioId → loadEvaluation once (:992)	PASS	O-2
+5	5c	non-UUID ID (pack :339-340; CP-23 :466)	localized message, no request, plan still loads	scenarioId → existing field error openScenarioIdError (Details.cshtml:111, Localizer["ScenarioIdInvalid"]) + aria-invalid, no loadScenario (:985-988); evaluationId → evaluation error state, localized ErrInvalidRequest (ERROR_KEY :54, failureText :158), retry hidden, no loadEvaluation (:991); loadPlan independent (:1005)	PASS	-
+5	5d	safe-not-found (pack :340; CP-22 :465)	per-resource 404	unchanged loadScenario :378-382, loadEvaluation :498-502	PASS	runtime at Q88b
+5	5e	no new endpoint/route/L10n key/storage (pack :341; decision :12)	none	fetch( count 2/1 in v1 and v2; same 19 t('…') keys; ERROR_KEY unchanged; controllers + 14 resx identical; 0 storage APIs; 0 timers	PASS	-
+5	5f	session memory (pack :488)	resolved	header comment details.js:18-21 rewritten	PASS	-
+6	6a	changed Layout test	page views state shell; partials must not	CapacityPlanFormContractTests.cs:83-92 (only this assertion changed; the rest of the theory unchanged)	PASS	diff -u
+6	6b	3 new facts match v2 source	textual match	Section_skeletons_…, Rejected_submit_…, Scenario_and_evaluation_ids_… : all assertions true on v2, false on v1 (emulated)	PASS	/tmp/q173/emu.py
+6	6c	no other test weakened	unchanged	Details tests: +47/-0; existing bans (storage, timers, ?page, search=, verbs, native dialogs, hard-coded text, fetch count 2) still hold on v2	PASS	emulated
+7	7a	node --check	syntax OK	details.js OK; index.js OK (node v22.23.2)	PASS	-

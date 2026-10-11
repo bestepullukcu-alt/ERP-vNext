@@ -1,0 +1,18 @@
+time_istanbul	step	command	exit	output
+11:17:46	lane	cat TERMINAL-Q25-PROMPT.md; git rev-parse HEAD; git branch --show-current (GIT_OPTIONAL_LOCKS=0)	0	HEAD 4a8d4d4b…; feature/mvp6-logistics
+11:18:32	0	uname -s; dotnet --list-sdks/--list-runtimes; df -g; mktemp -d /private/tmp/mvp6-q25-loadspub.XXXXXX; git status --porcelain	0	raw/step0-environment.txt; raw/porcelain-status-start.txt (395 entries)
+11:18	0	shasum -a 256 -c prep SHA256SUMS; shasum -a 256 -c release-prep SHA256SUMS; shasum preimages; absence checks	0	raw/step0-hashes.txt (16/16 + 21/21 OK)
+11:19	0	shasum -a 256 -c seals-expected.txt (8 seals); grep patch headers	0	raw/step0-seals-patch.txt
+11:19:29	0.6	dotnet test TenantArchitecture.ArchitectureTests.csproj -c Debug --logger "trx;LogFileName=BASELINE-ARCHITECTURE-FULL-attempt1.trx" --results-directory <temp>/trx	1	52/56 pass; failed: DocsPathGuard scan (19 expected offenders), JwtClockSkew x2, MongoTestDatabase x1 — raw/step0-baseline-architecture-full-attempt1.txt, BASELINE-ARCHITECTURE-FULL-attempt1.trx
+11:20:15	1.1	rsync -a --exclude .git --exclude bin/ --exclude obj/ <repo>/ /private/tmp/mvp6-q25-loadspub.4mTLMX/rehearsal/repo/	0	1.5 GB copy; preimages re-hashed equal
+11:20:40	1.2	(copy) git apply --check publication.patch; git apply publication.patch; python3 w345.py <copy> <prep>	0/0/0	raw/step1-rehearsal-writes.txt
+11:20:52	1.3	(copy) dotnet test … --filter FullyQualifiedName~DocsPathGuardTests --logger "trx;LogFileName=REHEARSAL-DOCS-PATH-GUARD-attempt1.trx" --results-directory <temp>/trx	0	39/39 PASS — raw/step1-rehearsal-docs-path-guard-attempt1.txt
+11:21:20	2.1	git status --porcelain (diff vs start: none); cp -p W1, W5 to <temp>/snap	0	raw/step2-snapshot.txt, raw/porcelain-status-pre-step2.txt
+11:21:32	2.2	git apply --check publication.patch; git apply publication.patch (worktree only)	0/0	raw/step2-repository-write.txt
+11:21:32	2.3	python3 /private/tmp/mvp6-q25-loadspub.4mTLMX/w345.py <repo> <prep>  (W3, W4, W5)	0	raw/step2-repository-write.txt; script bytes raw/w345.py.txt
+11:21:40	2.4	shasum W1–W5 + v2; cmp W1/W2 vs PKG artifacts; W4/W5 binding check; git status --porcelain diff	0	raw/step2-postchecks.txt, raw/porcelain-status-post-step2.txt
+11:22:01	3	dotnet test … -c Debug --filter FullyQualifiedName~DocsPathGuardTests --logger "trx;LogFileName=PRODUCTION-DOCS-PATH-GUARD-attempt1.trx" --results-directory <temp>/trx	0 (see note)	39/39 PASS — PRODUCTION-DOCS-PATH-GUARD-attempt1.trx
+11:22:08	3	dotnet test … -c Debug --logger "trx;LogFileName=ARCHITECTURE-FULL-attempt1.trx" --results-directory <temp>/trx	1 (see note)	53/56; the 3 failures are exactly the Step 0 non-DocsPath baseline set — ARCHITECTURE-FULL-attempt1.trx
+11:23	4	cp TRX + raw outputs into this folder; write INPUTS/CHANGED-FILES/COMMANDS/REPORT; SHA256SUMS; secret scan	0	this folder
+#note	-	--results-directory was added to every dotnet test command: the literal Step 3 command would overwrite tests/…/TestResults/PRODUCTION-DOCS-PATH-GUARD.trx (23 Sep evidence) and CT addition 4 forbids overwriting. Nothing else in the commands differs.	-	-
+#note	-	The Step 3 shell line echoed exit codes after a $(date) substitution, which reset $?; the exit values above for Step 3 come from the TRX outcome (dotnet test exits 0 on all-pass, 1 on any failure), not from the echoed value.	-	-

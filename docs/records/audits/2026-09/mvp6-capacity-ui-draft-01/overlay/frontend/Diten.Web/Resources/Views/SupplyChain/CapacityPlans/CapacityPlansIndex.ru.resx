@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CapacityPlansTitle" xml:space="preserve"><value>Планы мощностей</value></data>
+  <data name="PlanId" xml:space="preserve"><value>ID плана</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Название плана</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Начало горизонта</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Конец горизонта</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>ID плана спроса</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Версия плана спроса</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Время фиксации источника</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Контрольная сумма источника</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус плана</value></data>
+  <data name="PlanStatus.Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="PlanStatus.Evaluating" xml:space="preserve"><value>Оценивается</value></data>
+  <data name="PlanStatus.Ready" xml:space="preserve"><value>Готов</value></data>
+  <data name="PlanStatus.Approved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="PlanStatus.Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Не указано</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Номер обращения в поддержку</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Скопировано в буфер обмена.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Предыдущий запрос ещё обрабатывается.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Заполните все обязательные поля.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Запрос недействителен. Проверьте введённые данные и повторите попытку.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>Не удалось отследить запрос. Обновите страницу и повторите попытку.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
+  <data name="ErrUnknownCapacityPlan" xml:space="preserve"><value>План мощностей не найден или недоступен для вас.</value></data>
+  <data name="ErrUnknownCapacityScenario" xml:space="preserve"><value>Сценарий не найден или недоступен для вас.</value></data>
+  <data name="ErrUnknownCapacityEvaluation" xml:space="preserve"><value>Оценка не найдена или недоступна для вас.</value></data>
+  <data name="ErrCapacityPlanAlreadyExists" xml:space="preserve"><value>План мощностей для этого горизонта и версии плана спроса уже существует.</value></data>
+  <data name="ErrCapacityScenarioNameConflict" xml:space="preserve"><value>Сценарий с таким названием в этом плане уже существует.</value></data>
+  <data name="ErrCapacityPlanStateConflict" xml:space="preserve"><value>Статус плана больше не позволяет создать сценарий. План перезагружен.</value></data>
+  <data name="ErrEvaluationAlreadyActive" xml:space="preserve"><value>Оценка этого сценария уже выполняется.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже использовался с другими значениями. Измените данные, чтобы отправить новый запрос.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>Ссылка на план спроса неизвестна или не опубликована.</value></data>
+  <data name="ErrInvalidConstraintReference" xml:space="preserve"><value>Ссылка на ограничение неизвестна или недействительна.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Сервис временно недоступен. Повторите попытку — будет отправлен тот же запрос.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Не удалось подтвердить результат. Повторите попытку — будет отправлен тот же запрос, повторной записи не будет.</value></data>
+  <data name="CapacityPlansPageDescription" xml:space="preserve"><value>Создайте план мощностей или откройте существующий план по его ID.</value></data>
+  <data name="NoPlanListNote" xml:space="preserve"><value>Планы здесь не перечисляются. Сохраните ID плана, показанный после создания, чтобы открыть план позже.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Создать план</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Открыть план</value></data>
+  <data name="OpenPlanTitle" xml:space="preserve"><value>Открыть план по ID</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Введите UUID плана в том виде, в каком он был показан после создания.</value></data>
+  <data name="PlanIdInvalid" xml:space="preserve"><value>Введите корректный ID плана (UUID).</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новый план мощностей</value></data>
+  <data name="HorizonOrderInvalid" xml:space="preserve"><value>Конец горизонта не может быть раньше его начала.</value></data>
+  <data name="DemandReferenceHelp" xml:space="preserve"><value>Введите ссылку на план DEMAND точно так, как она опубликована.</value></data>
+  <data name="SourceCapturedAtHelp" xml:space="preserve"><value>Дата и время в UTC, например 2026-09-26T12:00:00Z.</value></data>
+  <data name="RequiredFilled" xml:space="preserve"><value>Заполнено обязательных полей</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>План создан.</value></data>
+</root>

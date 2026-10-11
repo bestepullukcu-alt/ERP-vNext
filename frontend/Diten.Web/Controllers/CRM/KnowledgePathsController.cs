@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Views.CRM.KnowledgePaths;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -18,7 +19,7 @@ namespace Diten.Web.Controllers.CRM;
 /// </summary>
 [Authorize]
 [Route("CRM/KnowledgePaths")]
-public sealed class KnowledgePathsController : Controller
+public sealed partial class KnowledgePathsController : Controller
 {
     private const string ReadPermission = "crm.knowledge.path.read";
     private const string ManagePermission = "crm.knowledge.path.manage";
@@ -30,6 +31,7 @@ public sealed class KnowledgePathsController : Controller
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
+    private readonly IStringLocalizer<KnowledgePathStudio> _studioLocalizer;
     private readonly ILogger<KnowledgePathsController> _logger;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
@@ -37,59 +39,44 @@ public sealed class KnowledgePathsController : Controller
         HttpClient httpClient,
         IConfiguration configuration,
         IStringLocalizer<SharedResource> sharedLocalizer,
+        IStringLocalizer<KnowledgePathStudio> studioLocalizer,
         ILogger<KnowledgePathsController> logger)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
+        _studioLocalizer = studioLocalizer;
         _logger = logger;
     }
 
     // ---------------- Compact pages ----------------
 
     [HttpGet("")]
-    public IActionResult Index() => RequirePage(ReadPermission, ReadFallback) ?? View($"{ViewRoot}/Index.cshtml");
-
-    [HttpGet("Create")]
-    public async Task<IActionResult> Create(CancellationToken ct)
+    public IActionResult Index()
     {
-        if (RequirePage(ManagePermission, ManageFallback) is { } denied) return denied;
-        var model = new KnowledgePathEditViewModel
-        {
-            EffectiveFrom = DateTimeOffset.Now,
-            PathCode = SuggestPathCode(),
-            PathVersion = "1.0"
-        };
-        await PopulateOptionsAsync(model, ct);
-        return View($"{ViewRoot}/Create.cshtml", model);
+        // UAS-001 — without read permission a plain 403: no list skeleton is drawn.
+        if (RequirePage(ReadPermission, ReadFallback) is { } denied) return denied;
+        ViewData["CanManage"] = HasAnyPermission(ManagePermission, ManageFallback);
+        return View($"{ViewRoot}/Index.cshtml");
     }
 
-    [HttpPost("Create")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(KnowledgePathEditViewModel model, CancellationToken ct)
+    // WP-KP-UI-1 — a new path is a chain-bound studio path (chain + country + language); the page posts to the api/paths
+    // proxy and opens the workspace. The legacy chain-less create form is retired (legacy paths keep their editor).
+    [HttpGet("Create")]
+    public IActionResult Create()
+        => RequirePage(ManagePermission, ManageFallback) ?? View($"{ViewRoot}/Create.cshtml");
+
+    /// <summary>WP-KP-UI-1 — the studio workspace (replaces Details; Edit for chain-bound paths). UAS-001: without read
+    /// permission a plain 403, no page skeleton.</summary>
+    [HttpGet("{id:guid}")]
+    public IActionResult Workspace(Guid id)
     {
-        if (RequirePage(ManagePermission, ManageFallback) is { } denied) return denied;
-        if (!ModelState.IsValid)
-        {
-            await PopulateOptionsAsync(model, ct);
-            return View($"{ViewRoot}/Create.cshtml", model);
-        }
-
-        var response = await SendGatewayAsync(HttpMethod.Post, "/api/crm/knowledge/paths", ToPayload(model), ct);
-        if (response is not null && response.IsSuccessStatusCode)
-        {
-            var envelope = await response.Content.ReadFromJsonAsync<KnowledgePathGatewayResponse<Guid>>(_json, ct);
-            TempData["SuccessMessage"] = _sharedLocalizer["RecordCreated"].Value;
-            // New paths land on Edit so the author can add steps immediately (steps are the path's sub-resource).
-            return envelope?.Data is { } id && id != Guid.Empty
-                ? RedirectToAction(nameof(Edit), new { id })
-                : RedirectToAction(nameof(Index));
-        }
-
-        AddGatewayErrors(await ExtractErrorsAsync(response, ct));
-        await PopulateOptionsAsync(model, ct);
-        return View($"{ViewRoot}/Create.cshtml", model);
+        if (RequirePage(ReadPermission, ReadFallback) is { } denied) return denied;
+        ViewData["PathId"] = id.ToString();
+        ViewData["CanManage"] = HasAnyPermission(ManagePermission, ManageFallback);
+        ViewData["CanPublish"] = HasAnyPermission(PublishPermission);
+        return View($"{ViewRoot}/Workspace.cshtml");
     }
 
     [HttpGet("Edit/{id:guid}")]
@@ -98,11 +85,8 @@ public sealed class KnowledgePathsController : Controller
         if (RequirePage(ManagePermission, ManageFallback) is { } denied) return denied;
         var path = await LoadPathAsync(id, ct);
         if (path is null) return NotFound();
-        if (path.IsArchived)
-        {
-            TempData["WarningMessage"] = "ArchivedPathReadOnly";
-            return RedirectToAction(nameof(Details), new { id });
-        }
+        // WP-KP-UI-1 — a chain-bound path is edited in the studio workspace; only a legacy path keeps this editor.
+        if (path.IsArchived || !path.IsLegacyUnapproved) return RedirectToAction(nameof(Workspace), new { id });
 
         var model = ToEditModel(path);
         await PopulateOptionsAsync(model, ct);
@@ -125,7 +109,7 @@ public sealed class KnowledgePathsController : Controller
         if (response is not null && response.IsSuccessStatusCode)
         {
             TempData["SuccessMessage"] = _sharedLocalizer["RecordUpdated"].Value;
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(Workspace), new { id });
         }
 
         AddGatewayErrors(await ExtractErrorsAsync(response, ct));
@@ -133,29 +117,10 @@ public sealed class KnowledgePathsController : Controller
         return View($"{ViewRoot}/Edit.cshtml", model);
     }
 
+    /// <summary>WP-KP-UI-1 — the old detail page is the workspace now (same read gate).</summary>
     [HttpGet("Details/{id:guid}")]
-    public async Task<IActionResult> Details(Guid id, CancellationToken ct)
-    {
-        if (RequirePage(ReadPermission, ReadFallback) is { } denied) return denied;
-        var path = await LoadPathAsync(id, ct);
-        if (path is null) return NotFound();
-
-        // Resolve the classification ids to display labels (fail-soft; the view falls back to the id when null).
-        if (path.SubjectId != Guid.Empty)
-            path.SubjectName = await ResolveReferenceLabelAsync($"/api/crm/knowledge/subjects/{path.SubjectId}", ct);
-        if (path.TopicId is { } topicId && topicId != Guid.Empty)
-            path.TopicName = await ResolveReferenceLabelAsync($"/api/crm/knowledge/topics/{topicId}", ct);
-        if (path.AudienceProfileId is { } audienceId && audienceId != Guid.Empty)
-            path.AudienceProfileName = await ResolveReferenceLabelAsync($"/api/crm/knowledge/audience-profiles/{audienceId}", ct);
-
-        var model = new KnowledgePathPageViewModel
-        {
-            Path = path,
-            CanManage = HasAnyPermission(ManagePermission, ManageFallback),
-            CanPublish = HasAnyPermission(PublishPermission, ManagePermission, ManageFallback)
-        };
-        return View($"{ViewRoot}/Details.cshtml", model);
-    }
+    public IActionResult Details(Guid id)
+        => RequirePage(ReadPermission, ReadFallback) ?? RedirectToAction(nameof(Workspace), new { id });
 
     // ---------------- Same-origin browser proxy (FU04 allowlist only) ----------------
 
@@ -249,9 +214,6 @@ public sealed class KnowledgePathsController : Controller
         model.TopicOptions = topics;
         model.AudienceProfileOptions = audiences;
     }
-
-    private static string SuggestPathCode() =>
-        $"KP-{DateTime.UtcNow:yyyy}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
 
     private async Task<List<KnowledgePathOptionViewModel>> LoadOptionsAsync(
         string path, CancellationToken ct, string? groupKey = null, string? idKey = null)
@@ -353,28 +315,6 @@ public sealed class KnowledgePathsController : Controller
         var response = await SendGatewayAsync(HttpMethod.Get, $"/api/crm/knowledge/paths/{id}", null, ct);
         if (response is null || !response.IsSuccessStatusCode) return null;
         return (await response.Content.ReadFromJsonAsync<KnowledgePathGatewayResponse<KnowledgePathDetailViewModel>>(_json, ct))?.Data;
-    }
-
-    // Resolve a single reference (subject/topic/audience-profile) id to a "code — name" label. Fail-soft: any error
-    // returns null so the Details page falls back to rendering the raw id. Mirrors KnowledgeController.ResolveReferenceLabelAsync.
-    private async Task<string?> ResolveReferenceLabelAsync(string path, CancellationToken ct)
-    {
-        var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);
-        if (response is null || !response.IsSuccessStatusCode) return null;
-        try
-        {
-            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-            if (!doc.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object) return null;
-            var name = GetFirstString(data, "name", "subjectName", "topicName", "profileName", "audienceProfileName");
-            var code = GetFirstString(data, "code", "subjectCode", "topicCode", "profileCode");
-            if (!string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(name)) return $"{code} — {name}";
-            return name ?? code;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "KnowledgePath reference label resolve failed: {Path}", path);
-            return null;
-        }
     }
 
     private async Task<IActionResult> ProxyGetAsync(string path, string permission, CancellationToken ct, params string[] fallbacks)

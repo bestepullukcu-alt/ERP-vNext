@@ -1,0 +1,70 @@
+{
+  "phase": "nav",
+  "locale": "ar",
+  "startedAt": "2026-10-01T13:20:11.885Z",
+  "web": "http://127.0.0.1:5501",
+  "playwright": "1.59.1",
+  "cases": {
+    "NAV-sidebar": {
+      "result": "PASS",
+      "sidebarEntryHref": "/SupplyChain/CapacityPlans",
+      "sidebarText": "تخطيط السعة",
+      "expectedFromV3Fragment": "تخطيط السعة",
+      "fragmentKeyShown": "Nav.Module.CAPACITYPLANNING (single-page module: module name shown, page name hidden — product design, Q185 D-2)",
+      "rawKeyShown": false,
+      "sidebarLinkCount": 3,
+      "tenant": "platform system tenant (Q185 D-1)",
+      "evidence": [
+        "png/nav-sidebar-ar.png"
+      ]
+    },
+    "NAV-ctrlk": {
+      "result": "PASS",
+      "query": "خطط السعة",
+      "queryKey": "Nav.Page.CAPACITYPLANS (v3 fragment value for the locale)",
+      "hitText": "تخطيط السعة",
+      "results": [
+        {
+          "text": "تخطيط السعة",
+          "href": "/SupplyChain/CapacityPlans"
+        }
+      ],
+      "localizedNameInSearchData": true,
+      "openedPath": "/SupplyChain/CapacityPlans",
+      "evidence": [
+        "png/nav-ctrlk-results-ar.png",
+        "png/nav-ctrlk-opened-ar.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "nav-sidebar-ar.png",
+      "sha256": "45aca72729a4dbb0b33bfdec81f57549c724a9c7cbadedc6111a6588bb3bdfe8",
+      "url": "/SupplyChain/Shipments",
+      "capturedAt": "2026-10-01T13:20:14.752Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "nav-ctrlk-results-ar.png",
+      "sha256": "2d4a8b2a958201f3970634d0141813ad725e9afb38383df454c094ccd6c6c25d",
+      "url": "/SupplyChain/Shipments",
+      "capturedAt": "2026-10-01T13:20:15.922Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "nav-ctrlk-opened-ar.png",
+      "sha256": "5cc3443d83916a43c8dcf830d840b784eb1c7e4ed1a0b8ccbf0f03e0dcd4979e",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:20:17.692Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [],
+  "shellFonts": 4,
+  "endedAt": "2026-10-01T13:20:17.727Z"
+}

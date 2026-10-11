@@ -1,0 +1,14 @@
+./README.md: OK
+./claims/ACCEPTANCE.md: OK
+./claims/APPROVAL-DECISION.md: OK
+./claims/EFFORT.md: OK
+./claims/OWNED-PATHS.md: OK
+./claims/SCOPE.md: OK
+./claims/SHARED-HANDOFF.md: OK
+./returns/ACCEPTANCE.md: OK
+./returns/APPROVAL-DECISION.md: OK
+./returns/EFFORT.md: OK
+./returns/OWNED-PATHS.md: OK
+./returns/SCOPE.md: FAILED
+./returns/SHARED-HANDOFF.md: OK
+shasum: WARNING: 1 computed checksum did NOT match

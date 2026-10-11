@@ -1,0 +1,25 @@
+criterion	result	evidence	disposition
+Controlling handoff hash	PASS	INPUT-CONTROLLING-HANDOFF.md; ARTIFACTS.sha256	SHA-256 95dafe0fbfdfdf490f9ecdb57f65582d0146da435ad938f1df13c11105586cd2 verified before execution
+Final UI manifest hash	PASS	FINAL-UI-SOURCE.tsv; ARTIFACTS.sha256	SHA-256 3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c verified; 21/21 snapshot paths matched
+Final service source set	PASS	FINAL-22-SOURCE-MANIFEST.tsv; BUILD-SOURCE-MANIFEST.tsv	22/22 final paths and 3333/3333 build inputs matched in the disposable snapshot
+Native .NET 8 builds	PASS	evidence.tar.gz::raw/*.build.log	Auth, Platform, MDM, SupplyChain, Gateway and Web Release builds completed with zero errors
+DB-010 runtime isolation	PASS	evidence.tar.gz::raw/effective-config-redacted.json	Verifier-owned replica set rsCarrierRealAuthExec01 at 127.0.0.1:38994; no connection to 27017
+Source to binary to process	PASS	SOURCE-BINARY-PROCESS.tsv; evidence.tar.gz::raw/runtime-binaries.sha256; evidence.tar.gz::raw/listeners-before-cleanup.txt	Fresh Release binaries listened only on the assigned disposable ports
+Real browser Auth session	PASS	BROWSER-ACCEPTANCE.tsv	Browser used local Web/Auth login and server-managed session; no hand-created bearer or cookie extraction
+Carrier list	PASS	BROWSER-ACCEPTANCE.tsv	Authorized Carrier page rendered the DataTable through Gateway; initial list was empty
+Carrier create	PASS	BROWSER-ACCEPTANCE.tsv; evidence.tar.gz::raw/persistence-after-restart.json	UI created E2E-CARRIER-01 and showed localized success; reload and restart retained the row
+Carrier replay	PASS	evidence.tar.gz::raw/replay-create-first.json; evidence.tar.gz::raw/replay-create-same.json; evidence.tar.gz::raw/replay-create-conflict.json	First create 201; same key/payload 201 with same id and replay=true; changed payload 409 IDEMPOTENCY_KEY_REUSED
+Status from persisted row	PASS	BROWSER-ACCEPTANCE.tsv; evidence.tar.gz::raw/persistence-after-restart.json	Offcanvas opened from the real row; Suspended/E2E-VERIFY persisted across reload and service restart
+Permission enforcement	PASS	BROWSER-ACCEPTANCE.tsv; evidence.tar.gz::raw/access-isolation-matrix.json	Read-only user list 200/0, create 403 and status 403; no-role browser showed UAS-001-only denial
+Legal-entity isolation	PASS	evidence.tar.gz::raw/access-isolation-matrix.json	LE1-signed token requesting LE2 failed closed with 404 CARRIER_NOT_FOUND
+Tenant isolation	PASS	evidence.tar.gz::raw/access-isolation-matrix.json	Real tenant-97 Auth token saw its own empty scope while tenant-1 retained two rows; contradictory tenant header failed closed at Gateway with 400
+Missing signed LE	PASS	evidence.tar.gz::raw/access-isolation-matrix.json	Real Auth token without legal_entity_id reached Carrier consumer and failed closed with 403
+Refresh after LE revocation	PASS	evidence.tar.gz::raw/refresh-revocation.json	Refresh returned 200 after isolated assignment soft revocation, omitted legal_entity_id, and Carrier consumer returned 403; fixture restored
+Persistence across restart	PASS	evidence.tar.gz::raw/persistence-after-restart.json	After SupplyChain restart, E2E-CARRIER-01 remained Suspended and E2E-REPLAY-01 remained Active
+F-01/F-02 49/49	CLOSED / INHERITED	INPUT-CONTROLLING-HANDOFF.md	Unchanged 49/49 evidence retained by controlling-handoff hash; not rerun
+L10n/responsive	INHERITED / NOT RERUN	FINAL-UI-SOURCE.tsv	Prior result remains source-bound; no fresh execution claim
+Durable PNG	OPEN	BROWSER-ACCEPTANCE.tsv	CUA exposed screenshot bytes but no supported durable save/export method; no bypass attempted
+Platform aggregate health	NON-BLOCKING ENVIRONMENT OBSERVATION	evidence.tar.gz::raw/health-platform.body.json	HTTP 503 because business_reference_data_provider was unhealthy; self, MongoDB and Hangfire were healthy; not labelled Platform health PASS
+Secret/token archive scan	PASS	SECRET-SCAN.txt	No bearer, JWT, cookie, password, signing secret or raw Auth token response is archived
+Cleanup	PASS	CLEANUP.tsv	Disposable listeners stopped, temp scripts removed and isolated runtime root removed after archive creation
+

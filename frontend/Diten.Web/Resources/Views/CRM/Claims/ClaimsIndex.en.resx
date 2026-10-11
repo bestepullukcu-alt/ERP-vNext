@@ -178,4 +178,13 @@
   <data name="Err_country_not_closed" xml:space="preserve"><value>This country is not marked as not to be opened.</value></data>
   <data name="Err_invalid_reference_value" xml:space="preserve"><value>Select a valid reason.</value></data>
   <data name="Err_required" xml:space="preserve"><value>Select a reason.</value></data>
+  <data name="QvUsage" xml:space="preserve"><value>Where it is used</value></data>
+  <data name="QvUsageNone" xml:space="preserve"><value>No content, knowledge path or journey uses this claim.</value></data>
+  <data name="QvUsageFailed" xml:space="preserve"><value>The usage could not be loaded.</value></data>
+  <data name="UsageGlobal" xml:space="preserve"><value>Global (core claim)</value></data>
+  <data name="UsageVia" xml:space="preserve"><value>via {0}</value></data>
+  <data name="UsageNeedsReview" xml:space="preserve"><value>The claim version used here needs review.</value></data>
+  <data name="UsageType_content" xml:space="preserve"><value>Content</value></data>
+  <data name="UsageType_knowledge-path" xml:space="preserve"><value>Knowledge path</value></data>
+  <data name="UsageType_journey" xml:space="preserve"><value>Journey</value></data>
 </root>

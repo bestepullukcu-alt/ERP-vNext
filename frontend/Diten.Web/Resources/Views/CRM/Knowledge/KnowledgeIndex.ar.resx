@@ -190,4 +190,35 @@
   <data name="LinkedClaims" xml:space="preserve"><value>الادعاءات المرتبطة</value></data>
   <data name="NoLinkedClaims" xml:space="preserve"><value>لا توجد ادعاءات مرتبطة بهذا المحتوى.</value></data>
   <data name="ClaimNeedsReview" xml:space="preserve"><value>تحتاج إلى مراجعة — تغيّر الادعاء بعد اعتماد هذا الربط.</value></data>
+  <data name="ContentType_presentation" xml:space="preserve"><value>عرض تقديمي</value></data>
+  <data name="ContentType_brochure" xml:space="preserve"><value>كتيّب</value></data>
+  <data name="ContentType_lesson" xml:space="preserve"><value>درس</value></data>
+  <data name="ContentType_faq" xml:space="preserve"><value>الأسئلة الشائعة</value></data>
+  <data name="ContentType_clinical-summary" xml:space="preserve"><value>ملخص سريري</value></data>
+  <data name="ContentType_objection-handling" xml:space="preserve"><value>التعامل مع الاعتراضات</value></data>
+  <data name="ContentType_quiz" xml:space="preserve"><value>اختبار</value></data>
+  <data name="ContentType_video" xml:space="preserve"><value>فيديو</value></data>
+  <data name="ContentType_pdf" xml:space="preserve"><value>مستند PDF</value></data>
+  <data name="ContentType_html-detail" xml:space="preserve"><value>تفاصيل HTML</value></data>
+  <data name="ContentType_sop" xml:space="preserve"><value>إجراء التشغيل القياسي</value></data>
+  <data name="ContentType_training-material" xml:space="preserve"><value>مادة تدريبية</value></data>
+  <data name="ContentType_message-script" xml:space="preserve"><value>نص الرسالة</value></data>
+  <data name="ContentType_knowledge-article" xml:space="preserve"><value>مقالة معرفية</value></data>
+  <data name="ContentType_assembled-presentation" xml:space="preserve"><value>عرض تقديمي مجمّع</value></data>
+  <data name="ContentStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="ContentStatus_review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="ContentStatus_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="ContentStatus_published" xml:space="preserve"><value>منشور</value></data>
+  <data name="ContentStatus_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="ContentStatus_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ContentSource_manual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="ContentSource_campaign" xml:space="preserve"><value>حملة</value></data>
+  <data name="ContentSource_legacy-import" xml:space="preserve"><value>استيراد من النظام القديم</value></data>
+  <data name="ContentSource_training" xml:space="preserve"><value>تدريب</value></data>
+  <data name="ContentSource_external" xml:space="preserve"><value>خارجي</value></data>
+  <data name="ContentSource_other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="ContentSource_content-studio" xml:space="preserve"><value>استوديو المحتوى</value></data>
+  <data name="ContentConcurrencyConflict" xml:space="preserve"><value>عدّل شخص آخر هذا المحتوى أثناء تحريرك له. أعد تحميل الصفحة وطبّق تغييراتك مرة أخرى.</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>قائمة المنتجات غير متاحة حاليًا.</value></data>
+  <data name="ProductSearchPlaceholder" xml:space="preserve"><value>اكتب اسم المنتج أو رمزه…</value></data>
 </root>

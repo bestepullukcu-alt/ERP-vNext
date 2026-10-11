@@ -40,6 +40,19 @@ public sealed class CycleCapacityCalculationViewModel
     public List<string> ReasonCodes { get; set; } = [];
     public string Reason { get; set; } = string.Empty;
 
+    /// <summary>WP-CAP-MODEL — <c>typical</c> or <c>legacy</c>: which visit-duration arithmetic produced the figure.</summary>
+    public string VisitModel { get; set; } = string.Empty;
+
+    /// <summary>WP-CAP-MODEL — the per-visit divisor (the typical visit, or legacy promo + non-promo).</summary>
+    public int TypicalVisitMinutes { get; set; }
+
+    /// <summary>WP-CAP-MODEL — fixed minutes charged on every field DAY (typical: travel + quiz).</summary>
+    public int DailyFixedMinutes { get; set; }
+
+    /// <summary>WP-CAP-MODEL — the waterfall's cycle totals. <c>null</c> whenever <see cref="TotalVisitNumber"/> is
+    /// (calendar unresolved): the page then shows NO figure at all (K-4).</summary>
+    public CycleCapacityCalculationTotalsViewModel? Totals { get; set; }
+
     public bool IsResolved => string.Equals(Resolution, "resolved", StringComparison.OrdinalIgnoreCase);
 
     public bool IsForbidden => string.Equals(Resolution, "calendar_forbidden", StringComparison.OrdinalIgnoreCase);
@@ -95,6 +108,30 @@ public sealed class CycleCapacityMonthCalculationViewModel
 
     public int TotalVisitNumber { get; set; }
 
+    /// <summary>WP-CAP-MODEL — this month's fixed per-day charges (<c>DailyFixedMinutes × FieldDays</c>).</summary>
+    public int DailyFixedMinutes { get; set; }
+
+    /// <summary>WP-CAP-MODEL — minutes left for visits after the fixed charges and micro-targeting.</summary>
+    public int RemainingMinutes { get; set; }
+
+    /// <summary>WP-CAP-MODEL — the divisor this month was divided by.</summary>
+    public int TypicalVisitMinutes { get; set; }
+
     /// <summary>True when the month's deductions consumed every working day. The row is flagged rather than hidden.</summary>
     public bool IsFullyDeducted => FieldDays == 0;
+}
+
+/// <summary>WP-CAP-MODEL — the cycle totals exactly as the CRM publishes them. Every figure is the CRM's own sum of the
+/// month rows; nothing here is recomputed by the Web.</summary>
+public sealed class CycleCapacityCalculationTotalsViewModel
+{
+    public int WorkingDays { get; set; }
+    public int DeductedDays { get; set; }
+    public int FieldDays { get; set; }
+    public int AvailableMinutes { get; set; }
+    public int DailyFixedMinutes { get; set; }
+    public int MicroTargetingMinutes { get; set; }
+    public int RemainingMinutes { get; set; }
+    public int Visits { get; set; }
+    public decimal AverageFte { get; set; }
 }

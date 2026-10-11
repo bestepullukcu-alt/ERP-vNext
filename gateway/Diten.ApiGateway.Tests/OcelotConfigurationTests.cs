@@ -28,13 +28,15 @@ public sealed class OcelotConfigurationTests
     }
 
     // Known downstream services: auth(5056), platform(5057), dev-enablement(5058), mdm(5059), hcm(5060), pvg(5011),
-    // crm(5061), ppm(5062), human-capital(5063), tep(5064), procurement(5065), esbp/delivery-execution/uploads(5004).
+    // crm(5061), ppm(5062), human-capital(5063), tep(5064), procurement(5065), supplychain(5066),
+    // esbp/delivery-execution/uploads(5004).
     // Adding a new backend is a deliberate, reviewed change to this set — an unrecognized port is far more likely a typo
     // than a new service.
     // 5063: HumanCapitalService (İnsan Sermayesi), 949dff06d; appsettings + launchSettings 5063 (measured).
     // 5064: Talent Ecosystem (TEP), f9a68a022 (TalentEcosystemService appsettings + launchSettings measured: 5064).
     // 5065: Procurement (Satın Alma), de174eb97 "OD-5 port conflict 5062 → 5065" (launchSettings / appsettings measured).
-    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5063, 5064, 5065 };
+    // 5066: Supply Chain Execution (main, PR #134 MVP-6).
+    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5063, 5064, 5065, 5066 };
 
     private static readonly HashSet<string> PpmMethods = new(StringComparer.Ordinal)
     {

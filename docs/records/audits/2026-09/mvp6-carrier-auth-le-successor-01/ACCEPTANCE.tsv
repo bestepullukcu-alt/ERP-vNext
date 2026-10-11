@@ -1,0 +1,20 @@
+case	candidate_result	evidence_level	controlling_evidence	next_runtime_requirement
+GAP-01 correct internal key / tenant binding	PASS	E2	Platform focused test: tenant bound before resolver	Reproduce real Platform request and tenant-filtered repository read
+GAP-01 wrong internal key	PASS	E2 + inherited runtime	Focused no-bind/no-read test; predecessor runtime HTTP 401	Reproduce on successor binary
+GAP-02 exact caller/key/audience/scope	PASS	E2	MDM token validator tests	Reproduce Platform-to-MDM HTTP with ephemeral secret
+Wrong service signing key	PASS	E2	MDM token validator test	Reproduce HTTP 401 and zero repository reads
+Wrong caller or over-broad scope	PASS	E2	MDM token validator tests	Reproduce HTTP 401 and zero repository reads
+Wrong tenant/actor/LE	PASS	E2	MDM exact-claim mismatch test	Reproduce each mismatch and tenant-filtered zero-read
+Header without valid signed identity	PASS	E1/E2	Controller source ordering plus token validator negative tests	Reproduce HTTP 401; show repository not invoked
+Service identity disabled / rotated	PASS	E2	Disabled identity and wrong-key tests	Reproduce fail-closed dependency result through Auth
+Dependency refusal/timeout	PARTIAL	E1/E2	Existing validator fail-closed path; disabled config fails before wire	Run refusal and timeout through login/refresh
+Exactly one active authorized LE	NOT RUN	-	Predecessor logic retained byte-identically	Run real Auth→Platform→MDM→JWT chain
+Zero scope	NOT RUN	-	No successor runtime evidence	Verify claim omission
+Multiple scope	NOT RUN	-	No successor runtime evidence	Verify claim omission
+Inactive LE	NOT RUN	-	No successor runtime evidence	Verify claim omission
+Revoked scope	NOT RUN	-	No successor runtime evidence	Verify claim omission
+Login issuance	NOT RUN	-	Predecessor HTTP 200 omitted claim	Verify exact claim on one LE and omission otherwise
+Refresh issuance	NOT RUN	-	Predecessor HTTP 200 omitted claim	Verify re-resolution and no stale-claim carry
+MFA issuance	NOT RUN	-	No successor runtime evidence	Verify same scope rules
+Forced-password issuance	NOT RUN	-	No successor runtime evidence	Verify same scope rules
+Carrier missing-LE fail-closed	INHERITED	E2/E4	Carrier source excluded and previous UI evidence	Recheck only after authorized successor runtime succeeds

@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Diten.CrmService.Application.Features.ContentComposition.Claims;
+using Diten.CrmService.Application.Features.Knowledge.Path.Review;
+using Diten.CrmService.Application.Features.Knowledge.Regulatory;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using Diten.Platform.Application.Contracts.Eventing;
@@ -17,6 +19,10 @@ namespace Diten.CrmService.Infrastructure.Eventing;
 /// the object id and the workflow instance id must match the record's OPEN review round (the instance id CRM stored
 /// when MOD-0023 accepted the start). Anything else is ignored and logged. Reconcile-on-read (caller's token) remains
 /// the authoritative fallback.</para>
+/// <para>WP-KP-2 — routed by ObjectType on the SAME inbox: <c>crm.claim</c> / <c>crm.claim-country-version</c> → the
+/// claim applier (unchanged); <c>crm.knowledge-path-revision</c> → the knowledge path revision applier.</para>
+/// <para>WP-KP-5a — <c>crm.safety-text</c> / <c>crm.country-legal-profile</c> → the regulatory text applier (an added
+/// route; the claim and path routes are unchanged).</para>
 /// </summary>
 public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessage>
 {
@@ -27,13 +33,18 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
     private readonly ClaimReviewOutcomeApplier _applier;
     private readonly ICrmEventInboxRepository _inbox;
     private readonly ILogger<ClaimWorkflowOutcomeConsumer> _logger;
+    private readonly KnowledgePathRevisionOutcomeApplier? _pathApplier;
+    private readonly RegulatoryTextOutcomeApplier? _regulatoryApplier;
 
     public ClaimWorkflowOutcomeConsumer(ClaimReviewOutcomeApplier applier, ICrmEventInboxRepository inbox,
-        ILogger<ClaimWorkflowOutcomeConsumer> logger)
+        ILogger<ClaimWorkflowOutcomeConsumer> logger, KnowledgePathRevisionOutcomeApplier? pathApplier = null,
+        RegulatoryTextOutcomeApplier? regulatoryApplier = null)
     {
         _applier = applier;
         _inbox = inbox;
         _logger = logger;
+        _pathApplier = pathApplier;
+        _regulatoryApplier = regulatoryApplier;
     }
 
     public Task Consume(ConsumeContext<EventTransportMessage> context) => ConsumeAsync(context.Message, context.CancellationToken);
@@ -46,8 +57,11 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
         }
 
         var payload = Deserialize(message);
+        var isPath = payload?.ObjectType == KnowledgePathReviewRules.ObjectType && _pathApplier is not null;
+        var isRegulatory = RegulatoryTextOutcomeApplier.Handles(payload?.ObjectType) && _regulatoryApplier is not null;
         if (payload is null
-            || payload.ObjectType is not (ClaimReviewRules.ClaimObjectType or ClaimReviewRules.CountryVersionObjectType))
+            || (!isPath && !isRegulatory
+                && payload.ObjectType is not (ClaimReviewRules.ClaimObjectType or ClaimReviewRules.CountryVersionObjectType)))
         {
             return; // another module's workflow
         }
@@ -68,8 +82,15 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
             return;
         }
 
-        var result = await _applier.ApplyAsync(tenantId, payload.ObjectType, objectId, payload.WorkflowInstanceId,
-            payload.Outcome!, payload.CompletedBy, payload.ReasonCode, payload.CompletedAt ?? message.OccurredAtUtc, ct);
+        var completedAt = payload.CompletedAt ?? message.OccurredAtUtc;
+        var result = isPath
+            ? await _pathApplier!.ApplyAsync(tenantId, objectId, payload.WorkflowInstanceId, payload.Outcome!,
+                payload.CompletedBy, payload.ReasonCode, completedAt, ct)
+            : isRegulatory
+                ? await _regulatoryApplier!.ApplyAsync(tenantId, payload.ObjectType!, objectId, payload.WorkflowInstanceId,
+                    payload.Outcome!, payload.CompletedBy, payload.ReasonCode, completedAt, ct)
+            : await _applier.ApplyAsync(tenantId, payload.ObjectType!, objectId, payload.WorkflowInstanceId,
+                payload.Outcome!, payload.CompletedBy, payload.ReasonCode, completedAt, ct);
         _logger.LogInformation(
             "claims.review.event_processed EventId={EventId} ObjectType={ObjectType} ObjectId={ObjectId} "
             + "WorkflowInstanceId={InstanceId} Outcome={Outcome} Result={Result}",

@@ -253,6 +253,90 @@ internal sealed class FakeCandidateSource : ISegmentCandidateSource
         return Task.FromResult<IReadOnlyList<SegmentAccountAttributeProjection>>(
             Attributes.Where(a => accountIds.Contains(a.AccountId)).ToList());
     }
+
+    // ── WP-E2E-FIX-3 (E1-B2) — pre-filtered Phase 1, link pre-queries, fully-native count ─────────────────────────
+
+    /// <summary>How many candidates the last Phase-1 load returned (the "candidate set shrinks" measure).</summary>
+    public int LastCandidateCount { get; private set; }
+
+    /// <summary>The store's count of a fully-native rule (null = the store cannot count).</summary>
+    public long? FullyNativeCount { get; set; }
+
+    public int CountCalls { get; private set; }
+
+    /// <summary>Applies ONLY the pre-filtered leaves, the way the store translation does: a pre-filtered leaf is
+    /// "id in set", every other node is "true" (the store's native narrowing is not re-implemented here, so the answer is
+    /// a wider superset — the evaluator still decides). AND / OR / NOT combine like the translation (a NOT or Negate
+    /// subtree is "true").</summary>
+    public Task<SegmentCandidateLoad> LoadCandidatesAsync(
+        Guid tenantId, string subjectType, IReadOnlyList<SegmentCriteriaNode> criteria, string matchMode,
+        int cap, IReadOnlyDictionary<Guid, IReadOnlyCollection<Guid>> prefiltered, CancellationToken cancellationToken)
+    {
+        LoadCandidatesCalls++;
+        if (ForceCapExceeded)
+        {
+            return Task.FromResult(new SegmentCandidateLoad(Array.Empty<SegmentSubjectSnapshot>(), true, cap));
+        }
+
+        var roots = SegmentPushdownRules.Roots(criteria, out var tree) ?? Array.Empty<SegmentCriteriaNode>();
+        var isAny = string.Equals(SegmentMatchModes.Normalize(matchMode), SegmentMatchModes.Any, StringComparison.Ordinal);
+        bool? Node(SegmentCriteriaNode n, Guid id)
+        {
+            if (n.Negate) return null;
+            if (!n.IsGroup()) return prefiltered.TryGetValue(n.NodeId, out var ids) ? ids.Contains(id) : null;
+            if (SegmentPushdownRules.IsNotGroup(n) || !tree.TryGetValue(n.NodeId, out var kids) || kids.Count == 0) return null;
+            return Combine(kids.Select(k => Node(k, id)).ToList(), SegmentPushdownRules.IsOrGroup(n));
+        }
+        static bool? Combine(IReadOnlyList<bool?> parts, bool isOr)
+        {
+            if (isOr) return parts.Any(p => p is null) ? null : parts.Any(p => p == true);
+            var known = parts.Where(p => p is not null).ToList();
+            return known.Count == 0 ? null : known.All(p => p == true);
+        }
+
+        var kept = Candidates
+            .Where(c => roots.Count == 0 || Combine(roots.Select(r => Node(r, c.SubjectId)).ToList(), isAny) != false)
+            .ToList();
+        LastCandidateCount = kept.Count;
+        return Task.FromResult(new SegmentCandidateLoad(kept, false, cap));
+    }
+
+    public Task<IReadOnlyCollection<Guid>?> ListContactIdsLinkedToAccountsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> accountIds, int max, CancellationToken cancellationToken)
+    {
+        var ids = Links.Where(l => accountIds.Contains(l.AccountId)).Select(l => l.ContactId).ToHashSet();
+        return Task.FromResult<IReadOnlyCollection<Guid>?>(ids.Count > max ? null : ids);
+    }
+
+    public Task<IReadOnlyCollection<Guid>?> ListContactIdsByLinkAsync(
+        Guid tenantId, SegmentCriteriaNode leaf, int max, CancellationToken cancellationToken)
+    {
+        var values = SegmentPushdownRules.Values(leaf);
+        var op = SegmentOperators.Normalize(leaf.Operator);
+        bool Text(string? actual) => actual is not null && op switch
+        {
+            SegmentOperators.In => values.Any(v => string.Equals(v, actual, StringComparison.OrdinalIgnoreCase)),
+            SegmentOperators.Contains => actual.Contains(values[0], StringComparison.OrdinalIgnoreCase),
+            _ => string.Equals(values[0], actual, StringComparison.OrdinalIgnoreCase)
+        };
+        Func<SegmentLinkProjection, bool> match = (leaf.AttributeCode ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            SegmentAttributeCatalog.ContactAccountRole => l => Text(l.RoleCode),
+            SegmentAttributeCatalog.ContactAccountType => l => Text(l.AccountType),
+            SegmentAttributeCatalog.ContactIsPrimary => l => l.IsPrimary == bool.Parse(values[0]),
+            _ => _ => true
+        };
+        var ids = Links.Where(match).Select(l => l.ContactId).ToHashSet();
+        return Task.FromResult<IReadOnlyCollection<Guid>?>(ids.Count > max ? null : ids);
+    }
+
+    public Task<long?> CountFullyNativeAsync(
+        Guid tenantId, string subjectType, IReadOnlyList<SegmentCriteriaNode> criteria, string matchMode,
+        CancellationToken cancellationToken)
+    {
+        CountCalls++;
+        return Task.FromResult(FullyNativeCount);
+    }
 }
 
 internal sealed class FakeConsentBulkReader : ISegmentConsentBulkReader

@@ -1,0 +1,8 @@
+kind	path	sha256	use
+baseline_manifest	docs/roadmap/plans/mvp6-effort-auth-and-integration-update-04/ARTIFACTS.sha256	e5832f12210ce9c67f4b2e0e69a2d87432fbae3c22b063a4c3eb1ffb191855d0	predecessor integrity
+baseline_effort	docs/roadmap/plans/mvp6-effort-auth-and-integration-update-04/EFFORT.tsv	1e0eb2aa6dfcdafde441cd60049ac8a1df568b1d3f97d5c8247e656b82a839f7	103-row rubric and denominator
+carrier_e2e_report	docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/SOP-22.md	0b3e3b86646c71b4fbd88a2bf84d422180c2967d64fb3103ba620808c1901ffb	bounded execution result and open gates
+carrier_e2e_manifest	docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/ARTIFACTS.sha256	3fa13467ea03e7840686b96e08b507b02da84a7101fc4460059c3f328cc8ebff	package integrity
+carrier_e2e_acceptance	docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/ACCEPTANCE.tsv	172c4cde1407da92ad8ab1257906752d7f44e24effbda7fdef78bcc19a1a6390	integration and runtime evidence allocation
+carrier_browser_acceptance	docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/BROWSER-ACCEPTANCE.tsv	950119a8f67867fcaada1f42f8219725a09b6dd0fef255af85e9f1ea946544b3	frontend evidence allocation and PNG OPEN
+carrier_ct_handoff	docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/CARRIER-REAL-AUTH-E2E-CT-HANDOFF.md	111a50136d1405cb09f716f451d0ba8ba304e13ac85c8bc95b0797c1eeb776af	READY WITH PNG OPEN; not a CT decision

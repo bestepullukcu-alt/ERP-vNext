@@ -1,0 +1,448 @@
+{
+  "phase": "negctl",
+  "startedAt": "2026-09-26T07:44:32.119Z",
+  "cases": {
+    "login-actor-le-b": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        ".AspNetCore.Culture",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "login-actor-a": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "sabotage-baseline-detailsjs-cross-le": {
+      "actor": "actor-le-b",
+      "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "culture": "en",
+      "shellStatus": 200,
+      "loadingText": "جارٍ التحميل…",
+      "verdict": "FAIL",
+      "checks": {
+        "http404": true,
+        "code": true,
+        "correlationEchoed": true,
+        "headingIsLocalizedNotFound": false,
+        "alertExactSupportReference": true,
+        "noLoadingText": false,
+        "summaryLinesPodHidden": false,
+        "actionsHiddenEmpty": false,
+        "offcanvasesHiddenInert": false,
+        "noShipmentValues": true,
+        "keyboardNeverReachesHiddenSurfaces": true,
+        "hiddenSurfacesHaveFocusables": true
+      },
+      "expectedAlert": "تعذر العثور على الشحنة. مرجع الدعم: 648adcd1-cc08-4e62-b9ca-8bf6f7c121e4",
+      "probe": {
+        "lang": "ar",
+        "dir": "rtl",
+        "shipmentNumber": "جارٍ التحميل…",
+        "alertVisible": true,
+        "alertText": "تعذر العثور على الشحنة. مرجع الدعم: 648adcd1-cc08-4e62-b9ca-8bf6f7c121e4",
+        "row": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": null,
+          "focusables": 0
+        },
+        "actions": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": null,
+          "focusables": 0,
+          "buttons": []
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": null,
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": null,
+          "focusables": 7
+        },
+        "detail": {
+          "status": "",
+          "source": "",
+          "warehouse": "",
+          "root": "",
+          "lineRows": 0,
+          "podEmptyVisible": true,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "تعذر العثور على الشحنة.",
+          "supportReference": "مرجع الدعم"
+        },
+        "loadingVisibleAnywhere": true,
+        "visibleDetailText": "جارٍ التحميل…\nالشحنات\nتفاصيل الشحنة\nالعودة إلى القائمة\nتعذر العثور على الشحنة. مرجع الدعم: 648adcd1-cc08-4e62-b9ca-8bf6f7c121e4\nملخص الشحنة\nالحالة\nالمستند المصدر\nمرجع المستودع\nمرجع جهة التسليم\nجذر دورة الحياة\nالجدول والتعيين\nوقت الشحن المخطط\nوقت التسليم المخطط\nالناقل\nالحمولة\nبنود الشحنة\nرقم البند\tمعرّف الصنف\tمعرّف SKU\tالكمية\tوحدة القياس\tمرجع المخزون\nإثبات التسليم\nغير متاح"
+      },
+      "keyboard": {
+        "presses": 45,
+        "reachedDetailSurface": 0,
+        "sequence": [
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nجارٍ التحميل",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nجارٍ التحميل",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "INPUT",
+            "id": null,
+            "text": "on",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BODY",
+            "id": null,
+            "text": "Search [CTRL + K]\nجارٍ التحميل",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "BUTTON",
+            "id": "autocomplete-0-label",
+            "text": "Search [CTRL + K]",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": "nav-theme",
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "الشحنات",
+            "inDetailSurface": false
+          },
+          {
+            "tag": "A",
+            "id": null,
+            "text": "العودة إلى القائمة",
+            "inDetailSurface": false
+          }
+        ],
+        "programmaticFocusIntoHidden": {
+          "attempted": "offcanvasTransition",
+          "focusMoved": false
+        }
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:44:35.255Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/eacd617a-0575-4246-9736-1acd0c25ed6b",
+          "status": 404,
+          "requestCorrelation": "648adcd1-cc08-4e62-b9ca-8bf6f7c121e4",
+          "idempotencyKey": null,
+          "responseCorrelation": "648adcd1-cc08-4e62-b9ca-8bf6f7c121e4",
+          "errorCode": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "648adcd1-cc08-4e62-b9ca-8bf6f7c121e4",
+          "okShape": null
+        }
+      ],
+      "dbZeroWrite": true,
+      "expectation": "detector must FAIL on the baseline (original A12 defect reproduced)",
+      "controlResult": "PASS (defect reproduced, detector sensitive)"
+    },
+    "sabotage-baseline-late-async": {
+      "note": "baseline details.js + synthetic 404 for the second load (test route only; VS shipment untouched)",
+      "held": {
+        "status": 200
+      },
+      "staleSurfaceReExposed": true,
+      "probe": {
+        "shipmentNumber": "SHP-47ed1778665444689cb4ccd548bef351",
+        "rowVisible": true,
+        "status": "Draft"
+      },
+      "controlResult": "PASS (baseline re-exposes stale data; detector sensitive)"
+    }
+  },
+  "db": [
+    {
+      "name": "sabotage-baseline-detailsjs-cross-le",
+      "before": "negctl-sabotage-baseline-detailsjs-cross-le-before",
+      "after": "negctl-sabotage-baseline-detailsjs-cross-le-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    }
+  ],
+  "png": [
+    {
+      "file": "png/negctl-sabotage-baseline-detailsjs-cross-le.png",
+      "sha256": "1458828ae51fee4aa15fbb57ec088e69f9f056727d546108fe180e809c9638c2",
+      "bytes": 76518,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "capturedAt": "2026-09-26T07:44:50.794Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    }
+  ],
+  "console": [
+    {
+      "actor": "actor-le-b",
+      "tag": "detail",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "actor": "actor-a",
+      "tag": "late-sabotage",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "finishedAt": "2026-09-26T07:44:54.737Z"
+}

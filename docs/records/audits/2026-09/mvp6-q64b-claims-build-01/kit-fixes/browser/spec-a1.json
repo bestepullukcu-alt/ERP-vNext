@@ -1,0 +1,67 @@
+{
+  "phase": "spec",
+  "startedAt": "2026-09-26T19:57:19.199Z",
+  "web": "http://127.0.0.1:5601",
+  "cases": {
+    "spec": {
+      "result": "FAIL",
+      "exit": 1,
+      "specSha256": "e421b2f65d83a525fee23aa025c6fa2148ca8f3207dfad48350e2002499169ff",
+      "stdoutTail": " (CU-VS1, CU-09…CU-14, CU-17) › create positive: 250.00 EUR on a Dispatched shipment; body is exact text (1.7s)\n  ✓   5 claims-ui.spec.mjs:94:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create negative: lowercase currency → localized 400, inputs kept (CU-11) (1.7s)\n  ✓   6 claims-ui.spec.mjs:111:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › ineligible shipment: note + disabled submit (CU-17) (1.5s)\n  ✓   7 claims-ui.spec.mjs:120:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › carrier checkbox enabled only when the shipment has a carrier (CU-10) (1.7s)\n  ✓   8 claims-ui.spec.mjs:131:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › unknown shipment → one safe not-found text, no shipment data (CU-14) (1.5s)\n  ✘   9 claims-ui.spec.mjs:146:3 › Transition (CU-08, CU-20…CU-22) › allowed transition Open → Investigating returns 200 and reloads (1.0m)\n  ✘  10 claims-ui.spec.mjs:159:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) (1.0m)\n  -  11 claims-ui.spec.mjs:184:3 › Transition (CU-08, CU-20…CU-22) › reused key with a changed body → 409 IDEMPOTENCY_KEY_REUSED, retry stops (CU-19)\n  ✓  12 claims-ui.spec.mjs:191:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › without read: only _AccessDenied inside the shell (965ms)\n  ✓  13 claims-ui.spec.mjs:205:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › read-only: no create CTA and no row actions (966ms)\n  ✓  14 claims-ui.spec.mjs:215:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: LE-B list excludes LE-A claims; ?shipmentId=<LE-A> → empty (125ms)\n  ✓  15 claims-ui.spec.mjs:225:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: resolve of an LE-A shipment from LE-B → 404 safe-not-found (115ms)\n  ✓  16 claims-ui.spec.mjs:238:5 › Languages (CU-24, CU-25) › screen in tr (1.3s)\n  ✓  17 claims-ui.spec.mjs:238:5 › Languages (CU-24, CU-25) › screen in ar (RTL) (1.4s)\n\n\n  1) claims-ui.spec.mjs:146:3 › Transition (CU-08, CU-20…CU-22) › allowed transition Open → Investigating returns 200 and reloads \n\n    \u001b[31mTest timeout of 60000ms exceeded.\u001b[39m\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n    \u001b[2m  - waiting for locator('.js-transition[data-target-status=\"Investigating\"]').first()\u001b[22m\n    \u001b[2m    - locator resolved to <button type=\"button\" data-target-status=\"Investigating\" class=\"dropdown-item js-transition\" data-claim-id=\"882710cf-61d3-49c5-b374-66d4e8753d99\">Investigate</button>\u001b[22m\n    \u001b[2m  - attempting click action\u001b[22m\n    \u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m      - element is not visible\u001b[22m\n    \u001b[2m    - retrying click action\u001b[22m\n    \u001b[2m    - waiting 20ms\u001b[22m\n    \u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m      - element is not visible\u001b[22m\n    \u001b[2m    - retrying click action\u001b[22m\n    \u001b[2m      - waiting 100ms\u001b[22m\n    \u001b[2m    114 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m        - element is not visible\u001b[22m\n    \u001b[2m      - retrying click action\u001b[22m\n    \u001b[2m        - waiting 500ms\u001b[22m\n\n\n      149 |     test.skip(!(await action.count()), 'no Open claim seeded');\n      150 |     await page.locator('.dropdown-toggle').first().click();\n    > 151 |     await action.click();\n          |                  ^\n      152 |     await expect(page.locator('#transitionOccurredAt')).toHaveValue(/[+-]\\d{2}:\\d{2}$|Z$/);\n      153 |     await page.locator('#btnSubmitTransition').click();\n      154 |     const res = page.waitForResponse((r) => r.url().includes('/transition?shipmentId='));\n        at /Users/natig/mvp6-env/runtime/claims-ui.spec.mjs:151:18\n\n    Error Context: test-output/claims-ui-Transition-CU-08-08ab1-ing-returns-200-and-reloads/error-context.md\n\n  2) claims-ui.spec.mjs:159:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) \n\n    \u001b[31mTest timeout of 60000ms exceeded.\u001b[39m\n\n    Error: locator.click: Test ended.\n    Call log:\n    \u001b[2m  - waiting for locator('.js-transition[data-target-status=\"Rejected\"]').first()\u001b[22m\n    \u001b[2m    - locator resolved to <button type=\"button\" data-target-status=\"Rejected\" class=\"dropdown-item js-transition text-danger\" data-claim-id=\"29ad4009-aeae-4259-b5b9-1342e0309ead\">Reject</button>\u001b[22m\n    \u001b[2m  - attempting click action\u001b[22m\n    \u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m      - element is not visible\u001b[22m\n    \u001b[2m    - retrying click action\u001b[22m\n    \u001b[2m    - waiting 20ms\u001b[22m\n    \u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m      - element is not visible\u001b[22m\n    \u001b[2m    - retrying click action\u001b[22m\n    \u001b[2m      - waiting 100ms\u001b[22m\n    \u001b[2m    112 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m        - element is not visible\u001b[22m\n    \u001b[2m      - retrying click action\u001b[22m\n    \u001b[2m        - waiting 500ms\u001b[22m\n\n\n      166 |     test.skip(!(await approve.count()), 'no Investigating claim seeded');\n      167 |     await pb.locator('.dropdown-toggle').first().click();\n    > 168 |     await pb.locator('.js-transition[data-target-status=\"Rejected\"]').first().click();\n          |                                                                               ^\n      169 |     await pa.locator('.dropdown-toggle').first().click();\n      170 |     await approve.click();\n      171 |     await pa.locator('#transitionApprovedAmount').fill('0');\n        at /Users/natig/mvp6-env/runtime/claims-ui.spec.mjs:168:79\n\n    Error Context: test-output/claims-ui-Transition-CU-08-7f481-hows-conflict-reload-CU-21-/error-context.md\n\n  2 failed\n    claims-ui.spec.mjs:146:3 › Transition (CU-08, CU-20…CU-22) › allowed transition Open → Investigating returns 200 and reloads \n    claims-ui.spec.mjs:159:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) \n  1 skipped\n  14 passed (2.3m)\n",
+      "stderrTail": ""
+    }
+  },
+  "png": [
+    {
+      "name": "spec/01-list-en.png",
+      "sha256": "d9db6880aa7ca33f24f414cb694cc47a1b0a9668985dcdaa4d56344890fb7561"
+    },
+    {
+      "name": "spec/02-create-201.png",
+      "sha256": "6c18b23f3234ae3e9b50b8a6ca36558b011875fc18864b74c9818a686eff360d"
+    },
+    {
+      "name": "spec/03-create-400.png",
+      "sha256": "bbcef45a82b45647bc3d50f1c8c5b976e3d3212bb01dd3001efdd2b95c4f2a22"
+    },
+    {
+      "name": "spec/05-access-denied.png",
+      "sha256": "3ce2d84809b50a9415708c26953cf456e6166a06d9580cf152f510320f1e33a4"
+    },
+    {
+      "name": "spec/06-ar-1024.png",
+      "sha256": "938bcdc3baded8abbd41344f138ad0c863b505c14f5007f2ab65a7be3500b15b"
+    },
+    {
+      "name": "spec/06-ar-1440.png",
+      "sha256": "ab4f2a6037dc9b96d06fe0335273a5b6722f72f8276246b6fa09450bdf81fd63"
+    },
+    {
+      "name": "spec/06-ar-390.png",
+      "sha256": "29c5b6f8ce8fd0b2479530ea248abd9e412f7308b05b26bff25721d97a013bfe"
+    },
+    {
+      "name": "spec/06-ar-768.png",
+      "sha256": "e265c474d6f65ed91a080383dea0ab8e7ae642d307b559edaa0f8e5140e75ae3"
+    },
+    {
+      "name": "spec/06-tr-1024.png",
+      "sha256": "71bfb9903e67df0a66a19f125d0948588f00e6713d6a949eac1d871dddb6648f"
+    },
+    {
+      "name": "spec/06-tr-1440.png",
+      "sha256": "219ad40665b69a629cbb11eeb1f27097ef3a4b532373e2fbfc83576093d39bc2"
+    },
+    {
+      "name": "spec/06-tr-390.png",
+      "sha256": "8e2c904a9e3d0c118c114f0ee11931a8dad2d24767b5256ee01020b75b66ca99"
+    },
+    {
+      "name": "spec/06-tr-768.png",
+      "sha256": "9088b7b12cb7819ed68ed0fabf68711825934276f85babbabece099b060736ba"
+    }
+  ],
+  "console": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T19:59:39.280Z"
+}

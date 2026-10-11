@@ -1,0 +1,10 @@
+{
+  Admin: [
+    'create(1:carrier-management)',
+    'read(1:carrier-management)',
+    'status.change(1:carrier-management)'
+  ],
+  Viewer: [
+    'read(0:null)'
+  ]
+}

@@ -13,5 +13,10 @@ public static class PlannedVisitPermissions
     public const string Manage = "crm.planned-visit.manage";
     public const string Confirm = "crm.planned-visit.confirm";
 
+    /// <summary>WP-VP-2 (B-1) — Tier-3, EXPLICIT GRANT ONLY: read (and, with the existing write keys, act on) every
+    /// planned visit and visit report in the tenant. Without it a caller sees only plans whose resource is themselves; a
+    /// foreign plan answers 404. Not part of <see cref="All"/> (no endpoint is gated on it; handlers consult it).</summary>
+    public const string ReadAll = "crm.planned-visit.read-all";
+
     public static readonly IReadOnlyList<string> All = new[] { Read, Manage, Confirm };
 }

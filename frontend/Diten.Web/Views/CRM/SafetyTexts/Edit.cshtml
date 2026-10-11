@@ -1,0 +1,20 @@
+@model Diten.Web.Models.CRM.SafetyTextEditViewModel
+@using Diten.Web.Views.CRM.SafetyTexts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SafetyTextsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/CRM/SafetyTexts/_Form.cshtml" model="Model" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/regulatory-texts.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/CRM/SafetyTexts/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/SafetyTexts/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/RegulatoryTexts/form.js" asp-append-version="true"></script>
+}

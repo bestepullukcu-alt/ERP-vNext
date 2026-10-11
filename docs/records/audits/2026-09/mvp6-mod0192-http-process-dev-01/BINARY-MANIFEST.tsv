@@ -1,0 +1,4 @@
+artifact	sha256
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll	068255490253ac31038f630be4ac0a3a6302eb66dffc7ba4027ceeb0204fa804
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Debug/net8.0/Diten.SupplyChainService.Persistence.dll	f05302bed6ab214348b579ac1b5b334d0f7235a688c2d48c7d111ed7b5b84a29
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll	baa22ca8c72bef962fa60801a8b6c7db0d7bd2c7289aa9399411f2d136499b95

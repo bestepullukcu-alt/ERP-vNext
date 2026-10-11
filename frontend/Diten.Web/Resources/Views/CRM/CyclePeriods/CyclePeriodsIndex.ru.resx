@@ -81,4 +81,117 @@
   <data name="ScopeType_tenant" xml:space="preserve"><value>Весь арендатор</value></data>
   <data name="Version" xml:space="preserve"><value>Версия</value></data>
   <data name="CycleCapacity" xml:space="preserve"><value>Ёмкость цикла</value></data>
+  <data name="ViewTable" xml:space="preserve"><value>Таблица</value></data>
+  <data name="ViewTimeline" xml:space="preserve"><value>Временная шкала</value></data>
+  <data name="CycleCapacities" xml:space="preserve"><value>Мощности циклов</value></data>
+  <data name="FinderOpen" xml:space="preserve"><value>Найти действующий период</value></data>
+  <data name="FinderTitle" xml:space="preserve"><value>Действующий период для этого подразделения на эту дату</value></data>
+  <data name="FinderHint" xml:space="preserve"><value>Периоды разных уровней могут пересекаться. Применяется самый узкий активный: бизнес-единица › юрлицо › страна › вся компания. Черновики и закрытые периоды не учитываются.</value></data>
+  <data name="FinderUnit" xml:space="preserve"><value>Подразделение</value></data>
+  <data name="FinderDate" xml:space="preserve"><value>Дата</value></data>
+  <data name="FinderSubmit" xml:space="preserve"><value>Найти</value></data>
+  <data name="FinderIdle" xml:space="preserve"><value>Выберите подразделение и дату.</value></data>
+  <data name="FinderResolved" xml:space="preserve"><value>Действующий период найден.</value></data>
+  <data name="FinderNone" xml:space="preserve"><value>Для этого подразделения на эту дату нет действующего периода. Планирование невозможно.</value></data>
+  <data name="FinderAmbiguous" xml:space="preserve"><value>Эту дату покрывает более одного активного периода одного уровня — это ошибка данных. Закройте или исправьте один из них.</value></data>
+  <data name="FinderAnsweredBy" xml:space="preserve"><value>Ответивший уровень</value></data>
+  <data name="NoCapacityBandTitle" xml:space="preserve"><value>Открытые периоды без мощности:</value></data>
+  <data name="Days" xml:space="preserve"><value>Дни</value></data>
+  <data name="Capacity" xml:space="preserve"><value>Мощность</value></data>
+  <data name="Campaigns" xml:space="preserve"><value>Кампании</value></data>
+  <data name="PlannedVisits" xml:space="preserve"><value>Запланированные визиты</value></data>
+  <data name="PlanningSessions" xml:space="preserve"><value>Сеансы планирования</value></data>
+  <data name="HasCapacity" xml:space="preserve"><value>Мощность задана</value></data>
+  <data name="NoCapacity" xml:space="preserve"><value>нет мощности</value></data>
+  <data name="TimelineConflict" xml:space="preserve"><value>Конфликт</value></data>
+  <data name="TimelineOverlap" xml:space="preserve"><value>Пересечение (черновики)</value></data>
+  <data name="TimelineGap" xml:space="preserve"><value>Разрыв</value></data>
+  <data name="TimelineToday" xml:space="preserve"><value>Сегодня</value></data>
+  <data name="TimelineEmpty" xml:space="preserve"><value>Нет периодов, соответствующих фильтрам.</value></data>
+  <data name="TimelineFootnote" xml:space="preserve"><value>Каждый уровень — отдельная строка. Блоки, пересекающиеся в одной строке, — конфликты; разные уровни (например, страна и её бизнес-единица) находятся в разных строках и могут свободно пересекаться. Нажмите на блок, чтобы открыть подробности.</value></data>
+  <data name="TimelineGapTitle" xml:space="preserve"><value>Разрыв: {0} – {1} ({2} дн.)</value></data>
+  <data name="TimelineGapLabel" xml:space="preserve"><value>разрыв · {0} дн.</value></data>
+  <data name="TimelineOverlapTitle" xml:space="preserve"><value>Пересечение: {0} ({1} дн.)</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить периоды.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="DatesSection" xml:space="preserve"><value>Даты</value></data>
+  <data name="DateTemplates" xml:space="preserve"><value>Шаблоны дат</value></data>
+  <data name="TemplateQ1" xml:space="preserve"><value>1 кв.</value></data>
+  <data name="TemplateQ2" xml:space="preserve"><value>2 кв.</value></data>
+  <data name="TemplateQ3" xml:space="preserve"><value>3 кв.</value></data>
+  <data name="TemplateQ4" xml:space="preserve"><value>4 кв.</value></data>
+  <data name="TemplateH1" xml:space="preserve"><value>1 полугодие</value></data>
+  <data name="TemplateH2" xml:space="preserve"><value>2 полугодие</value></data>
+  <data name="TemplateMonth" xml:space="preserve"><value>Выберите месяц…</value></data>
+  <data name="DaysUnit" xml:space="preserve"><value>дн.</value></data>
+  <data name="WorkingDaysUnit" xml:space="preserve"><value>рабочих дней</value></data>
+  <data name="UseSuggestion" xml:space="preserve"><value>использовать предложение</value></data>
+  <data name="Suggestion" xml:space="preserve"><value>Предложение</value></data>
+  <data name="SequenceSuggestion" xml:space="preserve"><value>Предложение: {0} (первый свободный номер на этом уровне)</value></data>
+  <data name="NameSuggestionPattern" xml:space="preserve"><value>{0} · период {1}</value></data>
+  <data name="CodeSuggestedHint" xml:space="preserve"><value>Предложен по уровню и году; можно изменить. После сохранения изменить нельзя.</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>После сохранения периода код не меняется.</value></data>
+  <data name="ChecksSection" xml:space="preserve"><value>Проверка конфликтов</value></data>
+  <data name="CheckClear" xml:space="preserve"><value>На этом уровне нет конфликтующих периодов.</value></data>
+  <data name="CheckEndNotAfterStart" xml:space="preserve"><value>Дата окончания должна быть позже даты начала.</value></data>
+  <data name="CheckSequenceTaken" xml:space="preserve"><value>Этот номер уже используется на этом уровне в этом году (включая закрытые периоды):</value></data>
+  <data name="CheckActiveOverlap" xml:space="preserve"><value>Пересекается с активным периодом того же уровня — можно сохранить как черновик, но активировать нельзя, пока пересечение не устранено:</value></data>
+  <data name="CheckOtherLevelOverlap" xml:space="preserve"><value>Пересекающиеся периоды других уровней (допустимо — в конкретный день применяется самый узкий уровень):</value></data>
+  <data name="CloseAndReopen" xml:space="preserve"><value>Закрыть и открыть новый период</value></data>
+  <data name="CloseAndReopenConfirm" xml:space="preserve"><value>Закрыть этот период и открыть новый для того же уровня? Закрытие нельзя отменить.</value></data>
+  <data name="ClosedReadOnly" xml:space="preserve"><value>Этот период закрыт и доступен только для чтения.</value></data>
+  <data name="SaveAsDraft" xml:space="preserve"><value>Сохранить как черновик</value></data>
+  <data name="ScopeCardHint_tenant" xml:space="preserve"><value>Все страны и подразделения</value></data>
+  <data name="ScopeCardHint_country" xml:space="preserve"><value>Одна страна</value></data>
+  <data name="ScopeCardHint_legal-entity" xml:space="preserve"><value>Одно юрлицо</value></data>
+  <data name="ScopeCardHint_business-unit" xml:space="preserve"><value>Регион / команда</value></data>
+  <data name="ClosedBanner" xml:space="preserve"><value>Этот период закрыт. Период, его мощность и планы доступны только для чтения.</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Сводка</value></data>
+  <data name="Dates" xml:space="preserve"><value>Даты</value></data>
+  <data name="DaysAndWorkingDays" xml:space="preserve"><value>Дни · рабочие дни</value></data>
+  <data name="YearAndSequence" xml:space="preserve"><value>Год · номер</value></data>
+  <data name="NoDescription" xml:space="preserve"><value>Описание отсутствует.</value></data>
+  <data name="NotActivatedYet" xml:space="preserve"><value>Ещё не активирован</value></data>
+  <data name="NotClosedYet" xml:space="preserve"><value>Ещё не закрыт</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Черновик → Активировать → Активен → Закрыть → Закрыт. При активации проверяется пересечение с активными периодами того же уровня.</value></data>
+  <data name="CalendarSummary" xml:space="preserve"><value>Сводка календаря</value></data>
+  <data name="Month" xml:space="preserve"><value>Месяц</value></data>
+  <data name="CalendarDays" xml:space="preserve"><value>Календарные дни</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>Нерабочие дни</value></data>
+  <data name="PartialMonth" xml:space="preserve"><value>частично</value></data>
+  <data name="PartialMonthHint" xml:space="preserve"><value>Месяц обрезан границей периода.</value></data>
+  <data name="CalendarResolved" xml:space="preserve"><value>Календарь определён</value></data>
+  <data name="CalendarUnresolved" xml:space="preserve"><value>Календарь не определён</value></data>
+  <data name="CalendarForbidden" xml:space="preserve"><value>Нет доступа к календарю</value></data>
+  <data name="CalendarNoCountry" xml:space="preserve"><value>Нет страны календаря</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>Не удалось загрузить сводку календаря.</value></data>
+  <data name="UsageLoadFailed" xml:space="preserve"><value>Не удалось загрузить связанные записи.</value></data>
+  <data name="CapacityArchived" xml:space="preserve"><value>Мощность в архиве</value></data>
+  <data name="OpenCapacity" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="CreateCapacity" xml:space="preserve"><value>Создать мощность</value></data>
+  <data name="NoCapacityTitle" xml:space="preserve"><value>У этого периода нет мощности</value></data>
+  <data name="NoCapacityHint" xml:space="preserve"><value>Без мощности планирование визитов не может рассчитать предложение.</value></data>
+  <data name="NoCapacityClosed" xml:space="preserve"><value>Период закрыт, поэтому мощность создать нельзя.</value></data>
+  <data name="NoPlannedVisits" xml:space="preserve"><value>С этим периодом не связаны запланированные визиты.</value></data>
+  <data name="NoCampaigns" xml:space="preserve"><value>С этим периодом не связаны кампании.</value></data>
+  <data name="NoPlanningSessions" xml:space="preserve"><value>Сеансов планирования пока нет.</value></data>
+  <data name="VisitCountPattern" xml:space="preserve"><value>{0} визитов</value></data>
+  <data name="VisitStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="VisitStatus_planned" xml:space="preserve"><value>Запланирован</value></data>
+  <data name="VisitStatus_confirmed" xml:space="preserve"><value>Подтверждён</value></data>
+  <data name="VisitStatus_cancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="VisitStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="CampaignStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="CampaignStatus_active" xml:space="preserve"><value>Активна</value></data>
+  <data name="CampaignStatus_paused" xml:space="preserve"><value>Приостановлена</value></data>
+  <data name="CampaignStatus_completed" xml:space="preserve"><value>Завершена</value></data>
+  <data name="CampaignStatus_cancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="CampaignStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>Сформирован</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>Применён</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Перейти к подробностям</value></data>
+  <data name="StatusLine" xml:space="preserve"><value>Ход статуса</value></data>
+  <data name="TodayActivePeriods" xml:space="preserve"><value>Активные сегодня</value></data>
 </root>

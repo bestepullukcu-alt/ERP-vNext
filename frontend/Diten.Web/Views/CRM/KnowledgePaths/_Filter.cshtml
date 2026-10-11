@@ -1,31 +1,35 @@
 @using Diten.Web.Views.CRM.KnowledgePaths
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<KnowledgePathsIndex> Localizer
+@inject IHtmlLocalizer<KnowledgePathStudio> StudioLocalizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<div id="inlineFilterHost">
+<div id="inlineFilterHost" class="dt-inline-filter-host">
     <div class="collapse" id="inlineFilterCollapse">
         <div class="pt-0 pb-3">
             <form class="m-0" id="knowledgePathFilterForm" data-no-tracker>
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
 
-                    @* Path Status (multi-select) *@
+                    @* Product (multi-select) *@
                     <div class="filter-chip">
-                        <select id="filterPathStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["PathStatus"]"></select>
+                        <select id="filterProduct" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@StudioLocalizer["FilterProduct"]"></select>
                     </div>
-                    @* Subject (multi-select) *@
+                    @* Country (single-select, names) *@
                     <div class="filter-chip">
-                        <select id="filterSubjectId" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["SubjectId"]"></select>
+                        <select id="filterCountry" class="form-select form-select-sm select2" data-placeholder="@StudioLocalizer["FilterCountry"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
                     </div>
-                    @* Language (single-select) *@
+                    @* Language (single-select, native names) *@
                     <div class="filter-chip">
-                        <select id="filterLanguageCode" class="form-select form-select-sm select2" data-placeholder="@Localizer["LanguageCode"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
+                        <select id="filterLanguage" class="form-select form-select-sm select2" data-placeholder="@StudioLocalizer["FilterLanguage"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
                     </div>
-                    @* Include archived (single-select) *@
+                    @* Status (multi-select, labels) *@
                     <div class="filter-chip">
-                        <select id="filterIncludeArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
-                            <option value="true">@Localizer["IncludeArchived"]</option>
-                            <option value="false">@Localizer["Active"]</option>
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@StudioLocalizer["FilterStatus"]"></select>
+                    </div>
+                    @* Only unapproved legacy paths (single-select) *@
+                    <div class="filter-chip">
+                        <select id="filterLegacy" class="form-select form-select-sm select2" data-placeholder="@StudioLocalizer["FilterLegacyOnly"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="legacy">@StudioLocalizer["FilterLegacyOnly"]</option>
                         </select>
                     </div>
 

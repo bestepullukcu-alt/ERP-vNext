@@ -1,0 +1,6 @@
+verdict=REWORK
+meta_schema_errors=0
+semantic_errors=0
+local_refs=298
+schema_bound_examples=236
+schema_sha256=e7cb616a2a10849a166c4e4a93c62c56cfea02cc00eadf287e2fb875e7124098

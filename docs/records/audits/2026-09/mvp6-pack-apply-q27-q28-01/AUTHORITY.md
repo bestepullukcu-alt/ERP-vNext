@@ -1,0 +1,12 @@
+# Authority — Q27/Q28 pack apply (Q71, MVP6-WP-RECORD-AND-PACK-APPLY-01)
+
+Lane AL-MVP6-REC-PACK-01 (chat lane on the linked Mac folder), single ledger writer and single pack writer for this step. Repo `feature/mvp6-logistics` @ `4a8d4d4b339528a88e6220fb8402e5a2c771136c`. Working tree only: no `git add`, no `--index`, no commit, no stash (owner decision Q03a: C — no commit for now).
+
+| Item | Owner decision record | Decision source (exact text) | Patch | Target | Preimage → result |
+|---|---|---|---|---|---|
+| Q27 | `docs/records/decisions/2026-09/mvp6-sop-pack-promotion-owner-decision-q27-01.md` | `docs/roadmap/plans/mvp6-decision-prep-02/Q27.md` `ed009b7d9692e372c47cf8b5aa4e4e213a2e765d9b10f10aa9c4429b185be26c` (text unchanged from `mod-0190-sop/PROMOTION-DECISION.md` `8a01dad7da1f62343b1e6a086fc5e12ae5af42c2690ff4ee929f38e7c72a6c1e`) | `docs/roadmap/plans/mvp6-pack-alignment-01/mod-0190-sop/proposed-pack.patch` `116b7c47e31fca6cda17d4632cb9f9730ed0e3b46122f82a2f1f5c5f8cd0923e` | `execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md` | `637690f32c1fa03e3039a4542bd53f7bb9b12f6b18d856a7d0e1f23d740c6877` → `8403d8f46059c99ef34d3fe08b3cacdbbbefb321f30f921b620eceda9180ea40` |
+| Q28 | `docs/records/decisions/2026-09/mvp6-capacity-pack-promotion-owner-decision-q28-01.md` | `docs/roadmap/plans/mvp6-decision-prep-02/Q28.md` `f03f44793f39a8949dff42ebf407f9b10ad77ada4cff0f56ad35e0ff968ad8b4` (text unchanged from `mod-0192-capacity/PROMOTION-DECISION.md` `d20ac7a7fb290b73ca0cbe09d5c5fe60a2eb56b6581398e92bf8200dc9d4b203`) | `docs/roadmap/plans/mvp6-pack-alignment-01/mod-0192-capacity/proposed-pack.patch` `7d9b587ec5fb02b636308312483f2be72720df84d236bc0982be32bb1fe1b92f` | `execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md` | `edd550b84451af082b934b392cd34f7dc24dd6e462f7e1d9ee0e03c21b4469f7` → `de81a0e289fff2732ca333357654fcd0ea7254fd9496391d2b06933d1891946c` |
+
+Owner decision: 2026-09-26 ~14:36–14:48 +03:00, CT conversation, in-app question tool, option A for both; approvedBy `current-role-user-message-2026-09-26`. Rule applied from both texts: "One named writer applies the patch after rechecking both hashes; any mismatch stops the application."
+
+Not authorised and not done: `done` status, source uptake, `Program.cs`/DI/permission/gateway changes, UI, E5/G5, rollout, commit/push/stash, any other patch. Pre-copies of both packs were kept in VM `/tmp/q71/pre/` (outside the repository) for restore on mismatch; no restore was needed.

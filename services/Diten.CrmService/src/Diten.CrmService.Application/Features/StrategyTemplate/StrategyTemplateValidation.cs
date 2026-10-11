@@ -350,9 +350,66 @@ public static class StrategyTemplateValidation
     private static Failure? ValidateLineWeights(IReadOnlyList<StrategyTemplateProductLine> lines)
         => StrategyTemplateAllocationRules.ValidateLineWeights(lines);
 
+    /// <summary>
+    /// WP-SB-3a (DESIGN-SB-3 §3.1) — every WRITTEN product line says how it is told (role) and with which journey. Run on
+    /// create and whenever an update changes the product lines; NOT on a metadata-only update, so a pre-SB-3a play
+    /// (lines without role / journey) stays renameable and is completed through a new version. Shape only — the
+    /// journey's existence, publication and product are proven by the binding validator.
+    /// </summary>
+    public static Failure? ValidateProductLineRolesAndJourneys(IReadOnlyList<StrategyTemplateProductLine> lines)
+    {
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line.Role))
+            {
+                return new Failure(
+                    $"Product line '{line.GlobalProductCodeDisplay ?? line.GlobalProductId.ToString()}' needs a role "
+                    + $"({string.Join(" / ", StrategyProductLineRoles.All)}).",
+                    StrategyTemplateErrorCodes.ProductLineRoleRequired);
+            }
+
+            if (!StrategyProductLineRoles.IsValid(line.Role))
+            {
+                return new Failure(
+                    $"Role must be one of: {string.Join(", ", StrategyProductLineRoles.All)}.",
+                    StrategyTemplateErrorCodes.ProductLineRoleInvalid);
+            }
+
+            if (line.JourneyId is null || line.JourneyId == Guid.Empty)
+            {
+                return new Failure(
+                    $"Product line '{line.GlobalProductCodeDisplay ?? line.GlobalProductId.ToString()}' needs the "
+                    + "product's published engagement journey.",
+                    StrategyTemplateErrorCodes.ProductLineJourneyRequired);
+            }
+        }
+
+        return null;
+    }
+
     // ---------------------------------------------------------------------------------------------------------
     // Content bindings — "which story"
     // ---------------------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// WP-SB-3a (DESIGN-SB-3 S3-2) — a NEW template-level knowledge-path / content-engagement-journey binding is refused
+    /// (409): the journey lives on the product line now. A binding the stored template already carries (same type + same
+    /// row) may stay — it is read, and the visit content resolver keeps reading it until SB-3b — and may be removed.
+    /// </summary>
+    public static Failure? ValidateNoNewRetiredContentBindings(
+        IReadOnlyList<StrategyTemplateContentBinding> incoming,
+        IReadOnlyList<StrategyTemplateContentBinding> existing)
+    {
+        var added = incoming.FirstOrDefault(b => StrategyContentRefTypes.IsRetired(b.ContentRefType)
+            && !existing.Any(e => string.Equals(e.ContentRefType, b.ContentRefType, StringComparison.Ordinal)
+                                  && e.ContentRefId == b.ContentRefId));
+        return added is null
+            ? null
+            : new Failure(
+                $"A new '{added.ContentRefType}' binding is no longer accepted on a strategy template: bind the "
+                + "product's journey on its product line instead.",
+                StrategyTemplateErrorCodes.ContentBindingTypeRetired, 409);
+    }
 
     /// <summary>Shape only: existence, archive state and the published requirement are in-service repository checks the
     /// handler runs.</summary>

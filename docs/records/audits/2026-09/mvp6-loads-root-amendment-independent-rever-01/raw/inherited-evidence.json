@@ -1,0 +1,63 @@
+{
+  "classification": "INHERITED",
+  "same_yaml_sha256": true,
+  "prior_meta_schema_errors": [],
+  "prior_semantic_errors": [],
+  "prior_local_refs": 298,
+  "prior_schema_bound_examples": 236,
+  "prior_fixtures": {
+    "missing": {
+      "expectedValid": true,
+      "errors": [],
+      "pass": true
+    },
+    "null": {
+      "expectedValid": true,
+      "errors": [],
+      "pass": true
+    },
+    "valid": {
+      "expectedValid": true,
+      "errors": [],
+      "pass": true
+    },
+    "nil": {
+      "expectedValid": true,
+      "errors": [],
+      "pass": true
+    },
+    "malformed": {
+      "expectedValid": false,
+      "errors": [
+        "'not-a-uuid' is not a 'uuid'"
+      ],
+      "pass": true
+    }
+  },
+  "prior_mutants": {
+    "required_presence": true,
+    "non_nullable": true,
+    "missing_uuid_format": true,
+    "load_response_changed": true,
+    "non_load_path_changed": true,
+    "authority_changed": true
+  },
+  "prior_toolchain": {
+    "python": "3.9.6 (default, Dec  2 2025, 07:27:58) \n[Clang 17.0.0 (clang-1700.6.3.2)]",
+    "openapiSpecValidator": "0.7.2",
+    "jsonschema": "4.25.1",
+    "pyyaml": "6.0.3",
+    "schemaPath": "/private/tmp/mvp6-loads-root-ver-tooldeps/openapi_spec_validator/resources/schemas/v3.1/schema.json",
+    "schemaSha256": "e7cb616a2a10849a166c4e4a93c62c56cfea02cc00eadf287e2fb875e7124098",
+    "metaSchemaErrors": [],
+    "semanticErrors": [],
+    "localRefs": 298,
+    "schemaBoundExamples": 236,
+    "negativeControls": {
+      "bad_openapi_version_meta_errors": 1,
+      "bad_openapi_version_semantic_errors": 1,
+      "missing_info_title_meta_errors": 1,
+      "missing_info_title_semantic_errors": 1
+    }
+  }
+}

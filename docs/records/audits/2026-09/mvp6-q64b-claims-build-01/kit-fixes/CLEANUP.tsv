@@ -1,0 +1,28 @@
+resource	check	result	utc
+browser-tabs-and-profiles	closed by operator (manual)	PASS	2026-09-26T20:01:17Z
+web:42122	stop	KILLED-after-timeout	2026-09-26T20:01:37Z
+gateway:42055	stop	KILLED-after-timeout	2026-09-26T20:01:58Z
+supplychain:41994	stop	KILLED-after-timeout	2026-09-26T20:02:18Z
+mdm:41939	stop	KILLED-after-timeout	2026-09-26T20:02:39Z
+platform:41823	stop	KILLED-after-timeout	2026-09-26T20:03:00Z
+auth:41728	stop	KILLED-after-timeout	2026-09-26T20:03:20Z
+mongod:41640	stop	stopped	2026-09-26T20:03:22Z
+port:auth:5656	no listener	PASS	2026-09-26T20:03:22Z
+port:platform:5657	no listener	PASS	2026-09-26T20:03:22Z
+port:mdm:5659	no listener	PASS	2026-09-26T20:03:22Z
+port:supplychain:5661	no listener	PASS	2026-09-26T20:03:22Z
+port:gateway:5600	no listener	PASS	2026-09-26T20:03:22Z
+port:web:5601	no listener	PASS	2026-09-26T20:03:22Z
+port:sink:5699	no listener	PASS	2026-09-26T20:03:22Z
+port:mongo:36994	no listener	PASS	2026-09-26T20:03:22Z
+workspace:shared	removed	PASS	2026-09-26T20:03:22Z
+workspace:env	removed	PASS	2026-09-26T20:03:22Z
+workspace:mongo	removed	PASS	2026-09-26T20:03:22Z
+workspace:source	removed	PASS	2026-09-26T20:03:25Z
+workspace:gateway-runtime	removed	PASS	2026-09-26T20:03:25Z
+workspace:logs	removed	PASS	2026-09-26T20:03:25Z
+workspace	removed	PASS	2026-09-26T20:03:26Z
+repo-head	4a8d4d4b339528a88e6220fb8402e5a2c771136c	PASS	2026-09-26T20:03:26Z
+repo-branch	feature/mvp6-logistics	PASS	2026-09-26T20:03:26Z
+repo-status	no new entries outside evidence	PASS	2026-09-26T20:03:26Z
+supervisor	alive for the final seal; shutdown follows the seal	INFO	2026-09-26T20:03:26Z
