@@ -238,3 +238,38 @@ Yönetici değerlendirmemize kataloğun yeni bir sürümüyle cevap verdi: 23 an
 Toplam yaklaşık 6–9 prompt, 4–6 iş günü. §5.2 (tutanak eksikleri) ve §5.5 ile birlikte planlanır.
 
 **Yöneticinin "haftalık yönetici gözden geçirmesi" için seçtiği satır:** Operasyonel Birebir, haftalık, 30 dk, `CORP-ACTION`. Uygun. Çoklu görev incelemesi (§5.5 madde 2) tam bu toplantıya oturur: gündeme kişinin açık / geciken görevleri gelir, her birine ayrı sonuç yazılır.
+
+### 5.7 Yöneticinin kararları (2026-10-12 akşamı) — bağlayıcı
+
+| Konu | Karar |
+|---|---|
+| Model | Ana tür + alt tür. Eylül'ün kalite / birim toplantıları korunur, Ekim'in genel toplantıları eklenir, aynı davranıştakiler birleştirilir. |
+| Görev türü kataloğu (Eylül, 113 tür) | Onaylı; **önce o yüklenir**. Toplantı aksiyon kodları ona bağlı. |
+| Aksiyon türleri | 32 yeni tür açılmaz. Mevcut kalite türleri + birim bazlı aksiyon türleri. Çift kodlu satırda tek varsayılan; kullanıcı görev açarken değiştirebilir. |
+| Eksik kodlar | `COM-ACTION`, `FIN-ACTION`, `ITG-ACTION` görev türü kataloğuna eklenir. Alternatif: `CRM-ACTION`, `FIN-CLOSE`, `ITG-CHANGE`. |
+| Kriz toplantısı | `BCM-TEST` değil. `GRC-ACTION` ya da `CORP-ACTION`; gerçek olay varsa olay görevi. |
+| Geri eklenen türler | Tedarikçi Değerlendirmesi, İSG Kurulu, Bilgi Güvenliği Olayı Değerlendirmesi, Eğitim, Satış ve Operasyon Planlama. |
+| Kalan türler | Yönetimin Gözden Geçirmesi, Kalite Kurulu, Değişiklik Kontrol Kurulu, Sapma / CAPA kesin kalır. Karar ve Onay → tek "Karar / Onay Toplantısı". |
+| Mülakat | Toplantı türü değil, İK işe alım modülünün işi. Geçici kullanılırsa gizli. |
+| Birebir | Operasyonel Birebir (iş takibi) ve İK Birebir (gizli) ayrı alt türler. |
+| Tekrar | Tek varsayılan; diğerleri seçenek. |
+| Devamı olduğu toplantı kuralı | Yok / serinin bir önceki toplantısı / kullanıcı seçer. |
+| Katılım zorunlu | Her davetli için katıldı / katılmadı / mazeretli seçilmeden tutanak yayımlanmaz. |
+| Gündem | "Owner", "Due date", "Action items" gündemde tekrar edilmez (sistem alanı). |
+| Kim doldurur | Gündemleri iş sahibi / yönetici, kalite ve e-imza işaretlerini QA, rol → pozisyon eşlemesini İK / organizasyon yöneticisi. Davet pozisyon bazlı. |
+| QA sorumlusu | Bir QA süreç sahibi atanır. **İsmi sahip / yönetim verecek** (açık). |
+| Yükleme öncesi 5 yazılım işi | Evet, önce: gizlilik, zorunlu katılım, gündem notu / sonucu, işaretlerin dürüst gösterimi, zorunlu gündem maddesi. |
+| Kişinin zamanı | Faz 1 yalnız uyarı (başka toplantı, izinli, yoğun), engellemez. Faz 2: kişi seçerken açık görev sayısı ve bu hafta biten görev sayısı. |
+| Rutin işler | Kişi yerine pozisyon / havuz üzerinden atanır (özellik var; kullanım kuralı). |
+| Çoklu görev incelemesi | Her görev için ayrı karar / sonuç satırı şart. |
+
+**Toplantı adımının sırası (bu kararlarla):**
+1. Görev türü kataloğunun yüklenmesi + üç eksik kod (`COM-ACTION`, `FIN-ACTION`, `ITG-ACTION`). Katalog faz 1: içe aktarıcı ve tür sütunlarının ilk dalgası. Orta.
+2. Yükleme öncesi 5 yazılım işi (§5.2 "liste yüklenmeden önce" grubu). Orta, toplam 3–5 gün.
+3. Ana tür / alt tür ve varsayılan alanlar; oluşturma formunda otomatik doldurma (gündem, tekrar, başlık yer tutucuları, süre, pozisyondan katılımcı); günlük tekrar. Orta, 4–6 prompt.
+4. Toplantı kataloğunun yüklenmesi. Gündemler (iş sahibi), işaretler (QA) ve pozisyon eşlemesi (İK) tamamlanınca. Küçük.
+5. Çoklu görev incelemesi (görev başına sonuç; kapı görevin kendi sonucuna bakar). Orta.
+6. Kişinin zamanı faz 1 (uyarı); faz 2 iş yükü sonra.
+7. E-imza bağlama: imza altyapısını yapan geliştirici hazır olunca.
+
+**Sahipten beklenen:** QA süreç sahibinin adı.
