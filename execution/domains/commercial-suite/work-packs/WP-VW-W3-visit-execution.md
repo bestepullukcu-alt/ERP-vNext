@@ -638,3 +638,61 @@ KORU/YAPMA: kapsam yalnız AŞAĞI (PlatformAdmin→Tenant), asla yukarı; genel
 DOĞRULA (E2): AuthService Application testleri (taban ölç, yeni kırmızı yok) · Platform CrmManifest* testleri yeşil · mimari 36 değişmez. Sabotaj 2 (bir anahtarı listeden çıkar → kırmızı; genel .manage'i listeye ekle → kırmızı; geri al — git checkout -- YOK, .bak + touch). dotnet test -o çıktısı REPO İÇİNDE.
 Commit: "feat(auth): WP-VW-W3-AUTH — visit-evidence document-repository keys to tenant scope (CRM manifest on /CRM/VisitWorkspace + BL-411 allowlist)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, kapsamsız senkron ölçümü, canlıda düzeltmenin ne zaman çalıştığı (hangi servis hangi sırayla yeniden başlamalı), grant için adımlar. §22 TÜRKÇE. K13.
 ```
+
+## §37 CT kabul — W3-AUTH E2 ACCEPTED (2026-10-12)
+
+**Test dalına alındı:** ajan `960c7fb3f` → test dalı (cherry-pick, çakışmasız).
+
+**CT ölçümü:**
+- **AuthService Application 1108/0** (taban 1099 + 9).
+- **Platform CrmManifest\* 13/0.**
+- Mimari 36 (değişmedi).
+
+**CT kod okuması:**
+- CRM manifestinde Visit Workspace sayfasına üç işlem (`EVIDENCE_WRITE` / `EVIDENCE_READ` / `EVIDENCE_READ_ALL`); anahtarlar Platform sabitlerinden.
+- `TenantRouteScopeCorrections.Allowlist` 2 → 5 giriş, rota `/CRM/VisitWorkspace`; üç kapı aynen; genel `.read/.manage` listede yok.
+
+**Ölçüm (madde 3):** kapsamsız senkron (`Scope=null`) mevcut satırın kapsamına dokunmuyor.
+- Manifest önce gelirse satır Tenant doğar ve öyle kalır.
+- Otomatik kayıt önce gelirse PlatformAdmin doğar; manifest düşüremez → düzeltme listesi yakalar.
+
+**CT sabotajı:** listedeki `write` girişinin rotası `/Platform/VisitWorkspace` yapıldı → **4 kırmızı** (planlayıcı, manifest çapraz kontrolü, sabit liste, ikinci koşu); `.bak` + touch ile geri alındı.
+
+**Canlı sıra:**
+1. Platform yeniden başlar (manifest Tenant gönderir).
+2. Auth yeniden başlar (düzeltme açılışta çalışır; tekrar zararsız).
+3. Grant.
+4. Kullanıcı yeniden giriş yapar.
+
+**⚠ Açık karar (kullanıcıya soruldu):** anahtarlar Tenant olunca yetki senkronu modülün tüm anahtarlarını kiracı **Admin**'ine verir; buna `visit-evidence.read-all` (kiracıdaki tüm kanıtları okuma) dahil. `crm.planned-visit.read-all` / `crm.visit-plan.read-all` ürün sahibi kararıyla (2026-10-06) `ExplicitGrantOnlyPermissions`'ta. Aynısı öneriliyor; karar bekleniyor.
+
+## §37 CT kabul — W3-WEB-b E2 ACCEPTED (2026-10-12)
+
+**Test dalına alındı:** ajan `13406e0a3` → test dalı (cherry-pick, yalnız yeni dosyalar).
+
+**CT ölçümü:**
+- **Web 883/0** (867 + 16 `VisitPresentationWebTests`).
+- Mimari 36.
+- VisitWorkspace, CRM ve Platform'a dokunulmadı.
+
+**CT kod okuması:**
+- Vekiller CRM uçlarının izinlerini birebir istiyor: sunum `visit-report.read`, ayrıntı `planned-visit.read`, yürütme okuma `visit-execution.read`, yazma `visit-execution.record`.
+- İmza multipart olduğu gibi iletiliyor; gövdede `tenantId` reddediliyor.
+- PIN durum makinesi saf çekirdekte: belirle → doğrula → kilitli → aç. Çıkış `finish` çağırmıyor.
+
+**CT sabotajı:** PIN açma kontrolü her zaman doğru yapıldı (yanlış PIN de açar) → **2 kırmızı** (A2, A4); `.bak` + touch ile geri alındı.
+
+**Kabul edilen sapmalar:**
+- Üst satırda ürün formu yok (sunum yanıtında alan yok).
+- "Rapor gir" düz `/CRM/VisitExecution` (ziyaret kimliğiyle derin bağlantı yok; W4).
+- İmza ayrı "İmzayı kaydet" düğmesiyle.
+- Özet etiketi "İtiraz etti: …".
+- Ajan görsel karşılaştırmada İşaretler sekmesindeki ezilen satırı bulup düzeltti (`grid-auto-rows: max-content`).
+- E4c ve dar ekranlar görüntüyle değil, metin ve ölçüyle karşılaştırıldı (panel gizliydi) → **canlı E4'te CT görsel karşılaştırması yapılacak.**
+
+**Takip — FU-W3-COVISITOR-LOOKUP:**
+- Ortak ziyaretçi listesi Meetings katılımcı aramasından (`/api/v1/meetings/lookups/attendees`) geliyor ve `platform.meetings.create` istiyor. Temsilcide bu izin yoksa bölüm gizleniyor.
+- Ayrıca liste bir kez ve tamamı yükleniyor (arama yok).
+- Doğrusu: CRM tarafında kiracı kullanıcı araması (ad arama, en çok N satır, `crm.visit-execution.record` ile). W3 kapanışında ya da W4 öncesi.
+
+**Sıradaki:** W3-WEB-a raporu → kabul → grant betiği (kullanıcı çalıştırır) → canlı E4 + mockup görsel karşılaştırması.
