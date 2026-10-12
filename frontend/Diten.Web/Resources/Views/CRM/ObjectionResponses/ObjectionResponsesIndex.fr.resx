@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ColProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="ColCategory" xml:space="preserve"><value>Catégorie</value></data>
+  <data name="ColQuestion" xml:space="preserve"><value>Objection soulevée</value></data>
+  <data name="ColClaims" xml:space="preserve"><value>Allégations liées</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Utilisée dans les étapes</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="ColUpdated" xml:space="preserve"><value>Dernière modification</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Opérations</value></data>
+  <data name="NewResponse" xml:space="preserve"><value>Nouvelle réponse à une objection</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>Voir</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Modifier</value></data>
+  <data name="AllProducts" xml:space="preserve"><value>Tous les produits</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>Toutes les catégories</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Tous les statuts</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Rechercher dans le texte de l’objection</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Status_in_review" xml:space="preserve"><value>En attente d’approbation</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="Status_retired" xml:space="preserve"><value>Retirée</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Modifier la réponse à l’objection</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>Nouvelle réponse à une objection</value></data>
+  <data name="SelectProduct" xml:space="preserve"><value>Choisir un produit</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>Choisir une catégorie</value></data>
+  <data name="ClaimsSelected" xml:space="preserve"><value>{0} sélectionnée(s) (au plus {1})</value></data>
+  <data name="ClaimsMax" xml:space="preserve"><value>Au plus {0} allégations peuvent être choisies.</value></data>
+  <data name="ClaimsNone" xml:space="preserve"><value>Ce produit n’a aucune allégation approuvée.</value></data>
+  <data name="ClaimsPickProduct" xml:space="preserve"><value>Choisissez un produit pour voir ses allégations approuvées.</value></data>
+  <data name="ClaimsUnavailable" xml:space="preserve"><value>Vous n’avez pas l’autorisation de lire les allégations.</value></data>
+  <data name="ProductsUnavailable" xml:space="preserve"><value>La liste des produits n’a pas pu être lue.</value></data>
+  <data name="CategoriesUnavailable" xml:space="preserve"><value>La liste des catégories n’a pas pu être lue ; réessayez.</value></data>
+  <data name="PreviewEmptyQuestion" xml:space="preserve"><value>La question du médecin apparaît ici.</value></data>
+  <data name="PreviewEmptyAnswer" xml:space="preserve"><value>La réponse approuvée apparaît ici.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Enregistrer le brouillon</value></data>
+  <data name="Saved" xml:space="preserve"><value>Brouillon enregistré.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Envoyée pour approbation.</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Envoyer pour approbation</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Annuler</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>Des modifications ne sont pas enregistrées. Quitter quand même ?</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Créée par</value></data>
+  <data name="LastSaved" xml:space="preserve"><value>Dernier enregistrement</value></data>
+  <data name="ProductRequired" xml:space="preserve"><value>Choisissez un produit.</value></data>
+  <data name="PendingLine" xml:space="preserve"><value>En attente d’approbation · {0} l’a envoyée le {1}.</value></data>
+  <data name="ApprovedNote" xml:space="preserve"><value>Une réponse approuvée ne peut pas être modifiée. Pour la changer, retirez-la et créez-en une nouvelle.</value></data>
+  <data name="RetiredLine" xml:space="preserve"><value>Retirée · {0}, {1}. Elle n’est plus affichée dans les visites.</value></data>
+  <data name="DraftReturnedLine" xml:space="preserve"><value>Renvoyée en brouillon · {0}, {1} : « {2} »</value></data>
+  <data name="DraftReturnedReason" xml:space="preserve"><value>Retour en brouillon : {0}</value></data>
+  <data name="SodHint" xml:space="preserve"><value>Vous avez rédigé ou envoyé cette réponse ; un autre approbateur doit l’approuver.</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Retirer la demande</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>Approuver</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Renvoyer en brouillon</value></data>
+  <data name="RetireButton" xml:space="preserve"><value>Retirer</value></data>
+  <data name="Copy" xml:space="preserve"><value>Nouveau brouillon à partir d’une copie</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Modifier</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>Renvoyer en brouillon</value></data>
+  <data name="ReturnNoteLabel" xml:space="preserve"><value>Note à l’auteur (obligatoire)</value></data>
+  <data name="ReturnNoteRequired" xml:space="preserve"><value>Rédigez une note avant de la renvoyer en brouillon.</value></data>
+  <data name="ReturnConfirm" xml:space="preserve"><value>Renvoyer</value></data>
+  <data name="RetireTitle" xml:space="preserve"><value>Retirer cette réponse ?</value></data>
+  <data name="RetireText" xml:space="preserve"><value>Une réponse retirée disparaît aussitôt de toutes les présentations, publiées comprises ; c’est irréversible. Une modification est une nouvelle réponse.</value></data>
+  <data name="RetireUsed" xml:space="preserve"><value>Elle est utilisée dans {0} étape(s).</value></data>
+  <data name="RetireConfirm" xml:space="preserve"><value>Retirer</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Retirer la demande d’approbation ? La réponse repasse en brouillon.</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Envoyer cette réponse pour approbation ? Elle est verrouillée pendant la revue.</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Approuver cette réponse ? Les délégués la verront en visite.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Approuvée.</value></data>
+  <data name="Returned" xml:space="preserve"><value>Renvoyée en brouillon.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Demande retirée.</value></data>
+  <data name="Retired" xml:space="preserve"><value>Retirée.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Un nouveau brouillon a été créé à partir d’une copie.</value></data>
+  <data name="UsagesNone" xml:space="preserve"><value>Aucune étape de parcours ne l’utilise encore comme objection attendue.</value></data>
+  <data name="UsagePath" xml:space="preserve"><value>Parcours de connaissances</value></data>
+  <data name="UsageVersion" xml:space="preserve"><value>Version du parcours</value></data>
+  <data name="UsageStep" xml:space="preserve"><value>Étape</value></data>
+  <data name="UsageStepLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UsageCount" xml:space="preserve"><value>{0} étape(s)</value></data>
+  <data name="PathStatus_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="PathStatus_review" xml:space="preserve"><value>En revue</value></data>
+  <data name="PathStatus_approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="PathStatus_published" xml:space="preserve"><value>Publié</value></data>
+  <data name="PathStatus_inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="PathStatus_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historique</value></data>
+  <data name="Event_created" xml:space="preserve"><value>Créée</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>Envoyée pour approbation</value></data>
+  <data name="Event_approved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="Event_returned" xml:space="preserve"><value>Renvoyée en brouillon</value></data>
+  <data name="Event_withdrawn" xml:space="preserve"><value>Demande retirée</value></data>
+  <data name="Event_timeout" xml:space="preserve"><value>Délai dépassé</value></data>
+  <data name="Event_retired" xml:space="preserve"><value>Retirée</value></data>
+  <data name="EventLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
+  <data name="ClaimNotApprovedAnymore" xml:space="preserve"><value>Cette allégation n’est plus approuvée.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>Réponse introuvable.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>La réponse n’a pas pu être chargée ; réessayez.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>L’action n’a pas pu aboutir.</value></data>
+  <data name="Err_objection_response_incomplete" xml:space="preserve"><value>Renseignez le produit, la catégorie, la question et la réponse avant l’envoi.</value></data>
+  <data name="Err_objection_claim_not_approved" xml:space="preserve"><value>Une allégation choisie n’est plus approuvée ; retirez-la et réessayez.</value></data>
+  <data name="Err_objection_claim_product_mismatch" xml:space="preserve"><value>Une allégation choisie appartient à un autre produit.</value></data>
+  <data name="Err_objection_response_sod" xml:space="preserve"><value>L’approbateur a rédigé, modifié ou envoyé cette réponse : elle est revenue en brouillon ; un autre approbateur doit l’approuver.</value></data>
+  <data name="Err_objection_response_in_review" xml:space="preserve"><value>La réponse est verrouillée pendant la revue.</value></data>
+  <data name="Err_objection_response_not_editable" xml:space="preserve"><value>Seul un brouillon peut être modifié.</value></data>
+  <data name="Err_objection_response_not_draft" xml:space="preserve"><value>Cette action n’est possible que sur un brouillon.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>L’approbation passe uniquement par la tâche d’approbation.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>La liste des catégories n’a pas pu être lue ; rien n’a été enregistré. Réessayez.</value></data>
+  <data name="Err_objection_category_invalid" xml:space="preserve"><value>La catégorie n’est pas une valeur active.</value></data>
+  <data name="Err_objection_product_invalid" xml:space="preserve"><value>Le produit est introuvable dans le référentiel produits.</value></data>
+  <data name="Err_objection_response_invalid" xml:space="preserve"><value>Vérifiez les champs : question ≤ 500, réponse ≤ 4000 caractères, au plus 10 allégations.</value></data>
+  <data name="Err_objection_response_not_found" xml:space="preserve"><value>Réponse introuvable.</value></data>
+  <data name="Err_decision_comment_required" xml:space="preserve"><value>Un renvoi en brouillon nécessite une note.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Un service dépendant est indisponible ; réessayez.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Quelqu’un d’autre a enregistré cette réponse entre-temps ; rechargez la page et réessayez.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>Le service est indisponible pour le moment ; réessayez.</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Bibliothèque d’objections</value></data>
+  <data name="PageGroup" xml:space="preserve"><value>Studio de contenu</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Réponses approuvées aux objections des médecins, visibles par les délégués en visite.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Aucune réponse à une objection pour l’instant</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Les objections attendues et les réponses approuvées que les délégués voient pendant la présentation sont regroupées ici. Commencez par créer la première.</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>Objection et réponse approuvée</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="FieldCategory" xml:space="preserve"><value>Catégorie</value></data>
+  <data name="FieldQuestion" xml:space="preserve"><value>Objection · la question du médecin</value></data>
+  <data name="FieldAnswer" xml:space="preserve"><value>Réponse approuvée</value></data>
+  <data name="FieldClaims" xml:space="preserve"><value>Allégations à l’appui</value></data>
+  <data name="ClaimsHint" xml:space="preserve"><value>Seules les allégations approuvées du produit choisi sont listées.</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="PreviewRemote" xml:space="preserve"><value>Télécommande du délégué · Notes</value></data>
+  <data name="PreviewObjections" xml:space="preserve"><value>Objections attendues · réponse approuvée</value></data>
+  <data name="MetaNote" xml:space="preserve"><value>Un enregistrement approuvé ne peut plus être modifié. L’approbation est donnée par un approbateur autre que l’auteur.</value></data>
+  <data name="RecordTitle" xml:space="preserve"><value>Réponse à une objection</value></data>
+  <data name="UsagesTitle" xml:space="preserve"><value>Où elle est utilisée</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Fermer</value></data>
+</root>

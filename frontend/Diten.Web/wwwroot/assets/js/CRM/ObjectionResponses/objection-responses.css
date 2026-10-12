@@ -1,0 +1,20 @@
+/* WP-VW-W3 (W3-WEB-c) — the objection library pages. Colours are the theme's variables (light / dark), spacing uses
+   logical properties only, so every rule mirrors under RTL (ar). */
+.or-empty-text { max-inline-size: 28rem; }
+.or-question { display: inline-block; max-inline-size: 28rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.or-cat { white-space: normal; text-align: start; }
+.or-prewrap { white-space: pre-wrap; }
+.or-claim { cursor: pointer; background: var(--bs-paper-bg, var(--bs-card-bg)); }
+.or-claim.is-selected { border-color: var(--bs-primary) !important; background: var(--bs-primary-bg-subtle); }
+.or-preview { background: var(--bs-body-bg); }
+.or-preview-refs li { border-block-start: 1px solid var(--bs-border-color); padding-block-start: .35rem; margin-block-start: .35rem; }
+.or-preview-refs li:first-child { border-block-start: 0; padding-block-start: 0; margin-block-start: 0; }
+.or-timeline { list-style: none; margin: 0; padding: 0; }
+.or-timeline > li { position: relative; padding-inline-start: 1.75rem; padding-block-end: 1rem; border-inline-start: 2px solid var(--bs-border-color); margin-inline-start: .5rem; }
+.or-timeline > li:last-child { border-inline-start-color: transparent; padding-block-end: 0; }
+.or-timeline .or-dot { position: absolute; inset-inline-start: -.55rem; inset-block-start: 0; inline-size: 1rem; block-size: 1rem; border-radius: 50%; background: var(--bs-body-bg); border: 2px solid var(--bs-secondary-color); }
+.or-timeline .or-dot.is-created { border-color: var(--bs-primary); background: var(--bs-primary); }
+.or-timeline .or-dot.is-pending { border-color: var(--bs-warning); }
+.or-timeline .or-dot.is-approved { border-color: var(--bs-success); background: var(--bs-success); }
+.or-timeline .or-dot.is-rejected { border-color: var(--bs-danger); background: var(--bs-danger); }
+.or-quote { border-inline-start: 3px solid var(--bs-primary-border-subtle); padding-inline-start: .6rem; font-style: italic; color: var(--bs-body-color); }

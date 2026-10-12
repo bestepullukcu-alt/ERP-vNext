@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ColProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="ColCategory" xml:space="preserve"><value>Категория</value></data>
+  <data name="ColQuestion" xml:space="preserve"><value>Возражение</value></data>
+  <data name="ColClaims" xml:space="preserve"><value>Связанные утверждения</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Используется в шагах</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="ColUpdated" xml:space="preserve"><value>Последнее изменение</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Действия</value></data>
+  <data name="NewResponse" xml:space="preserve"><value>Новый ответ на возражение</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Изменить</value></data>
+  <data name="AllProducts" xml:space="preserve"><value>Все продукты</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>Все категории</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Все статусы</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Поиск по тексту возражения</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status_in_review" xml:space="preserve"><value>Ожидает утверждения</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="Status_retired" xml:space="preserve"><value>Выведен из обращения</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Изменить ответ на возражение</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>Новый ответ на возражение</value></data>
+  <data name="SelectProduct" xml:space="preserve"><value>Выберите продукт</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>Выберите категорию</value></data>
+  <data name="ClaimsSelected" xml:space="preserve"><value>Выбрано: {0} (не более {1})</value></data>
+  <data name="ClaimsMax" xml:space="preserve"><value>Можно выбрать не более {0} утверждений.</value></data>
+  <data name="ClaimsNone" xml:space="preserve"><value>У этого продукта нет утверждённых утверждений.</value></data>
+  <data name="ClaimsPickProduct" xml:space="preserve"><value>Выберите продукт, чтобы увидеть его утверждённые утверждения.</value></data>
+  <data name="ClaimsUnavailable" xml:space="preserve"><value>У вас нет прав на чтение утверждений.</value></data>
+  <data name="ProductsUnavailable" xml:space="preserve"><value>Не удалось прочитать список продуктов.</value></data>
+  <data name="CategoriesUnavailable" xml:space="preserve"><value>Не удалось прочитать список категорий; повторите попытку.</value></data>
+  <data name="PreviewEmptyQuestion" xml:space="preserve"><value>Здесь появится вопрос врача.</value></data>
+  <data name="PreviewEmptyAnswer" xml:space="preserve"><value>Здесь появится утверждённый ответ.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="Saved" xml:space="preserve"><value>Черновик сохранён.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Отправлено на утверждение.</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Отправить на утверждение</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Отмена</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>Есть несохранённые изменения. Всё равно уйти?</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Автор</value></data>
+  <data name="LastSaved" xml:space="preserve"><value>Последнее сохранение</value></data>
+  <data name="ProductRequired" xml:space="preserve"><value>Выберите продукт.</value></data>
+  <data name="PendingLine" xml:space="preserve"><value>Ожидает утверждения · {0} отправил(а) {1}.</value></data>
+  <data name="ApprovedNote" xml:space="preserve"><value>Утверждённый ответ нельзя изменить. Чтобы изменить, выведите его из обращения и создайте новый.</value></data>
+  <data name="RetiredLine" xml:space="preserve"><value>Выведен из обращения · {0}, {1}. Больше не показывается в визитах.</value></data>
+  <data name="DraftReturnedLine" xml:space="preserve"><value>Возвращено в черновик · {0}, {1}: «{2}»</value></data>
+  <data name="DraftReturnedReason" xml:space="preserve"><value>Возвращено в черновик: {0}</value></data>
+  <data name="SodHint" xml:space="preserve"><value>Вы написали или отправили этот ответ; утвердить его должен другой утверждающий.</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Отозвать</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Вернуть в черновик</value></data>
+  <data name="RetireButton" xml:space="preserve"><value>Вывести из обращения</value></data>
+  <data name="Copy" xml:space="preserve"><value>Новый черновик из копии</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Изменить</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>Вернуть в черновик</value></data>
+  <data name="ReturnNoteLabel" xml:space="preserve"><value>Комментарий автору (обязательно)</value></data>
+  <data name="ReturnNoteRequired" xml:space="preserve"><value>Напишите комментарий перед возвратом в черновик.</value></data>
+  <data name="ReturnConfirm" xml:space="preserve"><value>Вернуть</value></data>
+  <data name="RetireTitle" xml:space="preserve"><value>Вывести этот ответ из обращения?</value></data>
+  <data name="RetireText" xml:space="preserve"><value>Выведенный ответ сразу исчезает из всех презентаций, включая опубликованные; это необратимо. Изменение — это новый ответ.</value></data>
+  <data name="RetireUsed" xml:space="preserve"><value>Используется в шагах: {0}.</value></data>
+  <data name="RetireConfirm" xml:space="preserve"><value>Вывести из обращения</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Отозвать запрос на утверждение? Ответ вернётся в черновик.</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Отправить ответ на утверждение? На время проверки он блокируется.</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Утвердить ответ? Представители увидят его в визитах.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Утверждено.</value></data>
+  <data name="Returned" xml:space="preserve"><value>Возвращено в черновик.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Запрос отозван.</value></data>
+  <data name="Retired" xml:space="preserve"><value>Выведено из обращения.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Создан новый черновик из копии.</value></data>
+  <data name="UsagesNone" xml:space="preserve"><value>Ни один шаг пути пока не использует этот ответ как ожидаемое возражение.</value></data>
+  <data name="UsagePath" xml:space="preserve"><value>Путь знаний</value></data>
+  <data name="UsageVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="UsageStep" xml:space="preserve"><value>Шаг</value></data>
+  <data name="UsageStepLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UsageCount" xml:space="preserve"><value>Шагов: {0}</value></data>
+  <data name="PathStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="PathStatus_review" xml:space="preserve"><value>На проверке</value></data>
+  <data name="PathStatus_approved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="PathStatus_published" xml:space="preserve"><value>Опубликован</value></data>
+  <data name="PathStatus_inactive" xml:space="preserve"><value>Неактивен</value></data>
+  <data name="PathStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>История</value></data>
+  <data name="Event_created" xml:space="preserve"><value>Создано</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>Отправлено на утверждение</value></data>
+  <data name="Event_approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="Event_returned" xml:space="preserve"><value>Возвращено в черновик</value></data>
+  <data name="Event_withdrawn" xml:space="preserve"><value>Отозвано</value></data>
+  <data name="Event_timeout" xml:space="preserve"><value>Истёк срок</value></data>
+  <data name="Event_retired" xml:space="preserve"><value>Выведено из обращения</value></data>
+  <data name="EventLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
+  <data name="ClaimNotApprovedAnymore" xml:space="preserve"><value>Это утверждение больше не утверждено.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>Ответ не найден.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить ответ; повторите попытку.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>Не удалось выполнить действие.</value></data>
+  <data name="Err_objection_response_incomplete" xml:space="preserve"><value>Перед отправкой заполните продукт, категорию, вопрос и ответ.</value></data>
+  <data name="Err_objection_claim_not_approved" xml:space="preserve"><value>Одно из выбранных утверждений больше не утверждено; удалите его и повторите.</value></data>
+  <data name="Err_objection_claim_product_mismatch" xml:space="preserve"><value>Одно из выбранных утверждений относится к другому продукту.</value></data>
+  <data name="Err_objection_response_sod" xml:space="preserve"><value>Утверждающий писал, правил или отправлял этот ответ, поэтому он вернулся в черновик; утвердить должен другой утверждающий.</value></data>
+  <data name="Err_objection_response_in_review" xml:space="preserve"><value>На время проверки ответ заблокирован.</value></data>
+  <data name="Err_objection_response_not_editable" xml:space="preserve"><value>Изменять можно только черновик.</value></data>
+  <data name="Err_objection_response_not_draft" xml:space="preserve"><value>Это действие доступно только для черновика.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Утверждение возможно только через задачу утверждения.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Не удалось прочитать список категорий; ничего не сохранено. Повторите попытку.</value></data>
+  <data name="Err_objection_category_invalid" xml:space="preserve"><value>Категория не является активным значением.</value></data>
+  <data name="Err_objection_product_invalid" xml:space="preserve"><value>Продукт не найден в справочнике продуктов.</value></data>
+  <data name="Err_objection_response_invalid" xml:space="preserve"><value>Проверьте поля: вопрос ≤ 500, ответ ≤ 4000 символов, не более 10 утверждений.</value></data>
+  <data name="Err_objection_response_not_found" xml:space="preserve"><value>Ответ не найден.</value></data>
+  <data name="Err_decision_comment_required" xml:space="preserve"><value>Для возврата в черновик нужен комментарий.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Зависимая служба недоступна; повторите попытку.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Кто-то другой уже сохранил этот ответ; обновите страницу и повторите.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>Служба сейчас недоступна; повторите попытку.</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Библиотека возражений</value></data>
+  <data name="PageGroup" xml:space="preserve"><value>Контент-студия</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Утверждённые ответы на возражения врачей, которые представители видят во время визитов.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Ответов на возражения пока нет</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Здесь собраны ожидаемые возражения и утверждённые ответы, которые представители видят во время презентации. Начните с создания первого.</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>Возражение и утверждённый ответ</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="FieldCategory" xml:space="preserve"><value>Категория</value></data>
+  <data name="FieldQuestion" xml:space="preserve"><value>Возражение · вопрос врача</value></data>
+  <data name="FieldAnswer" xml:space="preserve"><value>Утверждённый ответ</value></data>
+  <data name="FieldClaims" xml:space="preserve"><value>Подтверждающие утверждения</value></data>
+  <data name="ClaimsHint" xml:space="preserve"><value>Показываются только утверждённые утверждения выбранного продукта.</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="PreviewRemote" xml:space="preserve"><value>Пульт представителя · Заметки</value></data>
+  <data name="PreviewObjections" xml:space="preserve"><value>Ожидаемые возражения · утверждённый ответ</value></data>
+  <data name="MetaNote" xml:space="preserve"><value>Утверждённую запись изменить нельзя. Утверждает не автор, а другой утверждающий.</value></data>
+  <data name="RecordTitle" xml:space="preserve"><value>Ответ на возражение</value></data>
+  <data name="UsagesTitle" xml:space="preserve"><value>Где используется</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Закрыть</value></data>
+</root>

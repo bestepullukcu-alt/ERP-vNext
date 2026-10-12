@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ColProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ColCategory" xml:space="preserve"><value>الفئة</value></data>
+  <data name="ColQuestion" xml:space="preserve"><value>الاعتراض</value></data>
+  <data name="ColClaims" xml:space="preserve"><value>الادعاءات المرتبطة</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>مستخدم في الخطوات</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ColUpdated" xml:space="preserve"><value>آخر تغيير</value></data>
+  <data name="ColActions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="NewResponse" xml:space="preserve"><value>رد جديد على اعتراض</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>عرض</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>تعديل</value></data>
+  <data name="AllProducts" xml:space="preserve"><value>جميع المنتجات</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>جميع الفئات</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>جميع الحالات</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>ابحث في نص الاعتراض</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status_in_review" xml:space="preserve"><value>بانتظار الموافقة</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="Status_retired" xml:space="preserve"><value>موقوف</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>تعديل الرد على الاعتراض</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>رد جديد على اعتراض</value></data>
+  <data name="SelectProduct" xml:space="preserve"><value>اختر منتجًا</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>اختر فئة</value></data>
+  <data name="ClaimsSelected" xml:space="preserve"><value>{0} محدد (بحد أقصى {1})</value></data>
+  <data name="ClaimsMax" xml:space="preserve"><value>يمكن اختيار {0} ادعاءات كحد أقصى.</value></data>
+  <data name="ClaimsNone" xml:space="preserve"><value>لا توجد ادعاءات معتمدة لهذا المنتج.</value></data>
+  <data name="ClaimsPickProduct" xml:space="preserve"><value>اختر منتجًا لعرض ادعاءاته المعتمدة.</value></data>
+  <data name="ClaimsUnavailable" xml:space="preserve"><value>ليس لديك إذن بقراءة الادعاءات.</value></data>
+  <data name="ProductsUnavailable" xml:space="preserve"><value>تعذرت قراءة قائمة المنتجات.</value></data>
+  <data name="CategoriesUnavailable" xml:space="preserve"><value>تعذرت قراءة قائمة الفئات؛ حاول مرة أخرى.</value></data>
+  <data name="PreviewEmptyQuestion" xml:space="preserve"><value>يظهر سؤال الطبيب هنا.</value></data>
+  <data name="PreviewEmptyAnswer" xml:space="preserve"><value>يظهر الرد المعتمد هنا.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم حفظ المسودة.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>تم الإرسال للموافقة.</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>إرسال للموافقة</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>لديك تغييرات غير محفوظة. هل تريد المغادرة على أي حال؟</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>أنشأه</value></data>
+  <data name="LastSaved" xml:space="preserve"><value>آخر حفظ</value></data>
+  <data name="ProductRequired" xml:space="preserve"><value>اختر منتجًا.</value></data>
+  <data name="PendingLine" xml:space="preserve"><value>بانتظار الموافقة · أرسله {0} للموافقة في {1}.</value></data>
+  <data name="ApprovedNote" xml:space="preserve"><value>لا يمكن تغيير رد معتمد. لتغييره، أوقفه وأنشئ ردًا جديدًا.</value></data>
+  <data name="RetiredLine" xml:space="preserve"><value>موقوف · {0}، {1}. لم يعد يظهر في الزيارات.</value></data>
+  <data name="DraftReturnedLine" xml:space="preserve"><value>أعيد إلى المسودة · {0}، {1}: «{2}»</value></data>
+  <data name="DraftReturnedReason" xml:space="preserve"><value>أعيد إلى المسودة: {0}</value></data>
+  <data name="SodHint" xml:space="preserve"><value>أنت كتبت هذا الرد أو أرسلته؛ يجب أن يوافق عليه معتمد آخر.</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>سحب</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>موافقة</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>إعادة إلى المسودة</value></data>
+  <data name="RetireButton" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="Copy" xml:space="preserve"><value>مسودة جديدة من نسخة</value></data>
+  <data name="EditButton" xml:space="preserve"><value>تعديل</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>إعادة إلى المسودة</value></data>
+  <data name="ReturnNoteLabel" xml:space="preserve"><value>ملاحظة للكاتب (إلزامية)</value></data>
+  <data name="ReturnNoteRequired" xml:space="preserve"><value>اكتب ملاحظة قبل إعادته إلى المسودة.</value></data>
+  <data name="ReturnConfirm" xml:space="preserve"><value>إعادة</value></data>
+  <data name="RetireTitle" xml:space="preserve"><value>إيقاف هذا الرد؟</value></data>
+  <data name="RetireText" xml:space="preserve"><value>يختفي الرد الموقوف فورًا من جميع العروض، بما فيها المنشورة؛ ولا يمكن التراجع. التغيير يعني ردًا جديدًا.</value></data>
+  <data name="RetireUsed" xml:space="preserve"><value>مستخدم في {0} خطوة.</value></data>
+  <data name="RetireConfirm" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>سحب طلب الموافقة؟ يعود الرد إلى المسودة.</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>إرسال هذا الرد للموافقة؟ يُقفل أثناء المراجعة.</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>الموافقة على هذا الرد؟ سيراه المندوبون في الزيارات.</value></data>
+  <data name="Approved" xml:space="preserve"><value>تمت الموافقة.</value></data>
+  <data name="Returned" xml:space="preserve"><value>أعيد إلى المسودة.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>تم سحب الطلب.</value></data>
+  <data name="Retired" xml:space="preserve"><value>تم الإيقاف.</value></data>
+  <data name="Copied" xml:space="preserve"><value>تم إنشاء مسودة جديدة من نسخة.</value></data>
+  <data name="UsagesNone" xml:space="preserve"><value>لم يُستخدم هذا الرد بعد كاعتراض متوقع في أي خطوة مسار.</value></data>
+  <data name="UsagePath" xml:space="preserve"><value>مسار المعرفة</value></data>
+  <data name="UsageVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="UsageStep" xml:space="preserve"><value>الخطوة</value></data>
+  <data name="UsageStepLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UsageCount" xml:space="preserve"><value>{0} خطوة</value></data>
+  <data name="PathStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="PathStatus_review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="PathStatus_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="PathStatus_published" xml:space="preserve"><value>منشور</value></data>
+  <data name="PathStatus_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="PathStatus_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>السجل</value></data>
+  <data name="Event_created" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>أُرسل للموافقة</value></data>
+  <data name="Event_approved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="Event_returned" xml:space="preserve"><value>أعيد إلى المسودة</value></data>
+  <data name="Event_withdrawn" xml:space="preserve"><value>تم السحب</value></data>
+  <data name="Event_timeout" xml:space="preserve"><value>انتهت المهلة</value></data>
+  <data name="Event_retired" xml:space="preserve"><value>تم الإيقاف</value></data>
+  <data name="EventLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
+  <data name="ClaimNotApprovedAnymore" xml:space="preserve"><value>لم يعد هذا الادعاء معتمدًا.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>لم يتم العثور على الرد.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذر تحميل الرد؛ حاول مرة أخرى.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>تعذر إكمال الإجراء.</value></data>
+  <data name="Err_objection_response_incomplete" xml:space="preserve"><value>املأ المنتج والفئة والسؤال والرد قبل الإرسال للموافقة.</value></data>
+  <data name="Err_objection_claim_not_approved" xml:space="preserve"><value>لم يعد أحد الادعاءات المحددة معتمدًا؛ أزله وحاول مرة أخرى.</value></data>
+  <data name="Err_objection_claim_product_mismatch" xml:space="preserve"><value>أحد الادعاءات المحددة يخص منتجًا آخر.</value></data>
+  <data name="Err_objection_response_sod" xml:space="preserve"><value>عاد الرد إلى المسودة لأن المعتمد كتبه أو عدّله أو أرسله؛ يجب أن يوافق عليه معتمد آخر.</value></data>
+  <data name="Err_objection_response_in_review" xml:space="preserve"><value>الرد مقفل أثناء المراجعة.</value></data>
+  <data name="Err_objection_response_not_editable" xml:space="preserve"><value>يمكن تعديل المسودة فقط.</value></data>
+  <data name="Err_objection_response_not_draft" xml:space="preserve"><value>هذا الإجراء ممكن على المسودة فقط.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>تتم الموافقة فقط من خلال مهمة الموافقة.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>تعذرت قراءة قائمة الفئات؛ لم يُحفظ شيء. حاول مرة أخرى.</value></data>
+  <data name="Err_objection_category_invalid" xml:space="preserve"><value>الفئة ليست قيمة نشطة.</value></data>
+  <data name="Err_objection_product_invalid" xml:space="preserve"><value>لم يتم العثور على المنتج في البيانات الرئيسية للمنتجات.</value></data>
+  <data name="Err_objection_response_invalid" xml:space="preserve"><value>تحقق من الحقول: السؤال ≤ 500، الرد ≤ 4000 حرف، 10 ادعاءات كحد أقصى.</value></data>
+  <data name="Err_objection_response_not_found" xml:space="preserve"><value>لم يتم العثور على الرد.</value></data>
+  <data name="Err_decision_comment_required" xml:space="preserve"><value>الإعادة إلى المسودة تتطلب ملاحظة.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>خدمة تابعة غير متاحة؛ حاول مرة أخرى.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>قام شخص آخر بحفظ هذا الرد في الأثناء؛ أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>الخدمة غير متاحة حاليًا؛ حاول مرة أخرى.</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>مكتبة الاعتراضات</value></data>
+  <data name="PageGroup" xml:space="preserve"><value>استوديو المحتوى</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>ردود معتمدة على اعتراضات الأطباء يراها المندوبون أثناء الزيارات.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>لا توجد ردود على الاعتراضات بعد</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>تُجمع هنا الاعتراضات المتوقعة والردود المعتمدة التي يراها المندوبون أثناء العرض. ابدأ بإنشاء أول رد.</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>الاعتراض والرد المعتمد</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="FieldCategory" xml:space="preserve"><value>الفئة</value></data>
+  <data name="FieldQuestion" xml:space="preserve"><value>الاعتراض · سؤال الطبيب</value></data>
+  <data name="FieldAnswer" xml:space="preserve"><value>الرد المعتمد</value></data>
+  <data name="FieldClaims" xml:space="preserve"><value>الادعاءات الداعمة</value></data>
+  <data name="ClaimsHint" xml:space="preserve"><value>تُعرض فقط الادعاءات المعتمدة للمنتج المحدد.</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>معاينة</value></data>
+  <data name="PreviewRemote" xml:space="preserve"><value>جهاز تحكم المندوب · ملاحظات</value></data>
+  <data name="PreviewObjections" xml:space="preserve"><value>الاعتراضات المتوقعة · الرد المعتمد</value></data>
+  <data name="MetaNote" xml:space="preserve"><value>لا يمكن تغيير سجل معتمد. تُمنح الموافقة من معتمد غير الكاتب.</value></data>
+  <data name="RecordTitle" xml:space="preserve"><value>الرد على الاعتراض</value></data>
+  <data name="UsagesTitle" xml:space="preserve"><value>أماكن الاستخدام</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>إغلاق</value></data>
+</root>
