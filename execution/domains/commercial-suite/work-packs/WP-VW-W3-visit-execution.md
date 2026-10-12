@@ -31,6 +31,7 @@
 10. **JourneyProgress ilerletme (SB-3c)** W3'te YOK. Rapor gönderimine bağlanır (W4).
 11. **İtiraz kütüphanesi ve sunum notu yazım ekranı** (Content Studio) bu turlarda YOK → **W3-WEB-c**. Kullanıcı (2026-10-12): **mockup yaptıracak**; brief [BRIEF-W3-authoring-and-evidence-settings](mockups/visit-workspace/BRIEF-W3-authoring-and-evidence-settings.md).
 
+13. **Kanıt ayarı katmanları (kullanıcı 2026-10-12):** en özel olan kazanır → **kiracı varsayılanı** < **tüzel kişilik** < **iş birimi**; alan bazında miras (katman yalnız değiştirdiği alanı tutar). Temsilci için kalıcı ayar YOK; **süreli istisna** (gevşetilebilen: konum → bilgi, fotoğraf → isteğe bağlı, konumsuz kurum → başlat; en çok 30 gün; gerekçe; SoD onay). Bugünkü BE-a yalnız kiracı katmanı; katmanlar + istisna backend'i **W3-WEB-d ile birlikte** (W3-BE-c). Ön koşul: temsilcinin tüzel kişilik / iş birimi bağının güvenilir kaynağı doğrulanacak (HR kimlik açığı). Brief §C güncellendi.
 12. **İtiraz yanıtı onayı (kullanıcı 2026-10-12):** şimdilik **basit onay** (yazan onaylayamaz, SoD) + yalnız onaylı iddialara bağlanma. **Takip (FU-W3-OBJ-MLR):** ileride yanıt metni Claims'in MLR inceleme akışına bağlanacak (tıbbi / hukuki / mevzuat kontrolü). BE-b, onay geçişini tek bir noktada (komut + durum makinesi) tutsun ki sonra değiştirilebilsin.
 
 **Kapsam dışı:** rapor ekranı (W4), e-postalar (W5), ön sipariş (W6), satış payı (W7), çevrimdışı kuyruk (mobil uygulamanın işi).

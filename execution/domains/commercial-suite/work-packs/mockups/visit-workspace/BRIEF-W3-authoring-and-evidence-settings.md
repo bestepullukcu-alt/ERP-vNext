@@ -1,6 +1,6 @@
 # MOCKUP BRIEF — W3 yazım ekranları: itiraz kütüphanesi, adım sunum notları, ziyaret kanıtı ayarları
 
-> **Tarih:** 2026-10-12 · **Hazırlayan:** CT · **İsteyen:** ürün sahibi (W3-WEB-c ve W3-WEB-d öncesi).
+> **Tarih:** 2026-10-12 (güncelleme: katmanlı ayar + süreli istisna) · **Hazırlayan:** CT · **İsteyen:** ürün sahibi (W3-WEB-c ve W3-WEB-d öncesi).
 >
 > **Dayanaklar:**
 > - [W3 paketi](../../WP-VW-W3-visit-execution.md): §0 kararlar, §2.1–2.3 alanlar ve sınırlar.
@@ -78,9 +78,26 @@
 
 ## C. Ziyaret kanıtı ayarları (yeni sayfa · CRM Ayarlar / Ziyaret menüsünde)
 
-**Amaç:** kiracı yöneticisinin temsilcinin "Ziyarete başla" kurallarını ayarlaması (K-W2 kiracı ayarı).
+**Amaç:** yöneticinin temsilcinin "Ziyarete başla" kurallarını ayarlaması (K-W2).
 
-**Alanlar ve varsayılanlar** (§2.2):
+**Katmanlı ayar (kullanıcı kararı 2026-10-12): en özel olan kazanır.**
+1. **Kiracı varsayılanı:** herkes için geçerli temel ayar (her zaman var).
+2. **Tüzel kişilik ayarı:** varsa o tüzel kişiliğin temsilcileri için kiracıyı ezer (ör. ülke mevzuatı farkı).
+3. **İş birimi ayarı:** varsa o iş biriminin temsilcileri için tüzel kişiliği de ezer (ör. hastane ekibi / KAM ekibi).
+4. **Temsilci için süreli istisna:** kalıcı ayar DEĞİL, gerekçeli ve süreli muafiyet (§C4).
+
+- Bir katman yalnız **değiştirdiği alanları** tutar; boş bıraktığı alan bir üst katmandan gelir (alan bazında miras). Tasarımcı bunu her alanda göstermeli: "Kiracıdan geliyor: Zorunlu" gibi soluk bir etiket + "Bu kapsamda değiştir" bağlantısı; değiştirilmiş alanın yanında "Üst ayara dön".
+
+### C1. Kapsam listesi (sayfanın sol ya da üst bölümü)
+- Ağaç ya da gruplu liste:
+  - **Kiracı varsayılanı** (en üstte, silinemez);
+  - altında **tüzel kişilikler** (yalnız kendi ayarı olanlar + "Tüzel kişilik ekle");
+  - her tüzel kişiliğin altında **iş birimleri** (aynı şekilde).
+- Her satırda: ad, kaç alanı değiştirdiği ("3 alan farklı"), etkilediği temsilci sayısı, son değişiklik.
+- **Etkin ayar arama:** "Bir temsilcinin etkin ayarını gör" kutusu. Temsilci seçilince her alanın değeri ve **nereden geldiği** gösterilir (Kiracı / Tüzel kişilik: Diten İlaç A.Ş. / İş birimi: Hastane Ekibi / İstisna).
+
+### C2. Seçili kapsamın ayar formu
+**Alanlar ve kiracı varsayılanları** (W3 paketi §2.2):
 
 | alan | denetim | varsayılan | açıklama metni (örnek) |
 |---|---|---|---|
@@ -93,9 +110,27 @@
 | Süre tutarlılığı | aç / kapa | açık | |
 | Kısa ziyaret eşiği | sayı (sn) | 120 | 30–1800 sn; "Bu süreden kısa ziyaret işaretlenir." |
 
-- **Önizleme kartı:** "Temsilci şunu görecek": E3 ekranının küçük bir kopyası. Seçilen ayara göre "zorunlu / isteğe bağlı" etiketleri ve "Sunumu başlat" düğmesinin ne zaman açılacağını anlatan bir cümle.
-- **Kaydet:** onay iletişim kutusu "Değişiklik hemen tüm temsilcilere uygulanır." Son değişiklik (kişi, tarih) gösterilir.
-- **QR ve anti-fraud bu ekranda YOK.** İleride "Ek kanıtlar" bölümü olarak eklenecek; tasarımcı yer bırakabilir (ör. altta katlanmış, pasif "Yakında" kartı) ama işlevsel çizmesin.
+- Kiracı varsayılanında tüm alanlar doludur. Tüzel kişilik / iş birimi formunda her alan "üstten gelen" ya da "bu kapsamda değiştirilmiş" durumundadır (yukarıdaki miras gösterimi).
+- **Önizleme kartı:** "Bu kapsamdaki temsilci şunu görecek": E3 ekranının küçük bir kopyası. Etkin değerlere göre "zorunlu / isteğe bağlı" etiketleri ve "Sunumu başlat" düğmesinin ne zaman açılacağını anlatan cümle.
+- **Kaydet:** onay iletişim kutusu "Değişiklik hemen bu kapsamdaki N temsilciye uygulanır." Son değişiklik (kişi, tarih) gösterilir.
+- **Kapsamı kaldır** (tüzel kişilik / iş birimi): "Bu kapsamdaki temsilciler üst ayara döner" onayı.
+
+### C3. Değişiklik geçmişi
+- Seçili kapsam için liste: tarih, kişi, alan, eski → yeni değer. (Denetim için; salt okunur.)
+
+### C4. Süreli istisnalar (temsilci)
+**Amaç:** geçici durum (GPS arızası, kurum konumu yanlış kayıtlı, cihaz değişimi) için tek bir temsilciye kısa süreli gevşetme. Kalıcı kişisel ayar yoktur.
+- **Liste:** temsilci, gevşetilen kural(lar), başlangıç–bitiş tarihi, gerekçe, onaylayan, durum çipi (Aktif / Planlı / Süresi doldu / İptal).
+- **Yeni istisna formu:**
+  - temsilci (kişi seçici);
+  - gevşetilecek kurallar: yalnız şunlar seçilebilir → "Konum kontrolü: Bilgi" · "Fotoğraf: İsteğe bağlı" · "Konumu olmayan kurum: Başlatılsın" (eşik değerleri istisnayla değiştirilmez);
+  - başlangıç ve bitiş tarihi (**en çok 30 gün**; bitişsiz istisna yok);
+  - gerekçe (zorunlu metin);
+  - onay: oluşturan ile onaylayan farklı kişi (görev ayrılığı). Taslak → Onaylı akışı; yalnız onaylı ve tarihi içindeki istisna uygulanır.
+- **İptal:** onaylı istisna erken bitirilebilir (gerekçeyle).
+- İstisnayla başlatılan ziyaretler yönetici görünümünde işaretli olur ("istisna ile başlatıldı"); bu ekran bunu yalnız bilgi metniyle anlatır.
+
+- **QR ve anti-fraud bu ekranda YOK.** İleride (W3E) "Ek kanıtlar" bölümü olarak eklenecek; tasarımcı yer bırakabilir (ör. altta katlanmış, pasif "Yakında" kartı) ama işlevsel çizmesin.
 
 ## D. Ortak kurallar
 - **Yetki:** yetkisiz kullanıcıya sayfa iskeleti çizilmez, yalnız erişim uyarısı (UAS-001). Salt okuma yetkisinde düğmeler gizli.
@@ -107,5 +142,9 @@
   3. A3 onaylı salt okunur + SoD uyarısı;
   4. B adım düzenleyici "Sunum notları" + önizleme;
   5. B yayınlanmış (salt okunur);
-  6. C ayarlar + önizleme + kaydet onayı;
-  7. Arapça RTL'de bir ekran (A1 veya C).
+  6. C1 + C2 kiracı varsayılanı seçili (tüm alanlar dolu) + önizleme;
+  7. C2 bir iş birimi seçili (alan bazında miras etiketleri; 2 alan değiştirilmiş) + kaydet onayı ("N temsilciye uygulanır");
+  8. C1 "etkin ayar" araması: bir temsilcinin değerleri ve kaynakları;
+  9. C3 değişiklik geçmişi;
+  10. C4 istisna listesi + yeni istisna formu + SoD uyarısı;
+  11. Arapça RTL'de bir ekran (A1 veya C2).
