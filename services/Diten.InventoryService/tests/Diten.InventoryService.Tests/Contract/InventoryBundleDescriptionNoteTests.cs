@@ -34,12 +34,23 @@ public sealed class InventoryBundleDescriptionNoteTests
     private const string RetestDueExample = "components.responses.UnprocessableMovement.content.application/json.examples.lotRetestDue.";
     private const string SkuLevelDescription = "components.schemas.SkuLevel.description";
 
+
+    /// <summary>The 1.3.0 additions (WP-0176-F2, MOD-0176 KF-B / KF-C, CT-F1): exactly these subtrees, nothing else.</summary>
+    private static readonly string[] V130Additions =
+    [
+        "components.schemas.MovementRequest.properties.fefoBypassReason.", "components.schemas.MovementResponse.properties.expiryChecks.",
+        "components.schemas.ExpiryChecks.", UnprocessableExamples + "fefoBypassReasonRequired.", UnprocessableExamples + "fefoOrderViolation.",
+        UnprocessableExamples + "lotBelowMinRemainingShelfLife.", UnprocessableExamples + "lotExpired.", UnprocessableExamples + "lotBlocked."
+    ];
+
     /// <summary>The 1.1.0 additions (WP-0173-PM2): exactly these subtrees, nothing else.</summary>
     private static readonly string[] AdditivePrefixes =
     [
         "paths./stock-presence.", "components.schemas.StockPresence.", "components.securitySchemes.internalApiKey.",
         // 1.2.0 (WP-0173-PM1)
-        UnprocessableExamples + "productMasterDataIncomplete.", UnprocessableExamples + "itemNotActive.", UnprocessableExamples + "skuLevelNotStockable."
+        UnprocessableExamples + "productMasterDataIncomplete.", UnprocessableExamples + "itemNotActive.", UnprocessableExamples + "skuLevelNotStockable.",
+        // 1.3.0 (WP-0176-F2)
+        .. V130Additions
     ];
 
     private const string UnprocessableExamples = "components.responses.UnprocessableMovement.content.application/json.examples.";
@@ -65,7 +76,7 @@ public sealed class InventoryBundleDescriptionNoteTests
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
         Assert.Equal(["info.version", SkuLevelDescription], changed);
-        Assert.Equal("1.2.1", current["info.version"]);
+        Assert.Equal("1.3.0", current["info.version"]);
         Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
                                            || k.StartsWith(RetestDueExample, StringComparison.Ordinal)
                                            || k == "components.schemas.SkuLevel.enum[3]" || k == PostMovementDescription
@@ -90,7 +101,7 @@ public sealed class InventoryBundleDescriptionNoteTests
     public void The_1_2_1_change_is_the_postMovement_description_and_one_changelog_line()
     {
         var frozen = Flatten(Load(FixtureV120Path));
-        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var current = Flatten(Load(FixtureV121Path));
         var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
         Assert.Equal(["info.version", PostMovementDescription], changed);
@@ -101,6 +112,45 @@ public sealed class InventoryBundleDescriptionNoteTests
         Assert.StartsWith("1.2.1 — description only (WP-0174-ITEM, O-PM1-3)", current[line]);
         Assert.Contains("stockable: false", current[PostMovementDescription]);
         Assert.Contains("SKU_LEVEL_NOT_STOCKABLE", current[PostMovementDescription]);
+    }
+
+    /// <summary>WP-0176-F2: the 1.2.1 file as frozen by WP-0174-ITEM, kept byte for byte (LF-normalised).</summary>
+    private const string FrozenV121Sha256 = "ac2781a8445d3b0f724ec7d4032c5ce5f75c70b88cf48115f1dd016f84052369";
+
+    private static string FixtureV121Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.2.1.openapi.yaml");
+
+    [Fact]
+    public void The_1_2_1_fixture_is_the_frozen_1_2_1_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV121Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV121Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// WP-0176-F2 — 1.2.1 → 1.3.0 is ADDITIVE (MOD-0176 KF-B / KF-C, CT-F1): nothing of 1.2.1 changes but the version; the additions are exactly
+    /// the optional request member <c>fefoBypassReason</c>, the optional response member <c>expiryChecks</c> + its schema, five examples under the
+    /// existing <c>UnprocessableMovement</c> response (three new 422 codes, LOT_EXPIRED / LOT_BLOCKED described) and one changelog line.
+    /// </summary>
+    [Fact]
+    public void The_1_3_0_change_is_additive_fefo_reason_expiry_checks_and_three_422_codes()
+    {
+        var frozen = Flatten(Load(FixtureV121Path));
+        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
+        var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
+        Assert.Equal(["info.version"], changed);
+        Assert.Equal("1.3.0", current["info.version"]);
+        var lines = added.Where(k => k.StartsWith("info.x-changelog[", StringComparison.Ordinal)).ToList();
+        Assert.StartsWith("1.3.0 — additive (WP-0176-F2", current[Assert.Single(lines)]);
+        Assert.All(added.Except(lines), k => Assert.True(V130Additions.Any(p => k.StartsWith(p, StringComparison.Ordinal)), "unexpected addition: " + k));
+        Assert.Equal("FEFO_BYPASS_REASON_REQUIRED", current[UnprocessableExamples + "fefoBypassReasonRequired.value.error.code"]);
+        Assert.Equal("FEFO_ORDER_VIOLATION", current[UnprocessableExamples + "fefoOrderViolation.value.error.code"]);
+        Assert.Equal("LOT_BELOW_MIN_REMAINING_SHELF_LIFE", current[UnprocessableExamples + "lotBelowMinRemainingShelfLife.value.error.code"]);
+        Assert.Equal("QUARANTINE", current[UnprocessableExamples + "lotBelowMinRemainingShelfLife.value.error.details.requiredToStockStatus"]);
+        Assert.False(current.ContainsKey("components.schemas.MovementRequest.required[11]"), "fefoBypassReason must stay optional");
+        Assert.False(current.Keys.Any(k => k.Contains("appliedToStockStatus", StringComparison.Ordinal)), "CT-F1: the ledger never changes the requested status");
+        Assert.All(new[] { "FEFO_BYPASS_REASON_REQUIRED", "FEFO_ORDER_VIOLATION", "LOT_BELOW_MIN_REMAINING_SHELF_LIFE" },
+            c => Assert.Contains(c, Diten.InventoryService.Application.Common.InventoryErrorCodes.All));
     }
 
     [Fact]

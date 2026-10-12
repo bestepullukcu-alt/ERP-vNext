@@ -31,7 +31,8 @@ public sealed class ContractSchemaValidatorTests
         // WP-0173-PM2 (MOD-0290 R-12, proposal accepted 2026-10-09): the ADDITIVE step 1.0.2 → 1.1.0 (SkuLevel Item,
         // getStockPresence) — InventoryBundleDescriptionNoteTests proves nothing of 1.0.0 was removed or changed but the allowed keys.
         // WP-0173-PM1 (CT-PM1-1): the additive step 1.1.0 → 1.2.0 (three 422 codes on postMovement + its description).
-        Assert.Contains("version: 1.2.1", text);
+        // WP-0176-F2 (MOD-0176 KF-B / KF-C, CT-F1): the additive step 1.2.1 → 1.3.0 (fefoBypassReason, expiryChecks, three 422 codes).
+        Assert.Contains("version: 1.3.0", text);
     }
 
     [Fact]

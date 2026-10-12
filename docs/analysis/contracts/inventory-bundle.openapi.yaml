@@ -6,7 +6,7 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.2.1
+  version: 1.3.0
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
@@ -17,6 +17,7 @@ info:
     - "1.1.0 — additive (MVP-1 CT, MOD-0290 R-12 and PRODUCT-MASTER 1.1): SkuLevel + Item; getStockPresence (service-to-service, X-Internal-Api-Key + X-Tenant-Id, no quantities). No existing path, parameter, property, type, required list or status code changed."
     - "1.2.0 — additive (WP-0173-PM1, CT-PM1-1; PRODUCT-MASTER 1.1 consumer, MOD-0290 OD-1/3/4/5/10): three error codes on postMovement, all 422 under the existing UnprocessableMovement response — PRODUCT_MASTER_DATA_INCOMPLETE (a lot / serial flag the SKU level needs is unknown in PRODUCT-MASTER), ITEM_NOT_ACTIVE (the item / SKU lifecycle status does not allow the movement type), SKU_LEVEL_NOT_STOCKABLE (a Gsku movement of a product whose serial flag is not explicitly false) — and the postMovement description of the rules. No path, parameter, schema, property, type, enum, required list or status code changed."
     - "1.2.1 — description only (WP-0174-ITEM, O-PM1-3): SKU_LEVEL_NOT_STOCKABLE also covers a SKU that PRODUCT-MASTER publishes stockable: false (every movement except REVERSAL). Nothing else changed."
+    - "1.3.0 — additive (WP-0176-F2, MOD-0176 KF-B / KF-C, CT-F1): postMovement accepts the optional fefoBypassReason (10–1000, the reason of an issue that is not from the first eligible FEFO lot of the same company + warehouse + SKU) and answers the optional expiryChecks (fefo Compliant | Bypassed, minRemaining Ok | NotDefined | Warned | NotApplicable, the ids of the expiry exceptions it opened); three 422 codes under the existing UnprocessableMovement response — FEFO_BYPASS_REASON_REQUIRED, FEFO_ORDER_VIOLATION, LOT_BELOW_MIN_REMAINING_SHELF_LIFE (details.requiredToStockStatus = QUARANTINE when the company quarantines such receipts: the caller resubmits into QUARANTINE; the ledger never changes the requested status — CT-F1); two description-only examples of the existing LOT_EXPIRED and LOT_BLOCKED refusals. A request without fefoBypassReason keeps its idempotency fingerprint. No existing path, parameter, property, type, required list, status code or enum value changed."
 servers:
   - url: /api/inventory
 security:
@@ -362,6 +363,7 @@ components:
         sourceSystem: { type: string, nullable: true, description: dış-entegrasyon LE (DEC-INV-19) }
         transactionDate: { type: string, format: date-time }
         postingDate: { type: string, format: date-time }
+        fefoBypassReason: { type: string, nullable: true, minLength: 10, maxLength: 1000, description: "1.3.0 (MOD-0176 KF-B) — the reason of an issue (GOODS_ISSUE_SALES / GOODS_ISSUE_PROD from AVAILABLE) that is not from the first eligible FEFO lot of the same company + warehouse + SKU. Required by the company policy RequireReason (default); ignored on a compliant issue." }
     BalanceView:
       type: object
       properties:
@@ -431,6 +433,15 @@ components:
         idempotentReplay: { type: boolean }
         balanceSnapshot: { $ref: '#/components/schemas/BalanceView' }
         contractVersion: { type: string }
+        expiryChecks: { $ref: '#/components/schemas/ExpiryChecks' }
+    ExpiryChecks:
+      type: object
+      description: "1.3.0 (MOD-0176) — what the expiry hooks decided in the posting transaction; absent when no hook applied (exempt movement type, no registered lot, REVERSAL)."
+      required: [exceptionIds]
+      properties:
+        fefo: { type: string, enum: [Compliant, Bypassed], description: "An issue under the FEFO hook: Bypassed = not from the first eligible lot (a FEFO_BYPASS exception was opened)." }
+        minRemaining: { type: string, enum: [Ok, NotDefined, Warned, NotApplicable], description: "A GOODS_RECEIPT_PO: Warned = posted below the minimum remaining shelf life (a BELOW_MIN_REMAINING exception was opened); NotDefined = the SKU states no minimum; NotApplicable = the lot has no expiry date." }
+        exceptionIds: { type: array, items: { type: string, format: uuid } }
     ReservationRequest:
       type: object
       required: [idempotencyKey, itemId, skuId, skuLevel, quantity, reservationType, sourceModule]
@@ -498,6 +509,11 @@ components:
             productMasterDataIncomplete: { value: { error: { code: PRODUCT_MASTER_DATA_INCOMPLETE, message: "PRODUCT-MASTER does not state the lot / serial flag this SKU level needs", details: { skuLevel: Lsku, lotControlled: null, serialControlled: true }, correlationId: req-13 }, contractVersion: v1 } }
             itemNotActive: { value: { error: { code: ITEM_NOT_ACTIVE, message: "The item / SKU lifecycle status does not allow a GOODS_RECEIPT_PO movement", details: { itemLifecycleStatus: Deactivated, skuLifecycleStatus: Deactivated, movementType: GOODS_RECEIPT_PO }, correlationId: req-14 }, contractVersion: v1 } }
             skuLevelNotStockable: { value: { error: { code: SKU_LEVEL_NOT_STOCKABLE, message: "A GSKU-level movement needs a product whose serial flag is explicitly false", details: { skuLevel: Gsku, productSerialControlled: true }, correlationId: req-15 }, contractVersion: v1 } }
+            fefoBypassReasonRequired: { value: { error: { code: FEFO_BYPASS_REASON_REQUIRED, message: "FEFO: lot L-101 (expiry 2027-01-31) expires earlier; issuing another lot needs fefoBypassReason", details: { firstEligibleLotId: 3f2b5a1e-0000-4000-8000-000000000101, firstEligibleLotNumber: L-101, firstEligibleExpiry: "2027-01-31", lotId: 3f2b5a1e-0000-4000-8000-000000000102, warehouseId: 3f2b5a1e-0000-4000-8000-000000000201 }, correlationId: req-12 }, contractVersion: v1 } }
+            fefoOrderViolation: { value: { error: { code: FEFO_ORDER_VIOLATION, message: "FEFO: lot L-101 must be issued first", details: { firstEligibleLotId: 3f2b5a1e-0000-4000-8000-000000000101, firstEligibleLotNumber: L-101, firstEligibleExpiry: "2027-01-31" }, correlationId: req-13 }, contractVersion: v1 } }
+            lotBelowMinRemainingShelfLife: { value: { error: { code: LOT_BELOW_MIN_REMAINING_SHELF_LIFE, message: "The lot has 40 days of shelf life left, below the minimum of 90: receive it into QUARANTINE", details: { remainingDays: 40, requiredDays: 90, requiredToStockStatus: QUARANTINE }, correlationId: req-14 }, contractVersion: v1 } }
+            lotExpired: { value: { error: { code: LOT_EXPIRED, message: "The lot has expired", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000103, lotNumber: L-103 }, correlationId: req-15 }, contractVersion: v1 } }
+            lotBlocked: { value: { error: { code: LOT_BLOCKED, message: "The lot is blocked", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000104, lotNumber: L-104 }, correlationId: req-16 }, contractVersion: v1 } }
     ProductMasterUnavailable:
       description: itemId/skuId doğrulaması yapılamadı (fail-closed, silent-pass YOK)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: PRODUCT_MASTER_UNAVAILABLE, message: "PRODUCT-MASTER erişilemedi", correlationId: req-7 }, contractVersion: v1 } } }
