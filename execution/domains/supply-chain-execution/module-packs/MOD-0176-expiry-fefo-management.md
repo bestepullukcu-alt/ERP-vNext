@@ -931,6 +931,13 @@ neighbours unchanged. Gateway tests 110/111 → **134/135** (the known 5063/5064
 restored green. Probe: own gateway copy on 5100 → `GET /api/expiry/policy` (random `X-Tenant-Id`, no token) **401 from localhost:5067**
 (Ocelot log), `/api/expiryX` 404 (no route).
 
+**INT — CT acceptance (2026-10-12).** Commits `91d89847e` + `2a180b48a` on `feature/int/mod-0176-expiry-routes` (base `80b417c58`,
+`HEAD..origin/main` = 0, tree clean, 4 files +327). The ocelot diff is exactly the two `/api/expiry` blocks (5067, GET/POST/PUT/OPTIONS, no
+auth / transform / rate limit). The CT re-measured gateway tests **134/135** (the one red = the known 5063/5064/5065 port test, FU-INT1-01).
+CT sabotage (own): `DELETE` added to `/api/expiry/{everything}` → **4 of 24** expiry route tests red; restored, `git diff` empty.
+**D-INT-1 accepted, no follow-up:** the blocks sit after `/api/v1/esign/{everything}` because the INT-QE order test pins the four blocks
+after trace; Ocelot matches by template, so placement does not change routing. Fast-forwarded into the MVP-1 branch.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
