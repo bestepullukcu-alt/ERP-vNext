@@ -1,4 +1,5 @@
 using System.Text;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.PlanningService.Application.Features.DemandPlanning.Behaviors;
 using Diten.PlanningService.Application.Features.DemandPlanning;
 using Diten.PlanningService.Application.Features.DemandPlanning.Contracts;
@@ -53,7 +54,7 @@ public static class DemandPlanningServiceCollectionExtensions
                     ValidIssuer = issuer,
                     ValidAudience = audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
-                    ClockSkew = TimeSpan.FromSeconds(30)
+                    ClockSkew = JwtValidationDefaults.ClockSkew
                 };
             });
 

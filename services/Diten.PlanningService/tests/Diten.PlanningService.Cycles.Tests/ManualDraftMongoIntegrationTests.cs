@@ -80,7 +80,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task BsonRoundTrip_PreservesTwoParts52WeeksValueKindsAndAudit()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         var tenant = Guid.NewGuid();
         var legalEntity = Guid.NewGuid();
         var draft = Draft(tenant, legalEntity);
@@ -125,7 +124,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task CreateRetry_OneRevisionAndChangedContentConflicts()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         var tenant = Guid.NewGuid();
         var legalEntity = Guid.NewGuid();
         var draft = Draft(tenant, legalEntity);
@@ -145,7 +143,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task EditRetryAndStaleVersion_AreDurableAndDistinct()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         var tenant = Guid.NewGuid();
         var legalEntity = Guid.NewGuid();
         var draft = Draft(tenant, legalEntity);
@@ -171,7 +168,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task ConcurrentEdits_WithSameVersion_AtMostOneCommits()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         var tenant = Guid.NewGuid();
         var legalEntity = Guid.NewGuid();
         var draft = Draft(tenant, legalEntity);
@@ -195,7 +191,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task TenantAndLegalEntityScopes_DoNotLeakDraftOrAudit()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         var tenant = Guid.NewGuid();
         var legalEntity = Guid.NewGuid();
         var draft = Draft(tenant, legalEntity);
@@ -216,7 +211,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task MongoAuditInsertFailure_RollsBackManifestAndAllSeriesParts()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         var tenant = Guid.NewGuid();
         var legalEntity = Guid.NewGuid();
         var draft = Draft(tenant, legalEntity);
@@ -262,7 +256,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task MongoEditAuditFailure_RollsBackVersionAndWeekChange()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         var tenant = Guid.NewGuid();
         var legalEntity = Guid.NewGuid();
         var draft = Draft(tenant, legalEntity);
@@ -314,7 +307,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task CorruptPhysicalPartIdentity_NeverReturnsPartialDraft()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         foreach (var field in new[]
                  { "TenantId", "LegalEntityId", "RevisionId", "SkuId", "WarehouseId" })
         {
@@ -348,7 +340,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task MissingDuplicateOrUnreadablePart_NeverReturnsPartialDraft()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         foreach (var corruptionKind in new[] { "Missing", "DuplicateContent", "Unreadable" })
         {
             var tenant = Guid.NewGuid();
@@ -381,7 +372,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task CorruptCreationAuditFields_NeverReturnsDraft()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         foreach (var field in new[]
                  { "RequestKey", "Fingerprint", "ActorId", "Reason", "OccurredAt" })
         {
@@ -415,7 +405,6 @@ public sealed class ManualDraftMongoIntegrationTests
     public async Task EditAuditVersionGap_NeverReturnsDraft()
     {
         var (store, context) = Open();
-        await store.EnsureIndexesAsync();
         var tenant = Guid.NewGuid();
         var legalEntity = Guid.NewGuid();
         var draft = Draft(tenant, legalEntity);

@@ -64,6 +64,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
         ["Diten.MdmService"] = new(Debt: 13, Exceptions: 0, Indirect: 8),
         ["Diten.Platform"] = new(Debt: 164, Exceptions: 5, K2Debt: 192, WritingQueries: 3),
+        ["Diten.PlanningService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),

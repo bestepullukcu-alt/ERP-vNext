@@ -258,7 +258,6 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         var draft = Draft(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), FirstWeek);
         var publisher = Guid.NewGuid();
         await Approve(drafts, draft, draft.CreatedBy, publisher);
-        await published.EnsureIndexesAsync();
         await context.Outbox.InsertOneAsync(new DemandOutboxMessage
         {
             TenantId = draft.TenantId, LegalEntityId = draft.LegalEntityId,

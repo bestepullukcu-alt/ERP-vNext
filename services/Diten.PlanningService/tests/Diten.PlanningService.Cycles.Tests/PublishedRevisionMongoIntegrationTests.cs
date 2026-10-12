@@ -318,7 +318,6 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         Assert.Equal(PublishOutcome.Published,
             (await Publish(published, previous, reviewer)).Outcome);
         await Approve(drafts, draft, draft.CreatedBy, reviewer);
-        await published.EnsureIndexesAsync();
         var eventId = PublishedRevisionMongoStore.DeterministicEventId(
             draft.TenantId, draft.LegalEntityId, draft.Id);
         await context.Outbox.InsertOneAsync(new DemandOutboxMessage
@@ -352,7 +351,6 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         var draft = Draft(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), FirstWeek);
         var reviewer = Guid.NewGuid();
         await Approve(drafts, draft, draft.CreatedBy, reviewer);
-        await published.EnsureIndexesAsync();
         var keys = Builders<DemandAuditEntry>.IndexKeys;
         await context.AuditEntries.Indexes.CreateOneAsync(
             new CreateIndexModel<DemandAuditEntry>(keys.Ascending(x => x.Action),
