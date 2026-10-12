@@ -10,12 +10,13 @@ namespace Diten.Platform.Infrastructure.Persistence;
 ///
 /// <para>Two lines added the same field independently: MVP-1 (WP-0023-FX) wrote it as a STRING (the user id in "D"
 /// form), main (WP-WORKFLOW-APPROVAL-STATUS-01 B2) as a <see cref="Guid"/> (Standard binary). The merged entity keeps
-/// main's <c>Guid?</c>. A database an MVP-1 build ran against can therefore hold the string form, and the default
-/// serializer would throw <c>FormatException</c> on the whole instance — every task read of that workflow would fail.
-/// This serializer reads a BSON string, a Guid (binary) or null, and always WRITES the Standard Guid, so a document is
-/// normalised the next time it is saved. No bulk migration (owner decision).</para>
+/// main's <c>Guid?</c>. A database an MVP-1 build ran against can therefore hold the string form. This serializer reads
+/// a BSON string, a Guid (binary) or null, and always WRITES the Standard Guid, so a document is normalised the next time
+/// it is saved. No bulk migration (owner decision).</para>
 ///
-/// <para>A string that is not a Guid reads as null: the instance then falls back to main's pre-field comparison
+/// <para>Measured (K3 sabotage e): the driver's default GuidSerializer already reads a VALID Guid text. What this map
+/// adds is the text that is NOT a Guid: the default throws <c>FormatException</c> on the whole instance (every task read
+/// of that workflow fails); here it reads as null, and the instance falls back to main's pre-field comparison
 /// (<c>StartedBy</c>), the same as an instance from before the field existed.</para>
 /// </summary>
 public static class WorkflowInstanceBsonMap

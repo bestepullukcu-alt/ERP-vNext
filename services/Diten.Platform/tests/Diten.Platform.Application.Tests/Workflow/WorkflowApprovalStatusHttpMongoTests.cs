@@ -251,6 +251,26 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
         Assert.Equal(WorkflowInstanceStatus.Completed, (await InstanceAsync(instance.InstanceId)).Status);
     }
 
+    /// <summary>
+    /// Measured with the K3 sabotage (e): the driver's own GuidSerializer already reads a VALID Guid text, so the two tests
+    /// above stay green without WorkflowInstanceBsonMap. What the map adds is this case — a text that is not a Guid. The
+    /// default serializer throws FormatException on the whole instance (every task read of it fails); the map reads it as
+    /// "no starter id", which is exactly an instance from before the field: main's old comparison (owner decision B).
+    /// </summary>
+    [Fact]
+    public async Task Sync1_a_starter_id_text_that_is_not_a_guid_reads_as_no_id_and_the_instance_keeps_the_old_comparison()
+    {
+        var starter = Guid.NewGuid();
+        var definitionId = await PlainDefinitionAsync(starter);
+        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
+        await _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instance.InstanceId, GuidRepresentation.Standard)),
+            Builders<BsonDocument>.Update.Set("StartedByUserId", "not-a-user-id"));
+
+        Assert.Null((await InstanceAsync(instance.InstanceId)).StartedByUserId);
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(starter, instance.InstanceId, "approve")).Status);
+    }
+
     private async Task<BsonDocument> WriteStarterIdAsTextAsync(Guid instanceId, Guid starter)
     {
         await _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
