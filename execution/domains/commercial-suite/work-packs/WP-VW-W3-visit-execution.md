@@ -733,3 +733,50 @@ Commit: "feat(auth): WP-VW-W3-AUTH — visit-evidence document-repository keys t
 - W3-BE-c + W3-WEB-c / d (mockup sonrası);
 - W3 mobil notu;
 - açık karar `visit-evidence.read-all` yalnız elle atanabilir mi.
+
+## §37 ek — W3 canlı E4, 1. oturum (2026-10-12, CT; kullanıcı onaylı yazımlar)
+
+**Hazırlık (kullanıcı çalıştırdı):**
+- `scripts/dev/grant-w3-visit-execution.py --apply`: 9 izin, 97c5 Admin, marker `manual-grant-w3-visit-execution`, geri alma `--revert`. Katalogda üç kanıt anahtarı **Tenant** (W3-AUTH düzeltmesi çalıştı).
+- `scripts/dev/w3-evidence-policy-location.py --info`: kiracı konum kuralı geçici "bilgi" (yerleşik tarayıcı konum vermiyor). **Geri alınacak: `--revert`.**
+- 42. hafta kullanıcı onayıyla onaylandı.
+
+**Akış (Bülent Yardımcı · Amerikan Hastanesi · 12 Eki 10:06, `d2ce28e6…`):**
+
+| adım | sonuç |
+|---|---|
+| ayrıntı paneli | "Bugün" + ipucu + tam genişlik "Ziyarete başla" + Yapılamadı / Ertele / İptal — mockup ile uyumlu |
+| E3 (konum zorunlu) | konum reddi → kırmızı "İzin verilmedi" + açıklama + "Yeniden dene"; "Eksik: konum"; başlat pasif ✅ |
+| E3 (konum bilgi) | "Konum · isteğe bağlı", "Bilgi olarak kaydedilir; yöneticiniz görür."; başlat etkin ✅ |
+| başlat | ilk deneme **502**, sonra **404** → iki hata bulundu ve düzeltildi (aşağıda) → **201** ✅ |
+| sunum sayfası | masaüstü bölünmüş, üst çubuk "kurum · başladı 13:45", Yüz yüze / Uzaktan, kumanda sekmeleri ✅. Bu ziyaretin ürünlerinde onaylı içerik yok → "Bu ziyarette sunulacak onaylı içerik yok." (doğru) |
+| bitir | onay penceresi → `capture` ×2 + `finish` 200 → E4c: toplam 01:10, kısa ziyaret uyarısı, doktor onayı kartı ✅ |
+| imza | tuval + onay → imza **Platform'da** (9.193 B png, confirmed, approval); ekrana 409 döndü (aşağıda) |
+| kayıt | `finished`, `location_missing` + `short_visit`, konum `info / missing / denied`, foto yok ✅ |
+| takvim | `report_missing`, son tarih 14 Eki 23:59 (CT düzeltmesi `e9b88bf85` canlıda doğrulandı) ✅ |
+
+**Canlıda bulunup düzeltilenler (`9f300a517`):**
+1. **Multipart vekiller boş gövde iletiyordu.**
+   - MVC, eylemde herhangi bir bağlanan parametre olduğunda (yalnız `CancellationToken` bile) form değer sağlayıcısıyla gövdeyi eylemden ÖNCE okuyor.
+   - Başlatma vekili akış + sabit Content-Length → 502; tamponlayınca boş form → CRM 404.
+   - Çözüm: yeni `[DisableFormValueModelBinding]` kaynak filtresi (başlatma + imza vekili); başlatma tamponlu.
+   - Test + sabotaj (öznitelik kaldırıldı → kırmızı). Web **897/0**.
+   - Birim testleri bellekteki gövdeyle bunu göremiyordu.
+2. **Gateway rotaları eksikti (W3-BE-b açığı, CT kabulde kaçırdı):** `/api/crm/visit-presentation/{everything}`, `/api/crm/objection-responses` (+`/{everything}`). Boş gövdeli 404 → eklendi. Gateway 86/1 (önceden var olan 5063–5065).
+
+**Açık bulgular (takip):**
+- **FU-W3-SIG-DUP:** tek "İmzayı kaydet" tıklaması CRM'de iki işlem gördü (ilki yazdı, ikincisi `visit_signature_exists` 409); istemci tek istek gönderiyor, CRM / Gateway'de yeniden deneme yok. Kök neden kanıtlanamadı (olası: HTTP istemcisinin kapalı bağlantıda otomatik yeniden göndermesi). Ekran 409'u hata gösteriyor, yenileyince "Doktor imzası alındı.".
+  - Düzeltme: 409 `visit_signature_exists` → yürütmeyi yeniden oku, imzalı göster.
+  - Kök neden araştırması.
+- **FU-W3-LIVE-CHIP:** "Devam ediyor · 00:00" saymıyor; yalnız slayt sürelerini topluyor. Mockup'ta başlangıçtan beri geçen süre → sunucu `startedAt`'tan say.
+- **FU-W3-SHORT-COPY:** "Ziyaret 02:00 süreden kısa…" → "2 dakikadan kısa…" (mockup).
+- **FU-W3-PRES-NAV:** sunum sayfasında kenar menüsü CRM yerine başka modül grubunu açıyor (sayfa menüde kayıtlı değil).
+- **Veri:**
+  - Bugünkü ziyaretlerin ürünlerinde (KONSET, KAPLERON, ROTVA) onaylı içerik yok.
+  - TUTUKON yollarında slayt başlıkları var ama bağlı onaylı iddia (madde işareti), hedef süre ve sunum notu yok.
+  - Zengin slayt görünümü için içerik verisi gerekli (W3-WEB-c yazım ekranı veya veri sahibi).
+- **Denenmeyenler:**
+  - fotoğraf (kamera / dosya seçici yok);
+  - tablet PIN ve telefon yerleşimi (bölme küçük, ziyaret bitti);
+  - Arapça RTL.
+  - Yeni bir bugünkü ziyaretle (kullanıcı onayı) yapılabilir.
