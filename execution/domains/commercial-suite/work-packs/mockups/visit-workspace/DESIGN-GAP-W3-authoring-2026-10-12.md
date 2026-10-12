@@ -62,6 +62,12 @@
 
 ## 4. Kullanıcı kararları
 > 2026-10-12 soruldu; yanıtlar buraya işlenecek.
+>
+> **Kullanıcı (2026-10-12):**
+> - Menü, koyu tema ve Arapça eksikleri CT / Web tarafında çözülür (mockup'tan beklenmez).
+> - K-C1: temsilci tüzel kişilik / iş birimi kaynağı **WorkCenter'ın yaptığı gibi ve / veya CRM bölge (territory) ataması** üzerinden analiz edilsin.
+> - K-A1: onay akışı **Workflow (MOD-0023) + WorkCenter (Görev Merkezi)** ile bağlansın.
+> - İki analiz çalışıyor; sonuçla bu tablo güncellenecek.
 
 | # | konu | CT önerisi |
 |---|---|---|
@@ -75,3 +81,73 @@
 | K-C2 | Kapsam kaldırınca alt iş birimleri | kaldırılır; **geçmiş korunur** |
 | K-C3 | İstisna ayrıntıları | aynı yönetim izni + kişi bazlı SoD; taslak reddet / geri çek eklenir; başlangıç bugün ya da sonrası; aynı kural için çakışan istisna yok; erken bitirme = bitiş bugün + "Erken bitti"; 30 gün iki uç dahil |
 | K-C4 | Salt okuma izni | `crm.visit-evidence-policy.read` eklenir |
+
+## 5. Analiz sonuçları (2026-10-12, CT; iki salt okuma analizi)
+
+### 5.1 Temsilci → tüzel kişilik / iş birimi (K-C1)
+
+**Tüzel kişilik — WorkCenter kuralı.** Platform MOD-0288 Organizasyon:
+- **Zincir:** birincil aktif koltuk (`position_assignments`) → pozisyon → org birimi → `LegalEntityId`; MDM'de doğrulanıyor, doğrulanamazsa kapalı (fail-closed).
+- **Kullananlar:** Görevler, Zaman Kaydı (MOD-0280, timesheet tüzel kişiliği), çalışma saatleri. Çözüm talep anında yapılır (`TaskSeatDirectory`, `OrgDataScopeResolver`).
+- **CRM erişimi yok.** "Benim koltuğum" ucu yok; liste ucu herkesi döndürür ve okuma izni ister.
+- **Kurallardaki eksikler:**
+  - kullanıcı başına tek birincil koltuk kuralı yok;
+  - `OrgDataScopeResolver` iptal edilmiş koltukları süzmüyor.
+- **97c5 verisi:** yalnız Admin (CEO) ve sema (MED-DIR) koltuklu. Hiçbir temsilcinin koltuğu yok; `medical-representative` paylaşımlı bir pozisyon.
+
+**İş birimi — CRM bölge ataması.**
+- CRM'de iş birimi bir MOD-0048 referans kodu: 97c5'te `alpha` / `beta` / `gamma`. Platform org birimi değil; Platform, HCM ve MDM'de karşılığı yok.
+- Temsilci bölge atamasında `BusinessScopes` var, ama 97c5'teki 4 atamanın (hepsi Admin) tamamında **boş**.
+- Bir temsilcinin birden çok iş birimi olabiliyor (yalnız uyarı veriliyor).
+- **Bölgede tüzel kişilik alanı YOK**, yalnız ülke var. Ülkeden tüzel kişiliğe gitmek belirsiz: 97c5'te 5 TR tüzel kişiliği var.
+
+**Uygun değil:**
+- Auth `legal_entities` claim'i: yalnız hr-future dalında, main'de devre dışı.
+- HCM `EmploymentRecord`: Employee ile User arasında bağ yok, koleksiyon da boş.
+
+**CT önerisi — hibrit:**
+- **Tüzel kişilik** = Platform birincil koltuğu (WorkCenter kuralı); yeni bir Platform "benim koltuğum" ucu veya iç uç gerekir.
+- **İş birimi** = temsilcinin geçerli birincil bölge atamalarının iş birimi kodu.
+- **Kapsam anahtarı** `(LegalEntityId, iş birimi kodu)`. Mockup'taki ağaç (tüzel kişilik > iş birimi) buna uyar.
+- **Çözüm kuralı:**
+  - tek iş birimi → iş birimi katmanı;
+  - sıfır ya da birden çok → iş birimi katmanı yok;
+  - koltuk yoksa veya MDM'ye ulaşılamazsa → tüzel kişilik katmanı yok;
+  - her durumda kiracı katmanına düşülür.
+- Çözülen kapsam yürütme kaydına damgalanır.
+- **Veri ön koşulları:**
+  - her temsilcinin Platform pozisyon ataması olmalı (İK);
+  - birincil bölge atamasında tam bir iş birimi kodu olmalı (CRM yöneticisi).
+- **CRM'de temsilci → tüzel kişilik tablosu YOK;** bölgeye tüzel kişilik alanı da EKLENMEZ.
+
+### 5.2 Onay akışı (K-A1) — Workflow + WorkCenter
+
+**Altyapı hazır ve CRM'de canlı.**
+- Workflow (MOD-0023, Platform) + WorkCenterNext gelen kutusu.
+- Kullananlar: iddialar (CLAIM-CORE-MLR, canlı E2E 2026-09-29), bilgi yolu revizyonu (KP-MLR), güvenlik metni ve ülke hukuki profili (KP-REG, canlı E4 2026-10-02).
+- **Kopyalanacak desen:** `RegulatoryTextLifecycle.cs`:
+  - gönder (180–247), geri çek (250–303), karar (310–430);
+  - sonuç uygulayıcı + okumada uzlaştırma (`RegulatoryTextCore.cs` 136–331);
+  - Platform tamamlanma olayı RabbitMQ ile `ClaimWorkflowOutcomeConsumer` üzerinden.
+
+**İtiraz yanıtı akışı:**
+1. "Onaya gönder" → Workflow örneği (`crm.objection-response`, şablon örn. `CRM-OBJ-RESP`, Görev Merkezi derin bağlantısı) → durum `in-review`.
+2. Karar Görev Merkezi'nde ya da CRM sayfasında: onayla / taslağa geri gönder (not zorunlu).
+3. CRM durumu günceller.
+4. Geri çekme yalnız gönderende. Eski `/approve` ucu → 409 `approval_via_workflow_only`.
+- **Platform kodu YOK:** CRM kodu + 1 şablon + pozisyon atamaları + yetki verme.
+
+**Süreli istisna:** aynı desen (`crm.visit-evidence-exception`, şablon örn. `CRM-VISIT-EVIDENCE-EXC`, sabit onaylayıcı pozisyonu). "Temsilcinin yöneticisi onaylasın" seçeneği Platform değişikliği ister.
+
+**Riskler ve önlemler:**
+- Platform yalnız **gönderen kişiyi** onaydan engelliyor → CRM sonuç uygulayıcısı yazar / son düzenleyen / gönderen onayını reddeder (taslağa döner). Aynı açık KP-5a'da da var.
+- Workflow görevi **yalnız ilk adaya** veriyor (kimliğe göre sıralı; diğerleri 403) → pozisyonlar, yazarın onaylayıcı pozisyonunda olmayacağı şekilde kurulmalı.
+- İstisnanın etkinleşmesi olaya bağlı: temsilcinin uzlaştırma için izni yok → olay veya arka plan uzlaştırması gerekir.
+- `platform.workflow.*` yetkileri betikle verilir; yeniden giriş gerekir.
+
+**Sonraki Platform paketi (ayrı):**
+- dışlanan kişiler listesi;
+- herhangi bir adayın karar verebilmesi;
+- olay imzalama;
+- onaylayıcı bildirimi;
+- yönetici tipinde aday.
