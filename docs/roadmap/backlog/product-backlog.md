@@ -7547,6 +7547,26 @@ Gelecek regresyon riski: 🟢 (yalnız etiket), ama yetki yanlış verilmesine y
 
 ---
 
+### BL-510
+
+**Erişim reddi kartı HTTP 200 ile dönüyor: ortak `_AccessDenied` parçası UAS-001'in istediği 403'ü vermiyor**
+
+DURUM: AÇIK · SAHİP: CT (ortak Web altyapısı) · BULAN: MVP-3 CT, M-4 canlı ölçümü (MOD-0193 BOM & Routings) · KAYIT: 2026-10-12
+
+UAS-001 §3 tablosu "oturum var, izin yok" için **403** ve kabuk içinde açıklama istiyor. Ortak `Views/Shared/_AccessDenied.cshtml`
+parçası açıklamayı doğru yerde (kabuğun içinde, yönlendirmesiz, sayfa iskeleti çizmeden) gösteriyor ama yanıt kodunu değiştirmiyor:
+sayfa **200** döner. Bu parçayı kullanan bütün sayfalarda aynı; MVP-3'e özgü değil. Kullanıcı doğru mesajı görüyor; sorun teknik —
+izleme araçları, erişim günlükleri ve HTTP düzeyindeki testler reddedilen isteği "başarılı" sayıyor.
+**Ölçüldü (2026-10-12, dev, canlı fleet):** BOM modülü yetkisi olmayan kiracı Admin'i ile `GET /Manufacturing/Boms` ve
+`/Manufacturing/Boms/Create` → **HTTP 200**, `Location` yok, kabuk var, `diten-access-denied` kartı var, BOM iskeleti yok; aynı
+kullanıcıyla ağ geçidinden `GET /api/bom/versions` → **403**. Kanıt:
+`docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m4-entitlement-uas001.txt`.
+Yapılacak: parça (ya da onu çağıran ortak yol) yanıt kodunu 403 yapsın — kabuk ve metin aynı kalır; parçayı kullanan sayfa sayısı
+ölçülüp bir test 403'ü sabitlesin. Bu kayıt yalnız tespittir; düzeltme ayrı iştir.
+Gelecek regresyon riski: 🟢 (görünen ekran değişmez), ama yanıt kodu değişince 200 bekleyen mevcut testler ölçülmeli.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
