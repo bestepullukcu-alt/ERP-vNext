@@ -51,4 +51,24 @@ public sealed class ManifestNamespaceOwnershipTests
         Assert.DoesNotContain(Keys(new LotSerialTrackingManifestProvider()), k => k.StartsWith("inventory.", StringComparison.Ordinal));
         Assert.DoesNotContain(Keys(new InventoryLedgerManifestProvider()), k => k.StartsWith("trace.", StringComparison.Ordinal));
     }
+
+    /// <summary>
+    /// WP-0176-F1 (pack §14.1, FU-0174-CAT-01): the MOD-0176 manifest declares ONLY <c>expiry.*</c> keys — exactly the eight F1 keys, as
+    /// <c>ApiPermissions</c> (no page yet). K3 sabotage (e): a <c>quarantine.*</c> key in it → red.
+    /// </summary>
+    [Fact]
+    public void The_expiry_module_declares_only_expiry_keys()
+    {
+        var manifest = new Diten.InventoryService.Api.Expiry.ExpiryFefoManifestProvider().GetManifest();
+        var keys = manifest.Pages.Select(p => p.RequiredPermission)
+            .Concat(manifest.Pages.SelectMany(p => p.Actions).Select(a => a.PermissionKey))
+            .Concat((manifest.ApiPermissions ?? []).Select(a => a.PermissionKey))
+            .ToList();
+
+        Assert.Equal("EXPIRY-FEFO-MANAGEMENT", manifest.ModuleCode);
+        var foreign = keys.Where(k => !k.StartsWith("expiry.", StringComparison.Ordinal)).ToList();
+        Assert.True(foreign.Count == 0, "EXPIRY-FEFO-MANAGEMENT declares keys outside 'expiry.*':\n" + string.Join("\n", foreign));
+        Assert.Equal(Diten.InventoryService.Infrastructure.Authorization.ExpiryPermissions.F1.OrderBy(k => k, StringComparer.Ordinal),
+            keys.OrderBy(k => k, StringComparer.Ordinal));
+    }
 }

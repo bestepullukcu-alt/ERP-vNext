@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Diten.BuildingBlocks.Security.Secrets;
+using Diten.InventoryService.Api.Expiry;
 using Diten.InventoryService.Api.ModuleRegistration;
 using Diten.InventoryService.Api.Quarantine;
 using Diten.InventoryService.Api.Traceability;
@@ -45,6 +46,8 @@ builder.Services.AddTraceability(builder.Configuration); // MOD-0174 slice P1
 builder.Services.AddScoped<Diten.InventoryService.Application.Features.Inventory.Services.InternalMovementPostingService>();
 builder.Services.AddSingleton<IModuleManifestProvider, QuarantineBlockedStockManifestProvider>(); // MOD-0175 (pack §14)
 builder.Services.AddQuarantine(builder.Configuration); // MOD-0175 slice Q1
+builder.Services.AddSingleton<IModuleManifestProvider, ExpiryFefoManifestProvider>(); // MOD-0176 (pack §14.4)
+builder.Services.AddExpiry(builder.Configuration); // MOD-0176 slice F1
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 // ── JWT (issuer / audience / keys from configuration; shared clock skew — BL-296) ─────────────────────────

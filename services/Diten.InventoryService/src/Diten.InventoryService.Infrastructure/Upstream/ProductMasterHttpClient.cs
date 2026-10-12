@@ -73,9 +73,23 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
                 UpstreamHttp.NullableBool(root, "lotControlled"),
                 UpstreamHttp.NullableBool(root, "serialControlled"),
                 // WP-0174-ITEM (O-PM1-3): an explicit false refuses; missing stays null.
-                UpstreamHttp.NullableBool(root, "stockable")),
+                UpstreamHttp.NullableBool(root, "stockable"),
+                // WP-0176-F1 (v1.1 SkuRef :729-732): the shelf-life days — unknown stays null ("Tanımsız"), never 0.
+                NullableDays(root, "shelfLifeDays"),
+                NullableDays(root, "retestDays"),
+                NullableDays(root, "minRemainingShelfLifeDays")),
             Unavailable,
             cancellationToken);
+
+    /// <summary>
+    /// WP-0176-F1: a PRODUCT-MASTER day count — a JSON integer ≥ 0, else null. Absent, <c>null</c>, a string, a fraction or a negative
+    /// number are "not stated" (PRODUCT-MASTER O-1: "Alan yok = bilinmiyor; false / 0 varsayılmaz") — never 0, so a missing minimum
+    /// remaining shelf life is never read as "no minimum" (KF-C applies the rule only to a stated value).
+    /// </summary>
+    internal static int? NullableDays(JsonElement element, string property)
+        => element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var days) && days >= 0
+            ? days
+            : null;
 
     /// <summary>
     /// The contract declares no 404 for <c>getSkuUom</c>; a 404 is still read as "no conversion data" (→ 422

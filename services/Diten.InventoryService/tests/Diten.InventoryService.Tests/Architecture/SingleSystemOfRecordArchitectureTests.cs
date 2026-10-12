@@ -40,6 +40,12 @@ public sealed class SingleSystemOfRecordArchitectureTests
             ["quarantine_block_reasons", "quarantine_blocked_stock", "quarantine_decision_events", "quarantine_decisions", "quarantine_event_inbox",
              "quarantine_history", "quarantine_holds", "quarantine_lot_release_claims", "quarantine_sequences", "quarantine_settings"],
             Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All.OrderBy(x => x).ToList());
+
+        // MOD-0176 (WP-0176-F1) — expiry policy / exception records in the same database, prefix expiry_ (pack §3). None is stock: an
+        // exception Quantity is the quantity the case is about.
+        Assert.Equal(
+            ["expiry_counters", "expiry_exception_events", "expiry_exceptions", "expiry_policies", "expiry_policy_history"],
+            Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All.OrderBy(x => x).ToList());
     }
 
     [Fact]
@@ -48,11 +54,12 @@ public sealed class SingleSystemOfRecordArchitectureTests
         var persistence = SourceScan.Production("Diten.InventoryService.Persistence");
         var declared = InventoryCollections.All.Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.All)
             .Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections)
-            .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All).ToList();
+            .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
+            .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All).ToList();
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)
-                        || n.StartsWith("quarantine_", StringComparison.Ordinal) || n.Contains("stock"))
+                        || n.StartsWith("quarantine_", StringComparison.Ordinal) || n.StartsWith("expiry_", StringComparison.Ordinal) || n.Contains("stock"))
             .Distinct()
             .ToList();
 
@@ -64,7 +71,7 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .ToList();
         Assert.All(getCollectionCalls, arg => Assert.True(
             arg.StartsWith("InventoryCollections.", StringComparison.Ordinal) || arg.StartsWith("TraceCollections.", StringComparison.Ordinal)
-            || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal),
+            || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal) || arg.StartsWith("ExpiryCollections.", StringComparison.Ordinal),
             $"GetCollection({arg}) does not name a declared collection constant."));
     }
 
