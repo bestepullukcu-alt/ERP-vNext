@@ -1,0 +1,17 @@
+sha256	path	use
+6f02cc694113d07e0af1951c33078226c4cc24c5755e80a773b3608704564d7d	docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/ARTIFACTS.sha256	Baseline evidence seal
+a66b3124c9abcd29ac7d709671e5f6bb590b753da5ec18cb787182aa2da8175e	docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/UNESTIMATED-SCOPE.tsv	Controlling open-scope row
+47db9c81f5ff4700cc3c09dd5c510eb0f0cebab1c0468f2f3605837b0b95e652	docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/EFFORT.tsv	Baseline O/M/P reserves
+3f34ccc970b75513a49208b2a131c786fc622003902a254a0becf548eca4f670	docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/REPORT.md	Baseline totals and terminology
+2ace6f78d97fc9987b1a688e9db42cc143521e20ac8768f45dbbe32328d05b41	docs/roadmap/plans/mvp6-loads-ui-scope-01/SHA256SUMS	UI preparation package seal
+ce1cadef9bd0b10ecdf0a7159fbc88ac4f6d423e33fe8040d0231e567d5f7b65	docs/roadmap/plans/mvp6-loads-ui-scope-01/SCOPE.md	ROOT-UI-01 and LIVE-185
+9946b3d42f29bfe2e0dd4388e93549afe0726285fbc0e222064e8b55af160b4e	docs/roadmap/plans/mvp6-loads-ui-scope-01/EFFORT.md	48/84/144 and reserve replacement
+d11de452a2549f5fec896ad12ea35f9ee3b68504616a6b9351b4ab8105a23bd0	docs/roadmap/plans/mvp6-loads-ui-scope-01/ACCEPTANCE.md	U15/U16 transition and root gates
+1effbb3ebc57ced3b666ad695b647d2873f928a1e6b13a85246c5f756be57cf1	docs/roadmap/plans/mvp6-loads-ui-scope-01/SHARED-HANDOFF.md	Integration-owner/root handoff
+4868669307a1cd37b88320f27d7c0c2e1c1ce8ed649f48c067cbedf20307536f	execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md	Controlling Loads pack
+28646bdeef8e2c13a2f0db1314c504522d54b062c46968a35e00b82ebf4c71c5	docs/analysis/workpackages/WP-MVP6-logistics.md	Full MVP ownership/golden flow
+5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	docs/analysis/contracts/shipment-bundle.openapi.yaml	Published Loads operations/schemas
+a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1	docs/analysis/contracts/loads-semantics-v2.0.0.md	Lifecycle/root/replay policy
+7c70d81ddb0256478bf580eedd3b4fd0dc9490748b70a5e7fb9dd0860dd5468e	docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-02/SOP-22.md	Bounded acceptance boundary
+cd646b97d69b92b0c00f00a27f25c1077f6bf80a7c849a6106b226cfe758bf56	docs/records/audits/2026-09/mvp6-shipment-real-auth-http-recovery-01/FINDINGS.md	Shipment Root R2 open defect
+544dfc8fc680d6f3033fbb867a3606d90a2b0d99431feafa9321d2a296ef3790	docs/records/audits/2026-09/mvp6-shipment-real-auth-http-recovery-01/SOP-22.md	Root defect verdict boundary

@@ -22,6 +22,10 @@ public sealed class ApprovalTask : TenantScopedEntity
     public string? IdempotencyKey { get; set; }
     public bool CommentRequired { get; set; }
     public bool EvidenceRequired { get; set; }
+
+    // MOD-0022 E4 — copied from the step's requirements.signatureRequired / signatureMeaning (absent = false / null).
+    public bool SignatureRequired { get; set; }
+    public string? SignatureMeaning { get; set; }
     public DateTimeOffset? DueAt { get; set; }
     public DateTimeOffset? EscalatedAt { get; set; }
     public int EscalationLevel { get; set; }

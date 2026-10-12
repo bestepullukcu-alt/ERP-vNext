@@ -1,0 +1,227 @@
+# MOD-0186 Reverse Logistics — UI-REVISION-01 (Q36). PROPOSED ONLY — NOT APPROVED. Apply only after alignment.patch.
+# Preimage SHA-256 f4396e8a03f663e34526e3bdaa4c85a4f3c96683ae73bae608f2981e87b33b1f (= alignment.patch target)  Target SHA-256 6c8fbe28f0b058cacf08aaf3941e82845b0842db3f8b8f295a753e746a65a5a0
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+index b2864f9..c6b82ca 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+@@ -3,8 +3,8 @@ id: MOD-0186
+ name: Reverse Logistics
+ domain: supply-chain-execution
+ service: Diten.SupplyChainService
+-shell: none
+-golden_reference: none
++shell: tenant
++golden_reference: slim
+ entity_base: EntityBase
+ status: ready-for-dev
+ status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01 on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
+@@ -12,7 +12,7 @@ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+ target: 2026-09-30
+-form_field_count: 0
++form_field_count: 6
+ ---
+ 
+ # MOD-0186 — Reverse Logistics
+@@ -588,3 +588,200 @@ This section records, without changing any business rule above, the Control Towe
+ **Owned paths:** the 46 effective paths listed in `docs/records/audits/2026-09/mvp6-mod0186-r01-independent-ver-01/authority/returns46.json` (SHA-256 `96f43bd7fa66256ee55e5aea2c4c412887238ea586fd96ceb05f8adb69485969`; 36 source + 10 test/probe paths). `Program.cs` and `ReturnOutboxWorker.cs` are not owned paths. Per the CT record, 43 Returns paths are absent from the common checkout.
+ 
+ **Still open:** common-checkout source uptake and composition, gateway and shared permission registration, real producer authoritative-root uptake beyond the accepted seam, verified inbound receiving and Inventory reconciliation, publisher/Event Bus delivery, UI, migration/backfill, rollout, E5/G5 and full-module acceptance. This section is not `done` status and grants no new DEV scope.
++
++## 32. Tenant UI scope (UI-REVISION-01) — GoldenReferenceSlim
++
++This section adds the tenant UI scope approved in `docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`
++(owner decision MVP6-RETURNS-CLAIMS-UI-SCOPE-OWNER-DECISION-01, 2026-09-26, "approve both as drafted"), bound to the draft package
++`docs/roadmap/plans/mvp6-ui-pack-drafts-01/` (SHA256SUMS `b568c94f7f524dd0bff1e2fa3277571fed174c6214ac0a9efd3ab13200abb57f`;
++`returns/APPROVAL-DECISION.md` `edb2b06df9d3c67958eade30dd16d826173455d45e5a2ffbdb773bb668d2b3b3`). It stacks on §31 and changes
++**no** business, contract, backend, owned-backend-path or acceptance rule in §§1–31. The frontmatter changes `shell: tenant`,
++`golden_reference: slim` and `form_field_count: 6` apply to the UI only. For the UI, §9 ("`shell: none`"), §11 ("not applicable") and
++Phase 1.5 rows 6/7 ("UI N/A") are superseded by this section; for the backend they remain as written. `status` stays `ready-for-dev`
++(backend scope, per §§30–31); UI code is **not** authorized by this section alone (§32.14).
++
++### 32.1 Identity
++
++UI revision inside MOD-0186; no FU, child or new ID. The pack author runs
++`python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0186 --name "Reverse Logistics"` before applying; non-zero exit stops.
++Observed 2026-09-26: `OK`, exit 0.
++
++### 32.2 Layout and shell contract
++
++- `shell: tenant` → every Returns `.cshtml` states `Layout = "_LayoutTenantShell";` explicitly; `_ViewStart.cshtml` unchanged.
++- View folder `frontend/Diten.Web/Views/SupplyChain/Returns/`; route `/SupplyChain/Returns`; no `/Platform` prefix; no `Areas/`.
++- Skeleton, empty and error are three distinct states (VIEW-001 §3.1); no spinner or "Loading" text.
++
++### 32.3 Bound operations (nothing else)
++
++Published SHIPMENT-BUNDLE 3.0.0 / wire v1 (`5dfe7c1b…d21c`) and Returns annex (`00990a28…8a11`) only:
++`queryReturns` (list/filter/reload), `createReturn` (create offcanvas), `transitionReturn` (row action), and Shipment-owned
++`getShipment` consumed read-only (number, status, lines, and the lifecycle root resolved **server-side**). No Return by-ID GET, detail page,
++edit, delete, bulk, import/export, server paging/search/sort, reason/disposition catalogue, remaining-entitlement display, Inventory or Warehouse call.
++
++### 32.4 Screens, routes, permissions
++
++Browser → same-origin MVC (`proxy-profile`, NET-001) → Gateway 5000 → SupplyChain 5061. The browser never calls 5000/5061 or holds a bearer token.
++
++| Surface | MVC route | Gateway downstream | UI display gate | Backend |
++|---|---|---|---|---|
++| Page | GET `/SupplyChain/Returns` | — | `supplychain.returns.read` | — |
++| List adapter | GET `/SupplyChain/Returns/api?shipmentId=&status=` | GET `/api/shipment-bundle/returns` | read | `queryReturns` |
++| Shipment resolve adapter | GET `/SupplyChain/Returns/api/shipments/{shipmentId:guid}` | GET `/api/shipment-bundle/shipments/{shipmentId}` | `.create` + `supplychain.shipments.read` | `getShipment`; projection = number, status, lines (lineNumber, quantity, uomId); root never returned to the browser |
++| Create adapter | POST `/SupplyChain/Returns/api` | root via `getShipment`, then POST `/api/shipment-bundle/returns` | `.create` + `supplychain.shipments.read` | `createReturn` |
++| Transition adapter | POST `/SupplyChain/Returns/api/{returnId:guid}/transition` | root via `getShipment`, then POST `/api/shipment-bundle/returns/{returnId}/transition` | `.transition` + target key + `supplychain.shipments.read` | `transitionReturn` |
++| Unsupported detail/edit/delete/bulk/import/export | absent | absent | — | no route, control, proxy or request |
++
++Permission keys stay exactly as in the annex (D186-05): `supplychain.returns.read`, `.create`, `.transition` plus target keys `.authorize`,
++`.transit`, `.cancel`, `.receive`, `.disposition`, `.close`, plus the approved UI prerequisite **`supplychain.shipments.read`** for create and
++transition actors (G-SHIPREAD). The UI check is a display decision (UAS-001 §4); `[HasPermission]` on the backend stays the authority.
++
++Adapter headers: `Authorization` server-side only; `X-Correlation-Id` = fresh UUID trace for GET, **the Shipment's `lifecycleCorrelationId`**
++for create/transition (the Return inherits the Shipment root; annex "Persist inherited Shipment root"); `Idempotency-Key` = browser per-intent
++key forwarded exactly; **`X-Tenant-Id`/`X-Legal-Entity-Id` required by the Returns family, filled only from the signed session claims**, never
++from browser input; scope query keys never sent. Antiforgery on every POST. The browser-supplied `shipmentId` on a transition is a lookup hint
++only; the backend root check (409 `CORRELATION_ROOT_MISMATCH`) is authoritative.
++
++### 32.5 List — bounded DataTables v2 profile
++
++`data-dt-standard="v2"`, `DtDefaults.create()`, explicit `stateSave: false`, `serverSide: false`; client search/sort/paging over the
++returned set only; `total` shown as returned. Filter (`_Filter.cshtml` inline collapse): `status` single Select2 with `ShowAll`
++(omits the parameter), `shipmentId` UUID text input (not a lookup). No other query parameter. Save View / column visibility / colReorder / Reset
++through the shared `personalizationClient` (`moduleKey`/`pageKey` codes assigned by the integration owner); no localStorage.
++Columns: `rmaNumber`, `shipmentId` (LTR, copyable), localized status, actions. Absent summary field → "not provided"; no action without
++`returnId`; malformed envelope → error, never empty. QuickView (`_DetailsQuickView.cshtml`) shows the row summary and copyable `returnId` only,
++with no by-ID request and no Edit button.
++
++### 32.6 Create offcanvas — field count and validation
++
++`form_field_count: 6` (schema field types; the `lines` container is not counted) → **GoldenReferenceSlim**, create-only
++`_CreateEditOffcanvas.cshtml` (no edit mode), `.diten-field` + icon per field.
++
++| Field | Required | UI rule (no client tightening; backend authoritative) |
++|---|---|---|
++| `shipmentId` | yes | UUID text + Resolve; a late response for a previous UUID never populates; 404 → safe-not-found, no line table or shipment data left in DOM |
++| `lines[].shipmentLineNumber` | yes | Chosen by selecting a resolved source line (one row per line, so no duplicates from the UI); read-only text |
++| `lines[].quantity` | yes | Text, `inputmode=decimal`, sent as a JSON **string** exactly as typed; no conversion, locale comma handling, rounding or float; the source quantity is labelled "shipped quantity", not "remaining" |
++| `lines[].uomId` | yes | Read-only from the selected source line (exact ordinal; no conversion) |
++| `reasonCode` | yes (presence) | Free text sent as typed; empty allowed; no HTML `required`, trim or maxlength; no catalogue |
++| `evidenceReferenceIds` | no | Repeatable text; omitted when empty; order, duplicates, empty strings preserved; no upload |
++
++Eligibility (Delivered, Closed) is shown as a note and submit is disabled for other statuses (display only; backend 422 stays
++authoritative). Required-contract parity follows the backend validator (presence ≠ nonempty).
++
++### 32.7 Transition action
++
++Shown only when the row status permits the arrow and the actor holds `.transition` and the target key. `occurredAt` (date-time with explicit
++offset; default now; exact text kept for retries) on every target.
++
++| Current | Target | Target key | Extra |
++|---|---|---|---|
++| Requested | Authorized / Rejected | `.authorize` | — |
++| Authorized | InTransit / Cancelled | `.transit` / `.cancel` | — |
++| InTransit | Received | `.receive` | optional `inventoryTransactionReferenceId` (opaque, unverified); label "Received (manual assertion)" — not warehouse receipt or stock posting |
++| Received | Dispositioned | `.disposition` | `dispositionCode` required, length ≥ 1, no trim (whitespace allowed); optional `inventoryTransactionReferenceId` |
++| Dispositioned | Closed | `.close` | — |
++| Rejected, Cancelled, Closed | none | — | no action |
++
++InTransit→Cancelled does not exist (annex correction). Optional fields not listed for a target are omitted. Confirmations use the shared premium wrapper
++(`window.showConfirm`, MOD-0013); no native dialog, manual `Swal.fire`, or inline handler (form surface: gap §32.13 G-MODAL).
++
++### 32.8 Errors, replay and concurrency (Returns annex; localized, never raw text)
++
++| Code (HTTP) | UI behaviour |
++|---|---|
++| `INVALID_REQUEST` (400 schema, 401 auth, 403 context, 415 media) | 400/415: localized form summary; 401: standard session surface, JSON adapters return 401 JSON without redirect; 403: page `_AccessDenied` in shell, action closed/disabled with localized denial |
++| `RETURN_NOT_FOUND` (404) and shipment 404 | One identical safe-not-found text + support reference for unknown, foreign-scope and soft-deleted targets; action closed; list reload; hidden surfaces inert and not keyboard-reachable; late responses never re-expose them |
++| `INVALID_RETURN_TRANSITION` (422) | Stale-state conflict + support reference + reload |
++| Other 422 (quantity, UoM, eligibility, duplicate line, disposition) | Specific localized message where the code is known; exact code set bound from the accepted backend at Phase 1.5; unknown code → generic localized text + support reference; inputs kept |
++| `CORRELATION_ROOT_MISMATCH` (409) | "Request no longer matches the shipment record"; no automatic new key |
++| `IDEMPOTENCY_KEY_REUSED` (409) | Stop retry; new user intent required |
++| `RETURN_SOURCE_CHANGED` (409) | Source shipment changed since the first return; show the conflict; no automatic adjustment |
++| `RETURN_SHIPMENT_ROOT_INVALID` (502) | Shipment reference data invalid; no retry loop |
++| `RETURN_SHIPMENT_ROOT_UNAVAILABLE`, dependency or storage unavailable (503) | Temporarily unavailable; same-key retry; unknown commit never shown as rolled back |
++
++Per intent: one pending request; the same key and identical body on network/500/503 retry; an edited payload is a new intent. A 201/200
++with `idempotentReplay: true` is shown as completed, then the list reloads; a replay snapshot is never shown as current state. The response
++`X-Correlation-Id` (= `error.correlationId`) is a copyable support reference, never labelled as the lifecycle root.
++
++### 32.9 Localization, UAS-001, accessibility
++
++Seven tenant languages (en, tr, fr, es, zh, ar, ru) in `Resources/Views/SupplyChain/Returns/ReturnsIndex.{lang}.resx`, marker class
++`ReturnsIndex`, `_IndexL10n.cshtml` JSON bridge + `index.l10n.js`; mandatory keys `ReturnsTitle`, `PageDescription`, `AddNewReturns`
++and column headers; shared toolbar vocabulary from `SharedResource`; no English placeholder in other languages, no hardcoded fallback; status,
++error and manual-assertion texts localized. Arabic RTL; UUIDs/decimals LTR-isolated; 390/768/1024/1440 without horizontal overflow;
++the repeatable line and evidence editors keep unique ids and accessible names after add/remove; keyboard focus/Escape in offcanvas and
++dialogs. UAS-001: without `.read` only `_AccessDenied` inside the shell (no title, filter, table, skeleton, button, toast or redirect); no
++create CTA without `.create` + `supplychain.shipments.read`; no action without its keys.
++
++### 32.10 Owned UI paths (21, new files only), protected paths, shared handoff
++
++Owned: `frontend/Diten.Web/Controllers/SupplyChainReturnsController.cs`; `frontend/Diten.Web/Models/SupplyChain/Returns/ReturnViewModels.cs`;
++`frontend/Diten.Web/Views/SupplyChain/Returns/{ReturnsIndex.cs, Index.cshtml, _Filter.cshtml, _DataTable.cshtml, _IndexL10n.cshtml, _CreateEditOffcanvas.cshtml, _DetailsQuickView.cshtml}`;
++`frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/{index.js, index.l10n.js}`;
++`frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx`;
++`frontend/Diten.Web.Tests/{Controllers/SupplyChainReturnsControllerTests.cs, Forms/ReturnFormContractTests.cs, JavaScript/ReturnIndexBehaviorTests.cs}`.
++These are separate from, and add nothing to, the 46 backend owned paths of §31.
++
++Protected for the UI writer: all backend source (including `Features/Returns/**` and service `Program.cs`), contracts/annexes,
++`gateway/**`, shared layouts/partials/JS/CSS, `SharedResource.*.resx`, frontend `Program.cs`/DI, navigation/module/permission catalogues,
++`frontend/Diten.Web/tests/diten-field-icons.test.js`, other modules' UI files, Golden Slim (read only), packs, registries, `.antigravity/**`,
++guards, existing records and Git state.
++
++One CT-appointed **integration owner** (the same owner as for Claims §32) alone delivers exact diffs for:
++gateway routes (**listed, not edited here**): GET+POST `/api/shipment-bundle/returns`, POST `/api/shipment-bundle/returns/{returnId}/transition`,
++and confirmation of GET `/api/shipment-bundle/shipments/{shipmentId}`, explicit routes with OPTIONS (NET-001), with passthrough of
++Authorization, X-Correlation-Id, Idempotency-Key, X-Tenant-Id and X-Legal-Entity-Id, and `/returnsXYZ` not matched;
++page/permission registration and G-SHIPREAD role design; tenant navigation and Ctrl+K with registry-reconciled module/page codes; shared
++L10n nav keys in 7 languages; personalization confirmation; the `ICON_MAP` entries; Shipment root emission in the target; and uptake
++of the accepted Returns backend (46 paths + its separately approved `Program.cs` composition) into the integrated target.
++
++### 32.11 Single acceptance matrix (UI) — early vertical slice first
++
++Full row text with HTTP/browser/DB expectations, owner, evidence type and dependency is controlling in
++`docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/ACCEPTANCE.md` (bound by the draft SHA256SUMS above). No row has run.
++
++| ID | Criterion | Readiness |
++|---|---|---|
++| RU-VS1 | Early vertical slice: real-Auth actor resolves a Delivered Shipment (non-null root) and creates a Return for one line; 201 Requested with Gateway `X-Correlation-Id` = Shipment root and X-Tenant/LE from session; +1 return, +1 entitlement per line, +1 receipt/audit/Pending outbox; reload shows the row | BLOCKED (target, gateway, G-SHIPREAD, seed) |
++| RU-01, RU-02, RU-03 | Same-origin chain (BLOCKED gateway); list query parity; envelope/absent fields | BLOCKED / READY |
++| RU-04, RU-05 | Skeleton/empty/error; UAS-001 no read | READY |
++| RU-06, RU-07 | Create CTA gating (BLOCKED G-SHIPREAD); action gating per target with 403 zero-write | BLOCKED / READY |
++| RU-08…RU-10 | Create body parity; presence ≠ nonempty; resolve stale-response guard | READY |
++| RU-11…RU-14 | Safe-not-found (create, transition); cross-LE list; eligibility display vs server 422 | READY |
++| RU-15, RU-16 | Root seam (BLOCKED producer uptake); idempotency (BLOCKED DN-01) | BLOCKED |
++| RU-17…RU-25 | Stale transition; Received = manual assertion; disposition code; occurredAt offset; support ref vs root; 7 languages + RTL; responsive + keyboard; premium dialogs/no secrets; no SoR duplication | READY |
++| RU-26 | Regression incl. Returns backend 78/78 on target | BLOCKED (target) |
++| RU-27 | Source→binary→process→browser binding | READY |
++| RU-28 | PNG via supported export only | BLOCKED (PRES-183-04) |
++| RU-29 | QuickView without by-ID request | READY |
++
++OUT at the start (scope-change rows, approved by the owner decision above): RU-SCR-01 checkbox + BulkActionBar; RU-SCR-02 edit/delete/bulk
++delete (incl. QuickView Edit button); RU-SCR-03 import/export; RU-SCR-04 server paging/search/sort; RU-SCR-05 multi-select status;
++RU-SCR-06 generic `verify_datatable_page.py --reference slim` as acceptance (run and kept as a record only).
++
++### 32.12 Test expectations (UI)
++
++Module tests in the three owned test files; `python3 .antigravity/scripts/verify_datatable_page.py . --area SupplyChain --module Returns --reference slim`
++run and recorded (RU-SCR-06); `quality-gate-datatable` result recorded against the bounded profile; RESX parity 7/7 with no placeholder;
++build of frontend, gateway and SupplyChain service on the integrated target; real-Auth browser smoke with three identities and separate
++profiles; `grep` scans for native dialogs, inline handlers and "Permission denied"/"Forbidden" text; independent VER on a frozen source.
++
++### 32.13 Remaining gaps (recorded, not decided here)
++
++- **G-MODAL:** MOD-0013 §4 requires `window.showConfirm` and forbids manual `Swal.fire` on layout pages; whether it can host the transition inputs (`occurredAt`, `dispositionCode`, `inventoryTransactionReferenceId`) is unverified. If not, a module-owned form surface (one more owned partial) needs a scope amendment.
++- **G-ICONMAP:** FORM template requires an icon per field registered in shared `diten-field-icons.test.js`; that edit belongs to the integration owner.
++- **G-DATETIME:** `occurredAt` needs date-time with offset; the shared date field is date-oriented; component choice is a Phase 1.5 item.
++- **Line picker in Slim offcanvas:** the repeatable line table inside the offcanvas must pass the 390/768 layout gate; if it does not, a Compact switch would need a scope decision (not silently changed).
++- **422 code set:** the Returns annex names `INVALID_RETURN_TRANSITION` but not every quantity/UoM/eligibility code; the exact set is bound from the accepted backend at Phase 1.5.
++- **Verifier tension:** module-pack standard §15 expects DataTable verifier PASS; the approved OUT rows make the generic verifier record-only until a scope-aware profile (DN-02 / PRES-183-03) exists.
++- G-TARGET integrated target; Returns backend absent from the common checkout; DN-01 retry policy; producer root uptake; PNG; nav/personalization codes; Loads 3.1.0 forward drift of the `5dfe7c1b…` pin; `module-implementation-status.md` update is a separate path.
++
++### 32.14 Effort and authorization boundary
++
++O/M/P (person-hours, replacement of 0186-1/4-REMAINING and the UI sub-items of 0186-5/6-REMAINING, not additive): pack/Phase 1.5 4/8/16;
++frontend 32/52/88; shared integration 8/16/28; independent UI VER 14/24/40; **total 58/100/172**; with the non-UI remainders 70/120/204
++(net +13.6/+26/+34.4 against the old rows). Joint delivery with Claims lowers the shared parts (draft README).
++
++Not authorized by this section: UI code until an integrated target exists and a versioned UI dispatch is released; gateway, permission,
++navigation, L10n or icon-map edits except by the single integration owner; contract changes; `done` status; commit or push.

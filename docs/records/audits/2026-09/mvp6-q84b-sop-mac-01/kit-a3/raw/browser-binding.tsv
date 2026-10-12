@@ -1,0 +1,6 @@
+kind	url_or_path	source_path	http	observed	expected	result
+served-asset	/assets/js/SupplyChain/SandopPlans/index.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/index.js	200	a4a084264ffa38937cf5008f245972fdbd4127fc4791bcd9db68645e7b9d68a3	a4a084264ffa38937cf5008f245972fdbd4127fc4791bcd9db68645e7b9d68a3	match
+served-asset	/assets/js/SupplyChain/SandopPlans/details.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/details.js	200	2e26935698ba474f24c5489499c0ea529b41cb05d141fa70c4401d574834c164	2e26935698ba474f24c5489499c0ea529b41cb05d141fa70c4401d574834c164	match
+served-asset	/assets/js/SupplyChain/SandopPlans/index.l10n.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/index.l10n.js	200	f45659e41047d085359905b62921fa7974a44f3e3f7f16a04a73d3c377c8eb9d	f45659e41047d085359905b62921fa7974a44f3e3f7f16a04a73d3c377c8eb9d	match
+served-asset	/assets/js/SupplyChain/SandopPlans/details.l10n.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/details.l10n.js	200	3454e57b879213262bd1a474bff9f909a4b44f647cfc16caa72f24b07721b2d8	3454e57b879213262bd1a474bff9f909a4b44f647cfc16caa72f24b07721b2d8	match
+browser-url	http://127.0.0.1:5801/SupplyChain/SandopPlans	-	-	127.0.0.1:5801	127.0.0.1:5801	match

@@ -1,0 +1,5 @@
+chore(tooling): install MVP6 evidence kit v1.2
+
+scripts/evidence-kit/, the kit guide and its install records. Same set as C14 of the Q69 plan.
+Work packages: Q24a.
+40 files from pathspec/T1.txt (Q230 commit plan).

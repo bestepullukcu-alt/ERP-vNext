@@ -1,0 +1,10 @@
+{
+  "baseline_files": 14276,
+  "changed_existing_files": [],
+  "git_unchanged": {
+    "head": true,
+    "diff": true,
+    "staged": true,
+    "stash": true
+  }
+}

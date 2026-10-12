@@ -1,0 +1,51 @@
+{
+  "wp": "WP-0173-UI1",
+  "date": "2026-10-01",
+  "chain": "browser pane → Diten.Web (this branch, Release, :5091) → user's Gateway :5000 → Diten.InventoryService (:5066, Mock, DB diten_inventory_fu01_smoke) + Prism PRODUCT-MASTER :4010 / LOCATION :4011; user's Auth :5056, Platform :5057, MDM :5059 reused, never stopped",
+  "environment_notes": [
+    "Seed test user (dev-runbook) logged in for real at :5091. Its tenant 'Default Tenant' is in Provisioning in the local Platform, so the Web's FIX-4 tenant-liveness guard signs it out on every page; the smoke Web instance therefore runs without Platform:InternalApiKey (guard fails open, its documented behaviour). See run-ui1-env.ps1 -WebWithoutTenantLiveness.",
+    "FINDING: the real AuthService token carries no legal_entity_id claim; InventoryService (S1 JWT-only scope) refuses it with 403 on every endpoint (d6-service-log-excerpt.log). The rest of the smoke uses session-minted test JWTs (local dev signing config, HS256, never written to evidence) for three personas with a synthetic LE: reverser (stock.read + movements.create + MDM selector reads), viewer (stock.read), none (no inventory permission)."
+  ],
+  "seed": "14 movements posted through Gateway as 'reverser': 12 OPENING_BALANCE (LOT-UI1-01..12, 10..120 EA), 1 COUNT_LOSS (3 EA, LOT-UI1-12), 1 GOODS_RECEIPT_PO from MOD-0142 (5 EA, QUALITY_INSPECTION) — all 201 (INV-2026-0000001..14)",
+  "checks": {
+    "U3_server_mode_paging": {
+      "browser": "GET /StockLedger/api?start=10&length=10&draw=3 → 200 (network)",
+      "gateway_call_from_web": "GET http://localhost:5000/api/inventory/balance?page=2&pageSize=10 (d6-web-gateway-calls.log)",
+      "datatable": { "page": 1, "length": 10, "recordsTotal": 13, "rowsOnPage2": 3 },
+      "note": "one /balance call per page request; the factory draws page 1 twice on first load (draw 1 = initial, draw 2 = applyState after the filter bar is ready) — factory behaviour shared by every server-mode list"
+    },
+    "U4_kpi_only_with_product_filter": {
+      "without_filter": "cards '—' + hint 'select a product or SKU' (screenshot 01 before filter / _KpiStrip)",
+      "with_itemId_filter": { "onHand": "782 EA", "available": "777 EA", "qualityInspection": "5 EA", "quarantineBlocked": "0 EA" },
+      "equality_with_availability": "d6-u4-kpi-vs-availability.json — onHand/available/qualityInspection identical to GET /api/inventory/availability at the same moment (675.000 after the reversals)"
+    },
+    "U5_reversal": {
+      "automatic_row": "INV-2026-0000014 (MOD-0142): 'Otomatik' badge + passive button with 'reversed in the source module' title (screenshot 03)",
+      "reversal_rows": "REVERSAL rows show no action; manual rows show the red Reversal action",
+      "confirm": "shared window.showConfirm (danger), 7-language text, entity badge (screenshot 04)",
+      "posted": [
+        "INV-2026-0000015 reverses INV-2026-0000005 (OB 50, LOT-UI1-05)",
+        "INV-2026-0000016 reverses INV-2026-0000013 (COUNT_LOSS 3) — INV-13 then shows 'Ters kaydı yapıldı' and no action (reversed on the same page)",
+        "INV-2026-0000017 reverses INV-2026-0000006 (HTTP double submit, see U6)",
+        "INV-2026-0000018 reverses INV-2026-0000010 (shared-confirm re-verification, triple click)"
+      ],
+      "second_attempt": "new dialog on INV-2026-0000005 → 422 ALREADY_REVERSED → dialog stays open: 'Bu hareketin ters kaydı zaten yapılmış. Hiçbir değişiklik yapılmadı; ters kaydı görmek için listeyi yenileyin.' (screenshot 06)",
+      "insufficient_stock": "reversal of INV-2026-0000012 (OB 120 with 117 left) → 422 INSUFFICIENT_STOCK → dialog stays open with 'Bu hareket için kaynakta yeterli stok yok…'; no transaction written",
+      "persisted": "d6-mongo-reversal-transactions.json / -audit.json / -outbox.json: exactly 4 REVERSAL transactions, one per original (sourceDocumentId = ReversesTransactionId = original id), 4 InventoryMovementReversed audits, 4 outbox events"
+    },
+    "U6_double_submit": {
+      "ui": "confirm clicked 2× (run 2) and 3× (run 3) in one dialog → 1 POST /StockMovements/reverse/{id} each time (resource timing)",
+      "http": { "original": "INV-2026-0000006", "first": { "status": 200, "idempotentReplay": false, "transactionNumber": "INV-2026-0000017" }, "second_same_key": { "status": 200, "idempotentReplay": true, "transactionNumber": "INV-2026-0000017" }, "without_antiforgery_token": 400 },
+      "mongo": "1 REVERSAL with sourceDocumentId = INV-6 id"
+    },
+    "U7_uas": {
+      "none_persona": "/StockLedger and /StockMovements: only _AccessDenied in the shell ('Stok Defteri için erişim yetkiniz yok — yöneticinizden yetki isteyin'), URL unchanged, no table/filter/tabs/KPI/skeleton, no technical text; the Inventory nav entry is absent (screenshots 09, 10)",
+      "viewer_persona": "/StockMovements: 10 rows, 0 Reversal buttons, 0 passive buttons, empty action cells, no antiforgery form (screenshot 08)"
+    },
+    "U8_pickers": "GET /StockMovements/lookups/products|skus → Gateway /api/global-products/selector, /api/gskus, /api/lskus only (d6-web-gateway-calls.log: /api/mdm/products 0); MDM answered (available=true, 0 products in this tenant); warehouses → /api/locations (no Gateway route, BG-10) → available=false + localized notice",
+    "U9_rtl": "?culture=ar: <html dir=rtl lang=ar>, title 'حركات المخزون', headers and movement types in Arabic, nav 'تنفيذ سلسلة الإمداد › إدارة المخزون' (screenshot 11)",
+    "U11_same_origin_only": "resource timing on S-2: origins = localhost:5091 + Google Fonts; requests to :5066 = 0, to /api/inventory = 0, to :5000 = 0",
+    "U12_manifest": "InventoryService pushed the manifest at every start ('Module manifest self-registered … ModuleCode=INVENTORY-LEDGER Attempt=1'); Platform catalog after two pushes: 1 module, 2 pages, 2 actions, no duplicates (d6-platform-catalog.json); tenant sidebar shows 'Tedarik Zinciri Yürütme › Envanter' (screenshot 01)"
+  },
+  "screenshots": "screenshots/01..11 (Turkish UI unless named; 04 and 06 are from the final shared-confirm implementation)"
+}

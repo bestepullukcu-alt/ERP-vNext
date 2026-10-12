@@ -1,0 +1,6 @@
+service	key	value
+auth	TenantResolution__DevBypassEnabled	false
+platform	TenantResolution__DevBypassEnabled	false
+platform	DocumentRegisterSeed__Enabled	false
+platform	BusinessReferenceData__CatalogLoad__Enabled	false
+supplychain	Claims__ReferenceBaseUrl	http://127.0.0.1:5900/

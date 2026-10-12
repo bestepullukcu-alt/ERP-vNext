@@ -1,0 +1,53 @@
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs
+@@ -1,5 +1,7 @@
+ using System.Diagnostics;
+ using MongoDB.Bson;
++using MongoDB.Bson.Serialization;
++using MongoDB.Bson.Serialization.Serializers;
+ using MongoDB.Driver;
+ using Diten.SupplyChainService.Domain.Features.CapacityPlans;
+ using Diten.SupplyChainService.Infrastructure.Features.CapacityPlans;
+@@ -20,10 +22,32 @@
+         var mode=Environment.GetEnvironmentVariable("MOD192_CHILD_MODE");
+         if(mode is null)return;
+         var db=new MongoClient(Connection).GetDatabase(Database);
++        var rawCollection=db.GetCollection<BsonDocument>("capacity_evaluations");
++        var raw=await rawCollection.Find(FilterDefinition<BsonDocument>.Empty).SingleAsync();
++        // The child is a fresh testhost process. Full-suite persistence startup
++        // stores GUIDs as strings, while a targeted run uses the driver default.
++        // Match the parent record before constructing a typed collection.
++        if(raw["_id"].BsonType==BsonType.String)
++        {
++            BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
++            BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
++        }
++        else
++        {
++            Assert.Equal(BsonType.Binary,raw["_id"].BsonType);
++            Assert.Equal(BsonBinarySubType.UuidLegacy,raw["_id"].AsBsonBinaryData.SubType);
++        }
++        var rawScoped=await rawCollection.Find(new BsonDocument {
++            {"TenantId",raw["TenantId"]},{"LegalEntityId",raw["LegalEntityId"]}}).SingleAsync();
++        Assert.Equal(raw["_id"],rawScoped["_id"]);
++        var scoped=await db.GetCollection<CapacityEvaluation>("capacity_evaluations").Find(x=>
++            x.TenantId==Scope.TenantId && x.LegalEntityId==Scope.LegalEntityId && !x.IsDeleted).SingleAsync();
++        Assert.Equal(raw["_id"].BsonType==BsonType.String ? raw["_id"].AsString : raw["_id"].AsBsonBinaryData.ToGuid().ToString(),scoped.Id.ToString());
+         var leaseStore=new CapacityLeaseStore(db);
+         var lease=await leaseStore.ClaimAsync(Scope,CancellationToken.None);
+-        if(mode=="claim-terminal" && lease is not null)
++        if(mode=="claim-terminal")
+         {
++            Assert.NotNull(lease);
+             var result=new CapacityBottleneck("line-4","2027-W03","520.000","480.000","40.000","HOUR");
+             Assert.True(await leaseStore.TerminalAsync(Scope,lease.Id,lease.Version,lease.Fence,"Completed",[result],false,CancellationToken.None));
+         }
+@@ -33,7 +57,7 @@
+         var project=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"../../../Diten.SupplyChainService.Tests.csproj"));
+         var info=new ProcessStartInfo("dotnet") {
+             WorkingDirectory=Path.GetDirectoryName(project)!,RedirectStandardOutput=true,RedirectStandardError=true,UseShellExecute=false };
+-        foreach(var arg in new[]{"test",project,"--no-build","--no-restore","--filter","FullyQualifiedName~CapacityRestartTests.ChildWorker","-v:q"})info.ArgumentList.Add(arg);
++        foreach(var arg in new[]{"test",project,"--no-build","--no-restore","--filter","FullyQualifiedName~CapacityRestartTests.ChildWorker","-v:normal"})info.ArgumentList.Add(arg);
+         info.Environment["DOTNET_ROLL_FORWARD"]="Major";
+         info.Environment["MOD192_CHILD_MODE"]=mode;
+         return Process.Start(info)!;

@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Quarantine.Common.Crumb.Root" xml:space="preserve"><value>Качество</value></data>
+  <data name="Quarantine.Common.Company.Label" xml:space="preserve"><value>Компания</value></data>
+  <data name="Quarantine.Common.Company.Placeholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="Quarantine.Common.Company.Required" xml:space="preserve"><value>Выберите компанию, в которой вы работаете, чтобы увидеть её записи карантина.</value></data>
+  <data name="Quarantine.Common.Company.Unavailable" xml:space="preserve"><value>Не удалось загрузить список компаний. Повторите попытку чуть позже.</value></data>
+  <data name="Quarantine.Common.NamesUnavailable" xml:space="preserve"><value>Названия товаров и мест сейчас недоступны; показаны идентификаторы. Количества верны.</value></data>
+  <data name="Quarantine.Common.Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="Quarantine.Common.Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Quarantine.Common.Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="Quarantine.Common.Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Quarantine.Common.Select" xml:space="preserve"><value>Выберите</value></data>
+  <data name="Quarantine.Common.Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="Quarantine.Common.No" xml:space="preserve"><value>Нет</value></data>
+  <data name="Quarantine.Common.Days" xml:space="preserve"><value>{0} дн.</value></data>
+  <data name="Quarantine.Common.DaysLeft" xml:space="preserve"><value>Осталось {0} дн.</value></data>
+  <data name="Quarantine.Common.DaysPast" xml:space="preserve"><value>Просрочено на {0} дн.</value></data>
+  <data name="Quarantine.Common.Target" xml:space="preserve"><value>Цель {0} дн. · компания</value></data>
+  <data name="Quarantine.Common.ReasonCounter" xml:space="preserve"><value>{0} / не менее 10</value></data>
+  <data name="Quarantine.Common.ReasonMin" xml:space="preserve"><value>Обоснование должно содержать не менее 10 символов.</value></data>
+  <data name="Quarantine.Tabs.Queue" xml:space="preserve"><value>Очередь карантина</value></data>
+  <data name="Quarantine.Tabs.Blocked" xml:space="preserve"><value>Заблокированный запас</value></data>
+  <data name="Quarantine.Tabs.Retest" xml:space="preserve"><value>Очередь повторного контроля</value></data>
+  <data name="Quarantine.Tabs.Settings" xml:space="preserve"><value>Настройки карантина</value></data>
+  <data name="Quarantine.Col.Product" xml:space="preserve"><value>Товар</value></data>
+  <data name="Quarantine.Col.Lot" xml:space="preserve"><value>Партия</value></data>
+  <data name="Quarantine.Col.LotNo" xml:space="preserve"><value>№ партии</value></data>
+  <data name="Quarantine.Col.Expiry" xml:space="preserve"><value>Срок годности</value></data>
+  <data name="Quarantine.Col.WarehouseLocation" xml:space="preserve"><value>Склад / Место</value></data>
+  <data name="Quarantine.Col.StockStatus" xml:space="preserve"><value>Статус запаса</value></data>
+  <data name="Quarantine.Col.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Quarantine.Col.EnteredAt" xml:space="preserve"><value>Дата поступления</value></data>
+  <data name="Quarantine.Col.Wait" xml:space="preserve"><value>Ожидание</value></data>
+  <data name="Quarantine.Col.Source" xml:space="preserve"><value>Источник / Документ</value></data>
+  <data name="Quarantine.Col.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Quarantine.Col.Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Quarantine.Col.BlockReason" xml:space="preserve"><value>Причина блокировки</value></data>
+  <data name="Quarantine.Col.BlockedAt" xml:space="preserve"><value>Дата блокировки</value></data>
+  <data name="Quarantine.Col.Pending" xml:space="preserve"><value>Ожидает решения</value></data>
+  <data name="Quarantine.Col.RetestDate" xml:space="preserve"><value>Дата повторного контроля</value></data>
+  <data name="Quarantine.Col.OnHand" xml:space="preserve"><value>В наличии</value></data>
+  <data name="Quarantine.Col.MoveNo" xml:space="preserve"><value>№ движения</value></data>
+  <data name="Quarantine.Col.Date" xml:space="preserve"><value>Дата</value></data>
+  <data name="Quarantine.Col.MoveType" xml:space="preserve"><value>Тип движения</value></data>
+  <data name="Quarantine.Col.StatusChange" xml:space="preserve"><value>Смена статуса</value></data>
+  <data name="Quarantine.Col.User" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="Quarantine.Field.Reason" xml:space="preserve"><value>Обоснование</value></data>
+  <data name="Quarantine.Field.BlockReason" xml:space="preserve"><value>Причина блокировки</value></data>
+  <data name="Quarantine.Filter.AllWarehouses" xml:space="preserve"><value>Все склады</value></data>
+  <data name="Quarantine.Filter.AllStockStatuses" xml:space="preserve"><value>Все статусы запаса</value></data>
+  <data name="Quarantine.Filter.AllSources" xml:space="preserve"><value>Все источники</value></data>
+  <data name="Quarantine.Filter.LateOnly" xml:space="preserve"><value>Только просроченные</value></data>
+  <data name="Quarantine.Filter.Clear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="Quarantine.Action.Decide" xml:space="preserve"><value>Принять решение</value></data>
+  <data name="Quarantine.Action.Detail" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="Quarantine.Action.Dispose" xml:space="preserve"><value>Решение о распоряжении</value></data>
+  <data name="Quarantine.Action.Unblock" xml:space="preserve"><value>Снять блокировку</value></data>
+  <data name="Quarantine.Action.CompleteReview" xml:space="preserve"><value>Завершить проверку</value></data>
+  <data name="Quarantine.Action.BlockStock" xml:space="preserve"><value>Заблокировать запас</value></data>
+  <data name="Quarantine.Action.Quarantine" xml:space="preserve"><value>Поместить в карантин</value></data>
+  <data name="Quarantine.Status.AVAILABLE" xml:space="preserve"><value>Доступен</value></data>
+  <data name="Quarantine.Status.QUALITY_INSPECTION" xml:space="preserve"><value>Контроль качества</value></data>
+  <data name="Quarantine.Status.QUARANTINE" xml:space="preserve"><value>Карантин</value></data>
+  <data name="Quarantine.Status.BLOCKED" xml:space="preserve"><value>Заблокирован</value></data>
+  <data name="Quarantine.Status.IN_TRANSIT" xml:space="preserve"><value>В пути</value></data>
+  <data name="Quarantine.Status.DAMAGED" xml:space="preserve"><value>Повреждён</value></data>
+  <data name="Quarantine.Status.EXPIRED" xml:space="preserve"><value>Просрочен</value></data>
+  <data name="Quarantine.HoldState.Waiting" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="Quarantine.HoldState.InReview" xml:space="preserve"><value>На проверке</value></data>
+  <data name="Quarantine.HoldState.Pending" xml:space="preserve"><value>Ожидает утверждения</value></data>
+  <data name="Quarantine.HoldState.Decided" xml:space="preserve"><value>Решение принято</value></data>
+  <data name="Quarantine.Workflow.Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Quarantine.Workflow.Submitted" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="Quarantine.Workflow.PendingApproval" xml:space="preserve"><value>Ожидает утверждения</value></data>
+  <data name="Quarantine.Workflow.Approved" xml:space="preserve"><value>Утверждено · ожидает применения</value></data>
+  <data name="Quarantine.Workflow.Applied" xml:space="preserve"><value>Применено</value></data>
+  <data name="Quarantine.Workflow.Rejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="Quarantine.Workflow.Cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="Quarantine.Workflow.TimedOut" xml:space="preserve"><value>Истекло время</value></data>
+  <data name="Quarantine.Workflow.Withdrawn" xml:space="preserve"><value>Отозвано</value></data>
+  <data name="Quarantine.Workflow.StartFailed" xml:space="preserve"><value>Не удалось отправить на утверждение</value></data>
+  <data name="Quarantine.Workflow.ApplyFailed" xml:space="preserve"><value>Не удалось применить</value></data>
+  <data name="Quarantine.Workflow.FourEyesViolation" xml:space="preserve"><value>Нарушение принципа «четырёх глаз»</value></data>
+  <data name="Quarantine.DecisionKind.HoldDecision" xml:space="preserve"><value>Решение по карантину</value></data>
+  <data name="Quarantine.DecisionKind.Disposition" xml:space="preserve"><value>Распоряжение</value></data>
+  <data name="Quarantine.DecisionKind.Unblock" xml:space="preserve"><value>Снятие блокировки</value></data>
+  <data name="Quarantine.DecisionKind.LotRelease" xml:space="preserve"><value>Выпуск партии</value></data>
+  <data name="Quarantine.LineDecision.Release" xml:space="preserve"><value>Выпустить</value></data>
+  <data name="Quarantine.LineDecision.Reject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="Quarantine.LineDecision.Block" xml:space="preserve"><value>Заблокировать</value></data>
+  <data name="Quarantine.Source.GoodsReceipt" xml:space="preserve"><value>Приёмка</value></data>
+  <data name="Quarantine.Source.Production" xml:space="preserve"><value>Производство</value></data>
+  <data name="Quarantine.Source.CustomerReturn" xml:space="preserve"><value>Возврат клиента</value></data>
+  <data name="Quarantine.Source.Manual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="Quarantine.Source.Retest" xml:space="preserve"><value>Повторный контроль</value></data>
+  <data name="Quarantine.Source.Rework" xml:space="preserve"><value>Переработка</value></data>
+  <data name="Quarantine.Source.OtherInbound" xml:space="preserve"><value>Прочее поступление</value></data>
+  <data name="Quarantine.Origin.QuarantineDecision" xml:space="preserve"><value>Решение по карантину</value></data>
+  <data name="Quarantine.Origin.ManualBlock" xml:space="preserve"><value>Ручная блокировка</value></data>
+  <data name="Quarantine.Origin.Rework" xml:space="preserve"><value>Переработка</value></data>
+  <data name="Quarantine.Origin.OtherInbound" xml:space="preserve"><value>Прочее поступление</value></data>
+  <data name="Quarantine.Origin.LotBlocked" xml:space="preserve"><value>Заблокированная партия</value></data>
+  <data name="Quarantine.LotStatus.Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Quarantine.LotStatus.Released" xml:space="preserve"><value>Выпущена</value></data>
+  <data name="Quarantine.LotStatus.Blocked" xml:space="preserve"><value>Заблокирована</value></data>
+  <data name="Quarantine.LotStatus.Expired" xml:space="preserve"><value>Просрочена</value></data>
+  <data name="Quarantine.MovementType.OPENING_BALANCE" xml:space="preserve"><value>Начальный остаток</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PO" xml:space="preserve"><value>Приход по закупке</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PROD" xml:space="preserve"><value>Приход из производства</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_SALES" xml:space="preserve"><value>Отгрузка продажи</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_PROD" xml:space="preserve"><value>Выдача в производство</value></data>
+  <data name="Quarantine.MovementType.WAREHOUSE_TRANSFER" xml:space="preserve"><value>Перемещение между складами</value></data>
+  <data name="Quarantine.MovementType.LOCATION_TRANSFER" xml:space="preserve"><value>Перемещение между местами</value></data>
+  <data name="Quarantine.MovementType.STATUS_TRANSFER" xml:space="preserve"><value>Смена статуса</value></data>
+  <data name="Quarantine.MovementType.CUSTOMER_RETURN" xml:space="preserve"><value>Возврат клиента</value></data>
+  <data name="Quarantine.MovementType.SUPPLIER_RETURN" xml:space="preserve"><value>Возврат поставщику</value></data>
+  <data name="Quarantine.MovementType.COUNT_GAIN" xml:space="preserve"><value>Излишек инвентаризации</value></data>
+  <data name="Quarantine.MovementType.COUNT_LOSS" xml:space="preserve"><value>Недостача инвентаризации</value></data>
+  <data name="Quarantine.MovementType.SCRAP" xml:space="preserve"><value>Списание в брак</value></data>
+  <data name="Quarantine.MovementType.WRITE_OFF" xml:space="preserve"><value>Списание</value></data>
+  <data name="Quarantine.MovementType.REVERSAL" xml:space="preserve"><value>Сторно</value></data>
+  <data name="Quarantine.History.Quarantined" xml:space="preserve"><value>Помещено в карантин</value></data>
+  <data name="Quarantine.History.ReviewStarted" xml:space="preserve"><value>Проверка начата</value></data>
+  <data name="Quarantine.History.DecisionSubmitted" xml:space="preserve"><value>Решение отправлено на утверждение</value></data>
+  <data name="Quarantine.History.Approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="Quarantine.History.Rejected" xml:space="preserve"><value>Утверждение отклонено</value></data>
+  <data name="Quarantine.History.Cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="Quarantine.History.TimedOut" xml:space="preserve"><value>Истекло время</value></data>
+  <data name="Quarantine.History.Withdrawn" xml:space="preserve"><value>Решение отозвано</value></data>
+  <data name="Quarantine.History.Applied" xml:space="preserve"><value>Движение запаса применено</value></data>
+  <data name="Quarantine.History.ApplyFailed" xml:space="preserve"><value>Не удалось применить</value></data>
+  <data name="Quarantine.History.FourEyesViolation" xml:space="preserve"><value>Нарушение «четырёх глаз» · без движения</value></data>
+  <data name="Quarantine.History.Blocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="Quarantine.History.ReviewCompleted" xml:space="preserve"><value>Проверка завершена</value></data>
+  <data name="Quarantine.History.Disposed" xml:space="preserve"><value>Распоряжение применено</value></data>
+  <data name="Quarantine.History.Unblocked" xml:space="preserve"><value>Блокировка снята</value></data>
+  <data name="Quarantine.History.SampleRetained" xml:space="preserve"><value>Отложено как образец</value></data>
+  <data name="Quarantine.Queue.Title" xml:space="preserve"><value>Очередь карантина</value></data>
+  <data name="Quarantine.Queue.Kpi.Pending" xml:space="preserve"><value>Строки, ожидающие решения</value></data>
+  <data name="Quarantine.Queue.Kpi.InReview" xml:space="preserve"><value>{0} строк на проверке</value></data>
+  <data name="Quarantine.Queue.Kpi.Quantity" xml:space="preserve"><value>Общее количество · по единицам</value></data>
+  <data name="Quarantine.Queue.Kpi.Late" xml:space="preserve"><value>Превысили цель ожидания</value></data>
+  <data name="Quarantine.Queue.Kpi.ExpirySoon" xml:space="preserve"><value>Истекает в течение 90 дней: {0}</value></data>
+  <data name="Quarantine.Queue.Empty" xml:space="preserve"><value>Нет записей карантина, соответствующих фильтру.</value></data>
+  <data name="Quarantine.Queue.Footer" xml:space="preserve"><value>Записей: {0}</value></data>
+  <data name="Quarantine.Queue.Legend.Late" xml:space="preserve"><value>Цель ожидания превышена</value></data>
+  <data name="Quarantine.Queue.Legend.Expiry" xml:space="preserve"><value>Срок годности ≤ 90 дн.</value></data>
+  <data name="Quarantine.Details.Title" xml:space="preserve"><value>Запись карантина</value></data>
+  <data name="Quarantine.Details.BackToQueue" xml:space="preserve"><value>Назад к очереди</value></data>
+  <data name="Quarantine.Details.GoToLot" xml:space="preserve"><value>Перейти к партии</value></data>
+  <data name="Quarantine.Details.LateAlert" xml:space="preserve"><value>Время ожидания превышает цель: {0} дн. (цель {1} дн. · компания).</value></data>
+  <data name="Quarantine.Details.Fact.Lot" xml:space="preserve"><value>№ партии</value></data>
+  <data name="Quarantine.Details.Fact.Expiry" xml:space="preserve"><value>Срок годности</value></data>
+  <data name="Quarantine.Details.Fact.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Quarantine.Details.Fact.Where" xml:space="preserve"><value>Склад / Место</value></data>
+  <data name="Quarantine.Details.Fact.Wait" xml:space="preserve"><value>Время ожидания</value></data>
+  <data name="Quarantine.Details.Fact.Source" xml:space="preserve"><value>Источник</value></data>
+  <data name="Quarantine.Details.Fact.CreatedBy" xml:space="preserve"><value>Создал</value></data>
+  <data name="Quarantine.Details.Quality.Title" xml:space="preserve"><value>Сведения о качестве</value></data>
+  <data name="Quarantine.Details.Quality.Coa" xml:space="preserve"><value>Ссылка на CoA (из партии)</value></data>
+  <data name="Quarantine.Details.Quality.LotStatus" xml:space="preserve"><value>Статус партии</value></data>
+  <data name="Quarantine.Details.Quality.Note" xml:space="preserve"><value>Заметка о результате анализа</value></data>
+  <data name="Quarantine.Details.Quality.NoNote" xml:space="preserve"><value>Заметки об анализе нет.</value></data>
+  <data name="Quarantine.Details.Quality.Attachments" xml:space="preserve"><value>Вложения · только ссылки</value></data>
+  <data name="Quarantine.Details.History.Title" xml:space="preserve"><value>История решений</value></data>
+  <data name="Quarantine.Details.History.Empty" xml:space="preserve"><value>Записей пока нет.</value></data>
+  <data name="Quarantine.Details.History.Signature" xml:space="preserve"><value>эл. подпись · {0}</value></data>
+  <data name="Quarantine.Details.History.ApproverSignature" xml:space="preserve"><value>подпись утверждающего · {0}</value></data>
+  <data name="Quarantine.Details.Moves.Title" xml:space="preserve"><value>Движения запаса</value></data>
+  <data name="Quarantine.Details.Moves.Subtitle" xml:space="preserve"><value>Смены статуса, созданные этой записью в журнале запасов</value></data>
+  <data name="Quarantine.Details.Moves.Empty" xml:space="preserve"><value>Для этой записи нет движений запаса.</value></data>
+  <data name="Quarantine.Details.StartReview" xml:space="preserve"><value>Начать проверку</value></data>
+  <data name="Quarantine.Details.StartReviewText" xml:space="preserve"><value>Запись переходит в статус «На проверке»; запас не перемещается.</value></data>
+  <data name="Quarantine.Details.ReviewNote" xml:space="preserve"><value>Заметка проверки (необязательно)</value></data>
+  <data name="Quarantine.Details.ReviewStarted" xml:space="preserve"><value>Запись взята на проверку.</value></data>
+  <data name="Quarantine.Workflow.Box" xml:space="preserve"><value>Рабочий процесс</value></data>
+  <data name="Quarantine.Workflow.NoDecision" xml:space="preserve"><value>Нет решений, ожидающих утверждения.</value></data>
+  <data name="Quarantine.Workflow.LastDecision" xml:space="preserve"><value>Последнее решение</value></data>
+  <data name="Quarantine.Workflow.Decision" xml:space="preserve"><value>Решение</value></data>
+  <data name="Quarantine.Workflow.Decider" xml:space="preserve"><value>Принял решение</value></data>
+  <data name="Quarantine.Workflow.Approver" xml:space="preserve"><value>Утверждающий</value></data>
+  <data name="Quarantine.Workflow.Instance" xml:space="preserve"><value>Экземпляр</value></data>
+  <data name="Quarantine.Workflow.DeciderSignature" xml:space="preserve"><value>Подпись принявшего решение</value></data>
+  <data name="Quarantine.Workflow.ApproverSignature" xml:space="preserve"><value>Подпись утверждающего</value></data>
+  <data name="Quarantine.Workflow.Refresh" xml:space="preserve"><value>Обновить статус</value></data>
+  <data name="Quarantine.Workflow.Refreshed" xml:space="preserve"><value>Статус обновлён: {0}</value></data>
+  <data name="Quarantine.Workflow.Withdraw" xml:space="preserve"><value>Отозвать решение</value></data>
+  <data name="Quarantine.Workflow.WithdrawTitle" xml:space="preserve"><value>Отозвать решение?</value></data>
+  <data name="Quarantine.Workflow.WithdrawText" xml:space="preserve"><value>Задача утверждения отменяется, запись открывается снова. Запас не перемещается.</value></data>
+  <data name="Quarantine.Workflow.WithdrawDone" xml:space="preserve"><value>Решение отозвано.</value></data>
+  <data name="Quarantine.Workflow.Reapply" xml:space="preserve"><value>Применить повторно</value></data>
+  <data name="Quarantine.Workflow.ReapplyText" xml:space="preserve"><value>Утверждённое решение применяется повторно с теми же ключами; проведённая строка не проводится дважды.</value></data>
+  <data name="Quarantine.Workflow.Reapplied" xml:space="preserve"><value>Решение применено повторно.</value></data>
+  <data name="Quarantine.Workflow.SubmitLink" xml:space="preserve"><value>Подписать и отправить</value></data>
+  <data name="Quarantine.Decide.PageTitle" xml:space="preserve"><value>Принять решение</value></data>
+  <data name="Quarantine.Decide.Title" xml:space="preserve"><value>Решение · {0}</value></data>
+  <data name="Quarantine.Decide.Step.Decision" xml:space="preserve"><value>Решение</value></data>
+  <data name="Quarantine.Decide.Step.Sign" xml:space="preserve"><value>Электронная подпись</value></data>
+  <data name="Quarantine.Decide.Step.Skipped" xml:space="preserve"><value>политика отключена · шаг пропускается</value></data>
+  <data name="Quarantine.Decide.FourEyes.On" xml:space="preserve"><value>Правило «четырёх глаз» включено: решение утверждает другой сотрудник QA; принявший решение не может утвердить его сам.</value></data>
+  <data name="Quarantine.Decide.FourEyes.Off" xml:space="preserve"><value>Правило «четырёх глаз» отключено политикой компании; утверждение всё равно выполняет не тот, кто принял решение.</value></data>
+  <data name="Quarantine.Decide.Partial.Label" xml:space="preserve"><value>Частичное решение</value></data>
+  <data name="Quarantine.Decide.Partial.Hint" xml:space="preserve"><value>Выпустить часть количества, по остатку принять другое решение</value></data>
+  <data name="Quarantine.Decide.Field.Decision" xml:space="preserve"><value>Решение</value></data>
+  <data name="Quarantine.Decide.Option.Release" xml:space="preserve"><value>Запас становится доступен для продажи и резервирования.</value></data>
+  <data name="Quarantine.Decide.Option.Reject" xml:space="preserve"><value>Попадает в список заблокированных запасов; затем нужно решение о распоряжении.</value></data>
+  <data name="Quarantine.Decide.Option.Block" xml:space="preserve"><value>Запас блокируется; проверка продолжается.</value></data>
+  <data name="Quarantine.Decide.Field.Lines" xml:space="preserve"><value>Распределение количества</value></data>
+  <data name="Quarantine.Decide.Lines.Pick" xml:space="preserve"><value>Выберите решение</value></data>
+  <data name="Quarantine.Decide.Lines.Release" xml:space="preserve"><value>Выпустить → Доступен</value></data>
+  <data name="Quarantine.Decide.Lines.Reject" xml:space="preserve"><value>Отклонить → Заблокирован</value></data>
+  <data name="Quarantine.Decide.Lines.Block" xml:space="preserve"><value>Заблокировать → Заблокирован</value></data>
+  <data name="Quarantine.Decide.Lines.Sum" xml:space="preserve"><value>Итого / доступное количество</value></data>
+  <data name="Quarantine.Decide.Field.Coa" xml:space="preserve"><value>CoA / результат анализа проверен</value></data>
+  <data name="Quarantine.Decide.Field.NewRetest" xml:space="preserve"><value>Новая дата повторного контроля</value></data>
+  <data name="Quarantine.Decide.NewRetest.Hint" xml:space="preserve"><value>Для выпуска партии с истёкшей датой повторного контроля нужна новая дата (после сегодняшней, до срока годности).</value></data>
+  <data name="Quarantine.Decide.Err.Decision" xml:space="preserve"><value>Выберите решение.</value></data>
+  <data name="Quarantine.Decide.Err.Lines" xml:space="preserve"><value>Две строки должны иметь разные решения, каждое количество больше нуля, а сумма — равна доступному количеству.</value></data>
+  <data name="Quarantine.Decide.Err.BlockReason" xml:space="preserve"><value>Выберите причину блокировки.</value></data>
+  <data name="Quarantine.Decide.Err.Coa" xml:space="preserve"><value>Подтвердите, что CoA / результат анализа проверен перед выпуском.</value></data>
+  <data name="Quarantine.Decide.Err.Retest" xml:space="preserve"><value>Укажите новую дату повторного контроля.</value></data>
+  <data name="Quarantine.Decide.Closed" xml:space="preserve"><value>Сейчас по этой записи нельзя принять решение ({0}).</value></data>
+  <data name="Quarantine.Decide.Button.Next" xml:space="preserve"><value>Далее: электронная подпись</value></data>
+  <data name="Quarantine.Decide.Button.SignSend" xml:space="preserve"><value>Подписать и отправить</value></data>
+  <data name="Quarantine.Decide.Button.Send" xml:space="preserve"><value>Отправить на утверждение</value></data>
+  <data name="Quarantine.Sign.Summary" xml:space="preserve"><value>Решение для подписи</value></data>
+  <data name="Quarantine.Sign.Info" xml:space="preserve"><value>Подпись добавляется к решению с пользователем, датой-временем и значением. Решение уходит на утверждение; запас перемещается только после утверждения.</value></data>
+  <data name="Quarantine.Sign.NotRequired" xml:space="preserve"><value>Политика не требует подписи для этого решения; оно уходит на утверждение без подписи. Запас перемещается только после утверждения.</value></data>
+  <data name="Quarantine.Sign.Movement" xml:space="preserve"><value>Движение запаса после утверждения</value></data>
+  <data name="Quarantine.Sign.ReasonLine" xml:space="preserve"><value>Обоснование: «{0}»</value></data>
+  <data name="Quarantine.Sign.Cancelled" xml:space="preserve"><value>Подпись отменена; решение не отправлено.</value></data>
+  <data name="Quarantine.Sent.Toast" xml:space="preserve"><value>Отправлено на утверждение</value></data>
+  <data name="Quarantine.Sent.Title" xml:space="preserve"><value>Отправлено на утверждение</value></data>
+  <data name="Quarantine.Sent.Text" xml:space="preserve"><value>{0} ожидает утверждения. Запас переместится после утверждения.</value></data>
+  <data name="Quarantine.Disposition.PageTitle" xml:space="preserve"><value>Решение о распоряжении</value></data>
+  <data name="Quarantine.Disposition.Title" xml:space="preserve"><value>Решение о распоряжении · {0}</value></data>
+  <data name="Quarantine.Disposition.Step" xml:space="preserve"><value>Распоряжение</value></data>
+  <data name="Quarantine.Disposition.BlockedQty" xml:space="preserve"><value>Заблокировано {0}</value></data>
+  <data name="Quarantine.Disposition.Field.Kind" xml:space="preserve"><value>Распоряжение</value></data>
+  <data name="Quarantine.Disposition.Destroy" xml:space="preserve"><value>Уничтожение</value></data>
+  <data name="Quarantine.Disposition.ReturnToSupplier" xml:space="preserve"><value>Возврат поставщику</value></data>
+  <data name="Quarantine.Disposition.Rework" xml:space="preserve"><value>Переработка</value></data>
+  <data name="Quarantine.Disposition.Sample" xml:space="preserve"><value>Отложить как образец / эталон</value></data>
+  <data name="Quarantine.Disposition.Move.Destroy" xml:space="preserve"><value>Списание в брак</value></data>
+  <data name="Quarantine.Disposition.Move.ReturnToSupplier" xml:space="preserve"><value>Расход по возврату</value></data>
+  <data name="Quarantine.Disposition.Move.Rework" xml:space="preserve"><value>Перевод на переработку (Заблокирован → Карантин)</value></data>
+  <data name="Quarantine.Disposition.Move.Sample" xml:space="preserve"><value>Перемещение в место хранения образцов (статус остаётся «Заблокирован»)</value></data>
+  <data name="Quarantine.Disposition.Move.Title" xml:space="preserve"><value>Движение, которое появится в журнале запасов после утверждения</value></data>
+  <data name="Quarantine.Disposition.Move.Line" xml:space="preserve"><value>{0} · {1} · {2}</value></data>
+  <data name="Quarantine.Disposition.Field.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Quarantine.Disposition.Qty.Hint" xml:space="preserve"><value>Не более {0} · остаток остаётся заблокированным</value></data>
+  <data name="Quarantine.Disposition.Field.Supplier" xml:space="preserve"><value>Поставщик</value></data>
+  <data name="Quarantine.Disposition.SuppliersUnavailable" xml:space="preserve"><value>Не удалось загрузить список поставщиков.</value></data>
+  <data name="Quarantine.Disposition.Field.ReturnDoc" xml:space="preserve"><value>№ документа возврата</value></data>
+  <data name="Quarantine.Disposition.Field.Method" xml:space="preserve"><value>Способ уничтожения</value></data>
+  <data name="Quarantine.Disposition.Method.INCINERATION" xml:space="preserve"><value>Сжигание · лицензированный объект</value></data>
+  <data name="Quarantine.Disposition.Method.CHEMICAL_NEUTRALIZATION" xml:space="preserve"><value>Химическая нейтрализация</value></data>
+  <data name="Quarantine.Disposition.Method.LICENSED_MEDICAL_WASTE" xml:space="preserve"><value>Передача лицензированной компании по медотходам</value></data>
+  <data name="Quarantine.Disposition.Field.Date" xml:space="preserve"><value>Дата уничтожения</value></data>
+  <data name="Quarantine.Disposition.SampleMissing" xml:space="preserve"><value>Для этого склада не задано место хранения образцов. Выберите его в настройках карантина.</value></data>
+  <data name="Quarantine.Disposition.Closed" xml:space="preserve"><value>Сейчас по этой записи нельзя принять решение о распоряжении.</value></data>
+  <data name="Quarantine.Disposition.Err.Kind" xml:space="preserve"><value>Выберите вид распоряжения.</value></data>
+  <data name="Quarantine.Disposition.Err.Qty" xml:space="preserve"><value>Введите количество больше нуля и не более {0}.</value></data>
+  <data name="Quarantine.Disposition.Err.Supplier" xml:space="preserve"><value>Выберите поставщика.</value></data>
+  <data name="Quarantine.Disposition.Err.ReturnDoc" xml:space="preserve"><value>Укажите номер документа возврата.</value></data>
+  <data name="Quarantine.Disposition.Err.Method" xml:space="preserve"><value>Выберите способ уничтожения.</value></data>
+  <data name="Quarantine.Disposition.Err.Date" xml:space="preserve"><value>Укажите дату уничтожения.</value></data>
+  <data name="Quarantine.Blocked.Title" xml:space="preserve"><value>Заблокированный запас</value></data>
+  <data name="Quarantine.Blocked.Filter.AllReasons" xml:space="preserve"><value>Все причины блокировки</value></data>
+  <data name="Quarantine.Blocked.Filter.PendingOnly" xml:space="preserve"><value>Только ожидающие распоряжения</value></data>
+  <data name="Quarantine.Blocked.Pending.Yes" xml:space="preserve"><value>Да · ожидает распоряжения</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewed" xml:space="preserve"><value>Нет · проверка завершена</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewing" xml:space="preserve"><value>Нет · проверка идёт</value></data>
+  <data name="Quarantine.Blocked.ActivePending" xml:space="preserve"><value>Решение ожидает утверждения · {0}</value></data>
+  <data name="Quarantine.Blocked.UnblockDisabled" xml:space="preserve"><value>Нельзя снять блокировку до завершения проверки</value></data>
+  <data name="Quarantine.Blocked.Info" xml:space="preserve"><value>Снять блокировку можно только у записей с завершённой проверкой. Снятие — это решение: оно подписывается, уходит на утверждение, и запас становится доступным после утверждения.</value></data>
+  <data name="Quarantine.Blocked.Empty" xml:space="preserve"><value>Нет заблокированных запасов, соответствующих фильтру.</value></data>
+  <data name="Quarantine.Unblock.Title" xml:space="preserve"><value>Снять блокировку с этого запаса?</value></data>
+  <data name="Quarantine.Unblock.Text" xml:space="preserve"><value>После утверждения запас переходит из «Заблокирован» в «Доступен» и открывается для продаж/резервов. Решение подписывается и отправляется на утверждение; это записывается в историю решений.</value></data>
+  <data name="Quarantine.Unblock.Confirm" xml:space="preserve"><value>Снять блокировку</value></data>
+  <data name="Quarantine.CompleteReview.Title" xml:space="preserve"><value>Завершить проверку?</value></data>
+  <data name="Quarantine.CompleteReview.Done" xml:space="preserve"><value>Проверка завершена; теперь можно снять блокировку.</value></data>
+  <data name="Quarantine.BlockStock.Title" xml:space="preserve"><value>Заблокировать запас</value></data>
+  <data name="Quarantine.BlockStock.Warn" xml:space="preserve"><value>Выбранный доступный запас сразу становится заблокированным (безопасное направление; утверждение не требуется).</value></data>
+  <data name="Quarantine.BlockStock.Lot" xml:space="preserve"><value>Партия</value></data>
+  <data name="Quarantine.BlockStock.LotSearch" xml:space="preserve"><value>Поиск номера партии</value></data>
+  <data name="Quarantine.BlockStock.Row" xml:space="preserve"><value>Строка запаса (Доступен)</value></data>
+  <data name="Quarantine.BlockStock.NoRows" xml:space="preserve"><value>У этой партии нет доступного запаса.</value></data>
+  <data name="Quarantine.BlockStock.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Quarantine.BlockStock.QtyInvalid" xml:space="preserve"><value>Введите количество больше нуля, не превышающее выбранную строку.</value></data>
+  <data name="Quarantine.BlockStock.Note" xml:space="preserve"><value>Примечание</value></data>
+  <data name="Quarantine.BlockStock.Confirm" xml:space="preserve"><value>Заблокировать</value></data>
+  <data name="Quarantine.BlockStock.Done" xml:space="preserve"><value>Запас заблокирован · {0}</value></data>
+  <data name="Quarantine.Retest.Title" xml:space="preserve"><value>Очередь повторного контроля</value></data>
+  <data name="Quarantine.Retest.Info" xml:space="preserve"><value>Партию с истёкшей датой повторного контроля нельзя использовать для продаж, резервирования и отгрузок до решения по качеству.</value></data>
+  <data name="Quarantine.Retest.Horizon" xml:space="preserve"><value>Партии с истёкшей датой или сроком в течение {0} дн.</value></data>
+  <data name="Quarantine.Retest.State.Upcoming" xml:space="preserve"><value>Скоро</value></data>
+  <data name="Quarantine.Retest.State.DueClosed" xml:space="preserve"><value>Просрочено · закрыто для использования</value></data>
+  <data name="Quarantine.Retest.State.Quarantined" xml:space="preserve"><value>В карантине</value></data>
+  <data name="Quarantine.Retest.Open" xml:space="preserve"><value>Открыть запись карантина</value></data>
+  <data name="Quarantine.Retest.Confirm.Title" xml:space="preserve"><value>Поместить партию в карантин?</value></data>
+  <data name="Quarantine.Retest.Confirm.Text" xml:space="preserve"><value>Доступный запас партии {0} ({1}) сразу переходит в карантин и добавляется в очередь.</value></data>
+  <data name="Quarantine.Retest.Confirm.DefaultReason" xml:space="preserve"><value>Дата повторного контроля {0} · образец в лабораторию ОКК</value></data>
+  <data name="Quarantine.Retest.Done" xml:space="preserve"><value>{0} помещена в карантин · {1} добавлена в очередь.</value></data>
+  <data name="Quarantine.Retest.Empty" xml:space="preserve"><value>В очереди повторного контроля нет партий.</value></data>
+  <data name="Quarantine.Submit.PageTitle" xml:space="preserve"><value>Отправить решение</value></data>
+  <data name="Quarantine.Submit.Title" xml:space="preserve"><value>Отправить решение · {0}</value></data>
+  <data name="Quarantine.Submit.Step" xml:space="preserve"><value>Решение</value></data>
+  <data name="Quarantine.Submit.Intro" xml:space="preserve"><value>Это решение — черновик: подпишите его и отправьте на утверждение. Запас перемещается после утверждения.</value></data>
+  <data name="Quarantine.Submit.NotDraft" xml:space="preserve"><value>Это решение больше нельзя отправить ({0}).</value></data>
+  <data name="Quarantine.Submit.LotRelease" xml:space="preserve"><value>Партия {0} → Выпущена</value></data>
+  <data name="Quarantine.Settings.Title" xml:space="preserve"><value>Настройки карантина</value></data>
+  <data name="Quarantine.Settings.Description" xml:space="preserve"><value>Правила карантина компании, утверждающие, места образцов и причины блокировки.</value></data>
+  <data name="Quarantine.Settings.Section.General" xml:space="preserve"><value>Общие</value></data>
+  <data name="Quarantine.Settings.WaitTarget" xml:space="preserve"><value>Цель ожидания (дни)</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Hint" xml:space="preserve"><value>1–60 дней; строки очереди сверх этого срока выделяются.</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Invalid" xml:space="preserve"><value>Укажите число дней от 1 до 60.</value></data>
+  <data name="Quarantine.Settings.Reconcile" xml:space="preserve"><value>Интервал повторного чтения (секунды)</value></data>
+  <data name="Quarantine.Settings.Reconcile.Hint" xml:space="preserve"><value>Как часто (не чаще) запрашивается статус утверждения ожидающего решения при чтении экранов.</value></data>
+  <data name="Quarantine.Settings.FourEyes" xml:space="preserve"><value>«Четыре глаза»</value></data>
+  <data name="Quarantine.Settings.FourEyes.Hint" xml:space="preserve"><value>Принявший решение не может его утвердить; это повторно проверяется при применении.</value></data>
+  <data name="Quarantine.Settings.LotRelease" xml:space="preserve"><value>Утверждение выпуска партии</value></data>
+  <data name="Quarantine.Settings.LotRelease.Hint" xml:space="preserve"><value>При выпуске партии из черновика или блокировки требуется утверждение качества.</value></data>
+  <data name="Quarantine.Settings.Approvers" xml:space="preserve"><value>Кандидаты на утверждение</value></data>
+  <data name="Quarantine.Settings.Approvers.Hint" xml:space="preserve"><value>Должность или пользователь; не более 10. Принявший решение не отправляется кандидатом.</value></data>
+  <data name="Quarantine.Settings.Approvers.Kind" xml:space="preserve"><value>Тип</value></data>
+  <data name="Quarantine.Settings.Approvers.Value" xml:space="preserve"><value>Кандидат</value></data>
+  <data name="Quarantine.Settings.Approvers.Position" xml:space="preserve"><value>Должность</value></data>
+  <data name="Quarantine.Settings.Approvers.User" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="Quarantine.Settings.Approvers.Empty" xml:space="preserve"><value>Нет кандидатов — решение нельзя отправить на утверждение.</value></data>
+  <data name="Quarantine.Settings.Approvers.Invalid" xml:space="preserve"><value>Выберите должность или введите корректный идентификатор пользователя.</value></data>
+  <data name="Quarantine.Settings.Approvers.Max" xml:space="preserve"><value>Можно задать не более 10 кандидатов.</value></data>
+  <data name="Quarantine.Settings.SampleLocations" xml:space="preserve"><value>Места хранения образцов</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Hint" xml:space="preserve"><value>Одно место хранения на склад; запас, отложенный как образец, остаётся здесь заблокированным.</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Empty" xml:space="preserve"><value>Места для образцов не заданы.</value></data>
+  <data name="Quarantine.Settings.Sample.Warehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="Quarantine.Settings.Sample.Location" xml:space="preserve"><value>Место для образцов</value></data>
+  <data name="Quarantine.Settings.Add" xml:space="preserve"><value>Добавить</value></data>
+  <data name="Quarantine.Settings.Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Quarantine.Settings.Saved" xml:space="preserve"><value>Настройки сохранены.</value></data>
+  <data name="Quarantine.Settings.Template.Section" xml:space="preserve"><value>Шаблон утверждения</value></data>
+  <data name="Quarantine.Settings.Template.Code" xml:space="preserve"><value>Код шаблона</value></data>
+  <data name="Quarantine.Settings.Template.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Quarantine.Settings.Template.Version" xml:space="preserve"><value>Опубликованная версия</value></data>
+  <data name="Quarantine.Settings.Template.Published" xml:space="preserve"><value>Опубликован</value></data>
+  <data name="Quarantine.Settings.Template.Missing" xml:space="preserve"><value>Отсутствует</value></data>
+  <data name="Quarantine.Settings.Template.Prepare" xml:space="preserve"><value>Подготовить шаблон утверждения</value></data>
+  <data name="Quarantine.Settings.Template.Text" xml:space="preserve"><value>Шаблон INV-QUARANTINE-RELEASE создаётся и публикуется с вашими правами; если он уже есть, сообщается его версия.</value></data>
+  <data name="Quarantine.Settings.Template.Created" xml:space="preserve"><value>Шаблон опубликован · версия {0}</value></data>
+  <data name="Quarantine.Settings.Template.Existing" xml:space="preserve"><value>Шаблон уже опубликован · версия {0}</value></data>
+  <data name="Quarantine.Settings.Section.BlockReasons" xml:space="preserve"><value>Причины блокировки</value></data>
+  <data name="Quarantine.Settings.BR.Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Quarantine.Settings.BR.CodeHint" xml:space="preserve"><value>Заглавные буквы, цифры и подчёркивание; начинается с буквы (например, QC_REJECT). Не меняется.</value></data>
+  <data name="Quarantine.Settings.BR.CodeInvalid" xml:space="preserve"><value>Неверный формат кода (например, QC_REJECT).</value></data>
+  <data name="Quarantine.Settings.BR.Name" xml:space="preserve"><value>Название</value></data>
+  <data name="Quarantine.Settings.BR.Active" xml:space="preserve"><value>Активен</value></data>
+  <data name="Quarantine.Settings.BR.Locked" xml:space="preserve"><value>Используется</value></data>
+  <data name="Quarantine.Settings.BR.Add" xml:space="preserve"><value>Добавить причину блокировки</value></data>
+  <data name="Quarantine.Settings.BR.Edit" xml:space="preserve"><value>Изменить причину блокировки</value></data>
+  <data name="Quarantine.Settings.BR.Saved" xml:space="preserve"><value>Причина блокировки сохранена.</value></data>
+  <data name="Quarantine.Settings.Lang.tr" xml:space="preserve"><value>Турецкий</value></data>
+  <data name="Quarantine.Settings.Lang.en" xml:space="preserve"><value>Английский</value></data>
+  <data name="Quarantine.Settings.Lang.fr" xml:space="preserve"><value>Французский</value></data>
+  <data name="Quarantine.Settings.Lang.es" xml:space="preserve"><value>Испанский</value></data>
+  <data name="Quarantine.Settings.Lang.zh" xml:space="preserve"><value>Китайский</value></data>
+  <data name="Quarantine.Settings.Lang.ar" xml:space="preserve"><value>Арабский</value></data>
+  <data name="Quarantine.Settings.Lang.ru" xml:space="preserve"><value>Русский</value></data>
+  <data name="Quarantine.Errors.GENERIC" xml:space="preserve"><value>Не удалось выполнить действие. Повторите попытку.</value></data>
+  <data name="Quarantine.Errors.FORBIDDEN" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="Quarantine.Errors.UNAUTHORIZED" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="Quarantine.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>Служба карантина сейчас недоступна. Повторите попытку позже.</value></data>
+  <data name="Quarantine.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>Не удалось загрузить окно подписи; решение не отправлено.</value></data>
+  <data name="Quarantine.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Сначала выберите компанию, в которой работаете.</value></data>
+  <data name="Quarantine.Errors.INVALID_REQUEST" xml:space="preserve"><value>Запрос неполный или неверный. Проверьте поля.</value></data>
+  <data name="Quarantine.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Одно и то же действие повторено с другим содержимым. Обновите страницу и повторите.</value></data>
+  <data name="Quarantine.Errors.REASON_REQUIRED" xml:space="preserve"><value>Обоснование должно содержать от 10 до 1000 символов.</value></data>
+  <data name="Quarantine.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Эта запись принадлежит другой компании.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_NOT_FOUND" xml:space="preserve"><value>Запись карантина не найдена.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_NOT_FOUND" xml:space="preserve"><value>Запись заблокированного запаса не найдена.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_FOUND" xml:space="preserve"><value>Решение не найдено.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_CONFLICT" xml:space="preserve"><value>Запись изменилась, пока вы её просматривали. Обновите и повторите.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_INVALID" xml:space="preserve"><value>Неверное решение: одиночное решение содержит одну строку на всё количество.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_PARTIAL_SUM_MISMATCH" xml:space="preserve"><value>Сумма частичного решения должна равняться количеству записи.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_COA_NOT_CONFIRMED" xml:space="preserve"><value>Для выпуска нужно подтвердить проверку CoA.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_REQUIRED" xml:space="preserve"><value>Для отклонения / блокировки нужна активная причина блокировки.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_RETEST_DATE_REQUIRED" xml:space="preserve"><value>Для этого выпуска нужна новая дата повторного контроля (после сегодняшней, до срока годности).</value></data>
+  <data name="Quarantine.Errors.LOT_DATES_INVALID" xml:space="preserve"><value>Даты партии противоречат друг другу (повторный контроль не может быть позже срока годности).</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_QUANTITY_INVALID" xml:space="preserve"><value>Количество должно быть больше нуля и не превышать заблокированное.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SUPPLIER_REQUIRED" xml:space="preserve"><value>Для возврата поставщику нужны поставщик и номер документа возврата.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DESTRUCTION_METHOD_REQUIRED" xml:space="preserve"><value>Для уничтожения нужны способ и дата не старше 30 дней.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_REQUIRED" xml:space="preserve"><value>Политика требует электронной подписи для этого решения.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_MISMATCH" xml:space="preserve"><value>Подпись не относится к этому решению, к вам или к значению политики. Подпишите снова.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_ALREADY_PENDING" xml:space="preserve"><value>Другое решение по этой записи уже ожидает утверждения.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_DRAFT" xml:space="preserve"><value>Это решение не черновик; повторно отправить нельзя.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_PENDING" xml:space="preserve"><value>Решение больше не ожидает утверждения.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_APPLICABLE" xml:space="preserve"><value>Повторно применить можно только решение, которое не удалось применить.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOT_DECIDER" xml:space="preserve"><value>Это может сделать только принявший решение.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_CLOSED" xml:space="preserve"><value>Запись карантина закрыта.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_CLOSED" xml:space="preserve"><value>Запись заблокированного запаса закрыта.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_LOT_HELD" xml:space="preserve"><value>Партия заблокирована или просрочена; возможно только уничтожение.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_NOT_SET" xml:space="preserve"><value>Для склада не задано место хранения образцов (настройки карантина).</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_INVALID" xml:space="preserve"><value>Место для образцов должно быть на том же складе, активным и пригодным для хранения.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_REVIEW_NOT_COMPLETED" xml:space="preserve"><value>Нельзя снять блокировку до завершения проверки.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_CHANGED" xml:space="preserve"><value>Запас изменился во время принятия решения. Откройте запись снова.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_RESERVED" xml:space="preserve"><value>Часть запаса зарезервирована; резервы остались бы без покрытия, поэтому ничего не сделано.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOTHING_AVAILABLE" xml:space="preserve"><value>У этой партии нет доступного запаса.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_APPROVERS_NOT_CONFIGURED" xml:space="preserve"><value>Не задан ни один утверждающий, кроме вас (настройки карантина). Решение не отправлено.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_TEMPLATE_MISSING" xml:space="preserve"><value>Шаблон утверждения не опубликован. Используйте «Подготовить шаблон утверждения» в настройках.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_FORBIDDEN" xml:space="preserve"><value>Вы не можете запустить процесс утверждения.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_REJECTED" xml:space="preserve"><value>Служба процессов отклонила запрос.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_UNAVAILABLE" xml:space="preserve"><value>Служба процессов недоступна; ничего не отправлено.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_LANGUAGE_MISSING" xml:space="preserve"><value>У причины блокировки должно быть название на всех семи языках.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_EXISTS" xml:space="preserve"><value>Причина блокировки с таким кодом уже есть.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_IN_USE" xml:space="preserve"><value>Используемую причину блокировки нельзя деактивировать.</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Партия не найдена.</value></data>
+  <data name="Quarantine.Errors.INSUFFICIENT_STOCK" xml:space="preserve"><value>Недостаточно запаса.</value></data>
+  <data name="Quarantine.Errors.LOT_BLOCKED" xml:space="preserve"><value>Партия заблокирована; это движение невозможно.</value></data>
+  <data name="Quarantine.Errors.LOT_EXPIRED" xml:space="preserve"><value>Срок годности партии истёк; это движение невозможно.</value></data>
+  <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>Дата повторного контроля партии истекла; использовать нельзя до решения по качеству.</value></data>
+  <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>Учётный период закрыт.</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>Место неизвестно или недоступно.</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>неизвестный пользователь</value></data>
+  <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>Глобальный SKU</value></data>
+  <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>Локальный SKU</value></data>
+  <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Готовая продукция</value></data>
+  <data name="Quarantine.Level.Item" xml:space="preserve"><value>Материальная позиция</value></data>
+  <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>Изменить заметку</value></data>
+  <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>Заметка о результате анализа сохранена.</value></data>
+  <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Примечание к анализу обновлено</value></data>
+  <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>Примечание заблокировано, пока решение по этой записи ожидает утверждения или применения.</value></data>
+  <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Примечание: {0} → {1} символов · Вложения: {2} → {3}</value></data>
+</root>

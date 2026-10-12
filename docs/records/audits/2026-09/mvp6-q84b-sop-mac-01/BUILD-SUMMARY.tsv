@@ -1,0 +1,7 @@
+tree	target	exit	warnings	errors	log
+B	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0	logs/build-B--Diten.SupplyChainService.log
+B	frontend/Diten.Web/Diten.Web.csproj	0	15	0	logs/build-B--Diten.Web.log
+B	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	3	0	logs/build-B--Diten.Web.Tests.log
+A	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0	logs/build-A--Diten.SupplyChainService.log
+A	frontend/Diten.Web/Diten.Web.csproj	0	15	0	logs/build-A--Diten.Web.log
+A	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	3	0	logs/build-A--Diten.Web.Tests.log

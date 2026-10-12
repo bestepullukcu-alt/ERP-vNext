@@ -1,0 +1,6 @@
+COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+dotnet  58820 natig  418u  IPv4 0x46ccbf23a79ccdd2      0t0  TCP 127.0.0.1:5057 (LISTEN)
+dotnet  58900 natig  368u  IPv4 0x3e175807ea72199b      0t0  TCP 127.0.0.1:5056 (LISTEN)
+dotnet  58949 natig  314u  IPv4 0xa741dee8b6f91b99      0t0  TCP 127.0.0.1:5061 (LISTEN)
+dotnet  58993 natig  308u  IPv4  0xa80456ce5c9f2e3      0t0  TCP 127.0.0.1:5000 (LISTEN)
+dotnet  59032 natig  302u  IPv4 0x299bbb66f9941fab      0t0  TCP 127.0.0.1:5001 (LISTEN)

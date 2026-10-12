@@ -1,0 +1,14 @@
+overlay extracted files 11
+patch files 11 marker swaps in memory 3
+MATCH e439219871a1  services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj
+MATCH 1f737a587170  services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+MATCH c788bac86577  services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
+MATCH 18d906cc6213  services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
+MATCH aed11cd7390d  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs
+MATCH b3f616deff27  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/TestAssemblyBsonSetup.cs
+MATCH ad6ddbc0bc5b  services/Diten.SupplyChainService/tests/loads/failure_probe.py
+MATCH 5c78f3c1b91a  services/Diten.SupplyChainService/tests/loads/restart_probe.py
+MATCH 71fd51b7f5b4  services/Diten.SupplyChainService/tests/loads/runtime_probe.py
+MATCH 2a1d608c17ca  services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj
+MATCH 4026b32d35dc  services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+V2 byte-for-byte 11 / 11 patch∖overlay [] overlay∖patch []

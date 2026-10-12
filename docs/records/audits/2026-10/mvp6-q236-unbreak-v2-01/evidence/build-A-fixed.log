@@ -1,0 +1,23 @@
+  Determining projects to restore...
+  Restored /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/Diten.BuildingBlocks.Eventing.csproj (in 62 ms).
+  Restored /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj (in 62 ms).
+  Restored /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj (in 62 ms).
+  Restored /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj (in 1.13 sec).
+  Restored /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj (in 1.13 sec).
+  Restored /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj (in 1.15 sec).
+  Restored /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj (in 1.16 sec).
+  Restored /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj (in 1.16 sec).
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/bin/Debug/net8.0/Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.SupplyChainService.Domain -> /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Debug/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Debug/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Application -> /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Debug/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Debug/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Debug/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Api -> /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:10.16

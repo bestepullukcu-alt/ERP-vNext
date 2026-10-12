@@ -1,0 +1,3 @@
+Toplam 1 test dosyası belirtilen desenle eşleşti.
+  Başarısız Diten.ApiGateway.Tests.OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet [7 ms]
+Başarısız! - Başarısız:     1, Başarılı:    83, Atlanan:     0, Toplam:    84, Süre: 1 s - Diten.ApiGateway.Tests.dll (net8.0)

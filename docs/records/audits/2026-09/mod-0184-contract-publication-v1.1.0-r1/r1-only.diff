@@ -1,0 +1,57 @@
+--- v1.1.0/shipment-bundle.openapi.candidate.yaml
++++ v1.1.0-r1/shipment-bundle.openapi.candidate.yaml
+@@ -1452,54 +1452,6 @@
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Error'
+-          examples:
+-            shipmentTransition:
+-              value:
+-                error:
+-                  code: INVALID_SHIPMENT_TRANSITION
+-                  message: Shipment lifecycle gecisi gecersiz
+-                  details:
+-                    from: Draft
+-                    to: Delivered
+-                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-                contractVersion: v1
+-            loadTransition:
+-              value:
+-                error:
+-                  code: INVALID_LOAD_TRANSITION
+-                  message: Load lifecycle gecisi gecersiz
+-                  details:
+-                    from: Draft
+-                    to: Dispatched
+-                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-                contractVersion: v1
+-            returnTransition:
+-              value:
+-                error:
+-                  code: INVALID_RETURN_TRANSITION
+-                  message: Return lifecycle gecisi gecersiz
+-                  details:
+-                    from: Requested
+-                    to: Received
+-                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-                contractVersion: v1
+-            claimTransition:
+-              value:
+-                error:
+-                  code: INVALID_CLAIM_TRANSITION
+-                  message: Claim lifecycle gecisi gecersiz
+-                  details:
+-                    from: Open
+-                    to: Settled
+-                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-                contractVersion: v1
+-            inventory:
+-              value:
+-                error:
+-                  code: INVENTORY_REFERENCE_INVALID
+-                  message: Frozen INVENTORY reference gecersiz veya availability yetersiz
+-                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-                contractVersion: v1
+       headers:
+         X-Correlation-Id:
+           $ref: '#/components/headers/CarrierResponseCorrelation'

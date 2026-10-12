@@ -1,0 +1,13 @@
+[
+ {
+  "call": "POST /movements (real token, HQ, LE master unreachable)",
+  "status": 503,
+  "code": "LEGAL_ENTITY_MASTER_UNAVAILABLE",
+  "message": "The legal-entity master could not confirm the selected company. Nothing was read or changed; retry later."
+ },
+ {
+  "call": "GET /balance (same)",
+  "status": 503,
+  "code": "LEGAL_ENTITY_MASTER_UNAVAILABLE"
+ }
+]

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.Platform.BackgroundJobs.Tests;
@@ -163,7 +164,7 @@ public sealed class PlatformContainerValidationTests
                 // A database of this test's own, under a FIXED name so it is reused and cannot pile up —
                 // MongoIntegrationHarness.CreateIsolatedAsync's rule, for the same reason: what
                 // AddInfrastructure seeds is database-global, not tenant-scoped.
-                ["MongoDbSettings:ConnectionString"] = "mongodb://localhost:27017",
+                ["MongoDbSettings:ConnectionString"] = RequireLaneMongoConnectionString(),
                 ["MongoDbSettings:DatabaseName"] = "diten_platform_itest_container_validation",
                 ["MongoDbSettings:AllowStartupWithoutDatabase"] = "true",
 
@@ -185,6 +186,43 @@ public sealed class PlatformContainerValidationTests
                 ["Smtp:Enabled"] = "false"
             })
             .Build();
+
+    // Q131a: the lane's MongoDB comes only from DITEN_PLATFORM_TEST_MONGO_URI: no fallback port, no remote host, no
+    // credentials. Same rules as Diten.Platform.Application.Tests.Persistence.PlatformMongoTestConnection; this project
+    // does not reference that test assembly, so the check is repeated here. Messages never repeat the URI.
+    private static string RequireLaneMongoConnectionString()
+    {
+        const string key = "DITEN_PLATFORM_TEST_MONGO_URI";
+        var connectionString = Environment.GetEnvironmentVariable(key);
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                $"{key} is not set. Platform Mongo tests fail closed: point it at a lane-owned loopback MongoDB "
+                + "(scripts/test-env/mvp6-test-mongo-env.sh). There is no fallback port.");
+        }
+
+        var url = new MongoUrl(connectionString);
+        if (url.Username is not null)
+        {
+            throw new InvalidOperationException($"{key} must not carry credentials.");
+        }
+
+        foreach (var server in url.Servers ?? [])
+        {
+            if (server.Host is not ("127.0.0.1" or "localhost" or "::1" or "[::1]"))
+            {
+                throw new InvalidOperationException($"{key} must point at a loopback host.");
+            }
+
+            if (server.Port is >= 27017 and <= 27021)
+            {
+                throw new InvalidOperationException(
+                    $"{key} points at protected MongoDB port {server.Port}. Use the lane's own port.");
+            }
+        }
+
+        return connectionString;
+    }
 
     /// <summary>
     /// A settings file inside Diten.Platform.API, found by WALKING UP to the AGENTS.md marker rather than by

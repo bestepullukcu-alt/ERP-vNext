@@ -1,0 +1,9 @@
+# Q217 artifacts · start 2026-10-02 23:00:40 +03 · end 2026-10-02 23:06:27 +03 (Europe/Istanbul)
+# HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c · git status --porcelain: 665 lines at start, 665 at end (this folder is inside the already-untracked docs/records/audits/2026-10/, so it adds no line)
+# verify: cd docs/records/audits/2026-10/mvp6-q217-startup-01 && shasum -a 256 -c ARTIFACTS.sha256
+38ecdd6c061e3f260eb9b64e9ce238fbc27702227c9adec13831d4ad2f95d31c  SOP-22.md
+a3add078378bd9522ecec77cf250980f3c293ad290a80264ff5c87b6b81a73b1  BUILD.md
+de04c28d3412d2c88f4b90394de6ab20d57dcd7db5808082d67d48218ca77eb5  STARTUP-VERDICT.md
+5551648d4b863c8b30e4eec4b2aabf9b5e720387a0c381a1922ceecc291e5a21  HTTP-EVIDENCE.md
+b8fb85d39baa4cfbe4df723d5a7e7bb7742b4eeceab41f79af23c24f5a95f6a7  WHAT-Q209-NEEDS.md
+9f3e7353bee34c9292be7c2af03aaf36ddb5557a2067ab6492dec4378814a046  CLEANUP.md

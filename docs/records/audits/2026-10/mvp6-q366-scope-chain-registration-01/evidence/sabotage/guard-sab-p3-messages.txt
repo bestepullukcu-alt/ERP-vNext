@@ -1,0 +1,9 @@
+  Error Message:
+   Controllers the production container cannot construct:
+Diten.Platform.API.Controllers.Internal.InternalTenantLegalEntityScopeController(Diten.Platform.Application.Common.IInternalScopeResolutionContext internalScopeContext)
+  Failed Diten.Platform.CompositionGuard.Tests.CompositionRootGuardTests.EveryOptionalDitenDependency_IsRegisteredInTheProductionContainer [4 ms]
+  Error Message:
+   Optional Diten.* dependencies that silently resolve to null:
+Diten.Platform.Infrastructure.Services.Mdm.MdmLegalEntityReferenceValidator(Diten.Platform.Application.Common.IInternalScopeResolutionContext? internalScopeContext = null)
+Diten.Platform.Infrastructure.Services.Mdm.MdmLegalEntityReferenceValidator(Diten.Platform.Infrastructure.Services.Mdm.IMdmServiceIdentityTokenProvider? serviceTokenProvider = null)
+

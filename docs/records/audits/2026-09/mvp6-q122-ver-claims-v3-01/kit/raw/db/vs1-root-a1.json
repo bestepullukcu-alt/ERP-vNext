@@ -1,0 +1,41 @@
+{
+  "label": "vs1",
+  "claims": {
+    "7ceb7776-daaf-4197-849b-5ba5bff4a64b": {
+      "found": true,
+      "status": "Open",
+      "claimNumber": "CLM-7ceb7776daaf4197849b5ba5bff4a64b",
+      "claimedAmount": "250.00",
+      "approvedAmount": null,
+      "currency": "EUR",
+      "reasonCode": "DAMAGE",
+      "evidenceReferenceIds": [],
+      "carrierId": null,
+      "correlationRoot": "08920312-1334-437b-b443-3a25261b6358",
+      "isDeleted": false,
+      "version": 1,
+      "receipts": [
+        {
+          "statusCode": 201,
+          "resultingStatus": "Open",
+          "correlationRoot": "08920312-1334-437b-b443-3a25261b6358"
+        }
+      ],
+      "audit": [
+        {
+          "version": 1,
+          "correlationRoot": "08920312-1334-437b-b443-3a25261b6358",
+          "resolutionCode": null,
+          "note": null
+        }
+      ],
+      "outbox": [
+        {
+          "status": "Pending",
+          "eventType": "ClaimOpened",
+          "correlationId": "08920312-1334-437b-b443-3a25261b6358"
+        }
+      ]
+    }
+  }
+}

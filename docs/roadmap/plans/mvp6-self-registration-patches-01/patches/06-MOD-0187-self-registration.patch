@@ -1,0 +1,80 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+index 219190e..b3a5b0a 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+@@ -733,3 +733,75 @@ frontend 30/50/84; shared integration 8/16/28; independent UI VER 14/24/40; **to
+ 
+ Not authorized by this section: UI code until an integrated target exists and a versioned UI dispatch is released; gateway, permission,
+ navigation, L10n or icon-map edits except by the single integration owner; contract changes; `done` status; commit or push.
++
++## 33. Self-registration (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++
++**Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
++**Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).
++This section specifies; it authorizes no code, `Program.cs`, `.csproj`, appsettings, `SharedResource`, Platform or gateway change, no new permission key or ID, and no commit, push or stash.
++
++### Identity (D3 = A)
++
++| Field | Value |
++|---|---|
++| ModuleCode / ModuleName / DisplayName | `claims-management` / `ClaimsManagement` / `Claims Management` |
++| Domain / Service | `SupplyChainExecution` / `DitenSupplyChainService` |
++| ModuleVersion / IsTenantAssignable / IsBaseline | `1.0.0` / true / false |
++| SortOrder / Icon (SOFT, seed-once) | 430 / `bx-receipt` |
++| Provider / tests (proposed paths) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ClaimsManagementManifestProvider.cs` / `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ClaimsManagementManifestProviderTests.cs` |
++| Scope | every RoutePath starts with `/SupplyChain/`, none with `/Platform/` → Tenant |
++
++### Pages
++
++| PageCode | DisplayName | RoutePath | RequiredPermission | Parent | Nav | PageType | Sort |
++|---|---|---|---|---|---|---|---|
++| `CLAIMS` | Claims | `/SupplyChain/Claims` (approved in §32.4; not a route yet) | `supplychain.claims.read` | — | **true** | List | 10 |
++
++### Actions
++
++| Page | ActionCode | DisplayName | PermissionKey | Placement | Dangerous |
++|---|---|---|---|---|---|
++| `CLAIMS` | `CREATE` | Create Claim | `supplychain.claims.create` | Toolbar | no |
++| `CLAIMS` | `INVESTIGATE` | Investigate | `supplychain.claims.investigate` | RowAction | no |
++| `CLAIMS` | `WITHDRAW` | Withdraw | `supplychain.claims.investigate` | RowAction | **yes** |
++| `CLAIMS` | `APPROVE` | Approve | `supplychain.claims.decide` | RowAction | no |
++| `CLAIMS` | `REJECT` | Reject | `supplychain.claims.decide` | RowAction | **yes** |
++| `CLAIMS` | `SETTLE` | Settle (no payment posted) | `supplychain.claims.settle` | RowAction | no |
++| `CLAIMS` | `CLOSE` | Close | `supplychain.claims.decide` | RowAction | no |
++
++Existing keys only: `ClaimPermissions` constants `Read`, `Create`, `Investigate`, `Decide`, `Settle` (accepted isolated source, `normal-source.tar.gz` `edb759a0…`). Pages and buttons mirror the §32 GoldenReferenceSlim tenant UI scope.
++
++### Navigation keys (NAV-L10N-KEYS.tsv; 0/7 present today)
++
++| Key | Required languages | Ships with |
++|---|---|---|
++| `Nav.Module.CLAIMSMANAGEMENT` | en, tr, fr, es, zh, ar, ru | this provider |
++| `Nav.Page.CLAIMS` | en, tr, fr, es, zh, ar, ru | this provider |
++
++Values are added to `frontend/Diten.Web/Resources/SharedResource.{lang}.resx` by the integration owner and reviewed by the l10n agent (no empty value, no English placeholder, no key echoing its own name). This pack does not supply or approve values.
++
++### Tests (TEST-PLAN.md §2; all required before the module counts as closed)
++
++| ID | Pass condition |
++|---|---|
++| M-01 | Identity exactly as above; `IsTenantAssignable` true |
++| M-02 | Every manifest `RequiredPermission` / `PermissionKey` is in the reflected `public const string` fields of `ClaimPermissions` |
++| M-03 | Every reflected key is in the manifest or on the API-only allow-list with a reason: none expected (every constant is modeled; any addition needs a reason) |
++| M-04 | Manifest RoutePaths = the frontend view-route set of `SupplyChainClaimsController` (§32.4; to be built), counts equal (cross-checked by W-01) |
++| M-05 | The action table above equals the manifest actions per page (code, key, placement, dangerous flag) |
++| M-06 | PageCodes, RoutePaths and ActionCodes (per page) unique, case-insensitive |
++| M-07 | Exactly one `IsNavigationVisible` page, with a null parent; every other page has a parent |
++| M-08 | No RoutePath starts with `/Platform/` |
++
++Shared guards W-01…W-04 and reconcile-state R-01…R-04 (DCP-009 §21.3) must also be green for this module.
++
++### Ship rule (D4 = A)
++
++The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navigation keys ship **together with this module's UI** in the integrated target (Q14/Q15), never ahead of it.
++
++### Open gaps (carried, not solved)
++
++1. `ClaimPermissions.cs` exists only in the accepted isolated source, not in the common checkout.
++2. `CREATE` and every row action also need `supplychain.shipments.read` (G-SHIPREAD); the single-key action model cannot express that conjunction.
++3. The Claims UI is approved (§32) but not built; the route and actions are re-checked against the built UI (M-04/M-05, W-01/W-02).
++4. Runtime tests R-02…R-04 need a native executor and the integrated target.

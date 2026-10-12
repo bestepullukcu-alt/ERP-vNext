@@ -1,0 +1,32 @@
+{
+  "name": "auth-401",
+  "request": {
+    "bodyUtf8": null,
+    "headers": {
+      "X-Correlation-Id": "62a4eb1b-bf7c-4154-9a93-17b825b10b6e",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111"
+    },
+    "method": "GET",
+    "path": "/api/shipment-bundle/returns"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "error": {
+        "code": "INVALID_REQUEST",
+        "correlationId": "62a4eb1b-bf7c-4154-9a93-17b825b10b6e",
+        "message": "INVALID REQUEST"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 16:22:54 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "WWW-Authenticate": "Bearer",
+      "X-Correlation-Id": "62a4eb1b-bf7c-4154-9a93-17b825b10b6e"
+    },
+    "status": 401
+  }
+}

@@ -1,0 +1,9 @@
+service	mongo_connection	database	external_url_keys
+auth	mongodb://127.0.0.1:34994/?replicaSet=rsShipmentA12RtVer02&serverSelectionTimeoutMS=5000	DitenAuth_ShipmentA12RtVer02	0
+platform	mongodb://127.0.0.1:34994/?replicaSet=rsShipmentA12RtVer02&serverSelectionTimeoutMS=5000	DitenPlatform_ShipmentA12RtVer02	2
+mdm	mongodb://127.0.0.1:34994/?replicaSet=rsShipmentA12RtVer02&serverSelectionTimeoutMS=5000	DitenMdm_ShipmentA12RtVer02	0
+supplychain	mongodb://127.0.0.1:34994/?replicaSet=rsShipmentA12RtVer02&serverSelectionTimeoutMS=5000	DitenSupplyChain_ShipmentA12RtVer02	0
+gateway	-	-	0
+web	mongodb://127.0.0.1:34994/?replicaSet=rsShipmentA12RtVer02&serverSelectionTimeoutMS=5000&connectTimeoutMS=3000	DitenWeb_ShipmentA12RtVer02	0
+#groups	lane-generated=['auth-events', 'auth-platform', 'jwt', 'mfa', 'platform-mdm-active', 'sc-platreg', 'web-platform']	unverified-pairing=['platform-mdm-previous']
+#result	PASS	0 finding(s)

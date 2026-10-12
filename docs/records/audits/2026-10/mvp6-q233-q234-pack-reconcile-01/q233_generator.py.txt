@@ -1,0 +1,408 @@
+# Q233+Q234 PROPOSAL MODE generator. Reads the three packs (read-only) and writes ONLY into the record folder.
+import hashlib, os, subprocess
+R = '/Users/natig/Projects/ERP-vNext-recovery'
+OUT = R + '/docs/records/audits/2026-10/mvp6-q233-q234-pack-reconcile-01'
+P = 'execution/domains/supply-chain-execution/module-packs/'
+Y = 'docs/analysis/contracts/shipment-bundle.openapi.yaml'
+Q218 = 'docs/records/audits/2026-10/mvp6-q218-contract-pin-01'
+Q231 = 'docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01'
+ME = 'docs/records/audits/2026-10/mvp6-q233-q234-pack-reconcile-01'
+OLDH = '5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c'
+NEWH = '6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2'
+os.makedirs(OUT + '/proposed', exist_ok=False)
+sha = lambda b: hashlib.sha256(b).hexdigest()
+now = lambda: subprocess.check_output(['date', '+%Y-%m-%d %H:%M:%S %z']).decode().strip()
+def w(name, text): open(OUT + '/' + name, 'w').write(text)
+
+disk = sha(open(R + '/' + Y, 'rb').read())
+assert disk == NEWH, disk          # task A1: verify the new hash against the file on disk before writing it
+
+def apply(text, reps):
+    for a, b in reps:
+        assert text.count(a) == 1, (a[:70], text.count(a))
+        text = text.replace(a, b)
+    return text
+
+# ------------------------------------------------------------------ MOD-0186
+def repin_note(mod, reads, ops, annex, gaps):
+    return ('\n**Contract re-pin (Q233, 2026-10-02):** the SHIPMENT-BUNDLE pin of this pack moves from 3.0.0 `' + OLDH + '` to '
+        '**3.1.0 `' + NEWH + '`**. 3.1.0 is the owner-authorized publication of 2026-09-26 '
+        '(`docs/records/decisions/2026-09/mvp6-loads-root-amendment-owner-decision-a-01.md` and `…-owner-decision-b-01.md`; F-Q218-4). '
+        'Evidence: `' + Q218 + '/` — F-Q218-2 (the delta touches Loads only: seven hunks, one wire change, the optional nullable '
+        '`LoadSummary.lifecycleCorrelationId`) and F-Q218-3 with `FIELD-PARITY.tsv` (' + reads + ' identical in both versions in path, method, '
+        'request fields, response fields, required/nullable and error codes); `VERSION-DELTA.md` (' + ops + ' are equal in both versions with everything '
+        'they reach). **The re-pin carries no material change for ' + mod + ':** no operation, field, error code, annex or business rule of this pack '
+        'changes, and the ' + annex + ' annex and root annex hashes stay as bound. It fixes nothing else: acceptance was given on `5dfe7c1b…d21c` and '
+        'stays recorded on that hash; ' + gaps + ' and every item under "Still open" stay open. `status` is unchanged. '
+        'Record: `' + ME + '/PIN-CHANGE.md`.\n')
+
+m186 = open(R + '/' + P + 'MOD-0186-reverse-logistics.md', encoding='utf-8').read()
+r186 = [
+ ('on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31). Common-checkout',
+  'on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31); contract pin moved to 3.1.0 / wire v1 `6dc1dd48…96aa2` on 2026-10-02 with no material change for Returns (§31 re-pin note, Q233 on Q218 evidence). Common-checkout'),
+ ('| Published contracts at acceptance and today | SHIPMENT-BUNDLE YAML `' + OLDH + '`; Returns annex',
+  '| Published contracts at acceptance (2026-09-21) | SHIPMENT-BUNDLE 3.0.0 YAML `' + OLDH + '`; Returns annex'),
+ ('root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |\n\n**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 is published and bound.',
+  'root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |\n'
+  '| Published contract today — pin in force (re-pin Q233, 2026-10-02) | SHIPMENT-BUNDLE **3.1.0** YAML `' + NEWH + '` (computed from `' + Y + '` at the re-pin); Returns annex and root annex unchanged, same hashes as the row above; wire `contractVersion: v1`. This row replaces the earlier label "at acceptance and today", which was untrue for "today" from the 3.1.0 publication of 2026-09-26 (F-Q218-5, `' + Q218 + '/SOP-22.md`) |\n\n'
+  '**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 was published and bound at acceptance; the pin in force today is 3.1.0 (re-pin note below).'),
+ ('verified inbound receiving and Inventory reconciliation, publisher/Event Bus delivery, UI, migration/backfill, rollout, E5/G5 and full-module acceptance. This section is not `done` status and grants no new DEV scope.\n',
+  'verified inbound receiving and Inventory reconciliation, publisher/Event Bus delivery, UI, migration/backfill, rollout, E5/G5 and full-module acceptance. This section is not `done` status and grants no new DEV scope.\n'
+  + repin_note('MOD-0186', '`getShipment`, the only read Returns consumes, is', '`queryReturns`, `createReturn` and `transitionReturn`', 'Returns',
+               'the consumer/contract gaps of F-Q218-7 (undeclared 500 `SHIPMENT_ROOT_INVALID` and 401/403/5xx on `getShipment`; scope headers the operation does not declare)')),
+ ('Published SHIPMENT-BUNDLE 3.0.0 / wire v1 (`5dfe7c1b…d21c`) and Returns annex (`00990a28…8a11`) only:',
+  'Published SHIPMENT-BUNDLE 3.1.0 / wire v1 (`6dc1dd48…96aa2`; re-pinned on 2026-10-02 from 3.0.0 `5dfe7c1b…d21c`, the bound operations are identical in both versions — §31 re-pin note, Q233/F-Q218-3) and Returns annex (`00990a28…8a11`) only:'),
+ ('nav/personalization codes; Loads 3.1.0 forward drift of the `5dfe7c1b…` pin; `module-implementation-status.md` update is a separate path.',
+  'nav/personalization codes; `module-implementation-status.md` update is a separate path.\n'
+  '- **CLOSED 2026-10-02 — "Loads 3.1.0 forward drift of the `5dfe7c1b…` pin":** closed by the Q233 re-pin of this pack to 3.1.0 `6dc1dd48…96aa2` (§31 re-pin note), on the measured field parity of Q218 (F-Q218-2, F-Q218-3; `' + Q218 + '/FIELD-PARITY.tsv`). Nothing else in this list is closed by it.'),
+]
+p186 = apply(m186, r186)
+
+# ------------------------------------------------------------------ MOD-0187
+m187 = open(R + '/' + P + 'MOD-0187-claims-management.md', encoding='utf-8').read()
+r187 = [
+ ('on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31). Common-checkout',
+  'on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31); contract pin moved to 3.1.0 / wire v1 `6dc1dd48…96aa2` on 2026-10-02 with no material change for Claims (§31 re-pin note, Q233 on Q218 evidence). Common-checkout'),
+ ('| Published contracts at acceptance and today | SHIPMENT-BUNDLE YAML `' + OLDH + '`; Claims annex',
+  '| Published contracts at acceptance (2026-09-20) | SHIPMENT-BUNDLE 3.0.0 YAML `' + OLDH + '`; Claims annex'),
+ ('root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |\n\n**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 is published.',
+  'root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |\n'
+  '| Published contract today — pin in force (re-pin Q233, 2026-10-02) | SHIPMENT-BUNDLE **3.1.0** YAML `' + NEWH + '` (computed from `' + Y + '` at the re-pin); Claims annex and root annex unchanged, same hashes as the row above; wire `contractVersion: v1`. This row replaces the earlier label "at acceptance and today", which was untrue for "today" from the 3.1.0 publication of 2026-09-26 (F-Q218-5, `' + Q218 + '/SOP-22.md`) |\n\n'
+  '**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 was published and bound at acceptance; the pin in force today is 3.1.0 (re-pin note below).'),
+ ('publisher/Event Bus delivery, finance posting, UI, migration/backfill, rollout, E5/G5 and full-module acceptance. This section is not `done` status and grants no new DEV scope.\n',
+  'publisher/Event Bus delivery, finance posting, UI, migration/backfill, rollout, E5/G5 and full-module acceptance. This section is not `done` status and grants no new DEV scope.\n'
+  + repin_note('MOD-0187', '`getShipment` and the optional carrier read `queryCarriers`, the two reads Claims consumes, are', '`queryClaims`, `createClaim` and `transitionClaim`', 'Claims',
+               'the consumer/contract gaps of F-Q218-7 (undeclared 500 `SHIPMENT_ROOT_INVALID` and 401/403/5xx on `getShipment`; scope headers the operations do not declare; the repeated-`carrierId` rejection)')),
+ ('Published SHIPMENT-BUNDLE 3.0.0 / wire v1 (`5dfe7c1b…d21c`) and Claims annex (`16e65c26…4eb63`) only:',
+  'Published SHIPMENT-BUNDLE 3.1.0 / wire v1 (`6dc1dd48…96aa2`; re-pinned on 2026-10-02 from 3.0.0 `5dfe7c1b…d21c`, the bound operations are identical in both versions — §31 re-pin note, Q233/F-Q218-3) and Claims annex (`16e65c26…4eb63`) only:'),
+ ('nav/personalization codes; Loads 3.1.0 forward drift of the `5dfe7c1b…` pin; `module-implementation-status.md` update is a separate path.',
+  'nav/personalization codes; `module-implementation-status.md` update is a separate path.\n'
+  '- **CLOSED 2026-10-02 — "Loads 3.1.0 forward drift of the `5dfe7c1b…` pin":** closed by the Q233 re-pin of this pack to 3.1.0 `6dc1dd48…96aa2` (§31 re-pin note), on the measured field parity of Q218 (F-Q218-2, F-Q218-3; `' + Q218 + '/FIELD-PARITY.tsv`). Nothing else in this list is closed by it.'),
+]
+p187 = apply(m187, r187)
+
+# ------------------------------------------------------------------ MOD-0183
+F = 'frontend/Diten.Web/'
+V = F + 'Views/SupplyChain/Shipments/'
+J = F + 'wwwroot/assets/js/SupplyChain/Shipments/'
+GAPS = [
+ ('G183-UI-01', 'Golden flow', 'F-Q231-8', 'No golden-flow document with the five SOP §18.0 elements (actor, trigger, interaction sequence, expected response, success result). The backend sequence is one sentence in the readiness record; the UI journey list → create → details → change status → capture POD is unwritten.'),
+ ('G183-UI-02', 'No-shell: gateway has 0 routes', 'F-Q231-1', 'Every UI adapter calls `{GatewayUrl}/api/shipment-bundle/…`; `ocelot.json` has no route for that family. Backend wired, frontend wired, the link between them missing (SOP K4). Gateway edits belong to `integration-agent` only (§6, §15).'),
+ ('G183-UI-03', 'No-shell: permission seed', 'F-Q231-2', 'Nothing gives a user the six `supplychain.shipments.*` keys: no seed outside the service, and the manifest provider / registration hosted service are not registered in the service `Program.cs`. With the UAS gate in place every user would get the access-denied panel. Needs a run to confirm (Q231 R-02).'),
+ ('G183-UI-04', 'Contract blocker: error-code mismatch', 'F-Q231-4', 'The backend sends `INVALID_REQUEST` for 500 and for 403; the UI maps `INTERNAL_ERROR` and `PERSISTENCE_UNAVAILABLE`, which the backend never sends. A server failure or a denied save is shown as "Check the entered values". The other half of this §18.0 row — a UI with no UI contract in the pack (F-Q231-3) — is what this §23 records; whether that half is thereby closed is for CT.'),
+ ('G183-UI-05', 'Validation: no client validation on Change Status and Capture POD', 'F-Q231-6', 'Both offcanvas forms are `novalidate` and have no script check; an empty date throws inside the submit handler and the user sees nothing. Server validation is authoritative and tested.'),
+ ('G183-UI-06', 'Audit / evidence for POD', 'F-Q231-7', 'POD evidence is a free-text list of reference strings that nothing resolves or verifies; no shared evidence service is called. §4 and §12 of this pack prescribe "reference only", and the readiness record calls POD regulated: an owner decision, not a coding slip.'),
+ ('G183-UI-07', 'UX states', 'F-Q231-5, F-Q231-12', 'The list shows a failed load as an empty table plus a toast; if the list API answers 403 the page shows a toast and an empty table, which UAS-001 §6 forbids. The details page draws its cards before data arrives under a "Loading…" heading; the skeleton element in `_DataTable.cshtml` is never shown by a script; no field-level validation messages.'),
+ ('G183-UI-08', 'Observability', 'F-Q231-9', 'No metrics and no traces in the service. SOP §18.0 asks for "required" ones; none is defined for this module in this pack or in the readiness record.'),
+ ('G183-UI-09', 'Hard-coded status names', 'F-Q231-11', 'The eight shipment status names are hard-coded English in `_Filter.cshtml` and shown raw in the list badge, the details status and the target-status dropdown, in all seven languages.'),
+ ('G183-UI-10', 'Note length mismatch 2000 vs 1000', 'F-Q231-10', 'Note is max 2000 in the UI (`ShipmentViewModels.cs:34,42`; `maxlength="2000"` in both offcanvas files) and max 1000 on the server (§4 of this pack; `ShipmentNoteRules.cs:15`). A 1500-character note passes the UI and the adapter and is rejected by the service.'),
+]
+gap_md = '\n'.join('| %s | %s | %s | %s |' % g for g in GAPS)
+
+S23 = '''
+## 23. Tenant UI declaration (Q234, 2026-10-02) — record of the UI that is in the tree
+
+**Evidence:** `''' + Q231 + '''/` (F-Q231-3: this pack said the module has no UI while the tree holds one) and the files read for
+`''' + ME + '''/MOD0183-UI-DECLARATION.md`. Every row below is derived from a file in the tree; no screen and no field is
+declared that has no view behind it.
+
+**What this section is.** A record of what exists and what is missing. It accepts nothing, ticks no checkbox and authorizes no code,
+gateway, permission, navigation or contract change. `status` is unchanged. No backend, contract or business rule in §§1–22 is changed.
+The frontmatter values `shell: tenant`, `golden_reference: compact` and `form_field_count: 13` describe the UI. For the UI, the opening
+ASSUMPTION ("backend-only … `shell: none`"), §9 ("`shell: none`"), §11 ("Not applicable in the first slice"), the §18 line "Backend-only
+first slice selected; no UI/form pattern invented", the §20 item "Separate UI follow-up" and §22 open gap 1 ("The Shipment UI is not in the
+common checkout") are superseded by this section; for the backend they remain as written. The UI files are untracked working-tree files
+(they arrived through Q202a, per Q231 `SLICE-GATE-MATRIX.tsv` row 14); acceptance is for CT and the owner (SOP §32 K13).
+
+### 23.1 Layout and shell — as in the tree
+
+- `shell: tenant`: each of the three page views states `Layout = "_LayoutTenantShell";` explicitly — `Index.cshtml:7`, `Create.cshtml:8`,
+  `Details.cshtml:8`. No partial (`_*.cshtml`) in the folder sets a `Layout`.
+- View folder `''' + V + '''`; route base `/SupplyChain/Shipments` (`SupplyChainShipmentsController.cs:12`); no `/Platform` prefix.
+
+### 23.2 Screens and routes — as in the tree
+
+Browser → same-origin MVC adapter → `{GatewayUrl}/api/shipment-bundle/…`. All paths are `''' + F + '''Controllers/SupplyChainShipmentsController.cs`.
+
+| Surface | MVC route (controller line) | View / form | UI gate in the tree | Adapter target |
+|---|---|---|---|---|
+| List page | GET `/SupplyChain/Shipments` (`:39`) | `Index.cshtml` + `_Filter.cshtml` + `_DataTable.cshtml` | `supplychain.shipments.read` (`Index.cshtml:9`); Create button only with `.create` (`:17`) | — |
+| Create page | GET `/SupplyChain/Shipments/Create` (`:42`) | `Create.cshtml` + `_Form.cshtml` | `supplychain.shipments.create` (`Create.cshtml:10`) | — |
+| Details page | GET `/SupplyChain/Shipments/Details/{shipmentId:guid}` (`:45`) | `Details.cshtml` | `supplychain.shipments.read` (`Details.cshtml:11`) | — |
+| Change Status (form on the Details page) | — | `_TransitionOffcanvas.cshtml` | button built only when a target is allowed for the current status and the key is held (`details.js:70-80`) | — |
+| Capture POD (form on the Details page) | — | `_PodOffcanvas.cshtml` | `.pod.capture` and status Dispatched or InTransit (`details.js:81`) | — |
+| List adapter | GET `…/api?status=&sourceDocumentId=&page=&pageSize=` (`:52`) | — | `.read`; `pageSize` 1–200 | GET `/api/shipment-bundle/shipments` |
+| Detail adapter | GET `…/api/{shipmentId:guid}` (`:67`) | — | `.read` | GET `/api/shipment-bundle/shipments/{shipmentId}` |
+| Create adapter | POST `…/api` (`:75`) | — | `.create`; antiforgery | POST `/api/shipment-bundle/shipments` |
+| Transition adapter | POST `…/api/{shipmentId:guid}/transition` (`:86`) | — | `.cancel` when the target is `Cancelled`, otherwise `.dispatch`; antiforgery | POST `/api/shipment-bundle/shipments/{shipmentId}/transition` |
+| POD adapter | POST `…/api/{shipmentId:guid}/pod` (`:100`) | — | `.pod.capture`; antiforgery | POST `/api/shipment-bundle/shipments/{shipmentId}/pod` |
+
+These are the five frozen operations of §21 and nothing else. No edit, delete, bulk, import or export screen exists in the tree; none is declared.
+The three pages equal the three pages of §22.
+
+### 23.3 Create form — the field count that decides the golden reference
+
+Counted from `_Form.cshtml` (inputs) and `CreateShipmentViewModel` / `CreateShipmentLineViewModel` (`''' + F + '''Models/SupplyChain/Shipments/ShipmentViewModels.cs:5-25`).
+Rule: AGENTS.md §6 — only fields the user fills in the create form; `Id`, `TenantId`, `IsDeleted`, `CreatedAt`, `UpdatedAt`, audit fields and
+DataTable checkbox/action columns are not counted. The repeatable line container is not counted; its field types are counted once each
+(the same rule MOD-0186 §32.6 states).
+
+| # | Field | Where | Required in the form | Input |
+|---|---|---|---|---|
+| 1 | `sourceModule` | `_Form.cshtml:10` | yes | text |
+| 2 | `sourceType` | `:11` | yes | text |
+| 3 | `sourceDocumentId` | `:12` | yes | text |
+| 4 | `warehouseReferenceId` | `:13` | yes | text |
+| 5 | `shipToReference` | `:14` | yes | text |
+| 6 | `plannedShipAt` | `:17` | yes | date-time picker |
+| 7 | `plannedDeliverAt` | `:18` | no | date-time picker |
+| 8 | `lines[].lineNumber` | `:23` (line template) | yes | text |
+| 9 | `lines[].itemId` | `:23` | yes | text (UUID checked in `create.js:54`) |
+| 10 | `lines[].skuId` | `:23` | yes | text (UUID checked in `create.js:54`) |
+| 11 | `lines[].quantity` | `:23` | yes | text, `inputmode=decimal`, sent as a string |
+| 12 | `lines[].uomId` | `:23` | yes | text |
+| 13 | `lines[].inventoryReferenceId` | `:23` | no | text |
+
+`form_field_count: 13`. 13 is more than 8 → **`golden_reference: compact`** (AGENTS.md §6). The tree is consistent with that: separate
+`Create.cshtml`, `Details.cshtml` and `_Form.cshtml`, and no create/edit offcanvas in `Index.cshtml`.
+Sensitivity, recorded and not hidden: if only the seven header fields were counted the result would be 7 and the rule would say `slim`.
+The count of 13 follows the stated rule; CT may rule otherwise (F-Q234-1). Not counted: `shipmentNumber` and `status` (server-set).
+
+### 23.4 The two other forms (Details page)
+
+| Form | Field | Required attribute | Note |
+|---|---|---|---|
+| Change Status (`_TransitionOffcanvas.cshtml:4`) | `targetStatus` | yes | options built from the current status and the held keys (`details.js:11-13`, `:70-71`) |
+| | `occurredAt` | yes | `datetime-local`, defaulted to now |
+| | `reasonCode` | no | text |
+| | `note` | no | `maxlength="2000"` — see G183-UI-10 |
+| Capture POD (`_PodOffcanvas.cshtml:4`) | `recipientName` | yes | text |
+| | `receivedAt` | yes | `datetime-local`, defaulted to now |
+| | `evidenceReferenceIds` | yes | free text, split on line breaks and commas (`details.js:137`) — see G183-UI-06 |
+| | `note` | no | `maxlength="2000"` — see G183-UI-10 |
+
+Both forms are `novalidate` (G183-UI-05). Both submit through `window.showConfirm` (`details.js:128`).
+
+### 23.5 List — as in the tree
+
+`data-dt-standard="v2"` (`_DataTable.cshtml:4`); `DtDefaults.create` with `serverSide: true`, `stateSave: false`, `searching: false`
+(`index.js:66-67`). Columns: responsive control, `shipmentNumber`, `sourceDocumentId`, `status`, `plannedShipAt`, `plannedDeliverAt`,
+details link (`index.js:69-76`). Filter (`_Filter.cshtml:4`): `status` select with eight values, `sourceDocumentId` text, Apply and Reset.
+No checkbox column, no BulkActionBar, and the export collection button is filtered out (`index.js:64-65`).
+
+### 23.6 Frontend file contract — the files that exist
+
+- Views (10 `.cshtml`): `Index`, `Create`, `Details`, `_Form`, `_Filter`, `_DataTable`, `_IndexL10n`, `_LineEditor`, `_TransitionOffcanvas`, `_PodOffcanvas`; marker class `ShipmentsIndex.cs`.
+- Controller `''' + F + '''Controllers/SupplyChainShipmentsController.cs`; models `''' + F + '''Models/SupplyChain/Shipments/ShipmentViewModels.cs`.
+- Scripts (4) in `''' + J + '''`: `index.js`, `index.l10n.js`, `create.js`, `details.js`.
+- Resources (7): `''' + F + '''Resources/Views/SupplyChain/Shipments/ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx`, 63 keys each (counted for Q234; Q231 L10n row).
+- Tests (4) in `''' + F[:-1] + '''.Tests/`: `Controllers/ShipmentJsonAdapterChallengeTests.cs`, `Forms/ShipmentFormContractTests.cs`, `JavaScript/ShipmentDetailActionTests.cs`, `JavaScript/ShipmentIndexBehaviorTests.cs`.
+
+Differences from the Compact file set of `module-pack-standard.md` §5, recorded and not decided here (F-Q234-2):
+
+- No `Edit.cshtml`. The frozen contract has no update operation (§21: five operations), so there is nothing for an edit page to call.
+- Change Status and Capture POD are offcanvas forms on the Details page. They are action forms, not the `_CreateEditOffcanvas.cshtml` / `_DetailsQuickView.cshtml` that Compact forbids; whether they fit the Compact contract is for CT.
+- `_LineEditor.cshtml` is a one-line comment; the line editor is the `<template>` inside `_Form.cshtml:23`.
+- `verify_datatable_page.py . --area SupplyChain --module Shipments --reference compact` and `quality-gate-datatable` have not been run by any record read here.
+
+### 23.7 UI acceptance rows — none accepted, none ticked
+
+Derived from the tree. "State" is what Q231 measured by reading (E1); nothing here was run.
+
+| ID | Criterion | Derived from | State (Q231, static) |
+|---|---|---|---|
+| SU-01 | Each of the three page views states `Layout = "_LayoutTenantShell";` and no partial sets a Layout | §23.1 | present by reading |
+| SU-02 | UAS-001: without the page permission only `_AccessDenied` renders inside the shell — no heading, filter, table, button or redirect — on all three pages | `Index.cshtml:9-13`, `Create.cshtml:10-14`, `Details.cshtml:11-15` | static MET (matrix row 8); live check open (Q231 R-03); list-API 403 path NOT MET → G183-UI-07 |
+| SU-03 | The list loads through the same-origin adapter and the Gateway, with `status` / `sourceDocumentId` filter and server paging | `index.js`; controller `:52-65` | NOT MET — G183-UI-02 |
+| SU-04 | Create sends the 13 fields of §23.3 with at least one line, one idempotency key per unchanged payload, and opens Details on success | `create.js:44-80` | not run; blocked by G183-UI-02, G183-UI-03 |
+| SU-05 | Details shows summary, schedule, lines and POD; an unknown or foreign shipment shows the safe not-found text with a support reference | `Details.cshtml:23-26`; `details.js:95-109` | not run |
+| SU-06 | Change Status offers only the targets allowed for the current status and the held keys; `Cancelled` needs `.cancel`, every other target `.dispatch` | `details.js:11-13,70-71`; controller `:92-93` | not run; G183-UI-05 |
+| SU-07 | Capture POD is offered only in Dispatched or InTransit with `.pod.capture`; evidence references are sent as a list | `details.js:81,134-138` | not run; G183-UI-05, G183-UI-06 |
+| SU-08 | A server failure or a denied save is distinguishable from a validation error | `create.js:56-60`; `details.js:49-52` | NOT MET — G183-UI-04 |
+| SU-09 | Loading, empty and error are three distinct states on the list and on Details | `index.js:51,57-59`; `_DataTable.cshtml:4` | NOT MET — G183-UI-07 |
+| SU-10 | Seven languages: every key present and non-empty in en, tr, fr, es, zh, ar, ru; status names localized | 7 `.resx`, 63 keys each; `_Filter.cshtml:4` | keys MET (matrix row L10n); status names NOT MET — G183-UI-09 |
+| SU-11 | The note limit is the same in the UI, the adapter and the service | `ShipmentViewModels.cs:34,42`; §4 | NOT MET — G183-UI-10 |
+| SU-12 | Confirmations use the shared premium wrapper (`window.showConfirm`, MOD-0013); no native dialog | `details.js:128` | present by reading |
+| SU-13 | DataTable verifier and `quality-gate-datatable` results are recorded against `--reference compact` | §23.6 | not run |
+| SU-14 | A real user can hold the six keys and reach the three pages from the navigation | §22; `Program.cs` | NOT MET — G183-UI-03 |
+
+### 23.8 Open items — the SOP §18.0 rows Q231 measured as NOT MET, and two further measured gaps
+
+Source: `''' + Q231 + '''/SLICE-GATE-MATRIX.tsv` and `SOP-22.md`. Recorded, not decided and not fixed here.
+
+| Item | §18.0 row / subject | Finding | What is missing |
+|---|---|---|---|
+''' + gap_md + '''
+
+Not carried into this table: the Low findings F-Q231-13 to F-Q231-16 (see the Q231 `SOP-22.md`). The contract version this pack names
+("`SHIPMENT-BUNDLE` v1", no version, no hash — F-Q218-10) is not changed by this section.
+
+### 23.9 Not authorized by this section
+
+UI code changes; gateway, permission-seed, navigation or shared-resource edits (single integration owner); contract changes; a `status`
+change; ticking any acceptance or checklist box; commit or push. `execution/registries/module-implementation-status.md` is a separate path and is not updated here.
+'''
+m183 = open(R + '/' + P + 'MOD-0183-shipment-tracking-pod.md', encoding='utf-8').read()
+assert m183.endswith('\n')
+p183 = apply(m183, [
+ ('\nshell: none\ngolden_reference: none\n', '\nshell: tenant\ngolden_reference: compact\n'),
+ ('\nform_field_count: 0\n---\n', '\nform_field_count: 13\n---\n'),
+]) + S23
+
+# status must not change in any pack
+for a, b in [(m183, p183), (m186, p186), (m187, p187)]:
+    assert [l for l in a.split('\n')[:16] if l.startswith('status:')] == [l for l in b.split('\n')[:16] if l.startswith('status:')] == ['status: ready-for-dev']
+    assert a.count('- [x]') == b.count('- [x]') and a.count('- [ ]') == b.count('- [ ]')   # no checkbox ticked or added
+
+packs = [('MOD-0183-shipment-tracking-pod.md', m183, p183), ('MOD-0186-reverse-logistics.md', m186, p186), ('MOD-0187-claims-management.md', m187, p187)]
+rows = []
+for name, before, after in packs:
+    open(OUT + '/proposed/' + name + '.md.txt' if not name.endswith('.md') else OUT + '/proposed/' + name + '.txt', 'w', encoding='utf-8').write(after)
+    d = subprocess.run(['diff', '-u', R + '/' + P + name, OUT + '/proposed/' + name + '.txt'], capture_output=True, text=True).stdout.replace(R + '/', '')
+    open(OUT + '/proposed/' + name + '.diff.txt', 'w', encoding='utf-8').write(d)
+    rows.append((name, sha(before.encode()), sha(after.encode()), len(before.split('\n')) - 1, len(after.split('\n')) - 1))
+print(rows)
+
+# ------------------------------------------------------------------ PIN-CHANGE.md
+w('PIN-CHANGE.md', '''# Q233 — The two re-pins (PROPOSED — not applied; the Edit tool was refused)
+
+## Hash verified against disk before anything was written
+
+| File | sha256 computed in this lane | `info.version` |
+|---|---|---|
+| `''' + Y + '''` | `''' + disk + '''` | 3.1.0 (`:13`) |
+
+Equal to the value Q218 measured and to the guard authority `docs/reference/architecture/docs-path-authority.json:11`.
+The old pin, 3.0.0 `''' + OLDH + '''`, is the hash of the one recovered copy
+(`docs/records/audits/2026-09/mvp6-combined-final-release-pack-01/publication/docs/analysis/contracts/shipment-bundle.openapi.yaml`, F-Q218-1).
+
+## Proposed pack text — before and after
+
+| Pack | sha256 before (file in the repo, unchanged) | sha256 after (proposed text) | Lines before → after | Proposed text | Diff |
+|---|---|---|---|---|---|
+''' + '\n'.join('| `%s` | `%s` | `%s` | %d → %d | `proposed/%s.txt` | `proposed/%s.diff.txt` |' % (n, b, a, lb, la, n, n) for n, b, a, lb, la in rows[1:]) + '''
+
+## What changes in each pack (six places each)
+
+| # | MOD-0186 line | MOD-0187 line | Change | Task |
+|---|---|---|---|---|
+| 1 | 10 (`status_note`) | 10 (`status_note`) | adds: pin moved to 3.1.0 on 2026-10-02, no material change, with the section and record that say so. `status` itself is untouched | A1 |
+| 2 | 584 | 533 | row label "Published contracts at acceptance and today" → "Published contracts at acceptance (date)"; the 3.0.0 hash stays, now labelled 3.0.0 | A2 |
+| 3 | new row after 584 | new row after 533 | "Published contract today — pin in force": 3.1.0 `6dc1dd48…96aa2`; annex hashes unchanged; says the old label was untrue from 2026-09-26, citing F-Q218-5 | A1, A2 |
+| 4 | 586 | 535 | "3.0.0 is published and bound" → "was published and bound at acceptance; the pin in force today is 3.1.0" | A2 |
+| 5 | new paragraph after 592 | new paragraph after 541 | re-pin note: no material change for the module, citing F-Q218-2, F-Q218-3, `FIELD-PARITY.tsv`, `VERSION-DELTA.md`; states it fixes nothing else and that F-Q218-7 and "Still open" stay open | A3 |
+| 6 | 619 (§32.3) | 569 (§32.3) | bound contract "3.0.0 (`5dfe7c1b…d21c`)" → "3.1.0 (`6dc1dd48…96aa2`; re-pinned from 3.0.0 …)" | A1 |
+| 7 | 780 (§32.13) | 729 (§32.13) | the gap entry "Loads 3.1.0 forward drift of the `5dfe7c1b…` pin" is taken out of the open list and written as CLOSED 2026-10-02, with what closed it | A4 |
+
+## What is deliberately not changed
+
+| Line | Why it stays |
+|---|---|
+| MOD-0186 `:165-168`, `:480-481`; MOD-0187 `:166-168`, `:476-477` | historical 1.1.0 and 2.0.0 pins, already marked superseded by each pack's §31 |
+| MOD-0186 `:484`, `:564`; MOD-0187 `:501`, `:515` | they state which bytes governed the September dispatch and acceptance. That was `5dfe7c1b…` and still is the acceptance record |
+| every annex hash, every other hash | rule: no other hash, no other pin |
+| `status: ready-for-dev` in both | rule: promotion is an owner decision |
+| every checkbox | none ticked, none added (asserted by the generator: counts of `- [x]` and `- [ ]` equal before and after) |
+
+## What the re-pin does not do
+
+It does not make either module reachable, does not fix the consumer/contract gaps of F-Q218-7, and does not replace the acceptance
+given on `5dfe7c1b…`. It makes the packs name the file that is on disk.
+''')
+
+# ------------------------------------------------------------------ MOD0183-UI-DECLARATION.md
+n, b, a, lb, la = rows[0]
+w('MOD0183-UI-DECLARATION.md', '''# Q234 — MOD-0183 UI declaration: field count and golden-reference decision (PROPOSED — not applied)
+
+| Pack | sha256 before (unchanged in the repo) | sha256 after (proposed) | Lines | Proposed text | Diff |
+|---|---|---|---|---|---|
+| `''' + n + '''` | `''' + b + '''` | `''' + a + '''` | ''' + str(lb) + ' → ' + str(la) + ''' | `proposed/''' + n + '''.txt` | `proposed/''' + n + '''.diff.txt` |
+
+## Frontmatter
+
+| Field | Now | Proposed | Basis |
+|---|---|---|---|
+| `shell` | `none` | `tenant` | three page views state `Layout = "_LayoutTenantShell";` (`Index.cshtml:7`, `Create.cshtml:8`, `Details.cshtml:8`); F-Q231-3 |
+| `form_field_count` | `0` | `13` | derivation below |
+| `golden_reference` | `none` | `compact` | 13 > 8, AGENTS.md §6 |
+| `status` | `ready-for-dev` | unchanged | rule |
+| `status_note` | unchanged | unchanged | it still says "first executable slice is backend/contract only"; left as history, superseded for the UI by the new §23 |
+
+## Field count — derivation
+
+Source: `''' + V + '''_Form.cshtml` (sha256 `''' + sha(open(R + '/' + V + '_Form.cshtml', 'rb').read()) + '''`) and
+`''' + F + '''Models/SupplyChain/Shipments/ShipmentViewModels.cs:5-25`; cross-checked with the payload builder `''' + J + '''create.js:44-51`.
+
+| Group | Fields | Count |
+|---|---|---:|
+| Header inputs (`_Form.cshtml:10-18`) | sourceModule, sourceType, sourceDocumentId, warehouseReferenceId, shipToReference, plannedShipAt, plannedDeliverAt | 7 |
+| Line inputs, one repeatable template (`_Form.cshtml:23`) | lineNumber, itemId, skuId, quantity, uomId, inventoryReferenceId | 6 |
+| **Counted** | | **13** |
+| Not counted | the `lines` container itself; the antiforgery token; `shipmentNumber`, `status` (server-set); Id, TenantId, audit fields (none is in the form) | — |
+
+The three sources agree: 13 inputs in the view, 7 + 6 properties in the two view models (`Lines` is the container), 7 + 6 names in the payload.
+
+## Golden-reference decision
+
+- Rule (AGENTS.md §6; `module-pack-standard.md` §3): 8 or fewer → slim; more than 8 → compact.
+- **13 → compact.**
+- The file layout agrees (separate `Create.cshtml`, `Details.cshtml`, `_Form.cshtml`; no create/edit offcanvas in `Index.cshtml`), but the count decides, not the layout.
+- **Sensitivity (F-Q234-1).** The rule does not say how a repeatable line group is counted. Counting each line field type once gives 13.
+  MOD-0186 §32.6 counts the same way ("the `lines` container is not counted"). Counting header fields only would give 7 and `slim`,
+  which the tree does not follow. CT to confirm the counting rule.
+
+## What the proposed §23 adds
+
+Screens and routes (10 rows), the 13 create fields, the two Details forms (8 fields), the list profile, the files that exist, the
+differences from the Compact file set, 14 UI acceptance rows (SU-01…SU-14, none ticked), and 10 open items (`OPEN-ITEMS-ADDED.tsv`).
+It changes no line of §§1–22 and supersedes, for the UI only, the statements listed in its first paragraph.
+
+## Differences between the tree and the Compact set (F-Q234-2)
+
+| Compact expects | Tree | Note |
+|---|---|---|
+| `Edit.cshtml` | absent | the frozen contract has no update operation |
+| no offcanvas for create/edit/quick view | two offcanvas action forms on Details (Change Status, Capture POD) | not the forbidden files; CT to rule |
+| `_Form.cshtml` shared by Create and Edit | used by Create only | follows from the first row |
+| — | `_LineEditor.cshtml` is a one-line comment | placeholder |
+
+## Not done
+
+- `verify_module_id.py` and `verify_datatable_page.py` were not run (this WP starts nothing).
+- The Golden Reference Compact pack and code were not opened beyond a directory listing of `Views/DevEnablement/GoldenReferenceCompact/` (it has `Edit.cshtml`).
+- No runtime statement is made; every "State" in SU-01…SU-14 is Q231's static reading.
+''')
+
+# ------------------------------------------------------------------ OPEN-ITEMS-ADDED.tsv
+H = ['pack', 'section', 'item_id', 'action', 'subject', 'finding_id', 'evidence_record', 'applied']
+t = [H]
+for g in GAPS:
+    t.append(['MOD-0183', '§23.8', g[0], 'ADDED (open)', g[1], g[2], Q231 + '/SOP-22.md; SLICE-GATE-MATRIX.tsv', 'NO — proposal only'])
+t.append(['MOD-0186', '§32.13', 'Loads 3.1.0 forward drift of the 5dfe7c1b… pin', 'CLOSED', 'contract pin drift', 'F-Q218-2; F-Q218-3 (reported as F-Q210-8)', Q218 + '/FIELD-PARITY.tsv', 'NO — proposal only'])
+t.append(['MOD-0187', '§32.13', 'Loads 3.1.0 forward drift of the 5dfe7c1b… pin', 'CLOSED', 'contract pin drift', 'F-Q218-2; F-Q218-3 (reported as F-Q211-4)', Q218 + '/FIELD-PARITY.tsv', 'NO — proposal only'])
+w('OPEN-ITEMS-ADDED.tsv', '\n'.join('\t'.join(r) for r in t) + '\n')
+
+# ------------------------------------------------------------------ MOD0185-OPEN.md
+w('MOD0185-OPEN.md', '''# Q233 task A5 — MOD-0185 stays open (not touched)
+
+`execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md` was not edited and no proposal was written for it.
+sha256 at the start and at the end of this lane: `''' + sha(open(R + '/' + P + 'MOD-0185-routing-load-planning.md', 'rb').read()) + '''` (equal to the value in Q218 `PIN-INVENTORY.tsv`).
+
+## The open item, for a separate work package
+
+| Point | Fact | Evidence |
+|---|---|---|
+| Effective pin | SHIPMENT-BUNDLE **2.0.0** `93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571`, Loads annex v2 `a2187c93…` | MOD-0185 `:20`, `:478-480`; F-Q218-6 |
+| Distance | two publications behind the file on disk (2.0.0 → 3.0.0 → 3.1.0). The pack mentions neither 3.0.0 nor 3.1.0 | Q218 `PIN-INVENTORY.tsv` row 6 |
+| Why it matters more here | 3.1.0 was published for Loads: the one wire change is `LoadSummary.lifecycleCorrelationId`, and the three Loads operations now point at `loads-semantics-v3.1.0.md` | Q218 `VERSION-DELTA.md` |
+| Why it was not re-pinned | the 2.0.0 bytes (and the 1.1.0 bytes) were not found on disk. Nobody can diff 2.0.0 against 3.1.0, so "no material change" cannot be measured for Loads — and for Loads the change **is** material by design | Q218 `HASHES.md` ("not found among the 85 candidate files"; sealed archives not opened) |
+
+## What a separate work package would need (description, not a prompt)
+
+1. The 2.0.0 bytes, or a ruling that they are lost. Places Q218 did not look: sealed `tar.gz` archives under `docs/records/audits/2026-09/`.
+2. A Loads field-parity measurement 2.0.0 → 3.1.0 for `queryLoads`, `createLoadPlan`, `transitionLoad`, and v2 → v3.1.0 for the Loads annex.
+3. An owner decision on the MOD-0185 pin, with the Loads producer uptake state (CT-QUEUE Q09 / Q68) taken into account.
+
+Owner of the decision: repository owner; routing: CT.
+''')
+print('ok', now())

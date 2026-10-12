@@ -1,0 +1,4 @@
+dbb58c0cc245f0d1157c518adc5b73beab6ac310ae9878e9a580d07de25487f8  services/Diten.AuthService/src/Diten.AuthService.Api/bin/Release/net8.0/Diten.AuthService.Api.dll
+93f1c480631b11c328a1901ba9ba6a55314be0cd2b16083a9313ce7981eb1b60  services/Diten.Platform/src/Diten.Platform.API/bin/Release/net8.0/Diten.Platform.API.dll
+f04081ed7a4292858490fbeec177b24292b1e92856d0647e0f956b70a7f108e0  services/Diten.MdmService/src/Diten.MdmService.Api/bin/Release/net8.0/Diten.MdmService.Api.dll
+554e115715d282a04cfb3203246eafaa53e71a1c98da54cefa3cfe6d2cb201d2  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll

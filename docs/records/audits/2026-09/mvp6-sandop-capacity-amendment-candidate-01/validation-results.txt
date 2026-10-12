@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "openapi": "3.1.0",
+  "operations": 12,
+  "mutationOperations": 6,
+  "responseExamplesValidated": 23,
+  "refs": "all resolved",
+  "oldSuccessResponses": "byte/AST preserved",
+  "sharedSchemas": "unchanged",
+  "patchApply": "byte-identical",
+  "baselineSha256": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+  "candidateSha256": "aa6a1e1e238ad347e03dc793dfef8f6f7dad786ec0bb9d7871603f63f4d8a658",
+  "patchSha256": "e0a35b3cc3f2259a133b12117c359288db3c7ffcfe1c6ae6e92853eec62cf4d3"
+}

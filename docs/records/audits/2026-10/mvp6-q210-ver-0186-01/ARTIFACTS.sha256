@@ -1,0 +1,12 @@
+# Q210 mvp6-q210-ver-0186-01 — ARTIFACTS.sha256 (last write)
+# start 2026-10-02 20:15:11 +03 · end 2026-10-02 20:25:42 +03 (Europe/Istanbul)
+# branch feature/mvp6-logistics · HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+# no-change: git status --porcelain before = after, byte-identical (sha256 01ef1f7fe7d9b0e91795cef4a4bdf728669428b5dee4fccb3f80c8144f2f9d5e); 665 lines = 89 M + 576 ?? + 0 staged; git diff not run; no build, no test
+# written by this lane: this folder only (inside the already-untracked docs/records/audits/2026-10/)
+# verify: cd docs/records/audits/2026-10/mvp6-q210-ver-0186-01 && grep -v '^#' ARTIFACTS.sha256 | shasum -a 256 -c
+95c6fcdf2c3342aa00e41f7ddfa30ad2ad2f90c7d85c9979234e098ab1f378d2  ACCEPTANCE-MATRIX.tsv
+edf981e10f60421ab349a541edb4d653946222ca82a7095086a7a8c995dff33e  BOUNDARY-REFS.tsv
+4d329403889f3d811d547390776b20798debca53f916d0de1460ff5adeeb121e  REACHABILITY.md
+8c0291f0dfe8fe57348fed1d84e0b4c075c30a833565c5dcb908b46edda85147  SCOPE-DELTA.tsv
+cccd72125deea49db48d74d6da99fb3990007e2c6aa472173a9154c04b894154  SOP-22.md
+9cbc5161698a612bc2bc3217bc62f7a1b7cb130a07e5f9f23b1f048fc2dcf7b2  tools/q210_matrix.py

@@ -1,0 +1,15 @@
+[14:13:47 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[14:13:47 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[14:13:48 INF] Now listening on: http://127.0.0.1:5161
+[14:13:48 INF] Application started. Press Ctrl+C to shut down.
+[14:13:48 INF] Hosting environment: Production
+[14:13:48 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery
+[14:13:52 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5161/api/shipment-bundle/shipments/3d8b2dfd-88ae-43ec-be60-ff6cb5390885 - null null
+[14:13:52 INF] Executing endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api)'
+[14:13:52 INF] Route matched with {action = "Detail", controller = "Shipments"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Detail(System.Guid, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Controllers.ShipmentsController (Diten.SupplyChainService.Api).
+[14:13:52 INF] Handling GetShipmentByIdQuery
+[14:13:52 INF] Executing ObjectResult, writing value of type 'System.Text.Json.Nodes.JsonObject'.
+[14:13:52 INF] Executed action Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api) in 109.4421ms
+[14:13:52 INF] Executed endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api)'
+[14:13:52 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5161/api/shipment-bundle/shipments/3d8b2dfd-88ae-43ec-be60-ff6cb5390885 - 200 null application/json; charset=utf-8 230.0596ms
+[14:13:52 INF] Application is shutting down...

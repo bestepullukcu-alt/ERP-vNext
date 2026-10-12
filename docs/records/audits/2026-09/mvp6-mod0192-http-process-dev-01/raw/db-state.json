@@ -1,0 +1,48 @@
+{
+  "counts": {
+    "capacity_plans": 1,
+    "capacity_scenarios": 1,
+    "capacity_evaluations": 1,
+    "capacity_receipts": 3,
+    "capacity_active_slots": 0,
+    "capacity_audit": 4,
+    "capacity_outbox": 3
+  },
+  "events": [
+    {
+      "_id": "5fe42f4b-4db1-461b-a472-fb64f9f14fac",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "AggregateId": "9a9d59ea-c16c-47ee-ad2f-a467bbd37f33",
+      "EventType": "capacity.evaluation.completed.v1",
+      "Status": "Pending",
+      "EvaluationStatus": "Completed",
+      "CorrelationId": "589d6b83-8d9b-443b-8f16-4ad6d0e5422f",
+      "CausationId": "98fc877f-0cee-44b0-8502-5c99f10e1838",
+      "OccurredAt": {
+        "$date": "2026-09-22T21:22:43.440Z"
+      },
+      "ContractVersion": "v1",
+      "Payload": {
+        "capacityPlanId": "3dfbdcd2-9a67-490f-a3dc-f9a1ab789ca5",
+        "scenarioId": "c894200e-9fc6-4f03-96cd-e8f62caaaf3e",
+        "evaluationId": "9a9d59ea-c16c-47ee-ad2f-a467bbd37f33",
+        "status": "Completed"
+      }
+    }
+  ],
+  "audits": [
+    {
+      "_id": "ff764bc4-80d8-478f-aafc-1ec1a2b7f674",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "TargetId": "9a9d59ea-c16c-47ee-ad2f-a467bbd37f33",
+      "Operation": "terminalCapacityEvaluation",
+      "Status": "Completed",
+      "CorrelationId": "589d6b83-8d9b-443b-8f16-4ad6d0e5422f",
+      "OccurredAt": {
+        "$date": "2026-09-22T21:22:43.440Z"
+      }
+    }
+  ]
+}

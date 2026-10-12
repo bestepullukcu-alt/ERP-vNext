@@ -1,0 +1,8 @@
+stage	status	evidence
+UI source	HASH_CHECKED	UI-SOURCE-REHASH.tsv; no fresh binary claim
+NumericDate source	CANDIDATE_ONLY	final manifest b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731; applied writer-complete absent
+Independent Auth	BLOCKED	preceding VER REWORK; no subsequent PASS found
+Binary	NOT RUN	No build or reuse promoted
+Process/restart	NOT RUN	No launch/restart
+Gateway/browser	NOT RUN	No Auth token or browser session created
+Persistence	NOT RUN	No DB connection or mutation

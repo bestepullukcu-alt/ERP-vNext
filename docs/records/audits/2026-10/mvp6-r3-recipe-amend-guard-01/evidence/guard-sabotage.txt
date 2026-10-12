@@ -1,0 +1,21 @@
+== guard, fixed tree
+Passed!  - Failed:     0, Passed:     4, Skipped:     0, Total:     4, Duration: 8 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== SABOTAGE 1: Returns CHANGE_STATUS removed from the provider
+Failed Diten.SupplyChainService.Tests.ModuleRegistration.EnforcedPermissionDeclarationGuardTests.Every_enforced_key_is_declared_by_its_module_provider [6 ms]
+supplychain.returns.transition — enforced at ReturnsController.Transition, declared by no provider
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 16 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== SABOTAGE 2a: dummy Loads provider (ModuleCode routing-load-planning, no keys)
+Failed Diten.SupplyChainService.Tests.ModuleRegistration.EnforcedPermissionDeclarationGuardTests.Known_without_provider_entries_are_still_true [23 ms]
+'loads': ScratchOnlyLoadsProvider now provides routing-load-planning — remove the entry; its enforced keys must be declared (MOD-0185:602 ship rule — no UI yet)
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 3 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== SABOTAGE 2b: dummy Loads provider declaring supplychain.loads.read
+Failed Diten.SupplyChainService.Tests.ModuleRegistration.EnforcedPermissionDeclarationGuardTests.Known_without_provider_entries_are_still_true [17 ms]
+'loads': ScratchOnlyLoadsProvider now provides routing-load-planning — remove the entry; its enforced keys must be declared (MOD-0185:602 ship rule — no UI yet)
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 3 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== SABOTAGE 2c: the 'loads' entry removed as the message instructs
+Failed Diten.SupplyChainService.Tests.ModuleRegistration.EnforcedPermissionDeclarationGuardTests.Every_enforced_key_is_declared_by_its_module_provider [7 ms]
+supplychain.loads.create — enforced at LoadsController.Create, declared by no provider
+supplychain.loads.transition — enforced at LoadsController.Transition, declared by no provider
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 16 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== RESTORED: guard + every *ManifestProvider* test (packs present in the copy)
+Passed!  - Failed:     0, Passed:    18, Skipped:     0, Total:    18, Duration: 50 ms - Diten.SupplyChainService.Tests.dll (net8.0)

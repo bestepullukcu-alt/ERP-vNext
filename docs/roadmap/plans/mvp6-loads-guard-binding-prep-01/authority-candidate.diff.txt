@@ -1,0 +1,99 @@
+--- a/docs/reference/architecture/docs-path-authority.json
++++ b/docs-path-authority.candidate.json.txt
+@@ -1,14 +1,11 @@
+ {
+   "schemaVersion": 1,
+-  "status": "APPROVED",
+-  "decision": {
+-    "path": "docs/records/decisions/2026-09/mvp6-capacity-guard-single-disposition-owner-decision-01.json",
+-    "sha256": "877c3878d9b38446fc437a384d5e61630ccbec601dc5dd025a536ea21aa20ae2"
+-  },
++  "status": "UNAPPROVED",
++  "decision": null,
+   "canonicalTargets": [
+     {
+       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+-      "sha256": "5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c"
++      "sha256": "6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2"
+     },
+     {
+       "path": "docs/analysis/contracts/carrier-semantics-v1.1.0.md",
+@@ -343,6 +340,78 @@
+       "provenanceSha256": "401174ea2ff6e12861a9f2e375f5990f42bd879623ecc20b8c83e21f93f2ceda",
+       "provenanceLine": 3,
+       "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py",
++      "sha256": "3e30d1bb8ea75d212632133ff55c28ce48f072d927030a4c85a9b5e73522709d",
++      "kind": "historical-tool",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
++      "provenanceSha256": "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
++      "provenanceLine": 3,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json",
++      "sha256": "8255831b4510abdcc60a29ebc3d860df7a37e2d9f77305a1da00df180f82aa9c",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
++      "provenanceSha256": "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
++      "provenanceLine": 4,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json",
++      "sha256": "8255831b4510abdcc60a29ebc3d860df7a37e2d9f77305a1da00df180f82aa9c",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
++      "provenanceSha256": "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
++      "provenanceLine": 5,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py",
++      "sha256": "1a1960f82e052c4cd41923e5b95c4bc7834fab19d462f7e73d55b6bf4db553c1",
++      "kind": "historical-tool",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
++      "provenanceSha256": "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
++      "provenanceLine": 6,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/raw/results.json",
++      "sha256": "77c89743329fc9bfe7837b2fa7a8de35e42f50917c29f1ca3bbc339ba427bf17",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
++      "provenanceSha256": "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
++      "provenanceLine": 7,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py",
++      "sha256": "b359cfdec8579b610fcb63774b184eb91d9d06dabd0a852eb84cbd517b074572",
++      "kind": "historical-tool",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
++      "provenanceSha256": "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
++      "provenanceLine": 8,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json",
++      "sha256": "a9c20c25e05117c24e473594f33bc7b3cd4ba0e2fffe9a598e859355895532eb",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
++      "provenanceSha256": "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
++      "provenanceLine": 9,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json",
++      "sha256": "a9c20c25e05117c24e473594f33bc7b3cd4ba0e2fffe9a598e859355895532eb",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
++      "provenanceSha256": "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
++      "provenanceLine": 10,
++      "targets": []
+     }
+   ]
+ }

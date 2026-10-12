@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="StockLedgerTitle" xml:space="preserve"><value>库存台账</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>按产品、仓库、库位、批次和状态显示的当前库存。库存只能通过移动变更。</value></data>
+  <data name="KpiOnHand" xml:space="preserve"><value>现有总量</value></data>
+  <data name="KpiAvailable" xml:space="preserve"><value>可用</value></data>
+  <data name="KpiQualityInspection" xml:space="preserve"><value>质检中</value></data>
+  <data name="KpiQuarantineBlocked" xml:space="preserve"><value>隔离 / 冻结</value></data>
+  <data name="KpiSelectProduct" xml:space="preserve"><value>在筛选中选择产品或 SKU 以查看其合计。</value></data>
+  <data name="ColWarehouseLocation" xml:space="preserve"><value>仓库 / 库位</value></data>
+  <data name="ColStockStatus" xml:space="preserve"><value>库存状态</value></data>
+  <data name="ColOnHand" xml:space="preserve"><value>现有</value></data>
+  <data name="ColReserved" xml:space="preserve"><value>已预留</value></data>
+  <data name="ColAvailable" xml:space="preserve"><value>可用</value></data>
+  <data name="ColQualityInspection" xml:space="preserve"><value>质检</value></data>
+  <data name="ColBlocked" xml:space="preserve"><value>冻结</value></data>
+  <data name="ColInTransit" xml:space="preserve"><value>在途</value></data>
+  <data name="ColUnit" xml:space="preserve"><value>单位</value></data>
+  <data name="History" xml:space="preserve"><value>历史</value></data>
+  <data name="FilterSku" xml:space="preserve"><value>SKU（库存单位）</value></data>
+  <data name="FilterStockStatus" xml:space="preserve"><value>库存状态</value></data>
+  <data name="TabStock" xml:space="preserve"><value>库存列表</value></data>
+  <data name="TabMovements" xml:space="preserve"><value>移动历史</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>暂时无法加载产品和库位名称，因此显示编码。库存数量是正确的。</value></data>
+  <data name="ColProductSku" xml:space="preserve"><value>产品 / SKU</value></data>
+  <data name="ColLot" xml:space="preserve"><value>批次</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>批号</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>库位</value></data>
+  <data name="Searching" xml:space="preserve"><value>正在搜索…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>无匹配结果</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>该列表暂不可用（无法连接主数据服务）。您仍可使用其他字段筛选。</value></data>
+  <data name="StatusAVAILABLE" xml:space="preserve"><value>可用</value></data>
+  <data name="StatusQUALITY_INSPECTION" xml:space="preserve"><value>质检</value></data>
+  <data name="StatusQUARANTINE" xml:space="preserve"><value>隔离</value></data>
+  <data name="StatusBLOCKED" xml:space="preserve"><value>冻结</value></data>
+  <data name="StatusIN_TRANSIT" xml:space="preserve"><value>在途</value></data>
+  <data name="StatusDAMAGED" xml:space="preserve"><value>损坏</value></data>
+  <data name="StatusEXPIRED" xml:space="preserve"><value>过期</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>全球 SKU</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>本地 SKU</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>成品</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>物料项</value></data>
+  <data name="ErrInsufficientStock" xml:space="preserve"><value>来源处库存不足，无法执行此移动。未做任何更改；请检查可用数量后重试。</value></data>
+  <data name="ErrAlreadyReversed" xml:space="preserve"><value>此移动已被冲销。未做任何更改；请刷新列表查看冲销记录。</value></data>
+  <data name="ErrMasterUnavailable" xml:space="preserve"><value>暂时无法校验产品或库位数据，因此未做任何更改。请在连接恢复后重试。</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>此记录属于其他公司。请切换到该公司，或向管理员申请访问权限。</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>此操作已使用其他值提交过。请关闭对话框后重新开始。</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>由于某个值无效，请求无法处理。请刷新页面后重试。</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>产品主数据无法识别该产品或 SKU。未做任何更改；请检查产品。</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>无法识别该仓库或库位。未做任何更改；请检查库位。</value></data>
+  <data name="ErrUomMissing" xml:space="preserve"><value>该单位无法换算为 SKU 的基本单位。未做任何更改；请选择其他单位。</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>该产品实行批次管理：必须填写批次。未做任何更改；请填写批次后重试。</value></data>
+  <data name="ErrSerialMismatch" xml:space="preserve"><value>序列号数量与数量不一致。未做任何更改；请更正序列号。</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>在您操作期间数据已发生变化。请刷新列表后重试。</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>您无权执行此操作。请向管理员申请所需的库存权限。</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>您的会话已结束。请重新登录以继续。</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>暂时无法连接库存服务。未做任何更改；请稍后重试。</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>出现问题，未做任何更改。请重试；如问题持续，请联系支持人员。</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>公司</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>请选择公司</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>请选择要查看库存的公司。选择公司之前不会显示任何数据。</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>无法加载公司列表，因此不显示库存数据。请向管理员申请查看公司的权限，或稍后重试。</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>请先选择公司。未读取或更改任何数据。</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>暂时无法确认所选公司，因此未做任何更改。请稍后重试。</value></data>
+  <!-- WP-0173-UI2: model translation, native-speaker review pending (FU-UI2-01). -->
+  <data name="NewStockEntry" xml:space="preserve"><value>新建入库</value></data>
+  <data name="RowMovement" xml:space="preserve"><value>移动</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>未登记</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>未登记批次（MOD-0174 之前）</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>过账日期位于已关闭期间。未做任何更改；请选择未结期间内的日期。</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>来源可用：{0}；请求：{1}（基本单位）。</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>产品主数据未说明此 SKU 是否按批次或序列号管理，因此无法保存该移动。请在产品主数据完整后重试。</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>该产品的状态不允许此移动类型（草稿、已停用或已退役）。未做任何更改。</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>该产品可能按序列号管理：库存不能在全局 SKU 级别移动。请选择本地 SKU 或成品级别。</value></data>
+</root>

@@ -1,0 +1,49 @@
+[{
+    "_id" : "8244ff3b-84ba-424b-bce2-fa8e3dd3f5c6",
+    "TenantId" : "00000000-0000-0000-0000-000000000001",
+    "LegalEntityId" : "099219a0-9780-454a-9580-a216f0fe33d0",
+    "TransactionNumber" : "INV-2026-0000001",
+    "MovementType" : "OpeningBalance",
+    "Quantity" : { "$numberDecimal" : "40.000" },
+    "LotId" : "LOT-LE1-01",
+    "SourceDocumentId" : "LE1-OB-1",
+    "ReversesTransactionId" : null,
+    "CorrelationId" : "0bbcfb4a-a547-45ba-beac-d81bdac16c1a",
+    "CreatedBy" : "11111111-1111-1111-1111-111111111111"
+  }, {
+    "_id" : "9044da16-d4f3-4abb-b660-4f51a4a6426a",
+    "TenantId" : "00000000-0000-0000-0000-000000000001",
+    "LegalEntityId" : "099219a0-9780-454a-9580-a216f0fe33d0",
+    "TransactionNumber" : "INV-2026-0000002",
+    "MovementType" : "OpeningBalance",
+    "Quantity" : { "$numberDecimal" : "25.000" },
+    "LotId" : "LOT-LE1-02",
+    "SourceDocumentId" : "LE1-OB-2",
+    "ReversesTransactionId" : null,
+    "CorrelationId" : "f82dd760-0891-4f10-9477-82cfbc434a8b",
+    "CreatedBy" : "11111111-1111-1111-1111-111111111111"
+  }, {
+    "_id" : "212ef2f2-52d6-4322-96d0-a6e7d36c67d9",
+    "TenantId" : "00000000-0000-0000-0000-000000000001",
+    "LegalEntityId" : "099219a0-9780-454a-9580-a216f0fe33d0",
+    "TransactionNumber" : "INV-2026-0000003",
+    "MovementType" : "OpeningBalance",
+    "Quantity" : { "$numberDecimal" : "15.000" },
+    "LotId" : "LOT-LE1-03",
+    "SourceDocumentId" : "LE1-OB-3",
+    "ReversesTransactionId" : null,
+    "CorrelationId" : "eacaa69f-6668-40cb-8484-59805b011a2d",
+    "CreatedBy" : "11111111-1111-1111-1111-111111111111"
+  }, {
+    "_id" : "ccb587d5-d471-46d3-b598-40d26263dd11",
+    "TenantId" : "00000000-0000-0000-0000-000000000001",
+    "LegalEntityId" : "099219a0-9780-454a-9580-a216f0fe33d0",
+    "TransactionNumber" : "INV-2026-0000004",
+    "MovementType" : "Reversal",
+    "Quantity" : { "$numberDecimal" : "40.000" },
+    "LotId" : "LOT-LE1-01",
+    "SourceDocumentId" : "8244ff3b-84ba-424b-bce2-fa8e3dd3f5c6",
+    "ReversesTransactionId" : "8244ff3b-84ba-424b-bce2-fa8e3dd3f5c6",
+    "CorrelationId" : "27798545-b84d-4cd0-a8ee-c034d43686d1",
+    "CreatedBy" : "11111111-1111-1111-1111-111111111111"
+  }]

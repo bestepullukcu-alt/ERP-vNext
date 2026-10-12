@@ -1,0 +1,10 @@
+--- /private/tmp/mod0186-r01-ver-baseline-status.txt	2026-09-21 19:46:01
++++ /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0186-r01-independent-ver-01/raw/final-status-pre-output.txt	2026-09-21 20:12:55
+@@ -74,6 +74,7 @@
+ ?? docs/records/audits/2026-09/mvp6-mod0186-r01-rework-01/
+ ?? docs/records/audits/2026-09/mvp6-mod0187-auth-05/
+ ?? docs/records/audits/2026-09/mvp6-mod0187-auth05-independent-ver-01/
++?? docs/records/audits/2026-09/mvp6-mod0187-e4-policy-01/
+ ?? docs/records/audits/2026-09/mvp6-mod0187-http-composition-01/
+ ?? docs/records/audits/2026-09/mvp6-r2-combined-release-candidate-01/
+ ?? docs/records/audits/2026-09/mvp6-r2-composition-ins-01/

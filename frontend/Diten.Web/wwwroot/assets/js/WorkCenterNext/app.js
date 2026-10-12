@@ -8087,6 +8087,36 @@
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
     /*
+     * MOD-0022 E5W1 — the signature a flagged Workflow approve needs (pack §11.4; E4 gate). The shared dialog signs the TASK
+     * (subject workflow / workflow-task / {task id} — the work item id IS the ApprovalTask id) with the step's meaning; the binding
+     * context the E4 gate checks (workflowInstanceId, workflowTaskId, decision approve; stepCode for the record) is taken from the
+     * server's own subject fields, never guessed here. Cancel → null → nothing is dispatched. An item that needs no signature never
+     * opens the dialog (null signature, today's body unchanged).
+     */
+    const signatureForApproval = async (item, action) => {
+        if (action.code !== 'approve' || action.signatureRequired !== true) return { needed: false, signatureId: null };
+        if (!global.ESign || typeof global.ESign.open !== 'function') {
+            toast(global.TasksApi.failureMessage({ ok: false, status: 409, reasonCode: 'ESIGN_SIGNATURE_REQUIRED' }), 'error');
+            return { needed: true, signatureId: null };
+        }
+        const signed = await global.ESign.open({
+            module: 'workflow',
+            subjectType: 'workflow-task',
+            subjectId: item.id,
+            meaningCode: action.signatureMeaning || undefined,
+            // E5W2 (CT-D19, O-E5W1-3) — the step's signable action: the dialog asks the tenant policy for it (visual mode)
+            actionCode: action.signatureActionCode || undefined,
+            context: (subject) => ({
+                workflowInstanceId: (subject.fields && subject.fields.workflowInstanceId) || null,
+                workflowTaskId: item.id,
+                stepCode: (subject.fields && subject.fields.stepCode) || null,
+                decision: 'approve'
+            })
+        });
+        return { needed: true, signatureId: signed ? signed.signatureId : null };
+    };
+
+    /*
      * ══ MOD-0280-FU01 T2b — THE CARD'S TIMER ═══════════════════════════════════════════════════════════════════
      *
      * startTimer / stopTimer travel the same dispatch address as every action; the TimeEntry handlers decide. What
@@ -8157,6 +8187,11 @@
     const submitRealTransition = async (
         item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
+        const signature = await signatureForApproval(item, action);
+        if (signature.needed && !signature.signatureId) {
+            // the signer closed the dialog (or it could not open): the approve is NOT sent
+            return { outcome: 'cancelled' };
+        }
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
         render();
@@ -8175,6 +8210,7 @@
         const body = buildTransitionBody(
             action.code,
             { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues });
+        if (signature.signatureId) body.signatureId = signature.signatureId; // WorkItemActionPayloadDto.SignatureId (E4)
         // BL-491 — the person an action flagged by the server hands the work to, in the field the dispatcher reads.
         // Added only for such an action, so every other request is byte for byte what it was.
         if (action.targetPerson && assigneeUserId) { body.targetPrincipalId = assigneeUserId; }
@@ -8249,7 +8285,10 @@
         }
 
         render();
-        toast(global.TasksApi.failureMessage(result, overrides), 'error');
+        // an e-signature refusal (ESIGN_*) speaks the e-signature vocabulary, not the task one
+        toast(String(result.reasonCode || '').startsWith('ESIGN_') && global.ESign
+            ? global.ESign.message(result.reasonCode)
+            : global.TasksApi.failureMessage(result, overrides), 'error');
         return { outcome: 'refused', reasonCode: result.reasonCode };
     };
 

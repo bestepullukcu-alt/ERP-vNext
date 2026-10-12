@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <!-- WP-0173-LOC2: model translation, native-speaker review pending (FU-LOC2-01). -->
+  <data name="LocationsTitle" xml:space="preserve"><value>Liste des emplacements</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Liste unique des lieux physiques de la société. Stocks, entrepôt, achats et production s'appuient sur cette liste.</value></data>
+  <data name="TabTree" xml:space="preserve"><value>Hiérarchie</value></data>
+  <data name="TabList" xml:space="preserve"><value>Liste</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Société</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Sélectionnez une société</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Sélectionnez la société dont vous voulez voir les emplacements. Rien n'est affiché tant qu'aucune société n'est sélectionnée.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>La liste des sociétés n'a pas pu être chargée ; aucun emplacement n'est affiché. Demandez à votre administrateur l'accès aux sociétés ou réessayez plus tard.</value></data>
+  <data name="AddNewLocation" xml:space="preserve"><value>Nouvel emplacement</value></data>
+  <data name="ColCode" xml:space="preserve"><value>Code emplacement</value></data>
+  <data name="ColName" xml:space="preserve"><value>Nom</value></data>
+  <data name="ColType" xml:space="preserve"><value>Type d'emplacement</value></data>
+  <data name="ColParentPath" xml:space="preserve"><value>Chemin parent</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="ColStockable" xml:space="preserve"><value>Peut contenir du stock</value></data>
+  <data name="ColOperatingMode" xml:space="preserve"><value>Mode de fonctionnement</value></data>
+  <data name="Actions" xml:space="preserve"><value>Opérations</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Type d'emplacement</value></data>
+  <data name="FilterStockable" xml:space="preserve"><value>Peut contenir du stock</value></data>
+  <data name="FilterParent" xml:space="preserve"><value>Emplacement parent</value></data>
+  <data name="StockableYes" xml:space="preserve"><value>Peut contenir du stock</value></data>
+  <data name="StockableNo" xml:space="preserve"><value>Ne peut pas contenir de stock</value></data>
+  <data name="TypeSite" xml:space="preserve"><value>Établissement</value></data>
+  <data name="TypeWarehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="TypeStorageLocation" xml:space="preserve"><value>Aire de stockage</value></data>
+  <data name="TypeZone" xml:space="preserve"><value>Secteur</value></data>
+  <data name="TypeBin" xml:space="preserve"><value>Casier</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="ModeInternal" xml:space="preserve"><value>Stock dans ce système</value></data>
+  <data name="ModeExternal" xml:space="preserve"><value>Stock dans un système externe, suivi par intégration</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="ActionAddChild" xml:space="preserve"><value>Ajouter un sous-emplacement</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Activer</value></data>
+  <data name="ActionDeactivate" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Archiver</value></data>
+  <data name="ActionHistory" xml:space="preserve"><value>Historique</value></data>
+  <data name="ActionViewStock" xml:space="preserve"><value>Voir dans la liste des stocks</value></data>
+  <data name="ActionBulkBins" xml:space="preserve"><value>Générer des casiers</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nouvel emplacement</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier l'emplacement</value></data>
+  <data name="FormTitleChild" xml:space="preserve"><value>Nouvel emplacement sous {0}</value></data>
+  <data name="FieldCode" xml:space="preserve"><value>Code emplacement</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Nom</value></data>
+  <data name="FieldType" xml:space="preserve"><value>Type d'emplacement</value></data>
+  <data name="FieldParent" xml:space="preserve"><value>Emplacement parent</value></data>
+  <data name="FieldStockable" xml:space="preserve"><value>Peut contenir du stock</value></data>
+  <data name="FieldOperatingMode" xml:space="preserve"><value>Mode de fonctionnement</value></data>
+  <data name="FieldOrgUnit" xml:space="preserve"><value>Unité organisationnelle</value></data>
+  <data name="FieldCostCenter" xml:space="preserve"><value>Code centre de coûts</value></data>
+  <data name="Optional" xml:space="preserve"><value>facultatif</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ex. WH-01</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ex. Entrepôt central</value></data>
+  <data name="ParentPlaceholder" xml:space="preserve"><value>Rechercher un parent par code ou nom</value></data>
+  <data name="OrgUnitPlaceholder" xml:space="preserve"><value>Sélectionnez une unité organisationnelle</value></data>
+  <data name="CostCenterPlaceholder" xml:space="preserve"><value>p. ex. MM-1100</value></data>
+  <data name="HintCode" xml:space="preserve"><value>Unique dans cette société. Il peut être modifié plus tard : le stock continue de pointer vers le même emplacement.</value></data>
+  <data name="HintTypeFixed" xml:space="preserve"><value>Le type ne peut pas être modifié. S'il est erroné, archivez l'enregistrement et créez-en un nouveau.</value></data>
+  <data name="HintParentSite" xml:space="preserve"><value>Un établissement n'a pas de parent.</value></data>
+  <data name="HintZoneOptional" xml:space="preserve"><value>Un casier peut aussi être placé directement sous une aire de stockage, sans secteur.</value></data>
+  <data name="HintCompany" xml:space="preserve"><value>L'emplacement appartient à la société sélectionnée ; les emplacements en dessous en héritent. La société ne peut pas être modifiée.</value></data>
+  <data name="OrgUnitsUnavailable" xml:space="preserve"><value>La liste des unités organisationnelles n'a pas pu être lue. Vous pouvez laisser le champ vide et enregistrer.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Ce champ est obligatoire.</value></data>
+  <data name="ValidationCodeFormat" xml:space="preserve"><value>Utilisez 1 à 40 caractères : lettres, chiffres et . _ / - uniquement.</value></data>
+  <data name="ValidationNameLength" xml:space="preserve"><value>Utilisez 120 caractères au maximum.</value></data>
+  <data name="ValidationCostCenterFormat" xml:space="preserve"><value>Utilisez 1 à 40 caractères : lettres, chiffres et . _ - uniquement.</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Rien n'a été modifié.</value></data>
+  <data name="ReloadLabel" xml:space="preserve"><value>Recharger l'enregistrement</value></data>
+  <data name="ErrorDetails" xml:space="preserve"><value>Détails</value></data>
+  <data name="ReferenceLabel" xml:space="preserve"><value>Référence</value></data>
+  <data name="Searching" xml:space="preserve"><value>Recherche…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Aucun résultat</value></data>
+  <data name="ConfirmActivateTitle" xml:space="preserve"><value>Activer l'emplacement ?</value></data>
+  <data name="ConfirmActivateText" xml:space="preserve"><value>{0} sera de nouveau actif et pourra être sélectionné dans les formulaires de stock.</value></data>
+  <data name="ConfirmDeactivateTitle" xml:space="preserve"><value>Désactiver l'emplacement ?</value></data>
+  <data name="ConfirmDeactivateText" xml:space="preserve"><value>{0} sera désactivé. Les emplacements inactifs ne peuvent pas être sélectionnés dans les formulaires de stock.</value></data>
+  <data name="ConfirmArchiveTitle" xml:space="preserve"><value>Archiver l'emplacement ?</value></data>
+  <data name="ConfirmArchiveText" xml:space="preserve"><value>{0} sera archivé. Cette action est irréversible : un emplacement archivé ne peut être ni réactivé ni modifié. Il n'est pas supprimé et reste visible dans les mouvements passés.</value></data>
+  <data name="BulkTitle" xml:space="preserve"><value>Génération de casiers en masse</value></data>
+  <data name="BulkTarget" xml:space="preserve"><value>Cible</value></data>
+  <data name="BulkAisleFrom" xml:space="preserve"><value>Allée de</value></data>
+  <data name="BulkAisleTo" xml:space="preserve"><value>Allée à</value></data>
+  <data name="BulkRackFrom" xml:space="preserve"><value>Rayonnage de</value></data>
+  <data name="BulkRackTo" xml:space="preserve"><value>Rayonnage à</value></data>
+  <data name="BulkLevelFrom" xml:space="preserve"><value>Niveau de</value></data>
+  <data name="BulkLevelTo" xml:space="preserve"><value>Niveau à</value></data>
+  <data name="BulkPositions" xml:space="preserve"><value>Casiers par niveau</value></data>
+  <data name="BulkCodePattern" xml:space="preserve"><value>Codes : ALLÉE-RAYONNAGE-NIVEAU-CASIER, p. ex. A-01-01-01.</value></data>
+  <data name="BulkCount" xml:space="preserve"><value>{0} casiers</value></data>
+  <data name="BulkPreview" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="BulkPreviewSummary" xml:space="preserve"><value>{0} casiers seront créés</value></data>
+  <data name="BulkSkipped" xml:space="preserve"><value>{0} codes existent déjà et seront ignorés.</value></data>
+  <data name="BulkCreateButton" xml:space="preserve"><value>Créer {0} casiers</value></data>
+  <data name="BulkNothingToCreate" xml:space="preserve"><value>Rien à créer</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>{0} casiers créés.</value></data>
+  <data name="BulkResultSkipped" xml:space="preserve"><value>{0} codes existants ont été ignorés.</value></data>
+  <data name="BulkMore" xml:space="preserve"><value>et {0} de plus</value></data>
+  <data name="LocationCreated" xml:space="preserve"><value>Emplacement créé.</value></data>
+  <data name="LocationSaved" xml:space="preserve"><value>Modifications enregistrées.</value></data>
+  <data name="StatusChanged" xml:space="preserve"><value>Statut mis à jour.</value></data>
+  <data name="BinsCreated" xml:space="preserve"><value>{0} casiers créés.</value></data>
+  <data name="ErrCodeTaken" xml:space="preserve"><value>Ce code est déjà utilisé dans cette société. Choisissez un autre code.</value></data>
+  <data name="ErrLevelInvalid" xml:space="preserve"><value>Ce type ne peut pas être placé sous le parent choisi (établissement → entrepôt → aire de stockage → secteur → casier ; un casier peut aussi être placé sous une aire de stockage).</value></data>
+  <data name="ErrParentInactive" xml:space="preserve"><value>Le parent n'est pas actif. Activez d'abord le parent.</value></data>
+  <data name="ErrMoveIntoSubtree" xml:space="preserve"><value>Un emplacement ne peut pas être déplacé sous lui-même ni sous l'un de ses enfants.</value></data>
+  <data name="ErrHasStock" xml:space="preserve"><value>Cet emplacement (ou un emplacement en dessous) contient du stock ; la modification est impossible. Transférez d'abord le stock. Rien n'a été modifié.</value></data>
+  <data name="ErrHasActiveChildren" xml:space="preserve"><value>Cet emplacement a des sous-emplacements actifs. Désactivez-les d'abord.</value></data>
+  <data name="ErrArchived" xml:space="preserve"><value>L'emplacement est archivé : il ne peut pas être modifié et rien ne peut être ajouté en dessous.</value></data>
+  <data name="ErrLocationConflict" xml:space="preserve"><value>Quelqu'un d'autre a enregistré cet emplacement après votre ouverture. Rechargez-le et refaites votre modification.</value></data>
+  <data name="ErrBulkLimit" xml:space="preserve"><value>Au maximum 1000 casiers peuvent être créés en une fois. Réduisez les plages.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>L'emplacement est introuvable dans cette société. Rechargez la page.</value></data>
+  <data name="ErrOrgUnitInvalid" xml:space="preserve"><value>Cette unité organisationnelle n'est pas une unité active de cette société. Choisissez-en une autre ou laissez le champ vide.</value></data>
+  <data name="ErrOrgUnitDirectoryUnavailable" xml:space="preserve"><value>L'unité organisationnelle n'a pas pu être vérifiée pour le moment ; rien n'a été enregistré. Réessayez, ou laissez le champ vide et enregistrez.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Cette action a déjà été envoyée avec d'autres valeurs. Fermez la fenêtre et recommencez.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La demande n'a pas pu être traitée car une valeur n'est pas valide. Vérifiez les champs et réessayez.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Cet enregistrement appartient à une autre société. Passez à cette société ou demandez l'accès à votre administrateur.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>La société sélectionnée ne peut pas être confirmée pour le moment ; aucune modification n'a été faite. Réessayez dans un instant.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Sélectionnez d'abord une société. Rien n'a été lu ni modifié.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>Vous n'avez pas accès à cette action. Demandez à votre administrateur les droits sur les emplacements nécessaires.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous pour continuer.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Le service des emplacements est injoignable pour le moment. Aucune modification n'a été faite ; réessayez dans un instant.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Les données ont changé pendant votre travail. Rechargez et réessayez.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Un problème est survenu et aucune modification n'a été faite. Réessayez ; si cela persiste, contactez le support.</value></data>
+</root>

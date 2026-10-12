@@ -1,0 +1,9 @@
+kind	path	sha256	use
+baseline_manifest	docs/roadmap/plans/mvp6-effort-baseline-reconcile-02/ARTIFACTS.sha256	a36d4a2abfa2903f75929b1757a50e393e7d5b29eb9b91ac8a35f482bcbe434b	predecessor integrity
+baseline_effort	docs/roadmap/plans/mvp6-effort-baseline-reconcile-02/EFFORT.tsv	35a497e3f71cd1fec8dac7b8989d230f2766d1979171631469889e3acfea04c8	103-row baseline and weights
+numericdate_writer	docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/SOP-22-DEV-HANDOFF.md	ff1689ef8bb0d6fd58b77e836607860cfa82e43ee5b786d2e072d2131ed01097	approved application and writer-complete
+numericdate_writer_manifest	docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/ARTIFACTS.sha256	70e7b237dda9de0d1d21ca8f1e8d6511b59b4a34cb390db114b52b7b05637f35	writer package integrity
+numericdate_verifier	docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-ver-01/SOP-22-VER.md	fdd43da87ab93004aeb070f3b2940607b1ce5f3d772520b204f13e5afc8cefc5	independent F01/F02 closure and Auth-chain boundary
+numericdate_verifier_manifest	docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-ver-01/ARTIFACTS.sha256	5b06bc21425b0eddd7b81d89382fb5007af38663ea07aea989e9ca2044e906a5	verifier package integrity
+shipment_ui	docs/records/audits/2026-09/mvp6-shipment-pod-ui-exec-01/SOP-22.md	57687791911a865d1c016cb746faac2354a91a3804b44511bd40e578befd7981	bounded UI implementation and open build/runtime boundary
+shipment_ui_manifest	docs/records/audits/2026-09/mvp6-shipment-pod-ui-exec-01/SHA256SUMS	396a1bdd2be678f004c9d93bbfe607a9a84c1bfc71714254621ecc8d42c00040	Shipment package integrity

@@ -1,0 +1,4 @@
+kind	path
+candidate-source	services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
+candidate-test	services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
+audit-output	docs/records/audits/2026-09/mvp6-carrier-numericdate-rework-01/

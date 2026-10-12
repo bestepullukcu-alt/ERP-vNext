@@ -1,0 +1,104 @@
+[
+  {
+    "method": "GET",
+    "path": "",
+    "sentBodyBase64": "",
+    "request": null,
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "path": "",
+    "sentBodyBase64": "",
+    "request": null,
+    "status": 503
+  },
+  {
+    "method": "POST",
+    "path": "",
+    "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJvdXRhZ2UiLCAiZGlzcGxheU5hbWUiOiAiT3V0YWdlIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIl19",
+    "request": {
+      "carrierCode": "outage",
+      "displayName": "Outage",
+      "supportedModes": [
+        "Road"
+      ]
+    },
+    "status": 503
+  },
+  {
+    "method": "POST",
+    "path": "/3788eb9c-ba04-4bdf-b725-bd71a98178a8/status",
+    "sentBodyBase64": "eyJ0YXJnZXRTdGF0dXMiOiAiU3VzcGVuZGVkIiwgInJlYXNvbkNvZGUiOiAiIn0=",
+    "request": {
+      "targetStatus": "Suspended",
+      "reasonCode": ""
+    },
+    "status": 503
+  },
+  {
+    "method": "POST",
+    "path": "",
+    "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJvdXRhZ2UiLCAiZGlzcGxheU5hbWUiOiAiT3V0YWdlIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIl19",
+    "request": {
+      "carrierCode": "outage",
+      "displayName": "Outage",
+      "supportedModes": [
+        "Road"
+      ]
+    },
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "path": "",
+    "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJvdXRhZ2UiLCAiZGlzcGxheU5hbWUiOiAiT3V0YWdlIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIl19",
+    "request": {
+      "carrierCode": "outage",
+      "displayName": "Outage",
+      "supportedModes": [
+        "Road"
+      ]
+    },
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "path": "",
+    "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJjb21taXQtcmV0cnkiLCAiZGlzcGxheU5hbWUiOiAiT3V0YWdlIiwgInN1cHBvcnRlZE1vZGVzIjogWyJSb2FkIl19",
+    "request": {
+      "carrierCode": "commit-retry",
+      "displayName": "Outage",
+      "supportedModes": [
+        "Road"
+      ]
+    },
+    "status": 201
+  },
+  {
+    "method": "POST",
+    "path": "",
+    "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJjb21taXQtdW5rbm93biIsICJkaXNwbGF5TmFtZSI6ICJPdXRhZ2UiLCAic3VwcG9ydGVkTW9kZXMiOiBbIlJvYWQiXX0=",
+    "request": {
+      "carrierCode": "commit-unknown",
+      "displayName": "Outage",
+      "supportedModes": [
+        "Road"
+      ]
+    },
+    "status": 503
+  },
+  {
+    "method": "POST",
+    "path": "",
+    "sentBodyBase64": "eyJjYXJyaWVyQ29kZSI6ICJjb21taXQtdW5rbm93biIsICJkaXNwbGF5TmFtZSI6ICJPdXRhZ2UiLCAic3VwcG9ydGVkTW9kZXMiOiBbIlJvYWQiXX0=",
+    "request": {
+      "carrierCode": "commit-unknown",
+      "displayName": "Outage",
+      "supportedModes": [
+        "Road"
+      ]
+    },
+    "status": 201
+  }
+]

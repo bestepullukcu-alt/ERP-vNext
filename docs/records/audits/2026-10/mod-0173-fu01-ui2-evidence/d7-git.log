@@ -1,0 +1,153 @@
+﻿# WP-0173-UI2 D7 — git, measured 2026-10-02T13:18:21.3299995+03:00 in C:\Users\Ali\erp-vnext
+
+## branch / HEAD
+feature/sce/mod-0173-inventory-ledger-valuation
+5227e914d5085cc4f1ceb84fd3dc9741b9cecb1e
+
+## git log --format='%h %an <%ae> | %s' c634557c5..HEAD
+5227e914d bestepullukcu-alt <bestepullukcu@gmail.com> | docs(sce): WP-0173-UI2 evidence, audit, FU01 pack §19 UI-2 notes (ASSUMPTION-UI2-01..22, FU-UI2-01..07)
+38911b95f bestepullukcu-alt <bestepullukcu@gmail.com> | feat(sce): MOD-0173-FU01 UI-2 — S-3 new movement, Correct (reversal + new movement), Details receipt, StockLedger/Create inbound entry, manifest pages/actions
+
+## trailer check
+5227e914d Claude Opus 5.5 <noreply@anthropic.com>
+38911b95f Claude Opus 5.5 <noreply@anthropic.com>
+
+## git diff --stat c634557c5..HEAD
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-audit-2026-10-02.md                                                          |   51 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/README.md                                                           |   36 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d1-build-inventory.log                                              |   18 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d1-build-web.log                                                    |   45 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d2-inventory-tests-summary.log                                      |    5 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d2-inventory-tests.trx                                              | 7729 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d2-web-tests-summary.log                                            |    5 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d2-web-tests.trx                                                    | 3510 +++++++++++++++++++++++++++++++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d3-architecture-tests-run1-docs-path-guard.log                      |   16 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d3-architecture-tests.log                                           |    7 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d4-sabotage.log                                                     |   51 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d4-sabotage.sh                                                      |   56 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d5-compact-manual-checklist.md                                      |   40 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d5-greps.log                                                        |   37 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-automatic-movement.json                                          |   62 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-gateway-copy-changes.json                                        |   17 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-gateway-copy-override.json                                       |    5 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-mongo-audit-final.json                                           |  289 +++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-mongo-balances-final.json                                        |  277 +++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-mongo-outbox-final.json                                          |  397 ++++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-mongo-transactions-final.json                                    |  760 +++++++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-network-paths.log                                                |   53 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-platform-catalog.json                                            |  238 +++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-prism-spec-lot.openapi.yaml                                      |  222 ++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-prism-spec-serial.openapi.yaml                                   |  222 ++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d6-runtime-smoke.json                                               |   41 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d7-fleet-before.json                                                |  136 ++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d7-processes-after.json                                             |   41 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/e1-js-guards-base.txt                                               |  224 ++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/e1-js-guards-diff.txt                                               |    1 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/e1-js-guards-ui2.txt                                                |  224 ++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/mini-vitest.js                                                      |   76 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/persona-helper.js                                                   |   80 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/post-automatic.js                                                   |   56 +
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/run-ui2-env.ps1                                                     |  187 ++
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/01-form-count-gain-top-stock-effect.jpg                 |  Bin 0 -> 19522 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/02-form-count-gain-lot-known-unit-hint.jpg              |  Bin 0 -> 17092 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/03-s1-row-after-opening-balance.jpg                     |  Bin 0 -> 14870 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/04-receipt-idempotent-replay-banner.jpg                 |  Bin 0 -> 19353 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/05-insufficient-stock-under-quantity.jpg                |  Bin 0 -> 17649 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/06-receipt-warehouse-transfer-single-step.jpg           |  Bin 0 -> 20281 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/07-s1-row-movement-prefills-location-transfer.jpg       |  Bin 0 -> 18560 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/08-uom-conversion-missing-under-unit.jpg                |  Bin 0 -> 17517 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/09-lot-required-client.jpg                              |  Bin 0 -> 18254 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/10-s2-correct-only-on-manual-rows-automatic-passive.jpg |  Bin 0 -> 18838 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/11-correct-confirm-two-records.jpg                      |  Bin 0 -> 19799 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/12-partial-correction-state.jpg                         |  Bin 0 -> 22717 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/13-correction-completed-receipt.jpg                     |  Bin 0 -> 21041 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/14-forced-archived-location-unknown-location.jpg        |  Bin 0 -> 16253 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/15-serial-count-mismatch.jpg                            |  Bin 0 -> 16296 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/16-stock-entry-inbound-types-only.jpg                   |  Bin 0 -> 17441 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/17-seven-manual-types-grouped.jpg                       |  Bin 0 -> 17331 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/18-product-master-unavailable-no-unit.jpg               |  Bin 0 -> 19609 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/19-upstream-down-page-alert-retry.jpg                   |  Bin 0 -> 19094 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/20-ar-rtl-form-top-before-bidi-fix.jpg                  |  Bin 0 -> 19749 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/21-ar-rtl-form-bottom.jpg                               |  Bin 0 -> 16769 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/22-ar-rtl-form-after-bidi-fix.jpg                       |  Bin 0 -> 19485 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/23-viewer-s1-no-new-no-movement.jpg                     |  Bin 0 -> 18062 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/24-viewer-s2-no-new-no-correct-no-reversal.jpg          |  Bin 0 -> 17384 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/screenshots/25-viewer-create-uas001.jpg                             |  Bin 0 -> 7560 bytes
+ docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/ui2-fixtures.js                                                     |  127 ++
+ execution/domains/supply-chain-execution/module-packs/MOD-0173-FU01-inventory-ledger-ui.md                                 |   43 +
+ frontend/Diten.Web.Tests/Inventory/InventoryResxParityTests.cs                                                             |   19 +-
+ frontend/Diten.Web.Tests/Inventory/MovementFormTests.cs                                                                    |  587 ++++++
+ frontend/Diten.Web.Tests/Inventory/MovementPagesSurfaceTests.cs                                                            |  211 ++
+ frontend/Diten.Web/Controllers/StockLedgerController.cs                                                                    |   10 +-
+ frontend/Diten.Web/Controllers/StockMovementsController.cs                                                                 |  354 +++-
+ frontend/Diten.Web/Models/Inventory/InventoryErrorMessages.cs                                                              |    6 +-
+ frontend/Diten.Web/Models/Inventory/InventoryListAdapter.cs                                                                |    7 +-
+ frontend/Diten.Web/Models/Inventory/LocationPickerSource.cs                                                                |  101 +-
+ frontend/Diten.Web/Models/Inventory/MasterLabelResolver.cs                                                                 |    5 +-
+ frontend/Diten.Web/Models/Inventory/MovementErrorFields.cs                                                                 |   67 +
+ frontend/Diten.Web/Models/Inventory/MovementFormSources.cs                                                                 |  235 +++
+ frontend/Diten.Web/Models/Inventory/MovementFormViewModels.cs                                                              |  276 +++
+ frontend/Diten.Web/Models/Inventory/MovementRules.cs                                                                       |  262 +++
+ frontend/Diten.Web/Models/Inventory/ProductPickerSource.cs                                                                 |   80 +
+ frontend/Diten.Web/Models/Inventory/StockLedgerViewModels.cs                                                               |    2 +
+ frontend/Diten.Web/Models/Inventory/StockMovementViewModels.cs                                                             |    5 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockLedger/StockLedgerIndex.ar.resx                                          |    7 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockLedger/StockLedgerIndex.en.resx                                          |    6 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockLedger/StockLedgerIndex.es.resx                                          |    7 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockLedger/StockLedgerIndex.fr.resx                                          |    7 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockLedger/StockLedgerIndex.ru.resx                                          |    7 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockLedger/StockLedgerIndex.tr.resx                                          |    6 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockLedger/StockLedgerIndex.zh.resx                                          |    7 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockMovements/StockMovementsIndex.ar.resx                                    |  107 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockMovements/StockMovementsIndex.en.resx                                    |  106 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockMovements/StockMovementsIndex.es.resx                                    |  107 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockMovements/StockMovementsIndex.fr.resx                                    |  107 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockMovements/StockMovementsIndex.ru.resx                                    |  107 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockMovements/StockMovementsIndex.tr.resx                                    |  106 +
+ frontend/Diten.Web/Resources/Views/Inventory/StockMovements/StockMovementsIndex.zh.resx                                    |  107 +
+ frontend/Diten.Web/Views/Inventory/StockLedger/Create.cshtml                                                               |   31 +
+ frontend/Diten.Web/Views/Inventory/StockLedger/_IndexL10n.cshtml                                                           |    6 +-
+ frontend/Diten.Web/Views/Inventory/StockMovements/Create.cshtml                                                            |   27 +
+ frontend/Diten.Web/Views/Inventory/StockMovements/Details.cshtml                                                           |  250 +++
+ frontend/Diten.Web/Views/Inventory/StockMovements/Edit.cshtml                                                              |   28 +
+ frontend/Diten.Web/Views/Inventory/StockMovements/_Form.cshtml                                                             |  409 ++++
+ frontend/Diten.Web/Views/Inventory/StockMovements/_FormL10n.cshtml                                                         |   49 +
+ frontend/Diten.Web/Views/Inventory/StockMovements/_IndexL10n.cshtml                                                        |    6 +-
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/StockLedger/index.js                                                        |   35 +-
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/StockLedger/index.l10n.js                                                   |    3 +-
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/StockMovements/details.js                                                   |   29 +
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/StockMovements/form.js                                                      |  698 +++++++
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/StockMovements/index.js                                                     |   49 +-
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/StockMovements/index.l10n.js                                                |    3 +-
+ services/Diten.InventoryService/src/Diten.InventoryService.Api/ModuleRegistration/InventoryLedgerManifestProvider.cs       |   58 +-
+ services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Api/InventoryLedgerManifestCompletenessTests.cs         |   55 +-
+ 108 files changed, 20095 insertions(+), 46 deletions(-)
+
+## deleted lines outside this WP's own new files
+(binary files — the screenshots — have no line counts; every deleted line is in a file this WP edits)
+   1 deleted · frontend/Diten.Web.Tests/Inventory/InventoryResxParityTests.cs
+   2 deleted · frontend/Diten.Web/Controllers/StockLedgerController.cs
+   5 deleted · frontend/Diten.Web/Controllers/StockMovementsController.cs
+   1 deleted · frontend/Diten.Web/Models/Inventory/InventoryErrorMessages.cs
+   1 deleted · frontend/Diten.Web/Models/Inventory/InventoryListAdapter.cs
+   1 deleted · frontend/Diten.Web/Models/Inventory/LocationPickerSource.cs
+   1 deleted · frontend/Diten.Web/Models/Inventory/MasterLabelResolver.cs
+   1 deleted · frontend/Diten.Web/Views/Inventory/StockLedger/_IndexL10n.cshtml
+   1 deleted · frontend/Diten.Web/Views/Inventory/StockMovements/_IndexL10n.cshtml
+   5 deleted · frontend/Diten.Web/wwwroot/assets/js/Inventory/StockLedger/index.js
+   1 deleted · frontend/Diten.Web/wwwroot/assets/js/Inventory/StockLedger/index.l10n.js
+   6 deleted · frontend/Diten.Web/wwwroot/assets/js/Inventory/StockMovements/index.js
+   1 deleted · frontend/Diten.Web/wwwroot/assets/js/Inventory/StockMovements/index.l10n.js
+   6 deleted · services/Diten.InventoryService/src/Diten.InventoryService.Api/ModuleRegistration/InventoryLedgerManifestProvider.cs
+  13 deleted · services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Api/InventoryLedgerManifestCompletenessTests.cs
+
+## allowed-path check (WP Allowed = FU01 pack §5 + manifest provider + its test + docs/records/audits/2026-10/mod-0173-fu01-ui2-* + FU01 pack §19)
+changed files: 108
+outside the allow-list: 0
+matching a protected path (SharedResource, _LayoutTenantShell, shared JS/CSS, gateway/, contracts, registries, FU01 company-selector files, FU02 location files, InventoryService outside the manifest, the UI worktree): 0
+
+## pack §19 is the only part of the FU01 pack touched (hunk headers)
+@@ -670,0 +671,43 @@ StockLedger/Create are UI-2. Evidence `docs/records/audits/2026-10/mod-0173-fu01
+
+## git status --porcelain (before the D7 evidence commit; only the D7 files expected)
+?? docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/d7-fleet-after.json

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "mongosh",
+    "--quiet",
+    "mongodb://127.0.0.1:27990/",
+    "--eval",
+    "JSON.stringify(rs.initiate({_id:\"mvp6_normal_shipment_exact\",members:[{_id:0,host:\"127.0.0.1:27990\"}]}))"
+  ],
+  "exit": 0,
+  "stdout": "{\"ok\":1,\"$clusterTime\":{\"clusterTime\":{\"$timestamp\":\"7688252757060354049\"},\"signature\":{\"hash\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"keyId\":{\"low\":0,\"high\":0,\"unsigned\":false}}},\"operationTime\":{\"$timestamp\":\"7688252757060354049\"}}\n",
+  "stderr": ""
+}

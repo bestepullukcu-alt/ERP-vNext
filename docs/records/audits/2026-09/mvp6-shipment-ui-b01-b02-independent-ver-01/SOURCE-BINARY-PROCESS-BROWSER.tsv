@@ -1,0 +1,15 @@
+stage	identity_or_result
+Shipment/UI source	354/354 exact; manifest e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3
+Auth source	22/22 exact; manifest b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731
+Build source	3333/3333 exact; manifest 516ba828bed602e4355a5cc6871501cbb3b3c72d60473fa7ec73d135bbadf911
+Auth DLL	9552d12b7e73efc23e8a82f47012c5274d479c2cfd53e7ca90a2287c22907439
+Platform DLL	dad08bbff55d77fdfd3df8298023378d415b0f1e65b51e595980e54eeb610341
+MDM DLL	60c6baa1f92395677c45e3f87352d037a3da3e9857a1e35f76539dfb4bba5b72
+SupplyChain DLL	568833f6bc3a9dc29390c44d501fbe7fa0bfa206c1998e33fa88ee52deb392eb
+Gateway DLL	395351a61c11b87106546ccdfb6dd765cca66b9f79cb91c8aad7cae9f0d1aab3
+Web DLL	e0763704217c7711d5fc0178e6614249f0c98b060725041b51b5ce4377bbbf20
+Web Tests DLL	86396edd30e645aa95c41e481c2cee7c90fa4c5cf0cf8ece7669182b2bdd9130
+process smoke	Gateway 5920; Web 5921; Auth 5956; Platform 5957; MDM 5959; SupplyChain 5961; Mongo 42124
+browser	NOT RUN to acceptance completion; no independent browser PASS claimed
+cleanup	all listed listener ports FREE
+

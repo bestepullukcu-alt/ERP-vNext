@@ -1,0 +1,26 @@
+--- a/docs/reference/architecture/docs-path-authority.json
++++ b/docs/reference/architecture/docs-path-authority.json
+@@ -1,11 +1,11 @@
+ {
+   "schemaVersion": 1,
+   "status": "APPROVED",
+-  "decision": {"path": "docs/records/decisions/2026-09/mvp6-docs-path-owner-approval-01.json", "sha256": "f2cc8213583f10ba6e7c69e86e5d478ad88fe825ca3bcee8ac2c78c1cb1ca607"},
++  "decision": {"path": "docs/records/decisions/2026-09/mvp6-loads-docs-path-owner-binding-01.json", "sha256": "170ea3c5e47af103aeeceda471606d60fc31e69bff233279cb9ecd4cd6c805e7"},
+   "canonicalTargets": [
+     {
+       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+-      "sha256": "ba9d85f086dd2bfc150c1818843fa22c5b00b0dba1948a57a3672e2529d9880f"
++      "sha256": "93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571"
+     },
+     {
+       "path": "docs/analysis/contracts/carrier-semantics-v1.1.0.md",
+--- /dev/null
++++ b/docs/records/decisions/2026-09/mvp6-loads-docs-path-owner-binding-01.json
+@@ -0,0 +1,7 @@
++{
++  "kind": "DOCS_PATH_OWNER_DECISION",
++  "status": "APPROVED",
++  "decisionId": "MVP6-LOADS-DOCS-PATH-OWNER-BINDING-01",
++  "approvedBy": "Repository user — explicit exact Loads R2 publication and authority payload approval in this task on 2026-09-18",
++  "payloadSha256": "9bc2cb3737d0e8d3330fdc9945d3d268b64ab582ef49dee11cee524811d3846a"
++}

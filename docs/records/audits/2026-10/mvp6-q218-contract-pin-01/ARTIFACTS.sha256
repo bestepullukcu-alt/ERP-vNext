@@ -1,0 +1,20 @@
+# Q218 ARTIFACTS — generated 2026-10-02 23:08:09 +0300 (Europe/Istanbul). Start 2026-10-02 23:00:20 +03.
+# HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c (unchanged). Porcelain start: 89 M + 576 ?? = 665. Porcelain end: 89 M + 576 ?? = 665.
+# New porcelain entries since start: none
+# Protected files, end-of-lane sha256 (equal to the values measured at the start of Phase A):
+# 6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2  docs/analysis/contracts/shipment-bundle.openapi.yaml
+# 00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11  docs/analysis/contracts/returns-semantics-v3.0.0.md
+# 16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63  docs/analysis/contracts/claims-semantics-v3.0.0.md
+# 7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af  docs/analysis/contracts/shipment-root-semantics-v3.0.0.md
+# 933e89262713f36982a7885b9b95a84e3fbfad62b276b721a300c0ec6c8521fe  execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+# 3d1a00e2f0a0e7e58d19f44b340de9ab0d6bf84e7e2997db451c65d2ddb74cae  execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+# Files of this record (ARTIFACTS.sha256 itself excluded):
+4d9880ac85347e694713b960fa2cc9687a7cb1ad42736704e6ba0002736b4fc8  FIELD-PARITY.tsv
+25e1e984116dcfcb15c4db6706532e31a55fac18e5b6fc952399d07f620b3ce6  HASHES.md
+20bd2ad816cbaf9d3ab3989493de638080c21bed785ea64df1cd73d5485c53c8  PIN-INVENTORY.tsv
+a9a0cc32798985c9adf5eff668a7df9c109db96b8369a6a7bebc2da8c9760435  RECOMMENDATION.md
+e11f35c5c7ebb52f2bbf5f14b31363a1d634b6d59469e29f9ddfc95cc2fba74e  SOP-22.md
+ce6333d67c541ec9d59237e9c45eb354e5190b1402b65e57fba8d3b17957961f  VERSION-DELTA.md
+4d096824e116fccfa1b105e12e2fd7a0ebb5bd515093e22121f5d85f0783071d  delta-3.0.0-to-3.1.0.diff
+c3ea836208bf8279c26d021c5f87ae9dca7e2d4ef19c0781cbc16128c1f8bf33  tools/q218_cmp.py
+efada2f6f782fa3c2bb65e6de81518f6748b89bdfd1fe32e97722a44da0f0d94  tools/q218_ops.py

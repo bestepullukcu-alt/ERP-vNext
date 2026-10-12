@@ -1,0 +1,64 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@*
+    "Stoğu bloke et" (§21.3 #9, BLOCKSTOCK, quarantine.blocked.block) — QUARANTINE-BUNDLE blockStock: STATUS_TRANSFER
+    AVAILABLE → BLOCKED of the chosen stock row now (no workflow: the safety direction, contract x-rules 3). Lot → its AVAILABLE
+    rows (ledger balance) → quantity, block reason (active list), note, reason ≥ 10. The service checks the reservations
+    (CT-Q6 QUARANTINE_STOCK_RESERVED) and the ledger rules; its refusal is shown on the form.
+*@
+<div class="modal fade" id="qr-block-modal" tabindex="-1" aria-labelledby="qr-block-title" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qr-block-title">@Localizer["Quarantine.BlockStock.Title"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Quarantine.Common.Close"]"></button>
+            </div>
+            <form id="qr-block-form" novalidate>
+                <div class="modal-body">
+                    <div class="alert alert-warning d-flex gap-2 py-2 small" role="note"><i class="bx bx-error mt-1"></i><span>@Localizer["Quarantine.BlockStock.Warn"]</span></div>
+                    <div class="alert alert-danger d-none" id="qr-block-error" role="alert"></div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-block-lot">@Localizer["Quarantine.BlockStock.Lot"] <span class="text-danger">*</span></label>
+                            <select id="qr-block-lot" class="form-select" data-placeholder="@Localizer["Quarantine.BlockStock.LotSearch"]"><option value=""></option></select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-block-row">@Localizer["Quarantine.BlockStock.Row"] <span class="text-danger">*</span></label>
+                            <select id="qr-block-row" class="form-select" disabled><option value=""></option></select>
+                            <div class="form-text d-none" id="qr-block-norows">@Localizer["Quarantine.BlockStock.NoRows"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-block-qty">@Localizer["Quarantine.BlockStock.Quantity"] <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" min="0" step="any" id="qr-block-qty" class="form-control" inputmode="decimal" />
+                                <span class="input-group-text" id="qr-block-uom"></span>
+                            </div>
+                            <div class="invalid-feedback d-block" data-err="qty"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-block-reason-code">@Localizer["Quarantine.Field.BlockReason"] <span class="text-danger">*</span></label>
+                            <select id="qr-block-reason-code" class="form-select"><option value="">@Localizer["Quarantine.Common.Select"]</option></select>
+                            <div class="invalid-feedback d-block" data-err="blockReason"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="qr-block-note">@Localizer["Quarantine.BlockStock.Note"]</label>
+                            <input type="text" id="qr-block-note" class="form-control" maxlength="2000" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label d-flex justify-content-between" for="qr-block-reason">
+                                <span>@Localizer["Quarantine.Field.Reason"] <span class="text-danger">*</span></span>
+                                <small class="text-muted" data-counter="qr-block-reason"></small>
+                            </label>
+                            <textarea id="qr-block-reason" class="form-control" rows="2" maxlength="1000"></textarea>
+                            <div class="invalid-feedback d-block" data-err="reason"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Quarantine.Common.Cancel"]</button>
+                    <button type="submit" class="btn btn-danger" id="qr-block-submit"><i class="bx bx-block me-1"></i>@Localizer["Quarantine.BlockStock.Confirm"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+{
+  "verdict": "PASS",
+  "inverse": [
+    {
+      "final": "shipment-bundle.openapi.yaml",
+      "candidate": "shipment-bundle-combined-candidate.yaml",
+      "candidateSha256": "d763b571a1c6b88cbfadc56af2c51da1c0009589e3b82bcbe122329b17213c88",
+      "inverseExact": true
+    },
+    {
+      "final": "shipment-root-semantics-v3.0.0.md",
+      "candidate": "shipment-root-semantics-candidate.md",
+      "candidateSha256": "fceac091e75a4407210c80b81ca6b6757cc7199d4e09546dda39f3f8271c269b",
+      "inverseExact": true
+    },
+    {
+      "final": "returns-semantics-v3.0.0.md",
+      "candidate": "returns-semantics-candidate.md",
+      "candidateSha256": "ae5db7f45c4ba5d0d1a6772904037193c52c4cc730f3277096d74579f413a49c",
+      "inverseExact": true
+    },
+    {
+      "final": "claims-semantics-v3.0.0.md",
+      "candidate": "claims-semantics-r2.md",
+      "candidateSha256": "c33cefe16c5cee75e4f8102dba13328c974753be5ca4c31acbf37c45226d47fa",
+      "inverseExact": true
+    }
+  ],
+  "openapiErrors": 0,
+  "validator": "0.7.2",
+  "refs": 298,
+  "examples": 236,
+  "links": [
+    "carrier-semantics-v1.1.0.md",
+    "claims-semantics-v3.0.0.md",
+    "loads-semantics-v2.0.0.md",
+    "returns-semantics-v3.0.0.md",
+    "shipment-root-semantics-v3.0.0.md"
+  ],
+  "negativeControls": [
+    "bad-version",
+    "missing-title"
+  ],
+  "historicalSeals": 17,
+  "totalSeals": 22,
+  "models": "not rerun; pinned prior independent archive unchanged"
+}

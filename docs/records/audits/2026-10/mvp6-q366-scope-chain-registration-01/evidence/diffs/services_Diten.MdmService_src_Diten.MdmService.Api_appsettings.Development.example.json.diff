@@ -1,0 +1,15 @@
+diff --git a/services/Diten.MdmService/src/Diten.MdmService.Api/appsettings.Development.example.json b/services/Diten.MdmService/src/Diten.MdmService.Api/appsettings.Development.example.json
+index cb8091842..698c31b3f 100644
+--- a/services/Diten.MdmService/src/Diten.MdmService.Api/appsettings.Development.example.json
++++ b/services/Diten.MdmService/src/Diten.MdmService.Api/appsettings.Development.example.json
+@@ -13,5 +13,10 @@
+     "InternalApiKey": "",
+     "ModuleRegistrationCredentialIdentifier": "ditenmdmservice",
+     "ModuleRegistrationCredentialSecret": ""
++  },
++  "PlatformServiceIdentity": {
++    "Enabled": true,
++    "KeyId": "local-dev",
++    "Secret": ""
+   }
+ }

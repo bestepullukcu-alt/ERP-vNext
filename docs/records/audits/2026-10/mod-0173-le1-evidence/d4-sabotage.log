@@ -1,0 +1,77 @@
+### D4 — InventoryScopeResolutionMiddleware, sha256 before: b1569a27f497a4afd78e03ce0e7681afb8309d6c4c0e969242bc961d14c49dcf
+## green baseline
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "caller-refused") [3 s]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "unknown") [9 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "inactive") [9 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "other-tenant") [4 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L3_a_claim_less_token_with_an_active_company_of_its_tenant_posts_and_reads_with_the_header_source [258 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.A_company_in_the_query_is_still_400_even_for_a_claim_less_token [4 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: "00000000-0000-0000-0000-000000000000") [14 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: "not-a-uuid") [3 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: null) [3 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L1_a_token_with_a_legal_entity_claim_decides_and_a_differing_header_is_403 [27 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L5_MDM_unavailable_is_503_and_nothing_is_written [7 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.A_confirmed_company_is_cached_per_token_and_a_refusal_is_never_cached [18 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L6_stock_entered_under_company_A_is_invisible_under_company_B_of_the_same_tenant [76 ms]
+Toplam test sayısı: 13
+     Geçti: 13
+
+## (a) SABOTAGE: drop the 'active legal entity of the caller's tenant' refusal
+150:        if (false && membership != LegalEntityMembership.Active) // SABOTAGE (a)
+  Başarısız Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "caller-refused") [3 s]
+  Başarısız Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "unknown") [14 ms]
+  Başarısız Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "inactive") [11 ms]
+  Başarısız Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "other-tenant") [6 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L3_a_claim_less_token_with_an_active_company_of_its_tenant_posts_and_reads_with_the_header_source [187 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.A_company_in_the_query_is_still_400_even_for_a_claim_less_token [7 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: "00000000-0000-0000-0000-000000000000") [12 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: "not-a-uuid") [5 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: null) [4 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L1_a_token_with_a_legal_entity_claim_decides_and_a_differing_header_is_403 [22 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L5_MDM_unavailable_is_503_and_nothing_is_written [10 ms]
+  Başarısız Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.A_confirmed_company_is_cached_per_token_and_a_refusal_is_never_cached [29 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L6_stock_entered_under_company_A_is_invisible_under_company_B_of_the_same_tenant [56 ms]
+Toplam test sayısı: 13
+     Geçti: 8
+     Başarısız: 5
+restored, sha256: b1569a27f497a4afd78e03ce0e7681afb8309d6c4c0e969242bc961d14c49dcf
+(diff empty)
+
+## (b) SABOTAGE: a token with a legal-entity claim no longer checks the header against it
+102:            if (false && !HeaderMatches(context, InventoryContract.LegalEntityOverrideHeader, claimLegalEntity.Value)) // SABOTAGE (b)
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "caller-refused") [3 s]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "unknown") [11 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "inactive") [5 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "other-tenant") [5 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L3_a_claim_less_token_with_an_active_company_of_its_tenant_posts_and_reads_with_the_header_source [261 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.A_company_in_the_query_is_still_400_even_for_a_claim_less_token [9 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: "00000000-0000-0000-0000-000000000000") [10 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: "not-a-uuid") [4 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: null) [2 ms]
+  Başarısız Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L1_a_token_with_a_legal_entity_claim_decides_and_a_differing_header_is_403 [12 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L5_MDM_unavailable_is_503_and_nothing_is_written [11 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.A_confirmed_company_is_cached_per_token_and_a_refusal_is_never_cached [19 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L6_stock_entered_under_company_A_is_invisible_under_company_B_of_the_same_tenant [80 ms]
+Toplam test sayısı: 13
+     Geçti: 12
+     Başarısız: 1
+restored, sha256: b1569a27f497a4afd78e03ce0e7681afb8309d6c4c0e969242bc961d14c49dcf
+identical: YES
+(diff empty)
+
+## green again
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "caller-refused") [3 s]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "unknown") [8 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "inactive") [9 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L4_a_company_that_is_not_an_active_one_of_the_callers_tenant_is_403_and_nothing_is_written(kind: "other-tenant") [4 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L3_a_claim_less_token_with_an_active_company_of_its_tenant_posts_and_reads_with_the_header_source [248 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.A_company_in_the_query_is_still_400_even_for_a_claim_less_token [5 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: "00000000-0000-0000-0000-000000000000") [16 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: "not-a-uuid") [3 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L2_a_claim_less_token_without_a_valid_company_header_is_403_select_a_company(header: null) [2 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L1_a_token_with_a_legal_entity_claim_decides_and_a_differing_header_is_403 [27 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L5_MDM_unavailable_is_503_and_nothing_is_written [14 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.A_confirmed_company_is_cached_per_token_and_a_refusal_is_never_cached [18 ms]
+  Başarılı Diten.InventoryService.Tests.Api.LegalEntitySelectorScopeTests.L6_stock_entered_under_company_A_is_invisible_under_company_B_of_the_same_tenant [79 ms]
+Toplam test sayısı: 13
+     Geçti: 13

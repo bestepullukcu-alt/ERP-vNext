@@ -1,0 +1,142 @@
+{
+  "verdict": "PASS",
+  "failures": [],
+  "checks": {
+    "writerSeal": {
+      "entries": 26,
+      "allMatch": true
+    },
+    "inputBindings": {
+      "entries": 9,
+      "allMatch": true
+    },
+    "sourceComposition": {
+      "baselineEntries": 379,
+      "capacityEntries": 43,
+      "overlap": 0,
+      "combinedEntries": 422,
+      "mismatches": [],
+      "programTarget": "50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0",
+      "authorizedTestTarget": "2c133ac1b6b431db074b0054b0337bbc3957fce5869c7aca9291454a53681c43"
+    },
+    "programReconstruction": {
+      "baseline": "a2a216be15d07fa656f5fd7da43711aa989c4a8d52cd51c58e8ded48d5d735e5",
+      "patch": "78cc0fa61dd37019f525c621c572d1dc2ef518eb0b4faf520a280f01909db82e",
+      "patchExit": 0,
+      "patchOutput": "patching file 'services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs'\n",
+      "target": "50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0"
+    },
+    "testRuns": {
+      "initial": {
+        "counters": {
+          "total": "0",
+          "executed": "0",
+          "passed": "0",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "resultCount": 0
+      },
+      "rollForward": {
+        "counters": {
+          "total": "36",
+          "executed": "36",
+          "passed": "36",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "resultCount": 36
+      },
+      "laterReadFaults": [
+        {
+          "boundary": "active-slot",
+          "skip": 4,
+          "entries": 1,
+          "failures": 1
+        },
+        {
+          "boundary": "audit-broad",
+          "skip": 2,
+          "entries": 1,
+          "failures": 1
+        },
+        {
+          "boundary": "audit-exact",
+          "skip": 3,
+          "entries": 1,
+          "failures": 1
+        },
+        {
+          "boundary": "event-broad",
+          "skip": 0,
+          "entries": 1,
+          "failures": 1
+        },
+        {
+          "boundary": "event-exact",
+          "skip": 1,
+          "entries": 1,
+          "failures": 1
+        }
+      ]
+    },
+    "runtimeRaw": {
+      "httpRows": 21,
+      "httpStatuses": {
+        "401": 1,
+        "403": 1,
+        "201": 8,
+        "409": 1,
+        "200": 3,
+        "404": 3,
+        "202": 3
+      },
+      "responseLoss": {
+        "case": "response-loss",
+        "transportClosedBeforeRead": true,
+        "receiptObservedBeforeRetry": true,
+        "recoveredCapacityPlanId": "feaada3f-3263-4656-9333-db173ac6d0ae",
+        "receiptCorrelationId": "16061c42-6dea-4596-b93a-c8a8b1c27416"
+      },
+      "processCount": 5,
+      "processBinaryHashes": [
+        "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f"
+      ],
+      "processExitCodes": {
+        "main-http": -9,
+        "restart-host": 0,
+        "race-seed": 0,
+        "worker-a": 0,
+        "worker-b": 0
+      },
+      "noPublisherWarnings": 5,
+      "staleFenceWarning": true,
+      "mongoTranscriptRows": 49
+    },
+    "acceptanceGuard": {
+      "addedPhysicalIdEquality": false
+    }
+  }
+}

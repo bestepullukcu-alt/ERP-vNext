@@ -1,0 +1,8 @@
+surface	culture	requested_width	window_innerWidth	devicePixelRatio	document_scrollWidth	document_overflow	contained_behavior	verdict
+list	ar	390	390	1	390	false	48px responsive-control column visible; data columns collapse; action is reachable in responsive modal	PASS with shared L10n finding
+list	en	768	768	1	768	false	columns 0-5 visible; action column collapses into responsive control	PASS
+create	en	390	390	1	390	false	cards stack; all approved inputs remain reachable	PASS
+create	en	768	768	1	768	false	736px cards; no document overflow	PASS
+create	ar	390	390	1	390	false	RTL form and repeatable line surface render without document overflow	PASS
+detail	en	390	390	1	390	false	587px line table is contained by 326px overflow-auto wrapper	PASS
+detail	en	768	768	1	768	false	704px line table fits 704px wrapper	PASS

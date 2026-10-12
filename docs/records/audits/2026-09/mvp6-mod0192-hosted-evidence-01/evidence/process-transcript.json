@@ -1,0 +1,62 @@
+[
+  {
+    "name": "main-http",
+    "appName": "mod192-host-main",
+    "port": 56392,
+    "pid": 56954,
+    "startedAt": 1790113906.792143,
+    "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f",
+    "log": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/main-http.log",
+    "healthyAt": 1790113909.328203,
+    "exitCode": -9,
+    "stoppedAt": 1790113939.2208261
+  },
+  {
+    "name": "restart-host",
+    "appName": "mod192-host-restart",
+    "port": 56392,
+    "pid": 57016,
+    "startedAt": 1790113939.223329,
+    "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f",
+    "log": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/restart-host.log",
+    "healthyAt": 1790113940.1191401,
+    "exitCode": 0,
+    "stoppedAt": 1790114000.195891
+  },
+  {
+    "name": "race-seed",
+    "appName": "mod192-race-seed",
+    "port": 56392,
+    "pid": 57108,
+    "startedAt": 1790114000.198603,
+    "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f",
+    "log": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/race-seed.log",
+    "healthyAt": 1790114001.092221,
+    "exitCode": 0,
+    "stoppedAt": 1790114001.409036
+  },
+  {
+    "name": "worker-a",
+    "appName": "mod192-worker-a",
+    "port": 56392,
+    "pid": 57119,
+    "startedAt": 1790114002.1780689,
+    "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f",
+    "log": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/worker-a.log",
+    "healthyAt": 1790114002.849226,
+    "exitCode": 0,
+    "stoppedAt": 1790114053.563634
+  },
+  {
+    "name": "worker-b",
+    "appName": "mod192-worker-b",
+    "port": 56393,
+    "pid": 57133,
+    "startedAt": 1790114034.617486,
+    "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f",
+    "log": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/worker-b.log",
+    "healthyAt": 1790114035.50638,
+    "exitCode": 0,
+    "stoppedAt": 1790114053.585811
+  }
+]

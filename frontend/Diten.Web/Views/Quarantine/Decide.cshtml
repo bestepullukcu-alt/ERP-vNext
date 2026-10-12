@@ -1,0 +1,172 @@
+@model string?
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Quarantine.Decide.PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0175 Q5 — Karar Ver (QUARANTINEDECIDE, pack §11.3; mockup "Karar ver" panel as a page, §21.3 #7). Two steps:
+      1 "Karar"           — the form (single: Serbest Bırak / Reddet / Bloke Et cards; "Kısmi karar": two lines whose sum = the
+                            hold quantity, KQ-A; Bloke nedeni; Gerekçe ≥ 10; CoA confirmation for a release; "Yeni yeniden test
+                            tarihi" for a retest hold, §21.3 #11). "İleri: Elektronik imza" creates the DRAFT (createDecision —
+                            nothing moves).
+      2 "Elektronik imza" — the server's draft as summary + MOD-0022 dialog (ESign.open, module quarantine, subjectType
+                            quarantine.decision, actionCode = the draft's esignActionCode; CT-D17). Policy off → "politika kapalı ·
+                            bu adım atlanır" and the draft goes unsigned. "İmzala ve gönder" = submitDecision → 202 "Onay bekliyor"
+                            (§21.3 #1: the stock moves only after approval).
+    0175 draws no password field (KQ-G). UAS-001 — nothing without quarantine.decisions.create.
+*@
+@if (!Perms.Has("quarantine.decisions.create"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Quarantine.Decide.PageTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Quarantine.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Quarantine.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Quarantine.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Quarantine.Common.Company.Unavailable"].Value;
+}
+
+<partial name="~/Views/Quarantine/_Header.cshtml" model="@("QUARANTINEDECIDE")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready && Model is not null)
+{
+    <div id="qr-decide" data-hold-id="@Model">
+        <div class="alert alert-danger d-none" id="qr-page-error" role="alert"></div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="mb-1" id="qr-p-title">@Localizer["Quarantine.Decide.PageTitle"]</h5>
+                <div class="fw-medium" id="qr-p-name"></div>
+                <div class="text-muted small" id="qr-p-sub"></div>
+            </div>
+        </div>
+
+        <partial name="~/Views/Quarantine/_Stepper.cshtml" model="@("Quarantine.Decide.Step.Decision")" />
+
+        <form id="qr-decide-form" novalidate>
+            <div class="alert alert-danger d-none" id="qr-form-error" role="alert"></div>
+            <div class="card mb-4" id="qr-step1">
+                <div class="card-body">
+                    <div class="alert alert-primary d-flex gap-2 py-2 small d-none" id="qr-foureyes" role="note"><i class="bx bx-group mt-1"></i><span></span></div>
+
+                    <div class="d-flex justify-content-between align-items-start gap-3 border rounded p-3 mb-4">
+                        <div>
+                            <div class="fw-medium">@Localizer["Quarantine.Decide.Partial.Label"]</div>
+                            <small class="text-muted">@Localizer["Quarantine.Decide.Partial.Hint"]</small>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="qr-partial" aria-label="@Localizer["Quarantine.Decide.Partial.Label"]" />
+                        </div>
+                    </div>
+
+                    <div id="qr-single" class="mb-4">
+                        <label class="form-label">@Localizer["Quarantine.Decide.Field.Decision"] <span class="text-danger">*</span></label>
+                        <div class="d-flex flex-column gap-2" role="radiogroup" id="qr-options">
+                            @foreach (var (code, icon, color, to) in new[] { ("Release", "bx-check-circle", "text-success", "AVAILABLE"), ("Reject", "bx-x-circle", "text-danger", "BLOCKED"), ("Block", "bx-block", "text-warning", "BLOCKED") })
+                            {
+                                <label class="border rounded p-3 d-flex align-items-start gap-3 qr-option" data-decision="@code">
+                                    <input class="form-check-input mt-1" type="radio" name="qr-decision" value="@code" />
+                                    <i class="bx @icon @color fs-4"></i>
+                                    <span class="flex-grow-1">
+                                        <span class="fw-medium d-flex flex-wrap align-items-center gap-2">@Localizer["Quarantine.LineDecision." + code] <i class="bx bx-right-arrow-alt text-muted"></i><span class="badge @(to == "AVAILABLE" ? "bg-label-success" : "bg-label-danger")">@Localizer["Quarantine.Status." + to]</span></span>
+                                        <small class="text-muted d-block" data-desc>@Localizer["Quarantine.Decide.Option." + code]</small>
+                                    </span>
+                                </label>
+                            }
+                        </div>
+                        <div class="invalid-feedback d-block" data-err="decision"></div>
+                    </div>
+
+                    <div id="qr-lines" class="mb-4 d-none">
+                        <label class="form-label">@Localizer["Quarantine.Decide.Field.Lines"] <span class="text-danger">*</span></label>
+                        @for (var n = 1; n <= 2; n++)
+                        {
+                            <div class="row g-2 align-items-center mb-2" data-line="@n">
+                                <div class="col-auto"><span class="badge rounded-pill bg-label-secondary">@n</span></div>
+                                <div class="col-12 col-sm">
+                                    <select class="form-select" data-line-decision aria-label="@Localizer["Quarantine.Decide.Field.Decision"] @n">
+                                        <option value="">@Localizer["Quarantine.Decide.Lines.Pick"]</option>
+                                        <option value="Release">@Localizer["Quarantine.Decide.Lines.Release"]</option>
+                                        <option value="Reject">@Localizer["Quarantine.Decide.Lines.Reject"]</option>
+                                        <option value="Block">@Localizer["Quarantine.Decide.Lines.Block"]</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <div class="input-group">
+                                        <input type="number" min="0" step="any" class="form-control" data-line-qty inputmode="decimal" aria-label="@Localizer["Quarantine.Col.Quantity"] @n" />
+                                        <span class="input-group-text" data-uom></span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div class="d-flex justify-content-between small border-top pt-2">
+                            <span class="text-muted">@Localizer["Quarantine.Decide.Lines.Sum"]</span><span class="fw-medium" id="qr-sum"></span>
+                        </div>
+                        <div class="invalid-feedback d-block" data-err="lines"></div>
+                    </div>
+
+                    <div class="mb-4 d-none" id="qr-blockreason-wrap">
+                        <label class="form-label" for="qr-blockreason">@Localizer["Quarantine.Field.BlockReason"] <span class="text-danger">*</span></label>
+                        <select id="qr-blockreason" class="form-select"><option value="">@Localizer["Quarantine.Common.Select"]</option></select>
+                        <div class="invalid-feedback d-block" data-err="blockReason"></div>
+                    </div>
+
+                    <div class="mb-4 d-none" id="qr-retest-wrap">
+                        <label class="form-label" for="qr-retest">@Localizer["Quarantine.Decide.Field.NewRetest"] <span class="text-danger">*</span></label>
+                        <input type="date" id="qr-retest" class="form-control" />
+                        <small class="text-muted">@Localizer["Quarantine.Decide.NewRetest.Hint"]</small>
+                        <div class="invalid-feedback d-block" data-err="retest"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label d-flex justify-content-between" for="qr-reason">
+                            <span>@Localizer["Quarantine.Field.Reason"] <span class="text-danger">*</span></span>
+                            <small class="text-muted" data-counter="qr-reason"></small>
+                        </label>
+                        <textarea id="qr-reason" class="form-control" rows="3" maxlength="1000"></textarea>
+                        <div class="invalid-feedback d-block" data-err="reason"></div>
+                    </div>
+
+                    <div class="mb-0 d-none" id="qr-coa-wrap">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="qr-coa" />
+                            <label class="form-check-label" for="qr-coa">@Localizer["Quarantine.Decide.Field.Coa"] <span class="text-muted small font-monospace" id="qr-coa-ref"></span></label>
+                        </div>
+                        <div class="invalid-feedback d-block" data-err="coa"></div>
+                    </div>
+                </div>
+            </div>
+
+            <partial name="~/Views/Quarantine/_DecisionSummary.cshtml" />
+
+            <div class="d-flex flex-wrap justify-content-end gap-2 mb-4">
+                <button type="button" class="btn btn-label-secondary d-none" id="qr-back"><i class="bx bx-chevron-left me-1"></i>@Localizer["Quarantine.Common.Back"]</button>
+                <a class="btn btn-label-secondary" id="qr-cancel" href="/Quarantine/Details/@Model">@Localizer["Quarantine.Common.Cancel"]</a>
+                <button type="submit" class="btn btn-primary" id="qr-primary">@Localizer["Quarantine.Decide.Button.Next"]</button>
+            </div>
+        </form>
+    </div>
+    <form id="qr-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineActions.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineL10n.cshtml" />
+    @if (company.Ready && Model is not null)
+    {
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+        <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Quarantine/decide.js" asp-append-version="true"></script>
+    }
+}

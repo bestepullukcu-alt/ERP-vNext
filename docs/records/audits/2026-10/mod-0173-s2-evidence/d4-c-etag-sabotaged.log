@@ -1,0 +1,11 @@
+### D4-c ETag (If-Match version) check on release — SABOTAGED
+-            ReservationScope() & f.Eq(x => x.Id, reservationId) & f.Eq(x => x.Status, ReservationStatus.Active)
+-                & f.Eq(x => x.Version, expectedVersion),
++            ReservationScope() & f.Eq(x => x.Id, reservationId) & f.Eq(x => x.Status, ReservationStatus.Active), // SABOTAGE D4-c: ETag (version) check removed
+  Başarısız Diten.InventoryService.Tests.Api.ReservationTests.AC_R6_release_with_the_right_ETag_restores_available_stale_ETag_409_missing_400_other_tenant_404 [54 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Values differ
+  Başarısız Diten.InventoryService.Tests.Api.ReservationTests.A_consumed_reservation_changes_version_so_its_creation_ETag_is_stale [82 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Values differ
+Başarısız! - Başarısız:     2, Başarılı:    42, Atlanan:     0, Toplam:    44, Süre: 16 s - Diten.InventoryService.Tests.dll (net8.0)

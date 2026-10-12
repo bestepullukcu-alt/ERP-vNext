@@ -1,0 +1,10 @@
+dependency	current_disposition	exact_binding	successor_action
+Auth/Platform independent runtime VER	REWORK; successor pending	patch 6559c94835814ab65dc50a05cca32db905e31e637f9a15aeeeb033e9850c83e6; manifest 84ce27833951bfed92edf46c02a0ee7c8934d1c6eff006e665d3ddaf09bf8b23; report SHA256 1fdeeefb654ae85ee9671dd60a2e0056be64c30e5161f0cb0f9599140b993a80	Wait for approved/applied rework successor and separate independent runtime PASS
+Auth GAP-CARRIER-AUTH-LE-01	REWORK reproduced	correct internal key reached resolver then HTTP 400 TenantId unresolved	Successor must establish trusted tenant context without client-selected LE authority
+Auth GAP-CARRIER-AUTH-LE-02	REWORK source-confirmed	no authorized server-to-server MDM validation channel	Successor must supply narrow authorized MDM validation seam
+Carrier final UI source	PASS bound	manifest 3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c; patch 57f90dadedd6e2304e3775fd1ea0bd7def29ad9d265ccbbeb892afdc04ba1adb	Rehash 21/21 at successor start; do not use e96578d0 as final
+Carrier L10n	PASS inherited on final v3	70/70 resource matrix; browser console 0 warnings	Do not rerun absent source drift
+Carrier responsive 768/390	PASS inherited on final v3	four exact measurements in quality-close RESPONSIVE.tsv	Do not rerun absent source/browser-layout drift
+Shared Search localization	OPEN shared-owner scope	unapplied patch 2abe82415f68870f8d714af093473f497bcb1f210f970e491c32d288b1440074	Not an Auth-successor start blocker; preserve separate owner gate
+Real Auth Carrier E2E	OPEN; waiting for Auth rework successor	updated successor matrix in this package	Run only after Auth successor independent PASS
+Durable screenshot PNG	OPEN; unsupported by established permitted mechanism	BROWSER-ARTIFACT-CAPABILITY.md	Use only a future explicit browser screenshot artifact-save API

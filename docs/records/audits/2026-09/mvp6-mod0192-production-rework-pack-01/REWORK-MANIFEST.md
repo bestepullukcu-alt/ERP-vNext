@@ -1,0 +1,10 @@
+# Exact rework candidate manifest
+
+| Finding | Owned path | Baseline SHA256 | Proposed target SHA256 | Artifact/state |
+|---|---|---|---|---|
+| X01 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityRepository.cs` | `74153ee83d4f20c7b464558467025d5a58d7e594607c2b5e76a577d9f9c2d616` | `6bf026d3bfaeddf37ff4e461efedfa977a07765a413d5f363fcbdc80edfe0364` | `X01-PROPOSED-UNAPPLIED.patch`; disposable applicability only |
+| X01 | `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs` | `576bf4001c0573f9884012c9aaaffeb57ab4e658b4eddc3be16de25a7acd98b8` | `aba0942905b4c035820335d403f5b835d7b431e48ef7fa054d3d150670950d4d` | same patch; flips definite cut oracle; more negative tests required in DEV |
+| X07 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs` | `2912a032deb172909cf7ae8f0730f0c412b0f05239c32aba0b3cf06794517b78` | `feaf82f2e15f6ebec9b8cfc6727d738f7d3889cbacdb0a0e77eb343dde8b0c7a` | Existing `BLOCKED-CapacityLeaseStore.patch` SHA256 `94f65a697acf533f4f1b3ea49e5d3c18e962426686873ec19961162f1ae50730`; unapplied; possible exactness addendum would change target hash |
+| Duplicate name | `CapacityRepository.cs` plus CapacityPlans concurrency/contract tests | Repository baseline above; test baselines are in `SOURCE-43-CHECK.tsv` | **UNSET until contract-owner decision and versioned successor** | No production patch or target hash manufactured. Wire delta is `CONTRACT-DELTA.md`; published contract unchanged. |
+
+X01 patch intentionally touches the three Capacity POST handlers' common failure classification but no other feature. It is a proposed source/test diff and has **not** been built. X07 existing patch is referenced, not reproduced. Exact approved DEV patch will require fresh baseline and target hash recalculation. `Program.cs` and the other 40+ source/test inputs are protected by the manifest.

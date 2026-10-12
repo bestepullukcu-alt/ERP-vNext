@@ -1,0 +1,8 @@
+21:29:40 start B--web-tests
+21:29:51 end B--web-tests rc=1
+21:29:51 start B--supplychain-tests
+21:34:12 end B--supplychain-tests rc=1
+21:34:12 start A--web-tests
+21:34:21 end A--web-tests rc=0
+21:34:21 start A--supplychain-tests
+21:38:56 end A--supplychain-tests rc=1

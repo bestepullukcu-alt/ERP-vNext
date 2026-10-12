@@ -1,0 +1,4 @@
+step	command	exit	result
+tool_install	python3 -m pip install --target /private/tmp/mvp6-loads-root-ver-tooldeps openapi-spec-validator==0.7.2 PyYAML==6.0.3 jsonschema==4.25.1	0	Disposable only; repository dependencies unchanged
+independent_ver	MVP6_LOADS_ROOT_VER_WORK=/private/tmp/mvp6-loads-root-amendment-independent-ver-01-20260924 MVP6_OAS31_TOOLDEPS=/private/tmp/mvp6-loads-root-ver-tooldeps python3 verify_candidate.py	0	Verifier completed; semantic verdict REWORK from annex consistency finding
+consumer_scan	rg exact lifecycleCorrelationId and shipment-bundle/loads references outside docs/bin/obj	0	raw/consumer-reference-scan-focused.txt

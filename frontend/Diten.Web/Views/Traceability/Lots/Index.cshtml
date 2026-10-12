@@ -1,0 +1,78 @@
+@using Diten.Web.Views.Traceability.Lots
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Page.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0174 P3 — Lot Gezgini (pack §11.1/§11.3): Golden Reference Slim, server mode, proxy profile (/Lots/api →
+    TRACE listLots, includeStock=true — "Eldeki Stok" is the ledger's per-lot position, K-A).
+
+    UAS-001 — nothing below is drawn without trace.lots.read: no heading, no filter, no empty table, no button. No redirect.
+    ⚠ Display only: InventoryService's [HasPermission] stays the authority (UAS-001 §4). Every button is looked up in the
+    pack §14 table (TraceActions) and drawn only for a holder of its key — absent, not disabled.
+*@
+@if (!Perms.Has("trace.lots.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Page.Title"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Company.Label"].Value;
+    company.Placeholder = Localizer["Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Company.Required"].Value;
+    company.UnavailableText = Localizer["Company.Unavailable"].Value;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Traceability/Lots/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["Page.Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["Page.Description"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="lots-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Names.Unavailable"]</div>
+    <div id="lots-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* No selection column, no bulk bar, no import / export (pack §11.2 FU01 rules). *@
+    @* Contract markers are rendered by _DataTable.cshtml: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table id="dt-lots" data-dt-standard="v2"> *@
+    <partial name="~/Views/Traceability/Lots/_DataTable.cshtml" />
+
+    @if (Perms.Has("trace.lots.change-status"))
+    {
+        @* The status dialog's post is [ValidateAntiForgeryToken]; the token is issued only to a user who may change a status. *@
+        <form id="lots-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+        <partial name="~/Views/Traceability/Lots/_StatusDialog.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Traceability/Lots/_TraceActions.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Traceability/Lots/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Traceability/Lots/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Traceability/trace-ui.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Traceability/Lots/status.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Traceability/Lots/index.js" asp-append-version="true"></script>
+    }
+}

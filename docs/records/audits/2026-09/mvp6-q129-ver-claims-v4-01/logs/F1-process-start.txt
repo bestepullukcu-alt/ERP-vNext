@@ -1,0 +1,8 @@
+5856 pid 55111 started Sun 27 Sep 16:30:24 2026    
+5857 pid 55184 started Sun 27 Sep 16:30:31 2026    
+5859 pid 55299 started Sun 27 Sep 16:30:51 2026    
+5861 pid 55354 started Sun 27 Sep 16:30:53 2026    
+5800 pid 55420 started Sun 27 Sep 16:30:58 2026    
+5801 pid 55479 started Sun 27 Sep 16:31:02 2026    
+27 Sep 16:30:12 2026 /Users/natig/mvp6-env/q129/ek-work/source/frontend/Diten.Web/bin/Release/net8.0/Diten.Web.dll
+27 Sep 16:29:24 2026 /Users/natig/mvp6-env/q129/ek-work/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll

@@ -1,0 +1,31 @@
+--- a/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
++++ b/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+@@ -362,6 +362,9 @@
+     [InlineData("traversal")]
+     [InlineData("wildcard")]
+     [InlineData("symlink")]
++    [InlineData("roadmap-neighbor")]
++    [InlineData("roadmap-wrong-hash")]
++    [InlineData("roadmap-active-tool")]
+     [InlineData("empty-inputs")]
+     [InlineData("missing-cs-presence")]
+     [InlineData("missing-ps1-presence")]
+@@ -417,6 +420,18 @@
+                 var target = Path.Combine(f.Root, f.Target);
+                 var contents = File.ReadAllText(target); File.Delete(target);
+                 f.Write("linked-target.txt", contents); File.CreateSymbolicLink(target, Path.Combine(f.Root, "linked-target.txt")); break;
++            case "roadmap-neighbor":
++            case "roadmap-wrong-hash":
++            case "roadmap-active-tool":
++                var recovery = f.Record["sealedInputs"]!.AsArray().First(x =>
++                    x!["path"]!.GetValue<string>().StartsWith("docs/roadmap/", StringComparison.Ordinal))!;
++                if (scenario == "roadmap-neighbor") recovery["path"] = "docs/roadmap/plans/unapproved-neighbor.json";
++                if (scenario == "roadmap-wrong-hash") recovery["sha256"] = new string('0', 64);
++                if (scenario == "roadmap-active-tool") recovery["kind"] = "active-tool";
++                f.Approve();
++                var pathError = Assert.ThrowsAny<Exception>(() => ReadAuthority(f.Root, syntheticFixture: true));
++                Assert.Contains("sealed input must be in records or an exact approved recovery snapshot", pathError.Message);
++                return;
+             case "empty-inputs":
+                 Directory.Delete(f.Root, true); Directory.CreateDirectory(f.Root); break;
+             case "missing-cs-presence": File.Delete(Path.Combine(f.Root, "witness.cs")); break;

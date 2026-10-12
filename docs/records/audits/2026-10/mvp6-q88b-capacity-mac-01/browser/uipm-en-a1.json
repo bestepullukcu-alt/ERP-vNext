@@ -1,0 +1,632 @@
+{
+  "phase": "uipm",
+  "locale": "en",
+  "startedAt": "2026-10-01T13:16:02.807Z",
+  "web": "http://127.0.0.1:5501",
+  "playwright": "1.59.1",
+  "cases": {
+    "UI-PM-05": {
+      "result": "PASS",
+      "during": [
+        {
+          "section": "summary",
+          "display": "block",
+          "height": 145
+        },
+        {
+          "section": "scenario",
+          "display": "block",
+          "height": 145
+        },
+        {
+          "section": "evaluation",
+          "display": "none",
+          "height": 0
+        }
+      ],
+      "duringEvaluationLoad": [
+        {
+          "section": "evaluation",
+          "display": "block",
+          "height": 161
+        }
+      ],
+      "after": [
+        {
+          "section": "summary",
+          "display": "none",
+          "height": 0
+        },
+        {
+          "section": "scenario",
+          "display": "none",
+          "height": 0
+        },
+        {
+          "section": "evaluation",
+          "display": "none",
+          "height": 0
+        }
+      ],
+      "faked": "delay only: GETs delayed 3 s in the browser, real responses",
+      "evidence": [
+        "png/uipm05-skeleton-1-en.png",
+        "png/uipm05-skeleton-2-evaluation-en.png",
+        "png/uipm05-loaded-en.png"
+      ]
+    },
+    "UI-PM-12": {
+      "result": "PASS",
+      "out": {
+        "summary": {
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "message": "The service is temporarily unavailable. Try again; the same request will be sent.",
+          "retryVisible": true,
+          "rawErrorInPage": false,
+          "retryRequest": true,
+          "retryStatus": 200,
+          "after": {
+            "empty": false,
+            "skeleton": false,
+            "error": false,
+            "content": true
+          }
+        },
+        "scenario": {
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "message": "The service is temporarily unavailable. Try again; the same request will be sent.",
+          "retryVisible": true,
+          "rawErrorInPage": false,
+          "retryRequest": true,
+          "retryStatus": 200,
+          "after": {
+            "empty": false,
+            "skeleton": false,
+            "error": false,
+            "content": true
+          }
+        },
+        "scenario-malformed": {
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "message": "The service is temporarily unavailable. Try again; the same request will be sent.",
+          "retryVisible": true,
+          "rawErrorInPage": false,
+          "retryRequest": true,
+          "retryStatus": 200,
+          "after": {
+            "empty": false,
+            "skeleton": false,
+            "error": false,
+            "content": true
+          }
+        },
+        "evaluation": {
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "message": "The service is temporarily unavailable. Try again; the same request will be sent.",
+          "retryVisible": true,
+          "rawErrorInPage": false,
+          "retryRequest": true,
+          "retryStatus": 200,
+          "after": {
+            "empty": false,
+            "skeleton": false,
+            "error": false,
+            "content": true
+          }
+        }
+      },
+      "faked": "plan GET 503, scenario GET 500, scenario GET 200 malformed, evaluation GET 500 via route.fulfill; Retry hits the real service",
+      "evidence": [
+        "png/uipm12-summary-error-en.png",
+        "png/uipm12-summary-after-retry-en.png",
+        "png/uipm12-scenario-error-en.png",
+        "png/uipm12-scenario-after-retry-en.png",
+        "png/uipm12-scenario-malformed-error-en.png",
+        "png/uipm12-scenario-malformed-after-retry-en.png",
+        "png/uipm12-evaluation-error-en.png",
+        "png/uipm12-evaluation-after-retry-en.png"
+      ]
+    },
+    "UI-PM-09": {
+      "result": "PASS",
+      "out": {
+        "createPlan-escape": {
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": "btnOpenCreatePlan",
+            "tag": "BUTTON",
+            "inCreatePlan": false,
+            "inScenario": false,
+            "inEvaluate": false
+          },
+          "want": "btnOpenCreatePlan"
+        },
+        "createPlan-close-button": {
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": "btnOpenCreatePlan",
+            "tag": "BUTTON",
+            "inCreatePlan": false,
+            "inScenario": false,
+            "inEvaluate": false
+          },
+          "want": "btnOpenCreatePlan"
+        },
+        "offcanvasCreateScenario": {
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": "btnOpenCreateScenario",
+            "tag": "BUTTON",
+            "inCreatePlan": false,
+            "inScenario": false,
+            "inEvaluate": false
+          },
+          "want": "btnOpenCreateScenario"
+        },
+        "offcanvasEvaluate": {
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": "btnOpenEvaluate",
+            "tag": "BUTTON",
+            "inCreatePlan": false,
+            "inScenario": false,
+            "inEvaluate": false
+          },
+          "want": "btnOpenEvaluate"
+        }
+      },
+      "scope": "r2 / OD-F-Q145-1: stable toolbar/page openers (Create plan, Create scenario, Evaluate); no row-menu surface",
+      "evidence": [
+        "png/uipm09-entry-en.png",
+        "png/uipm09-details-en.png"
+      ]
+    },
+    "UI-PM-10": {
+      "result": "PASS",
+      "out": {
+        "createPlan": {
+          "status": 422,
+          "errorCode": "INVALID_DEMAND_REFERENCE",
+          "panelOpen": true,
+          "focus": {
+            "id": "btnSubmitCreatePlan",
+            "tag": "BUTTON",
+            "inCreatePlan": true,
+            "inScenario": false,
+            "inEvaluate": false
+          },
+          "alert": "The demand plan reference is unknown or not published. Support reference: 9ff00d42-e66b-4fd8-b30d-038f5f28ae29",
+          "pngKey": "inCreatePlan",
+          "escapeClosed": true
+        },
+        "scenario": {
+          "status": 422,
+          "errorCode": "INVALID_CONSTRAINT_REFERENCE",
+          "panelOpen": true,
+          "focus": {
+            "id": "btnSubmitCreateScenario",
+            "tag": "BUTTON",
+            "inCreatePlan": false,
+            "inScenario": true,
+            "inEvaluate": false
+          },
+          "alert": "A constraint reference is unknown or invalid. Support reference: a1ad3ad7-03ee-49e0-854e-69339307e01b",
+          "pngKey": "inScenario",
+          "escapeClosed": true
+        },
+        "evaluate": {
+          "status": 422,
+          "errorCode": "INVALID_CONSTRAINT_REFERENCE",
+          "panelOpen": true,
+          "focus": {
+            "id": "btnSubmitEvaluate",
+            "tag": "BUTTON",
+            "inCreatePlan": false,
+            "inScenario": false,
+            "inEvaluate": true
+          },
+          "alert": "A constraint reference is unknown or invalid. Support reference: efc79ff6-4899-4ceb-a989-8b2f22ccaa93",
+          "pngKey": "inEvaluate",
+          "escapeClosed": true
+        }
+      },
+      "note": "no submit goes through window.showConfirm in this module, so all three direct submits are asserted",
+      "evidence": [
+        "png/uipm10-create-plan-422-en.png",
+        "png/uipm10-scenario-422-en.png",
+        "png/uipm10-evaluate-422-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "uipm05-skeleton-1-en.png",
+      "sha256": "37b555b207cb8375e1a99ddd5dc4beeb16a00c53aad447408897e66c8a3965c3",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:05.470Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm05-skeleton-2-evaluation-en.png",
+      "sha256": "a45fa11e4be973eac2eab2cc2c6d2d9ebd33fe1650531b3e0929a9687c29a233",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:09.130Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm05-loaded-en.png",
+      "sha256": "a9c1a93457f579438ca99223c0e0c9bdb5b8fe0fe241380503c3e4e7c6c1bba5",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:12.150Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-summary-error-en.png",
+      "sha256": "0b049b97bca254def73770d191fff6c223c028b77834e3f9924354ffe3308c15",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:14.631Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-summary-after-retry-en.png",
+      "sha256": "a9c1a93457f579438ca99223c0e0c9bdb5b8fe0fe241380503c3e4e7c6c1bba5",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:15.796Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-scenario-error-en.png",
+      "sha256": "0f903708c22a0978920a2dcb65a8f75319fc9a5d571c83d74b62c4f340ec4733",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:18.081Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-scenario-after-retry-en.png",
+      "sha256": "a9c1a93457f579438ca99223c0e0c9bdb5b8fe0fe241380503c3e4e7c6c1bba5",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:19.230Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-scenario-malformed-error-en.png",
+      "sha256": "4f7ac1854d43ea1363e491306646e2f0732c649752508ee322bbefeebd935bff",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:21.596Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-scenario-malformed-after-retry-en.png",
+      "sha256": "a9c1a93457f579438ca99223c0e0c9bdb5b8fe0fe241380503c3e4e7c6c1bba5",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:22.747Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-evaluation-error-en.png",
+      "sha256": "d3ea8a7f6abe8f3cffa2c66d9ff0f42772220f117ac985b2ab7db14639deebb5",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:25.216Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-evaluation-after-retry-en.png",
+      "sha256": "cb3c91846a22473739e6a74304bec97bac79baf580c77539f157b0796d04cd4f",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:26.365Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm09-entry-en.png",
+      "sha256": "473cc1ebb61e80e3a0e5e3228185968d904b428e5ba2fea84f37ff50f9d1c10b",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:16:30.684Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm09-details-en.png",
+      "sha256": "1f30632c8e11ae154ba938c0ed3f1bf1e3c368cc24ef402fd4f7d77eeffd6dde",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:34.378Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm10-create-plan-422-en.png",
+      "sha256": "a600b778715a0474db6252ff2a1e237bfadcf3d3b21241576fca7479cbdc2fe3",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:16:38.008Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm10-scenario-422-en.png",
+      "sha256": "d3d2034eec11644382c912c6276687914f6650f9b4dbcfafd6527815c416d325",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:41.872Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm10-evaluate-422-en.png",
+      "sha256": "d0d3f86205cb1d897e1ef6726b9af55fe8bc79b5496133151b17a14e8af82f43",
+      "url": "/SupplyChain/CapacityPlans/Details/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "capturedAt": "2026-10-01T13:16:43.876Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "uipm-en-pm12-summary",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "tag": "uipm-en-pm12-scenario",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "tag": "uipm-en-pm12-evaluation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "uipm-en-pm05",
+      "at": "2026-10-01T13:16:07.842Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm05",
+      "at": "2026-10-01T13:16:07.843Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm05",
+      "at": "2026-10-01T13:16:10.953Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/09433fde-9d74-4493-826c-fd6090d3c335",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-10-01T13:16:13.285Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 503,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-10-01T13:16:13.304Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-10-01T13:16:13.404Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/09433fde-9d74-4493-826c-fd6090d3c335",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-summary",
+      "at": "2026-10-01T13:16:14.743Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-scenario",
+      "at": "2026-10-01T13:16:16.851Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 500,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-scenario",
+      "at": "2026-10-01T13:16:16.867Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-scenario",
+      "at": "2026-10-01T13:16:18.166Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-scenario",
+      "at": "2026-10-01T13:16:18.233Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/09433fde-9d74-4493-826c-fd6090d3c335",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-scenario-malformed",
+      "at": "2026-10-01T13:16:20.257Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-scenario-malformed",
+      "at": "2026-10-01T13:16:20.271Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-scenario-malformed",
+      "at": "2026-10-01T13:16:21.684Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-scenario-malformed",
+      "at": "2026-10-01T13:16:21.753Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/09433fde-9d74-4493-826c-fd6090d3c335",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-evaluation",
+      "at": "2026-10-01T13:16:23.943Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-evaluation",
+      "at": "2026-10-01T13:16:23.949Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-evaluation",
+      "at": "2026-10-01T13:16:23.958Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/09433fde-9d74-4493-826c-fd6090d3c335",
+      "status": 500,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-evaluation",
+      "at": "2026-10-01T13:16:25.353Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/evaluations/09433fde-9d74-4493-826c-fd6090d3c335",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm09",
+      "at": "2026-10-01T13:16:30.892Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm09",
+      "at": "2026-10-01T13:16:30.907Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-10-01T13:16:37.118Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api",
+      "status": 422,
+      "errorCode": "INVALID_DEMAND_REFERENCE",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-10-01T13:16:38.733Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-10-01T13:16:38.733Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-10-01T13:16:40.917Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios",
+      "status": 422,
+      "errorCode": "INVALID_CONSTRAINT_REFERENCE",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-10-01T13:16:42.917Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/2cf33759-75ef-4570-83dd-db2f7d9030a9/scenarios/4aadf74c-684b-463f-b624-096ca493569f/evaluations",
+      "status": 422,
+      "errorCode": "INVALID_CONSTRAINT_REFERENCE",
+      "idempotencyKey": true
+    }
+  ],
+  "shellFonts": 18,
+  "endedAt": "2026-10-01T13:16:44.506Z"
+}

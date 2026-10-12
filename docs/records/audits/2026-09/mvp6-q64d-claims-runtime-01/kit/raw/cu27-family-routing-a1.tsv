@@ -1,0 +1,9 @@
+method	path	status
+GET	/api/shipment-bundle/claims	401
+POST	/api/shipment-bundle/claims	401
+POST	/api/shipment-bundle/claims/00000000-0000-4000-8000-000000000001/transition	401
+GET	/api/shipment-bundle/claimsXYZ	404
+POST	/api/shipment-bundle/claimsXYZ	404
+GET	/api/shipment-bundle/claims-archive	404
+POST	/api/shipment-bundle/claims/00000000-0000-4000-8000-000000000001/transitionXYZ	404
+GET	/api/shipment-bundle/claims/00000000-0000-4000-8000-000000000001	404

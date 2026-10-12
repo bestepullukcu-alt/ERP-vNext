@@ -1,0 +1,52 @@
+{
+  "name": "shipment-detail-authoritative",
+  "request": {
+    "bodyUtf8": null,
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "X-Correlation-Id": "59a6cf31-9090-45d1-af9d-dfd890dd5754",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111"
+    },
+    "method": "GET",
+    "path": "/api/shipment-bundle/shipments/7a95045c-2480-4a63-86ce-39c9ecda7cd1"
+  },
+  "response": {
+    "body": {
+      "actualDeliverAt": "2026-09-21T12:00:00+00:00",
+      "carrierId": null,
+      "contractVersion": "v1",
+      "lifecycleCorrelationId": "59a6cf31-9090-45d1-af9d-dfd890dd5754",
+      "lines": [
+        {
+          "inventoryReferenceId": null,
+          "itemId": "e9094a7e-b50c-433a-b5b2-a7f2faa9d528",
+          "lineNumber": "1",
+          "quantity": "10",
+          "skuId": "d25c27a5-38e3-4aea-96df-48f09e639499",
+          "uomId": "EA"
+        }
+      ],
+      "loadId": null,
+      "plannedDeliverAt": "2026-09-21T12:00:00+00:00",
+      "plannedShipAt": "2026-09-21T12:00:00+00:00",
+      "pod": null,
+      "shipToReference": "CUSTOMER-HTTP-01",
+      "shipmentId": "7a95045c-2480-4a63-86ce-39c9ecda7cd1",
+      "shipmentNumber": "SHP-7A95045C2480",
+      "sourceDocumentId": "OUT-7a95045c",
+      "sourceModule": "MOD-0178",
+      "sourceType": "WAREHOUSE_OUTBOUND",
+      "status": "Delivered",
+      "warehouseReferenceId": "WH-HTTP-01"
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 16:20:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "59a6cf31-9090-45d1-af9d-dfd890dd5754"
+    },
+    "status": 200
+  }
+}

@@ -1,0 +1,10 @@
+  Determining projects to restore...
+  Restored /Users/natig/mvp6-env/ek-work-fixes/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj (in 65 ms).
+  Restored /Users/natig/mvp6-env/ek-work-fixes/source/services/Diten.PpmService/src/Diten.PpmService.Contracts/Diten.PpmService.Contracts.csproj (in 117 ms).
+  Restored /Users/natig/mvp6-env/ek-work-fixes/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj (in 65 ms).
+  Restored /Users/natig/mvp6-env/ek-work-fixes/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/Diten.BuildingBlocks.BackgroundJobs.csproj (in 117 ms).
+  Restored /Users/natig/mvp6-env/ek-work-fixes/source/services/Diten.Platform/src/Diten.Platform.Domain/Diten.Platform.Domain.csproj (in 403 ms).
+  Restored /Users/natig/mvp6-env/ek-work-fixes/source/services/Diten.Platform/src/Diten.Platform.Application/Diten.Platform.Application.csproj (in 402 ms).
+  Restored /Users/natig/mvp6-env/ek-work-fixes/source/services/Diten.Platform/src/Diten.Platform.Infrastructure/Diten.Platform.Infrastructure.csproj (in 454 ms).
+  Restored /Users/natig/mvp6-env/ek-work-fixes/source/services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj (in 455 ms).
+  4 of 12 projects are up-to-date for restore.

@@ -1,0 +1,22 @@
+{
+  "sourceManifestSha256": "e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3",
+  "ports": {"presentationFixture": 6030, "web": 6031},
+  "database": "N/A: stateless presentation fixture; no Mongo connection and no operational 27017 access",
+  "localization": {"cultures": ["en", "tr", "fr", "es", "zh", "ar", "ru"], "resourceKeysPerCulture": 63, "missingOrEmpty": 0, "arabic": {"lang": "ar", "dir": "rtl"}},
+  "responsive": {
+    "list390": {"innerWidth":390,"devicePixelRatio":1,"documentScrollWidth":390,"overflow":false,"responsiveControlWidth":48,"actionViaResponsiveModal":true},
+    "list768": {"innerWidth":768,"devicePixelRatio":1,"documentScrollWidth":768,"overflow":false,"visibleColumns":[0,1,2,3,4,5],"collapsedColumns":[6]},
+    "create390": {"innerWidth":390,"devicePixelRatio":1,"documentScrollWidth":390,"overflow":false},
+    "create768": {"innerWidth":768,"devicePixelRatio":1,"documentScrollWidth":768,"overflow":false,"cardWidth":736},
+    "detail390": {"innerWidth":390,"devicePixelRatio":1,"documentScrollWidth":390,"overflow":false,"lineTableWidth":587,"lineTableWrapperWidth":326,"wrapperOverflowX":"auto"},
+    "detail768": {"innerWidth":768,"devicePixelRatio":1,"documentScrollWidth":768,"overflow":false,"lineTableWidth":704,"lineTableWrapperWidth":704,"wrapperOverflowX":"auto"}
+  },
+  "accessibility": {
+    "filters": {"statusLabelBound":true,"sourceDocumentLabelBound":true,"nativeApplyResetButtons":true},
+    "create": {"staticInputLabelsBound":7,"repeatableLineInputs":6,"repeatableLineAccessibleLabels":0,"errorSummaryRole":"alert","errorSummaryTabindex":-1,"invalidSubmitFocus":"formShipmentAlert","tabOrder":"static fields -> Add Line -> repeatable line inputs"},
+    "transition": {"keyboardEnterOpened":true,"role":"dialog","ariaModal":"true","labelledBy":"transitionTitle","focusEnteredDialog":true,"boundFields":["targetStatus","occurredAt","reasonCode","transitionNote"]},
+    "pod": {"keyboardEnterOpened":true,"role":"dialog","ariaModal":"true","labelledBy":"podTitle","boundFields":["recipientName","receivedAt","evidenceReferenceIds","podNote"]},
+    "responsiveModalArabic": {"rowLabelsLocalized":true,"heading":"Details","closeAccessibleName":"Close","localized":false}
+  },
+  "screenshots": {"inlineInspected":true,"durablePngProduced":false,"reason":"No documented permitted artifact-save/export capability"}
+}

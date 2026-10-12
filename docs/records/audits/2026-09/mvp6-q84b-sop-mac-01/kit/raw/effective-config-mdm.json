@@ -1,0 +1,68 @@
+{
+  "service": "mdm",
+  "environment": "Development",
+  "contentRoot": "/Users/natig/mvp6-env/q84b/ek-work/source/services/Diten.MdmService/src/Diten.MdmService.Api/bin/Release/net8.0",
+  "externalUrlKeysForReview": [],
+  "keys": {
+    "ASPNETCORE_ENVIRONMENT": {
+      "value": "Development",
+      "layer": "environment"
+    },
+    "DOTNET_ROLL_FORWARD": {
+      "value": "LatestPatch",
+      "layer": "environment"
+    },
+    "JwtSettings:Audience": {
+      "value": "diten-erp",
+      "layer": "environment"
+    },
+    "JwtSettings:Issuer": {
+      "value": "diten-auth-service",
+      "layer": "environment"
+    },
+    "JwtSettings:Secret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "Mongo:ConnectionString": {
+      "value": "mongodb://127.0.0.1:38994/?replicaSet=rsSopQ84b01&serverSelectionTimeoutMS=5000",
+      "layer": "environment"
+    },
+    "Mongo:DatabaseName": {
+      "value": "DitenMdm_SopQ84b01",
+      "layer": "environment"
+    },
+    "PlatformRegistration:BaseUrl": {
+      "value": "http://127.0.0.1:5857",
+      "layer": "environment"
+    },
+    "PlatformRegistration:InternalApiKey": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "PlatformRegistration:ModuleRegistrationCredentialIdentifier": {
+      "value": "ditenmdmservice",
+      "layer": "appsettings.Development.json"
+    },
+    "PlatformRegistration:ModuleRegistrationCredentialSecret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "PlatformServiceIdentity:Enabled": {
+      "value": "true",
+      "layer": "environment"
+    },
+    "PlatformServiceIdentity:KeyId": {
+      "value": "lane-SopQ84b01",
+      "layer": "environment"
+    },
+    "PlatformServiceIdentity:Secret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "urls": {
+      "value": "http://127.0.0.1:5859",
+      "layer": "command-line"
+    }
+  }
+}

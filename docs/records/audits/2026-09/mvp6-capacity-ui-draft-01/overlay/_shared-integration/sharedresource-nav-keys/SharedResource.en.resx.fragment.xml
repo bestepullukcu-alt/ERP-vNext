@@ -1,0 +1,5 @@
+<!-- Insert these rows into frontend/Diten.Web/Resources/SharedResource.en.resx (integration owner, SR-D4; values reviewed by the l10n agent). -->
+<fragment>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>Capacity Planning</value></data>
+  <data name="Nav.Page.CAPACITY_PLANS" xml:space="preserve"><value>Capacity Plans</value></data>
+</fragment>

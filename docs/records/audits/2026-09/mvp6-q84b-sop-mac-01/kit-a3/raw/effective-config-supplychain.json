@@ -1,0 +1,84 @@
+{
+  "service": "supplychain",
+  "environment": "Development",
+  "contentRoot": "/Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0",
+  "externalUrlKeysForReview": [],
+  "keys": {
+    "AllowedHosts": {
+      "value": "*",
+      "layer": "appsettings.json"
+    },
+    "ASPNETCORE_ENVIRONMENT": {
+      "value": "Testing",
+      "layer": "environment"
+    },
+    "DOTNET_ROLL_FORWARD": {
+      "value": "LatestPatch",
+      "layer": "environment"
+    },
+    "JwtSettings:Audience": {
+      "value": "diten-erp",
+      "layer": "environment"
+    },
+    "JwtSettings:Issuer": {
+      "value": "diten-auth-service",
+      "layer": "environment"
+    },
+    "JwtSettings:Secret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "Logging:LogLevel:Default": {
+      "value": "Information",
+      "layer": "appsettings.json"
+    },
+    "Logging:LogLevel:Microsoft.AspNetCore": {
+      "value": "Warning",
+      "layer": "appsettings.json"
+    },
+    "Mongo:ConnectionString": {
+      "value": "mongodb://127.0.0.1:38994/?replicaSet=rsSopQ84b01&serverSelectionTimeoutMS=5000",
+      "layer": "environment"
+    },
+    "Mongo:DatabaseName": {
+      "value": "DitenSupplyChain_SopQ84b01",
+      "layer": "environment"
+    },
+    "PlatformRegistration:BaseUrl": {
+      "value": "http://127.0.0.1:5857",
+      "layer": "environment"
+    },
+    "PlatformRegistration:InternalApiKey": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "Sandop:DemandFixtures:0:Checksum": {
+      "value": "sha256:q84b-demand-01",
+      "layer": "environment"
+    },
+    "Sandop:DemandFixtures:0:LegalEntityId": {
+      "value": "134756de-5dbe-44da-bf9d-d7cf19b0ea78",
+      "layer": "environment"
+    },
+    "Sandop:DemandFixtures:0:PlanId": {
+      "value": "DP-Q84B-01",
+      "layer": "environment"
+    },
+    "Sandop:DemandFixtures:0:Published": {
+      "value": "true",
+      "layer": "environment"
+    },
+    "Sandop:DemandFixtures:0:TenantId": {
+      "value": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+      "layer": "environment"
+    },
+    "Sandop:DemandFixtures:0:Version": {
+      "value": "1",
+      "layer": "environment"
+    },
+    "urls": {
+      "value": "http://127.0.0.1:5861",
+      "layer": "command-line"
+    }
+  }
+}

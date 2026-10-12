@@ -1,0 +1,14 @@
+{
+  "tempRoot": "/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-integration-preflight-1fvb4smu",
+  "mod0190Rows": 379,
+  "capacityRows": 43,
+  "intersection": 0,
+  "programPreimage": "a2a216be15d07fa656f5fd7da43711aa989c4a8d52cd51c58e8ded48d5d735e5",
+  "programTarget": "50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0",
+  "testPreimage": "91999330faf2a50f5ff2cda3595506ecded50d5b87ffb7bf393dd655f71e51db",
+  "testTarget": "2c133ac1b6b431db074b0054b0337bbc3957fce5869c7aca9291454a53681c43",
+  "selectedRows": 422,
+  "selectedBytes": 74155,
+  "selectedManifestSha256": "cdc6228aa3d215f34f2f2f9d5b784cf57ac20b6eb8f2c2f26bdcace9dcd4d76c",
+  "status": "PREFLIGHT_PASS_AUTHORITY_BLOCKED"
+}

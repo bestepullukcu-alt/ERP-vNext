@@ -1,0 +1,12 @@
+{
+  "audience": "diten-erp",
+  "carrierPermissions": [
+    "supplychain.carriers.read",
+    "supplychain.carriers.create",
+    "supplychain.carriers.status.change"
+  ],
+  "issuer": "diten-auth-service",
+  "legal_entity_id": "10000000-0000-0000-0000-000000000001",
+  "source": "diagnostic-resigned-from-real-admin-token; NOT Auth-issued",
+  "tenant_id": "00000000-0000-0000-0000-000000000001"
+}

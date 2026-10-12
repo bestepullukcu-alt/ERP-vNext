@@ -1,0 +1,13 @@
+kind	value	sha256_or_result
+branch_head	feature/mvp6-logistics / 4a8d4d4b339528a88e6220fb8402e5a2c771136c	verified
+candidate_patch	mvp6-shipment-root-r2-emission-rework-01/candidate.patch	2d44f0d3b61b29c5bf34437fa12564d29319fd64beaded366f443b08b1a0319e
+baseline_overlay	mvp6-shipment-integration-rework-exec-01/final-source-overlay.tar.gz	8aba3d890f160cbed88eecc284cdcba78eda03b6b0955cf3061199a62171112e
+applied_source_archive	mvp6-shipment-root-r2-emission-exec-01/applied-three-file-source.tar.gz	c3fba911952951eef3be80cf591bad99d543acd53bbde0badc7e317dacfb11f4
+final_source_manifest	FINAL-SOURCE-MANIFEST.tsv	7b6d2f6a679275b74ab88989f5ca943b139e7f1a365b5ab99d6f1285ceb1acae
+runtime	/Users/natig/.dotnet/dotnet SDK 8.0.417 / runtime 8.0.23	native net8.0
+restore	fresh isolated source	PASS
+build	Release --no-restore -m:1 /nr:false	PASS; 0 warnings; 0 errors
+binary	Diten.SupplyChainService.Api.dll	754329d79a2aa6b94430acc4b81f9bf60204229e45bfb3b4a0e4e436e6104333
+restart_process	PID 46776 /Users/natig/.dotnet/dotnet Diten.SupplyChainService.Api.dll --urls http://127.0.0.1:5783	actual listener bound; secret environment redacted
+mongo	127.0.0.1:41132 / rsShipmentRootR2Ver01 / diten_mod0183_root_ver01	PRIMARY and isolated
+raw_evidence	raw-evidence.tar.gz	e4f1da354b385334fa284ae0ffad3a56f83717fc515c16674a920a1433885ce6

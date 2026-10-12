@@ -1,0 +1,20 @@
+suite	tree	total	passed	failed	skipped	new_failures_vs_A	new_failure_names	fixed_vs_A	trx
+web-tests	A	158	158	0	0	-	-	-	logs/test/A--web-tests.trx
+web-tests	B	216	215	1	0	1	Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Every_nav_visible_manifest_page_has_a_Nav_Page_key_in_all_seven_languages	0	logs/test/B--web-tests.trx
+supplychain-tests	A	417	416	1	0	-	-	-	logs/test/A--supplychain-tests.trx
+supplychain-tests	B	426	425	1	0	0	-	0	logs/test/B--supplychain-tests.trx
+
+# failures and added tests
+suite	tree	kind	test	note
+web-tests	B	FAILED	Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Every_nav_visible_manifest_page_has_a_Nav_Page_key_in_all_seven_languages	NEW (not failing on A)
+web-tests	B	ADDED-TESTS	58	tests present in B only (overlay tests)
+supplychain-tests	A	FAILED	Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery	baseline
+supplychain-tests	B	FAILED	Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery	also fails on A
+supplychain-tests	B	ADDED-TESTS	9	tests present in B only (overlay tests)
+
+# console summaries (dotnet test)
+tree	suite	exit	summary
+B	web-tests	1	Failed!  - Failed:     1, Passed:   215, Skipped:     0, Total:   216, Duration: 9 s - Diten.Web.Tests.dll (net8.0)
+B	supplychain-tests	1	Failed!  - Failed:     1, Passed:   425, Skipped:     0, Total:   426, Duration: 4 m 16 s - Diten.SupplyChainService.Tests.dll (net8.0)
+A	web-tests	0	Passed!  - Failed:     0, Passed:   158, Skipped:     0, Total:   158, Duration: 7 s - Diten.Web.Tests.dll (net8.0)
+A	supplychain-tests	1	Failed!  - Failed:     1, Passed:   416, Skipped:     0, Total:   417, Duration: 4 m 31 s - Diten.SupplyChainService.Tests.dll (net8.0)

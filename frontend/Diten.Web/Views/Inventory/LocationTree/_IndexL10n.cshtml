@@ -1,0 +1,35 @@
+@using Diten.Web.Views.Inventory.LocationTree
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LocationTreeIndex> Localizer
+@*
+    L-1's own words for the browser (tree, detail panel, history). The shared location vocabulary (types, statuses,
+    actions, form, dialogs, errors) comes from Views/Inventory/Locations/_IndexL10n.cshtml, rendered before this.
+*@
+<script id="locationtree-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        TooManyChildren = Localizer["TooManyChildren"].Value,
+        OpenInList = Localizer["OpenInList"].Value,
+        ShowInList = Localizer["ShowInList"].Value,
+        ChildrenCount = Localizer["ChildrenCount"].Value,
+        NoChildrenForBin = Localizer["NoChildrenForBin"].Value,
+        StockYes = Localizer["StockYes"].Value,
+        StockNo = Localizer["StockNo"].Value,
+        InactiveNote = Localizer["InactiveNote"].Value,
+        ArchivedNote = Localizer["ArchivedNote"].Value,
+        ExternalNote = Localizer["ExternalNote"].Value,
+        HistAction_Created = Localizer["HistAction_Created"].Value,
+        HistAction_Updated = Localizer["HistAction_Updated"].Value,
+        HistAction_Moved = Localizer["HistAction_Moved"].Value,
+        HistAction_StatusChanged = Localizer["HistAction_StatusChanged"].Value,
+        HistAction_BulkCreated = Localizer["HistAction_BulkCreated"].Value,
+        HistField_code = Localizer["HistField_code"].Value,
+        HistField_name = Localizer["HistField_name"].Value,
+        HistField_parentId = Localizer["HistField_parentId"].Value,
+        HistField_status = Localizer["HistField_status"].Value,
+        HistField_isStockable = Localizer["HistField_isStockable"].Value,
+        HistField_operatingMode = Localizer["HistField_operatingMode"].Value,
+        HistField_orgUnitRef = Localizer["HistField_orgUnitRef"].Value,
+        HistField_costCenterCode = Localizer["HistField_costCenterCode"].Value
+    })
+</script>

@@ -1,0 +1,3 @@
+base dc2b6dd0: routes=285 unrecognized-port routes by port={"5063":46,"5064":62,"5065":14}
+HEAD (INT-1): routes=287 unrecognized-port routes by port={"5063":46,"5064":62,"5065":14,"5066":2}
+KnownDownstreamPorts (gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs:16) = 5004,5011,5056,5057,5058,5059,5060,5061,5062

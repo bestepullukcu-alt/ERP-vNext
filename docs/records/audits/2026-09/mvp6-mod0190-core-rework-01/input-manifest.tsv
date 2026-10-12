@@ -1,0 +1,8 @@
+path	sha256
+docs/analysis/contracts/sandop-capacity.openapi.yaml	9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3
+docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md	eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda
+execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md	6a57769ced4396d2bc4228749a7e24b0daf36ce279930bb77c5dfdfe19fd0983
+docs/roadmap/plans/mvp6-mod0190-pack-phase15-close-01/OWNED-PATHS.tsv	4bfc17f4811073553f1da773748cbc3733cd554671078188d122214ee3947982
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs	7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8
+docs/records/audits/2026-09/mvp6-mod0190-core-dev-01/source-manifest.tsv	a3cc7b4729a6b688adc7b6c22d021c618382f75fd909859f4eca033340ab1934
+docs/records/audits/2026-09/mvp6-mod0190-core-ver-01/SOP-22-VER-REPORT.md	738164f9cb85dbb2ef921de1ba5f0e0299402055d155fa00eb29b2777703c8a0

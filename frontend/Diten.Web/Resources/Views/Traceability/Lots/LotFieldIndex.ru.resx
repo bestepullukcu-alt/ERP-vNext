@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Lot.BlockedDisabled" xml:space="preserve">
+    <value>Заблокирована — приход невозможен</value>
+  </data>
+  <data name="Lot.Created" xml:space="preserve">
+    <value>Партия {0} создана как черновик и выбрана.</value>
+  </data>
+  <data name="Lot.ExpiredDisabled" xml:space="preserve">
+    <value>Просрочена — приход невозможен</value>
+  </data>
+  <data name="Lot.FromSource" xml:space="preserve">
+    <value>Партия взята из исходной строки.</value>
+  </data>
+  <data name="Lot.NewLot" xml:space="preserve">
+    <value>+ Новая партия</value>
+  </data>
+  <data name="Lot.None" xml:space="preserve">
+    <value>Для этого артикула (SKU) пока нет зарегистрированных партий.</value>
+  </data>
+  <data name="Lot.Picker" xml:space="preserve">
+    <value>Партия</value>
+  </data>
+  <data name="Lot.Placeholder" xml:space="preserve">
+    <value>Выберите зарегистрированную партию</value>
+  </data>
+  <data name="Lot.RetestConfirm" xml:space="preserve">
+    <value>Подтверждаю использование этой партии, хотя дата повторного контроля прошла.</value>
+  </data>
+  <data name="Lot.RetestConfirmRequired" xml:space="preserve">
+    <value>Подтвердите использование партии с прошедшей датой повторного контроля.</value>
+  </data>
+  <data name="Lot.RetestWarn" xml:space="preserve">
+    <value>Дата повторного контроля этой партии ({0}) прошла.</value>
+  </data>
+  <data name="Lot.TypedBadge" xml:space="preserve">
+    <value>Вручную введённая партия</value>
+  </data>
+  <data name="Lot.TypedHint" xml:space="preserve">
+    <value>В переходный период вручную введённый текст партии ещё принимается (W-UI-02); предпочтительно выбрать зарегистрированную партию.</value>
+  </data>
+  <data name="Lot.Unavailable" xml:space="preserve">
+    <value>Сейчас не удаётся получить список зарегистрированных партий.</value>
+  </data>
+  <data name="Serial.Add" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="Serial.Added" xml:space="preserve">
+    <value>Добавлено серийных номеров: {0}.</value>
+  </data>
+  <data name="Serial.BadFormat" xml:space="preserve">
+    <value>Недопустимый серийный номер (от 3 до 24 символов A–Z, 0–9, -): {0}</value>
+  </data>
+  <data name="Serial.CheckUnavailable" xml:space="preserve">
+    <value>Сейчас не удаётся проверить код.</value>
+  </data>
+  <data name="Serial.Clear" xml:space="preserve">
+    <value>Очистить</value>
+  </data>
+  <data name="Serial.Counter" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Serial.CounterMore" xml:space="preserve">
+    <value>Не хватает серийных номеров: {0}.</value>
+  </data>
+  <data name="Serial.CounterOk" xml:space="preserve">
+    <value>Число серийных номеров совпадает с количеством.</value>
+  </data>
+  <data name="Serial.CounterOver" xml:space="preserve">
+    <value>Лишних серийных номеров: {0}.</value>
+  </data>
+  <data name="Serial.Duplicates" xml:space="preserve">
+    <value>Уже в списке, пропущены: {0}</value>
+  </data>
+  <data name="Serial.Empty" xml:space="preserve">
+    <value>Серийные номера ещё не добавлены.</value>
+  </data>
+  <data name="Serial.GtinSkippedWarning" xml:space="preserve">
+    <value>У товара нет GTIN в основных данных: GTIN не проверен; партия и срок годности проверены.</value>
+  </data>
+  <data name="Serial.Methods.Range" xml:space="preserve">
+    <value>Диапазон</value>
+  </data>
+  <data name="Serial.Methods.Scan" xml:space="preserve">
+    <value>Код DataMatrix (GS1)</value>
+  </data>
+  <data name="Serial.Methods.Single" xml:space="preserve">
+    <value>По одному</value>
+  </data>
+  <data name="Serial.Mismatch.Expiry" xml:space="preserve">
+    <value>В коде указан другой срок годности.</value>
+  </data>
+  <data name="Serial.Mismatch.Gtin" xml:space="preserve">
+    <value>Код относится к другому товару (GTIN).</value>
+  </data>
+  <data name="Serial.Mismatch.Lot" xml:space="preserve">
+    <value>В коде указана другая партия.</value>
+  </data>
+  <data name="Serial.RangeAdd" xml:space="preserve">
+    <value>Добавить диапазон</value>
+  </data>
+  <data name="Serial.RangeEnd" xml:space="preserve">
+    <value>Последний серийный номер</value>
+  </data>
+  <data name="Serial.RangeHint" xml:space="preserve">
+    <value>Одинаковый префикс и число цифр, не более 5 000.</value>
+  </data>
+  <data name="Serial.RangeMax" xml:space="preserve">
+    <value>Диапазон может содержать не более 5 000 серийных номеров.</value>
+  </data>
+  <data name="Serial.RangeOrder" xml:space="preserve">
+    <value>Последний серийный номер не может быть меньше первого.</value>
+  </data>
+  <data name="Serial.RangePrefix" xml:space="preserve">
+    <value>Первый и последний серийные номера должны иметь одинаковый префикс и число цифр.</value>
+  </data>
+  <data name="Serial.RangePreview" xml:space="preserve">
+    <value>Серийных номеров: {0} — {1} … {2}</value>
+  </data>
+  <data name="Serial.RangeStart" xml:space="preserve">
+    <value>Первый серийный номер</value>
+  </data>
+  <data name="Serial.ScanHint" xml:space="preserve">
+    <value>Отсканируйте или вставьте код GS1 / ITS и нажмите Enter.</value>
+  </data>
+  <data name="Serial.ScanNeedsLot" xml:space="preserve">
+    <value>Перед сканированием выберите партию.</value>
+  </data>
+  <data name="Serial.Unreadable" xml:space="preserve">
+    <value>Не удалось прочитать код.</value>
+  </data>
+  <data name="Lot.RetestRequired" xml:space="preserve">
+    <value>Дата повторного контроля этой партии прошла: подтвердите предупреждение в поле партии перед сохранением.</value>
+  </data>
+</root>

@@ -1,0 +1,70 @@
+﻿{
+    "passed":  16,
+    "failed":  0,
+    "checks":  [
+                   {
+                       "check":  "a) create through the gateway -\u003e 201 with ETag W/\"1\"",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "a) replay -\u003e 200 with the same locationId",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "b) GET -\u003e 200 with ETag W/\"1\" (ETag passes the gateway)",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "b) PATCH with the current If-Match -\u003e 200, ETag W/\"2\" (If-Match passes the gateway)",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "b) stale If-Match -\u003e 409 LOCATION_CONFLICT",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "b) missing If-Match -\u003e 400 INVALID_REQUEST",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "c) dry run -\u003e 200 preview of 8 codes (A-01-01-01 first)",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "c) dry run wrote nothing (3 locations before and after)",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "d) path -\u003e 200 Site \u003e Warehouse \u003e StorageLocation",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "d) history -\u003e 200 Updated(name) + Created, newest first",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "d) search -\u003e 200 (literal segment routed, not taken for {id})",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "e) caller X-Correlation-Id echoed in the gateway response",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "e) the same UUID is persisted on the Created history row",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "f) no token -\u003e 401 from the service through the gateway (contract Error body)",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "f) PUT -\u003e 404 at the gateway (method not routed)",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "f) DELETE -\u003e 404 at the gateway (method not routed)",
+                       "passed":  true
+                   }
+               ]
+}

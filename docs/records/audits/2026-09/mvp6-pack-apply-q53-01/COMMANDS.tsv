@@ -1,0 +1,10 @@
+step	command	result
+0	git rev-parse HEAD; git branch --show-current (GIT_OPTIONAL_LOCKS=0)	4a8d4d4b339528a88e6220fb8402e5a2c771136c; feature/mvp6-logistics
+0	sha256sum decision record; source SIGN-OFF-DECISION.md	626055e4…4744; 0a526059…05d4 (= record)
+0	(cd mvp6-self-registration-patch05-rebase-01 && sha256sum -c SHA256SUMS)	3/3 OK
+0	sha256sum patch; sha256sum target	7adf06ad…c6fd PASS; 6c8fbe28…a5a0 PASS
+1	cp target to pre-copy outside the repository; git status --porcelain snapshot	taken
+1	(09:45:38 +03:00) git apply --check --include=<target> <patch>; git apply --include=<target> <patch>	exit 0; warning "unable to unlink" (folder deletes not permitted; file rewritten in place)
+1	sha256sum target	a762305ec789f0b2547d5205135a0ff70b64e83f4a63b839a985432a46d8a552 PASS
+1	grep status; grep "## 33"; git status --porcelain diff; ls .git/index.lock	status: ready-for-dev; §33 at line 789; porcelain unchanged (pack already " M"); no lock
+1	restore	NOT NEEDED

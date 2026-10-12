@@ -1,0 +1,24 @@
+{
+  "db": "diten_claims_e4p01",
+  "tenantId": "3ff50845-a6c7-4ba3-8a69-27f4c7659d76",
+  "legalEntityId": "423b905f-472a-4ae4-b4ba-0450a2af7151",
+  "actorId": "6c952ed6-fcea-4c7f-9baf-4a30e75a0bc5",
+  "shipmentId": "8bde608e-5376-43a6-845e-05a94f86a375",
+  "root": "690699f9-dff3-44ee-a84a-87d63584a7d7",
+  "claimId": "178ef46d-3945-4194-903a-03acbb78b566",
+  "key": "e4-long-create",
+  "body": {
+    "shipmentId": "8bde608e-5376-43a6-845e-05a94f86a375",
+    "reasonCode": "DAMAGED",
+    "claimedAmount": "12345678901234567890123456789012345678901234567890.00000000000000000000000000000000000000000000000001",
+    "currency": "USD",
+    "evidenceReferenceIds": []
+  },
+  "amount": "12345678901234567890123456789012345678901234567890.00000000000000000000000000000000000000000000000001",
+  "before": {
+    "claims": 1,
+    "receipts": 1,
+    "audit": 1,
+    "outbox": 1
+  }
+}

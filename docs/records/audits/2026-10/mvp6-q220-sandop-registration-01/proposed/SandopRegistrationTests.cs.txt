@@ -1,0 +1,20 @@
+using Xunit;using Microsoft.Extensions.DependencyInjection;using Microsoft.Extensions.Hosting;using MongoDB.Bson;using MongoDB.Driver;using Diten.SupplyChainService.Persistence.Features.SandopPlans;
+namespace Diten.SupplyChainService.Tests.SandopPlans;
+public sealed class SandopRegistrationTests
+{
+ // Fixed-suffix database (DB-010): the rule under test is not tenant-bound and needs collections that start without indexes.
+ private const string Database="DitenSupplyChain_Mod0190_Registration_Test";
+ private static readonly (string Collection,string Index,bool Unique)[] Expected=[("sandop_plans","sandop_active_horizon_demand",true),("sandop_snapshots","sandop_snapshot_sequence",true),("sandop_sign_offs","sandop_role_snapshot",true),("sandop_receipts","sandop_receipt_identity",true),("sandop_audit","sandop_audit_scope",false),("sandop_outbox","sandop_outbox_scope",false)];
+ private static async Task<List<BsonDocument>> Indexes(IMongoDatabase db,string collection)=>await (await db.GetCollection<BsonDocument>(collection).Indexes.ListAsync()).ToListAsync();
+
+ [Fact]public async Task Registration_path_creates_the_six_indexes_without_the_test_helper()
+ {var uri=Environment.GetEnvironmentVariable("MVP6_MOD0190_MONGO_URI")??throw new InvalidOperationException("Set lane-local MVP6_MOD0190_MONGO_URI; operational 27017 is forbidden.");
+ var db=new MongoClient(uri).GetDatabase(Database);
+ foreach(var (collection,index,_) in Expected){await db.DropCollectionAsync(collection);Assert.DoesNotContain(await Indexes(db,collection),x=>x["name"].AsString==index);}
+ // Only AddSandopPersistence() and the hosted services it registers run here; SandopSchema.EnsureAsync is never called by this test.
+ await using var provider=new ServiceCollection().AddSingleton(db).AddSandopPersistence().BuildServiceProvider();
+ var hosted=provider.GetServices<IHostedService>().ToArray();Assert.Single(hosted.OfType<SandopSchema>());
+ foreach(var service in hosted)await service.StartAsync(CancellationToken.None);
+ foreach(var (collection,index,unique) in Expected){var found=Assert.Single(await Indexes(db,collection),x=>x["name"].AsString==index);Assert.Equal(unique,found.GetValue("unique",false).ToBoolean());}
+ }
+}

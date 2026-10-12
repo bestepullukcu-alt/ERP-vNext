@@ -1,0 +1,31 @@
+@model Diten.Web.Models.Inventory.StockMovementFormViewModel
+@using Diten.Web.Views.Inventory.StockLedger
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockLedgerIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.Views.Inventory.StockMovements.StockMovementsIndex> MovementLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = MovementLocalizer["FormTitleEntry"].Value;
+    ViewData["ListTitle"] = Localizer["StockLedgerTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0173-FU01 StockLedger/Create = "New stock entry" (KD-2 compliant mapping, pack §19). The balance is a
+    projection and is never written: this page hosts the SAME movement _Form (single source of truth) restricted to the
+    inbound manual types (Opening balance, Count gain) and posts POST /api/inventory/movements through
+    /StockMovements/Create. UAS-001 on inventory.movements.create.
+*@
+@if (!Perms.Has("inventory.movements.create"))
+{
+    <partial name="_AccessDenied" model="@MovementLocalizer["FormTitleEntry"].Value" />
+    return;
+}
+
+<partial name="~/Views/Inventory/StockMovements/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/Inventory/StockMovements/_FormL10n.cshtml" />
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Inventory/StockMovements/form.js" asp-append-version="true"></script>
+}

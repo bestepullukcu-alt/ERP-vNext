@@ -1,0 +1,64 @@
+key	en	tr	fr	es	zh	ar	ru
+AccessDenied	You do not have permission for this action.	Bu işlem için yetkiniz yok.	Vous n’avez pas l’autorisation requise.	No tiene permiso para esta acción.	您无权执行此操作。	ليس لديك إذن لهذا الإجراء.	У вас нет разрешения на это действие.
+Actions	Actions	İşlemler	Actions	Acciones	操作	الإجراءات	Действия
+AddLine	Add Line	Satır Ekle	Ajouter une ligne	Añadir línea	添加行	إضافة بند	Добавить строку
+AllStatuses	All statuses	Tüm durumlar	Tous les statuts	Todos los estados	所有状态	كل الحالات	Все статусы
+ApplyFilter	Apply	Uygula	Appliquer	Aplicar	应用	تطبيق	Применить
+Cancel	Cancel	İptal	Annuler	Cancelar	取消	إلغاء	Отмена
+CapturePod	Capture POD	Teslimat Kanıtı Kaydet	Saisir la preuve	Registrar entrega	记录交付证明	تسجيل إثبات التسليم	Зафиксировать доставку
+CarrierId	Carrier	Taşıyıcı	Transporteur	Transportista	承运商	الناقل	Перевозчик
+ConfirmAction	Confirm	Onayla	Confirmer	Confirmar	确认	تأكيد	Подтвердить
+ConfirmTitle	Confirm this action	İşlemi onaylayın	Confirmer cette action	Confirme esta acción	确认此操作	تأكيد هذا الإجراء	Подтвердите действие
+CreateShipment	Create Shipment	Sevkiyat Oluştur	Créer une expédition	Crear envío	创建货运	إنشاء شحنة	Создать отгрузку
+Details	Details	Ayrıntılar	Détails	Detalles	详情	التفاصيل	Сведения
+EmptyState	No shipments were found.	Sevkiyat bulunamadı.	Aucune expédition trouvée.	No se encontraron envíos.	未找到货运。	لم يتم العثور على شحنات.	Отгрузки не найдены.
+EvidenceHelp	Enter one reference per line or separate references with commas.	Her satıra bir referans girin veya virgülle ayırın.	Saisissez une référence par ligne ou séparez-les par des virgules.	Introduzca una referencia por línea o sepárelas con comas.	每行输入一个引用，或用逗号分隔。	أدخل مرجعاً واحداً في كل سطر أو افصل المراجع بفواصل.	Введите по одной ссылке в строке или разделите ссылки запятыми.
+EvidenceReferenceIds	Evidence References	Kanıt Referansları	Références de preuve	Referencias de evidencia	证据引用	مراجع الإثبات	Ссылки на доказательства
+IdempotencyKeyReused	The request identity belongs to different content.	İstek kimliği farklı bir içeriğe ait.	L’identité de requête appartient à un autre contenu.	La identidad de solicitud pertenece a otro contenido.	请求标识属于其他内容。	هوية الطلب تخص محتوى مختلفاً.	Идентификатор запроса относится к другому содержимому.
+InternalError	An unexpected error occurred.	Beklenmeyen bir hata oluştu.	Une erreur inattendue s’est produite.	Se produjo un error inesperado.	发生意外错误。	حدث خطأ غير متوقع.	Произошла непредвиденная ошибка.
+InvalidTransition	The current status no longer permits this transition.	Mevcut durum bu geçişe artık izin vermiyor.	Le statut actuel n’autorise plus cette transition.	El estado actual ya no permite esta transición.	当前状态不再允许此转换。	الحالة الحالية لم تعد تسمح بهذا الانتقال.	Текущий статус больше не допускает этот переход.
+InventoryReferenceId	Inventory Reference	Stok Referansı	Référence de stock	Referencia de inventario	库存引用	مرجع المخزون	Ссылка на запас
+ItemId	Item ID	Kalem Kimliği	ID article	ID de artículo	物料 ID	معرّف الصنف	ID позиции
+LifecycleRoot	Lifecycle Root	Yaşam Döngüsü Kökü	Racine du cycle de vie	Raíz del ciclo de vida	生命周期根	جذر دورة الحياة	Корень жизненного цикла
+LineNumber	Line Number	Satır Numarası	Numéro de ligne	Número de línea	行号	رقم البند	Номер строки
+LoadId	Load	Yük	Chargement	Carga	装载	الحمولة	Загрузка
+Loading	Loading…	Yükleniyor…	Chargement…	Cargando…	正在加载…	جارٍ التحميل…	Загрузка…
+NotFound	The shipment could not be found.	Sevkiyat bulunamadı.	L’expédition est introuvable.	No se encontró el envío.	未找到货运。	تعذر العثور على الشحنة.	Отгрузка не найдена.
+Note	Note	Not	Note	Nota	备注	ملاحظة	Примечание
+OccurredAt	Occurred At	Gerçekleşme Zamanı	Date de l’événement	Fecha del evento	发生时间	وقت الحدث	Время события
+PageDescription	Track shipments, lifecycle actions and proof of delivery.	Sevkiyatları, yaşam döngüsü işlemlerini ve teslimat kanıtını izleyin.	Suivez les expéditions, leur cycle de vie et la preuve de livraison.	Controle envíos, acciones del ciclo de vida y comprobantes de entrega.	跟踪货运、生命周期操作和交付证明。	تتبّع الشحنات وإجراءات دورة الحياة وإثبات التسليم.	Отслеживайте отгрузки, действия жизненного цикла и подтверждение доставки.
+PersistenceUnavailable	The request outcome is unavailable. Retry the same intent.	İstek sonucu bilinmiyor. Aynı işlemi yeniden deneyin.	Le résultat est indisponible. Réessayez la même intention.	El resultado no está disponible. Reintente la misma acción.	请求结果不可用，请重试相同操作。	نتيجة الطلب غير متاحة. أعد المحاولة بنفس الإجراء.	Результат запроса недоступен. Повторите то же действие.
+PlannedDeliverAt	Planned Delivery Time	Planlanan Teslim Zamanı	Livraison prévue	Entrega prevista	计划交付时间	وقت التسليم المخطط	Плановое время доставки
+PlannedShipAt	Planned Ship Time	Planlanan Sevk Zamanı	Expédition prévue	Envío previsto	计划发运时间	وقت الشحن المخطط	Плановое время отгрузки
+PodAlreadyCaptured	Proof of delivery was already captured.	Teslimat kanıtı zaten kaydedildi.	La preuve de livraison a déjà été saisie.	El comprobante de entrega ya fue registrado.	交付证明已记录。	تم تسجيل إثبات التسليم مسبقاً.	Подтверждение доставки уже зафиксировано.
+ProofOfDelivery	Proof of Delivery	Teslimat Kanıtı	Preuve de livraison	Comprobante de entrega	交付证明	إثبات التسليم	Подтверждение доставки
+Quantity	Quantity	Miktar	Quantité	Cantidad	数量	الكمية	Количество
+ReasonCode	Reason Code	Neden Kodu	Code motif	Código de motivo	原因代码	رمز السبب	Код причины
+ReceivedAt	Received At	Teslim Zamanı	Reçu le	Recibido el	接收时间	وقت الاستلام	Время получения
+RecipientName	Recipient Name	Teslim Alan	Nom du destinataire	Nombre del destinatario	收件人姓名	اسم المستلم	Имя получателя
+RemoveLine	Remove Line	Satırı Kaldır	Retirer la ligne	Quitar línea	移除行	إزالة البند	Удалить строку
+Replay	This request was already completed.	Bu istek daha önce tamamlandı.	Cette requête a déjà été exécutée.	Esta solicitud ya se completó.	此请求已完成。	تم تنفيذ هذا الطلب مسبقاً.	Этот запрос уже выполнен.
+ResetFilter	Reset	Sıfırla	Réinitialiser	Restablecer	重置	إعادة ضبط	Сбросить
+Schedule	Schedule	Takvim	Calendrier	Calendario	计划	الجدول	График
+ScheduleAndAssignment	Schedule and Assignment	Takvim ve Atama	Calendrier et affectation	Calendario y asignación	计划与分配	الجدول والتعيين	График и назначение
+ShipToReference	Ship-to Reference	Teslim Yeri Referansı	Référence de destination	Referencia de destino	收货方引用	مرجع جهة التسليم	Ссылка на получателя
+ShipmentDetails	Shipment Details	Sevkiyat Ayrıntıları	Détails de l’expédition	Detalles del envío	货运详情	تفاصيل الشحنة	Сведения об отгрузке
+ShipmentLines	Shipment Lines	Sevkiyat Satırları	Lignes d’expédition	Líneas del envío	货运行	بنود الشحنة	Строки отгрузки
+ShipmentNumber	Shipment Number	Sevkiyat Numarası	Numéro d’expédition	Número de envío	货运编号	رقم الشحنة	Номер отгрузки
+ShipmentSummary	Shipment Summary	Sevkiyat Özeti	Résumé de l’expédition	Resumen del envío	货运摘要	ملخص الشحنة	Сводка отгрузки
+ShipmentsTitle	Shipments	Sevkiyatlar	Expéditions	Envíos	货运	الشحنات	Отгрузки
+SkuId	SKU ID	SKU Kimliği	ID SKU	ID de SKU	SKU ID	معرّف SKU	ID SKU
+SourceAndDestination	Source and Destination	Kaynak ve Hedef	Source et destination	Origen y destino	来源与目的地	المصدر والوجهة	Источник и назначение
+SourceDocumentId	Source Document	Kaynak Belge	Document source	Documento de origen	源单据	المستند المصدر	Исходный документ
+SourceModule	Source Module	Kaynak Modül	Module source	Módulo de origen	源模块	الوحدة المصدر	Исходный модуль
+SourceType	Source Type	Kaynak Türü	Type de source	Tipo de origen	源类型	نوع المصدر	Тип источника
+Status	Status	Durum	Statut	Estado	状态	الحالة	Статус
+Success	Action completed.	İşlem tamamlandı.	Action terminée.	Acción completada.	操作已完成。	اكتمل الإجراء.	Действие выполнено.
+SupportReference	Support reference	Destek referansı	Référence d’assistance	Referencia de soporte	支持引用	مرجع الدعم	Ссылка для поддержки
+TargetStatus	Target Status	Hedef Durum	Statut cible	Estado de destino	目标状态	الحالة المستهدفة	Целевой статус
+Transition	Change Status	Durumu Değiştir	Changer le statut	Cambiar estado	更改状态	تغيير الحالة	Изменить статус
+Unavailable	Unavailable	Kullanılamıyor	Indisponible	No disponible	不可用	غير متاح	Недоступно
+Unknown	Unknown	Bilinmiyor	Inconnu	Desconocido	未知	غير معروف	Неизвестно
+UomId	Unit of Measure	Ölçü Birimi	Unité de mesure	Unidad de medida	计量单位	وحدة القياس	Единица измерения
+ValidationError	Check the entered values.	Girilen değerleri kontrol edin.	Vérifiez les valeurs saisies.	Revise los valores introducidos.	请检查输入的值。	تحقق من القيم المدخلة.	Проверьте введённые значения.
+WarehouseReferenceId	Warehouse Reference	Depo Referansı	Référence d’entrepôt	Referencia de almacén	仓库引用	مرجع المستودع	Ссылка на склад

@@ -1,0 +1,149 @@
+{
+  "phase": "diag",
+  "mode": "v3",
+  "startedAt": "2026-09-27T09:56:31.336Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "DIAG-skeleton-timeline": {
+      "result": "PASS",
+      "servedIndexHasD1Fix": true,
+      "servedSha256": "95f796844177e6a959ef4f107b97a4826257bfa6be00d2f53e4ff1ea1fc25c51",
+      "changes": [
+        {
+          "t": 806,
+          "why": "DOMContentLoaded",
+          "inline": null,
+          "cls": "backbone-skeleton p-4",
+          "computed": "none"
+        },
+        {
+          "t": 811,
+          "why": "mutation",
+          "inline": "display: block;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 898,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.999938;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 899,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.989611;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 900,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.987958;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 914,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.952414;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 931,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.885257;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 946,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.80021;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 964,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.669369;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 981,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.547054;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 996,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.421783;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 1014,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.28711;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 1031,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.181288;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 1048,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.0909251;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 1064,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.0295596;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 1081,
+          "why": "mutation",
+          "inline": "display: block; opacity: 0.00221902;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 1098,
+          "why": "mutation",
+          "inline": "display: none;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "none"
+        },
+        {
+          "t": 3586,
+          "why": "mutation",
+          "inline": "display: none;",
+          "cls": "backbone-skeleton p-4 d-none",
+          "computed": "none"
+        }
+      ],
+      "pollSamples": "909:block 1007:block 1109:none 1209:none 1309:none 1407:none 1507:none 1608:none 1709:none 1809:none 1909:none 2009:none 2109:none 2210:none 2307:none 2407:none 2510:none 2608:none 2709:none 2810:none 2909:none 3009:none 3109:none 3209:none 3309:none 3407:none 3591:none 3608:none 3709:none 3807:none 3909:none 4008:none 4109:none 4209:none 4309:none 4409:none 4508:none 4609:none 4709:none 4809:none"
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-27T09:56:37.374Z"
+}

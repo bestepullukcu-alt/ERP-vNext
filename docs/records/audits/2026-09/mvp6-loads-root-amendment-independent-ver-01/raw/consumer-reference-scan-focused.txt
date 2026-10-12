@@ -1,0 +1,5 @@
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs:31:        data["lifecycleCorrelationId"] = result.RootState == RawRootState.InvalidStoredValue
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadsController.cs:12:[Authorize,Route("api/shipment-bundle/loads")]
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadContextMiddleware.cs:10:    public static bool IsLoadPath(HttpContext http) => http.Request.Path.StartsWithSegments("/api/shipment-bundle/loads", StringComparison.OrdinalIgnoreCase);
+execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md:198:| `queryLoads` | GET `/loads` | 200 |
+execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md:486:**Exact implemented target:** queryLoads/createLoadPlan/transitionLoad only; GET/POST loads and

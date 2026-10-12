@@ -1,0 +1,5 @@
+5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c  docs/records/audits/2026-09/mvp6-combined-final-release-pack-01/publication/docs/analysis/contracts/shipment-bundle.openapi.yaml
+6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2  docs/analysis/contracts/shipment-bundle.openapi.yaml
+00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11  docs/analysis/contracts/returns-semantics-v3.0.0.md
+16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63  docs/analysis/contracts/claims-semantics-v3.0.0.md
+7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af  docs/analysis/contracts/shipment-root-semantics-v3.0.0.md

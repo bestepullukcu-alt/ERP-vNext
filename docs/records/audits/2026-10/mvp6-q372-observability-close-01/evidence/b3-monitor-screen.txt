@@ -1,0 +1,38 @@
+# Q372-R2 part B, phase 3: dotnet-counters 10.0.745401 monitor (fresh session), verbatim screen text from the terminal reader
+# command: /Users/natig/.dotnet/tools/dotnet-counters monitor --process-id 11090 --refresh-interval 2 --counters Diten.SupplyChainService.Shipments
+# behaviours (results/b-drive.jsonl): 15:46:24 transition (create 201 + transition Draft->Planned 200),
+# 15:46:36 load (30 creates 201 + 90 lists 200). Lane mongod had been restarted at 15:45 after the disk-full stop (REPORT §5).
+# Reader note: as in phase 1, in-place cell rewrites are appended to the last line.
+
+--- after the transition (one create + one transition) ---
+Name                                         Current Value
+[Diten.SupplyChainService.Shipments]
+    shipment.operation.duration (ms)
+        operation                 centile
+        ------------------------- -------
+        CreateShipmentCommand     50                83
+        CreateShipmentCommand     95                83
+        CreateShipmentCommand     99                83
+        TransitionShipmentCommand 50                26.031
+        TransitionShipmentCommand 95                26.031
+        TransitionShipmentCommand 99                26.031
+    shipment.outbox.pending ({event})                2
+          2              2              2              2
+
+--- during the load ---
+Name                                         Current Value
+[Diten.SupplyChainService.Shipments]
+    shipment.operation.duration (ms)
+        operation                 centile
+        ------------------------- -------
+        CreateShipmentCommand     50                83
+        CreateShipmentCommand     95                83
+        CreateShipmentCommand     99                83
+        GetShipmentListQuery      50                 3.434
+        GetShipmentListQuery      95                 5.758
+        GetShipmentListQuery      99                 5.758
+        TransitionShipmentCommand 50                26.031
+        TransitionShipmentCommand 95                26.031
+        TransitionShipmentCommand 99                26.031
+    shipment.outbox.pending ({event})                2
+         10.016         11.563         11.563          6              2.508          3.48           4.883          7.383          9.609          9.953         32             32

@@ -1,0 +1,19 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs
+@@ -22,5 +22,6 @@
+     public DateTimeOffset? DispatchedAt { get; set; }
+     public ShipmentStatus Status { get; set; }
+     public Guid CorrelationId { get; set; }
++    public Guid? LifecycleCorrelationId { get; set; }
+     public ProofOfDelivery? Pod { get; set; }
+ }
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CreateShipmentHandler.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CreateShipmentHandler.cs
+@@ -40,6 +40,7 @@
+                 PlannedDeliverAt = b.PlannedDeliverAt,
+                 Status = ShipmentStatus.Draft,
+                 CorrelationId = context.CorrelationId,
++                LifecycleCorrelationId = context.CorrelationId,
+                 Lines = normalized.Lines.Select(x => new ShipmentLine(x.LineNumber, x.ItemId, x.SkuId, x.Quantity, x.UomId, x.InventoryReferenceId)).ToArray()
+             };
+             return new ShipmentChange(shipment, null, 201, now);

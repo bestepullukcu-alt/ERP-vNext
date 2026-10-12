@@ -1,0 +1,167 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnContextMiddleware.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnContextMiddleware.cs
+@@ -62,7 +62,7 @@
+         var authorization = http.Request.Headers.Authorization;
+         if (authorization.Count != 1 || http.User.Identity?.IsAuthenticated != true) { await Error(401); return; }
+         if (!UniqueSignedContextFields(authorization[0]!) || !Claim(http, "tenant_id", out var tenant) || !Claim(http, "legal_entity_id", out var le) || !Claim(http, "sub", out var actor) ||
+-            !http.User.HasClaim("permission", permission.Permission)) { await Error(403); return; }
++            (permission.Permission is not null && !http.User.HasClaim("permission", permission.Permission))) { await Error(403); return; }
+         if (!validCorrelation) { await Error(400, message: "X-Correlation-Id must contain exactly one UUID value."); return; }
+         if (!Header(http.Request, "X-Tenant-Id", out var headerTenant)) { await Error(400, message: "X-Tenant-Id must contain exactly one UUID value."); return; }
+         if (!Header(http.Request, "X-Legal-Entity-Id", out var headerLe)) { await Error(400, message: "X-Legal-Entity-Id must contain exactly one UUID value."); return; }
+@@ -91,8 +91,11 @@
+                 if (!(transition ? ReturnWire.TransitionValid(body.RootElement) : ReturnWire.CreateValid(body.RootElement))) { await Error(400); return; }
+                 if (transition)
+                 {
++                    // OD-F-Q65b-1: the target-state key is the only transition gate. Fail-closed: a target with
++                    // no key (ForTarget = null, e.g. Requested) is 403; schema-invalid targets were 400 above.
+                     var grant = ReturnPermissions.ForTarget(body.RootElement.GetProperty("targetStatus").GetString()!);
+-                    if (grant is not null && !http.User.HasClaim("permission", grant)) { await Error(403); return; }
++                    if (grant is null || !http.User.HasClaim("permission", grant)) { await Error(403); return; }
++                    http.Items[ReturnPermissionAttribute.TargetGrantItem] = grant;
+                 }
+             }
+             catch (JsonException) { await Error(400); return; }
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnsController.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnsController.cs
+@@ -17,7 +17,9 @@
+     public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? shipmentId, CancellationToken ct) => ReturnWireResponse(await sender.Send(new GetReturnListQuery(status is null ? null : Enum.Parse<ReturnStatus>(status), shipmentId is null ? null : Guid.Parse(shipmentId)), ct));
+     [HttpPost, ReturnPermission(ReturnPermissions.Create)]
+     public async Task<IActionResult> Create([FromBody] JsonElement body, CancellationToken ct) => ReturnWireResponse(await sender.Send(new CreateReturnCommand(body), ct));
+-    [HttpPost("{returnId}/transition"), ReturnPermission(ReturnPermissions.Transition)]
++    // OD-F-Q65b-1 / D186-05: no endpoint-level key; the only permission gate is the target-state key
++    // (ReturnPermissions.ForTarget), checked by ReturnContextMiddleware and re-checked fail-closed by the attribute.
++    [HttpPost("{returnId}/transition"), ReturnPermission]
+     public async Task<IActionResult> Transition(string returnId, [FromBody] JsonElement body, CancellationToken ct) => ReturnWireResponse(await sender.Send(new TransitionReturnCommand(Guid.Parse(returnId), body), ct));
+     private IActionResult ReturnWireResponse<T>(Response<T> response) => StatusCode(response.StatusCode, response.ErrorCode is null ? response.Data : ReturnContractError.Create(response.StatusCode == 500 ? "INTERNAL_ERROR" : response.ErrorCode, response.StatusCode, context.CorrelationId));
+ }
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnPermissionAttribute.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnPermissionAttribute.cs
+@@ -2,13 +2,18 @@
+ using Microsoft.AspNetCore.Mvc.Filters;
+ namespace Diten.SupplyChainService.Infrastructure.Features.Returns;
+ [AttributeUsage(AttributeTargets.Method)]
+-public sealed class ReturnPermissionAttribute(string permission) : Attribute, IAuthorizationFilter
++public sealed class ReturnPermissionAttribute(string? permission = null) : Attribute, IAuthorizationFilter
+ {
+-    public string Permission { get; } = permission;
++    // HttpContext.Items slot where ReturnContextMiddleware puts the target-state key it verified for a transition.
++    public const string TargetGrantItem = "Diten.SupplyChainService.Returns.TargetGrant";
++    // null = transition endpoint: the target-state key (ReturnPermissions.ForTarget) is the only permission gate.
++    public string? Permission { get; } = permission;
+     public void OnAuthorization(AuthorizationFilterContext context)
+     {
+         // Ordered middleware supplies the published envelope before MVC executes.
+-        if (context.HttpContext.User.Identity?.IsAuthenticated != true || !context.HttpContext.User.HasClaim("permission", Permission))
++        // Fail-closed: with no endpoint key, a request passes only with a target-state key the middleware verified.
++        var required = Permission ?? context.HttpContext.Items[TargetGrantItem] as string;
++        if (context.HttpContext.User.Identity?.IsAuthenticated != true || required is null || !context.HttpContext.User.HasClaim("permission", required))
+             context.Result = new StatusCodeResult(403);
+     }
+ }
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnPermissions.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnPermissions.cs
+@@ -3,7 +3,7 @@
+ {
+     public const string Read = "supplychain.returns.read";
+     public const string Create = "supplychain.returns.create";
+-    public const string Transition = "supplychain.returns.transition";
++    // Transitions have no generic key (OD-F-Q65b-1). A target without a key here is never authorized (fail-closed).
+     public static string? ForTarget(string target) => target switch
+     {
+         "Authorized" or "Rejected" => "supplychain.returns.authorize",
+--- /dev/null
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnTransitionGuardTests.cs
+@@ -0,0 +1,92 @@
++using Xunit;
++using System.Reflection;
++using System.Security.Claims;
++using System.Text;
++using System.Text.Json;
++using Microsoft.AspNetCore.Authorization;
++using Microsoft.AspNetCore.Http;
++using Microsoft.AspNetCore.Mvc;
++using Microsoft.AspNetCore.Mvc.Abstractions;
++using Microsoft.AspNetCore.Mvc.Filters;
++using Microsoft.AspNetCore.Routing;
++using Microsoft.Extensions.DependencyInjection;
++using Microsoft.Extensions.Logging.Abstractions;
++using Diten.SupplyChainService.Api.Features.Returns;
++using Diten.SupplyChainService.Application.Features.Returns;
++using Diten.SupplyChainService.Infrastructure.Features.Returns;
++namespace Diten.SupplyChainService.Tests.Returns;
++// F-Q65b-1 / OD-F-Q65b-1 / D186-05: the transition endpoint is gated only by the target-state key.
++// Middleware + MVC filter unit evidence with an already-authenticated fabricated principal, NOT JWT validation.
++public sealed class ReturnTransitionGuardTests
++{
++ private const string Generic="supplychain.returns.transition";
++ private static readonly string[] TargetKeys={"supplychain.returns.authorize","supplychain.returns.transit","supplychain.returns.cancel","supplychain.returns.receive","supplychain.returns.disposition","supplychain.returns.close"};
++ private static readonly string[] EveryKey=TargetKeys.Concat(new[]{"supplychain.returns.read","supplychain.returns.create",Generic}).ToArray();
++ private static readonly Dictionary<string,string> Expected=new(){{"Authorized","supplychain.returns.authorize"},{"Rejected","supplychain.returns.authorize"},{"InTransit","supplychain.returns.transit"},{"Cancelled","supplychain.returns.cancel"},{"Received","supplychain.returns.receive"},{"Dispositioned","supplychain.returns.disposition"},{"Closed","supplychain.returns.close"}};
++ private static ReturnPermissionAttribute Attr(string action)=>typeof(ReturnsController).GetMethod(action)!.GetCustomAttributes<ReturnPermissionAttribute>(false).Single();
++ private static ReturnPermissionAttribute TransitionAttribute()=>Attr(nameof(ReturnsController.Transition));
++ private sealed record Outcome(int Status,bool Next,DefaultHttpContext Http);
++ private static ClaimsPrincipal Principal(Guid tenant,Guid le,Guid actor,IEnumerable<string> permissions)=>
++  new(new ClaimsIdentity(new[]{new System.Security.Claims.Claim("tenant_id",tenant.ToString()),new System.Security.Claims.Claim("legal_entity_id",le.ToString()),new System.Security.Claims.Claim("sub",actor.ToString())}.Concat(permissions.Select(p=>new System.Security.Claims.Claim("permission",p))),"unit-authenticated"));
++ private static async Task<Outcome> Run(string method,string? body,ReturnPermissionAttribute attribute,params string[] permissions)
++ {
++  var tenant=Guid.NewGuid();var le=Guid.NewGuid();var actor=Guid.NewGuid();var id=Guid.NewGuid();
++  var http=new DefaultHttpContext();http.Response.Body=new MemoryStream();http.RequestServices=new ServiceCollection().AddLogging().AddOptions().BuildServiceProvider();
++  http.Request.Method=method;http.SetEndpoint(new Endpoint(_=>Task.CompletedTask,new EndpointMetadataCollection(attribute),"unit"));
++  if(method=="POST"){http.Request.Path="/api/shipment-bundle/returns/"+id+"/transition";http.Request.RouteValues["returnId"]=id.ToString();http.Request.Headers["Idempotency-Key"]="guard";http.Request.ContentType="application/json";http.Request.Body=new MemoryStream(Encoding.UTF8.GetBytes(body!));}
++  else http.Request.Path="/api/shipment-bundle/returns";
++  var payload=JsonSerializer.Serialize(new{tenant_id=tenant,legal_entity_id=le,sub=actor});var token=Convert.ToBase64String(Encoding.UTF8.GetBytes(payload)).TrimEnd('=').Replace('+','-').Replace('/','_');
++  http.Request.Headers.Authorization="Bearer unit."+token+".not-a-signature";http.Request.Headers["X-Correlation-Id"]=Guid.NewGuid().ToString();http.Request.Headers["X-Tenant-Id"]=tenant.ToString();http.Request.Headers["X-Legal-Entity-Id"]=le.ToString();
++  http.User=Principal(tenant,le,actor,permissions);
++  bool next=false;var middleware=new ReturnContextMiddleware(_=>{next=true;return Task.CompletedTask;},NullLogger<ReturnContextMiddleware>.Instance);
++  await middleware.InvokeAsync(http,new ReturnRequestContext(),new Diten.SupplyChainService.Application.Common.RequestContext());
++  return new(http.Response.StatusCode,next,http);
++ }
++ private static Task<Outcome> Transition(string target,params string[] permissions)=>Run("POST",$$"""{"targetStatus":"{{target}}","occurredAt":"2026-09-20T09:00:00Z"}""",TransitionAttribute(),permissions);
++ private static int? Filter(HttpContext http,ReturnPermissionAttribute attribute)
++ {var context=new AuthorizationFilterContext(new ActionContext(http,new RouteData(),new ActionDescriptor()),new List<IFilterMetadata>());attribute.OnAuthorization(context);return (context.Result as StatusCodeResult)?.StatusCode;}
++ private static async Task Assert403(Outcome r)
++ {
++  Assert.Equal(403,r.Status);Assert.False(r.Next);Assert.False(r.Http.Items.ContainsKey(ReturnPermissionAttribute.TargetGrantItem));
++  r.Http.Response.Body.Position=0;var error=(await JsonDocument.ParseAsync(r.Http.Response.Body)).RootElement;
++  Assert.Equal("INVALID_REQUEST",error.GetProperty("error").GetProperty("code").GetString());Assert.Equal("v1",error.GetProperty("contractVersion").GetString());
++  Assert.Equal(r.Http.Response.Headers["X-Correlation-Id"].ToString(),error.GetProperty("error").GetProperty("correlationId").GetString());
++  Assert.Equal(403,Filter(r.Http,TransitionAttribute()));
++ }
++ // (a) the target key alone is enough, e.g. supplychain.returns.authorize for Authorized and Rejected.
++ [Theory][InlineData("Authorized")][InlineData("Rejected")][InlineData("InTransit")][InlineData("Cancelled")][InlineData("Received")][InlineData("Dispositioned")][InlineData("Closed")]
++ public async Task Transition_OnlyTargetKey_PassesMiddlewareAndFilter(string target)
++ {var r=await Transition(target,Expected[target]);Assert.Equal(200,r.Status);Assert.True(r.Next);Assert.Equal(Expected[target],r.Http.Items[ReturnPermissionAttribute.TargetGrantItem]);Assert.Null(Filter(r.Http,TransitionAttribute()));}
++ // (b) without the target key: 403 for each target, even when every other Returns key is held.
++ [Theory][InlineData("Authorized")][InlineData("Rejected")][InlineData("InTransit")][InlineData("Cancelled")][InlineData("Received")][InlineData("Dispositioned")][InlineData("Closed")]
++ public async Task Transition_WithoutTargetKey_Is403ForEachTarget(string target)
++ {await Assert403(await Transition(target));await Assert403(await Transition(target,EveryKey.Where(k=>k!=Expected[target]).ToArray()));}
++ // (c) the old generic key grants nothing.
++ [Theory][InlineData("Authorized")][InlineData("Rejected")][InlineData("InTransit")][InlineData("Cancelled")][InlineData("Received")][InlineData("Dispositioned")][InlineData("Closed")][InlineData("Requested")]
++ public async Task Transition_OnlyGenericTransitionKey_Is403(string target)=>await Assert403(await Transition(target,Generic));
++ // (d) an unmapped target never succeeds: Requested (in the enum, no key) is 403 even with every key held.
++ [Fact] public async Task Transition_UnmappedTarget_Is403_EvenWithEveryKey()
++ {Assert.Null(ReturnPermissions.ForTarget("Requested"));await Assert403(await Transition("Requested",EveryKey));}
++ // (d) precedence kept: a target outside the schema is 400 before any permission decision, with or without keys.
++ [Theory][InlineData("Bogus")][InlineData("authorized")][InlineData("")]
++ public async Task Transition_TargetOutsideSchema_Is400BeforePermission(string target)
++ {foreach(var keys in new[]{Array.Empty<string>(),EveryKey}){var r=await Transition(target,keys);Assert.Equal(400,r.Status);Assert.False(r.Next);Assert.False(r.Http.Items.ContainsKey(ReturnPermissionAttribute.TargetGrantItem));}}
++ // (d) the MVC filter fails closed on its own: no verified target key, or a verified key the caller lacks, is 403.
++ [Fact] public void Filter_TransitionWithoutVerifiedTargetKey_FailsClosed()
++ {
++  var http=new DefaultHttpContext{User=Principal(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),EveryKey)};Assert.Equal(403,Filter(http,TransitionAttribute()));
++  http.Items[ReturnPermissionAttribute.TargetGrantItem]="supplychain.returns.authorize";Assert.Null(Filter(http,TransitionAttribute()));
++  http.User=Principal(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),new[]{Generic});Assert.Equal(403,Filter(http,TransitionAttribute()));
++  http.User=new ClaimsPrincipal(new ClaimsIdentity());Assert.Equal(403,Filter(http,TransitionAttribute()));
++ }
++ // (e) read/create gates unchanged; the transition endpoint carries no endpoint key; no generic key constant remains.
++ [Fact] public async Task Endpoints_ReadCreateUnchanged_TransitionHasNoEndpointKey_NoGenericConstant()
++ {
++  Assert.Null(TransitionAttribute().Permission);Assert.Equal("supplychain.returns.read",Attr(nameof(ReturnsController.List)).Permission);Assert.Equal("supplychain.returns.create",Attr(nameof(ReturnsController.Create)).Permission);
++  Assert.NotEmpty(typeof(ReturnsController).GetCustomAttributes<AuthorizeAttribute>(true));
++  Assert.Null(typeof(ReturnPermissions).GetField("Transition"));
++  Assert.DoesNotContain(Generic,typeof(ReturnPermissions).GetFields(BindingFlags.Public|BindingFlags.Static).Select(f=>(f.IsLiteral?f.GetRawConstantValue():f.GetValue(null)) as string));
++  Assert.Equal(200,(await Run("GET",null,Attr(nameof(ReturnsController.List)),"supplychain.returns.read")).Status);
++  Assert.Equal(403,(await Run("GET",null,Attr(nameof(ReturnsController.List)),Generic,"supplychain.returns.create")).Status);
++ }
++}

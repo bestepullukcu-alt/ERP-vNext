@@ -1,0 +1,1 @@
+{"eventId": "d89c15f8-29d4-4369-a953-c729d0ceb115", "tenantId": "db0dae78-f721-414c-8b51-1cbd7c866c54", "eventName": "tenant.activated", "eventVersion": 1, "correlationId": "d26a476f-4f1d-4690-b008-ee07ff579512", "causationId": "00000000-0000-0000-0000-000000000000", "occurredAt": "2026-10-03T17:13:11.920068+00:00", "producer": "Q358-replay"}

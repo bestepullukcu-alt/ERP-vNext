@@ -1,0 +1,14 @@
+step	time_local	command	result
+0	2026-09-26T14:59:15+03:00	GIT_OPTIONAL_LOCKS=0 git rev-parse HEAD; GIT_OPTIONAL_LOCKS=0 git branch --show-current; ls .git/index.lock	4a8d4d4b339528a88e6220fb8402e5a2c771136c; feature/mvp6-logistics (match); no index.lock
+0	2026-09-26T14:59:15+03:00	GIT_OPTIONAL_LOCKS=0 git status --porcelain > /tmp/q75/st-before.txt	433 rows (VM /tmp, outside repo)
+0	2026-09-26T14:59:15+03:00	(cd docs/roadmap/plans/mvp6-pack-heading-labels-01 && sha256sum -c SHA256SUMS)	13/13 OK
+0	2026-09-26T14:59+03:00	sha256sum -c docs/records/audits/2026-09/mvp6-pack-apply-q27-q28-independent-ver-01/ARTIFACTS.sha256	2/2 OK
+1	2026-09-26T14:59+03:00	for each BASE-HASHES.tsv row: sha256sum target and patch; cp -p target /tmp/q75/pre/	8/8 before-hashes and 8/8 patch hashes = expected; 11/11 approving records named in HEADINGS.tsv match their sha256
+2	2026-09-26T15:00:08+03:00	python3 /tmp/q75/build.py (sources hash-checked first; exact decision block copied from SIGN-OFF-DECISION.md)	2 records written; quote byte-identical in the decision record
+3	2026-09-26T15:00:15+03:00	for each patch in BASE-HASHES.tsv order: recheck before + patch hash; GIT_OPTIONAL_LOCKS=0 git apply --check <patch>; GIT_OPTIONAL_LOCKS=0 git apply <patch>; sha256sum target	8/8 rc=0; 8/8 after-hash = expected; 8 warnings "unable to unlink … Operation not permitted" (bridge cannot delete; file rewritten in place); no restore
+4	2026-09-26T15:00+03:00	grep -nE '^#+ .*(NOT APPROVED|proposed draft delta|proposal —)' <8 targets>	0 headings left
+4	2026-09-26T15:00+03:00	per HEADINGS.tsv row: grep -nxF <new heading>; next 2 lines contain "Approved: `<record>`"	11/11 headings present, 11/11 approval lines; total "Approved: `" lines in the 8 files = 11
+4	2026-09-26T15:00+03:00	diff /tmp/q75/pre/<file> <file> (all 8)	only heading lines, approval lines and one blank line per approval (44 changed lines = 11 × 4); nothing else
+4	2026-09-26T15:00+03:00	find execution docs -newer /tmp/q75/st-before.txt ( -name '*.orig' -o -name '*.rej' -o -name '*~' ); ls .git/index.lock	none; no index.lock
+5	2026-09-26T15:00+03:00	python3 ledger edit (CT-QUEUE state of Q27, Q28, Q50, Q72, Q73; append Q74, Q75, Q76; MILESTONE-EVENTS append 4 lines); pre-copies in /tmp/q75/pre/	old states asserted before edit; column counts 8/6 unchanged; BLOCKERS untouched
+6	2026-09-26T15:00+03:00	grep -nEi (password/secret/JwtSettings__Secret/api key/bearer/JWT/private key/mongodb URI/AKIA/ghp_/sk-) on the 2 records + 2 ledgers	0 hits

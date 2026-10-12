@@ -1,0 +1,3 @@
+root_storage=0
+replay_concurrency=0
+rollback=0

@@ -1,0 +1,21 @@
+collections: sce_shipment_audit sce_shipment_history sce_shipment_outbox sce_shipment_receipts sce_shipment_source_evidence sce_shipment_source_intents sce_shipment_source_links sce_shipments
+{
+  ShipmentNumber: 'SHP-65cc49a9fbb94b588cdb0b4b1f99b048',
+  Status: 'Closed',
+  TenantId: '00000000-0000-0000-0000-000000000001',
+  LegalEntityId: 'e5f15d4b-12ba-44d9-9009-6a16014fc4a1',
+  Version: 5,
+  Pod: {
+    RecipientNameLen: 19,
+    Evidence: 1
+  }
+}
+sce_shipment_outbox: 6 for this shipment
+returns_audit: 0 for this shipment
+claims_audit: 0 for this shipment
+carrier_audit: 0 for this shipment
+returns_outbox: 0 for this shipment
+sce_shipment_audit: 5 for this shipment
+claims_outbox: 0 for this shipment
+loads_outbox: 0 for this shipment
+loads_audit: 0 for this shipment

@@ -1,0 +1,6 @@
+yaml_byte_identical_candidate01_candidate02=True
+annex_line_counts_equal=True
+exact_single_line_change=True
+annex_byte_equal_after_reversing_one_token=True
+stale_normative_sentence_absent=True
+corrected_normative_sentence_count=1

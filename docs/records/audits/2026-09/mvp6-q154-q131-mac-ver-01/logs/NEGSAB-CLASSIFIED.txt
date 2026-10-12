@@ -1,0 +1,19 @@
+N--capacityplans                           {'NOT-SET (fail closed)': 32}
+N--platform-application                    {'NOT-SET (fail closed)': 159, 'pre-existing (fails in B positive run too)': 15}
+N--platform-backgroundjobs                 {'pre-existing (fails in B positive run too)': 2, 'NOT-SET (fail closed)': 1}
+S1-port27017--capacity                     {'PROTECTED-PORT': 5}
+S1-port27017--platform-backgroundjobs      {'pre-existing (fails in B positive run too)': 2, 'PROTECTED-PORT': 1}
+S1-port27017--platform-mongo               {'PROTECTED-PORT': 18}
+S2-port-omitted--capacity                  {'PROTECTED-PORT': 5}
+S2-port-omitted--platform-backgroundjobs   {'PROTECTED-PORT': 1, 'pre-existing (fails in B positive run too)': 2}
+S2-port-omitted--platform-mongo            {'PROTECTED-PORT': 18}
+S3-credentials--capacity                   {'CREDENTIALS': 5}
+S3-credentials--platform-backgroundjobs    {'CREDENTIALS': 1, 'pre-existing (fails in B positive run too)': 2}
+S3-credentials--platform-mongo             {'CREDENTIALS': 18}
+S4-non-loopback--capacity                  {'NON-LOOPBACK': 5}
+S4-non-loopback--platform-backgroundjobs   {'NON-LOOPBACK': 1, 'pre-existing (fails in B positive run too)': 2}
+S4-non-loopback--platform-mongo            {'NON-LOOPBACK': 18}
+S5-srv--capacity                           {'NOT-PLAIN-MONGODB': 5}
+S5-srv--platform-backgroundjobs            {'pre-existing (fails in B positive run too)': 2, 'NON-LOOPBACK': 1}
+S5-srv--platform-mongo                     {'NOT-PLAIN-MONGODB': 18}
+S6-capacity-no-replicaset--capacity        {'NO-REPLICASET': 5}

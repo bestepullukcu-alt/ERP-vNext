@@ -1,0 +1,19 @@
+criterion	result	evidence
+preimage 354 entries exact	PASS	raw/preimage-manifest-check.json
+RED reproduces missing repeatable label binding	PASS	raw/red.trx (0/1; expected data-field-label count 1, observed 0)
+unique ids at one line	PASS	raw/browser-accessibility.json viewport390.initial
+unique ids/label bindings after keyboard add to three lines	PASS	raw/browser-accessibility.json viewport390.afterKeyboardAdd1/2
+remove/reindex preserves bindings	PASS	raw/browser-accessibility.json viewport390.afterRemoveMiddle
+remove moves focus deterministically	PASS	raw/browser-accessibility.json viewport390.afterRemoveMiddle.activeId
+label activation targets matching input	PASS	raw/browser-accessibility.json viewport390.labelActivation
+logical keyboard Tab order	PASS	raw/browser-accessibility.json viewport390.tabOrder
+validation focuses alert summary	PASS	raw/browser-accessibility.json viewport390.invalidSubmit
+768 responsive labels/focus/no overflow	PASS	raw/browser-accessibility.json viewport768
+model-binding/name and payload semantics preserved	PASS	raw/browser-accessibility.json payloadSemantics; production JS still reads data-field in DOM order
+focused GREEN regression	PASS	raw/green-focused.trx 1/1
+Shipment UI regression including B01/B02	PASS	raw/shipment-regression.trx 17/17
+Root R2 narrow regression	PASS	raw/root-r2-regression.trx 7/7
+Web Release build native .NET 8	PASS	raw/web-build.log; 0 warnings/0 errors
+shared layout/Gateway unchanged by patch	PASS
+patch has exactly three approved UI/test paths
+permanent PNG export	OPEN	No documented supported export; no bypass attempted

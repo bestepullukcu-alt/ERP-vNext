@@ -1,0 +1,26 @@
+@model Diten.Web.Models.Traceability.LotPageViewModel
+@using Diten.Web.Views.Traceability.LotMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@* Lot Hareket Geçmişi filters: the lot is the page's selector (above the table); dates as FU01 S-2. *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-from">
+                        <input id="filterFrom" type="date" class="form-control form-control-sm" aria-label="@Localizer["Filter.From"]" title="@Localizer["Filter.From"]" />
+                    </div>
+                    <div class="filter-chip filter-to">
+                        <input id="filterTo" type="date" class="form-control form-control-sm" aria-label="@Localizer["Filter.To"]" title="@Localizer["Filter.To"]" />
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

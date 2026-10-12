@@ -1,0 +1,6 @@
+acceptance	verdict	browser_sessions	exact_http	before_after	remaining_gap
+UI183-A08	PASS	actor-a + actor-b	422 INVALID_SHIPMENT_TRANSITION	failed request zero-write; final 1/2/2/2/2	none for A08 on exact source
+UI183-A09-409	PASS	actor-a + actor-b	409 POD_ALREADY_CAPTURED	actor-b leaves post-actor-a 1/4/4/4/5 unchanged	none for duplicate stale POD on exact source
+UI183-A09-422	PASS	actor-a + actor-b	422 INVALID_SHIPMENT_TRANSITION	actor-b leaves post-actor-a 1/4/4/4/4 unchanged	none for stale eligibility POD on exact source
+UI183-A12-data-api	PASS	actor-a + actor-le-b	transition and POD both 404 SHIPMENT_NOT_FOUND	1/1/1/1/1 and state byte-semantically unchanged	none for data/API isolation on exact source
+UI183-A12-safe-not-found-DOM	FAIL	actor-le-b cross-LE/unknown/deleted	all three safe 404	zero-write	Loading/summary/lines/POD skeleton remains after 404; only support-reference surface was required

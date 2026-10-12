@@ -1,0 +1,35 @@
+{
+  collections: [
+    'load_assignments',
+    'loads_receipts',
+    'loads_outbox',
+    'loads_audit',
+    'loads'
+  ],
+  loadCollection: 'loads',
+  load: {
+    number: 'LOAD-659A9B097C6544E28CD12F053432AFF7',
+    status: 'Draft',
+    version: 1,
+    root: 'f44306eb-7d57-42f2-baf2-ba4b8d6541db',
+    departAt: '2026-10-04T18:59:00Z',
+    mode: 'Road',
+    carrier: '1195039d-0af7-4724-bd6c-c0007c545be6',
+    shipments: [
+      '587dd735-f705-4083-ae3c-70bdb1a64052'
+    ],
+    stops: [
+      '1:Pickup:LOC-A',
+      '2:Delivery:LOC-B'
+    ],
+    tenantOk: true,
+    leOk: true
+  },
+  counts: {
+    load_assignments: 1,
+    loads_receipts: 1,
+    loads_outbox: 1,
+    loads_audit: 1,
+    loads: 1
+  }
+}

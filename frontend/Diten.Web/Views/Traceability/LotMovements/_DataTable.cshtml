@@ -1,0 +1,28 @@
+@using Diten.Web.Views.Traceability.LotMovements
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotMovementsIndex> Localizer
+@{
+    // FU01 S-2 history columns, filtered to the lot (pack §11.3). "Nereden" and "Kaydeden" are not columns: the contract's
+    // TransactionItem carries neither (FU01 BG-05) — the target side is shown, as in S-2.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-lotmovements",
+        DataMode = "server",
+        Slug = "lotmovements",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Col.Number"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Col.Type"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Quantity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.FromTo"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Status"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Source"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Date"].Value }
+        ],
+        ActionsHeader = Localizer["Col.Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

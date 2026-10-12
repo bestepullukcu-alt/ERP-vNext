@@ -1,0 +1,55 @@
+{
+ "carrier": {
+  "status": 201,
+  "carrierId": "3533de1e-ec9b-4dc6-8213-d68a0d93822b"
+ },
+ "shipments": [
+  {
+   "create": 201,
+   "shipmentId": "21c7563a-2fb6-4426-8b1b-d3b6e95af1e2",
+   "Planned": 200,
+   "Dispatched": 200,
+   "status": "Dispatched"
+  },
+  {
+   "create": 201,
+   "shipmentId": "240a4b27-5c42-48f3-953a-a15d2ae18b4a",
+   "Planned": 200,
+   "Dispatched": 200,
+   "status": "Dispatched"
+  },
+  {
+   "create": 201,
+   "shipmentId": "7da68be6-1077-4649-977f-59e232f54c04",
+   "Planned": 200,
+   "Dispatched": 200,
+   "status": "Dispatched"
+  },
+  {
+   "create": 201,
+   "shipmentId": "37dcd93c-598c-401a-9728-fa970e620207",
+   "Planned": 200,
+   "Dispatched": 200,
+   "status": "Dispatched"
+  },
+  {
+   "create": 201,
+   "shipmentId": "50105142-8483-47d7-8600-45dbe3e08ad9",
+   "Planned": 200,
+   "Dispatched": 200,
+   "status": "Dispatched"
+  },
+  {
+   "create": 201,
+   "shipmentId": "3091b3ee-5ef8-4500-b353-65d2f4269e70",
+   "Planned": 200,
+   "Dispatched": 200,
+   "status": "Dispatched"
+  },
+  {
+   "create": 201,
+   "shipmentId": "e6d31394-a4e9-40e8-8be2-744182c1bf3a",
+   "status": "Draft"
+  }
+ ]
+}

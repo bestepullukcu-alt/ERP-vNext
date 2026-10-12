@@ -1,0 +1,3 @@
+### D4-2 negative-stock guard — RESTORED
+git diff --stat (must be empty):
+Başarılı!  - Başarısız:     0, Başarılı:    18, Atlanan:     0, Toplam:    18, Süre: 1 s - Diten.InventoryService.Tests.dll (net8.0)

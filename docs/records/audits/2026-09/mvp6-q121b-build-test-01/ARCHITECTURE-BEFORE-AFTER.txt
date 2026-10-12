@@ -1,0 +1,10 @@
+before Passed ['MongoTestDatabaseGuardTests', 'PerRunDatabaseExceptionListStaysHonest'] 
+before Passed ['MongoTestDatabaseGuardTests', 'NoTestBuildsThePlatformSchema'] 
+before Passed ['MongoTestDatabaseGuardTests', 'TheScanActuallySeesTheTestTree'] 
+before Failed ['MongoTestDatabaseGuardTests', 'NoTestCreatesItsOwnDatabasePerRun'] a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason: | services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs | services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+before Passed ['MongoTestDatabaseGuardTests', 'SchemaBuildExceptionListStaysHonest'] 
+after Passed ['MongoTestDatabaseGuardTests', 'PerRunDatabaseExceptionListStaysHonest'] 
+after Passed ['MongoTestDatabaseGuardTests', 'NoTestBuildsThePlatformSchema'] 
+after Passed ['MongoTestDatabaseGuardTests', 'TheScanActuallySeesTheTestTree'] 
+after Passed ['MongoTestDatabaseGuardTests', 'SchemaBuildExceptionListStaysHonest'] 
+after Passed ['MongoTestDatabaseGuardTests', 'NoTestCreatesItsOwnDatabasePerRun'] 

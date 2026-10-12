@@ -1,0 +1,17 @@
+acceptance	verdict	evidence_or_gap
+Exact v3 source binding	PASS	21/21 immutable source manifest SHA256 3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c; Carrier patch SHA256 57f90dadedd6e2304e3775fd1ea0bd7def29ad9d265ccbbeb892afdc04ba1adb
+Isolated runtime	PASS	Web/Gateway/Auth/Platform/SupplyChain listened on 5301/5300/5356/5357/5361; sandbox-network-disabled launch discarded before evidence use
+Carrier L10n warnings	PASS	Fresh Arabic Carrier page browser console returned zero warning/error entries; focused RED 10 to GREEN 0 and missing-Save mutation evidence in carrier-writer
+DataTables v2 toolbar	PASS	768 and 390 measurements show table, search, filter, Add and responsive toolbar; 390 Add control collapses to 38.0078125 px icon width
+GoldenReferenceSlim create	PASS	Create offcanvas opened at both measured widths; exactly four approved user fields visible when Select2 internal control is counted as SupportedModes
+Responsive 768	PASS	window.innerWidth=768, devicePixelRatio=1, document/body scrollWidth=768; no document horizontal overflow
+Responsive 390	PASS	window.innerWidth=390, devicePixelRatio=1, document/body scrollWidth=390; no document horizontal overflow
+Arabic RTL	PASS	document dir=rtl at both measured widths; Carrier labels and controls rendered in Arabic
+Seven Carrier languages	PASS	Affected resource matrix is 70/70 present/non-empty and previous live seven-language evidence remains applicable; only warning predicate/test changed
+UAS-001	PASS (bound prior evidence)	Prior browser evidence proves denial/remediation only with no DataTable/create/status; authorization/controller/shared sources are byte-identical in v3. Fresh UAS login could not be established in this isolated rerun and is not represented as a new browser execution
+Shared Search localization	OPEN	main.js still hardcodes Search [CTRL + K]; exact shared-owner unapplied patch SHA256 2abe82415f68870f8d714af093473f497bcb1f210f970e491c32d288b1440074
+Status offcanvas and data mutations	OPEN	Requires real Auth handoff with usable tenant/legal-entity context; diagnostic/admin session produced fail-closed downstream denial and was not used as mutation acceptance
+Auth-issued list/create/replay/status	OPEN	No valid LE-scoped handoff in this lane
+Persistent PNG archive	OPEN	Fresh v3 evidence is DOM/geometry/console based; prior artifact-save/export denial was preserved and no data URL, CDP, encoding or alternate capture workaround was attempted
+No out-of-scope source write	PASS	Carrier writer changed only two allowlisted files; shared candidate remains unapplied; this lane wrote audit evidence only in the main checkout
+Overall	PARTIAL	Carrier warning defect and responsive measurement gaps are closed; shared Search, Auth-dependent E2E and persistent PNG remain open

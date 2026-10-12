@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "httpStatus": 200,
+  "body": "{\"shipmentId\":\"3d8b2dfd-88ae-43ec-be60-ff6cb5390885\",\"shipmentNumber\":\"R2-valid\",\"sourceDocumentId\":\"SO-3d8b2dfd-88ae-43ec-be60-ff6cb5390885\",\"status\":\"Draft\",\"carrierId\":null,\"loadId\":null,\"plannedShipAt\":\"2026-09-20T11:02:41.854+00:00\",\"plannedDeliverAt\":null,\"actualDeliverAt\":null,\"sourceModule\":\"MOD-0141\",\"sourceType\":\"SALES_ORDER\",\"warehouseReferenceId\":\"WH-1\",\"shipToReference\":\"C-1\",\"lines\":[],\"pod\":null,\"contractVersion\":\"v1\",\"lifecycleCorrelationId\":\"495ccdc8-3827-4c47-811a-89d62607f36b\"}",
+  "binarySha256": "7a92f3d38d8342a170124c92ab67087053d11b23e549863a81da57c6bf08f7f5"
+}

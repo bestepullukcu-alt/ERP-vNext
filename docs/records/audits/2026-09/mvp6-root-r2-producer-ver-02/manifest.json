@@ -1,0 +1,1 @@
+{"workPackage":"MVP6-ROOT-R2-PRODUCER-VER-02","verdict":"PASS_BOUNDED_RUNTIME","candidateYamlSha256":"dab5a2f9974283e2404a29a7fb8ed07a77ae8ed843929b1c7b4546c5615dd7cb","binarySha256":"1433ff88004c2fdebc8516f1162d8bf36a69b54c5deb7722afdfe2a7e49986a3","replicaSet":"mvp6r2ver02","port":27120,"apiPort":5162,"tests":{"root":7,"shipment":12},"noChange":true}

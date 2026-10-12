@@ -1,0 +1,11 @@
+stage	identity	result	evidence
+source	Shipment/UI 354-manifest e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3	PASS	354/354 exact
+source	Auth successor 22-manifest b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731	PASS	22/22 exact
+build	Build source 3333-manifest 516ba828bed602e4355a5cc6871501cbb3b3c72d60473fa7ec73d135bbadf911	PASS	3333/3333 exact
+binary	Supply 568833f6bc3a9dc29390c44d501fbe7fa0bfa206c1998e33fa88ee52deb392eb	PASS	process-manifest.tsv and supply-binary.sha256
+process	Supply PID 62012 then 62623	PASS	same binary and Mongo database across restart
+auth	Fresh real Auth-issued session	PASS	Web→Gateway→Auth login; credentials/token not archived
+browser	Root-assisted IAB on verifier stack	PASS	B01/B02 and restart observations, with assistance disclosed
+persistence	Shipment 15b654be-6029-42ea-8ea4-2d13cdeacb57	PASS	root/receipts/audit/outbox and scoped zero-write projections
+cleanup	All lane ports FREE	PASS	cleanup-final.tsv
+

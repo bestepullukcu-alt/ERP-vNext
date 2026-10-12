@@ -1,0 +1,10 @@
+Python 3.9.6 (default, Dec  2 2025, 07:27:58) 
+[Clang 17.0.0 (clang-1700.6.3.2)]
+openapi-spec-validator==0.7.2
+PyYAML==6.0.3
+jsonschema==4.25.1
+openapi-schema-validator==0.6.3
+Packaged OAS 3.1 schema SHA256 e7cb616a2a10849a166c4e4a93c62c56cfea02cc00eadf287e2fb875e7124098
+Tooldeps: /private/tmp/mvp6-capacity-duplicate-name-candidate-01/tooldeps
+Full meta-schema and semantic document validators used; no remote ref required.
+LibreSSL and RefResolver deprecation warnings are recorded in stderr, not test failures.

@@ -1,0 +1,21 @@
+Q88b FINAL-CHECK — 2026-10-01 16:23:55 +03
+uname -s: Darwin
+HEAD: 4a8d4d4b339528a88e6220fb8402e5a2c771136c (expected 4a8d4d4b339528a88e6220fb8402e5a2c771136c)
+branch: feature/mvp6-logistics
+.git/index.lock: absent
+git status --porcelain entries: start 565 (sha256 06c28ae7fb6647c71a9cf3d592aaffc10c95ae4ce36fe37fc0079695892dbbf8) · end 565
+entries added vs start: 0
+entries removed vs start: 0
+Note: docs/records/audits/2026-10/ was already one untracked entry at the start ('?? docs/records/audits/2026-10/'), so this run's new folder inside it adds no porcelain line.
+contents of docs/records/audits/2026-10/ now (birth time, system clock +02):
+  2026-10-01 13:34:23  mvp6-ct-verdicts-q183-q184-q65b-2026-10-01.md
+  2026-10-01 13:43:24  mvp6-q185-sop-mac-retest-01
+  2026-10-01 14:15:00  mvp6-q88b-capacity-mac-01
+  -> this run wrote only mvp6-q88b-capacity-mac-01/; every other entry belongs to another lane or an earlier run and was not touched.
+
+lane processes left: 0
+lane port listeners (5500-5599, 35994): 0
+27017 listener: owner dev mongod only: 758
+57192 listener: 0
+
+No git diff / add / commit / push. No tracked file edited. No ledger write. No rm / rmdir. Writes only in ~/mvp6-env/q88b/ and docs/records/audits/2026-10/mvp6-q88b-capacity-mac-01/ (new files).

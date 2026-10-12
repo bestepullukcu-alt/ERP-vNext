@@ -1,0 +1,33 @@
+# Q216 mvp6-q216-baseline-variance-01 — ARTIFACTS.sha256 (last write)
+# start 2026-10-02 21:00:40 +03 · end 2026-10-02 21:47:02 +03 (Europe/Istanbul)
+# branch feature/mvp6-logistics · HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+# no-change: git status --porcelain before = after, byte-identical (sha256 01ef1f7fe7d9b0e91795cef4a4bdf728669428b5dee4fccb3f80c8144f2f9d5e); 665 lines = 89 M + 576 ?? + 0 staged; git diff not run
+# written by this lane: this folder + /private/tmp/q216-baseline-variance-01/ + git-ignored bin/ obj/ of the SupplyChain test build
+# verify: cd docs/records/audits/2026-10/mvp6-q216-baseline-variance-01 && grep -v '^#' ARTIFACTS.sha256 | shasum -a 256 -c
+a67187834c516930d892d5808644757fe11b07e289175d39c7c7795392e0d28e  CI-GATE-RECOMMENDATION.md
+bb210ebec2c1494d7d9f468adb6861fcff2d444cb362070f27b0722f64db879a  DISK-LOG.md
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  NEW-FLIPS.tsv
+a46bbf21ddca3e6fa82693a5ac23642db97686f11f9cf25529bbd742c9f9dc03  RUN-TOTALS.tsv
+5cc15ddac5f2bb4f8c908531fe14d9698aef11c0f21cc18561afdbac097b7d19  SOP-22.md
+6a6ebfab2a7f4f49ce4836186e15410e43b058032d2a7cfeaa104a840c713a6f  VARIANCE.tsv
+3ce2f6ad48a4f63c80640a6628b8b4bf1c3eb4bd56e271d6b0067b77fda805c2  evidence/build.log
+c9d61e1e928027f4fd7d32f75d34f98121f176360ee975df86e379b0ad4ce663  evidence/env-seven-names.txt
+87b4d5bd732dd4009b87ff66707f1a07a08e302850e62c01c89ec6833f8f2a86  evidence/episodes.tsv
+9e9627a5755b5b9d06c49c91d9c23c69f29a9954e2014bbd0714fda121fdf9a2  evidence/failpoint-episodes-by-test.tsv
+54dbbae20bbfed4634bd1bc40ec05575aa6cca05d3f26afc93b56640c3fd6989  evidence/per-test-outcomes.json
+72922272c351bbd6f066f8aeb25bc914a9c5de6490386cff45dbd62c608e4da8  evidence/run01.log
+50064cfe12de1092440b530164fe56b5fae919c6b5d9dc14e972e29d09cabccd  evidence/run02.log
+cb94366595e80dca7ab798fc3f86bf3b2c1712a6d384457fd3aa881a10751af0  evidence/run03.log
+d8b42253cbfe8ac3ed36c40a88ebb297ad3bdc047ef63a65a2677df2f5c94435  evidence/run04.log
+b8d582b002716f16e0db449f1ddad522ae4de409b1023a546552e6f75eb25306  evidence/run05.log
+822602c213c89e3e724b83f9efd36d14913d022d657bce85f7a021ba6ddcf7b3  evidence/run06.log
+cfbb812868a163590c35cb7c16c68d991b4a79fe90f5be77f4148c7b447ade7b  evidence/run07.log
+c734d0984b4ffc26c326df440b5ff115289f0d651408dd583e21b37e9a82bc9f  evidence/run08.log
+abb9593c04b77b4aa84ff1164e9d1f7f72dc0bc35a3eb3afcdc39ea00aaf5576  evidence/run09.log
+0605de431de57d67eee43db435d39268685a6ab89db0eabc306c187df8b1414f  evidence/run10.log
+66b669dcc2bf969e021ed10bec3b5b5b3c2b4042d665084dd4428037d8213bfe  evidence/runs.tsv
+4d4a8f36a98e57c3cfe079c75123ee4885e5b56a74498cc8aaa867795864555d  evidence/trx-sha256.txt
+3f1f23955fd6c97732628c2639b2781d155f9e5c2be649e2195bfa6eae19efe4  tools/analyze.py
+006e015f1049347b3bb2004fcff35725736021e1b6bcdc1e9dde053b2796d978  tools/episodes.py
+348a7eca93a35b498cc8bd9a3acd35f0095f943fcf901f9eec8f3ee0acacb575  tools/join.py
+d15626b9df8cd2ea1966a87de46bc2e050f5185b8d992e5f083f0b788dec2e8d  tools/run10.py

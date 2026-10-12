@@ -1,0 +1,13 @@
+--- /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q366/services_Diten.MdmService_src_Diten.MdmService.Api_appsettings.Development.json.pre	2026-10-03 21:09:56
++++ services/Diten.MdmService/src/Diten.MdmService.Api/appsettings.Development.json	2026-10-03 21:09:56
+@@ -12,5 +12,10 @@
+     "InternalApiKey": "<REDACTED len 45>",
+     "ModuleRegistrationCredentialIdentifier": "ditenmdmservice",
+     "ModuleRegistrationCredentialSecret": "<REDACTED len 45>"
++  },
++  "PlatformServiceIdentity": {
++    "Enabled": true,
++    "KeyId": "local-dev",
++    "Secret": "<REDACTED len 64>"
+   }
+ }

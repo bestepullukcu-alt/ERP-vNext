@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ReturnsTitle" xml:space="preserve"><value>İadeler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Sevk edilen malların iadelerini talep edin, onaylayın ve izleyin.</value></data>
+  <data name="AddNewReturns" xml:space="preserve"><value>İade Ekle</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="RmaNumber" xml:space="preserve"><value>RMA Numarası</value></data>
+  <data name="ReturnId" xml:space="preserve"><value>İade Kimliği</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>Sevkiyat Kimliği</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>Sevkiyatın UUID değerini girin.</value></data>
+  <data name="ReturnSummary" xml:space="preserve"><value>İade Özeti</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="QuickViewNote" xml:space="preserve"><value>Bu özet listeden gelir; başka iade verisi yüklenmez.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Geçerli filtreyle eşleşen iade yok.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>İadeler yüklenemedi.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Yeniden Dene</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Belirtilmemiş</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Panoya kopyalandı.</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Dönen iade sayısı</value></data>
+  <data name="StatusRequested" xml:space="preserve"><value>Talep Edildi</value></data>
+  <data name="StatusAuthorized" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="StatusInTransit" xml:space="preserve"><value>Yolda</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>Teslim Alındı</value></data>
+  <data name="StatusDispositioned" xml:space="preserve"><value>Karara Bağlandı</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Kapatıldı</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>Planlandı</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Sevk Edildi</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>Yolda</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Teslim Edildi</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>İstisna</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni İade</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Sorgula</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>İadeyi oluşturmadan önce sevkiyatı arayın ve en az bir satır seçin.</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>Sevkiyat Numarası</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>Sevkiyat Durumu</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>Yalnızca Teslim Edildi veya Kapatıldı durumundaki sevkiyatlar için iade oluşturulabilir.</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>Bu sevkiyatın durumu iadeye izin vermiyor.</value></data>
+  <data name="ReturnLines" xml:space="preserve"><value>İade Edilen Satırlar</value></data>
+  <data name="ReturnLinesHelp" xml:space="preserve"><value>İade edilecek her sevkiyat satırını seçin ve miktarını girin. Sevk edilen miktar yalnızca bilgi içindir; kalan miktar değildir.</value></data>
+  <data name="SelectLine" xml:space="preserve"><value>Bu satırı iade et</value></data>
+  <data name="LineNumber" xml:space="preserve"><value>Satır Numarası</value></data>
+  <data name="ShippedQuantity" xml:space="preserve"><value>Sevk Edilen Miktar</value></data>
+  <data name="ReturnQuantity" xml:space="preserve"><value>İade Miktarı</value></data>
+  <data name="ReturnQuantityHelp" xml:space="preserve"><value>Yazıldığı gibi gönderilir, örneğin 2 veya 1.5.</value></data>
+  <data name="UomId" xml:space="preserve"><value>Ölçü Birimi</value></data>
+  <data name="NoShipmentLines" xml:space="preserve"><value>Bu sevkiyatta iade edilecek satır yok.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Neden Kodu</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>Kanıt Referansları</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Kanıt referansı</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>Referans Ekle</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>Referansı kaldır</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>İsteğe bağlı. Referanslar gösterilen sırayla gönderilir.</value></data>
+  <data name="CreateReturn" xml:space="preserve"><value>İade Oluştur</value></data>
+  <data name="ReturnCreated" xml:space="preserve"><value>İade oluşturuldu.</value></data>
+  <data name="ReturnCreateReplayed" xml:space="preserve"><value>Bu iade aynı istekle zaten oluşturulmuştu ve tamamlanmış olarak gösteriliyor.</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>İade Durumunu Değiştir</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>Yeni Durum</value></data>
+  <data name="ActionAuthorize" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="ActionMarkInTransit" xml:space="preserve"><value>Yolda Olarak İşaretle</value></data>
+  <data name="ActionCancelReturn" xml:space="preserve"><value>İadeyi İptal Et</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>Teslim Al (manuel beyan)</value></data>
+  <data name="ActionDisposition" xml:space="preserve"><value>Karar Ver</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>Kapat</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>Teslim Alındı (manuel beyan)</value></data>
+  <data name="ReceivedManualNote" xml:space="preserve"><value>Teslim alma yalnızca manuel bir beyandır. Depo girişi değildir ve stok hareketi oluşturmaz.</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>Gerçekleşme Zamanı</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>Yerel tarih ve saatiniz. UTC olarak gönderilir.</value></data>
+  <data name="OccurredAtInvalid" xml:space="preserve">
+    <value>Saat diliminizde var olan geçerli bir tarih ve saat girin.</value>
+  </data>
+  <data name="DispositionCode" xml:space="preserve"><value>Karar Kodu</value></data>
+  <data name="DispositionCodeHelp" xml:space="preserve"><value>Bu durum için zorunludur. Yazıldığı gibi gönderilir.</value></data>
+  <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>Stok İşlem Referansı</value></data>
+  <data name="InventoryReferenceHelp" xml:space="preserve"><value>İsteğe bağlı. Metin olarak saklanır ve stokla doğrulanmaz.</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>Durumu Uygula</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>İade durumu seçilen değere değiştirilsin mi?</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>İade durumu güncellendi.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>Bu durum değişikliği aynı istekle zaten uygulanmıştı ve tamamlanmış olarak gösteriliyor.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Bu işlem için bir istek hâlâ sürüyor.</value></data>
+  <data name="NoticeSessionEnded" xml:space="preserve"><value>Oturumunuz sona erdi. Lütfen yeniden oturum açın.</value></data>
+  <data name="NoticeForbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="NoticeUnsupportedMedia" xml:space="preserve"><value>İstek biçimi desteklenmiyor.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>İstek geçerli değil. Girilen değerleri kontrol edin.</value></data>
+  <data name="ErrReturnNotFound" xml:space="preserve"><value>Kayıt bulunamadı veya sizin için erişilebilir değil.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>Kayıt bulunamadı veya sizin için erişilebilir değil.</value></data>
+  <data name="ErrShipmentLineNotFound" xml:space="preserve"><value>Seçilen bir sevkiyat satırı artık sevkiyatta yok.</value></data>
+  <data name="ErrInvalidReturnTransition" xml:space="preserve"><value>İade bu arada değişti ve bu durum değişikliği artık mümkün değil. Liste yeniden yüklendi.</value></data>
+  <data name="ErrDispositionRequired" xml:space="preserve"><value>Bu durum için bir karar kodu girin.</value></data>
+  <data name="ErrInvalidReturnQuantity" xml:space="preserve"><value>Her iade miktarı sıfırdan büyük olmalıdır.</value></data>
+  <data name="ErrReturnQuantityExceeded" xml:space="preserve"><value>İade miktarı, iade için hâlâ açık olan sevk edilen miktarı aşıyor.</value></data>
+  <data name="ErrReturnUomMismatch" xml:space="preserve"><value>Ölçü birimi sevkiyat satırıyla eşleşmiyor.</value></data>
+  <data name="ErrDuplicateReturnLine" xml:space="preserve"><value>Aynı sevkiyat satırı birden fazla kez yer alıyor.</value></data>
+  <data name="ErrShipmentNotReturnable" xml:space="preserve"><value>Sevkiyatın durumu iadeye izin vermiyor.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>İstek artık sevkiyat kaydıyla eşleşmiyor.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten kullanıldı. Yeni bir işlem başlatın.</value></data>
+  <data name="ErrReturnSourceChanged" xml:space="preserve"><value>Sevkiyat, ilk iadesinden bu yana değişti. Sevkiyatı inceleyin; hiçbir şey otomatik olarak düzeltilmedi.</value></data>
+  <data name="ErrReturnShipmentRootInvalid" xml:space="preserve"><value>Sevkiyat referans verisi geçersiz. Lütfen destek ekibine başvurun.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Kaynak sistemin döndürdüğü sevkiyat verisi geçersiz. Lütfen destekle iletişime geçin.</value></data>
+  <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>Sevkiyat referans verisi eksik. Aynı isteği daha sonra yeniden deneyin.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>Sevkiyat durumu geçici olarak kullanılamıyor. Aynı isteği yeniden deneyin.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Sevkiyat referans verisine geçici olarak ulaşılamıyor. Aynı isteği yeniden deneyin.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>İadeler geçici olarak kullanılamıyor. Sonuç doğrulanmadı; aynı isteği yeniden deneyin.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Beklenmeyen bir hata oluştu. Aynı işlemi yeniden deneyebilirsiniz.</value></data>
+</root>

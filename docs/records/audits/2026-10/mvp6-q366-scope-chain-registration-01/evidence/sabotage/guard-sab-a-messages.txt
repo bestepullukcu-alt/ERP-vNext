@@ -1,0 +1,6 @@
+  Error Message:
+   Optional Diten.* dependencies that silently resolve to null:
+Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers.ForcedChangeTenantPasswordCommandHandler(Diten.AuthService.Application.Common.Interfaces.ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
+Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers.LoginCommandHandler(Diten.AuthService.Application.Common.Interfaces.ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
+Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers.RefreshTokenCommandHandler(Diten.AuthService.Application.Common.Interfaces.ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
+Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers.VerifyMfaCommandHandler(Diten.AuthService.Application.Common.Interfaces.ITenantLegalEntityScopeClient? legalEntityScopeClient = null)

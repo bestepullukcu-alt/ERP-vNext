@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@*
+    MOD-0022 E5W1 — "İmza görüntüsü" (mockup v2 MODAL · İMZA GÖRÜNTÜSÜ). Sneat modal (MasterRegister/Details.cshtml modal
+    pattern); filled by ESign.zoom({ img, nameOnly, signer, login, type, at, storage, hash, sub }). Rendered once per page.
+*@
+@if (Context.Items["ESignZoomRendered"] is not true)
+{
+    Context.Items["ESignZoomRendered"] = true;
+    <div class="modal fade" id="esignZoom" tabindex="-1" aria-hidden="true" aria-labelledby="esignZoomTitle">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="esignZoomTitle">@Localizer["ESign.Zoom.Title"]</h5>
+                        <small class="text-muted font-monospace" data-esign-zoom="sub"></small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["ESign.Dialog.Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="border rounded d-grid p-3 mb-3 bg-white" style="min-height:160px;place-items:center">
+                        <img alt="" class="img-fluid d-none" style="max-height:200px" data-esign-zoom="img" />
+                        <span class="text-center d-none" data-esign-zoom="name"></span>
+                    </div>
+                    <dl class="row mb-0 small">
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Zoom.Person"]</dt><dd class="col-7" data-esign-zoom="signer"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Zoom.Type"]</dt><dd class="col-7" data-esign-zoom="type"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Zoom.At"]</dt><dd class="col-7" data-esign-zoom="at"></dd>
+                        <dt class="col-5 text-muted fw-normal" data-esign-zoom-row="storage">@Localizer["ESign.Mine.Storage"]</dt><dd class="col-7" data-esign-zoom="storage"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.ImageDigest"]</dt><dd class="col-7 font-monospace text-break" data-esign-zoom="hash"></dd>
+                    </dl>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["ESign.Dialog.Close"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

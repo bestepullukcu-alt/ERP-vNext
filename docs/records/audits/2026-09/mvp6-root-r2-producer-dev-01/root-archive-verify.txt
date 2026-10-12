@@ -1,0 +1,6 @@
+baseline-2.0.0.yaml: OK
+shipment-bundle-2.0.0-root-r2-candidate.yaml: OK
+root-r2.patch: OK
+semantics-r2.md: OK
+harness-result.json: OK
+VER-PROMPT-R2.md: OK

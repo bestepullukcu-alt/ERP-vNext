@@ -1,0 +1,14 @@
+# verify from: repository root
+1f0b03e3215ad8899d827b9b6e109b2d13b338bfb71f142b765bf63477902726  frontend/Diten.Web/Program.cs
+33462d9c4389bc85002e906b9df318700533e07dca76e2599d43fe6f31c50acc  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/REPORT.md
+d4de0803421bbacd2c6ba660b885e1621ffc9135b81acea4247bb43bb4adfe4a  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix1-live-fixed.txt
+24675fcf8a5e43b8a8ec443567ff9b6262c72dcd6527337ea25b6542aaf1c589  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix1-live-restored.txt
+0e3d3702b6ca809169dee918c695fe51f6ec54730f5b64cbb09c087a32e15caf  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix1-live-sabotage.txt
+e09b85788c89492f2037d41024e36c32cacda6e3212f805a74cccb2234be9388  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix2-gateway-log-fixed.txt
+831adff467af55088a687e3d2d31e1c5c9756a2ca590be0861ceaf6b737e5fd0  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix2-gateway-log-sabotage.txt
+0704d3cac2dbab4c54c7039ff879aa205c1c3b7fda12dbff558164fa52cd0878  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix2-supplychain-post-lines.txt
+793bab90e3f20f6a242baf8d37fe2ed657e95acd8dd127366f423687576b9792  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix2-timings.tsv
+eeb606cfd667e337ee9a4e6019bc0432e2ec64ecf4674d11ceb75fed03904587  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix2-web-log-excerpts.txt
+cf8c0a0ead0ed6f5c825eb802c7db5e35ae587b47e2fb13ede56bfcfc3aec2c0  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/fix2-write-after-resume-db.txt
+608d0f7f0c33fd9fd06fe99da6f4e2645aaf6fdf497ed49f7f864e661cdcfb4a  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/program-cs.diff
+d79e401d94167edaf647e1e9ac4f99091fcbdf0b40f0f28beeae00b93b03a9fd  docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01/evidence/suite-results.txt

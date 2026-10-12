@@ -1,0 +1,30 @@
+@model Diten.Web.Models.Traceability.LotFormPageViewModel
+@using Diten.Web.Views.Traceability.Lots
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["Form.TitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0174 P3 — Lot Düzenle (LOTEDIT, page key trace.lots.update). ASSUMPTION-0174-08: the page also admits a holder of
+    trace.lots.update-released; which key the edit needs is decided per lot status (Draft → update, else update-released)
+    by the MVC post and by the service. UAS-001: with neither key only _AccessDenied, no form, no redirect.
+*@
+@if (!Perms.Has("trace.lots.update") && !Perms.Has("trace.lots.update-released"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Form.TitleEdit"].Value" />
+    return;
+}
+
+<partial name="~/Views/Traceability/Lots/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Traceability/Lots/_TraceActions.cshtml" />
+    <partial name="~/Views/Traceability/Lots/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Traceability/Lots/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Traceability/trace-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Traceability/Lots/form.js" asp-append-version="true"></script>
+}

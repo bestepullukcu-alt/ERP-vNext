@@ -1,0 +1,112 @@
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Quarantine.Blocked.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0175 Q5 — Bloke Stok (BLOCKEDSTOCK, pack §11.3). DataTable v2 SERVER mode → listBlocked. Row actions: Disposition Kararı
+    (page), Blokeyi Kaldır (an Unblock DECISION — draft → MOD-0022 signature → workflow; stock moves after approval, §21.3 #3;
+    disabled with the mockup tooltip until the review is complete, V14), İncelemeyi tamamla (§21.3 #8). Toolbar: Stoğu bloke et
+    (§21.3 #9 — blockStock, no workflow, the safety direction). Virtual "Bloke lot" rows (origin LotBlocked) offer Destroy only.
+    UAS-001 — nothing without quarantine.holds.read; every button only for a holder of its key (absent, not disabled).
+*@
+@if (!Perms.Has("quarantine.holds.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Quarantine.Blocked.Title"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Quarantine.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Quarantine.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Quarantine.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Quarantine.Common.Company.Unavailable"].Value;
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-quarantine-blocked",
+        DataMode = "server",
+        Slug = "quarantine-blocked",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Product"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Lot"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.WarehouseLocation"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Quantity"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.BlockReason"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.BlockedAt"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Pending"].Value, CssClass = "all" }
+        ],
+        ActionsHeader = Localizer["Quarantine.Col.Actions"].Value
+    };
+}
+
+<partial name="~/Views/Quarantine/_Header.cshtml" model="@("BLOCKEDSTOCK")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="inlineFilterHost">
+        <div class="collapse" id="inlineFilterCollapse">
+            <div class="pt-0 pb-3">
+                <form class="m-0" id="filterForm" data-no-tracker>
+                    <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                        <div class="filter-chip">
+                            <select id="filterReason" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Blocked.Filter.AllReasons"]">
+                                <option value="">@Localizer["Quarantine.Blocked.Filter.AllReasons"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterPending" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Blocked.Filter.PendingOnly"]">
+                                <option value="">@SharedLocalizer["ShowAll"]</option>
+                                <option value="true">@Localizer["Quarantine.Blocked.Filter.PendingOnly"]</option>
+                            </select>
+                        </div>
+                        <div class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                            <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Localizer["Quarantine.Filter.Clear"]</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="qr-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Quarantine.Common.NamesUnavailable"]</div>
+    <div id="qr-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table data-dt-standard="v2" data-dt-data-mode="server"> *@
+    <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+
+    <div class="alert alert-secondary d-flex gap-2 mt-3 py-2 small" role="note">
+        <i class="bx bx-info-circle mt-1"></i><span>@Localizer["Quarantine.Blocked.Info"]</span>
+    </div>
+
+    <form id="qr-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+    <partial name="~/Views/Quarantine/_UnblockModal.cshtml" />
+    @if (Perms.Has("quarantine.blocked.block"))
+    {
+        <partial name="~/Views/Quarantine/_BlockStockModal.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineActions.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+        <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Quarantine/blocked.js" asp-append-version="true"></script>
+    }
+}

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>S&amp;OP Planları</value></data>
+  <data name="PlanId" xml:space="preserve"><value>Plan Kimliği</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Plan Adı</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Ufuk Başlangıcı</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Ufuk Bitişi</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>Talep Planı Kimliği</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Talep Planı Sürümü</value></data>
+  <data name="Status" xml:space="preserve"><value>Plan Durumu</value></data>
+  <data name="Status.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Status.InReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="Status.Approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="Status.Rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="Status.Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Belirtilmemiş</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Panoya kopyalandı.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Önceki istek hâlâ işleniyor.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Tüm zorunlu alanları doldurun.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>İstek geçerli değil. Girdileri kontrol edip yeniden deneyin.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>İstek izlenemedi. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden oturum açın.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ErrUnknownSandopPlan" xml:space="preserve"><value>Bu S&amp;OP planı bulunamadı veya size açık değil.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>Bu ufuk ve talep planı sürümü için zaten bir S&amp;OP planı var.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>Planın durumu artık anlık görüntü almaya izin vermiyor. Plan yeniden yüklendi.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>Planın durumu artık onay kaydına izin vermiyor. Plan yeniden yüklendi.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>Bu rol ve anlık görüntü için zaten bir karar kaydedilmiş.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten kullanıldı. Yeni bir istek göndermek için girdileri değiştirin.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>Talep planı referansı bilinmiyor veya yayımlanmamış.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>Seçilen anlık görüntü bu plana ait değil.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Hizmet geçici olarak kullanılamıyor. Yeniden deneyin; aynı istek gönderilecek.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Sonuç doğrulanamadı. Yeniden deneyin; aynı istek gönderileceği için hiçbir şey iki kez kaydedilmez.</value></data>
+  <data name="SandopPlansPageDescription" xml:space="preserve"><value>Bir S&amp;OP planı oluşturun veya mevcut bir planı kimliğiyle açın.</value></data>
+  <data name="NoPlanListNote" xml:space="preserve"><value>Planlar burada listelenmez. Planı daha sonra açmak için oluşturma sonrasında gösterilen plan kimliğini saklayın.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Plan Oluştur</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Planı Aç</value></data>
+  <data name="OpenPlanTitle" xml:space="preserve"><value>Kimlikle plan aç</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Planın UUID değerini oluşturma sonrasında gösterildiği gibi girin.</value></data>
+  <data name="PlanIdInvalid" xml:space="preserve"><value>Geçerli bir plan kimliği (UUID) girin.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni S&amp;OP Planı</value></data>
+  <data name="HorizonOrderInvalid" xml:space="preserve"><value>Ufuk bitişi, ufuk başlangıcıyla aynı gün veya sonrasında olmalıdır.</value></data>
+  <data name="DemandReferenceHelp" xml:space="preserve"><value>DEMAND planı referansını yayımlandığı haliyle girin.</value></data>
+  <data name="RequiredFilled" xml:space="preserve"><value>Doldurulan zorunlu alanlar</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>Plan oluşturuldu.</value></data>
+</root>

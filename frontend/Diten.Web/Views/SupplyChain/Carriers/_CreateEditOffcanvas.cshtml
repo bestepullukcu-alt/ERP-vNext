@@ -1,0 +1,76 @@
+@model Diten.Web.Models.SupplyChain.Carriers.CreateCarrierViewModel
+@using Diten.Web.Views.SupplyChain.Carriers
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CarriersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit"
+     aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["AddNewCarrier"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formCarrierAlert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formCarrier" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                @* R-2 (SHIPMENT-BUNDLE 3.2.0): the company travels on the query, never in the body — the service
+                   rejects tenantId/legalEntityId body fields — so this select is not model-bound. It defaults to
+                   the company the list is scoped to and can be changed before saving. *@
+                <div class="col-12">
+                    <label for="formLegalEntity" class="form-label fw-medium">
+                        @SharedLocalizer["LegalEntity"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="formLegalEntity" class="form-select" required></select>
+                    <div class="invalid-feedback" id="formLegalEntityFeedback"></div>
+                </div>
+                <div class="col-12">
+                    <label asp-for="CarrierCode" class="form-label fw-medium">
+                        @Localizer["CarrierCode"] <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="CarrierCode" id="carrierCode" class="form-control"
+                           placeholder="@Localizer["CarrierCodePlaceholder"]" required />
+                    <span asp-validation-for="CarrierCode" class="invalid-feedback"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="DisplayName" class="form-label fw-medium">
+                        @Localizer["DisplayName"] <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="DisplayName" id="displayName" class="form-control"
+                           placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                    <span asp-validation-for="DisplayName" class="invalid-feedback"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="SupportedModes" class="form-label fw-medium">
+                        @Localizer["SupportedModes"] <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="SupportedModes" id="supportedModes"
+                            class="form-select select2-offcanvas" multiple="multiple" required
+                            data-placeholder="@Localizer["SupportedModesPlaceholder"]">
+                        <option value="Road">@Localizer["ModeRoad"]</option>
+                        <option value="Air">@Localizer["ModeAir"]</option>
+                        <option value="Sea">@Localizer["ModeSea"]</option>
+                        <option value="Rail">@Localizer["ModeRail"]</option>
+                        <option value="Parcel">@Localizer["ModeParcel"]</option>
+                    </select>
+                    <span asp-validation-for="SupportedModes" class="invalid-feedback"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="ExternalReference" class="form-label fw-medium">@Localizer["ExternalReference"]</label>
+                    <input asp-for="ExternalReference" id="externalReference" class="form-control"
+                           placeholder="@Localizer["ExternalReferencePlaceholder"]" />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveCarrier" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+# verify from: repository root
+581941ee764f8837cc3f7782d301ae2f39cba55bce23d1d44962bc4782a9a136  docs/records/audits/2026-10/mvp6-q453-observability-four-01/REPORT.md
+11ac46f1c00ce971d820cddb119bc15e35163bcf43628228991453693ea022c7  docs/records/audits/2026-10/mvp6-q453-observability-four-01/SOURCE-AS-MEASURED.sha256
+d308bfe0db40715cf382caaf81823608d7f819287e5592a1278bc59f8c442866  docs/records/audits/2026-10/mvp6-q453-observability-four-01/evidence/code-change.diff
+11764f657676020cc8db5fe64b45f20268298ee8c410bff0467afd4239e1ea1f  docs/records/audits/2026-10/mvp6-q453-observability-four-01/evidence/driver-results.txt
+f70502f9899dd40d3c92d546a9e6dfa879054186df5fa1c1448e50ed2f6829fb  docs/records/audits/2026-10/mvp6-q453-observability-four-01/evidence/outcome-1-fixed.txt
+89647ac75f086693dd244a70393cb1b5b27bf809b4f60b07886160c2dfd9d276  docs/records/audits/2026-10/mvp6-q453-observability-four-01/evidence/outcome-2-sabotage.txt
+372c41de4d244db5dfc10bd8b22b29d3ebdadad619e6b4862b076f6079e96640  docs/records/audits/2026-10/mvp6-q453-observability-four-01/evidence/outcome-3-restored.txt
+789065f56d9103f56fbe6acb5736daa93f72914c6c2873750564069fc4a0089f  docs/records/audits/2026-10/mvp6-q453-observability-four-01/evidence/sabotage.diff
+64ed7166f09aafd8a1e4dbdd84cf7b53f173b82da97f9a7734b6d982bcaa7da0  docs/records/audits/2026-10/mvp6-q453-observability-four-01/evidence/sc-suite.txt

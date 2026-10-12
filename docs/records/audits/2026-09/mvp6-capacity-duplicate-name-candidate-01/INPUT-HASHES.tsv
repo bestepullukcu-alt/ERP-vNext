@@ -1,0 +1,7 @@
+sha256	path
+9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3	docs/analysis/contracts/sandop-capacity.openapi.yaml
+eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda	docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d	docs/analysis/contracts/demand.openapi.yaml
+e5ca9ded1ce99166b3c28ea751ecc4215afab96a0a6ab1f1911236a35ee8275b	docs/records/audits/2026-09/mvp6-mod0192-production-rework-pack-01/CONTRACT-DELTA.md
+637690f32c1fa03e3039a4542bd53f7bb9b12f6b18d856a7d0e1f23d740c6877	execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+edd550b84451af082b934b392cd34f7dc24dd6e462f7e1d9ee0e03c21b4469f7	execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md

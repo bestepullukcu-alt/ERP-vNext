@@ -1,0 +1,277 @@
+[{
+	"_id": "724385ff-6fe3-471b-8040-220bf4e7d509",
+	"SkuLevel": "Gsku",
+	"LotId": "LOT-UI2/01",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"IsDeleted": false,
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"OwnerId": null,
+	"ProjectId": null,
+	"LocationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"StockStatus": "Available",
+	"WarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"Available": {
+		"$numberDecimal": "12"
+	},
+	"BaseUomId": "ADET",
+	"Blocked": {
+		"$numberDecimal": "0"
+	},
+	"CreatedAt": {
+		"$date": "2026-10-02T09:38:38.011Z"
+	},
+	"DeletedAt": null,
+	"InTransit": {
+		"$numberDecimal": "0"
+	},
+	"LastMovementId": "9d8855c6-3503-4cec-bb50-b86229440b90",
+	"LastPostingDate": {
+		"$date": "2026-10-02T09:50:43Z"
+	},
+	"OnHand": {
+		"$numberDecimal": "12"
+	},
+	"QualityInspection": {
+		"$numberDecimal": "0"
+	},
+	"Reserved": {
+		"$numberDecimal": "0"
+	},
+	"UpdatedAt": {
+		"$date": "2026-10-02T09:52:04.686Z"
+	},
+	"Version": 4
+},
+{
+	"_id": "32e6e6af-b74f-4fe9-affa-7bd6284b99d9",
+	"WarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+	"ProjectId": null,
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"IsDeleted": false,
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"LotId": "LOT-UI2/01",
+	"OwnerId": null,
+	"LocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"SkuLevel": "Gsku",
+	"StockStatus": "Available",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"Available": {
+		"$numberDecimal": "468"
+	},
+	"BaseUomId": "ADET",
+	"Blocked": {
+		"$numberDecimal": "0"
+	},
+	"CreatedAt": {
+		"$date": "2026-10-02T09:46:26.587Z"
+	},
+	"DeletedAt": null,
+	"InTransit": {
+		"$numberDecimal": "0"
+	},
+	"LastMovementId": "9d8855c6-3503-4cec-bb50-b86229440b90",
+	"LastPostingDate": {
+		"$date": "2026-10-02T09:50:43Z"
+	},
+	"OnHand": {
+		"$numberDecimal": "468"
+	},
+	"QualityInspection": {
+		"$numberDecimal": "0"
+	},
+	"Reserved": {
+		"$numberDecimal": "0"
+	},
+	"UpdatedAt": {
+		"$date": "2026-10-02T09:52:04.686Z"
+	},
+	"Version": 5
+},
+{
+	"_id": "83c5fefe-ec6e-4f69-88d5-cd0dc0e7a222",
+	"WarehouseId": "9b108296-e056-436f-a6af-6e9a534acc9c",
+	"ProjectId": null,
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"IsDeleted": false,
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"LotId": "LOT-UI2/01",
+	"OwnerId": null,
+	"LocationId": "0fe4da31-9c0c-4c78-b94e-8d3c7abfd6c7",
+	"SkuLevel": "Gsku",
+	"StockStatus": "Available",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"Available": {
+		"$numberDecimal": "24"
+	},
+	"BaseUomId": "ADET",
+	"Blocked": {
+		"$numberDecimal": "0"
+	},
+	"CreatedAt": {
+		"$date": "2026-10-02T09:47:56.055Z"
+	},
+	"DeletedAt": null,
+	"InTransit": {
+		"$numberDecimal": "0"
+	},
+	"LastMovementId": "ff22d931-eb07-4cbc-830f-a0bbf47751e2",
+	"LastPostingDate": {
+		"$date": "2026-10-02T09:47:42Z"
+	},
+	"OnHand": {
+		"$numberDecimal": "24"
+	},
+	"QualityInspection": {
+		"$numberDecimal": "0"
+	},
+	"Reserved": {
+		"$numberDecimal": "0"
+	},
+	"UpdatedAt": {
+		"$date": "2026-10-02T09:47:56.055Z"
+	},
+	"Version": 1
+},
+{
+	"_id": "87879d0c-30e1-4a03-ba9d-94e4952c088a",
+	"StockStatus": "Available",
+	"LotId": "LOT-UI2-PO",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"IsDeleted": false,
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"OwnerId": null,
+	"ProjectId": null,
+	"LocationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"SkuLevel": "Gsku",
+	"WarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"Available": {
+		"$numberDecimal": "10"
+	},
+	"BaseUomId": "ADET",
+	"Blocked": {
+		"$numberDecimal": "0"
+	},
+	"CreatedAt": {
+		"$date": "2026-10-02T09:50:20.752Z"
+	},
+	"DeletedAt": null,
+	"InTransit": {
+		"$numberDecimal": "0"
+	},
+	"LastMovementId": "3898097c-da07-41d7-9b91-5857369ca8b9",
+	"LastPostingDate": {
+		"$date": "2026-10-02T09:50:20.658Z"
+	},
+	"OnHand": {
+		"$numberDecimal": "10"
+	},
+	"QualityInspection": {
+		"$numberDecimal": "0"
+	},
+	"Reserved": {
+		"$numberDecimal": "0"
+	},
+	"UpdatedAt": {
+		"$date": "2026-10-02T09:50:20.752Z"
+	},
+	"Version": 1
+},
+{
+	"_id": "ffade542-4a9a-4f8c-8d71-a95b6d7e819d",
+	"ProjectId": null,
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"IsDeleted": false,
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"LotId": null,
+	"OwnerId": null,
+	"LocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+	"SkuLevel": "Gsku",
+	"StockStatus": "Available",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"WarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"Available": {
+		"$numberDecimal": "2"
+	},
+	"BaseUomId": "ADET",
+	"Blocked": {
+		"$numberDecimal": "0"
+	},
+	"CreatedAt": {
+		"$date": "2026-10-02T09:55:51.78Z"
+	},
+	"DeletedAt": null,
+	"InTransit": {
+		"$numberDecimal": "0"
+	},
+	"LastMovementId": "063d0a35-a252-45a8-abd2-8ba191823843",
+	"LastPostingDate": {
+		"$date": "2026-10-02T09:55:23Z"
+	},
+	"OnHand": {
+		"$numberDecimal": "2"
+	},
+	"QualityInspection": {
+		"$numberDecimal": "0"
+	},
+	"Reserved": {
+		"$numberDecimal": "0"
+	},
+	"UpdatedAt": {
+		"$date": "2026-10-02T09:55:51.78Z"
+	},
+	"Version": 1
+},
+{
+	"_id": "5d5263d4-b356-4ce8-8b34-1d4f20ca6e8f",
+	"ProjectId": null,
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"IsDeleted": false,
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"LotId": "LOT-UI2/04",
+	"OwnerId": null,
+	"LocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+	"SkuLevel": "Gsku",
+	"StockStatus": "Available",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"WarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"Available": {
+		"$numberDecimal": "12"
+	},
+	"BaseUomId": "ADET",
+	"Blocked": {
+		"$numberDecimal": "0"
+	},
+	"CreatedAt": {
+		"$date": "2026-10-02T09:59:08.091Z"
+	},
+	"DeletedAt": null,
+	"InTransit": {
+		"$numberDecimal": "0"
+	},
+	"LastMovementId": "93b43e45-c0ce-488e-8767-bae4c37ca696",
+	"LastPostingDate": {
+		"$date": "2026-10-02T09:58:23Z"
+	},
+	"OnHand": {
+		"$numberDecimal": "12"
+	},
+	"QualityInspection": {
+		"$numberDecimal": "0"
+	},
+	"Reserved": {
+		"$numberDecimal": "0"
+	},
+	"UpdatedAt": {
+		"$date": "2026-10-02T09:59:08.091Z"
+	},
+	"Version": 1
+}]
+

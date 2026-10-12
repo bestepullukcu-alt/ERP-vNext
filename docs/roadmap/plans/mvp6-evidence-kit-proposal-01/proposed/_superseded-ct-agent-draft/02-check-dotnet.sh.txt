@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# CANDIDATE — NOT APPROVED. Step 2: native .NET 8 runtime check. Refuses any major roll-forward.
+# Usage: W=<workspace> DOTNET_BIN=... 02-check-dotnet.sh <evidence_dir>
+source "$(dirname "$0")/kit-lib.sh"
+E="${1:?evidence dir}"
+DOTNET_BIN="${DOTNET_BIN:?}"
+[[ -x "$DOTNET_BIN" ]] || die "dotnet not found at configured path"
+case "${DOTNET_ROLL_FORWARD:-}" in Major|LatestMajor) die "DOTNET_ROLL_FORWARD=$DOTNET_ROLL_FORWARD refused";; esac
+[[ -z "${DOTNET_ROLL_FORWARD_TO_PRERELEASE:-}" ]] || die "DOTNET_ROLL_FORWARD_TO_PRERELEASE refused"
+export DOTNET_ROOT="$(dirname "$DOTNET_BIN")" DOTNET_MULTILEVEL_LOOKUP=0 DOTNET_CLI_TELEMETRY_OPTOUT=1
+# LatestPatch is the recorded precedent (carrier-auth-chain-recovery-01): Disable cannot bind 8.0.0 -> 8.0.23.
+export DOTNET_ROLL_FORWARD=LatestPatch
+"$DOTNET_BIN" --info > "$E/dotnet-info.txt" 2>&1
+sdk="$("$DOTNET_BIN" --version)"
+[[ "$sdk" == "${EXPECT_SDK_MAJOR:-8}".* ]] || die "SDK $sdk is not ${EXPECT_SDK_MAJOR:-8}.x (no global.json in repo; latest SDK would be chosen)"
+"$DOTNET_BIN" --list-runtimes > "$W/runtimes.txt"
+grep -q "^Microsoft.NETCore.App ${EXPECT_RUNTIME_MAJOR:-8}\." "$W/runtimes.txt"    || die "no NETCore.App 8.x runtime"
+grep -q "^Microsoft.AspNetCore.App ${EXPECT_RUNTIME_MAJOR:-8}\." "$W/runtimes.txt" || die "no AspNetCore.App 8.x runtime"
+{ echo "sdk	$sdk"; grep -E '^Microsoft\.(NETCore|AspNetCore)\.App ' "$W/runtimes.txt" | sed "s#\[.*\]##";
+  echo "roll_forward	LatestPatch"; echo "dotnet_root	<redacted-home>/.dotnet"; } > "$E/DOTNET-CHECK.tsv"
+# Any non-8 runtime present is recorded; step 7 proves which runtime each process actually mapped.
+if grep -Ev "^Microsoft\.(NETCore|AspNetCore|WindowsDesktop)\.App ${EXPECT_RUNTIME_MAJOR:-8}\." "$W/runtimes.txt" | grep -q .; then
+  log "WARN: other runtime majors installed; process-level check in step 7 is mandatory"
+fi
+# Build flags recorded from accepted lanes: no shared compiler / build servers (stall precedent).
+echo "build_flags	-c Release -m:1 /nr:false -p:UseSharedCompilation=false" >> "$E/DOTNET-CHECK.tsv"
+"$DOTNET_BIN" build-server shutdown >/dev/null 2>&1 || true
+log "PASS dotnet SDK $sdk"

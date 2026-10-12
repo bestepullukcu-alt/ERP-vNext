@@ -1,0 +1,59 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+@@ -7,7 +7,7 @@
+ golden_reference: none
+ entity_base: EntityBase
+ status: draft
+-status_note: "MVP6-LOGISTICS-NEXT-PREP-01 v1.0: bounded design prepared; exact owner decisions open; draft and DEV HELD."
++status_note: "MVP6-MOD0187-PREP-02 v1.0: six exact UNAPPROVED owner decisions prepared; Phase 1.5 BLOCKED; draft; DEV/VER HELD."
+ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+@@ -53,8 +53,8 @@
+ 
+ ## 5. Repo Scope
+ 
+-The exact prospective file allowlist is §25. No broad service/features wildcard, generated documentation
+-or shared composition edit is authorized. This PREP lane edits this pack only for this module.
++The current exact prospective file allowlist is §28 / PREP-02; §25 is the preceding draft. No broad service/features wildcard, generated documentation
++or shared composition edit is authorized. This PREP lane edits this pack and only the two user-owned MOD-0187 PREP-02 documentation directories.
+ Frozen contracts remain read-only. Future DEV requires explicit pack and shared-file release.
+ 
+ ## 6. Protected Paths
+@@ -459,3 +459,36 @@
+ ASSUMPTION: backend-only and contract-first/mock-first derive from v4.0 §7 and the existing draft, not from
+ runtime availability. No supplier/stock/live-ingress/financial posting implied. Historical DCP/board status
+ reconciliation belongs to central CT, not this pack lane. No new writer/subagent launched.
++
++
++## 28. MVP6-MOD0187-PREP-02 — current owner review (2026-09-19)
++
++**Status remains draft; DEV/VER HELD; Phase1.5 approval BLOCKED.** No runtime, scaffold, shared composition,
++canonical publication, finance posting or pack promotion is authorized by this preparation.
++
++Current preparation source: [PREP-02 package](../../../../docs/roadmap/plans/mod-0187-prep-02/README.md).
++The [single decision set](../../../../docs/roadmap/plans/mod-0187-prep-02/owner-decisions.md) refines existing
++D187-01–06 into exact proposed rules/scenarios with required owners; all remain UNAPPROVED.
++It supersedes unresolved proposal descriptions in §§12,23–27 for this review, without converting any into a default.
++[Phase1.5 and closed future ownership](../../../../docs/roadmap/plans/mod-0187-prep-02/phase-1.5-and-scope.md)
++supersede §25's allowlist and §27's historical readiness references. Earlier observations remain historical context.
++
++Current frozen SHIPMENT-BUNDLE metadata2.0.0 / wirev1 SHA256:
++`93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571`.
++Claims operations/schema/arrows remain as enumerated in §22; old §21 metadata1.1.0/hash and v4.0 pending Carrier
++sequencing are superseded by the exact published-input/authority reconciliation in PREP-02 README/inputs.
++Carrier bounded CT acceptance and Loads publication remain intact; neither grants Claims runtime acceptance or
++approval of Claims business/security rules. No MOD-0186 unapproved decision is consumed.
++
++[Contract GAPs](../../../../docs/roadmap/plans/mod-0187-prep-02/contract-gaps.md) route root seam, amount/reference
++semantics, errors/headers/replay/RBAC, architecture exceptions, exact publication/consumer uptake and composition
++to CT. ShipmentDetail currently exposes no authoritative original lifecycle root: no fabricated value or direct DB
++access is permitted. Any producer seam change is a separate authorized WP, not MOD-0183 ingress or a hidden DEV edit.
++
++[HELD DEV v1.0](../../../../docs/roadmap/plans/mod-0187-prep-02/dev-held-v1.0.md) and
++[HELD VER v1.0](../../../../docs/roadmap/plans/mod-0187-prep-02/ver-held-v1.0.md) are review-only templates.
++Activation requires exact owner decisions, amendments/publication/mock uptake, approved Phase1.5/exceptions,
++single-writer Program.cs scope and explicit pack promotion/new prompt version. All existing prompts preserved.
++[SOP§22 evidence report](../../../../docs/records/audits/2026-09/mod-0187-prep-02/report.md) distinguishes static
++preparation checks from unperformed runtime tests. Existing Shipment/Carrier/**Loads** regressions are mandatory;
++historical architecture test totals are not a future waiver.

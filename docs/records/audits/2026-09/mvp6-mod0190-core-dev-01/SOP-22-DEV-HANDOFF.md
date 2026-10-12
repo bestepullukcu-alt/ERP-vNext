@@ -1,0 +1,49 @@
+# MVP6-MOD0190-CORE-DEV-01 — SOP §22 handoff
+
+**Agent verdict: PARTIAL core DEV; writer complete. Independent VER and CT acceptance are pending.** The bounded six-operation module source compiles and 15 targeted tests pass against an isolated Mongo replica set. Actual composed HTTP/JWT, post-write fault injection, unresolved commit recovery and process restart are unproven; no E5/G5 or full-module completion is claimed.
+
+## Authority, baseline and scope
+
+- Actual 2026-09-22 owner message approved the exact MOD-0190 baseline `637690f32c1fa03e3039a4542bd53f7bb9b12f6b18d856a7d0e1f23d740c6877`, patch `ea22af82a9bca914a37ce7a953b3aa9d1e8f41d88f9c81008cb86e6390eab46a`, draft target `04f2e36f89cae0a21300217b63756b0cd3104c33af145d985b9fc101a83b38a2`, 38-path manifest `4bfc17f4811073553f1da773748cbc3733cd554671078188d122214ee3947982`, Phase 1.5 and isolated core DEV/independent VER. Shared composition was excluded.
+- Registered isolated checkout: `/Users/natig/.codex/worktrees/mvp6-mod0190-core/ERP-vNext-recovery`; detached at HEAD `4a8d4d4b339528a88e6220fb8402e5a2c771136c`, from the `feature/mvp6-logistics` source branch. It was clean before the 189 pinned dirty inputs were copied. The initial transfer differed from HEAD in 111 files and is preserved in `raw-evidence.tar.gz` as `mvp6-mod0190-transfer-01.json`. Input manifest SHA-256 `c62f52d238fbf2056449290a055b4771aa1ac11bb0021927b867a81ca92a5dc1` confirms 188 unchanged pins and one intentionally promoted pack.
+- Approved draft patch was applied with `git apply --check` and exact target hash `04f2e36f…`. The separate [promotion status patch](promotion-status.patch) SHA-256 `545f1776f8e09c93896776b413663e0da690576a1c5fe05ea580dbcbb25dc868` yielded the **promoted pack** SHA-256 `6a57769ced4396d2bc4228749a7e24b0daf36ce279930bb77c5dfdfe19fd0983`. The promoted hash is not confused with the draft target.
+- Canonical YAML remained `9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3`; annex remained `eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda`; `Program.cs` remained at transferred baseline `7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8`.
+- All **38** exact allowlisted C# paths exist and are the only runtime/test source paths this lane wrote. Full path/hash inventory: [source-manifest.tsv](source-manifest.tsv), SHA-256 `a3cc7b4729a6b688adc7b6c22d021c618382f75fd909859f4eca033340ab1934`. Immutable source bytes plus promoted pack: [source-archive.tar.gz](source-archive.tar.gz), SHA-256 `369c857c327a69acba6073f3495309c2fbaa1f30b4b371f47f69bb89f840f2a4`. No MOD-0192 source, shared file, gateway or frozen contract was edited by this lane.
+- Old `DEV-v2.0-HELD.md` and `VER-v2.0-HELD.md` remain historical. New SOP §17 records are [DEV-v3.0.md](DEV-v3.0.md) and [VER-v3.0.md](VER-v3.0.md); the latter requires a separate agent after this handoff.
+
+## Implementation and evidence level
+
+The module has Api/Application/Domain/Persistence/Infrastructure classes and six CQRS operations. Mongo persistence uses tenant/LE predicates and module-local indexes, session transactions for aggregate/receipt/audit/Pending outbox, exact-key simple collation, original-result receipt replay and a test-only exact DEMAND fixture seam. Plan creation remains Draft with explicit null snapshot, capture preserves prior snapshots, sign-off does not auto-approve. This is **E2 plus direct Mongo E4 fragments**, not composed E3/E4. A module-local controller calls its own context gate, but `Program.cs` and shared DI/permission registration were excluded; real routed HTTP/JWT was not executed.
+
+| Approved pack §16 criterion | DEV evidence and precise limit |
+|---|---|
+| Published DEMAND reference plan creation | **PARTIAL** — `Create_capture_signoff_preserves_prior_snapshot_and_draft_to_inreview`, `Invalid_fixture_creates_nothing_in_five_effect_collections`: exact scoped fixture returns 201; unknown fixture 422/zero effects. No live DEMAND producer validation. |
+| Immutable snapshot provenance only | **PARTIAL** — lifecycle and checksum tests pass; source stores only provenance/reference JSON, not demand series. No live source checksum/version uptake. |
+| Snapshot-bound role decision; duplicate cannot overwrite | **PASS for direct Mongo core** — lifecycle, five-role and concurrent-role tests; InReview persists after all five approvals. |
+| Every command idempotent and event at most once | **PARTIAL** — `All_three_mutations_replay_without_duplicate_effects_or_fixture_reread` checks all three replay bodies and three receipts/audits/outbox rows; `Exact_key_replays_original_body_without_second_effect_and_changed_payload_conflicts` checks changed payload 409. Unknown-commit/failpoint path remains unproven. |
+| Correlation through HTTP/response/audit/event | **PARTIAL** — module gate unit test checks current response header and original audit correlation; event envelope source carries original correlation. No real HTTP/JWT response/event capture. |
+| Cross-scope 404; missing permission 403 | **PARTIAL** — tenant/LE direct repository reads and foreign mutation 404; module gate synthetic-auth test 403. Real JWT middleware/HTTP is untested. |
+| Frozen success/error wire parity | **PARTIAL** — application shape, fingerprint, schema negative and 503 unit tests pass. Six routed operations and real response headers/body are untested without shared composition. |
+| No MOD-0192 internals; mock-bound core | **PASS for source boundary** — 38-path inventory and exact DEMAND fixture reader. This is not live producer uptake. |
+| G5 provenance integration | **OPEN** — outside isolated scope and requires E5 cross-module runtime. |
+
+## Commands, failures and persistence
+
+- `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0190 --name 'S&OP Workflow & Sign-offs'` → exit 0, `OK MOD-0190`.
+- `/Users/natig/.dotnet/dotnet build .../Diten.SupplyChainService.Api.csproj --no-restore -c Debug -v quiet` → exit 0, 0 warnings/errors. Final binary hashes are [binary-manifest.tsv](binary-manifest.tsv), SHA-256 `e4fef737f80c49908d94927bbd98828048dbb627774099decc9a65aa388a66c9`; the final build did not change those hashes.
+- Isolated Mongo `rs190` on **57190**, fixed DB `DitenSupplyChain_Mod0190_Test`; PRIMARY was measured before tests. Operational 27017 was untouched. `/Users/natig/.dotnet/dotnet test ... --filter FullyQualifiedName~SandopPlans` → **15/15 PASS**, 0 skipped; raw final `mod0190-final-targeted-v4.trx`. Tests cover real collection counts, replay/no second fixture read, duplicate race, scope predicates, checksum rejection, Pending outbox, and new-client durable replay. New client is not a process restart.
+- The first full SupplyChain run lacked other modules' isolated Mongo env vars: 59/152 PASS, 93 FAIL, configuration-only; retained as `mod0190-full-supplychain.trx`. With all modules on lane-local 57190, full run was **147/152 PASS, five Loads FAIL**, after Loads unknown-commit failpoint temporarily put that single shared test replica set into `ShutdownInProgress`/recovering state. Four affected Loads concurrency tests separately reran **4/4 PASS** after recovery; the affected unknown-commit test separately reran **1/1 PASS** with a recovery-tolerant 15-second server-selection timeout. This does not convert the 147/152 full run to PASS. The five IDs and raw log/TRX are archived.
+- Fresh architecture suite → **15 PASS / 3 FAIL** (`mod0190-architecture.trx`): existing Platform per-run Mongo DB test paths and HCM/Talent JWT-clock-skew paths. No MOD-0190 path was named. These remain repository gate failures; no waiver was created.
+- Raw TRX, build, Mongo and failure logs: [raw-evidence.tar.gz](raw-evidence.tar.gz), SHA-256 `6ef5559ef4ea559749fb4e3293862fad21cb8619712f293f0bbdb95075da25e6`; internal file hashes in [raw-evidence-manifest.tsv](raw-evidence-manifest.tsv), SHA-256 `2852a57856748fcd1c1df0106dfa0f13fb84e8b85f018eb7c6deb304b2637881`.
+
+## Remaining gaps, decisions and cleanup
+
+1. **GAP-190-COMPOSITION/HTTP** — shared `Program.cs` registration and shared permission seam need a separately approved exact integration-owner diff. No composed JWT, HTTP, startup or process-restart evidence is claimed from these direct tests.
+2. **GAP-190-FAILPOINT** — after-write/precommit rollback, definite collision and unresolved unknown-commit/receipt recovery were not independently fault-injected for this new repository. An invalid fixture showed zero writes; that is narrower.
+3. **GAP-190-RESTART** — a new Mongo client retained replay/outbox, but no service process restart was executed.
+4. **GAP-190-EXTERNAL-ARCH** — fresh architecture 15/3 remains FAIL in paths outside this lane. Full SupplyChain 147/152 remains a non-PASS despite isolated reruns of five failures.
+5. **GAP-190-LIVE** — live DEMAND producer, Workflow, publisher delivery, gateway/UI and E5/G5 remain outside the approved slice.
+
+**ASSUMPTION-190-01:** The exact published 2.0.0 annex and the approved §21 reconciliation control over stale draft-era lines elsewhere in the same pack (notably a trimmed/max-200 key and old `v1` document label); wire `contractVersion` remains `v1`. This follows the user's exact-hash approval and is not a new business rule. **ASSUMPTION-190-02:** The fixture reader contains only explicit test tuples; absent tuple fails closed. Neither a live DEMAND endpoint nor real checksum verification is inferred.
+
+Migration/backfill: none. Observability: correlation persisted in audit/outbox; no token/secret captured. Rollback: remove only the 38 allowlisted files and restore the baseline pack from the two recorded patches if directed; existing dirty inputs remain untouched. The lane's own `mongod` PID 13344 on 57190 was shut down after evidence capture; `shutdown.log` is archived. No commit, push or stash occurred. **Source writer complete; independent VER may start only after hash reconciliation.**

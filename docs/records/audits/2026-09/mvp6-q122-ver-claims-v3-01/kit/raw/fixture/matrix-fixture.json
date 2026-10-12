@@ -1,0 +1,153 @@
+{
+  "authGrant": {
+    "role": "Q122FixtureAdmin@T1",
+    "grantAdded": "supplychain.shipments.cancel",
+    "grantsBefore": 19,
+    "grantsAfter": 20
+  },
+  "steps": [
+    {
+      "step": "POST /api/shipment-bundle/shipments",
+      "status": 201
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST /api/shipment-bundle/shipments",
+      "status": 201
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST /api/shipment-bundle/claims",
+      "status": 201
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    },
+    {
+      "step": "POST transition",
+      "status": 200
+    }
+  ],
+  "shipments": {
+    "PLANNED": {
+      "shipmentId": "9323b638-d660-4452-875b-99f0dd20560f",
+      "status": "Planned"
+    },
+    "CANCELLED": {
+      "shipmentId": "568920b5-fd9a-47c4-bdbe-4115a52de001",
+      "status": "Cancelled"
+    }
+  },
+  "claims": {
+    "MX_OPEN1": {
+      "claimId": "24546e78-5447-424a-86f1-38b168c7160a",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Open"
+    },
+    "MX_OPEN2": {
+      "claimId": "e5f35de6-291f-479c-b167-f561c38a7512",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Open"
+    },
+    "MX_OPEN3": {
+      "claimId": "3d9646cf-3cbe-469e-b42d-63bdda7da7d8",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Open"
+    },
+    "MX_OPEN4": {
+      "claimId": "35007289-d4e6-4ac6-bfd5-91c7fb373333",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Open"
+    },
+    "MX_INV1": {
+      "claimId": "7d9551ad-cfc8-4a3e-b7c1-6dd61e623534",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Investigating"
+    },
+    "MX_INV2": {
+      "claimId": "462343da-c787-4c06-8b41-f8f5ab34a0a3",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Investigating"
+    },
+    "MX_APPR1": {
+      "claimId": "53574baa-bf6f-48c4-8daf-2ec77787046c",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Approved"
+    },
+    "MX_REJ1": {
+      "claimId": "25914c40-992c-4fe1-a951-fa7dbdfd51aa",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Rejected"
+    },
+    "MX_REJ2": {
+      "claimId": "b6606ca4-80d2-47ad-838f-8bad5262eba7",
+      "shipmentId": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+      "status": "Rejected"
+    }
+  },
+  "seedShipment": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+  "result": "PASS"
+}

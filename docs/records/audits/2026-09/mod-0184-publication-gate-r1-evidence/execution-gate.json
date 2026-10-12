@@ -1,0 +1,8 @@
+{
+  "writerThread": "01a0a663-9b56-7721-94a9-da2d2f124c2a",
+  "writerTurn": "01a0abb2-362f-7380-8243-79bc6122d971",
+  "writerTurnStatus": "completed",
+  "writerCompletedAtUnix": 1789587191,
+  "verificationStartedUtc": "2026-09-16T19:34:10.820241+00:00",
+  "mode": "repository read-only; explicit user-authorized temp outputs only"
+}

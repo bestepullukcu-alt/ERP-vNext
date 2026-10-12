@@ -1,0 +1,210 @@
+{
+  "phase": "o3",
+  "locale": "en",
+  "startedAt": "2026-09-30T20:37:21.940Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "O-3": {
+      "result": "FAIL",
+      "out": {
+        "create": {
+          "focus": {
+            "id": null,
+            "tag": "BODY",
+            "inCreate": false,
+            "inTransition": false,
+            "classes": "",
+            "text": "Search [CTRL + K]\nReturns\n\nRequest, authorize and track retu"
+          },
+          "titleVisible": true,
+          "title": "Returns",
+          "titleFocusable": false,
+          "addCount": 1,
+          "addDisabled": true,
+          "rawErrorInPage": false,
+          "toasts": [
+            "You are not authorized for this action. Support reference: 4acf8fee-7458-419b-a5bc-291fb07b426b"
+          ]
+        },
+        "o1": {
+          "addDisabledAfter3s": true,
+          "addHasDisabledClass": true
+        },
+        "transition": {
+          "target": "InTransit",
+          "focus": {
+            "id": null,
+            "tag": "BODY",
+            "inCreate": false,
+            "inTransition": false,
+            "classes": "",
+            "text": "Search [CTRL + K]\nReturns\n\nRequest, authorize and track retu"
+          },
+          "rawErrorInPage": false,
+          "titleVisible": true
+        },
+        "readonly": {
+          "addCount": 0,
+          "rows": 1,
+          "directPostStatus": 403,
+          "directPostCode": "INVALID_REQUEST"
+        },
+        "noread": {
+          "table": 0,
+          "skeletons": 0,
+          "filter": 0,
+          "url": "/SupplyChain/Returns",
+          "rawErrorInPage": false,
+          "directGet": 403
+        }
+      },
+      "parts": {
+        "createFocusOnPageTitle": false,
+        "noRawError": true,
+        "real403": true
+      },
+      "faked": "create 403 and transition 403 via route.fulfill; real 403s for read-only and no-read",
+      "evidence": [
+        "png/o3-create-403-en.png",
+        "png/o3-transition-403-en.png",
+        "png/o3-readonly-list-en.png",
+        "png/o3-noread-list-en.png"
+      ]
+    },
+    "Q174-O-1 (informational)": {
+      "result": "PASS",
+      "observed": {
+        "addDisabledRightAfter403": true,
+        "addDisabledAfter3s": true,
+        "addHasDisabledClass": true
+      },
+      "note": "informational only: records whether Add stays disabled after a 403 on create"
+    }
+  },
+  "png": [
+    {
+      "name": "o3-create-403-en.png",
+      "sha256": "513933f0ea16d8df6f283281c30e83cd86f0986200420a85ea96dc5ec2b06ccb",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:37:28.630Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-transition-403-en.png",
+      "sha256": "f492a5506b6704257e0c485452759f3170367626cef7386bb4edeaa4584d0481",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:37:37.190Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-readonly-list-en.png",
+      "sha256": "88b7ec297b998946d998a5af6dc3f74780a8ffde38a47ec4e6fc59eb18491dd4",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:37:39.919Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "o3-noread-list-en.png",
+      "sha256": "38bbc69d3f98f8bcc5e5d5e6babcea7a449d059ac703ed7804e891cebc3f555c",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:37:42.230Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "o3-en-create403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "tag": "o3-en-transition403",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "o3-en-create403",
+      "text": "You are not authorized for this action. Support reference: 4acf8fee-7458-419b-a5bc-291fb07b426b",
+      "type": "warning",
+      "at": "2026-09-30T20:37:27.192Z"
+    },
+    {
+      "tag": "o3-en-transition403",
+      "text": "You are not authorized for this action. Support reference: d36eb9d5-3fc0-403b-91de-807978b814aa",
+      "type": "warning",
+      "at": "2026-09-30T20:37:35.536Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "o3-en-create403",
+      "at": "2026-09-30T20:37:25.459Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-create403",
+      "at": "2026-09-30T20:37:27.086Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api/shipments/489b040d-5181-49d3-ae0d-540b41939827",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-create403",
+      "at": "2026-09-30T20:37:27.191Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-en-transition403",
+      "at": "2026-09-30T20:37:33.167Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-transition403",
+      "at": "2026-09-30T20:37:35.535Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api/38f1fe01-12c5-4c19-a17c-56b171634cde/transition",
+      "status": 403,
+      "errorCode": "FORBIDDEN",
+      "idempotencyKey": true
+    },
+    {
+      "tag": "o3-en-transition403",
+      "at": "2026-09-30T20:37:35.603Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "o3-en-readonly",
+      "at": "2026-09-30T20:37:38.372Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 8,
+  "endedAt": "2026-09-30T20:37:42.280Z"
+}

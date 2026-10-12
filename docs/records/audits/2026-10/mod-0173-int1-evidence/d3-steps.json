@@ -1,0 +1,411 @@
+﻿{
+    "probe":  {
+                  "tenantId":  "99c19886-a6c0-45ff-852e-073fef52953c",
+                  "legalEntityId":  "0dbf539d-8e2d-4daf-839e-e870a37b5617",
+                  "userId":  "f1dfea56-d70e-4af8-9c66-b25d5348e96c",
+                  "callerCorrelationId":  "304b4d15-3eea-41d2-b370-842ef7f6a906",
+                  "reservationId":  "086669f3-bd8f-47a3-9be9-0a5dd4a0a1af",
+                  "mongoDatabase":  "diten_inventory_mock"
+              },
+    "steps":  [
+                  {
+                      "step":  "a) POST /api/inventory/movements OPENING_BALANCE 100 (+ d: X-Correlation-Id UUID)",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/inventory/movements",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "X-Correlation-Id":  "304b4d15-3eea-41d2-b370-842ef7f6a906",
+                                                      "Idempotency-Key":  "int1-20261001092506-open"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int1-20261001092506-open",
+                                                   "movementType":  "OPENING_BALANCE",
+                                                   "itemId":  "b1f2c3d4-0000-0000-0000-000000000001",
+                                                   "skuId":  "c3d4e5f6-0000-0000-0000-000000000002",
+                                                   "skuLevel":  "Lsku",
+                                                   "quantity":  "100",
+                                                   "uomId":  "EA",
+                                                   "lotId":  "lot-777",
+                                                   "toWarehouseId":  "wh-01",
+                                                   "toLocationId":  "loc-A-12-3",
+                                                   "sourceModule":  "MOD-PROBE",
+                                                   "sourceType":  "INT1",
+                                                   "transactionDate":  "2026-10-01T09:00:00Z",
+                                                   "postingDate":  "2026-10-01T10:00:00Z"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  201,
+                                              "xCorrelationId":  [
+                                                                     "304b4d15-3eea-41d2-b370-842ef7f6a906"
+                                                                 ],
+                                              "body":  {
+                                                           "transactionId":  "d1f24bab-7049-43d4-9546-8f246b45cffe",
+                                                           "transactionNumber":  "INV-2026-0000001",
+                                                           "postedAt":  "2026-10-01T09:25:06.854Z",
+                                                           "idempotentReplay":  false,
+                                                           "balanceSnapshot":  {
+                                                                                   "itemId":  "b1f2c3d4-0000-0000-0000-000000000001",
+                                                                                   "skuId":  "c3d4e5f6-0000-0000-0000-000000000002",
+                                                                                   "skuLevel":  "Lsku",
+                                                                                   "legalEntityId":  "0dbf539d-8e2d-4daf-839e-e870a37b5617",
+                                                                                   "warehouseId":  "wh-01",
+                                                                                   "locationId":  "loc-A-12-3",
+                                                                                   "lotId":  "lot-777",
+                                                                                   "stockStatus":  "AVAILABLE",
+                                                                                   "onHand":  "100.000",
+                                                                                   "reserved":  "0.000",
+                                                                                   "available":  "100.000",
+                                                                                   "inTransit":  "0.000",
+                                                                                   "blocked":  "0.000",
+                                                                                   "qualityInspection":  "0.000",
+                                                                                   "baseUomId":  "EA",
+                                                                                   "baseQuantity":  "100.000",
+                                                                                   "lastMovementId":  "d1f24bab-7049-43d4-9546-8f246b45cffe",
+                                                                                   "lastPostingDate":  "2026-10-01T10:00:00.000Z"
+                                                                               },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "a) same Idempotency-Key again (replay)",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/inventory/movements",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "Idempotency-Key":  "int1-20261001092506-open"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int1-20261001092506-open",
+                                                   "movementType":  "OPENING_BALANCE",
+                                                   "itemId":  "b1f2c3d4-0000-0000-0000-000000000001",
+                                                   "skuId":  "c3d4e5f6-0000-0000-0000-000000000002",
+                                                   "skuLevel":  "Lsku",
+                                                   "quantity":  "100",
+                                                   "uomId":  "EA",
+                                                   "lotId":  "lot-777",
+                                                   "toWarehouseId":  "wh-01",
+                                                   "toLocationId":  "loc-A-12-3",
+                                                   "sourceModule":  "MOD-PROBE",
+                                                   "sourceType":  "INT1",
+                                                   "transactionDate":  "2026-10-01T09:00:00Z",
+                                                   "postingDate":  "2026-10-01T10:00:00Z"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "c50477dc49e44fd59209869849effe2e"
+                                                                 ],
+                                              "body":  {
+                                                           "transactionId":  "d1f24bab-7049-43d4-9546-8f246b45cffe",
+                                                           "transactionNumber":  "INV-2026-0000001",
+                                                           "postedAt":  "2026-10-01T09:25:06.854Z",
+                                                           "idempotentReplay":  true,
+                                                           "balanceSnapshot":  {
+                                                                                   "itemId":  "b1f2c3d4-0000-0000-0000-000000000001",
+                                                                                   "skuId":  "c3d4e5f6-0000-0000-0000-000000000002",
+                                                                                   "skuLevel":  "Lsku",
+                                                                                   "legalEntityId":  "0dbf539d-8e2d-4daf-839e-e870a37b5617",
+                                                                                   "warehouseId":  "wh-01",
+                                                                                   "locationId":  "loc-A-12-3",
+                                                                                   "lotId":  "lot-777",
+                                                                                   "stockStatus":  "AVAILABLE",
+                                                                                   "onHand":  "100.000",
+                                                                                   "reserved":  "0.000",
+                                                                                   "available":  "100.000",
+                                                                                   "inTransit":  "0.000",
+                                                                                   "blocked":  "0.000",
+                                                                                   "qualityInspection":  "0.000",
+                                                                                   "baseUomId":  "EA",
+                                                                                   "baseQuantity":  "100.000",
+                                                                                   "lastMovementId":  "d1f24bab-7049-43d4-9546-8f246b45cffe",
+                                                                                   "lastPostingDate":  "2026-10-01T10:00:00.000Z"
+                                                                               },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "b) GET /api/inventory/availability",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/inventory/availability?skuId=c3d4e5f6-0000-0000-0000-000000000002",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "51bbeed0bee44f268b735e805cbf3a62"
+                                                                 ],
+                                              "body":  {
+                                                           "itemId":  "b1f2c3d4-0000-0000-0000-000000000001",
+                                                           "skuId":  "c3d4e5f6-0000-0000-0000-000000000002",
+                                                           "skuLevel":  "Lsku",
+                                                           "legalEntityId":  "0dbf539d-8e2d-4daf-839e-e870a37b5617",
+                                                           "scope":  {
+
+                                                                     },
+                                                           "onHand":  "100.000",
+                                                           "reserved":  "0.000",
+                                                           "available":  "100.000",
+                                                           "byStatus":  {
+                                                                            "AVAILABLE":  "100.000",
+                                                                            "QUALITY_INSPECTION":  "0.000",
+                                                                            "QUARANTINE":  "0.000",
+                                                                            "BLOCKED":  "0.000",
+                                                                            "IN_TRANSIT":  "0.000",
+                                                                            "DAMAGED":  "0.000",
+                                                                            "EXPIRED":  "0.000"
+                                                                        },
+                                                           "baseUomId":  "EA",
+                                                           "asOf":  "2026-10-01T09:25:07.458Z",
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) POST /api/inventory/reservations 30",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/inventory/reservations",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "Idempotency-Key":  "int1-20261001092506-rsv"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int1-20261001092506-rsv",
+                                                   "itemId":  "b1f2c3d4-0000-0000-0000-000000000001",
+                                                   "skuId":  "c3d4e5f6-0000-0000-0000-000000000002",
+                                                   "skuLevel":  "Lsku",
+                                                   "quantity":  "30",
+                                                   "reservationType":  "SALES_ORDER",
+                                                   "sourceModule":  "MOD-0172",
+                                                   "sourceDocumentId":  "SO-INT1",
+                                                   "sourceLineId":  "1"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  201,
+                                              "xCorrelationId":  [
+                                                                     "65c034208a31447b88fab16149f4c5ff"
+                                                                 ],
+                                              "body":  {
+                                                           "reservationId":  "086669f3-bd8f-47a3-9be9-0a5dd4a0a1af",
+                                                           "status":  "ACTIVE",
+                                                           "reservedQuantity":  "30.000",
+                                                           "availableAfter":  "70.000",
+                                                           "etag":  "W/\"1\"",
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) release WITHOUT If-Match",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  400,
+                                              "xCorrelationId":  [
+                                                                     "c35ee4b3933a4c59bcc9942b1c349d6d"
+                                                                 ],
+                                              "body":  {
+                                                           "error":  {
+                                                                         "code":  "INVALID_REQUEST",
+                                                                         "message":  "The If-Match header is required.",
+                                                                         "correlationId":  "c35ee4b3-933a-4c59-bcc9-942b1c349d6d"
+                                                                     },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) release with wrong If-Match W/\"9\"",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "If-Match":  "W/\"9\""
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  409,
+                                              "xCorrelationId":  [
+                                                                     "8f0c13a96d2f4598b73134a36b5dd7e9"
+                                                                 ],
+                                              "body":  {
+                                                           "error":  {
+                                                                         "code":  "RESERVATION_CONFLICT",
+                                                                         "message":  "The reservation changed or is no longer active; reload it and retry with its current ETag.",
+                                                                         "correlationId":  "8f0c13a9-6d2f-4598-b731-34a36b5dd7e9"
+                                                                     },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) release with correct If-Match W/\"1\"",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "If-Match":  "W/\"1\""
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "af1921da036b4fb7a1a20210763a799a"
+                                                                 ],
+                                              "body":  {
+                                                           "reservationId":  "086669f3-bd8f-47a3-9be9-0a5dd4a0a1af",
+                                                           "status":  "RELEASED",
+                                                           "availableAfter":  "100.000",
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) release again with the now-stale If-Match W/\"1\"",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "If-Match":  "W/\"1\""
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  409,
+                                              "xCorrelationId":  [
+                                                                     "bd22b35eaeae4b34af66b174932312a2"
+                                                                 ],
+                                              "body":  {
+                                                           "error":  {
+                                                                         "code":  "RESERVATION_CONFLICT",
+                                                                         "message":  "The reservation changed or is no longer active; reload it and retry with its current ETag.",
+                                                                         "correlationId":  "bd22b35e-aeae-4b34-af66-b174932312a2"
+                                                                     },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "d) request WITHOUT X-Correlation-Id (gateway mints one)",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/inventory/balance?skuId=c3d4e5f6-0000-0000-0000-000000000002",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "ca1dcf6a5bb04a849162c58eb1a1a360"
+                                                                 ],
+                                              "body":  {
+                                                           "rows":  [
+                                                                        {
+                                                                            "itemId":  "b1f2c3d4-0000-0000-0000-000000000001",
+                                                                            "skuId":  "c3d4e5f6-0000-0000-0000-000000000002",
+                                                                            "skuLevel":  "Lsku",
+                                                                            "legalEntityId":  "0dbf539d-8e2d-4daf-839e-e870a37b5617",
+                                                                            "warehouseId":  "wh-01",
+                                                                            "locationId":  "loc-A-12-3",
+                                                                            "lotId":  "lot-777",
+                                                                            "stockStatus":  "AVAILABLE",
+                                                                            "onHand":  "100.000",
+                                                                            "reserved":  "0.000",
+                                                                            "available":  "100.000",
+                                                                            "inTransit":  "0.000",
+                                                                            "blocked":  "0.000",
+                                                                            "qualityInspection":  "0.000",
+                                                                            "baseUomId":  "EA",
+                                                                            "lastMovementId":  "d1f24bab-7049-43d4-9546-8f246b45cffe",
+                                                                            "lastPostingDate":  "2026-10-01T10:00:00.000Z"
+                                                                        }
+                                                                    ],
+                                                           "total":  1,
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "e) no token",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/inventory/balance?skuId=c3d4e5f6-0000-0000-0000-000000000002",
+                                      "headers":  {
+
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  401,
+                                              "xCorrelationId":  [
+                                                                     "7168932623e34883872c6167a96da7c2"
+                                                                 ],
+                                              "body":  {
+                                                           "error":  {
+                                                                         "message":  "A valid bearer token is required.",
+                                                                         "correlationId":  "71689326-23e3-4883-872c-6167a96da7c2"
+                                                                     },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "f) PUT /api/inventory/movements",
+                      "request":  {
+                                      "method":  "PUT",
+                                      "url":  "http://localhost:5090/api/inventory/movements",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "Idempotency-Key":  "int1-put"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int1-20261001092506-open",
+                                                   "movementType":  "OPENING_BALANCE",
+                                                   "itemId":  "b1f2c3d4-0000-0000-0000-000000000001",
+                                                   "skuId":  "c3d4e5f6-0000-0000-0000-000000000002",
+                                                   "skuLevel":  "Lsku",
+                                                   "quantity":  "100",
+                                                   "uomId":  "EA",
+                                                   "lotId":  "lot-777",
+                                                   "toWarehouseId":  "wh-01",
+                                                   "toLocationId":  "loc-A-12-3",
+                                                   "sourceModule":  "MOD-PROBE",
+                                                   "sourceType":  "INT1",
+                                                   "transactionDate":  "2026-10-01T09:00:00Z",
+                                                   "postingDate":  "2026-10-01T10:00:00Z"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  404,
+                                              "xCorrelationId":  [
+                                                                     "8d92e5f269a44b66b10453d2da5ada1d"
+                                                                 ],
+                                              "body":  null
+                                          }
+                  }
+              ]
+}
