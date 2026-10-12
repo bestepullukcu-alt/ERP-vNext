@@ -1,0 +1,148 @@
+{
+  "level": "E1+static spec assertions only; no runtime test",
+  "assertions": [
+    {
+      "name": "published metadata2.0.0",
+      "pass": true
+    },
+    {
+      "name": "wirev1",
+      "pass": true
+    },
+    {
+      "name": "/returnsget",
+      "pass": true
+    },
+    {
+      "name": "/returnspost",
+      "pass": true
+    },
+    {
+      "name": "/returns/{returnId}/transitionpost",
+      "pass": true
+    },
+    {
+      "name": "transition409 absent",
+      "pass": true
+    },
+    {
+      "name": "Inventory GET-by-ID absent",
+      "pass": true
+    },
+    {
+      "name": "Inventory transactionId filter absent",
+      "pass": true
+    },
+    {
+      "name": "Warehouse only outbound",
+      "pass": true
+    },
+    {
+      "name": "TR evidence absent",
+      "pass": true
+    },
+    {
+      "name": "Inventory ref not required",
+      "pass": true
+    },
+    {
+      "name": "Disposition not required",
+      "pass": true
+    },
+    {
+      "name": "summary required absent",
+      "pass": true
+    },
+    {
+      "name": "Shipment status optional",
+      "pass": true
+    },
+    {
+      "name": "decimal no scale cap",
+      "pass": true
+    },
+    {
+      "name": "draft",
+      "pass": true
+    },
+    {
+      "name": "frontend N/A",
+      "pass": true
+    },
+    {
+      "name": "20sections",
+      "pass": true
+    },
+    {
+      "name": "two held prompts",
+      "pass": true
+    },
+    {
+      "name": "47unique exact prospective files",
+      "pass": true
+    },
+    {
+      "name": "allowlist files absent",
+      "pass": true
+    },
+    {
+      "name": "link ../../../../docs/roadmap/plans/mod-0186-prep-02/owner-decisions-v1.0.md",
+      "pass": true
+    },
+    {
+      "name": "link ../../../../docs/roadmap/plans/mod-0186-prep-02/owned-paths-v1.0.md",
+      "pass": true
+    },
+    {
+      "name": "link ../../../../docs/roadmap/plans/mod-0186-prep-02/dev-prompt-v1.0-HELD.md",
+      "pass": true
+    },
+    {
+      "name": "link ../../../../docs/roadmap/plans/mod-0186-prep-02/ver-prompt-v1.0-HELD.md",
+      "pass": true
+    },
+    {
+      "name": "proposed exact arithmetic oracle",
+      "pass": true
+    },
+    {
+      "name": "proposed high scale exact oracle",
+      "pass": true
+    }
+  ],
+  "count": 27,
+  "operations": {
+    "/returns": {
+      "get": {
+        "operationId": "queryReturns",
+        "responses": [
+          "200"
+        ]
+      },
+      "post": {
+        "operationId": "createReturn",
+        "responses": [
+          "201",
+          "404",
+          "409",
+          "422"
+        ]
+      }
+    },
+    "/returns/{returnId}/transition": {
+      "post": {
+        "operationId": "transitionReturn",
+        "responses": [
+          "200",
+          "404",
+          "422"
+        ]
+      }
+    }
+  },
+  "proposed_numeric_oracles_are_not_implementation_tests": true,
+  "verifier_source": "/private/tmp/mod0186-prep02-0t364hyp/check_spec.py",
+  "verifier_sha256": "8758a58b5b250785c9cad2f73609a172cdd25be276510695d38758c9b60510f8",
+  "dcp_exit": 0,
+  "diff_check_exit": 0
+}

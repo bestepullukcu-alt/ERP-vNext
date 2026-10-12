@@ -1,0 +1,3 @@
+# Authority
+
+The repository user explicitly instructed the single integration writer on 2026-09-25 to apply exact patch SHA-256 `1e53a3a63661e85b6a165dcf8aaf48451cc077af85713234e22496ec6e861c45` subject to exact table SHA-256 `0a8b1e48d53630070bacbce61294bc8ecf5d82961ab7196dea0794dd81c47470` and preservation of accessibility successor manifest SHA-256 `dcc6662696db5e689d2d4f6facbb5106ca53d06a957caf21c5fabc912a0c7c88`. This current-role user message is the exact owner application decision. It authorizes only the isolated integration target and requires an immutable independent-verifier handoff.

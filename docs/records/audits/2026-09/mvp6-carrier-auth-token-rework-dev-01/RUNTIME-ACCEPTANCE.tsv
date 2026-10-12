@@ -1,0 +1,9 @@
+id	result	evidence	boundary
+F-01 exact claim cardinality	PASS	evidence.tar.gz::evidence/tests/token-rework-green.trx; evidence/runtime/token-negative-safe.json	28-test validator suite and real HTTP duplicate/missing/extra-audience negatives
+F-02 time validation	PASS	evidence.tar.gz::evidence/tests/token-rework-green.trx; evidence/runtime/token-negative-safe.json	iat/nbf equality, future time, configured skew, expiry, maximum lifetime
+real issuer login	PASS	evidence.tar.gz::evidence/runtime/login-refresh-safe-corrected.json	Auth-issued token contains the single authoritative legal_entity_id
+real issuer refresh	PASS	evidence.tar.gz::evidence/runtime/login-refresh-safe-corrected.json	refresh re-resolution remains compatible with the successor validator
+Platform regression	PASS	evidence.tar.gz::evidence/tests/token-rework-platform.trx	8/8 successor regression tests
+source binding	PASS	FINAL-22-SOURCE-MANIFEST.tsv; BUILD-SOURCE-MANIFEST.tsv	22/22 final scope and 3333/3333 build-source inputs
+runtime provenance	PASS	evidence.tar.gz::evidence/runtime/process-binary.tsv	fresh native .NET 8 binaries and exact processes
+independent verification	OPEN	INDEPENDENT-VER-HANDOFF.md	different verifier required

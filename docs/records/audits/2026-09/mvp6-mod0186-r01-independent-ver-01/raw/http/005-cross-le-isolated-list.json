@@ -1,0 +1,29 @@
+{
+  "name": "cross-le-isolated-list",
+  "request": {
+    "bodyUtf8": null,
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "X-Correlation-Id": "91c21c34-00f3-4a6e-be7c-1aa8bbb43e6d",
+      "X-Legal-Entity-Id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111"
+    },
+    "method": "GET",
+    "path": "/api/shipment-bundle/returns"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "items": [],
+      "total": 0
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 17:05:28 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "91c21c34-00f3-4a6e-be7c-1aa8bbb43e6d"
+    },
+    "status": 200
+  }
+}

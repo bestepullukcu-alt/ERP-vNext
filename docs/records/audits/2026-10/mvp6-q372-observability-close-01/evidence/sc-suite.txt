@@ -1,0 +1,29 @@
+# SupplyChain suite, resume run — run-modules.sh (Q335 recipe) on ~/mvp6-env/q372-20261004-2305/stack, mongod 57373 rsq372s enableTestCommands=1
+== build rc=0 seconds=50
+== listed tests: 466
+== Shipments start 23:06:56
+== Shipments rc=0 seconds=30
+Passed!  - Failed:     0, Passed:    90, Skipped:     0, Total:    90, Duration: 22 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== Carriers start 23:07:26
+== Carriers rc=0 seconds=12
+Passed!  - Failed:     0, Passed:    36, Skipped:     0, Total:    36, Duration: 9 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== Loads start 23:07:38
+== Loads rc=0 seconds=63
+Passed!  - Failed:     0, Passed:    33, Skipped:     0, Total:    33, Duration: 56 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== Returns start 23:08:41
+== Returns rc=1 seconds=91
+Failed!  - Failed:     1, Passed:    77, Skipped:     0, Total:    78, Duration: 1 m 29 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== Claims start 23:10:12
+== Claims rc=1 seconds=4
+Failed!  - Failed:     1, Passed:   128, Skipped:     0, Total:   129, Duration: 1 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== SandopPlans start 23:10:16
+== SandopPlans rc=0 seconds=23
+Passed!  - Failed:     0, Passed:    19, Skipped:     0, Total:    19, Duration: 19 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== CapacityPlans start 23:10:39
+== CapacityPlans rc=0 seconds=132
+Passed!  - Failed:     0, Passed:    48, Skipped:     0, Total:    48, Duration: 2 m 9 s - Diten.SupplyChainService.Tests.dll (net8.0)
+== end 23:12:51
+## Returns failures
+[xUnit.net 00:01:29.31]     Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 403, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVAL
+## Claims failures
+[xUnit.net 00:00:01.88]     Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [FAIL]

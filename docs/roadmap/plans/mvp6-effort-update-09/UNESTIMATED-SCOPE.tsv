@@ -1,0 +1,13 @@
+id	module	status_09	description	change_vs_08
+0185-RS-05	0185	ESTIMATED (forecast)	Loads producer uptake	FC9-0185-UP-01..05 11.5/19/35 + F-1 1.5/3/5
+0185-RS-06	0185	OPEN_SCOPE_UNESTIMATED	Independent Loads detail surface (BL-375)	unchanged
+0185-RS-07	0185	OPEN_SCOPE_UNESTIMATED	Searchable Carrier/Shipment/location lookup (BL-376)	unchanged
+0185-RS-08	0185	OPEN_POLICY_UNESTIMATED	Multi-Shipment root grouping policy	unchanged
+UI-0190	0190	ESTIMATED (forecast)	S&OP UI scope	Q78 option A 52/86/148 (FC9-0190-1/-4; rows 5/6 hold the sub-items)
+UI-0192	0192	ESTIMATED (forecast)	Capacity UI scope	Q78 option A 58/98/168 (FC9-0192-1/-4; rows 5/6 hold the sub-items)
+SR-0190-0192	0190/0192	ESTIMATED inside UI-0190/UI-0192	Self-registration for S&OP and Capacity	Q78 integration row names provider + 2 nav keys + tests (A6)
+CAP-IDS	0192	UNESTIMATED (new)	Capacity IDs in the address (owner decision F-Q79-05 = A; Q88c)	new; the decision record gives no estimate
+SUP-0147-0148	0147/0148	RESERVE_ONLY	Supplier modules	unchanged
+SH-KIT	SHARED	UNESTIMATED	Evidence kit v1.x upkeep	unchanged
+SH-OVERLAY	SHARED	UNESTIMATED	Per-module shared-overlay packaging and reconciliation	unchanged
+SH-CARRIER-SRC	0184	UNESTIMATED	Carrier v3 UI source archiving (Q62)	unchanged

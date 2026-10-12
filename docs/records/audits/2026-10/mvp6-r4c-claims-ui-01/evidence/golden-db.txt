@@ -1,0 +1,155 @@
+{
+  claim: {
+    number: 'CLM-3b569dd1f818419b8026cbaee8eb5f48',
+    status: 'Open',
+    version: 1,
+    carrier: '3533de1e-ec9b-4dc6-8213-d68a0d93822b',
+    reason: 'DAMAGE-IN-TRANSIT',
+    amount: '250.00',
+    currency: 'EUR',
+    evidence: [
+      'EV-PHOTO-1'
+    ],
+    root: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+    snapshot: {
+      ShipmentId: '21c7563a-2fb6-4426-8b1b-d3b6e95af1e2',
+      ShipmentStatus: 'Dispatched',
+      ShipmentCarrierId: '3533de1e-ec9b-4dc6-8213-d68a0d93822b',
+      CarrierStatus: 'Active',
+      Root: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      ObservedAt: '2026-10-04T20:05:50.789819+00:00'
+    },
+    tenantOk: true,
+    le: '07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea'
+  },
+  shipmentRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+  rootEqualsShipmentRoot: true,
+  receipts: [
+    {
+      Operation: 'createClaim',
+      IdempotencyKey: '444041b9-6d3d-4aea-9432-3fa6e7e41a2e',
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      StatusCode: 201
+    }
+  ],
+  audit: 1,
+  outbox: [
+    {
+      Status: 'Pending'
+    }
+  ]
+}
+--- after the five transitions ---
+{
+  status: 'Closed',
+  version: 5,
+  approved: '200.00',
+  root: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+  audit: [
+    {
+      Version: 1,
+      After: {
+        Status: 'Open'
+      },
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      OccurredAt: '2026-10-04T20:05:50.6451530+00:00',
+      ReceivedAt: '2026-10-04T20:05:50.6451530+00:00',
+      ResolutionCode: null,
+      Note: null
+    },
+    {
+      Version: 2,
+      Before: {
+        Status: 'Open'
+      },
+      After: {
+        Status: 'Investigating'
+      },
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      OccurredAt: '2026-10-04T23:06:37+03:00',
+      ReceivedAt: '2026-10-04T20:06:40.4075930+00:00',
+      ResolutionCode: 'R4C-INV',
+      Note: 'Opened investigation'
+    },
+    {
+      Version: 3,
+      Before: {
+        Status: 'Investigating'
+      },
+      After: {
+        Status: 'Approved'
+      },
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      OccurredAt: '2026-10-04T23:07:00+03:00',
+      ReceivedAt: '2026-10-04T20:07:04.6018180+00:00',
+      ResolutionCode: 'R4C-APPROVED',
+      Note: null
+    },
+    {
+      Version: 4,
+      Before: {
+        Status: 'Approved'
+      },
+      After: {
+        Status: 'Settled'
+      },
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      OccurredAt: '2026-10-04T23:07:21+03:00',
+      ReceivedAt: '2026-10-04T20:07:22.5663460+00:00',
+      ResolutionCode: null,
+      Note: 'Settlement recorded'
+    },
+    {
+      Version: 5,
+      Before: {
+        Status: 'Settled'
+      },
+      After: {
+        Status: 'Closed'
+      },
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      OccurredAt: '2026-10-04T23:07:34+03:00',
+      ReceivedAt: '2026-10-04T20:07:35.8259800+00:00',
+      ResolutionCode: 'R4C-CLOSED',
+      Note: null
+    }
+  ],
+  receipts: [
+    {
+      Operation: 'createClaim',
+      IdempotencyKey: '444041b9-6d3d-4aea-9432-3fa6e7e41a2e',
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      ResultingStatus: 'Open',
+      StatusCode: 201
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: 'c5f6ee29-5cc4-46f2-9a0d-abf0eebb1448',
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      ResultingStatus: 'Investigating',
+      StatusCode: 200
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: '04c543ce-ac00-4877-8c55-51a17297a882',
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      ResultingStatus: 'Approved',
+      StatusCode: 200
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: '1f4939de-c2b2-42e3-9294-4f9c3b9d6e1c',
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      ResultingStatus: 'Settled',
+      StatusCode: 200
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: 'ab94805d-dd8e-42fe-8e7a-dd3ed34f8daa',
+      CorrelationRoot: 'b43dd46b-0dd5-4294-b9a6-23c383433771',
+      ResultingStatus: 'Closed',
+      StatusCode: 200
+    }
+  ],
+  outbox: 5
+}

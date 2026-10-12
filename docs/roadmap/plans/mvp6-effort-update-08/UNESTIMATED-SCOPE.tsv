@@ -1,0 +1,12 @@
+id	module	status	description	denominator_treatment	next_trigger
+0185-RS-05	0185	DECIDED_UNESTIMATED	Loads producer uptake: emit LoadPlan.CorrelationRoot via LoadSummary.lifecycleCorrelationId (decision C, option A)	Outside both ledgers; no invented estimate	Uptake WP preflight gives O/M/P
+0185-RS-06	0185	OPEN_SCOPE_UNESTIMATED	Independent Loads detail surface (BL-375)	Outside both ledgers	Owner scope decision
+0185-RS-07	0185	OPEN_SCOPE_UNESTIMATED	Searchable Carrier/Shipment/location lookup (BL-376)	Outside both ledgers	Owner scope decision
+0185-RS-08	0185	OPEN_POLICY_UNESTIMATED	Multi-Shipment root grouping policy (left open by D185-ROOT-ACQ-01)	Outside both ledgers	Owner boundary decision
+UI-0190	0190	OPEN_SCOPE_UNESTIMATED	S&OP UI scope (only a generic frontend reserve exists)	Reserve in ledger; scope not frozen	Q27 then UI scope prep
+UI-0192	0192	OPEN_SCOPE_UNESTIMATED	Capacity UI scope (only a generic frontend reserve exists)	Reserve in ledger; scope not frozen	Q28 then UI scope prep
+SR-0190-0192	0190/0192	UNESTIMATED	Self-registration for S&OP and Capacity (excluded from the 38/70/127 estimate)	Outside both ledgers	UI scope exists
+SUP-0147-0148	0147/0148	RESERVE_ONLY	Supplier modules: whole remaining is reserve-based; no scope freeze	Reserve in ledger	Q19 DC-01..05
+SH-KIT	SHARED	UNESTIMATED	Evidence kit v1.x revision, validation and upkeep (environment lane)	Outside both ledgers; no source estimate found	Q57/Q58/Q24 records
+SH-OVERLAY	SHARED	UNESTIMATED	Per-module shared-overlay packaging and one-time reconciliation (modules-first decision)	Outside both ledgers	Integration plan v9.3
+SH-CARRIER-SRC	0184	UNESTIMATED	Carrier v3 UI source archiving (Q62)	Outside both ledgers	Q62 result

@@ -1,0 +1,9 @@
+tree	target	exit	warnings	errors
+build-before	services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj	0	127	0
+build-before	tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj	0	0	0
+build-after	services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj	0	127	0
+build-after	tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj	0	0	0
+build-after	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0
+build-after	services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj	0	0	0
+build-after	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	18	0
+build-after	gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj	0	5	0

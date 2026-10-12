@@ -1,0 +1,186 @@
+    18	    [Fact]
+    19	    public void Exact_platform_identity_and_scope_are_accepted() =>
+    20	        Assert.True(CreateValidator().IsAuthorized(CreateToken(), TenantId, ActorId, LegalEntityId));
+    21	
+    22	    [Fact]
+    23	    public void Wrong_signing_key_is_rejected() =>
+    24	        Assert.False(CreateValidator().IsAuthorized(
+    25	            CreateToken(secret: "abcdefghijklmnopqrstuvwxyz123456"), TenantId, ActorId, LegalEntityId));
+    26	
+    27	    [Theory]
+    28	    [InlineData("wrong-caller", "mdm.legal-entities.reference.validate")]
+    29	    [InlineData("Diten.Platform", "mdm.everything.read")]
+    30	    public void Wrong_caller_or_scope_is_rejected(string caller, string scope) =>
+    31	        Assert.False(CreateValidator().IsAuthorized(
+    32	            CreateToken(caller: caller, scope: scope), TenantId, ActorId, LegalEntityId));
+    33	
+    34	    [Fact]
+    35	    public void Tenant_actor_and_legal_entity_must_all_match()
+    36	    {
+    37	        var validator = CreateValidator();
+    38	        var token = CreateToken();
+    39	        Assert.False(validator.IsAuthorized(token, Guid.NewGuid(), ActorId, LegalEntityId));
+    40	        Assert.False(validator.IsAuthorized(token, TenantId, Guid.NewGuid(), LegalEntityId));
+    41	        Assert.False(validator.IsAuthorized(token, TenantId, ActorId, Guid.NewGuid()));
+    42	    }
+    43	
+    44	    [Fact]
+    45	    public void Disabled_identity_rejects_otherwise_valid_token()
+    46	    {
+    47	        var options = ValidOptions();
+    48	        options.Enabled = false;
+    49	        Assert.False(new PlatformServiceTokenValidator(Options.Create(options))
+    50	            .IsAuthorized(CreateToken(), TenantId, ActorId, LegalEntityId));
+    51	    }
+    52	
+    53	    [Fact]
+    54	    public void Excessive_token_lifetime_is_rejected()
+    55	    {
+    56	        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    57	        Assert.False(CreateValidator().IsAuthorized(
+    58	            CreateToken(iat: now, nbf: now, exp: now + 120), TenantId, ActorId, LegalEntityId));
+    59	    }
+    60	
+    61	    [Theory]
+    62	    [InlineData(JwtRegisteredClaimNames.Sub, "other-caller")]
+    63	    [InlineData("scope", "mdm.everything.read")]
+    64	    [InlineData("tenant_id", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")]
+    65	    [InlineData("actor_id", "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")]
+    66	    [InlineData("legal_entity_id", "cccccccc-cccc-cccc-cccc-cccccccccccc")]
+    67	    [InlineData(JwtRegisteredClaimNames.Jti, "duplicate-jti")]
+    68	    [InlineData(JwtRegisteredClaimNames.Iat, "1")]
+    69	    public void Duplicate_security_claim_is_rejected(string type, string conflictingValue)
+    70	    {
+    71	        var duplicate = new Claim(type, conflictingValue, type == JwtRegisteredClaimNames.Iat
+    72	            ? ClaimValueTypes.Integer64
+    73	            : ClaimValueTypes.String);
+    74	        Assert.False(CreateValidator().IsAuthorized(
+    75	            CreateToken(extraClaims: new[] { duplicate }), TenantId, ActorId, LegalEntityId));
+    76	    }
+    77	
+    78	    [Theory]
+    79	    [InlineData(JwtRegisteredClaimNames.Sub)]
+    80	    [InlineData("scope")]
+    81	    [InlineData("tenant_id")]
+    82	    [InlineData("actor_id")]
+    83	    [InlineData("legal_entity_id")]
+    84	    [InlineData(JwtRegisteredClaimNames.Jti)]
+    85	    [InlineData(JwtRegisteredClaimNames.Iat)]
+    86	    public void Missing_security_claim_is_rejected(string type) =>
+    87	        Assert.False(CreateValidator().IsAuthorized(
+    88	            CreateToken(omitClaim: type), TenantId, ActorId, LegalEntityId));
+    89	
+    90	    [Fact]
+    91	    public void Expected_plus_extra_audience_is_rejected() =>
+    92	        Assert.False(CreateValidator().IsAuthorized(
+    93	            CreateToken(extraClaims: new[] { new Claim(JwtRegisteredClaimNames.Aud, "other-audience") }),
+    94	            TenantId, ActorId, LegalEntityId));
+    95	
+    96	    [Fact]
+    97	    public void Missing_audience_is_rejected() =>
+    98	        Assert.False(CreateValidator().IsAuthorized(
+    99	            CreateToken(audience: null), TenantId, ActorId, LegalEntityId));
+   100	
+   101	    [Fact]
+   102	    public void Future_iat_is_rejected_even_when_nbf_is_current()
+   103	    {
+   104	        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+   105	        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
+   106	            CreateToken(iat: now + 20, nbf: now, exp: now + 40), TenantId, ActorId, LegalEntityId));
+   107	    }
+   108	
+   109	    [Fact]
+   110	    public void Iat_and_nbf_must_have_the_same_numeric_date()
+   111	    {
+   112	        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+   113	        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
+   114	            CreateToken(iat: now - 1, nbf: now, exp: now + 20), TenantId, ActorId, LegalEntityId));
+   115	    }
+   116	
+   117	    [Fact]
+   118	    public void Future_nbf_outside_skew_is_rejected()
+   119	    {
+   120	        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+   121	        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
+   122	            CreateToken(iat: now + 20, nbf: now + 20, exp: now + 40), TenantId, ActorId, LegalEntityId));
+   123	    }
+   124	
+   125	    [Fact]
+   126	    public void Expired_token_inside_declared_skew_is_accepted()
+   127	    {
+   128	        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+   129	        Assert.True(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
+   130	            CreateToken(iat: now - 20, nbf: now - 20, exp: now - 2), TenantId, ActorId, LegalEntityId));
+   131	    }
+   132	
+   133	    [Fact]
+   134	    public void Expired_token_outside_declared_skew_is_rejected()
+   135	    {
+   136	        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+   137	        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
+   138	            CreateToken(iat: now - 20, nbf: now - 20, exp: now - 10), TenantId, ActorId, LegalEntityId));
+   139	    }
+   140	
+   141	    private static PlatformServiceTokenValidator CreateValidator(int clockSkewSeconds = 0)
+   142	    {
+   143	        var options = ValidOptions();
+   144	        options.ClockSkewSeconds = clockSkewSeconds;
+   145	        return new PlatformServiceTokenValidator(Options.Create(options));
+   146	    }
+   147	
+   148	    private static PlatformServiceIdentityOptions ValidOptions() => new()
+   149	    {
+   150	        Enabled = true,
+   151	        Issuer = "diten-platform-service",
+   152	        Audience = "diten-mdm-reference-validation",
+   153	        CallerId = "Diten.Platform",
+   154	        KeyId = "platform-mdm-2026-09",
+   155	        Secret = Secret,
+   156	        MaximumTokenLifetimeSeconds = 60,
+   157	        ClockSkewSeconds = 0
+   158	    };
+   159	
+   160	    private static string CreateToken(
+   161	        string caller = "Diten.Platform",
+   162	        string scope = "mdm.legal-entities.reference.validate",
+   163	        string secret = Secret,
+   164	        string? audience = "diten-mdm-reference-validation",
+   165	        string? omitClaim = null,
+   166	        IEnumerable<Claim>? extraClaims = null,
+   167	        long? iat = null,
+   168	        long? nbf = null,
+   169	        long? exp = null)
+   170	    {
+   171	        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+   172	        var issuedAt = iat ?? now;
+   173	        var notBefore = nbf ?? issuedAt;
+   174	        var expiresAt = exp ?? issuedAt + 30;
+   175	        var claims = new List<Claim>();
+   176	        Add(JwtRegisteredClaimNames.Sub, caller);
+   177	        Add("scope", scope);
+   178	        Add("tenant_id", TenantId.ToString("D"));
+   179	        Add("actor_id", ActorId.ToString("D"));
+   180	        Add("legal_entity_id", LegalEntityId.ToString("D"));
+   181	        Add(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("D"));
+   182	        Add(JwtRegisteredClaimNames.Iat, issuedAt.ToString(), ClaimValueTypes.Integer64);
+   183	        if (extraClaims is not null) claims.AddRange(extraClaims);
+   184	
+   185	        var token = new JwtSecurityToken(
+   186	            issuer: "diten-platform-service",
+   187	            audience: audience,
+   188	            claims: claims,
+   189	            notBefore: DateTimeOffset.FromUnixTimeSeconds(notBefore).UtcDateTime,
+   190	            expires: DateTimeOffset.FromUnixTimeSeconds(expiresAt).UtcDateTime,
+   191	            signingCredentials: new SigningCredentials(
+   192	                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+   193	                SecurityAlgorithms.HmacSha256));
+   194	        token.Header["kid"] = "platform-mdm-2026-09";
+   195	        return new JwtSecurityTokenHandler().WriteToken(token);
+   196	
+   197	        void Add(string type, string value, string valueType = ClaimValueTypes.String)
+   198	        {
+   199	            if (!string.Equals(omitClaim, type, StringComparison.Ordinal))
+   200	                claims.Add(new Claim(type, value, valueType));
+   201	        }
+   202	    }
+   203	}

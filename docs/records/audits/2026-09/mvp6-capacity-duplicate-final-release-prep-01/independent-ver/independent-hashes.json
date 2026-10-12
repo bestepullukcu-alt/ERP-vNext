@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "sandop-capacity.openapi.final-proposed.yaml": true,
+    "sandop-capacity-semantics-v3.0.0.md": true,
+    "publication-proposed.patch": true,
+    "candidate-to-final.diff": true
+  },
+  "sha256": {
+    "sandop-capacity.openapi.final-proposed.yaml": "5213b5353267ad4c25d150975d6f38422bced72f678c02271b0cccf6e768adab",
+    "sandop-capacity-semantics-v3.0.0.md": "f9d9d5553d70e1c54af3e03924600f4c8f426de50355ae861a4d3d5cef21ee64",
+    "publication-proposed.patch": "064827b512586bb17813a8e3703cc186f4a94295c590329674897ba31327aa23",
+    "candidate-to-final.diff": "b1e47e90b23897d352ebfc80ec1fd1b83989b81cf233c130b7149b86a3ef3a70"
+  },
+  "authority_prerequisite_preserved": true
+}

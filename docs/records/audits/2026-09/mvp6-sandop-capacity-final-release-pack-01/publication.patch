@@ -1,0 +1,572 @@
+diff --git a/docs/analysis/contracts/sandop-capacity.openapi.yaml b/docs/analysis/contracts/sandop-capacity.openapi.yaml
+index c255e92..9543e3f 100644
+--- a/docs/analysis/contracts/sandop-capacity.openapi.yaml
++++ b/docs/analysis/contracts/sandop-capacity.openapi.yaml
+@@ -8,9 +8,10 @@
+     provenance, never a second demand source of record. Tenant and LegalEntity
+     scope are resolved from authenticated server context and are never accepted
+     in request bodies.
+-  version: 1.0.0
++  version: 2.0.0
+   x-status: FROZEN
+   x-contract-version: v1
++  x-semantics-annex: sandop-capacity-semantics-v2.0.0.md
+   x-owner: [MOD-0190, MOD-0192]
+   x-consumes: [DEMAND]
+ servers:
+@@ -70,6 +71,14 @@
+           $ref: '#/components/responses/PlanConflict'
+         '422':
+           $ref: '#/components/responses/InvalidDemandReference'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/MutationUnavailable'
+   /sandop-plans/{sandopPlanId}:
+     get:
+       tags: [S&OP Plans]
+@@ -101,6 +110,14 @@
+                 contractVersion: v1
+         '404':
+           $ref: '#/components/responses/UnknownSandopPlan'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/ReadUnavailable'
+   /sandop-plans/{sandopPlanId}/snapshots:
+     post:
+       tags: [S&OP Snapshots]
+@@ -160,6 +177,14 @@
+           $ref: '#/components/responses/PlanStateConflict'
+         '422':
+           $ref: '#/components/responses/InvalidDemandReference'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/MutationUnavailable'
+     get:
+       tags: [S&OP Snapshots]
+       operationId: listSandopSnapshots
+@@ -202,6 +227,14 @@
+                 contractVersion: v1
+         '404':
+           $ref: '#/components/responses/UnknownSandopPlan'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/ReadUnavailable'
+   /sandop-plans/{sandopPlanId}/sign-offs:
+     post:
+       tags: [S&OP Sign-offs]
+@@ -248,6 +281,14 @@
+           $ref: '#/components/responses/SignOffConflict'
+         '422':
+           $ref: '#/components/responses/InvalidSnapshotReference'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/MutationUnavailable'
+     get:
+       tags: [S&OP Sign-offs]
+       operationId: listSandopSignOffs
+@@ -287,6 +328,14 @@
+                 contractVersion: v1
+         '404':
+           $ref: '#/components/responses/UnknownSandopPlan'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/ReadUnavailable'
+   /capacity-plans:
+     post:
+       tags: [Capacity Plans]
+@@ -338,6 +387,14 @@
+           $ref: '#/components/responses/CapacityPlanConflict'
+         '422':
+           $ref: '#/components/responses/InvalidDemandReference'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/MutationUnavailable'
+   /capacity-plans/{capacityPlanId}:
+     get:
+       tags: [Capacity Plans]
+@@ -373,6 +430,14 @@
+                 contractVersion: v1
+         '404':
+           $ref: '#/components/responses/UnknownCapacityPlan'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/ReadUnavailable'
+   /capacity-plans/{capacityPlanId}/scenarios:
+     post:
+       tags: [Capacity Scenarios]
+@@ -429,6 +494,16 @@
+           $ref: '#/components/responses/UnknownCapacityPlan'
+         '409':
+           $ref: '#/components/responses/CapacityPlanStateConflict'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/MutationUnavailable'
++        '422':
++          $ref: '#/components/responses/InvalidConstraintReference'
+   /capacity-plans/{capacityPlanId}/scenarios/{scenarioId}:
+     get:
+       tags: [Capacity Scenarios]
+@@ -459,6 +534,14 @@
+                 contractVersion: v1
+         '404':
+           $ref: '#/components/responses/UnknownCapacityScenario'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/ReadUnavailable'
+   /capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations:
+     post:
+       tags: [Capacity Evaluations]
+@@ -502,6 +585,16 @@
+           $ref: '#/components/responses/UnknownCapacityScenario'
+         '409':
+           $ref: '#/components/responses/EvaluationConflict'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/MutationUnavailable'
++        '422':
++          $ref: '#/components/responses/InvalidConstraintReference'
+   /capacity-plans/{capacityPlanId}/evaluations/{evaluationId}:
+     get:
+       tags: [Capacity Evaluations]
+@@ -539,6 +632,14 @@
+                 contractVersion: v1
+         '404':
+           $ref: '#/components/responses/UnknownCapacityEvaluation'
++        '400':
++          $ref: '#/components/responses/InvalidRequest'
++        '401':
++          $ref: '#/components/responses/Unauthenticated'
++        '403':
++          $ref: '#/components/responses/Forbidden'
++        '503':
++          $ref: '#/components/responses/ReadUnavailable'
+ components:
+   securitySchemes:
+     bearerAuth:
+@@ -1277,6 +1378,84 @@
+         contractVersion:
+           $ref: '#/components/schemas/ContractVersion'
+   responses:
++    InvalidRequest:
++      description: Invalid required header, correlation or request payload; no mutation
++      x-error-codes: [INVALID_CORRELATION_ID, INVALID_REQUEST]
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CorrelationId'
++      content:
++        application/json:
++          schema: { $ref: '#/components/schemas/Error' }
++          example:
++            error: { code: INVALID_CORRELATION_ID, message: Invalid correlation identifier, correlationId: aaaaaaaa-0000-4000-8000-000000000001 }
++            contractVersion: v1
++    Unauthenticated:
++      description: Authentication failed. Application-generated 401 echoes current valid or rejection-only correlation in header and body; a parser-level challenge before application context may omit the correlation header and envelope
++      headers:
++        WWW-Authenticate:
++          schema: { type: string }
++          example: Bearer
++        X-Correlation-Id:
++          $ref: '#/components/headers/CorrelationId'
++      content:
++        application/json:
++          schema: { $ref: '#/components/schemas/Error' }
++          example:
++            error: { code: UNAUTHENTICATED, message: Authentication required, correlationId: aaaaaaaa-0000-4000-8000-000000000001 }
++            contractVersion: v1
++    Forbidden:
++      description: Authenticated actor lacks the operation grant
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CorrelationId'
++      content:
++        application/json:
++          schema: { $ref: '#/components/schemas/Error' }
++          example:
++            error: { code: FORBIDDEN, message: Permission denied, correlationId: aaaaaaaa-0000-4000-8000-000000000001 }
++            contractVersion: v1
++    ReadUnavailable:
++      description: For GET only, dependency or storage unavailable; no mutation commit outcome is asserted
++      x-error-codes: [DEPENDENCY_UNAVAILABLE]
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CorrelationId'
++      content:
++        application/json:
++          schema: { $ref: '#/components/schemas/Error' }
++          example:
++            error: { code: DEPENDENCY_UNAVAILABLE, message: Dependency unavailable, correlationId: aaaaaaaa-0000-4000-8000-000000000001 }
++            contractVersion: v1
++    MutationUnavailable:
++      description: For POST only, known dependency/storage failure or unresolved commit after scoped durable receipt lookup; retry unresolved outcome with the same exact idempotency key
++      x-error-codes: [DEPENDENCY_UNAVAILABLE, COMMIT_RESULT_UNRESOLVED]
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CorrelationId'
++      content:
++        application/json:
++          schema: { $ref: '#/components/schemas/Error' }
++          examples:
++            dependency:
++              value:
++                error: { code: DEPENDENCY_UNAVAILABLE, message: Dependency unavailable, correlationId: aaaaaaaa-0000-4000-8000-000000000001 }
++                contractVersion: v1
++            unknownCommit:
++              value:
++                error: { code: COMMIT_RESULT_UNRESOLVED, message: Commit result unresolved; retry with the same key, correlationId: aaaaaaaa-0000-4000-8000-000000000001 }
++                contractVersion: v1
++    InvalidConstraintReference:
++      description: Constraint fixture reference is unknown, stale or mismatched in the resolved scope
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CorrelationId'
++      content:
++        application/json:
++          schema: { $ref: '#/components/schemas/Error' }
++          example:
++            error: { code: INVALID_CONSTRAINT_REFERENCE, message: Constraint reference is invalid, correlationId: aaaaaaaa-0000-4000-8000-000000000001 }
++            contractVersion: v1
+     UnknownSandopPlan:
+       description: S&OP plan not found in the resolved tenant/legal-entity scope
+       headers:
+@@ -1294,6 +1473,7 @@
+             contractVersion: v1
+     PlanConflict:
+       description: An S&OP plan already exists for the requested horizon and demand version
++      x-error-codes: [SANDOP_PLAN_ALREADY_EXISTS, IDEMPOTENCY_KEY_REUSED]
+       headers:
+         X-Correlation-Id:
+           $ref: '#/components/headers/CorrelationId'
+@@ -1301,14 +1481,21 @@
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Error'
+-          example:
+-            error:
+-              code: SANDOP_PLAN_ALREADY_EXISTS
+-              message: S&OP plan already exists for this horizon and demand version
+-              correlationId: aaaaaaaa-0000-4000-8000-000000000002
+-            contractVersion: v1
++          examples:
++            existingBusinessConflict:
++              value:
++                error:
++                  code: SANDOP_PLAN_ALREADY_EXISTS
++                  message: S&OP plan already exists for this horizon and demand version
++                  correlationId: aaaaaaaa-0000-4000-8000-000000000002
++                contractVersion: v1
++            idempotencyKeyReused:
++              value:
++                error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency key was used with a different valid payload, correlationId: aaaaaaaa-0000-4000-8000-000000000100 }
++                contractVersion: v1
+     PlanStateConflict:
+       description: S&OP plan state does not allow a new snapshot
++      x-error-codes: [SANDOP_PLAN_STATE_CONFLICT, IDEMPOTENCY_KEY_REUSED]
+       headers:
+         X-Correlation-Id:
+           $ref: '#/components/headers/CorrelationId'
+@@ -1316,14 +1503,20 @@
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Error'
+-          example:
+-            error:
+-              code: SANDOP_PLAN_STATE_CONFLICT
+-              message: S&OP plan state does not allow a new snapshot
+-              correlationId: aaaaaaaa-0000-4000-8000-000000000003
+-            contractVersion: v1
++          examples:
++            existingBusinessConflict:
++              value:
++                error:
++                  code: SANDOP_PLAN_STATE_CONFLICT
++                  message: S&OP plan state does not allow a new snapshot
++                  correlationId: aaaaaaaa-0000-4000-8000-000000000003
++                contractVersion: v1
++            idempotencyKeyReused:
++              value:
++                error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency key was used with a different valid payload, correlationId: aaaaaaaa-0000-4000-8000-000000000100 }
++                contractVersion: v1
+     InvalidDemandReference:
+-      description: Referenced DEMAND plan or version is unknown or not published
++      description: Referenced DEMAND plan/version is unknown or not published, or supplied checksum differs from the exact scoped fixture
+       headers:
+         X-Correlation-Id:
+           $ref: '#/components/headers/CorrelationId'
+@@ -1331,12 +1524,18 @@
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Error'
+-          example:
+-            error:
+-              code: INVALID_DEMAND_REFERENCE
+-              message: Referenced DEMAND plan version is unknown or not published
+-              correlationId: aaaaaaaa-0000-4000-8000-000000000004
+-            contractVersion: v1
++          examples:
++            unknownOrUnpublished:
++              value:
++                error:
++                  code: INVALID_DEMAND_REFERENCE
++                  message: Referenced DEMAND plan version is unknown or not published
++                  correlationId: aaaaaaaa-0000-4000-8000-000000000004
++                contractVersion: v1
++            checksumMismatch:
++              value:
++                error: { code: INVALID_DEMAND_REFERENCE, message: Supplied checksum differs from the exact scoped test fixture, correlationId: aaaaaaaa-0000-4000-8000-000000000104 }
++                contractVersion: v1
+     InvalidSnapshotReference:
+       description: Snapshot is unknown or does not belong to the S&OP plan
+       headers:
+@@ -1354,6 +1553,7 @@
+             contractVersion: v1
+     SignOffConflict:
+       description: Role has already recorded a decision for this snapshot
++      x-error-codes: [SIGN_OFF_ALREADY_RECORDED, SANDOP_SIGN_OFF_STATE_CONFLICT, IDEMPOTENCY_KEY_REUSED]
+       headers:
+         X-Correlation-Id:
+           $ref: '#/components/headers/CorrelationId'
+@@ -1361,12 +1561,22 @@
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Error'
+-          example:
+-            error:
+-              code: SIGN_OFF_ALREADY_RECORDED
+-              message: This role already recorded a decision for the snapshot
+-              correlationId: aaaaaaaa-0000-4000-8000-000000000006
+-            contractVersion: v1
++          examples:
++            existingBusinessConflict:
++              value:
++                error:
++                  code: SIGN_OFF_ALREADY_RECORDED
++                  message: This role already recorded a decision for the snapshot
++                  correlationId: aaaaaaaa-0000-4000-8000-000000000006
++                contractVersion: v1
++            idempotencyKeyReused:
++              value:
++                error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency key was used with a different valid payload, correlationId: aaaaaaaa-0000-4000-8000-000000000100 }
++                contractVersion: v1
++            signOffStateConflict:
++              value:
++                error: { code: SANDOP_SIGN_OFF_STATE_CONFLICT, message: S&OP plan state does not permit sign-off, correlationId: aaaaaaaa-0000-4000-8000-000000000101 }
++                contractVersion: v1
+     UnknownCapacityPlan:
+       description: Capacity plan not found in the resolved tenant/legal-entity scope
+       headers:
+@@ -1384,6 +1594,7 @@
+             contractVersion: v1
+     CapacityPlanConflict:
+       description: A capacity plan already exists for the requested horizon and demand version
++      x-error-codes: [CAPACITY_PLAN_ALREADY_EXISTS, IDEMPOTENCY_KEY_REUSED]
+       headers:
+         X-Correlation-Id:
+           $ref: '#/components/headers/CorrelationId'
+@@ -1391,14 +1602,21 @@
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Error'
+-          example:
+-            error:
+-              code: CAPACITY_PLAN_ALREADY_EXISTS
+-              message: Capacity plan already exists for this horizon and demand version
+-              correlationId: aaaaaaaa-0000-4000-8000-000000000008
+-            contractVersion: v1
++          examples:
++            existingBusinessConflict:
++              value:
++                error:
++                  code: CAPACITY_PLAN_ALREADY_EXISTS
++                  message: Capacity plan already exists for this horizon and demand version
++                  correlationId: aaaaaaaa-0000-4000-8000-000000000008
++                contractVersion: v1
++            idempotencyKeyReused:
++              value:
++                error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency key was used with a different valid payload, correlationId: aaaaaaaa-0000-4000-8000-000000000100 }
++                contractVersion: v1
+     CapacityPlanStateConflict:
+       description: Capacity plan state does not allow a new scenario
++      x-error-codes: [CAPACITY_PLAN_STATE_CONFLICT, IDEMPOTENCY_KEY_REUSED]
+       headers:
+         X-Correlation-Id:
+           $ref: '#/components/headers/CorrelationId'
+@@ -1406,12 +1624,18 @@
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Error'
+-          example:
+-            error:
+-              code: CAPACITY_PLAN_STATE_CONFLICT
+-              message: Capacity plan state does not allow a new scenario
+-              correlationId: aaaaaaaa-0000-4000-8000-000000000009
+-            contractVersion: v1
++          examples:
++            existingBusinessConflict:
++              value:
++                error:
++                  code: CAPACITY_PLAN_STATE_CONFLICT
++                  message: Capacity plan state does not allow a new scenario
++                  correlationId: aaaaaaaa-0000-4000-8000-000000000009
++                contractVersion: v1
++            idempotencyKeyReused:
++              value:
++                error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency key was used with a different valid payload, correlationId: aaaaaaaa-0000-4000-8000-000000000100 }
++                contractVersion: v1
+     UnknownCapacityScenario:
+       description: Capacity scenario not found in the capacity plan
+       headers:
+@@ -1429,6 +1653,7 @@
+             contractVersion: v1
+     EvaluationConflict:
+       description: An evaluation is already active for this scenario
++      x-error-codes: [EVALUATION_ALREADY_ACTIVE, IDEMPOTENCY_KEY_REUSED]
+       headers:
+         X-Correlation-Id:
+           $ref: '#/components/headers/CorrelationId'
+@@ -1436,12 +1661,18 @@
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Error'
+-          example:
+-            error:
+-              code: EVALUATION_ALREADY_ACTIVE
+-              message: An evaluation is already active for this scenario
+-              correlationId: aaaaaaaa-0000-4000-8000-000000000011
+-            contractVersion: v1
++          examples:
++            existingBusinessConflict:
++              value:
++                error:
++                  code: EVALUATION_ALREADY_ACTIVE
++                  message: An evaluation is already active for this scenario
++                  correlationId: aaaaaaaa-0000-4000-8000-000000000011
++                contractVersion: v1
++            idempotencyKeyReused:
++              value:
++                error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency key was used with a different valid payload, correlationId: aaaaaaaa-0000-4000-8000-000000000100 }
++                contractVersion: v1
+     UnknownCapacityEvaluation:
+       description: Capacity evaluation not found in the capacity plan
+       headers:
+diff --git a/docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md b/docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+new file mode 100644
+index 0000000..78113fa
+--- /dev/null
++++ b/docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+@@ -0,0 +1,61 @@
++# SANDOP-CAPACITY semantics v2.0.0 — proposed final publication artifact
++
++This annex belongs to the proposed final YAML only. Prepared metadata is `info.version: 2.0.0`, `x-status: FROZEN`, wire `contractVersion: v1`; these bytes are not canonical until separately approved and published. The major line is a **release proposal** because state eligibility and new error cases can narrow behavior; it does not negotiate routes or migrate consumers. The actual 2026-09-22 user messages approve D190-04/05 and C192-02…07 **for amendment-candidate preparation**, exact parsed key/no trim, the fixture-only DEMAND/constraint scope, local JWT actor/no Workflow, Pending-only outbox/no Event Bus publisher, and the exact MOD-0192 executor design bound to `DECISION.md` SHA-256 `cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d`. The 2.0.0 final-artifact preparation is approved, while exact-hash consumer consent and canonical publication remain UNAPPROVED; no canonical publication, consumer consent, pack promotion, Phase 1.5, Program.cs or runtime DEV follows.
++
++## Common transport, error, receipt and precedence proposal
++
++All twelve operations require bearer authentication and a single valid UUID `X-Correlation-Id`. The three S&OP and three Capacity POSTs require a nonempty parsed `Idempotency-Key`. Key identity is **exact parsed string**: no trim, case folding, max-200 rule or silent Unicode normalization. `CreateSandopPlanRequest.name` likewise retains its frozen minimum length 1 with no new trim/maximum; a 201-character key or name is not rejected solely for length. Standard host request-size limits are separate transport limits. The body remains the frozen schema with `additionalProperties:false` where declared. No new endpoint or body field is introduced.
++
++Proposed precedence: authentication parser (401) → trusted tenant/LE and operation grant (403) → required headers/body schema (400) → scoped target existence (404) → durable receipt identity/fingerprint → current state/duplicate/fixture validation (declared 409/422) → atomic commit. Cross-scope target is 404 and cannot expose a receipt. A valid same-key receipt replays before a later state change or fixture reread; changed valid payload is 409 `IDEMPOTENCY_KEY_REUSED` before current business conflicts. Invalid payload never retrieves an old success. Reads have no receipt. All failures leave no new write, except unresolved unknown commit, whose result is unknown until durable receipt resolution.
++
++Receipt tuple: `(TenantId, LegalEntityId, operationId, targetId-or-create-sentinel, exact parsed key)`. Actor and correlation are excluded. SHA-256 fingerprint is over canonical decoded JSON: object member order/escape spelling normalized; array order and exact Unicode string/decimal lexemes retained; omitted and null distinct (null rejected if schema forbids); operation/target are in tuple. No TTL/key reuse in the bounded slice. A different authorized actor can replay the original result without rewriting original audit actor. No `idempotentReplay` field or new response body shape is added.
++
++Identical valid same-key request returns the stored **original status/body** (201 for create/capture/sign-off/scenario, 202 for evaluate) without dependency reread or second aggregate/receipt/audit/outbox/job. Response `X-Correlation-Id` is the **current request's** valid UUID; original persisted audit/event correlation stays original. An error generated now carries current UUID in `Error.error.correlationId` and header. A retry with a different correlation but identical payload therefore gets original business body and current header. Auth failure happens before receipt. Missing/malformed/duplicate correlation proposes 400 `INVALID_CORRELATION_ID`, no write, and one generated rejection-only UUID in response header/body because no unique valid request UUID can be echoed; this is a proposed explicit exception to the old echo description. Parser-level malformed wire bytes may be rejected before application body; they must not be called an application-envelope PASS.
++
++Response shape for all application errors: frozen `#/components/schemas/Error` (`{error:{code,message,correlationId,details?},contractVersion:'v1'}`); success bodies and their required/null rules remain unchanged. New 401 includes `WWW-Authenticate: Bearer`. An **application-generated** 401 also carries `X-Correlation-Id` matching the error body: current valid request UUID if available, otherwise one rejection-only UUID. A parser-level authentication challenge before application context may omit that correlation header and application Error envelope; do not claim it as an application response. 403 is `FORBIDDEN`. Generic malformed body/header is 400 `INVALID_REQUEST`. Known dependency/storage failure is 503 `DEPENDENCY_UNAVAILABLE`. A GET 503 exposes **only** that code. For POST uncertain commit, query the scoped durable receipt first: found → original result; unresolved → 503 `COMMIT_RESULT_UNRESOLVED` and same-exact-key recovery after restart; never assert zero writes from that 503 alone. Known precommit failure rolls aggregate/receipt/audit/Pending outbox back. The two POST codes are distinct from each other and from every GET 503. Exact code/message text in the accompanying YAML is proposed for publication, not yet canonical.
++
++## Twelve-operation status/error matrix
++
++For every row, 400/401/403 follow the common rule above; 503 is `DEPENDENCY_UNAVAILABLE` for known dependency/storage failure, plus `COMMIT_RESULT_UNRESOLVED` on POST only. Valid response/error correlation and headers follow the common rule. Frozen response codes are listed before proposed additions; no prior frozen code is removed.
++
++| operationId / path | Frozen success and business failure | Proposed final added/special failure | Replay and acceptance example |
++|---|---|---|---|
++| `createSandopPlan` POST `/sandop-plans` | 201 Draft/currentSnapshotId null; 409 `SANDOP_PLAN_ALREADY_EXISTS`; 422 `INVALID_DEMAND_REFERENCE` | 409 `IDEMPOTENCY_KEY_REUSED`; common 400/401/403/503 | Exact fixture Published ID/version 201; unknown/unpublished 422, zero writes. Same key/body original 201, changed name 409 key-reused. |
++| `getSandopPlan` GET `/sandop-plans/{sandopPlanId}` | 200; 404 `UNKNOWN_SANDOP_PLAN` | common 400/401/403/503 | Scoped read returns Draft then InReview after capture; foreign tenant/LE 404. No replay. |
++| `captureSandopSnapshot` POST `/sandop-plans/{sandopPlanId}/snapshots` | 201; 404 `UNKNOWN_SANDOP_PLAN`; 409 `SANDOP_PLAN_STATE_CONFLICT`; 422 `INVALID_DEMAND_REFERENCE` | 409 `IDEMPOTENCY_KEY_REUSED`; common 400/401/403/503 | Draft or InReview → immutable snapshot, plan InReview; Approved/Rejected/Archived → declared 409. Exact fixture checksum mismatch → 422 `INVALID_DEMAND_REFERENCE`, zero writes. Same key/body returns original snapshot. |
++| `listSandopSnapshots` GET same `/snapshots` | 200; 404 `UNKNOWN_SANDOP_PLAN` | common 400/401/403/503 | Lists old and new snapshots with provenance unchanged; foreign plan 404. No replay. |
++| `recordSandopSignOff` POST `/sandop-plans/{sandopPlanId}/sign-offs` | 201; 404 `UNKNOWN_SANDOP_PLAN`; 409 `SIGN_OFF_ALREADY_RECORDED`; 422 `INVALID_SNAPSHOT_REFERENCE` | 409 `SANDOP_SIGN_OFF_STATE_CONFLICT` for non-InReview; 409 `IDEMPOTENCY_KEY_REUSED`; common 400/401/403/503 | InReview, any same-plan snapshot and frozen role/decision → 201, immutable sign-off; duplicate same snapshot/role different key → one 201, one 409. Same-key retry original 201. Draft/Approved/Rejected/Archived 409 state conflict; wrong-plan snapshot 422. |
++| `listSandopSignOffs` GET same `/sign-offs` | 200; 404 `UNKNOWN_SANDOP_PLAN` | common 400/401/403/503 | Lists decisions across same-plan snapshots without overwriting. No replay. |
++| `createCapacityPlan` POST `/capacity-plans` | 201 Draft; 409 `CAPACITY_PLAN_ALREADY_EXISTS`; 422 `INVALID_DEMAND_REFERENCE` | 409 `IDEMPOTENCY_KEY_REUSED`; common 400/401/403/503 | Exact scoped Published ID/version/checksum fixture 201; checksum mismatch 422, zero writes; same key/body original 201. |
++| `getCapacityPlan` GET `/capacity-plans/{capacityPlanId}` | 200; 404 `UNKNOWN_CAPACITY_PLAN` | common 400/401/403/503 | Scoped Draft provenance read; foreign scope 404. No replay. |
++| `createCapacityScenario` POST `/capacity-plans/{capacityPlanId}/scenarios` | 201 Draft; 404 `UNKNOWN_CAPACITY_PLAN`; 409 `CAPACITY_PLAN_STATE_CONFLICT` | 422 `INVALID_CONSTRAINT_REFERENCE` for unknown/stale/cross-scope/mismatched fixture tuple; 409 `IDEMPOTENCY_KEY_REUSED`; common 400/401/403/503 | Exact `(tenant,LE,source,id,version,resource,period,UoM)` fixture 201; altered tuple or UoM 422 and zero writes; same key/body original 201. |
++| `getCapacityScenario` GET `/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}` | 200; 404 `UNKNOWN_CAPACITY_SCENARIO` | common 400/401/403/503 | Same plan/scoped scenario only; foreign scope 404. No replay. |
++| `evaluateCapacityScenario` POST `/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations` | 202 Accepted; 404 `UNKNOWN_CAPACITY_SCENARIO`; 409 `EVALUATION_ALREADY_ACTIVE` | 409 `IDEMPOTENCY_KEY_REUSED`; **422 `INVALID_CONSTRAINT_REFERENCE`** for resourceRefs absent from or incompatible with the exact scoped fixture; common 400/401/403/503 | Different key while Accepted/Running → declared 409; same key/body original 202, no second job. Invalid fixture resourceRefs → 422 with zero evaluation/receipt/audit/outbox. Terminal fixture-only Completed/Failed is not a general optimizer claim. |
++| `getCapacityEvaluation` GET `/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}` | 200; 404 `UNKNOWN_CAPACITY_EVALUATION` | common 400/401/403/503 | Read Accepted/Running/Completed/Failed without mutation; foreign scope 404. No replay. |
++
++## Lifecycle/fixture boundary that proposed final wire errors depend on
++
++0190: Create Draft/null; capture from Draft or InReview appends immutable snapshot and sets InReview; sign-off only InReview against any same-plan snapshot, one decision per snapshot/role, no automatic plan Approved/Rejected even after all five roles approve. The new sign-off state-conflict code needs owner and contract release. 0192: Capacity plan/scenario remain Draft in this bounded slice; evaluation alone may progress Accepted→Running→Completed/Failed under the **design-approved, not runtime-authorized** module-owned executor. The owner approved the startup+10-second scan, 30-second fenced lease and three-attempt **design for candidate preparation**, including the exact `DECISION.md` SHA-256 above; runtime implementation is still unauthorized. Terminal values come only from the exact fixture oracle `CAPACITY-EVAL-FIXTURE-192-01@1`; no live optimizer, supply-constraint source or Event Bus publisher. A Pending outbox event is written at terminal commit, no publisher delivery claim. Until Phase 1.5 and runtime DEV/VER authorization, terminal E4 acceptance remains HELD.
++
++The four approved scope limits are respected: exact tenant/LE test fixture for DEMAND with no producer endpoint; local trusted JWT actor/no Workflow; atomic Pending outbox/no publisher; Capacity fixture references/literal results only. A fixture PASS is not live DEMAND version/checksum or constraint producer validation. New 400/409/422/503 wire cases remain **proposed final publication bytes**; executor/lifecycle/replay design approval and final-artifact preparation grant no runtime authority. This artifact is not canonical until separately published.
++
++
++## MOD-0192 executor design bound to exact approved decision hash
++
++The controlling design source is `docs/roadmap/plans/mod-0192-executor-exact-decisions-01/DECISION.md` SHA-256 `cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d`. The historical document itself remains unchanged and says PROPOSED; the later user message approved **that exact payload for R2 candidate design**; final-artifact preparation does not grant runtime authority.
++
++- A successful scoped claim of Accepted or expired Running atomically writes `status=Running`, version, a new monotonic fence, `leaseUntil`, and increments persisted `attempt` **in that claim**. Initial attempt is 0; successful claims are 1, 2, 3. Losing CAS is not an attempt; a claim followed by crash/expiry is.
++- Claim, renewal, expiry and terminal validity use Mongo primary **server UTC time**, not process/JWT/request time. A lease expires at `leaseUntil <= serverNow`. Each successful claim/renewal gives `serverNow + 30s`; target Mongo support for server-side time expressions is a Phase 1.5 technical gate, not assumed.
++- The executor signals after committed Accepted and scans on startup and every 10 seconds. While Running, a separate 10-second heartbeat renews only under current scope/status/version/fence and unexpired lease. Renewal does not increment attempt. A worker losing renewal does not attempt terminal persistence; any stale result is rejected by the fence.
++- Terminal commit requires scoped `Running`, current version/fence and `serverNow < leaseUntil`. A losing CAS writes no aggregate, slot, audit or outbox. Winning transaction atomically writes terminal Completed/Failed with `completedAt`, releases the active slot, and writes one terminal audit and one `capacity.evaluation.completed.v1` **Pending** outbox row. Event `occurredAt=completedAt`, original submit correlation and scenario-created causation. A unique terminal effect key prevents a second terminal event. Unknown terminal commit is resolved by reading scoped evaluation/event/audit before retry, never by blind second insert.
++- A third successful claim may complete normally while its lease is valid. If claim 3 crashes/expires, startup/scan first resolves any uncertain terminal commit, then performs a fenced atomic Failed terminal transaction **without claim 4 or fixture invocation 4**. Deterministic fixture rejection uses the same Failed path. Literal fixture oracle may run more than once after crashes; the guarantee is one durable terminal effect, not exactly-once computation.
++- Publisher remains absent; terminal outbox stays Pending. The executor is module-owned evaluation progress, not Event Bus delivery. Ten-second intervals and 30-second lease are configured intervals, not recovery SLA guarantees.
++
++The X01–X10 interruption/restart oracles in the approved `DECISION.md` are acceptance requirements for a later authorized isolated runtime DEV/VER; this static annex cannot establish those E4 outcomes.
++
++## Acceptance controls for independent VER
++
++1. Verify baseline and final-artifact hashes, exact patch application and only this YAML/annex publication scope; compare operationId/path/security/body schemas/event schemas to baseline. No DEMAND YAML edit.
++2. Validate OpenAPI 3.1 schema, local refs and every positive/negative response example. For each of twelve rows exercise schema/model status/code/body/header/correlation positive and negative fixtures; a duplicate key and checksum mismatch fixture must detect incorrect behavior, not merely restate expected values.
++3. Compare 12 operation count, six S&OP/six Capacity, no new endpoint, no removed success/business status, no shared schema change except explicit new response components and `info.version`/annex pointer.
++4. Distinguish these schema/model checks from real HTTP/JWT/Mongo, producer uptake, consumer consent, guard, publication, pack promotion or rollout.

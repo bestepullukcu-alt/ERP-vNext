@@ -1,0 +1,13 @@
+action	current authority	decision
+Read and compare accepted archives/manifests	AUTHORIZED by this inspection request	Completed read-only
+Create this roadmap handoff	AUTHORIZED owned output	Completed
+Copy/extract the selected 379 archive into a new target checkout	NOT AUTHORIZED this turn	Requires target-bound dispatch authority
+Overlay the exact Capacity 43 archive into a new target checkout	Historical authority was exercised in the prior hosted lane; not portable automatically	Requires target-bound dispatch authority
+Apply Program patch 78cc0fa6… to a new target checkout	Historical exact decision was tied to the prior hosted integration lane	Requires new target/preimage-bound authority and one writer
+Apply hosted Capacity test patch b6744cdd… to a new target checkout	Accepted as test-only evidence delta; no transfer this turn	Requires target-bound dispatch authority
+Select accepted S&OP test successor eba2da6f…	Accepted source provenance exists	Transfer still requires target-bound authority
+Apply MOD-0192 duplicate-name patch f4fc82b4…	NOT AUTHORIZED; publication/uptake HELD	Excluded
+Edit shared permission registry	NOT AUTHORIZED and no exact diff exists	Separate owner decision only if a measured gap appears
+Edit gateway routes	NOT AUTHORIZED and no exact diff exists	Separate integration-agent decision only if required
+Change pack status	NOT AUTHORIZED	Excluded
+Run build/tests	Explicitly prohibited in this preparation turn	Deferred to active integration dispatch

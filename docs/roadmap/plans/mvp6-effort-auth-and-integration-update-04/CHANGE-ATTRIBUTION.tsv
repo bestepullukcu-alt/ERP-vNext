@@ -1,0 +1,6 @@
+change_class	delivered_most_likely_delta_hours	remaining_most_likely_delta_hours	total_estimate_delta_hours	interpretation
+completed_auth_chain	16	-16	0	Existing Shared Test/VER reserve moved to delivered by fresh login, refresh, LE re-resolution and fail-closed dependency evidence; prior 16h NumericDate implementation credit is not repeated.
+completed_shipment_disposable_prep	0	0	0	Candidate preparation is complete but no real-target application or independent VER was performed; no retrospective preparation-hour credit is invented.
+shipment_rework_estimate_correction	0	0	0	The two formerly unestimated items are now allocated within existing Integration and Test/VER reserves, so the portfolio denominator does not increase.
+scope_change	0	0	0	No new delivery scope was added; the successor makes discovered integration work explicit.
+total_progress	16	-16	0	Only fresh Auth-chain completion changes delivered progress.

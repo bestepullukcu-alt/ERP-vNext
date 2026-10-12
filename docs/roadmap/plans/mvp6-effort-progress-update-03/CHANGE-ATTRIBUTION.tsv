@@ -1,0 +1,6 @@
+change_class	delivered_most_likely_delta_hours	remaining_most_likely_delta_hours	total_estimate_delta_hours	interpretation
+completed_shipment_ui	64	-64	0	Existing bounded frontend deliverable moved to delivered; focused tests support scope closure but do not determine weight.
+completed_shared_numericdate_application	16	-16	0	Existing shared backend application reserve moved to delivered; not repeated in Carrier.
+independent_f01_f02_closure	0	0	0	Qualitative closure mapped to shared VER evidence; co-mingled remaining Auth-chain effort cannot be reliably split.
+new_integration_rework	0	0	0	Two exact Shipment integration defects recorded separately; estimate pending, no invented hours.
+total_progress	80	-80	0	Baseline total weight is preserved.

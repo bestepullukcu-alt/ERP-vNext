@@ -1,0 +1,4 @@
+# MVP6-R2-COMPOSITION-INS-01 evidence manifest
+2d575dbb53c204ad19f5479599de054541facf03ac2e858c43d200f7230b5a62  root-r2-candidate.tar.gz (source: docs/records/audits/2026-09/mvp6-root-candidate-reconstruct-r2-01/root-r2-candidate.tar.gz)
+a29cdb1e4d3f9a28b07812ddb53a794e4ae432772bc39a6ba919d98bc317c989  returns-r2-candidate.yaml (extracted candidate)
+d7564f2ba1d471cd05cf89ddaf1d69093232a7a1dcb3fc4c830df5fafc66115f  claims-r2.openapi.yaml (extracted candidate)

@@ -1,0 +1,11 @@
+command	exit	purpose
+git branch --show-current; git rev-parse HEAD; git status --short	0	branch/HEAD/dirty baseline
+lsof -nP -iTCP:5061 -sTCP:LISTEN	1	read-only current listener check; no listener
+lsof -nP -iTCP:5065 -sTCP:LISTEN	1	read-only candidate-port listener check; no listener
+python gateway route parser on Carrier predecessor	0	35 CRM route descriptors on 5061
+patch -p1 CRM-PORT-MIGRATION-CANDIDATE.patch in disposable copy	0	candidate applicability
+byte comparison for 35 candidate target files	0	0 mismatches
+python json parser and route classifier	0	35 CRM routes on 5065
+patch -p1 SHIPMENT-SHARED-SUCCESSOR-AFTER-PORT.patch in disposable copy	0	regenerated successor applicability
+byte comparison for 12 successor target rows	0	0 mismatches
+python composed gateway classifier	0	35 CRM routes on 5065; 4 Shipment descriptors on 5061

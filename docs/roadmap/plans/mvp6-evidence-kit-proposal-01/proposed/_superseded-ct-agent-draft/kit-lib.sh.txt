@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# CANDIDATE — NOT APPROVED. Shared helpers for the MVP6 evidence kit. Source, do not execute.
+set -euo pipefail
+export GIT_OPTIONAL_LOCKS=0
+
+ts()   { TZ=Europe/Istanbul date -Iseconds; }
+log()  { printf '%s\t%s\n' "$(ts)" "$*" | tee -a "${W:?}/kit.log" >&2; }
+die()  { log "FAIL: $*"; exit 1; }
+sha()  { shasum -a 256 "$1" 2>/dev/null | awk '{print $1}' || sha256sum "$1" | awk '{print $1}'; }
+
+# Canonical service table: name|canonical_port|project_dir|assembly
+KIT_SERVICES=(
+  "mdm|5059|services/Diten.MdmService/src/Diten.MdmService.Api|Diten.MdmService.Api"
+  "platform|5057|services/Diten.Platform/src/Diten.Platform.API|Diten.Platform.API"
+  "auth|5056|services/Diten.AuthService/src/Diten.AuthService.Api|Diten.AuthService.Api"
+  "supplychain|5061|services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api|Diten.SupplyChainService.Api"
+  "gateway|5000|gateway/Diten.ApiGateway|Diten.ApiGateway"
+  "web|5001|frontend/Diten.Web|Diten.Web"
+)   # start order: MDM -> Platform -> Auth -> SupplyChain -> Gateway -> Web (observed in accepted lanes)
+
+lane_port()     { echo $(( ${LANE_PORT_BASE:?} * 100 + $1 - 5000 )); }
+sentinel_port() { echo $(( ${LANE_PORT_BASE:?} * 100 + 99 )); }   # must stay CLOSED for the whole run
+
+listening_pids() { lsof -nP -iTCP:"$1" -sTCP:LISTEN -t 2>/dev/null || true; }
+
+require_lane_base() {
+  [[ "${LANE_PORT_BASE:?}" =~ ^[0-9]+$ ]] || die "LANE_PORT_BASE not numeric"
+  (( LANE_PORT_BASE >= 51 && LANE_PORT_BASE <= 64 )) || die "LANE_PORT_BASE outside 51..64 (canonical band 5000-5064 is reserved)"
+}
+require_mongo_port() {
+  (( MONGO_PORT != 27017 )) || die "operational Mongo port 27017 refused"
+  (( MONGO_PORT < 27000 || MONGO_PORT > 27099 )) || die "Mongo port in operational neighbourhood 27000-27099 refused"
+}
+# Workspace guard: only a kit-created directory under the temp root may be removed.
+require_workspace() {
+  case "${W:?}" in "${TMPDIR:-/private/tmp}"/mvp6-*|/private/tmp/mvp6-*) ;; *) die "workspace $W not under temp root";; esac
+  [[ -f "$W/.mvp6-evidence-kit-workspace" ]] || die "workspace marker missing"
+}

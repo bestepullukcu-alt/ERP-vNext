@@ -1,0 +1,5 @@
+<!-- Insert these rows into frontend/Diten.Web/Resources/SharedResource.ar.resx (integration owner, SR-D4; values reviewed by the l10n agent). NOT APPLIED. -->
+<fragment>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>الخدمات اللوجستية العكسية</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>المرتجعات</value></data>
+</fragment>

@@ -1,0 +1,15 @@
+item	status	evidence	remaining_gate
+canonical identity	COMPLETE	DCP-002 PASS inherited from controlling package	none
+UI bounded scope	COMPLETE DESIGN	list/create/detail/transition/POD; no edit/delete/reconcile/history	implementation verification
+Compact + 13 inputs	COMPLETE DESIGN	GoldenReferenceCompact and controlling UI183-A05	implementation/browser verification
+28 UI-owned paths	COMPLETE TECHNICAL	UI-PREIMAGE-MANIFEST.tsv has 28/28 ABSENT preimages	exact UI DEV authority
+accepted backend selection	COMPLETE TECHNICAL	40 rows bound to durable archive and MOD-0183/root CT decisions	transfer authority and target preimage check
+isolated target proposal	COMPLETE TECHNICAL	new registered checkout from immutable HEAD + donor + frozen Carrier predecessor	owner decision; target not created here
+shared successor delta	COMPLETE TECHNICAL	12-path patch; disposable apply 12/12; focused builds/tests PASS	Carrier predecessor freeze + single integration-owner approval
+gateway route policy	COMPLETE DESIGN	four exact descriptors implement five operations; no wildcard/OPTIONS/PUT/PATCH/DELETE	composed Gateway runtime evidence
+module registration/navigation	COMPLETE DESIGN	three pages, exact five permission literals, seven-language nav keys	live Platform reconcile/idempotency and visibility evidence
+permission policy	COMPLETE DESIGN	existing ShipmentPermissions literals; no Auth seed or new policy	live manifest reconciliation/RBAC evidence
+pack delta	DECISION PENDING	PACK-DELTA.patch 20eacc55... -> target 464d10b4...	owner artifact replacement/application approval
+shared port topology	DECISION/RUNTIME PENDING	pre-existing CRM and SupplyChain 5061 collision	integration-owner environment disposition; no CRM edit in this scope
+UI DEV/VER dispatch	HELD	versioned prompts exact-bound below	pack + transfer + shared approvals and immutable target
+runtime/browser acceptance	DEFERRED	static candidate checks only	DEV writer complete then independent browser VER

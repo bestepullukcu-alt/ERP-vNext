@@ -1,0 +1,2 @@
+id	severity	artifact	location	expected	observed	impact	closure
+F-01	REWORK	docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-01/loads-semantics-v3.1.0-rc.1.md	line 192	Release boundary names the actual candidate metadata while preserving wire v1	info.version2.0.0 is candidate metadata only	Normative annex contradicts YAML info.version 3.1.0-rc.1 and can mis-bind final-version/cutover review	Successor candidate corrects only the stale claim, regenerates annex/patch hashes, and repeats independent exact-byte/OAS/annex consistency VER

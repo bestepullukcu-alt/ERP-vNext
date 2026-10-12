@@ -1,0 +1,25 @@
+id	acceptance	verdict	evidence_or_gap
+RA-01	Auth/Platform independent VER handoff exists	OPEN	Only unapplied candidate and UNAPPROVED decision draft exist; independent runtime VER NOT RUN
+RA-02	Carrier final UI exact identity	PASS inherited	Sealed UI VER records e96578d0... 21/21, patch 3c05dfdf..., Index da254157...; no fresh producer-manifest rehash claimed
+RA-03	Shared integration exact source	PASS inherited	Independent 422/422 manifest dec28b6...; shared Carrier patch 3fdc9188... recorded 18/18
+RA-04	Fresh source→binary→process chain includes approved Auth LE issuance	OPEN	No approved/applied Auth implementation or fresh independent binaries/processes
+RA-05	Real Auth-issued tenant JWT carries authoritative legal_entity_id	OPEN	Prior real token omitted claim; candidate is unapplied and unapproved
+RA-06	Auth→MVC→Gateway→Carrier list	OPEN	Start prerequisite failed; no fresh real-token execution
+RA-07	Auth→MVC→Gateway→Carrier create	OPEN	Start prerequisite failed; no fresh real-token execution
+RA-08	Same-key replay and payload-conflict behavior through real Auth chain	OPEN	Diagnostic-token result is excluded from real-Auth acceptance
+RA-09	Status transition through real Auth chain	OPEN	Diagnostic-token result is excluded from real-Auth acceptance
+RA-10	Status offcanvas opens from a persisted real row	OPEN	No Auth-scoped list row; prior browser evidence verified markup only
+RA-11	Read/create/status permission separation in real HTTP/browser chain	OPEN	Permission claims PASS inherited; action-level real-Auth separation not executed
+RA-12	Unauthenticated JWT enforcement	PASS inherited	Gateway and SupplyChain Carrier endpoints returned 401
+RA-13	Missing LE fails closed	PASS inherited	Real Auth token lacked LE and Carrier adapter returned 403
+RA-14	Tenant and LE cross-scope isolation	OPEN	No Auth-issued LE identity available for positive and cross-scope pair
+RA-15	UAS-001 browser behavior	PASS inherited	Denial/remediation only; table/create/status absent; no browser console error
+RA-16	Persistence effects for create/replay/status	OPEN	No real-Auth mutation run; diagnostic-token persistence not promoted
+RA-17	Response and error behavior bound to controlling acceptance	OPEN	401 and missing-LE 403 inherited; positive/replay/conflict/status responses require real-Auth run
+RA-18	Carrier responsive evidence at 768 and 390	PARTIAL inherited	Prior viewport requests left window.innerWidth at 1280
+RA-19	Carrier seven-language and Arabic RTL evidence	PASS inherited	Exact UI identity; en,tr,fr,es,zh,ar,ru and dir=rtl observed
+RA-20	Shared-shell L10n and console warnings	PARTIAL inherited	Arabic Search label remained English; ten distinct missing-key warnings
+RA-21	Browser screenshot durable archive	PARTIAL inherited	Four captures visibly observed and hash-bound; no durable PNG archived
+RA-22	Diagnostic-token list/create/replay/status as real-Auth proof	N/A	Explicitly excluded; token was locally signed and not Auth-issued
+RA-23	Full-module/E5/G5/rollout	N/A	Outside this bounded verifier scope
+OVERALL	Real Auth Carrier E2E successor acceptance	OPEN	Required Auth/Platform independent runtime VER handoff is missing

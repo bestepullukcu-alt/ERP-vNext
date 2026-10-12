@@ -1,0 +1,5 @@
+feat(supply-chain): add MOD-0192 Capacity bounded core (not composed)
+
+Capacity source and tests. Not registered in Program.cs.
+Work packages: Q202a; verified by Q213.
+45 files from pathspec/S8.txt (Q230 commit plan).

@@ -1,0 +1,8 @@
+command	result	evidence
+Verify DEV SHA256SUMS and 43-file SOURCE-MANIFEST	5/5 package hashes;43/43 source hashes	SOURCE-CHECK.tsv
+Apply X01 then X07 starting then X07 addendum to archived FAULT-SOURCE-43 baseline	43/43 byte-identical targets	patch-chain checked in disposable workspace
+.NET 8 test-project build --no-restore	Exit 0; 0 warnings; 0 errors	RAW-EVIDENCE.tar.gz/build2.log
+CapacityFaultTests against verifier Mongo rsmod192:57192	20/20 PASS; 0 skipped	RAW-EVIDENCE.tar.gz/x01x07-ver.trx
+CapacityPlans against verifier Mongo rsmod192:57192	31/31 PASS; 0 skipped	RAW-EVIDENCE.tar.gz/capacity-ver.trx
+Mongo PRIMARY and configureFailPoint check	PRIMARY=true; configureFailPoint=1	RAW-EVIDENCE.tar.gz/mongo-after.json; SOP-22-VER.md
+Verifier Mongo PID 44096 SIGTERM	port 57192 no listener	PROCESS-CLEANUP.md

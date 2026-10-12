@@ -546,6 +546,10 @@
   <data name="PositionAssignments" xml:space="preserve"><value>Pozisyon Atamaları</value></data>
   <data name="MasterData" xml:space="preserve"><value>Ana Veri</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Tüzel Kişilikler</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Tüzel Kişilik</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>Bir tüzel kişilik seçin.</value></data>
+  <data name="LegalEntityUnavailable" xml:space="preserve"><value>Tüzel kişilik listesi kullanılamıyor.</value></data>
+  <data name="LegalEntityNone" xml:space="preserve"><value>Bu kiracının etkin tüzel kişiliği yok.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>İş Akışı Onayları</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Dokümantasyon Yapıları</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Kontrollü Belgeler</value></data>
@@ -1105,4 +1109,15 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Yine De Kabul Et</value>
   </data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Tedarik Zinciri Yürütme</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Taşıyıcı Yönetimi</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Taşıyıcılar</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Sevkiyat Takibi ve Teslimat Kanıtı</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Sevkiyatlar</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>Tersine Lojistik</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>İadeler</value></data>
+  <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Rota ve Yük Planlama</value></data>
+  <data name="Nav.Page.LOADS" xml:space="preserve"><value>Yükler</value></data>
+  <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Hasar Talebi Yönetimi</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Hasar Talepleri</value></data>
 </root>

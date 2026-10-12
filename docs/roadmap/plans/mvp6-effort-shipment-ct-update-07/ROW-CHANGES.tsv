@@ -1,0 +1,9 @@
+source_row	target_row	change_class	old_state	new_state	old_omp	new_omp	numeric_delta_omp	controlling_evidence	reason
+0183-3-DELIVERED	0183-3-DELIVERED	proven_delivery_transfer	DELIVERED	DELIVERED_PLUS_ROOT_R2	48/64/80	52/72/96	+4/+8/+16	mvp6-shipment-root-r2-ct-disposition-01/EFFORT-ROW-MAPPING.tsv	Close exact Root R2 application allocation
+0183-3-REMAINING	0183-3-REMAINING	reserve_transfer	REMAINING	REMAINING_AFTER_ROOT_R2	9.6/16/25.6	5.6/8/9.6	-4/-8/-16	mvp6-shipment-root-r2-ct-disposition-01/EFFORT-ROW-MAPPING.tsv	Same hours transferred; no total increase
+0183-6-DELIVERED	0183-6-DELIVERED	proven_delivery_transfer	DELIVERED	DELIVERED_PLUS_ROOT_RUNTIME_VER	24/32/40	30/44/60	+6/+12/+20	mvp6-shipment-root-r2-ct-disposition-01/EFFORT-ROW-MAPPING.tsv	Close exact independent runtime allocation
+0183-6-REMAINING	0183-6-REMAINING	reserve_transfer	REMAINING	REMAINING_BROWSER_PNG_AND_UI_GAPS	20/36/64	14/24/44	-6/-12/-20	mvp6-shipment-ui-functional-ct-consolidation-01/EFFORT-DISPOSITION.tsv	Root browser and broader UI/PNG stay open; B01/B02 no duplicate credit
+SHIP-UI-B01/B02	EVIDENCE-ALLOCATION.tsv	evidence_only	OPEN_FINDINGS	CT_ACCEPTED_FUNCTIONAL	N/A	N/A	0/0/0	mvp6-shipment-ui-functional-ct-consolidation-01/SOP-22.md	No controlling numeric split; overlap retained explicitly
+0185-RS-01	0185-4-TRANSITION-REMAINING	baseline_materialization	LATEST_BASELINE_INCLUDED	UNCHANGED_REMAINING	16/28/48	16/28/48	0/0/0	mvp6-loads-remaining-scope-estimate-01/EFFORT.tsv	Materialize latest composite baseline in full ledger; do not recount
+portfolio	portfolio	reserve_transfer	1052.2/1432/1859.8 delivered; 838.8/1410/2628 remaining	1062.2/1452/1895.8 delivered; 828.8/1390/2592 remaining	1891/2842/4487.8 total	1891/2842/4487.8 total	0/0/0 total	Root CT exact mappings	Only delivery/remaining composition changes
+

@@ -1,0 +1,9 @@
+# Tek kopyalanabilir owner karar metni — ONAY BEKLİYOR
+
+"MVP6-MOD0192-PRODUCTION-REWORK-PACK-01 içindeki üç bulgunun dar disposition'ını inceliyorum. MOD-0192'nin mevcut exact-name uniqueness ve Draft lifecycle kuralını koruyarak, `createCapacityScenario` için `409 CAPACITY_SCENARIO_NAME_CONFLICT` kodunun **versioned contract successor adayı** olarak hazırlanmasını onaylıyorum; yayımlanmış 2.0.0 sözleşmesini bu mesajla değiştirmiyorum. Successor'ın exact YAML/annex hash'i, strict-code consumer etkisi ve aynı-route/wire-v1 cutover'ı ayrıca değerlendirilecektir.
+
+Promoted MOD-0192'nin kayıtlı izole worktree'sinde, yalnız `CapacityRepository.cs`, `CapacityLeaseStore.cs` ve ilgili CapacityPlans test dosyaları üzerinde **production persistence rework** yapılmasını onaylıyorum: X01'de definite server-rejected precommit ile uncertain commit ayrımı; X07'de authoritative scoped evaluation + exact Pending terminal event + exact audit doğrulaması ve read-failure fail-closed; duplicate-name için yalnız sözleşme successor'ı ve consumer/cutover kararı sonrasında deterministik kontrol ile unique-index yarışının aynı yayımlanmış 409 sonucuna bağlanması. X07'nin mevcut SHA256 `94f65a697acf533f4f1b3ea49e5d3c18e962426686873ec19961162f1ae50730` unapplied patch'i başlangıç girdisidir; exact event/audit identity için gerekli addendum ayrı diff/hash ile incelemeye sunulacaktır. Her source baseline yeniden doğrulanacak, RED→GREEN ve bağımsız VER yapılacaktır.
+
+Bu karar Program.cs, MOD-0190, canonical publication, guard, gateway, shared permission, live producer, worker publisher, rollout, commit/push/stash, E5/G5 veya CT acceptance yetkisi vermez. Contract publication ve consumer consent ayrıca exact final hash ile karara bağlanacaktır."
+
+Bu metin **taslak**tır; mevcut kullanıcı mesajı yalnız paket hazırlığını yetkilendirir. Özellikle önceki auto-review reddi altında production persistence dosyalarına uygulama için yukarıdaki açık karar gerekir.

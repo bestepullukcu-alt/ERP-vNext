@@ -1,0 +1,7 @@
+step	command	exit	result
+1	python3 verify_rever.py	0	PASS
+2	git apply --check <candidate-02 amendment.patch> (fresh disposable canonical copy)	0	PASS
+3	git apply <candidate-02 amendment.patch> (fresh disposable canonical copy)	0	PASS
+4	SHA-256 and byte equality comparison	0	PASS
+5	Candidate-01→02 unified diff and reverse-normalization comparison	0	PASS
+

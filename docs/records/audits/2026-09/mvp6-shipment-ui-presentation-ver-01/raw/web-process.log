@@ -1,0 +1,1533 @@
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://127.0.0.1:6031
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 22.4503ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 32.6444ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 6.1381ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 6.6973ms - 404
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:6030/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:6030/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 32.471ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 33.0095ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.1282ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.2912ms - 404
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:6030/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:6030/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 5.3792ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 5.7298ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.2301ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.3253ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.0952ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.2155ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.9625ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.0521ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.4192ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.5592ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:00000009 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 9.428ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 9.7186ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:0000000E. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 4.1722ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 4.4322ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 7.6025ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 8.3602ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.6516ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.8413ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.3528ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.4714ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 2.836ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 3.1005ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000011 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 63.5545ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 63.7506ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000012. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 45.8792ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 45.978ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 5.2117ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 5.7554ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.4548ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 3.5886ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.1656ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.4865ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 2.341ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 2.4913ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:00000013 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 176.1597ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 176.2785ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO3:00000014. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+fail: Diten.Web.Controllers.SupplyChainShipmentsController[0]
+      Shipment Gateway request failed for http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10.
+      System.Net.Http.HttpRequestException: An error occurred while sending the request.
+       ---> System.IO.IOException: Unable to read data from the transport connection: Connection reset by peer.
+       ---> System.Net.Sockets.SocketException (54): Connection reset by peer
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.CreateException(SocketError error, Boolean forAsyncThrow)
+         at System.Net.Sockets.NetworkStream.ReadAsync(Memory`1 buffer, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+         at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+         at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.ExecutionContextCallback(Object s)
+         at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+         at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+         at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext()
+         at System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(IAsyncStateMachineBox box, Boolean allowInlining)
+         at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+         at System.Runtime.CompilerServices.AsyncValueTaskMethodBuilder`1.SetResult(TResult result)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.ExecutionContextCallback(Object s)
+         at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+         at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+         at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.ExecuteFromThreadPool(Thread threadPoolThread)
+         at System.Threading.ThreadPoolWorkQueue.Dispatch()
+         at System.Threading.PortableThreadPool.WorkerThread.WorkerThreadStart()
+         at System.Threading.Thread.StartCallback()
+      --- End of stack trace from previous location ---
+      
+         --- End of inner exception stack trace ---
+         at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+         at Diten.Web.Controllers.SupplyChainShipmentsController.ProxyAsync(HttpMethod method, String targetUrl, HttpContent content, Boolean includeIdempotencyKey, CancellationToken cancellationToken) in /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs:line 115
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.6983ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.8072ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.582ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.7133ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.4239ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.5386ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.2729ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.3387ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000014 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.6342ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 2.1914ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000015. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.799ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.9907ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 2.2106ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 2.391ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.06ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.2099ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.6526ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 3.7787ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.1712ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.2847ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000017 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 4.6839ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 4.9287ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000018. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 4.2612ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 4.4303ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 2.3988ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 2.5762ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.1947ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.2579ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.1392ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.2116ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.9739ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.08ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:0000001A Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.6237ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.7202ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:0000001B. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.7749ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.9289ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 5.3257ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 5.5141ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.6516ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.7517ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.1502ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.2217ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.2919ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.3879ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:0000001D Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.9762ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.0548ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:0000001E. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.3143ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.37ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.5132ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.639ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.4039ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.4695ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.408ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.4704ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.4863ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.5504ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000020 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.6613ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.8101ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000021. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.4195ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.4954ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 3.9682ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 4.2602ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.2471ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.2826ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.8757ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.926ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.854ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.8926ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000023 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.9122ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.9565ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000024. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.9125ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.9731ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 16.3687ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 16.9573ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.9007ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.9636ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.67ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.6978ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.5585ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.577ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000026 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 3.3407ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 3.4109ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000027. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.4333ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.5784ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.2365ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.3051ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.7578ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.7938ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.6894ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.7206ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.5ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.5248ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000029 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.0499ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.1248ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:0000002D. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 2.3165ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 2.5231ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.0736ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.163ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.5751ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.6005ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.4767ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.4933ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:0000002E Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.7682ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.9708ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:0000002F. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 4.2835ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 4.5518ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.0934ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.1282ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.4558ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.4848ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.466ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.4811ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000030 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.7789ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.8168ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000032. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments/15b5087c-6471-44b6-bf33-98bf61104475
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments/15b5087c-6471-44b6-bf33-98bf61104475
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.8336ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.8792ms - 404
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 6.3884ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 6.9112ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.7927ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.8782ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 10.486ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 10.5248ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.8085ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.8373ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000034 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.4304ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.5434ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000035. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.1576ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.2007ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.2551ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.3211ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.6778ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.7067ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.4709ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.4905ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.5027ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.5335ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000037 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 3.722ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 3.8637ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000038. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments/15b654be-6029-42ea-8ea4-2d13cdeacb57
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments/15b654be-6029-42ea-8ea4-2d13cdeacb57
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.1551ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.2332ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 41.4313ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 42.3638ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.9945ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.1247ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 9.5945ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 9.6934ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 3.1018ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 3.271ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:00000017 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.4913ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.5544ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO3:00000018. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments/15b654be-6029-42ea-8ea4-2d13cdeacb57
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments/15b654be-6029-42ea-8ea4-2d13cdeacb57
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 2.9055ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 3.0085ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 4.0607ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 4.2581ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.8146ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.9693ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.8635ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.9147ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.7196ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.7452ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:0000001A Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.0125ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.0645ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO3:0000001B. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 4.8627ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 5.2284ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.8835ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.9216ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.5557ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.58ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.0802ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.15ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:0000001C Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.5876ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.6359ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO3:0000001D. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.7608ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.8885ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.2123ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.2592ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.9085ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.955ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.128ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.1862ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.5019ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.5592ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:0000001F Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 24.5368ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.9305ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO3:00000020. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+fail: Diten.Web.Controllers.SupplyChainShipmentsController[0]
+      Shipment Gateway request failed for http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10.
+      System.Net.Http.HttpRequestException: An error occurred while sending the request.
+       ---> System.IO.IOException: Unable to read data from the transport connection: Connection reset by peer.
+       ---> System.Net.Sockets.SocketException (54): Connection reset by peer
+         at System.Net.Sockets.NetworkStream.ReadAsync(Memory`1 buffer, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+         at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+         at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+         at System.Net.Http.HttpConnectionPool.SendWithNtProxyAuthAsync(HttpConnection connection, HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+         at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+         at System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(IAsyncStateMachineBox box, Boolean allowInlining)
+         at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+         at System.Runtime.CompilerServices.AsyncValueTaskMethodBuilder`1.SetResult(TResult result)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+         at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+         at System.Threading.ThreadPoolWorkQueue.Dispatch()
+         at System.Threading.PortableThreadPool.WorkerThread.WorkerThreadStart()
+         at System.Threading.Thread.StartCallback()
+      --- End of stack trace from previous location ---
+      
+         --- End of inner exception stack trace ---
+         at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+         at Diten.Web.Controllers.SupplyChainShipmentsController.ProxyAsync(HttpMethod method, String targetUrl, HttpContent content, Boolean includeIdempotencyKey, CancellationToken cancellationToken) in /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs:line 115
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 0.8557ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 2.8859ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.7095ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.7564ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.5202ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.5492ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.2946ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.3215ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:0000003A Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.1567ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.2143ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:0000003B. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.288ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.3461ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 2.2127ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 2.3175ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.3503ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.4309ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.2256ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.2982ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.19ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.2305ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:0000003D Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 8.1436ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 8.2298ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:0000003E. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 5.553ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 5.6479ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.4411ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.6054ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.7522ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.8271ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.8896ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.077ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.5712ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.6515ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000040 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 2.0018ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 2.1523ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000041. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.0528ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.1053ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.1037ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.157ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.8742ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.913ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.89ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.9605ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.768ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.7997ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000043 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.5791ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.634ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000044. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.2874ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.3626ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 1.1508ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 1.1985ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.2731ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.3261ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.4355ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.5364ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.1107ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.1676ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO0:00000046 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.5873ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.8333ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO0:00000047. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.7087ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.7667ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 18.522ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 18.7664ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.7937ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.8485ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 1.2302ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 1.2919ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.0783ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.1197ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:00000022 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.9945ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.0437ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO3:00000023. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.983ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 2.1607ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 25.1561ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 25.9111ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.787ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.8616ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 0.5038ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 0.5236ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 0.487ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 0.5001ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:00000025 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.1487ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.211ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO3:00000026. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/shipment-bundle/shipments?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 1.1922ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 1.2549ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 14.5238ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 14.7781ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 8.2809ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 9.1296ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 11.6857ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 12.5242ms - 404
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:6030/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:6030/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 26.118ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 26.8129ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 2.859ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 3.1309ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.0308ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.2513ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 5.2807ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 5.7009ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 3.7421ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 3.826ms - 404
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]
+      dynamic_module_menu.empty Reason=http_404 TenantId=00000000-0000-0000-0000-000000000001 CorrelationId=0HNOQEN4QPVO3:0000002D Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 2.656ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 2.8184ms - 404
+warn: Diten.Web.Controllers.TenantSearchController[0]
+      tenant_search.degraded Reason=http_404 (Not Found) CorrelationId=0HNOQEN4QPVO3:0000002E. Ctrl+K returned NO items — the same failure that empties the sidebar menu.
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:6030/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 16.1322ms - 404
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 16.604ms - 404

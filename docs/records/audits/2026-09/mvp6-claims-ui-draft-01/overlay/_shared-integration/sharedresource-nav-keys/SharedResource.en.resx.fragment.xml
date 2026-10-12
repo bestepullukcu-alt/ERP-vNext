@@ -1,0 +1,5 @@
+<!-- Insert these rows into frontend/Diten.Web/Resources/SharedResource.en.resx (integration owner, SR-D4). -->
+<fragment>
+  <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Claims Management</value></data>
+  <data name="Nav.Page.CLAIMS" xml:space="preserve"><value>Claims</value></data>
+</fragment>

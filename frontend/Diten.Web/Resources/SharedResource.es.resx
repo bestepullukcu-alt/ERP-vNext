@@ -487,6 +487,10 @@
   <data name="PositionAssignments" xml:space="preserve"><value>Asignaciones de posiciones</value></data>
   <data name="MasterData" xml:space="preserve"><value>Datos maestros</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Entidades jurídicas</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>Seleccione una entidad jurídica.</value></data>
+  <data name="LegalEntityUnavailable" xml:space="preserve"><value>La lista de entidades jurídicas no está disponible.</value></data>
+  <data name="LegalEntityNone" xml:space="preserve"><value>Este inquilino no tiene ninguna entidad jurídica activa.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Aprobaciones de flujo de trabajo</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Estructuras de documentación</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Documentos Controlados</value></data>
@@ -1049,4 +1053,15 @@
   <data name="Loading" xml:space="preserve">
     <value>Cargando...</value>
   </data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Ejecución de la cadena de suministro</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestión de transportistas</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transportistas</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Seguimiento de envíos y comprobante de entrega</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Envíos</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>Logística inversa</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>Devoluciones</value></data>
+  <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Rutas y planificación de cargas</value></data>
+  <data name="Nav.Page.LOADS" xml:space="preserve"><value>Cargas</value></data>
+  <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestión de reclamaciones</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Reclamaciones de transporte</value></data>
 </root>

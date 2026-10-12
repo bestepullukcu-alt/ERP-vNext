@@ -1,0 +1,5 @@
+docs(scm): update supply-chain module packs, DCP-009 and CRM packs to the applied state
+
+Module packs MOD-0183…0192, DCP-009 and the commercial-suite packs written by Q202a.
+Work packages: pack-apply WPs; Q202a.
+22 files from pathspec/K1.txt (Q230 commit plan).

@@ -1,0 +1,15 @@
+class alone r1: Passed!  - Failed:     0, Passed:     5, Skipped:     0, Total:     5, Duration: 1 s
+class alone r2: Passed!  - Failed:     0, Passed:     5, Skipped:     0, Total:     5, Duration: 1 s
+class alone r3: Passed!  - Failed:     0, Passed:     5, Skipped:     0, Total:     5, Duration: 1 s
+BRD namespace r1: Failed!  - Failed:    50, Passed:   129, Skipped:     0, Total:   179, Duration: 2 s
+BRD namespace r2: Failed!  - Failed:    49, Passed:   130, Skipped:     0, Total:   179, Duration: 2 s
+A BRD failures 49 | B r1 50 | B r2 49
+sweeper test failed in r1: True | r2: False
+r1 minus A: ['Sweep_DropsOnlyStaleOwnedMarkedDatabaseFromPreviousRun']
+r2 minus A: []
+A minus r1: []
+A minus r2: []
+Loads A r1: Failed!  - Failed:     1, Passed:    32, Skipped:     0, Total:    33, Duration: 28 s Failed Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+Loads B r1: Failed!  - Failed:     1, Passed:    32, Skipped:     0, Total:    33, Duration: 29 s Failed Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+Loads A r2: Failed!  - Failed:     1, Passed:    32, Skipped:     0, Total:    33, Duration: 29 s Failed Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce
+Loads B r2: Failed!  - Failed:     1, Passed:    32, Skipped:     0, Total:    33, Duration: 28 s Failed Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce

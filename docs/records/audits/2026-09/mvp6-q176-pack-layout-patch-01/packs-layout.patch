@@ -1,0 +1,33 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+@@ -610,7 +610,7 @@
+ 
+ ### 32.2 Layout and shell contract
+ 
+-- `shell: tenant` → every Returns `.cshtml` states `Layout = "_LayoutTenantShell";` explicitly; `_ViewStart.cshtml` unchanged.
++- `shell: tenant` → the Returns page view (`Index.cshtml`) states `Layout = "_LayoutTenantShell";` explicitly; partial views (`_*.cshtml`) set no `Layout`, because an explicit Layout on a partial renders a second shell (Q64b D-02; UI-PM-01); `_ViewStart.cshtml` unchanged.
+ - View folder `frontend/Diten.Web/Views/SupplyChain/Returns/`; route `/SupplyChain/Returns`; no `/Platform` prefix; no `Areas/`.
+ - Skeleton, empty and error are three distinct states (VIEW-001 §3.1); no spinner or "Loading" text.
+ 
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+@@ -291,7 +291,7 @@
+ 
+ ### 23.2 Layout and shell contract
+ 
+-- `shell: tenant` → every S&OP `.cshtml` states `Layout = "_LayoutTenantShell";` explicitly; `_ViewStart.cshtml` unchanged.
++- `shell: tenant` → the S&OP page views (`Index.cshtml`, `Details.cshtml`) state `Layout = "_LayoutTenantShell";` explicitly; partial views (`_*.cshtml`) set no `Layout`, because an explicit Layout on a partial renders a second shell (Q64b D-02; UI-PM-01); `_ViewStart.cshtml` unchanged.
+ - View folder `frontend/Diten.Web/Views/SupplyChain/SandopPlans/`; routes under `/SupplyChain/SandopPlans`; no `/Platform` prefix; no `Areas/`.
+ - Skeleton, empty and error are three distinct states (VIEW-001 §3.1); no spinner or "Loading" text.
+ 
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
+@@ -300,7 +300,7 @@
+ 
+ ### 23.2 Layout and shell contract
+ 
+-- `shell: tenant` → every Capacity `.cshtml` states `Layout = "_LayoutTenantShell";` explicitly; `_ViewStart.cshtml` unchanged.
++- `shell: tenant` → the Capacity page views (`Index.cshtml`, `Details.cshtml`) state `Layout = "_LayoutTenantShell";` explicitly; partial views (`_*.cshtml`) set no `Layout`, because an explicit Layout on a partial renders a second shell (Q64b D-02; UI-PM-01); `_ViewStart.cshtml` unchanged.
+ - View folder `frontend/Diten.Web/Views/SupplyChain/CapacityPlans/`; routes under `/SupplyChain/CapacityPlans`; no `/Platform` prefix; no `Areas/`.
+ - Skeleton, empty and error are three distinct states (VIEW-001 §3.1); no spinner or "Loading" text.
+ 

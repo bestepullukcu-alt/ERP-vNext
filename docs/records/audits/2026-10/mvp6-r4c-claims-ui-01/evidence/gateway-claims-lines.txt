@@ -1,0 +1,63 @@
+# Gateway lines for /api/shipment-bundle/claims (lane gateway log; 0 in the first 50 lines, written before the Claims page was used)
+23:05:02 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 226.3271 ms
+23:05:50 HTTP "POST" "/api/shipment-bundle/claims" responded 201 in 287.1331 ms
+23:05:50 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 16.3643 ms
+23:06:00 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 22.3705 ms
+23:06:03 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 72.6694 ms
+23:06:40 HTTP "POST" "/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition" responded 200 in 834.5968 ms
+23:06:40 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 47.3500 ms
+23:06:57 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 49.8571 ms
+23:07:04 HTTP "POST" "/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition" responded 200 in 138.0569 ms
+23:07:04 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 11.6680 ms
+23:07:18 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 147.1598 ms
+23:07:22 HTTP "POST" "/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition" responded 200 in 56.1669 ms
+23:07:22 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 7.4580 ms
+23:07:31 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 13.0982 ms
+23:07:35 HTTP "POST" "/api/shipment-bundle/claims/3b569dd1-f818-419b-8026-cbaee8eb5f48/transition" responded 200 in 18.4012 ms
+23:07:35 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 4.7335 ms
+23:07:48 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 30.1741 ms
+23:08:16 HTTP "POST" "/api/shipment-bundle/claims" responded 201 in 31.8235 ms
+23:08:16 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 2.7709 ms
+23:08:25 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 10.8822 ms
+23:08:29 HTTP "POST" "/api/shipment-bundle/claims/88d91434-55aa-4460-884a-2c6e4fe6eb96/transition" responded 200 in 17.2193 ms
+23:08:29 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 2.8681 ms
+23:08:42 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 14.4042 ms
+23:08:46 HTTP "POST" "/api/shipment-bundle/claims" responded 201 in 23.2420 ms
+23:08:48 RequestId: e6abe031-96af-4910-bd33-8ae941f464d5, PreviousRequestId: - | 409 Conflict status code of request URI: http://localhost:5061/api/shipment-bundle/claims
+23:08:48 HTTP "POST" "/api/shipment-bundle/claims" responded 409 in 22.7941 ms
+23:09:03 HTTP "POST" "/api/shipment-bundle/claims" responded 201 in 23.1859 ms
+23:09:05 HTTP "POST" "/api/shipment-bundle/claims" responded 201 in 5.8652 ms
+23:09:05 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 4.7287 ms
+23:09:32 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 29.0719 ms
+23:09:37 HTTP "POST" "/api/shipment-bundle/claims" responded 201 in 49.0153 ms
+23:09:39 HTTP "POST" "/api/shipment-bundle/claims" responded 201 in 40.7601 ms
+23:09:39 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 6.6481 ms
+23:09:53 HTTP "POST" "/api/shipment-bundle/claims/6c6d0a8c-4a58-481c-a0f9-bf7068b1685d/transition" responded 200 in 29.2296 ms
+23:09:56 RequestId: 5fd00f08-88b2-4ace-abcc-b1ce7f29b266, PreviousRequestId: - | 422 Unprocessable Entity status code of request URI: http://localhost:5061/api/shipment-bundle/claims/6c6d0a8c-4a58-481c-a0f9-bf7068b1685d/transition
+23:09:56 HTTP "POST" "/api/shipment-bundle/claims/6c6d0a8c-4a58-481c-a0f9-bf7068b1685d/transition" responded 422 in 13.3087 ms
+23:09:56 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 2.6357 ms
+23:10:17 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 27.7992 ms
+23:10:21 HTTP "POST" "/api/shipment-bundle/claims/cc07b692-604d-40a1-87cd-8c085b3d4daf/transition" responded 200 in 25.1496 ms
+23:10:23 RequestId: 5fd00f08-88b2-4ace-abcc-b1ce7f29b266, PreviousRequestId: - | 409 Conflict status code of request URI: http://localhost:5061/api/shipment-bundle/claims/cc07b692-604d-40a1-87cd-8c085b3d4daf/transition
+23:10:23 HTTP "POST" "/api/shipment-bundle/claims/cc07b692-604d-40a1-87cd-8c085b3d4daf/transition" responded 409 in 10.9282 ms
+23:10:58 TenantResolution dev bypass applied in gateway. Path="/api/shipment-bundle/claims" TenantId=00000000-0000-0000-0000-000000000001
+23:10:58 RequestId: 57338d4578c84b6faf9fbf8348039a49, PreviousRequestId: - | ResponderMiddleware found 1 error -> | ConnectionToDownstreamServiceError: Error connecting to downstream service, exception: System.Net.Http.HttpRequestException
+23:10:58 HTTP "GET" "/api/shipment-bundle/claims" responded 502 in 75.5377 ms
+23:10:59 RequestId: 1f15f5d4-1127-4ebb-b6ca-5525ed22dc8f, PreviousRequestId: - | ResponderMiddleware found 1 error -> | ConnectionToDownstreamServiceError: Error connecting to downstream service, exception: System.Net.Http.HttpRequestExcep
+23:10:59 HTTP "GET" "/api/shipment-bundle/claims" responded 502 in 7.6154 ms
+23:11:01 RequestId: [REDACTED_PHONE], PreviousRequestId: - | ResponderMiddleware found 1 error -> | ConnectionToDownstreamServiceError: Error connecting to downstream service, exception: System.Net.Http.HttpRequestException: Connection ref
+23:11:01 HTTP "GET" "/api/shipment-bundle/claims" responded 502 in 8.3871 ms
+23:11:10 RequestId: d920fc71-c4ea-4f29-aca3-ff64c68f84e8, PreviousRequestId: - | ResponderMiddleware found 1 error -> | ConnectionToDownstreamServiceError: Error connecting to downstream service, exception: System.Net.Http.HttpRequestExcep
+23:11:10 HTTP "GET" "/api/shipment-bundle/claims" responded 502 in 4.3126 ms
+23:11:50 RequestId: 1d577582-4ca8-4919-bf18-ed2af2507c93, PreviousRequestId: - | ResponderMiddleware found 1 error -> | RequestCanceled: The operation was canceled. | Setting error response for request: GET /api/shipment-bundle/claims
+23:11:50 HTTP "GET" "/api/shipment-bundle/claims" responded 499 in 15010.1338 ms
+23:12:17 RequestId: c545cdb2-6d31-4445-907b-5de1f33228db, PreviousRequestId: - | ResponderMiddleware found 1 error -> | RequestCanceled: The operation was canceled. | Setting error response for request: GET /api/shipment-bundle/claims
+23:12:17 HTTP "GET" "/api/shipment-bundle/claims" responded 499 in 15035.1451 ms
+23:12:44 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 71.1389 ms
+23:12:48 HTTP "POST" "/api/shipment-bundle/claims/02e00fbe-38a7-4538-8f71-3c6796ae30a3/transition" responded 200 in 116.9090 ms
+23:12:48 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 4.5573 ms
+23:13:13 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 58.1684 ms
+23:13:16 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 191.8054 ms
+23:13:26 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 13.7398 ms
+23:13:39 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 11.7076 ms
+23:13:54 HTTP "GET" "/api/shipment-bundle/claims" responded 200 in 6.8680 ms

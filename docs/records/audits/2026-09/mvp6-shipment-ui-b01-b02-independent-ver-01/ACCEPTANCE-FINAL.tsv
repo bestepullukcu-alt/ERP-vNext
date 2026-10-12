@@ -1,0 +1,20 @@
+id	result	evidence_or_reason
+ARTIFACTS	PASS	Inherited independent 13/13 writer artifact checksum verification
+SOURCE-354	PASS	354/354 exact; e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3
+AUTH-22	PASS	22/22 exact; b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731
+BUILD-3333	PASS	3333/3333 exact; 516ba828bed602e4355a5cc6871501cbb3b3c72d60473fa7ec73d135bbadf911
+PATCH-ROUNDTRIP	PASS	Inherited independent reverse/forward apply and manifest recheck
+FOCUSED-TESTS	PASS	Inherited independent 9 passed, 0 failed, 0 skipped
+FRESH-BUILDS	PASS	Inherited independent native .NET 8 builds; all six targets 0 errors
+RUNTIME-ENV	PASS	Own DB-010 replica set and distinct ports; no 27017
+B01-RUNTIME	PASS	Root-assisted IAB on verifier stack: list 200 and filter/DataTable surfaces visible
+B02-TRANSITION	PASS	Draft→Planned→Dispatched receipts/audit/snapshots retain persisted root
+B02-POD	PASS	Browser POD reached Delivered and retained persisted root
+B02-REPLAY	PASS	HTTP 201 and idempotentReplay=true for same key/body/root
+B02-CONFLICT	PASS	HTTP 409 IDEMPOTENCY_KEY_REUSED for changed payload
+B02-ZERO-WRITE	PASS	Scoped shipments/receipts/audit/outbox deltas all zero
+B02-RESTART	PASS	Same binary/database; API and root-assisted browser detail retained Delivered/root/POD
+OUTBOX-PENDING	PASS	5 of 5 rows Pending; no publisher delivery claim
+PNG	OPEN	No supported persistent PNG export capability
+PLATFORM-AGGREGATE-HEALTH	OBSERVED-503	Preserved separately; Shipment detail remained available
+

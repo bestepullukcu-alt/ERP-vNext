@@ -1,0 +1,15 @@
+# RESTORED (fixed Web again) — correlation id c3b6835b-ed11-42b2-9897-849a48bab853
+# command: grep -F <id> log/web.log log/gateway.log log/supplychain.log (scratch /Users/natig/mvp6-env/q372-20261004-1359)
+## web.log: 1 lines
+      Shipment Gateway answered 201 for POST http://localhost:5000/api/shipment-bundle/shipments; correlation c3b6835b-ed11-42b2-9897-849a48bab853.
+## gateway.log: 1 lines
+{"Timestamp":"2026-10-04T14:05:45.1043430+03:00","Level":"Information","MessageTemplate":"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms","RenderedMessage":"HTTP \"POST\" \"/api/shipment-bundle/shipments\" responded 201 in 28.5353 ms","TraceId":"f7db0ca3e5ec6b58cc5290dc5d12359e","SpanId":"9b709170509739f0","Properties":{"ServiceName":"Diten.ApiGateway","Environment":"Development","CorrelationId":"c3b6835b-ed11-42b2-9897-849a48bab853","RequestPath":"/api/shipment-bundle/shipments","StatusCode":201,"TraceId":"f7db0ca3e5ec6b58cc5290dc5d12359e","RequestMethod":"POST","Elapsed":28.535333,"SourceContext":"Serilog.AspNetCore.RequestLoggingMiddleware","RequestId":"0HNP20RSOGHFU:00000003","ConnectionId":"[REDACTED]","MachineName":"Natig-Erens-MacBook-Pro"},"Renderings":{"Elapsed":[{"Format":"0.0000","Rendering":"28.5353"}]}}
+## supplychain.log: 8 lines
+[14:05:45 INF] Request starting HTTP/1.1 POST http://localhost:5061/api/shipment-bundle/shipments - application/json; charset=utf-8 null CorrelationId=c3b6835b-ed11-42b2-9897-849a48bab853 TenantId= LegalEntityId=
+[14:05:45 INF] Executing endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Create (Diten.SupplyChainService.Api)' CorrelationId=c3b6835b-ed11-42b2-9897-849a48bab853 TenantId= LegalEntityId=
+[14:05:45 INF] Route matched with {action = "Create", controller = "Shipments"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Create, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Controllers.ShipmentsController (Diten.SupplyChainService.Api). CorrelationId=c3b6835b-ed11-42b2-9897-849a48bab853 TenantId= LegalEntityId=
+[14:05:45 INF] Handling CreateShipmentCommand CorrelationId=c3b6835b-ed11-42b2-9897-849a48bab853 TenantId=00000000-0000-0000-0000-000000000001 LegalEntityId=93acb21f-a7ea-45cc-9916-1652fb3574c2
+[14:05:45 INF] Executing ObjectResult, writing value of type 'System.Text.Json.Nodes.JsonObject'. CorrelationId=c3b6835b-ed11-42b2-9897-849a48bab853 TenantId= LegalEntityId=
+[14:05:45 INF] Executed action Diten.SupplyChainService.Api.Controllers.ShipmentsController.Create (Diten.SupplyChainService.Api) in 14.9485ms CorrelationId=c3b6835b-ed11-42b2-9897-849a48bab853 TenantId= LegalEntityId=
+[14:05:45 INF] Executed endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Create (Diten.SupplyChainService.Api)' CorrelationId=c3b6835b-ed11-42b2-9897-849a48bab853 TenantId= LegalEntityId=
+[14:05:45 INF] Request finished HTTP/1.1 POST http://localhost:5061/api/shipment-bundle/shipments - 201 null application/json; charset=utf-8 23.7529ms CorrelationId=c3b6835b-ed11-42b2-9897-849a48bab853 TenantId= LegalEntityId=

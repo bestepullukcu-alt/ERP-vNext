@@ -1,0 +1,3 @@
+tree	suite	exit	summary
+treeB	web-tests	0	Passed!  - Failed:     0, Passed:   216, Skipped:     0, Total:   216, Duration: 10 s - Diten.Web.Tests.dll (net8.0)
+treeA	web-tests	0	Passed!  - Failed:     0, Passed:   158, Skipped:     0, Total:   158, Duration: 18 s - Diten.Web.Tests.dll (net8.0)

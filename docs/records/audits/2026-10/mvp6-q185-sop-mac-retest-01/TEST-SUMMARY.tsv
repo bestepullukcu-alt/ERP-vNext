@@ -1,0 +1,19 @@
+suite	tree	total	passed	failed	skipped	new_failures_vs_A	new_failure_names	trx
+web-tests	treeA	158	158	0	0	-	-	logs/test/treeA--web-tests.trx
+web-tests	treeB	216	216	0	0	0	-	logs/test/treeB--web-tests.trx
+
+# NavManifestL10nGuardTests on treeB
+Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Every_manifest_provider_in_the_repo_is_parsed_and_yields_a_module_code_and_pages	Passed
+Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.The_key_transform_is_the_shipping_bridge_not_a_copy	Passed
+Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Every_manifest_domain_has_a_Nav_Domain_key_in_all_seven_languages	Passed
+Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Every_nav_visible_manifest_page_has_a_Nav_Page_key_in_all_seven_languages	Passed
+Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.The_parser_sees_all_three_declaration_shapes_used_today	Passed
+Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Every_manifest_module_has_a_Nav_Module_key_in_all_seven_languages	Passed
+Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Ppm_navigation_covers_the_domain_module_and_current_pages_with_runtime_keys	Passed
+
+# tests present in B only: 58
+
+# console summaries (dotnet test)
+tree	suite	exit	summary
+treeB	web-tests	0	Passed!  - Failed:     0, Passed:   216, Skipped:     0, Total:   216, Duration: 10 s - Diten.Web.Tests.dll (net8.0)
+treeA	web-tests	0	Passed!  - Failed:     0, Passed:   158, Skipped:     0, Total:   158, Duration: 18 s - Diten.Web.Tests.dll (net8.0)

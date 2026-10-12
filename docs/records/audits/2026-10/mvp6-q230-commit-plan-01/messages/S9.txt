@@ -1,0 +1,5 @@
+feat(platform): add service-to-service scope resolution and lane-configurable test Mongo URIs
+
+Auth, MDM, Platform, HCM, TEP and CRM service files from the Auth-22, A12-360, Q117, Q121 and Q131 layers.
+Work packages: Q202a (BASE L2/L3, Q117, Q121, Q131).
+40 files from pathspec/S9.txt (Q230 commit plan).

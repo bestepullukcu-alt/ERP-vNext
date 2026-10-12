@@ -1,0 +1,107 @@
+{
+  "oldInventory": {
+    "entries": 12,
+    "selfExcluded": true,
+    "exactCompleteSet": true,
+    "allHashesMatch": true,
+    "manifestSha256": "720365228c1718c1e13f8375e75e17196b7a939242866bc5ae568e7a76070745"
+  },
+  "r1Inventory": {
+    "entries": 18,
+    "selfExcluded": true,
+    "exactCompleteSet": true,
+    "allHashesMatch": true,
+    "manifestSha256": "e20345d0ab42771edc23faac07c4d4627e8df4bef0008393e58bdbbc2dac305f"
+  },
+  "scope": {
+    "onlyChange": "/components/responses/CarrierCreateUnprocessable/content/application~1json/examples removed",
+    "removed": [
+      "shipmentTransition",
+      "loadTransition",
+      "returnTransition",
+      "claimTransition",
+      "inventory"
+    ],
+    "allOldToNewPathsIdentical": true,
+    "sharedSchemasAndOriginalComponentsIdentical": true,
+    "nonCarrierPathsIdenticalToCanonical": 10,
+    "noNewBusinessRuleStatusOrAnnexChange": true
+  },
+  "patch": {
+    "commands": [
+      {
+        "argv": [
+          "git",
+          "apply",
+          "--check",
+          "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/publication-after-approval.patch"
+        ],
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "git",
+          "apply",
+          "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/publication-after-approval.patch"
+        ],
+        "exit": 0,
+        "stdout": "",
+        "stderr": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/publication-after-approval.patch:1083: new blank line at EOF.\n+\nwarning: 1 line adds whitespace errors.\n"
+      }
+    ],
+    "exactTwoFiles": [
+      "docs/analysis/contracts/carrier-semantics-v1.1.0.md",
+      "docs/analysis/contracts/shipment-bundle.openapi.yaml"
+    ],
+    "proposedHashMatch": true,
+    "onlyCandidatePublicationMetadataChanged": true
+  },
+  "r1DeltaPatch": {
+    "exit": 0,
+    "stdout": "patching file 'v1.1.0/shipment-bundle.openapi.candidate.yaml'\n",
+    "stderr": "",
+    "byteExactNewCandidate": true
+  },
+  "reproduced": {
+    "oldOriginalAndAdaptedSameFindings": 4,
+    "r1Findings": 0,
+    "responseGroups": 27,
+    "passGroups": 26,
+    "naGroup": "C422 no approved example",
+    "scenarioCount": 44,
+    "negativeMutations": 7,
+    "deliveredResultFilesByteOrObjectExact": true
+  },
+  "canonicalContractHashes": {
+    "docs/analysis/contracts/inventory-bundle.openapi.yaml": "456f63589ee1141dbe1ad999eda090b22c22af3ae1de07e1fcd0616ce44db4d8",
+    "docs/analysis/contracts/shipment-bundle.openapi.yaml": "f6415bbfda42a61a9845e7e1fc843be087bf249cac6bcdc9cb678284766450a1",
+    "docs/analysis/contracts/supplier-performance.openapi.yaml": "9100d106527947a0a842bc5c4b580fbb2c3b6a288949798b8416a08d352e0088",
+    "docs/analysis/contracts/supplier.openapi.yaml": "87a297edfb8eabf9ecc8beff7870955f46b38413a1490a05a36e3f255d77bb00",
+    "docs/analysis/contracts/sandop-capacity.openapi.yaml": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+    "docs/analysis/contracts/trace.openapi.yaml": "2fa5e20b8de84deba16533c24bc9e1a090847c9494d73a1752522e1f69ea2297",
+    "docs/analysis/contracts/demand.openapi.yaml": "3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d",
+    "docs/analysis/contracts/README.md": "c1071d61dd59c42c7f87f50a4dffe44ec9a7b9b56dda1dd8ef72a06dbfcb8a78",
+    "docs/analysis/contracts/warehouse-outbound.openapi.yaml": "2389ce2064570812b8f7efda249af0c1d261f21841443bd88414eda8fb72ba6c",
+    "docs/analysis/contracts/product-master-bundle.openapi.yaml": "8c5ed4679319be39f73ad6b03fa89beb734ea16d8607cdb1c5b53844a383ca3a",
+    "docs/analysis/contracts/bom.openapi.yaml": "8c2b41829123296743ec55e628557d4df8f1d5d333bb71bab3eebd9ec01f32d9",
+    "docs/analysis/contracts/grn-event.openapi.yaml": "3f3c2243fa2da637b20d5b51ea679b8b274282a77f500057dc1b50a9623bd390",
+    "docs/analysis/contracts/location.openapi.yaml": "90cbdd1bfa02e1f1020944f1c96229ee64e0a79fc75b9379dcc9ee0493150f67",
+    "docs/analysis/contracts/atp-bundle.openapi.yaml": "1b43709a9d404fa2ea0c91d1d607ceb82e77265557839f226f6a4ff4b2600064"
+  },
+  "exactHashes": {
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/shipment-bundle.openapi.candidate.yaml": "c650bf44d3fd813bfd2424f48141ff4aed5decda7b4d49e3a945426678e8ee1e",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/shipment-bundle.openapi.candidate.yaml": "05a7ad0c8e26f46983a712e475f39fa5288164f0385f351e3d3a04860d9d8034",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/publication-after-approval.patch": "9f96389b08758ee4fb5d12fe9d6381a7cadaff058deeb8d46b36f89466e4cd88",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/carrier-semantics-v1.1.0.md": "87557ef9f5b5a4427862effbece2bb528ebc1b95361c29416373709223021fee",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/r1-only.diff": "5b563724a93e15cd8e9870d69f1745e1cc2aa8ce472d490d44a474d225794c5f",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_consumer.py": "48f17177bf5116bcfc84880113c4cfb9e89ea64df6136cd4ebf569e50886bb70",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/manifest.json": "e20345d0ab42771edc23faac07c4d4627e8df4bef0008393e58bdbbc2dac305f"
+  },
+  "proposedHashes": {
+    "notPublished": true,
+    "docs/analysis/contracts/shipment-bundle.openapi.yaml": "ba9d85f086dd2bfc150c1818843fa22c5b00b0dba1948a57a3672e2529d9880f",
+    "docs/analysis/contracts/carrier-semantics-v1.1.0.md": "87557ef9f5b5a4427862effbece2bb528ebc1b95361c29416373709223021fee"
+  }
+}

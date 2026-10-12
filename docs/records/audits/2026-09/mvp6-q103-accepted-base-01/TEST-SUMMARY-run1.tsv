@@ -1,0 +1,6 @@
+start	end	suite	exit	summary
+2026-09-26T20:28:59Z	2026-09-26T20:30:30Z	supplychain	1	Failed!  - Failed:    19, Passed:   389, Skipped:     0, Total:   408, Duration: 1 m 29 s - Diten.SupplyChainService.Tests.dll (net8.0)
+2026-09-26T20:30:30Z	2026-09-26T20:30:36Z	architecture	1	Failed!  - Failed:     3, Passed:    15, Skipped:     0, Total:    18, Duration: 4 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+2026-09-26T20:30:36Z	2026-09-26T20:30:37Z	gateway	0	Passed!  - Failed:     0, Passed:    87, Skipped:     0, Total:    87, Duration: 159 ms - Diten.ApiGateway.Tests.dll (net8.0)
+2026-09-26T20:30:38Z	2026-09-26T20:30:46Z	web	0	Passed!  - Failed:     0, Passed:   158, Skipped:     0, Total:   158, Duration: 7 s - Diten.Web.Tests.dll (net8.0)
+2026-09-26T20:30:46Z	2026-09-26T20:30:48Z	secrets	0	Passed!  - Failed:     0, Passed:     5, Skipped:     0, Total:     5, Duration: 4 ms - Diten.BuildingBlocks.Security.Secrets.Tests.dll (net8.0)

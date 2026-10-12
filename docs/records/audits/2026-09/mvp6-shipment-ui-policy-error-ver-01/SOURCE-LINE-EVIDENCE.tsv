@@ -1,0 +1,11 @@
+requirement_or_finding	path_line	evidence
+UI183-A03 direct adapter	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/ACCEPTANCE.md:7	direct adapter must return 401/403
+controller challenge	frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs:11	controller-wide Authorize triggers cookie challenge
+local missing-token 401	frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs:148	unreachable after unauthenticated cookie challenge
+permission split	frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs:88	Cancelled uses cancel permission; all other targets use dispatch permission
+POD permission	frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs:101	POD permission checked before proxy
+controller failure mapping	frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs:126	timeout/refusal 503; unexpected 500
+error code mapping	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js:25	422/409/503/500 code-to-message map
+permission action surface	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js:46	targets filtered by dispatch/cancel permissions
+stable transition/POD intent	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js:74	body/key/root tuple retained; changed-payload conflict clears
+stable create intent	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js:33	body/key retained; changed-payload conflict clears

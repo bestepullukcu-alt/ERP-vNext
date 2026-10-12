@@ -1,0 +1,15 @@
+stage	artifact	sha256_or_value	disposition
+prior_read_only_ct	mvp6-root-r2-producer-ct-accept-01/README.md	4cca61682757ae1a3f615cfa40027fd8a4dc39fe38f6a2421a64c092b80c4102	Accepted only read-only detail materialization; no mutation
+owner_decision	emission-rework-01/OWNER-DECISION-TEXT.md	33dabd9e3f36289d6b00f6634a38bee4b8f7e2efec1e079ac327894be1d5b204	Exact three-file isolated application authorized
+candidate_patch	emission-rework-01/candidate.patch	2d44f0d3b61b29c5bf34437fa12564d29319fd64beaded366f443b08b1a0319e	Authorized aggregate patch
+production_patch	emission-rework-01/production.patch	c78fefe4cfe0377ec014b58918656ddf05121504fd54fb40bcf0521677852011	Shipment.cs plus CreateShipmentHandler.cs
+test_patch	emission-rework-01/test.patch	c154f3352f3b266e2a52c3eee8d97008dc2823fc2a9fa6aaa5dc0d066a5363fe	ShipmentTests.cs
+target_manifest	emission-rework-01/target-manifest.tsv	b39d00079306f87500f280f4e9e2c5c6c270827503e5bb85992571c7b847cb5d	Three preimage/target pairs
+owner_binding	emission-exec-01/OWNER-AUTHORITY-BINDING.md	ae31669ef5d77f56f119b92f6d226fa3aaa0ce33443f9b787aeb073c3b93546e	Recorded real owner authorization
+applied_delta	emission-exec-01/APPLIED-DELTA.tsv	16cbbcfbcb8483d8c8e468229b6824f3910b9d786a0f29919f230830e1ed0de7	All target hashes match final manifest
+writer_source_archive	emission-exec-01/applied-three-file-source.tar.gz	c3fba911952951eef3be80cf591bad99d543acd53bbde0badc7e317dacfb11f4	Immutable applied source
+writer_final_manifest	emission-exec-01/FINAL-SOURCE-MANIFEST.tsv	7b6d2f6a679275b74ab88989f5ca943b139e7f1a365b5ab99d6f1285ceb1acae	354 entries
+verifier_final_manifest	emission-independent-ver-01/FINAL-SOURCE-MANIFEST.tsv	7b6d2f6a679275b74ab88989f5ca943b139e7f1a365b5ab99d6f1285ceb1acae	Byte-identical 354-entry source
+verifier_binary	Diten.SupplyChainService.Api.dll	754329d79a2aa6b94430acc4b81f9bf60204229e45bfb3b4a0e4e436e6104333	Fresh native .NET 8 Release binary
+verifier_process	127.0.0.1:5783; Mongo 127.0.0.1:41132	PID/path and isolated replica-set bound	Operational Mongo 27017 untouched
+verifier_raw_archive	emission-independent-ver-01/raw-evidence.tar.gz	e4f1da354b385334fa284ae0ffad3a56f83717fc515c16674a920a1433885ce6	Independent runtime evidence

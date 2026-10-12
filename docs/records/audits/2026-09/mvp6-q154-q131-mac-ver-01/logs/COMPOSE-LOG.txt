@@ -1,0 +1,6 @@
+A: BASE cloned (cp -c -Rp) and made writable on the copy only
+q117: archive 83e6322c1d4d OK; 11 members = declared list; AppleDouble skipped 0; preimages OK; 10 replaced, 1 added
+q121: archive 93bf1c07249c OK; 2 members = declared list; AppleDouble skipped 0; preimages OK; 2 replaced, 0 added
+tree A (BASE→Q117→Q121): files 14567; expected 14567; mismatches 0 []; extra 0 []; missing 0
+q131a: archive 4a4a0860954f OK; 20 members = declared list; AppleDouble skipped 0; preimages OK; 15 replaced, 5 added
+tree B (A + overlay-q131a): files 14572; expected 14572; mismatches 0 []; extra 0 []; missing 0

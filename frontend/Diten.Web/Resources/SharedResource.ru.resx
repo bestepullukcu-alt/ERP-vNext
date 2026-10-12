@@ -487,6 +487,10 @@
   <data name="PositionAssignments" xml:space="preserve"><value>Назначения должностей</value></data>
   <data name="MasterData" xml:space="preserve"><value>Мастер-данные</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Юридические лица</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>Выберите юридическое лицо.</value></data>
+  <data name="LegalEntityUnavailable" xml:space="preserve"><value>Список юридических лиц недоступен.</value></data>
+  <data name="LegalEntityNone" xml:space="preserve"><value>У этого арендатора нет активного юридического лица.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Согласования рабочих процессов</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Структуры документации</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Управляемые документы</value></data>
@@ -1048,4 +1052,15 @@
   <data name="Loading" xml:space="preserve">
     <value>Загрузка...</value>
   </data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Исполнение цепочки поставок</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Управление перевозчиками</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Перевозчики</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Отслеживание отгрузок и подтверждение доставки</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Отгрузки</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>Обратная логистика</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>Возвраты</value></data>
+  <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Маршруты и планирование рейсов</value></data>
+  <data name="Nav.Page.LOADS" xml:space="preserve"><value>Рейсы</value></data>
+  <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Управление претензиями</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Претензии по перевозке</value></data>
 </root>

@@ -1,0 +1,70 @@
+{
+  "phase": "nav",
+  "locale": "en",
+  "startedAt": "2026-10-01T13:17:49.738Z",
+  "web": "http://127.0.0.1:5501",
+  "playwright": "1.59.1",
+  "cases": {
+    "NAV-sidebar": {
+      "result": "PASS",
+      "sidebarEntryHref": "/SupplyChain/CapacityPlans",
+      "sidebarText": "Capacity Planning",
+      "expectedFromV3Fragment": "Capacity Planning",
+      "fragmentKeyShown": "Nav.Module.CAPACITYPLANNING (single-page module: module name shown, page name hidden — product design, Q185 D-2)",
+      "rawKeyShown": false,
+      "sidebarLinkCount": 3,
+      "tenant": "platform system tenant (Q185 D-1)",
+      "evidence": [
+        "png/nav-sidebar-en.png"
+      ]
+    },
+    "NAV-ctrlk": {
+      "result": "PASS",
+      "query": "Capacity Plans",
+      "queryKey": "Nav.Page.CAPACITYPLANS (v3 fragment value for the locale)",
+      "hitText": "Capacity Planning",
+      "results": [
+        {
+          "text": "Capacity Planning",
+          "href": "/SupplyChain/CapacityPlans"
+        }
+      ],
+      "localizedNameInSearchData": true,
+      "openedPath": "/SupplyChain/CapacityPlans",
+      "evidence": [
+        "png/nav-ctrlk-results-en.png",
+        "png/nav-ctrlk-opened-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "nav-sidebar-en.png",
+      "sha256": "db43b40576e164bc40e15bd2db1aa2dd6d53f82f2574e41a065da57cc5b59b83",
+      "url": "/SupplyChain/Shipments",
+      "capturedAt": "2026-10-01T13:17:52.668Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "nav-ctrlk-results-en.png",
+      "sha256": "ca3067a7dc85ef6123ef92143e1c0ce1d9a0366919d4ff3789d4c334a6e6fc72",
+      "url": "/SupplyChain/Shipments",
+      "capturedAt": "2026-10-01T13:17:53.827Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "nav-ctrlk-opened-en.png",
+      "sha256": "6c8d2ba7beefad26cb5ed631ee5e8778501c884db124a0c44b1d8f4e5c87f7b4",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:17:55.447Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [],
+  "shellFonts": 4,
+  "endedAt": "2026-10-01T13:17:55.477Z"
+}

@@ -1,0 +1,19 @@
+module	option	category	delivery	O_h	M_h	P_h	confidence	replaces_or_note
+MOD-0190	A	Pack/tasarım	UI pack revision (shell tenant, slim, form_field_count 5), Phase 1.5 closure, dispatch	4	8	16	MEDIUM	replaces 0190-1-REMAINING 4.8/8/12.8
+MOD-0190	A	Frontend	Entry page (create + open by ID), create offcanvas, plan workspace (summary, snapshots table + capture offcanvas with repeater, sign-offs table + record offcanvas), MVC adapter, 7 languages + RTL, module tests	28	44	72	LOW-MEDIUM	replaces 0190-4-REMAINING 33.6/56/112
+MOD-0190	A	Entegrasyon	Gateway routes, permission/nav registration (SR-D4 overlay: provider + 2 nav keys + tests), shared L10n	8	14	24	MEDIUM	UI sub-item of 0190-5-REMAINING 19.2/32/51.2
+MOD-0190	A	Test/VER	Independent UI VER: real Auth, read/create/capture/sign-off identities, DB before/after, replay, 7 languages, PNG	12	20	36	MEDIUM	UI sub-item of 0190-6-REMAINING 14.4/24/38.4
+MOD-0190	A	TOTAL	Bounded UI deliveries, option A	52	86	148	LOW-MEDIUM	≈ 10.8 person-days at M
+MOD-0190	B	Contract+Backend	Versioned SANDOP-CAPACITY change adding a plan list operation; backend query; tests; independent re-VER of the changed backend	-	-	-	UNESTIMATED	not in the ledger; also re-opens the MOD-0190 contract pin (F190-PIN)
+MOD-0190	B	Frontend	Option A frontend + plan list DataTable (server or client paging per the new contract)	34	54	88	LOW	instead of the A frontend row
+MOD-0190	B	TOTAL (UI part only)	Option B UI deliveries excluding the contract/backend part	58	96	164	LOW	plus UNESTIMATED contract/backend
+MOD-0190	C	-	No UI in MVP6 (shell none stays)	0	0	0	HIGH	0190-4-REMAINING reserve stays unused; module has no UI
+MOD-0192	A	Pack/tasarım	UI pack revision (shell tenant, slim, form_field_count 7), Phase 1.5 closure, dispatch	4	8	16	MEDIUM	replaces 0192-1-REMAINING 4.8/8/12.8
+MOD-0192	A	Frontend	Entry page, create-plan offcanvas, plan workspace, create-scenario offcanvas with 2 repeaters and decimal-string handling, scenario panel, evaluate offcanvas, evaluation panel with bottleneck table + manual refresh, adapter, 7 languages + RTL, module tests	32	52	88	LOW-MEDIUM	replaces 0192-4-REMAINING 38.4/64/128
+MOD-0192	A	Entegrasyon	Gateway routes, permission/nav registration (SR-D4 overlay), shared L10n	8	14	24	MEDIUM	UI sub-item of 0192-5-REMAINING
+MOD-0192	A	Test/VER	Independent UI VER: real Auth, 4 permissions, DB before/after, evaluation lifecycle (Accepted→Completed/Failed), replay, 7 languages, PNG	14	24	40	MEDIUM	UI sub-item of 0192-6-REMAINING
+MOD-0192	A	TOTAL	Bounded UI deliveries, option A	58	98	168	LOW-MEDIUM	≈ 12.3 person-days at M
+MOD-0192	B	Contract+Backend	Versioned change adding plan list, scenarios-by-plan and evaluations-by-scenario operations; backend queries; tests; re-VER	-	-	-	UNESTIMATED	not in the ledger
+MOD-0192	B	Frontend	Option A frontend + plan list DataTable + scenario and evaluation tables	40	64	108	LOW	instead of the A frontend row
+MOD-0192	B	TOTAL (UI part only)	Option B UI deliveries excluding contract/backend	66	110	188	LOW	plus UNESTIMATED contract/backend
+MOD-0192	C	-	No UI in MVP6	0	0	0	HIGH	0192-4-REMAINING reserve stays unused

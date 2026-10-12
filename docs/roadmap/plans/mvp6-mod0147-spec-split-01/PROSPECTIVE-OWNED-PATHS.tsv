@@ -1,0 +1,7 @@
+path	recursive	prospective_owner	purpose	current_authority
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/SupplierPerformance/	yes	MOD-0147	Nine-operation HTTP adapter, module context and contract error mapping	HELD; only after pack amendment and runtime WP
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SupplierPerformance/	yes	MOD-0147	Commands, queries, handlers, validators, models, calculation and dependency ports	HELD; only after pack amendment and runtime WP
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/SupplierPerformance/	yes	MOD-0147	Evaluation, scorecard, SupplierRisk lifecycle, value objects and repository contracts	HELD; only after pack amendment and runtime WP
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/SupplierPerformance/	yes	MOD-0147	Module collections, indexes, receipts, audit/Pending outbox atomic persistence	HELD; only after pack amendment and runtime WP
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/SupplierPerformance/	yes	MOD-0147	Module-owned dependency adapters and permission enforcement types	HELD; exact producer pointers and composition excluded
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SupplierPerformance/	yes	MOD-0147	Unit, handler, persistence and module-isolated acceptance tests	HELD; fixture results must be labelled SIMULATED

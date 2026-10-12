@@ -1,0 +1,6 @@
+writer_browser_tab=closed_by_turn_boundary
+viewport_override=tab_closed
+fixture_port_6040=CLOSED
+web_port_6041=CLOSED
+operational_mongo_27017=NOT_USED
+writer=COMPLETE

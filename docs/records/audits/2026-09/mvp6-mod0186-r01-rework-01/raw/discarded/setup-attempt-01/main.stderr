@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/private/tmp/mvp6-mod0186-r01-rework-evidence-01/scripts/http_probe.py", line 279, in <module>
+    phase_main() if a.phase=='main' else phase_restart()
+  File "/private/tmp/mvp6-mod0186-r01-rework-evidence-01/scripts/http_probe.py", line 225, in phase_main
+    mongo('db.getSiblingDB("admin").runCommand({configureFailPoint:"failCommand",mode:{skip:'+str(skip)+'},data:{failCommands:["insert"],errorCode:2}});')
+  File "/private/tmp/mvp6-mod0186-r01-rework-evidence-01/scripts/http_probe.py", line 63, in mongo
+    cp = subprocess.run(MONGO + [full], text=True, capture_output=True, check=True)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['mongosh', '--quiet', '--host', '127.0.0.1', '--port', '27187', '--eval', 'const dbx=db.getSiblingDB("returns_r01_rework_db"); db.getSiblingDB("admin").runCommand({configureFailPoint:"failCommand",mode:{skip:0},data:{failCommands:["insert"],errorCode:2}});']' returned non-zero exit status 1.

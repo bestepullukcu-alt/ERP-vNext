@@ -1,0 +1,1 @@
+Runtime probe exit 0; five BSON variants plus soft-delete/no-read captured.

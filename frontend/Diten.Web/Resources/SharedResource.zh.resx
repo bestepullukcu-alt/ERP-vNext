@@ -487,6 +487,10 @@
   <data name="PositionAssignments" xml:space="preserve"><value>职位分配</value></data>
   <data name="MasterData" xml:space="preserve"><value>主数据</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>法律实体</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>法律实体</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>请选择法律实体。</value></data>
+  <data name="LegalEntityUnavailable" xml:space="preserve"><value>法律实体列表不可用。</value></data>
+  <data name="LegalEntityNone" xml:space="preserve"><value>此租户没有有效的法律实体。</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>工作流审批</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>文档结构</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>受控文档</value></data>
@@ -1048,4 +1052,15 @@
   <data name="Loading" xml:space="preserve">
     <value>加载中...</value>
   </data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>货运跟踪与交付证明</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>货运</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>逆向物流</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>退货</value></data>
+  <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>路线与装载计划</value></data>
+  <data name="Nav.Page.LOADS" xml:space="preserve"><value>装载计划</value></data>
+  <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>索赔管理</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>运输索赔</value></data>
 </root>

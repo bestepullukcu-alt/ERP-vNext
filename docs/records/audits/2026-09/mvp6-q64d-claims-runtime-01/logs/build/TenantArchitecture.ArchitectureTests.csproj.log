@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /Users/natig/mvp6-env/q64d/src/tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj (in 482 ms).
+  TenantArchitecture.ArchitectureTests -> /Users/natig/mvp6-env/q64d/src/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.78

@@ -1,0 +1,5 @@
+feat(web): add Supply Chain shipment UI, shared resources and gateway route tests
+
+frontend/ and gateway test files written by Q202a. ocelot.json itself is not in this commit (held seam).
+Work packages: Q202a.
+40 files from pathspec/S10.txt (Q230 commit plan).

@@ -1,0 +1,52 @@
+# MVP6-MOD0190-CORE-VER-01 — independent SOP §22
+
+**Independent verdict: PARTIAL.** The approved isolated MOD-0190 core is reproducibly buildable and its 15 targeted tests pass against a separate Mongo replica set. Persisted success receipts and Pending outbox events match the published schemas. The full approved pack is **not independently accepted**: composed HTTP/JWT, post-write rollback, uncertain-commit recovery, and process restart have no direct evidence. This is not CT acceptance, E5/G5, or a live DEMAND/Workflow/Event Bus claim.
+
+## Authority and provenance
+
+- Mode: strict source/worktree read-only. Only this new verification directory and `/private/tmp/mvp6-mod0190-ver01-t3hasx5z/` were written.
+- Reviewed checkout: `/Users/natig/.codex/worktrees/mvp6-mod0190-core/ERP-vNext-recovery`, detached at `4a8d4d4b339528a88e6220fb8402e5a2c771136c`, with 36 pre-existing dirty status rows. Source branch: `feature/mvp6-logistics` at the same HEAD. No Git mutation.
+- Actual owner approval: the 2026-09-22 user decision explicitly names baseline pack `637690f32c1fa03e3039a4542bd53f7bb9b12f6b18d856a7d0e1f23d740c6877`, draft patch `ea22af82a9bca914a37ce7a953b3aa9d1e8f41d88f9c81008cb86e6390eab46a`, draft target `04f2e36f89cae0a21300217b63756b0cd3104c33af145d985b9fc101a83b38a2`, and 38-path allowlist `4bfc17f4811073553f1da773748cbc3733cd554671078188d122214ee3947982`. The separately promoted pack is `6a57769ced4396d2bc4228749a7e24b0daf36ce279930bb77c5dfdfe19fd0983`; its status patch is `545f1776f8e09c93896776b413663e0da690576a1c5fe05ea580dbcbb25dc868`.
+- Canonical published YAML `9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3`; annex `eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda`. Both match the reviewed checkout. `Program.cs` remains the transferred baseline `7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8`.
+- DEV `source-manifest.tsv` `a3cc7b4729a6b688adc7b6c22d021c618382f75fd909859f4eca033340ab1934` lists 38 exact files. All 38 match in the reviewed checkout and after independent build in the disposable copy. DEV source archive `369c857c327a69acba6073f3495309c2fbaa1f30b4b371f47f69bb89f840f2a4` contains those 38 bytes plus the promoted pack, each independently compared. DEV raw archive `6ef5559ef4ea559749fb4e3293862fad21cb8619712f293f0bbdb95075da25e6` and its manifest match the recorded hashes. No MOD-0192, shared composition, gateway, or protected source file is in the 38-path inventory.
+
+## Independent execution
+
+The disposable source copy was made from the reviewed checkout with `.git`, `bin`, `obj`, historical audit output, frontend and gateway excluded. Cached `obj/project.assets.json` for eight local projects was copied into the disposable tree only. A first `--no-restore` build lacked two BuildingBlocks asset files (`NETSDK1004`); after those assets were copied, a fresh compile succeeded. This is an environment setup correction, not a source change or a hidden test PASS.
+
+| Check | Command / result |
+|---|---|
+| Mongo startup | `mongod --replSet rsver190 --port 57290 --dbpath /private/tmp/mvp6-mod0190-ver01-t3hasx5z/mongo --bind_ip 127.0.0.1 --nounixsocket --fork --setParameter enableTestCommands=1 ...` → exit 0; `rs.initiate` exit 0; `db.hello().isWritablePrimary=true`. The first sandboxed attempts failed to bind with `Operation not permitted`; the successful instance was lane-local. Operational 27017 was never addressed. |
+| Fresh build | `/Users/natig/.dotnet/dotnet build services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj --no-restore -c Debug -v minimal -m:1 -p:UseSharedCompilation=false` → exit 0, zero warnings/errors. API DLL SHA-256 `2522bf4c8a0598082b4a5f5b14286837b651456eb712fd5d3bbff6a4693f88c4`. |
+| Targeted behavior | `MVP6_MOD0190_MONGO_URI=mongodb://127.0.0.1:57290/?replicaSet=rsver190... dotnet test ...Diten.SupplyChainService.Tests.csproj --no-restore -c Debug --filter FullyQualifiedName~SandopPlans --logger trx` → exit 0, **15 passed / 0 failed / 0 skipped**. Test DLL SHA-256 `f6c5a7d407cd2f182a39e1468374e039a8efaec53d10f8a573dc160eb3f5775b`. Raw TRX is archived. |
+| Persisted state | After tests, six collections held plans 11, snapshots 5, sign-offs 8, receipts 24, audit 24, outbox 24. All 24 outbox rows were `Pending`. The 24 persisted receipt bodies validate against the corresponding frozen SandopPlan/SandopSnapshot/SignOff schemas; all 24 event envelopes validate against the three frozen event schemas. This measures generated data, not HTTP transport. |
+| Cleanup | `db.adminCommand({shutdown:1,force:true})` closed the lane-local Mongo process. `mongosh` exits 1 on the expected connection closure; port 57290 had no remaining listener. |
+
+Independent raw archive: [raw-evidence.tar.gz](raw-evidence.tar.gz), SHA-256 `2630408061879007ce7738b2b161c7987e952e9f3dd3070010edf351b92a434c`; internal [raw-evidence-manifest.tsv](raw-evidence-manifest.tsv), SHA-256 `3c6c12afa1ee456eaaecc8bbb9d61cb24837e339791c46f678a80108322e483b`. The archive contains build/test logs, TRX, replica readiness, persisted counts, raw receipt/event bodies, schema results, indexes, and source no-change checks. No bearer token or secret was captured.
+
+## Approved pack §16 acceptance mapping
+
+| Criterion | Independent result | Exact evidence and limit |
+|---|---|---|
+| Scoped Draft plan / exact Published DEMAND fixture | PARTIAL | `SandopLifecycleTests.cs:4-6`, `SandopAtomicityTests.cs:4-8`; fresh 15/15 and persisted 11 plan rows. Fixture is test-only at `DemandFixtureReader.cs:3-8`; no live producer. |
+| Immutable snapshot provenance / older snapshots / no series copy | PARTIAL | `SandopLifecycleTests.cs:6-7`, `SandopRepository.cs:55-66`; two captures and old-list body comparison. Schema-tested receipt bodies. No live source version/checksum provenance. |
+| Same-plan role sign-off / duplicate immutability / no auto approval | PASS in direct Mongo core | `SandopLifecycleTests.cs:8-22`, `SandopConcurrencyTests.cs:4-8`; one winner/one declared 409 and five approvals retain InReview. |
+| Durable receipt, replay, atomic audit and at-most-one Pending event for all three mutations | PARTIAL | `SandopReplayTests.cs:4-35`, `SandopRepository.cs:33-90`; fresh targeted PASS, 24 receipt/audit/outbox rows and all outbox Pending. No independently injected after-write rollback, duplicate-key collision, or unknown-commit recovery; see findings. |
+| Current response correlation versus original audit/event; rejection fallback and application 401 | PARTIAL | `SandopContractTests.cs:22-29` tests module gate; `SandopReplayTests.cs:4-12` checks original audit correlation. `SandopContextMiddleware.cs:10-20` sets a current header; no real HTTP/JWT header/body evidence or application 401 test. |
+| Tenant/LE 404 and permission 403 | PARTIAL | `SandopIsolationTests.cs:4-13` directly proves scoped repository reads/mutation; `SandopContractTests.cs:22-29` is a synthetic ClaimsPrincipal gate test. No actual JWT middleware request. |
+| Six frozen wire operations, errors and three event payloads | PARTIAL | Six controller methods exist at `SandopPlansController.cs:9-20`. Persisted 24 receipt bodies and 24 event envelopes pass the frozen JSON Schemas; event outbox remains Pending. Routed request/response status, headers, 400/401/409/422/503 precedence and all six HTTP paths are unexecuted. |
+| No MOD-0192 persistence/internal DTO coupling | PASS for source boundary | 38 allowlisted files and source archive contain only SandopPlans feature/test paths. `Program.cs` and peer paths unchanged by this lane. |
+| Bounded E4 fixture provenance / G5 | PARTIAL / OPEN | Direct Mongo and schema evidence reaches E4 fragments. G5, live DEMAND, Workflow, Event Bus delivery, gateway and rollout are out of scope. |
+
+## Findings and remaining gates
+
+1. **HIGH — G190-HTTP-COMPOSITION:** `SandopPlansController.cs:4-20` has six actions, but `Program.cs` has no Sandop registration and the module-local gate itself says composition is pending at `SandopContextMiddleware.cs:3`. No composed process, JWT, response-header or restart test can establish the approved pack's HTTP clauses. This is a separately owned integration gate, not an authorization to edit shared files.
+2. **HIGH — G190-FAULT/UNKNOWN-COMMIT:** `SandopRepository.cs:77-92` contains transaction/commit recovery branches, while `SandopAtomicityTests.cs:4-18` proves only invalid fixture, checksum mismatch and an unreachable pre-write dependency. Post-write rollback, definite collision, unresolved commit and same-key recovery after that failure are untested. A new-client replay at `SandopReplayTests.cs:14-21` is not a service process restart. Keep those criteria PARTIAL.
+3. **MEDIUM — exact-key test weakness:** `SandopReplayTests.cs:22-29` calls the test `Exact_key_is_not_trimmed`, but the two keys have independently generated UUID suffixes and the bodies differ. Its PASS cannot distinguish trimmed from untrimmed repository identity. `SandopContractTests.cs:22-29` does check that the module gate retains a whitespace-padded header value; the persisted exact-key collision/replay permutation remains unproven.
+4. **Repository gates not PASS:** DEV raw TRX identifies full SupplyChain **147/152**, with five Loads failures; separate four-test and one-test reruns pass but do not convert that full run to PASS. Architecture TRX is **15/18**, with two JWT-clock-skew and one Mongo test DB guard failures outside MOD-0190. I did not rerun these broad suites; their exact archived TRX hashes are bound through the unchanged DEV raw archive. No waiver or new PASS is inferred.
+
+**Recommendation to CT:** accept the reproduced direct Mongo core evidence as a bounded technical fragment; retain overall MOD-0190 work-package acceptance as PARTIAL until the approved pack's HTTP/JWT and failure/restart criteria are independently exercised through a separately authorized composition/evidence lane. Do not promote this result to composed HTTP GO, live producer uptake, E5/G5 or full module acceptance.
+
+## Final no-change check
+
+The 38 reviewed worktree source hashes, 38 disposable source hashes, promoted pack hash, canonical YAML and annex hashes matched again after tests. The reviewed worktree remained at the same HEAD with 36 dirty status rows and no staged change from this VER lane. The only persistent repository output owned here is this report, raw archive, raw manifest and checksum file. No commit, push, stash, source fix or branch switch was performed.

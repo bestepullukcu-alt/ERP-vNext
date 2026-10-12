@@ -1,0 +1,74 @@
+# git apply --check output (Q44)
+
+## A. Container, clean git repo seeded with the six staged base files (hashes = BASE-HASHES.tsv sha256_before)
+
+$ git apply --check -v patches/01-DCP-009-self-registration-foundation.patch
+Checking patch execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md...
+exit=0
+
+$ git apply --check -v patches/02-MOD-0183-self-registration.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md...
+exit=0
+
+$ git apply --check -v patches/03-MOD-0184-self-registration.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md...
+exit=0
+
+$ git apply --check -v patches/04-MOD-0185-self-registration-after-loads-ui.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md...
+exit=0
+
+$ git apply --check -v patches/05-MOD-0186-self-registration.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md...
+exit=0
+
+$ git apply --check -v patches/06-MOD-0187-self-registration.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md...
+exit=0
+
+## B. Live repository on the owner's computer (VM shell, repo mounted read-only for git; GIT_OPTIONAL_LOCKS=0), 2026-09-26 ~09:21 +0300
+
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c feature/mvp6-logistics
+git version 2.34.1
+ce30e922a10207553c2ec8ba1f493aaf6674e053d4ca7637fc45ae0dea77d083  execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
+32381634163a2acff440475f4582c05defc8261957386dfa43d5c8fc7eaf962e  execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+2df9363b7c870672fab13b68a87e7fb849ed7a3f213c5197e87f9c2147de817e  execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+4868669307a1cd37b88320f27d7c0c2e1c1ce8ed649f48c067cbedf20307536f  execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+07a8a0159b5ab02fecc7b1aa6314106d81b1584150169f457cb9a395614a04b7  execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+762ab5337af85b965216d41a212217db3681af3a31bbd1514544b58dbfc7786b  execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+
+$ git apply --check -v docs/roadmap/plans/mvp6-self-registration-patches-01/patches/01-DCP-009-self-registration-foundation.patch
+Checking patch execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md...
+exit=0
+
+$ git apply --check -v docs/roadmap/plans/mvp6-self-registration-patches-01/patches/02-MOD-0183-self-registration.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md...
+exit=0
+
+$ git apply --check -v docs/roadmap/plans/mvp6-self-registration-patches-01/patches/03-MOD-0184-self-registration.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md...
+exit=0
+
+$ git apply --check -v docs/roadmap/plans/mvp6-self-registration-patches-01/patches/04-MOD-0185-self-registration-after-loads-ui.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md...
+exit=0
+
+$ git apply --check -v docs/roadmap/plans/mvp6-self-registration-patches-01/patches/05-MOD-0186-self-registration.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md...
+exit=0
+
+$ git apply --check -v docs/roadmap/plans/mvp6-self-registration-patches-01/patches/06-MOD-0187-self-registration.patch
+Checking patch execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md...
+exit=0
+
+$ git status --porcelain -- execution/     (pre-existing working-tree state; not changed by this lane)
+ M execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+ M execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+ M execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+ M execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+.git/index.lock: absent
+
+## Result
+
+6/6 patches: `git apply --check` exit 0 in both places. Checks bind to the working-tree files (the hashes above), not to HEAD:
+MOD-0184…0187 already carry uncommitted changes relative to HEAD from earlier lanes. No patch was applied.

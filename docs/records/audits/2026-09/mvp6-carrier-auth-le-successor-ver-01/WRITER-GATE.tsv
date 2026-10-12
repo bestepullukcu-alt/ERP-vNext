@@ -1,0 +1,9 @@
+gate	observed	verdict
+owner decision	OWNER-DECISION-TEXT.md says UNAPPROVED	OPEN
+candidate status	CANDIDATE READY — IMPLEMENTATION HELD	OPEN
+writer-complete record	not found	OPEN
+immutable full build-source archive	not found; candidate archive is 22-file overlay	OPEN
+final writer target manifest	not found	OPEN
+no-active-writer handoff	not found	OPEN
+phase2 native build/runtime	must wait for all gates	NOT RUN
+

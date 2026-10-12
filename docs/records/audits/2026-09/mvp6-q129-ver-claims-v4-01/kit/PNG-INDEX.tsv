@@ -1,0 +1,52 @@
+png	sha256	bytes	phase	phase_file	url	captured_at	tool	file_matches
+03a-create-400-focus-ar.png	6d2be7cd442134c8ed48dfd0472a42014c4fd432839da8b59a0b56abc78d0c45	179911	cu25	cu25-a1.json	http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar	2026-09-27T13:33:29.388Z	playwright 1.59.1 page.screenshot	yes
+03a-create-400-focus-en.png	d5237c6edeadb581a0b20145fba99c0c86bed1a4e49faab8cda5eca2de12e323	212047	cu25	cu25-a1.json	http://127.0.0.1:5801/SupplyChain/Claims?culture=en&ui-culture=en	2026-09-27T13:33:25.464Z	playwright 1.59.1 page.screenshot	yes
+03b-create-400-escape-ar.png	1be94a941cb1a244f5ff296dae8d3038ab302cb28517f58514aa85bc1c351932	168409	cu25	cu25-a1.json	http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar	2026-09-27T13:33:30.427Z	playwright 1.59.1 page.screenshot	yes
+03b-create-400-escape-en.png	aa82d64d0bfd8e9efaf2cd7c87f33fc924f4fd7d44858022b00e62f90d7f3cae	179391	cu25	cu25-a1.json	http://127.0.0.1:5801/SupplyChain/Claims?culture=en&ui-culture=en	2026-09-27T13:33:26.525Z	playwright 1.59.1 page.screenshot	yes
+cu02-filter-applied-en.png	75cf0537bf031cc49338bbf7e4c117cdff9a7441d5fdae657e3d7adcaae02808	109705	ui-flows	ui-flows-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:33:56.515Z	playwright 1.59.1 page.screenshot	yes
+cu05-after-load-en.png	e36262626fc220fe6f58c918a8b498eb244deef5253813a1145c6ee8fd2df550	194054	cu05	cu05-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:37.966Z	playwright 1.59.1 page.screenshot	yes
+cu05-empty-en.png	7cd098e16f1661b33f47732771b43e8bb77e2b5f604d710fe0451857addb5a6c	59341	cu05	cu05-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:40.672Z	playwright 1.59.1 page.screenshot	yes
+cu05-error-503-en.png	dc77de899e14e06458cc9cd1e3f90bb878ad9bb55be0316ebd42890a97aec6b4	52999	cu05	cu05-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:43.270Z	playwright 1.59.1 page.screenshot	yes
+cu05-skeleton-en.png	f1d4e30fed2b51cd686cd673964ce6f1b8b5c145b02ae3465e2c945c4cc90aa4	58674	cu05	cu05-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:34.611Z	playwright 1.59.1 page.screenshot	yes
+cu08-transition-investigating-en.png	e3a636b42c2d66f0d557172b9e07ae6d1cfe4a2fa5b85f58f1709e5d9a23d14b	113028	ui-flows	ui-flows-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:02.399Z	playwright 1.59.1 page.screenshot	yes
+cu11-lexical-400-en.png	b1c79553bcbcf04b811a2a0d89b61dcf77e8f9e11c60174edb8e58b1da1c9452	242109	cu11	cu11-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:35:20.221Z	playwright 1.59.1 page.screenshot	yes
+cu21-stale-transition-422-en.png	b729248a65eb20e9c9a8290e2fb7da022267093ded856fe30a9bc2142f797a33	130770	ui-flows	ui-flows-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:08.653Z	playwright 1.59.1 page.screenshot	yes
+cu25-create-open-en.png	64fb6660eb51724f56ef6115b154a6b9454fbcd72e12f554f24d54c5aeaf406f	148693	kbd	kbd-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:50.165Z	playwright 1.59.1 page.screenshot	yes
+cu25-transition-open-en.png	b7f1d16be5395e68f289bce522edf8e1bc85637d19c369a8ae56f9a71110dbf9	114947	kbd	kbd-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:55.384Z	playwright 1.59.1 page.screenshot	yes
+cu31-quickview-en.png	2fc61d3e1c84453b8dd9688f58f4645ec806c76378f0451823fed062a9609ef7	200796	ui-flows	ui-flows-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:33:58.841Z	playwright 1.59.1 page.screenshot	yes
+d01-create-reload-en.png	1e249acfbe5bdbb6346ca86a5e51c3279aa4c33d12c32bd2afcf94dbb7a6e148	196020	ui-flows	ui-flows-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:33:54.264Z	playwright 1.59.1 page.screenshot	yes
+d02-single-shell-en.png	77a73325e61fa530c3d3cf5645c4f7990a38c5ae376db7b5d83bc0a028726680	179201	ui-flows	ui-flows-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:33:51.417Z	playwright 1.59.1 page.screenshot	yes
+regression-create-reload-en.png	9c29af8d0ada4e14c9cb5a8484dc1eab9f7057d7f3ebce39398623dd2a2c654e	210942	regression	regression-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:35:03.876Z	playwright 1.59.1 page.screenshot	yes
+regression-create-reload-search-en.png	1e5cbc887c570f4a9cab40312febbed7448f8bc5d7bc7b7876de6e6ec79c9f5f	78737	regd01	regd01-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:35:14.394Z	playwright 1.59.1 page.screenshot	yes
+regression-transition-investigating-en.png	f754e33cdcd54fdf23fb8cc761d64e65f4bdb6f1d19af4f92def12a29a3d3c51	113267	regression	regression-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:35:08.081Z	playwright 1.59.1 page.screenshot	yes
+saveview-1-apply-dirty-en.png	c21c15a8f5da1741d92d98e2ee0d5ad1322cca002fcba9cd9f2ad2eb8f7494db	110075	saveview	saveview-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:14.668Z	playwright 1.59.1 page.screenshot	yes
+saveview-2-reset-factory-en.png	3d25f12ad9d7f84d887666501ef9e0c6bf44e0ed57ad929eca1b33f3bc3b93ef	199329	saveview	saveview-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:15.350Z	playwright 1.59.1 page.screenshot	yes
+saveview-3-saved-clean-en.png	13115a931b4aa6b6560d07a00c345a5fb797620f438537815675fcb8af828dad	203574	saveview	saveview-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:16.727Z	playwright 1.59.1 page.screenshot	yes
+saveview-4-reload-restored-en.png	f76a7ee6551a98a507444655fbab68587175fc89799a664fe47c014a9d8e5337	194022	saveview	saveview-a1.json	http://127.0.0.1:5801/SupplyChain/Claims	2026-09-27T13:34:18.549Z	playwright 1.59.1 page.screenshot	yes
+spec/01-list-en.png	abd16aea76559230d11b96ab68585880ae42070680120885e41e2281181af1a6	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/01-list-en.png	fc3039005ca897ba8f3df6466e1e17be770dc0d66ae4068dd16e9f2d9652c50a	210211	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/02-create-201.png	6884d10d89f21642d49d0259791ed204bdf0093353f64f7143ae6cb2b9f8be05	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/02-create-201.png	e57effeae54da2fbddbaec3f618355716d858c24d4c65dec7bc1e7999d718885	258425	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/03-create-400.png	ab661bb0d718a4a35fdb8e55766e0add1bd4f205d18867f14317af83f3c6c5a4	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/03-create-400.png	e57da6d32691431be5d6defbf4420759ce2ce3f208ed2ee81142ed85df210634	182043	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/03b-create-400-escape.png	7344a8956f396ebccf65c2d3f307552b4f8127cdeef6384fdaa572c200030404	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/03b-create-400-escape.png	2118826547a766acec1d5c22fd89c79fa4ecd5360ef81795e1a6b562be816db8	151791	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/04-transition-422.png	96271e63d7e15deb0f663cb71c3639b6a675b82f0734baeb3373927d99b01b6e	166722	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/05-access-denied.png	3ce2d84809b50a9415708c26953cf456e6166a06d9580cf152f510320f1e33a4	44083	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/05-access-denied.png	3ce2d84809b50a9415708c26953cf456e6166a06d9580cf152f510320f1e33a4	44083	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/06-ar-1024.png	0813db6647aec1706feefe5e8ed47069bf0be729ce8cf738ccf3df66e40f7ce4	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/06-ar-1024.png	eaf2169bdc28d260541dc1e9db899f8928cca94d8ac99bb63e43970cee081737	162362	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/06-ar-1440.png	5e2e5738f27761b153d0d8bde74ad3c950721130191ceb23ac0e6d2d8344f8e3	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/06-ar-1440.png	f9a05e5c5235a1086fc47fd2249651b3b6a19794a59bc2878654337ea74ae326	192060	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/06-ar-390.png	285dc969efa3e551d5081bc27951a0f2f814aa1d49a4a7ec12b525aa55c6499c	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/06-ar-390.png	3927aed90df0100ed7d940f2ec5997c7cba069ab85b1f18473e266dcfd9a38f1	91768	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/06-ar-768.png	9d4d3aebf0d9f914f6db7c7e04b77f47c81440a95a790322865958298179a82c	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/06-ar-768.png	f38721996d5f4726bdf40569af5395e97a42da9389fefa99de18eebcca0945c3	149468	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/06-tr-1024.png	f66f60add44ce17a4beb78ccfa944872d7d1bd05488153206f8c1f76356b511b	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/06-tr-1024.png	5559e6cb227ff0c6588ab209c8dafe430071669069c5f822c5b4423251bb7a1f	148541	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/06-tr-1440.png	1d871461ee4bfe65957fcbc904251c2f5c06155b3fcadc0bcbc8581aa1469085	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/06-tr-1440.png	35e9c01e1f7c780c49be79c116d5f4d60e921296f07eaf33ee292d35ced2590f	205537	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/06-tr-390.png	c39d6b97263d55c1d258e7b658e83ca86f03fe7147479130f227d8a76e936bbc	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/06-tr-390.png	ed08f7a0d7d067b6a496d63a1c4568092738fd02fdb3c709d0037d027ba0bdf7	97269	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes
+spec/06-tr-768.png	2168d091d92ff6abb598fd90a9c5aa23504adcbe9c5905df349fc87ede82678b	-	spec	spec-a1.json	-	-	@playwright/test 1.59.1 page.screenshot	NO (overwritten by a later run)
+spec/06-tr-768.png	51ecd5ae202612214401593614607721d26392a89affaa2e046549a0a71d09b5	109219	spec	spec-a2.json	-	-	@playwright/test 1.59.1 page.screenshot	yes

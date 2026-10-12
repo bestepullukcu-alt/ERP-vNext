@@ -1,0 +1,91 @@
+--- a/frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs
++++ b/frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs
+@@ -14,6 +14,20 @@
+         foreach (var field in new[] { "lineNumber", "itemId", "skuId", "quantity", "uomId", "inventoryReferenceId" })
+             Assert.Equal(1, Count(form, $"data-field=\"{field}\""));
+         Assert.DoesNotContain("TenantId", form); Assert.DoesNotContain("LegalEntityId", form); Assert.DoesNotContain("Status\"", form);
++    }
++
++    [Fact]
++    public void RepeatableLines_HaveUniqueLabelBindingsAndDeterministicFocusRecovery()
++    {
++        var form = Read("frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml");
++        var script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js");
++        foreach (var field in new[] { "lineNumber", "itemId", "skuId", "quantity", "uomId", "inventoryReferenceId" })
++            Assert.Equal(1, Count(form, $"data-field-label=\"{field}\""));
++        Assert.Contains("const syncLineAccessibility", script);
++        Assert.Contains("input.id = `shipmentLine_${index}_${field}`", script);
++        Assert.Contains("label.htmlFor = input.id", script);
++        Assert.Contains("focusTarget?.focus()", script);
++        Assert.DoesNotContain("input.name =", script);
+     }
+ 
+     [Fact]
+--- a/frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml
++++ b/frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml
+@@ -20,4 +20,4 @@
+         <div class="col-12"><section class="card"><div class="card-body p-4"><div class="d-flex justify-content-between align-items-center mb-4"><h6 class="card-section-title mb-0"><i class="bx bx-list-ul" aria-hidden="true"></i>@Localizer["ShipmentLines"]</h6><button type="button" id="btnAddLine" class="btn btn-sm btn-label-primary">@Localizer["AddLine"]</button></div><div id="shipmentLines" class="vstack gap-3"></div></div></section></div>
+     </div>
+ </form>
+-<template id="shipmentLineTemplate"><div class="shipment-line border rounded p-3"><div class="row g-3"><div class="col-12 col-md-2"><label class="form-label">@Localizer["LineNumber"] *</label><div class="diten-field"><i class="bx bx-hash diten-field-icon" aria-hidden="true"></i><input data-field="lineNumber" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label">@Localizer["ItemId"] *</label><div class="diten-field"><i class="bx bx-cube diten-field-icon" aria-hidden="true"></i><input data-field="itemId" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label">@Localizer["SkuId"] *</label><div class="diten-field"><i class="bx bx-barcode diten-field-icon" aria-hidden="true"></i><input data-field="skuId" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label">@Localizer["Quantity"] *</label><div class="diten-field"><i class="bx bx-calculator diten-field-icon" aria-hidden="true"></i><input data-field="quantity" inputmode="decimal" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label">@Localizer["UomId"] *</label><div class="diten-field"><i class="bx bx-ruler diten-field-icon" aria-hidden="true"></i><input data-field="uomId" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label">@Localizer["InventoryReferenceId"]</label><div class="diten-field"><i class="bx bx-package diten-field-icon" aria-hidden="true"></i><input data-field="inventoryReferenceId" class="form-control" /></div></div><div class="col-12 text-end"><button type="button" class="btn btn-sm btn-label-danger remove-line">@Localizer["RemoveLine"]</button></div></div></div></template>
++<template id="shipmentLineTemplate"><div class="shipment-line border rounded p-3"><div class="row g-3"><div class="col-12 col-md-2"><label class="form-label" data-field-label="lineNumber">@Localizer["LineNumber"] *</label><div class="diten-field"><i class="bx bx-hash diten-field-icon" aria-hidden="true"></i><input data-field="lineNumber" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label" data-field-label="itemId">@Localizer["ItemId"] *</label><div class="diten-field"><i class="bx bx-cube diten-field-icon" aria-hidden="true"></i><input data-field="itemId" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label" data-field-label="skuId">@Localizer["SkuId"] *</label><div class="diten-field"><i class="bx bx-barcode diten-field-icon" aria-hidden="true"></i><input data-field="skuId" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label" data-field-label="quantity">@Localizer["Quantity"] *</label><div class="diten-field"><i class="bx bx-calculator diten-field-icon" aria-hidden="true"></i><input data-field="quantity" inputmode="decimal" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label" data-field-label="uomId">@Localizer["UomId"] *</label><div class="diten-field"><i class="bx bx-ruler diten-field-icon" aria-hidden="true"></i><input data-field="uomId" class="form-control" required /></div></div><div class="col-12 col-md-2"><label class="form-label" data-field-label="inventoryReferenceId">@Localizer["InventoryReferenceId"]</label><div class="diten-field"><i class="bx bx-package diten-field-icon" aria-hidden="true"></i><input data-field="inventoryReferenceId" class="form-control" /></div></div><div class="col-12 text-end"><button type="button" class="btn btn-sm btn-label-danger remove-line">@Localizer["RemoveLine"]</button></div></div></div></template>
+--- a/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js
++++ b/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js
+@@ -3,6 +3,7 @@
+ const ShipmentCreate = (function () {
+     const L = window.L10n || {};
+     let intent = null;
++    const lineFields = ['lineNumber', 'itemId', 'skuId', 'quantity', 'uomId', 'inventoryReferenceId'];
+     const uuid = () => crypto.randomUUID();
+     const value = (id) => document.getElementById(id)?.value || '';
+     const toUtc = (input) => input ? new Date(input).toISOString() : null;
+@@ -11,14 +12,36 @@
+         const alert = document.getElementById('formShipmentAlert');
+         alert.textContent = message; alert.classList.remove('d-none'); alert.focus();
+     };
+-    const addLine = () => {
++    const syncLineAccessibility = () => {
++        Array.from(document.querySelectorAll('.shipment-line')).forEach((line, index) => {
++            lineFields.forEach((field) => {
++                const input = line.querySelector(`[data-field="${field}"]`);
++                const label = line.querySelector(`[data-field-label="${field}"]`);
++                if (!input || !label) return;
++                input.id = `shipmentLine_${index}_${field}`;
++                label.htmlFor = input.id;
++            });
++        });
++    };
++    const addLine = (focusNewLine = false) => {
+         const fragment = document.getElementById('shipmentLineTemplate').content.cloneNode(true);
+-        fragment.querySelector('.remove-line').addEventListener('click', (event) => {
+-            if (document.querySelectorAll('.shipment-line').length > 1) event.target.closest('.shipment-line').remove();
++        const line = fragment.querySelector('.shipment-line');
++        line.querySelector('.remove-line').addEventListener('click', () => {
++            const lines = Array.from(document.querySelectorAll('.shipment-line'));
++            if (lines.length <= 1) return;
++            const index = lines.indexOf(line);
++            line.remove();
++            syncLineAccessibility();
++            const remaining = document.querySelectorAll('.shipment-line');
++            const focusTarget = remaining[Math.min(index, remaining.length - 1)]?.querySelector('[data-field="lineNumber"]')
++                || document.getElementById('btnAddLine');
++            focusTarget?.focus();
+         });
+         document.getElementById('shipmentLines').appendChild(fragment);
++        syncLineAccessibility();
++        if (focusNewLine) line.querySelector('[data-field="lineNumber"]')?.focus();
+     };
+-    const linePayload = (line) => Object.fromEntries(['lineNumber', 'itemId', 'skuId', 'quantity', 'uomId', 'inventoryReferenceId']
++    const linePayload = (line) => Object.fromEntries(lineFields
+         .map((name) => [name, line.querySelector(`[data-field="${name}"]`).value]));
+     const payload = () => ({
+         sourceModule: value('sourceModule'), sourceType: value('sourceType'), sourceDocumentId: value('sourceDocumentId'),
+@@ -59,7 +82,7 @@
+         finally { button.disabled = false; }
+     };
+     const init = () => {
+-        document.getElementById('btnAddLine')?.addEventListener('click', addLine);
++        document.getElementById('btnAddLine')?.addEventListener('click', () => addLine(true));
+         document.getElementById('formShipment')?.addEventListener('submit', submit);
+         addLine();
+         window.DitenDateField?.enhance(document);

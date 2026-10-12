@@ -1,0 +1,194 @@
+{
+  "phase": "late",
+  "startedAt": "2026-09-26T07:44:16.977Z",
+  "cases": {
+    "login-actor-a": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "late-soft-delete-step": {
+      "lane_db_update": {
+        "matched": 1,
+        "modified": 1,
+        "createdAtType": "string"
+      }
+    },
+    "late-async-stale-response": {
+      "actor": "actor-a",
+      "verdict": "PASS",
+      "checks": {
+        "firstResponseWas200Held": true,
+        "secondResponse404": true,
+        "finalIsSafeNotFound": true,
+        "staleDataNotRendered": true,
+        "stage2AlreadySafe": true
+      },
+      "held": {
+        "status": 200,
+        "at": "2026-09-26T07:44:19.929Z",
+        "releasedAt": "2026-09-26T07:44:22.022Z"
+      },
+      "safe404Checks": {
+        "http404": true,
+        "code": true,
+        "correlationEchoed": true,
+        "headingIsLocalizedNotFound": true,
+        "alertExactSupportReference": true,
+        "noLoadingText": true,
+        "summaryLinesPodHidden": true,
+        "actionsHiddenEmpty": true,
+        "offcanvasesHiddenInert": true,
+        "noShipmentValues": true
+      },
+      "firstCall": {
+        "at": "2026-09-26T07:44:21.523Z",
+        "method": "GET",
+        "path": "/SupplyChain/Shipments/api/2997bde4-7181-41f6-8069-aad89009d9f6",
+        "status": 404,
+        "requestCorrelation": "37055ddf-6c05-461f-a64c-1da49d2c1944",
+        "idempotencyKey": null,
+        "responseCorrelation": "37055ddf-6c05-461f-a64c-1da49d2c1944",
+        "errorCode": "SHIPMENT_NOT_FOUND",
+        "bodyCorrelation": "37055ddf-6c05-461f-a64c-1da49d2c1944",
+        "okShape": null
+      },
+      "stages": {
+        "beforeRelease_initial": {
+          "shipmentNumber": "Loading…"
+        },
+        "afterSecond404": {
+          "shipmentNumber": "The shipment could not be found.",
+          "rowVisible": false
+        },
+        "afterStale200Released": {
+          "lang": "en",
+          "dir": "ltr",
+          "shipmentNumber": "The shipment could not be found.",
+          "alertVisible": true,
+          "alertText": "The shipment could not be found. Support reference: 37055ddf-6c05-461f-a64c-1da49d2c1944",
+          "row": {
+            "visible": false,
+            "hidden": true,
+            "inert": true,
+            "ariaHidden": "true",
+            "focusables": 0
+          },
+          "actions": {
+            "visible": false,
+            "hidden": true,
+            "inert": true,
+            "ariaHidden": "true",
+            "focusables": 0,
+            "buttons": []
+          },
+          "offTransition": {
+            "visible": false,
+            "hidden": true,
+            "inert": true,
+            "ariaHidden": "true",
+            "focusables": 7
+          },
+          "offPod": {
+            "visible": false,
+            "hidden": true,
+            "inert": true,
+            "ariaHidden": "true",
+            "focusables": 7
+          },
+          "detail": {
+            "status": "",
+            "source": "",
+            "warehouse": "",
+            "root": "",
+            "lineRows": 0,
+            "podEmptyVisible": false,
+            "podDetailsVisible": false,
+            "podRecipient": "",
+            "podEvidence": ""
+          },
+          "l10n": {
+            "notFound": "The shipment could not be found.",
+            "supportReference": "Support reference"
+          },
+          "loadingVisibleAnywhere": false,
+          "visibleDetailText": "The shipment could not be found.\nShipments\nShipment Details\nBack to List\nThe shipment could not be found. Support reference: 37055ddf-6c05-461f-a64c-1da49d2c1944"
+        }
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:44:21.523Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/2997bde4-7181-41f6-8069-aad89009d9f6",
+          "status": 404,
+          "requestCorrelation": "37055ddf-6c05-461f-a64c-1da49d2c1944",
+          "idempotencyKey": null,
+          "responseCorrelation": "37055ddf-6c05-461f-a64c-1da49d2c1944",
+          "errorCode": "SHIPMENT_NOT_FOUND",
+          "bodyCorrelation": "37055ddf-6c05-461f-a64c-1da49d2c1944",
+          "okShape": null
+        },
+        {
+          "at": "2026-09-26T07:44:22.074Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/2997bde4-7181-41f6-8069-aad89009d9f6",
+          "status": 200,
+          "requestCorrelation": "163cd00e-ebaf-4f8a-b309-5d5b8d19336c",
+          "idempotencyKey": null,
+          "responseCorrelation": "163cd00e-ebaf-4f8a-b309-5d5b8d19336c",
+          "errorCode": null,
+          "bodyCorrelation": null,
+          "okShape": {
+            "shipmentId": "2997bde4-7181-41f6-8069-aad89009d9f6",
+            "status": "Draft",
+            "lifecycleCorrelationId": "66376d6e-4bfb-4c53-bcd1-11a2d38fe1e4",
+            "idempotentReplay": null
+          }
+        }
+      ]
+    }
+  },
+  "db": [
+    {
+      "name": "late-softdelete-fixture",
+      "before": "late-before",
+      "after": "late-after-softdelete",
+      "expect": "{\"counts\":{},\"state\":{\"isDeleted\":true}}",
+      "result": "PASS",
+      "detail": "{\"counts\":{},\"state\":{\"isDeleted\":true}}"
+    },
+    {
+      "name": "late-browser-zero-write",
+      "before": "late-after-softdelete",
+      "after": "late-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    }
+  ],
+  "png": [
+    {
+      "file": "png/late-final-after-stale-200-released.png",
+      "sha256": "309d4064de670b14c3a880a9bf3b03d0c76211effd670f7e843efdd927596607",
+      "bytes": 51212,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/2997bde4-7181-41f6-8069-aad89009d9f6",
+      "capturedAt": "2026-09-26T07:44:23.603Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    }
+  ],
+  "console": [
+    {
+      "actor": "actor-a",
+      "tag": "late",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "lateFixtureSource": "shipment-fixtures-late2.json",
+  "finishedAt": "2026-09-26T07:44:24.415Z"
+}

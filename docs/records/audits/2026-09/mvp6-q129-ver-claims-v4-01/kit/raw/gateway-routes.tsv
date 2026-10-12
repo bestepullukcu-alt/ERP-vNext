@@ -1,0 +1,16 @@
+operational_port	lane_port	disposition	downstream_entries
+5004	5899	sink	24
+5011	5899	sink	4
+5056	5856	mapped	7
+5057	5857	mapped	64
+5058	5899	sink	4
+5059	5859	mapped	17
+5060	5899	sink	4
+5061	5861	mapped	8
+5062	5899	sink	2
+5063	5899	sink	46
+5064	5899	sink	62
+5065	5899	sink	35
+#source_ocelot_sha256	112dc0ab244ac20d553205e0972f1c67fa5098adc8ee88399cf842399d05fdba
+#runtime_ocelot_sha256	e9f4db6674b5bf9fc2279e2bc59f03caba37a285ded5b332ebb556c5fa2151be
+#gateway_dll_sha256	c83a7af641232726508de9f9630cc5f2ac5ec344aa161b092aaa5ba31ed4b0f9

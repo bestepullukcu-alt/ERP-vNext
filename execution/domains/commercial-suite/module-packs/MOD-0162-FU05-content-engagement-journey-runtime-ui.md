@@ -446,7 +446,7 @@ Frontmatter listesinin açıklamalı karşılığı.
 
 ## 8. Runtime Constraints
 
-- **Servis:** `Diten.CrmService` (port **5061**), **yeni servis yaratılmaz**.
+- **Servis:** `Diten.CrmService` (port **5065**), **yeni servis yaratılmaz**.
 - **Gateway:** tüm çağrılar `:5000` üzerinden; browser JS **servis portuna gitmez** (same-origin MVC proxy).
 - **Soft delete:** `DELETE` ve `PATCH` **yoktur** — kaldırma = archive (journey **ve** gömülü aşama); archived kayıt
   update kabul etmez (**409**). Archived aşama **diziden silinmez**.
@@ -860,7 +860,7 @@ authenticated + policy-korumalı, tüm §12 kuralları fail-closed çalışır.
 
 **Karar: Gateway değişikliği GEREKSİZ.**
 
-- Mevcut `ocelot.json` kaydı: `"/api/crm/knowledge/{everything}"` → `localhost:5061`,
+- Mevcut `ocelot.json` kaydı: `"/api/crm/knowledge/{everything}"` → `localhost:5065`,
   `["GET","POST","PUT","OPTIONS"]` (`gateway/Diten.ApiGateway/ocelot.json:2245-2260`, **doğrulandı**).
 - §8.1'deki **tüm** route'lar bu wildcard'ın altındadır
   (`/api/crm/knowledge/content-engagement-journeys…`, aşama alt-route'ları ve
@@ -870,7 +870,7 @@ authenticated + policy-korumalı, tüm §12 kuralları fail-closed çalışır.
 - `DELETE`/`PATCH` wildcard'da **zaten yok** → bu metotlar Gateway seviyesinde de **404**.
 - `gateway/Diten.ApiGateway/**/ocelot.json` **protected path**'tir; bu pack oraya yazmaz. İleride explicit route
   istenirse **ayrı `integration-agent` task'ı** açılır.
-- Browser JS **`:5061`'e gitmez**; same-origin MVC proxy (`/CRM/ContentEngagementJourneys/api/...`) → Gateway `:5000`.
+- Browser JS **`:5065`'e gitmez**; same-origin MVC proxy (`/CRM/ContentEngagementJourneys/api/...`) → Gateway `:5000`.
 
 ---
 

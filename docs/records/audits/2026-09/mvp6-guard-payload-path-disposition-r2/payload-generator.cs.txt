@@ -1,0 +1,10 @@
+using System.Text;
+using System.Text.Json;
+using System.Security.Cryptography;
+var bytes = File.ReadAllBytes(args[0]);
+using var doc = JsonDocument.Parse(bytes);
+var payload = doc.RootElement.GetProperty("canonicalTargets").GetRawText() + "\n" +
+    doc.RootElement.GetProperty("sealedInputs").GetRawText();
+var raw = Encoding.UTF8.GetBytes(payload);
+File.WriteAllBytes(args[1], raw);
+Console.WriteLine($"{raw.Length} bytes {Convert.ToHexString(SHA256.HashData(raw)).ToLowerInvariant()}");

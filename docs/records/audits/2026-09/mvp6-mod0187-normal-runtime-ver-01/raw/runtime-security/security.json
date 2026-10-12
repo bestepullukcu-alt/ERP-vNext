@@ -1,0 +1,29 @@
+{
+  "anonymous": {
+    "status": 401,
+    "code": "UNAUTHENTICATED",
+    "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+  },
+  "missingCreatePermission": {
+    "status": 403,
+    "code": "FORBIDDEN",
+    "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+  },
+  "foreignTenant": {
+    "status": 404,
+    "code": "CLAIM_NOT_FOUND",
+    "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+  },
+  "foreignLegalEntity": {
+    "status": 404,
+    "code": "CLAIM_NOT_FOUND",
+    "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+  },
+  "ownerScopeCounts": {
+    "claims": 0,
+    "claims_receipts": 0,
+    "claims_audit": 0,
+    "claims_outbox": 0
+  },
+  "pass": true
+}

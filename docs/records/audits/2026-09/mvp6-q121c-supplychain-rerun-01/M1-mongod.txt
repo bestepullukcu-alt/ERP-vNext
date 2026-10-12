@@ -1,0 +1,3 @@
+  PID COMMAND
+48248 /opt/homebrew/bin/mongod --port 57192 --bind_ip 127.0.0.1 --replSet rsmod192 --dbpath /Users/natig/mvp6-env/q121c/test-mongo-192/db --logpath /Users/natig/mvp6-env/q121c/test-mongo-192/mongod.lo
+PRIMARY dbs: admin config local

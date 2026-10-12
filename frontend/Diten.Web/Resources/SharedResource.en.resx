@@ -546,6 +546,10 @@
   <data name="PositionAssignments" xml:space="preserve"><value>Position Assignments</value></data>
   <data name="MasterData" xml:space="preserve"><value>Master Data</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Legal Entities</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Legal Entity</value></data>
+  <data name="LegalEntityRequired" xml:space="preserve"><value>Select a legal entity.</value></data>
+  <data name="LegalEntityUnavailable" xml:space="preserve"><value>The legal entity list is unavailable.</value></data>
+  <data name="LegalEntityNone" xml:space="preserve"><value>This tenant has no active legal entity.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Workflow Approvals</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Documentation Structures</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Controlled Documents</value></data>
@@ -1105,4 +1109,15 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Accept Anyway</value>
   </data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Supply Chain Execution</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Carrier Management</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Carriers</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Shipment Tracking &amp; POD</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Shipments</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>Reverse Logistics</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>Returns</value></data>
+  <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Routing &amp; Load Planning</value></data>
+  <data name="Nav.Page.LOADS" xml:space="preserve"><value>Loads</value></data>
+  <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Claims Management</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Shipment Claims</value></data>
 </root>

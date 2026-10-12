@@ -1,0 +1,9 @@
+id	task	reason	type	owner	first_recorded	end	status	record
+B01	Q04 before 25 Sep	A12 archive judged not runnable (overlay method not applied)	environment/method	CT	2026-09-25	2026-09-25	RESOLVED by owner confirmation 25 Sep	mvp6-shipment-a12-safe404-independent-ver-01/SOP-22.md
+B02	Q13	No supported durable PNG save/export	environment capability	Environment owner	2026-09-18 (record text)	2026-09-26	RESOLVED (method) by mvp6-png-method-owner-decision-01; captures per module	PNG-DISPOSITION.md
+B03	A10 verification	Proxy authority missing	owner decision	Owner	before 2026-09-24		RESOLVED (owner decisions 2026-09-26)	DECISION-NEEDS.md DN-01
+B04	A14 DataTable gate	Bounded profile undecided	owner decision	Owner	before 2026-09-24		RESOLVED (owner decisions 2026-09-26)	DECISION-NEEDS.md DN-02
+B05	Integration execution	Target-bound owner decision absent	owner decision	Owner	record date of exec-01		OPEN	mvp6-integration-baseline-exec-01/SOP-22-BLOCKED.md
+B06	Loads publication/uptake	Owner release decisions A/B/C	owner decision	Owner	2026-09-24		OPEN	OWNER-DECISION-PACK.md
+B07	Supplier runtime	DC-01..05 concurrence	owner decision	Owner	before 2026-09-24		OPEN	supplier OWNER-DECISION-PACK.md
+B08	Shared health	Platform aggregate health 503 (business_reference_data_provider)	environment	Integration owner	before 2026-09-25		OPEN	handoff ENVIRONMENT.md

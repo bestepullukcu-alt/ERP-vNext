@@ -1,0 +1,17 @@
+[20:12:38 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[20:12:38 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[20:12:38 INF] Now listening on: http://127.0.0.1:5261
+[20:12:38 INF] Application started. Press Ctrl+C to shut down.
+[20:12:38 INF] Hosting environment: Development
+[20:12:38 INF] Content root path: /private/tmp/mvp6-carrier-ui-ver-01/snapshot-v2/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api
+[20:12:38 INF] Start processing HTTP request POST http://127.0.0.1:5257/api/internal/module-catalog/register-manifest
+[20:12:38 INF] Sending HTTP request POST http://127.0.0.1:5257/api/internal/module-catalog/register-manifest
+[20:12:38 INF] Received HTTP response headers after 125.6878ms - 200
+[20:12:38 INF] End processing HTTP request after 132.2043ms - 200
+[20:12:38 INF] Module manifest self-registered with Platform. ModuleCode=carrier-management Attempt=1
+[20:13:20 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5261/health - null null
+[20:13:20 INF] Executing endpoint 'HTTP: GET /health'
+[20:13:20 INF] Setting HTTP status code 200.
+[20:13:20 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[20:13:20 INF] Executed endpoint 'HTTP: GET /health'
+[20:13:20 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5261/health - 200 null application/json; charset=utf-8 56.6088ms

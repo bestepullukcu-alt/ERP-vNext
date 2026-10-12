@@ -1,0 +1,5 @@
+patching file 'execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md'
+
+Inputs remained byte-identical in common checkout.
+DCP002 fresh PASS
+47paths/0overlap/0workers/30acceptance rows PASS

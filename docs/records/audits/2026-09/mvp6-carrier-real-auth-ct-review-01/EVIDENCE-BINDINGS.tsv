@@ -1,0 +1,19 @@
+artifact	sha256	role
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/CARRIER-REAL-AUTH-E2E-HANDOFF.md	95dafe0fbfdfdf490f9ecdb57f65582d0146da435ad938f1df13c11105586cd2	Controlling READY handoff
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/evidence.tar.gz	a9ee32792baea3e70d72eb4ec6cc9d66a1e23f7c7bd34970115086f5fcec134e	Fresh Auth chain raw evidence
+docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/final-source.tar.gz	f50350b8e541a4c1cbc640926c581cf510b4c2dbb57b31ef4193bf4c25c9e2cd	Immutable Auth/Platform/MDM final source
+docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/FINAL-22-SOURCE-MANIFEST.tsv	b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731	22-path final source binding
+docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/BUILD-SOURCE-MANIFEST.tsv	516ba828bed602e4355a5cc6871501cbb3b3c72d60473fa7ec73d135bbadf911	3333-entry build binding
+docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/FINAL-UI-SOURCE.tsv	3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c	21-path UI source binding
+docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/evidence.tar.gz	c5df26ab200d4353be52c9ef513fa6bc777aef9ab2f092fa32af8e718f7435f1	Fresh E2E raw evidence
+docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/ACCEPTANCE.tsv	172c4cde1407da92ad8ab1257906752d7f44e24effbda7fdef78bcc19a1a6390	E2E acceptance matrix
+docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/SOURCE-BINARY-PROCESS.tsv	96f697e19e6f331a4d55c599d6881f8495523c87039e1b6aa91c8e519d1f22eb	Process binding index
+docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/CARRIER-REAL-AUTH-E2E-CT-HANDOFF.md	111a50136d1405cb09f716f451d0ba8ba304e13ac85c8bc95b0797c1eeb776af	Immediate CT handoff
+docs/roadmap/plans/mvp6-effort-carrier-e2e-update-05/ARTIFACTS.sha256	c2d08b1a363213bc7fabbacbdfc4e0f265ce19b73e8659c77c273a743d5e1e99	Reporting context only; explicitly excluded from technical acceptance
+docs/roadmap/plans/mvp6-effort-carrier-e2e-update-05/REPORT.md	12bfb016e5d8e042685dd273d66ebbfbdd086ecbe13e4a87ec92a502c80c2ed1	Effort status only; not runtime, source or acceptance evidence
+Auth binary	7d766fdc84e4a21bfc4d29d467eae02e121b51b8c63d294ca1cdd854b60ccf8b	Fresh E2E process on 5656
+Platform binary	0db7fb8915c987c397dafe0f2176685e08b361738ce53df86696d8b177b75f40	Fresh E2E process on 5657
+MDM binary	2377ddb569bc402c49cb970b56e2a38c68f95a8a201ed9dcc078ead3f82d24c2	Fresh E2E process on 5659
+SupplyChain binary	27d1c0b5d0c5eb4c9936eca2cb9c996d9aad84f423ca9c64039cb03dd683a37f	Fresh E2E process on 5661 and restart
+Web binary	61073625bce47057c31900c5d57f465f024f025d65a6974df2a9c16c0d7d8702	Fresh E2E process on 5601
+Gateway binary	02eb5653dcaae4712057cd37a7d75d19aa8ea722bd9acf6216676a5ac86402e2	Fresh E2E process on 5600

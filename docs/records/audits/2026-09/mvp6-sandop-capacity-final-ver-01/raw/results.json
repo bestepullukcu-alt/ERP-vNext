@@ -1,0 +1,518 @@
+{
+  "hashes": {
+    "baseline": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/analysis/contracts/sandop-capacity.openapi.yaml",
+      "expected": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+      "actual": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+      "match": true
+    },
+    "demand": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/analysis/contracts/demand.openapi.yaml",
+      "expected": "3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d",
+      "actual": "3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d",
+      "match": true
+    },
+    "executor": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/roadmap/plans/mod-0192-executor-exact-decisions-01/DECISION.md",
+      "expected": "cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d",
+      "actual": "cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d",
+      "match": true
+    },
+    "r2Yaml": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-r2-01/sandop-capacity.openapi.candidate.yaml",
+      "expected": "5dc5e9750797ea687fce2e959b17d9b3312231b5701238815cab48e7ca3b661c",
+      "actual": "5dc5e9750797ea687fce2e959b17d9b3312231b5701238815cab48e7ca3b661c",
+      "match": true
+    },
+    "r2Annex": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-r2-01/sandop-capacity-semantics-v2.0.0-rc.2.md",
+      "expected": "9f7d87fc72934dc204fb6dffba1a6646ef583dea3c24d996974e716a9add9b20",
+      "actual": "9f7d87fc72934dc204fb6dffba1a6646ef583dea3c24d996974e716a9add9b20",
+      "match": true
+    },
+    "yamlA": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/sandop-capacity.openapi.final-proposed.yaml",
+      "expected": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+      "actual": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+      "match": true
+    },
+    "yamlB": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/publication/docs/analysis/contracts/sandop-capacity.openapi.yaml",
+      "expected": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+      "actual": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+      "match": true
+    },
+    "annexA": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/sandop-capacity-semantics-v2.0.0.md",
+      "expected": "e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442",
+      "actual": "e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442",
+      "match": true
+    },
+    "annexB": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/publication/docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+      "expected": "78113fa0e4c220b011f6c6334c80a8e2b638acc831e760171d0f0011f4e63d64",
+      "actual": "78113fa0e4c220b011f6c6334c80a8e2b638acc831e760171d0f0011f4e63d64",
+      "match": true
+    },
+    "patchA": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/publication-proposed.patch",
+      "expected": "0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04",
+      "actual": "0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04",
+      "match": true
+    },
+    "patchB": {
+      "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/publication.patch",
+      "expected": "03a4df276e29f3b33a54fb6900eacd9f8a56855318a5e97502312571c6a91822",
+      "actual": "03a4df276e29f3b33a54fb6900eacd9f8a56855318a5e97502312571c6a91822",
+      "match": true
+    },
+    "oasSchema": {
+      "path": "/private/tmp/mvp6-combined-final-release-q16pebui/tooldeps/openapi_spec_validator/resources/schemas/v3.1/schema.json",
+      "expected": "e7cb616a2a10849a166c4e4a93c62c56cfea02cc00eadf287e2fb875e7124098",
+      "actual": "e7cb616a2a10849a166c4e4a93c62c56cfea02cc00eadf287e2fb875e7124098",
+      "match": true
+    },
+    "mvp6-sandop-capacity-final-pack-01Manifest": [
+      {
+        "path": "MANIFEST.tsv",
+        "expected": "25b88c5f0a5f4ad098b11696b7cda67043593b8739ec46594e452c99f51a0a7c",
+        "actual": "25b88c5f0a5f4ad098b11696b7cda67043593b8739ec46594e452c99f51a0a7c",
+        "match": true
+      },
+      {
+        "path": "OWNER-DECISIONS-UNAPPROVED.md",
+        "expected": "a33e5daf51ac9d988a7b7b85999d1a8e0b50424546b0df7258e8453232491a22",
+        "actual": "a33e5daf51ac9d988a7b7b85999d1a8e0b50424546b0df7258e8453232491a22",
+        "match": true
+      },
+      {
+        "path": "SOP-22.md",
+        "expected": "972cf8cbf99791a2b29ab3801c6233b96be4f2bb487f002eb0a41f2f87943f59",
+        "actual": "972cf8cbf99791a2b29ab3801c6233b96be4f2bb487f002eb0a41f2f87943f59",
+        "match": true
+      },
+      {
+        "path": "candidate-to-final.diff",
+        "expected": "cfe1b6c37b2714d9c70ab25072d98ecdddc27e7df92eb66d6ef48dd7bac1141f",
+        "actual": "cfe1b6c37b2714d9c70ab25072d98ecdddc27e7df92eb66d6ef48dd7bac1141f",
+        "match": true
+      },
+      {
+        "path": "publication-proposed.patch",
+        "expected": "0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04",
+        "actual": "0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04",
+        "match": true
+      },
+      {
+        "path": "sandop-capacity-semantics-v2.0.0.md",
+        "expected": "e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442",
+        "actual": "e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442",
+        "match": true
+      },
+      {
+        "path": "sandop-capacity.openapi.final-proposed.yaml",
+        "expected": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+        "actual": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+        "match": true
+      },
+      {
+        "path": "validation-results.json",
+        "expected": "e43098474b64c5763ebb061feb693df5a7bc0a77674fe9896f4309e972eb3369",
+        "actual": "e43098474b64c5763ebb061feb693df5a7bc0a77674fe9896f4309e972eb3369",
+        "match": true
+      }
+    ],
+    "mvp6-sandop-capacity-final-release-pack-01Manifest": [
+      {
+        "path": "SOP-22.md",
+        "expected": "bc714b278b9fd14a857943d75d3be71d2a5082b9ed355807ba54910f0a9ad91e",
+        "actual": "bc714b278b9fd14a857943d75d3be71d2a5082b9ed355807ba54910f0a9ad91e",
+        "match": true
+      },
+      {
+        "path": "build_final.py",
+        "expected": "0aa65ec9b1174a1b5862a3b6202ff981e3c3bd71028d57fe736af180184e49d6",
+        "actual": "0aa65ec9b1174a1b5862a3b6202ff981e3c3bd71028d57fe736af180184e49d6",
+        "match": true
+      },
+      {
+        "path": "candidate-to-final.diff",
+        "expected": "dd20c6451c19f7158477a1f17503a0c1aed7987cb2e2cca7466449d3afdf068a",
+        "actual": "dd20c6451c19f7158477a1f17503a0c1aed7987cb2e2cca7466449d3afdf068a",
+        "match": true
+      },
+      {
+        "path": "candidate-to-final.json",
+        "expected": "19c3e03192614ee8d86ceb2003635f4f2c62c40e6413ee1d582d773c491e84f4",
+        "actual": "19c3e03192614ee8d86ceb2003635f4f2c62c40e6413ee1d582d773c491e84f4",
+        "match": true
+      },
+      {
+        "path": "publication/docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md",
+        "expected": "78113fa0e4c220b011f6c6334c80a8e2b638acc831e760171d0f0011f4e63d64",
+        "actual": "78113fa0e4c220b011f6c6334c80a8e2b638acc831e760171d0f0011f4e63d64",
+        "match": true
+      },
+      {
+        "path": "publication/docs/analysis/contracts/sandop-capacity.openapi.yaml",
+        "expected": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+        "actual": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+        "match": true
+      },
+      {
+        "path": "publication.patch",
+        "expected": "03a4df276e29f3b33a54fb6900eacd9f8a56855318a5e97502312571c6a91822",
+        "actual": "03a4df276e29f3b33a54fb6900eacd9f8a56855318a5e97502312571c6a91822",
+        "match": true
+      },
+      {
+        "path": "verification-results.json",
+        "expected": "d75570c08b61266fb7935de0215b1fae44415c41aa5b3fd2e65c154c96663bdc",
+        "actual": "d75570c08b61266fb7935de0215b1fae44415c41aa5b3fd2e65c154c96663bdc",
+        "match": true
+      },
+      {
+        "path": "verification-stderr.txt",
+        "expected": "80705a706862b420489a8bae142ca71b438e4400dffa7f1d8d07d2b8698682e4",
+        "actual": "80705a706862b420489a8bae142ca71b438e4400dffa7f1d8d07d2b8698682e4",
+        "match": true
+      },
+      {
+        "path": "verify_final.py",
+        "expected": "7b9a10151f0fe6c0978530d541e1cdd116714788f4eb031df7257c4612a0a9c9",
+        "actual": "7b9a10151f0fe6c0978530d541e1cdd116714788f4eb031df7257c4612a0a9c9",
+        "match": true
+      }
+    ]
+  },
+  "operations": [
+    {
+      "id": "createSandopPlan",
+      "method": "POST",
+      "path": "/sandop-plans",
+      "oldStatuses": [
+        "201",
+        "409",
+        "422"
+      ],
+      "finalStatuses": [
+        "201",
+        "400",
+        "401",
+        "403",
+        "409",
+        "422",
+        "503"
+      ]
+    },
+    {
+      "id": "getSandopPlan",
+      "method": "GET",
+      "path": "/sandop-plans/{sandopPlanId}",
+      "oldStatuses": [
+        "200",
+        "404"
+      ],
+      "finalStatuses": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "503"
+      ]
+    },
+    {
+      "id": "captureSandopSnapshot",
+      "method": "POST",
+      "path": "/sandop-plans/{sandopPlanId}/snapshots",
+      "oldStatuses": [
+        "201",
+        "404",
+        "409",
+        "422"
+      ],
+      "finalStatuses": [
+        "201",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409",
+        "422",
+        "503"
+      ]
+    },
+    {
+      "id": "listSandopSnapshots",
+      "method": "GET",
+      "path": "/sandop-plans/{sandopPlanId}/snapshots",
+      "oldStatuses": [
+        "200",
+        "404"
+      ],
+      "finalStatuses": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "503"
+      ]
+    },
+    {
+      "id": "recordSandopSignOff",
+      "method": "POST",
+      "path": "/sandop-plans/{sandopPlanId}/sign-offs",
+      "oldStatuses": [
+        "201",
+        "404",
+        "409",
+        "422"
+      ],
+      "finalStatuses": [
+        "201",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409",
+        "422",
+        "503"
+      ]
+    },
+    {
+      "id": "listSandopSignOffs",
+      "method": "GET",
+      "path": "/sandop-plans/{sandopPlanId}/sign-offs",
+      "oldStatuses": [
+        "200",
+        "404"
+      ],
+      "finalStatuses": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "503"
+      ]
+    },
+    {
+      "id": "createCapacityPlan",
+      "method": "POST",
+      "path": "/capacity-plans",
+      "oldStatuses": [
+        "201",
+        "409",
+        "422"
+      ],
+      "finalStatuses": [
+        "201",
+        "400",
+        "401",
+        "403",
+        "409",
+        "422",
+        "503"
+      ]
+    },
+    {
+      "id": "getCapacityPlan",
+      "method": "GET",
+      "path": "/capacity-plans/{capacityPlanId}",
+      "oldStatuses": [
+        "200",
+        "404"
+      ],
+      "finalStatuses": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "503"
+      ]
+    },
+    {
+      "id": "createCapacityScenario",
+      "method": "POST",
+      "path": "/capacity-plans/{capacityPlanId}/scenarios",
+      "oldStatuses": [
+        "201",
+        "404",
+        "409"
+      ],
+      "finalStatuses": [
+        "201",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409",
+        "422",
+        "503"
+      ]
+    },
+    {
+      "id": "getCapacityScenario",
+      "method": "GET",
+      "path": "/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}",
+      "oldStatuses": [
+        "200",
+        "404"
+      ],
+      "finalStatuses": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "503"
+      ]
+    },
+    {
+      "id": "evaluateCapacityScenario",
+      "method": "POST",
+      "path": "/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations",
+      "oldStatuses": [
+        "202",
+        "404",
+        "409"
+      ],
+      "finalStatuses": [
+        "202",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409",
+        "422",
+        "503"
+      ]
+    },
+    {
+      "id": "getCapacityEvaluation",
+      "method": "GET",
+      "path": "/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}",
+      "oldStatuses": [
+        "200",
+        "404"
+      ],
+      "finalStatuses": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "503"
+      ]
+    }
+  ],
+  "oas": {
+    "validatorVersion": "0.7.2",
+    "metaErrors": [],
+    "fullDocumentErrors": [],
+    "negatives": {
+      "badVersion": {
+        "metaErrors": 1,
+        "fullErrors": 1
+      },
+      "missingTitle": {
+        "metaErrors": 1,
+        "fullErrors": 1
+      },
+      "badRef": {
+        "metaErrors": 0,
+        "fullErrors": 1,
+        "exception": "'/components/responses/DoesNotExist' does not exist within {'openapi': '3.1.0', 'info': {'title': 'SANDOP-CAPACITY', 'description': 'MOD-0190 S&OP Workflow & Sign-offs and MOD-0192 Capacity Planning owned contract — frozen v1. DEMAND (MOD-0188) is consumed as a frozen contract; this contract stores only demand-plan references and immutable input-snapshot provenance, never a second demand source of record. Tenant and LegalEntity scope are resolved from authenticated server context and are never accepted in request bodies.\\n', 'version': '2.0.0', 'x-status': 'FROZEN', 'x-contract-version': 'v1', 'x-semantics-annex': 'sandop-capacity-semantics-v2.0.0.md', 'x-owner': ['MOD-0190', 'MOD-0192'], 'x-consumes': ['DEMAND']}, 'servers': [{'url': '/api/supply-chain'}], 'security': [{'bearerAuth': []}], 'tags': [{'name': 'S&OP Plans'}, {'name': 'S&OP Snapshots'}, {'name': 'S&OP Sign-offs'}, {'name': 'Capacity Plans'}, {'name': 'Capacity Scenarios'}, {'name': 'Capacity Evaluations'}], 'paths': {'/sandop-plans': {'post': {'tags': ['S&OP Plans'], 'operationId': 'createSandopPlan', 'summary': 'Create an S&OP plan referencing a frozen DEMAND plan version', 'parameters': [{'$ref': '#/components/parameters/IdempotencyKey'}, {'$ref': '#/components/parameters/CorrelationId'}], 'requestBody': {'required': True, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CreateSandopPlanRequest'}, 'example': {'name': 'FY2027 Integrated Plan', 'horizonStart': '2027-01-01', 'horizonEnd': '2027-12-31', 'demandPlanId': 'dp-2027', 'demandPlanVersion': '3'}}}}, 'responses': {'201': {'description': 'S&OP plan created', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/SandopPlan'}, 'example': {'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'name': 'FY2027 Integrated Plan', 'horizonStart': '2027-01-01', 'horizonEnd': '2027-12-31', 'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'status': 'Draft', 'currentSnapshotId': None, 'createdAt': '2026-09-15T10:00:00Z', 'contractVersion': 'v1'}}}}, '409': {'$ref': '#/components/responses/PlanConflict'}, '422': {'$ref': '#/components/responses/InvalidDemandReference'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/DoesNotExist'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/MutationUnavailable'}}}}, '/sandop-plans/{sandopPlanId}': {'get': {'tags': ['S&OP Plans'], 'operationId': 'getSandopPlan', 'summary': 'Get an S&OP plan in the authenticated tenant and legal entity scope', 'parameters': [{'$ref': '#/components/parameters/SandopPlanId'}, {'$ref': '#/components/parameters/CorrelationId'}], 'responses': {'200': {'description': 'S&OP plan', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/SandopPlan'}, 'example': {'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'name': 'FY2027 Integrated Plan', 'horizonStart': '2027-01-01', 'horizonEnd': '2027-12-31', 'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'status': 'InReview', 'currentSnapshotId': '01900000-0000-4000-8000-000000000010', 'createdAt': '2026-09-15T10:00:00Z', 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownSandopPlan'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/ReadUnavailable'}}}}, '/sandop-plans/{sandopPlanId}/snapshots': {'post': {'tags': ['S&OP Snapshots'], 'operationId': 'captureSandopSnapshot', 'summary': 'Capture immutable provenance for the S&OP review input set', 'description': 'Captures references and provenance only. Demand quantities, forecast series, and other DEMAND-owned data are not copied into this service.\\n', 'parameters': [{'$ref': '#/components/parameters/SandopPlanId'}, {'$ref': '#/components/parameters/IdempotencyKey'}, {'$ref': '#/components/parameters/CorrelationId'}], 'requestBody': {'required': True, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CaptureSandopSnapshotRequest'}, 'example': {'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'sourceCapturedAt': '2026-09-15T09:45:00Z', 'sourceChecksum': 'sha256:ee56d4f9a3c8', 'supplyInputRefs': [{'source': 'INVENTORY', 'resourceId': 'availability-snapshot-20260915', 'resourceVersion': '12'}]}}}}, 'responses': {'201': {'description': 'Immutable S&OP input snapshot captured', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/SandopSnapshot'}, 'example': {'snapshotId': '01900000-0000-4000-8000-000000000010', 'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'provenance': {'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'sourceContract': 'DEMAND', 'sourceContractVersion': 'v1', 'sourceCapturedAt': '2026-09-15T09:45:00Z', 'sourceChecksum': 'sha256:ee56d4f9a3c8'}, 'supplyInputRefs': [{'source': 'INVENTORY', 'resourceId': 'availability-snapshot-20260915', 'resourceVersion': '12'}], 'capturedAt': '2026-09-15T10:10:00Z', 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownSandopPlan'}, '409': {'$ref': '#/components/responses/PlanStateConflict'}, '422': {'$ref': '#/components/responses/InvalidDemandReference'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/MutationUnavailable'}}}, 'get': {'tags': ['S&OP Snapshots'], 'operationId': 'listSandopSnapshots', 'summary': 'List immutable S&OP input snapshots', 'parameters': [{'$ref': '#/components/parameters/SandopPlanId'}, {'$ref': '#/components/parameters/CorrelationId'}], 'responses': {'200': {'description': 'S&OP snapshots', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'type': 'object', 'required': ['items', 'contractVersion'], 'properties': {'items': {'type': 'array', 'items': {'$ref': '#/components/schemas/SandopSnapshot'}}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'example': {'items': [{'snapshotId': '01900000-0000-4000-8000-000000000010', 'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'provenance': {'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'sourceContract': 'DEMAND', 'sourceContractVersion': 'v1', 'sourceCapturedAt': '2026-09-15T09:45:00Z', 'sourceChecksum': 'sha256:ee56d4f9a3c8'}, 'supplyInputRefs': [], 'capturedAt': '2026-09-15T10:10:00Z', 'contractVersion': 'v1'}], 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownSandopPlan'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/ReadUnavailable'}}}}, '/sandop-plans/{sandopPlanId}/sign-offs': {'post': {'tags': ['S&OP Sign-offs'], 'operationId': 'recordSandopSignOff', 'summary': 'Record an approval or rejection against an immutable S&OP snapshot', 'parameters': [{'$ref': '#/components/parameters/SandopPlanId'}, {'$ref': '#/components/parameters/IdempotencyKey'}, {'$ref': '#/components/parameters/CorrelationId'}], 'requestBody': {'required': True, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/RecordSignOffRequest'}, 'example': {'snapshotId': '01900000-0000-4000-8000-000000000010', 'role': 'SupplyPlanning', 'decision': 'Approved', 'comment': 'Capacity scenario C-3 accepted'}}}}, 'responses': {'201': {'description': 'Sign-off recorded', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/SignOff'}, 'example': {'signOffId': '01900000-0000-4000-8000-000000000020', 'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'snapshotId': '01900000-0000-4000-8000-000000000010', 'role': 'SupplyPlanning', 'decision': 'Approved', 'comment': 'Capacity scenario C-3 accepted', 'decidedBy': '90000000-0000-4000-8000-000000000001', 'decidedAt': '2026-09-15T11:00:00Z', 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownSandopPlan'}, '409': {'$ref': '#/components/responses/SignOffConflict'}, '422': {'$ref': '#/components/responses/InvalidSnapshotReference'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/MutationUnavailable'}}}, 'get': {'tags': ['S&OP Sign-offs'], 'operationId': 'listSandopSignOffs', 'summary': 'List sign-offs for an S&OP plan', 'parameters': [{'$ref': '#/components/parameters/SandopPlanId'}, {'$ref': '#/components/parameters/CorrelationId'}], 'responses': {'200': {'description': 'S&OP sign-offs', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'type': 'object', 'required': ['items', 'contractVersion'], 'properties': {'items': {'type': 'array', 'items': {'$ref': '#/components/schemas/SignOff'}}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'example': {'items': [{'signOffId': '01900000-0000-4000-8000-000000000020', 'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'snapshotId': '01900000-0000-4000-8000-000000000010', 'role': 'SupplyPlanning', 'decision': 'Approved', 'comment': 'Capacity scenario C-3 accepted', 'decidedBy': '90000000-0000-4000-8000-000000000001', 'decidedAt': '2026-09-15T11:00:00Z', 'contractVersion': 'v1'}], 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownSandopPlan'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/ReadUnavailable'}}}}, '/capacity-plans': {'post': {'tags': ['Capacity Plans'], 'operationId': 'createCapacityPlan', 'summary': 'Create a capacity plan from a frozen DEMAND plan reference', 'parameters': [{'$ref': '#/components/parameters/IdempotencyKey'}, {'$ref': '#/components/parameters/CorrelationId'}], 'requestBody': {'required': True, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CreateCapacityPlanRequest'}, 'example': {'name': 'FY2027 Capacity Baseline', 'horizonStart': '2027-01-01', 'horizonEnd': '2027-12-31', 'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'sourceCapturedAt': '2026-09-15T09:45:00Z', 'sourceChecksum': 'sha256:ee56d4f9a3c8'}}}}, 'responses': {'201': {'description': 'Capacity plan created', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CapacityPlan'}, 'example': {'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'name': 'FY2027 Capacity Baseline', 'horizonStart': '2027-01-01', 'horizonEnd': '2027-12-31', 'provenance': {'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'sourceContract': 'DEMAND', 'sourceContractVersion': 'v1', 'sourceCapturedAt': '2026-09-15T09:45:00Z', 'sourceChecksum': 'sha256:ee56d4f9a3c8'}, 'status': 'Draft', 'createdAt': '2026-09-15T10:20:00Z', 'contractVersion': 'v1'}}}}, '409': {'$ref': '#/components/responses/CapacityPlanConflict'}, '422': {'$ref': '#/components/responses/InvalidDemandReference'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/MutationUnavailable'}}}}, '/capacity-plans/{capacityPlanId}': {'get': {'tags': ['Capacity Plans'], 'operationId': 'getCapacityPlan', 'summary': 'Get a capacity plan in the authenticated tenant and legal entity scope', 'parameters': [{'$ref': '#/components/parameters/CapacityPlanId'}, {'$ref': '#/components/parameters/CorrelationId'}], 'responses': {'200': {'description': 'Capacity plan', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CapacityPlan'}, 'example': {'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'name': 'FY2027 Capacity Baseline', 'horizonStart': '2027-01-01', 'horizonEnd': '2027-12-31', 'provenance': {'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'sourceContract': 'DEMAND', 'sourceContractVersion': 'v1', 'sourceCapturedAt': '2026-09-15T09:45:00Z', 'sourceChecksum': 'sha256:ee56d4f9a3c8'}, 'status': 'Evaluating', 'createdAt': '2026-09-15T10:20:00Z', 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownCapacityPlan'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/ReadUnavailable'}}}}, '/capacity-plans/{capacityPlanId}/scenarios': {'post': {'tags': ['Capacity Scenarios'], 'operationId': 'createCapacityScenario', 'summary': 'Create a capacity scenario without copying DEMAND-owned facts', 'parameters': [{'$ref': '#/components/parameters/CapacityPlanId'}, {'$ref': '#/components/parameters/IdempotencyKey'}, {'$ref': '#/components/parameters/CorrelationId'}], 'requestBody': {'required': True, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CreateCapacityScenarioRequest'}, 'example': {'name': 'Add weekend shift', 'constraintRefs': [{'constraintId': 'line-4-hours', 'source': 'SUPPLY-CONSTRAINTS', 'sourceVersion': '8'}], 'adjustments': [{'resourceRef': 'line-4', 'period': '2027-W03', 'availableCapacityDelta': '80.000', 'uomId': 'HOUR'}]}}}}, 'responses': {'201': {'description': 'Capacity scenario created', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CapacityScenario'}, 'example': {'scenarioId': '01920000-0000-4000-8000-000000000010', 'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'name': 'Add weekend shift', 'constraintRefs': [{'constraintId': 'line-4-hours', 'source': 'SUPPLY-CONSTRAINTS', 'sourceVersion': '8'}], 'adjustments': [{'resourceRef': 'line-4', 'period': '2027-W03', 'availableCapacityDelta': '80.000', 'uomId': 'HOUR'}], 'status': 'Draft', 'createdAt': '2026-09-15T10:30:00Z', 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownCapacityPlan'}, '409': {'$ref': '#/components/responses/CapacityPlanStateConflict'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/MutationUnavailable'}, '422': {'$ref': '#/components/responses/InvalidConstraintReference'}}}}, '/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}': {'get': {'tags': ['Capacity Scenarios'], 'operationId': 'getCapacityScenario', 'summary': 'Get a capacity scenario', 'parameters': [{'$ref': '#/components/parameters/CapacityPlanId'}, {'$ref': '#/components/parameters/ScenarioId'}, {'$ref': '#/components/parameters/CorrelationId'}], 'responses': {'200': {'description': 'Capacity scenario', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CapacityScenario'}, 'example': {'scenarioId': '01920000-0000-4000-8000-000000000010', 'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'name': 'Add weekend shift', 'constraintRefs': [], 'adjustments': [], 'status': 'Draft', 'createdAt': '2026-09-15T10:30:00Z', 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownCapacityScenario'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/ReadUnavailable'}}}}, '/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations': {'post': {'tags': ['Capacity Evaluations'], 'operationId': 'evaluateCapacityScenario', 'summary': 'Evaluate a capacity scenario against its immutable demand provenance', 'parameters': [{'$ref': '#/components/parameters/CapacityPlanId'}, {'$ref': '#/components/parameters/ScenarioId'}, {'$ref': '#/components/parameters/IdempotencyKey'}, {'$ref': '#/components/parameters/CorrelationId'}], 'requestBody': {'required': True, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/EvaluateCapacityScenarioRequest'}, 'example': {'evaluationMode': 'Finite', 'resourceRefs': ['line-4', 'labor-cell-a']}}}}, 'responses': {'202': {'description': 'Capacity evaluation accepted', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CapacityEvaluation'}, 'example': {'evaluationId': '01920000-0000-4000-8000-000000000020', 'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'scenarioId': '01920000-0000-4000-8000-000000000010', 'evaluationMode': 'Finite', 'status': 'Accepted', 'bottlenecks': [], 'submittedAt': '2026-09-15T10:40:00Z', 'completedAt': None, 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownCapacityScenario'}, '409': {'$ref': '#/components/responses/EvaluationConflict'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/MutationUnavailable'}, '422': {'$ref': '#/components/responses/InvalidConstraintReference'}}}}, '/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}': {'get': {'tags': ['Capacity Evaluations'], 'operationId': 'getCapacityEvaluation', 'summary': 'Get a capacity evaluation and bottleneck result', 'parameters': [{'$ref': '#/components/parameters/CapacityPlanId'}, {'$ref': '#/components/parameters/EvaluationId'}, {'$ref': '#/components/parameters/CorrelationId'}], 'responses': {'200': {'description': 'Capacity evaluation', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/CapacityEvaluation'}, 'example': {'evaluationId': '01920000-0000-4000-8000-000000000020', 'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'scenarioId': '01920000-0000-4000-8000-000000000010', 'evaluationMode': 'Finite', 'status': 'Completed', 'bottlenecks': [{'resourceRef': 'line-4', 'period': '2027-W03', 'requiredCapacity': '520.000', 'availableCapacity': '480.000', 'shortfall': '40.000', 'uomId': 'HOUR'}], 'submittedAt': '2026-09-15T10:40:00Z', 'completedAt': '2026-09-15T10:42:00Z', 'contractVersion': 'v1'}}}}, '404': {'$ref': '#/components/responses/UnknownCapacityEvaluation'}, '400': {'$ref': '#/components/responses/InvalidRequest'}, '401': {'$ref': '#/components/responses/Unauthenticated'}, '403': {'$ref': '#/components/responses/Forbidden'}, '503': {'$ref': '#/components/responses/ReadUnavailable'}}}}}, 'components': {'securitySchemes': {'bearerAuth': {'type': 'http', 'scheme': 'bearer', 'bearerFormat': 'JWT'}}, 'parameters': {'IdempotencyKey': {'name': 'Idempotency-Key', 'in': 'header', 'required': True, 'schema': {'type': 'string', 'minLength': 1}}, 'CorrelationId': {'name': 'X-Correlation-Id', 'in': 'header', 'required': True, 'schema': {'type': 'string', 'format': 'uuid'}}, 'SandopPlanId': {'name': 'sandopPlanId', 'in': 'path', 'required': True, 'schema': {'type': 'string', 'format': 'uuid'}}, 'CapacityPlanId': {'name': 'capacityPlanId', 'in': 'path', 'required': True, 'schema': {'type': 'string', 'format': 'uuid'}}, 'ScenarioId': {'name': 'scenarioId', 'in': 'path', 'required': True, 'schema': {'type': 'string', 'format': 'uuid'}}, 'EvaluationId': {'name': 'evaluationId', 'in': 'path', 'required': True, 'schema': {'type': 'string', 'format': 'uuid'}}}, 'headers': {'CorrelationId': {'description': 'Correlation identifier echoed from the request', 'schema': {'type': 'string', 'format': 'uuid'}}}, 'schemas': {'ContractVersion': {'type': 'string', 'const': 'v1'}, 'Decimal': {'type': 'string', 'pattern': '^-?\\\\d+(\\\\.\\\\d+)?$'}, 'CreateSandopPlanRequest': {'type': 'object', 'additionalProperties': False, 'required': ['name', 'horizonStart', 'horizonEnd', 'demandPlanId', 'demandPlanVersion'], 'properties': {'name': {'type': 'string', 'minLength': 1}, 'horizonStart': {'type': 'string', 'format': 'date'}, 'horizonEnd': {'type': 'string', 'format': 'date'}, 'demandPlanId': {'type': 'string', 'description': 'Reference to DEMAND planId; DEMAND remains the source of record'}, 'demandPlanVersion': {'type': 'string', 'minLength': 1}}}, 'SandopPlan': {'type': 'object', 'required': ['sandopPlanId', 'name', 'horizonStart', 'horizonEnd', 'demandPlanId', 'demandPlanVersion', 'status', 'createdAt', 'contractVersion'], 'properties': {'sandopPlanId': {'type': 'string', 'format': 'uuid'}, 'name': {'type': 'string'}, 'horizonStart': {'type': 'string', 'format': 'date'}, 'horizonEnd': {'type': 'string', 'format': 'date'}, 'demandPlanId': {'type': 'string'}, 'demandPlanVersion': {'type': 'string'}, 'status': {'type': 'string', 'enum': ['Draft', 'InReview', 'Approved', 'Rejected', 'Archived']}, 'currentSnapshotId': {'type': ['string', 'null'], 'format': 'uuid'}, 'createdAt': {'type': 'string', 'format': 'date-time'}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'CaptureSandopSnapshotRequest': {'type': 'object', 'additionalProperties': False, 'required': ['demandPlanId', 'demandPlanVersion', 'sourceCapturedAt', 'sourceChecksum'], 'properties': {'demandPlanId': {'type': 'string'}, 'demandPlanVersion': {'type': 'string'}, 'sourceCapturedAt': {'type': 'string', 'format': 'date-time'}, 'sourceChecksum': {'type': 'string'}, 'supplyInputRefs': {'type': 'array', 'items': {'$ref': '#/components/schemas/ExternalInputReference'}, 'default': []}}}, 'InputSnapshotProvenance': {'type': 'object', 'required': ['demandPlanId', 'demandPlanVersion', 'sourceContract', 'sourceContractVersion', 'sourceCapturedAt', 'sourceChecksum'], 'properties': {'demandPlanId': {'type': 'string'}, 'demandPlanVersion': {'type': 'string'}, 'sourceContract': {'type': 'string', 'const': 'DEMAND'}, 'sourceContractVersion': {'type': 'string', 'const': 'v1'}, 'sourceCapturedAt': {'type': 'string', 'format': 'date-time'}, 'sourceChecksum': {'type': 'string'}}}, 'ExternalInputReference': {'type': 'object', 'additionalProperties': False, 'required': ['source', 'resourceId', 'resourceVersion'], 'properties': {'source': {'type': 'string'}, 'resourceId': {'type': 'string'}, 'resourceVersion': {'type': 'string'}}}, 'SandopSnapshot': {'type': 'object', 'required': ['snapshotId', 'sandopPlanId', 'provenance', 'supplyInputRefs', 'capturedAt', 'contractVersion'], 'properties': {'snapshotId': {'type': 'string', 'format': 'uuid'}, 'sandopPlanId': {'type': 'string', 'format': 'uuid'}, 'provenance': {'$ref': '#/components/schemas/InputSnapshotProvenance'}, 'supplyInputRefs': {'type': 'array', 'items': {'$ref': '#/components/schemas/ExternalInputReference'}}, 'capturedAt': {'type': 'string', 'format': 'date-time'}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'RecordSignOffRequest': {'type': 'object', 'additionalProperties': False, 'required': ['snapshotId', 'role', 'decision'], 'properties': {'snapshotId': {'type': 'string', 'format': 'uuid'}, 'role': {'type': 'string', 'enum': ['DemandPlanning', 'SupplyPlanning', 'Finance', 'Operations', 'Executive']}, 'decision': {'type': 'string', 'enum': ['Approved', 'Rejected']}, 'comment': {'type': 'string', 'maxLength': 2000}}}, 'SignOff': {'type': 'object', 'required': ['signOffId', 'sandopPlanId', 'snapshotId', 'role', 'decision', 'decidedBy', 'decidedAt', 'contractVersion'], 'properties': {'signOffId': {'type': 'string', 'format': 'uuid'}, 'sandopPlanId': {'type': 'string', 'format': 'uuid'}, 'snapshotId': {'type': 'string', 'format': 'uuid'}, 'role': {'type': 'string'}, 'decision': {'type': 'string', 'enum': ['Approved', 'Rejected']}, 'comment': {'type': 'string'}, 'decidedBy': {'type': 'string', 'format': 'uuid', 'description': 'Resolved from authenticated actor context'}, 'decidedAt': {'type': 'string', 'format': 'date-time'}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'CreateCapacityPlanRequest': {'type': 'object', 'additionalProperties': False, 'required': ['name', 'horizonStart', 'horizonEnd', 'demandPlanId', 'demandPlanVersion', 'sourceCapturedAt', 'sourceChecksum'], 'properties': {'name': {'type': 'string', 'minLength': 1}, 'horizonStart': {'type': 'string', 'format': 'date'}, 'horizonEnd': {'type': 'string', 'format': 'date'}, 'demandPlanId': {'type': 'string'}, 'demandPlanVersion': {'type': 'string'}, 'sourceCapturedAt': {'type': 'string', 'format': 'date-time'}, 'sourceChecksum': {'type': 'string'}}}, 'CapacityPlan': {'type': 'object', 'required': ['capacityPlanId', 'name', 'horizonStart', 'horizonEnd', 'provenance', 'status', 'createdAt', 'contractVersion'], 'properties': {'capacityPlanId': {'type': 'string', 'format': 'uuid'}, 'name': {'type': 'string'}, 'horizonStart': {'type': 'string', 'format': 'date'}, 'horizonEnd': {'type': 'string', 'format': 'date'}, 'provenance': {'$ref': '#/components/schemas/InputSnapshotProvenance'}, 'status': {'type': 'string', 'enum': ['Draft', 'Evaluating', 'Ready', 'Approved', 'Archived']}, 'createdAt': {'type': 'string', 'format': 'date-time'}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'ConstraintReference': {'type': 'object', 'additionalProperties': False, 'required': ['constraintId', 'source', 'sourceVersion'], 'properties': {'constraintId': {'type': 'string'}, 'source': {'type': 'string'}, 'sourceVersion': {'type': 'string'}}}, 'CapacityAdjustment': {'type': 'object', 'additionalProperties': False, 'required': ['resourceRef', 'period', 'availableCapacityDelta', 'uomId'], 'properties': {'resourceRef': {'type': 'string'}, 'period': {'type': 'string'}, 'availableCapacityDelta': {'$ref': '#/components/schemas/Decimal'}, 'uomId': {'type': 'string'}}}, 'CreateCapacityScenarioRequest': {'type': 'object', 'additionalProperties': False, 'required': ['name', 'constraintRefs', 'adjustments'], 'properties': {'name': {'type': 'string', 'minLength': 1}, 'constraintRefs': {'type': 'array', 'items': {'$ref': '#/components/schemas/ConstraintReference'}}, 'adjustments': {'type': 'array', 'items': {'$ref': '#/components/schemas/CapacityAdjustment'}}}}, 'CapacityScenario': {'type': 'object', 'required': ['scenarioId', 'capacityPlanId', 'name', 'constraintRefs', 'adjustments', 'status', 'createdAt', 'contractVersion'], 'properties': {'scenarioId': {'type': 'string', 'format': 'uuid'}, 'capacityPlanId': {'type': 'string', 'format': 'uuid'}, 'name': {'type': 'string'}, 'constraintRefs': {'type': 'array', 'items': {'$ref': '#/components/schemas/ConstraintReference'}}, 'adjustments': {'type': 'array', 'items': {'$ref': '#/components/schemas/CapacityAdjustment'}}, 'status': {'type': 'string', 'enum': ['Draft', 'Evaluating', 'Evaluated', 'Archived']}, 'createdAt': {'type': 'string', 'format': 'date-time'}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'EvaluateCapacityScenarioRequest': {'type': 'object', 'additionalProperties': False, 'required': ['evaluationMode', 'resourceRefs'], 'properties': {'evaluationMode': {'type': 'string', 'enum': ['Finite', 'Infinite']}, 'resourceRefs': {'type': 'array', 'minItems': 1, 'items': {'type': 'string'}}}}, 'Bottleneck': {'type': 'object', 'required': ['resourceRef', 'period', 'requiredCapacity', 'availableCapacity', 'shortfall', 'uomId'], 'properties': {'resourceRef': {'type': 'string'}, 'period': {'type': 'string'}, 'requiredCapacity': {'$ref': '#/components/schemas/Decimal'}, 'availableCapacity': {'$ref': '#/components/schemas/Decimal'}, 'shortfall': {'$ref': '#/components/schemas/Decimal'}, 'uomId': {'type': 'string'}}}, 'CapacityEvaluation': {'type': 'object', 'required': ['evaluationId', 'capacityPlanId', 'scenarioId', 'evaluationMode', 'status', 'bottlenecks', 'submittedAt', 'contractVersion'], 'properties': {'evaluationId': {'type': 'string', 'format': 'uuid'}, 'capacityPlanId': {'type': 'string', 'format': 'uuid'}, 'scenarioId': {'type': 'string', 'format': 'uuid'}, 'evaluationMode': {'type': 'string', 'enum': ['Finite', 'Infinite']}, 'status': {'type': 'string', 'enum': ['Accepted', 'Running', 'Completed', 'Failed']}, 'bottlenecks': {'type': 'array', 'items': {'$ref': '#/components/schemas/Bottleneck'}}, 'submittedAt': {'type': 'string', 'format': 'date-time'}, 'completedAt': {'type': ['string', 'null'], 'format': 'date-time'}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'SandopPlanCreatedEvent': {'description': 'Lifecycle event emitted when an S&OP plan is created', 'allOf': [{'$ref': '#/components/schemas/LifecycleEventEnvelope'}, {'type': 'object', 'properties': {'eventType': {'const': 'sandop.plan.created.v1'}, 'payload': {'$ref': '#/components/schemas/SandopPlanEventPayload'}}}], 'examples': [{'eventId': '71900000-0000-4000-8000-000000000001', 'eventType': 'sandop.plan.created.v1', 'occurredAt': '2026-09-15T10:00:00Z', 'correlationId': 'bbbbbbbb-0000-4000-8000-000000000001', 'causationId': None, 'payload': {'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'demandPlanId': 'dp-2027', 'demandPlanVersion': '3'}, 'contractVersion': 'v1'}]}, 'SandopSnapshotCapturedEvent': {'description': 'Lifecycle event emitted when an immutable input snapshot is captured', 'allOf': [{'$ref': '#/components/schemas/LifecycleEventEnvelope'}, {'type': 'object', 'properties': {'eventType': {'const': 'sandop.snapshot.captured.v1'}, 'payload': {'$ref': '#/components/schemas/SandopSnapshotEventPayload'}}}], 'examples': [{'eventId': '71900000-0000-4000-8000-000000000002', 'eventType': 'sandop.snapshot.captured.v1', 'occurredAt': '2026-09-15T10:10:00Z', 'correlationId': 'bbbbbbbb-0000-4000-8000-000000000001', 'causationId': '71900000-0000-4000-8000-000000000001', 'payload': {'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'snapshotId': '01900000-0000-4000-8000-000000000010', 'provenance': {'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'sourceContract': 'DEMAND', 'sourceContractVersion': 'v1', 'sourceCapturedAt': '2026-09-15T09:45:00Z', 'sourceChecksum': 'sha256:ee56d4f9a3c8'}}, 'contractVersion': 'v1'}]}, 'SandopSignOffRecordedEvent': {'description': 'Lifecycle event emitted for an S&OP sign-off decision', 'allOf': [{'$ref': '#/components/schemas/LifecycleEventEnvelope'}, {'type': 'object', 'properties': {'eventType': {'const': 'sandop.sign-off.recorded.v1'}, 'payload': {'$ref': '#/components/schemas/SandopSignOffEventPayload'}}}], 'examples': [{'eventId': '71900000-0000-4000-8000-000000000003', 'eventType': 'sandop.sign-off.recorded.v1', 'occurredAt': '2026-09-15T11:00:00Z', 'correlationId': 'bbbbbbbb-0000-4000-8000-000000000001', 'causationId': '71900000-0000-4000-8000-000000000002', 'payload': {'sandopPlanId': '01900000-0000-4000-8000-000000000001', 'snapshotId': '01900000-0000-4000-8000-000000000010', 'signOffId': '01900000-0000-4000-8000-000000000020', 'role': 'SupplyPlanning', 'decision': 'Approved'}, 'contractVersion': 'v1'}]}, 'CapacityPlanCreatedEvent': {'description': 'Lifecycle event emitted when a capacity plan is created', 'allOf': [{'$ref': '#/components/schemas/LifecycleEventEnvelope'}, {'type': 'object', 'properties': {'eventType': {'const': 'capacity.plan.created.v1'}, 'payload': {'$ref': '#/components/schemas/CapacityPlanEventPayload'}}}], 'examples': [{'eventId': '71920000-0000-4000-8000-000000000001', 'eventType': 'capacity.plan.created.v1', 'occurredAt': '2026-09-15T10:20:00Z', 'correlationId': 'cccccccc-0000-4000-8000-000000000001', 'causationId': None, 'payload': {'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'provenance': {'demandPlanId': 'dp-2027', 'demandPlanVersion': '3', 'sourceContract': 'DEMAND', 'sourceContractVersion': 'v1', 'sourceCapturedAt': '2026-09-15T09:45:00Z', 'sourceChecksum': 'sha256:ee56d4f9a3c8'}}, 'contractVersion': 'v1'}]}, 'CapacityScenarioCreatedEvent': {'description': 'Lifecycle event emitted when a capacity scenario is created', 'allOf': [{'$ref': '#/components/schemas/LifecycleEventEnvelope'}, {'type': 'object', 'properties': {'eventType': {'const': 'capacity.scenario.created.v1'}, 'payload': {'$ref': '#/components/schemas/CapacityScenarioEventPayload'}}}], 'examples': [{'eventId': '71920000-0000-4000-8000-000000000002', 'eventType': 'capacity.scenario.created.v1', 'occurredAt': '2026-09-15T10:30:00Z', 'correlationId': 'cccccccc-0000-4000-8000-000000000001', 'causationId': '71920000-0000-4000-8000-000000000001', 'payload': {'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'scenarioId': '01920000-0000-4000-8000-000000000010'}, 'contractVersion': 'v1'}]}, 'CapacityEvaluationCompletedEvent': {'description': 'Lifecycle event emitted when capacity evaluation finishes', 'allOf': [{'$ref': '#/components/schemas/LifecycleEventEnvelope'}, {'type': 'object', 'properties': {'eventType': {'const': 'capacity.evaluation.completed.v1'}, 'payload': {'$ref': '#/components/schemas/CapacityEvaluationEventPayload'}}}], 'examples': [{'eventId': '71920000-0000-4000-8000-000000000003', 'eventType': 'capacity.evaluation.completed.v1', 'occurredAt': '2026-09-15T10:42:00Z', 'correlationId': 'cccccccc-0000-4000-8000-000000000001', 'causationId': '71920000-0000-4000-8000-000000000002', 'payload': {'capacityPlanId': '01920000-0000-4000-8000-000000000001', 'scenarioId': '01920000-0000-4000-8000-000000000010', 'evaluationId': '01920000-0000-4000-8000-000000000020', 'status': 'Completed'}, 'contractVersion': 'v1'}]}, 'LifecycleEventEnvelope': {'type': 'object', 'required': ['eventId', 'eventType', 'occurredAt', 'correlationId', 'payload', 'contractVersion'], 'properties': {'eventId': {'type': 'string', 'format': 'uuid'}, 'eventType': {'type': 'string'}, 'occurredAt': {'type': 'string', 'format': 'date-time'}, 'correlationId': {'type': 'string', 'format': 'uuid'}, 'causationId': {'type': ['string', 'null'], 'format': 'uuid'}, 'payload': {'type': 'object'}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}, 'SandopPlanEventPayload': {'type': 'object', 'required': ['sandopPlanId', 'demandPlanId', 'demandPlanVersion'], 'properties': {'sandopPlanId': {'type': 'string', 'format': 'uuid'}, 'demandPlanId': {'type': 'string'}, 'demandPlanVersion': {'type': 'string'}}}, 'SandopSnapshotEventPayload': {'type': 'object', 'required': ['sandopPlanId', 'snapshotId', 'provenance'], 'properties': {'sandopPlanId': {'type': 'string', 'format': 'uuid'}, 'snapshotId': {'type': 'string', 'format': 'uuid'}, 'provenance': {'$ref': '#/components/schemas/InputSnapshotProvenance'}}}, 'SandopSignOffEventPayload': {'type': 'object', 'required': ['sandopPlanId', 'snapshotId', 'signOffId', 'role', 'decision'], 'properties': {'sandopPlanId': {'type': 'string', 'format': 'uuid'}, 'snapshotId': {'type': 'string', 'format': 'uuid'}, 'signOffId': {'type': 'string', 'format': 'uuid'}, 'role': {'type': 'string'}, 'decision': {'type': 'string', 'enum': ['Approved', 'Rejected']}}}, 'CapacityPlanEventPayload': {'type': 'object', 'required': ['capacityPlanId', 'provenance'], 'properties': {'capacityPlanId': {'type': 'string', 'format': 'uuid'}, 'provenance': {'$ref': '#/components/schemas/InputSnapshotProvenance'}}}, 'CapacityScenarioEventPayload': {'type': 'object', 'required': ['capacityPlanId', 'scenarioId'], 'properties': {'capacityPlanId': {'type': 'string', 'format': 'uuid'}, 'scenarioId': {'type': 'string', 'format': 'uuid'}}}, 'CapacityEvaluationEventPayload': {'type': 'object', 'required': ['capacityPlanId', 'scenarioId', 'evaluationId', 'status'], 'properties': {'capacityPlanId': {'type': 'string', 'format': 'uuid'}, 'scenarioId': {'type': 'string', 'format': 'uuid'}, 'evaluationId': {'type': 'string', 'format': 'uuid'}, 'status': {'type': 'string', 'enum': ['Completed', 'Failed']}}}, 'Error': {'type': 'object', 'required': ['error', 'contractVersion'], 'properties': {'error': {'type': 'object', 'required': ['code', 'message', 'correlationId'], 'properties': {'code': {'type': 'string'}, 'message': {'type': 'string'}, 'details': {'type': 'object', 'additionalProperties': True}, 'correlationId': {'type': 'string', 'format': 'uuid'}}}, 'contractVersion': {'$ref': '#/components/schemas/ContractVersion'}}}}, 'responses': {'InvalidRequest': {'description': 'Invalid required header, correlation or request payload; no mutation', 'x-error-codes': ['INVALID_CORRELATION_ID', 'INVALID_REQUEST'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'INVALID_CORRELATION_ID', 'message': 'Invalid correlation identifier', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000001'}, 'contractVersion': 'v1'}}}}, 'Unauthenticated': {'description': 'Authentication failed. Application-generated 401 echoes current valid or rejection-only correlation in header and body; a parser-level challenge before application context may omit the correlation header and envelope', 'headers': {'WWW-Authenticate': {'schema': {'type': 'string'}, 'example': 'Bearer'}, 'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'UNAUTHENTICATED', 'message': 'Authentication required', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000001'}, 'contractVersion': 'v1'}}}}, 'Forbidden': {'description': 'Authenticated actor lacks the operation grant', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'FORBIDDEN', 'message': 'Permission denied', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000001'}, 'contractVersion': 'v1'}}}}, 'ReadUnavailable': {'description': 'For GET only, dependency or storage unavailable; no mutation commit outcome is asserted', 'x-error-codes': ['DEPENDENCY_UNAVAILABLE'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'DEPENDENCY_UNAVAILABLE', 'message': 'Dependency unavailable', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000001'}, 'contractVersion': 'v1'}}}}, 'MutationUnavailable': {'description': 'For POST only, known dependency/storage failure or unresolved commit after scoped durable receipt lookup; retry unresolved outcome with the same exact idempotency key', 'x-error-codes': ['DEPENDENCY_UNAVAILABLE', 'COMMIT_RESULT_UNRESOLVED'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'examples': {'dependency': {'value': {'error': {'code': 'DEPENDENCY_UNAVAILABLE', 'message': 'Dependency unavailable', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000001'}, 'contractVersion': 'v1'}}, 'unknownCommit': {'value': {'error': {'code': 'COMMIT_RESULT_UNRESOLVED', 'message': 'Commit result unresolved; retry with the same key', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000001'}, 'contractVersion': 'v1'}}}}}}, 'InvalidConstraintReference': {'description': 'Constraint fixture reference is unknown, stale or mismatched in the resolved scope', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'INVALID_CONSTRAINT_REFERENCE', 'message': 'Constraint reference is invalid', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000001'}, 'contractVersion': 'v1'}}}}, 'UnknownSandopPlan': {'description': 'S&OP plan not found in the resolved tenant/legal-entity scope', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'UNKNOWN_SANDOP_PLAN', 'message': 'S&OP plan not found', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000001'}, 'contractVersion': 'v1'}}}}, 'PlanConflict': {'description': 'An S&OP plan already exists for the requested horizon and demand version', 'x-error-codes': ['SANDOP_PLAN_ALREADY_EXISTS', 'IDEMPOTENCY_KEY_REUSED'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'examples': {'existingBusinessConflict': {'value': {'error': {'code': 'SANDOP_PLAN_ALREADY_EXISTS', 'message': 'S&OP plan already exists for this horizon and demand version', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000002'}, 'contractVersion': 'v1'}}, 'idempotencyKeyReused': {'value': {'error': {'code': 'IDEMPOTENCY_KEY_REUSED', 'message': 'Idempotency key was used with a different valid payload', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000100'}, 'contractVersion': 'v1'}}}}}}, 'PlanStateConflict': {'description': 'S&OP plan state does not allow a new snapshot', 'x-error-codes': ['SANDOP_PLAN_STATE_CONFLICT', 'IDEMPOTENCY_KEY_REUSED'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'examples': {'existingBusinessConflict': {'value': {'error': {'code': 'SANDOP_PLAN_STATE_CONFLICT', 'message': 'S&OP plan state does not allow a new snapshot', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000003'}, 'contractVersion': 'v1'}}, 'idempotencyKeyReused': {'value': {'error': {'code': 'IDEMPOTENCY_KEY_REUSED', 'message': 'Idempotency key was used with a different valid payload', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000100'}, 'contractVersion': 'v1'}}}}}}, 'InvalidDemandReference': {'description': 'Referenced DEMAND plan/version is unknown or not published, or supplied checksum differs from the exact scoped fixture', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'examples': {'unknownOrUnpublished': {'value': {'error': {'code': 'INVALID_DEMAND_REFERENCE', 'message': 'Referenced DEMAND plan version is unknown or not published', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000004'}, 'contractVersion': 'v1'}}, 'checksumMismatch': {'value': {'error': {'code': 'INVALID_DEMAND_REFERENCE', 'message': 'Supplied checksum differs from the exact scoped test fixture', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000104'}, 'contractVersion': 'v1'}}}}}}, 'InvalidSnapshotReference': {'description': 'Snapshot is unknown or does not belong to the S&OP plan', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'INVALID_SNAPSHOT_REFERENCE', 'message': 'Snapshot does not belong to the S&OP plan', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000005'}, 'contractVersion': 'v1'}}}}, 'SignOffConflict': {'description': 'Role has already recorded a decision for this snapshot', 'x-error-codes': ['SIGN_OFF_ALREADY_RECORDED', 'SANDOP_SIGN_OFF_STATE_CONFLICT', 'IDEMPOTENCY_KEY_REUSED'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'examples': {'existingBusinessConflict': {'value': {'error': {'code': 'SIGN_OFF_ALREADY_RECORDED', 'message': 'This role already recorded a decision for the snapshot', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000006'}, 'contractVersion': 'v1'}}, 'idempotencyKeyReused': {'value': {'error': {'code': 'IDEMPOTENCY_KEY_REUSED', 'message': 'Idempotency key was used with a different valid payload', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000100'}, 'contractVersion': 'v1'}}, 'signOffStateConflict': {'value': {'error': {'code': 'SANDOP_SIGN_OFF_STATE_CONFLICT', 'message': 'S&OP plan state does not permit sign-off', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000101'}, 'contractVersion': 'v1'}}}}}}, 'UnknownCapacityPlan': {'description': 'Capacity plan not found in the resolved tenant/legal-entity scope', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'UNKNOWN_CAPACITY_PLAN', 'message': 'Capacity plan not found', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000007'}, 'contractVersion': 'v1'}}}}, 'CapacityPlanConflict': {'description': 'A capacity plan already exists for the requested horizon and demand version', 'x-error-codes': ['CAPACITY_PLAN_ALREADY_EXISTS', 'IDEMPOTENCY_KEY_REUSED'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'examples': {'existingBusinessConflict': {'value': {'error': {'code': 'CAPACITY_PLAN_ALREADY_EXISTS', 'message': 'Capacity plan already exists for this horizon and demand version', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000008'}, 'contractVersion': 'v1'}}, 'idempotencyKeyReused': {'value': {'error': {'code': 'IDEMPOTENCY_KEY_REUSED', 'message': 'Idempotency key was used with a different valid payload', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000100'}, 'contractVersion': 'v1'}}}}}}, 'CapacityPlanStateConflict': {'description': 'Capacity plan state does not allow a new scenario', 'x-error-codes': ['CAPACITY_PLAN_STATE_CONFLICT', 'IDEMPOTENCY_KEY_REUSED'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'examples': {'existingBusinessConflict': {'value': {'error': {'code': 'CAPACITY_PLAN_STATE_CONFLICT', 'message': 'Capacity plan state does not allow a new scenario', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000009'}, 'contractVersion': 'v1'}}, 'idempotencyKeyReused': {'value': {'error': {'code': 'IDEMPOTENCY_KEY_REUSED', 'message': 'Idempotency key was used with a different valid payload', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000100'}, 'contractVersion': 'v1'}}}}}}, 'UnknownCapacityScenario': {'description': 'Capacity scenario not found in the capacity plan', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'UNKNOWN_CAPACITY_SCENARIO', 'message': 'Capacity scenario not found', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000010'}, 'contractVersion': 'v1'}}}}, 'EvaluationConflict': {'description': 'An evaluation is already active for this scenario', 'x-error-codes': ['EVALUATION_ALREADY_ACTIVE', 'IDEMPOTENCY_KEY_REUSED'], 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'examples': {'existingBusinessConflict': {'value': {'error': {'code': 'EVALUATION_ALREADY_ACTIVE', 'message': 'An evaluation is already active for this scenario', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000011'}, 'contractVersion': 'v1'}}, 'idempotencyKeyReused': {'value': {'error': {'code': 'IDEMPOTENCY_KEY_REUSED', 'message': 'Idempotency key was used with a different valid payload', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000100'}, 'contractVersion': 'v1'}}}}}}, 'UnknownCapacityEvaluation': {'description': 'Capacity evaluation not found in the capacity plan', 'headers': {'X-Correlation-Id': {'$ref': '#/components/headers/CorrelationId'}}, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Error'}, 'example': {'error': {'code': 'UNKNOWN_CAPACITY_EVALUATION', 'message': 'Capacity evaluation not found', 'correlationId': 'aaaaaaaa-0000-4000-8000-000000000012'}, 'contractVersion': 'v1'}}}}}}}"
+      }
+    },
+    "refs": {
+      "encounters": 204,
+      "unique": 52
+    },
+    "examples": {
+      "checks": 98,
+      "uniqueValues": 33
+    }
+  },
+  "patches": {
+    "A": {
+      "check": {
+        "command": [
+          "git",
+          "apply",
+          "--unsafe-paths",
+          "--check",
+          "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/publication-proposed.patch"
+        ],
+        "cwd": "/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/sandop-final-ver-A-11x4pa9p",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "apply": {
+        "command": [
+          "git",
+          "apply",
+          "--unsafe-paths",
+          "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01/publication-proposed.patch"
+        ],
+        "cwd": "/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/sandop-final-ver-A-11x4pa9p",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "yamlSha256": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+      "annexSha256": "e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442",
+      "yamlByteEqual": true,
+      "annexByteEqual": true
+    },
+    "B": {
+      "check": {
+        "command": [
+          "git",
+          "apply",
+          "--unsafe-paths",
+          "--check",
+          "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/publication.patch"
+        ],
+        "cwd": "/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/sandop-final-ver-B-j85web2l",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "apply": {
+        "command": [
+          "git",
+          "apply",
+          "--unsafe-paths",
+          "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/publication.patch"
+        ],
+        "cwd": "/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/sandop-final-ver-B-j85web2l",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "yamlSha256": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+      "annexSha256": "78113fa0e4c220b011f6c6334c80a8e2b638acc831e760171d0f0011f4e63d64",
+      "yamlByteEqual": true,
+      "annexByteEqual": true
+    }
+  },
+  "policyMutants": {
+    "evaluation422Removed": "REJECTED",
+    "getUnknownCommitAdded": "REJECTED",
+    "application401CorrelationRemoved": "REJECTED",
+    "keyMaxAdded": "REJECTED",
+    "checksumExampleRemoved": "REJECTED"
+  },
+  "annexOperationIdsPresent": {
+    "A": 12,
+    "B": 12
+  },
+  "parsedR2FinalEqualOutsideThreeInfoKeys": true,
+  "yamlByteIdenticalAcrossPackages": true,
+  "annexDiffLineCount": 61
+}

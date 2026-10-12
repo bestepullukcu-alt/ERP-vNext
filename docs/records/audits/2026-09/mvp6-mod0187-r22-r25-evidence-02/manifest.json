@@ -1,0 +1,38 @@
+{
+  "workPackage": "MVP6-MOD0187-R22-R25-EVIDENCE-02",
+  "status": "writer-complete",
+  "verdict": {
+    "R22": "PASS",
+    "R25": "PARTIAL"
+  },
+  "authority": {
+    "ownerDecisionTimestamp": "2026-09-21T18:14:22.547Z",
+    "mode": "evidence-only"
+  },
+  "source": {
+    "baseline": {
+      "NoOpClaimCommitProbe.cs": "4082bb189256e6bffbec4440913f4fd2544ed79ce88252324cd86007d069a222",
+      "ClaimPersistenceRegistration.cs": "0361088e461cfac00ecf3b34b39ee311a9e58f0b82d51327b82f44ae196752de"
+    },
+    "patch": "d0844d8c8e4b28dc3ab1f1559b6f49c45005567f6f1ea252fca6c51f84f75eca",
+    "target": {
+      "NoOpClaimCommitProbe.cs": "05cb87877bf427e3232fd2a074915a26e4256d9a5c61e357c4d7ab2b8ceef68b",
+      "ClaimPersistenceRegistration.cs": "c4ca2690bb964529cb7d1d2a1265c514c10946f792829d4da821597636761a9c"
+    },
+    "targetSourceManifest": "5cdb54bf022bcda4c8b0befb940aeea045765d1af7249624e99e048f0e4530b8",
+    "programCs": "a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c"
+  },
+  "binary": {
+    "api": "cf7194de59aab991dd1885a15d287f33f738a9f90a4f48318c9312a0c24f2042",
+    "persistence": "5cac5ae8d8d45ba29603c93d317ccd95d4c6988ea752c1c3a24fb33c013ffdc1",
+    "application": "37b4dfdd2d2a7756cc86d61c60e8a7c9b0e750c221264b29dfa9d5e2cc547ee5",
+    "domain": "2bac1106c0415466990983d91b9c1ed7cbe05d12ca4dccfaf1c8a708eace5083"
+  },
+  "evidence": {
+    "processBoundary": "069919b20900eeafbfec3819f3b84d0c2b407bb042aaaafb05976551f5f70dbe",
+    "unknownCommitRerun": "21d69b288a4eee731fa78971fc6ca19dd2faea06f03b6ca52aac69f695902161",
+    "notCommitted251": "6634e02edb5a903b0dd1a900068e184cc0e5638d7c04f59eb00be7fb53871502",
+    "eventualRecovery": "e54e35d4e2f78fafc46c81be8359dc4079989c2661438ecf07a20ead8931b700",
+    "finalDb": "532f11bdb5fab4a24377c7fb187bb10f50f58faefceb67a7c6f4324c4412afa8"
+  }
+}

@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+"""CANDIDATE — NOT APPROVED.  Step 6: redaction filter and permanent-evidence secret scan.
+
+filter : stdin -> stdout, applied to EVERY log / HTTP capture before it is written under the evidence dir.
+scan   : walks the evidence dir (including inside .tar.gz) and fails on any pattern hit OR any exact run-time secret
+         value from <W>/secrets/lane.env.  Must run BEFORE step 9 deletes the secrets file (exact-value scan).
+Patterns cover what SECRET-SCAN.txt in mvp6-carrier-real-auth-e2e-exec-01 scanned for, plus antiforgery and BCrypt.
+"""
+import argparse, io, re, sys, tarfile
+from pathlib import Path
+
+R = "[REDACTED]"
+RULES = [
+  (re.compile(r"eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]*"), R),                    # JWT
+  (re.compile(r"(?im)^(authorization|cookie|set-cookie|requestverificationtoken|x-api-key|x-internal-api-key)\s*:.*$"), r"\1: " + R),
+  (re.compile(r"(?i)(bearer)\s+[A-Za-z0-9._~+/=-]+"), r"\1 " + R),
+  (re.compile(r'(?i)"(access_?token|refresh_?token|id_?token|password|secret|api_?key|internal_?api_?key|client_?secret)"\s*:\s*"[^"]*"'), r'"\1":"' + R + '"'),
+  (re.compile(r'(?i)(name="__RequestVerificationToken"[^>]*value=")[^"]+'), r"\1" + R),
+  (re.compile(r"(?i)(\.AspNetCore\.[A-Za-z0-9._-]+)=[^;\s]+"), r"\1=" + R),
+  (re.compile(r"\$2[abxy]\$\d{2}\$[./A-Za-z0-9]{53}"), R),                                       # BCrypt hash
+  (re.compile(r"mongodb(\+srv)?://[^/@\s]+:[^/@\s]+@"), "mongodb://" + R + "@"),                 # URI credentials
+  (re.compile(r"(?i)(JwtSettings__Secret|FIXTURE_PASSWORD|[A-Z_]*(SECRET|KEY|PASSWORD))=\S+"), r"\1=" + R),
+]
+
+def redact(text, exact=()):
+    for v in exact:
+        if len(v) >= 8: text = text.replace(v, R)
+    for rx, rep in RULES: text = rx.sub(rep, text)
+    return text
+
+def exact_values(ws):
+    p = Path(ws, "secrets/lane.env") if ws else None
+    return [l.split("=", 1)[1] for l in p.read_text().splitlines() if "=" in l] if p and p.exists() else []
+
+def scan(root, exact):
+    hits = []
+    def check(name, data):
+        t = data.decode("utf-8", "ignore")
+        for v in exact:
+            if len(v) >= 8 and v in t: hits.append(f"{name}\texact-runtime-secret")
+        for rx, _ in RULES:
+            for m in rx.finditer(t):
+                if R not in m.group(0): hits.append(f"{name}\t{rx.pattern[:40]}")
+    for f in Path(root).rglob("*"):
+        if not f.is_file(): continue
+        if f.name.endswith((".tar.gz", ".tgz")):
+            with tarfile.open(f) as t:
+                for m in t.getmembers():
+                    if m.isfile(): check(f"{f}::{m.name}", t.extractfile(m).read())
+        elif f.suffix.lower() != ".png": check(str(f), f.read_bytes())
+    return hits
+
+if __name__ == "__main__":
+    a = argparse.ArgumentParser(); a.add_argument("mode", choices=["filter", "scan"])
+    a.add_argument("--workspace"); a.add_argument("--root"); a.add_argument("--out")
+    o = a.parse_args(); ex = exact_values(o.workspace)
+    if o.mode == "filter":
+        sys.stdout.write(redact(sys.stdin.read(), ex))
+    else:
+        if not ex: sys.exit("FAIL exact-value scan requires the live secrets file (run before cleanup)")
+        hits = scan(o.root, ex)
+        Path(o.out).write_text(("PASS\n" if not hits else "FAIL\n") + f"exact_values_checked\t{len(ex)}\n" +
+                               "".join(f"HIT\t{h}\n" for h in hits))   # hit lines carry file + rule only, never the value
+        sys.exit(1 if hits else 0)

@@ -1,0 +1,75 @@
+@using Diten.Web.Views.SupplyChain.SandopPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SandopPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Pack §23.2: every S&OP .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+    Layout = "_LayoutTenantShell";
+}
+
+@* Create-only offcanvas (pack §23.6, CreateSandopPlanRequest, form_field_count 5 → GoldenReferenceSlim). No edit mode.
+   No client tightening (no HTML validation attributes, no trim). index.js mirrors the schema only
+   (required = non-empty, horizonEnd ≥ horizonStart) and sends every value exactly as typed. Date inputs produce the
+   schema's yyyy-MM-dd form (README A4). *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreatePlan" aria-labelledby="offcanvasCreatePlanLabel">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="offcanvasCreatePlanLabel" class="offcanvas-title mb-0">@Localizer["FormTitleCreate"]</h5>
+            <small class="text-muted d-block" id="createRequiredProgress" aria-live="polite"></small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formCreatePlanAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+
+        <form id="formCreatePlan" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="planName" class="form-label fw-medium">@Localizer["PlanName"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-detail diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="planName" class="form-control js-create-required" autocomplete="off" />
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <label for="planHorizonStart" class="form-label fw-medium">@Localizer["HorizonStart"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                        <input type="date" id="planHorizonStart" class="form-control js-create-required" dir="ltr" />
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <label for="planHorizonEnd" class="form-label fw-medium">@Localizer["HorizonEnd"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-calendar-check diten-field-icon" aria-hidden="true"></i>
+                        <input type="date" id="planHorizonEnd" class="form-control js-create-required" dir="ltr" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="planDemandPlanId" class="form-label fw-medium">@Localizer["DemandPlanId"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-line-chart diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="planDemandPlanId" class="form-control js-create-required" dir="ltr" autocomplete="off" spellcheck="false"
+                               aria-describedby="planDemandReferenceHelp" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="planDemandPlanVersion" class="form-label fw-medium">@Localizer["DemandPlanVersion"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-git-commit diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="planDemandPlanVersion" class="form-control js-create-required" dir="ltr" autocomplete="off" spellcheck="false"
+                               aria-describedby="planDemandReferenceHelp" />
+                    </div>
+                    <div id="planDemandReferenceHelp" class="form-text">@Localizer["DemandReferenceHelp"]</div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSubmitCreatePlan" class="btn btn-primary">@Localizer["CreatePlan"]</button>
+    </div>
+</div>

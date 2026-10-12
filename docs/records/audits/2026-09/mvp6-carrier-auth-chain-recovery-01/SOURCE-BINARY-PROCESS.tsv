@@ -1,0 +1,4 @@
+service	source_binding	build_result	binary_sha256	process_evidence	runtime_result
+Auth	BUILD-SOURCE-MANIFEST.tsv 3333/3333	auth-build.exit=0	8f737c5cbf3f3adec8ec56e97aa72238f379f1231dc7ea0aa24113bc17cb5d4b	evidence.tar.gz::raw/checks/live-processes.txt; raw/checks/live-process-cwds.tsv	HTTP login/refresh and negative cases executed on 127.0.0.1:5556
+Platform	BUILD-SOURCE-MANIFEST.tsv 3333/3333	platform-build.exit=0	22a469226c797d9546257e9cb7c988e69b70eb548001f4787f46a271ab1a7c1b	evidence.tar.gz::raw/checks/platform-process-evidence.tsv; raw/runtime/platform-attempt3-health.body	Internal login-settings and tenant/LE resolver chain executed on 127.0.0.1:5557
+MDM	BUILD-SOURCE-MANIFEST.tsv 3333/3333	mdm-build.exit=0	1edf6b0f41603ba64f0d0a5411a0ceaa60bdf8efd3e58efb7f6a97f0c5f68c0c	evidence.tar.gz::raw/checks/live-processes.txt; raw/checks/live-process-cwds.tsv	Reference-validation endpoint executed on 127.0.0.1:5559; health 200

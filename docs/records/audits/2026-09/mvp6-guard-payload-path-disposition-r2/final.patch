@@ -1,0 +1,180 @@
+diff --git a/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs b/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+--- a/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
++++ b/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+@@ -233,7 +233,14 @@
+         foreach (var seal in record.SealedInputs)
+         {
+             Assert.True(paths.Add(seal.Path), "duplicate sealed input");
+-            Assert.StartsWith("docs/records/", seal.Path);
++            // Two immutable recovery snapshots only; all other paths retain the records requirement.
++            var exactRecoverySnapshot = seal.Kind == "historical-data" &&
++                ((seal.Path == "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json" &&
++                  seal.Sha256 == "a70f79d7892d83ddbe772653a06cb009ebfe7e2b72549d11dd956f72ab9f83fe") ||
++                 (seal.Path == "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json" &&
++                  seal.Sha256 == "74e31359aaeb662645d224d9602cb801f8f81a433cc75cf09840d852fd2e878e"));
++            Assert.True(seal.Path.StartsWith("docs/records/", StringComparison.Ordinal) ||
++                exactRecoverySnapshot, "sealed input must be in records or an exact approved recovery snapshot");
+             ReadPinned(root, seal.Path, seal.Sha256);
+             Assert.StartsWith("docs/records/", seal.ProvenancePath);
+             var proof = Encoding.UTF8.GetString(ReadPinned(root, seal.ProvenancePath, seal.ProvenanceSha256))
+@@ -283,7 +290,12 @@
+             var paths = Record["canonicalTargets"]!.AsArray().Select(x => x!["path"]!.GetValue<string>())
+                 .Concat(Record["sealedInputs"]!.AsArray().Select(x => x!["path"]!.GetValue<string>()))
+                 .Concat(Record["sealedInputs"]!.AsArray().Select(x => x!["provenancePath"]!.GetValue<string>())).Distinct();
+-            foreach (var path in paths) Write(path, File.ReadAllText(Path.Combine(source, path)));
++            foreach (var path in paths)
++            {
++                var destination = Path.Combine(Root, path);
++                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
++                File.Copy(Path.Combine(source, path), destination);
++            }
+             Write("witness.cs", "// docs/reference/architecture/\n");
+             Write("witness.ps1", "# docs/guides/operations/\n");
+             Approve();
+@@ -350,6 +362,9 @@
+     [InlineData("traversal")]
+     [InlineData("wildcard")]
+     [InlineData("symlink")]
++    [InlineData("roadmap-neighbor")]
++    [InlineData("roadmap-wrong-hash")]
++    [InlineData("roadmap-active-tool")]
+     [InlineData("empty-inputs")]
+     [InlineData("missing-cs-presence")]
+     [InlineData("missing-ps1-presence")]
+@@ -405,6 +420,18 @@
+                 var target = Path.Combine(f.Root, f.Target);
+                 var contents = File.ReadAllText(target); File.Delete(target);
+                 f.Write("linked-target.txt", contents); File.CreateSymbolicLink(target, Path.Combine(f.Root, "linked-target.txt")); break;
++            case "roadmap-neighbor":
++            case "roadmap-wrong-hash":
++            case "roadmap-active-tool":
++                var recovery = f.Record["sealedInputs"]!.AsArray().First(x =>
++                    x!["path"]!.GetValue<string>().StartsWith("docs/roadmap/", StringComparison.Ordinal))!;
++                if (scenario == "roadmap-neighbor") recovery["path"] = "docs/roadmap/plans/unapproved-neighbor.json";
++                if (scenario == "roadmap-wrong-hash") recovery["sha256"] = new string('0', 64);
++                if (scenario == "roadmap-active-tool") recovery["kind"] = "active-tool";
++                f.Approve();
++                var pathError = Assert.ThrowsAny<Exception>(() => ReadAuthority(f.Root, syntheticFixture: true));
++                Assert.Contains("sealed input must be in records or an exact approved recovery snapshot", pathError.Message);
++                return;
+             case "empty-inputs":
+                 Directory.Delete(f.Root, true); Directory.CreateDirectory(f.Root); break;
+             case "missing-cs-presence": File.Delete(Path.Combine(f.Root, "witness.cs")); break;
+diff --git a/.antigravity/rules/docs-organization.md b/.antigravity/rules/docs-organization.md
+--- a/.antigravity/rules/docs-organization.md
++++ b/.antigravity/rules/docs-organization.md
+@@ -175,3 +175,14 @@
+ files, changed evidence, stale dispositions and missing/invalid approval records fail closed.
+ Any new path/content requires a newly reviewed disposition; an existing record is not a waiver
+ for future changes. Existing immutable evidence/manifests/contracts remain byte-identical.
++
++## R2 exact recovery snapshot disposition (requires new owner approval)
++
++Only the following historical-data seals may remain outside records:
++- `docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json`, SHA256 `a70f79d7892d83ddbe772653a06cb009ebfe7e2b72549d11dd956f72ab9f83fe`.
++- `docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json`, SHA256 `74e31359aaeb662645d224d9602cb801f8f81a433cc75cf09840d852fd2e878e`.
++
++These are exact immutable snapshots, not a roadmap prefix exemption. Existing
++records-only provenance, approved payload binding, source hash, empty historical
++targets, inventory consumption and every other fail-closed check still apply.
++Changing either path or byte content requires a new reviewed rule and payload.
+diff --git a/docs/reference/architecture/docs-path-authority.json b/docs/reference/architecture/docs-path-authority.json
+--- a/docs/reference/architecture/docs-path-authority.json
++++ b/docs/reference/architecture/docs-path-authority.json
+@@ -1,7 +1,10 @@
+ {
+   "schemaVersion": 1,
+-  "status": "APPROVED",
+-  "decision": {"path": "docs/records/decisions/2026-09/mvp6-loads-docs-path-owner-binding-01.json", "sha256": "170ea3c5e47af103aeeceda471606d60fc31e69bff233279cb9ecd4cd6c805e7"},
++  "status": "UNAPPROVED",
++  "decision": {
++    "path": "docs/records/decisions/2026-09/mvp6-guard-payload-path-disposition-r2.json",
++    "sha256": "7ebb6e590ef9aa511d3530454f040958e883a3cdba9d0d676c5a3824f3bed390"
++  },
+   "canonicalTargets": [
+     {
+       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+@@ -178,6 +181,51 @@
+       "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+       "provenanceLine": 72,
+       "targets": []
++    },
++    {
++      "path": "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json",
++      "sha256": "a70f79d7892d83ddbe772653a06cb009ebfe7e2b72549d11dd956f72ab9f83fe",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 3,
++      "targets": []
++    },
++    {
++      "path": "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json",
++      "sha256": "74e31359aaeb662645d224d9602cb801f8f81a433cc75cf09840d852fd2e878e",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 4,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mod-0185-dev-02/changed-files.json",
++      "sha256": "f9eb90fa8fdf341f92540cbb12acb0f281be504be98ce612f93530d9efd4ddf0",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 5,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mod-0185-dev-03/changed-files.json",
++      "sha256": "f3343d7f963841988e55a4a20a51524fc8dcc2c87a2d6f046f1cf5968ba8316a",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 6,
++      "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json",
++      "sha256": "9557f3499533dbcb9477e1f16d5f455e495702e7ace10e13d2bee8299bbe68bb",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
++      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
++      "provenanceLine": 7,
++      "targets": []
+     }
+   ]
+ }
+diff --git a/docs/records/decisions/2026-09/mvp6-guard-payload-path-disposition-r2.json b/docs/records/decisions/2026-09/mvp6-guard-payload-path-disposition-r2.json
+new file mode 100644
+--- /dev/null
++++ b/docs/records/decisions/2026-09/mvp6-guard-payload-path-disposition-r2.json
+@@ -0,0 +1,7 @@
++{
++  "kind": "DOCS_PATH_OWNER_DECISION",
++  "status": "UNAPPROVED",
++  "decisionId": "MVP6-GUARD-PAYLOAD-PATH-DISPOSITION-R2",
++  "approvedBy": "PENDING-EXPLICIT-OWNER-CONSENT",
++  "payloadSha256": "b1dd34f588e360b92041275f12b6f5b1f996b7fb1ef3a207cb3f3c91e30364c1"
++}
+diff --git a/docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json b/docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json.archived.txt
+similarity index 100%
+rename from docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json
+rename to docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json.archived.txt
+diff --git a/docs/records/audits/2026-09/mvp6-guard-payload-path-disposition-r2/relocation.md b/docs/records/audits/2026-09/mvp6-guard-payload-path-disposition-r2/relocation.md
+new file mode 100644
+--- /dev/null
++++ b/docs/records/audits/2026-09/mvp6-guard-payload-path-disposition-r2/relocation.md
+@@ -0,0 +1,11 @@
++# Working artifact relocation — R2 candidate
++
++Original: `docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json`
++Archive: `docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json.archived.txt`
++SHA256 (both): `c39d01c4f19fd8a18a40cb86788c8a34c609cf44c8fe0127bfa988fee86e4c6b`
++
++Only the unapproved working artifact moves. It is not sealed or activated.
++Historical manifest.json and prior audit/patch references describe the original
++snapshot and remain byte-identical; resolve them through this relocation record.
++No executable/current working reference to this artifact was found outside
++historical audit outputs. Future working references use the archive path.
