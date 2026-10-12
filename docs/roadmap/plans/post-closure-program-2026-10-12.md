@@ -183,3 +183,58 @@ Ayrıca, toplantı türündeki üç işaret bugün hiçbir şey yapmıyor: "kali
   6. Üst sınır: 20 görev.
 - **UI önerisi:** genel çoklu seçimi geri getirmek yerine inceleme toplantısı penceresine "başka görevler ekle" seçicisi. Varsayılan liste: aynı kişinin ya da ekibimin açık görevleri. Çoklu seçim + toplu işlem çubuğu ayrı ve daha büyük iş.
 - **Büyüklük:** orta (2–3 prompt), §5.2'nin ilk satırından sonra.
+
+### 5.6 Yöneticinin cevabı: Toplantı Oluşturma Kataloğu (2026-10-12)
+
+Yönetici değerlendirmemize kataloğun yeni bir sürümüyle cevap verdi: 23 ana tür altında 46 alt tür.
+- **Alanlar:** başlık şablonu, tür / alt tür, varsayılan aksiyon görev türü, süre, tekrar, katılımcılar, yer / bağlantı, açıklama şablonu, devamı olduğu toplantı kuralı.
+- **Ekranda doldurma:** başlık, tür, yer, açıklama ve katılımcılar şablondan gelir. Başlangıç kullanıcının seçimi; bitiş = başlangıç + süre.
+
+**Önerilerimizden kabul edilenler:**
+- iki liste birleşti;
+- Yönetimin Gözden Geçirmesi, Kalite Kurulu, Sapma / CAPA Değerlendirmesi, Değişiklik Kontrol Kurulu geri geldi;
+- aksiyon türleri Eylül'ün birim bazlı kodları oldu;
+- Mülakat çıktı.
+
+**Bizim modele oturuşu:**
+- Alt tür = bugünkü `MeetingType` satırı; ana tür = yeni bir gruplama alanı (seçicide gruplu görünür).
+- Yeni alanlar: başlık şablonu, varsayılan süre, varsayılan tekrar, varsayılan yer, varsayılan katılımcılar, açıklama şablonu, devamı olduğu toplantı kuralı.
+- Kalanlar: gündem şablonu, varsayılan aksiyon türü, kalite kaydı, e-imza, katılım zorunlu. Eklenen: gizli.
+
+**Eksik ya da düzeltilmesi gerekenler:**
+1. **Bu katalogda gündem şablonu ve kalite / e-imza / katılım / gizlilik sütunları yok.** Önceki iki listede vardı. Kalmalı: gündem satırları önceki listelerden alınır; işaretleri QA doldurur.
+2. **Katılımcılar rol olarak yazılmış** ("CEO, Directors", "QA, SMEs").
+   - Otomatik doldurmak için her rol bir organizasyon pozisyonuna bağlanır; pozisyonda kim varsa o davet edilir.
+   - "Employee", "Individual Manager" gibi kişiye göre değişen roller toplantı açılırken seçilir.
+   - Dev kiracısında pozisyon verisi az (BL-356).
+3. **Kodlar.** Üç kod Eylül kataloğundaki 113 görev türünde YOK: `COM-ACTION`, `FIN-ACTION`, `ITG-ACTION`. `BCM-TEST` "iş sürekliliği tatbikatı"; gerçek kriz aksiyonu için yanlış tür.
+4. **İkili değerler.** 5 satırda iki aksiyon türü var (ör. "CORP-ACTION / MFG-ACTION"). Alan tek varsayılan tutar; biri seçilir, kullanıcı görev açarken değiştirebilir.
+5. **Tekrar değerleri.**
+   - "Monthly / Quarterly" gibi ikililerden biri varsayılan seçilir.
+   - "As needed", "Per release", "Before launch", "After implementation", "Per audit" tekrar değil, tek seferlik.
+   - "Daily" için seri sıklığına günlük eklenmeli. Bugün yok: `MeetingSeriesFrequency` = haftalık / aylık / üç aylık / yıllık.
+6. **Başlık şablonundaki yer tutucular.**
+   - Tarihten gelenler kendiliğinden dolar: `{Period}`, `{Week}`, `{Month}`, `{Year}`, `{Date}`, `{Quarter}`. Seride her toplantı için ayrı hesaplanır.
+   - Diğerlerini (`{Manager}`, `{Project}`, `{Topic}`, `{Record}`…) kullanıcı kaydetmeden önce doldurur.
+7. **"Devamı olduğu toplantı kuralı"** alan olarak var ama değerleri verilmemiş. Öneri: "yok / serinin bir önceki toplantısı / kullanıcı seçer". Tekrarlayan türlerde varsayılan "bir önceki"; açık aksiyonlar zaten kendiliğinden taşınıyor.
+8. **Listeden düşenler:**
+   - Tedarikçi Değerlendirmesi (GxP kalite toplantısı);
+   - İSG Kurulu (50+ çalışanlı işyerinde yasal zorunluluk, 6331 sayılı Kanun);
+   - Bilgi Güvenliği Olayı Değerlendirmesi (ISO 27001);
+   - Eğitim Toplantısı;
+   - Satış ve Operasyon Planlama.
+   - Bilerek mi çıkarıldı, sorulmalı.
+9. **İki birebir türü kaldı:** Operasyonel Birebir (iş takibi) ve İK Birebir (kişisel). Davranış farkı gizlilik olmalı: İK Birebir gizli.
+10. **Ekran eşlemesinde gündem ve tekrar yok.** İkisi de oluşturma formunda dolmalı (§5.5 madde 1).
+
+**Yapılacaklar (toplantı adımında):**
+| İş | Büyüklük |
+|---|---|
+| Tür alanları (ana tür, şablonlar, süre, tekrar, yer, katılımcı pozisyonları, kural, gizli) + tür ekranı, 7 dil | orta |
+| Oluşturma formunda otomatik doldurma: başlık yer tutucuları, bitiş = başlangıç + süre, pozisyondan katılımcı, gündem, tekrar | orta |
+| Seri sıklığına günlük | küçük |
+| Kataloğun tek seferlik yüklenmesi (46 satır). Önce görev türü kataloğu yüklenmeli; kodlar ona bağlı. | küçük |
+
+Toplam yaklaşık 6–9 prompt, 4–6 iş günü. §5.2 (tutanak eksikleri) ve §5.5 ile birlikte planlanır.
+
+**Yöneticinin "haftalık yönetici gözden geçirmesi" için seçtiği satır:** Operasyonel Birebir, haftalık, 30 dk, `CORP-ACTION`. Uygun. Çoklu görev incelemesi (§5.5 madde 2) tam bu toplantıya oturur: gündeme kişinin açık / geciken görevleri gelir, her birine ayrı sonuç yazılır.
