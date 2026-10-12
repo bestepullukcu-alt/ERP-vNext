@@ -222,4 +222,71 @@
   <data name="ViewMonth" xml:space="preserve"><value>Mes</value></data>
   <data name="TargetsHeading" xml:space="preserve"><value>Objetivos</value></data>
   <data name="MapPlaceholder" xml:space="preserve"><value>vista del mapa</value></data>
+  <!-- WP-VW-W3 (WEB-a) — start the visit (E3), in_progress -->
+  <data name="Status_in_progress" xml:space="preserve"><value>En curso</value></data>
+  <data name="AlertTitle_in_progress" xml:space="preserve"><value>En curso · {0} min</value></data>
+  <data name="AlertText_in_progress" xml:space="preserve"><value>Iniciada a las {1} (hora del servidor).</value></data>
+  <data name="AlertText_today_start" xml:space="preserve"><value>Al llegar a la institución, inicie la visita; la presentación se abre tras el paso de evidencias.</value></data>
+  <data name="CardLiveMinutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Action_start" xml:space="preserve"><value>Iniciar visita</value></data>
+  <data name="Action_presentation" xml:space="preserve"><value>Volver a la presentación</value></data>
+  <data name="Action_finish" xml:space="preserve"><value>Finalizar visita</value></data>
+  <data name="E3Required" xml:space="preserve"><value>obligatorio</value></data>
+  <data name="E3Optional" xml:space="preserve"><value>opcional</value></data>
+  <data name="E3Webcam" xml:space="preserve"><value>Cámara web</value></data>
+  <data name="E3CameraPhone" xml:space="preserve"><value>Cámara</value></data>
+  <data name="E3Missing" xml:space="preserve"><value>Falta: {0}</value></data>
+  <data name="E3Missing_photo" xml:space="preserve"><value>foto</value></data>
+  <data name="E3Missing_location" xml:space="preserve"><value>ubicación</value></data>
+  <data name="E3HintReady" xml:space="preserve"><value>La hora de inicio la toma el servidor.</value></data>
+  <data name="Loc_pending" xml:space="preserve"><value>Obteniendo ubicación…</value></data>
+  <data name="Loc_ok" xml:space="preserve"><value>Ubicación obtenida</value></data>
+  <data name="Loc_okDetail" xml:space="preserve"><value>Precisión ±{0} m · el servidor mide la distancia a la institución.</value></data>
+  <data name="Loc_inaccurate" xml:space="preserve"><value>Precisión baja</value></data>
+  <data name="Loc_inaccurateDetail" xml:space="preserve"><value>±{0} m; se aceptan como máximo {1} m. Inténtelo de nuevo al aire libre.</value></data>
+  <data name="Loc_denied" xml:space="preserve"><value>Permiso denegado</value></data>
+  <data name="Loc_deniedDetail" xml:space="preserve"><value>El navegador denegó el permiso de ubicación. Permítalo desde la barra de direcciones e inténtelo de nuevo.</value></data>
+  <data name="Loc_unavailable" xml:space="preserve"><value>Ubicación no disponible</value></data>
+  <data name="Loc_unavailableDetail" xml:space="preserve"><value>El dispositivo no pudo determinar su posición. Compruebe que la ubicación esté activada e inténtelo de nuevo.</value></data>
+  <data name="Loc_timeout" xml:space="preserve"><value>Tiempo agotado</value></data>
+  <data name="Loc_timeoutDetail" xml:space="preserve"><value>La ubicación no llegó a tiempo. Inténtelo de nuevo.</value></data>
+  <data name="Loc_requiredNote" xml:space="preserve"><value>La ubicación es obligatoria: podrá iniciar cuando esté cerca de la institución.</value></data>
+  <data name="Loc_requiredMissing" xml:space="preserve"><value>La ubicación es obligatoria aquí: la visita no puede iniciarse sin ella.</value></data>
+  <data name="Loc_infoNote" xml:space="preserve"><value>Se registra como información; su responsable lo ve.</value></data>
+  <data name="Cam_denied" xml:space="preserve"><value>Se denegó el permiso de la cámara. Permítalo desde la barra de direcciones o use Subir archivo.</value></data>
+  <data name="Cam_unavailable" xml:space="preserve"><value>No se encontró ninguna cámara. Use Subir archivo.</value></data>
+  <data name="Cam_failed" xml:space="preserve"><value>No se pudo abrir la cámara. Use Subir archivo.</value></data>
+  <data name="Photo_invalid" xml:space="preserve"><value>No se pudo leer la foto. Elija un JPEG o PNG.</value></data>
+  <data name="Photo_tooLarge" xml:space="preserve"><value>La foto es demasiado grande. Elija otra.</value></data>
+  <data name="UploadFailed" xml:space="preserve"><value>No se pudo enviar. Compruebe su conexión e inténtelo de nuevo.</value></data>
+  <data name="DistanceMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="DistanceKm" xml:space="preserve"><value>{0} km</value></data>
+  <data name="StartErr_visit_not_today" xml:space="preserve"><value>Esta visita solo puede iniciarse en su propio día.</value></data>
+  <data name="StartErr_visit_not_confirmed" xml:space="preserve"><value>La semana aún no está aprobada; apruébela primero.</value></data>
+  <data name="StartErr_visit_already_started" xml:space="preserve"><value>Esta visita ya se ha iniciado.</value></data>
+  <data name="StartErr_visit_already_reported" xml:space="preserve"><value>Esta visita ya tiene un informe.</value></data>
+  <data name="StartErr_visit_location_required" xml:space="preserve"><value>La ubicación es obligatoria: permita la ubicación e inténtelo de nuevo.</value></data>
+  <data name="StartErr_visit_location_too_far" xml:space="preserve"><value>Está a {0} de la institución.</value></data>
+  <data name="StartErr_visit_location_inaccurate" xml:space="preserve"><value>Su ubicación no es lo bastante precisa. Inténtelo de nuevo al aire libre.</value></data>
+  <data name="StartErr_visit_account_location_unknown" xml:space="preserve"><value>Se desconoce la ubicación de la institución; la visita no puede verificarse. Avise a su responsable.</value></data>
+  <data name="StartErr_visit_photo_required" xml:space="preserve"><value>Se necesita una foto para iniciar.</value></data>
+  <data name="StartErr_visit_photo_invalid" xml:space="preserve"><value>La foto no fue aceptada. Tome otra.</value></data>
+  <data name="StartErr_visit_capture_invalid" xml:space="preserve"><value>Los datos de inicio no son válidos. Cierre la ventana e inténtelo de nuevo.</value></data>
+  <data name="StartErr_visit_evidence_store_unavailable" xml:space="preserve"><value>El almacén de evidencias no está disponible ahora. Inténtelo de nuevo en breve.</value></data>
+  <data name="StartErr_visit_execution_not_found" xml:space="preserve"><value>No se encontró esta visita.</value></data>
+  <data name="StartErr_visit_execution_concurrency_conflict" xml:space="preserve"><value>La visita cambió mientras tanto. Actualice e inténtelo de nuevo.</value></data>
+  <data name="E3Title" xml:space="preserve"><value>Iniciar visita</value></data>
+  <data name="E3Photo" xml:space="preserve"><value>Foto</value></data>
+  <data name="E3Upload" xml:space="preserve"><value>Subir archivo</value></data>
+  <data name="E3Shutter" xml:space="preserve"><value>Tomar foto</value></data>
+  <data name="E3PhotoTaken" xml:space="preserve"><value>Foto tomada</value></data>
+  <data name="E3Retake" xml:space="preserve"><value>Repetir</value></data>
+  <data name="E3Kvkk" xml:space="preserve"><value>Entrada de la institución o sala de espera. No fotografíe la cara del médico ni de los pacientes (protección de datos).</value></data>
+  <data name="E3LocationTime" xml:space="preserve"><value>Ubicación y hora</value></data>
+  <data name="E3Location" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="E3Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="E3StartLabel" xml:space="preserve"><value>Inicio</value></data>
+  <data name="E3StartValue" xml:space="preserve"><value>al iniciar · hora del servidor</value></data>
+  <data name="E3Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="E3Begin" xml:space="preserve"><value>Iniciar presentación</value></data>
 </root>

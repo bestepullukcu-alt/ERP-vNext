@@ -17,6 +17,9 @@ namespace Diten.Web.Controllers.CRM;
 /// <c>crm.visit-report.read</c> + <c>crm.visit-plan.read</c>; cancel / unplanned <c>crm.planned-visit.manage</c>; not done /
 /// reschedule (outcome + submit) <c>crm.visit-report.record</c> + <c>crm.planned-visit.manage</c>; approve / reopen a
 /// week <c>crm.visit-plan.apply</c> + <c>crm.planned-visit.manage</c>; the doctor search <c>crm.contact.read</c>.</para>
+/// <para>WP-VW-W3 (WEB-a) — the visit execution: its contract <c>crm.visit-execution.read</c>; the start (multipart: the
+/// photo + the position, STREAMED through, never buffered here) <c>crm.visit-execution.record</c>. The CRM checks the
+/// ownership, the day, the setting and the distance; the instant is the server's.</para>
 /// </summary>
 [Authorize]
 [Route("CRM/VisitWorkspace")]
@@ -32,10 +35,18 @@ public sealed class VisitWorkspaceController : Controller
     /// <summary>WP-VW-W2 (WEB-b) — Plan mode writes through the Visit Planning session update (its generate key).</summary>
     public const string VisitPlanGenerate = "crm.visit-plan.generate";
 
+    /// <summary>WP-VW-W3 (WEB-a) — the visit execution keys (Platform CrmManifestProvider; no seed / grant here).</summary>
+    public const string VisitExecutionRead = "crm.visit-execution.read";
+    public const string VisitExecutionRecord = "crm.visit-execution.record";
+
+    /// <summary>The CRM's start ceiling: the 10 MB evidence plus the multipart envelope (VisitExecutionController).</summary>
+    public const long MaxStartBytes = 11L * 1024 * 1024;
+
     private static readonly string[] WorkspaceRead = [VisitReportRead, VisitPlanRead];
     private static readonly string[] RecordKeys = [VisitReportRecord, PlannedVisitManage];
     private static readonly string[] ApplyKeys = [VisitPlanApply, PlannedVisitManage];
     private static readonly string[] PlanKeys = [VisitPlanRead, VisitPlanGenerate];
+    private static readonly string[] ExecutionKeys = [VisitExecutionRead, VisitExecutionRecord];
 
     private const string ViewRoot = "~/Views/CRM/VisitWorkspace";
 
@@ -64,7 +75,8 @@ public sealed class VisitWorkspaceController : Controller
             CanRecord = HasAll(RecordKeys),
             CanApplyWeek = HasAll(ApplyKeys),
             CanSearchContacts = HasAll(ContactRead),
-            CanPlan = HasAll(PlanKeys)
+            CanPlan = HasAll(PlanKeys),
+            CanExecute = HasAll(ExecutionKeys)
         });
 
     // ---------------- workspace reads ----------------
@@ -150,6 +162,44 @@ public sealed class VisitWorkspaceController : Controller
             $"/api/crm/visit-plan/sessions/{planningSessionId}/weeks/{Uri.EscapeDataString(weekStart)}/reopen",
             ct, ApplyKeys);
 
+    // ---------------- WP-VW-W3 (WEB-a) — the visit execution ----------------
+
+    /// <summary>The execution contract: the tenant's evidence setting (policy), the codes, the limits.</summary>
+    [HttpGet("api/execution/contract")]
+    public Task<IActionResult> ExecutionContract(CancellationToken ct)
+        => ProxyAsync(HttpMethod.Get, "/api/crm/visit-execution/contract", null, ct, VisitExecutionRead);
+
+    /// <summary>Start the visit: multipart/form-data (plannedVisitId, kind, latitude / longitude / accuracyMeters or
+    /// locationError, photo, photoCapturedAt) streamed to the CRM as it came (the boundary kept). Anything but
+    /// multipart is refused here; the CRM answers the rest (409 / 400 / 503 with its codes).</summary>
+    [HttpPost("api/execution/start")]
+    [RequestSizeLimit(MaxStartBytes)]
+    public async Task<IActionResult> StartVisit(CancellationToken ct)
+    {
+        if (!HasAll(VisitExecutionRecord))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Permission denied." });
+        }
+
+        var contentType = Request.ContentType;
+        if (string.IsNullOrWhiteSpace(contentType)
+            || !contentType.StartsWith("multipart/form-data", StringComparison.OrdinalIgnoreCase)
+            || !MediaTypeHeaderValue.TryParse(contentType, out var mediaType))
+        {
+            return BadRequest(new { errors = new[] { "multipart/form-data is required.", "visit_capture_invalid" } });
+        }
+
+        var content = new StreamContent(Request.Body);
+        content.Headers.ContentType = mediaType;
+        if (Request.ContentLength is { } length)
+        {
+            content.Headers.ContentLength = length;
+        }
+
+        var response = await SendGatewayAsync(HttpMethod.Post, "/api/crm/visit-execution/start", content, ct);
+        return await ToProxyResultAsync(response, ct);
+    }
+
     // ---------------- proxy helpers ----------------
 
     /// <summary>Static, so MVC never treats it as an action: does the JSON body say <c>unplanned: true</c>?</summary>
@@ -202,8 +252,15 @@ public sealed class VisitWorkspaceController : Controller
         return string.IsNullOrWhiteSpace(body) ? null : body;
     }
 
-    private async Task<HttpResponseMessage?> SendGatewayAsync(
+    private Task<HttpResponseMessage?> SendGatewayAsync(
         HttpMethod method, string path, string? rawBody, CancellationToken ct)
+        => SendGatewayAsync(method, path,
+            rawBody is null ? null : new StringContent(rawBody, Encoding.UTF8, "application/json"), ct);
+
+    /// <summary>WP-VW-W3 — the one gateway send: the bearer, the tenant, the page language, any content (JSON or a
+    /// streamed multipart). The content is owned (and disposed) by the request.</summary>
+    private async Task<HttpResponseMessage?> SendGatewayAsync(
+        HttpMethod method, string path, HttpContent? content, CancellationToken ct)
     {
         try
         {
@@ -229,9 +286,9 @@ public sealed class VisitWorkspaceController : Controller
                 request.Headers.TryAddWithoutValidation("Accept-Language", language);
             }
 
-            if (rawBody is not null)
+            if (content is not null)
             {
-                request.Content = new StringContent(rawBody, Encoding.UTF8, "application/json");
+                request.Content = content;
             }
 
             return await _httpClient.SendAsync(request, ct);

@@ -222,4 +222,71 @@
   <data name="ViewMonth" xml:space="preserve"><value>شهر</value></data>
   <data name="TargetsHeading" xml:space="preserve"><value>الأهداف</value></data>
   <data name="MapPlaceholder" xml:space="preserve"><value>معاينة الخريطة</value></data>
+  <!-- WP-VW-W3 (WEB-a) — start the visit (E3), in_progress -->
+  <data name="Status_in_progress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="AlertTitle_in_progress" xml:space="preserve"><value>قيد التنفيذ · {0} د</value></data>
+  <data name="AlertText_in_progress" xml:space="preserve"><value>بدأت الساعة {1} (توقيت الخادم).</value></data>
+  <data name="AlertText_today_start" xml:space="preserve"><value>عند وصولك إلى المؤسسة ابدأ الزيارة؛ يُفتح العرض بعد خطوة الإثبات.</value></data>
+  <data name="CardLiveMinutes" xml:space="preserve"><value>{0} د</value></data>
+  <data name="Action_start" xml:space="preserve"><value>بدء الزيارة</value></data>
+  <data name="Action_presentation" xml:space="preserve"><value>العودة إلى العرض</value></data>
+  <data name="Action_finish" xml:space="preserve"><value>إنهاء الزيارة</value></data>
+  <data name="E3Required" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="E3Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="E3Webcam" xml:space="preserve"><value>كاميرا الويب</value></data>
+  <data name="E3CameraPhone" xml:space="preserve"><value>الكاميرا</value></data>
+  <data name="E3Missing" xml:space="preserve"><value>ناقص: {0}</value></data>
+  <data name="E3Missing_photo" xml:space="preserve"><value>الصورة</value></data>
+  <data name="E3Missing_location" xml:space="preserve"><value>الموقع</value></data>
+  <data name="E3HintReady" xml:space="preserve"><value>يُؤخذ وقت البدء من الخادم.</value></data>
+  <data name="Loc_pending" xml:space="preserve"><value>جارٍ تحديد الموقع…</value></data>
+  <data name="Loc_ok" xml:space="preserve"><value>تم تحديد الموقع</value></data>
+  <data name="Loc_okDetail" xml:space="preserve"><value>الدقة ±{0} م · يقيس الخادم المسافة إلى المؤسسة.</value></data>
+  <data name="Loc_inaccurate" xml:space="preserve"><value>دقة منخفضة</value></data>
+  <data name="Loc_inaccurateDetail" xml:space="preserve"><value>±{0} م؛ الحد الأقصى المقبول {1} م. أعد المحاولة في مكان مفتوح.</value></data>
+  <data name="Loc_denied" xml:space="preserve"><value>تم رفض الإذن</value></data>
+  <data name="Loc_deniedDetail" xml:space="preserve"><value>رفض المتصفح إذن الموقع. اسمح به من شريط العنوان ثم أعد المحاولة.</value></data>
+  <data name="Loc_unavailable" xml:space="preserve"><value>الموقع غير متاح</value></data>
+  <data name="Loc_unavailableDetail" xml:space="preserve"><value>تعذّر على الجهاز تحديد موقعه. تحقّق من تشغيل خدمة الموقع ثم أعد المحاولة.</value></data>
+  <data name="Loc_timeout" xml:space="preserve"><value>انتهت المهلة</value></data>
+  <data name="Loc_timeoutDetail" xml:space="preserve"><value>لم يصل الموقع في الوقت المحدد. أعد المحاولة.</value></data>
+  <data name="Loc_requiredNote" xml:space="preserve"><value>الموقع إلزامي: يمكنك البدء عند اقترابك من المؤسسة.</value></data>
+  <data name="Loc_requiredMissing" xml:space="preserve"><value>الموقع إلزامي هنا: لا يمكن بدء الزيارة بدونه.</value></data>
+  <data name="Loc_infoNote" xml:space="preserve"><value>يُسجَّل للعلم؛ ويراه مديرك.</value></data>
+  <data name="Cam_denied" xml:space="preserve"><value>تم رفض إذن الكاميرا. اسمح به من شريط العنوان أو استخدم «تحميل ملف».</value></data>
+  <data name="Cam_unavailable" xml:space="preserve"><value>لم يتم العثور على كاميرا. استخدم «تحميل ملف».</value></data>
+  <data name="Cam_failed" xml:space="preserve"><value>تعذّر فتح الكاميرا. استخدم «تحميل ملف».</value></data>
+  <data name="Photo_invalid" xml:space="preserve"><value>تعذّرت قراءة الصورة. اختر ملف JPEG أو PNG.</value></data>
+  <data name="Photo_tooLarge" xml:space="preserve"><value>الصورة كبيرة جدًا. اختر صورة أخرى.</value></data>
+  <data name="UploadFailed" xml:space="preserve"><value>تعذّر الإرسال. تحقّق من اتصالك ثم أعد المحاولة.</value></data>
+  <data name="DistanceMeters" xml:space="preserve"><value>{0} م</value></data>
+  <data name="DistanceKm" xml:space="preserve"><value>{0} كم</value></data>
+  <data name="StartErr_visit_not_today" xml:space="preserve"><value>لا يمكن بدء هذه الزيارة إلا في يومها.</value></data>
+  <data name="StartErr_visit_not_confirmed" xml:space="preserve"><value>لم يتم اعتماد الأسبوع بعد؛ اعتمد الأسبوع أولاً.</value></data>
+  <data name="StartErr_visit_already_started" xml:space="preserve"><value>بدأت هذه الزيارة بالفعل.</value></data>
+  <data name="StartErr_visit_already_reported" xml:space="preserve"><value>لهذه الزيارة تقرير بالفعل.</value></data>
+  <data name="StartErr_visit_location_required" xml:space="preserve"><value>الموقع إلزامي: اسمح بتحديد الموقع ثم أعد المحاولة.</value></data>
+  <data name="StartErr_visit_location_too_far" xml:space="preserve"><value>أنت على بُعد {0} من المؤسسة.</value></data>
+  <data name="StartErr_visit_location_inaccurate" xml:space="preserve"><value>موقعك ليس دقيقًا بما يكفي. أعد المحاولة في مكان مفتوح.</value></data>
+  <data name="StartErr_visit_account_location_unknown" xml:space="preserve"><value>موقع المؤسسة غير معروف؛ لا يمكن التحقق من الزيارة. أبلغ مديرك.</value></data>
+  <data name="StartErr_visit_photo_required" xml:space="preserve"><value>الصورة إلزامية للبدء.</value></data>
+  <data name="StartErr_visit_photo_invalid" xml:space="preserve"><value>لم تُقبل الصورة. التقط صورة أخرى.</value></data>
+  <data name="StartErr_visit_capture_invalid" xml:space="preserve"><value>بيانات البدء غير صالحة. أغلق النافذة ثم أعد المحاولة.</value></data>
+  <data name="StartErr_visit_evidence_store_unavailable" xml:space="preserve"><value>مخزن الإثباتات غير متاح حاليًا. أعد المحاولة بعد قليل.</value></data>
+  <data name="StartErr_visit_execution_not_found" xml:space="preserve"><value>لم يتم العثور على هذه الزيارة.</value></data>
+  <data name="StartErr_visit_execution_concurrency_conflict" xml:space="preserve"><value>تغيّرت الزيارة في هذه الأثناء. حدّث الصفحة ثم أعد المحاولة.</value></data>
+  <data name="E3Title" xml:space="preserve"><value>بدء الزيارة</value></data>
+  <data name="E3Photo" xml:space="preserve"><value>الصورة</value></data>
+  <data name="E3Upload" xml:space="preserve"><value>تحميل ملف</value></data>
+  <data name="E3Shutter" xml:space="preserve"><value>التقاط صورة</value></data>
+  <data name="E3PhotoTaken" xml:space="preserve"><value>تم التقاط الصورة</value></data>
+  <data name="E3Retake" xml:space="preserve"><value>إعادة الالتقاط</value></data>
+  <data name="E3Kvkk" xml:space="preserve"><value>مدخل المؤسسة أو منطقة الانتظار. لا تصوّر وجه الطبيب أو المرضى (حماية البيانات).</value></data>
+  <data name="E3LocationTime" xml:space="preserve"><value>الموقع والوقت</value></data>
+  <data name="E3Location" xml:space="preserve"><value>الموقع</value></data>
+  <data name="E3Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="E3StartLabel" xml:space="preserve"><value>البدء</value></data>
+  <data name="E3StartValue" xml:space="preserve"><value>عند البدء · توقيت الخادم</value></data>
+  <data name="E3Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="E3Begin" xml:space="preserve"><value>بدء العرض</value></data>
 </root>

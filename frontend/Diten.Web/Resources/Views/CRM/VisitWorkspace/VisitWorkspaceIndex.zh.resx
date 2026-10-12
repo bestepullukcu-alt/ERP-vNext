@@ -222,4 +222,71 @@
   <data name="ViewMonth" xml:space="preserve"><value>月</value></data>
   <data name="TargetsHeading" xml:space="preserve"><value>目标</value></data>
   <data name="MapPlaceholder" xml:space="preserve"><value>地图预览</value></data>
+  <!-- WP-VW-W3 (WEB-a) — start the visit (E3), in_progress -->
+  <data name="Status_in_progress" xml:space="preserve"><value>进行中</value></data>
+  <data name="AlertTitle_in_progress" xml:space="preserve"><value>进行中 · {0} 分钟</value></data>
+  <data name="AlertText_in_progress" xml:space="preserve"><value>{1} 开始（服务器时间）。</value></data>
+  <data name="AlertText_today_start" xml:space="preserve"><value>到达机构后开始拜访；完成证据步骤后将打开演示。</value></data>
+  <data name="CardLiveMinutes" xml:space="preserve"><value>{0} 分钟</value></data>
+  <data name="Action_start" xml:space="preserve"><value>开始拜访</value></data>
+  <data name="Action_presentation" xml:space="preserve"><value>返回演示</value></data>
+  <data name="Action_finish" xml:space="preserve"><value>结束拜访</value></data>
+  <data name="E3Required" xml:space="preserve"><value>必填</value></data>
+  <data name="E3Optional" xml:space="preserve"><value>可选</value></data>
+  <data name="E3Webcam" xml:space="preserve"><value>网络摄像头</value></data>
+  <data name="E3CameraPhone" xml:space="preserve"><value>相机</value></data>
+  <data name="E3Missing" xml:space="preserve"><value>缺少：{0}</value></data>
+  <data name="E3Missing_photo" xml:space="preserve"><value>照片</value></data>
+  <data name="E3Missing_location" xml:space="preserve"><value>位置</value></data>
+  <data name="E3HintReady" xml:space="preserve"><value>开始时间以服务器为准。</value></data>
+  <data name="Loc_pending" xml:space="preserve"><value>正在获取位置…</value></data>
+  <data name="Loc_ok" xml:space="preserve"><value>已获取位置</value></data>
+  <data name="Loc_okDetail" xml:space="preserve"><value>精度 ±{0} 米 · 与机构的距离由服务器计算。</value></data>
+  <data name="Loc_inaccurate" xml:space="preserve"><value>精度低</value></data>
+  <data name="Loc_inaccurateDetail" xml:space="preserve"><value>±{0} 米；最多接受 {1} 米。请到开阔处重试。</value></data>
+  <data name="Loc_denied" xml:space="preserve"><value>权限被拒绝</value></data>
+  <data name="Loc_deniedDetail" xml:space="preserve"><value>浏览器拒绝了位置权限。请在地址栏中允许后重试。</value></data>
+  <data name="Loc_unavailable" xml:space="preserve"><value>无法获取位置</value></data>
+  <data name="Loc_unavailableDetail" xml:space="preserve"><value>设备无法确定位置。请确认已开启定位后重试。</value></data>
+  <data name="Loc_timeout" xml:space="preserve"><value>超时</value></data>
+  <data name="Loc_timeoutDetail" xml:space="preserve"><value>未能及时获取位置。请重试。</value></data>
+  <data name="Loc_requiredNote" xml:space="preserve"><value>位置为必填项：靠近机构后即可开始。</value></data>
+  <data name="Loc_requiredMissing" xml:space="preserve"><value>此处位置为必填项：没有位置无法开始拜访。</value></data>
+  <data name="Loc_infoNote" xml:space="preserve"><value>仅作记录；您的经理可见。</value></data>
+  <data name="Cam_denied" xml:space="preserve"><value>摄像头权限被拒绝。请在地址栏中允许，或使用“上传文件”。</value></data>
+  <data name="Cam_unavailable" xml:space="preserve"><value>未找到摄像头。请使用“上传文件”。</value></data>
+  <data name="Cam_failed" xml:space="preserve"><value>无法打开摄像头。请使用“上传文件”。</value></data>
+  <data name="Photo_invalid" xml:space="preserve"><value>无法读取照片。请选择 JPEG 或 PNG。</value></data>
+  <data name="Photo_tooLarge" xml:space="preserve"><value>照片过大。请另选一张。</value></data>
+  <data name="UploadFailed" xml:space="preserve"><value>发送失败。请检查网络连接后重试。</value></data>
+  <data name="DistanceMeters" xml:space="preserve"><value>{0} 米</value></data>
+  <data name="DistanceKm" xml:space="preserve"><value>{0} 公里</value></data>
+  <data name="StartErr_visit_not_today" xml:space="preserve"><value>此拜访只能在计划当天开始。</value></data>
+  <data name="StartErr_visit_not_confirmed" xml:space="preserve"><value>该周尚未批准；请先批准该周。</value></data>
+  <data name="StartErr_visit_already_started" xml:space="preserve"><value>此拜访已经开始。</value></data>
+  <data name="StartErr_visit_already_reported" xml:space="preserve"><value>此拜访已有报告。</value></data>
+  <data name="StartErr_visit_location_required" xml:space="preserve"><value>位置为必填项：请允许定位后重试。</value></data>
+  <data name="StartErr_visit_location_too_far" xml:space="preserve"><value>您距离机构 {0}。</value></data>
+  <data name="StartErr_visit_location_inaccurate" xml:space="preserve"><value>您的位置不够精确。请到开阔处重试。</value></data>
+  <data name="StartErr_visit_account_location_unknown" xml:space="preserve"><value>机构位置未知，无法核验拜访。请告知您的经理。</value></data>
+  <data name="StartErr_visit_photo_required" xml:space="preserve"><value>开始前必须拍照。</value></data>
+  <data name="StartErr_visit_photo_invalid" xml:space="preserve"><value>照片未被接受。请重新拍摄。</value></data>
+  <data name="StartErr_visit_capture_invalid" xml:space="preserve"><value>开始数据无效。请关闭窗口后重试。</value></data>
+  <data name="StartErr_visit_evidence_store_unavailable" xml:space="preserve"><value>证据存储暂时不可用。请稍后重试。</value></data>
+  <data name="StartErr_visit_execution_not_found" xml:space="preserve"><value>未找到此拜访。</value></data>
+  <data name="StartErr_visit_execution_concurrency_conflict" xml:space="preserve"><value>拜访已被修改。请刷新后重试。</value></data>
+  <data name="E3Title" xml:space="preserve"><value>开始拜访</value></data>
+  <data name="E3Photo" xml:space="preserve"><value>照片</value></data>
+  <data name="E3Upload" xml:space="preserve"><value>上传文件</value></data>
+  <data name="E3Shutter" xml:space="preserve"><value>拍照</value></data>
+  <data name="E3PhotoTaken" xml:space="preserve"><value>已拍照</value></data>
+  <data name="E3Retake" xml:space="preserve"><value>重拍</value></data>
+  <data name="E3Kvkk" xml:space="preserve"><value>机构入口或候诊区。不得拍摄医生或患者的面部（个人数据保护）。</value></data>
+  <data name="E3LocationTime" xml:space="preserve"><value>位置和时间</value></data>
+  <data name="E3Location" xml:space="preserve"><value>位置</value></data>
+  <data name="E3Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="E3StartLabel" xml:space="preserve"><value>开始时间</value></data>
+  <data name="E3StartValue" xml:space="preserve"><value>开始时 · 服务器时间</value></data>
+  <data name="E3Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="E3Begin" xml:space="preserve"><value>开始演示</value></data>
 </root>

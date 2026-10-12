@@ -222,4 +222,71 @@
   <data name="ViewMonth" xml:space="preserve"><value>Месяц</value></data>
   <data name="TargetsHeading" xml:space="preserve"><value>Цели</value></data>
   <data name="MapPlaceholder" xml:space="preserve"><value>превью карты</value></data>
+  <!-- WP-VW-W3 (WEB-a) — start the visit (E3), in_progress -->
+  <data name="Status_in_progress" xml:space="preserve"><value>Идёт</value></data>
+  <data name="AlertTitle_in_progress" xml:space="preserve"><value>Идёт · {0} мин</value></data>
+  <data name="AlertText_in_progress" xml:space="preserve"><value>Начата в {1} (время сервера).</value></data>
+  <data name="AlertText_today_start" xml:space="preserve"><value>Прибыв в учреждение, начните визит; презентация откроется после шага подтверждения.</value></data>
+  <data name="CardLiveMinutes" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="Action_start" xml:space="preserve"><value>Начать визит</value></data>
+  <data name="Action_presentation" xml:space="preserve"><value>Вернуться к презентации</value></data>
+  <data name="Action_finish" xml:space="preserve"><value>Завершить визит</value></data>
+  <data name="E3Required" xml:space="preserve"><value>обязательно</value></data>
+  <data name="E3Optional" xml:space="preserve"><value>необязательно</value></data>
+  <data name="E3Webcam" xml:space="preserve"><value>Веб-камера</value></data>
+  <data name="E3CameraPhone" xml:space="preserve"><value>Камера</value></data>
+  <data name="E3Missing" xml:space="preserve"><value>Не хватает: {0}</value></data>
+  <data name="E3Missing_photo" xml:space="preserve"><value>фото</value></data>
+  <data name="E3Missing_location" xml:space="preserve"><value>местоположение</value></data>
+  <data name="E3HintReady" xml:space="preserve"><value>Время начала берётся с сервера.</value></data>
+  <data name="Loc_pending" xml:space="preserve"><value>Определяем местоположение…</value></data>
+  <data name="Loc_ok" xml:space="preserve"><value>Местоположение получено</value></data>
+  <data name="Loc_okDetail" xml:space="preserve"><value>Точность ±{0} м · расстояние до учреждения измеряет сервер.</value></data>
+  <data name="Loc_inaccurate" xml:space="preserve"><value>Низкая точность</value></data>
+  <data name="Loc_inaccurateDetail" xml:space="preserve"><value>±{0} м; допускается не более {1} м. Повторите на открытом месте.</value></data>
+  <data name="Loc_denied" xml:space="preserve"><value>Доступ запрещён</value></data>
+  <data name="Loc_deniedDetail" xml:space="preserve"><value>Браузер запретил доступ к местоположению. Разрешите его в адресной строке и повторите.</value></data>
+  <data name="Loc_unavailable" xml:space="preserve"><value>Местоположение недоступно</value></data>
+  <data name="Loc_unavailableDetail" xml:space="preserve"><value>Устройство не смогло определить местоположение. Проверьте, что геолокация включена, и повторите.</value></data>
+  <data name="Loc_timeout" xml:space="preserve"><value>Время истекло</value></data>
+  <data name="Loc_timeoutDetail" xml:space="preserve"><value>Местоположение не получено вовремя. Повторите.</value></data>
+  <data name="Loc_requiredNote" xml:space="preserve"><value>Местоположение обязательно: начать можно, оказавшись рядом с учреждением.</value></data>
+  <data name="Loc_requiredMissing" xml:space="preserve"><value>Здесь местоположение обязательно: без него визит не начать.</value></data>
+  <data name="Loc_infoNote" xml:space="preserve"><value>Сохраняется для сведения; его видит ваш руководитель.</value></data>
+  <data name="Cam_denied" xml:space="preserve"><value>Доступ к камере запрещён. Разрешите его в адресной строке или используйте «Загрузить файл».</value></data>
+  <data name="Cam_unavailable" xml:space="preserve"><value>Камера не найдена. Используйте «Загрузить файл».</value></data>
+  <data name="Cam_failed" xml:space="preserve"><value>Не удалось открыть камеру. Используйте «Загрузить файл».</value></data>
+  <data name="Photo_invalid" xml:space="preserve"><value>Не удалось прочитать фото. Выберите JPEG или PNG.</value></data>
+  <data name="Photo_tooLarge" xml:space="preserve"><value>Фото слишком большое. Выберите другое.</value></data>
+  <data name="UploadFailed" xml:space="preserve"><value>Не удалось отправить. Проверьте подключение и повторите.</value></data>
+  <data name="DistanceMeters" xml:space="preserve"><value>{0} м</value></data>
+  <data name="DistanceKm" xml:space="preserve"><value>{0} км</value></data>
+  <data name="StartErr_visit_not_today" xml:space="preserve"><value>Этот визит можно начать только в его день.</value></data>
+  <data name="StartErr_visit_not_confirmed" xml:space="preserve"><value>Неделя ещё не утверждена; сначала утвердите её.</value></data>
+  <data name="StartErr_visit_already_started" xml:space="preserve"><value>Этот визит уже начат.</value></data>
+  <data name="StartErr_visit_already_reported" xml:space="preserve"><value>По этому визиту уже есть отчёт.</value></data>
+  <data name="StartErr_visit_location_required" xml:space="preserve"><value>Местоположение обязательно: разрешите геолокацию и повторите.</value></data>
+  <data name="StartErr_visit_location_too_far" xml:space="preserve"><value>Вы в {0} от учреждения.</value></data>
+  <data name="StartErr_visit_location_inaccurate" xml:space="preserve"><value>Местоположение недостаточно точное. Повторите на открытом месте.</value></data>
+  <data name="StartErr_visit_account_location_unknown" xml:space="preserve"><value>Местоположение учреждения неизвестно; визит нельзя проверить. Сообщите руководителю.</value></data>
+  <data name="StartErr_visit_photo_required" xml:space="preserve"><value>Для начала нужно фото.</value></data>
+  <data name="StartErr_visit_photo_invalid" xml:space="preserve"><value>Фото не принято. Сделайте другое.</value></data>
+  <data name="StartErr_visit_capture_invalid" xml:space="preserve"><value>Данные запуска неверны. Закройте окно и повторите.</value></data>
+  <data name="StartErr_visit_evidence_store_unavailable" xml:space="preserve"><value>Хранилище подтверждений сейчас недоступно. Повторите чуть позже.</value></data>
+  <data name="StartErr_visit_execution_not_found" xml:space="preserve"><value>Визит не найден.</value></data>
+  <data name="StartErr_visit_execution_concurrency_conflict" xml:space="preserve"><value>Визит тем временем изменился. Обновите страницу и повторите.</value></data>
+  <data name="E3Title" xml:space="preserve"><value>Начать визит</value></data>
+  <data name="E3Photo" xml:space="preserve"><value>Фото</value></data>
+  <data name="E3Upload" xml:space="preserve"><value>Загрузить файл</value></data>
+  <data name="E3Shutter" xml:space="preserve"><value>Сделать снимок</value></data>
+  <data name="E3PhotoTaken" xml:space="preserve"><value>Фото сделано</value></data>
+  <data name="E3Retake" xml:space="preserve"><value>Переснять</value></data>
+  <data name="E3Kvkk" xml:space="preserve"><value>Вход в учреждение или зона ожидания. Не снимайте лица врача и пациентов (защита данных).</value></data>
+  <data name="E3LocationTime" xml:space="preserve"><value>Место и время</value></data>
+  <data name="E3Location" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="E3Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="E3StartLabel" xml:space="preserve"><value>Начало</value></data>
+  <data name="E3StartValue" xml:space="preserve"><value>при запуске · время сервера</value></data>
+  <data name="E3Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="E3Begin" xml:space="preserve"><value>Начать презентацию</value></data>
 </root>

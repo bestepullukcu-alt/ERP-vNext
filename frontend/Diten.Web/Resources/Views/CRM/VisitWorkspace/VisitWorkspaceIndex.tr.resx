@@ -222,4 +222,71 @@
   <data name="ViewMonth" xml:space="preserve"><value>Ay</value></data>
   <data name="TargetsHeading" xml:space="preserve"><value>Hedefler</value></data>
   <data name="MapPlaceholder" xml:space="preserve"><value>harita önizlemesi</value></data>
+  <!-- WP-VW-W3 (WEB-a) — start the visit (E3), in_progress -->
+  <data name="Status_in_progress" xml:space="preserve"><value>Devam ediyor</value></data>
+  <data name="AlertTitle_in_progress" xml:space="preserve"><value>Devam ediyor · {0} dk</value></data>
+  <data name="AlertText_in_progress" xml:space="preserve"><value>Başlangıç {1} (sunucu saati).</value></data>
+  <data name="AlertText_today_start" xml:space="preserve"><value>Kuruma vardığınızda ziyarete başlayın; kanıt adımından sonra sunum açılır.</value></data>
+  <data name="CardLiveMinutes" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="Action_start" xml:space="preserve"><value>Ziyarete başla</value></data>
+  <data name="Action_presentation" xml:space="preserve"><value>Sunuma dön</value></data>
+  <data name="Action_finish" xml:space="preserve"><value>Ziyareti bitir</value></data>
+  <data name="E3Required" xml:space="preserve"><value>zorunlu</value></data>
+  <data name="E3Optional" xml:space="preserve"><value>isteğe bağlı</value></data>
+  <data name="E3Webcam" xml:space="preserve"><value>Web kamerası</value></data>
+  <data name="E3CameraPhone" xml:space="preserve"><value>Kamera</value></data>
+  <data name="E3Missing" xml:space="preserve"><value>Eksik: {0}</value></data>
+  <data name="E3Missing_photo" xml:space="preserve"><value>fotoğraf</value></data>
+  <data name="E3Missing_location" xml:space="preserve"><value>konum</value></data>
+  <data name="E3HintReady" xml:space="preserve"><value>Başlangıç saati sunucudan alınır.</value></data>
+  <data name="Loc_pending" xml:space="preserve"><value>Konum alınıyor…</value></data>
+  <data name="Loc_ok" xml:space="preserve"><value>Konum alındı</value></data>
+  <data name="Loc_okDetail" xml:space="preserve"><value>Doğruluk ±{0} m · kuruma uzaklığı sunucu ölçer.</value></data>
+  <data name="Loc_inaccurate" xml:space="preserve"><value>Doğruluk düşük</value></data>
+  <data name="Loc_inaccurateDetail" xml:space="preserve"><value>±{0} m; en çok {1} m kabul edilir. Açık alanda yeniden deneyin.</value></data>
+  <data name="Loc_denied" xml:space="preserve"><value>İzin verilmedi</value></data>
+  <data name="Loc_deniedDetail" xml:space="preserve"><value>Tarayıcı konum iznini reddetti. Adres çubuğundan izin verip yeniden deneyin.</value></data>
+  <data name="Loc_unavailable" xml:space="preserve"><value>Konum alınamadı</value></data>
+  <data name="Loc_unavailableDetail" xml:space="preserve"><value>Cihaz konumunu belirleyemedi. Konum hizmetinin açık olduğunu kontrol edip yeniden deneyin.</value></data>
+  <data name="Loc_timeout" xml:space="preserve"><value>Zaman aşımı</value></data>
+  <data name="Loc_timeoutDetail" xml:space="preserve"><value>Konum zamanında gelmedi. Yeniden deneyin.</value></data>
+  <data name="Loc_requiredNote" xml:space="preserve"><value>Konum zorunlu: kuruma yaklaşınca başlatabilirsiniz.</value></data>
+  <data name="Loc_requiredMissing" xml:space="preserve"><value>Konum zorunlu: konum alınmadan ziyaret başlatılamaz.</value></data>
+  <data name="Loc_infoNote" xml:space="preserve"><value>Bilgi olarak kaydedilir; yöneticiniz görür.</value></data>
+  <data name="Cam_denied" xml:space="preserve"><value>Kamera izni verilmedi. Adres çubuğundan izin verin ya da Dosya yükle'yi kullanın.</value></data>
+  <data name="Cam_unavailable" xml:space="preserve"><value>Kamera bulunamadı. Dosya yükle'yi kullanın.</value></data>
+  <data name="Cam_failed" xml:space="preserve"><value>Kamera açılamadı. Dosya yükle'yi kullanın.</value></data>
+  <data name="Photo_invalid" xml:space="preserve"><value>Fotoğraf okunamadı. JPEG ya da PNG seçin.</value></data>
+  <data name="Photo_tooLarge" xml:space="preserve"><value>Fotoğraf çok büyük. Başka bir fotoğraf seçin.</value></data>
+  <data name="UploadFailed" xml:space="preserve"><value>Gönderilemedi. Bağlantınızı kontrol edip yeniden deneyin.</value></data>
+  <data name="DistanceMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="DistanceKm" xml:space="preserve"><value>{0} km</value></data>
+  <data name="StartErr_visit_not_today" xml:space="preserve"><value>Bu ziyaret yalnız kendi gününde başlatılabilir.</value></data>
+  <data name="StartErr_visit_not_confirmed" xml:space="preserve"><value>Hafta henüz onaylanmadı; önce haftayı onaylayın.</value></data>
+  <data name="StartErr_visit_already_started" xml:space="preserve"><value>Bu ziyaret zaten başlatılmış.</value></data>
+  <data name="StartErr_visit_already_reported" xml:space="preserve"><value>Bu ziyaretin raporu zaten var.</value></data>
+  <data name="StartErr_visit_location_required" xml:space="preserve"><value>Konum zorunlu: konum izni verip yeniden deneyin.</value></data>
+  <data name="StartErr_visit_location_too_far" xml:space="preserve"><value>Kurumdan {0} uzaktasınız.</value></data>
+  <data name="StartErr_visit_location_inaccurate" xml:space="preserve"><value>Konumunuz yeterince doğru değil. Açık alanda yeniden deneyin.</value></data>
+  <data name="StartErr_visit_account_location_unknown" xml:space="preserve"><value>Kurumun konumu bilinmiyor; ziyaret doğrulanamıyor. Yöneticinize bildirin.</value></data>
+  <data name="StartErr_visit_photo_required" xml:space="preserve"><value>Başlatmak için fotoğraf zorunlu.</value></data>
+  <data name="StartErr_visit_photo_invalid" xml:space="preserve"><value>Fotoğraf kabul edilmedi. Yeni bir fotoğraf çekin.</value></data>
+  <data name="StartErr_visit_capture_invalid" xml:space="preserve"><value>Başlatma bilgileri geçersiz. Pencereyi kapatıp yeniden deneyin.</value></data>
+  <data name="StartErr_visit_evidence_store_unavailable" xml:space="preserve"><value>Kanıt deposuna şu an ulaşılamıyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="StartErr_visit_execution_not_found" xml:space="preserve"><value>Bu ziyaret bulunamadı.</value></data>
+  <data name="StartErr_visit_execution_concurrency_conflict" xml:space="preserve"><value>Ziyaret bu arada değişti. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="E3Title" xml:space="preserve"><value>Ziyarete başla</value></data>
+  <data name="E3Photo" xml:space="preserve"><value>Fotoğraf</value></data>
+  <data name="E3Upload" xml:space="preserve"><value>Dosya yükle</value></data>
+  <data name="E3Shutter" xml:space="preserve"><value>Fotoğraf çek</value></data>
+  <data name="E3PhotoTaken" xml:space="preserve"><value>Fotoğraf alındı</value></data>
+  <data name="E3Retake" xml:space="preserve"><value>Yeniden çek</value></data>
+  <data name="E3Kvkk" xml:space="preserve"><value>Kurum girişi ya da bekleme alanı. Doktorun ya da hastaların yüzü çekilmez (KVKK).</value></data>
+  <data name="E3LocationTime" xml:space="preserve"><value>Konum ve saat</value></data>
+  <data name="E3Location" xml:space="preserve"><value>Konum</value></data>
+  <data name="E3Retry" xml:space="preserve"><value>Yeniden dene</value></data>
+  <data name="E3StartLabel" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="E3StartValue" xml:space="preserve"><value>başlatınca · sunucu saati</value></data>
+  <data name="E3Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="E3Begin" xml:space="preserve"><value>Sunumu başlat</value></data>
 </root>

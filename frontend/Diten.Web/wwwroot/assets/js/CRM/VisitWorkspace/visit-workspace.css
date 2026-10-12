@@ -1,10 +1,10 @@
 /* WP-VW-W2 — the Visit Workspace. WEB-c: the mockup's look (mockups/visit-workspace/decoded/01-takvim.html, 00-tema.css
    tokens). Logical properties only (inline-start / inline-end), so Arabic (dir=rtl) mirrors the bars, chips and panels. */
-#vw-root, #vw-detail, #vw-dialog, #vw-unplaced-modal, #vw-products-modal, #vw-reopen-modal, #vw-unplanned-modal { /* the panel and the dialogs sit outside #vw-root */
+#vw-root, #vw-detail, #vw-dialog, #vw-unplaced-modal, #vw-products-modal, #vw-reopen-modal, #vw-unplanned-modal, #vw-e3 { /* the panel and the dialogs sit outside #vw-root */
     --vw-p: #0b1a8c; --vw-pl: #e0e2f3; --vw-pbd: #c5c9e8; --vw-pt: #0b1a8c; --vw-pt2: #4b55a8;
     --vw-h: #384551; --vw-tx: #646e78; --vw-mu: #8592a3; --vw-bd: #e4e6e8; --vw-bd2: #d9dee3; --vw-soft: #f5f5f9; --vw-soft2: #fafafb;
     --vw-okb: #e8fadf; --vw-ok: #4a9a22; --vw-okc: #71dd37; --vw-wab: #fff2d6; --vw-wa: #b27800; --vw-wac: #ffab00;
-    --vw-dab: #ffe0db; --vw-da: #d1301a; --vw-dac: #ff3e1d; --vw-inb: #d7f5fc; --vw-in: #028aa6; --vw-seb: #ebeef0; --vw-se: #6d7887;
+    --vw-dab: #ffe0db; --vw-da: #d1301a; --vw-dac: #ff3e1d; --vw-inb: #d7f5fc; --vw-in: #028aa6; --vw-inc: #03c3ec; --vw-seb: #ebeef0; --vw-se: #6d7887;
 }
 [dir="rtl"] .vw-flip { transform: scaleX(-1); }
 
@@ -119,6 +119,12 @@
 .vw-st-reported { background: var(--vw-okb); color: var(--vw-ok); border-color: var(--vw-okc); }
 .vw-st-missed, .vw-st-expired { background: var(--vw-dab); color: var(--vw-da); border-color: var(--vw-dac); }
 .vw-st-not_done, .vw-st-rescheduled, .vw-st-cancelled { background: var(--vw-seb); color: var(--vw-se); border-color: #b4bdc6; }
+/* WP-VW-W3 (WEB-a) — in_progress: the info tone (the mockup's "devam") + the pulse dot */
+.vw-st-in_progress { background: var(--vw-inb); color: var(--vw-in); border-color: var(--vw-inc); }
+.vw-dot.vw-st-in_progress { background: var(--vw-inc) !important; }
+@keyframes vw-pulse { 0% { box-shadow: 0 0 0 0 rgba(3, 195, 236, .6); } 70% { box-shadow: 0 0 0 6px rgba(3, 195, 236, 0); } 100% { box-shadow: 0 0 0 0 rgba(3, 195, 236, 0); } }
+.vw-live { width: 7px; height: 7px; border-radius: 50%; background: var(--vw-inc); display: inline-block; animation: vw-pulse 1.6s infinite; }
+@media (prefers-reduced-motion: reduce) { .vw-live { animation: none; } }
 .vw-dashed { border-style: dashed; }
 .vw-card.vw-st-draft { opacity: .9; }
 
@@ -159,6 +165,7 @@
 .vw-prev { padding: 10px 12px; background: var(--vw-soft2); border-radius: 6px; font-size: 13px; }
 .vw-detail-actions { padding: 14px 20px; border-top: 1px solid var(--vw-bd); display: flex; gap: 8px; flex-wrap: wrap; }
 .vw-detail-actions .btn { min-height: 38px; display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
+.vw-detail-actions .vw-act-full { flex: 1 1 100%; } /* WP-VW-W3 — "Start the visit": primary, full width */
 .vw-locked-note { font-size: 13px; color: var(--vw-mu); display: flex; gap: 6px; align-items: center; }
 
 /* ── E2: one dialog, three tabs (P1); the 4-column day grid (P2) ── */
@@ -223,4 +230,70 @@
 @media (max-width: 767.98px) {
     .vw-detail.offcanvas-end { width: 100% !important; }
     .vw-cal-head .vw-select { max-width: 100%; }
+}
+
+/* ── WP-VW-W3 (WEB-a) — E3: start the visit (mockup 02-ziyaret-kanit-sunum.html "E3 Ziyarete başla" / "E3 Telefon
+   kamera + konum"). A 760 px dialog with two columns on a desktop / tablet; full screen, one column on a phone. ── */
+.vw-e3-dialog.modal-lg { max-width: 760px; }
+.vw-e3 .modal-content, #vw-e3 .modal-content { border-radius: 8px; box-shadow: 0 6px 20px rgba(34, 48, 62, .18); }
+.vw-e3-head { padding: 20px 24px; border-bottom: 1px solid var(--vw-bd); display: flex; justify-content: space-between; gap: 12px; }
+.vw-e3-title { font-size: 18px; font-weight: 500; color: var(--vw-h); margin: 0; }
+.vw-e3-sub { font-size: 13px; margin-top: 2px; color: var(--vw-tx); }
+.vw-e3-body { padding: 20px 24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.vw-e3-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.vw-e3-cap { font-size: 13px; font-weight: 600; color: var(--vw-h); text-transform: uppercase; letter-spacing: .3px; }
+.vw-e3-need { font-weight: 400; text-transform: none; color: var(--vw-mu); }
+.vw-e3-shot { height: 200px; border-radius: 8px; border: 1px dashed var(--vw-pbd); background: repeating-linear-gradient(135deg, var(--vw-soft) 0 8px, #fff 8px 16px);
+    display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.vw-e3-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.vw-e3-empty > .bx { font-size: 32px; color: var(--vw-mu); }
+.vw-e3-camera, .vw-e3-taken { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #24252f; }
+.vw-e3-camera.d-none, .vw-e3-taken.d-none, .vw-e3-empty.d-none { display: none !important; }
+.vw-e3-camera video, .vw-e3-taken img { width: 100%; height: 100%; object-fit: cover; }
+.vw-e3-kvkk-over { position: absolute; inset-inline: 12px; bottom: 12px; background: rgba(0, 0, 0, .6); color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.4; }
+.vw-e3-shutter-row { display: flex; justify-content: center; }
+.vw-e3-shutter { width: 56px; height: 56px; border-radius: 50%; border: 4px solid var(--vw-p); background: #fff;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+.vw-e3-shutter > span { width: 38px; height: 38px; border-radius: 50%; background: var(--vw-p); }
+.vw-e3-taken .vw-e3-btn { position: absolute; bottom: 10px; inset-inline-end: 10px; }
+.vw-e3-btn { height: 34px; border-radius: 6px; padding: 0 12px; font-size: 13px; cursor: pointer; display: inline-flex; gap: 5px; align-items: center; justify-content: center; border: 1px solid transparent; }
+.vw-e3-btn-p { background: var(--vw-p); color: #fff; }
+.vw-e3-btn-o { background: #fff; color: var(--vw-pt); border-color: var(--vw-pt); }
+.vw-e3-btn-s { background: var(--vw-seb); color: var(--vw-se); height: 38px; padding: 0 16px; font-size: 14px; }
+.vw-e3-begin { height: 38px; padding: 0 16px; font-size: 14px; font-weight: 500; }
+.vw-e3-btn:disabled { opacity: .5; cursor: not-allowed; }
+.vw-e3-kvkk { font-size: 12px; display: flex; gap: 6px; color: var(--vw-tx); }
+/* the camera carries the KVKK note on its preview (the mockup): the line under it is not repeated */
+.vw-e3-shot:has(.vw-e3-camera:not(.d-none)) ~ .vw-e3-kvkk { display: none; }
+.vw-e3-kvkk > .bx { font-size: 16px; color: var(--vw-wa); flex: 0 0 auto; }
+.vw-e3-error { font-size: 12px; color: var(--vw-da); background: var(--vw-dab); border-radius: 6px; padding: 6px 10px; }
+.vw-e3-box { border: 1px solid var(--vw-bd); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.vw-e3-row { flex-direction: row; justify-content: space-between; }
+.vw-e3-h { color: var(--vw-h); }
+.vw-e3-loc-text { font-size: 12px; color: var(--vw-tx); }
+.vw-e3-link { align-self: flex-start; border: 0; background: transparent; color: var(--vw-pt); padding: 0; font-size: 12px; display: inline-flex; gap: 4px; align-items: center; }
+.vw-loc-chip { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.vw-tone-success { background: var(--vw-okb); color: var(--vw-ok); }
+.vw-tone-warning { background: var(--vw-wab); color: var(--vw-wa); }
+.vw-tone-danger { background: var(--vw-dab); color: var(--vw-da); }
+.vw-tone-muted { background: var(--vw-seb); color: var(--vw-se); }
+.vw-e3-alert { margin: 0 24px 12px; border-radius: 6px; padding: 10px 12px; font-size: 13px; background: var(--vw-dab); color: var(--vw-da); }
+.vw-e3-foot { padding: 14px 24px; border-top: 1px solid var(--vw-bd); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.vw-e3-hint { font-size: 12px; color: var(--vw-mu); }
+.vw-e3-btns { display: flex; gap: 8px; }
+@media (max-width: 767.98px) {
+    /* the phone: full screen (modal-fullscreen-md-down), one column, the big camera, the full-width Start */
+    .vw-e3-head { padding: 8px 12px; }
+    #vw-e3 .modal-content { background: var(--vw-soft); }
+    .vw-e3-head, .vw-e3-foot { background: #fff; }
+    .vw-e3-body { grid-template-columns: minmax(0, 1fr); padding: 12px 16px; gap: 12px; }
+    .vw-e3-box { background: #fff; border: 0; border-radius: 10px; box-shadow: 0 3px 8px rgba(34, 48, 62, .08); }
+    .vw-e3-cancel { display: none; } /* the phone goes back from the head (the mockup has no Cancel at the foot) */
+    .vw-e3-shot { height: 360px; border-radius: 14px; }
+    .vw-e3-shutter { width: 72px; height: 72px; }
+    .vw-e3-shutter > span { width: 52px; height: 52px; }
+    .vw-e3-foot { flex-direction: column; align-items: stretch; padding: 12px 16px 20px; }
+    .vw-e3-btns { flex-direction: column-reverse; }
+    .vw-e3-begin { width: 100%; height: 50px; border-radius: 10px; font-size: 16px; font-weight: 600; }
+    .vw-e3-alert { margin: 0 16px 12px; }
 }

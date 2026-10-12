@@ -36,6 +36,19 @@
  *   LEGEND                            the legend's statuses
  *   productDistribution(visits)       the selection summary's "TUTUKON 12 · ALMIBA 10"
  *   alertFor(v, nowMs)                the detail panel's status box (title + text keys)
+ * WP-VW-W3 (WEB-a) — start the visit (E3) and the in_progress status:
+ *   in_progress                       a started, unfinished visit (info tone + a pulse dot, "N min" on the card)
+ *   minutesSince(iso, nowMs) / clockOf(iso, offset)   the running minutes; the server start instant as hh:mm
+ *   canStart(v, perms) / visitActions(v, today, perms)   today + approved + no execution => Start (+ not done /
+ *                                     reschedule / cancel); in_progress => back to the presentation + finish; else W2
+ *   presentationUrl(base, id, summary)   /CRM/VisitPresentation?plannedVisitId=...[&phase=summary]
+ *   evidenceNeeds(policy) / startMissing(policy, ev) / canBegin(policy, ev)   the E3 Start button: the tenant
+ *                                     setting (contract.policy) x what is still missing (photo, location)
+ *   locationView(loc, policy)         the location box: pending / ok / inaccurate / denied / unavailable / timeout
+ *   startFields(id, ev)               the POST start multipart fields (numbers in the invariant culture)
+ *   photoSize(w, h) / PHOTO_*         the JPEG: the longest edge 1600 px, quality 0.85
+ *   cameraConstraints(layout) / cameraErrorKey(err)   the phone's back camera; a refused / missing camera
+ *   startError(response)              a refused start -> the key in the user's language (+ the distance when far)
  * Reason codes / labels are NOT here: they come from the reference set (GET reasons), never a local list.
  */
 (function (root, factory) {
@@ -47,7 +60,8 @@
     'use strict';
 
     // ── statuses (W1 priority order, then the workspace-only draft) ──────────────────────────────────────────
-    const STATUSES = ['cancelled', 'not_done', 'rescheduled', 'reported', 'expired', 'report_missing', 'missed', 'today', 'planned', 'draft'];
+    // WP-VW-W3 (WEB-a) — in_progress sits BEFORE today (W3-BE-a: a started, unfinished visit, even on a later day).
+    const STATUSES = ['cancelled', 'not_done', 'rescheduled', 'reported', 'expired', 'report_missing', 'missed', 'in_progress', 'today', 'planned', 'draft'];
 
     const STYLE = {
         cancelled: { tone: 'muted', icon: 'bx-block', strike: true },
@@ -57,6 +71,7 @@
         expired: { tone: 'danger', icon: 'bx-lock-alt', locked: true },
         report_missing: { tone: 'warning', icon: 'bx-time-five' },
         missed: { tone: 'danger', icon: 'bx-error-circle' },
+        in_progress: { tone: 'info', icon: 'bx-radio-circle-marked', live: true },
         today: { tone: 'today', icon: 'bx-play-circle' },
         planned: { tone: 'planned', icon: 'bx-calendar-check' },
         draft: { tone: 'draft', icon: 'bx-edit-alt', dashed: true, faded: true }
@@ -74,6 +89,7 @@
             faded: !!s.faded,
             strike: !!s.strike,
             locked: !!s.locked,
+            live: !!s.live,
             labelKey: 'Status_' + (known ? code : 'planned'),
             cssClass: 'vw-st-' + (known ? code : 'planned')
         };
@@ -390,6 +406,7 @@
         const cd = showsCountdown(st.code) ? countdown(v.reportDeadline, c.nowMs) : null;
         if (st.code === 'report_missing' && cd && !cd.passed) { bottom = { key: 'CardReportLeft', args: [cd.hours] }; }
         else if (st.code === 'missed' && cd && !cd.passed) { bottom = { key: 'CardMarkLeft', args: [cd.hours] }; }
+        else if (st.code === 'in_progress' && v.startedAt) { bottom = { key: 'CardLiveMinutes', args: [minutesSince(v.startedAt, c.nowMs)] }; }
         else if (st.code === 'expired' || (st.code === 'missed' && cd && cd.passed)) { bottom = { key: 'CardLocked', args: [] }; }
         else if (st.code === 'rescheduled' && v.rescheduledToPlannedVisitId) {
             const next = (c.visits || []).find(x => x.plannedVisitId === v.rescheduledToPlannedVisitId);
@@ -407,6 +424,7 @@
             pinned: !!(v && v.isPinned),
             unplanned: !!(v && v.source === 'unplanned'),
             rescheduledFrom: !!(v && v.rescheduledFromPlannedVisitId),
+            live: st.live,
             bottom: bottom,
             compact: compactCard(minutes, c.narrow),
             tiny: tinyCard(minutes),
@@ -448,7 +466,7 @@
     /** The ONE E2 dialog: three tabs; a tab is enabled when the visit's actions allow it (a past day takes no cancel). */
     const DIALOG_TABS = ['cancel', 'notDone', 'reschedule'];
     const dialogTabs = (v, today, perms) => {
-        const allowed = actionsFor(v, today, perms);
+        const allowed = visitActions(v, today, perms); // WP-VW-W3 — a startable visit also takes not done / reschedule
         return DIALOG_TABS.map(key => ({ key: key, enabled: allowed.indexOf(key) > -1 }));
     };
 
@@ -460,7 +478,7 @@
     };
 
     /** The legend under the calendar (the mockup's order). */
-    const LEGEND = ['draft', 'planned', 'today', 'report_missing', 'reported', 'missed', 'cancelled'];
+    const LEGEND = ['draft', 'planned', 'today', 'in_progress', 'report_missing', 'reported', 'missed', 'cancelled'];
 
     /** The selection summary's product counts over the given visits (a cancelled visit does not count), most first. */
     const productDistribution = visits => {
@@ -473,9 +491,16 @@
             .sort((a, b) => b.count - a.count || (a.name < b.name ? -1 : 1));
     };
 
-    /** The detail panel's status box: tone + icon + title / text keys (with their arguments). */
-    const alertFor = (v, nowMs) => {
+    /** The detail panel's status box: tone + icon + title / text keys (with their arguments). WP-VW-W3 (WEB-a) —
+     *  args: what the texts take ({0}, {1}); in_progress = the running minutes + the server start as hh:mm (offset =
+     *  the browser's minutes east of UTC). */
+    const alertFor = (v, nowMs, offsetMinutes) => {
         const st = statusStyle(v && v.workStatus);
+        if (st.code === 'in_progress') {
+            const minutes = v.startedAt ? minutesSince(v.startedAt, nowMs) : 0;
+            const clock = clockOf(v.startedAt, offsetMinutes);
+            return { cssClass: st.cssClass, icon: st.icon, titleKey: 'AlertTitle_in_progress', textKey: 'AlertText_in_progress', hours: null, time: clock, minutes: minutes, args: [minutes, clock] };
+        }
         const cd = showsCountdown(st.code) ? countdown(v.reportDeadline, nowMs) : null;
         const locked = st.code === 'expired' || (st.code === 'missed' && cd && cd.passed);
         const key = st.code === 'missed' && locked ? 'missed_locked' : st.code;
@@ -485,9 +510,166 @@
             titleKey: 'AlertTitle_' + key,
             textKey: 'AlertText_' + key,
             hours: cd && !cd.passed ? cd.hours : null,
-            time: (v && v.startTime) || ''
+            time: (v && v.startTime) || '',
+            args: [cd && !cd.passed ? cd.hours : '', (v && v.startTime) || '']
         };
     };
+
+    // ── WP-VW-W3 (WEB-a) — start the visit (E3), in_progress ─────────────────────────────────────────────────
+    /** Whole minutes from <paramref iso> to now (never negative; an unreadable instant is 0). */
+    const minutesSince = (iso, nowMs) => {
+        const t = Date.parse(iso || '');
+        return isNaN(t) ? 0 : Math.max(0, Math.floor((nowMs - t) / 60000));
+    };
+
+    /** An instant as hh:mm on a clock <paramref offsetMinutes> east of UTC (the page passes the browser's own). */
+    const clockOf = (iso, offsetMinutes) => {
+        const t = Date.parse(iso || '');
+        if (isNaN(t)) { return ''; }
+        const d = new Date(t + (offsetMinutes || 0) * 60000);
+        return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+    };
+
+    /** Today, approved (a written plan, not a draft), no execution yet, and the execution keys => Start. */
+    const canStart = (v, perms) => !!v && v.workStatus === 'today' && !!v.plannedVisitId && !v.executionId && !!(perms && perms.execute);
+
+    /**
+     * The detail panel's actions with the visit execution (perms.execute = crm.visit-execution.read + record):
+     *   today, startable -> start (primary, full width) + not done / reschedule (record) + cancel (manage)
+     *   in_progress      -> back to the presentation + finish (both open the presentation page)
+     *   anything else    -> the W2 actions unchanged (actionsFor).
+     */
+    const visitActions = (v, today, perms) => {
+        const p = perms || {};
+        if (v && v.workStatus === 'in_progress') { return p.execute && v.plannedVisitId ? ['presentation', 'finish'] : []; }
+        if (canStart(v, p)) {
+            const out = ['start'];
+            if (p.record) { out.push('notDone', 'reschedule'); }
+            if (p.manage) { out.push('cancel'); }
+            return out;
+        }
+        return actionsFor(v, today, p);
+    };
+
+    /** The presentation page of a visit; the finish opens its summary (that page calls finish). */
+    const presentationUrl = (base, plannedVisitId, summary) => (base || '/CRM/VisitPresentation')
+        + '?plannedVisitId=' + encodeURIComponent(plannedVisitId || '') + (summary ? '&phase=summary' : '');
+
+    /** The tenant setting (contract.policy). Without it the CT defaults hold: location required, photo optional. */
+    const evidenceNeeds = policy => {
+        const p = policy || {};
+        return { photo: p.photoMode === 'required', location: p.locationMode !== 'info' };
+    };
+
+    const LOCATION_ERRORS = ['denied', 'unavailable', 'timeout'];
+    const hasFix = loc => !!loc && loc.status === 'ok' && typeof loc.latitude === 'number' && typeof loc.longitude === 'number';
+
+    /** What still blocks the start: 'photo' (required, none taken), 'location' (required, no position yet). */
+    const startMissing = (policy, ev) => {
+        const n = evidenceNeeds(policy);
+        const e = ev || {};
+        const out = [];
+        if (n.photo && !e.photo) { out.push('photo'); }
+        if (n.location && !hasFix(e.location)) { out.push('location'); }
+        return out;
+    };
+
+    /** "Start the presentation": nothing missing and no start in flight. The distance is the SERVER's to judge. */
+    const canBegin = (policy, ev) => !(ev && ev.busy) && startMissing(policy, ev).length === 0;
+
+    /**
+     * The location box. loc = { status: pending | ok | denied | unavailable | timeout, accuracyMeters }. An accuracy
+     * worse than the setting's maxAccuracyMeters is shown as inaccurate (the server decides; this only warns).
+     */
+    const locationView = (loc, policy) => {
+        const l = loc || { status: 'pending' };
+        const max = (policy && policy.maxAccuracyMeters) || null;
+        const required = evidenceNeeds(policy).location;
+        if (hasFix(l)) {
+            const acc = typeof l.accuracyMeters === 'number' ? Math.round(l.accuracyMeters) : null;
+            const bad = acc != null && max != null && acc > max;
+            return { status: bad ? 'inaccurate' : 'ok', tone: bad ? 'warning' : 'success', labelKey: bad ? 'Loc_inaccurate' : 'Loc_ok',
+                textKey: bad ? 'Loc_inaccurateDetail' : 'Loc_okDetail', args: [acc == null ? '—' : acc, max == null ? '—' : max], required: required, retry: bad };
+        }
+        const status = LOCATION_ERRORS.indexOf(l.status) > -1 ? l.status : 'pending';
+        return { status: status, tone: status === 'pending' ? 'muted' : 'danger', labelKey: 'Loc_' + status, textKey: status === 'pending' ? null : 'Loc_' + status + 'Detail',
+            args: [], required: required, retry: status !== 'pending' };
+    };
+
+    /** navigator.geolocation's error code -> our status (1 denied, 2 unavailable, 3 timeout). */
+    const geoErrorStatus = err => (err && err.code === 1 ? 'denied' : err && err.code === 3 ? 'timeout' : 'unavailable');
+
+    const num = n => String(Number(n)); // invariant: "41.0123", never "41,0123"
+
+    /**
+     * The POST start multipart fields, in order: [name, value, fileName?]. plannedVisitId, kind; the position
+     * (latitude, longitude, accuracyMeters) or why there is none (locationError); the photo (JPEG) + its capture time.
+     */
+    const startFields = (plannedVisitId, ev) => {
+        const e = ev || {};
+        const out = [['plannedVisitId', plannedVisitId], ['kind', e.kind || 'in_person']];
+        if (hasFix(e.location)) {
+            out.push(['latitude', num(e.location.latitude)], ['longitude', num(e.location.longitude)]);
+            if (typeof e.location.accuracyMeters === 'number') { out.push(['accuracyMeters', num(e.location.accuracyMeters)]); }
+        } else if (e.location && LOCATION_ERRORS.indexOf(e.location.status) > -1) {
+            out.push(['locationError', e.location.status]);
+        }
+        if (e.photo) {
+            out.push(['photo', e.photo, e.photoName || 'visit-photo.jpg']);
+            if (e.photoCapturedAt) { out.push(['photoCapturedAt', e.photoCapturedAt]); }
+        }
+        return out;
+    };
+
+    const PHOTO_MAX_EDGE = 1600;
+    const PHOTO_QUALITY = 0.85;
+    const PHOTO_TYPE = 'image/jpeg';
+
+    /** The JPEG's size: the longest edge at most 1600 px, the ratio kept, never enlarged. */
+    const photoSize = (width, height) => {
+        const w = Math.max(1, Math.round(width || 0)), h = Math.max(1, Math.round(height || 0));
+        const scale = Math.min(1, PHOTO_MAX_EDGE / Math.max(w, h));
+        return { width: Math.max(1, Math.round(w * scale)), height: Math.max(1, Math.round(h * scale)) };
+    };
+
+    /** getUserMedia: the phone (list layout) asks for the BACK camera; a desktop / tablet takes its own. No sound. */
+    const cameraConstraints = layout => ({ audio: false, video: layout === 'list' ? { facingMode: { ideal: 'environment' } } : true });
+
+    /** A camera failure -> the user's text key: refused, missing, else failed. */
+    const cameraErrorKey = err => {
+        const name = err && err.name;
+        if (name === 'NotAllowedError' || name === 'SecurityError') { return 'Cam_denied'; }
+        if (name === 'NotFoundError' || name === 'OverconstrainedError' || name === 'NotReadableError' || name === 'unsupported') { return 'Cam_unavailable'; }
+        return 'Cam_failed';
+    };
+
+    const START_CODES = [
+        'visit_not_today', 'visit_not_confirmed', 'visit_already_started', 'visit_already_reported',
+        'visit_location_required', 'visit_location_too_far', 'visit_location_inaccurate', 'visit_account_location_unknown',
+        'visit_photo_required', 'visit_photo_invalid', 'visit_capture_invalid', 'visit_evidence_store_unavailable',
+        'visit_execution_not_found', 'visit_execution_concurrency_conflict'
+    ];
+    const DISTANCE_PREFIX = 'distance_meters=';
+
+    /**
+     * A refused start -> { key, code, distanceMeters, hintKey }: the code's text (StartErr_*), the distance a too-far
+     * refusal carries ("distance_meters=N"), and for too far the setting's hint. Unknown / network -> UploadFailed /
+     * ActionFailed (never a raw code).
+     */
+    const startError = response => {
+        const errors = response && response.body && Array.isArray(response.body.errors) ? response.body.errors : [];
+        const code = errors.find(c => START_CODES.indexOf(c) > -1) || null;
+        const line = errors.find(c => typeof c === 'string' && c.indexOf(DISTANCE_PREFIX) === 0);
+        const distance = line ? Number(line.slice(DISTANCE_PREFIX.length)) : null;
+        if (code) {
+            return { key: 'StartErr_' + code, code: code, distanceMeters: distance != null && isFinite(distance) ? distance : null, hintKey: code === 'visit_location_too_far' ? 'Loc_requiredNote' : null };
+        }
+        if (response && response.status === 404) { return { key: 'StartErr_visit_execution_not_found', code: null, distanceMeters: null, hintKey: null }; }
+        return { key: !response || response.status === 0 ? 'UploadFailed' : 'ActionFailed', code: null, distanceMeters: null, hintKey: null };
+    };
+
+    /** A distance in the user's language: under 1 km in metres, else km with one decimal (the page formats the number). */
+    const distanceParts = meters => (meters == null ? null : meters < 1000 ? { key: 'DistanceMeters', value: Math.round(meters) } : { key: 'DistanceKm', value: Math.round(meters / 100) / 10 });
 
     return {
         STATUSES, statusStyle, countdown, showsCountdown, layoutFor, PHONE_MAX, actionsFor, noteState, canSave,
@@ -496,6 +678,9 @@
         eventOf, unplannedBody,
         canPlanWeek, PIN_STEP, roundToStep, pinFromDrop, pinsWith, PIN_CODES, pinKey, pinText, pinMoveCode,
         dragItem, parseDragItem, accountOptions, unplacedRows, sessionVersionOf,
-        compactCard, tinyCard, cardModel, stepMinutes, estimate, monthCell, DIALOG_TABS, dialogTabs, dayHead, LEGEND, productDistribution, alertFor, isPromo
+        compactCard, tinyCard, cardModel, stepMinutes, estimate, monthCell, DIALOG_TABS, dialogTabs, dayHead, LEGEND, productDistribution, alertFor, isPromo,
+        minutesSince, clockOf, canStart, visitActions, presentationUrl, evidenceNeeds, startMissing, canBegin, locationView,
+        geoErrorStatus, startFields, PHOTO_MAX_EDGE, PHOTO_QUALITY, PHOTO_TYPE, photoSize, cameraConstraints, cameraErrorKey,
+        START_CODES, startError, distanceParts
     };
 }));

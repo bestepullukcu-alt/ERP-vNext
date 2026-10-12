@@ -12,6 +12,10 @@
  * Week / Month; FullCalendar's own toolbar hidden), the week inside it, the cards / day heads / month cells / legend
  * of the mockup, the detail panel's blocks, ONE E2 dialog with three tabs and the Targets panel's cards. Behaviour
  * (data, requests, the two-step save, the drag rules, the permissions) is unchanged.
+ * WP-VW-W3 (WEB-a) — start the visit: the in_progress card (pulse dot + "N min"), the detail panel's Start / Back to
+ * the presentation / Finish (/CRM/VisitPresentation), and E3 — the evidence dialog (photo: file or webcam, JPEG at most
+ * 1600 px, quality 0.85; the browser position; the server's start time) whose Start follows the tenant setting
+ * (contract.policy) and posts multipart to /api/execution/start. The distance is the SERVER's; this page only shows it.
  */
 (function (window, document) {
     'use strict';
@@ -32,8 +36,10 @@
         record: root.getAttribute('data-can-record') === 'true',
         apply: root.getAttribute('data-can-apply') === 'true',
         contacts: root.getAttribute('data-can-search-contacts') === 'true',
-        plan: root.getAttribute('data-can-plan') === 'true' // the Visit Planning read + generate keys
+        plan: root.getAttribute('data-can-plan') === 'true', // the Visit Planning read + generate keys
+        execute: root.getAttribute('data-can-execute') === 'true' // WP-VW-W3 — crm.visit-execution.read + record
     };
+    const presentationBase = root.getAttribute('data-presentation-url') || '/CRM/VisitPresentation';
 
     // ── tiny helpers ─────────────────────────────────────────────────────────────────────────────────────────
     const el = id => document.getElementById(id);
@@ -47,16 +53,20 @@
     const showModal = id => { const m = el(id); if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).show(); } };
     const hideModal = id => { const m = el(id); if (m && window.bootstrap) { window.bootstrap.Modal.getOrCreateInstance(m).hide(); } };
 
+    const asResult = r => r.text().then(t => {
+        let b = null;
+        try { b = t ? JSON.parse(t) : null; } catch (e) { b = null; }
+        return { ok: r.ok, status: r.status, body: b };
+    });
     const call = (method, path, body, prefix) => fetch((prefix || base) + path, {
         method: method,
         credentials: 'same-origin',
         headers: Object.assign({ Accept: 'application/json' }, body ? { 'Content-Type': 'application/json' } : {}),
         body: body ? JSON.stringify(body) : undefined
-    }).then(r => r.text().then(t => {
-        let b = null;
-        try { b = t ? JSON.parse(t) : null; } catch (e) { b = null; }
-        return { ok: r.ok, status: r.status, body: b };
-    })).catch(() => ({ ok: false, status: 0, body: null }));
+    }).then(asResult).catch(() => ({ ok: false, status: 0, body: null }));
+    // WP-VW-W3 — a multipart POST (the browser sets the boundary; no Content-Type of ours)
+    const upload = (path, form) => fetch(base + path, { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' }, body: form })
+        .then(asResult).catch(() => ({ ok: false, status: 0, body: null }));
     const get = path => call('GET', path);
     const post = (path, body) => call('POST', path, body);
 
@@ -69,6 +79,7 @@
         window: null,
         data: null,
         contract: null,
+        execContract: null, // WP-VW-W3 — the visit execution contract (policy = the tenant's evidence setting)
         filters: C.loadFilters(safeStorage()),
         layout: C.layoutFor(window.innerWidth),
         calendar: null,
@@ -237,6 +248,7 @@
         const icons = (m.pinned ? '<i class="bx bxs-pin" title="' + esc(L.Icon_Pinned || '') + (v.pinnedTime ? ' ' + esc(v.pinnedTime) : '') + '"></i>' : '')
             + (m.unplanned ? '<i class="bx bx-user-plus" title="' + esc(L.Icon_Unplanned || '') + '"></i>' : '')
             + (m.rescheduledFrom ? '<i class="bx bx-calendar-edit" title="' + esc(L.Icon_Rescheduled || '') + '"></i>' : '')
+            + (m.live ? '<span class="vw-live" aria-hidden="true"></span>' : '') // WP-VW-W3 — in_progress: the pulse dot
             + '<i class="bx ' + m.icon + ' vw-st-icon" title="' + esc(L[st.labelKey] || '') + '"></i>';
         const chips = m.chips.map(c => '<span class="vw-pchip ' + (c.promo ? 'vw-pchip-promo' : 'vw-pchip-reminder') + '">' + F.bidi(c.name) + '</span>').join('');
         return '<div class="vw-card ' + st.cssClass + (st.dashed ? ' vw-dashed' : '') + (st.strike ? ' vw-strike' : '') + (m.compact ? ' vw-compact' : '') + (m.tiny ? ' vw-tiny' : '') + '" title="' + esc(m.time) + '">'
@@ -430,9 +442,11 @@
             .filter(Boolean).join(' · '));
 
         // D3 — the status box (the mockup's words)
-        const a = C.alertFor(v, Date.now());
-        const title = fmt(L[a.titleKey] || L[st.labelKey] || '', a.hours != null ? a.hours : '', a.time);
-        const text = fmt(L[a.textKey] || '', a.hours != null ? a.hours : '', a.time);
+        const a = C.alertFor(v, Date.now(), -new Date().getTimezoneOffset());
+        // WP-VW-W3 — a startable visit says what happens next (the evidence step, then the presentation)
+        const textKey = a.textKey === 'AlertText_today' && C.canStart(v, perms) ? 'AlertText_today_start' : a.textKey;
+        const title = fmt(L[a.titleKey] || L[st.labelKey] || '', ...a.args);
+        const text = fmt(L[textKey] || '', ...a.args);
         const band = el('vw-detail-band');
         band.className = 'vw-alert ' + a.cssClass;
         band.innerHTML = '<i class="bx ' + a.icon + '"></i><div class="d-flex flex-column"><strong>' + esc(title) + '</strong>'
@@ -504,14 +518,23 @@
         notDone: { label: 'Action_notDone', tone: 'primary', icon: 'bx-x-circle' },
         reschedule: { label: 'Action_reschedule', tone: 'outline-primary', icon: 'bx-calendar-edit' },
         sendReport: { label: 'Action_sendReport', tone: 'primary', icon: 'bx-edit' },
-        plan: { label: 'Action_plan', tone: 'outline-primary', icon: 'bx-edit' }
+        plan: { label: 'Action_plan', tone: 'outline-primary', icon: 'bx-edit' },
+        // WP-VW-W3 (WEB-a)
+        start: { label: 'Action_start', tone: 'primary', icon: 'bx-play-circle' },
+        presentation: { label: 'Action_presentation', tone: 'primary', icon: 'bx-slideshow' },
+        finish: { label: 'Action_finish', tone: 'outline-primary', icon: 'bx-stop-circle' }
     };
 
     // D6 — the actions at the panel's foot, full width
     function renderActions(v) {
         const box = el('vw-detail-actions');
-        const keys = C.actionsFor(v, todayYmd(), perms);
+        const keys = C.visitActions(v, todayYmd(), perms); // WP-VW-W3 — the W2 actions + start / presentation / finish
         box.innerHTML = keys.map(k => {
+            if (k === 'start') { return '<button type="button" class="btn btn-primary vw-act-full" data-start="1"><i class="bx ' + ACTION.start.icon + '"></i> ' + esc(L[ACTION.start.label] || '') + '</button>'; }
+            if (k === 'presentation' || k === 'finish') {
+                const a = ACTION[k];
+                return '<a class="btn btn-' + a.tone + ' flex-fill" href="' + esc(C.presentationUrl(presentationBase, v.plannedVisitId, k === 'finish')) + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</a>';
+            }
             if (k === 'locked') { return '<div class="vw-locked-note"><i class="bx bx-lock-alt"></i> ' + esc(L.LockedInfo || '') + '</div>'; }
             const a = ACTION[k];
             if (k === 'result' || k === 'sendReport') { return '<a class="btn btn-' + a.tone + ' flex-fill" href="' + esc(executionUrl) + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</a>'; }
@@ -629,6 +652,179 @@
             kind: dlg.kind, plannedVisitId: v.plannedVisitId, reasonCode: dlg.reason.code, reasonNote: note || null,
             rescheduleToDate: dlg.date
         }).then(done);
+    }
+
+    // ── WP-VW-W3 (WEB-a) — E3: start the visit (photo, location, the server's start time) ─────────────────────
+    // The Start button follows the tenant setting (contract.policy: photo required / optional, location required / info)
+    // and what is still missing; the server decides the distance, the accuracy and the time. On success the presentation
+    // page opens. Nothing is kept in the browser: the photo is a JPEG blob in memory until the dialog closes.
+    const e3 = { visit: null, photo: null, photoUrl: null, photoCapturedAt: null, location: { status: 'pending' }, busy: false, stream: null, open: false };
+    const policy = () => (state.execContract && state.execContract.policy) || null;
+    const e3State = () => ({ photo: e3.photo, location: e3.location, busy: e3.busy });
+    const show = (id, on) => { const n = el(id); if (n) { n.classList.toggle('d-none', !on); } };
+
+    function openStart() {
+        const v = state.current;
+        if (!v || !C.canStart(v, perms)) { return; }
+        stopCamera(); clearPhoto();
+        e3.visit = v; e3.busy = false; e3.open = true;
+        el('vw-e3-target').innerHTML = [F.bidi(v.targetDisplayName || '—'), v.accountDisplayName ? F.bidi(v.accountDisplayName) : '',
+            esc(F.dayLabel(v.plannedDate) + (v.startTime ? ' ' + v.startTime + (v.endTime ? '–' + v.endTime : '') : ''))].filter(Boolean).join(' · ');
+        const needs = C.evidenceNeeds(policy());
+        setText('vw-e3-photo-need', '· ' + (needs.photo ? L.E3Required || '' : L.E3Optional || ''));
+        setText('vw-e3-loc-need', '· ' + (needs.location ? L.E3Required || '' : L.E3Optional || ''));
+        setText('vw-e3-webcam-label', state.layout === 'list' ? L.E3CameraPhone || '' : L.E3Webcam || '');
+        showError('vw-e3-photo-error', '');
+        showError('vw-e3-error', '');
+        const panel = el('vw-detail');
+        if (panel && window.bootstrap) { window.bootstrap.Offcanvas.getOrCreateInstance(panel).hide(); }
+        showModal('vw-e3');
+        locate();
+        if (state.layout === 'list') { openCamera(); } // the phone (mockup "E3 · Kamera + konum"): the back camera at once
+    }
+
+    function closeStart() {
+        e3.open = false; e3.visit = null;
+        stopCamera(); clearPhoto();
+    }
+
+    function showError(id, text, hint) {
+        const n = el(id); if (!n) { return; }
+        n.innerHTML = text ? esc(text) + (hint ? '<div class="small">' + esc(hint) + '</div>' : '') : '';
+        n.classList.toggle('d-none', !text);
+    }
+
+    // the browser position: pending → ok | denied | unavailable | timeout (the distance is the server's)
+    function locate() {
+        e3.location = { status: 'pending' };
+        syncStart();
+        const visit = e3.visit;
+        const geo = window.navigator && window.navigator.geolocation;
+        if (!geo) { e3.location = { status: 'unavailable' }; syncStart(); return; }
+        geo.getCurrentPosition(pos => {
+            if (e3.visit !== visit) { return; }
+            e3.location = { status: 'ok', latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracyMeters: pos.coords.accuracy };
+            syncStart();
+        }, err => {
+            if (e3.visit !== visit) { return; }
+            e3.location = { status: C.geoErrorStatus(err) };
+            syncStart();
+        }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    }
+
+    function syncStart() {
+        const pol = policy();
+        const lv = C.locationView(e3.location, pol);
+        const chip = el('vw-e3-loc-chip');
+        if (chip) { chip.className = 'vw-loc-chip vw-tone-' + lv.tone; chip.textContent = L[lv.labelKey] || ''; }
+        const detail = lv.textKey ? fmt(L[lv.textKey] || '', ...lv.args.map(x => F.isolate(x))) : '';
+        const note = lv.status === 'ok' ? (lv.required ? '' : L.Loc_infoNote || '') : (lv.status === 'pending' ? '' : (lv.required ? L.Loc_requiredMissing || '' : L.Loc_infoNote || ''));
+        setText('vw-e3-loc-text', [detail, note].filter(Boolean).join(' '));
+        show('vw-e3-loc-retry', lv.retry);
+        // the photo block: empty → camera → taken
+        show('vw-e3-empty', !e3.photo && !e3.stream);
+        show('vw-e3-camera', !e3.photo && !!e3.stream);
+        show('vw-e3-shutter-row', !e3.photo && !!e3.stream);
+        show('vw-e3-taken', !!e3.photo);
+        // "Missing: photo, location" / "The start time is taken from the server."
+        const missing = C.startMissing(pol, e3State());
+        setText('vw-e3-hint', missing.length ? fmt(L.E3Missing || '{0}', missing.map(k => L['E3Missing_' + k] || k).join(', ')) : (L.E3HintReady || ''));
+        const begin = el('vw-e3-begin');
+        if (begin) { begin.disabled = !C.canBegin(pol, e3State()); begin.setAttribute('aria-busy', String(e3.busy)); }
+    }
+
+    function clearPhoto() {
+        if (e3.photoUrl && window.URL && window.URL.revokeObjectURL) { window.URL.revokeObjectURL(e3.photoUrl); }
+        e3.photo = null; e3.photoUrl = null; e3.photoCapturedAt = null;
+        const img = el('vw-e3-preview'); if (img) { img.removeAttribute && img.removeAttribute('src'); }
+    }
+
+    function setPhoto(blob, capturedAt) {
+        const max = state.execContract && state.execContract.maxEvidenceBytes;
+        if (max && blob.size > max) { showError('vw-e3-photo-error', L.Photo_tooLarge || ''); syncStart(); return; }
+        clearPhoto(); stopCamera();
+        e3.photo = blob;
+        e3.photoCapturedAt = capturedAt || null;
+        e3.photoUrl = window.URL && window.URL.createObjectURL ? window.URL.createObjectURL(blob) : null;
+        const img = el('vw-e3-preview'); if (img && e3.photoUrl) { img.src = e3.photoUrl; }
+        showError('vw-e3-photo-error', '');
+        syncStart();
+    }
+
+    /** Any image (file or video frame) → a JPEG: the longest edge at most 1600 px, quality 0.85. */
+    function toJpeg(source, width, height) {
+        const size = C.photoSize(width, height);
+        const canvas = document.createElement('canvas');
+        canvas.width = size.width; canvas.height = size.height;
+        const ctx = canvas.getContext && canvas.getContext('2d');
+        if (!ctx || !canvas.toBlob) { return Promise.reject(new Error('canvas')); }
+        ctx.drawImage(source, 0, 0, size.width, size.height);
+        return new Promise((resolve, reject) => canvas.toBlob(b => (b ? resolve(b) : reject(new Error('blob'))), C.PHOTO_TYPE, C.PHOTO_QUALITY));
+    }
+
+    function photoFromFile(file) {
+        if (!file) { return; }
+        if (!/^image\//.test(file.type || '')) { showError('vw-e3-photo-error', L.Photo_invalid || ''); return; }
+        const url = window.URL.createObjectURL(file);
+        const img = new window.Image();
+        img.onload = () => {
+            toJpeg(img, img.naturalWidth, img.naturalHeight)
+                .then(b => setPhoto(b, null), () => showError('vw-e3-photo-error', L.Photo_invalid || ''))
+                .then(() => window.URL.revokeObjectURL(url));
+        };
+        img.onerror = () => { window.URL.revokeObjectURL(url); showError('vw-e3-photo-error', L.Photo_invalid || ''); };
+        img.src = url;
+    }
+
+    // the webcam (getUserMedia): the phone asks for the back camera; a refusal / no camera is said, the upload stays
+    function openCamera() {
+        const md = window.navigator && window.navigator.mediaDevices;
+        if (!md || !md.getUserMedia) { showError('vw-e3-photo-error', L[C.cameraErrorKey({ name: 'unsupported' })] || ''); return; }
+        showError('vw-e3-photo-error', '');
+        md.getUserMedia(C.cameraConstraints(state.layout)).then(stream => {
+            if (!e3.open) { stream.getTracks().forEach(t => t.stop()); return; }
+            e3.stream = stream;
+            const video = el('vw-e3-video');
+            if (video) { video.srcObject = stream; if (video.play) { Promise.resolve(video.play()).catch(() => {}); } }
+            syncStart();
+        }, err => showError('vw-e3-photo-error', L[C.cameraErrorKey(err)] || ''));
+    }
+
+    function shoot() {
+        const video = el('vw-e3-video');
+        if (!video || !video.videoWidth) { return; }
+        toJpeg(video, video.videoWidth, video.videoHeight).then(b => setPhoto(b, new Date().toISOString()), () => showError('vw-e3-photo-error', L.Photo_invalid || ''));
+    }
+
+    function stopCamera() {
+        if (e3.stream) { e3.stream.getTracks().forEach(t => t.stop()); e3.stream = null; }
+        const video = el('vw-e3-video'); if (video) { video.srcObject = null; }
+    }
+
+    function showStartError(r) {
+        const e = C.startError(r);
+        const d = C.distanceParts(e.distanceMeters);
+        const distance = d ? fmt(L[d.key] || '{0}', d.key === 'DistanceKm' ? F.number(d.value, 1) : d.value) : '—';
+        showError('vw-e3-error', fmt(L[e.key] || L.ActionFailed || '', F.isolate(distance)), e.hintKey ? L[e.hintKey] || '' : '');
+    }
+
+    /** "Start the presentation": POST start (multipart); success (or a visit already started) opens the presentation. */
+    function beginVisit() {
+        const v = e3.visit;
+        if (!v || !C.canBegin(policy(), e3State())) { return; }
+        e3.busy = true; syncStart(); showError('vw-e3-error', '');
+        const form = new window.FormData();
+        C.startFields(v.plannedVisitId, { location: e3.location, photo: e3.photo, photoName: 'visit-photo.jpg', photoCapturedAt: e3.photoCapturedAt })
+            .forEach(f => (f.length > 2 ? form.append(f[0], f[1], f[2]) : form.append(f[0], f[1])));
+        upload('/execution/start', form).then(r => {
+            e3.busy = false;
+            if (r.ok || C.startError(r).code === 'visit_already_started') {
+                window.location.assign(C.presentationUrl(presentationBase, v.plannedVisitId, false));
+                return;
+            }
+            syncStart();
+            showStartError(r);
+        });
     }
 
     // ── approve / reopen the week (the existing Visit Planning endpoints) ─────────────────────────────────────
@@ -1020,6 +1216,8 @@
         if (view) { switchView(view.getAttribute('data-view')); }
     });
     document.addEventListener('click', e => {
+        const s = e.target.closest('[data-start]');
+        if (s) { openStart(); return; } // WP-VW-W3 — E3
         const d = e.target.closest('[data-dialog]');
         if (d) { openDialog(d.getAttribute('data-dialog')); return; }
         const tab = e.target.closest('[data-tab]');
@@ -1058,6 +1256,16 @@
     on('vw-prev', 'click', () => navigate(-1));
     on('vw-next', 'click', () => navigate(1));
     on('vw-today', 'click', () => navigate(0));
+
+    // WP-VW-W3 (WEB-a) — E3
+    on('vw-e3-upload', 'click', () => { const f = el('vw-e3-file'); if (f) { f.value = ''; f.click(); } });
+    on('vw-e3-file', 'change', e => photoFromFile(e.target.files && e.target.files[0]));
+    on('vw-e3-webcam', 'click', openCamera);
+    on('vw-e3-shutter', 'click', shoot);
+    on('vw-e3-retake', 'click', () => { clearPhoto(); syncStart(); });
+    on('vw-e3-loc-retry', 'click', locate);
+    on('vw-e3-begin', 'click', beginVisit);
+    on('vw-e3', 'hidden.bs.modal', closeStart);
 
     // WP-VW-W2 (WEB-b) — Plan mode
     on('vw-mode-execute', 'click', () => setMode('execute'));
@@ -1112,5 +1320,6 @@
     });
 
     get('/contract').then(r => { if (r.ok && r.body && r.body.data) { state.contract = r.body.data; } });
+    if (perms.execute) { get('/execution/contract').then(r => { if (r.ok && r.body && r.body.data) { state.execContract = r.body.data; if (e3.open) { syncStart(); } } }); }
     load(true);
 }(window, document));

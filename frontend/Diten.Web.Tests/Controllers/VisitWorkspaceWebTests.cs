@@ -74,13 +74,14 @@ public sealed class VisitWorkspaceWebTests
             "process.stdout.write(JSON.stringify({ all: out, unknown: C.statusStyle('bogus'), count: C.STATUSES.length }));");
         if (node is null) { return; }
         var r = JsonDocument.Parse(node).RootElement;
-        Assert.Equal(10, r.GetProperty("count").GetInt32());
+        // WP-VW-W3 (WEB-a) — in_progress joins the ten W2 statuses (before today, the W3-BE-a order)
+        Assert.Equal(11, r.GetProperty("count").GetInt32());
         var all = r.GetProperty("all").EnumerateArray().ToList();
-        Assert.Equal(10, all.Select(s => s.GetProperty("cssClass").GetString()).Distinct().Count());
+        Assert.Equal(11, all.Select(s => s.GetProperty("cssClass").GetString()).Distinct().Count());
         Assert.All(all, s => Assert.StartsWith("bx-", s.GetProperty("icon").GetString()));
         var byCode = all.ToDictionary(s => s.GetProperty("code").GetString()!);
         Assert.Equal(
-            new[] { "cancelled", "not_done", "rescheduled", "reported", "expired", "report_missing", "missed", "today", "planned", "draft" },
+            new[] { "cancelled", "not_done", "rescheduled", "reported", "expired", "report_missing", "missed", "in_progress", "today", "planned", "draft" },
             byCode.Keys);
         Assert.True(byCode["draft"].GetProperty("dashed").GetBoolean() && byCode["draft"].GetProperty("faded").GetBoolean());
         Assert.True(byCode["cancelled"].GetProperty("strike").GetBoolean());
@@ -342,13 +343,14 @@ public sealed class VisitWorkspaceWebTests
         // the view serializes exactly the script keys and uses only declared view keys
         var view = ViewSource();
         Assert.Contains("VisitWorkspaceIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)", view);
-        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(view, "Localizer\\[\"([A-Za-z_]+)\"\\]"))
+        // WP-VW-W3 (WEB-a) — a key may carry a digit (E3…): the patterns read it whole (a stricter check, not a looser one)
+        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(view, "Localizer\\[\"([A-Za-z0-9_]+)\"\\]"))
         {
             Assert.Contains(m.Groups[1].Value, VisitWorkspaceIndex.ViewKeys);
         }
 
         var js = Script("visit-workspace.js");
-        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(js, "\\bL\\.([A-Za-z_]+)"))
+        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(js, "\\bL\\.([A-Za-z0-9_]+)"))
         {
             Assert.Contains(m.Groups[1].Value, VisitWorkspaceIndex.ScriptKeys);
         }

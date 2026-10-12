@@ -24,4 +24,8 @@ public sealed class VisitWorkspaceIndexViewModel
 
     /// <summary>The doctor search of the unplanned-visit dialog: crm.contact.read.</summary>
     public bool CanSearchContacts { get; set; }
+
+    /// <summary>WP-VW-W3 (WEB-a) — start a visit (E3) and go back to its presentation: crm.visit-execution.read AND
+    /// crm.visit-execution.record. Without them the panel keeps the W2 actions and E3 is not drawn.</summary>
+    public bool CanExecute { get; set; }
 }

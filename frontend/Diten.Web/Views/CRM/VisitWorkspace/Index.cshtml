@@ -27,6 +27,8 @@
      data-can-apply="@Model.CanApplyWeek.ToString().ToLowerInvariant()"
      data-can-search-contacts="@Model.CanSearchContacts.ToString().ToLowerInvariant()"
      data-can-plan="@Model.CanPlan.ToString().ToLowerInvariant()"
+     data-can-execute="@Model.CanExecute.ToString().ToLowerInvariant()"
+     data-presentation-url="/CRM/VisitPresentation"
      data-planning-api-base="/CRM/VisitPlanning/api">
 
     @* ── WP-VW-W2 (WEB-c) — the page head (mockup): the title; the period chip + the subtitle; under it, on the left,
@@ -191,6 +193,71 @@
         </div>
     </div>
 </div>
+
+@* ── WP-VW-W3 (WEB-a) — E3: start the visit. A dialog on a desktop / tablet, full screen on a phone. The photo (file
+   or webcam, KVKK), the location (the browser's; the server measures the distance) and the server's start time. The
+   mockup's design-note box (tenant setting buttons) and the QR / anti-fraud cards are NOT drawn. ── *@
+@if (Model.CanExecute)
+{
+<div class="modal fade" id="vw-e3" tabindex="-1" aria-labelledby="vw-e3-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down vw-e3-dialog">
+        <div class="modal-content">
+            <div class="vw-e3-head">
+                <div style="min-width:0">
+                    <h5 class="vw-e3-title" id="vw-e3-title">@Localizer["E3Title"]</h5>
+                    <div class="vw-e3-sub" id="vw-e3-target"></div>
+                </div>
+                <button type="button" class="vw-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button>
+            </div>
+            <div class="modal-body vw-e3-body">
+                <section class="vw-e3-col">
+                    <div class="vw-e3-cap">@Localizer["E3Photo"] <span class="vw-e3-need" id="vw-e3-photo-need"></span></div>
+                    <div class="vw-e3-shot">
+                        <div class="vw-e3-empty" id="vw-e3-empty">
+                            <i class="bx bx-camera"></i>
+                            <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                <button type="button" class="vw-e3-btn vw-e3-btn-p" id="vw-e3-upload"><i class="bx bx-upload"></i> @Localizer["E3Upload"]</button>
+                                <button type="button" class="vw-e3-btn vw-e3-btn-o" id="vw-e3-webcam"><i class="bx bx-webcam"></i> <span id="vw-e3-webcam-label">@Localizer["E3Webcam"]</span></button>
+                            </div>
+                        </div>
+                        <div class="vw-e3-camera d-none" id="vw-e3-camera">
+                            <video id="vw-e3-video" autoplay playsinline muted></video>
+                            <div class="vw-e3-kvkk-over">@Localizer["E3Kvkk"]</div>
+                        </div>
+                        <div class="vw-e3-taken d-none" id="vw-e3-taken">
+                            <img id="vw-e3-preview" alt="@Localizer["E3PhotoTaken"]" />
+                            <button type="button" class="vw-e3-btn vw-e3-btn-o" id="vw-e3-retake">@Localizer["E3Retake"]</button>
+                        </div>
+                    </div>
+                    <div class="vw-e3-shutter-row d-none" id="vw-e3-shutter-row">
+                        <button type="button" class="vw-e3-shutter" id="vw-e3-shutter" aria-label="@Localizer["E3Shutter"]"><span></span></button>
+                    </div>
+                    <input type="file" id="vw-e3-file" accept="image/jpeg,image/png" class="d-none" aria-hidden="true" tabindex="-1" />
+                    <div class="vw-e3-error d-none" id="vw-e3-photo-error" role="alert"></div>
+                    <div class="vw-e3-kvkk"><i class="bx bx-shield-quarter"></i><span>@Localizer["E3Kvkk"]</span></div>
+                </section>
+                <section class="vw-e3-col">
+                    <div class="vw-e3-cap">@Localizer["E3LocationTime"]</div>
+                    <div class="vw-e3-box">
+                        <div class="d-flex justify-content-between align-items-center gap-2"><span class="vw-e3-h">@Localizer["E3Location"] <span class="vw-e3-need" id="vw-e3-loc-need"></span></span><span class="vw-loc-chip" id="vw-e3-loc-chip"></span></div>
+                        <div class="vw-e3-loc-text" id="vw-e3-loc-text"></div>
+                        <button type="button" class="vw-e3-link d-none" id="vw-e3-loc-retry"><i class="bx bx-refresh"></i> @Localizer["E3Retry"]</button>
+                    </div>
+                    <div class="vw-e3-box vw-e3-row"><span class="vw-e3-h">@Localizer["E3StartLabel"]</span><span>@Localizer["E3StartValue"]</span></div>
+                </section>
+            </div>
+            <div class="vw-e3-alert d-none" id="vw-e3-error" role="alert"></div>
+            <div class="vw-e3-foot">
+                <span class="vw-e3-hint" id="vw-e3-hint"></span>
+                <div class="vw-e3-btns">
+                    <button type="button" class="vw-e3-btn vw-e3-btn-s vw-e3-cancel" data-bs-dismiss="modal">@Localizer["E3Cancel"]</button>
+                    <button type="button" class="vw-e3-btn vw-e3-btn-p vw-e3-begin" id="vw-e3-begin" disabled><i class="bx bx-slideshow"></i> @Localizer["E3Begin"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
 
 @* ── WP-VW-W2 (WEB-b) — apply products to the institution's plan doctors: the first promo, the others reminders ── *@
 <div class="modal fade" id="vw-products-modal" tabindex="-1" aria-labelledby="vw-products-title" aria-hidden="true">

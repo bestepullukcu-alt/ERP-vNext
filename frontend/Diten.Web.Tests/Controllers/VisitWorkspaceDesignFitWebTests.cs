@@ -128,7 +128,7 @@ public sealed class VisitWorkspaceDesignFitWebTests
         Assert.True(r.GetProperty("dayOver").GetProperty("over").GetBoolean());
         Assert.Equal(0, r.GetProperty("dayOver").GetProperty("freeMinutes").GetInt32());
         Assert.False(r.GetProperty("dayOver").GetProperty("isToday").GetBoolean());
-        Assert.Equal(new[] { "draft", "planned", "today", "report_missing", "reported", "missed", "cancelled" }, r.GetProperty("legend").EnumerateArray().Select(x => x.GetString()));
+        Assert.Equal(new[] { "draft", "planned", "today", "in_progress", "report_missing", "reported", "missed", "cancelled" }, r.GetProperty("legend").EnumerateArray().Select(x => x.GetString()));
 
         Assert.Equal("[{\"name\":\"A\",\"count\":2},{\"name\":\"B\",\"count\":1}]", r.GetProperty("dist").GetRawText());
 
