@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+    <ProjectReference Include="..\Diten.SafetyStockService.Application\Diten.SafetyStockService.Application.csproj" />
+    <ProjectReference Include="..\Diten.SafetyStockService.Infrastructure\Diten.SafetyStockService.Infrastructure.csproj" />
+    <ProjectReference Include="..\Diten.SafetyStockService.Persistence\Diten.SafetyStockService.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+  </ItemGroup>
+</Project>
