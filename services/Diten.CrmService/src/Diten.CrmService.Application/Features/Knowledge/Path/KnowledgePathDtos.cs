@@ -115,7 +115,9 @@ public sealed record KnowledgePathStepDto(
     string? UpdatedBy,
     bool IsArchived,
     // WP-KP-1 — the chain slot (null on a legacy path / an unplaced step).
-    KnowledgePathArrangementDto? Arrangement = null);
+    KnowledgePathArrangementDto? Arrangement = null,
+    // WP-VW-W3 (W3-BE-b, additive) — the step's presentation notes (null = none).
+    KnowledgePathStepPresentationDto? Presentation = null);
 
 public sealed record KnowledgePathBranchConditionDto(
     string ConditionCode,

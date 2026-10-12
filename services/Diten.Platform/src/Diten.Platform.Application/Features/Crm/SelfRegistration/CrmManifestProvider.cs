@@ -43,6 +43,8 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string KnowledgePathRead = "crm.knowledge.path.read";
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
     private const string ClaimRead = "crm.claim.read";
+    // WP-VW-W3 (W3-BE-b) — the objection library (approved answers to doctor objections; approve ≠ manage, SoD).
+    private const string ObjectionResponseRead = "crm.objection-response.read";
     private const string EligibilityRead = "crm.eligibility.read";
     private const string SafetyTextRead = "crm.safety-text.read";
     private const string CountryLegalProfileRead = "crm.country-legal-profile.read";
@@ -181,6 +183,14 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
+                ]),
+                // WP-VW-W3 (W3-BE-b) — the objection library's keys. NOT in the navigation yet: its authoring screen is
+                // W3-WEB-c (mockup decision first), so the page only declares the read / manage / approve keys for RBAC.
+                // approve is a SEPARATE key from manage (author-vs-approver SoD).
+                new ModuleManifestPage("OBJECTION_RESPONSES", "Objection Responses", "/CRM/ObjectionResponses", ObjectionResponseRead, null, false, "List", 145,
+                [
+                    new ModuleManifestAction("MANAGE", "New Objection Response", "crm.objection-response.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("APPROVE", "Approve", "crm.objection-response.approve", "RowAction", 20, false, false, true)
                 ]),
                 // WP-KP-5a-UI — the Regulatory-approved master data the page designer's locked blocks will read
                 // (DESIGN-KP-STUDIO §2.4): safety texts (product × country × language) and country legal profiles

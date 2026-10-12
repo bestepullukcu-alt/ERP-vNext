@@ -115,6 +115,8 @@ public static class DependencyInjection
         // day kinds / budget / load (calendar days, reschedule options and the reschedule date rule share it).
         services.AddScoped<Features.VisitWorkspace.VisitReasonValidator>();
         services.AddScoped<Features.VisitWorkspace.VisitWorkspaceDays>();
+        // WP-VW-W3 (W3-BE-b) — the objection library's content rules (category set, MDM product, approved claims).
+        services.AddScoped<Features.Knowledge.ObjectionResponses.ObjectionResponseRules>();
         // W2-BE-c (C1) — the engine preview behind a tenant-keyed, bounded cache (session version + today + the rep's
         // written visits / reports stamp in the key); the calendar and the reschedule options share it.
         services.AddSingleton<Features.VisitWorkspace.WorkspacePreviewCache>();

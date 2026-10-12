@@ -135,6 +135,7 @@ public static class DependencyInjection
         services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
         // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
         services.AddScoped<IClaimRepository, ClaimRepository>();
+        services.AddScoped<IObjectionResponseRepository, ObjectionResponseRepository>(); // WP-VW-W3 (W3-BE-b)
         // WP-CL-BE-1 (claims v2) — claim country versions.
         services.AddScoped<IClaimCountryVersionRepository, ClaimCountryVersionRepository>();
         // WP-CL-BE-4 — consumed-event inbox (claim workflow outcome consumer).
@@ -620,6 +621,14 @@ public static class DependencyInjection
         // silently returns nothing (the new-aggregate class-map trap).
         // WP-CL-BE-1 (claims v2) — the new optional Guid members (ProductId, AudienceProfileIds, ResponsibleOrgUnitId,
         // SupersedesClaimId) take the same string-Guid convention. A pre-v2 document simply lacks them (defaults apply).
+        // WP-VW-W3 (W3-BE-b) — the objection library: ProductId and the ClaimIds list take the string-Guid convention (the
+        // new-aggregate class-map trap: without it the ids store binary and every by-id read silently finds nothing).
+        Map<ObjectionResponse>(map =>
+        {
+            map.GetMemberMap(x => x.ProductId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ClaimIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+        });
         Map<Claim>(map =>
         {
             map.GetMemberMap(x => x.ComponentRefs)
@@ -786,6 +795,18 @@ public static class DependencyInjection
                 map.GetMemberMap(s => s.ContentId).SetSerializer(stringGuid);
                 map.GetMemberMap(s => s.PrerequisiteStepId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
                 map.GetMemberMap(s => s.ConceptNodeId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        // WP-VW-W3 (W3-BE-b) — the step's presentation notes: a new embedded type, so its Guid list takes the string-Guid
+        // convention here (the new-type GUID trap). An older step has no "Presentation" (null).
+        if (!BsonClassMap.IsClassMapRegistered(typeof(KnowledgePathStepPresentation)))
+        {
+            BsonClassMap.RegisterClassMap<KnowledgePathStepPresentation>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(p => p.ObjectionResponseIds)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
             });
         }
         if (!BsonClassMap.IsClassMapRegistered(typeof(KnowledgePathBranchCondition)))

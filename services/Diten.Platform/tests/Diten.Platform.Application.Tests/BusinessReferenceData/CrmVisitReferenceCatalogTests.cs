@@ -45,7 +45,8 @@ public sealed class CrmVisitReferenceCatalogTests
         var document = InvokeLoader<BusinessReferenceDataCatalogDocument>("Parse", payload);
         Assert.Equal("BusinessReferenceData", document.Module);
         Assert.False(string.IsNullOrWhiteSpace(document.CatalogVersion));
-        var set = Assert.Single(document.Sets);
+        // WP-VW-W3 — the catalog now also carries visit-objection-category (its own test); this one reads its set by code.
+        var set = Assert.Single(document.Sets, s => s.SetCode == SetCode);
         return InvokeLoader<BusinessReferenceDataCatalogSetDocument>("NormalizeSet", set);
     }
 

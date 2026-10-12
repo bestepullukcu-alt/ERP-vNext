@@ -88,7 +88,9 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         "planning-center-type",
         "content-moderator-role",
         // WP-VW-W2 — the visit workspace cancel / not-done / reschedule reasons (CrmService validates; Web + mobile read).
-        "visit-outcome-reason"
+        "visit-outcome-reason",
+        // WP-VW-W3 — the doctor objection categories (CrmService validates the objection library; the presentation reads).
+        "visit-objection-category"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>
