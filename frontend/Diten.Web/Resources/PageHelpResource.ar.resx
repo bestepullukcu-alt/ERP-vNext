@@ -76,7 +76,10 @@
     <value>اختصارات لوحة المفاتيح في هذه الصفحة</value>
   </data>
   <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>في اللوحة الجانبية يحفظ مفتاح Enter؛ وفي الحقل متعدد الأسطر يحفظ Ctrl+Enter (⌘+Enter على Mac).</value>
+    <value>في اللوحة الجانبية يحفظ مفتاح Enter. أما الإجراء الذي لا يمكن التراجع عنه (النشر، الاعتماد، الإرسال، الحذف، الإلغاء…) فلا يُنفَّذ إلا بـ Ctrl+Enter (⌘+Enter على Mac)؛ ولا يفعل Enter وحده شيئًا هناك. وفي الحقل متعدد الأسطر يحفظ Ctrl+Enter.</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter (⌘+Enter على Mac). لا يُنفِّذ Enter وحده هذا الإجراء.</value>
   </data>
   <data name="Help.Panel.StartTour" xml:space="preserve">
     <value>ابدأ الجولة</value>

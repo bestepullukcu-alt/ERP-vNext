@@ -64,9 +64,9 @@ biçimindedir: büyük harf, yalnız harf ve rakam.
   (menüde görünmeyen alt sayfalar dahil) ∪ FROZEN `_Layout`'a düşen görünümler.
 - Metni olmayan ve defterde de olmayan sayfa = kırmızı.
 - Metni yazılmış ama defterde kalmış sayfa = kırmızı.
-- Satır sayısı, **defterin kendi başlığındaki** tavanı aşarsa kırmızı. **Defter yalnız küçülür.** Tavanı yükseltmek defter
-  belgesini değiştirmek demektir ve PR farkında görünür; test bir önceki sürümün tavanını göremez (öneri: CI'da
-  `git diff` ile tavan sayıları azalmadıysa kırmızı).
+- Satır sayısı, **defterin kendi başlığındaki** sayılara **EŞİT** olmak zorundadır (UX-COMMON-FIX2): bir satır eklemek
+  ya da silmek başlığı da düzenletir, böylece her değişiklik PR'da başlık satırıyla görünür. **Defter yalnız küçülür.**
+  Test bir önceki sürümün sayısını göremez; ana dala karşı denetim (`git show origin/main:…`) ayrı iştir (CT backlog'u).
 - **Yeni sayfa metniyle gelir; deftere satır eklenmez.**
 
 ## 3. Enter = birincil işlem (BL-586)
@@ -83,13 +83,34 @@ tıklamakla aynı şeydir: sayfanın kendi kaydetme işleyicisi, doğrulaması v
 
 Kaydet düğmesi `.btn-primary` değilse (ör. `btn-warning` "Sonlandır") **`data-dt-primary` zorunludur**.
 
+**Açık işaret (UX-COMMON-FIX2, CT kararı):** form alanı olan **her** panelin birincil düğmesi işaret taşır:
+`data-dt-primary="enter"` (çıplak Enter çalıştırır) ya da `data-dt-primary="chord"` (yalnız Ctrl / ⌘ + Enter).
+İşaretsiz panel = bekçi kırmızı. İşareti sayfa betiği eylem başına da koyabilir (Platform Tenants abonelik işlemi:
+iptal / askıya alma `chord`, atama / etkinleştirme / yenileme `enter`; görünümdeki statik işaret güvenli olan `chord`'dur).
+
 **Sonuçlu (geri alınamaz) işlem: `data-dt-primary="chord"`** (UX-COMMON-FIX1, CT kararı). Yayımla, onayla, reddet,
 gönder, sil, bitir / sonlandır, emekliye ayır, devre dışı bırak, devret, statü değiştir, ayır (rezerve et), kanıt kaydet.
 Böyle bir panelde **çıplak Enter hiçbir şey yapmaz** (doğal form gönderimi de olmaz); **Ctrl+Enter** (macOS'ta ⌘+Enter)
 çalıştırır. Çıplak Enter yalnız geri alınabilir işler içindir: taslak kaydet, oluştur, düzenle, süz, ara. Etiketi
-sonuçlu bir sözcük taşıyan birincil düğme `chord` işaretli olmak zorundadır (bekçi testi); etiketi yalnız "Kaydet" olan
-sonuçlu paneller (iş akışı görev işlemi, abonelik işlemi) işareti açıkça taşır. 70 panelin sınıflandırması:
-`ux-common-fix1-report.md` (2026-10-10): enter 52 · chord 13 · yok 3 · karar CT 2 (geçici `chord`).
+sonuçlu bir sözcük taşıyan birincil düğme `chord` işaretli olmak zorundadır; `enter` işaretli bir panelde sonuçlu sözcük
+de kırmızıdır (ikinci denetim). Etiketi yalnız "Kaydet" olan sonuçlu paneller (iş akışı görev işlemi, abonelik işlemi,
+kullanıcı daveti, platform yöneticisi oluşturma) işareti açıkça taşır.
+
+**Sınıflandırmanın kaynağı kodun kendisidir** (her panelin işareti) ve bekçisi
+`frontend/Diten.Web/tests/diten-enter-primary.test.js`'tir: işaretsiz panel, sonuçlu sözcüğü olan `enter` paneli ve
+listede olmayan bir istisna kırmızıdır; istisnalar adıyla ve gerekçesiyle o testte yazılıdır. CT kararları (FIX2):
+Gskus → `enter` (her modda onay penceresi açar); Governance Users oluştur → `chord` (davet e-postası gider); Platform
+Administrators oluştur → `chord` (ayrıcalıklı hesap + davet); Tenants abonelik işlemi → eylem başına (yukarıda).
+
+**Doğal form gönderimi kuralın arkasından olmaz (FIX2, R1):** birincil düğme `chord` işaretliyse ya da kendisi bir gönder
+düğmesiyse (`type="submit"`, türü yazılmamış `<button>`), panelde bir girdi ya da `<select>` üzerindeki Enter — onay
+kutusu, kapalı select, datalist alanı, basılı tuş, Alt+Enter — betik hiçbir şeye basmasa bile `preventDefault` edilir.
+Aksi hâlde tarayıcının örtük gönderimi o düğmeye basar (onaysız abonelik iptali, basılı tuşla tekrarlanan POST).
+Textarea, düğme, bağlantı, IME yazımı ve açık seçici bunun dışındadır.
+
+**Kullanıcıya söylenir (FIX2, R3):** `chord` işaretli düğme, paneli her açılışta `aria-keyshortcuts="Control+Enter
+Meta+Enter"` ve (kendi `title`'ı yoksa) kısayolu anlatan yerelleştirilmiş bir `title` alır
+(`Help.Panel.ChordTitle`, 7 dil). Yardım panelindeki `Help.Panel.EnterHint` chord'u anlatır.
 
 **İstisnalar:**
 
@@ -100,11 +121,16 @@ sonuçlu paneller (iş akışı görev işlemi, abonelik işlemi) işareti açı
 | IME yazımı (`isComposing`) | yok sayılır |
 | birincil düğme pasif (`disabled`, `.disabled`, `aria-disabled`) | hiçbir şey; çift gönderim yok |
 | basılı tutulan tuş (`repeat`) | yok sayılır |
-| düğme, bağlantı, onay kutusu, select üzerinde Enter | o öğenin kendi davranışı |
+| düğme, bağlantı üzerinde Enter | o öğenin kendi davranışı (odaklı bir gönder düğmesinde Enter'ın yerel çalışması doğrudur: odak bilinçlidir) |
+| onay kutusu, select, datalist alanı üzerinde Enter | betik basmaz; `chord` / gönder birincilli panelde örtük gönderim de engellenir (R1) |
+| kapanmakta olan panel (`.offcanvas.show.hiding`) | yanıtlanmaz |
 | sayfa Enter'a kendi anlamını vermiş (`preventDefault`) | sayfanınki geçerlidir |
 | `list` özniteliği olan alan (datalist) | alanın kendi davranışı (öneri seçimi) |
 | aynı panelde art arda iki Enter (kısa süre) | tek tıklama |
 | birincil düğme şu an gizli (`d-none`, `[hidden]`, etkin olmayan sekme / adım) | birincil sayılmaz |
+
+**Bu modülün dışında (FIX2, adla):** modal pencere içindeki yerel Enter gönderimi bu kuralın kapsamında değildir
+(`gateEvidenceModal`, Platform Administrators `suspendModal`); BL satırı CT'dedir.
 
 Dinleyici `window` üzerinde, kabarcık aşamasındadır. Bu sayede alan ya da `document` üzerindeki sayfa işleyicileri
 ondan önce çalışır. "Seçici açık mı" bilgisi ise **capture** aşamasında, alanın kendi işleyicilerinden ÖNCE alınır:

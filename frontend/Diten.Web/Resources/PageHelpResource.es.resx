@@ -76,7 +76,10 @@
     <value>Atajos de teclado de esta página</value>
   </data>
   <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>En un panel lateral, Intro guarda; en un campo de varias líneas, Ctrl+Intro (⌘+Intro en Mac) guarda.</value>
+    <value>En un panel lateral, Intro guarda. Una acción que no se puede deshacer (publicar, aprobar, enviar, eliminar, cancelar…) solo se ejecuta con Ctrl+Intro (⌘+Intro en Mac); un Intro solo no hace nada allí. En un campo de varias líneas, Ctrl+Intro guarda.</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Intro (⌘+Intro en Mac). Un Intro solo no ejecuta esta acción.</value>
   </data>
   <data name="Help.Panel.StartTour" xml:space="preserve">
     <value>Iniciar el recorrido</value>

@@ -11139,6 +11139,7 @@
         // The toolbar's keyboard button — the same panel `?` opens (UX-COMMON-FIX1: the page help panel, which carries
         // the shortcut list; the bare list only where the shell drew no panel).
         if (event.target.closest('[data-wcn-shortcuts]')) {
+            if (global.DitenShortcuts && typeof global.DitenShortcuts.overlayOpen === 'function' && global.DitenShortcuts.overlayOpen()) { return; } // UX-COMMON-FIX2: not over an open overlay, as `?`
             const help = global.DitenHelp;
             if (!(help && typeof help.open === 'function' && help.open()) && global.DitenShortcuts) {
                 global.DitenShortcuts.open();

@@ -85,9 +85,13 @@
         const panel = panelEl();
         if (!panel) { return false; }
         fillShortcuts(panel);
-        // UX-COMMON-FIX1 — the side-panel Enter hint only where the page HAS a side panel (an offcanvas other than this).
+        // UX-COMMON-FIX1 / FIX2 — the side-panel Enter hint only where the page has a side panel WITH fields (an offcanvas
+        // other than this one that a reader types into): a read-only quick view has no Enter to explain.
         const hint = panel.querySelector('[data-diten-help-enter-hint]');
-        if (hint) { hint.hidden = !doc.querySelector(`.offcanvas:not(#${PANEL_ID})`); }
+        if (hint) {
+            hint.hidden = !Array.from(doc.querySelectorAll(`.offcanvas:not(#${PANEL_ID})`))
+                .some((side) => side.querySelector('input:not([type="hidden"]), textarea, select'));
+        }
         const tour = panel.querySelector('[data-diten-help-tour]');
         if (tour) { tour.hidden = !tourAvailable(pageCode()); }
         const instance = offcanvasOf(panel);

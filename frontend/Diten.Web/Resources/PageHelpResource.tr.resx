@@ -76,7 +76,10 @@
     <value>Bu sayfanın kısayolları</value>
   </data>
   <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>Yan panelde Enter kaydeder; çok satırlı alanda Ctrl+Enter (Mac'te ⌘+Enter) kaydeder.</value>
+    <value>Yan panelde Enter kaydeder. Geri alınamayan bir işlem (yayımla, onayla, gönder, sil, iptal et…) yalnız Ctrl+Enter ile (Mac'te ⌘+Enter) çalışır; orada tek başına Enter hiçbir şey yapmaz. Çok satırlı alanda Ctrl+Enter kaydeder.</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter (Mac'te ⌘+Enter). Tek başına Enter bu işlemi çalıştırmaz.</value>
   </data>
   <data name="Help.Panel.StartTour" xml:space="preserve">
     <value>Turu başlat</value>

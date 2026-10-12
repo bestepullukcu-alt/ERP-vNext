@@ -148,11 +148,15 @@ describe("diten-help.js", () => {
     errors.mockRestore();
   });
 
-  it("the side-panel Enter hint shows only where the page has a side panel", () => {
+  it("the side-panel Enter hint shows only where the page has a side panel with fields", () => {
     boot();
     window.DitenHelp.open();
     expect(document.querySelector("[data-diten-help-enter-hint]").hidden, "a page with no side panel shows the hint").toBe(true);
-    document.body.insertAdjacentHTML("beforeend", '<div class="offcanvas offcanvas-end" id="offcanvasCreateEdit"></div>');
+    // UX-COMMON-FIX2 — a read-only quick view (no field) has no Enter to explain.
+    document.body.insertAdjacentHTML("beforeend", '<div class="offcanvas offcanvas-end" id="offcanvasQuickView"><button class="btn btn-primary">Edit</button></div>');
+    window.DitenHelp.open();
+    expect(document.querySelector("[data-diten-help-enter-hint]").hidden, "a quick view counted as an edit panel").toBe(true);
+    document.body.insertAdjacentHTML("beforeend", '<div class="offcanvas offcanvas-end" id="offcanvasCreateEdit"><input type="text"></div>');
     window.DitenHelp.open();
     expect(document.querySelector("[data-diten-help-enter-hint]").hidden).toBe(false);
   });

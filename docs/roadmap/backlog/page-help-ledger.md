@@ -4,9 +4,9 @@ Kural: `.antigravity/rules/page-help-and-keyboard.md` (UXH-001) · Ölçen test:
 
 **Tavan (yalnız azalır): kiracı 236 · platform 18 · frozen 99**
 
-Tavan bu satırdadır, testte değil: yükseltmek bu belgeyi değiştirmek demektir ve PR farkında görünür. Test satır sayısının
-tavanı aşmadığını ölçer; tavanın bir önceki sürümden büyük olmadığını (git geçmişi) ölçemez — o denetim PR gözden
-geçirmesinde, öneri olarak CI'da (`git diff` ile bu satırın sayıları azalmadıysa kırmızı) durur.
+Tavan bu satırdadır, testte değil. UX-COMMON-FIX2: test satır sayısının bu sayılara **EŞİT** olduğunu ölçer; bir satır
+eklemek ya da silmek bu başlığı da düzenletir, böylece her değişiklik PR farkında başlık satırıyla görünür. Sayının bir
+önceki sürümden büyük olmadığını (git geçmişi) test ölçemez — o, ana dala karşı ayrı bir CI denetimidir (CT backlog'u).
 
 Bu defter, **"?" yardım panelinde kendi metni olmayan** sayfaları listeler. Metni olmayan sayfada panel yalnız
 kısayolları ve "Bu sayfa için yardım metni hazırlanıyor" yazısını gösterir; bu bir hata değil, bir **borçtur**.

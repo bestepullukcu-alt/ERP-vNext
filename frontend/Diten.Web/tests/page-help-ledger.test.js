@@ -138,11 +138,12 @@ describe("page help: text or a ledger row, and the ledger only shrinks", () => {
     [tenantRows, platformRows, frozenRows].forEach((rows) => expect(new Set(rows).size).toBe(rows.length));
   });
 
-  test("the ledger only shrinks: row counts at or under the ceiling written in the ledger's own header", () => {
+  test("the ledger's header names its row counts EXACTLY: every added or removed row edits the header too", () => {
+    // UX-COMMON-FIX2 (R2) — equality, not "at or under": a removed row must lower the header in the same change.
     expect(ceiling, "the ledger lost its ceiling line").not.toBeNull();
-    expect(tenantRows.length).toBeLessThanOrEqual(ceiling.tenant);
-    expect(platformRows.length).toBeLessThanOrEqual(ceiling.platform);
-    expect(frozenRows.length).toBeLessThanOrEqual(ceiling.frozen);
+    expect(tenantRows.length, "tenant rows ≠ the header's count").toBe(ceiling.tenant);
+    expect(platformRows.length, "platform rows ≠ the header's count").toBe(ceiling.platform);
+    expect(frozenRows.length, "frozen rows ≠ the header's count").toBe(ceiling.frozen);
   });
 
   test("a page's text is complete in every language it carries: purpose and steps in all 7, or none", () => {

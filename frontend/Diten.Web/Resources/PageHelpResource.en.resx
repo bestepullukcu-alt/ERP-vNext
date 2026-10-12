@@ -76,7 +76,10 @@
     <value>Keyboard shortcuts on this page</value>
   </data>
   <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>In a side panel, Enter saves; in a multi-line field, Ctrl+Enter (⌘+Enter on a Mac) saves.</value>
+    <value>In a side panel, Enter saves. An action that cannot be taken back (publish, approve, send, delete, cancel…) runs only with Ctrl+Enter (⌘+Enter on a Mac); a bare Enter does nothing there. In a multi-line field, Ctrl+Enter saves.</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter (⌘+Enter on a Mac). A bare Enter does not run this action.</value>
   </data>
   <data name="Help.Panel.StartTour" xml:space="preserve">
     <value>Start the tour</value>

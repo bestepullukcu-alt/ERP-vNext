@@ -76,7 +76,10 @@
     <value>Сочетания клавиш на этой странице</value>
   </data>
   <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>В боковой панели Enter сохраняет; в многострочном поле сохраняет Ctrl+Enter (⌘+Enter на Mac).</value>
+    <value>В боковой панели Enter сохраняет. Действие, которое нельзя отменить (опубликовать, утвердить, отправить, удалить, отменить…), выполняется только по Ctrl+Enter (⌘+Enter на Mac); один Enter там ничего не делает. В многострочном поле сохраняет Ctrl+Enter.</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter (⌘+Enter на Mac). Один Enter не выполняет это действие.</value>
   </data>
   <data name="Help.Panel.StartTour" xml:space="preserve">
     <value>Начать обзор</value>

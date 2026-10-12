@@ -267,24 +267,196 @@ describe("UX-COMMON-FIX1: consequential actions, one press one action, pickers r
   });
 });
 
+describe("UX-COMMON-FIX2 (R1): no native form submission behind the rule's back", () => {
+  // The tenant subscription panel's shape: the primary is a `type="submit" form=` button whose handler is the form's
+  // submit event; Enter on its "cancel at period end" checkbox used to fall to the browser's implicit submission.
+  const SUBMIT_CHORD = '<button type="submit" id="act" class="btn btn-primary" data-dt-primary="chord">Save</button>';
+  const SUBMIT_ENTER = '<button type="submit" id="act" class="btn btn-primary" data-dt-primary="enter">Save</button>';
+
+  test.each([
+    ["a checkbox", '<input id="t" type="checkbox">'],
+    ["a closed select", '<select id="t"><option>1</option></select>'],
+    ["a datalist field", '<input id="t" type="text" list="o"><datalist id="o"><option value="a"></option></datalist>']
+  ])("chord panel: Enter on %s is defaultPrevented and clicks nothing", (_label, field) => {
+    const clicks = panel(`${field}${SUBMIT_CHORD}`);
+    const event = press(document.getElementById("t"));
+    expect(event.defaultPrevented, "the browser would submit the form natively").toBe(true);
+    expect(clicks).toEqual([]);
+  });
+
+  test("chord panel: a held Enter and Alt+Enter are defaultPrevented and click nothing", () => {
+    const clicks = panel(`<input id="t" type="text">${SUBMIT_CHORD}`);
+    expect(press(document.getElementById("t"), { repeat: true }).defaultPrevented).toBe(true);
+    expect(press(document.getElementById("t"), { altKey: true }).defaultPrevented).toBe(true);
+    expect(clicks).toEqual([]);
+  });
+
+  test("a plain submit panel: a held Enter is ONE action (the repeats are not native submissions)", () => {
+    const clicks = panel(`<input id="t" type="text">${SUBMIT_ENTER}`);
+    const first = press(document.getElementById("t"));
+    const repeats = [1, 2, 3].map(() => press(document.getElementById("t"), { repeat: true }));
+    expect(first.defaultPrevented).toBe(true);
+    expect(repeats.every((e) => e.defaultPrevented), "a repeat fell through to a native submission").toBe(true);
+    expect(clicks).toEqual(["act"]);
+  });
+
+  test("a <button> with no type IS a submit button (its implicit submission is held too)", () => {
+    const clicks = panel('<input id="t" type="checkbox"><button id="act" class="btn btn-primary" data-dt-primary="enter">Save</button>');
+    expect(press(document.getElementById("t")).defaultPrevented).toBe(true);
+    expect(clicks).toEqual([]);
+  });
+
+  test("IME composition and a textarea are never taken, even in a chord panel", () => {
+    panel(`<input id="t" type="text"><textarea id="x"></textarea>${SUBMIT_CHORD}`);
+    expect(press(document.getElementById("t"), { isComposing: true }).defaultPrevented).toBe(false);
+    expect(press(document.getElementById("x")).defaultPrevented).toBe(false);
+  });
+
+  test("a plain type=button panel: a checkbox's Enter is left alone (no implicit submission to stop)", () => {
+    const clicks = panel(`<input id="t" type="checkbox">${SAVE}`);
+    expect(press(document.getElementById("t")).defaultPrevented).toBe(false);
+    expect(clicks).toEqual([]);
+  });
+});
+
+describe("UX-COMMON-FIX2: the cases a sabotage must turn red (E1–E4, .hiding)", () => {
+  test("E1: a CLOSED date picker without allowInput — Enter opens its calendar, the panel does NOT save", () => {
+    global.self = global.self || window;
+    loadScript("wwwroot/assets/vendor/libs/flatpickr/flatpickr.js");
+    const clicks = panel(`<input id="due" type="text">${SAVE}`);
+    const due = document.getElementById("due");
+    const fp = window.flatpickr(due, { dateFormat: "Y-m-d" });
+    due.focus(); // focusing opens it (clickOpens)…
+    fp.close();  // …so close it: the case is Enter on a CLOSED picker
+    expect(fp.isOpen).toBe(false);
+    press(due, { keyCode: 13 });
+    expect(fp.isOpen, "flatpickr did not open on Enter").toBe(true);
+    expect(clicks, "the panel saved while the calendar opened").toEqual([]);
+    fp.destroy();
+  });
+
+  test("E2: Alt+Enter in a single-line field is not save", () => {
+    const clicks = panel(`<input id="n" type="text">${SAVE}`);
+    press(document.getElementById("n"), { altKey: true });
+    expect(clicks).toEqual([]);
+  });
+
+  test.each(["datetime-local", "month", "week"])("E3: Enter in an <input type=%s> runs the primary", (type) => {
+    const clicks = panel(`<input id="n" type="${type}">${SAVE}`);
+    press(document.getElementById("n"));
+    expect(clicks).toEqual(["save"]);
+  });
+
+  test("E4: one press one action holds for 800 ms, measured on a mocked clock", () => {
+    let now = 5000000;
+    vi.spyOn(Date, "now").mockImplementation(() => now);
+    try {
+      const clicks = panel(`<input id="n" type="text">${SAVE}`);
+      press(document.getElementById("n"));
+      now += 500;
+      press(document.getElementById("n"));
+      expect(clicks, "a second Enter 500 ms later was a second save").toEqual(["save"]);
+      now += 400; // 900 ms after the first
+      press(document.getElementById("n"));
+      expect(clicks).toEqual(["save", "save"]);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  test("a panel sliding OUT (.offcanvas.show.hiding) is not answered", () => {
+    document.body.innerHTML = `<div class="offcanvas offcanvas-end show hiding" id="p"><input id="n" type="text">${SAVE}</div>`;
+    const clicks = [];
+    document.getElementById("save").addEventListener("click", () => clicks.push("save"));
+    press(document.getElementById("n"));
+    expect(clicks).toEqual([]);
+  });
+});
+
+describe("UX-COMMON-FIX2 (R3): a chord button tells the reader", () => {
+  test("on panel open, a chord button gets aria-keyshortcuts and the help panel's localized title", () => {
+    document.body.innerHTML = `<div id="diten-help-panel" data-diten-chord-title="Ctrl+Entrée"></div>
+      <div class="offcanvas offcanvas-end" id="p"><input type="text">
+        <button type="button" id="go" class="btn btn-primary" data-dt-primary="chord">Publish</button>
+        <button type="button" id="own" class="btn btn-secondary" data-dt-primary="chord" title="Mine">Other</button></div>`;
+    document.getElementById("p").dispatchEvent(new Event("show.bs.offcanvas", { bubbles: true }));
+    const go = document.getElementById("go");
+    expect(go.getAttribute("aria-keyshortcuts")).toBe("Control+Enter Meta+Enter");
+    expect(go.getAttribute("title")).toBe("Ctrl+Entrée");
+    expect(document.getElementById("own").getAttribute("title"), "a title the page wrote was replaced").toBe("Mine");
+  });
+
+  test("a mark set by a page script before the panel opens is decorated too (Tenants' per-action mark)", () => {
+    document.body.innerHTML = `<div class="offcanvas offcanvas-end" id="p"><input type="text">
+      <button type="submit" id="act" class="btn btn-primary" data-dt-primary="enter">Save</button></div>`;
+    document.getElementById("act").setAttribute("data-dt-primary", "chord");
+    document.getElementById("p").dispatchEvent(new Event("show.bs.offcanvas", { bubbles: true }));
+    expect(document.getElementById("act").getAttribute("aria-keyshortcuts")).toBe("Control+Enter Meta+Enter");
+  });
+});
+
+describe("UX-COMMON-FIX2 (R5): the tenant subscription panel's Enter is decided per action", () => {
+  beforeAll(() => {
+    loadScript("wwwroot/assets/js/Platform/Tenants/details.js");
+  });
+
+  test.each([
+    ["cancel", "chord"], ["suspend", "chord"],
+    ["assign", "enter"], ["activate", "enter"], ["renew", "enter"]
+  ])("%s → %s", (action, mark) => {
+    const details = require("vm").runInThisContext("TenantDetails");
+    expect(details.subscriptionActionPrimary(action)).toBe(mark);
+  });
+
+  test("opening the panel sets that mark on its primary button (and the view's static mark is the safe chord)", () => {
+    const source = fs.readFileSync(path.resolve(__dirname, "..", "wwwroot/assets/js/Platform/Tenants/details.js"), "utf8");
+    expect(source).toMatch(/getElementById\('btnSubmitSubscriptionAction'\)\?\.setAttribute\('data-dt-primary', subscriptionActionPrimary\(action\)\)/);
+    const view = fs.readFileSync(path.join(VIEWS, "Platform/Tenants/Details.cshtml"), "utf8");
+    expect(view).toMatch(/id="btnSubmitSubscriptionAction" data-dt-primary="chord"/);
+  });
+});
+
 /*
- * Every offcanvas in Views/ that carries form fields must name its primary for this rule: exactly one shown
- * `data-dt-primary`, or no mark and exactly one `.btn-primary`. A panel the rule cannot read must be listed here,
- * with its reason — the list only shrinks.
+ * UX-COMMON-FIX2 (R4, CT decision) — every offcanvas in Views/ that carries form fields MARKS its primary explicitly:
+ * `data-dt-primary="enter"` or `data-dt-primary="chord"`. An unmarked panel is red; the exceptions are named here with
+ * their reason, and the list only shrinks.
  */
-const UNRECOGNIZED_PANELS = {
-  // Filter drawers on the FROZEN _Layout: they have no save; "Apply" is `btn-filter-apply`. The Enter module is not
-  // loaded on _Layout (frozen), so these never see it.
+const UNMARKED_PANELS = {
+  // Filter drawers on the FROZEN _Layout: no save ("Apply" is `btn-filter-apply`); the Enter module is not loaded there.
   "DeliveryExecutionManagement/Initiatives.cshtml": "filter drawer, no save, FROZEN _Layout",
   "EnterpriseStrategyBusinessPerformance/Initiatives.cshtml": "filter drawer, no save, FROZEN _Layout",
-  "EnterpriseStrategyBusinessPerformance/Objectives.cshtml": "filter drawer, no save, FROZEN _Layout"
+  "EnterpriseStrategyBusinessPerformance/Objectives.cshtml": "filter drawer, no save, FROZEN _Layout",
+  // PPM is outside WP-UX-COMMON-01 (CT: "PPM'ye dokunma"): its two panels keep the FIX1 rule (one unmarked .btn-primary).
+  "PPM/Initiatives/_CreateEditOffcanvas.cshtml": "PPM, not touched by this WP",
+  "PPM/Shared/_CreateEditOffcanvas.cshtml": "PPM, not touched by this WP"
 };
+
+// A FROZEN exception must really be on the FROZEN _Layout: the view itself, or EVERY view that renders the partial.
+const FROZEN_EXCEPTIONS = [
+  "DeliveryExecutionManagement/Initiatives.cshtml",
+  "EnterpriseStrategyBusinessPerformance/Initiatives.cshtml",
+  "EnterpriseStrategyBusinessPerformance/Objectives.cshtml",
+  "EnterpriseStrategyBusinessPerformance/Components/Planning/_PlanningCycleOffcanvas.cshtml",
+  "EnterpriseStrategyBusinessPerformance/Components/Planning/_StrategyPeriodOffcanvas.cshtml"
+];
 
 const cshtmlFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
   const full = path.join(dir, entry.name);
   if (entry.isDirectory()) { return cshtmlFiles(full); }
   return entry.name.endsWith(".cshtml") ? [full] : [];
 });
+
+const relative = (file) => path.relative(VIEWS, file).split(path.sep).join("/");
+
+// The same FROZEN derivation as page-help-ledger.test.js: a non-partial view that falls to the frozen _Layout.
+const frozenViews = (() => {
+  return cshtmlFiles(VIEWS).filter((file) => !path.basename(file).startsWith("_")).filter((file) => {
+    const source = fs.readFileSync(file, "utf8");
+    const layout = /Layout\s*=\s*(null|"([^"]+)")/.exec(source);
+    if (layout) { return layout[2] === "_Layout" || layout[2] === "~/Views/Shared/_Layout.cshtml"; }
+    return !file.startsWith(path.join(VIEWS, "Platform") + path.sep);
+  }).map(relative);
+})();
 
 // Each `<div class="… offcanvas …">` block, closed by balancing its <div>s.
 const offcanvasBlocks = () => cshtmlFiles(VIEWS).flatMap((file) => {
@@ -303,25 +475,42 @@ const offcanvasBlocks = () => cshtmlFiles(VIEWS).flatMap((file) => {
       depth += t[0] === "</div>" ? -1 : 1;
       if (depth === 0) { end = tag.lastIndex; break; }
     }
-    blocks.push({
-      file: path.relative(VIEWS, file).split(path.sep).join("/"),
-      line: source.slice(0, match.index).split("\n").length,
-      body: source.slice(match.index, end)
-    });
+    blocks.push({ file: relative(file), line: source.slice(0, match.index).split("\n").length, body: source.slice(match.index, end) });
   }
   return blocks;
 });
 
-describe("BL-586: every side panel with fields names its primary action", () => {
+/*
+ * The second check: a primary whose label says it cannot be taken back must not be `enter`-marked. The words were
+ * measured from the panels' primary labels (resource key and English text), widened in FIX2. Generic verbs that also
+ * name reversible work (Run, Apply, Upload, Request, Record, Post) stay out — those panels carry `chord` explicitly.
+ */
+const CONSEQUENTIAL = /\b(Publish|Approve|Reject|Submit|Send|Confirm|End|Terminate|Retire|Deactivate|Delete|Delegate|Withdraw|Cancel|Suspend|Amend|Escalat\w*|Transition|Evidence|Reserve|Snapshot|Revoke|Reset|Invite|Assign|Disable|Remove|Archive|Release|Close|Finalize|Sign|Decline|Return|Activate)/;
+const splitWords = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
+// A consequential-sounding label on a reversible save, by name and reason. The list only shrinks.
+const NOT_CONSEQUENTIAL = {
+  "EnterpriseStrategyBusinessPerformance/Components/Planning/_PlanningCycleOffcanvas.cshtml":
+    "hard-coded English 'Submit' on a plain create / update save of a planning cycle; FROZEN _Layout (no Enter rule there)",
+  "EnterpriseStrategyBusinessPerformance/Components/Planning/_StrategyPeriodOffcanvas.cshtml":
+    "hard-coded English 'Submit' on a plain create / update save of a strategy period; FROZEN _Layout"
+};
+const primaryButtons = (body) => {
+  const marked = [...body.matchAll(/<button\b[^>]*data-dt-primary[^>]*>([\s\S]*?)<\/button>/g)];
+  if (marked.length) { return marked.map((m) => m[0]); }
+  const primaries = [...body.matchAll(/<button\b[^>]*class="[^"]*\bbtn-primary\b[^"]*"[^>]*>([\s\S]*?)<\/button>/g)];
+  return primaries.length === 1 ? [primaries[0][0]] : [];
+};
+// The finding for one panel: an `enter`-marked or unmarked primary whose label is consequential.
+const consequentialUnchorded = (block) => primaryButtons(block.body).flatMap((button) => {
+  const label = splitWords(button.replace(/<button\b[^>]*>/, ""));
+  return CONSEQUENTIAL.test(label) && !/data-dt-primary="chord"/.test(button)
+    ? [`${block.file}:${block.line} ${label.replace(/\s+/g, " ").trim()}`] : [];
+});
+
+describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primary action", () => {
   const blocks = offcanvasBlocks();
   const withFields = blocks.filter((b) => /<input\b(?![^>]*type="hidden")|<textarea\b|<select\b/.test(b.body));
-
-  const readable = (body) => {
-    const marks = (body.match(/data-dt-primary/g) || []).length;
-    const primaries = (body.match(/<button\b[^>]*class="[^"]*\bbtn-primary\b/g) || []).length
-      + (body.match(/<input\b[^>]*type="submit"[^>]*class="[^"]*\bbtn-primary\b/g) || []).length;
-    return marks >= 1 || primaries === 1;
-  };
+  const marked = (body) => /data-dt-primary="(enter|chord)"/.test(body);
 
   test("the scan reaches the panels (guards against a vacuous pass)", () => {
     expect(withFields.length).toBeGreaterThan(50);
@@ -332,45 +521,44 @@ describe("BL-586: every side panel with fields names its primary action", () => 
     ]));
   });
 
-  test("a panel the rule cannot read is listed with its reason; the list only shrinks", () => {
-    const unreadable = [...new Set(withFields.filter((b) => !readable(b.body)).map((b) => b.file))].sort();
-    expect(unreadable).toEqual(Object.keys(UNRECOGNIZED_PANELS).sort());
+  test("R4: a panel with no explicit enter / chord mark is listed with its reason; the list only shrinks", () => {
+    const unmarked = [...new Set(withFields.filter((b) => !marked(b.body)).map((b) => b.file))].sort();
+    expect(unmarked).toEqual(Object.keys(UNMARKED_PANELS).sort());
   });
 
-  /*
-   * UX-COMMON-FIX1 (CT decision) — a primary whose label says it cannot be taken back must be chord-marked
-   * (`data-dt-primary="chord"`: bare Enter does nothing, Ctrl / Cmd + Enter runs it). The words were measured from
-   * the 70 panels' primary labels (resource key and English text); generic verbs that also name reversible work
-   * (Run, Apply, Upload, Request, Record, Post) are left out — those panels carry the mark explicitly instead.
-   */
-  const CONSEQUENTIAL = /\b(Publish|Approve|Reject|Submit|Send|Confirm|End|Terminate|Retire|Deactivate|Delete|Delegate|Withdraw|Cancel|Suspend|Amend|Escalat\w*|Transition|Evidence|Reserve|Snapshot)/;
-  const splitWords = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
-  // A consequential-sounding label on a reversible save, by name and reason. The list only shrinks.
-  const NOT_CONSEQUENTIAL = {
-    "EnterpriseStrategyBusinessPerformance/Components/Planning/_PlanningCycleOffcanvas.cshtml":
-      "hard-coded English 'Submit' on a plain create / update save of a planning cycle; FROZEN _Layout (no Enter rule there)",
-    "EnterpriseStrategyBusinessPerformance/Components/Planning/_StrategyPeriodOffcanvas.cshtml":
-      "hard-coded English 'Submit' on a plain create / update save of a strategy period; FROZEN _Layout"
-  };
-  const primaryMarkup = (body) => {
-    const marked = [...body.matchAll(/<button\b[^>]*data-dt-primary[^>]*>([\s\S]*?)<\/button>/g)];
-    if (marked.length) { return marked.map((m) => m[0]); }
-    const primaries = [...body.matchAll(/<button\b[^>]*class="[^"]*\bbtn-primary\b[^"]*"[^>]*>([\s\S]*?)<\/button>/g)];
-    return primaries.length === 1 ? [primaries[0][0]] : [];
-  };
+  test("every mark is one of the two values", () => {
+    const odd = withFields.flatMap((b) => [...b.body.matchAll(/data-dt-primary(?:="([^"]*)")?/g)]
+      .filter((m) => !["enter", "chord"].includes(m[1])).map((m) => `${b.file}:${b.line} ${m[0]}`));
+    expect(odd).toEqual([]);
+  });
 
-  test("a primary whose label is consequential is chord-marked (Ctrl+Enter), or named as an exception", () => {
-    const unmarked = [];
-    withFields.forEach((block) => {
-      if (NOT_CONSEQUENTIAL[block.file]) { return; }
-      primaryMarkup(block.body).forEach((button) => {
-        const label = splitWords(button.replace(/<button\b[^>]*>/, ""));
-        if (CONSEQUENTIAL.test(label) && !/data-dt-primary="chord"/.test(button)) {
-          unmarked.push(`${block.file}:${block.line} ${label.replace(/\s+/g, " ").trim()}`);
-        }
-      });
+  test("a FROZEN exception is really on the FROZEN _Layout (the view, or every view rendering the partial)", () => {
+    const notFrozen = FROZEN_EXCEPTIONS.filter((file) => {
+      if (!path.basename(file).startsWith("_")) { return !frozenViews.includes(file); }
+      const name = path.basename(file, ".cshtml");
+      const hosts = cshtmlFiles(VIEWS).map(relative).filter((view) => view !== file
+        && new RegExp(`["/]${name}["]`).test(fs.readFileSync(path.join(VIEWS, view), "utf8")));
+      return hosts.length === 0 || hosts.some((view) => !frozenViews.includes(view));
     });
-    expect(unmarked).toEqual([]);
+    expect(notFrozen).toEqual([]);
+    // Every FROZEN-reasoned exception above is in that list (a stale or new one cannot hide behind "FROZEN").
+    const claimed = [...Object.entries(UNMARKED_PANELS), ...Object.entries(NOT_CONSEQUENTIAL)]
+      .filter(([, reason]) => /FROZEN/.test(reason)).map(([file]) => file);
+    expect(claimed.filter((file) => !FROZEN_EXCEPTIONS.includes(file))).toEqual([]);
+  });
+
+  test("a primary whose label is consequential is chord-marked, never enter (or named as an exception)", () => {
+    const findings = withFields.filter((b) => !NOT_CONSEQUENTIAL[b.file]).flatMap(consequentialUnchorded);
+    expect(findings).toEqual([]);
+  });
+
+  test("positive control: the word check flags an enter-marked consequential label (every listed word)", () => {
+    const words = CONSEQUENTIAL.source.replace(/^\\b\(|\)$/g, "").split("|").map((w) => w.replace("\\w*", "ion"));
+    words.forEach((word) => {
+      const block = { file: "control.cshtml", line: 1, body: `<button type="button" class="btn btn-primary" data-dt-primary="enter">${word}</button>` };
+      expect(consequentialUnchorded(block), word).toHaveLength(1);
+    });
+    ["Publish", "Revoke", "Invite", "Archive"].forEach((word) => expect(words).toContain(word));
   });
 
   test("the measured consequential panels carry the chord mark (incl. those whose label is just 'Save')", () => {
@@ -390,10 +578,16 @@ describe("BL-586: every side panel with fields names its primary action", () => 
       ["DocumentManagement/MasterRegister/Details.cshtml", "lifecycleModalSubmit"],
       ["DocumentManagement/MasterRegister/Details.cshtml", "approvalEvidenceSubmit"],
       ["MDM/ProductAbbreviationRegister/_CreateEditOffcanvas.cshtml", "btnRequestAbbreviation"],
-      // "karar CT" (one Save, a reversible or an irreversible act by mode): chord until CT decides.
-      ["MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml", "btnSaveGsku"],
-      ["Platform/Tenants/Details.cshtml", "btnSubmitSubscriptionAction"]
+      ["Platform/Tenants/Details.cshtml", "btnSubmitSubscriptionAction"],
+      // FIX2, CT decisions: an invitation e-mail leaves; a privileged account and its invitation.
+      ["Governance/Users/_CreateEditOffcanvas.cshtml", "btnSaveUser"],
+      ["Platform/Administrators/_CreateEditOffcanvas.cshtml", "btnSaveAdministrator"]
     ].forEach(([file, id]) => expect(chord(file, id), `${file} #${id}`).toBe(true));
+  });
+
+  test("FIX2, CT decision: Gskus saves with a bare Enter (it asks for confirmation in every mode)", () => {
+    const gsku = withFields.find((b) => b.file === "MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml").body;
+    expect(gsku).toMatch(/id="btnSaveGsku"[^>]*data-dt-primary="enter"/);
   });
 
   test("the panels that save with a non-primary colour carry the mark", () => {

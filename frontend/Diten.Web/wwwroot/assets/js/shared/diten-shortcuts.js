@@ -268,6 +268,8 @@
     if (doc) { doc.addEventListener('keydown', onKeydown); }
 
     global.DitenShortcuts = {
+        // UX-COMMON-FIX2 — the same "a modal, side panel or dialog is open" answer `?` uses, for a page's own help button.
+        overlayOpen,
         register,
         unregister,
         open,

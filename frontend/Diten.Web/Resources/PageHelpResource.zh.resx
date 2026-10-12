@@ -76,7 +76,10 @@
     <value>本页快捷键</value>
   </data>
   <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>在侧边面板中按 Enter 保存；在多行字段中按 Ctrl+Enter（Mac 上为 ⌘+Enter）保存。</value>
+    <value>在侧边面板中按 Enter 保存。无法撤销的操作（发布、批准、发送、删除、取消……）只能用 Ctrl+Enter（Mac 上为 ⌘+Enter）执行；单独按 Enter 不会执行。在多行字段中按 Ctrl+Enter 保存。</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter（Mac 上为 ⌘+Enter）。单独按 Enter 不会执行此操作。</value>
   </data>
   <data name="Help.Panel.StartTour" xml:space="preserve">
     <value>开始导览</value>

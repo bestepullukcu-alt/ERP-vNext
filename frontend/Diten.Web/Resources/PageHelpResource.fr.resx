@@ -76,7 +76,10 @@
     <value>Raccourcis clavier de cette page</value>
   </data>
   <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>Dans un panneau latéral, Entrée enregistre ; dans un champ multiligne, Ctrl+Entrée (⌘+Entrée sur Mac) enregistre.</value>
+    <value>Dans un panneau latéral, Entrée enregistre. Une action irréversible (publier, approuver, envoyer, supprimer, annuler…) ne s'exécute qu'avec Ctrl+Entrée (⌘+Entrée sur Mac) ; une simple Entrée n'y fait rien. Dans un champ multiligne, Ctrl+Entrée enregistre.</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Entrée (⌘+Entrée sur Mac). Une simple Entrée n'exécute pas cette action.</value>
   </data>
   <data name="Help.Panel.StartTour" xml:space="preserve">
     <value>Lancer la visite guidée</value>
