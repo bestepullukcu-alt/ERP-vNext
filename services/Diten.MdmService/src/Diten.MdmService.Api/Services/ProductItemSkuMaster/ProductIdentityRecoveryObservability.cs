@@ -87,6 +87,9 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
     public const string OpenApprovalAlertAfterGauge = "mdm.product_identity.open_approval.alert_after";
     private readonly ConcurrentDictionary<string, double> _oldestOpenApproval = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, double> _openApprovalAlertAfter = new(StringComparer.Ordinal);
+    // BL-607 FIX1 item 1: 1 while the last read of a flow's oldest open approval FAILED (its age is dropped, not stale).
+    public const string OpenApprovalReadFailedGauge = "mdm.product_identity.open_approval.read_failed";
+    private readonly ConcurrentDictionary<string, long> _openApprovalReadFailed = new(StringComparer.Ordinal);
 
     public ProductIdentityRecoveryMetrics()
     {
@@ -110,6 +113,10 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
             () => _openApprovalAlertAfter.Select(item => new Measurement<double>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
             unit: "s",
             description: "The open-approval age past which an alert is due (validated at start against the backoff ceiling and the poll interval), per flow.");
+        _meter.CreateObservableGauge(OpenApprovalReadFailedGauge,
+            () => _openApprovalReadFailed.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "{flow}",
+            description: "1 while the last read of the oldest open approval failed (its age gauge is absent until a read succeeds), per flow.");
     }
 
     /// <summary>BL-607: the oldest open approval's age (null: none open — the gauge drops the flow) and the alert threshold.</summary>
@@ -118,7 +125,18 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
         if (oldestAge is { } age) _oldestOpenApproval[flow] = Math.Max(age.TotalSeconds, 0);
         else _oldestOpenApproval.TryRemove(flow, out _);
         _openApprovalAlertAfter[flow] = alertAfter.TotalSeconds;
+        _openApprovalReadFailed[flow] = 0;
     }
+
+    /// <summary>BL-607 FIX1 item 1: the read failed — the age is dropped (never left stale) and the failure is marked.</summary>
+    public void RecordOpenApprovalReadFailed(string flow, TimeSpan alertAfter)
+    {
+        _oldestOpenApproval.TryRemove(flow, out _);
+        _openApprovalAlertAfter[flow] = alertAfter.TotalSeconds;
+        _openApprovalReadFailed[flow] = 1;
+    }
+
+    public long? OpenApprovalReadFailed(string flow) => _openApprovalReadFailed.TryGetValue(flow, out var value) ? value : null;
 
     public double? OldestOpenApprovalSeconds(string flow) => _oldestOpenApproval.TryGetValue(flow, out var value) ? value : null;
 

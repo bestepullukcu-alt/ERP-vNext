@@ -46,7 +46,26 @@ public sealed class LskuOpenApprovalBackoffAndThresholdTests
         Assert.Equal(longDelay, ProductIdentityOpenApprovalBackoff.Ceiling(longDelay));
         Assert.Equal(longDelay, ProductIdentityOpenApprovalBackoff.Delay(Opened.UtcTicks, Opened.AddHours(5), longDelay));
         Assert.Equal(RetryDelay, ProductIdentityOpenApprovalBackoff.Delay(null, Opened.AddHours(5), RetryDelay));
-        Assert.Equal(RetryDelay, ProductIdentityOpenApprovalBackoff.Delay(Opened.AddHours(1).UtcTicks, Opened, RetryDelay)); // a clock behind
+        // A clock behind (opened "in the future"): the configured delay. BL-607 FIX1 — this pins the BEHAVIOUR only: without the
+        // `since <= now` guard the open time would be negative and the "never sooner than retryDelay" clamp would give the same
+        // answer (an equivalent mutant), so no test can tell the guard is there; it stays for a readable TimeSpan.
+        Assert.Equal(RetryDelay, ProductIdentityOpenApprovalBackoff.Delay(Opened.AddHours(1).UtcTicks, Opened, RetryDelay));
+    }
+
+    /// <summary>BL-607 FIX1 — an approval whose opening was never recorded backs off from the request's creation, not a flat
+    /// retryDelay for good; the recorded opening wins when there is one.</summary>
+    [Fact]
+    public void An_unknown_opening_backs_off_from_the_requests_creation()
+    {
+        var now = Opened.AddHours(3);
+        var created = Opened.UtcTicks;
+
+        Assert.Equal(now.Add(ProductIdentityRecoveryStreak.DefaultMaxRetryDelay).UtcTicks,
+            ProductIdentityOpenApprovalBackoff.NextLookAtUtcTicks(null, created, now, RetryDelay));          // 3 h old → the ceiling
+        Assert.Equal(now.Add(TimeSpan.FromMinutes(2)).UtcTicks,
+            ProductIdentityOpenApprovalBackoff.NextLookAtUtcTicks(now.AddMinutes(-2).UtcTicks, created, now, RetryDelay)); // the opening wins
+        Assert.Equal(now.Add(RetryDelay).UtcTicks,
+            ProductIdentityOpenApprovalBackoff.NextLookAtUtcTicks(null, 0, now, RetryDelay));                // nothing known → the delay
     }
 
     private static LskuIdentityWorkflowWorkerOptions Options(int alertAfterMinutes, int pollSeconds = 15, int retrySeconds = 30) => new()
@@ -73,6 +92,10 @@ public sealed class LskuOpenApprovalBackoffAndThresholdTests
         Assert.False(Options(40, retrySeconds: 3600).OpenApprovalAlertThresholdIsValid()); // a 60-min delay is the ceiling
         Assert.False(Options(0).OpenApprovalAlertThresholdIsValid());
         Assert.False(Options(525601).OpenApprovalAlertThresholdIsValid());
+        // BL-607 FIX1 — the edges: EQUAL to ceiling + poll is refused (15 min + 120 s = 17 min); the upper bound itself is valid.
+        Assert.False(Options(17, pollSeconds: 120).OpenApprovalAlertThresholdIsValid());
+        Assert.True(Options(18, pollSeconds: 120).OpenApprovalAlertThresholdIsValid());
+        Assert.True(Options(525600).OpenApprovalAlertThresholdIsValid());
 
         var refused = Assert.Throws<InvalidOperationException>(() => Options(15).EnsureValidWhenEnabled());
         Assert.Equal("LSKU_IDENTITY_WORKFLOW_OPEN_APPROVAL_ALERT_THRESHOLD_INVALID", refused.Message);

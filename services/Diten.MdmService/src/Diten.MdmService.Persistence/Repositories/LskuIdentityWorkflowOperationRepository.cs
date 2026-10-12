@@ -1198,7 +1198,21 @@ public sealed class LskuIdentityWorkflowOperationRepository
                     .Ascending(item => item.NextAttemptAtUtcTicksV1).Ascending(item => item.OperationId)
                     .Ascending(item => item.Checkpoint).Ascending(item => item.LeaseUntilUtcTicksV1)
                     .Ascending(item => item.CreatedAtUtcTicksV1),
-                new CreateIndexOptions { Name = "ix_mdm_lsku_identity_workflow_recovery" })
+                new CreateIndexOptions { Name = "ix_mdm_lsku_identity_workflow_recovery" }),
+            // BL-607 FIX1 item 2: the open-approval gauge reads the oldest AwaitingDecision start across every tenant on
+            // every cycle (15 s by default, on every replica). Every index above starts with TenantId, so that read was a
+            // collection scan. A PARTIAL index holds only the rows that can be an open approval (AwaitingDecision), ordered
+            // by start: the read takes the first entry and fetches a handful — and the index stays as small as the number
+            // of approvals waiting, not the whole history. (A full {Checkpoint, Start} index would also index every
+            // completed row for nothing.)
+            new CreateIndexModel<LskuIdentityWorkflowOperation>(
+                Builders<LskuIdentityWorkflowOperation>.IndexKeys.Ascending(item => item.WorkflowStartedAtUtcTicksV1),
+                new CreateIndexOptions<LskuIdentityWorkflowOperation>
+                {
+                    Name = "ix_mdm_lsku_identity_workflow_open_approval",
+                    PartialFilterExpression = Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                        item => item.Checkpoint, LskuIdentityWorkflowCheckpoint.AwaitingDecision)
+                })
         ]);
     }
 }

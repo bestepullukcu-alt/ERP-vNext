@@ -4,7 +4,12 @@ using Diten.MdmService.Application.Contracts.Workflow;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Api.Configuration;
+using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Persistence.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
@@ -159,16 +164,212 @@ public sealed partial class LskuFix3HttpTests
     public async Task Bl607_The_runner_records_the_oldest_open_approval_age_from_when_the_engine_opened_it_and_the_threshold()
     {
         var (lsku, _) = await SubmittedLskuWaitingForAPersonAsync();
-        // Older than any other open approval a test of this collection may leave behind.
-        await BackdateApprovalOpenedAsync(lsku, TimeSpan.FromDays(400));
-        await DueNowAsync(lsku);
+        try
+        {
+            // Older than any other open approval a test of this collection may leave behind.
+            await BackdateApprovalOpenedAsync(lsku, TimeSpan.FromDays(400));
+            await DueNowAsync(lsku);
 
+            await host.RunAsync<LskuIdentityWorkflowRecoveryRunner>(runner => runner.RunCycleAsync());
+
+            var metrics = host.Factory.Services.GetRequiredService<ProductIdentityRecoveryMetrics>();
+            var age = metrics.OldestOpenApprovalSeconds(LskuIdentityWorkflowRecoveryRunner.Flow);
+            Assert.NotNull(age);
+            Assert.True(age >= TimeSpan.FromDays(400).TotalSeconds - 60, $"oldest open approval age {age} s");
+            Assert.Equal(TimeSpan.FromMinutes(1440).TotalSeconds, metrics.OpenApprovalAlertAfterSeconds(LskuIdentityWorkflowRecoveryRunner.Flow));
+        }
+        finally
+        {
+            // BL-607 FIX1: the 400-day approval must not stay the oldest for every later test of this collection (the gauge
+            // reads across tenants on the shared test mongod): its operation is retired here.
+            await OperationsCollection.UpdateManyAsync(x => x.TenantId == _tenant && x.LskuId == lsku,
+                Builders<LskuIdentityWorkflowOperation>.Update.Set(x => x.IsDeleted, true));
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------- BL-607 FIX1
+
+    private IMongoCollection<LskuIdentityWorkflowOperation> OperationsCollection =>
+        host.Database.GetCollection<LskuIdentityWorkflowOperation>("mdm_lsku_identity_workflow_operations");
+
+    /// <summary>A copy of this LSKU's real operation under a tenant of its own (no unique key is shared), never due for the
+    /// worker, with its start and one changed field — a row the open-approval read must or must not see.</summary>
+    private async Task<Guid> OpenApprovalCopyAsync(Guid lsku, int version, long? startedAtUtcTicks,
+        Action<LskuIdentityWorkflowOperation>? change = null)
+    {
+        var copy = await IdentityOperationAsync(lsku, version);
+        copy.Id = Guid.NewGuid();
+        copy.TenantId = Guid.NewGuid();
+        copy.OperationId = Guid.NewGuid();
+        copy.WorkflowStartedAtUtcTicksV1 = startedAtUtcTicks;
+        copy.NextAttemptAtUtcTicksV1 = DateTimeOffset.UtcNow.AddYears(50).UtcTicks;   // the worker never claims it
+        change?.Invoke(copy);
+        await OperationsCollection.InsertOneAsync(copy);
+        return copy.TenantId;
+    }
+
+    /// <summary>FIX1 items 1, 4 and the CT survivors B5 / B6 / B7 / R2 — the read sees only the open approvals the worker
+    /// keeps asking about: the oldest of them, not the newest; not a row with no start, a deleted one, a completed one, a
+    /// wait at its limit (a real outage, counted as stuck elsewhere), a row of an older storage version the worker never
+    /// scans, nor a corrupt (negative) start. Each decoy is OLDER than the real one, so a missing rule makes it win.</summary>
+    [Fact]
+    public async Task Bl607Fix1_The_open_approval_read_sees_only_what_the_worker_keeps_asking_about_and_the_oldest_of_it()
+    {
+        var (lsku, version) = await SubmittedLskuWaitingForAPersonAsync();
+        var now = DateTimeOffset.UtcNow;
+        long DaysAgo(int days) => now.AddDays(-days).UtcTicks;
+        var target = DaysAgo(3000);
+        var copies = new List<Guid>();
+        try
+        {
+            copies.Add(await OpenApprovalCopyAsync(lsku, version, target));
+            copies.Add(await OpenApprovalCopyAsync(lsku, version, DaysAgo(10)));                         // B5: newer
+            copies.Add(await OpenApprovalCopyAsync(lsku, version, null));                                // B6: no start
+            copies.Add(await OpenApprovalCopyAsync(lsku, version, DaysAgo(4000), x => x.IsDeleted = true)); // R2
+            copies.Add(await OpenApprovalCopyAsync(lsku, version, DaysAgo(4001),
+                x => x.Checkpoint = LskuIdentityWorkflowCheckpoint.Completed));                          // B7
+            copies.Add(await OpenApprovalCopyAsync(lsku, version, DaysAgo(4002),
+                x => x.LastFailureCode = LskuIdentityWorkflowProcessor.RetryLimitReached));              // item 4
+            copies.Add(await OpenApprovalCopyAsync(lsku, version, DaysAgo(4003),
+                x => x.TemporalStorageVersion = LskuIdentityWorkflowOperation.CurrentTemporalStorageVersion - 1)); // item 4
+            copies.Add(await OpenApprovalCopyAsync(lsku, version, -100));                                // item 1: corrupt
+
+            var oldest = await new LskuIdentityWorkflowTenantPartitionDiscoveryRepository(host.Database)
+                .OldestOpenApprovalStartedAtUtcTicksAsync();
+
+            Assert.Equal(target, oldest);
+
+            await host.RunAsync<LskuIdentityWorkflowRecoveryRunner>(runner => runner.RunCycleAsync());
+            var age = host.Factory.Services.GetRequiredService<ProductIdentityRecoveryMetrics>()
+                .OldestOpenApprovalSeconds(LskuIdentityWorkflowRecoveryRunner.Flow);
+            Assert.InRange(age!.Value, TimeSpan.FromDays(3000).TotalSeconds - 120, TimeSpan.FromDays(3000).TotalSeconds + 120);
+        }
+        finally
+        {
+            await OperationsCollection.UpdateManyAsync(x => copies.Contains(x.TenantId),
+                Builders<LskuIdentityWorkflowOperation>.Update.Set(x => x.IsDeleted, true));
+        }
+    }
+
+    /// <summary>FIX1 item 2 — the read is served by its partial index (only AwaitingDecision rows, by start), not a scan of
+    /// every tenant's history: the index exists with its partial filter and the planner's winning plan uses it.</summary>
+    [Fact]
+    public async Task Bl607Fix1_The_open_approval_read_uses_its_partial_index()
+    {
+        using (var scope = TenantScope())
+            _ = scope.ServiceProvider.GetRequiredService<ILskuIdentityWorkflowOperationRepository>();   // its indexes
+        var collection = OperationsCollection;
+        var indexes = await (await collection.Indexes.ListAsync()).ToListAsync();
+
+        var index = Assert.Single(indexes, x => x["name"] == "ix_mdm_lsku_identity_workflow_open_approval");
+        Assert.Contains("Checkpoint", index["partialFilterExpression"].AsBsonDocument.Names);
+
+        var serializer = collection.DocumentSerializer;
+        var registry = collection.Settings.SerializerRegistry;
+        var explain = await host.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            ["explain"] = new BsonDocument
+            {
+                ["find"] = collection.CollectionNamespace.CollectionName,
+                ["filter"] = LskuIdentityWorkflowTenantPartitionDiscoveryRepository.OpenApproval.Render(serializer, registry),
+                ["sort"] = Builders<LskuIdentityWorkflowOperation>.Sort.Ascending(x => x.WorkflowStartedAtUtcTicksV1).Render(serializer, registry),
+                ["limit"] = 1
+            },
+            ["verbosity"] = "queryPlanner"
+        });
+        Assert.Contains("ix_mdm_lsku_identity_workflow_open_approval", explain["queryPlanner"]["winningPlan"].ToJson());
+    }
+
+    /// <summary>FIX1 item 5 (CT survivor B1) — THE RULE ITSELF: a run of real faults raises the worker's streak; the next "not
+    /// decided yet" answer ends it (0), as a success would. The stored code is the engine's own.</summary>
+    [Fact]
+    public async Task Bl607Fix1_A_run_of_real_faults_is_ended_by_the_next_not_decided_yet_answer()
+    {
+        var (lsku, version) = await SubmittedLskuWaitingForAPersonAsync();
+        host.Engine.TerminalEvidenceFailure = (ProductIdentityWorkflowTransportOutcome.Retryable, "WORKFLOW_UNAVAILABLE");
+        try
+        {
+            for (var cycle = 0; cycle < 3; cycle++)
+            {
+                await DueNowAsync(lsku);
+                await host.RunAsync<LskuIdentityWorkflowRecoveryRunner>(runner => runner.RunCycleAsync());
+            }
+        }
+        finally
+        {
+            host.Engine.TerminalEvidenceFailure = null;
+        }
+        var faulted = await IdentityOperationAsync(lsku, version);
+        Assert.True(faulted.FailedAttemptCount >= 2, $"the faults were not counted: {faulted.FailedAttemptCount}");
+
+        await DueNowAsync(lsku);
         await host.RunAsync<LskuIdentityWorkflowRecoveryRunner>(runner => runner.RunCycleAsync());
 
-        var metrics = host.Factory.Services.GetRequiredService<ProductIdentityRecoveryMetrics>();
-        var age = metrics.OldestOpenApprovalSeconds(LskuIdentityWorkflowRecoveryRunner.Flow);
-        Assert.NotNull(age);
-        Assert.True(age >= TimeSpan.FromDays(400).TotalSeconds - 60, $"oldest open approval age {age} s");
-        Assert.Equal(TimeSpan.FromMinutes(1440).TotalSeconds, metrics.OpenApprovalAlertAfterSeconds(LskuIdentityWorkflowRecoveryRunner.Flow));
+        var waiting = await IdentityOperationAsync(lsku, version);
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.AwaitingDecision, waiting.Checkpoint);
+        Assert.Equal(0, waiting.FailedAttemptCount);
+        Assert.Equal("WORKFLOW_DECISION_NOT_TERMINAL", waiting.LastFailureCode);
+    }
+
+    /// <summary>FIX1 small item — an open answer without a code stores this flow's own DECISION_PENDING.</summary>
+    [Fact]
+    public async Task Bl607Fix1_An_open_answer_without_a_code_stores_the_flows_own_pending_code()
+    {
+        var (lsku, version) = await SubmittedLskuWaitingForAPersonAsync();
+        host.Engine.TerminalEvidenceFailure = (ProductIdentityWorkflowTransportOutcome.NonTerminal, "");
+        try
+        {
+            await DueNowAsync(lsku);
+            await host.RunAsync<LskuIdentityWorkflowRecoveryRunner>(runner => runner.RunCycleAsync());
+        }
+        finally
+        {
+            host.Engine.TerminalEvidenceFailure = null;
+        }
+
+        Assert.Equal(LskuIdentityWorkflowProcessor.DecisionPending, (await IdentityOperationAsync(lsku, version)).LastFailureCode);
+    }
+
+    /// <summary>FIX1 item 5 — every OTHER fault of the evidence call still counts (test 4 covers Retryable): not found,
+    /// incomplete, a timeout, and a refusal the engine gives this service (ServiceWait).</summary>
+    [Theory]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.NotFound, "NOT_FOUND_NON_LEAKAGE")]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Incomplete, "WORKFLOW_RESPONSE_INCOMPLETE")]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT")]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Forbidden, "WORKFLOW_SOMETHING_FORBIDDEN")]
+    public async Task Bl607Fix1_Every_other_fault_of_the_evidence_call_still_counts(ProductIdentityWorkflowTransportOutcome outcome, string code)
+    {
+        var (lsku, version) = await SubmittedLskuWaitingForAPersonAsync();
+        host.Engine.TerminalEvidenceFailure = (outcome, code);
+        try
+        {
+            await DueNowAsync(lsku);
+            await host.RunAsync<LskuIdentityWorkflowRecoveryRunner>(runner => runner.RunCycleAsync());
+        }
+        finally
+        {
+            host.Engine.TerminalEvidenceFailure = null;
+        }
+
+        var operation = await IdentityOperationAsync(lsku, version);
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.AwaitingDecision, operation.Checkpoint);
+        Assert.Equal(1, operation.FailedAttemptCount);
+        Assert.Equal(code, operation.LastFailureCode);
+    }
+
+    /// <summary>FIX1 small item (CT survivor R3) — the host's own validation of the worker options refuses a threshold inside
+    /// the backoff ceiling plus one poll BY NAME (the general worker validator only says "configuration invalid").</summary>
+    [Fact]
+    public void Bl607Fix1_The_host_refuses_a_threshold_inside_the_ceiling_by_its_own_name()
+    {
+        var validators = host.Factory.Services.GetServices<IValidateOptions<LskuIdentityWorkflowWorkerOptions>>().ToList();
+        var bad = new LskuIdentityWorkflowWorkerOptions { Enabled = true, LeaseOwner = "bl607-fix1", OpenApprovalAlertAfterMinutes = 15 };
+
+        var failures = validators.Select(v => v.Validate(Microsoft.Extensions.Options.Options.DefaultName, bad))
+            .Where(result => result.Failed).SelectMany(result => result.Failures ?? []).ToList();
+
+        Assert.Contains("LSKU_IDENTITY_WORKFLOW_OPEN_APPROVAL_ALERT_THRESHOLD_INVALID", failures);
+        Assert.All(validators, v => Assert.False(v.Validate(Microsoft.Extensions.Options.Options.DefaultName,
+            new LskuIdentityWorkflowWorkerOptions { Enabled = true, LeaseOwner = "bl607-fix1" }).Failed));
     }
 }

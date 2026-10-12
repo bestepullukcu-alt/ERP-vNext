@@ -25,4 +25,9 @@ public static class ProductIdentityOpenApprovalBackoff
 
     public static long NextLookAtUtcTicks(long? openSinceUtcTicks, DateTimeOffset now, TimeSpan retryDelay) =>
         now.Add(Delay(openSinceUtcTicks, now, retryDelay)).UtcTicks;
+
+    /// <summary>BL-607 FIX1: when the moment the approval opened is unknown (a row written before it was recorded), the
+    /// backoff runs from the request's creation — never a flat <c>retryDelay</c> for good.</summary>
+    public static long NextLookAtUtcTicks(long? openedAtUtcTicks, long createdAtUtcTicks, DateTimeOffset now, TimeSpan retryDelay) =>
+        NextLookAtUtcTicks(openedAtUtcTicks ?? (createdAtUtcTicks > 0 ? createdAtUtcTicks : null), now, retryDelay);
 }
