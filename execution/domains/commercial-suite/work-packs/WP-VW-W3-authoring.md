@@ -390,3 +390,77 @@ Commit: "chore(crm): WP-VW-W3-CFG — workflow templates CRM-OBJ-RESP + CRM-VISI
 - WEB-c ajanı canlı görsel karşılaştırma yapmadı → CT canlı E4'te mockup ile yan yana bakacak.
 
 **Sıradaki:** W3-CFG (Workflow şablonları + grant betiği) → canlı E4 (A1–A3, B, C1–C4, AR) + mockup görsel karşılaştırması.
+
+## §36.2 Uygulama raporu — W3-CFG (2026-10-12, canlı 97c5)
+
+**Ön koşul / DUR kontrolü (salt okuma):**
+- **Şablon kodu:** `AuthoringApprovalDefaults` → `CRM-OBJ-RESP`, `CRM-VISIT-EVIDENCE-EXC`; CrmService.Api `appsettings*.json`'da `Crm:ObjectionResponses:Workflow` / `Crm:VisitEvidenceExceptions:Workflow` override'ı yok.
+- **Pozisyonlar:**
+  - `POS-MED-DIR` "Medikal Direktör" `d0b6ce33-09ab-4789-bfaa-e49d53880fef` aktif; sema birincil.
+  - `POS-SALES-OPS` "Satış Operasyon" `c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d` aktif; sema ikincil, 2026-10-12'den, iptal yok.
+  - Pozisyon / atama yazılmadı.
+- **Auth kataloğu:** `crm.objection-response.{read,manage,submit}`, `crm.visit-evidence-policy.{read,manage}`, `crm.visit-evidence-exception.{read,manage}` ve `platform.workflow.*` mevcut.
+- **Oturum:** fleet ayakta (gateway / auth / CRM `/health` 200, Platform 503 = bilinen sağlık sinyali, uçlar çalışıyor). İşlemler yerleşik tarayıcıda ayrı sekmeden, aynı kaynaktaki `/Platform/Workflow/api/…` proxy'si üzerinden yapıldı. Mock / harness yok; örnek başlatılmadı; CRM kaydı oluşturulmadı.
+- **Başlangıç parmak izi:** 23 şablonun (şablon + tüm sürüm dokümanlarının SHA-256'sı, Mongo `diten_personalization_dev`) parmak izi alındı.
+
+### 1. Şablonlar — 2/2 Published
+İşlem: `POST definitions` (201) → `POST definitions/{id}/publish` (200), ilk denemede; `publishReason` = `WP-VW-W3-CFG`. Idempotent akış: kod varsa oluşturmaz, yayınlıysa yayınlamaz.
+
+| Kod | Ad | Template id | Aktif sürüm (v1) |
+|---|---|---|---|
+| `CRM-OBJ-RESP` | İtiraz yanıtı — Tıbbi onay | `b6cc495f-2021-499c-a20a-8a834658df2e` | `18562f8f-fa96-4b16-b426-f1d299e133e6` |
+| `CRM-VISIT-EVIDENCE-EXC` | Ziyaret kanıtı istisnası — Satış operasyon onayı | `f28ec41d-574b-41fc-882c-a2bde613a7e1` | `b0f5408f-b61a-42c5-8af7-3600470e703e` |
+
+Yayınlı tanım (`GET definitions/{id}/versions/{v}` ile doğrulandı):
+
+| Kod | requestedObjectType | Aşama / adım | Aday | SLA | Seçenek |
+|---|---|---|---|---|---|
+| `CRM-OBJ-RESP` | `crm.objection-response` | `medical` "Tıbbi Onay" / `medical` "Tıbbi onay" | `position:d0b6ce33…` (MED-DIR) | 4320 dk; 2880'de MED-DIR'e yükselt | `options.rejectCommentRequired: true` |
+| `CRM-VISIT-EVIDENCE-EXC` | `crm.visit-evidence-exception` | `sales_ops` "Satış Operasyon" / `sales_ops` "Satış operasyon onayı" | `position:c1acdf12…` (POS-SALES-OPS) | 4320 dk; 2880'de POS-SALES-OPS'a yükselt | `options.rejectCommentRequired: true` |
+
+- **SLA:** KP-MLR-TR v1 `medical` adımından birebir (4320 / 2880). İstisna şablonunda da aynı değer kullanıldı (paket bir değer vermedi).
+- **Aday farkı:** KP-MLR-TR'nin tıbbi adımında ikinci aday POS-MED-SPC de var; paket "aday MED-DIR" dediği için yalnız MED-DIR konuldu.
+- **`rejectCommentRequired`:** Platform kökte `options.rejectCommentRequired` okur (`WorkflowDefinitionRuntimePlan.RejectCommentRequired`). Adım `requirements.commentRequired: false` kaldı; o alan onayda da yorum ister.
+- **Duman:** `CLAIM-*` (7), `KP-MLR-*` (6), `KP-REG-*` (6) ve diğer 4 şablon — **23/23 parmak izi önce / sonra aynı**; yalnız 2 yeni kod eklendi.
+
+### 2. Yetki — betik yazıldı, RBAC'a yazılmadı
+97c5 salt okuma kontrolü:
+- **Admin** (`6a315467-…`) şu an:
+  - var: `crm.objection-response.read / manage / approve`, `crm.visit-evidence-policy.manage`, `platform.workflow.instances.start / view`, `tasks.approve / reject / cancel`;
+  - **eksik:** `crm.objection-response.submit`, `crm.visit-evidence-policy.read`, `crm.visit-evidence-exception.read / manage`.
+- **sema** (`b.pullukcu@grandmedical.eu`, `d27fa4a6…`) rolleri: Admin, GQD, QADocumentation → ayrı okuyucu rolü gerekmiyor.
+
+**Betik:** `scripts/rbac/grant_w3_authoring_rbac_97c5.py`
+- dry-run varsayılan; subtype-4 GUID; tarih alanları yerel 97c5 kaydından aynen kopya;
+- idempotent; marker `manual-grant-w3-authoring-rbac`;
+- rol / izin oluşturmaz, katalog eksikse durur;
+- `--reader-role`, Admin olmayan onaylayıcı için yalnız okuma ve karar anahtarları verir;
+- eski `crm.objection-response.approve` verilmez.
+
+Dry-run çıktısı:
+```
+skip (already granted): Admin ← crm.objection-response.read
+skip (already granted): Admin ← crm.objection-response.manage
+skip (already granted): Admin ← crm.visit-evidence-policy.manage
+skip (already granted): Admin ← platform.workflow.instances.start
+skip (already granted): Admin ← platform.workflow.instances.view
+skip (already granted): Admin ← platform.workflow.tasks.approve
+skip (already granted): Admin ← platform.workflow.tasks.reject
+skip (already granted): Admin ← platform.workflow.tasks.cancel
+role 'Admin' (6a315467-7d80-4ad8-bd76-78f8f762fe8a): 4 grant(s) to insert: ['crm.objection-response.submit', 'crm.visit-evidence-policy.read', 'crm.visit-evidence-exception.read', 'crm.visit-evidence-exception.manage']
+DRY-RUN — nothing written. Re-run with --apply.
+```
+Marker'lı satır sayısı: 0 (agent yazmadı).
+
+**Kullanıcı adımı:**
+1. `py -3 scripts/rbac/grant_w3_authoring_rbac_97c5.py --apply` çalıştır.
+2. Admin rolündeki kullanıcılar **yeniden giriş** yapar.
+
+Geri alma: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-w3-authoring-rbac"})`.
+
+### 3. Kalan (CT, `--apply` + yeniden giriş sonrası)
+- **Canlı E4:**
+  - itiraz yanıtı taslak → onaya gönder → `CRM-OBJ-RESP` görevi sema'ya → Work Center onay / ret (ret yorumsuz 400 olmalı) → CRM durumu;
+  - istisna oluştur → gönder → `CRM-VISIT-EVIDENCE-EXC` görevi sema'ya → onay → etkin ayarda "İstisna" kaynağı;
+  - A1–A3, B, C1–C4, AR ekranları mockup ile yan yana.
+- Kod değişikliği yok.
