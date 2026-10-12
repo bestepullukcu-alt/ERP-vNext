@@ -343,11 +343,11 @@ written; these rows supersede its numbers.
 
 | AC (§16) | evidence |
 |---|---|
-| 1–9 | service suite 77/77, 0 skipped, on a temporary Mongo replica set; live gateway run 15/15 and live MDM proof (M-3) |
+| 1–9 | service suite 73/73, 0 skipped, on a temporary Mongo replica set (after `730a7fa1f`); live gateway run 15/15 and live MDM proof (M-3) |
 | 10 | **driven in a browser (M-5):** choose LE → create → release → second version → history → explode → Excel export → `ar` (RTL); two defects found there and fixed (history actor, untranslated field names); `BomsL10nTests` 4/4 |
 | 10 (UAS-001) | live: unentitled tenant Admin sees the in-shell denial, no redirect, no skeleton; gateway 403 (page itself answers 200 → BL-510, shared) |
 | 11 | `OcelotConfigurationTests` knows 5066 and 5067 after the main sync |
 | 12 | architecture 69/77 on the branch = 69/77 on main `a814bad0f` (the 8 reds are main's, byte-identical) |
 | Platform | self-registration; entitlement gives the tenant Admin exactly the 6 `manufacturing.bom.*` (M-4) |
-| AUD-001 | path c unchanged; central log via BL-501 pre-wired (§21), merge waits on BL-501 |
+| AUD-001 | path c unchanged; central-log connection is an open item (BL-501, central team, after the MVPs — §21, `730a7fa1f`); the PR does not wait for it |
 

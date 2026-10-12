@@ -14,3 +14,4 @@ Reds present on BOTH sides (main's, not MVP-3):
 - gateway (1): OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet — both list 5063 x46, 5064 x62, 5065 x14; 5066 and 5067 x0 (5065 = BL-470, PR #136).
 Web +4 on the branch (TRX diff) = MVP-3 BomsL10nTests (4).
 SDK 8.0.131 (CI): Diten.ManufacturingService.sln and Diten.ApiGateway build, 0 errors.
+Note 2026-10-12: after merging 730a7fa1f the architecture suite was re-run on the branch — 69/77, the same 8 reds as main a814bad0f (failure text identical); the service suite is 73/73 (see service-suite.txt).

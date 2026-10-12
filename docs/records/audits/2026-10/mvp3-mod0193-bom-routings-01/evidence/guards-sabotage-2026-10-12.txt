@@ -11,7 +11,7 @@ Collection: ["status"]
 Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 44 ms - Diten.Web.Tests.dll (net8.0)
 restored: 4/4
 
-## 3. CentralAuditDeclarationTests (82ebedeb4) — BL-501 pre-wiring
+## 3. CentralAuditDeclarationTests (82ebedeb4) — BL-501 pre-wiring  [HISTORICAL: the declarations and these 4 tests were removed by 730a7fa1f — BL-501 deferred after the MVPs]
 ## S1: DeleteBomDraftCommand no longer declares (interface removed, members kept)
 services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Registration/CentralAuditDeclarationTests.cs(82,9): error CS0029: Cannot implicitly convert type 'Diten.ManufacturingService.Application.Features.Boms.Commands.DeleteBomDraftCommand' to 'Diten.ManufacturingService.Application.Common.ICentralAuditDeclaration' [/home/user/ERP-vNext/services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj]
 ## S2: release declared as 'Release' (not a Platform AuditOperation)

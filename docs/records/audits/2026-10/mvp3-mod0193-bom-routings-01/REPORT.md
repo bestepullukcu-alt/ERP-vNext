@@ -5,7 +5,8 @@ Lane: MVP-3 (Parallel Lane B after MVP-1) · Module: MOD-0193 BOM & Routings · 
 `feature/mvp3-bom-routings` (M-1; `claude/bold-bell-52tgsz` kept, not deleted).
 Owner instruction (2026-10-06): "MVP-3 … bu kısım ve modülleri tamamla"; "sadece mvp3 yapılacak, diğer mvp'lere dokunma";
 service decision: **ayrı servis**. Pre-acceptance fix package: M-1 … M-6 (below). Owner decisions 2026-10-12: login
-path, main sync, central audit via BL-501 (merge waits on BL-501), open items for the PR.
+path, main sync, central audit via BL-501, open items for the PR. Changed later the same day by `730a7fa1f` (pushed to
+the branch by ElikPenco): BL-501 connection deferred until after the MVPs; the PR does not wait for it.
 
 ## What was measured before any work (SOP §12 INSPECT)
 
@@ -37,8 +38,9 @@ path, main sync, central audit via BL-501 (merge waits on BL-501), open items fo
   refused when it closes a loop, Effective/Superseded immutable, revision numbers never reused, decimal-string quantities.
 - **Audit (AUD-001):** path c `bom-surum-gecmisi` — BOM and history in ONE Mongo transaction (K2 fail-closed); the
   history names the actor from a real Auth token and shows changed fields under translated labels.
-- **Central audit (owner decision 2026-10-12, BL-501):** the BOM history stays; the central Platform log is added next to
-  it. BL-501 does not exist and copying MDM's forwarder is forbidden, so only the data is ready (see below).
+- **Central audit (BL-501):** the BOM history stays as the product feature and K2 trail. The central Platform log
+  connection is an open item for the central team after the MVPs (`730a7fa1f`); no declaration, forwarder or shared
+  interface is added ahead of BL-501's real contract. The 4 write commands are listed "BL-501 bekliyor" in the audit ledger.
 - **Web** `/Manufacturing/Boms`: Golden Compact, LE filter on the list (from `/api/legal-entities/lookup`, auto-selected
   when only one), LE required on Create, shown on Edit/Details; history, release, delete, requirement check; UAS-001; 7 languages.
 - **Gateway:** `/api/bom` + `/api/bom/{everything}` → 5067. **Platform:** self-registration (M-4).
@@ -53,26 +55,18 @@ path, main sync, central audit via BL-501 (merge waits on BL-501), open items fo
 | M-4 Platform | `35221a406` self-registration · `9b5c46a05` entitlement → tenant Admin gets the 6 BOM permissions; UAS-001 denial live | done |
 | M-5 browser | `b67b13f7f` (actor name fix) · `d6af82f2d` (history field labels, 7 languages) · `2534ec00d` (evidence) | done |
 | M-6 suites | `bbd345ffb`, refreshed after the a814bad0f merge | accepted; re-measured: 0 new red |
-| Central audit (BL-501 pre-wiring) | `82ebedeb4` (declarations + guard) · `9f96b1ff2` (pack §21) | data ready; wiring waits on BL-501 |
+| Central audit (BL-501) | `82ebedeb4` pre-wiring, then removed by `730a7fa1f` (deferred after the MVPs; ledger lists the 4 commands) | open item, PR does not wait |
 
 **Login (owner rule 1):** admin login succeeded (`admin@diten.com`, Web `/platform/login`; no password change, reset or
 database write). With that admin, through Platform's normal APIs: test tenant `d703d845-…` registered (plan FREE, type
 Internal), its initial admin invited (Development returns a temporary password), first login forced the normal
 `/account/change-password`. No password is recorded in this repository.
 
-**BL-501 — what is ready, what is not.** Ready: each of the 4 write commands implements `ICentralAuditDeclaration`
-(category `MasterData`; operation `Create` / `Update` / `LifecycleTransition` / `Delete`; entity `BomVersion`; source
-`bom-routings`; explicit entity id, Create's from the response); values checked against Platform's `AuditEnums.cs`; a
-guard that the service carries no forwarder of its own. Not present (by rule): marker, pipeline behaviour, Platform
-client, `Program.cs` registration. When BL-501 lands: each command adds the shared marker and maps its declaration;
-`Program.cs` registers the shared behaviour. Open question for BL-501: the shared behaviour should read the entity id
-from an explicit member, not by reflection (Create's id is inside `Response<BomView>`).
-
 ## Evidence (files in `evidence/`)
 
 | level | what | result |
 |---|---|---|
-| E2 | `service-suite.txt` — real Mongo replica set; re-run 2026-10-12 on a temporary replica set (port 28117), 0 skipped | 77/77 |
+| E2 | `service-suite.txt` — temporary Mongo replica set (port 28117), 0 skipped, on the branch after `730a7fa1f` | 73/73 |
 | E2 | `service-sabotage.txt`, `m3-mdm-sabotage.txt`, `guards-sabotage-2026-10-12.txt` | each guard red under sabotage, green restored |
 | **E3** | `m3-live-mdm.txt` (2026-10-06) — real Gateway + MDM: DRAFT LE 422, ACTIVE LE 201/200, unknown LE 422, no LE 400, other tenant 422, MDM stopped 503 | as expected |
 | **E3** | `gateway-e2e.txt` (2026-10-06) — full API flow incl. other active LE 404, no permission 403 | 15/15 |
@@ -84,7 +78,7 @@ from an explicit member, not by reflection (Create's id is inside `Response<BomV
 
 ## Open items (stated, not hidden)
 
-- **Merge waits on BL-501** (shared audit forwarder). The PR may be open; it is not merged before BL-501 is wired.
+- **Central audit (BL-501):** open item — central team, after the MVPs; the PR does not wait for it (`730a7fa1f`).
 - **Company authority:** MDM only proves the legal entity is ACTIVE and the tenant's; whether the USER is authorised in
   that company is not checked. Open until Platform's "my authorised companies" endpoint exists.
 - BOM users also need `mdm.legal-entities.read` (the LE lookup is MDM's), recorded in pack §8.
