@@ -151,6 +151,12 @@ public sealed class SandopCapacityHttpHost : WebApplicationFactory<Program>
                 + "or the handlers were deleted; this host would otherwise start with both controllers dropped.");
     }
 
+    /// <summary>
+    /// The service's own database, resolved from its container, so a test reads back exactly what the request
+    /// wrote rather than a second client's view of it.
+    /// </summary>
+    public MongoDB.Driver.IMongoDatabase Database => Services.GetRequiredService<MongoDB.Driver.IMongoDatabase>();
+
     public string Token(Guid? tenant = null, Guid? legalEntity = null, IEnumerable<string>? permissions = null, Guid? actor = null)
     {
         var claims = new List<Claim>

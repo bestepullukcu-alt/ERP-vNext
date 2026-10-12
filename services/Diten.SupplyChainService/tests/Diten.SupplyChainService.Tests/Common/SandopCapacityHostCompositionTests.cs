@@ -36,7 +36,15 @@ public sealed class SandopCapacityHostCompositionTests
     ///
     /// Fixing it means editing Program.cs, which the §22 gate reserves, so this test records the defect instead.
     /// When the middleware is wired, this test fails and must be replaced by the real Capacity HTTP assertions —
-    /// MOD-0192's acceptance :199, :200, :201 and :202 are open for exactly this reason.
+    /// MOD-0192's acceptance :199, :200 and :201 are open for exactly this reason (:202 closed 2026-10-12 by
+    /// SandopCapacitySeparationTests, which needs no HTTP).
+    ///
+    /// 2026-10-12: CT wired the branch, watched this guard fire exactly as designed, measured the result, and
+    /// then reverted it — Program.cs is hash-pinned as Accepted composition in both packs (MOD-0192:273,
+    /// MOD-0190:261) and CT did not have the integration-owner authorization. The measurement survives in
+    /// MOD-0192:199: the correlation chain is green end to end and all five pipeline suites were byte-identical,
+    /// so whoever holds that authorization has the evidence and the two lines ready. CapacityCorrelationTests
+    /// is the test to un-skip on that day.
     /// </summary>
     [Fact]
     public async Task Capacity_controller_is_mapped_but_its_context_middleware_is_not_composed()
