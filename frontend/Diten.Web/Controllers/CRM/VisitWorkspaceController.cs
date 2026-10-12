@@ -173,6 +173,7 @@ public sealed class VisitWorkspaceController : Controller
     /// locationError, photo, photoCapturedAt) streamed to the CRM as it came (the boundary kept). Anything but
     /// multipart is refused here; the CRM answers the rest (409 / 400 / 503 with its codes).</summary>
     [HttpPost("api/execution/start")]
+    [Diten.Web.Filters.DisableFormValueModelBinding] // CT live E4: keep the multipart body unread for the copy
     [RequestSizeLimit(MaxStartBytes)]
     public async Task<IActionResult> StartVisit(CancellationToken ct)
     {
@@ -189,12 +190,14 @@ public sealed class VisitWorkspaceController : Controller
             return BadRequest(new { errors = new[] { "multipart/form-data is required.", "visit_capture_invalid" } });
         }
 
-        var content = new StreamContent(Request.Body);
+        // CT (live E4, 2026-10-12): the body is BUFFERED (bounded by [RequestSizeLimit]) and sent as bytes — the same as
+        // the presentation page's signature proxy. Streaming Kestrel's request body straight into the gateway call with
+        // a pinned Content-Length failed live ("Gateway unavailable", 502) although every unit test with an in-memory
+        // body passed.
+        using var buffer = new MemoryStream();
+        await Request.Body.CopyToAsync(buffer, ct);
+        var content = new ByteArrayContent(buffer.ToArray());
         content.Headers.ContentType = mediaType;
-        if (Request.ContentLength is { } length)
-        {
-            content.Headers.ContentLength = length;
-        }
 
         var response = await SendGatewayAsync(HttpMethod.Post, "/api/crm/visit-execution/start", content, ct);
         return await ToProxyResultAsync(response, ct);

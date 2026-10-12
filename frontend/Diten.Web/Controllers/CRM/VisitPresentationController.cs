@@ -104,6 +104,7 @@ public sealed class VisitPresentationController : Controller
 
     /// <summary>The doctor's signature: the browser's multipart (file png, confirmed, context) is streamed as-is.</summary>
     [HttpPost("api/execution/{executionId:guid}/signature")]
+    [Diten.Web.Filters.DisableFormValueModelBinding] // CT live E4: keep the multipart body unread for the copy
     [RequestSizeLimit(MaxSignatureRequestBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxSignatureRequestBytes)]
     public async Task<IActionResult> Signature(Guid executionId, CancellationToken ct)
