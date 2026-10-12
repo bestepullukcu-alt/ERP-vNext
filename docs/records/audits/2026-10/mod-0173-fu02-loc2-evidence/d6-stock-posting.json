@@ -1,0 +1,60 @@
+{
+  "step": "E4 — OPENING_BALANCE 25 EA into the bulk-created bin, through the probe gateway",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:5090/api/inventory/movements",
+    "headers": {
+      "Authorization": "Bearer ***(masked, test JWT: inventory.movements.create + inventory.stock.read, legal_entity_id claim = the selected company)",
+      "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+      "Idempotency-Key": "loc2-ob-1e78fdd0-cdd2-4219-9df4-747270b7a5cd"
+    },
+    "body": {
+      "idempotencyKey": "loc2-ob-1e78fdd0-cdd2-4219-9df4-747270b7a5cd",
+      "movementType": "OPENING_BALANCE",
+      "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+      "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+      "skuLevel": "Lsku",
+      "toWarehouseId": "34d5a227-229e-4dd9-9cd3-3fd9882ad241",
+      "toLocationId": "719585e5-faab-4cfd-952a-55c21a6f121a",
+      "quantity": "25",
+      "uomId": "EA",
+      "lotId": "LOT-LOC2-01",
+      "toStockStatus": "AVAILABLE",
+      "sourceModule": "MOD-0173",
+      "sourceType": "OPENING_BALANCE",
+      "transactionDate": "2026-10-02T08:04:56.842Z",
+      "postingDate": "2026-10-02T08:04:56.846Z"
+    }
+  },
+  "response": {
+    "status": 201,
+    "xCorrelationId": "faeebc0405ea44909a2747ec3e626049",
+    "body": {
+      "transactionId": "37efecb3-2519-473d-8d03-9d003651faae",
+      "transactionNumber": "INV-2026-0000001",
+      "postedAt": "2026-10-02T08:04:57.711Z",
+      "idempotentReplay": false,
+      "balanceSnapshot": {
+        "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+        "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+        "skuLevel": "Lsku",
+        "legalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+        "warehouseId": "34d5a227-229e-4dd9-9cd3-3fd9882ad241",
+        "locationId": "719585e5-faab-4cfd-952a-55c21a6f121a",
+        "lotId": "LOT-LOC2-01",
+        "stockStatus": "AVAILABLE",
+        "onHand": "25.000",
+        "reserved": "0.000",
+        "available": "25.000",
+        "inTransit": "0.000",
+        "blocked": "0.000",
+        "qualityInspection": "0.000",
+        "baseUomId": "EA",
+        "baseQuantity": "25.000",
+        "lastMovementId": "37efecb3-2519-473d-8d03-9d003651faae",
+        "lastPostingDate": "2026-10-02T08:04:56.846Z"
+      },
+      "contractVersion": "v1"
+    }
+  }
+}

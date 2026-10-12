@@ -22,6 +22,9 @@ public sealed class WorkflowTransitionLog : TenantScopedEntity
     public string? IdempotencyKey { get; set; }
     public string? Comment { get; set; }
     public string? EvidenceRef { get; set; }
+
+    /// <summary>MOD-0022 E4 — the e-signature id an approve carried (validated on signature-required steps).</summary>
+    public string? SignatureId { get; set; }
     public string? CorrelationId { get; set; }
 
     // Monotonic per-instance sequence; the transition batch assigns it. Append-only (no update/delete).

@@ -1,0 +1,346 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Action.CHANGELOTSTATUS" xml:space="preserve">
+    <value>Changer le statut</value>
+  </data>
+  <data name="Action.EDITLOT" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Action.EDITRELEASEDLOT" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Action.LOTMOVES" xml:space="preserve">
+    <value>Historique des mouvements</value>
+  </data>
+  <data name="Action.LOTTRACEOPEN" xml:space="preserve">
+    <value>Traçabilité</value>
+  </data>
+  <data name="Action.NEWLOT" xml:space="preserve">
+    <value>Nouveau lot</value>
+  </data>
+  <data name="Action.OPENINLEDGER" xml:space="preserve">
+    <value>Ouvrir dans le registre des stocks</value>
+  </data>
+  <data name="Action.RECEIPTINLEDGER" xml:space="preserve">
+    <value>Ouvrir dans le registre des stocks</value>
+  </data>
+  <data name="Action.SERIALLOT" xml:space="preserve">
+    <value>Détail du lot</value>
+  </data>
+  <data name="Action.SERIALMOVES" xml:space="preserve">
+    <value>Historique des mouvements</value>
+  </data>
+  <data name="Action.TRACELOTDETAIL" xml:space="preserve">
+    <value>Détail du lot</value>
+  </data>
+  <data name="Action.VIEWALLSERIALS" xml:space="preserve">
+    <value>Tous les numéros de série</value>
+  </data>
+  <data name="Action.VIEWLOT" xml:space="preserve">
+    <value>Détail du lot</value>
+  </data>
+  <data name="Action.VIEWRECEIPT" xml:space="preserve">
+    <value>Bon de mouvement</value>
+  </data>
+  <data name="Badge.Automatic" xml:space="preserve">
+    <value>Automatique</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Chip.Serial" xml:space="preserve">
+    <value>Numéro de série {0}</value>
+  </data>
+  <data name="Chip.SerialLast" xml:space="preserve">
+    <value>Le dernier mouvement du numéro de série {0} est mis en évidence.</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Col.By" xml:space="preserve">
+    <value>Enregistré par</value>
+  </data>
+  <data name="Col.Date" xml:space="preserve">
+    <value>Date de transaction</value>
+  </data>
+  <data name="Col.FromTo" xml:space="preserve">
+    <value>Vers</value>
+  </data>
+  <data name="Col.Number" xml:space="preserve">
+    <value>N° de transaction</value>
+  </data>
+  <data name="Col.Quantity" xml:space="preserve">
+    <value>Quantité</value>
+  </data>
+  <data name="Col.Source" xml:space="preserve">
+    <value>Origine</value>
+  </data>
+  <data name="Col.Status" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="Col.Type" xml:space="preserve">
+    <value>Type de mouvement</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>Société</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>Choisissez une société</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>Choisissez la société dans laquelle vous travaillez pour voir ses lots et son stock.</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>La liste des sociétés n’a pas pu être chargée. Réessayez dans un instant.</value>
+  </data>
+  <data name="Empty.List" xml:space="preserve">
+    <value>Aucun enregistrement ne correspond aux filtres.</value>
+  </data>
+  <data name="Empty.NoLedger" xml:space="preserve">
+    <value>Les mouvements du registre des stocks sont affichés aux utilisateurs autorisés à consulter le registre des stocks.</value>
+  </data>
+  <data name="Empty.PickLot" xml:space="preserve">
+    <value>Choisissez un lot.</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>Confirmez que vous comprenez l’impact du blocage.</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>Choisissez d’abord une société.</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>Cette société ne peut pas être utilisée avec votre compte.</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>Référence pour le support</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>Le code n’a pas pu être lu.</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>L’opération n’a pas pu aboutir. Réessayez.</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>Ce formulaire a déjà été envoyé avec d’autres valeurs. Rechargez la page.</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>Certaines valeurs ne sont pas valides. Vérifiez les champs.</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>La société n’a pas pu être vérifiée pour le moment. Réessayez dans un instant.</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>Ce numéro de lot existe déjà pour ce produit.</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>Ce lot a été modifié entre-temps par quelqu’un d’autre. Rechargez la page et réessayez.</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>Les dates ne sont pas cohérentes (fabrication ≤ aujourd’hui, péremption après la fabrication, recontrôle entre les deux).</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>Le numéro de lot et la SKU ne peuvent pas être modifiés.</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>Rien n’a été modifié.</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>Le numéro de lot ne peut contenir que 1 à 40 caractères : lettres A–Z, chiffres et . / -.</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>Le lot appartient à une autre SKU.</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>Choisissez la SKU à laquelle appartient le lot.</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>Ce changement de statut n’est pas autorisé pour ce lot.</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>Vous n’êtes pas autorisé à effectuer cette opération.</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>Les données produit sont inaccessibles pour le moment ; rien n’a été enregistré.</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>Ce produit n’est pas suivi par lot ; aucun lot ne peut être créé.</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>Saisissez un motif d’au moins 10 caractères.</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>Le service des lots est inaccessible pour le moment. Réessayez dans un instant.</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>Votre session a expiré. Reconnectez-vous.</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>Le produit ou la SKU est introuvable.</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>Ce lot est introuvable.</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>Ce numéro de série est introuvable.</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>{0} jours</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>Périmé</value>
+  </data>
+  <data name="Filter.From" xml:space="preserve">
+    <value>Date de début</value>
+  </data>
+  <data name="Filter.Lot" xml:space="preserve">
+    <value>Lot</value>
+  </data>
+  <data name="Filter.To" xml:space="preserve">
+    <value>Date de fin</value>
+  </data>
+  <data name="Movement.COUNT_GAIN" xml:space="preserve">
+    <value>Excédent d'inventaire</value>
+  </data>
+  <data name="Movement.COUNT_LOSS" xml:space="preserve">
+    <value>Manquant d'inventaire</value>
+  </data>
+  <data name="Movement.CUSTOMER_RETURN" xml:space="preserve">
+    <value>Retour client</value>
+  </data>
+  <data name="Movement.GOODS_ISSUE_PROD" xml:space="preserve">
+    <value>Sortie (production)</value>
+  </data>
+  <data name="Movement.GOODS_ISSUE_SALES" xml:space="preserve">
+    <value>Sortie (vente)</value>
+  </data>
+  <data name="Movement.GOODS_RECEIPT_PO" xml:space="preserve">
+    <value>Réception (achat)</value>
+  </data>
+  <data name="Movement.GOODS_RECEIPT_PROD" xml:space="preserve">
+    <value>Réception (production)</value>
+  </data>
+  <data name="Movement.LOCATION_TRANSFER" xml:space="preserve">
+    <value>Transfert d'emplacement</value>
+  </data>
+  <data name="Movement.OPENING_BALANCE" xml:space="preserve">
+    <value>Solde d'ouverture</value>
+  </data>
+  <data name="Movement.REVERSAL" xml:space="preserve">
+    <value>Contre-passation</value>
+  </data>
+  <data name="Movement.SCRAP" xml:space="preserve">
+    <value>Mise au rebut</value>
+  </data>
+  <data name="Movement.STATUS_TRANSFER" xml:space="preserve">
+    <value>Changement de statut</value>
+  </data>
+  <data name="Movement.SUPPLIER_RETURN" xml:space="preserve">
+    <value>Retour fournisseur</value>
+  </data>
+  <data name="Movement.WAREHOUSE_TRANSFER" xml:space="preserve">
+    <value>Transfert entre entrepôts</value>
+  </data>
+  <data name="Movement.WRITE_OFF" xml:space="preserve">
+    <value>Dépréciation</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>Aucun résultat</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>Suivi des lots / séries</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>Tous les mouvements du registre des stocks d’un lot.</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>Historique des mouvements du lot</value>
+  </data>
+  <data name="Paging.Range" xml:space="preserve">
+    <value>{0}–{1} sur {2}</value>
+  </data>
+  <data name="Receipt.DateBy" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Receipt.Document" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="Receipt.From" xml:space="preserve">
+    <value>De</value>
+  </data>
+  <data name="Receipt.Lot" xml:space="preserve">
+    <value>Lot</value>
+  </data>
+  <data name="Receipt.OpenInLedger" xml:space="preserve">
+    <value>Ouvrir dans le registre des stocks</value>
+  </data>
+  <data name="Receipt.Product" xml:space="preserve">
+    <value>Produit / SKU</value>
+  </data>
+  <data name="Receipt.Quantity" xml:space="preserve">
+    <value>Quantité</value>
+  </data>
+  <data name="Receipt.StockStatus" xml:space="preserve">
+    <value>Statut du stock</value>
+  </data>
+  <data name="Receipt.Title" xml:space="preserve">
+    <value>Bon de mouvement</value>
+  </data>
+  <data name="Receipt.To" xml:space="preserve">
+    <value>Vers</value>
+  </data>
+  <data name="Receipt.Type" xml:space="preserve">
+    <value>Type de mouvement</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>Date de recontrôle dépassée</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Recherche…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>Actif</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>Bloqué</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>Consommé</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>Bloqué</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>Brouillon</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>Périmé</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>Libéré</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>Disponible</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>Bloqué</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>Endommagé</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>Périmé</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>En transit</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>Contrôle qualité</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>Quarantaine</value>
+  </data>
+</root>

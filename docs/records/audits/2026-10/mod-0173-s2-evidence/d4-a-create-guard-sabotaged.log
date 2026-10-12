@@ -1,0 +1,10 @@
+### D4-a create guard (AvailableOnHand - Reserved >= q) — SABOTAGED
+-            PositionKey(sku) & UnreservedAtLeast(quantity),
++            PositionKey(sku), // SABOTAGE D4-a: create guard removed
+  Başarısız Diten.InventoryService.Tests.Api.ReservationTests.AC_R3_two_parallel_reserves_of_60_on_100_commit_once_and_reserved_is_60_never_120 [43 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Collections differ
+  Başarısız Diten.InventoryService.Tests.Api.ReservationTests.AC_R2_over_reservation_is_422_INSUFFICIENT_AVAILABLE_with_details_and_writes_nothing [33 ms]
+  Hata İletisi:
+   expected 422, got 201: {"reservationId":"4381382c-aca1-4c6a-9b9e-8f263e6f83f0","status":"ACTIVE","reservedQuantity":"80.000","availableAfter":"-10.000","etag":"W/\"1\"","contractVersion":"v1"}
+Başarısız! - Başarısız:     2, Başarılı:    42, Atlanan:     0, Toplam:    44, Süre: 18 s - Diten.InventoryService.Tests.dll (net8.0)

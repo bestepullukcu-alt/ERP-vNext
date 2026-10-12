@@ -1,0 +1,54 @@
+﻿{
+    "passed":  12,
+    "failed":  0,
+    "checks":  [
+                   {
+                       "check":  "a) movement through gateway -\u003e 201",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "a) replay -\u003e 200 idempotentReplay:true",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "b) availability 200 onHand 100.000 / available 100.000",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "c) reservation -\u003e 201 with etag W/\"1\"",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "c) release without If-Match -\u003e 400",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "c) wrong If-Match -\u003e 409 RESERVATION_CONFLICT",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "c) correct If-Match -\u003e 200 RELEASED",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "c) stale If-Match -\u003e 409",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "d) caller X-Correlation-Id echoed by the gateway response",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "d) no caller correlation -\u003e 200 (gateway-minted id accepted by the service)",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "e) no token -\u003e 401 from the service through the gateway (contract Error body)",
+                       "passed":  true
+                   },
+                   {
+                       "check":  "f) PUT -\u003e 404 at the gateway (method not routed)",
+                       "passed":  true
+                   }
+               ]
+}

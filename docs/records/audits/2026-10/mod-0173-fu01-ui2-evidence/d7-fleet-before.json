@@ -1,0 +1,136 @@
+﻿{
+    "measuredAt":  "2026-10-02T12:31:21.2563626+03:00",
+    "note":  "User fleet before WP-0173-UI2 runtime (nothing of this WP running yet).",
+    "listeners":  [
+                      {
+                          "port":  4010,
+                          "pid":  1392,
+                          "name":  "node.exe",
+                          "started":  "2026-10-02T09:50:27.6922310+03:00"
+                      },
+                      {
+                          "port":  5000,
+                          "pid":  16972,
+                          "name":  "Diten.ApiGateway.exe",
+                          "started":  "2026-10-02T11:30:28.3764230+03:00"
+                      },
+                      {
+                          "port":  5001,
+                          "pid":  35808,
+                          "name":  "Diten.Web.exe",
+                          "started":  "2026-10-02T11:31:38.2550670+03:00"
+                      },
+                      {
+                          "port":  5056,
+                          "pid":  22600,
+                          "name":  "Diten.AuthService.Api.exe",
+                          "started":  "2026-10-02T11:30:51.0971030+03:00"
+                      },
+                      {
+                          "port":  5057,
+                          "pid":  25400,
+                          "name":  "dotnet.exe",
+                          "started":  "2026-10-02T11:31:08.5156190+03:00"
+                      },
+                      {
+                          "port":  5058,
+                          "pid":  1932,
+                          "name":  "Diten.DevEnablementService.Api.exe",
+                          "started":  "2026-10-02T11:30:50.7482450+03:00"
+                      },
+                      {
+                          "port":  5059,
+                          "pid":  25588,
+                          "name":  "Diten.MdmService.Api.exe",
+                          "started":  "2026-10-02T11:30:57.5088030+03:00"
+                      },
+                      {
+                          "port":  5060,
+                          "pid":  18704,
+                          "name":  "Diten.HcmService.Api.exe",
+                          "started":  "2026-10-02T11:30:51.3489450+03:00"
+                      },
+                      {
+                          "port":  5061,
+                          "pid":  22184,
+                          "name":  "Diten.CrmService.Api.exe",
+                          "started":  "2026-10-02T11:30:50.6941690+03:00"
+                      },
+                      {
+                          "port":  5066,
+                          "pid":  26232,
+                          "name":  "Diten.InventoryService.Api.exe",
+                          "started":  "2026-10-02T11:30:45.9533570+03:00"
+                      },
+                      {
+                          "port":  27017,
+                          "pid":  5380,
+                          "name":  "mongod.exe",
+                          "started":  "2026-09-30T11:18:43.3230200+03:00"
+                      }
+                  ],
+    "dotnetWatchHosts":  [
+                             {
+                                 "pid":  24556,
+                                 "started":  "2026-10-02T09:41:13.2744890+03:00"
+                             },
+                             {
+                                 "pid":  24024,
+                                 "started":  "2026-10-02T09:41:39.7440150+03:00"
+                             },
+                             {
+                                 "pid":  8264,
+                                 "started":  "2026-10-02T09:41:53.4939870+03:00"
+                             },
+                             {
+                                 "pid":  34252,
+                                 "started":  "2026-10-02T09:42:28.7376380+03:00"
+                             },
+                             {
+                                 "pid":  24704,
+                                 "started":  "2026-10-02T09:42:47.5815730+03:00"
+                             },
+                             {
+                                 "pid":  7824,
+                                 "started":  "2026-10-02T09:43:05.9559730+03:00"
+                             },
+                             {
+                                 "pid":  12148,
+                                 "started":  "2026-10-02T09:43:27.6607860+03:00"
+                             },
+                             {
+                                 "pid":  19772,
+                                 "started":  "2026-10-02T09:43:41.7878790+03:00"
+                             },
+                             {
+                                 "pid":  38932,
+                                 "started":  "2026-10-02T10:15:30.5095090+03:00"
+                             }
+                         ],
+    "ui2Ports":  [
+                     {
+                         "port":  4011,
+                         "listening":  false
+                     },
+                     {
+                         "port":  4012,
+                         "listening":  false
+                     },
+                     {
+                         "port":  5067,
+                         "listening":  false
+                     },
+                     {
+                         "port":  5090,
+                         "listening":  false
+                     },
+                     {
+                         "port":  5091,
+                         "listening":  false
+                     },
+                     {
+                         "port":  5097,
+                         "listening":  false
+                     }
+                 ]
+}

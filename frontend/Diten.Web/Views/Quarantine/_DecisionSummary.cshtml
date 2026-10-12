@@ -1,0 +1,16 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@*
+    Step 2 "Elektronik imza": the decision to be signed, as the SERVER built it (lines → target status, disposition, the planned
+    ledger movement, reason). The signature itself is MOD-0022's dialog (ESign.open — module quarantine, subjectType
+    quarantine.decision, CT-D17): 0175 draws no password field (KQ-G) and keeps no signature data, only the id.
+*@
+<div class="card mb-4 d-none" id="qr-sign-step">
+    <div class="card-body">
+        <h6 class="mb-3"><i class="bx bx-pen me-1"></i>@Localizer["Quarantine.Sign.Summary"]</h6>
+        <div class="border rounded p-3 bg-lighter mb-3" id="qr-summary"></div>
+        <div class="alert alert-primary d-flex gap-2 mb-0 py-2" id="qr-sign-info" role="status">
+            <i class="bx bx-info-circle mt-1"></i><span id="qr-sign-info-text">@Localizer["Quarantine.Sign.Info"]</span>
+        </div>
+    </div>
+</div>

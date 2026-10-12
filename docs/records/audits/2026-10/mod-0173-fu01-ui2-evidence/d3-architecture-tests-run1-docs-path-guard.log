@@ -1,0 +1,16 @@
+﻿  Geri yüklenecek projeler belirleniyor...
+  C:\Users\Ali\erp-vnext-wt-ui2\tests\architecture\TenantArchitecture.ArchitectureTests\TenantArchitecture.ArchitectureTests.csproj geri yüklendi (1,02 sn içinde).
+  TenantArchitecture.ArchitectureTests -> C:\Users\Ali\erp-vnext-wt-ui2\tests\architecture\TenantArchitecture.ArchitectureTests\bin\Release\net8.0\TenantArchitecture.ArchitectureTests.dll
+C:\Users\Ali\erp-vnext-wt-ui2\tests\architecture\TenantArchitecture.ArchitectureTests\bin\Release\net8.0\TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0) için test çalıştırması
+Toplam 1 test dosyası belirtilen desenle eşleşti.
+[xUnit.net 00:00:26.36]     TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [FAIL]
+  Başarısız TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [25 s]
+  Hata İletisi:
+   code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/run-ui2-env.ps1:78 → docs/analysis — bkz. docs-organization.md §4
+  Yığın İzleme:
+     at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders() in C:\Users\Ali\erp-vnext-wt-ui2\tests\architecture\TenantArchitecture.ArchitectureTests\DocsPathGuardTests.cs:line 120
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Başarısız! - Başarısız:     1, Başarılı:    17, Atlanan:     0, Toplam:    18, Süre: 25 s - TenantArchitecture.ArchitectureTests.dll (net8.0)

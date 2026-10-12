@@ -1,0 +1,414 @@
+openapi: 3.1.0
+info:
+  title: INVENTORY-BUNDLE
+  description: >
+    MOD-0173 Inventory Ledger & Valuation — Wave-0 frozen contract (v1).
+    Stok değiştiren tek yol POST /movements (append-only, idempotent).
+    Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
+    Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0173
+  x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
+servers:
+  - url: /api/inventory
+security:
+  - bearerAuth: []
+paths:
+  /movements:
+    post:
+      operationId: postMovement
+      summary: Stok hareketi post et (stok değiştiren TEK API)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/LegalEntityOverride'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MovementRequest' }
+            example:
+              idempotencyKey: mv-2026-09-09-abc123
+              documentGroupId: GRN-10001
+              movementType: GOODS_RECEIPT_PO
+              movementReason: STANDARD
+              itemId: b1f2c3d4-0000-0000-0000-000000000001
+              skuId: c3d4e5f6-0000-0000-0000-000000000002
+              skuLevel: Lsku
+              toWarehouseId: wh-01
+              toLocationId: loc-A-12-3
+              quantity: "100.000"
+              uomId: BOX
+              lotId: lot-777
+              toStockStatus: QUALITY_INSPECTION
+              sourceModule: MOD-0142
+              sourceType: GOODS_RECEIPT
+              sourceDocumentId: GRN-10001
+              sourceLineId: "3"
+              transactionDate: "2026-09-09T09:00:00Z"
+              postingDate: "2026-09-09T10:00:00Z"
+      responses:
+        '201':
+          description: Hareket post edildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MovementResponse' }
+              example:
+                transactionId: txn-55010
+                transactionNumber: INV-2026-0000123
+                postedAt: "2026-09-09T10:00:00Z"
+                idempotentReplay: false
+                balanceSnapshot:
+                  itemId: b1f2c3d4-0000-0000-0000-000000000001
+                  skuId: c3d4e5f6-0000-0000-0000-000000000002
+                  skuLevel: Lsku
+                  legalEntityId: le-tr
+                  warehouseId: wh-01
+                  locationId: loc-A-12-3
+                  lotId: lot-777
+                  stockStatus: QUALITY_INSPECTION
+                  onHand: "100.000"
+                  reserved: "0.000"
+                  available: "0.000"
+                  inTransit: "0.000"
+                  blocked: "0.000"
+                  qualityInspection: "100.000"
+                  baseUomId: EA
+                  baseQuantity: "1000.000"
+                  lastMovementId: txn-55010
+                  lastPostingDate: "2026-09-09T10:00:00Z"
+                contractVersion: v1
+        '200':
+          description: Idempotent replay (aynı key) — orijinal sonuç
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MovementResponse' }
+              example: { transactionId: txn-55010, idempotentReplay: true, contractVersion: v1 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/CrossLeForbidden' }
+        '422': { $ref: '#/components/responses/UnprocessableMovement' }
+        '503': { $ref: '#/components/responses/ProductMasterUnavailable' }
+  /availability:
+    get:
+      operationId: getAvailability
+      summary: Availability (0172 ATP / 0189 MRP / 0176 FEFO okur)
+      parameters:
+        - { name: itemId, in: query, schema: { type: string, format: uuid } }
+        - { name: skuId, in: query, schema: { type: string, format: uuid } }
+        - { name: skuLevel, in: query, schema: { $ref: '#/components/schemas/SkuLevel' } }
+        - { name: warehouseId, in: query, schema: { type: string } }
+        - { name: locationId, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Availability görünümü
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AvailabilityView' }
+              example:
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                skuId: c3d4e5f6-0000-0000-0000-000000000002
+                skuLevel: Lsku
+                legalEntityId: le-tr
+                scope: { warehouseId: wh-01 }
+                onHand: "100.000"
+                reserved: "30.000"
+                available: "70.000"
+                byStatus: { AVAILABLE: "100.000", QUALITY_INSPECTION: "0.000", QUARANTINE: "0.000", BLOCKED: "0.000", IN_TRANSIT: "0.000" }
+                baseUomId: EA
+                asOf: "2026-09-09T10:05:00Z"
+                contractVersion: v1
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/UnknownItem' }
+  /balance:
+    get:
+      operationId: getBalance
+      summary: Dimension bazlı bakiye (projection, read-only)
+      parameters:
+        - { name: itemId, in: query, schema: { type: string, format: uuid } }
+        - { name: skuId, in: query, schema: { type: string, format: uuid } }
+        - { name: skuLevel, in: query, schema: { $ref: '#/components/schemas/SkuLevel' } }
+        - { name: warehouseId, in: query, schema: { type: string } }
+        - { name: locationId, in: query, schema: { type: string } }
+        - { name: lotId, in: query, schema: { type: string } }
+        - { name: stockStatus, in: query, schema: { $ref: '#/components/schemas/StockStatus' } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, default: 50 } }
+      responses:
+        '200':
+          description: Bakiye satırları
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rows: { type: array, items: { $ref: '#/components/schemas/BalanceView' } }
+                  total: { type: integer }
+                  contractVersion: { type: string }
+              example:
+                rows:
+                  - { itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, legalEntityId: le-tr, warehouseId: wh-01, locationId: loc-A-12-3, lotId: lot-777, stockStatus: AVAILABLE, onHand: "70.000", reserved: "30.000", available: "40.000", inTransit: "0.000", blocked: "0.000", qualityInspection: "0.000", baseUomId: EA, lastMovementId: txn-55010, lastPostingDate: "2026-09-09T10:00:00Z" }
+                total: 1
+                contractVersion: v1
+  /transactions:
+    get:
+      operationId: getTransactions
+      summary: Immutable hareket geçmişi
+      parameters:
+        - { name: itemId, in: query, schema: { type: string, format: uuid } }
+        - { name: lotId, in: query, schema: { type: string } }
+        - { name: locationId, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, default: 50 } }
+      responses:
+        '200':
+          description: Hareketler (sayfalı, immutable)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/TransactionItem' } }
+                  page: { type: integer }
+                  pageSize: { type: integer }
+                  total: { type: integer }
+                  contractVersion: { type: string }
+  /reservations:
+    post:
+      operationId: createReservation
+      summary: Fiziksel hold oluştur (ATP kararı 0172'de)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReservationRequest' }
+            example:
+              idempotencyKey: rsv-abc
+              itemId: b1f2c3d4-0000-0000-0000-000000000001
+              skuId: c3d4e5f6-0000-0000-0000-000000000002
+              skuLevel: Lsku
+              quantity: "30.000"
+              reservationType: SALES_ORDER
+              sourceModule: MOD-0172
+              sourceDocumentId: SO-900
+              sourceLineId: "1"
+              priority: 10
+              expiresAt: "2026-09-16T00:00:00Z"
+      responses:
+        '201':
+          description: Reservation oluşturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReservationResponse' }
+              example: { reservationId: rsv-4001, status: ACTIVE, reservedQuantity: "30.000", availableAfter: "40.000", etag: 'W/"1"', contractVersion: v1 }
+        '422': { $ref: '#/components/responses/InsufficientAvailable' }
+  /reservations/{id}/release:
+    post:
+      operationId: releaseReservation
+      summary: Reservation serbest bırak
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Serbest bırakıldı
+          content:
+            application/json:
+              example: { reservationId: rsv-4001, status: RELEASED, availableAfter: "70.000", contractVersion: v1 }
+        '409': { $ref: '#/components/responses/ReservationConflict' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string }
+    LegalEntityOverride:
+      name: X-Legal-Entity-Id
+      in: header
+      required: false
+      description: İzinli çok-LE operatörlerde LE override; yoksa token'dan resolve.
+      schema: { type: string }
+  schemas:
+    Decimal:
+      type: string
+      pattern: '^-?\d+(\.\d+)?$'
+      description: Finansal precision — float değil, string decimal.
+    SkuLevel:
+      type: string
+      enum: [Gsku, Lsku, FinishedGood]
+      description: Polimorfik — üçü de stok tutabilir; per-product default Lsku.
+    MovementType:
+      type: string
+      description: CANONICAL/SABİT (DEC-INV-16) — kullanıcı yeni yaratamaz.
+      enum: [OPENING_BALANCE, GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD, GOODS_ISSUE_SALES, GOODS_ISSUE_PROD, WAREHOUSE_TRANSFER, LOCATION_TRANSFER, STATUS_TRANSFER, CUSTOMER_RETURN, SUPPLIER_RETURN, COUNT_GAIN, COUNT_LOSS, SCRAP, WRITE_OFF, REVERSAL]
+    StockStatus:
+      type: string
+      enum: [AVAILABLE, QUALITY_INSPECTION, QUARANTINE, BLOCKED, IN_TRANSIT, DAMAGED, EXPIRED]
+    MovementRequest:
+      type: object
+      required: [idempotencyKey, movementType, itemId, skuId, skuLevel, quantity, uomId, sourceModule, sourceType, transactionDate, postingDate]
+      properties:
+        idempotencyKey: { type: string }
+        documentGroupId: { type: string, nullable: true }
+        movementType: { $ref: '#/components/schemas/MovementType' }
+        movementReason: { type: string, nullable: true, description: MOD-0048 reference kodu }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        fromWarehouseId: { type: string, nullable: true }
+        fromLocationId: { type: string, nullable: true }
+        toWarehouseId: { type: string, nullable: true }
+        toLocationId: { type: string, nullable: true }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        lotId: { type: string, nullable: true }
+        serialIds: { type: array, items: { type: string }, nullable: true }
+        fromStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        toStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        sourceModule: { type: string }
+        sourceType: { type: string }
+        sourceDocumentId: { type: string, nullable: true }
+        sourceLineId: { type: string, nullable: true }
+        sourceSystem: { type: string, nullable: true, description: dış-entegrasyon LE (DEC-INV-19) }
+        transactionDate: { type: string, format: date-time }
+        postingDate: { type: string, format: date-time }
+    BalanceView:
+      type: object
+      properties:
+        itemId: { type: string }
+        skuId: { type: string }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        legalEntityId: { type: string }
+        warehouseId: { type: string, nullable: true }
+        locationId: { type: string, nullable: true }
+        lotId: { type: string, nullable: true }
+        stockStatus: { $ref: '#/components/schemas/StockStatus' }
+        onHand: { $ref: '#/components/schemas/Decimal' }
+        reserved: { $ref: '#/components/schemas/Decimal' }
+        available: { $ref: '#/components/schemas/Decimal', description: 'available = onHand(AVAILABLE) − reserved' }
+        inTransit: { $ref: '#/components/schemas/Decimal' }
+        blocked: { $ref: '#/components/schemas/Decimal' }
+        qualityInspection: { $ref: '#/components/schemas/Decimal' }
+        baseUomId: { type: string }
+        baseQuantity: { $ref: '#/components/schemas/Decimal' }
+        lastMovementId: { type: string }
+        lastPostingDate: { type: string, format: date-time }
+    AvailabilityView:
+      type: object
+      properties:
+        itemId: { type: string }
+        skuId: { type: string }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        legalEntityId: { type: string }
+        scope: { type: object, additionalProperties: { type: string } }
+        onHand: { $ref: '#/components/schemas/Decimal' }
+        reserved: { $ref: '#/components/schemas/Decimal' }
+        available: { $ref: '#/components/schemas/Decimal' }
+        byStatus: { type: object, additionalProperties: { $ref: '#/components/schemas/Decimal' } }
+        baseUomId: { type: string }
+        asOf: { type: string, format: date-time }
+        contractVersion: { type: string }
+    TransactionItem:
+      type: object
+      properties:
+        transactionId: { type: string }
+        transactionNumber: { type: string }
+        movementType: { $ref: '#/components/schemas/MovementType' }
+        movementReason: { type: string, nullable: true }
+        itemId: { type: string }
+        skuId: { type: string }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        baseQuantity: { $ref: '#/components/schemas/Decimal' }
+        baseUomId: { type: string }
+        toWarehouseId: { type: string, nullable: true }
+        toLocationId: { type: string, nullable: true }
+        lotId: { type: string, nullable: true }
+        fromStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        toStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        sourceModule: { type: string }
+        sourceDocumentId: { type: string, nullable: true }
+        sourceLineId: { type: string, nullable: true }
+        transactionDate: { type: string, format: date-time }
+        postingDate: { type: string, format: date-time }
+    MovementResponse:
+      type: object
+      properties:
+        transactionId: { type: string }
+        transactionNumber: { type: string }
+        postedAt: { type: string, format: date-time }
+        idempotentReplay: { type: boolean }
+        balanceSnapshot: { $ref: '#/components/schemas/BalanceView' }
+        contractVersion: { type: string }
+    ReservationRequest:
+      type: object
+      required: [idempotencyKey, itemId, skuId, skuLevel, quantity, reservationType, sourceModule]
+      properties:
+        idempotencyKey: { type: string }
+        itemId: { type: string }
+        skuId: { type: string }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        baseQuantity: { $ref: '#/components/schemas/Decimal' }
+        reservationType: { type: string }
+        sourceModule: { type: string }
+        sourceDocumentId: { type: string, nullable: true }
+        sourceLineId: { type: string, nullable: true }
+        priority: { type: integer }
+        expiresAt: { type: string, format: date-time }
+    ReservationResponse:
+      type: object
+      properties:
+        reservationId: { type: string }
+        status: { type: string, enum: [ACTIVE, RELEASED, EXPIRED] }
+        reservedQuantity: { $ref: '#/components/schemas/Decimal' }
+        availableAfter: { $ref: '#/components/schemas/Decimal' }
+        etag: { type: string }
+        contractVersion: { type: string }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string }
+        contractVersion: { type: string }
+  responses:
+    BadRequest:
+      description: Geçersiz istek (enum/param)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_MOVEMENT_TYPE, message: "movementType geçersiz", correlationId: req-1 }, contractVersion: v1 } } }
+    CrossLeForbidden:
+      description: Başka legal-entity'ye posting
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: CROSS_LE_FORBIDDEN, message: "Başka legal-entity'ye hareket yasak", correlationId: req-2 }, contractVersion: v1 } } }
+    UnprocessableMovement:
+      description: İş kuralı ihlali (stok/serial/lot/period/location)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            insufficientStock: { value: { error: { code: INSUFFICIENT_STOCK, message: "Yetersiz stok", details: { available: "80.000", requested: "100.000" }, correlationId: req-3 }, contractVersion: v1 } }
+            serialMismatch: { value: { error: { code: SERIAL_COUNT_MISMATCH, message: "serial sayısı miktara eşit değil", correlationId: req-4 }, contractVersion: v1 } }
+            periodClosed: { value: { error: { code: POSTING_PERIOD_CLOSED, message: "Kapalı döneme posting", correlationId: req-5 }, contractVersion: v1 } }
+            unknownLocation: { value: { error: { code: UNKNOWN_LOCATION, message: "location bulunamadı", correlationId: req-6 }, contractVersion: v1 } }
+    ProductMasterUnavailable:
+      description: itemId/skuId doğrulaması yapılamadı (fail-closed, silent-pass YOK)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: PRODUCT_MASTER_UNAVAILABLE, message: "PRODUCT-MASTER erişilemedi", correlationId: req-7 }, contractVersion: v1 } } }
+    UnknownItem:
+      description: Item/SKU bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_ITEM, message: "item bulunamadı", correlationId: req-8 }, contractVersion: v1 } } }
+    InsufficientAvailable:
+      description: Reserve > available
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INSUFFICIENT_AVAILABLE, message: "yetersiz available", details: { available: "40.000", requested: "50.000" }, correlationId: req-9 }, contractVersion: v1 } } }
+    ReservationConflict:
+      description: ETag uyuşmazlığı (eşzamanlı değişiklik)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: RESERVATION_CONFLICT, message: "reservation eşzamanlı değişti", correlationId: req-10 }, contractVersion: v1 } } }

@@ -1,0 +1,224 @@
+## chunked-cookie-and-nav-degraded.test.js — 20 tests
+  PASS nothing reads the access-token cookie directly › has NO direct Request.Cookies["access_token"] read left in any controller
+  PASS nothing reads the access-token cookie directly › routes the six repaired call sites through AuthTokenCookies.GetAccessToken
+  PASS nothing reads the access-token cookie directly › keeps the chunk marker and the reassembly in ONE place
+  PASS the navigation endpoint gets exactly one silent retry › exists as a single shared helper rather than three copies
+  PASS the navigation endpoint gets exactly one silent retry › sends at most twice — the retry is not a loop
+  PASS the navigation endpoint gets exactly one silent retry › does not sleep — the retry must not slow the page down
+  PASS the navigation endpoint gets exactly one silent retry › retries transient faults only, never a decided answer
+  PASS a navigation that stays down is never silent › gives the sidebar a load-failure state distinct from being legitimately empty
+  PASS a navigation that stays down is never silent › renders the warning in the menu's own place, localized
+  PASS a navigation that stays down is never silent › tells the Ctrl+K palette that its emptiness is a failure, not an answer
+  PASS a navigation that stays down is never silent › renders that warning in the palette instead of an empty box
+  PASS a navigation that stays down is never silent › hands the localized text to that static asset from the shell layout
+  PASS the warning exists in all seven tenant languages › en carries both keys with real translations
+  PASS the warning exists in all seven tenant languages › tr carries both keys with real translations
+  PASS the warning exists in all seven tenant languages › fr carries both keys with real translations
+  PASS the warning exists in all seven tenant languages › es carries both keys with real translations
+  PASS the warning exists in all seven tenant languages › zh carries both keys with real translations
+  PASS the warning exists in all seven tenant languages › ar carries both keys with real translations
+  PASS the warning exists in all seven tenant languages › ru carries both keys with real translations
+  PASS the warning exists in all seven tenant languages › does not ship the English text under a non-English culture
+## date-field-never-dies-silently.test.js — 16 tests
+  FAIL a date field that cannot be enhanced is never left quietly dead › with the library present the control really is bound — the premise for every negative below
+       window is not defined
+  FAIL a date field that cannot be enhanced is never left quietly dead › the leading glyph OPENS the calendar — the icon is a control, not a picture
+       window is not defined
+  FAIL a date field that cannot be enhanced is never left quietly dead › with flatpickr missing it reports the field it could not bind, instead of returning 0 in silence
+       document is not defined
+  FAIL a date field that cannot be enhanced is never left quietly dead › a page with no date field at all stays quiet — the alarm is about dead controls, not about absence
+       document is not defined
+  FAIL a date field that cannot be enhanced is never left quietly dead › TaskForm.enhanceDates says which SCREEN forgot the component, not just that one is missing
+       document is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › the sweep finds those views at all — otherwise the loop below asserts nothing
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/Tasks/Create.cshtml loads shared/diten-datefield.js
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/Tasks/Details.cshtml loads shared/diten-datefield.js
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/Tasks/Edit.cshtml loads shared/diten-datefield.js
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/WorkCenterNext/Details.cshtml loads shared/diten-datefield.js
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/WorkCenterNext/Index.cshtml loads shared/diten-datefield.js
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/Tasks/Create.cshtml has flatpickr itself available
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/Tasks/Details.cshtml has flatpickr itself available
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/Tasks/Edit.cshtml has flatpickr itself available
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/WorkCenterNext/Details.cshtml has flatpickr itself available
+       window is not defined
+  FAIL a view that loads Tasks/form.js ships what form.js delegates to › Views/WorkCenterNext/Index.cshtml has flatpickr itself available
+       window is not defined
+## dialog-one-implementation.test.js — 4 tests
+  FAIL one confirm implementation, product-wide › opens no dialog outside the shared component, except the files named here
+       a dialog was opened without window.showConfirm — call the shared component, or add the file to KNOWN_RAW with a reason — expected [
+         'Account\\forgot-password.js',
+         'Account\\login.js',
+         'Account\\reset-password.js',
+         'DocumentManagement\\TemplateMasters\\index.js',
+         'Meetings\\follow-up-dialog.js',
+         'Meetings\\minutes-editor.js',
+         'Meetings\\task-from-meeting-dialog.js',
+         'PPM\\Initiatives\\index.js',
+         'Platform\\Administrators\\index.js',
+         'Platform\\AuditRetention\\index.js',
+         'Tasks\\reassign.js',
+         'WorkCenterNext\\app.js',
+         'WorkCenter\\task-detail.js',
+         'pages\\demand-ideas\\demandIdeaCapture.js',
+         'pages\\demand-ideas\\demandIdeaRowActions.js',
+         'pages\\demand-ideas\\demandIdeasList.js'
+       ] to equal []
+  PASS one confirm implementation, product-wide › keeps the exception list honest — every named file still has a raw call
+  PASS one confirm implementation, product-wide › counts the shared confirm's real surface, both call forms
+  PASS one confirm implementation, product-wide › declares the implementation in exactly one place, plus one named fallback
+## diten-field-icons.test.js — 34 tests
+  PASS the tag box's text starts on the same line as its neighbours' › the theme's inset can be read — guards against a vacuous derivation
+  PASS the tag box's text starts on the same line as its neighbours' › the box declares the THEME's inset, not a number of its own
+  PASS the tag box's text starts on the same line as its neighbours' › Tagify's own editor padding is zeroed, or it adds a second inset on top
+  PASS the tag box's text starts on the same line as its neighbours' › the chips start at the BOX'S EDGE, not at the text
+  PASS the tag box's text starts on the same line as its neighbours' › the box's background is the THEME's, so it does not read as disabled
+  PASS an icon marks the fields where typing is not the whole story › every mapped field has a wrapper and a glyph
+  PASS an icon marks the fields where typing is not the whole story › each field carries the glyph the map assigns it
+  PASS an icon marks the fields where typing is not the whole story › the estimate says what a value looks like
+  PASS an icon marks the fields where typing is not the whole story › every icon the form asks for EXISTS in the icon set
+  PASS an icon marks the fields where typing is not the whole story › EVERY field carries an icon — the rule the owner replaced the old one with
+  PASS an icon marks the fields where typing is not the whole story › the icon says what the FIELD is, and never repeats its own card header
+  PASS an icon marks the fields where typing is not the whole story › the icon is hidden from assistive tech — the label already says what the field is
+  PASS an icon marks the fields where typing is not the whole story › the icon is quiet, and positioned with LOGICAL properties so RTL moves it
+  PASS an icon marks the fields where typing is not the whole story › the icon is centred on the CONTROL, not on the wrapper the chips grew
+  PASS an icon marks the fields where typing is not the whole story › the control makes ROOM for the icon instead of overlapping it
+  PASS an icon marks the fields where typing is not the whole story › focus does not move the text — the vendor collapses the inset, we hold it
+  PASS an icon marks the fields where typing is not the whole story › the box is still 38px — the previous round's claim is not traded away
+  PASS a textarea and a select2 need the icon placed differently › the textarea's icon aligns with the FIRST LINE, not with the middle
+  PASS a textarea and a select2 need the icon placed differently › a select2 control makes room for the icon in the box select2 renders
+  PASS a textarea and a select2 need the icon placed differently › RTL gets its own rule — select2's container carries its own dir
+  PASS a textarea and a select2 need the icon placed differently › select2's own arrow stays on the far side — the icon must not push it
+  PASS the quick-create offcanvas uses the same glyphs › every shared field carries the FULL FORM's glyph, derived not restated
+  PASS clicking the calendar icon opens the calendar › the page binds the icon to the picker
+  FAIL clicking the calendar icon opens the calendar › the click reaches flatpickr's own open()
+       document is not defined
+  PASS clicking the calendar icon opens the calendar › the icon does not swallow clicks meant for the field itself
+  PASS the shared add row keeps the form's field shape › wraps the input in a .diten-field carrying bx-list-plus
+  PASS every offcanvas form carries the leading-icon pattern, or is a named debt › the census sees a real population — guards against a vacuous sweep
+  PASS every offcanvas form carries the leading-icon pattern, or is a named debt › no NEW offcanvas ships without the wrapper
+  PASS every offcanvas form carries the leading-icon pattern, or is a named debt › the debt list may only shrink — a fixed file must leave it
+  PASS Roles and Users wear the reference's shape › Governance/Roles/_CreateEditOffcanvas.cshtml — every field has a wrapper and its glyph
+  PASS Roles and Users wear the reference's shape › Governance/Users/_CreateEditOffcanvas.cshtml — every field has a wrapper and its glyph
+  PASS Roles and Users wear the reference's shape › the textarea's glyph is top-aligned, not parked beside line three
+  PASS Roles and Users wear the reference's shape › the help texts the golden reference has no counterpart for are KEPT
+  PASS Roles and Users wear the reference's shape › the wrapper does not swallow the validation message
+## global-confirm-input-type.test.js — 17 tests
+  FAIL the callers that were already using the input box › is still accounted for, and none of them names a type
+       expected 13 to be 8
+  PASS the callers that were already using the input box › still gets a textarea when it asks for an input without naming a type
+  PASS the callers that were already using the input box › keeps the label, the validator and the required check exactly as they were
+  PASS a caller that does name a type › gets that type instead
+  PASS a caller that does name a type › keeps everything else the wrapper already gave it
+  PASS a caller that does name a type › reaches the caller's didOpen with the popup
+  PASS the dialog is written in the product's type scale › titles at the product's heading size, not a size of its own
+  PASS the dialog is written in the product's type scale › writes its description at the product's body size
+  PASS the dialog is written in the product's type scale › labels its input the way every form in the product labels a field
+  PASS the dialog is written in the product's type scale › keeps the buttons neutral-cancel and the width fixed
+  PASS the icon › is drawn for every caller that does not ask otherwise
+  PASS the icon › is left out only when a caller asks
+  PASS the icon › does not take the button colour with it
+  PASS the glyph, and only the glyph › can be named by a caller
+  PASS the glyph, and only the glyph › keeps the circle, its colour and its size — those belong to the type
+  PASS the glyph, and only the glyph › does not touch the confirm button's colour, whatever glyph is asked for
+  PASS the glyph, and only the glyph › leaves every existing caller with the glyph its type gives it
+## product-abbreviation-register.test.js — 8 tests
+  PASS MOD-0290-FU01 Product Abbreviation Register › uses only the same-origin MVC proxy from browser code
+  PASS MOD-0290-FU01 Product Abbreviation Register › keeps the request form to the two approved user fields
+  PASS MOD-0290-FU01 Product Abbreviation Register › consumes only the existing Global Product selector contract
+  PASS MOD-0290-FU01 Product Abbreviation Register › loads an exact-product zero-or-one row and read-only evidence
+  PASS MOD-0290-FU01 Product Abbreviation Register › uses Golden Slim and tenant-shell contracts
+  PASS MOD-0290-FU01 Product Abbreviation Register › persists, restores, and resets the complete saved-view state without leaking browser credentials
+  PASS MOD-0290-FU01 Product Abbreviation Register › generates correlation and idempotency only inside the MVC proxy
+  PASS MOD-0290-FU01 Product Abbreviation Register › ships marker-matched resources for exactly seven tenant locales
+## shared-ui-parts-one-implementation.test.js — 11 tests
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › personInitials is a real declaration only in shared/diten-person-picker.js
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › Tasks/form.js and WorkCenterNext/app.js call the shared personInitials rather than redeclaring it
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › renderPersonOptions is a real declaration only in shared/diten-person-picker.js
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › buildSearchableDropdownAdapter is a real declaration only in shared/diten-person-picker.js
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › Meetings/form.js, Meetings/series/form.js and Governance/RoleAssignments/index.js call the shared adapter rather than redeclaring it
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › relatedRecordRow / renderRelatedRows are real declarations only in shared/diten-related-records.js
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › WorkCenterNext/app.js's renderRelated and Meetings/form.js's renderLinkedTasks call the shared row renderer
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › bindDialogSelect2 and dialogLook are real declarations only in shared/diten-dialog.js
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › WorkCenterNext/app.js calls the shared bindDialogSelect2/dialogLook rather than redeclaring them
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › dialogIcon and dialogDescriptionClass are NOT similarly duplicated — only their call sites are pinned
+  PASS WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-record row have one body each › M1/M2 — no hand-rolled Bootstrap modal remains under Views/Meetings
+## wcn-dead-code-and-timer.test.js — 11 tests
+  PASS the dead renders are gone, not just unwired › names none of them anywhere under wwwroot or Views
+  PASS the dead renders are gone, not just unwired › names the generic ones nowhere inside WorkCenterNext
+  PASS the dead renders are gone, not just unwired › removes the strip's own renderer from this module
+  PASS the dead renders are gone, not just unwired › leaves no orphaned handler behind
+  PASS the effort card was connected, not invented › carries spent hours all the way to the client
+  PASS the effort card was connected, not invented › gates on a capability the contract actually knows
+  PASS the effort card was connected, not invented › draws only the half it has data for
+  PASS the effort card was connected, not invented › sizes its bar with the product's own step classes, never an inline style
+  PASS the timesheet card gained a control, not an authority › draws Log time, and the rail no longer does
+  PASS the timesheet card gained a control, not an authority › does NOT move start or pause into the card
+  PASS the timesheet card gained a control, not an authority › says what the timer is doing, in all seven languages
+## wcn-dialog-one-language.test.js — 17 tests
+  FAIL the appearance has exactly one definition › declares the package once, in the shared component
+       expected [
+         'frontend\\Diten.Web\\Views\\Shared\\_GlobalConfirmation.cshtml',
+         'frontend\\Diten.Web\\wwwroot\\assets\\js\\Account\\forgot-password.js',
+         'frontend\\Diten.Web\\wwwroot\\assets\\js\\Account\\login.js',
+         'frontend\\Diten.Web\\wwwroot\\assets\\js\\Account\\reset-password.js',
+         'frontend\\Diten.Web\\wwwroot\\assets\\js\\shared\\premium-modal.js'
+       ] to equal [
+         'frontend/Diten.Web/Views/Shared/_GlobalConfirmation.cshtml',
+         'frontend/Diten.Web/wwwroot/assets/js/Account/forgot-password.js',
+         'frontend/Diten.Web/wwwroot/assets/js/Account/login.js',
+         'frontend/Diten.Web/wwwroot/assets/js/Account/reset-password.js',
+         'frontend/Diten.Web/wwwroot/assets/js/shared/premium-modal.js'
+       ]
+  PASS the appearance has exactly one definition › makes the shared confirm a CONSUMER of the package, not a second author
+  PASS the appearance has exactly one definition › keeps the neutral dismiss button in the package, where the theme's red default is overruled
+  PASS eight dialogs, four moved and four dressed › moves the four single-value dialogs into the shared component
+  PASS eight dialogs, four moved and four dressed › gives the appearance to the four that cannot be confirmations
+  PASS eight dialogs, four moved and four dressed › reads the package instead of copying it
+  PASS eight dialogs, four moved and four dressed › forwards the select's options — the seventh parameter, and the last
+  FAIL eight dialogs, four moved and four dressed › leaves every existing showConfirm caller untouched
+       an unnamed caller started passing inputOptions — expected [
+         'frontend\\Diten.Web\\wwwroot\\assets\\js\\Meetings\\form.js',
+         'frontend\\Diten.Web\\wwwroot\\assets\\js\\Procurement\\InvoiceMatch\\details.js',
+         'frontend\\Diten.Web\\wwwroot\\assets\\js\\Procurement\\InvoiceMatch\\index.js',
+         'frontend\\Diten.Web\\wwwroot\\assets\\js\\WorkCenterNext\\app.js'
+       ] to equal [ 'frontend/Diten.Web/wwwroot/assets/js/Meetings/form.js', 'frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js' ]
+  PASS every box carries a real example › wires a placeholder into every text, date and number box
+  PASS every box carries a real example › never repeats the field's own name back at the reader
+  PASS every box carries a real example › declares the six new strings in all seven languages
+  PASS a field gets a glyph only when the glyph says something › paints the calendar and the clock ON the box, with no element added
+  PASS a field gets a glyph only when the glyph says something › leaves the select and the prose boxes without one
+  PASS a field gets a glyph only when the glyph says something › takes the glyph from the ONE action dictionary, not from a hand
+  PASS BL-205 — a close button is not a cancel button › says Close on all four panel dismissers
+  PASS BL-211 — the dependency badges join the product's status vocabulary › says exactly what the rest of the product says, in all seven languages
+  PASS BL-211 — the dependency badges join the product's status vocabulary › leaves DepCancelled alone — it was right from the start
+## wcn-icon-map-and-dead-panels.test.js — 20 tests
+  PASS BL-245 — a cancellation looks like a cancellation › maps `cancel` onto the family it belongs to
+  PASS BL-245 — a cancellation looks like a cancellation › gives the lifecycle verbs their own glyphs, and only them
+  PASS BL-245 — a cancellation looks like a cancellation › EVERY mapped glyph exists in the icon font
+  PASS BL-245 — a cancellation looks like a cancellation › leaves seven codes on the default DELIBERATELY, and says so
+  PASS BL-245 — a cancellation looks like a cancellation › drops the map entry no source can reach
+  PASS BL-245 — a cancellation looks like a cancellation › chooses the glyph in the MAP, never at a call site
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names data-wcn-toggle
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names data-wcn-global-note-input
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names data-wcn-global-note-add
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names data-wcn-note-convert
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names addGlobalNote
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names convertGlobalNote
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names data-wcn-meeting-followup
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names createMeetingFollowup
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names state.agendaOpen
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names state.notesOpen
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names state.notes
+  PASS BL-244 — the deleted panels took their handlers with them › no code still names buildNotes
+  PASS BL-244 — the deleted panels took their handlers with them › drops `panel` from the URL whitelist it no longer has panels for
+  PASS BL-244 — the deleted panels took their handlers with them › LEAVES THE PERSONAL NOTE CARD ALONE — it is a different thing entirely
+FAILED: 21

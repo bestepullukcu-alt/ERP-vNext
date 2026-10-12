@@ -14,7 +14,10 @@ internal sealed record WorkflowRuntimeStep(
     int? DueInMinutes,
     int? EscalateAfterMinutes = null,
     int? TimeoutAfterMinutes = null,
-    IReadOnlyList<string>? EscalationPrincipalIds = null);
+    IReadOnlyList<string>? EscalationPrincipalIds = null,
+    // MOD-0022 E4 — requirements.signatureRequired / signatureMeaning; additive (absent = false / null).
+    bool SignatureRequired = false,
+    string? SignatureMeaning = null);
 
 internal static class WorkflowDefinitionRuntimePlan
 {
@@ -28,9 +31,15 @@ internal static class WorkflowDefinitionRuntimePlan
             return [];
         }
 
+        return FromJson(version.DefinitionJson);
+    }
+
+    /// <summary>The steps of a definition JSON (publish validation reads the same plan the runtime uses).</summary>
+    public static IReadOnlyList<WorkflowRuntimeStep> FromJson(string definitionJson)
+    {
         try
         {
-            using var document = JsonDocument.Parse(version.DefinitionJson);
+            using var document = JsonDocument.Parse(definitionJson);
             if (!document.RootElement.TryGetProperty("stages", out var stages) ||
                 stages.ValueKind != JsonValueKind.Array)
             {
@@ -59,6 +68,8 @@ internal static class WorkflowDefinitionRuntimePlan
                     var escalateAfterMinutes = ReadInt(step, "sla", "escalateAfterMinutes");
                     var timeoutAfterMinutes = ReadInt(step, "sla", "timeoutAfterMinutes");
                     var escalationPrincipalIds = ReadEscalationPrincipals(step);
+                    var signatureRequired = ReadBool(step, "requirements", "signatureRequired");
+                    var signatureMeaning = ReadNestedString(step, "requirements", "signatureMeaning");
 
                     steps.Add(new WorkflowRuntimeStep(
                         stageCode,
@@ -71,7 +82,9 @@ internal static class WorkflowDefinitionRuntimePlan
                         dueInMinutes,
                         escalateAfterMinutes,
                         timeoutAfterMinutes,
-                        escalationPrincipalIds));
+                        escalationPrincipalIds,
+                        signatureRequired,
+                        signatureMeaning));
                 }
             }
 
@@ -183,6 +196,16 @@ internal static class WorkflowDefinitionRuntimePlan
 
         var text = value.GetString();
         return string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+    }
+
+    private static string? ReadNestedString(JsonElement source, string objectProperty, string property)
+    {
+        if (!source.TryGetProperty(objectProperty, out var obj) || obj.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        return ReadString(obj, property);
     }
 
     private static bool ReadBool(JsonElement source, string objectProperty, string property)

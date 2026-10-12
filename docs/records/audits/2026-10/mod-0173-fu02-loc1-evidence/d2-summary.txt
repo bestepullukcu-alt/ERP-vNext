@@ -1,0 +1,10 @@
+dotnet test services/Diten.InventoryService/tests/Diten.InventoryService.Tests (HEAD 2e8ff898e, 2026-10-01T14:32:58Z)
+<Counters total="353" executed="353" passed="353" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" 
+AC-16 race: rounds=30 postingWon=23 deactivationWon=7 postingTxnReRuns=7 locationTxnReRuns=24
+Test Çalıştırması Başarılı.
+Toplam test sayısı: 353
+     Geçti: 353
+ Toplam süre: 54,2804 Saniye
+
+Location tests (Api/Locations + LocationRouteArchitectureTests):
+56

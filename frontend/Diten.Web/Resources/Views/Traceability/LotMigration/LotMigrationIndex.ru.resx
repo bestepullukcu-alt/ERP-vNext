@@ -1,0 +1,409 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+      <data name="Action.APPLYALLSUGGESTIONS" xml:space="preserve">
+    <value>Применить все предложения</value>
+  </data>
+  <data name="Action.APPLYSUGGESTION" xml:space="preserve">
+    <value>Применить предложение</value>
+  </data>
+  <data name="Action.CHANGEDECISION" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="Action.CONFIRMMIGRATION" xml:space="preserve">
+    <value>Подтвердить перенос</value>
+  </data>
+  <data name="Action.LINKEXISTINGLOT" xml:space="preserve">
+    <value>Привязать к существующей партии</value>
+  </data>
+  <data name="Action.MARKTYPO" xml:space="preserve">
+    <value>Опечатка — привязать к другой партии</value>
+  </data>
+  <data name="Action.NEWLOTFROMTEXT" xml:space="preserve">
+    <value>Создать как новую партию</value>
+  </data>
+  <data name="Banner.Done" xml:space="preserve">
+    <value>Завершено · {0} · движений привязано: {1}, партий: {2} (новых партий: {3}, черновик). Ручной ввод партии в складском учёте отныне закрыт.</value>
+  </data>
+  <data name="Banner.NoChange" xml:space="preserve">
+    <value>Перенос не изменяет прошлые движения; он только добавляет привязку к партии.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="Col.Action" xml:space="preserve">
+    <value>Действие</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="Col.Decision" xml:space="preserve">
+    <value>Решение</value>
+  </data>
+  <data name="Col.Moves" xml:space="preserve">
+    <value>Движения</value>
+  </data>
+  <data name="Col.OnHand" xml:space="preserve">
+    <value>В наличии</value>
+  </data>
+  <data name="Col.Product" xml:space="preserve">
+    <value>Товар</value>
+  </data>
+  <data name="Col.Suggestion" xml:space="preserve">
+    <value>Предлагаемое соответствие</value>
+  </data>
+  <data name="Col.Typed" xml:space="preserve">
+    <value>Вручную введённая партия</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>Компания</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>Выберите компанию</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>Выберите компанию, в которой вы работаете, чтобы увидеть её партии и запасы.</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>Не удалось загрузить список компаний. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="Confirm.Button" xml:space="preserve">
+    <value>Подтвердить перенос</value>
+  </data>
+  <data name="Confirm.Count" xml:space="preserve">
+    <value>Будет привязано движений: {0}, партий: {1}.</value>
+  </data>
+  <data name="Confirm.Danger" xml:space="preserve">
+    <value>Это действие необратимо: после него ручной ввод партии в складском учёте будет закрыт.</value>
+  </data>
+  <data name="Confirm.Existing" xml:space="preserve">
+    <value>Существующих партий: {0}</value>
+  </data>
+  <data name="Confirm.New" xml:space="preserve">
+    <value>Новых партий (черновик): {0}</value>
+  </data>
+  <data name="Confirm.Reason" xml:space="preserve">
+    <value>Причина (не менее 10 символов)</value>
+  </data>
+  <data name="Confirm.Title" xml:space="preserve">
+    <value>Подтверждение переноса</value>
+  </data>
+  <data name="Decision.Linked" xml:space="preserve">
+    <value>Привязано → {0}</value>
+  </data>
+  <data name="Decision.New" xml:space="preserve">
+    <value>Новая партия → {0}</value>
+  </data>
+  <data name="Decision.Pending" xml:space="preserve">
+    <value>Ожидает решения</value>
+  </data>
+  <data name="Decision.Typo" xml:space="preserve">
+    <value>Опечатка → {0}</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>Подтвердите, что понимаете последствия блокировки.</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>Сначала выберите компанию.</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>Эту компанию нельзя использовать с вашей учётной записью.</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>Код для службы поддержки</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>Не удалось прочитать код.</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>Не удалось выполнить операцию. Повторите попытку.</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>Эта форма уже была отправлена с другими значениями. Перезагрузите страницу.</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>Некоторые значения недопустимы. Проверьте поля.</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>Сейчас не удалось проверить компанию. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>Такой номер партии для этого товара уже существует.</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>Тем временем эту партию изменил другой пользователь. Перезагрузите страницу и повторите попытку.</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>Даты не согласуются (производство ≤ сегодня, срок годности позже производства, повторный контроль между ними).</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>Номер партии и артикул (SKU) изменить нельзя.</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>Ничего не изменено.</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>Номер партии может содержать только от 1 до 40 символов: буквы A–Z, цифры и . / -.</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>Партия относится к другому артикулу (SKU).</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>Выберите артикул (SKU), к которому относится партия.</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>Такая смена статуса для партии не допускается.</value>
+  </data>
+  <data name="Error.MIGRATION_ALREADY_COMPLETED" xml:space="preserve">
+    <value>Перенос уже завершён; ручной ввод партии закрыт.</value>
+  </data>
+  <data name="Error.MIGRATION_DECISIONS_INCOMPLETE" xml:space="preserve">
+    <value>Для некоторых строк решение не завершено.</value>
+  </data>
+  <data name="Error.MIGRATION_STALE" xml:space="preserve">
+    <value>Список изменился после загрузки (проведена новая вручную введённая партия). Он загружен заново — проверьте строки и подтвердите ещё раз.</value>
+  </data>
+  <data name="Error.MIGRATION_TYPO_UNRESOLVED" xml:space="preserve">
+    <value>Решение «опечатка» не приводит к партии того же артикула (SKU) за 3 шага.</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>У вас нет прав на эту операцию.</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>Данные товара сейчас недоступны; ничего не сохранено.</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>Этот товар не учитывается по партиям; создать для него партию нельзя.</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>Укажите причину длиной не менее 10 символов.</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>Служба партий сейчас недоступна. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>Срок действия сеанса истёк. Войдите снова.</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>Товар или артикул (SKU) не найден.</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>Партия не найдена.</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>Серийный номер не найден.</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>Дней: {0}</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>Просрочена</value>
+  </data>
+  <data name="Kpi.Matched" xml:space="preserve">
+    <value>Сопоставлено</value>
+  </data>
+  <data name="Kpi.Moves" xml:space="preserve">
+    <value>Движений: {0}</value>
+  </data>
+  <data name="Kpi.Pending" xml:space="preserve">
+    <value>Ожидает</value>
+  </data>
+  <data name="Kpi.Total" xml:space="preserve">
+    <value>Всего строк</value>
+  </data>
+  <data name="NewLot.Apply" xml:space="preserve">
+    <value>Принять как решение</value>
+  </data>
+  <data name="NewLot.DraftNote" xml:space="preserve">
+    <value>Партия создаётся как черновик при подтверждении переноса.</value>
+  </data>
+  <data name="NewLot.Prefilled" xml:space="preserve">
+    <value>Номер партии взят из введённого текста (в верхнем регистре).</value>
+  </data>
+  <data name="NewLot.Title" xml:space="preserve">
+    <value>Создать как новую партию</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>Совпадений нет</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>Учёт партий / серийных номеров</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>Привяжите к зарегистрированным партиям тексты партий, введённые в складской учёт до регистрации партий.</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>Перенос вручную введённых партий</value>
+  </data>
+  <data name="Pick.Apply" xml:space="preserve">
+    <value>Привязать</value>
+  </data>
+  <data name="Pick.Lots" xml:space="preserve">
+    <value>Зарегистрированные партии</value>
+  </data>
+  <data name="Pick.NoLots" xml:space="preserve">
+    <value>Для этого артикула (SKU) пока нет зарегистрированных партий.</value>
+  </data>
+  <data name="Pick.Rows" xml:space="preserve">
+    <value>Строки того же артикула (SKU)</value>
+  </data>
+  <data name="Pick.Target" xml:space="preserve">
+    <value>Цель</value>
+  </data>
+  <data name="Pick.TitleLink" xml:space="preserve">
+    <value>Привязать к существующей партии</value>
+  </data>
+  <data name="Pick.TitleTypo" xml:space="preserve">
+    <value>Опечатка — привязать к другой партии</value>
+  </data>
+  <data name="Pick.Typed" xml:space="preserve">
+    <value>Введённый текст</value>
+  </data>
+  <data name="Pick.TypoNote" xml:space="preserve">
+    <value>Выбранная здесь строка следует решению этой строки (не более 3 шагов).</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>Дата повторного контроля прошла</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Поиск…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>Активен</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>Заблокирован</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>Израсходован</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>Заблокирован</value>
+  </data>
+  <data name="Status.Dialog.Acknowledge" xml:space="preserve">
+    <value>Я понимаю последствия.</value>
+  </data>
+  <data name="Status.Dialog.AcknowledgeRequired" xml:space="preserve">
+    <value>Подтвердите, что понимаете последствия.</value>
+  </data>
+  <data name="Status.Dialog.Allowed" xml:space="preserve">
+    <value>Допустимо</value>
+  </data>
+  <data name="Status.Dialog.Confirm" xml:space="preserve">
+    <value>Изменить статус</value>
+  </data>
+  <data name="Status.Dialog.ConfirmBlock" xml:space="preserve">
+    <value>Заблокировать партию</value>
+  </data>
+  <data name="Status.Dialog.Current" xml:space="preserve">
+    <value>Текущий статус</value>
+  </data>
+  <data name="Status.Dialog.Danger" xml:space="preserve">
+    <value>Блокировка делает весь запас этой партии непригодным к использованию.</value>
+  </data>
+  <data name="Status.Dialog.Done" xml:space="preserve">
+    <value>Статус партии изменён.</value>
+  </data>
+  <data name="Status.Dialog.Impact" xml:space="preserve">
+    <value>Единиц: {0} · мест: {1} · {2}</value>
+  </data>
+  <data name="Status.Dialog.New" xml:space="preserve">
+    <value>Новый статус</value>
+  </data>
+  <data name="Status.Dialog.NotAllowed" xml:space="preserve">
+    <value>Недопустимо из текущего статуса.</value>
+  </data>
+  <data name="Status.Dialog.PickOne" xml:space="preserve">
+    <value>Выберите допустимый статус.</value>
+  </data>
+  <data name="Status.Dialog.Reason" xml:space="preserve">
+    <value>Причина (не менее 10 символов)</value>
+  </data>
+  <data name="Status.Dialog.SystemOnly" xml:space="preserve">
+    <value>Устанавливается системой; выбрать вручную нельзя.</value>
+  </data>
+  <data name="Status.Dialog.Title" xml:space="preserve">
+    <value>Смена статуса партии</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>Просрочен</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>Выпущен</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>Доступно</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>Заблокировано</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>Повреждено</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>Просрочено</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>В пути</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>Контроль качества</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>Карантин</value>
+  </data>
+  <data name="Suggest.CaseOnly" xml:space="preserve">
+    <value>Существующая партия (отличаются регистр или пробелы): {0}</value>
+  </data>
+  <data name="Suggest.Exact" xml:space="preserve">
+    <value>Существующая партия: {0}</value>
+  </data>
+  <data name="Suggest.NewDraft" xml:space="preserve">
+    <value>Новая партия {0} (черновик)</value>
+  </data>
+  <data name="Suggest.None" xml:space="preserve">
+    <value>Новая партия (сначала исправьте номер)</value>
+  </data>
+  <data name="Suggest.Similar" xml:space="preserve">
+    <value>Возможная опечатка партии {0}</value>
+  </data>
+  <data name="Suggest.SimilarRow" xml:space="preserve">
+    <value>Возможная опечатка строки {0}</value>
+  </data>
+  <data name="Tab.All" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="Tab.Done" xml:space="preserve">
+    <value>Сопоставлено</value>
+  </data>
+  <data name="Tab.Pending" xml:space="preserve">
+    <value>Ожидает</value>
+  </data>
+  <data name="Toast.Done" xml:space="preserve">
+    <value>Перенос завершён.</value>
+  </data>
+  <data name="Validation.DatesOrder" xml:space="preserve">
+    <value>Производство ≤ сегодня; срок годности позже производства; повторный контроль между ними.</value>
+  </data>
+  <data name="Validation.FixFields" xml:space="preserve">
+    <value>Проверьте отмеченные поля.</value>
+  </data>
+  <data name="Validation.Length" xml:space="preserve">
+    <value>Слишком длинное значение.</value>
+  </data>
+  <data name="Validation.LotFormat" xml:space="preserve">
+    <value>Используйте от 1 до 40 символов: A–Z, 0–9 и . / -.</value>
+  </data>
+  <data name="Validation.ReasonMin" xml:space="preserve">
+    <value>Укажите причину длиной не менее 10 символов.</value>
+  </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>Обязательное поле.</value>
+  </data>
+</root>

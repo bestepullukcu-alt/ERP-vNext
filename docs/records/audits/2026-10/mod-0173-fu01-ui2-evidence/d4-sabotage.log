@@ -1,0 +1,51 @@
+==================================================================
+## (a: Correct offered only on an eligible row) 2026-10-02T13:09:18+03:00
+file: frontend/Diten.Web/Models/Inventory/InventoryListAdapter.cs
+sha256 before : 631dc581a473a266d942292773fdbf06777a0b0e7c47ba0f8a38b23a58c8269e
+occurrences of the guarded text: 1
+--- sabotage diff:
+227c227
+<         IsReversible(t) && MovementRules.ManualTypes.Contains(t.MovementType ?? string.Empty, StringComparer.Ordinal);
+---
+>         true;
+--- tests with the guard broken (expected RED):
+Başarısız Diten.Web.Tests.Inventory.MovementFormTests.Correct_is_offered_only_on_a_manual_unreversed_row_of_a_manual_type [29 ms]
+Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 29 ms - Diten.Web.Tests.dll (net8.0)
+sha256 restored: 631dc581a473a266d942292773fdbf06777a0b0e7c47ba0f8a38b23a58c8269e  identical=yes
+--- tests restored (expected GREEN):
+Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 14 ms - Diten.Web.Tests.dll (net8.0)
+==================================================================
+## (b: direction matrix — inbound target location required) 2026-10-02T13:10:08+03:00
+file: frontend/Diten.Web/Models/Inventory/MovementRules.cs
+sha256 before : 68c9ac243f8ff032c84f3827d880a267b77c93c87d99ea9b9369462343b11346
+occurrences of the guarded text: 4
+--- sabotage diff:
+179c179
+<                 toLocation = Required(form.ToLocationId, Fields.TargetLocation, errors);
+---
+>                 toLocation = form.ToLocationId?.Trim();
+--- tests with the guard broken (expected RED):
+Başarısız Diten.Web.Tests.Inventory.MovementFormTests.An_inbound_needs_target_warehouse_location_and_status_and_never_posts_a_source(type: "COUNT_GAIN") [23 ms]
+Başarısız Diten.Web.Tests.Inventory.MovementFormTests.An_inbound_needs_target_warehouse_location_and_status_and_never_posts_a_source(type: "OPENING_BALANCE") [< 1 ms]
+Başarısız! - Başarısız:     2, Başarılı:     0, Atlanan:     0, Toplam:     2, Süre: 26 ms - Diten.Web.Tests.dll (net8.0)
+sha256 restored: 68c9ac243f8ff032c84f3827d880a267b77c93c87d99ea9b9369462343b11346  identical=yes
+--- tests restored (expected GREEN):
+Başarılı!  - Başarısız:     0, Başarılı:     2, Atlanan:     0, Toplam:     2, Süre: 22 ms - Diten.Web.Tests.dll (net8.0)
+==================================================================
+## (c: one key per form (double submit replays)) 2026-10-02T13:10:50+03:00
+file: frontend/Diten.Web/Controllers/StockMovementsController.cs
+sha256 before : 3e894aa9e429a92bfc56c58c6b94334ae0e4b4ce05eee0de2323f8891758525a
+occurrences of the guarded text: 1
+--- sabotage diff:
+84c84
+<         var reply = await gateway.PostAsync("/api/inventory/movements", check.Payload!, MovementKey(key), cancellationToken);
+---
+>         var reply = await gateway.PostAsync("/api/inventory/movements", check.Payload!, MovementKey(Guid.NewGuid()), cancellationToken);
+--- tests with the guard broken (expected RED):
+Başarısız Diten.Web.Tests.Inventory.MovementFormTests.The_same_form_posted_twice_sends_the_forms_key_both_times_so_the_service_replays [83 ms]
+Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 83 ms - Diten.Web.Tests.dll (net8.0)
+sha256 restored: 3e894aa9e429a92bfc56c58c6b94334ae0e4b4ce05eee0de2323f8891758525a  identical=yes
+--- tests restored (expected GREEN):
+Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 79 ms - Diten.Web.Tests.dll (net8.0)
+==================================================================
+## working tree after all three (git status of the touched files must equal the pre-run status):

@@ -1,0 +1,169 @@
+@model string?
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Quarantine.Disposition.PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0175 Q5 — Disposition (BLOCKEDDISPOSITION, pack §11.3; the mockup panel as a page, §21.3 #7). Two steps like Karar Ver:
+    1 "Disposition" — İmha (Hurda çıkışı) / Tedarikçiye İade (İade çıkışı) / Yeniden İşleme (Bloke → Karantina) / Numune / Referans
+    olarak ayır (numune lokasyonuna transfer — the stock STAYS Bloke, §21.3 #4, KQ-E); quantity ≤ the blocked quantity (the rest
+    stays Bloke); supplier + return document (return); method + date (destroy); reason; the box "Onaylanınca Stok Defteri'nde
+    oluşacak hareket". 2 "Elektronik imza" — the server's draft (plannedMovements) + MOD-0022 dialog, then submitDecision.
+    A virtual "Bloke lot" row (no blocked record) never reaches this page: its only action is Destroy on the lot (CT-D4).
+    UAS-001 — nothing without quarantine.blocked.dispose.
+*@
+@if (!Perms.Has("quarantine.blocked.dispose"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Quarantine.Disposition.PageTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Quarantine.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Quarantine.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Quarantine.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Quarantine.Common.Company.Unavailable"].Value;
+    var kinds = new[]
+    {
+        ("Destroy", "bx-trash", "bg-label-danger"),
+        ("ReturnToSupplier", "bx-undo", "bg-label-warning"),
+        ("Rework", "bx-refresh", "bg-label-info"),
+        ("Sample", "bx-archive", "bg-label-primary")
+    };
+}
+
+<partial name="~/Views/Quarantine/_Header.cshtml" model="@("BLOCKEDDISPOSITION")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready && Model is not null)
+{
+    <div id="qr-disposition" data-blocked-id="@Model">
+        <div class="alert alert-danger d-none" id="qr-page-error" role="alert"></div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="mb-1" id="qr-p-title">@Localizer["Quarantine.Disposition.PageTitle"]</h5>
+                <div class="fw-medium" id="qr-p-name"></div>
+                <div class="text-muted small" id="qr-p-sub"></div>
+            </div>
+        </div>
+
+        <partial name="~/Views/Quarantine/_Stepper.cshtml" model="@("Quarantine.Disposition.Step")" />
+
+        <form id="qr-disposition-form" novalidate>
+            <div class="alert alert-danger d-none" id="qr-form-error" role="alert"></div>
+            <div class="card mb-4" id="qr-step1">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="form-label">@Localizer["Quarantine.Disposition.Field.Kind"] <span class="text-danger">*</span></label>
+                        <div class="row g-2" role="radiogroup" id="qr-kinds">
+                            @foreach (var (kind, icon, chip) in kinds)
+                            {
+                                <div class="col-12 col-md-6">
+                                    <label class="border rounded p-3 d-flex align-items-start gap-3 h-100 qr-option" data-kind="@kind">
+                                        <input class="form-check-input mt-1" type="radio" name="qr-kind" value="@kind" />
+                                        <span class="avatar avatar-sm"><span class="avatar-initial rounded @chip"><i class="bx @icon"></i></span></span>
+                                        <span class="flex-grow-1">
+                                            <span class="fw-medium d-block">@Localizer["Quarantine.Disposition." + kind]</span>
+                                            <small class="text-muted">@Localizer["Quarantine.Disposition.Move." + kind]</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                        <div class="invalid-feedback d-block" data-err="kind"></div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-qty">@Localizer["Quarantine.Disposition.Field.Quantity"] <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" min="0" step="any" id="qr-qty" class="form-control" inputmode="decimal" />
+                                <span class="input-group-text" data-uom></span>
+                            </div>
+                            <small class="text-muted" id="qr-qty-hint"></small>
+                            <div class="invalid-feedback d-block" data-err="qty"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4 d-none" id="qr-return-wrap">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-supplier">@Localizer["Quarantine.Disposition.Field.Supplier"] <span class="text-danger">*</span></label>
+                            <select id="qr-supplier" class="form-select"><option value="">@Localizer["Quarantine.Common.Select"]</option></select>
+                            <small class="text-muted d-none" id="qr-supplier-unavailable">@Localizer["Quarantine.Disposition.SuppliersUnavailable"]</small>
+                            <div class="invalid-feedback d-block" data-err="supplier"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-returndoc">@Localizer["Quarantine.Disposition.Field.ReturnDoc"] <span class="text-danger">*</span></label>
+                            <input type="text" id="qr-returndoc" class="form-control" maxlength="100" />
+                            <div class="invalid-feedback d-block" data-err="returnDoc"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4 d-none" id="qr-destroy-wrap">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-method">@Localizer["Quarantine.Disposition.Field.Method"] <span class="text-danger">*</span></label>
+                            <select id="qr-method" class="form-select">
+                                <option value="">@Localizer["Quarantine.Common.Select"]</option>
+                                @foreach (var method in new[] { "INCINERATION", "CHEMICAL_NEUTRALIZATION", "LICENSED_MEDICAL_WASTE" })
+                                {
+                                    <option value="@method">@Localizer["Quarantine.Disposition.Method." + method]</option>
+                                }
+                            </select>
+                            <div class="invalid-feedback d-block" data-err="method"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-date">@Localizer["Quarantine.Disposition.Field.Date"] <span class="text-danger">*</span></label>
+                            <input type="date" id="qr-date" class="form-control" />
+                            <div class="invalid-feedback d-block" data-err="date"></div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning d-none" id="qr-sample-missing" role="status">@Localizer["Quarantine.Disposition.SampleMissing"]</div>
+
+                    <div class="mb-4">
+                        <label class="form-label d-flex justify-content-between" for="qr-reason">
+                            <span>@Localizer["Quarantine.Field.Reason"] <span class="text-danger">*</span></span>
+                            <small class="text-muted" data-counter="qr-reason"></small>
+                        </label>
+                        <textarea id="qr-reason" class="form-control" rows="3" maxlength="1000"></textarea>
+                        <div class="invalid-feedback d-block" data-err="reason"></div>
+                    </div>
+
+                    <div class="border rounded p-3 bg-lighter d-none" id="qr-move-box">
+                        <small class="text-muted d-block mb-1"><i class="bx bx-transfer-alt me-1"></i>@Localizer["Quarantine.Disposition.Move.Title"]</small>
+                        <div class="fw-medium" id="qr-move-text"></div>
+                    </div>
+                </div>
+            </div>
+
+            <partial name="~/Views/Quarantine/_DecisionSummary.cshtml" />
+
+            <div class="d-flex flex-wrap justify-content-end gap-2 mb-4">
+                <button type="button" class="btn btn-label-secondary d-none" id="qr-back"><i class="bx bx-chevron-left me-1"></i>@Localizer["Quarantine.Common.Back"]</button>
+                <a class="btn btn-label-secondary" id="qr-cancel" href="/Quarantine/Blocked">@Localizer["Quarantine.Common.Cancel"]</a>
+                <button type="submit" class="btn btn-primary" id="qr-primary">@Localizer["Quarantine.Decide.Button.Next"]</button>
+            </div>
+        </form>
+    </div>
+    <form id="qr-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineActions.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineL10n.cshtml" />
+    @if (company.Ready && Model is not null)
+    {
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+        <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Quarantine/disposition.js" asp-append-version="true"></script>
+    }
+}

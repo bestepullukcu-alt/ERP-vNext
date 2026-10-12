@@ -1,0 +1,35 @@
+{
+  "a": {
+    "database": "diten_inventory_s1_tests",
+    "serviceExitedOnItsOwn": false,
+    "warningLines": [
+      "      MOD-0173 SKU-position rebuild skipped 6 group(s) without a complete scope (tenant, LE, item, sku, level) on database diten_inventory_s1_tests - never guessed, never deleted."
+    ],
+    "warnLevelHeaders": 1,
+    "criticalLines": 0,
+    "listening": true,
+    "pid": 37676
+  },
+  "a_markerRemoved": 1,
+  "b": {
+    "database": "diten_inventory_k1_gate_probe",
+    "existedBeforeProbe": false,
+    "serviceExitedOnItsOwn": true,
+    "exitCode": -532462766,
+    "warningLines": [
+      "      MOD-0173 SKU-position rebuild skipped 1 group(s) without a complete scope (tenant, LE, item, sku, level) on database diten_inventory_k1_gate_probe - never guessed, never deleted."
+    ],
+    "criticalHeaders": 1,
+    "criticalLines": [
+      "      MOD-0173 startup gate (indexes / SKU positions) failed; refusing to start.",
+      "      System.InvalidOperationException: 1 unscoped SKU-position group(s) on non-test database \u0027diten_inventory_k1_gate_probe\u0027; they must be investigated before the service may start.",
+      "      System.InvalidOperationException: 1 unscoped SKU-position group(s) on non-test database \u0027diten_inventory_k1_gate_probe\u0027; they must be investigated before the service may start.",
+      "Unhandled exception. System.InvalidOperationException: 1 unscoped SKU-position group(s) on non-test database \u0027diten_inventory_k1_gate_probe\u0027; they must be investigated before the service may start."
+    ],
+    "listening": false,
+    "unscopedRowsStillPresentAfterRefusal": 1,
+    "pid": 12564
+  },
+  "b_tempDatabaseDropped": true,
+  "remainingServiceProcesses": []
+}

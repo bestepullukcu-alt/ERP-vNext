@@ -1,0 +1,313 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Action.CHANGELOTSTATUS" xml:space="preserve">
+    <value>Durum Değiştir</value>
+  </data>
+  <data name="Action.EDITLOT" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
+  <data name="Action.EDITRELEASEDLOT" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
+  <data name="Action.LOTMOVES" xml:space="preserve">
+    <value>Hareket Geçmişi</value>
+  </data>
+  <data name="Action.LOTTRACEOPEN" xml:space="preserve">
+    <value>İzlenebilirlik</value>
+  </data>
+  <data name="Action.NEWLOT" xml:space="preserve">
+    <value>Yeni Lot</value>
+  </data>
+  <data name="Action.OPENINLEDGER" xml:space="preserve">
+    <value>Stok Defteri'nde aç</value>
+  </data>
+  <data name="Action.RECEIPTINLEDGER" xml:space="preserve">
+    <value>Stok Defteri'nde aç</value>
+  </data>
+  <data name="Action.SERIALLOT" xml:space="preserve">
+    <value>Lot Detayı</value>
+  </data>
+  <data name="Action.SERIALMOVES" xml:space="preserve">
+    <value>Hareket Geçmişi</value>
+  </data>
+  <data name="Action.TRACELOTDETAIL" xml:space="preserve">
+    <value>Lot Detayı</value>
+  </data>
+  <data name="Action.VIEWALLSERIALS" xml:space="preserve">
+    <value>Seri Gezgini'nde tümü</value>
+  </data>
+  <data name="Action.VIEWLOT" xml:space="preserve">
+    <value>Lot Detayı</value>
+  </data>
+  <data name="Action.VIEWRECEIPT" xml:space="preserve">
+    <value>Hareket fişi</value>
+  </data>
+  <data name="Back.Level1" xml:space="preserve">
+    <value>Geri · 1. seviye</value>
+  </data>
+  <data name="Back.Level2" xml:space="preserve">
+    <value>Geri · 2. seviye</value>
+  </data>
+  <data name="Back.None" xml:space="preserve">
+    <value>Kaynak kaydı yok</value>
+  </data>
+  <data name="Back.Title" xml:space="preserve">
+    <value>Geriye doğru</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Vazgeç</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>İşlemler</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>Şirket</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>Şirket seçin</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>Lotları ve stoğu görmek için çalıştığınız şirketi seçin.</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>Şirket listesi yüklenemedi. Biraz sonra yeniden deneyin.</value>
+  </data>
+  <data name="Empty.List" xml:space="preserve">
+    <value>Filtrelere uyan kayıt yok.</value>
+  </data>
+  <data name="Empty.PickLot" xml:space="preserve">
+    <value>Bir lot seçin.</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>Bloke etmenin etkisini anladığınızı onaylayın.</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>Önce bir şirket seçin.</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>Bu şirket hesabınız için kullanılamaz.</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>Destek için başvuru numarası</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>Kod okunamadı.</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>İşlem tamamlanamadı. Yeniden deneyin.</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>Bu form başka değerlerle zaten gönderildi. Sayfayı yenileyin.</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>Bazı değerler geçersiz. Alanları kontrol edin.</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>Şirket şu anda doğrulanamadı. Biraz sonra yeniden deneyin.</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>Bu ürün için bu lot numarası zaten var.</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>Bu lot bu arada başka biri tarafından değiştirildi. Sayfayı yenileyip yeniden deneyin.</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>Tarihler uyumsuz (üretim ≤ bugün, SKT üretimden sonra, yeniden test ikisinin arasında).</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>Lot numarası ve SKU değiştirilemez.</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>Hiçbir şey değiştirilmedi.</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>Lot numarası yalnız 1–40 karakter A–Z harf, rakam ve . / - içerebilir.</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>Lot başka bir SKU'ya ait.</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>Lotun ait olduğu SKU'yu seçin.</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>Bu durum değişikliğine bu lot için izin verilmiyor.</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>Bu işlem için yetkiniz yok.</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>Ürün verilerine şu anda ulaşılamıyor; hiçbir şey kaydedilmedi.</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>Bu ürün lot takipli değil; lot oluşturulamaz.</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>En az 10 karakterlik bir gerekçe yazın.</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>Lot servisine şu anda ulaşılamıyor. Biraz sonra yeniden deneyin.</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>Oturumunuzun süresi doldu. Yeniden giriş yapın.</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>Ürün veya SKU bulunamadı.</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>Bu lot bulunamadı.</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>Bu seri numarası bulunamadı.</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>{0} gün</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>Doldu</value>
+  </data>
+  <data name="Filter.Lot" xml:space="preserve">
+    <value>Lot</value>
+  </data>
+  <data name="Fwd.Level1" xml:space="preserve">
+    <value>İleri · 1. seviye</value>
+  </data>
+  <data name="Fwd.Level2" xml:space="preserve">
+    <value>İleri · 2. seviye</value>
+  </data>
+  <data name="Fwd.None" xml:space="preserve">
+    <value>Kullanılmadı veya sevk edilmedi</value>
+  </data>
+  <data name="Fwd.Title" xml:space="preserve">
+    <value>İleriye doğru</value>
+  </data>
+  <data name="Hint.Reroot" xml:space="preserve">
+    <value>Merkeze almak için bir lot kartına tıklayın.</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>Sonuç yok</value>
+  </data>
+  <data name="Node.Consumed" xml:space="preserve">
+    <value>Üretime verildi</value>
+  </data>
+  <data name="Node.Opening" xml:space="preserve">
+    <value>Açılış bakiyesi</value>
+  </data>
+  <data name="Node.Receipt" xml:space="preserve">
+    <value>Giriş</value>
+  </data>
+  <data name="Node.Shipment" xml:space="preserve">
+    <value>Sevkiyat</value>
+  </data>
+  <data name="Node.Used" xml:space="preserve">
+    <value>Kullanıldığı lot</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>Lot / Seri Takibi</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>Bir lotun nereden geldiği ve nereye gittiği — her yönde iki seviye.</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>İzlenebilirlik</value>
+  </data>
+  <data name="Paging.Range" xml:space="preserve">
+    <value>{2} kayıttan {0}–{1}</value>
+  </data>
+  <data name="Reality.BackwardReceiptOnly" xml:space="preserve">
+    <value>Üretim soy ağacı kaydedilene kadar (MOD-0194) geriye doğru lotun giriş kaynağı gösterilir.</value>
+  </data>
+  <data name="Reality.ForwardDocumentOnly" xml:space="preserve">
+    <value>İleriye doğru yalnız çıkış belge numaraları gösterilir; müşteri adları sevkiyat modülüyle gelir.</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>Yeniden test tarihi geçti</value>
+  </data>
+  <data name="Root.Expiry" xml:space="preserve">
+    <value>SKT</value>
+  </data>
+  <data name="Root.Initial" xml:space="preserve">
+    <value>İlk miktar</value>
+  </data>
+  <data name="Root.OnHand" xml:space="preserve">
+    <value>Eldeki</value>
+  </data>
+  <data name="Root.Title" xml:space="preserve">
+    <value>Seçili lot</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Aranıyor…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>Bloke</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>Tüketildi</value>
+  </data>
+  <data name="Stat.Lots" xml:space="preserve">
+    <value>Etkilenen lot</value>
+  </data>
+  <data name="Stat.LotsSub" xml:space="preserve">
+    <value>Bu lot ve bağlı lotları</value>
+  </data>
+  <data name="Stat.OnHand" xml:space="preserve">
+    <value>Depoda</value>
+  </data>
+  <data name="Stat.OnHandSub" xml:space="preserve">
+    <value>Seçili şirkette eldeki</value>
+  </data>
+  <data name="Stat.Shipped" xml:space="preserve">
+    <value>Sevk edilmiş</value>
+  </data>
+  <data name="Stat.ShippedSub" xml:space="preserve">
+    <value>Bu lotun satış çıkışları</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>Bloke</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>Süresi Dolmuş</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>Serbest</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>Kullanılabilir</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>Bloke</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>Hasarlı</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>Süresi dolmuş</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>Yolda</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>Kalite kontrol</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>Karantina</value>
+  </data>
+  <data name="Total.PerUnit" xml:space="preserve">
+    <value>{0} {1} (elde {2} + sevk {3})</value>
+  </data>
+  <data name="Total.Sub" xml:space="preserve">
+    <value>Eldeki + sevk edilmiş, birim başına — birimler asla toplanmaz.</value>
+  </data>
+  <data name="Total.Title" xml:space="preserve">
+    <value>Etkilenen toplam miktar</value>
+  </data>
+</root>

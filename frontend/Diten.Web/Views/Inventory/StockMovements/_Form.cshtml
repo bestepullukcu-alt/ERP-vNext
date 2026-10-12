@@ -1,0 +1,478 @@
+@model Diten.Web.Models.Inventory.StockMovementFormViewModel
+@using Diten.Web.Models.Inventory
+@using Diten.Web.Views.Inventory.StockMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IHtmlLocalizer<Diten.Web.Views.Traceability.Lots.LotFieldIndex> LotField
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@*
+    MOD-0173-FU01 UI-2 — the ONE movement form (pack §11/§12; KD-2: StockLedger/Create hosts this same partial).
+    Three pages, one partial: S-3 New movement, Edit = "Correct" (KD-1) and the stock entry (inbound types only).
+
+    The direction matrix (pack §12) decides which of the source / target fields a type shows: each conditional field
+    carries data-matrix and form.js shows, requires or hides it. A hidden field is never posted — the MVC proxy ignores
+    it too (MovementRules.Check). MOD-0173 stays the authority for stock, lot, serial, unit and location: its refusal
+    comes back to the field it is about, in the reader's language.
+
+    No browser call leaves the origin: every list below is a same-origin /StockMovements/lookups/* proxy.
+*@
+@{
+    var mode = Model.Mode;
+    var title = mode switch
+    {
+        MovementFormMode.Entry => Localizer["FormTitleEntry"].Value,
+        MovementFormMode.Correct => Localizer["FormTitleCorrect"].Value,
+        _ => Localizer["FormTitleCreate"].Value
+    };
+    var listTitle = ViewData["ListTitle"] as string ?? Localizer["StockMovementsTitle"].Value;
+    var submitText = mode == MovementFormMode.Correct ? Localizer["SubmitCorrect"].Value : Localizer["SubmitCreate"].Value;
+    var modeName = mode.ToString().ToLowerInvariant();
+
+    // W-0173-02 company selector: the token's company, or the user's choice. Without one, no form is drawn and no
+    // lookup is made (the same rule as the two lists).
+    var company = await CompanySelection.ResolveAsync(Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+
+    // MOD-0174 P4 (W-UI-02 closure, CT K4-1): once the tenant's typed-lot migration closed typing, the typed-lot input and
+    // the "unregistered lot" badges are gone. Read with the user's own trace.lots.read; unknown → today's behaviour.
+    var typingClosed = company.Ready && await Diten.Web.Models.Traceability.TraceMigrationStatus.IsClosedAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Perms, Context.RequestAborted);
+
+    string TypeGroup(string type) => MovementRules.DirectionOf(type) switch
+    {
+        MovementRules.Direction.Inbound => "GroupInbound",
+        MovementRules.Direction.Outbound => "GroupOutbound",
+        _ => "GroupTransfer"
+    };
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item"><a href="@Model.BackUrl">@listTitle</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-content-center flex-wrap gap-4">
+        <a href="@Model.BackUrl" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        @if (company.Ready && !Model.OriginalMissing)
+        {
+            <button type="submit" form="formStockMovement" id="btnMovementSubmit" class="btn btn-primary">@submitText</button>
+        }
+    </div>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (!company.Ready)
+{
+    return;
+}
+
+@if (Model.OriginalMissing)
+{
+    @* Correct opened without a usable history row (typed address, automatic or reversal row): no form, no guess. *@
+    <div class="alert alert-info d-flex align-items-start gap-2" role="status" id="movement-original-missing">
+        <i class="bx bx-info-circle mt-1" aria-hidden="true"></i>
+        <div>
+            <div class="fw-medium">@Localizer["OriginalMissingTitle"]</div>
+            <div>@Localizer["OriginalMissingText"]</div>
+            <a class="btn btn-sm btn-label-primary mt-2" href="/StockMovements">@Localizer["BackToHistory"]</a>
+        </div>
+    </div>
+    return;
+}
+
+@* Answers that are not about one field (pack §13): written by form.js in the reader's language. *@
+<div id="movement-page-alert" class="alert alert-danger d-none" role="alert">
+    <div class="d-flex align-items-start gap-2">
+        <i class="bx bx-error-circle mt-1" aria-hidden="true"></i>
+        <div class="flex-grow-1">
+            <div data-alert-text></div>
+            <details class="small mt-1 d-none" data-alert-reference><summary>@SharedLocalizer["Details"]</summary><span data-alert-correlation></span></details>
+            <button type="button" class="btn btn-sm btn-danger mt-2" id="btnMovementRetry">@Localizer["RetryButton"]</button>
+        </div>
+    </div>
+</div>
+<div id="movement-form-alert" class="alert alert-danger d-none" role="alert">
+    <div data-alert-text></div>
+    <details class="small mt-1 d-none" data-alert-reference><summary>@SharedLocalizer["Details"]</summary><span data-alert-correlation></span></details>
+    <a class="btn btn-sm btn-label-danger mt-2 d-none" id="lnkMovementRestart" href="">@Localizer["RestartLink"]</a>
+</div>
+@if (mode == MovementFormMode.Correct)
+{
+    @* KD-1 partial correction: the reversal stands, the corrected movement does not — said explicitly, never silent. *@
+    <div id="movement-partial" class="alert alert-warning d-none" role="alert">
+        <div class="d-flex align-items-start gap-2">
+            <i class="bx bx-error mt-1" aria-hidden="true"></i>
+            <div class="flex-grow-1">
+                <div class="fw-medium">@Localizer["PartialTitle"]</div>
+                <div data-partial-text></div>
+                <div class="small text-body-secondary mt-1">@Localizer["PartialHint"]</div>
+                <button type="submit" form="formStockMovement" class="btn btn-sm btn-warning mt-2" id="btnPartialRetry">@Localizer["PartialRetry"]</button>
+            </div>
+        </div>
+    </div>
+}
+
+<form id="formStockMovement" novalidate
+      data-mode="@modeName"
+      data-post-url="@Model.PostUrl"
+      data-prefill-type="@Model.MovementType"
+      data-prefill-item="@Model.ItemId"
+      data-prefill-item-text="@Model.ItemText"
+      data-prefill-sku="@Model.Sku"
+      data-prefill-sku-text="@Model.SkuText"
+      data-prefill-source="@Model.Source"
+      data-prefill-to-warehouse="@Model.ToWarehouseId"
+      data-prefill-to-location="@Model.ToLocationId"
+      data-prefill-to-warehouse-text="@Model.ToWarehouseText"
+      data-prefill-to-location-text="@Model.ToLocationText"
+      data-prefill-to-status="@Model.ToStockStatus"
+      data-prefill-lot="@Model.LotId"
+      data-prefill-quantity="@Model.Quantity"
+      data-prefill-uom="@Model.UomId">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="idempotencyKey" value="@Model.IdempotencyKey" />
+    @if (mode == MovementFormMode.Correct)
+    {
+        <input type="hidden" id="reversalKey" value="@Model.ReversalKey" />
+        <input type="hidden" id="reversalAt" value="@Model.ReversalAt" />
+        <input type="hidden" id="originalTransactionId" value="@Model.Original!.TransactionId" />
+        <input type="hidden" id="originalTransactionNumber" value="@Model.Original.TransactionNumber" />
+        <input type="hidden" id="originalItemId" value="@Model.Original.ItemId" />
+        <input type="hidden" id="originalSkuId" value="@Model.Original.SkuId" />
+        <input type="hidden" id="originalSkuLevel" value="@Model.Original.SkuLevel" />
+        <input type="hidden" id="originalQuantity" value="@Model.Original.Quantity" />
+        <input type="hidden" id="originalUomId" value="@Model.Original.UomId" />
+    }
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            @* ① Movement (fields 1, 2) *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-transfer-alt"></i>@Localizer["SectionMovement"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="movementType" class="form-label fw-medium">@Localizer["FieldMovementType"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-shuffle diten-field-icon" aria-hidden="true"></i>
+                                <select id="movementType" class="form-select" required data-placeholder="@SharedLocalizer["SelectPlaceholder"]">
+                                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                    @foreach (var group in Model.AllowedTypes.GroupBy(TypeGroup))
+                                    {
+                                        <optgroup label="@Localizer[group.Key]">
+                                            @foreach (var type in group)
+                                            {
+                                                <option value="@type">@Localizer["Movement" + type]</option>
+                                            }
+                                        </optgroup>
+                                    }
+                                </select>
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="movementType"></div>
+                        </div>
+                        @if (Model.ReasonCodesAvailable)
+                        {
+                            @* Field 2 — Reason code: drawn only when MOD-0048 publishes a movement-reason set (BG-03). *@
+                            <div class="col-12 col-md-6">
+                                <label for="movementReason" class="form-label fw-medium">@Localizer["FieldReasonCode"]</label>
+                                <div class="diten-field">
+                                    <i class="bx bx-comment-detail diten-field-icon" aria-hidden="true"></i>
+                                    <select id="movementReason" class="form-select"></select>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </section>
+
+            @* ② Item (fields 3, 4) — W-UI-01: Model A selectors behind the same-origin proxy. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-package"></i>@Localizer["SectionItem"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="itemId" class="form-label fw-medium">@Localizer["FieldProduct"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-cube diten-field-icon" aria-hidden="true"></i>
+                                <select id="itemId" class="form-select" required data-placeholder="@Localizer["PlaceholderProduct"]">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="itemId"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="sku" class="form-label fw-medium">@Localizer["FieldSku"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-barcode diten-field-icon" aria-hidden="true"></i>
+                                <select id="sku" class="form-select" required disabled data-placeholder="@Localizer["PlaceholderSku"]">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="form-text" data-hint-for="sku">@Localizer["HintSelectProductFirst"]</div>
+                            <div class="invalid-feedback d-block" data-error-for="sku"></div>
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-warning small mb-0 d-none" role="status" id="movement-product-unavailable"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* ③ Source & target (fields 5–9) — pack §12 direction matrix. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-map-alt"></i>@Localizer["SectionSourceTarget"]</h6>
+                    <p class="text-body-secondary small mb-0" data-matrix-empty>@Localizer["HintChooseTypeFirst"]</p>
+                    <div class="row g-3">
+                        <div class="col-12" data-matrix="source">
+                            <label for="source" class="form-label fw-medium">@Localizer["FieldSource"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-log-out-circle diten-field-icon" aria-hidden="true"></i>
+                                <select id="source" class="form-select" disabled data-placeholder="@Localizer["PlaceholderSource"]">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="form-text" data-hint-for="source"></div>
+                            <div class="invalid-feedback d-block" data-error-for="source"></div>
+                        </div>
+                        <div class="col-12 col-md-6" data-matrix="target-warehouse">
+                            <label for="toWarehouseId" class="form-label fw-medium">@Localizer["FieldTargetWarehouse"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i>
+                                <select id="toWarehouseId" class="form-select" data-placeholder="@Localizer["PlaceholderTargetWarehouse"]">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="form-text" data-hint-for="toWarehouseId"></div>
+                            <div class="invalid-feedback d-block" data-error-for="toWarehouseId"></div>
+                        </div>
+                        <div class="col-12 col-md-6" data-matrix="target-location">
+                            <label for="toLocationId" class="form-label fw-medium">@Localizer["FieldTargetLocation"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i>
+                                <select id="toLocationId" class="form-select" disabled data-placeholder="@Localizer["PlaceholderTargetLocation"]">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="form-text" data-hint-for="toLocationId">@Localizer["HintTargetLocation"]</div>
+                            <div class="invalid-feedback d-block" data-error-for="toLocationId"></div>
+                        </div>
+                        <div class="col-12 col-md-6" data-matrix="target-status">
+                            <label for="toStockStatus" class="form-label fw-medium">@Localizer["FieldTargetStockStatus"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-check-shield diten-field-icon" aria-hidden="true"></i>
+                                <select id="toStockStatus" class="form-select">
+                                    @foreach (var status in MovementRules.InboundStatuses)
+                                    {
+                                        <option value="@status" selected="@(status == "AVAILABLE")">@Localizer["Status" + status]</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="toStockStatus"></div>
+                        </div>
+                        <div class="col-12 col-md-6" data-matrix="lot">
+                            <label for="lotId" class="form-label fw-medium">@Localizer["FieldLot"] <span class="text-danger d-none" data-lot-required>*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag-alt diten-field-icon" aria-hidden="true"></i>
+                                @*
+                                    MOD-0174 P3 (pack §11.4): the REGISTERED lots of the SKU (lot no · SKT · status, sorted by SKT); Blocked and
+                                    Expired lots are listed but disabled with the reason (CT-D4). Inbound types only — the matrix hides this
+                                    block for outbound / transfers, whose lot is the source row's.
+                                *@
+                                <select id="lotId" class="form-select" data-placeholder="@LotField["Lot.Placeholder"]">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            @if (Perms.Has("trace.lots.create"))
+                            {
+                                @* CT-D5a: an in-form control of the lot field (not a manifest action), for a holder of trace.lots.create. *@
+                                <button type="button" class="btn btn-sm btn-link px-0" id="btnQuickLot">@LotField["Lot.NewLot"]</button>
+                            }
+                            <div class="form-text" data-hint-for="lotId"></div>
+                            @* K-F: a lot whose retest date passed — warning + explicit confirmation (ASSUMPTION-0174-06). *@
+                            <div class="alert alert-warning small py-2 px-3 mt-2 mb-0 d-none" id="lotRetestWarn" role="status">
+                                <div data-retest-text></div>
+                                <div class="form-check mt-1 mb-0">
+                                    <input class="form-check-input" type="checkbox" id="lotRetestConfirm" />
+                                    <label class="form-check-label" for="lotRetestConfirm">@LotField["Lot.RetestConfirm"]</label>
+                                </div>
+                            </div>
+                            @if (!typingClosed)
+                            {
+                                @* W-UI-02 (until the P4 migration closes typing): a typed lot text is still accepted, shown with its badge. *@
+                                <button type="button" class="btn btn-sm btn-link px-0" id="btnTypedLot">@LotField["Lot.TypedBadge"]…</button>
+                                <div class="input-group input-group-sm mt-1 d-none" id="lotTypedGroup">
+                                    <input id="lotIdTyped" type="text" class="form-control" maxlength="40" autocomplete="off" placeholder="@Localizer["PlaceholderLot"]" aria-label="@LotField["Lot.TypedBadge"]" />
+                                    <span class="input-group-text"><span class="badge bg-label-secondary">@LotField["Lot.TypedBadge"]</span></span>
+                                </div>
+                                <div class="form-text d-none" id="lotTypedHint">@LotField["Lot.TypedHint"]</div>
+                            }
+                            <div class="invalid-feedback d-block" data-error-for="lotId"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* ④ Quantity (fields 10, 11, 12) *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-calculator"></i>@Localizer["SectionQuantity"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="quantity" class="form-label fw-medium">@Localizer["FieldQuantity"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                <input id="quantity" type="text" inputmode="decimal" class="form-control" maxlength="30" required autocomplete="off"
+                                       placeholder="@Localizer["PlaceholderQuantity"]" />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="quantity"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="uomId" class="form-label fw-medium">@Localizer["FieldUnit"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-ruler diten-field-icon" aria-hidden="true"></i>
+                                <select id="uomId" class="form-select" required disabled data-placeholder="@SharedLocalizer["SelectPlaceholder"]">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="form-text" data-hint-for="uomId"></div>
+                            <div class="invalid-feedback d-block" data-error-for="uomId"></div>
+                        </div>
+                        <div class="col-12 d-none" data-serial-field>
+                            <label for="serialNumbers" class="form-label fw-medium">@Localizer["FieldSerialNumbers"] <span class="text-danger">*</span></label>
+                            @*
+                                MOD-0174 P3 (K-B): three input methods that all ADD to the one serial list below — one by one (Enter adds),
+                                a range (same prefix + digits, ≤ 5,000, expanded by the server) and a GS1 / ITS code (checked by the service:
+                                GTIN · serial · SKT · lot; when the SKU has no GTIN the GTIN check is skipped and the warning stays visible).
+                            *@
+                            <ul class="nav nav-pills nav-sm gap-2 mb-2" role="tablist" id="serialMethods">
+                                <li class="nav-item"><button type="button" class="nav-link small border shadow-none active" data-serial-method="single">@LotField["Serial.Methods.Single"]</button></li>
+                                <li class="nav-item"><button type="button" class="nav-link small border shadow-none" data-serial-method="range">@LotField["Serial.Methods.Range"]</button></li>
+                                <li class="nav-item"><button type="button" class="nav-link small border shadow-none" data-serial-method="scan">@LotField["Serial.Methods.Scan"]</button></li>
+                            </ul>
+                            <div data-serial-panel="single" class="input-group input-group-sm mb-2">
+                                <input id="serialSingle" type="text" class="form-control" maxlength="200" autocomplete="off" aria-label="@LotField["Serial.Methods.Single"]" />
+                                <button type="button" class="btn btn-label-primary" id="btnSerialAdd">@LotField["Serial.Add"]</button>
+                            </div>
+                            <div data-serial-panel="range" class="d-none mb-2">
+                                <div class="input-group input-group-sm">
+                                    <input id="serialRangeStart" type="text" class="form-control" maxlength="24" autocomplete="off" placeholder="@LotField["Serial.RangeStart"]" aria-label="@LotField["Serial.RangeStart"]" />
+                                    <input id="serialRangeEnd" type="text" class="form-control" maxlength="24" autocomplete="off" placeholder="@LotField["Serial.RangeEnd"]" aria-label="@LotField["Serial.RangeEnd"]" />
+                                    <button type="button" class="btn btn-label-primary" id="btnSerialRange">@LotField["Serial.RangeAdd"]</button>
+                                </div>
+                                <small class="text-muted d-block mt-1" id="serialRangePreview">@LotField["Serial.RangeHint"]</small>
+                            </div>
+                            <div data-serial-panel="scan" class="d-none mb-2">
+                                <div class="alert alert-warning small py-2 px-3 mb-2 d-none" id="serialGtinWarning" role="status"></div>
+                                <input id="serialScan" type="text" class="form-control form-control-sm" maxlength="200" autocomplete="off" placeholder="@LotField["Serial.ScanHint"]" aria-label="@LotField["Serial.Methods.Scan"]" />
+                            </div>
+                            <div class="small mb-2" id="serialMessages" role="status"></div>
+                            <div class="diten-field">
+                                <i class="bx bx-list-ol diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                                <textarea id="serialNumbers" class="form-control" rows="4" placeholder="@Localizer["PlaceholderSerials"]"></textarea>
+                            </div>
+                            <div class="form-text" data-hint-for="serialNumbers"></div>
+                            <div class="invalid-feedback d-block" data-error-for="serialNumbers"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* ⑤ Document & dates (fields 13, 14, 15) *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-file"></i>@Localizer["SectionDocumentDates"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label for="documentNo" class="form-label fw-medium">@Localizer["FieldDocumentNo"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-receipt diten-field-icon" aria-hidden="true"></i>
+                                <input id="documentNo" type="text" class="form-control" maxlength="200" autocomplete="off" placeholder="@Localizer["PlaceholderDocumentNo"]" />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="documentNo"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="transactionDate" class="form-label fw-medium">@Localizer["FieldTransactionDate"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input id="transactionDate" type="text" class="form-control flatpickr-date" required placeholder="YYYY-MM-DD HH:MM" />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="transactionDate"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="postingDate" class="form-label fw-medium">@Localizer["FieldPostingDate"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar-check diten-field-icon" aria-hidden="true"></i>
+                                <input id="postingDate" type="text" class="form-control flatpickr-date" required placeholder="YYYY-MM-DD HH:MM" />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="postingDate"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            @if (mode == MovementFormMode.Correct)
+            {
+                var original = Model.Original!;
+                @* KD-1: what is being corrected, and what "Correct" will do — two records, the original stays. *@
+                <section class="card mb-4" id="movement-original">
+                    <div class="card-body p-4">
+                        <h6 class="card-section-title mb-1"><i class="bx bx-history"></i>@Localizer["OriginalTitle"]</h6>
+                        <p class="card-section-desc mb-4">@Localizer["CorrectExplain"]</p>
+                        <dl class="row mb-0 small">
+                            <dt class="col-5 fw-medium text-heading">@Localizer["ColTransactionNo"]</dt>
+                            <dd class="col-7">@(original.TransactionNumber ?? original.TransactionId)</dd>
+                            <dt class="col-5 fw-medium text-heading">@Localizer["ColMovementType"]</dt>
+                            <dd class="col-7">@Localizer["Movement" + original.MovementType]</dd>
+                            <dt class="col-5 fw-medium text-heading">@Localizer["ColProductSku"]</dt>
+                            <dd class="col-7 text-break">@(Model.ItemText ?? original.ItemId)<br /><span class="text-muted">@(Model.SkuText ?? original.SkuId)</span></dd>
+                            <dt class="col-5 fw-medium text-heading">@Localizer["ColQuantity"]</dt>
+                            <dd class="col-7 font-monospace">@MovementRules.ReadableQuantity(original.Quantity) @original.UomId</dd>
+                            @if (!string.IsNullOrWhiteSpace(original.LotId))
+                            {
+                                <dt class="col-5 fw-medium text-heading">@Localizer["ColLot"]</dt>
+                                @* MOD-0174 P3: the W-UI-02 badge belongs to a TYPED lot only — a registered lot id is not "unregistered". *@
+                                <dd class="col-7">@original.LotId @if (!MovementRules.IsRegisteredLotId(original.LotId) && !typingClosed) { <span class="badge bg-label-secondary ms-1">@Localizer["LotUnregisteredBadge"]</span> }</dd>
+                            }
+                        </dl>
+                    </div>
+                </section>
+            }
+
+            @* "Stock effect" (pack §12): before → after from /balance, computed server-side; informational only. *@
+            <section class="card mb-4" id="movement-effect">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-line-chart"></i>@Localizer["EffectTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["EffectNote"]</p>
+                    <div data-effect-empty class="text-body-secondary small">@Localizer["EffectEmpty"]</div>
+                    <div data-effect-loading class="d-none" aria-hidden="true">
+                        <div class="shimmer skeleton-row mb-2"></div>
+                        <div class="shimmer skeleton-row w-75"></div>
+                    </div>
+                    <ul data-effect-rows class="list-unstyled mb-0 d-none"></ul>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>
+
+@* MOD-0174 P3 — the lot field's vocabulary (resx family LotFieldIndex; owner decision 2026-10-06), read by form.js. *@
+<script id="lotfield-l10n" type="application/json">@Json.Serialize(Diten.Web.Models.Traceability.TraceL10nKeys.LotField.ToDictionary(k => k, k => LotField[k].Value))</script>
+@if (Perms.Has("trace.lots.create"))
+{
+    <partial name="~/Views/Traceability/Lots/_LotQuickCreateModal.cshtml" />
+}

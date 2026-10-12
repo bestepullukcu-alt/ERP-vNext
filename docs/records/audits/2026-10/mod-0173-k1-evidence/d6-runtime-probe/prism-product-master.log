@@ -1,0 +1,574 @@
+[12:48:38] » [CLI] ...  awaiting  Starting Prism…
+[12:48:38] » [CLI] i  info      GET        http://127.0.0.1:4010/products/9210d410-bfa9-217a-9300-715acca37770
+[12:48:38] » [CLI] i  info      GET        http://127.0.0.1:4010/skus/0a56e3e6-c24e-cdf3-1ca8-a3b2efbc3a99?level=Gsku
+[12:48:38] » [CLI] i  info      GET        http://127.0.0.1:4010/skus/29495fb5-662b-923c-0cce-24ace4a8f498/product?level=Lsku
+[12:48:38] » [CLI] i  info      GET        http://127.0.0.1:4010/skus/91c61bc9-f066-56d2-f4ad-beae9eaf05d0/uom
+[12:48:38] » [CLI] i  info      POST       http://127.0.0.1:4010/validate
+[12:48:38] » [CLI] ►  start     Prism is listening on http://127.0.0.1:4010
+[12:48:39] » [HTTP SERVER] get / i  info      Request received
+[12:48:39] » [HTTP SERVER] get / ×  error     Request terminated with error: https://stoplight.io/prism/errors#NO_PATH_MATCHED_ERROR: Route not resolved, no path matched
+[12:48:45] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 00c23311-2174-4167-a74e-c2dd3e4043e5
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-e2271747e5541685c7b96ebcae094a2b-9dbb26c73a93258d-00
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:45] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:45] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:45] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:45] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 00c23311-2174-4167-a74e-c2dd3e4043e5
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-e2271747e5541685c7b96ebcae094a2b-b4b5d9a86c9ab7ae-00
+[12:48:45] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:45] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:45] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:45] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 00c23311-2174-4167-a74e-c2dd3e4043e5
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-e2271747e5541685c7b96ebcae094a2b-2f7b0a4fcbbfb78d-00
+[12:48:45] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:45] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:45] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:45] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 00c23311-2174-4167-a74e-c2dd3e4043e5
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-e2271747e5541685c7b96ebcae094a2b-2bf8bd4c7d6d1fa3-00
+[12:48:45] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:45] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:45] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:45] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 241814c6-3ce9-4a2b-8503-068b7903152b
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-989824f894f5626ace924be9650f983c-b6eeb9f716840882-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 241814c6-3ce9-4a2b-8503-068b7903152b
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-989824f894f5626ace924be9650f983c-b84618d05fd647c9-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 241814c6-3ce9-4a2b-8503-068b7903152b
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-989824f894f5626ace924be9650f983c-b6c2a0a8f2cdb2be-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 241814c6-3ce9-4a2b-8503-068b7903152b
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-989824f894f5626ace924be9650f983c-1df0e73cc13b8360-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: c8b6de9c-c47f-4f48-a989-c5a6c961fd16
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-ee4fc3a82c93eb0cc0405138d2079beb-b7f5e6a221a87a42-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: c8b6de9c-c47f-4f48-a989-c5a6c961fd16
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-ee4fc3a82c93eb0cc0405138d2079beb-d18527019326d982-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: c8b6de9c-c47f-4f48-a989-c5a6c961fd16
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-ee4fc3a82c93eb0cc0405138d2079beb-63982c79e73c4300-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: c8b6de9c-c47f-4f48-a989-c5a6c961fd16
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-ee4fc3a82c93eb0cc0405138d2079beb-038f5ae6987bf70e-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 11da9730-d34c-4b17-8789-cf6dafa747f4
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-e8736bc084a4a4259f15f58aa78b8c71-e757cf49914124fd-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 11da9730-d34c-4b17-8789-cf6dafa747f4
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-e8736bc084a4a4259f15f58aa78b8c71-a979515ecccd5f3c-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 11da9730-d34c-4b17-8789-cf6dafa747f4
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-e8736bc084a4a4259f15f58aa78b8c71-368c50170a42bb8c-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 11da9730-d34c-4b17-8789-cf6dafa747f4
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-e8736bc084a4a4259f15f58aa78b8c71-b13971cdb6e9fe3d-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: f8d7407d-5d2f-4dd3-a888-3a790c2ecaad
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-63d798ab6825b3b696f03249f6d2caf0-bf23464a6d0aea8d-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: f8d7407d-5d2f-4dd3-a888-3a790c2ecaad
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-63d798ab6825b3b696f03249f6d2caf0-d024b42fc9322987-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: f8d7407d-5d2f-4dd3-a888-3a790c2ecaad
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-63d798ab6825b3b696f03249f6d2caf0-ab5a8404ddb7b021-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: f8d7407d-5d2f-4dd3-a888-3a790c2ecaad
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-63d798ab6825b3b696f03249f6d2caf0-766db9b625d78c76-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: d7f01f76-33ad-406c-81d5-6a499515b81f
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-ff8e32aee4e848b801c2e546ef243356-f9df67ff1f16f296-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: d7f01f76-33ad-406c-81d5-6a499515b81f
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-ff8e32aee4e848b801c2e546ef243356-1bc0bcf61e8d51f3-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: d7f01f76-33ad-406c-81d5-6a499515b81f
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-ff8e32aee4e848b801c2e546ef243356-71585c26e63ddc52-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: d7f01f76-33ad-406c-81d5-6a499515b81f
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-ff8e32aee4e848b801c2e546ef243356-6f373cbe9161b654-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: d4e65ffa-14c8-4604-bce9-4038f1588dcd
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-b688200a07251d783af41c53382e6f4b-666165acdb158142-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 975215b7-d6f7-484f-90fa-9b3de711c5e1
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-d16a2bf70e5e7f0e1853cf8b26bd699a-eb3ced152ca52465-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 975215b7-d6f7-484f-90fa-9b3de711c5e1
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-d16a2bf70e5e7f0e1853cf8b26bd699a-aeb2f2146cc6a672-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 975215b7-d6f7-484f-90fa-9b3de711c5e1
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-d16a2bf70e5e7f0e1853cf8b26bd699a-ce8da34e57c0b5ce-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 975215b7-d6f7-484f-90fa-9b3de711c5e1
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-d16a2bf70e5e7f0e1853cf8b26bd699a-59b7dbdbdff351c3-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 7225f771-cee6-4ecd-88cb-e395eac16fc7
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-c8a89cc5f26753e8251ce812a0b191e3-6f5e8936053d632a-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 7225f771-cee6-4ecd-88cb-e395eac16fc7
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-c8a89cc5f26753e8251ce812a0b191e3-d78d36e0a30c278c-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 7225f771-cee6-4ecd-88cb-e395eac16fc7
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-c8a89cc5f26753e8251ce812a0b191e3-2f9e45747e35e031-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 7225f771-cee6-4ecd-88cb-e395eac16fc7
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-c8a89cc5f26753e8251ce812a0b191e3-b8396b9439f7d83d-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 47706427-bf20-4ea0-ba7b-db8d47431398
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-eebfa84dba83b4f4bf464be4ad028ace-3cb5fca7dac86b95-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /products/b1f2c3d4-0000-0000-0000-000000000001 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 47706427-bf20-4ea0-ba7b-db8d47431398
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-eebfa84dba83b4f4bf464be4ad028ace-65c2918fe66e5627-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"itemId":"b1f2c3d4-0000-0000-0000-000000000001","canonicalCode":"GP-000123","name":"Amoksisilin 500mg Kapsül","lifecycleStatus":"Active","baseUomId":"EA","shelfLifeDays":730,"minRemainingShelfLifeDays":180,"storageCondition":"15-25C","retestDays":365,"lotControlled":true,"serialControlled":false,"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002 i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 47706427-bf20-4ea0-ba7b-db8d47431398
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-eebfa84dba83b4f4bf464be4ad028ace-2fac1e35b8527864-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","canonicalCode":"LSKU-TR-000045","itemId":"b1f2c3d4-0000-0000-0000-000000000001","packUomCode":"BOX","packQuantity":"10","gtin":"08690000000017","marketCode":"TR","contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] get /skus/c3d4e5f6-0000-0000-0000-000000000002/uom i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 47706427-bf20-4ea0-ba7b-db8d47431398
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-eebfa84dba83b4f4bf464be4ad028ace-480705b2afac6dd4-00
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"baseUomId":"EA","conversions":[{"fromUom":"BOX","toUom":"EA","numerator":"10","denominator":"1"},{"fromUom":"PALLET","toUom":"BOX","numerator":"100","denominator":"1"}],"contractVersion":"v1"}
+[12:48:46] » [HTTP SERVER] post /validate i  info      Request received
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4010
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 9a1e17ef-b21e-4c6d-9b6a-f640de9ad7f4
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-079e6f5ca5816c387c9ffc5522907c06-61449a98e04a6501-00
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     < Body: {"refs":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001"},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku"}]}
+[12:48:46] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[12:48:46] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[12:48:46] »     [NEGOTIATOR] i  info      > Responding with "200"
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[12:48:46] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"itemId":"b1f2c3d4-0000-0000-0000-000000000001","exists":true},{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","exists":true},{"skuId":"00000000-0000-0000-0000-000000000000","skuLevel":"Gsku","exists":false}],"contractVersion":"v1"}

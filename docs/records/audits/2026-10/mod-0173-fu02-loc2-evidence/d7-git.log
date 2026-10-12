@@ -1,0 +1,149 @@
+﻿# WP-0173-LOC2 D7 — git, measured 2026-10-02T11:33:21.6078861+03:00 in C:\Users\Ali\erp-vnext
+
+## branch / HEAD
+feature/sce/mod-0173-inventory-ledger-valuation
+efba9b9ed861d68788e2e602069a2ddf8d94e4c6
+
+## git log --oneline eee49fe80..HEAD (WP-named base .. HEAD)
+efba9b9ed docs(sce): WP-0173-LOC2 evidence, audit, API screens section, FU02 pack §19 LOC2 notes
+a839b9044 feat(sce): MOD-0173-FU02 LOC2 — location screens (tree + list + one form + bulk bins), manifest pages/actions, Nav key, FU01 locationId deep link
+bc27dda23 fix(sce): InventoryService registers its manifest with Platform in Development (CT break-glass)
+
+## git log --format='%h %an <%ae> | %s' bc27dda23..HEAD (this WP's commits; author check)
+efba9b9ed bestepullukcu-alt <bestepullukcu@gmail.com> | docs(sce): WP-0173-LOC2 evidence, audit, API screens section, FU02 pack §19 LOC2 notes
+a839b9044 bestepullukcu-alt <bestepullukcu@gmail.com> | feat(sce): MOD-0173-FU02 LOC2 — location screens (tree + list + one form + bulk bins), manifest pages/actions, Nav key, FU01 locationId deep link
+
+## trailer check
+efba9b9ed Claude Opus 5.5 <noreply@anthropic.com>
+a839b9044 Claude Opus 5.5 <noreply@anthropic.com>
+
+## git diff --stat bc27dda23..HEAD
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-audit-2026-10-02.md                                                   |   44 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/README.md                                                    |   43 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d1-build-inventory.log                                       |   19 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d1-build-web.log                                             |   46 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d2-inventory-tests-run1-prism-timeout.log                    |   44 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d2-inventory-tests-summary.log                               |    6 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d2-inventory-tests.trx                                       | 7707 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d2-web-tests-summary.log                                     |   32 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d2-web-tests.trx                                             | 2976 +++++++++++++++++++++++++++++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d3-architecture-tests.log                                    |    8 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d4-sabotage.log                                              |   54 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d5-datatable-manual-checklist.md                             |   43 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d5-greps.log                                                 |   33 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-ac01-proxy-sentence.json                                  |    9 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-gateway-copy-override.json                                |   12 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-mongo-balances-final.json                                 |   47 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-mongo-history-after-bulk.json                             |  185 ++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-mongo-history-after-preview.json                          |    1 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-mongo-history-final.json                                  |  300 +++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-mongo-locations-after-bulk.json                           |  278 +++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-mongo-locations-after-preview.json                        |  134 ++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-mongo-locations-final.json                                |  351 ++++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-platform-catalog.json                                     |  203 ++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-runtime-smoke.json                                        |   68 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d6-stock-posting.json                                        |   60 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d7-fleet-before.json                                         |  110 ++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d7-processes-after.json                                      |   31 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/e1-js-guards-base.txt                                        |  224 +++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/e1-js-guards-diff.txt                                        |    0
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/e1-js-guards-loc2.txt                                        |  224 +++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/e2-fleet-rebuild-1015-origin.json                            |   39 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/mini-vitest.js                                               |   76 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/persona-helper.js                                            |   82 +
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/run-loc2-env.ps1                                             |  160 ++
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/01-company-not-selected.jpg                      |  Bin 0 -> 16763 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/02-empty-company-first-site-prompt.jpg           |  Bin 0 -> 25093 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/03-form-new-site.jpg                             |  Bin 0 -> 32689 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/04-form-required-fields.jpg                      |  Bin 0 -> 27279 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/05-form-code-taken-409.jpg                       |  Bin 0 -> 39891 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/06-bulk-limit-1000.jpg                           |  Bin 0 -> 33556 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/07-bulk-preview-dry-run.jpg                      |  Bin 0 -> 32989 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/08-bulk-result-one-run.jpg                       |  Bin 0 -> 29657 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/09-tree-with-bins-presence.jpg                   |  Bin 0 -> 40842 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/10-deactivate-refused-has-stock.jpg              |  Bin 0 -> 28223 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/11-view-in-stock-list-filtered.jpg               |  Bin 0 -> 34410 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/12-list-server-mode.jpg                          |  Bin 0 -> 35494 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/13-list-filters-applied.jpg                      |  Bin 0 -> 26599 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/14-archive-confirm-danger.jpg                    |  Bin 0 -> 24936 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/15-form-stockable-off-has-stock.jpg              |  Bin 0 -> 32094 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/16-form-move-has-stock.jpg                       |  Bin 0 -> 32729 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/17-form-operating-mode-has-stock.jpg             |  Bin 0 -> 30438 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/18-form-parent-inactive.jpg                      |  Bin 0 -> 30598 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/19-deactivate-refused-active-children.jpg        |  Bin 0 -> 26814 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/20-bulk-preview-skipped-codes.jpg                |  Bin 0 -> 27231 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/21-history.jpg                                   |  Bin 0 -> 18075 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/22-viewer-tree-no-manage.jpg                     |  Bin 0 -> 18597 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/23-viewer-detail-no-manage.jpg                   |  Bin 0 -> 25163 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/24-viewer-list-no-manage.jpg                     |  Bin 0 -> 34568 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/25-uas-locationtree.jpg                          |  Bin 0 -> 12004 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/26-uas-locations.jpg                             |  Bin 0 -> 6337 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/screenshots/27-ar-rtl-tree.jpg                               |  Bin 0 -> 35408 bytes
+ docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/user-manual-draft.html                                       |   94 +
+ docs/reference/architecture/api/mod-0173-location.md                                                                 |   24 +
+ execution/domains/supply-chain-execution/module-packs/MOD-0173-FU02-location-storage-master.md                       |   25 +
+ frontend/Diten.Web.Tests/Inventory/LocationAccessSurfaceTests.cs                                                     |  153 ++
+ frontend/Diten.Web.Tests/Inventory/LocationProxyControllerTests.cs                                                   |  502 +++++
+ frontend/Diten.Web.Tests/Inventory/LocationResxParityTests.cs                                                        |  152 ++
+ frontend/Diten.Web/Controllers/LocationTreeController.cs                                                             |  111 ++
+ frontend/Diten.Web/Controllers/LocationsController.cs                                                                |  454 +++++
+ frontend/Diten.Web/Models/Inventory/InventoryGatewayClient.cs                                                        |   34 +-
+ frontend/Diten.Web/Models/Inventory/LocationErrorMessages.cs                                                         |   69 +
+ frontend/Diten.Web/Models/Inventory/LocationListAdapter.cs                                                           |  201 ++
+ frontend/Diten.Web/Models/Inventory/LocationViewModels.cs                                                            |  162 ++
+ frontend/Diten.Web/Resources/SharedResource.ar.resx                                                                  |    1 +
+ frontend/Diten.Web/Resources/SharedResource.en.resx                                                                  |    1 +
+ frontend/Diten.Web/Resources/SharedResource.es.resx                                                                  |    1 +
+ frontend/Diten.Web/Resources/SharedResource.fr.resx                                                                  |    1 +
+ frontend/Diten.Web/Resources/SharedResource.ru.resx                                                                  |    1 +
+ frontend/Diten.Web/Resources/SharedResource.tr.resx                                                                  |    1 +
+ frontend/Diten.Web/Resources/SharedResource.zh.resx                                                                  |    1 +
+ frontend/Diten.Web/Resources/Views/Inventory/LocationTree/LocationTreeIndex.ar.resx                                  |   59 +
+ frontend/Diten.Web/Resources/Views/Inventory/LocationTree/LocationTreeIndex.en.resx                                  |   58 +
+ frontend/Diten.Web/Resources/Views/Inventory/LocationTree/LocationTreeIndex.es.resx                                  |   59 +
+ frontend/Diten.Web/Resources/Views/Inventory/LocationTree/LocationTreeIndex.fr.resx                                  |   59 +
+ frontend/Diten.Web/Resources/Views/Inventory/LocationTree/LocationTreeIndex.ru.resx                                  |   59 +
+ frontend/Diten.Web/Resources/Views/Inventory/LocationTree/LocationTreeIndex.tr.resx                                  |   58 +
+ frontend/Diten.Web/Resources/Views/Inventory/LocationTree/LocationTreeIndex.zh.resx                                  |   59 +
+ frontend/Diten.Web/Resources/Views/Inventory/Locations/LocationsIndex.ar.resx                                        |  132 ++
+ frontend/Diten.Web/Resources/Views/Inventory/Locations/LocationsIndex.en.resx                                        |  131 ++
+ frontend/Diten.Web/Resources/Views/Inventory/Locations/LocationsIndex.es.resx                                        |  132 ++
+ frontend/Diten.Web/Resources/Views/Inventory/Locations/LocationsIndex.fr.resx                                        |  132 ++
+ frontend/Diten.Web/Resources/Views/Inventory/Locations/LocationsIndex.ru.resx                                        |  132 ++
+ frontend/Diten.Web/Resources/Views/Inventory/Locations/LocationsIndex.tr.resx                                        |  131 ++
+ frontend/Diten.Web/Resources/Views/Inventory/Locations/LocationsIndex.zh.resx                                        |  132 ++
+ frontend/Diten.Web/Views/Inventory/LocationTree/Index.cshtml                                                         |  143 ++
+ frontend/Diten.Web/Views/Inventory/LocationTree/LocationTreeIndex.cs                                                 |    3 +
+ frontend/Diten.Web/Views/Inventory/LocationTree/_DetailPanel.cshtml                                                  |  105 +
+ frontend/Diten.Web/Views/Inventory/LocationTree/_IndexL10n.cshtml                                                    |   35 +
+ frontend/Diten.Web/Views/Inventory/Locations/Index.cshtml                                                            |   98 +
+ frontend/Diten.Web/Views/Inventory/Locations/LocationsIndex.cs                                                       |    3 +
+ frontend/Diten.Web/Views/Inventory/Locations/_BulkBinsModal.cshtml                                                   |  112 ++
+ frontend/Diten.Web/Views/Inventory/Locations/_CreateEditOffcanvas.cshtml                                             |  143 ++
+ frontend/Diten.Web/Views/Inventory/Locations/_DataTable.cshtml                                                       |   33 +
+ frontend/Diten.Web/Views/Inventory/Locations/_Filter.cshtml                                                          |   62 +
+ frontend/Diten.Web/Views/Inventory/Locations/_IndexL10n.cshtml                                                       |   84 +
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/LocationTree/index.js                                                 |  525 +++++
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/LocationTree/index.l10n.js                                            |   39 +
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/Locations/bulk-bins.js                                                |  178 ++
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/Locations/form.js                                                     |  612 ++++++
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/Locations/index.js                                                    |  218 +++
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/Locations/index.l10n.js                                               |   44 +
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/StockLedger/index.js                                                  |   17 +-
+ frontend/Diten.Web/wwwroot/assets/js/Inventory/StockMovements/index.js                                               |    9 +-
+ services/Diten.InventoryService/src/Diten.InventoryService.Api/ModuleRegistration/InventoryLedgerManifestProvider.cs |   44 +
+ services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Api/InventoryLedgerManifestCompletenessTests.cs   |  110 +-
+ 115 files changed, 19548 insertions(+), 39 deletions(-)
+
+## allowed-path check (pack §6 LOC2 paths) — every changed file vs the allow-list and the protected list (case-sensitive)
+changed files: 115
+outside allow-list: 0
+matching a protected path (_LayoutTenantShell, shared JS/CSS, gateway/, contracts/, registries/, company-selector files, InventoryService outside the manifest provider + its test): 0
+FU01 files touched (allowed by pack §11 deep link): wwwroot/assets/js/Inventory/StockLedger/index.js, StockMovements/index.js — locationId read only; company-selector files untouched.
+Shared file touched (allowed by pack §14): Resources/SharedResource.{7}.resx — +1 line Nav.Page.LOCATIONTREE each.
+
+## base..HEAD is a pure fast-forward of the WP commits
+merge-base bc27dda23 HEAD = bc27dda23655f5c7d3c94602bc2cca139b1b30d6
+
+## git status --porcelain (before the D7 evidence commit; only the two D7 files expected)
+?? docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/d7-fleet-after.json

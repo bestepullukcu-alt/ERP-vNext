@@ -547,6 +547,33 @@ public static class DependencyInjection
             Diten.Platform.Infrastructure.Persistence.Repositories.RepositoryObjectRepository>();
         services.AddScoped<Diten.Platform.Application.Features.DocumentRepository.Services.DocumentRepositoryService>();
 
+        // MOD-0022 E2 — e-Signature Service. Insert-only stores (records, invalidations, exports, policy history) are NOT
+        // TenantRepository<T> subclasses; see ESignatureRepositories.cs.
+        services.Configure<Diten.Platform.Infrastructure.Services.ESignature.ESignOptions>(
+            configuration.GetSection(Diten.Platform.Infrastructure.Services.ESignature.ESignOptions.SectionName));
+        services.AddScoped<IESignatureRecordRepository, ESignatureRecordRepository>();
+        services.AddScoped<IESignatureInvalidationRepository, ESignatureInvalidationRepository>();
+        services.AddScoped<IESignatureExportRepository, ESignatureExportRepository>();
+        services.AddScoped<IESignaturePolicyChangeRepository, ESignaturePolicyChangeRepository>();
+        services.AddScoped<IESignRequestRepository, ESignRequestRepository>();
+        services.AddScoped<IESignPolicyRepository, ESignPolicyRepository>();
+        services.AddScoped<IESignMeaningRepository, ESignMeaningRepository>();
+        services.AddScoped<IESignActionRepository, ESignActionRepository>();
+        services.AddScoped<IESignNumberGenerator, ESignNumberGenerator>();
+        // MOD-0022 E3 — samples (insert-only sample + event stores; the owner pointer is compare-and-set).
+        services.AddScoped<IESignatureSampleRepository, ESignatureSampleRepository>();
+        services.AddScoped<IESignatureSampleEventRepository, ESignatureSampleEventRepository>();
+        services.AddScoped<IESignSampleOwnerStateRepository, ESignSampleOwnerStateRepository>();
+        services.AddHttpClient<Diten.Platform.Application.Features.ESignature.Services.IESignTicketConsumer,
+            Diten.Platform.Infrastructure.Services.ESignature.AuthServiceESignTicketConsumer>();
+        services.AddHttpClient(Diten.Platform.Infrastructure.Services.ESignature.RemoteSignableSubjectClient.HttpClientName);
+        services.AddScoped<Diten.Platform.Application.Features.ESignature.Services.IRemoteSignableSubjectClient,
+            Diten.Platform.Infrastructure.Services.ESignature.RemoteSignableSubjectClient>();
+        services.AddScoped<Diten.Platform.Application.Features.ESignature.Services.IESignRequestLanguage,
+            Diten.Platform.Infrastructure.Services.ESignature.HttpESignRequestLanguage>();
+        services.AddSingleton<Diten.Platform.Application.Features.ESignature.Handlers.IESignaturePdfRenderer,
+            Diten.Platform.Infrastructure.Services.ESignature.MigraDocESignaturePdfRenderer>();
+
         services.AddScoped<IMessagingProvider, FakeMessagingProvider>();
         services.AddScoped<IMessagingProvider, SmtpMessagingProvider>();
         services.AddSingleton<ISmtpClientFactory, MailKitSmtpClientFactory>();

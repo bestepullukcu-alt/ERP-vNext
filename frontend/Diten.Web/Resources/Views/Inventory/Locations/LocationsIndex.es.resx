@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <!-- WP-0173-LOC2: model translation, native-speaker review pending (FU-LOC2-01). -->
+  <data name="LocationsTitle" xml:space="preserve"><value>Lista de ubicaciones</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Lista única de los lugares físicos de la empresa. Existencias, almacén, compras y producción leen de esta lista.</value></data>
+  <data name="TabTree" xml:space="preserve"><value>Jerarquía</value></data>
+  <data name="TabList" xml:space="preserve"><value>Lista</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Empresa</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Seleccione la empresa cuyas ubicaciones desea ver. No se muestra nada hasta que se seleccione una empresa.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>No se pudo cargar la lista de empresas, por lo que no se muestra ninguna ubicación. Solicite a su administrador permiso para ver las empresas o inténtelo más tarde.</value></data>
+  <data name="AddNewLocation" xml:space="preserve"><value>Nueva ubicación</value></data>
+  <data name="ColCode" xml:space="preserve"><value>Código</value></data>
+  <data name="ColName" xml:space="preserve"><value>Nombre</value></data>
+  <data name="ColType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="ColParentPath" xml:space="preserve"><value>Ruta del superior</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="ColStockable" xml:space="preserve"><value>Admite existencias</value></data>
+  <data name="ColOperatingMode" xml:space="preserve"><value>Modo de operación</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="FilterStockable" xml:space="preserve"><value>Admite existencias</value></data>
+  <data name="FilterParent" xml:space="preserve"><value>Superior</value></data>
+  <data name="StockableYes" xml:space="preserve"><value>Admite existencias</value></data>
+  <data name="StockableNo" xml:space="preserve"><value>No admite existencias</value></data>
+  <data name="TypeSite" xml:space="preserve"><value>Planta</value></data>
+  <data name="TypeWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="TypeStorageLocation" xml:space="preserve"><value>Área de almacenamiento</value></data>
+  <data name="TypeZone" xml:space="preserve"><value>Zona</value></data>
+  <data name="TypeBin" xml:space="preserve"><value>Hueco</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activo</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactivo</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="ModeInternal" xml:space="preserve"><value>Existencias en este sistema</value></data>
+  <data name="ModeExternal" xml:space="preserve"><value>Existencias en un sistema externo, seguidas mediante integración</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Editar</value></data>
+  <data name="ActionAddChild" xml:space="preserve"><value>Añadir ubicación hija</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Activar</value></data>
+  <data name="ActionDeactivate" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ActionHistory" xml:space="preserve"><value>Historial</value></data>
+  <data name="ActionViewStock" xml:space="preserve"><value>Ver en la lista de existencias</value></data>
+  <data name="ActionBulkBins" xml:space="preserve"><value>Generar huecos</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nueva ubicación</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar ubicación</value></data>
+  <data name="FormTitleChild" xml:space="preserve"><value>Nueva ubicación bajo {0}</value></data>
+  <data name="FieldCode" xml:space="preserve"><value>Código</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Nombre</value></data>
+  <data name="FieldType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="FieldParent" xml:space="preserve"><value>Superior</value></data>
+  <data name="FieldStockable" xml:space="preserve"><value>Admite existencias</value></data>
+  <data name="FieldOperatingMode" xml:space="preserve"><value>Modo de operación</value></data>
+  <data name="FieldOrgUnit" xml:space="preserve"><value>Unidad organizativa</value></data>
+  <data name="FieldCostCenter" xml:space="preserve"><value>Código de centro de coste</value></data>
+  <data name="Optional" xml:space="preserve"><value>opcional</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ej. WH-01</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ej. Almacén central</value></data>
+  <data name="ParentPlaceholder" xml:space="preserve"><value>Buscar un superior por código o nombre</value></data>
+  <data name="OrgUnitPlaceholder" xml:space="preserve"><value>Seleccione una unidad organizativa</value></data>
+  <data name="CostCenterPlaceholder" xml:space="preserve"><value>p. ej. MM-1100</value></data>
+  <data name="HintCode" xml:space="preserve"><value>Único en esta empresa. Se puede cambiar más tarde: las existencias siguen apuntando a la misma ubicación.</value></data>
+  <data name="HintTypeFixed" xml:space="preserve"><value>El tipo no se puede cambiar. Si es incorrecto, archive el registro y cree uno nuevo.</value></data>
+  <data name="HintParentSite" xml:space="preserve"><value>Una planta no tiene superior.</value></data>
+  <data name="HintZoneOptional" xml:space="preserve"><value>Un hueco también puede ir directamente bajo un área de almacenamiento, sin zona.</value></data>
+  <data name="HintCompany" xml:space="preserve"><value>La ubicación pertenece a la empresa seleccionada; las ubicaciones inferiores la heredan. La empresa no se puede cambiar.</value></data>
+  <data name="OrgUnitsUnavailable" xml:space="preserve"><value>No se pudo leer la lista de unidades organizativas. Puede dejar el campo vacío y guardar.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="ValidationCodeFormat" xml:space="preserve"><value>Use de 1 a 40 caracteres: solo letras, dígitos y . _ / -</value></data>
+  <data name="ValidationNameLength" xml:space="preserve"><value>Use 120 caracteres como máximo.</value></data>
+  <data name="ValidationCostCenterFormat" xml:space="preserve"><value>Use de 1 a 40 caracteres: solo letras, dígitos y . _ -</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>No se ha cambiado nada.</value></data>
+  <data name="ReloadLabel" xml:space="preserve"><value>Recargar el registro</value></data>
+  <data name="ErrorDetails" xml:space="preserve"><value>Detalles</value></data>
+  <data name="ReferenceLabel" xml:space="preserve"><value>Referencia</value></data>
+  <data name="Searching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sin resultados</value></data>
+  <data name="ConfirmActivateTitle" xml:space="preserve"><value>¿Activar la ubicación?</value></data>
+  <data name="ConfirmActivateText" xml:space="preserve"><value>{0} volverá a estar activa y se podrá seleccionar en los formularios de existencias.</value></data>
+  <data name="ConfirmDeactivateTitle" xml:space="preserve"><value>¿Desactivar la ubicación?</value></data>
+  <data name="ConfirmDeactivateText" xml:space="preserve"><value>Se desactivará {0}. Las ubicaciones inactivas no se pueden seleccionar en los formularios de existencias.</value></data>
+  <data name="ConfirmArchiveTitle" xml:space="preserve"><value>¿Archivar la ubicación?</value></data>
+  <data name="ConfirmArchiveText" xml:space="preserve"><value>Se archivará {0}. Esta acción no se puede deshacer: una ubicación archivada no se puede reactivar ni modificar. No se elimina y sigue visible en los movimientos anteriores.</value></data>
+  <data name="BulkTitle" xml:space="preserve"><value>Generación masiva de huecos</value></data>
+  <data name="BulkTarget" xml:space="preserve"><value>Destino</value></data>
+  <data name="BulkAisleFrom" xml:space="preserve"><value>Pasillo desde</value></data>
+  <data name="BulkAisleTo" xml:space="preserve"><value>Pasillo hasta</value></data>
+  <data name="BulkRackFrom" xml:space="preserve"><value>Estantería desde</value></data>
+  <data name="BulkRackTo" xml:space="preserve"><value>Estantería hasta</value></data>
+  <data name="BulkLevelFrom" xml:space="preserve"><value>Nivel desde</value></data>
+  <data name="BulkLevelTo" xml:space="preserve"><value>Nivel hasta</value></data>
+  <data name="BulkPositions" xml:space="preserve"><value>Huecos por nivel</value></data>
+  <data name="BulkCodePattern" xml:space="preserve"><value>Códigos: PASILLO-ESTANTERÍA-NIVEL-HUECO, p. ej. A-01-01-01.</value></data>
+  <data name="BulkCount" xml:space="preserve"><value>{0} huecos</value></data>
+  <data name="BulkPreview" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="BulkPreviewSummary" xml:space="preserve"><value>Se crearán {0} huecos</value></data>
+  <data name="BulkSkipped" xml:space="preserve"><value>{0} códigos ya existen y se omitirán.</value></data>
+  <data name="BulkCreateButton" xml:space="preserve"><value>Crear {0} huecos</value></data>
+  <data name="BulkNothingToCreate" xml:space="preserve"><value>Nada que crear</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>Se crearon {0} huecos.</value></data>
+  <data name="BulkResultSkipped" xml:space="preserve"><value>Se omitieron {0} códigos existentes.</value></data>
+  <data name="BulkMore" xml:space="preserve"><value>y {0} más</value></data>
+  <data name="LocationCreated" xml:space="preserve"><value>Ubicación creada.</value></data>
+  <data name="LocationSaved" xml:space="preserve"><value>Cambios guardados.</value></data>
+  <data name="StatusChanged" xml:space="preserve"><value>Estado actualizado.</value></data>
+  <data name="BinsCreated" xml:space="preserve"><value>Se crearon {0} huecos.</value></data>
+  <data name="ErrCodeTaken" xml:space="preserve"><value>Este código ya se usa en esta empresa. Elija otro código.</value></data>
+  <data name="ErrLevelInvalid" xml:space="preserve"><value>Este tipo no puede ir bajo el superior elegido (planta → almacén → área de almacenamiento → zona → hueco; un hueco también puede ir bajo un área de almacenamiento).</value></data>
+  <data name="ErrParentInactive" xml:space="preserve"><value>El superior no está activo. Active primero el superior.</value></data>
+  <data name="ErrMoveIntoSubtree" xml:space="preserve"><value>Una ubicación no puede moverse bajo sí misma ni bajo una de sus hijas.</value></data>
+  <data name="ErrHasStock" xml:space="preserve"><value>Esta ubicación (o una inferior) tiene existencias, por lo que el cambio no es posible. Transfiera primero las existencias. No se ha cambiado nada.</value></data>
+  <data name="ErrHasActiveChildren" xml:space="preserve"><value>Esta ubicación tiene ubicaciones hijas activas. Desactívelas primero.</value></data>
+  <data name="ErrArchived" xml:space="preserve"><value>La ubicación está archivada: no se puede modificar ni añadir nada debajo.</value></data>
+  <data name="ErrLocationConflict" xml:space="preserve"><value>Otra persona guardó esta ubicación después de que la abriera. Recárguela y vuelva a hacer su cambio.</value></data>
+  <data name="ErrBulkLimit" xml:space="preserve"><value>Se pueden crear como máximo 1000 huecos a la vez. Reduzca los rangos.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>No se encontró la ubicación en esta empresa. Recargue la página.</value></data>
+  <data name="ErrOrgUnitInvalid" xml:space="preserve"><value>Esta unidad organizativa no es una unidad activa de esta empresa. Elija otra o deje el campo vacío.</value></data>
+  <data name="ErrOrgUnitDirectoryUnavailable" xml:space="preserve"><value>Ahora no se pudo comprobar la unidad organizativa, por lo que no se guardó nada. Inténtelo de nuevo o deje el campo vacío y guarde.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Esta acción ya se envió con otros valores. Cierre el cuadro de diálogo y empiece de nuevo.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>No se pudo procesar la solicitud porque un valor no es válido. Revise los campos e inténtelo de nuevo.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Este registro pertenece a otra empresa. Cambie a esa empresa o solicite acceso a su administrador.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Ahora no se puede confirmar la empresa seleccionada, por lo que no se ha realizado ningún cambio. Inténtelo de nuevo en un momento.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Seleccione primero una empresa. No se ha leído ni cambiado nada.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>No tiene acceso a esta acción. Solicite a su administrador los permisos de ubicaciones que necesita.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Su sesión ha finalizado. Vuelva a iniciar sesión para continuar.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Ahora no se puede acceder al servicio de ubicaciones. No se ha realizado ningún cambio; inténtelo de nuevo en un momento.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Los datos cambiaron mientras trabajaba. Recargue e inténtelo de nuevo.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Se produjo un problema y no se realizó ningún cambio. Inténtelo de nuevo; si persiste, contacte con soporte.</value></data>
+</root>

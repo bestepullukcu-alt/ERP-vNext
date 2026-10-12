@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="StockMovementsTitle" xml:space="preserve"><value>库存移动</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>所有库存移动，最新的在前。移动记录不可修改：错误通过冲销更正。</value></data>
+  <data name="ColTransactionNo" xml:space="preserve"><value>交易编号</value></data>
+  <data name="ColMovementType" xml:space="preserve"><value>移动类型</value></data>
+  <data name="ColReason" xml:space="preserve"><value>原因</value></data>
+  <data name="ColQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="ColBaseQuantity" xml:space="preserve"><value>基本数量</value></data>
+  <data name="ColTo" xml:space="preserve"><value>目标</value></data>
+  <data name="ColStatusChange" xml:space="preserve"><value>状态</value></data>
+  <data name="ColSource" xml:space="preserve"><value>来源</value></data>
+  <data name="ColTransactionDate" xml:space="preserve"><value>交易日期</value></data>
+  <data name="ColPostingDate" xml:space="preserve"><value>过账日期</value></data>
+  <data name="Reversal" xml:space="preserve"><value>冲销</value></data>
+  <data name="ReversalConfirmTitle" xml:space="preserve"><value>冲销此移动？</value></data>
+  <data name="ReversalConfirmText" xml:space="preserve"><value>移动 {0} 将保留在历史中；新的冲销移动会抵消其库存影响。此操作无法撤消。</value></data>
+  <data name="ReversalConfirmButton" xml:space="preserve"><value>确认冲销</value></data>
+  <data name="ReversalPosted" xml:space="preserve"><value>冲销 {0} 已过账。</value></data>
+  <data name="ReversedBadge" xml:space="preserve"><value>已冲销</value></data>
+  <data name="ReversedInSource" xml:space="preserve"><value>由其他模块过账：需在该模块中冲销。</value></data>
+  <data name="Automatic" xml:space="preserve"><value>自动</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>开始日期</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>结束日期</value></data>
+  <data name="MovementOPENING_BALANCE" xml:space="preserve"><value>期初余额</value></data>
+  <data name="MovementGOODS_RECEIPT_PO" xml:space="preserve"><value>收货（采购）</value></data>
+  <data name="MovementGOODS_RECEIPT_PROD" xml:space="preserve"><value>收货（生产）</value></data>
+  <data name="MovementGOODS_ISSUE_SALES" xml:space="preserve"><value>发货（销售）</value></data>
+  <data name="MovementGOODS_ISSUE_PROD" xml:space="preserve"><value>发料（生产）</value></data>
+  <data name="MovementWAREHOUSE_TRANSFER" xml:space="preserve"><value>仓库间调拨</value></data>
+  <data name="MovementLOCATION_TRANSFER" xml:space="preserve"><value>库位调拨</value></data>
+  <data name="MovementSTATUS_TRANSFER" xml:space="preserve"><value>状态转移</value></data>
+  <data name="MovementCUSTOMER_RETURN" xml:space="preserve"><value>客户退货</value></data>
+  <data name="MovementSUPPLIER_RETURN" xml:space="preserve"><value>退货给供应商</value></data>
+  <data name="MovementCOUNT_GAIN" xml:space="preserve"><value>盘盈</value></data>
+  <data name="MovementCOUNT_LOSS" xml:space="preserve"><value>盘亏</value></data>
+  <data name="MovementSCRAP" xml:space="preserve"><value>报废</value></data>
+  <data name="MovementWRITE_OFF" xml:space="preserve"><value>核销</value></data>
+  <data name="MovementREVERSAL" xml:space="preserve"><value>冲销</value></data>
+  <data name="TabStock" xml:space="preserve"><value>库存列表</value></data>
+  <data name="TabMovements" xml:space="preserve"><value>移动历史</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>暂时无法加载产品和库位名称，因此显示编码。库存数量是正确的。</value></data>
+  <data name="ColProductSku" xml:space="preserve"><value>产品 / SKU</value></data>
+  <data name="ColLot" xml:space="preserve"><value>批次</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>批号</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>库位</value></data>
+  <data name="Searching" xml:space="preserve"><value>正在搜索…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>无匹配结果</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>该列表暂不可用（无法连接主数据服务）。您仍可使用其他字段筛选。</value></data>
+  <data name="StatusAVAILABLE" xml:space="preserve"><value>可用</value></data>
+  <data name="StatusQUALITY_INSPECTION" xml:space="preserve"><value>质检</value></data>
+  <data name="StatusQUARANTINE" xml:space="preserve"><value>隔离</value></data>
+  <data name="StatusBLOCKED" xml:space="preserve"><value>冻结</value></data>
+  <data name="StatusIN_TRANSIT" xml:space="preserve"><value>在途</value></data>
+  <data name="StatusDAMAGED" xml:space="preserve"><value>损坏</value></data>
+  <data name="StatusEXPIRED" xml:space="preserve"><value>过期</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>全球 SKU</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>本地 SKU</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>成品</value></data>
+  <data name="ErrInsufficientStock" xml:space="preserve"><value>来源处库存不足，无法执行此移动。未做任何更改；请检查可用数量后重试。</value></data>
+  <data name="ErrAlreadyReversed" xml:space="preserve"><value>此移动已被冲销。未做任何更改；请刷新列表查看冲销记录。</value></data>
+  <data name="ErrMasterUnavailable" xml:space="preserve"><value>暂时无法校验产品或库位数据，因此未做任何更改。请在连接恢复后重试。</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>此记录属于其他公司。请切换到该公司，或向管理员申请访问权限。</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>此操作已使用其他值提交过。请关闭对话框后重新开始。</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>由于某个值无效，请求无法处理。请刷新页面后重试。</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>产品主数据无法识别该产品或 SKU。未做任何更改；请检查产品。</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>无法识别该仓库或库位。未做任何更改；请检查库位。</value></data>
+  <data name="ErrUomMissing" xml:space="preserve"><value>该单位无法换算为 SKU 的基本单位。未做任何更改；请选择其他单位。</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>该产品实行批次管理：必须填写批次。未做任何更改；请填写批次后重试。</value></data>
+  <data name="ErrSerialMismatch" xml:space="preserve"><value>序列号数量与数量不一致。未做任何更改；请更正序列号。</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>在您操作期间数据已发生变化。请刷新列表后重试。</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>您无权执行此操作。请向管理员申请所需的库存权限。</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>您的会话已结束。请重新登录以继续。</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>暂时无法连接库存服务。未做任何更改；请稍后重试。</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>出现问题，未做任何更改。请重试；如问题持续，请联系支持人员。</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>公司</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>请选择公司</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>请选择要查看库存的公司。选择公司之前不会显示任何数据。</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>无法加载公司列表，因此不显示库存数据。请向管理员申请查看公司的权限，或稍后重试。</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>请先选择公司。未读取或更改任何数据。</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>暂时无法确认所选公司，因此未做任何更改。请稍后重试。</value></data>
+  <!-- WP-0173-UI2: model translation, native-speaker review pending (FU-UI2-01). -->
+  <data name="NewMovement" xml:space="preserve"><value>新建库存移动</value></data>
+  <data name="Correct" xml:space="preserve"><value>更正</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建库存移动</value></data>
+  <data name="FormTitleEntry" xml:space="preserve"><value>新建入库</value></data>
+  <data name="FormTitleCorrect" xml:space="preserve"><value>更正移动</value></data>
+  <data name="SubmitCreate" xml:space="preserve"><value>过账</value></data>
+  <data name="SubmitCorrect" xml:space="preserve"><value>更正</value></data>
+  <data name="OriginalMissingTitle" xml:space="preserve"><value>请从移动历史中打开更正</value></data>
+  <data name="OriginalMissingText" xml:space="preserve"><value>此页面用于更正历史中的一条移动。请在移动历史中对手工移动使用“更正”；自动移动需在产生它的模块中更正。</value></data>
+  <data name="BackToHistory" xml:space="preserve"><value>移动历史</value></data>
+  <data name="BackToStock" xml:space="preserve"><value>库存列表</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>重试</value></data>
+  <data name="RestartLink" xml:space="preserve"><value>打开新表单</value></data>
+  <data name="PartialTitle" xml:space="preserve"><value>更正未完成</value></data>
+  <data name="PartialText" xml:space="preserve"><value>冲销 {0} 已过账，但更正后的移动未过账：{1}</value></data>
+  <data name="PartialHint" xml:space="preserve"><value>原移动已被冲销抵消。请修正下方字段并过账更正后的移动；将复用同一请求，不会重复过账。</value></data>
+  <data name="PartialRetry" xml:space="preserve"><value>过账更正后的移动</value></data>
+  <data name="SectionMovement" xml:space="preserve"><value>移动</value></data>
+  <data name="FieldMovementType" xml:space="preserve"><value>移动类型</value></data>
+  <data name="GroupInbound" xml:space="preserve"><value>入库</value></data>
+  <data name="GroupOutbound" xml:space="preserve"><value>出库</value></data>
+  <data name="GroupTransfer" xml:space="preserve"><value>转移</value></data>
+  <data name="FieldReasonCode" xml:space="preserve"><value>原因代码</value></data>
+  <data name="SectionItem" xml:space="preserve"><value>物料</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="PlaceholderProduct" xml:space="preserve"><value>按代码或名称搜索产品</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>库存单位 (SKU)</value></data>
+  <data name="PlaceholderSku" xml:space="preserve"><value>选择该产品的 SKU</value></data>
+  <data name="HintSelectProductFirst" xml:space="preserve"><value>请先选择产品；仅列出该产品的 SKU。</value></data>
+  <data name="HintSkuNone" xml:space="preserve"><value>该产品在主数据中尚无 SKU，无法过账。</value></data>
+  <data name="SectionSourceTarget" xml:space="preserve"><value>来源与目标</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>来源（批次/库位）</value></data>
+  <data name="PlaceholderSource" xml:space="preserve"><value>选择出库的库存行</value></data>
+  <data name="HintSourceSelectSku" xml:space="preserve"><value>请先选择 SKU；其库存行将列在此处。</value></data>
+  <data name="HintSourceNone" xml:space="preserve"><value>该 SKU 在本公司没有任何在手库存。</value></data>
+  <data name="HintSourceStock" xml:space="preserve"><value>该来源在手：{0} {1}</value></data>
+  <data name="FieldTargetWarehouse" xml:space="preserve"><value>目标仓库</value></data>
+  <data name="PlaceholderTargetWarehouse" xml:space="preserve"><value>选择一个启用的仓库</value></data>
+  <data name="HintLocationTransferWarehouse" xml:space="preserve"><value>库位转移在来源所在仓库内进行。</value></data>
+  <data name="FieldTargetLocation" xml:space="preserve"><value>目标库位</value></data>
+  <data name="PlaceholderTargetLocation" xml:space="preserve"><value>搜索该仓库的库位</value></data>
+  <data name="HintTargetLocation" xml:space="preserve"><value>仅显示启用且可存放库存的库位。</value></data>
+  <data name="HintTargetLocationNone" xml:space="preserve"><value>该仓库没有可存放库存的启用库位。请在“库位”中添加。</value></data>
+  <data name="FieldTargetStockStatus" xml:space="preserve"><value>目标库存状态</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>批次</value></data>
+  <data name="PlaceholderLot" xml:space="preserve"><value>选择已有批次或输入新批次</value></data>
+  <data name="HintLotUnregistered" xml:space="preserve"><value>未登记批次（MOD-0174 之前）：先列出该 SKU 已有库存的批次；手工输入的批次以大写保存（A–Z、0–9、. / -，最多 40 位）。</value></data>
+  <data name="SectionQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="PlaceholderQuantity" xml:space="preserve"><value>例如 12 或 2.5</value></data>
+  <data name="FieldUnit" xml:space="preserve"><value>单位</value></data>
+  <data name="HintUnitBase" xml:space="preserve"><value>{0} {1} = {2} {3}（基本单位）</value></data>
+  <data name="HintUnitNoConversion" xml:space="preserve"><value>未定义从该单位到 SKU 基本单位的换算；该移动将被拒绝。</value></data>
+  <data name="FieldSerialNumbers" xml:space="preserve"><value>序列号</value></data>
+  <data name="PlaceholderSerials" xml:space="preserve"><value>每行一个序列号</value></data>
+  <data name="HintSerialCounter" xml:space="preserve"><value>已输入 {0} / 需要 {1}</value></data>
+  <data name="HintSerialCounterUnknown" xml:space="preserve"><value>已输入 {0} — 所需数量由数量和单位决定</value></data>
+  <data name="SectionDocumentDates" xml:space="preserve"><value>单据与日期</value></data>
+  <data name="FieldDocumentNo" xml:space="preserve"><value>单据号</value></data>
+  <data name="PlaceholderDocumentNo" xml:space="preserve"><value>例如盘点表或报告编号</value></data>
+  <data name="FieldTransactionDate" xml:space="preserve"><value>业务日期</value></data>
+  <data name="FieldPostingDate" xml:space="preserve"><value>过账日期</value></data>
+  <data name="OriginalTitle" xml:space="preserve"><value>被更正的移动</value></data>
+  <data name="CorrectExplain" xml:space="preserve"><value>更正会生成两条记录：(1) 该移动的冲销，(2) 下方更正后的移动。原移动保留在历史中。</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>库存影响</value></data>
+  <data name="EffectNote" xml:space="preserve"><value>变动前 → 变动后（基本单位）。仅供参考：过账时由库存服务校验数量。</value></data>
+  <data name="EffectEmpty" xml:space="preserve"><value>选择类型、产品、数量和库位后即可查看影响。</value></data>
+  <data name="EffectSource" xml:space="preserve"><value>来源</value></data>
+  <data name="EffectTarget" xml:space="preserve"><value>目标</value></data>
+  <data name="EffectNegative" xml:space="preserve"><value>超过在手数量——除非库存变化，库存服务将拒绝。</value></data>
+  <data name="EffectUnavailable" xml:space="preserve"><value>目前无法计算影响（产品数据不可用）。</value></data>
+  <data name="PickerIncomplete" xml:space="preserve"><value>列表过长，无法完整显示；请输入部分代码或名称进行筛选。</value></data>
+  <data name="ProductFactsUnavailable" xml:space="preserve"><value>目前无法读取产品数据（批次/序列号管理、单位），因此无法过账。未做任何更改，请稍后重试。</value></data>
+  <data name="ValRequired" xml:space="preserve"><value>此字段为必填项。</value></data>
+  <data name="ValMovementType" xml:space="preserve"><value>请选择此页面提供的移动类型之一。</value></data>
+  <data name="ValQuantity" xml:space="preserve"><value>请输入大于 0、最多 6 位小数的数量（小数点：2.5）。</value></data>
+  <data name="ValTooLong" xml:space="preserve"><value>该值过长（最多 200 个字符）。</value></data>
+  <data name="ValDate" xml:space="preserve"><value>请输入日期和时间。</value></data>
+  <data name="ValLotFormat" xml:space="preserve"><value>批次只能包含 A–Z、0–9、点、斜杠和连字符，最多 40 个字符。</value></data>
+  <data name="ValSerialDuplicate" xml:space="preserve"><value>每个序列号只能出现一次。</value></data>
+  <data name="ValSerialCount" xml:space="preserve"><value>已输入 {0} 个序列号；该数量需要 {1} 个。</value></data>
+  <data name="ValSameWarehouse" xml:space="preserve"><value>仓库间转移的目标仓库必须不同于来源仓库。</value></data>
+  <data name="ValSameWarehouseRequired" xml:space="preserve"><value>库位转移需在来源仓库内进行；如需更换仓库，请使用仓库间转移。</value></data>
+  <data name="ValSameLocation" xml:space="preserve"><value>请选择不同于来源的库位。</value></data>
+  <data name="ValFixFields" xml:space="preserve"><value>部分字段需要修正。未过账任何内容。</value></data>
+  <data name="ConfirmCorrectTitle" xml:space="preserve"><value>更正此移动？</value></data>
+  <data name="ConfirmCorrectText" xml:space="preserve"><value>移动 {0} 将保留在历史中。冲销会抵消其库存影响，更正后的移动将作为新记录过账。此操作不可撤销。</value></data>
+  <data name="ConfirmCorrectButton" xml:space="preserve"><value>冲销并过账</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>移动回执</value></data>
+  <data name="ReceiptMissing" xml:space="preserve"><value>没有可显示的回执。回执仅在本浏览器会话中过账后立即显示；更早的移动请查看移动历史。</value></data>
+  <data name="ReceiptPosted" xml:space="preserve"><value>移动 {0} 已过账。</value></data>
+  <data name="ReplayBanner" xml:space="preserve"><value>此表单此前已提交，因此未新增过账。这是该移动的回执。</value></data>
+  <data name="CorrectionDone" xml:space="preserve"><value>移动 {0} 已由冲销 {1} 抵消；更正后的移动为 {2}。</value></data>
+  <data name="DetailPostedAt" xml:space="preserve"><value>过账时间</value></data>
+  <data name="DetailFrom" xml:space="preserve"><value>从</value></data>
+  <data name="DetailTo" xml:space="preserve"><value>到</value></data>
+  <data name="BalanceTitle" xml:space="preserve"><value>当前余额</value></data>
+  <data name="BalanceNote" xml:space="preserve"><value>此移动后形成的库存行（来自库存服务返回）。</value></data>
+  <data name="BalanceLocation" xml:space="preserve"><value>仓库/库位</value></data>
+  <data name="BalanceOnHand" xml:space="preserve"><value>在手</value></data>
+  <data name="BalanceAvailable" xml:space="preserve"><value>可用</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>未登记</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>未登记批次（MOD-0174 之前）</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>过账日期位于已关闭期间。未做任何更改；请选择未结期间内的日期。</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>来源可用：{0}；请求：{1}（基本单位）。</value></data>
+  <data name="HintChooseTypeFirst" xml:space="preserve"><value>请先选择移动类型：它决定需要哪些来源和目标字段。</value></data>
+  <data name="ProductFlagsUnknown" xml:space="preserve"><value>产品主数据未说明此 SKU 是否按批次或序列号管理，因此无法保存该移动。请在产品主数据完整后重试。</value></data>
+  <data name="ProductLevelNotStockable" xml:space="preserve"><value>该产品可能按序列号管理：库存不能在全局 SKU 级别移动。请选择本地 SKU 或成品级别。</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>物料项</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>产品主数据未说明此 SKU 是否按批次或序列号管理，因此无法保存该移动。请在产品主数据完整后重试。</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>该产品的状态不允许此移动类型（草稿、已停用或已退役）。未做任何更改。</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>该产品可能按序列号管理：库存不能在全局 SKU 级别移动。请选择本地 SKU 或成品级别。</value></data>
+</root>

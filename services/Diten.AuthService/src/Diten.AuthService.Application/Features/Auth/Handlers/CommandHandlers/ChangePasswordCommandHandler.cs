@@ -15,6 +15,8 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
     private readonly IAuthAuditService _authAuditService;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<ChangePasswordCommandHandler> _logger;
+    // MOD-0022 E1 — revokes KS-3 e-signature windows; optional so direct constructions stay valid (DI always supplies it).
+    private readonly IESignReauthTicketService? _eSignTickets;
 
     public ChangePasswordCommandHandler(
         IUserRepository userRepository,
@@ -23,8 +25,10 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         IPasswordPolicyService passwordPolicyService,
         IAuthAuditService authAuditService,
         ITenantContext tenantContext,
-        ILogger<ChangePasswordCommandHandler> logger)
+        ILogger<ChangePasswordCommandHandler> logger,
+        IESignReauthTicketService? eSignTickets = null)
     {
+        _eSignTickets = eSignTickets;
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _passwordHasher = passwordHasher;
@@ -52,6 +56,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
 
         await _userRepository.UpdateAsync(user, ct);
         await _refreshTokenRepository.RevokeAllByUserAsync(userId, _tenantContext.TenantId, ct);
+        if (_eSignTickets is not null) await _eSignTickets.RevokeWindowsAsync(_tenantContext.TenantId, userId, "password_changed", ct);
         await _authAuditService.WriteAsync("tenant_password_changed", user.Id, _tenantContext.TenantId, "{}", ct);
 
         _logger.LogInformation("User changed password. UserId={UserId}", userId);

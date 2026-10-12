@@ -1,0 +1,18 @@
+$ grep -rn "supplychain\.inventory" services/Diten.InventoryService docs/reference/architecture/api/mod-0173-inventory-bundle.md --exclude-dir=bin --exclude-dir=obj
+grep exit=1 (1 = 0 matches)
+
+$ grep -rnoE "inventory\.(stock\.read|movements\.create|reservations\.manage)" <same scope> | per-file count
+      6 docs/reference/architecture/api/mod-0173-inventory-bundle.md
+      6 services/Diten.InventoryService/README.md
+      3 services/Diten.InventoryService/src/Diten.InventoryService.Infrastructure/Authorization/InventoryPermissions.cs
+      3 services/Diten.InventoryService/tests/Diten.InventoryService.RuntimeProbe/Program.cs
+      4 services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Api/PermissionNamespaceTests.cs
+      3 services/Diten.InventoryService/tests/Diten.InventoryService.Tests/TestInfrastructure/TestTokens.cs
+
+$ grep -rn "HasPermission(" services/Diten.InventoryService/src --include=*.cs
+services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/InventoryController.cs:28:    [HasPermission(InventoryPermissions.CreateMovements)]
+services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/InventoryController.cs:44:    [HasPermission(InventoryPermissions.ManageReservations)]
+services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/InventoryController.cs:60:    [HasPermission(InventoryPermissions.ManageReservations)]
+services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/InventoryController.cs:66:    [HasPermission(InventoryPermissions.Read)]
+services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/InventoryController.cs:78:    [HasPermission(InventoryPermissions.Read)]
+services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/InventoryController.cs:95:    [HasPermission(InventoryPermissions.Read)]

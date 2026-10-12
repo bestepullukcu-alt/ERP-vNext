@@ -1,0 +1,30 @@
+@using Diten.Web.Views.Traceability.LotMigration
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotMigrationIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    "Mevcut lota bağla" (LINKEXISTINGLOT) and "Yazım hatası — başka lota bağla" (MARKTYPO) share this window: the target is
+    a registered lot of the row's SKU, or — for a typo — another row of the same SKU (K-D, L-001 / L001). "Bağla" is the
+    pick confirm of those actions (pack §14 "not actions"), not an action of its own.
+*@
+<div class="modal fade" id="modalMigrationPick" tabindex="-1" aria-labelledby="modalMigrationPickTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalMigrationPickTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted mb-2"><span>@Localizer["Pick.Typed"]</span>: <strong id="migrationPickTyped"></strong></p>
+                <label for="migrationPickTarget" class="form-label fw-medium">@Localizer["Pick.Target"]</label>
+                <select id="migrationPickTarget" class="form-select"></select>
+                <div class="form-text d-none" id="migrationPickNoLots">@Localizer["Pick.NoLots"]</div>
+                <div class="form-text d-none" id="migrationPickTypoNote">@Localizer["Pick.TypoNote"]</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="btnMigrationPickApply" disabled>@Localizer["Pick.Apply"]</button>
+            </div>
+        </div>
+    </div>
+</div>

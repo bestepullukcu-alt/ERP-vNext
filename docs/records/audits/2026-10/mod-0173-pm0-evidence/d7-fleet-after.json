@@ -1,0 +1,13 @@
+{
+  "wp": "WP-0173-PM0",
+  "fastForward": { "range": "64629d27b..9df9d4f25", "at": "2026-10-02T14:00:45+03:00", "worktree": "C:\Users\Ali\erp-vnext (main checkout of feature/sce/mod-0173-inventory-ledger-valuation)" },
+  "beforeFastForward": {"4010":1392,"5000":30236,"5001":38232,"5056":41652,"5057":21540,"5058":19064,"5059":33564,"5060":27476,"5061":35008,"5066":35948},
+  "timeline": [
+    "t+21s listening=2/10 newPid=0", "t+37s 2/10", "t+53s 2/10", "t+69s 2/10", "t+84s 2/10", "t+100s 1/10",
+    "t+116s 3/10 newPid=2", "t+133s 6/10 newPid=5", "t+151s 8/10 newPid=7", "t+166s 9/10 newPid=8", "t+181s 9/10",
+    "t+194s 10/10 newPid=9", "t+207s 10/10", "t+221s 10/10", "t+234s 10/10 (stable 40 s)"
+  ],
+  "afterRecovery": {"4010":1392,"5000":37216,"5001":41304,"5056":25756,"5057":8944,"5058":27880,"5059":12432,"5060":23636,"5061":33032,"5066":26240},
+  "health": { "5000/health": 200, "5066/health": 200, "5001/": "302 -> /WorkCenterNext/", "5001/StockMovements": "302 -> /account/login (unauthenticated)" },
+  "reading": "The fast-forward changed files under frontend/ and the repo root; every dotnet watch process of the user's fleet restarted once (9 new PIDs, Prism 4010 unchanged) and self-recovered in ~3.2 min with no action from this WP — the same pattern UI2 / LOC2 measured. Nothing was started or stopped in the fleet by this WP."
+}

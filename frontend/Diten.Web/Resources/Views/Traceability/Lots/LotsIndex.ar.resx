@@ -1,0 +1,673 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Action.CHANGELOTSTATUS" xml:space="preserve">
+    <value>تغيير الحالة</value>
+  </data>
+  <data name="Action.EDITLOT" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="Action.EDITRELEASEDLOT" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="Action.LOTMOVES" xml:space="preserve">
+    <value>سجل الحركات</value>
+  </data>
+  <data name="Action.LOTTRACEOPEN" xml:space="preserve">
+    <value>التتبع</value>
+  </data>
+  <data name="Action.NEWLOT" xml:space="preserve">
+    <value>تشغيلة جديدة</value>
+  </data>
+  <data name="Action.OPENINLEDGER" xml:space="preserve">
+    <value>فتح في دفتر المخزون</value>
+  </data>
+  <data name="Action.RECEIPTINLEDGER" xml:space="preserve">
+    <value>فتح في دفتر المخزون</value>
+  </data>
+  <data name="Action.SERIALLOT" xml:space="preserve">
+    <value>تفاصيل التشغيلة</value>
+  </data>
+  <data name="Action.SERIALMOVES" xml:space="preserve">
+    <value>سجل الحركات</value>
+  </data>
+  <data name="Action.TRACELOTDETAIL" xml:space="preserve">
+    <value>تفاصيل التشغيلة</value>
+  </data>
+  <data name="Action.VIEWALLSERIALS" xml:space="preserve">
+    <value>جميع الأرقام التسلسلية</value>
+  </data>
+  <data name="Action.VIEWLOT" xml:space="preserve">
+    <value>تفاصيل التشغيلة</value>
+  </data>
+  <data name="Action.VIEWRECEIPT" xml:space="preserve">
+    <value>إيصال الحركة</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="Col.CoaRef" xml:space="preserve">
+    <value>مرجع CoA</value>
+  </data>
+  <data name="Col.ExpiryDate" xml:space="preserve">
+    <value>انتهاء الصلاحية</value>
+  </data>
+  <data name="Col.LotNumber" xml:space="preserve">
+    <value>رقم التشغيلة</value>
+  </data>
+  <data name="Col.ManufacturerLot" xml:space="preserve">
+    <value>تشغيلة المصنّع</value>
+  </data>
+  <data name="Col.ManufacturingDate" xml:space="preserve">
+    <value>التصنيع</value>
+  </data>
+  <data name="Col.OnHand" xml:space="preserve">
+    <value>الكمية المتوفرة</value>
+  </data>
+  <data name="Col.Origin" xml:space="preserve">
+    <value>المنشأ</value>
+  </data>
+  <data name="Col.Product" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="Col.RetestDate" xml:space="preserve">
+    <value>إعادة الاختبار</value>
+  </data>
+  <data name="Col.Status" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="Col.SupplierLot" xml:space="preserve">
+    <value>تشغيلة المورّد</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>الشركة</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>اختر شركة</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>اختر الشركة التي تعمل بها لعرض تشغيلاتها ومخزونها.</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>تعذّر تحميل قائمة الشركات. حاول مرة أخرى بعد قليل.</value>
+  </data>
+  <data name="Country.AE" xml:space="preserve">
+    <value>الإمارات العربية المتحدة</value>
+  </data>
+  <data name="Country.AT" xml:space="preserve">
+    <value>النمسا</value>
+  </data>
+  <data name="Country.AU" xml:space="preserve">
+    <value>أستراليا</value>
+  </data>
+  <data name="Country.BE" xml:space="preserve">
+    <value>بلجيكا</value>
+  </data>
+  <data name="Country.BR" xml:space="preserve">
+    <value>البرازيل</value>
+  </data>
+  <data name="Country.CA" xml:space="preserve">
+    <value>كندا</value>
+  </data>
+  <data name="Country.CH" xml:space="preserve">
+    <value>سويسرا</value>
+  </data>
+  <data name="Country.CN" xml:space="preserve">
+    <value>الصين</value>
+  </data>
+  <data name="Country.CZ" xml:space="preserve">
+    <value>التشيك</value>
+  </data>
+  <data name="Country.DE" xml:space="preserve">
+    <value>ألمانيا</value>
+  </data>
+  <data name="Country.DK" xml:space="preserve">
+    <value>الدنمارك</value>
+  </data>
+  <data name="Country.EG" xml:space="preserve">
+    <value>مصر</value>
+  </data>
+  <data name="Country.ES" xml:space="preserve">
+    <value>إسبانيا</value>
+  </data>
+  <data name="Country.FI" xml:space="preserve">
+    <value>فنلندا</value>
+  </data>
+  <data name="Country.FR" xml:space="preserve">
+    <value>فرنسا</value>
+  </data>
+  <data name="Country.GB" xml:space="preserve">
+    <value>المملكة المتحدة</value>
+  </data>
+  <data name="Country.GR" xml:space="preserve">
+    <value>اليونان</value>
+  </data>
+  <data name="Country.HU" xml:space="preserve">
+    <value>المجر</value>
+  </data>
+  <data name="Country.IE" xml:space="preserve">
+    <value>أيرلندا</value>
+  </data>
+  <data name="Country.IL" xml:space="preserve">
+    <value>إسرائيل</value>
+  </data>
+  <data name="Country.IN" xml:space="preserve">
+    <value>الهند</value>
+  </data>
+  <data name="Country.IT" xml:space="preserve">
+    <value>إيطاليا</value>
+  </data>
+  <data name="Country.JP" xml:space="preserve">
+    <value>اليابان</value>
+  </data>
+  <data name="Country.KR" xml:space="preserve">
+    <value>كوريا الجنوبية</value>
+  </data>
+  <data name="Country.MX" xml:space="preserve">
+    <value>المكسيك</value>
+  </data>
+  <data name="Country.NL" xml:space="preserve">
+    <value>هولندا</value>
+  </data>
+  <data name="Country.NO" xml:space="preserve">
+    <value>النرويج</value>
+  </data>
+  <data name="Country.PL" xml:space="preserve">
+    <value>بولندا</value>
+  </data>
+  <data name="Country.PT" xml:space="preserve">
+    <value>البرتغال</value>
+  </data>
+  <data name="Country.RO" xml:space="preserve">
+    <value>رومانيا</value>
+  </data>
+  <data name="Country.RU" xml:space="preserve">
+    <value>روسيا</value>
+  </data>
+  <data name="Country.SA" xml:space="preserve">
+    <value>المملكة العربية السعودية</value>
+  </data>
+  <data name="Country.SE" xml:space="preserve">
+    <value>السويد</value>
+  </data>
+  <data name="Country.SG" xml:space="preserve">
+    <value>سنغافورة</value>
+  </data>
+  <data name="Country.TR" xml:space="preserve">
+    <value>تركيا</value>
+  </data>
+  <data name="Country.UA" xml:space="preserve">
+    <value>أوكرانيا</value>
+  </data>
+  <data name="Country.US" xml:space="preserve">
+    <value>الولايات المتحدة</value>
+  </data>
+  <data name="Country.ZA" xml:space="preserve">
+    <value>جنوب أفريقيا</value>
+  </data>
+  <data name="Detail.History" xml:space="preserve">
+    <value>سجل التغييرات</value>
+  </data>
+  <data name="Detail.HistorySub" xml:space="preserve">
+    <value>من غيّر ماذا ولماذا. لا يمكن حذف السجلات.</value>
+  </data>
+  <data name="Detail.Info" xml:space="preserve">
+    <value>معلومات التشغيلة</value>
+  </data>
+  <data name="Detail.OnHand" xml:space="preserve">
+    <value>الكمية المتوفرة</value>
+  </data>
+  <data name="Detail.Serials" xml:space="preserve">
+    <value>الأرقام التسلسلية</value>
+  </data>
+  <data name="Detail.SerialsAll" xml:space="preserve">
+    <value>جميع الأرقام التسلسلية</value>
+  </data>
+  <data name="Detail.SerialsMore" xml:space="preserve">
+    <value>+{0} أخرى</value>
+  </data>
+  <data name="Detail.StockDistribution" xml:space="preserve">
+    <value>توزيع المخزون</value>
+  </data>
+  <data name="Detail.StockDistributionSub" xml:space="preserve">
+    <value>صفوف أرصدة دفتر المخزون لهذه التشغيلة في الشركة المختارة.</value>
+  </data>
+  <data name="Detail.Title" xml:space="preserve">
+    <value>تفاصيل التشغيلة</value>
+  </data>
+  <data name="Detail.Unusable.Blocked" xml:space="preserve">
+    <value>التشغيلة محظورة: لا يمكن استخدام أي جزء من مخزونها ({0}).</value>
+  </data>
+  <data name="Detail.Unusable.Expired" xml:space="preserve">
+    <value>التشغيلة منتهية الصلاحية: لا يمكن استخدام أي جزء من مخزونها ({0}).</value>
+  </data>
+  <data name="Empty.List" xml:space="preserve">
+    <value>لا توجد سجلات تطابق عوامل التصفية.</value>
+  </data>
+  <data name="Empty.Lot" xml:space="preserve">
+    <value>لم يتم اختيار تشغيلة. افتح تشغيلة من مستكشف التشغيلات.</value>
+  </data>
+  <data name="Empty.Stock" xml:space="preserve">
+    <value>لا يوجد مخزون من هذه التشغيلة في الشركة المختارة.</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>أكّد أنك تدرك أثر الحظر.</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>اختر شركة أولًا.</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>لا يمكن استخدام هذه الشركة مع حسابك.</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>مرجع للدعم الفني</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>تعذّرت قراءة الرمز.</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>تعذّر إكمال العملية. حاول مرة أخرى.</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>تم إرسال هذا النموذج من قبل بقيم أخرى. أعد تحميل الصفحة.</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>بعض القيم غير صالحة. راجع الحقول.</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>تعذّر التحقق من الشركة الآن. حاول مرة أخرى بعد قليل.</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>رقم التشغيلة هذا موجود بالفعل لهذا المنتج.</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>غيّر شخص آخر هذه التشغيلة في هذه الأثناء. أعد تحميل الصفحة وحاول مرة أخرى.</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>التواريخ غير متسقة (التصنيع ≤ اليوم، انتهاء الصلاحية بعد التصنيع، إعادة الاختبار بينهما).</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>لا يمكن تغيير رقم التشغيلة ووحدة التخزين (SKU).</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>لم يتم تغيير أي شيء.</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>يمكن أن يحتوي رقم التشغيلة على 1 إلى 40 حرفًا فقط: الأحرف A–Z والأرقام و . / -.</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>تنتمي التشغيلة إلى وحدة تخزين (SKU) أخرى.</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>اختر وحدة التخزين (SKU) التي تنتمي إليها التشغيلة.</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>تغيير الحالة هذا غير مسموح به للتشغيلة.</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>ليست لديك صلاحية لهذه العملية.</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>تعذّر الوصول إلى بيانات المنتج الآن؛ لم يتم حفظ أي شيء.</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>هذا المنتج لا يُتتبَّع بالتشغيلات؛ لا يمكن إنشاء تشغيلة له.</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>اكتب سببًا لا يقل عن 10 أحرف.</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>تعذّر الوصول إلى خدمة التشغيلات الآن. حاول مرة أخرى بعد قليل.</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>انتهت جلستك. سجّل الدخول مرة أخرى.</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>لم يتم العثور على المنتج أو وحدة التخزين (SKU).</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>لم يتم العثور على هذه التشغيلة.</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>لم يتم العثور على هذا الرقم التسلسلي.</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>{0} يوم</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>منتهية الصلاحية</value>
+  </data>
+  <data name="Filter.Clear" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="Filter.ExpiryBefore" xml:space="preserve">
+    <value>انتهاء الصلاحية قبل</value>
+  </data>
+  <data name="Filter.Product" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="Filter.Search" xml:space="preserve">
+    <value>رقم التشغيلة، المنتج، تشغيلة المصنّع / المورّد</value>
+  </data>
+  <data name="Filter.Status" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="Filter.WarnOnly" xml:space="preserve">
+    <value>التشغيلات التي عليها تحذير فقط</value>
+  </data>
+  <data name="Form.Changes" xml:space="preserve">
+    <value>التغييرات المطلوب حفظها</value>
+  </data>
+  <data name="Form.Coa" xml:space="preserve">
+    <value>مرجع شهادة التحليل (CoA)</value>
+  </data>
+  <data name="Form.Country" xml:space="preserve">
+    <value>بلد المنشأ</value>
+  </data>
+  <data name="Form.DraftNote" xml:space="preserve">
+    <value>تُحفظ التشغيلة الجديدة كمسودة.</value>
+  </data>
+  <data name="Form.Duplicate" xml:space="preserve">
+    <value>رقم التشغيلة هذا موجود بالفعل لهذا المنتج.</value>
+  </data>
+  <data name="Form.ExpiryDate" xml:space="preserve">
+    <value>تاريخ انتهاء الصلاحية</value>
+  </data>
+  <data name="Form.LockedBanner" xml:space="preserve">
+    <value>هذه التشغيلة ليست مسودة: اكتب سببًا لا يقل عن 10 أحرف لفتح الحقول.</value>
+  </data>
+  <data name="Form.LotNumber" xml:space="preserve">
+    <value>رقم التشغيلة</value>
+  </data>
+  <data name="Form.LotNumberHint" xml:space="preserve">
+    <value>من 1 إلى 40 حرفًا: A–Z و0–9 و . / -. لا يمكن تغييره بعد الحفظ.</value>
+  </data>
+  <data name="Form.ManufacturerLot" xml:space="preserve">
+    <value>تشغيلة المصنّع</value>
+  </data>
+  <data name="Form.ManufacturingDate" xml:space="preserve">
+    <value>تاريخ التصنيع</value>
+  </data>
+  <data name="Form.NoChanges" xml:space="preserve">
+    <value>لا توجد تغييرات بعد.</value>
+  </data>
+  <data name="Form.Product" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="Form.Reason" xml:space="preserve">
+    <value>سبب التغيير</value>
+  </data>
+  <data name="Form.ReasonCounter" xml:space="preserve">
+    <value>{0}/10</value>
+  </data>
+  <data name="Form.ReasonHint" xml:space="preserve">
+    <value>10 أحرف على الأقل؛ يُحفظ في سجل التغييرات.</value>
+  </data>
+  <data name="Form.RetestDate" xml:space="preserve">
+    <value>تاريخ إعادة الاختبار</value>
+  </data>
+  <data name="Form.Sku" xml:space="preserve">
+    <value>وحدة التخزين (SKU)</value>
+  </data>
+  <data name="Form.Summary" xml:space="preserve">
+    <value>الملخص</value>
+  </data>
+  <data name="Form.SupplierLot" xml:space="preserve">
+    <value>تشغيلة المورّد</value>
+  </data>
+  <data name="Form.TitleEdit" xml:space="preserve">
+    <value>تعديل التشغيلة</value>
+  </data>
+  <data name="Form.TitleNew" xml:space="preserve">
+    <value>تشغيلة جديدة</value>
+  </data>
+  <data name="History.Action.Created" xml:space="preserve">
+    <value>أُنشئت</value>
+  </data>
+  <data name="History.Action.Linked" xml:space="preserve">
+    <value>رُبطت</value>
+  </data>
+  <data name="History.Action.Migrated" xml:space="preserve">
+    <value>رُحّلت</value>
+  </data>
+  <data name="History.Action.StatusChanged" xml:space="preserve">
+    <value>تغيّرت الحالة</value>
+  </data>
+  <data name="History.Action.SystemExpired" xml:space="preserve">
+    <value>انتهت صلاحيتها بواسطة النظام</value>
+  </data>
+  <data name="History.Action.Updated" xml:space="preserve">
+    <value>حُدّثت</value>
+  </data>
+  <data name="History.Change" xml:space="preserve">
+    <value>القديم → الجديد</value>
+  </data>
+  <data name="History.Date" xml:space="preserve">
+    <value>التاريخ</value>
+  </data>
+  <data name="History.Field" xml:space="preserve">
+    <value>الحقل</value>
+  </data>
+  <data name="History.Field.TypedText" xml:space="preserve">
+    <value>تشغيلة مُدخلة يدويًا</value>
+  </data>
+  <data name="History.Field.GenealogyParent" xml:space="preserve">
+    <value>التشغيلة الأم</value>
+  </data>
+  <data name="History.Page" xml:space="preserve">
+    <value>الصفحة {0} / {1}</value>
+  </data>
+  <data name="History.Reason" xml:space="preserve">
+    <value>السبب</value>
+  </data>
+  <data name="History.System" xml:space="preserve">
+    <value>النظام (تلقائي)</value>
+  </data>
+  <data name="History.Who" xml:space="preserve">
+    <value>بواسطة</value>
+  </data>
+  <data name="Info.CreatedBy" xml:space="preserve">
+    <value>أنشأها</value>
+  </data>
+  <data name="Info.None" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="Info.Source" xml:space="preserve">
+    <value>المصدر</value>
+  </data>
+  <data name="Info.Source.GoodsReceipt" xml:space="preserve">
+    <value>استلام بضاعة</value>
+  </data>
+  <data name="Info.Source.Manual" xml:space="preserve">
+    <value>إدخال يدوي</value>
+  </data>
+  <data name="Info.Source.Migration" xml:space="preserve">
+    <value>ترحيل التشغيلات المُدخلة يدويًا</value>
+  </data>
+  <data name="Info.Source.Opening" xml:space="preserve">
+    <value>رصيد افتتاحي</value>
+  </data>
+  <data name="Info.Source.Production" xml:space="preserve">
+    <value>استلام بضاعة (إنتاج)</value>
+  </data>
+  <data name="Info.Tracking" xml:space="preserve">
+    <value>التتبع</value>
+  </data>
+  <data name="Names.Unavailable" xml:space="preserve">
+    <value>تعذّر تحميل أسماء المنتجات؛ تُعرض الرموز.</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>لا توجد نتائج مطابقة</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>تتبع التشغيلات / الأرقام التسلسلية</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>جميع تشغيلات منتجات الشركة: التواريخ والحالة والكمية المتوفرة.</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>مستكشف التشغيلات</value>
+  </data>
+  <data name="Paging.Range" xml:space="preserve">
+    <value>{0}–{1} من {2}</value>
+  </data>
+  <data name="Quick.MarkNew" xml:space="preserve">
+    <value>جديدة</value>
+  </data>
+  <data name="Quick.PrefilledNote" xml:space="preserve">
+    <value>المنتج ووحدة التخزين (SKU) مأخوذان من الحركة.</value>
+  </data>
+  <data name="Quick.SaveSelect" xml:space="preserve">
+    <value>حفظ واختيار</value>
+  </data>
+  <data name="Quick.Title" xml:space="preserve">
+    <value>تشغيلة جديدة</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>انقضى تاريخ إعادة الاختبار</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>جارٍ البحث…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>محظور</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>مستهلك</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>محظور</value>
+  </data>
+  <data name="Status.Dialog.Acknowledge" xml:space="preserve">
+    <value>أدرك الأثر.</value>
+  </data>
+  <data name="Status.Dialog.AcknowledgeRequired" xml:space="preserve">
+    <value>أكّد أنك تدرك الأثر.</value>
+  </data>
+  <data name="Status.Dialog.Allowed" xml:space="preserve">
+    <value>مسموح</value>
+  </data>
+  <data name="Status.Dialog.Confirm" xml:space="preserve">
+    <value>تغيير الحالة</value>
+  </data>
+  <data name="Status.Dialog.ConfirmBlock" xml:space="preserve">
+    <value>حظر التشغيلة</value>
+  </data>
+  <data name="Status.Dialog.Current" xml:space="preserve">
+    <value>الحالة الحالية</value>
+  </data>
+  <data name="Status.Dialog.Danger" xml:space="preserve">
+    <value>الحظر يجعل كل مخزون هذه التشغيلة غير قابل للاستخدام.</value>
+  </data>
+  <data name="Status.Dialog.Done" xml:space="preserve">
+    <value>تم تغيير حالة التشغيلة.</value>
+  </data>
+  <data name="Status.Dialog.Impact" xml:space="preserve">
+    <value>{0} وحدة · {1} موقع · {2}</value>
+  </data>
+  <data name="Status.Dialog.New" xml:space="preserve">
+    <value>الحالة الجديدة</value>
+  </data>
+  <data name="Status.Dialog.NotAllowed" xml:space="preserve">
+    <value>غير مسموح به من الحالة الحالية.</value>
+  </data>
+  <data name="Status.Dialog.PickOne" xml:space="preserve">
+    <value>اختر حالة مسموحًا بها.</value>
+  </data>
+  <data name="Status.Dialog.Reason" xml:space="preserve">
+    <value>السبب (10 أحرف على الأقل)</value>
+  </data>
+  <data name="Status.Dialog.SystemOnly" xml:space="preserve">
+    <value>يحدّدها النظام؛ لا يمكن اختيارها يدويًا.</value>
+  </data>
+  <data name="Status.Dialog.Title" xml:space="preserve">
+    <value>تغيير حالة التشغيلة</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>منتهي الصلاحية</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>مُفرج عنه</value>
+  </data>
+  <data name="Stock.Location" xml:space="preserve">
+    <value>الموقع</value>
+  </data>
+  <data name="Stock.Quantity" xml:space="preserve">
+    <value>الكمية</value>
+  </data>
+  <data name="Stock.Status" xml:space="preserve">
+    <value>حالة المخزون</value>
+  </data>
+  <data name="Stock.Warehouse" xml:space="preserve">
+    <value>المستودع</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>متاح</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>موقوف</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>تالف</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>منتهي الصلاحية</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>قيد النقل</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>فحص الجودة</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>الحجر</value>
+  </data>
+  <data name="Tracking.Lot" xml:space="preserve">
+    <value>التشغيلة</value>
+  </data>
+  <data name="Tracking.LotAndSerial" xml:space="preserve">
+    <value>التشغيلة + الرقم التسلسلي</value>
+  </data>
+  <data name="Tracking.None" xml:space="preserve">
+    <value>بدون تتبع</value>
+  </data>
+  <data name="Validation.DatesOrder" xml:space="preserve">
+    <value>التصنيع ≤ اليوم؛ انتهاء الصلاحية بعد التصنيع؛ إعادة الاختبار بينهما.</value>
+  </data>
+  <data name="Validation.FixFields" xml:space="preserve">
+    <value>راجع الحقول المحدّدة.</value>
+  </data>
+  <data name="Validation.Length" xml:space="preserve">
+    <value>هذه القيمة طويلة جدًا.</value>
+  </data>
+  <data name="Validation.LotFormat" xml:space="preserve">
+    <value>استخدم من 1 إلى 40 حرفًا: A–Z و0–9 و . / -.</value>
+  </data>
+  <data name="Validation.ReasonMin" xml:space="preserve">
+    <value>اكتب سببًا لا يقل عن 10 أحرف.</value>
+  </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>هذا الحقل مطلوب.</value>
+  </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>أُرسل للموافقة</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>الإفراج عن التشغيلة بانتظار موافقة الجودة؛ تتغير حالتها بعد الموافقة. افتح صفحة إرسال القرار لتوقيعه وإرساله.</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>فتح صفحة إرسال القرار</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>بانتظار الموافقة</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>قرار الإفراج بانتظار الموافقة · {0}</value></data>
+  <data name="Level.Gsku" xml:space="preserve"><value>SKU عالمي</value></data>
+  <data name="Level.Lsku" xml:space="preserve"><value>SKU محلي</value></data>
+  <data name="Level.FinishedGood" xml:space="preserve"><value>منتج نهائي</value></data>
+  <data name="Level.Item" xml:space="preserve"><value>صنف مادة</value></data>
+</root>

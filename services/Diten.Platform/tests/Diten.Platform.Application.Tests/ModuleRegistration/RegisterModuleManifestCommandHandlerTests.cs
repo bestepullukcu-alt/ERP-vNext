@@ -390,6 +390,96 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         Assert.Contains(pages.Items, p => p.PageCode == "RECORDS" && !p.IsDeleted);
     }
 
+    // ── FU-RSV-01 (WP-0173-RSV1) — API-only permissions ──
+
+    [Fact]
+    public async Task Api_permissions_are_synced_with_their_declared_scope_and_module_code()
+    {
+        var (handler, _, pages, actions, sync) = Build();
+        var manifest = GoldenSlimManifest() with
+        {
+            ApiPermissions =
+            [
+                new ModuleManifestPermission(" GoldenSlim.Records.Reserve ", "Reserve records", "Tenant"),
+                new ModuleManifestPermission("goldenslim.ops.purge", "Purge", "PlatformAdmin")
+            ]
+        };
+
+        var result = await handler.Handle(new RegisterModuleManifestCommand(manifest), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(6, result.Data!.PermissionsSynced); // 4 page/action keys + 2 API-only keys
+        Assert.Contains(("goldenslim.records.reserve", (string?)"GOLDENSLIM", (string?)"Tenant"), sync.Synced); // normalized
+        Assert.Contains(("goldenslim.ops.purge", (string?)"GOLDENSLIM", (string?)"PlatformAdmin"), sync.Synced);
+        // No catalog page / action is created for an API-only key.
+        Assert.Equal(1, result.Data.PagesUpserted);
+        Assert.Equal(3, result.Data.ActionsUpserted);
+        Assert.Single(pages.Items);
+        Assert.Equal(3, actions.Items.Count);
+        Assert.DoesNotContain(pages.Items, p => p.RequiredPermission is "goldenslim.records.reserve" or "goldenslim.ops.purge");
+        Assert.DoesNotContain(actions.Items, a => a.PermissionKey is "goldenslim.records.reserve" or "goldenslim.ops.purge");
+    }
+
+    [Theory]
+    [InlineData("platformadmin")]
+    [InlineData("tenant")]
+    [InlineData(" Tenant")]
+    [InlineData("Global")]
+    [InlineData("")]
+    public async Task An_api_permission_with_an_unknown_scope_is_skipped_never_synced_as_PlatformAdmin(string scope)
+    {
+        var (handler, _, _, _, sync) = Build();
+        var manifest = GoldenSlimManifest() with
+        {
+            ApiPermissions = [new ModuleManifestPermission("goldenslim.records.reserve", "Reserve records", scope)]
+        };
+
+        var result = await handler.Handle(new RegisterModuleManifestCommand(manifest), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(4, result.Data!.PermissionsSynced);
+        Assert.DoesNotContain(sync.Synced, s => s.Key == "goldenslim.records.reserve");
+        Assert.DoesNotContain(sync.Synced, s => s.Scope == "PlatformAdmin");
+    }
+
+    [Fact]
+    public async Task Without_api_permissions_the_reconcile_is_unchanged()
+    {
+        var (handlerNull, _, _, _, syncNull) = Build();
+        var (handlerEmpty, _, _, _, syncEmpty) = Build();
+        Assert.Null(GoldenSlimManifest().ApiPermissions);
+
+        var withNull = await handlerNull.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest()), CancellationToken.None);
+        var withEmpty = await handlerEmpty.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest() with { ApiPermissions = [] }), CancellationToken.None);
+
+        Assert.Equal(4, withNull.Data!.PermissionsSynced);
+        Assert.Equal(withNull.Data.PermissionsSynced, withEmpty.Data!.PermissionsSynced);
+        Assert.Equal(syncNull.Synced, syncEmpty.Synced);
+    }
+
+    [Fact]
+    public async Task Re_register_resends_an_api_permission_with_the_same_scope_and_removing_it_prunes_nothing()
+    {
+        var (handler, _, pages, actions, sync) = Build();
+        var withApi = GoldenSlimManifest() with
+        {
+            ApiPermissions = [new ModuleManifestPermission("goldenslim.records.reserve", "Reserve records", "Tenant")]
+        };
+
+        await handler.Handle(new RegisterModuleManifestCommand(withApi), CancellationToken.None);
+        await handler.Handle(new RegisterModuleManifestCommand(withApi), CancellationToken.None);
+        var without = await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest()), CancellationToken.None);
+
+        // Idempotent re-send (AuthService upserts by key): same key, same module, same scope both times.
+        Assert.Equal(2, sync.Synced.Count(s => s.Key == "goldenslim.records.reserve"));
+        Assert.All(sync.Synced.Where(s => s.Key == "goldenslim.records.reserve"), s => Assert.Equal(("GOLDENSLIM", "Tenant"), (s.ModuleCode, s.Scope)));
+        // Dropping it from the manifest prunes no page/action (the handler never calls RemovePermissionAsync — additive).
+        Assert.Equal(0, without.Data!.PagesPruned);
+        Assert.Equal(0, without.Data.ActionsPruned);
+        Assert.Single(pages.Items, p => !p.IsDeleted);
+        Assert.Equal(3, actions.Items.Count(a => !a.IsDeleted));
+    }
+
     // NOTE: the E11000 duplicate-key backstop in the handler is defense-in-depth for races / cross-push collisions.
     // MongoDB.Driver 3.x makes MongoWriteException/WriteError impractical to construct in a unit test, so it is not
     // exercised here directly; the realistic same-push route collision is covered by the test above (skip, no 500).

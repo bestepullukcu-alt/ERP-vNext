@@ -1,0 +1,313 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Action.CHANGELOTSTATUS" xml:space="preserve">
+    <value>Изменить статус</value>
+  </data>
+  <data name="Action.EDITLOT" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="Action.EDITRELEASEDLOT" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="Action.LOTMOVES" xml:space="preserve">
+    <value>История движений</value>
+  </data>
+  <data name="Action.LOTTRACEOPEN" xml:space="preserve">
+    <value>Прослеживаемость</value>
+  </data>
+  <data name="Action.NEWLOT" xml:space="preserve">
+    <value>Новая партия</value>
+  </data>
+  <data name="Action.OPENINLEDGER" xml:space="preserve">
+    <value>Открыть в складском учёте</value>
+  </data>
+  <data name="Action.RECEIPTINLEDGER" xml:space="preserve">
+    <value>Открыть в складском учёте</value>
+  </data>
+  <data name="Action.SERIALLOT" xml:space="preserve">
+    <value>Карточка партии</value>
+  </data>
+  <data name="Action.SERIALMOVES" xml:space="preserve">
+    <value>История движений</value>
+  </data>
+  <data name="Action.TRACELOTDETAIL" xml:space="preserve">
+    <value>Карточка партии</value>
+  </data>
+  <data name="Action.VIEWALLSERIALS" xml:space="preserve">
+    <value>Все серийные номера</value>
+  </data>
+  <data name="Action.VIEWLOT" xml:space="preserve">
+    <value>Карточка партии</value>
+  </data>
+  <data name="Action.VIEWRECEIPT" xml:space="preserve">
+    <value>Квитанция движения</value>
+  </data>
+  <data name="Back.Level1" xml:space="preserve">
+    <value>Назад · уровень 1</value>
+  </data>
+  <data name="Back.Level2" xml:space="preserve">
+    <value>Назад · уровень 2</value>
+  </data>
+  <data name="Back.None" xml:space="preserve">
+    <value>Источник не зарегистрирован</value>
+  </data>
+  <data name="Back.Title" xml:space="preserve">
+    <value>Обратная прослеживаемость</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>Компания</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>Выберите компанию</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>Выберите компанию, в которой вы работаете, чтобы увидеть её партии и запасы.</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>Не удалось загрузить список компаний. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="Empty.List" xml:space="preserve">
+    <value>Нет записей, соответствующих фильтрам.</value>
+  </data>
+  <data name="Empty.PickLot" xml:space="preserve">
+    <value>Выберите партию.</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>Подтвердите, что понимаете последствия блокировки.</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>Сначала выберите компанию.</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>Эту компанию нельзя использовать с вашей учётной записью.</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>Код для службы поддержки</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>Не удалось прочитать код.</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>Не удалось выполнить операцию. Повторите попытку.</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>Эта форма уже была отправлена с другими значениями. Перезагрузите страницу.</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>Некоторые значения недопустимы. Проверьте поля.</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>Сейчас не удалось проверить компанию. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>Такой номер партии для этого товара уже существует.</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>Тем временем эту партию изменил другой пользователь. Перезагрузите страницу и повторите попытку.</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>Даты не согласуются (производство ≤ сегодня, срок годности позже производства, повторный контроль между ними).</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>Номер партии и артикул (SKU) изменить нельзя.</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>Ничего не изменено.</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>Номер партии может содержать только от 1 до 40 символов: буквы A–Z, цифры и . / -.</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>Партия относится к другому артикулу (SKU).</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>Выберите артикул (SKU), к которому относится партия.</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>Такая смена статуса для партии не допускается.</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>У вас нет прав на эту операцию.</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>Данные товара сейчас недоступны; ничего не сохранено.</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>Этот товар не учитывается по партиям; создать для него партию нельзя.</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>Укажите причину длиной не менее 10 символов.</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>Служба партий сейчас недоступна. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>Срок действия сеанса истёк. Войдите снова.</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>Товар или артикул (SKU) не найден.</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>Партия не найдена.</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>Серийный номер не найден.</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>Дней: {0}</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>Просрочена</value>
+  </data>
+  <data name="Filter.Lot" xml:space="preserve">
+    <value>Партия</value>
+  </data>
+  <data name="Fwd.Level1" xml:space="preserve">
+    <value>Вперёд · уровень 1</value>
+  </data>
+  <data name="Fwd.Level2" xml:space="preserve">
+    <value>Вперёд · уровень 2</value>
+  </data>
+  <data name="Fwd.None" xml:space="preserve">
+    <value>Не использована и не отгружена</value>
+  </data>
+  <data name="Fwd.Title" xml:space="preserve">
+    <value>Прямая прослеживаемость</value>
+  </data>
+  <data name="Hint.Reroot" xml:space="preserve">
+    <value>Нажмите на карточку партии, чтобы поместить её в центр.</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>Совпадений нет</value>
+  </data>
+  <data name="Node.Consumed" xml:space="preserve">
+    <value>Передано в производство</value>
+  </data>
+  <data name="Node.Opening" xml:space="preserve">
+    <value>Начальный остаток</value>
+  </data>
+  <data name="Node.Receipt" xml:space="preserve">
+    <value>Приход</value>
+  </data>
+  <data name="Node.Shipment" xml:space="preserve">
+    <value>Отгрузка</value>
+  </data>
+  <data name="Node.Used" xml:space="preserve">
+    <value>Использовано в</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>Учёт партий / серийных номеров</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>Откуда пришла партия и куда ушла — по два уровня в каждую сторону.</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>Прослеживаемость</value>
+  </data>
+  <data name="Paging.Range" xml:space="preserve">
+    <value>{0}–{1} из {2}</value>
+  </data>
+  <data name="Reality.BackwardReceiptOnly" xml:space="preserve">
+    <value>Пока производственная генеалогия не регистрируется (MOD-0194), обратная прослеживаемость показывает источник прихода партии.</value>
+  </data>
+  <data name="Reality.ForwardDocumentOnly" xml:space="preserve">
+    <value>Прямая прослеживаемость показывает только номера расходных документов; названия клиентов появятся вместе с модулем отгрузок.</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>Дата повторного контроля прошла</value>
+  </data>
+  <data name="Root.Expiry" xml:space="preserve">
+    <value>Годен до</value>
+  </data>
+  <data name="Root.Initial" xml:space="preserve">
+    <value>Начальное количество</value>
+  </data>
+  <data name="Root.OnHand" xml:space="preserve">
+    <value>В наличии</value>
+  </data>
+  <data name="Root.Title" xml:space="preserve">
+    <value>Выбранная партия</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Поиск…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>Активен</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>Заблокирован</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>Израсходован</value>
+  </data>
+  <data name="Stat.Lots" xml:space="preserve">
+    <value>Затронутые партии</value>
+  </data>
+  <data name="Stat.LotsSub" xml:space="preserve">
+    <value>Эта партия и связанные с ней партии</value>
+  </data>
+  <data name="Stat.OnHand" xml:space="preserve">
+    <value>На складе</value>
+  </data>
+  <data name="Stat.OnHandSub" xml:space="preserve">
+    <value>В наличии в выбранной компании</value>
+  </data>
+  <data name="Stat.Shipped" xml:space="preserve">
+    <value>Отгружено</value>
+  </data>
+  <data name="Stat.ShippedSub" xml:space="preserve">
+    <value>Расход по продажам из этой партии</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>Заблокирован</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>Просрочен</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>Выпущен</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>Доступно</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>Заблокировано</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>Повреждено</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>Просрочено</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>В пути</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>Контроль качества</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>Карантин</value>
+  </data>
+  <data name="Total.PerUnit" xml:space="preserve">
+    <value>{0} {1} (в наличии {2} + отгружено {3})</value>
+  </data>
+  <data name="Total.Sub" xml:space="preserve">
+    <value>В наличии + отгружено, по единицам измерения — разные единицы никогда не суммируются.</value>
+  </data>
+  <data name="Total.Title" xml:space="preserve">
+    <value>Общее затронутое количество</value>
+  </data>
+</root>

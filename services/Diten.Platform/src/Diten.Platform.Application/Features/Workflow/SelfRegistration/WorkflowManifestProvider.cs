@@ -35,13 +35,13 @@ public sealed class WorkflowManifestProvider : IModuleManifestProvider
                     IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 10,
-                    // Mirror the Definitions row menu: Create (toolbar), Publish + Start Instance (row actions).
-                    // Start Instance is a ROW action on the Definitions list (UI), even though the API is POST /instances.
+                    // Mirror the Definitions row menu: Create (toolbar), Publish (row action). The Start Instance button
+                    // is gated by the RUNTIME key instances.start, declared once below as an API permission (Tenant) and
+                    // never on a /Platform page, or the catalog sync would keep it PlatformAdmin (WP-0023-FX).
                     Actions:
                     [
                         new ModuleManifestAction("CREATE", "Create Definition", WorkflowPermissions.DefinitionsManage, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("PUBLISH", "Publish", WorkflowPermissions.DefinitionsPublish, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("START_INSTANCE", "Start Instance", WorkflowPermissions.InstancesStart, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("PUBLISH", "Publish", WorkflowPermissions.DefinitionsPublish, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ]),
 
                 // UI-only sub-pages reached from a Definitions row (Designer / Visual Designer / Versions).
@@ -78,36 +78,32 @@ public sealed class WorkflowManifestProvider : IModuleManifestProvider
                     SortOrder: 13,
                     Actions: []),
 
-                // Instances list — view-only (Start Instance lives on the Definitions row, above).
+                // Instances list — view-only administration page under the designer (/Platform). Gated by the design
+                // read key; the runtime read key instances.view is an API permission (WP-0023-FX).
                 new ModuleManifestPage(
                     PageCode: "INSTANCES",
                     DisplayName: "Workflow Instances",
                     RoutePath: "/Platform/Workflow/Definitions/{id}/Instances",
-                    RequiredPermission: WorkflowPermissions.InstancesView,
+                    RequiredPermission: WorkflowPermissions.DefinitionsView,
                     ParentPageCode: "DEFINITIONS",
                     IsNavigationVisible: false,
                     PageType: "List",
                     SortOrder: 20,
                     Actions: []),
 
-                // Task inbox — the actionable approvals (approve/reject/delegate/request-info/cancel).
+                // Task list under the designer (/Platform administration page). The approvals people act on live in
+                // WorkCenter; the task action keys are RUNTIME keys, declared once below as API permissions (Tenant),
+                // so this page carries no action with them (WP-0023-FX).
                 new ModuleManifestPage(
                     PageCode: "TASKS",
                     DisplayName: "My Tasks",
                     RoutePath: "/Platform/Workflow/Definitions/{id}/Tasks",
-                    RequiredPermission: WorkflowPermissions.InstancesView,
+                    RequiredPermission: WorkflowPermissions.DefinitionsView,
                     ParentPageCode: "DEFINITIONS",
                     IsNavigationVisible: false,
                     PageType: "List",
                     SortOrder: 30,
-                    Actions:
-                    [
-                        new ModuleManifestAction("APPROVE", "Approve", WorkflowPermissions.TasksApprove, "RowAction", 10, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("REJECT", "Reject", WorkflowPermissions.TasksReject, "RowAction", 20, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("DELEGATE", "Delegate", WorkflowPermissions.TasksDelegate, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("REQUEST_INFO", "Request Info", WorkflowPermissions.TasksRequestInfo, "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("CANCEL", "Cancel", WorkflowPermissions.TasksCancel, "RowAction", 50, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
-                    ]),
+                    Actions: []),
 
                 new ModuleManifestPage(
                     PageCode: "SLA_RULES",
@@ -150,5 +146,24 @@ public sealed class WorkflowManifestProvider : IModuleManifestProvider
                     [
                         new ModuleManifestAction("EVALUATE", "Evaluate", WorkflowPermissions.TransitionsEvaluate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ])
-            ]);
+            ],
+            // WP-0023-FX — RUNTIME keys: start an instance, read instances and tasks, act on a task. A QA user needs
+            // them to decide and approve (WorkCenter, consumer modules through the Gateway), so they are tenant-scoped
+            // and declared here, on no /Platform page (module-self-registration-standard 2d). Template design, publish,
+            // SLA rules, escalations and the transition gate stay page keys on /Platform routes, so PlatformAdmin.
+            // AuthService moves the existing catalog rows of exactly these keys PlatformAdmin -> Tenant once
+            // (TenantRouteScopeCorrections, allowlisted); the catalog sync itself never lowers a scope.
+            ApiPermissions: RuntimeApiPermissions);
+
+    /// <summary>WP-0023-FX — the runtime workflow keys, Tenant scope. AuthService pins its allowlist to this list.</summary>
+    public static readonly IReadOnlyList<ModuleManifestPermission> RuntimeApiPermissions =
+    [
+        new(WorkflowPermissions.InstancesStart, "Start Workflow Instance", "Tenant"),
+        new(WorkflowPermissions.InstancesView, "View Workflow Instances and Tasks", "Tenant"),
+        new(WorkflowPermissions.TasksApprove, "Approve Workflow Task", "Tenant"),
+        new(WorkflowPermissions.TasksReject, "Reject Workflow Task", "Tenant"),
+        new(WorkflowPermissions.TasksDelegate, "Delegate Workflow Task", "Tenant"),
+        new(WorkflowPermissions.TasksRequestInfo, "Request Info on Workflow Task", "Tenant"),
+        new(WorkflowPermissions.TasksCancel, "Cancel Workflow Task", "Tenant")
+    ];
 }

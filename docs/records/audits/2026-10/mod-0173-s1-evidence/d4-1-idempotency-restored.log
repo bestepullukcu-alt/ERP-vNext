@@ -1,0 +1,5 @@
+### D4-1 idempotency guard — RESTORED
+git diff --stat (must be empty):
+warning: in the working copy of 'services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Inventory/Handlers/CommandHandlers/PostMovementHandler.cs', LF will be replaced by CRLF the next time Git touches it
+    0 Hata
+Başarılı!  - Başarısız:     0, Başarılı:     9, Atlanan:     0, Toplam:     9, Süre: 1 s - Diten.InventoryService.Tests.dll (net8.0)

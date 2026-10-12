@@ -1,0 +1,69 @@
+@model string?
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Quarantine.Submit.PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0175 Q5 — Karar Gönder (DECISIONSUBMIT, pack §11.1): the page a DRAFT decision is signed and sent from when no form
+    created it here — the lot release of KQ-I (TRACE 202 → pendingRequestId = this decision) and a resubmit after StartFailed.
+    Step 2 only: the server's decision as summary + MOD-0022 dialog (CT-D17) → submitDecision → 202 "Onay bekliyor".
+    UAS-001 — nothing without quarantine.decisions.create.
+*@
+@if (!Perms.Has("quarantine.decisions.create"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Quarantine.Submit.PageTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Quarantine.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Quarantine.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Quarantine.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Quarantine.Common.Company.Unavailable"].Value;
+}
+
+<partial name="~/Views/Quarantine/_Header.cshtml" model="@("DECISIONSUBMIT")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready && Model is not null)
+{
+    <div id="qr-submit" data-decision-id="@Model">
+        <div class="alert alert-danger d-none" id="qr-page-error" role="alert"></div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="mb-1" id="qr-p-title">@Localizer["Quarantine.Submit.PageTitle"]</h5>
+                <div class="fw-medium" id="qr-p-name"></div>
+                <div class="text-muted small" id="qr-p-sub"></div>
+                <p class="text-muted small mb-0 mt-2" id="qr-p-intro">@Localizer["Quarantine.Submit.Intro"]</p>
+            </div>
+        </div>
+        <partial name="~/Views/Quarantine/_Stepper.cshtml" model="@("Quarantine.Submit.Step")" />
+        <div class="alert alert-danger d-none" id="qr-form-error" role="alert"></div>
+        <partial name="~/Views/Quarantine/_DecisionSummary.cshtml" />
+        <div class="d-flex flex-wrap justify-content-end gap-2 mb-4">
+            <a class="btn btn-label-secondary" id="qr-cancel" href="/Quarantine">@Localizer["Quarantine.Common.Cancel"]</a>
+            <button type="button" class="btn btn-primary d-none" id="qr-primary">@Localizer["Quarantine.Decide.Button.SignSend"]</button>
+        </div>
+    </div>
+    <form id="qr-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineActions.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineL10n.cshtml" />
+    @if (company.Ready && Model is not null)
+    {
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+        <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Quarantine/submit.js" asp-append-version="true"></script>
+    }
+}

@@ -1,0 +1,673 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Action.CHANGELOTSTATUS" xml:space="preserve">
+    <value>Cambiar estado</value>
+  </data>
+  <data name="Action.EDITLOT" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Action.EDITRELEASEDLOT" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Action.LOTMOVES" xml:space="preserve">
+    <value>Historial de movimientos</value>
+  </data>
+  <data name="Action.LOTTRACEOPEN" xml:space="preserve">
+    <value>Trazabilidad</value>
+  </data>
+  <data name="Action.NEWLOT" xml:space="preserve">
+    <value>Nuevo lote</value>
+  </data>
+  <data name="Action.OPENINLEDGER" xml:space="preserve">
+    <value>Abrir en el libro de existencias</value>
+  </data>
+  <data name="Action.RECEIPTINLEDGER" xml:space="preserve">
+    <value>Abrir en el libro de existencias</value>
+  </data>
+  <data name="Action.SERIALLOT" xml:space="preserve">
+    <value>Detalle del lote</value>
+  </data>
+  <data name="Action.SERIALMOVES" xml:space="preserve">
+    <value>Historial de movimientos</value>
+  </data>
+  <data name="Action.TRACELOTDETAIL" xml:space="preserve">
+    <value>Detalle del lote</value>
+  </data>
+  <data name="Action.VIEWALLSERIALS" xml:space="preserve">
+    <value>Todos los números de serie</value>
+  </data>
+  <data name="Action.VIEWLOT" xml:space="preserve">
+    <value>Detalle del lote</value>
+  </data>
+  <data name="Action.VIEWRECEIPT" xml:space="preserve">
+    <value>Comprobante del movimiento</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="Col.CoaRef" xml:space="preserve">
+    <value>Ref. CoA</value>
+  </data>
+  <data name="Col.ExpiryDate" xml:space="preserve">
+    <value>Caducidad</value>
+  </data>
+  <data name="Col.LotNumber" xml:space="preserve">
+    <value>N.º de lote</value>
+  </data>
+  <data name="Col.ManufacturerLot" xml:space="preserve">
+    <value>Lote del fabricante</value>
+  </data>
+  <data name="Col.ManufacturingDate" xml:space="preserve">
+    <value>Fabricación</value>
+  </data>
+  <data name="Col.OnHand" xml:space="preserve">
+    <value>En existencia</value>
+  </data>
+  <data name="Col.Origin" xml:space="preserve">
+    <value>Origen</value>
+  </data>
+  <data name="Col.Product" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="Col.RetestDate" xml:space="preserve">
+    <value>Reanálisis</value>
+  </data>
+  <data name="Col.Status" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="Col.SupplierLot" xml:space="preserve">
+    <value>Lote del proveedor</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>Empresa</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>Seleccione una empresa</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>Seleccione la empresa en la que trabaja para ver sus lotes y existencias.</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>No se pudo cargar la lista de empresas. Inténtelo de nuevo en unos momentos.</value>
+  </data>
+  <data name="Country.AE" xml:space="preserve">
+    <value>Emiratos Árabes Unidos</value>
+  </data>
+  <data name="Country.AT" xml:space="preserve">
+    <value>Austria</value>
+  </data>
+  <data name="Country.AU" xml:space="preserve">
+    <value>Australia</value>
+  </data>
+  <data name="Country.BE" xml:space="preserve">
+    <value>Bélgica</value>
+  </data>
+  <data name="Country.BR" xml:space="preserve">
+    <value>Brasil</value>
+  </data>
+  <data name="Country.CA" xml:space="preserve">
+    <value>Canadá</value>
+  </data>
+  <data name="Country.CH" xml:space="preserve">
+    <value>Suiza</value>
+  </data>
+  <data name="Country.CN" xml:space="preserve">
+    <value>China</value>
+  </data>
+  <data name="Country.CZ" xml:space="preserve">
+    <value>Chequia</value>
+  </data>
+  <data name="Country.DE" xml:space="preserve">
+    <value>Alemania</value>
+  </data>
+  <data name="Country.DK" xml:space="preserve">
+    <value>Dinamarca</value>
+  </data>
+  <data name="Country.EG" xml:space="preserve">
+    <value>Egipto</value>
+  </data>
+  <data name="Country.ES" xml:space="preserve">
+    <value>España</value>
+  </data>
+  <data name="Country.FI" xml:space="preserve">
+    <value>Finlandia</value>
+  </data>
+  <data name="Country.FR" xml:space="preserve">
+    <value>Francia</value>
+  </data>
+  <data name="Country.GB" xml:space="preserve">
+    <value>Reino Unido</value>
+  </data>
+  <data name="Country.GR" xml:space="preserve">
+    <value>Grecia</value>
+  </data>
+  <data name="Country.HU" xml:space="preserve">
+    <value>Hungría</value>
+  </data>
+  <data name="Country.IE" xml:space="preserve">
+    <value>Irlanda</value>
+  </data>
+  <data name="Country.IL" xml:space="preserve">
+    <value>Israel</value>
+  </data>
+  <data name="Country.IN" xml:space="preserve">
+    <value>India</value>
+  </data>
+  <data name="Country.IT" xml:space="preserve">
+    <value>Italia</value>
+  </data>
+  <data name="Country.JP" xml:space="preserve">
+    <value>Japón</value>
+  </data>
+  <data name="Country.KR" xml:space="preserve">
+    <value>Corea del Sur</value>
+  </data>
+  <data name="Country.MX" xml:space="preserve">
+    <value>México</value>
+  </data>
+  <data name="Country.NL" xml:space="preserve">
+    <value>Países Bajos</value>
+  </data>
+  <data name="Country.NO" xml:space="preserve">
+    <value>Noruega</value>
+  </data>
+  <data name="Country.PL" xml:space="preserve">
+    <value>Polonia</value>
+  </data>
+  <data name="Country.PT" xml:space="preserve">
+    <value>Portugal</value>
+  </data>
+  <data name="Country.RO" xml:space="preserve">
+    <value>Rumanía</value>
+  </data>
+  <data name="Country.RU" xml:space="preserve">
+    <value>Rusia</value>
+  </data>
+  <data name="Country.SA" xml:space="preserve">
+    <value>Arabia Saudí</value>
+  </data>
+  <data name="Country.SE" xml:space="preserve">
+    <value>Suecia</value>
+  </data>
+  <data name="Country.SG" xml:space="preserve">
+    <value>Singapur</value>
+  </data>
+  <data name="Country.TR" xml:space="preserve">
+    <value>Turquía</value>
+  </data>
+  <data name="Country.UA" xml:space="preserve">
+    <value>Ucrania</value>
+  </data>
+  <data name="Country.US" xml:space="preserve">
+    <value>Estados Unidos</value>
+  </data>
+  <data name="Country.ZA" xml:space="preserve">
+    <value>Sudáfrica</value>
+  </data>
+  <data name="Detail.History" xml:space="preserve">
+    <value>Historial de cambios</value>
+  </data>
+  <data name="Detail.HistorySub" xml:space="preserve">
+    <value>Quién cambió qué y por qué. Los registros no se pueden eliminar.</value>
+  </data>
+  <data name="Detail.Info" xml:space="preserve">
+    <value>Información del lote</value>
+  </data>
+  <data name="Detail.OnHand" xml:space="preserve">
+    <value>En existencia</value>
+  </data>
+  <data name="Detail.Serials" xml:space="preserve">
+    <value>Números de serie</value>
+  </data>
+  <data name="Detail.SerialsAll" xml:space="preserve">
+    <value>Todos los números de serie</value>
+  </data>
+  <data name="Detail.SerialsMore" xml:space="preserve">
+    <value>+{0} más</value>
+  </data>
+  <data name="Detail.StockDistribution" xml:space="preserve">
+    <value>Distribución de existencias</value>
+  </data>
+  <data name="Detail.StockDistributionSub" xml:space="preserve">
+    <value>Filas del libro de existencias de este lote en la empresa seleccionada.</value>
+  </data>
+  <data name="Detail.Title" xml:space="preserve">
+    <value>Detalle del lote</value>
+  </data>
+  <data name="Detail.Unusable.Blocked" xml:space="preserve">
+    <value>El lote está bloqueado: ninguna de sus existencias puede usarse ({0}).</value>
+  </data>
+  <data name="Detail.Unusable.Expired" xml:space="preserve">
+    <value>El lote está caducado: ninguna de sus existencias puede usarse ({0}).</value>
+  </data>
+  <data name="Empty.List" xml:space="preserve">
+    <value>Ningún registro coincide con los filtros.</value>
+  </data>
+  <data name="Empty.Lot" xml:space="preserve">
+    <value>No hay ningún lote seleccionado. Abra un lote desde el Explorador de lotes.</value>
+  </data>
+  <data name="Empty.Stock" xml:space="preserve">
+    <value>No hay existencias de este lote en la empresa seleccionada.</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>Confirme que entiende el impacto del bloqueo.</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>Seleccione primero una empresa.</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>Esta empresa no se puede usar con su cuenta.</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>Referencia para soporte</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>No se pudo leer el código.</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>No se pudo completar la operación. Inténtelo de nuevo.</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>Este formulario ya se envió con otros valores. Vuelva a cargar la página.</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>Algunos valores no son válidos. Revise los campos.</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>No se pudo verificar la empresa en este momento. Inténtelo de nuevo en unos momentos.</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>Este número de lote ya existe para este producto.</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>Otra persona modificó este lote mientras tanto. Vuelva a cargar la página e inténtelo de nuevo.</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>Las fechas no son coherentes (fabricación ≤ hoy, caducidad posterior a la fabricación, reanálisis entre ambas).</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>El número de lote y la SKU no se pueden cambiar.</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>No se cambió nada.</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>El número de lote solo puede contener de 1 a 40 caracteres: letras A–Z, dígitos y . / -.</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>El lote pertenece a otra SKU.</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>Elija la SKU a la que pertenece el lote.</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>Este cambio de estado no está permitido para el lote.</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>No tiene autorización para esta operación.</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>No se puede acceder a los datos del producto en este momento; no se guardó nada.</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>Este producto no se controla por lotes; no se puede crear ningún lote.</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>Escriba un motivo de al menos 10 caracteres.</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>No se puede acceder al servicio de lotes en este momento. Inténtelo de nuevo en unos momentos.</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>Su sesión ha caducado. Vuelva a iniciar sesión.</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>No se encontró el producto o la SKU.</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>No se encontró este lote.</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>No se encontró este número de serie.</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>{0} días</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>Caducado</value>
+  </data>
+  <data name="Filter.Clear" xml:space="preserve">
+    <value>Borrar</value>
+  </data>
+  <data name="Filter.ExpiryBefore" xml:space="preserve">
+    <value>Caducidad antes del</value>
+  </data>
+  <data name="Filter.Product" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="Filter.Search" xml:space="preserve">
+    <value>N.º de lote, producto, lote del fabricante / proveedor</value>
+  </data>
+  <data name="Filter.Status" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="Filter.WarnOnly" xml:space="preserve">
+    <value>Solo lotes con advertencia</value>
+  </data>
+  <data name="Form.Changes" xml:space="preserve">
+    <value>Cambios por guardar</value>
+  </data>
+  <data name="Form.Coa" xml:space="preserve">
+    <value>Ref. certificado de análisis (CoA)</value>
+  </data>
+  <data name="Form.Country" xml:space="preserve">
+    <value>País de origen</value>
+  </data>
+  <data name="Form.DraftNote" xml:space="preserve">
+    <value>Un lote nuevo se guarda como borrador.</value>
+  </data>
+  <data name="Form.Duplicate" xml:space="preserve">
+    <value>Este número de lote ya existe para este producto.</value>
+  </data>
+  <data name="Form.ExpiryDate" xml:space="preserve">
+    <value>Fecha de caducidad</value>
+  </data>
+  <data name="Form.LockedBanner" xml:space="preserve">
+    <value>Este lote no es un borrador: escriba un motivo de al menos 10 caracteres para desbloquear los campos.</value>
+  </data>
+  <data name="Form.LotNumber" xml:space="preserve">
+    <value>N.º de lote</value>
+  </data>
+  <data name="Form.LotNumberHint" xml:space="preserve">
+    <value>De 1 a 40 caracteres: A–Z, 0–9 y . / -. No se puede cambiar después de guardar.</value>
+  </data>
+  <data name="Form.ManufacturerLot" xml:space="preserve">
+    <value>Lote del fabricante</value>
+  </data>
+  <data name="Form.ManufacturingDate" xml:space="preserve">
+    <value>Fecha de fabricación</value>
+  </data>
+  <data name="Form.NoChanges" xml:space="preserve">
+    <value>Todavía no hay cambios.</value>
+  </data>
+  <data name="Form.Product" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="Form.Reason" xml:space="preserve">
+    <value>Motivo del cambio</value>
+  </data>
+  <data name="Form.ReasonCounter" xml:space="preserve">
+    <value>{0}/10</value>
+  </data>
+  <data name="Form.ReasonHint" xml:space="preserve">
+    <value>Al menos 10 caracteres; se conserva en el historial de cambios.</value>
+  </data>
+  <data name="Form.RetestDate" xml:space="preserve">
+    <value>Fecha de reanálisis</value>
+  </data>
+  <data name="Form.Sku" xml:space="preserve">
+    <value>Referencia (SKU)</value>
+  </data>
+  <data name="Form.Summary" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="Form.SupplierLot" xml:space="preserve">
+    <value>Lote del proveedor</value>
+  </data>
+  <data name="Form.TitleEdit" xml:space="preserve">
+    <value>Editar lote</value>
+  </data>
+  <data name="Form.TitleNew" xml:space="preserve">
+    <value>Nuevo lote</value>
+  </data>
+  <data name="History.Action.Created" xml:space="preserve">
+    <value>Creado</value>
+  </data>
+  <data name="History.Action.Linked" xml:space="preserve">
+    <value>Vinculado</value>
+  </data>
+  <data name="History.Action.Migrated" xml:space="preserve">
+    <value>Migrado</value>
+  </data>
+  <data name="History.Action.StatusChanged" xml:space="preserve">
+    <value>Estado cambiado</value>
+  </data>
+  <data name="History.Action.SystemExpired" xml:space="preserve">
+    <value>Caducado por el sistema</value>
+  </data>
+  <data name="History.Action.Updated" xml:space="preserve">
+    <value>Actualizado</value>
+  </data>
+  <data name="History.Change" xml:space="preserve">
+    <value>Anterior → Nuevo</value>
+  </data>
+  <data name="History.Date" xml:space="preserve">
+    <value>Fecha</value>
+  </data>
+  <data name="History.Field" xml:space="preserve">
+    <value>Campo</value>
+  </data>
+  <data name="History.Field.TypedText" xml:space="preserve">
+    <value>Lote introducido manualmente</value>
+  </data>
+  <data name="History.Field.GenealogyParent" xml:space="preserve">
+    <value>Lote padre</value>
+  </data>
+  <data name="History.Page" xml:space="preserve">
+    <value>Página {0} / {1}</value>
+  </data>
+  <data name="History.Reason" xml:space="preserve">
+    <value>Motivo</value>
+  </data>
+  <data name="History.System" xml:space="preserve">
+    <value>Sistema (automático)</value>
+  </data>
+  <data name="History.Who" xml:space="preserve">
+    <value>Quién</value>
+  </data>
+  <data name="Info.CreatedBy" xml:space="preserve">
+    <value>Creado por</value>
+  </data>
+  <data name="Info.None" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="Info.Source" xml:space="preserve">
+    <value>Origen</value>
+  </data>
+  <data name="Info.Source.GoodsReceipt" xml:space="preserve">
+    <value>Entrada de mercancía</value>
+  </data>
+  <data name="Info.Source.Manual" xml:space="preserve">
+    <value>Entrada manual</value>
+  </data>
+  <data name="Info.Source.Migration" xml:space="preserve">
+    <value>Migración de lotes introducidos manualmente</value>
+  </data>
+  <data name="Info.Source.Opening" xml:space="preserve">
+    <value>Saldo inicial</value>
+  </data>
+  <data name="Info.Source.Production" xml:space="preserve">
+    <value>Entrada de mercancía (producción)</value>
+  </data>
+  <data name="Info.Tracking" xml:space="preserve">
+    <value>Seguimiento</value>
+  </data>
+  <data name="Names.Unavailable" xml:space="preserve">
+    <value>No se pudieron cargar los nombres de los productos; se muestran los códigos.</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>Sin resultados</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>Seguimiento de lotes / series</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>Todos los lotes de los productos de la empresa: fechas, estado y existencias.</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>Explorador de lotes</value>
+  </data>
+  <data name="Paging.Range" xml:space="preserve">
+    <value>{0}–{1} de {2}</value>
+  </data>
+  <data name="Quick.MarkNew" xml:space="preserve">
+    <value>Nuevo</value>
+  </data>
+  <data name="Quick.PrefilledNote" xml:space="preserve">
+    <value>El producto y la SKU son los del movimiento.</value>
+  </data>
+  <data name="Quick.SaveSelect" xml:space="preserve">
+    <value>Guardar y seleccionar</value>
+  </data>
+  <data name="Quick.Title" xml:space="preserve">
+    <value>Nuevo lote</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>Fecha de reanálisis vencida</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Buscando…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>Activo</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>Bloqueado</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>Consumido</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>Bloqueado</value>
+  </data>
+  <data name="Status.Dialog.Acknowledge" xml:space="preserve">
+    <value>Entiendo el impacto.</value>
+  </data>
+  <data name="Status.Dialog.AcknowledgeRequired" xml:space="preserve">
+    <value>Confirme que entiende el impacto.</value>
+  </data>
+  <data name="Status.Dialog.Allowed" xml:space="preserve">
+    <value>Permitido</value>
+  </data>
+  <data name="Status.Dialog.Confirm" xml:space="preserve">
+    <value>Cambiar estado</value>
+  </data>
+  <data name="Status.Dialog.ConfirmBlock" xml:space="preserve">
+    <value>Bloquear el lote</value>
+  </data>
+  <data name="Status.Dialog.Current" xml:space="preserve">
+    <value>Estado actual</value>
+  </data>
+  <data name="Status.Dialog.Danger" xml:space="preserve">
+    <value>El bloqueo deja inutilizables todas las existencias de este lote.</value>
+  </data>
+  <data name="Status.Dialog.Done" xml:space="preserve">
+    <value>Estado del lote cambiado.</value>
+  </data>
+  <data name="Status.Dialog.Impact" xml:space="preserve">
+    <value>{0} unidades · {1} ubicaciones · {2}</value>
+  </data>
+  <data name="Status.Dialog.New" xml:space="preserve">
+    <value>Nuevo estado</value>
+  </data>
+  <data name="Status.Dialog.NotAllowed" xml:space="preserve">
+    <value>No permitido desde el estado actual.</value>
+  </data>
+  <data name="Status.Dialog.PickOne" xml:space="preserve">
+    <value>Elija un estado permitido.</value>
+  </data>
+  <data name="Status.Dialog.Reason" xml:space="preserve">
+    <value>Motivo (al menos 10 caracteres)</value>
+  </data>
+  <data name="Status.Dialog.SystemOnly" xml:space="preserve">
+    <value>Lo asigna el sistema; no se puede elegir manualmente.</value>
+  </data>
+  <data name="Status.Dialog.Title" xml:space="preserve">
+    <value>Cambiar el estado del lote</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>Caducado</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>Liberado</value>
+  </data>
+  <data name="Stock.Location" xml:space="preserve">
+    <value>Ubicación</value>
+  </data>
+  <data name="Stock.Quantity" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
+  <data name="Stock.Status" xml:space="preserve">
+    <value>Estado del stock</value>
+  </data>
+  <data name="Stock.Warehouse" xml:space="preserve">
+    <value>Almacén</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>Disponible</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>Bloqueado</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>Dañado</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>Caducado</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>En tránsito</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>Inspección de calidad</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>Cuarentena</value>
+  </data>
+  <data name="Tracking.Lot" xml:space="preserve">
+    <value>Lote</value>
+  </data>
+  <data name="Tracking.LotAndSerial" xml:space="preserve">
+    <value>Lote + número de serie</value>
+  </data>
+  <data name="Tracking.None" xml:space="preserve">
+    <value>Sin seguimiento</value>
+  </data>
+  <data name="Validation.DatesOrder" xml:space="preserve">
+    <value>Fabricación ≤ hoy; caducidad posterior a la fabricación; reanálisis entre ambas.</value>
+  </data>
+  <data name="Validation.FixFields" xml:space="preserve">
+    <value>Revise los campos marcados.</value>
+  </data>
+  <data name="Validation.Length" xml:space="preserve">
+    <value>Este valor es demasiado largo.</value>
+  </data>
+  <data name="Validation.LotFormat" xml:space="preserve">
+    <value>Use de 1 a 40 caracteres: A–Z, 0–9 y . / -.</value>
+  </data>
+  <data name="Validation.ReasonMin" xml:space="preserve">
+    <value>Escriba un motivo de al menos 10 caracteres.</value>
+  </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>Este campo es obligatorio.</value>
+  </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>Enviado a aprobación</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>La liberación del lote espera una aprobación de calidad; el estado cambia tras aprobarse. Abra la página Enviar decisión para firmarla y enviarla.</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>Abrir la página Enviar decisión</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>Pendiente de aprobación</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>Decisión de liberación pendiente de aprobación · {0}</value></data>
+  <data name="Level.Gsku" xml:space="preserve"><value>SKU global</value></data>
+  <data name="Level.Lsku" xml:space="preserve"><value>SKU local</value></data>
+  <data name="Level.FinishedGood" xml:space="preserve"><value>Producto terminado</value></data>
+  <data name="Level.Item" xml:space="preserve"><value>Artículo de material</value></data>
+</root>

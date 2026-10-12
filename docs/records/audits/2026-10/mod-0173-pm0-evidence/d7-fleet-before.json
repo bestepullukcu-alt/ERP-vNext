@@ -1,0 +1,98 @@
+﻿{
+    "measuredAt":  "2026-10-02T13:48:29.9373683+03:00",
+    "note":  "User fleet before WP-0173-PM0 runtime.",
+    "listeners":  [
+                      {
+                          "port":  4010,
+                          "pid":  1392,
+                          "name":  "node.exe",
+                          "started":  "2026-10-02T09:50:27.6922310+03:00"
+                      },
+                      {
+                          "port":  5000,
+                          "pid":  30236,
+                          "name":  "Diten.ApiGateway.exe",
+                          "started":  "2026-10-02T13:16:11.6226300+03:00"
+                      },
+                      {
+                          "port":  5001,
+                          "pid":  38232,
+                          "name":  "Diten.Web.exe",
+                          "started":  "2026-10-02T13:17:24.3457100+03:00"
+                      },
+                      {
+                          "port":  5056,
+                          "pid":  41652,
+                          "name":  "Diten.AuthService.Api.exe",
+                          "started":  "2026-10-02T13:16:40.0560520+03:00"
+                      },
+                      {
+                          "port":  5057,
+                          "pid":  21540,
+                          "name":  "dotnet.exe",
+                          "started":  "2026-10-02T13:16:46.2561850+03:00"
+                      },
+                      {
+                          "port":  5058,
+                          "pid":  19064,
+                          "name":  "Diten.DevEnablementService.Api.exe",
+                          "started":  "2026-10-02T13:16:31.5847260+03:00"
+                      },
+                      {
+                          "port":  5059,
+                          "pid":  33564,
+                          "name":  "Diten.MdmService.Api.exe",
+                          "started":  "2026-10-02T13:16:25.1058180+03:00"
+                      },
+                      {
+                          "port":  5060,
+                          "pid":  27476,
+                          "name":  "Diten.HcmService.Api.exe",
+                          "started":  "2026-10-02T13:16:26.3313940+03:00"
+                      },
+                      {
+                          "port":  5061,
+                          "pid":  35008,
+                          "name":  "Diten.CrmService.Api.exe",
+                          "started":  "2026-10-02T13:16:25.4284550+03:00"
+                      },
+                      {
+                          "port":  5066,
+                          "pid":  35948,
+                          "name":  "Diten.InventoryService.Api.exe",
+                          "started":  "2026-10-02T13:16:35.9481510+03:00"
+                      },
+                      {
+                          "port":  27017,
+                          "pid":  5380,
+                          "name":  "mongod.exe",
+                          "started":  "2026-09-30T11:18:43.3230200+03:00"
+                      }
+                  ],
+    "probePorts":  [
+                       {
+                           "port":  4011,
+                           "listening":  false
+                       },
+                       {
+                           "port":  4012,
+                           "listening":  false
+                       },
+                       {
+                           "port":  5067,
+                           "listening":  false
+                       },
+                       {
+                           "port":  5090,
+                           "listening":  false
+                       },
+                       {
+                           "port":  5091,
+                           "listening":  false
+                       },
+                       {
+                           "port":  5097,
+                           "listening":  false
+                       }
+                   ]
+}

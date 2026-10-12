@@ -1,0 +1,155 @@
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using Diten.Web.Models.Inventory;
+using Xunit;
+
+namespace Diten.Web.Tests.Inventory;
+
+/// <summary>
+/// MOD-0173-FU01 is a TENANT module: seven languages, every key in every file, no empty value and no English copy in a
+/// non-English file (localization-standard; pack §16 RESX parity). Also: every key the error map can return, and
+/// every key the pages read, is in all fourteen screen files — a missing resx key prints its own NAME at runtime and
+/// no compiler sees it.
+/// </summary>
+public sealed class InventoryResxParityTests
+{
+    private static readonly string[] Languages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+
+    private static readonly string WebRoot = FindWebRoot();
+
+    public static TheoryData<string, string> Families => new()
+    {
+        { "Resources/Views/Inventory/StockLedger", "StockLedgerIndex" },
+        { "Resources/Views/Inventory/StockMovements", "StockMovementsIndex" }
+    };
+
+    [Theory]
+    [MemberData(nameof(Families))]
+    public void Seven_languages_carry_the_same_keys_with_real_text(string folder, string family)
+    {
+        var english = Read(folder, family, "en");
+        Assert.NotEmpty(english);
+
+        foreach (var lang in Languages)
+        {
+            var values = Read(folder, family, lang);
+            Assert.Equal(english.Keys.OrderBy(k => k, StringComparer.Ordinal), values.Keys.OrderBy(k => k, StringComparer.Ordinal));
+            Assert.All(values, pair => Assert.False(string.IsNullOrWhiteSpace(pair.Value), $"{family}.{lang}: {pair.Key} is empty"));
+            if (lang == "en") continue;
+            // A missing key renders as its own name; in a translated file a value equal to the key or to English is
+            // that defect wearing a disguise. (In English "Actions" may legitimately be the key's own word.)
+            Assert.All(values, pair => Assert.NotEqual(pair.Key, pair.Value));
+            Assert.All(values, pair => Assert.True(pair.Value != english[pair.Key] || SameAsEnglish.Contains($"{family}.{lang}.{pair.Key}"),
+                $"{family}.{lang}: {pair.Key} is an English copy"));
+        }
+    }
+
+    /// <summary>
+    /// WP-0174-FU5 T-2: values that are deliberately the English word — exact family.lang.key, each with its reason; no
+    /// prefix. The tr lot column is "Lot", the owner's term and the MOD-0174 glossary (Traceability <c>Tracking.Lot</c>).
+    /// </summary>
+    private static readonly HashSet<string> SameAsEnglish = new(StringComparer.Ordinal)
+    {
+        "StockLedgerIndex.tr.ColLot",    // glossary: Lot = Lot (owner's term, WP-0174-FU5 T-2)
+        "StockMovementsIndex.tr.ColLot"  // glossary: Lot = Lot (owner's term, WP-0174-FU5 T-2)
+    };
+
+    [Fact]
+    public void Every_same_as_english_entry_is_still_needed()
+    {
+        foreach (var entry in SameAsEnglish)
+        {
+            var parts = entry.Split('.', 3);
+            var folder = parts[0] == "StockLedgerIndex" ? "Resources/Views/Inventory/StockLedger" : "Resources/Views/Inventory/StockMovements";
+            Assert.True(Read(folder, parts[0], parts[1])[parts[2]] == Read(folder, parts[0], "en")[parts[2]],
+                $"{entry} no longer equals en — remove it from SameAsEnglish");
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Families))]
+    public void Every_error_sentence_the_proxy_can_choose_exists(string folder, string family)
+    {
+        var keys = Read(folder, family, "en").Keys.ToHashSet(StringComparer.Ordinal);
+        Assert.All(InventoryErrorMessages.AllKeys, key => Assert.Contains(key, keys));
+    }
+
+    [Fact]
+    public void Every_contract_failure_code_maps_to_its_own_sentence_not_the_generic_one()
+    {
+        // parent pack §12 / FU01 pack §13 codes the UI can receive
+        string[] codes =
+        [
+            "INSUFFICIENT_STOCK", "ALREADY_REVERSED", "PRODUCT_MASTER_UNAVAILABLE", "LOCATION_MASTER_UNAVAILABLE",
+            "CROSS_LE_FORBIDDEN", "IDEMPOTENCY_KEY_REUSED", "INVALID_REQUEST", "INVALID_MOVEMENT_TYPE", "UNKNOWN_ITEM",
+            "SKU_ITEM_MISMATCH", "UNKNOWN_LOCATION", "UOM_CONVERSION_MISSING", "LOT_REQUIRED", "SERIAL_COUNT_MISMATCH",
+            "RESERVATION_CONFLICT", "POSTING_PERIOD_CLOSED"
+        ];
+        Assert.All(codes, code => Assert.NotEqual(InventoryErrorMessages.Generic, InventoryErrorMessages.KeyFor(code, 422)));
+        Assert.Equal(InventoryErrorMessages.NoPermission, InventoryErrorMessages.KeyFor(null, 403));
+        Assert.Equal(InventoryErrorMessages.SessionExpired, InventoryErrorMessages.KeyFor(null, 401));
+        Assert.Equal(InventoryErrorMessages.ServiceUnavailable, InventoryErrorMessages.KeyFor(null, 0));
+        Assert.Equal(InventoryErrorMessages.Conflict, InventoryErrorMessages.KeyFor(null, 409));
+    }
+
+    [Theory]
+    [InlineData("Views/Inventory/StockLedger", "Resources/Views/Inventory/StockLedger", "StockLedgerIndex")]
+    [InlineData("Views/Inventory/StockMovements", "Resources/Views/Inventory/StockMovements", "StockMovementsIndex")]
+    public void Every_key_the_views_ask_for_is_in_the_resx(string viewFolder, string resxFolder, string family)
+    {
+        var keys = Read(resxFolder, family, "en").Keys.ToHashSet(StringComparer.Ordinal);
+        var asked = Directory.EnumerateFiles(Path.Combine(WebRoot, viewFolder), "*.cshtml")
+            .SelectMany(file => Regex.Matches(File.ReadAllText(file), @"(?<![A-Za-z])Localizer\[""(?<key>[^""]+)""\]").Select(m => m.Groups["key"].Value))
+            .Distinct()
+            .ToList();
+
+        Assert.NotEmpty(asked);
+        Assert.All(asked, key => Assert.Contains(key, keys));
+    }
+
+    [Theory]
+    // UI-2: what each script reads (form.js: t('Key'); the lists: L().Key) must be delivered by its page's payload —
+    // a key read but never delivered prints nothing (no English fallback in the scripts).
+    [InlineData("Views/Inventory/StockMovements/_FormL10n.cshtml", "StockMovements/form.js", @"\bt\('(?<key>[A-Z]\w*)'\)")]
+    [InlineData("Views/Inventory/StockMovements/_IndexL10n.cshtml", "StockMovements/index.js", @"L\(\)\.(?<key>[A-Z]\w*)")]
+    [InlineData("Views/Inventory/StockLedger/_IndexL10n.cshtml", "StockLedger/index.js", @"L\(\)\.(?<key>[A-Z]\w*)")]
+    public void Every_key_a_movement_script_reads_is_delivered_by_its_payload(string payload, string script, string pattern)
+    {
+        var delivered = Regex.Matches(File.ReadAllText(Path.Combine(WebRoot, payload)), @"^\s*(?<name>\w+)\s*=", RegexOptions.Multiline)
+            .Select(m => m.Groups["name"].Value).ToHashSet(StringComparer.Ordinal);
+        var read = Regex.Matches(File.ReadAllText(Path.Combine(WebRoot, "wwwroot", "assets", "js", "Inventory", script)), pattern)
+            .Select(m => m.Groups["key"].Value).Distinct().ToList();
+
+        Assert.NotEmpty(read);
+        Assert.All(read, key => Assert.True(delivered.Contains(key), $"{script} reads {key} but {payload} does not deliver it"));
+    }
+
+    [Fact]
+    public void The_nav_keys_of_the_manifest_are_in_all_seven_shared_files()
+    {
+        foreach (var lang in Languages)
+        {
+            var shared = Read("Resources", "SharedResource", lang);
+            foreach (var key in new[] { "Nav.Domain.SUPPLYCHAINEXECUTION", "Nav.Module.INVENTORYLEDGER", "Nav.Page.STOCKLEDGER" })
+                Assert.False(string.IsNullOrWhiteSpace(shared.GetValueOrDefault(key)), $"SharedResource.{lang}: {key}");
+        }
+    }
+
+    private static Dictionary<string, string> Read(string folder, string family, string lang) =>
+        XDocument.Load(Path.Combine(WebRoot, folder, $"{family}.{lang}.resx"))
+            .Root!.Elements("data")
+            .ToDictionary(e => (string)e.Attribute("name")!, e => (string?)e.Element("value") ?? string.Empty, StringComparer.Ordinal);
+
+    private static string FindWebRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, "frontend", "Diten.Web");
+            if (Directory.Exists(Path.Combine(candidate, "Resources"))) return candidate;
+            current = current.Parent;
+        }
+
+        throw new InvalidOperationException("frontend/Diten.Web not found above the test binary.");
+    }
+}

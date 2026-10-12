@@ -614,6 +614,78 @@ public sealed class WorkflowCrossServiceTests
                     .ToDictionary(kv => kv.Key, kv => kv.Value));
     }
 
+    // ============================================================ WP-0023-FX — four eyes (SoD) for tenant users
+    //
+    // The start handler stored the starter as ActorName — the e-mail claim first — while every approve path compares
+    // the starter with the approver's USER ID (the snapshot principal; WorkCenter passes the JWT sub). For a tenant
+    // user the two never matched, so "submitter cannot approve" never fired. These cases start through the real
+    // handler with a production-shaped caller instead of writing StartedBy by hand.
+
+    private static readonly Guid FxStarter = Guid.Parse("5f000000-0000-0000-0000-00000000000a");
+    private static readonly Guid FxOther = Guid.Parse("5f000000-0000-0000-0000-00000000000b");
+
+    [Fact]
+    public async Task Fx_a_tenant_user_who_started_the_workflow_cannot_approve_it()
+    {
+        var f = new Fx(TenantA, user: new RealisticUser(FxStarter, "starter@tenant.test"));
+        var template = f.SeedTemplate("CLAIM-APPROVAL");
+        var start = await f.Start().Handle(new StartWorkflowInstanceCommand(
+            StartRequest(template.Id, ["user:" + FxStarter]), Correlation), default);
+        Assert.True(start.IsSuccessful, string.Join(",", start.Errors));
+
+        var r = await f.Approve().Handle(new ApproveWorkflowTaskCommand(start.Data!.ApprovalTaskId,
+            new ApproveWorkflowTaskRequest(FxStarter.ToString(), "APPROVED", "fx-sod-1", null, null), Correlation), default);
+
+        Assert.Equal(409, r.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.SodViolation, r.ReasonCode);
+        Assert.Equal(ApprovalTaskStatus.WaitingApproval, f.Store.Tasks.Single().Status);
+        Assert.Equal(WorkflowInstanceStatus.Active, f.Store.Instances.Single().Status);
+    }
+
+    [Fact]
+    public async Task Fx_another_assigned_tenant_user_can_still_approve()
+    {
+        var f = new Fx(TenantA, user: new RealisticUser(FxStarter, "starter@tenant.test"));
+        var template = f.SeedTemplate("CLAIM-APPROVAL");
+        var start = await f.Start().Handle(new StartWorkflowInstanceCommand(
+            StartRequest(template.Id, ["user:" + FxOther]), Correlation), default);
+        Assert.True(start.IsSuccessful, string.Join(",", start.Errors));
+
+        var r = await f.Approve().Handle(new ApproveWorkflowTaskCommand(start.Data!.ApprovalTaskId,
+            new ApproveWorkflowTaskRequest(FxOther.ToString(), "APPROVED", "fx-sod-2", null, null), Correlation), default);
+
+        Assert.True(r.IsSuccessful, string.Join(",", r.Errors));
+        Assert.Equal(WorkflowInstanceStatus.Completed, f.Store.Instances.Single().Status);
+    }
+
+    // WP-MVP1-SYNC1 (owner decision B, 2026-10-12): "Fx_an_instance_started_before_the_fix_still_blocks_its_starter_through
+    // _the_start_log" was removed with the Start-log fallback. An instance from before StartedByUserId keeps main's old
+    // comparison (WP-WORKFLOW-APPROVAL-STATUS-01, test An_instance_from_before_the_field_keeps_the_old_comparison) — a known
+    // gap the owner accepted. New instances: SoD by user id, unchanged (the two tests above and main's B2 tests).
+
+    [Fact]
+    public async Task Fx_assignment_and_SoD_compare_user_ids_as_ids_not_as_text_casing()
+    {
+        // A template may name a user in upper case ("user:5F00…"); the bound actor is the JWT sub (lower case "D").
+        var f = new Fx(TenantA);
+        var run = f.SeedRuntime(startedBy: FxStarter.ToString().ToUpperInvariant());
+        f.Store.Snapshots.Single().ResolvedPrincipalId = FxOther.ToString().ToUpperInvariant();
+
+        var approved = await f.Approve().Handle(new ApproveWorkflowTaskCommand(run.Task.Id,
+            new ApproveWorkflowTaskRequest(FxOther.ToString(), "APPROVED", "fx-case-1", null, null), Correlation), default);
+        Assert.True(approved.IsSuccessful, string.Join(",", approved.Errors));
+
+        // WP-MVP1-SYNC1 — a NEW instance (StartedByUserId set, main's Guid): the starter is compared as an id, so the
+        // upper-case snapshot principal and the lower-case JWT sub are the same person and the approve is refused.
+        var g = new Fx(TenantA);
+        var own = g.SeedRuntime(startedBy: FxStarter.ToString().ToUpperInvariant());
+        own.Instance.StartedByUserId = FxStarter;
+        g.Store.Snapshots.Single().ResolvedPrincipalId = FxStarter.ToString().ToUpperInvariant();
+        var refused = await g.Approve().Handle(new ApproveWorkflowTaskCommand(own.Task.Id,
+            new ApproveWorkflowTaskRequest(FxStarter.ToString(), "APPROVED", "fx-case-2", null, null), Correlation), default);
+        Assert.Equal(WorkflowReasonCodes.SodViolation, refused.ReasonCode);
+    }
+
     // ============================================================ helpers
 
     private static StartWorkflowInstanceRequest StartRequest(Guid templateId, IReadOnlyList<string> candidates,
@@ -670,10 +742,13 @@ public sealed class WorkflowCrossServiceTests
         public ImmediateExecutor Transactions { get; } = new();
         public FixedClock Clock { get; } = new(new DateTimeOffset(2026, 9, 28, 12, 0, 0, TimeSpan.Zero));
 
-        public Fx(Guid tenant, Store? shared = null)
+        private readonly ICurrentUserContext _user;
+
+        public Fx(Guid tenant, Store? shared = null, ICurrentUserContext? user = null)
         {
             Store = shared ?? new Store();
             Tenant.SetTenant(tenant);
+            _user = user ?? new User();
         }
 
         public TaskRepo TaskRepo => new(Store, Tenant);
@@ -687,7 +762,7 @@ public sealed class WorkflowCrossServiceTests
         private AssignmentRepo? _assignments;
 
         public StartWorkflowInstanceHandler Start() => new(TemplateRepo, VersionRepo, InstanceRepo, TaskRepo, SnapshotRepo,
-            LogRepo, Tenant, new User(), AssignmentRepo, null, PositionRepo);
+            LogRepo, Tenant, _user, AssignmentRepo, null, PositionRepo);
 
         public ApproveWorkflowTaskHandler Approve() => new(TaskRepo, InstanceRepo, SnapshotRepo, LogRepo, VersionRepo,
             AssignmentRepo, PositionRepo, Transactions, Events, TemplateRepo);
@@ -779,6 +854,20 @@ public sealed class WorkflowCrossServiceTests
         public List<Position> Positions { get; } = [];
         public List<PositionAssignment> Assignments { get; } = [];
         public bool FailInstanceUpdate { get; set; }
+    }
+
+    /// <summary>
+    /// WP-0023-FX — a caller shaped like production: <c>CurrentUserContext.ActorName</c> is the e-mail claim first
+    /// (the tenant token always carries one), the id is the JWT <c>sub</c>. The <see cref="User"/> fake returns a
+    /// bare string as ActorName, which is why the SoD tests never saw the mismatch.
+    /// </summary>
+    private sealed class RealisticUser(Guid userId, string email) : ICurrentUserContext
+    {
+        public Guid UserId => userId;
+        public string? Email => email;
+        public string? DisplayName => "Realistic User";
+        public string ActorName => Email ?? DisplayName ?? userId.ToString();
+        public bool IsAuthenticated => true;
     }
 
     private sealed class User : ICurrentUserContext

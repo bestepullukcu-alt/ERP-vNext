@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="LocationsTitle" xml:space="preserve"><value>Lokasyon listesi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Şirketin fiziksel yerlerinin tek listesi. Stok, depo, satınalma ve üretim bu listeden okur.</value></data>
+  <data name="TabTree" xml:space="preserve"><value>Hiyerarşi</value></data>
+  <data name="TabList" xml:space="preserve"><value>Liste</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Şirket</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Lokasyonlarını görmek istediğiniz şirketi seçin. Şirket seçilene kadar hiçbir veri gösterilmez.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Şirket listesi alınamadı, bu yüzden lokasyon gösterilmiyor. Yöneticinizden şirketleri görüntüleme yetkisi isteyin veya daha sonra tekrar deneyin.</value></data>
+  <data name="AddNewLocation" xml:space="preserve"><value>Yeni lokasyon</value></data>
+  <data name="ColCode" xml:space="preserve"><value>Kod</value></data>
+  <data name="ColName" xml:space="preserve"><value>Ad</value></data>
+  <data name="ColType" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColParentPath" xml:space="preserve"><value>Üst kayıt yolu</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="ColStockable" xml:space="preserve"><value>Stok tutulabilir</value></data>
+  <data name="ColOperatingMode" xml:space="preserve"><value>Çalışma modu</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Tür</value></data>
+  <data name="FilterStockable" xml:space="preserve"><value>Stok tutulabilir</value></data>
+  <data name="FilterParent" xml:space="preserve"><value>Üst kayıt</value></data>
+  <data name="StockableYes" xml:space="preserve"><value>Stok tutulabilir</value></data>
+  <data name="StockableNo" xml:space="preserve"><value>Stok tutulamaz</value></data>
+  <data name="TypeSite" xml:space="preserve"><value>Tesis</value></data>
+  <data name="TypeWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="TypeStorageLocation" xml:space="preserve"><value>Depolama alanı</value></data>
+  <data name="TypeZone" xml:space="preserve"><value>Bölge</value></data>
+  <data name="TypeBin" xml:space="preserve"><value>Raf/Göz</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşiv</value></data>
+  <data name="ModeInternal" xml:space="preserve"><value>Stok bu sistemde</value></data>
+  <data name="ModeExternal" xml:space="preserve"><value>Stok dış sistemde, entegrasyonla izleniyor</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="ActionAddChild" xml:space="preserve"><value>Alt kayıt ekle</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Aktife al</value></data>
+  <data name="ActionDeactivate" xml:space="preserve"><value>Pasife al</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ActionHistory" xml:space="preserve"><value>Geçmiş</value></data>
+  <data name="ActionViewStock" xml:space="preserve"><value>Stok listesinde gör</value></data>
+  <data name="ActionBulkBins" xml:space="preserve"><value>Toplu raf üret</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni lokasyon</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Lokasyonu düzenle</value></data>
+  <data name="FormTitleChild" xml:space="preserve"><value>{0} altına yeni lokasyon</value></data>
+  <data name="FieldCode" xml:space="preserve"><value>Kod</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Ad</value></data>
+  <data name="FieldType" xml:space="preserve"><value>Tür</value></data>
+  <data name="FieldParent" xml:space="preserve"><value>Üst kayıt</value></data>
+  <data name="FieldStockable" xml:space="preserve"><value>Stok tutulabilir</value></data>
+  <data name="FieldOperatingMode" xml:space="preserve"><value>Çalışma modu</value></data>
+  <data name="FieldOrgUnit" xml:space="preserve"><value>Organizasyon birimi</value></data>
+  <data name="FieldCostCenter" xml:space="preserve"><value>Masraf merkezi kodu</value></data>
+  <data name="Optional" xml:space="preserve"><value>isteğe bağlı</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. WH-01</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>örn. Merkez depo</value></data>
+  <data name="ParentPlaceholder" xml:space="preserve"><value>Üst kaydı kod veya adla arayın</value></data>
+  <data name="OrgUnitPlaceholder" xml:space="preserve"><value>Organizasyon birimi seçin</value></data>
+  <data name="CostCenterPlaceholder" xml:space="preserve"><value>örn. MM-1100</value></data>
+  <data name="HintCode" xml:space="preserve"><value>Bu şirkette benzersiz. Sonradan değiştirilebilir: stok aynı lokasyonu göstermeye devam eder.</value></data>
+  <data name="HintTypeFixed" xml:space="preserve"><value>Tür değiştirilemez. Yanlışsa kaydı arşivleyip yenisini açın.</value></data>
+  <data name="HintParentSite" xml:space="preserve"><value>Tesisin üst kaydı olmaz.</value></data>
+  <data name="HintZoneOptional" xml:space="preserve"><value>Raf, bölge olmadan doğrudan depolama alanı altına da bağlanabilir.</value></data>
+  <data name="HintCompany" xml:space="preserve"><value>Lokasyon seçili şirkete aittir; altındaki lokasyonlar bunu miras alır. Şirket değiştirilemez.</value></data>
+  <data name="OrgUnitsUnavailable" xml:space="preserve"><value>Organizasyon birimi listesi alınamadı. Alanı boş bırakıp kaydedebilirsiniz.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Bu alan zorunlu.</value></data>
+  <data name="ValidationCodeFormat" xml:space="preserve"><value>1–40 karakter kullanın: yalnız harf, rakam ve . _ / -</value></data>
+  <data name="ValidationNameLength" xml:space="preserve"><value>En fazla 120 karakter kullanın.</value></data>
+  <data name="ValidationCostCenterFormat" xml:space="preserve"><value>1–40 karakter kullanın: yalnız harf, rakam ve . _ -</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Hiçbir şey değiştirilmedi.</value></data>
+  <data name="ReloadLabel" xml:space="preserve"><value>Kaydı yeniden yükle</value></data>
+  <data name="ErrorDetails" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="ReferenceLabel" xml:space="preserve"><value>Referans</value></data>
+  <data name="Searching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Eşleşme yok</value></data>
+  <data name="ConfirmActivateTitle" xml:space="preserve"><value>Lokasyon aktife alınsın mı?</value></data>
+  <data name="ConfirmActivateText" xml:space="preserve"><value>{0} yeniden aktif olacak ve stok formlarında seçilebilecek.</value></data>
+  <data name="ConfirmDeactivateTitle" xml:space="preserve"><value>Lokasyon pasife alınsın mı?</value></data>
+  <data name="ConfirmDeactivateText" xml:space="preserve"><value>{0} pasife alınacak. Pasif lokasyonlar stok formlarında seçilemez.</value></data>
+  <data name="ConfirmArchiveTitle" xml:space="preserve"><value>Lokasyon arşivlensin mi?</value></data>
+  <data name="ConfirmArchiveText" xml:space="preserve"><value>{0} arşivlenecek. Bu işlem geri alınamaz: arşivlenen lokasyon yeniden aktif edilemez ve değiştirilemez. Kayıt silinmez; geçmiş hareketlerde görünmeye devam eder.</value></data>
+  <data name="BulkTitle" xml:space="preserve"><value>Toplu raf üretimi</value></data>
+  <data name="BulkTarget" xml:space="preserve"><value>Hedef</value></data>
+  <data name="BulkAisleFrom" xml:space="preserve"><value>Koridor başlangıç</value></data>
+  <data name="BulkAisleTo" xml:space="preserve"><value>Koridor bitiş</value></data>
+  <data name="BulkRackFrom" xml:space="preserve"><value>Raf başlangıç</value></data>
+  <data name="BulkRackTo" xml:space="preserve"><value>Raf bitiş</value></data>
+  <data name="BulkLevelFrom" xml:space="preserve"><value>Kat başlangıç</value></data>
+  <data name="BulkLevelTo" xml:space="preserve"><value>Kat bitiş</value></data>
+  <data name="BulkPositions" xml:space="preserve"><value>Kat başına göz</value></data>
+  <data name="BulkCodePattern" xml:space="preserve"><value>Kodlar: KORİDOR-RAF-KAT-GÖZ, örn. A-01-01-01.</value></data>
+  <data name="BulkCount" xml:space="preserve"><value>{0} raf/göz</value></data>
+  <data name="BulkPreview" xml:space="preserve"><value>Önizleme</value></data>
+  <data name="BulkPreviewSummary" xml:space="preserve"><value>{0} raf/göz oluşturulacak</value></data>
+  <data name="BulkSkipped" xml:space="preserve"><value>{0} kod zaten var, atlanacak.</value></data>
+  <data name="BulkCreateButton" xml:space="preserve"><value>{0} raf/göz oluştur</value></data>
+  <data name="BulkNothingToCreate" xml:space="preserve"><value>Oluşturulacak kayıt yok</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>{0} raf/göz oluşturuldu.</value></data>
+  <data name="BulkResultSkipped" xml:space="preserve"><value>Mevcut {0} kod atlandı.</value></data>
+  <data name="BulkMore" xml:space="preserve"><value>ve {0} tane daha</value></data>
+  <data name="LocationCreated" xml:space="preserve"><value>Lokasyon oluşturuldu.</value></data>
+  <data name="LocationSaved" xml:space="preserve"><value>Değişiklikler kaydedildi.</value></data>
+  <data name="StatusChanged" xml:space="preserve"><value>Durum güncellendi.</value></data>
+  <data name="BinsCreated" xml:space="preserve"><value>{0} raf/göz oluşturuldu.</value></data>
+  <data name="ErrCodeTaken" xml:space="preserve"><value>Bu kod bu şirkette zaten kullanılıyor. Başka bir kod seçin.</value></data>
+  <data name="ErrLevelInvalid" xml:space="preserve"><value>Bu tür seçilen üst kaydın altına bağlanamaz (tesis → depo → depolama alanı → bölge → raf; raf depolama alanı altına da bağlanabilir).</value></data>
+  <data name="ErrParentInactive" xml:space="preserve"><value>Üst kayıt aktif değil. Önce üst kaydı aktife alın.</value></data>
+  <data name="ErrMoveIntoSubtree" xml:space="preserve"><value>Lokasyon kendi altına veya kendi alt kayıtlarından birinin altına taşınamaz.</value></data>
+  <data name="ErrHasStock" xml:space="preserve"><value>Bu lokasyonda (veya altındakilerde) stok var; değişiklik yapılamaz. Önce stoğu transfer edin. Hiçbir şey değiştirilmedi.</value></data>
+  <data name="ErrHasActiveChildren" xml:space="preserve"><value>Bu lokasyonun altında aktif kayıtlar var. Önce onları pasife alın.</value></data>
+  <data name="ErrArchived" xml:space="preserve"><value>Lokasyon arşivlenmiş; değiştirilemez ve altına kayıt eklenemez.</value></data>
+  <data name="ErrLocationConflict" xml:space="preserve"><value>Siz açtıktan sonra bu lokasyonu başka biri kaydetti. Kaydı yeniden yükleyip değişikliğinizi tekrar yapın.</value></data>
+  <data name="ErrBulkLimit" xml:space="preserve"><value>Tek seferde en fazla 1000 raf/göz oluşturulabilir. Aralıkları daraltın.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>Lokasyon bu şirkette bulunamadı. Sayfayı yenileyin.</value></data>
+  <data name="ErrOrgUnitInvalid" xml:space="preserve"><value>Bu organizasyon birimi bu şirketin aktif birimi değil. Başka birini seçin veya alanı boş bırakın.</value></data>
+  <data name="ErrOrgUnitDirectoryUnavailable" xml:space="preserve"><value>Organizasyon birimi şu anda doğrulanamadı, bu yüzden hiçbir şey kaydedilmedi. Tekrar deneyin veya alanı boş bırakıp kaydedin.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Bu işlem başka değerlerle zaten gönderilmiş. Pencereyi kapatıp yeniden başlayın.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Bir değer geçerli olmadığı için istek işlenemedi. Alanları kontrol edip tekrar deneyin.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Bu kayıt başka bir şirkete ait. O şirkete geçin veya yöneticinizden erişim isteyin.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Seçilen şirket şu anda doğrulanamıyor, bu yüzden değişiklik yapılmadı. Biraz sonra tekrar deneyin.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Önce bir şirket seçin. Hiçbir veri okunmadı veya değiştirilmedi.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>Bu işleme erişiminiz yok. İhtiyacınız olan lokasyon yetkilerini yöneticinizden isteyin.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi. Devam etmek için yeniden giriş yapın.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Lokasyon servisine şu anda ulaşılamıyor. Hiçbir değişiklik yapılmadı; biraz sonra tekrar deneyin.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Siz çalışırken veri değişti. Yenileyip tekrar deneyin.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Bir sorun oluştu ve değişiklik yapılmadı. Tekrar deneyin; devam ederse destek ekibine başvurun.</value></data>
+</root>

@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common.Events;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -88,7 +89,8 @@ public sealed class InternalEventsController : ControllerBase
             return Ok(new { status = "noop_duplicate" });
         }
 
-        await _roleProvisioningService.EnsureDefaultRolesAsync(integrationEvent.TenantId, ct);
+        // WP-0018-ROLE1: only the default roles this tenant LACKS are created (a re-activation changes no existing role).
+        await _roleProvisioningService.EnsureDefaultRolesAsync(integrationEvent.TenantId, DefaultRoleProvisioningTriggers.TenantActivated, ct);
         await SyncEntitledModulesBestEffortAsync(integrationEvent.TenantId, ct);
 
         return Ok(new { status = "processed" });
@@ -107,7 +109,9 @@ public sealed class InternalEventsController : ControllerBase
             return BadRequest(new { message = "tenantId and email are required" });
         }
 
-        await _roleProvisioningService.EnsureDefaultRolesAsync(request.TenantId, ct);
+        // WP-0018-ROLE1: an invitation to an EXISTING tenant changes none of its roles; it only makes sure the Admin role
+        // the invitee is assigned to exists (a tenant without it gets it from the template).
+        await _roleProvisioningService.EnsureDefaultRolesAsync(request.TenantId, DefaultRoleProvisioningTriggers.TenantAdminInvited, ct);
         await SyncEntitledModulesBestEffortAsync(request.TenantId, ct);
 
         var loginSettings = await _tenantLoginSettingsClient.GetAsync(request.TenantId, ct);
