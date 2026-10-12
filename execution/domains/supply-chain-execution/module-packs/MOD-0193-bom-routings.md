@@ -288,7 +288,7 @@ Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lan
 - F-0193-02 item seçici: MOD-0290 ürün arama (MDM lookup) — bugün uuid girişi.
 - F-0193-03 UoM doğrulaması PRODUCT-MASTER `getSkuUom` / UoM master ile.
 - F-0193-04 MOD-0209 gerçek değişiklik kontrolü entegrasyonu (W-0193-01 kapanışı); e-imza (21 CFR Part 11) release'de.
-- F-0193-05 Merkezi denetim günlüğüne iletim — K4 ortak iletici geldiğinde (BL-501) yol b eklenir; yol c kalır.
+- F-0193-05 Merkezi denetim günlüğüne iletim — merkezi ekip BL-501'i bütün MVP'ler bittikten sonra teslim ettiğinde yol b eklenir; BOM sürüm geçmişi ürün özelliği ve mevcut K2 izi olarak kalır. MVP-3 PR merge'i bunu beklemez.
 - F-0193-06 Routing'in iş merkezi master'ına (MOD-0192/0194) bağlanması; süre/kapasite alanları.
 - F-0193-07 Gerçek `ProductMaster:Mode=Http` entegrasyonu MOD-0290 `validate` canlı olunca (bugün permissive).
 
@@ -310,23 +310,13 @@ Sorgular (liste, sürüm, current, explode, geçmiş) yazmaz; `explode` POST ols
 
 **Merkezi denetim günlüğü — KARAR (ürün sahibi, 2026-10-12).** MOD-0193'ün yazma komutları Platform'daki merkezi
 günlüğe de yazar (AUD-001 K4, ortak iletici **BL-501**). Sürüm geçmişi (yol c) **kalır**; merkezi kayıt onun yanına
-eklenir, yerine geçmez — F-0193-05'i BL-501 bağlandığında kapatır. BL-501 paketi henüz yok ve MDM ileticisini kopyalamak
-yasak; bu yüzden bugün yalnız **veri** hazır: her yazma komutu `ICentralAuditDeclaration` ile kaydını bildirir
-(davranış, istemci, kayıt yok — çalışma anında hiçbir şey değişmez). BL-501 gelince iş yalnız bağlamadır: komutlara
-ortak işaret + `Program.cs`'e ortak davranışın kaydı. **MVP-3 PR'ı BL-501 bağlanmadan merge edilmez.**
+eklenir, yerine geçmez — F-0193-05'i BL-501 bağlandığında kapatır. BL-501 paketi henüz yok;
+MDM ileticisi kopyalanmaz ve ortak arayüz önceden uydurulmaz. Merkezi ekip paketi teslim ettiğinde
+bağlantı o paketin gerçek sözleşmesine göre yapılır. **BL-501 bağlantısı açık maddedir (merkezi ekip, MVP'ler sonrası); MVP-3 PR'ı bunu beklemez.** Dört komut ManufacturingService audit defterinde "BL-501 bekliyor" olarak listelenir.
 
-| komut | kategori | işlem | varlık / kimlik |
-|---|---|---|---|
-| CreateBomDraftCommand | `MasterData` | `Create` | `BomVersion` · yanıttaki `BomView.bomVersionId` |
-| UpdateBomDraftCommand | `MasterData` | `Update` | `BomVersion` · komuttaki `BomVersionId` |
-| ReleaseBomVersionCommand | `MasterData` | `LifecycleTransition` | `BomVersion` · komuttaki `BomVersionId` |
-| DeleteBomDraftCommand | `MasterData` | `Delete` | `BomVersion` · komuttaki `BomVersionId` |
-
-Kaynak modül `bom-routings` (manifest ModuleCode). Değerler Platform `AuditCategory` / `AuditOperation` adlarıdır;
-`CentralAuditDeclarationTests` Platform'un kaynak dosyasından okuyup doğrular ve serviste ayrı bir iletici olmadığını
-ölçer. Release'in önceki sürümü `Superseded` yapması merkezi günlükte ayrı kayıt değildir (tek komut, tek kayıt);
-sürüm geçmişinde iki satırdır. BL-501'e açık soru: Create kimliği yanıtın içinde (`Response<BomView>`) — ortak
-davranış kimliği `ICentralAuditDeclaration.CentralAuditEntityId` benzeri açık bir üyeden almalı, yansıma ile değil.
+Release'in önceki sürümü `Superseded` yapması BOM sürüm geçmişinde iki satırdır.
+Merkezi günlüğün olay ve kimlik eşlemesi, BL-501 teslim edildiğinde o paketin sözleşmesine göre belirlenecektir;
+bugün komutlara merkezi audit bildirimi veya ileticisi eklenmez.
 
 ## 22. Implementation record (2026-10-06)
 
