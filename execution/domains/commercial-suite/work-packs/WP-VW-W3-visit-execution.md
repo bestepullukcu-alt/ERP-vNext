@@ -819,3 +819,17 @@ Commit: "feat(auth): WP-VW-W3-AUTH — visit-evidence document-repository keys t
 **Geri alma:**
 - kiracı konum kuralı `--revert` (kullanıcı);
 - test ziyaretleri (Bülent Yardımcı, Bülent Çuhacı, Birsen Durmaz) `report_missing` durumunda kalır.
+
+## §37 ek — W3 Arapça (RTL) + mobil not (2026-10-12, CT)
+
+**Arapça (kullanıcı onayıyla dil çerezi; sonra Türkçeye geri alındı):**
+- çalışma alanı telefon ve masaüstü: ızgara aynalı, Pazartesi sağda, menü sağda, ayrıntı paneli solda;
+- "بدء الزيارة" düğmesi;
+- E3 penceresi tamamen çevrilmiş ve RTL (konum zorunlu → "ناقص: الموقع");
+- bitiş özeti RTL, saatler yerel biçimde ("02:51 م").
+- Sorun yok.
+
+**Mobil not:**
+- [MOBILE-NOTE-2026-10-12-visit-execution](mobile/2026-10-12-visit-workspace-w3/MOBILE-NOTE-2026-10-12-visit-execution.md): uçlar, multipart alanları, kanıt ayarı, yakalama gövdesi, DTO, hata kodları, durum sırası, sunum okuması, tablet PIN.
+- W2 mobil notu hâlâ ayrı bekliyor.
+
