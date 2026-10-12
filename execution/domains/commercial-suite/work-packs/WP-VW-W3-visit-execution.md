@@ -538,3 +538,102 @@ Commit: "feat(web): WP-VW-W3-WEB-b — visit presentation page (doctor screen wi
 ```
 
 ---
+
+## §37 CT kabul — 1. tur: W3-PLT ∥ W3-BE-a ∥ W3-BE-b E2 ACCEPTED (2026-10-12)
+
+**Test dalına alınanlar (çakışmasız):**
+- `8b1fe5d92` PLT (ajan `79f492ac8`);
+- `64be7741f` BE-a (ajan `298f37339`);
+- `af7756cf4` BE-b (ajan `79b143932`);
+- CT düzeltmesi `e9b88bf85`.
+
+**CT ölçümü:**
+- **CRM 2608/0/5** = 2558 + 46 (BE-a) + 4 (BE-b).
+- **Platform** ilgili testler (DocumentRepository, CrmVisitEvidence, TaskAttachment, HasPermission, CrmManifest, CrmVisit*) **154/0**.
+- **Mimari:** denetimsiz sayı **27 → 36** (+5 BE-a Start / Capture / Finish / Sign / UpdatePolicy, +4 BE-b ObjectionResponse Create / Update / Approve / Retire). Faz 8 kararı; listeye ekleme yok.
+- **Gateway 86/1:** tek kırmızı 5063–5065 portları (önceden var). Yeni rotalar 5061.
+- Web'e dokunulmadı (867/0 taban).
+
+**CT kod okuması:**
+- **PLT:**
+  - Yetki kararı tek yerde (`DocumentRepositoryAccessPolicy`).
+  - HTTP yolu yalnız `*ForCallerAsync`; Tasks süreç içi yol değişmedi.
+  - `IActorPermissionContext` Program.cs'te kayıtlı ve `[HasPermission]` ile aynı eşleyiciyi kullanıyor (genel `.read/.manage` çağıranları — SCMM-16B — reddedilmez).
+  - Kapsam dosya kuralı yalnız `CrmVisitEvidence`.
+- **BE-a:**
+  - Başlatma sırası sözleşmedeki gibi; fotoğraf önce depoya, kayıt yazılamazsa telafi; `startedAt` sunucu saati.
+  - Konum kuralı (eksik / doğruluk / uzak / kurum konumsuz) ayar moduna göre ret veya bayrak.
+  - Rapor bağı tek yerde (`VisitExecutionReportBinding`).
+- **BE-b:**
+  - Onaysız iddia, onaysız ülke sürümü ve onaysız itiraz yanıtı temsilciye dönmüyor.
+  - SoD (yazar ve son düzenleyen onaylayamaz); onayda iddialar yeniden denetleniyor.
+
+**CT düzeltmesi (`e9b88bf85`):**
+- Sorun: paketin "bitince mevcut kurallar" ifadesi (CT yazım belirsizliği) bitmiş ziyareti aynı gün `today`, ertesi gün **`missed`** gösteriyordu.
+- Düzeltme: `VisitWorkStatus.Derive` yürütmeyi takvim gününden önce okur.
+  - **bitmiş → `report_missing`** (ziyaret yapıldı, rapor bekliyor);
+  - **başlamış → `in_progress`** gün geçse de;
+  - 48 sa geçince `expired` (önceki kurallar).
+- Test genişletildi (ertesi gün bitmiş / bitmemiş / yürütmesiz / süresi geçmiş).
+
+**CT sabotajları** (hepsi kırmızı, `.bak` + touch ile geri alındı):
+
+| sabotaj | sonuç |
+|---|---|
+| S1 bitmiş → `report_missing` dalı kapatıldı | 1 kırmızı |
+| S2 yazma sahipliği kaldırıldı | 1 kırmızı |
+| S3 itiraz onay süzgeci kaldırıldı | 1 kırmızı |
+| S4 PLT kapsamlı okuyucunun sahip kontrolü kaldırıldı | 2 kırmızı |
+
+**Kabul edilen sapmalar:**
+- **BE-a "onaylı plan" = `planned` | `confirmed`** (hafta onayı `planned` yazıyor; katı `confirmed` hiçbir ziyareti başlatmazdı) — DOĞRU.
+- `too_far` yanıtında `distance_meters=N` satırı.
+- Doğruluksuz konum = "doğruluk kötü".
+- Yeniden açılan haftada başlamış ziyaret korunur.
+- Konum kuralı ziyaret türünden bağımsız.
+- `HttpContentArtifactStore` taşıma kodu ortak yardımcıya (SCMM testleri yeşil).
+- Gateway'e iki rota (`visit-execution/{everything}`, `visit-evidence-policy`).
+- **BE-b:** PUT'ta `presentation` gönderilmezse mevcut notlar korunur, `{}` temizler.
+- **Görsel: `asset.kind = none`** (karar 8; temsilci içerik görselini yeni izin olmadan okuyamaz) → takip **FU-W3-SLIDE-ASSET**.
+
+**Veri:** 97c5'te **43.374 kurumun tamamında** enlem/boylam var, Türkiye sınırları içinde (BE-a salt okuma sayımı).
+
+**⚠ Açık engel — izin kapsamı (PLT raporu):**
+- Platform'un otomatik kaydı `platform.document-repository.visit-evidence.*` anahtarlarını kapsamsız gönderiyor. Auth `platform.` önekini **PlatformAdmin** sayıyor; katalog senkronu kapsamı düşürmüyor. Kiracı rolüne `AssignPermission` 403 döner.
+- **CT kararı:** üç anahtar Auth'un kapalı düzeltme listesine (`TenantRouteScopeCorrections`, BL-411) eklenir ve CRM manifestinde kiracı rotasına (`/CRM/VisitWorkspace`) bağlanır.
+- Gerekçe: anahtarlar yalnız ziyaret kanıtı kapsamını açar, doğası kiracı iznidir; genel `.read/.manage` PlatformAdmin kalır.
+- → **W3-AUTH** promptu (aşağıda). Canlı E4'ten önce.
+
+**Sıradaki:** W3-AUTH → 2. tur WEB-a ∥ WEB-b (bu belgedeki promptlar; çalışma yeri test dalı `e9b88bf85`+).
+
+## W3-AUTH — ziyaret kanıtı anahtarlarını kiracı kapsamına alma (Auth + Platform manifest)
+1. **Manifest:** Platform `CrmManifestProvider`, Visit Workspace sayfasının (`/CRM/VisitWorkspace`, kiracı rotası) izinlerine üç anahtarı ekler: `platform.document-repository.visit-evidence.write`, `.read`, `.read-all` (İngilizce açıklama). Böylece manifest senkronu **Tenant** kapsamı taşır.
+2. **Düzeltme listesi:** Auth `TenantRouteScopeCorrections.Allowlist`'e üç giriş (rota `/CRM/VisitWorkspace`).
+   - Üç kapı aynen geçerli: listede olmak, şu an PlatformAdmin olmak, kayıtlı rota kiracı rotası.
+   - Genel `platform.document-repository.read` / `.manage` listeye **GİRMEZ**.
+3. **Kapsamsız senkron Tenant'ı yükseltmemeli:** Platform otomatik kaydı (`Module/Scope = null`) mevcut bir **Tenant** satırını PlatformAdmin'e **yükseltmemeli**. Bugünkü davranışı ölç:
+   - yükseltmiyorsa testle sabitle;
+   - yükseltiyorsa DUR + raporla (genel kural değişikliği CT kararı).
+4. **Testler:**
+   - Allowlist testleri (`TenantRouteScopeCorrectionTests`: "tam olarak şu anahtarlar" sabitlemesi 5 anahtara; her girişin üretim manifestinde listelenen kiracı rotasında kayıtlı olduğu çapraz kontrolü — Tasks manifesti yanına CRM manifesti).
+   - Planlayıcı: üç anahtar PlatformAdmin → Tenant; ikinci koşu değişiklik yapmaz; genel `.read/.manage` dokunulmaz.
+   - Platform CRM manifest testi: üç anahtar Visit Workspace sayfasında.
+
+**Acceptance:**
+- AuthService Application testleri yeşil (taban ölç), ilgili Platform manifest testleri yeşil, mimari değişmez (36).
+- Sabotajlar (her biri kırmızı kanıtlanır, sonra geri alınır):
+  - bir anahtar listeden çıkarılsın → kırmızı;
+  - genel `.manage` listeye eklensin → kırmızı.
+
+## §36.1 Agent Prompt — W3-AUTH (paste-ready)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W3 · W3-AUTH — platform.document-repository.visit-evidence.{write,read,read-all} anahtarlarını kiracı kapsamına al: CRM manifestinde /CRM/VisitWorkspace sayfasına bağla + Auth TenantRouteScopeCorrections (BL-411) kapalı listesine ekle
+Repository: C:\tmp\vw-w3-auth (worktree, test/crm-content-visit-e2e güncel başı — W3-PLT/BE-a/BE-b içerir) · Branch: wp/vw-w3-auth · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3-visit-execution.md — önce oku (§2.1, §37 1. tur "Açık engel — izin kapsamı", "W3-AUTH" 1–4 + Acceptance). Kod: services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/TenantRouteScopeCorrections.cs (BL-411; dosyanın kendi notu: ekleme CT kararıdır — bu paket o karardır), services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs (ApplyTenantRouteScopeCorrectionsAsync), Auth catalog sync (InternalPermissionsController.Sync tie-break), services/Diten.AuthService/tests/**/Authorization/TenantRouteScopeCorrectionTests.cs; services/Diten.Platform/src/Diten.Platform.Application/Features/Crm/SelfRegistration/CrmManifestProvider.cs (Visit Workspace sayfası), Platform PlatformPermissionAutoRegistrationWorker + HasPermissionReflector (anahtarların kapsamsız gidiş yolu), Platform DocumentRepositoryModels.cs (anahtar sabitleri).
+NE: (1) CrmManifestProvider Visit Workspace sayfasının (/CRM/VisitWorkspace) izinlerine üç anahtar (İngilizce açıklama) → manifest senkronu Tenant taşır. (2) TenantRouteScopeCorrections.Allowlist'e üç giriş (rota /CRM/VisitWorkspace); üç kapı aynen; genel platform.document-repository.read/.manage listeye GİRMEZ. (3) kapsamsız otomatik kaydın mevcut Tenant satırını PlatformAdmin'e yükseltmediğini ölç: yükseltmiyorsa testle sabitle; yükseltiyorsa DUR + raporla. (4) testler: allowlist "tam olarak" sabitlemesi 5 anahtar; her giriş üretim manifestinde (Tasks + CRM) listelenen kiracı rotasında kayıtlı; planlayıcı üç anahtarı PlatformAdmin→Tenant yapar, ikinci koşu değişiklik yapmaz, genel .read/.manage dokunulmaz; Platform CRM manifest testi üç anahtarı Visit Workspace sayfasında görür.
+KORU/YAPMA: kapsam yalnız AŞAĞI (PlatformAdmin→Tenant), asla yukarı; genel kural/mekanizma DEĞİŞMEZ (kapalı liste kalır); rolePermissions/grant/seed yazımı YOK (düzeltme koşusu grant eklemez/silmez); canlı DB yazımı YOK; CRM/Web koduna dokunma (yalnız Platform CrmManifestProvider); izin açıklamaları İngilizce.
+DOĞRULA (E2): AuthService Application testleri (taban ölç, yeni kırmızı yok) · Platform CrmManifest* testleri yeşil · mimari 36 değişmez. Sabotaj 2 (bir anahtarı listeden çıkar → kırmızı; genel .manage'i listeye ekle → kırmızı; geri al — git checkout -- YOK, .bak + touch). dotnet test -o çıktısı REPO İÇİNDE.
+Commit: "feat(auth): WP-VW-W3-AUTH — visit-evidence document-repository keys to tenant scope (CRM manifest on /CRM/VisitWorkspace + BL-411 allowlist)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, kapsamsız senkron ölçümü, canlıda düzeltmenin ne zaman çalıştığı (hangi servis hangi sırayla yeniden başlamalı), grant için adımlar. §22 TÜRKÇE. K13.
+```
