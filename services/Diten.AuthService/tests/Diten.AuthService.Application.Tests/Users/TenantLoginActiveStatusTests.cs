@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 using Diten.AuthService.Domain.Entities;
@@ -57,7 +58,47 @@ public sealed class TenantLoginActiveStatusTests
 
     private static LoginCommand Login(string email) => new(email, CorrectPassword, "127.0.0.1", "test-agent");
 
-    private static LoginCommandHandler CreateHandler(User user, FakeAuditService audit)
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 3 — a tenant whose login settings cannot be read (an unknown GUID) still
+    /// gets LOGIN_UNAVAILABLE every time, but the anonymous audit row is written within a global budget, never once per
+    /// request.</summary>
+    [Fact]
+    public async Task An_unknown_tenant_is_answered_every_time_but_audited_within_a_budget()
+    {
+        var audit = new FakeAuditService();
+        var handler = CreateHandler(new User("x@acme.test", "hash:x", "X", "Y", TenantA), audit, new ThrowingSettings());
+        var answers = new List<Response<Diten.AuthService.Application.DTOs.AuthResponse>>();
+
+        for (var i = 0; i < 3 * AnonymousAuditBudget.RowsPerWindow; i++)
+            answers.Add(await handler.Handle(Login("x@acme.test"), CancellationToken.None));
+
+        Assert.All(answers, answer => Assert.Equal(AuthRefusalCodes.LoginUnavailable, Assert.Single(answer.ErrorCodes).Code));
+        Assert.InRange(audit.Events.Count(e => e == "tenant_login_settings_read_failed"), 0, AnonymousAuditBudget.RowsPerWindow);
+    }
+
+    [Fact]
+    public void The_anonymous_audit_budget_refills_each_window()
+    {
+        var time = new MovableTime(new DateTimeOffset(2026, 10, 12, 9, 0, 0, TimeSpan.Zero));
+        var budget = new AnonymousAuditBudget(time);
+
+        Assert.Equal(AnonymousAuditBudget.RowsPerWindow, Enumerable.Range(0, 50).Count(_ => budget.TryTake()));
+        time.Advance(AnonymousAuditBudget.Window);
+        Assert.True(budget.TryTake());
+    }
+
+    private sealed class MovableTime(DateTimeOffset start) : TimeProvider
+    {
+        private DateTimeOffset _now = start;
+        public override DateTimeOffset GetUtcNow() => _now;
+        public void Advance(TimeSpan by) => _now += by;
+    }
+
+    private sealed class ThrowingSettings : ITenantLoginSettingsClient
+    {
+        public Task<TenantLoginSettingsSnapshot> GetAsync(Guid tenantId, CancellationToken ct) => throw new HttpRequestException("no such tenant");
+    }
+
+    private static LoginCommandHandler CreateHandler(User user, FakeAuditService audit, ITenantLoginSettingsClient? settings = null)
     {
         var tenantContext = new TestTenantContext();
         tenantContext.SetTenant(TenantA);
@@ -71,7 +112,7 @@ public sealed class TenantLoginActiveStatusTests
             new FakeRefreshTokenRepository(),
             new FakePasswordHasher(),
             audit,
-            new FakeTenantLoginSettingsClient(),
+            settings ?? new FakeTenantLoginSettingsClient(),
             new FakeMfaChallengeService(),
             new PassthroughEffectivePermissionResolver(),
             tenantContext,

@@ -54,6 +54,73 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         Assert.Equal("401|Invalid credentials.|" + AuthRefusalCodes.InvalidCredentials, unknown);
     }
 
+    /// <summary>FIX2 item 1 — WITH A WRONG PASSWORD EVERY ACCOUNT STATE IS THE SAME ANSWER: no such address, a platform account
+    /// at this door, a deactivated account, an invitation not yet accepted, a LOCKED account and an ordinary one — same status,
+    /// sentence and code. Before, a locked account said "locked" before its password was looked at (and the failures that
+    /// locked it were counted on deactivated and invited accounts too: their addresses could be read off the lock). The
+    /// failure is still counted (a locked account included) but does not extend the running lockout.</summary>
+    [Fact]
+    public async Task A_wrong_password_is_one_answer_whatever_the_accounts_state()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        using var admin = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.create"), tenantId);
+        var ordinary = await SeedTenantUserAsync(tenantId);
+        var deactivated = await SeedTenantUserAsync(tenantId);
+        await WriteAccountAsync(deactivated, a => a.DeactivateByAdministrator());
+        var invitedEmail = $"invited.{Guid.NewGuid():N}@reset.test";
+        Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("api/users", new { email = invitedEmail, firstName = "In", lastName = "Vited" })).StatusCode);
+        var locked = await SeedTenantUserAsync(tenantId);
+        var lockedUntil = DateTime.UtcNow.AddMinutes(10);
+        // Locked the way it happens: its failures reached the threshold (5 on this host). The next failure reaches the lockout
+        // write again — which must not move the end of the lock already running.
+        await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == locked.Id,
+            Builders<User>.Update.Set(u => u.LockoutEnd, lockedUntil).Set(u => u.FailedLoginAttempts, 5));
+        var lockEndBefore = (await ReadUserAsync(locked.Id)).LockoutEnd;
+        var platformAccount = new User($"pa.{Guid.NewGuid():N}@reset.test", new PasswordHasher().Hash(OldPassword), "Platform", "Account", tenantId);
+        platformAccount.SetPlatformActorType("platform_admin");
+        await _host.Database.GetCollection<User>("users").InsertOneAsync(platformAccount);
+
+        var expected = "401|Invalid email or password.|" + AuthRefusalCodes.InvalidCredentials;
+        foreach (var email in new[] { $"nobody.{Guid.NewGuid():N}@reset.test", platformAccount.Email, deactivated.Email, invitedEmail, locked.Email, ordinary.Email })
+        {
+            Assert.Equal(expected, await RefusalOfAsync(await TenantLoginAsync(tenantId, email, WrongPassword)));
+        }
+
+        var lockedAfter = await ReadUserAsync(locked.Id);
+        Assert.Equal(6, lockedAfter.FailedLoginAttempts);                 // counted …
+        Assert.Equal(lockEndBefore, lockedAfter.LockoutEnd);              // … the running lockout not extended
+        Assert.Equal(1, (await ReadUserAsync(deactivated.Id)).FailedLoginAttempts);
+
+        // The RIGHT password, and only it, learns the state.
+        Assert.Equal("401|Account is locked. Please try again later.|" + AuthRefusalCodes.AccountLocked,
+            await RefusalOfAsync(await TenantLoginAsync(tenantId, locked.Email, OldPassword)));
+        Assert.Equal("401|Account is disabled.|" + AuthRefusalCodes.AccountDeactivated,
+            await RefusalOfAsync(await TenantLoginAsync(tenantId, deactivated.Email, OldPassword)));
+    }
+
+    /// <summary>FIX2 item 2 — the branches that find NO account to check (an unknown address, a platform account at the tenant
+    /// door, an unknown address at the platform door) still verify the submitted password once (against a fixed hash, with
+    /// the same hasher): the answer's time does not tell an address that exists from one that does not. Measured by the
+    /// verifications of each branch's own password, not by the clock (a timing test would be flaky).</summary>
+    [Fact]
+    public async Task Every_branch_that_finds_no_account_to_check_still_verifies_the_password_once()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var platformAccount = new User($"pa.{Guid.NewGuid():N}@reset.test", new PasswordHasher().Hash(OldPassword), "Platform", "Account", tenantId);
+        platformAccount.SetPlatformActorType("platform_admin");
+        await _host.Database.GetCollection<User>("users").InsertOneAsync(platformAccount);
+        string Fresh() => "Timing!" + Guid.NewGuid().ToString("N");
+        var (unknownTenant, platformAtTenant, unknownPlatform) = (Fresh(), Fresh(), Fresh());
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, $"nobody.{Guid.NewGuid():N}@reset.test", unknownTenant)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, platformAccount.Email, platformAtTenant)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await PlatformLoginAsync($"nobody.{Guid.NewGuid():N}@reset.test", unknownPlatform)).StatusCode);
+
+        Assert.Equal(1, GatedHasher.Verifications.GetValueOrDefault(unknownTenant));
+        Assert.Equal(1, GatedHasher.Verifications.GetValueOrDefault(platformAtTenant));
+        Assert.Equal(1, GatedHasher.Verifications.GetValueOrDefault(unknownPlatform));
+    }
+
     /// <summary>The refusals said only AFTER the password matched (so they tell nothing about who exists) carry their own
     /// codes; the forced change's wrong current password too.</summary>
     [Fact]
@@ -94,9 +161,12 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         var reset = await SeedTenantUserAsync(tenantId);
         Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, reset.Id)).StatusCode);
         var before = await RawUserAsync(reset.Id);
+        var everyCollectionBefore = await CollectionCountsAsync();
         var usable = await CheckLinkAsync(reset.Email, _host.TenantEmails.LastTokenFor(reset.Email));
         Assert.Equal(HttpStatusCode.NoContent, usable.StatusCode);
         Assert.Equal(before, await RawUserAsync(reset.Id));
+        // FIX2 — "the check writes nothing", measured on the whole database: no audit row, no other document either.
+        Assert.Equal(everyCollectionBefore, await CollectionCountsAsync());
 
         // a pending invitation an administrator deactivated: the link is still its own → "deactivated" (409), as the POST
         var email = $"invited.{Guid.NewGuid():N}@reset.test";
@@ -147,10 +217,11 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         Assert.Equal(HttpStatusCode.BadRequest, (await RedeemTenantLinkAsync(burak.Email, NewPassword)).StatusCode);
     }
 
-    /// <summary>The pre-check is limited like the link door: links that do not match are counted per client (and address) and
-    /// earn the 429; the owner's valid link is never counted and still answers 204 from the same client.</summary>
+    /// <summary>FIX2 item 4 — the pre-check counts EVERY request (the valid link's too), per client, before it reads anything:
+    /// past the per-client limit even the owner's valid link gets the 429 from that client, and another client is not
+    /// affected (its own count).</summary>
     [Fact]
-    public async Task The_link_check_counts_only_links_that_do_not_match()
+    public async Task The_link_check_counts_every_request_the_valid_links_too()
     {
         var tenantId = _host.Seeded.TenantId;
         var user = await SeedTenantUserAsync(tenantId);
@@ -158,16 +229,72 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         var link = _host.TenantEmails.LastTokenFor(user.Email);
         var peer = RandomPeer();
 
-        for (var i = 0; i < Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
+        for (var i = 0; i < Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerClientLimit; i++)
         {
             Assert.Equal(HttpStatusCode.NoContent, (await PeerPostAsync(peer, "api/users/set-password/check", new { email = user.Email, token = link })).StatusCode);
-            Assert.Equal(HttpStatusCode.BadRequest, (await PeerPostAsync(peer, "api/users/set-password/check", new { email = user.Email, token = "junk" + i })).StatusCode);
         }
 
-        var refused = await PeerPostAsync(peer, "api/users/set-password/check", new { email = user.Email, token = "junk-over" });
+        var refused = await PeerPostAsync(peer, "api/users/set-password/check", new { email = user.Email, token = link });
         Assert.Equal((HttpStatusCode)429, refused.StatusCode);
         Assert.Contains(AuthRefusalCodes.TooManyRequests, await refused.Content.ReadAsStringAsync(), StringComparison.Ordinal);
-        Assert.Equal(HttpStatusCode.NoContent, (await PeerPostAsync(peer, "api/users/set-password/check", new { email = user.Email, token = link })).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await PeerPostAsync(RandomPeer(), "api/users/set-password/check", new { email = user.Email, token = link })).StatusCode);
+    }
+
+    /// <summary>FIX2 item 4 — the redemption POST had no limit; it is limited now, with its OWN count (a client that used up
+    /// its checks can still redeem, and the reverse).</summary>
+    [Fact]
+    public async Task The_redemption_is_limited_too_with_its_own_count()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode);
+        var peer = RandomPeer();
+
+        for (var i = 0; i < Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerClientLimit; i++)
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, (await PeerPostAsync(peer, "api/users/set-password",
+                new { email = user.Email, token = "junk-" + i, newPassword = NewPassword })).StatusCode);
+        }
+
+        var refused = await PeerPostAsync(peer, "api/users/set-password", new { email = user.Email, token = "junk-over", newPassword = NewPassword });
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.Contains(AuthRefusalCodes.TooManyRequests, await refused.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        // its own count: the same client's check is not refused
+        Assert.Equal(HttpStatusCode.NoContent, (await PeerPostAsync(peer, "api/users/set-password/check",
+            new { email = user.Email, token = _host.TenantEmails.LastTokenFor(user.Email) })).StatusCode);
+    }
+
+    private async Task<string> CollectionCountsAsync()
+    {
+        var names = await (await _host.Database.ListCollectionNamesAsync()).ToListAsync();
+        var counts = new List<string>();
+        foreach (var name in names.OrderBy(n => n, StringComparer.Ordinal))
+            counts.Add($"{name}={await _host.Database.GetCollection<BsonDocument>(name).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty)}");
+        return string.Join(";", counts);
+    }
+
+    /// <summary>FIX2 item 5 — the link's lookup (anonymous, across tenants) is served by an index, not a scan of every user:
+    /// the sparse index exists and the planner's winning plan for the lookup's own filter uses it.</summary>
+    [Fact]
+    public async Task The_link_lookup_has_its_index_and_uses_it()
+    {
+        var users = _host.Database.GetCollection<BsonDocument>("users");
+        var index = Assert.Single(await (await users.Indexes.ListAsync()).ToListAsync(),
+            x => x["name"] == Diten.AuthService.Persistence.Configurations.MongoDbIndexConfigurations.PasswordResetTokenHashIndexName);
+        Assert.True(index.GetValue("sparse", false).ToBoolean());
+
+        var explain = await _host.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            ["explain"] = new BsonDocument
+            {
+                ["find"] = "users",
+                ["filter"] = new BsonDocument { ["PasswordResetTokenHash"] = "no-such-hash", ["IsDeleted"] = false },
+                ["limit"] = 1
+            },
+            ["verbosity"] = "queryPlanner"
+        });
+        Assert.Contains(Diten.AuthService.Persistence.Configurations.MongoDbIndexConfigurations.PasswordResetTokenHashIndexName,
+            explain["queryPlanner"]["winningPlan"].ToJson(), StringComparison.Ordinal);
     }
 
     private async Task<HttpResponseMessage> CheckLinkAsync(string email, string token)

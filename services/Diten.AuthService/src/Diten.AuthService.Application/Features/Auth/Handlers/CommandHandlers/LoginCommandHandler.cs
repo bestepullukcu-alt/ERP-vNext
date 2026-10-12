@@ -70,7 +70,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         }
         catch
         {
-            await _authAuditService.WriteAsync("tenant_login_settings_read_failed", null, _tenantContext.TenantId, "{}", ct);
+            // FIX2 item 3 — anonymous: the row is written within a global budget, never once per request.
+            if (AnonymousAuditBudget.SettingsReadFailed.TryTake())
+                await _authAuditService.WriteAsync("tenant_login_settings_read_failed", null, _tenantContext.TenantId, "{}", ct);
             return Response<AuthResponse>.Fail("Login is temporarily unavailable.", [new ResponseError(AuthRefusalCodes.LoginUnavailable)], 401);
         }
 
@@ -90,24 +92,36 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         // answer is this door's own generic 401, given BEFORE the password is looked at: an account of that kind and a
         // stranger's address are the same answer, no failed-attempt count, no audit row, nothing to tell them apart. The
         // ordinary users of the same tenant are untouched.
-        if (user == null) return InvalidCredentials();
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX2 items 1–2 — ONE ANSWER UNTIL THE PASSWORD IS RIGHT. An unknown address, a platform
+        // account at this door, a deactivated account, an invitation not yet accepted, a locked account — with a wrong
+        // password every one of them is the same 401, the same code, the same body, and takes as long (the branches that
+        // find no account to check verify against SignInTiming's fixed hash). Only the right password learns more: "locked"
+        // or "deactivated". The failure is counted for every existing account (a locked one included), so the lockout keeps
+        // its threshold.
+        if (user == null)
+        {
+            SignInTiming.VerifyAgainstNoAccount(_passwordHasher, request.Password);
+            return InvalidCredentials();
+        }
         if (user.IsPlatformAccount)
         {
             // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
             TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.SignInDoor, _tenantContext.TenantId);
+            SignInTiming.VerifyAgainstNoAccount(_passwordHasher, request.Password);
             return InvalidCredentials();
-        }
-
-        var lockoutFailure = await CheckLockout(user, ct);
-        if (lockoutFailure is not null)
-        {
-            return lockoutFailure;
         }
 
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
             await HandleLoginFailure(user, settings, ct);
             return InvalidCredentials();
+        }
+
+        // The password is right: now — and only now — the account's state may be said.
+        var lockoutFailure = await CheckLockout(user, ct);
+        if (lockoutFailure is not null)
+        {
+            return lockoutFailure;
         }
 
         // Disabled accounts cannot log in. Checked AFTER password verify so it stays enumeration-safe.
@@ -165,7 +179,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         var failure = await _userRepository.RecordLoginFailureAsync(
             user.Id, _tenantContext.TenantId, settings.MaxFailedLoginAttempts, settings.LockoutDurationMinutes, ct);
         await _authAuditService.WriteAsync("tenant_login_password_failed", user.Id, _tenantContext.TenantId, "{}", ct);
-        if (failure.LockoutEnd.HasValue && failure.LockoutEnd > DateTime.UtcNow)
+        if (failure.LockoutStarted)
         {
             await _authAuditService.WriteAsync("tenant_login_lockout_started", user.Id, _tenantContext.TenantId, "{}", ct);
         }

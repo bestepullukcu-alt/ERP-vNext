@@ -35,8 +35,10 @@ public static class TenantPasswordLink
     public static async Task<(TenantPasswordLinkState State, User? User, string? TokenHash)> ReadAsync(
         IUserRepository users, IRefreshTokenHasher hasher, string? email, string? token, CancellationToken ct)
     {
-        // An empty token is a link that does not match — never a hashing exception.
-        if (string.IsNullOrWhiteSpace(token))
+        // An empty token is a link that does not match — never a hashing exception. FIX2 item 5 — nor is a token that is
+        // not one this service issues (64 random bytes, standard Base64: 88 characters), nor an address longer than an
+        // address can be: refused before anything is hashed or read (an anonymous request cannot make the store work).
+        if (!IsWellFormedToken(token) || (email ?? string.Empty).Length > MaxEmailLength)
         {
             return (TenantPasswordLinkState.Invalid, null, null);
         }
@@ -62,6 +64,20 @@ public static class TenantPasswordLink
         return user.IsDeactivatedByAdministrator()
             ? (TenantPasswordLinkState.Deactivated, user, tokenHash)
             : (TenantPasswordLinkState.Usable, user, tokenHash);
+    }
+
+    public const int TokenBytes = 64;
+    public const int MaxEmailLength = 254;
+
+    public static bool IsWellFormedToken(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token) || token.Length != 4 * ((TokenBytes + 2) / 3))
+        {
+            return false;
+        }
+
+        Span<byte> bytes = stackalloc byte[TokenBytes + 3];
+        return Convert.TryFromBase64String(token, bytes, out var written) && written == TokenBytes;
     }
 
     public static Response<NoContent> InvalidAnswer()

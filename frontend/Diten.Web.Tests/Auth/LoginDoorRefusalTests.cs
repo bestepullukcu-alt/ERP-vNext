@@ -89,6 +89,58 @@ public sealed class LoginDoorRefusalTests : IClassFixture<WebApplicationFactory<
         Assert.Equal(localizer["Auth.Error.RequestInvalid"].Value, Body(answer).Detail);
     }
 
+    // FIX2 item 6: the refresh never sends the service's English or an exception's text
+
+    [Fact]
+    public async Task A_refresh_that_throws_answers_the_general_sentence_never_the_exceptions_text()
+    {
+        using var _ = new CultureScope("tr");
+        var localizer = Localizer();
+        var controller = RefreshController(new RefreshGateway(() => throw new InvalidOperationException("secret internal detail at 10.0.0.7")), localizer);
+
+        var answer = Assert.IsType<ObjectResult>(await controller.Refresh(CancellationToken.None));
+
+        Assert.Equal(500, answer.StatusCode);
+        var json = JsonSerializer.Serialize(answer.Value);
+        Assert.DoesNotContain("secret internal detail", json, StringComparison.Ordinal);
+        Assert.Equal(localizer["Auth.Error.ServiceUnavailable"].Value, Body(answer).Detail);
+        Assert.False(JsonDocument.Parse(json).RootElement.GetProperty("reauthRequired").GetBoolean());
+    }
+
+    [Fact]
+    public async Task A_refused_refresh_answers_in_the_readers_language_and_keeps_reauth_required()
+    {
+        using var _ = new CultureScope("tr");
+        var localizer = Localizer();
+        var cookies = new CookieStub();
+        var controller = RefreshController(new RefreshGateway(() => new AuthBridgeResult(false, null, null, null, null,
+            "Refresh token is invalid.", ReauthRequired: true, StatusCode: 401)), localizer, cookies);
+
+        var answer = Assert.IsType<ObjectResult>(await controller.Refresh(CancellationToken.None));
+
+        Assert.Equal(401, answer.StatusCode);
+        Assert.Equal(localizer["Auth.Error.SessionEnded"].Value, Body(answer).Detail);
+        Assert.DoesNotContain("Refresh token is invalid", JsonSerializer.Serialize(answer.Value), StringComparison.Ordinal);
+        Assert.True(JsonDocument.Parse(JsonSerializer.Serialize(answer.Value)).RootElement.GetProperty("reauthRequired").GetBoolean());
+        Assert.True(cookies.Cleared);
+    }
+
+    /// <summary>FIX2 (review candidate AuthGateway:396) — a ProblemDetails body (`detail` / `title`, no code) is the
+    /// service's own English: never marked "already the reader's language", so the door says its own sentence.</summary>
+    [Theory]
+    [InlineData("""{"title":"Unauthorized","status":401,"detail":"Some English detail."}""")]
+    [InlineData("""{"title":"Some English title.","status":401}""")]
+    public async Task A_problem_details_body_is_never_taken_for_the_readers_language(string problem)
+    {
+        using var _ = new CultureScope("tr");
+        var localizer = Localizer();
+
+        var login = Assert.IsType<ObjectResult>(await Controller(Gateway(HttpStatusCode.Unauthorized, problem, localizer), localizer)
+            .Login(new AccountController.LoginRequest("a@b.test", "x", Guid.NewGuid(), null), CancellationToken.None));
+
+        Assert.Equal(localizer["Auth.Error.LoginFailed"].Value, Body(login).Detail);
+    }
+
     // ── item 3 (KR4): the page, rendered for real ────────────────────────────────────────────────────────────────
 
     [Theory]
@@ -103,6 +155,7 @@ public sealed class LoginDoorRefusalTests : IClassFixture<WebApplicationFactory<
         Assert.DoesNotContain("id=\"resetPasswordForm\"", html);
         Assert.DoesNotContain("id=\"newPassword\"", html);
         Assert.DoesNotContain("secret-link-token", html);           // the link is not echoed into the page
+        Assert.DoesNotContain("a@b.test", WebUtility.HtmlDecode(html)); // FIX2 — nor the address (review candidate)
         Assert.Contains("id=\"linkRefusal\"", html);
         Assert.Contains(TurkishSentence(key), WebUtility.HtmlDecode(html)); // Razor encodes non-ASCII letters
     }
@@ -125,6 +178,7 @@ public sealed class LoginDoorRefusalTests : IClassFixture<WebApplicationFactory<
 
         Assert.Equal(HttpStatusCode.OK, status);
         Assert.Contains("id=\"resetPasswordForm\"", html);
+        Assert.Contains("a@b.test", WebUtility.HtmlDecode(html));     // the form face does carry it (the control)
         Assert.DoesNotContain("id=\"linkRefusal\"", html);
         Assert.Contains("diten-refusal.js", html);
     }
@@ -138,6 +192,67 @@ public sealed class LoginDoorRefusalTests : IClassFixture<WebApplicationFactory<
 
         Assert.DoesNotContain("id=\"resetPasswordForm\"", html);
         Assert.Equal(0, gateway.Checks);
+    }
+
+    /// <summary>FIX2 small item — the link page (each face) sends no Referer onward and is not kept in a cache.</summary>
+    [Theory]
+    [InlineData(204)]
+    [InlineData(400)]
+    public async Task The_link_page_sends_no_referrer_and_is_not_cached(int checkStatus)
+    {
+        using var client = PageClient(new LinkCheckGateway(checkStatus));
+
+        var response = await client.GetAsync("/account/set-password?email=a%40b.test&token=secret-link-token&culture=tr");
+
+        Assert.Equal("no-referrer", Assert.Single(response.Headers.GetValues("Referrer-Policy")));
+        Assert.Contains("no-store", response.Headers.CacheControl!.ToString(), StringComparison.Ordinal);
+    }
+
+    private HttpClient PageClient(IAuthGateway gateway) =>
+        _factory.WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Development");
+                builder.UseSetting("GatewayUrl", ClosedPort);
+                builder.UseSetting("PlatformServiceUrl", ClosedPort);
+                builder.ConfigureTestServices(services =>
+                {
+                    services.RemoveAll<IAuthGateway>();
+                    services.AddSingleton(gateway);
+                });
+            })
+            .CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+    private static AccountController RefreshController(IAuthGateway gateway, IStringLocalizer<SharedResource> localizer, CookieStub? cookies = null)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Cookie = "access_token=not-a-jwt; refresh_token=refresh-value";
+        return new AccountController(gateway, cookies ?? new CookieStub(), null!, new StubEnvironment(), localizer)
+        {
+            ControllerContext = new ControllerContext { HttpContext = context }
+        };
+    }
+
+    private sealed class CookieStub : IAuthCookieService
+    {
+        public bool Cleared { get; private set; }
+        public void WriteTokens(HttpResponse response, string accessToken, string refreshToken, DateTime refreshExpiresAtUtc) { }
+        public void ClearTokens(HttpResponse response) => Cleared = true;
+    }
+
+    private sealed class RefreshGateway(Func<AuthBridgeResult> answer) : IAuthGateway
+    {
+        public Task<AuthBridgeResult> RefreshAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default) => Task.FromResult(answer());
+        public Task<AuthBridgeResult> CheckTenantPasswordLinkAsync(string email, string token, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> LoginTenantAsync(string email, string password, Guid tenantId, bool rememberMe = false, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> VerifyTenantMfaAsync(string challengeId, string code, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> ResendTenantMfaAsync(string challengeId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> LoginPlatformAsync(string email, string password, bool rememberMe = false, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> ChangePlatformPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> ChangeTenantPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> ResetTenantPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task LogoutAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     private async Task<(HttpStatusCode Status, string Html)> SetPasswordPageAsync(LinkCheckGateway gateway, string culture,

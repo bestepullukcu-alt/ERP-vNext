@@ -23,14 +23,17 @@ public class AccountController : Controller
     private readonly IBrandingGateway _brandingGateway;
     private readonly IWebHostEnvironment _environment;
     private readonly IStringLocalizer<SharedResource> _localizer;
+    private readonly ILogger<AccountController> _logger;
 
     public AccountController(
         IAuthGateway authGateway,
         IAuthCookieService authCookieService,
         IBrandingGateway brandingGateway,
         IWebHostEnvironment environment,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        ILogger<AccountController>? logger = null)
     {
+        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<AccountController>.Instance;
         _authGateway = authGateway;
         _authCookieService = authCookieService;
         _brandingGateway = brandingGateway;
@@ -43,11 +46,20 @@ public class AccountController : Controller
     // sentence — never the service's English. The body is the shape diten-refusal.js reads ({ errors, local: true }: a
     // sentence this application produced, already localized), with `detail` kept for the existing readers.
     private ObjectResult Refused(int status, AuthBridgeResult? result, string fallbackKey)
-    {
-        var detail = result is { ErrorLocalized: true } && !string.IsNullOrWhiteSpace(result.ErrorMessage)
+        => StatusCode(status, new { detail = SentenceOf(result, fallbackKey), errors = new[] { SentenceOf(result, fallbackKey) }, local = true });
+
+    private string SentenceOf(AuthBridgeResult? result, string fallbackKey)
+        => result is { ErrorLocalized: true } && !string.IsNullOrWhiteSpace(result.ErrorMessage)
             ? result.ErrorMessage
             : Say(fallbackKey);
-        return StatusCode(status, new { detail, errors = new[] { detail }, local = true });
+
+    // FIX2 item 6 — the refresh answers like every other door (the reader's language, the shape diten-refusal.js reads)
+    // and keeps `reauthRequired`, which dt-defaults' refresh reads; the service's English and an exception's text never
+    // reach the browser.
+    private ObjectResult RefreshRefused(int status, AuthBridgeResult? result, string fallbackKey, bool reauthRequired)
+    {
+        var detail = SentenceOf(result, fallbackKey);
+        return StatusCode(status, new { detail, errors = new[] { detail }, local = true, reauthRequired });
     }
 
     private string Say(string key)
@@ -279,6 +291,7 @@ public class AccountController : Controller
     [HttpGet("/platform/reset-password")]
     public IActionResult PlatformResetPassword([FromQuery] string? email, [FromQuery] string? token)
     {
+        KeepLinkOutOfReferrerAndCache();
         ViewBag.AuthMode = "platform";
         ViewBag.Email = email ?? string.Empty;
         ViewBag.Token = token ?? string.Empty;
@@ -298,6 +311,7 @@ public class AccountController : Controller
     [HttpGet("/account/set-password")]
     public async Task<IActionResult> SetPassword([FromQuery] string? email, [FromQuery] string? token, CancellationToken ct)
     {
+        KeepLinkOutOfReferrerAndCache();
         ViewBag.LinkRefusal = await SetPasswordLinkRefusalAsync(email, token, ct);
         ViewBag.AuthMode = "tenant";
         ViewBag.Email = email ?? string.Empty;
@@ -306,6 +320,15 @@ public class AccountController : Controller
         ViewBag.SetPasswordUrl = "/account/set-password";
         ViewBag.BackToLoginUrl = "/account/login";
         return View("ResetPassword");
+    }
+
+    // FIX2 small item — a page opened from a set-password link carries the link in its address: no Referer leaves it (to a
+    // font, an image, the next site) and no cache keeps it.
+    private void KeepLinkOutOfReferrerAndCache()
+    {
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+        Response.Headers.CacheControl = "no-store";
+        Response.Headers.Pragma = "no-cache";
     }
 
     private async Task<string?> SetPasswordLinkRefusalAsync(string? email, string? token, CancellationToken ct)
@@ -434,7 +457,7 @@ public class AccountController : Controller
         if (!TryGetCookie("access_token", out var accessToken) || !TryGetCookie("refresh_token", out var refreshToken))
         {
             _authCookieService.ClearTokens(Response);
-            return Unauthorized(new { detail = "Authentication cookies are missing." });
+            return RefreshRefused(StatusCodes.Status401Unauthorized, null, "Auth.Error.SessionEnded", reauthRequired: true);
         }
 
         var tenantId = TryReadTenantId(accessToken);
@@ -447,21 +470,19 @@ public class AccountController : Controller
                 {
                     _authCookieService.ClearTokens(Response);
                 }
-                return StatusCode(result.StatusCode ?? 500, new { 
-                    detail = result.ErrorMessage ?? "Refresh failed.",
-                    reauthRequired = result.ReauthRequired
-                });
+                var status = result.StatusCode ?? StatusCodes.Status500InternalServerError;
+                return RefreshRefused(status, result,
+                    status >= 500 ? "Auth.Error.ServiceUnavailable" : "Auth.Error.SessionEnded", result.ReauthRequired);
             }
 
             _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
             return Ok(new { success = true, user = result.User });
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            return StatusCode(500, new { 
-                detail = "Transient error during token refresh: " + ex.Message,
-                reauthRequired = false
-            });
+            // The exception is the server's to read (its type, in the log); the browser gets the general sentence.
+            _logger.LogWarning(ex, "Token refresh failed with {ExceptionType}; the session is kept.", ex.GetType().Name);
+            return RefreshRefused(StatusCodes.Status500InternalServerError, null, "Auth.Error.ServiceUnavailable", reauthRequired: false);
         }
     }
 

@@ -52,6 +52,13 @@ public sealed class AuthRefusalCodeContractTests
         Assert.Equal(declared, ExpectedCodeToResourceKey.Keys.OrderBy(c => c, StringComparer.Ordinal));
     }
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 6 — a door's own code constant is one of the shared codes (the platform forced
+    /// change's expired temporary password used to send "PLATFORM_TEMPORARY_PASSWORD_EXPIRED", a code the Web had no
+    /// sentence for).</summary>
+    [Fact]
+    public void The_platform_forced_change_sends_the_shared_expired_temporary_password_code()
+        => Assert.Equal(AuthRefusalCodes.TemporaryPasswordExpired, Diten.AuthService.Api.Controllers.PlatformAuthController.TemporaryPasswordExpiredCode);
+
     [Fact]
     public void The_web_gateway_maps_every_code_to_its_key()
     {

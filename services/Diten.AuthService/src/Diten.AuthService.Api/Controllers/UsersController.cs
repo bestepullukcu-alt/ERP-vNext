@@ -208,8 +208,21 @@ public sealed class UsersController : CustomBaseController
     // No tenant header/JWT is required — see TenantResolutionMiddleware public-path allowance.
     [HttpPost("set-password")]
     [AllowAnonymous]
-    public async Task<IActionResult> SetPassword([FromBody] SetTenantPasswordRequest request, CancellationToken ct)
+    [RequestSizeLimit(AnonymousLinkBodyLimit)] // FIX2 item 5 — an anonymous body is small: an address, a link, a password
+    public async Task<IActionResult> SetPassword(
+        [FromBody] SetTenantPasswordRequest request,
+        [FromServices] Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors,
+        [FromServices] Diten.AuthService.Infrastructure.Security.ClientAddressResolver clientAddress,
+        CancellationToken ct)
     {
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 4 — the redemption is limited too (it had no limit), with its own prefix.
+        var asking = clientAddress.Identify(HttpContext);
+        if (!passwordDoors.TryAcquireTenantLinkDoor(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.TenantLinkDoor.Redeem,
+                asking.Key, request.Email, asking.Identified))
+        {
+            return TenantLinkDoorTooManyRequests(passwordDoors);
+        }
+
         var result = await _mediator.Send(new SetTenantPasswordCommand(request.Email, request.Token, request.NewPassword), ct);
         return CreateActionResultInstance(result);
     }
@@ -217,31 +230,38 @@ public sealed class UsersController : CustomBaseController
     // WP-USERS-ROLES-CLOSE-FIX1 item 3 (KR4) — the set-password page's READ-ONLY pre-check: which face to draw before anyone
     // types a password (the form, "deactivated", or "this link is no longer valid"). The same reader as the redemption above,
     // so it says nothing the redemption would not; nothing is written. POST, so the link stays out of the URL (and of every
-    // access log). As the platform link door (BL-529 FIX5): a valid link is never counted; a link that does not match is
-    // counted per client / address and can earn the 429 — a pre-check cannot be used to sweep links faster than the door.
+    // access log). FIX2 item 4 — EVERY request is counted (per client, or per address bucket when clients cannot be told
+    // apart), before the store is read, under its own prefix — the valid link's too: a pre-check cannot be used to sweep
+    // links, nor to fill the store with reads. The link's 64 random bytes remain the real control.
     [HttpPost("set-password/check")]
     [AllowAnonymous]
+    [RequestSizeLimit(AnonymousLinkBodyLimit)]
     public async Task<IActionResult> CheckSetPasswordLink(
         [FromBody] CheckSetPasswordLinkRequest request,
         [FromServices] Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors,
         [FromServices] Diten.AuthService.Infrastructure.Security.ClientAddressResolver clientAddress,
         CancellationToken ct)
     {
-        var result = await _mediator.Send(new CheckTenantPasswordLinkQuery(request.Email, request.Token), ct);
-        if (result.StatusCode == 400)
+        // FIX2 item 4 — counted FIRST (every request, the valid link's too), before the store is read.
+        var asking = clientAddress.Identify(HttpContext);
+        if (!passwordDoors.TryAcquireTenantLinkDoor(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.TenantLinkDoor.Check,
+                asking.Key, request.Email, asking.Identified))
         {
-            var asking = clientAddress.Identify(HttpContext);
-            if (!passwordDoors.TryCountInvalidLinkAttempt(asking.Key, request.Email, asking.Identified))
-            {
-                Response.Headers.RetryAfter = ((int)passwordDoors.Window.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                return CreateActionResultInstance(Response<NoContent>.Fail(
-                    "Too many requests. Try again later.",
-                    [new ResponseError(AuthRefusalCodes.TooManyRequests)],
-                    429));
-            }
+            return TenantLinkDoorTooManyRequests(passwordDoors);
         }
 
-        return CreateActionResultInstance(result);
+        return CreateActionResultInstance(await _mediator.Send(new CheckTenantPasswordLinkQuery(request.Email, request.Token), ct));
+    }
+
+    internal const long AnonymousLinkBodyLimit = 8 * 1024;
+
+    private IActionResult TenantLinkDoorTooManyRequests(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors)
+    {
+        Response.Headers.RetryAfter = ((int)passwordDoors.Window.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return CreateActionResultInstance(Response<NoContent>.Fail(
+            "Too many requests. Try again later.",
+            [new ResponseError(AuthRefusalCodes.TooManyRequests)],
+            429));
     }
 
     // Re-issue a fresh set-password token for a pending invited user and re-send the invitation email.

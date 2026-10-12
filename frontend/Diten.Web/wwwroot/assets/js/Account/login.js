@@ -50,7 +50,7 @@ const LoginPage = (function () {
         try {
             const tenantId = config.authMode === 'platform' ? null : resolveTenantIdForLogin();
             if (config.authMode !== 'platform' && !tenantId) {
-                throw new Error(window.L10n?.TenantLoginMissingTenant || 'Tenant login link is missing tenant information.');
+                throw refusal(window.L10n?.TenantLoginMissingTenant || '');
             }
 
             const loginEndpoint = config.authMode === 'platform'
@@ -73,7 +73,7 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                throw new Error(await refusalSentence(response));
+                throw refusal(await refusalSentence(response));
             }
 
             const data = await response.json();
@@ -93,7 +93,7 @@ const LoginPage = (function () {
             window.location.href = data.redirectUrl || window.PostLoginDefault || '/WorkCenterNext';
 
         } catch (error) {
-            showError(error.message);
+            showError(sentenceOf(error));
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
         }
@@ -127,13 +127,13 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                throw new Error(await refusalSentence(response));
+                throw refusal(await refusalSentence(response));
             }
 
             const data = await response.json();
             window.location.href = data.redirectUrl || window.PostLoginDefault || '/WorkCenterNext';
         } catch (error) {
-            showError(error.message);
+            showError(sentenceOf(error));
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
         }
@@ -160,7 +160,7 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                throw new Error(await refusalSentence(response));
+                throw refusal(await refusalSentence(response));
             }
 
             const data = await response.json();
@@ -174,7 +174,7 @@ const LoginPage = (function () {
                 });
             }
         } catch (error) {
-            showError(error.message);
+            showError(sentenceOf(error));
         } finally {
             window.setTimeout(() => {
                 resendBtn.disabled = false;
@@ -200,6 +200,19 @@ const LoginPage = (function () {
         return (problem && problem.local === true && problem.detail) || window.L10n?.ErrorOccurred || '';
     }
 
+    // FIX2 item 6 — only a refusal this page put together (already the reader's language) is shown as it is; anything else
+    // thrown on the way (a network failure's TypeError, a parse error — English, and not the reader's business) is the
+    // general sentence.
+    function refusal(sentence) {
+        const error = new Error(sentence);
+        error.isRefusal = true;
+        return error;
+    }
+
+    function sentenceOf(error) {
+        return error && error.isRefusal && error.message ? error.message : (window.L10n?.ErrorOccurred || '');
+    }
+
     function resolveTenantIdForLogin() {
         // FIX-LOGIN-TENANT-FALLBACK — prefer ?tenantId= (invite link); otherwise fall back to the Development-only
         // DefaultTenant injected by the server. In Production devDefaultTenantId is null, so the guard below still
@@ -212,7 +225,8 @@ const LoginPage = (function () {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: window.L10n?.LoginErrorTitle || '',
-                html: `<div class="mb-1 text-muted">${message}</div>`,
+                // FIX2 item 6 — TEXT, never HTML: whatever the sentence holds is shown, not run.
+                text: message,
                 iconHtml: '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25" style="display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 76, 81, 0.12); border: 2px solid rgba(255, 76, 81, 0.25); margin: 0 auto !important;"><i class="bx bx-error-circle text-danger" style="font-size: 2.5rem; color: #ff4c51;"></i></div>',
                 confirmButtonText: window.L10n?.ConfirmButton || 'OK',
                 width: '400px',
@@ -220,7 +234,7 @@ const LoginPage = (function () {
                 customClass: {
                     popup: 'rounded-4 shadow-lg',
                     title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                    htmlContainer: 'mb-1 d-block w-100 text-center',
+                    htmlContainer: 'mb-1 d-block w-100 text-center text-muted',
                     actions: 'd-flex justify-content-center mt-4 w-100',
                     confirmButton: 'btn btn-primary waves-effect waves-light px-5',
                     icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'

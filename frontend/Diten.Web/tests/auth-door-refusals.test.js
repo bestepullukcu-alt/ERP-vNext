@@ -59,7 +59,7 @@ describe("the sign-in page says every refusal through the shared bridge", () => 
     submit();
     const dialog = await shownSentence();
 
-    expect(dialog.html).toContain(sentence);
+    expect(dialog.text).toContain(sentence);
     expect(dialog.confirmButtonText).toBe("Tamam");
   });
 
@@ -69,8 +69,28 @@ describe("the sign-in page says every refusal through the shared bridge", () => 
     submit();
     const dialog = await shownSentence();
 
-    expect(dialog.html).toContain(L.ErrorOccurred);
-    expect(dialog.html).not.toContain("Invalid email or password.");
+    expect(dialog.text).toContain(L.ErrorOccurred);
+    expect(dialog.text).not.toContain("Invalid email or password.");
+  });
+
+  test("FIX2 — a failure that is not a refusal (the network) is the general sentence, never its English message", async () => {
+    global.fetch = vi.fn(() => Promise.reject(new TypeError("Failed to fetch")));
+
+    submit();
+    const dialog = await shownSentence();
+
+    expect(dialog.text).toBe(L.ErrorOccurred);
+  });
+
+  test("FIX2 — a sentence is shown as TEXT, never as HTML", async () => {
+    const sentence = '<img src=x onerror="window.__pwned=1">';
+    global.fetch = vi.fn(() => answer(401, { detail: sentence, errors: [sentence], local: true }));
+
+    submit();
+    const dialog = await shownSentence();
+
+    expect(dialog.text).toBe(sentence);
+    expect(dialog.html).toBeUndefined();
   });
 
   test("an answer that is not JSON (a proxy's error page) is the general sentence, not a crash", async () => {
@@ -79,8 +99,8 @@ describe("the sign-in page says every refusal through the shared bridge", () => 
     submit();
     const dialog = await shownSentence();
 
-    expect(dialog.html).toContain(L.ErrorOccurred);
-    expect(dialog.html).not.toContain("Bad gateway");
+    expect(dialog.text).toContain(L.ErrorOccurred);
+    expect(dialog.text).not.toContain("Bad gateway");
   });
 });
 
@@ -110,7 +130,17 @@ describe("the password page says every refusal through the shared bridge", () =>
     submit();
     const dialog = await shownSentence();
 
-    expect(dialog.html).toContain(sentence);
+    expect(dialog.text).toContain(sentence);
+  });
+
+  test("FIX2 — a network failure on the password page is the general sentence, shown as text", async () => {
+    global.fetch = vi.fn(() => Promise.reject(new TypeError("Failed to fetch")));
+
+    submit();
+    const dialog = await shownSentence();
+
+    expect(dialog.text).toBe(L.ErrorOccurred);
+    expect(dialog.html).toBeUndefined();
   });
 
   test("an empty answer is the general sentence — never the old English 'Password could not be changed.'", async () => {
@@ -119,7 +149,7 @@ describe("the password page says every refusal through the shared bridge", () =>
     submit();
     const dialog = await shownSentence();
 
-    expect(dialog.html).toContain(L.ErrorOccurred);
-    expect(dialog.html).not.toContain("Password could not be changed");
+    expect(dialog.text).toContain(L.ErrorOccurred);
+    expect(dialog.text).not.toContain("Password could not be changed");
   });
 });

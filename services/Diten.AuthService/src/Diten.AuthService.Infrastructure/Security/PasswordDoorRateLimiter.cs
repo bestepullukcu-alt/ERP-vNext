@@ -75,6 +75,22 @@ public sealed class PasswordDoorRateLimiter : IDisposable
               && TryAcquire(_perAddress, $"reset-password|client-address|{client}|{Normalize(email)}")
             : TryAcquire(_perAddress, $"reset-password|address-bucket|{AddressBucket(email)}");
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 4 — the TENANT set-password link's two doors (the page's read-only check
+    /// and the redemption POST): EVERY request is counted, before anything is read — per client when clients can be told
+    /// apart, otherwise per address bucket — with its own prefix (never shares a count with the platform door's
+    /// "reset-password|…" keys, nor the check with the redemption). Unlike the platform door, a request carrying the valid
+    /// link is counted too: a page opened, refreshed and submitted a few times stays far inside the per-client limit, and
+    /// the link's 64 random bytes — not this count — are what keep it from being guessed. True = go on; false = 429.</summary>
+    public bool TryAcquireTenantLinkDoor(TenantLinkDoor door, string client, string? email, bool countPerClient)
+    {
+        var prefix = door == TenantLinkDoor.Check ? "tenant-link-check" : "tenant-link-set";
+        return countPerClient
+            ? TryAcquire(_perClient, $"{prefix}|client|{client}")
+            : TryAcquire(_perAddress, $"{prefix}|address-bucket|{AddressBucket(email)}");
+    }
+
+    public enum TenantLinkDoor { Check, Redeem }
+
     /// <summary>FIX6 — the bucket an address falls in while clients cannot be told apart (0 … buckets − 1).</summary>
     public static int AddressBucket(string? email)
         => (int)(BitConverter.ToUInt32(SHA256.HashData(Encoding.UTF8.GetBytes(Normalize(email))), 0) % UnidentifiedLinkBuckets);

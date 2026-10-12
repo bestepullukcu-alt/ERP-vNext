@@ -72,7 +72,8 @@ public sealed class TenantAuthController : CustomBaseController
         var tenantIdString = User.FindFirst("tenant_id")?.Value;
         if (!Guid.TryParse(userIdString, out var userId) || !Guid.TryParse(tenantIdString, out var tenantId))
         {
-            return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", 401));
+            // FIX2 item 6 — coded: the forced-change page says "your session has ended" in the reader's language.
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", [new ResponseError(AuthRefusalCodes.SessionEnded)], 401));
         }
 
         var command = new ForcedChangeTenantPasswordCommand(

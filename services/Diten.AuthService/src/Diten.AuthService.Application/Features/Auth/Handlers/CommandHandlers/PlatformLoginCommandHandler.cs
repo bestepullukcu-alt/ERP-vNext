@@ -56,7 +56,14 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             ? await _userRepository.GetByEmailAndTenantAsync(loginIdentifier, PlatformTenantId, ct)
             : await _userRepository.GetByUserNameAndTenantAsync(loginIdentifier, PlatformTenantId, ct);
 
-        if (user is null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 2 — no account still costs one verification (SignInTiming): the answer's time
+        // does not tell an administrator's address from an unknown one.
+        if (user is null)
+        {
+            SignInTiming.VerifyAgainstNoAccount(_passwordHasher, request.Password);
+            return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
+        }
+        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
             return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
         }

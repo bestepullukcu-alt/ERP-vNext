@@ -45,7 +45,7 @@ const ResetPasswordPage = (function () {
             // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — the shared bridge: the door's sentence is already the reader's
             // language ({ errors, local:true }); anything else is the general sentence, never the service's English.
             if (!response.ok) {
-                throw new Error(window.DitenRefusal
+                throw refusal(window.DitenRefusal
                     ? window.DitenRefusal.message(payload, {}, window.L10n, 'reset-password')
                     : ((payload.local === true && payload.detail) || window.L10n?.ErrorOccurred || ''));
             }
@@ -70,18 +70,27 @@ const ResetPasswordPage = (function () {
             });
             window.location.href = payload.redirectUrl || config.backToLoginUrl || '/platform/login';
         } catch (error) {
-            showError(error.message);
+            showError(error && error.isRefusal && error.message ? error.message : (window.L10n?.ErrorOccurred || ''));
         } finally {
             button.disabled = false;
             button.innerHTML = original;
         }
     }
 
+    // FIX2 item 6 — a refusal this page put together (already the reader's language); anything else thrown is the general
+    // sentence (see the catch above).
+    function refusal(sentence) {
+        const error = new Error(sentence);
+        error.isRefusal = true;
+        return error;
+    }
+
     function showError(message) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: window.L10n?.ErrorTitle || '',
-                html: `<div class="mb-1 text-muted">${message}</div>`,
+                // FIX2 item 6 — TEXT, never HTML.
+                text: message,
                 iconHtml: '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25" style="display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 76, 81, 0.12); border: 2px solid rgba(255, 76, 81, 0.25); margin: 0 auto !important;"><i class="bx bx-error-circle text-danger" style="font-size: 2.5rem; color: #ff4c51;"></i></div>',
                 confirmButtonText: window.L10n?.ConfirmButton || 'OK',
                 width: '400px',
@@ -89,7 +98,7 @@ const ResetPasswordPage = (function () {
                 customClass: {
                     popup: 'rounded-4 shadow-lg',
                     title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                    htmlContainer: 'mb-1 d-block w-100 text-center',
+                    htmlContainer: 'mb-1 d-block w-100 text-center text-muted',
                     actions: 'd-flex justify-content-center mt-4 w-100',
                     confirmButton: 'btn btn-primary waves-effect waves-light px-5',
                     icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'

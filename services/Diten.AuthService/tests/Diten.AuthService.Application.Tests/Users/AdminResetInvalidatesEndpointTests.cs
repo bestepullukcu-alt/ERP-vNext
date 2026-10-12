@@ -3015,10 +3015,14 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
     {
         private readonly PasswordHasher _inner = new();
 
+        // FIX2 item 2 — how many times each submitted password was verified (the door's timing-safe branches included).
+        public static ConcurrentDictionary<string, int> Verifications { get; } = new(StringComparer.Ordinal);
+
         public string Hash(string password) => _inner.Hash(password);
 
         public bool Verify(string password, string hash)
         {
+            Verifications.AddOrUpdate(password, 1, (_, count) => count + 1);
             var ok = _inner.Verify(password, hash);
             gate.Pass("verify:" + password);
             return ok;

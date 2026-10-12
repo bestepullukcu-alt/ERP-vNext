@@ -286,9 +286,15 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         // same filter, the platform-account exclusion included).
         if (AfterFailureCounted is { } hook) await hook();
 
-        var lockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
-        var locked = await Collection.UpdateOneAsync(filter, Builders<User>.Update.Set(u => u.LockoutEnd, lockoutEnd), cancellationToken: ct);
-        return new LoginFailureOutcome(counted.FailedLoginAttempts, locked.MatchedCount == 1 ? lockoutEnd : counted.LockoutEnd);
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX2 — the failures of a LOCKED account are counted now (the password is checked before
+        // the lock is said), but they do not extend the lockout already running: it ends when it was set to end.
+        var now = DateTime.UtcNow;
+        var lockoutEnd = now.AddMinutes(lockoutDurationMinutes);
+        var notLockedNow = Builders<User>.Filter.Eq(u => u.LockoutEnd, null) | Builders<User>.Filter.Lte(u => u.LockoutEnd, now);
+        var locked = await Collection.UpdateOneAsync(filter & notLockedNow, Builders<User>.Update.Set(u => u.LockoutEnd, lockoutEnd), cancellationToken: ct);
+        return locked.MatchedCount == 1
+            ? new LoginFailureOutcome(counted.FailedLoginAttempts, lockoutEnd, LockoutStarted: true)
+            : new LoginFailureOutcome(counted.FailedLoginAttempts, counted.LockoutEnd);
     }
 
     public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)

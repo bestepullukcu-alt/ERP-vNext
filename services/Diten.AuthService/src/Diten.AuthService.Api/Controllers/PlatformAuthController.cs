@@ -31,7 +31,9 @@ public sealed class PlatformAuthController : CustomBaseController
     public const string ForcedChangeNotPendingCode = "PLATFORM_FORCED_CHANGE_NOT_PENDING";
 
     /// <summary>BL-521 FIX3 item 4 — 401: the temporary password has expired; a password reset replaces it.</summary>
-    public const string TemporaryPasswordExpiredCode = "PLATFORM_TEMPORARY_PASSWORD_EXPIRED";
+    // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 6 — the one code the sign-in and the forced change share (AuthRefusalCodes), so the
+    // Web says it in the reader's language; before, this door's own "PLATFORM_TEMPORARY_PASSWORD_EXPIRED" had no sentence.
+    public const string TemporaryPasswordExpiredCode = AuthRefusalCodes.TemporaryPasswordExpired;
 
     /// <summary>BL-521 FIX4 item 5 — the Platform record status (its enum name) for which the sync switches the account on.</summary>
     private const string PlatformActiveStatus = "Active";

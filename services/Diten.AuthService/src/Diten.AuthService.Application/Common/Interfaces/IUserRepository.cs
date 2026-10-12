@@ -70,7 +70,8 @@ public interface IUserRepository
     Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct);
 }
 
-public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd);
+// WP-USERS-ROLES-CLOSE-FIX1 FIX2 — LockoutStarted: THIS failure started a lockout (not one already running).
+public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd, bool LockoutStarted = false);
 
 /// <summary>
 /// BL-529 FIX3 — what the stored account must still look like for a targeted write to land (null = not checked).
