@@ -434,8 +434,9 @@ const UNMARKED_PANELS = {
 /*
  * WP-LANE-UX-GUARDS-01 (CT decision, ONE-TIME) — screens that arrived with the main-sync of 2026-10-12, owned by other
  * teams: XMC-001, their views are not ours to mark. Named with the owner and the reason; the mark is the owner's work
- * and is sent to them. This is not "the list grows": the latch test below pins every list's size, so the next unmarked
- * panel is red again, whoever adds it and wherever.
+ * and is sent to them. This is not "the list grows": the latch test below pins every list's exact key list (FIX1 — not
+ * its size: an added row, a removed one or a swap all change it), so the next unmarked panel is red again, whoever adds
+ * it and wherever. The owner follows the path (`SupplyChain/` ↔ SCE, `CRM/` ↔ CRM).
  */
 const SCE = "SCE / MVP-6 (gmg-10)";
 const CRM = "CRM";
@@ -456,19 +457,67 @@ const MAIN_SYNC_UNMARKED = {
   "SupplyChain/Shipments/_TransitionOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY }
 };
 // The same main-sync screens: a consequential label that is not chord-marked — "chord olmalı, sahibine iletilecek".
-// Keyed by file + label (no line number, so an unrelated edit above the button does not move the key).
+// Keyed by file + label + its ordinal among the same label in that file (FIX1), never the line number: an unrelated
+// edit above the button does not move the key, and two same-labelled buttons in one file are two keys.
 const MAIN_SYNC_CONSEQUENTIAL = {
-  'SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml @Localizer["Confirm Status Change"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
-  'SupplyChain/Claims/Index.cshtml @Localizer["Submit Transition"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
-  'SupplyChain/Returns/Index.cshtml @Localizer["Submit Transition"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
-  'SupplyChain/Returns/_CreateEditOffcanvas.cshtml @Localizer["Create Return"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
-  'SupplyChain/Shipments/_PodOffcanvas.cshtml @Localizer["Confirm Action"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
-  'SupplyChain/Shipments/_TransitionOffcanvas.cshtml @Localizer["Confirm Action"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` }
+  'SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml @Localizer["Confirm Status Change"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Claims/Index.cshtml @Localizer["Submit Transition"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Returns/Index.cshtml @Localizer["Submit Transition"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Returns/_CreateEditOffcanvas.cshtml @Localizer["Create Return"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Shipments/_PodOffcanvas.cshtml @Localizer["Confirm Action"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Shipments/_TransitionOffcanvas.cshtml @Localizer["Confirm Action"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` }
 };
-// The latch: every list's size, pinned. A row added to any of them — named or not — is red here.
-const LIST_SIZES = { UNMARKED_PANELS: 5, NOT_CONSEQUENTIAL: 2, MAIN_SYNC_UNMARKED: 13, MAIN_SYNC_CONSEQUENTIAL: 6 };
-// "file:line label </button>" → "file label"
-const findingKey = (finding) => finding.replace(/^([^:]+):\d+ /, "$1 ").replace(/\s*<\/button>\s*$/, "").trim();
+// The latch (FIX1): every list's keys, pinned as the EXACT sorted list. Adding, removing or swapping a row changes the
+// list itself, so it is red here unless this pin changes in the same diff — where review sees it.
+const LIST_KEYS = {
+  UNMARKED_PANELS: [
+    "DeliveryExecutionManagement/Initiatives.cshtml",
+    "EnterpriseStrategyBusinessPerformance/Initiatives.cshtml",
+    "EnterpriseStrategyBusinessPerformance/Objectives.cshtml",
+    "PPM/Initiatives/_CreateEditOffcanvas.cshtml",
+    "PPM/Shared/_CreateEditOffcanvas.cshtml"
+  ],
+  NOT_CONSEQUENTIAL: [
+    "EnterpriseStrategyBusinessPerformance/Components/Planning/_PlanningCycleOffcanvas.cshtml",
+    "EnterpriseStrategyBusinessPerformance/Components/Planning/_StrategyPeriodOffcanvas.cshtml"
+  ],
+  MAIN_SYNC_UNMARKED: [
+    "CRM/CyclePeriods/_PeriodPanel.cshtml",
+    "CRM/KnowledgePaths/Workspace.cshtml",
+    "CRM/VisitPlanning/_DoctorPanel.cshtml",
+    "CRM/VisitPlanning/_NewPlanDrawer.cshtml",
+    "SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml",
+    "SupplyChain/Carriers/_CreateEditOffcanvas.cshtml",
+    "SupplyChain/Claims/Index.cshtml",
+    "SupplyChain/Claims/_CreateEditOffcanvas.cshtml",
+    "SupplyChain/Loads/_CreateEditOffcanvas.cshtml",
+    "SupplyChain/Returns/Index.cshtml",
+    "SupplyChain/Returns/_CreateEditOffcanvas.cshtml",
+    "SupplyChain/Shipments/_PodOffcanvas.cshtml",
+    "SupplyChain/Shipments/_TransitionOffcanvas.cshtml"
+  ],
+  MAIN_SYNC_CONSEQUENTIAL: [
+    'SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml @Localizer["Confirm Status Change"] #1',
+    'SupplyChain/Claims/Index.cshtml @Localizer["Submit Transition"] #1',
+    'SupplyChain/Returns/Index.cshtml @Localizer["Submit Transition"] #1',
+    'SupplyChain/Returns/_CreateEditOffcanvas.cshtml @Localizer["Create Return"] #1',
+    'SupplyChain/Shipments/_PodOffcanvas.cshtml @Localizer["Confirm Action"] #1',
+    'SupplyChain/Shipments/_TransitionOffcanvas.cshtml @Localizer["Confirm Action"] #1'
+  ]
+};
+// The owner follows the path, and the reason is the decision's own words — a row cannot borrow another team's owner.
+const OWNER_BY_PATH = [["SupplyChain/", SCE], ["CRM/", CRM]];
+const WHY_BY_LIST = { MAIN_SYNC_UNMARKED: MAIN_SYNC_WHY, MAIN_SYNC_CONSEQUENTIAL: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` };
+// "file:line label </button>" → "file label #n", n = its place among the same label in the same file (document order).
+const findingKeys = (findings) => {
+  const seen = new Map();
+  return findings.map((finding) => {
+    const base = finding.replace(/^([^:]+):\d+ /, "$1 ").replace(/\s*<\/button>\s*$/, "").trim();
+    const n = (seen.get(base) || 0) + 1;
+    seen.set(base, n);
+    return `${base} #${n}`;
+  });
+};
 
 // A FROZEN exception must really be on the FROZEN _Layout: the view itself, or EVERY view that renders the partial.
 const FROZEN_EXCEPTIONS = [
@@ -567,11 +616,15 @@ describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primar
 
   test("WP-LANE-UX-GUARDS-01: the latch — no exception list grows, and every main-sync row names its owner and reason", () => {
     const lists = { UNMARKED_PANELS, NOT_CONSEQUENTIAL, MAIN_SYNC_UNMARKED, MAIN_SYNC_CONSEQUENTIAL };
-    Object.entries(LIST_SIZES).forEach(([name, size]) => expect(Object.keys(lists[name]).length, name).toBe(size));
-    const unnamed = Object.entries({ ...MAIN_SYNC_UNMARKED, ...MAIN_SYNC_CONSEQUENTIAL })
-      .filter(([, row]) => ![SCE, CRM].includes(row && row.owner) || !/^main-sync \(2026-10-12\)/.test((row && row.why) || ""))
-      .map(([key]) => key);
-    expect(unnamed, "a main-sync row without its owner or reason").toEqual([]);
+    Object.entries(LIST_KEYS).forEach(([name, keys]) => expect(Object.keys(lists[name]).sort(), name).toEqual(keys));
+    // FIX1 — the owner is the path's, the reason is the decision's: anything else is named here.
+    const wrong = ["MAIN_SYNC_UNMARKED", "MAIN_SYNC_CONSEQUENTIAL"].flatMap((name) => Object.entries(lists[name])
+      .filter(([key, row]) => {
+        const owner = (OWNER_BY_PATH.find(([prefix]) => key.startsWith(prefix)) || [])[1];
+        return !owner || !row || row.owner !== owner || row.why !== WHY_BY_LIST[name];
+      })
+      .map(([key]) => `${name}: ${key}`));
+    expect(wrong, "a main-sync row whose owner is not its path's, or whose reason is not the decision's").toEqual([]);
   });
 
   test("every mark is one of the two values", () => {
@@ -597,9 +650,21 @@ describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primar
 
   test("a primary whose label is consequential is chord-marked, never enter (or named as an exception)", () => {
     const findings = withFields.filter((b) => !NOT_CONSEQUENTIAL[b.file]).flatMap(consequentialUnchorded);
-    expect(findings.filter((finding) => !MAIN_SYNC_CONSEQUENTIAL[findingKey(finding)])).toEqual([]);
+    const keys = findingKeys(findings);
+    expect(findings.filter((finding, i) => !MAIN_SYNC_CONSEQUENTIAL[keys[i]])).toEqual([]);
     // …and a main-sync row its owner fixed leaves the list (the list only shrinks).
-    expect(Object.keys(MAIN_SYNC_CONSEQUENTIAL).filter((key) => !findings.map(findingKey).includes(key))).toEqual([]);
+    expect(Object.keys(MAIN_SYNC_CONSEQUENTIAL).filter((key) => !keys.includes(key))).toEqual([]);
+  });
+
+  test("FIX1: two same-labelled buttons in one file are two keys, and fixing one forces a row out (no line numbers)", () => {
+    const two = ['X/P.cshtml:10 @Localizer["Confirm"] </button>', 'X/P.cshtml:40 @Localizer["Confirm"]</button>',
+      'Y/Q.cshtml:5 @Localizer["Confirm"]</button>'];
+    expect(findingKeys(two)).toEqual(['X/P.cshtml @Localizer["Confirm"] #1', 'X/P.cshtml @Localizer["Confirm"] #2',
+      'Y/Q.cshtml @Localizer["Confirm"] #1']);
+    // an unrelated edit above moves the line numbers, not the keys
+    expect(findingKeys(two.map((f) => f.replace(/:(\d+) /, (_, n) => `:${Number(n) + 7} `)))).toEqual(findingKeys(two));
+    // one of the pair is chord-marked by its owner: only #1 is left, so a list still holding #2 is stale (red above)
+    expect(findingKeys([two[1], two[2]])).not.toContain('X/P.cshtml @Localizer["Confirm"] #2');
   });
 
   test("positive control: the word check flags an enter-marked consequential label (every listed word)", () => {

@@ -312,7 +312,7 @@ durum gerçek depoda koşar).
 ## Yardım defteri tavanı taban dala karşı (BL-609)
 
 `docs/roadmap/backlog/page-help-ledger.md` (UXH-001) tavanlarını başlıktaki tek satırda taşır:
-`**Tavan (yalnız azalır): kiracı 236 · platform 18 · frozen 99**`. Web testi satır sayısının tavanın altında kaldığını
+`**Tavan (yalnız azalır): kiracı 246 · platform 18 · frozen 99**` (örnek; güncel değerler defterin kendi başlığındadır). Web testi satır sayısının tavanın altında kaldığını
 ölçer, ama aynı PR'da yükseltilen tavanı göremez.
 
 phase1 (`scripts/check_page_help_ledger_ceiling.py`) bu satırı PR'ın taban dalınınkiyle karşılaştırır:

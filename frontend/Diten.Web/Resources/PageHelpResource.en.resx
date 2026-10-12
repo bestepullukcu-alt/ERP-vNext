@@ -238,7 +238,7 @@
     <value>Narrow the list with the search box, or click “Filter”, choose “Status” or “Material type” and click “Apply”.</value>
   </data>
   <data name="Help.ITEMS.Step2" xml:space="preserve">
-    <value>Click “Add item”, fill in the identity and the stock behaviour, then click “Save”: the item is saved as “Draft”. Pressing Enter in a field saves the form too.</value>
+    <value>Click “Add item”, fill in the identity and the stock behaviour on its full-page form, then click “Save”: the item is saved as “Draft”. While you are in a field of that form, Enter saves it too. Later, on an active item only the name and the description change freely; a filled stock field needs an approved correction.</value>
   </data>
   <data name="Help.ITEMS.Step3" xml:space="preserve">
     <value>Open a draft's “Actions” and choose “Send for approval”: the item stays “Awaiting approval” until it is approved, and only then becomes “Active”.</value>
@@ -247,6 +247,6 @@
     <value>“Deactivate” takes an active item out of new stock entries; “Request reactivation” goes through the same approval again; “Retire” is final, is allowed only for a deactivated item with zero stock, and the code is never reused. Each of them asks for a reason.</value>
   </data>
   <data name="Help.ITEMS.Step5" xml:space="preserve">
-    <value>On an active item only the name and the description change freely; a filled stock field needs an approved correction. Press “?” at any time to open this help with the page's shortcuts.</value>
+    <value>Outside a text field, with no dialog or side panel open, the “?” key opens this help with the page's shortcuts.</value>
   </data>
 </root>
