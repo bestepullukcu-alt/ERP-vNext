@@ -22,6 +22,19 @@
             return;
         }
 
+    …and when the CONTROLLER answers the page's status code (`Response.StatusCode = 403` from
+    `PermissionClaims.HasPermission`), the view reads the claims with that SAME reader, so "*", a plural
+    `permissions` claim and a comma-separated list open the page on both sides at once (GlobalProducts EK item 11,
+    WP-URA-FIX-01). The snapshot reads only exact `permission` claims and would refuse a user the controller let in:
+
+        @@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "auth.users.assign-role"))
+        {
+            <partial name="_AccessDenied" model="@Localizer["Title"].Value" />
+            return;
+        }
+
+    tests/unauthorized-surface.test.js holds such views to the second form.
+
     ⚠ This is a DISPLAY decision, not an authorization one. The single source of truth stays the backend's
     `[HasPermission]`; removing this check breaks the screen, not the boundary (UAS-001 §4).
 

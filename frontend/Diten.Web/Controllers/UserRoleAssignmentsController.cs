@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
+using Diten.Web.Security;
 using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,10 @@ namespace Diten.Web.Controllers;
 [Route("UserRoleAssignments")]
 public sealed class UserRoleAssignmentsController : Controller
 {
+    // WP-URA-FIX-01 (UAS-001) — the key that opens this screen: the platform manifest's USER_ROLES page requires it, and
+    // AuthService's POST / DELETE /api/users/{id}/roles demand it. Display + proxy gate only; AuthService stays the authority.
+    public const string AssignRolePermission = "auth.users.assign-role";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -40,12 +45,37 @@ public sealed class UserRoleAssignmentsController : Controller
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View("~/Views/Governance/UserRoleAssignments/Index.cshtml");
+    public IActionResult Index()
+    {
+        // UAS-001 — no redirect for a signed-in user without the key: the status says 403 and the view draws the
+        // access-denied surface inside the shell, and nothing of the screen (Index.cshtml checks first).
+        if (!PermissionClaims.HasPermission(User, AssignRolePermission))
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+        return View("~/Views/Governance/UserRoleAssignments/Index.cshtml");
+    }
+
+    // A write this user may not make is refused here with a 403 before any call leaves for the gateway. FIX1 — the
+    // sentence is the one a 403 from AuthService already produces through GatewayRefusal (`AccessDenied`): the same
+    // refusal reads the same whichever side made it. (`AccessDeniedMessage` names "this page" — right for the face,
+    // wrong for an action toast.)
+    // FIX2 — a JsonResult, not StatusCode(403, value): an ObjectResult goes through content negotiation, so the
+    // caller's Accept header could pick another formatter (or a 406); the refusal is always the same JSON body. It is
+    // the FIRST line of each write — before the id check and the tenant/bearer headers (pinned by test).
+    private IActionResult? RefuseWithoutPermission() =>
+        PermissionClaims.HasPermission(User, AssignRolePermission)
+            ? null
+            : new JsonResult(GatewayRefusal.Local(_sharedLocalizer["AccessDenied"].Value))
+            {
+                StatusCode = StatusCodes.Status403Forbidden
+            };
 
     [HttpPost("assign")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Assign([FromForm] Guid userId, [FromForm] Guid roleId)
     {
+        if (RefuseWithoutPermission() is { } refused)
+            return refused;
+
         if (userId == Guid.Empty || roleId == Guid.Empty)
             return Json(GatewayRefusal.Local(_sharedLocalizer["ValidationFailed"].Value));
 
@@ -72,6 +102,9 @@ public sealed class UserRoleAssignmentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Revoke([FromForm] Guid userId, [FromForm] Guid roleId)
     {
+        if (RefuseWithoutPermission() is { } refused)
+            return refused;
+
         if (userId == Guid.Empty || roleId == Guid.Empty)
             return Json(GatewayRefusal.Local(_sharedLocalizer["ValidationFailed"].Value));
 

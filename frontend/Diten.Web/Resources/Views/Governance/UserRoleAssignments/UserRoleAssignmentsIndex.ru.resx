@@ -4,14 +4,14 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="Title" xml:space="preserve"><value>User Roles</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Assign or remove roles for a user.</value></data>
-  <data name="SelectUser" xml:space="preserve"><value>User</value></data>
+  <data name="Title" xml:space="preserve"><value>Роли пользователей</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Назначайте пользователю роли или снимайте их.</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Пользователь</value></data>
   <data name="SearchRoles" xml:space="preserve"><value>Название или код роли…</value></data>
-  <data name="SelectUserPrompt" xml:space="preserve"><value>Select a user to manage their roles.</value></data>
-  <data name="NoRoles" xml:space="preserve"><value>No roles are available.</value></data>
-  <data name="Assign" xml:space="preserve"><value>Assign</value></data>
-  <data name="Assigned" xml:space="preserve"><value>Assigned</value></data>
+  <data name="SelectUserPrompt" xml:space="preserve"><value>Выберите пользователя, чтобы управлять его ролями.</value></data>
+  <data name="NoRoles" xml:space="preserve"><value>Нет доступных ролей.</value></data>
+  <data name="Assign" xml:space="preserve"><value>Назначить</value></data>
+  <data name="Assigned" xml:space="preserve"><value>Назначена</value></data>
   <data name="SearchRolesLabel" xml:space="preserve"><value>Поиск ролей</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Все</value></data>
   <data name="FilterAssigned" xml:space="preserve"><value>Назначенные</value></data>

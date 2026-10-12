@@ -40,6 +40,7 @@ const GATED = {
   // Added when the Role Permissions screen was gated. The map is the guard: a screen absent from it is
   // simply not checked, which is why removing the gate from this very view broke nothing until this line existed.
   "Governance/RoleAssignments/Index.cshtml": "auth.roles.assign-permission",
+  "Governance/UserRoleAssignments/Index.cshtml": "auth.users.assign-role",
   // MOD-0357 S3 — the four Meetings screens, each on the key its own data actually needs (create/update stay
   // separate from read: a caller who may read a meeting is not automatically who may write one).
   "Meetings/Index.cshtml": "platform.meetings.read",
@@ -55,23 +56,101 @@ const GATED = {
   "MasterData/Brands/Index.cshtml": "mdm.brands.read",
   "MasterData/Brands/Create.cshtml": "mdm.brands.create",
   "MasterData/Brands/Edit.cshtml": "mdm.brands.update",
-  "MasterData/Brands/Details.cshtml": "mdm.brands.read"
+  "MasterData/Brands/Details.cshtml": "mdm.brands.read",
+  // WP-URA-FIX-01 FIX2 — the MDM screens whose controller answers the page's 403 itself (measured: the completeness
+  // test below derives that set from the controllers and fails while any of them is missing here).
+  "MasterDataManagement/GlobalProducts/Index.cshtml": "mdm.global-products.read",
+  "MasterDataManagement/FinishedGoods/Index.cshtml": "mdm.finished-goods.read",
+  "MasterDataManagement/Gskus/Index.cshtml": "mdm.gskus.read",
+  "MasterDataManagement/Lskus/Index.cshtml": "mdm.lskus.read"
+};
+
+/*
+ * WP-URA-FIX-01 FIX2 — views whose CONTROLLER answers the page's status code (`Response.StatusCode = 403`) are DERIVED
+ * from the controllers, never listed by hand: a controller that refuses with its own reader (PermissionClaims) and a
+ * view that decides with another (the Perms snapshot, exact `permission` claims only) disagree for "*", a plural
+ * `permissions` claim or a comma-separated list — 200 with a refused face, or 403 with the page. For these views the
+ * claims reader is REQUIRED (GlobalProducts EK item 11; URA FIX1).
+ */
+const CONTROLLERS = path.join(repoRoot, "frontend", "Diten.Web", "Controllers");
+const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true })
+  .flatMap((entry) => entry.isDirectory() ? walk(path.join(dir, entry.name)) : [path.join(dir, entry.name)]);
+const STATUS_ANSWERED = (() => {
+  const views = new Set();
+  walk(CONTROLLERS).filter((file) => file.endsWith(".cs")).forEach((file) => {
+    const code = fs.readFileSync(file, "utf8");
+    if (!/Response\.StatusCode\s*=\s*(?:StatusCodes\.Status403Forbidden|403)\b/.test(code)) { return; }
+    const root = (/const string ViewRoot\s*=\s*"~\/Views\/([^"]+)"/.exec(code) || [])[1];
+    for (const m of code.matchAll(/View\(\$?"(?:~\/Views\/([^"{}]+\.cshtml)|\{ViewRoot\}\/(\w+)\.cshtml)"/g)) {
+      if (m[1]) { views.add(m[1]); } else if (root) { views.add(`${root}/${m[2]}.cshtml`); }
+    }
+    // a `View($"{ViewRoot}/{view}.cshtml")` helper (Brands' Denied) serves the views the file names elsewhere
+    if (root && /View\(\$"\{ViewRoot\}\/\{\w+\}\.cshtml"/.test(code)) {
+      for (const m of code.matchAll(/(?:Denied|View)\("(\w+)"/g)) { views.add(`${root}/${m[1]}.cshtml`); }
+    }
+  });
+  return [...views].filter((view) => fs.existsSync(web("Views", view))).sort();
+})();
+
+/** Status-answered views that decide through the CONTROLLER's own answer instead of reading claims: named, with why. */
+const CONTROLLER_DECIDED = {
+  "MasterDataManagement/ProductLegalEntityScopes/Index.cshtml":
+    "reads ViewData[\"CanReadProductScope\"], which the controller sets from PermissionClaims itself — one reader by " +
+    "construction; HTTP-tested by ProductLegalEntityScopesPageRenderTests"
+};
+
+/** Razor comments removed: a gate that only exists inside @* … *@ gates nothing. */
+const stripRazorComments = (source) => source.replace(/@\*[\s\S]*?\*@/g, "");
+
+const gateReaders = (key) => {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return {
+    snapshot: new RegExp(`Perms\\.Has\\(\\s*"${escaped}"\\s*\\)`),
+    // the full name, or the short one under `@using Diten.Web.Security`; any spacing inside the call
+    claims: new RegExp(`(?:Diten\\.Web\\.Security\\.)?PermissionClaims\\.HasPermission\\(\\s*User\\s*,\\s*"${escaped}"\\s*\\)`)
+  };
+};
+
+/**
+ * The guard's DECISION, as a function, so it is itself tested on made-up view sources below (FIX2: CT sabotage U4 turned
+ * the assertion into `expect(true)` and nothing noticed). Returns what is wrong; an empty list means the gate is right.
+ */
+const gateProblems = (rawSource, key, { claimsRequired = false } = {}) => {
+  const source = stripRazorComments(rawSource);
+  const { snapshot, claims } = gateReaders(key);
+  const problems = [];
+  const claimsCall = claims.exec(source);
+  if (!snapshot.test(source) && !claimsCall) { problems.push(`the view does not gate on ${key}`); }
+  if (claimsRequired && !claimsCall) {
+    problems.push(`the controller answers this page's status through PermissionClaims; the view must read ${key} with it`);
+  }
+  if (claimsCall && !claimsCall[0].startsWith("Diten.") && !/^\s*@using\s+Diten\.Web\.Security\s*$/m.test(source)) {
+    problems.push("PermissionClaims is named without `@using Diten.Web.Security`");
+  }
+  if (snapshot.test(source) && !/@inject\s+Diten\.Web\.Services\.IPermissionSnapshot\s+Perms/.test(source)) {
+    problems.push("the view does not inject the permission snapshot");
+  }
+  return problems;
 };
 
 describe("the gate stands in front of the page, not beside it", () => {
   Object.entries(GATED).forEach(([file, key]) => {
     const source = () => read("Views", file);
 
-    test(`${file} checks ${key}`, () => {
-      expect(source(), "the view does not inject the permission snapshot")
-        .toMatch(/@inject\s+Diten\.Web\.Services\.IPermissionSnapshot\s+Perms/);
-      expect(source(), `the view does not gate on ${key}`)
-        .toMatch(new RegExp(`Perms\\.Has\\("${key.replace(/\./g, "\\.")}"\\)`));
+    /*
+     * Two readers are accepted: the UX snapshot (`Perms.Has`, injected) and the controller's own reader
+     * (`PermissionClaims.HasPermission(User, …)`). Where the controller answers the page's status code, only the
+     * second (FIX2, derived set above).
+     */
+    const { snapshot: snapshotGate, claims: claimsGate } = gateReaders(key);
+    const claimsRequired = STATUS_ANSWERED.includes(file);
+    test(`${file} checks ${key}${claimsRequired ? " with the controller's reader" : ""}`, () => {
+      expect(gateProblems(source(), key, { claimsRequired })).toEqual([]);
     });
 
     test(`${file} renders the refusal and stops before drawing anything`, () => {
-      const s = source();
-      const gate = s.indexOf("Perms.Has(");
+      const s = stripRazorComments(source());
+      const gate = Math.max(s.search(snapshotGate), s.search(claimsGate));
       const partial = s.indexOf('name="_AccessDenied"');
       const stop = s.indexOf("return;", gate);
 
@@ -89,6 +168,11 @@ describe("the gate stands in front of the page, not beside it", () => {
         if (at < 0) { return; }
         expect(at, `\`${marker}\` is drawn before the unauthorized user is stopped`).toBeGreaterThan(stop);
       });
+
+      // FIX2 — and NO markup line at all comes before the gate (a root `<div id="raRoot" data-…>` moved above it is the
+      // page again, whatever it is called). C# lines in @{ } never start with "<"; @inject's generics are mid-line.
+      const markupBeforeGate = s.slice(0, gate).split("\n").map((line) => line.trim()).filter((line) => line.startsWith("<"));
+      expect(markupBeforeGate, "markup is drawn before the gate").toEqual([]);
     });
 
     test(`${file} does not redirect the unauthorized user away`, () => {
@@ -99,6 +183,67 @@ describe("the gate stands in front of the page, not beside it", () => {
         .not.toMatch(/RedirectToAction|Response\.Redirect|Context\.Response\.Redirect|location\.href/);
       expect(s, "the view falls back to the shell-less 401 page, which strips the user's menu")
         .not.toContain("NotAuthorized");
+    });
+  });
+});
+
+describe("WP-URA-FIX-01 FIX2: the guard's own decision, measured on made-up views", () => {
+  const KEY = "auth.users.assign-role";
+  const page = (gate, head = "") => `${head}@{ Layout = "_LayoutTenantShell"; }\n${gate}\n{\n    <partial name="_AccessDenied" model="@Localizer["Title"].Value" />\n    return;\n}\n<h5>x</h5>`;
+
+  test("a view with NO gate is refused", () => {
+    expect(gateProblems(page("<div></div>"), KEY)).not.toEqual([]);
+  });
+
+  test("a gate that exists only inside a Razor comment is refused", () => {
+    expect(gateProblems(page(`@* @if (!Perms.Has("${KEY}")) *@`, "@inject Diten.Web.Services.IPermissionSnapshot Perms\n"), KEY))
+      .not.toEqual([]);
+  });
+
+  test("the snapshot reader is refused where the controller answers the status", () => {
+    const snapshotView = page(`@if (!Perms.Has("${KEY}"))`, "@inject Diten.Web.Services.IPermissionSnapshot Perms\n");
+    expect(gateProblems(snapshotView, KEY)).toEqual([]);
+    expect(gateProblems(snapshotView, KEY, { claimsRequired: true })).not.toEqual([]);
+  });
+
+  test("the claims reader passes: full name, or short name under @using, with any spacing", () => {
+    expect(gateProblems(page(`@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "${KEY}"))`), KEY, { claimsRequired: true }))
+      .toEqual([]);
+    expect(gateProblems(page(`@if (!PermissionClaims.HasPermission( User,"${KEY}" ))`, "@using Diten.Web.Security\n"), KEY,
+      { claimsRequired: true })).toEqual([]);
+  });
+
+  test("the short name WITHOUT @using is refused (it would not compile, and must not pass the guard)", () => {
+    expect(gateProblems(page(`@if (!PermissionClaims.HasPermission(User, "${KEY}"))`), KEY, { claimsRequired: true }))
+      .not.toEqual([]);
+  });
+
+  test("a gate on ANOTHER key is refused", () => {
+    expect(gateProblems(page('@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "auth.users.read"))'), KEY))
+      .not.toEqual([]);
+  });
+});
+
+describe("WP-URA-FIX-01 FIX2: every view whose controller answers its 403 is in the guard's map", () => {
+  test("the derived set reaches the screens it must (guards against a vacuous scan)", () => {
+    expect(STATUS_ANSWERED).toEqual(expect.arrayContaining([
+      "Governance/UserRoleAssignments/Index.cshtml",
+      "Governance/RoleAssignments/Index.cshtml",
+      "MasterDataManagement/GlobalProducts/Index.cshtml",
+      "MasterData/Brands/Index.cshtml"
+    ]));
+    expect(STATUS_ANSWERED.length).toBeGreaterThanOrEqual(8);
+  });
+
+  test("each is in GATED (and so read with the controller's reader) or named as controller-decided, with why", () => {
+    const missing = STATUS_ANSWERED.filter((view) => !(view in GATED) && !(view in CONTROLLER_DECIDED));
+    expect(missing, "a status-answered view the guard does not check").toEqual([]);
+  });
+
+  test("a controller-decided view really reads the controller's decision", () => {
+    Object.keys(CONTROLLER_DECIDED).forEach((view) => {
+      expect(STATUS_ANSWERED, `${view} is no longer status-answered; drop it from CONTROLLER_DECIDED`).toContain(view);
+      expect(read("Views", view)).toMatch(/ViewData\["CanRead\w+"\]/);
     });
   });
 });
