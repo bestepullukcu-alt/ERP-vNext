@@ -69,15 +69,23 @@ public static class VisitWorkStatus
             return ReportMissing;
         }
 
-        var today = DateOnly.FromDateTime(now.UtcDateTime);
-        if (plan.PlannedDate < today)
+        // WP-VW-W3 (CT, E2) — the execution outranks the calendar day: a FINISHED visit happened and waits for its report
+        // (report_missing, never "missed" the next day); a STARTED one is in progress until it is finished or the 48 h
+        // window closes (expired above), whatever the day.
+        if (execution is not null && execution.IsFinished())
         {
-            return Missed;
+            return ReportMissing;
         }
 
         if (execution is not null && execution.IsStarted())
         {
             return InProgress;
+        }
+
+        var today = DateOnly.FromDateTime(now.UtcDateTime);
+        if (plan.PlannedDate < today)
+        {
+            return Missed;
         }
 
         return plan.PlannedDate == today ? Today : Planned;

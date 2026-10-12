@@ -547,8 +547,20 @@ public sealed class VisitExecutionW3Tests
         _clock.Value = Now.AddMinutes(20);
         await Capturer().Handle(new FinishVisitExecutionCommand(dto.Id, null), default);
         var after = (await calendar.Handle(new GetVisitCalendarQuery("2026-10-15", "2026-10-15"), default)).Data!.Items.Single();
-        Assert.Equal(VisitWorkStatus.Today, after.WorkStatus); // finished: the earlier rules apply again
+        Assert.Equal(VisitWorkStatus.ReportMissing, after.WorkStatus); // CT: finished = happened, waits for its report
         Assert.Equal(Now.AddMinutes(20), after.FinishedAt);
+
+        // CT — the next day: a finished visit is still report_missing (never "missed"); a started one still in_progress
+        var execution = _executions.Items.Single();
+        Assert.Equal(VisitWorkStatus.ReportMissing, VisitWorkStatus.Derive(plan, null, Now.AddDays(1), execution));
+        var unfinished = new Diten.CrmService.Domain.Entities.VisitExecution
+        {
+            Id = Guid.NewGuid(), TenantId = execution.TenantId, PlannedVisitId = plan.Id,
+            ResourceId = execution.ResourceId, Status = VisitExecutionStatus.Started, StartedAt = Now
+        };
+        Assert.Equal(VisitWorkStatus.InProgress, VisitWorkStatus.Derive(plan, null, Now.AddDays(1), unfinished));
+        Assert.Equal(VisitWorkStatus.Missed, VisitWorkStatus.Derive(plan, null, Now.AddDays(1)));
+        Assert.Equal(VisitWorkStatus.Expired, VisitWorkStatus.Derive(plan, null, Now.AddDays(3), unfinished));
 
         var onlyInProgress = await calendar.Handle(new GetVisitCalendarQuery("2026-10-15", "2026-10-15", null, "in_progress"), default);
         Assert.Equal(200, onlyInProgress.StatusCode);
