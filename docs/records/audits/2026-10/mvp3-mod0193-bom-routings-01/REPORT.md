@@ -55,6 +55,7 @@ the branch by ElikPenco): BL-501 connection deferred until after the MVPs; the P
 | M-4 Platform | `35221a406` self-registration · `9b5c46a05` entitlement → tenant Admin gets the 6 BOM permissions; UAS-001 denial live | done |
 | M-5 browser | `b67b13f7f` (actor name fix) · `d6af82f2d` (history field labels, 7 languages) · `2534ec00d` (evidence) | done |
 | M-6 suites | `bbd345ffb`, refreshed after the a814bad0f merge | accepted; re-measured: 0 new red |
+| main sync 2 + port | `9e25c6843` (origin/main `77cd61a44`, PR #139) · `872d41105` (Manufacturing 5067 → **5070**, OD-P1) | 0 new red vs `77cd61a44`; live: gateway `/api/bom` → 5070, nothing on 5067 |
 | Central audit (BL-501) | `82ebedeb4` pre-wiring, then removed by `730a7fa1f` (deferred after the MVPs; ledger lists the 4 commands) | open item, PR does not wait |
 
 **Login (owner rule 1):** admin login succeeded (`admin@diten.com`, Web `/platform/login`; no password change, reset or
@@ -66,13 +67,14 @@ Internal), its initial admin invited (Development returns a temporary password),
 
 | level | what | result |
 |---|---|---|
-| E2 | `service-suite.txt` — temporary Mongo replica set (port 28117), 0 skipped, on the branch after `730a7fa1f` | 73/73 |
+| E2 | `service-suite.txt` — temporary Mongo replica set (port 28117), 0 skipped, after `730a7fa1f`, the main sync and the port move | 73/73 |
+| E3 | `port-5070-live.txt` — service on its own config listens on 5070; gateway `/api/bom` → `localhost:5070`; nothing on 5067 | done |
 | E2 | `service-sabotage.txt`, `m3-mdm-sabotage.txt`, `guards-sabotage-2026-10-12.txt` | each guard red under sabotage, green restored |
 | **E3** | `m3-live-mdm.txt` (2026-10-06) — real Gateway + MDM: DRAFT LE 422, ACTIVE LE 201/200, unknown LE 422, no LE 400, other tenant 422, MDM stopped 503 | as expected |
 | **E3** | `gateway-e2e.txt` (2026-10-06) — full API flow incl. other active LE 404, no permission 403 | 15/15 |
 | E3 | `m4-self-registration.txt` · `m4-entitlement-uas001.txt` — catalog visible; before entitlement: in-shell access-denied, no redirect, no skeleton, gateway 403; after: 36 → 42 permissions, exactly the 6 `manufacturing.bom.*`; `AdminModules` untouched | done |
 | **E3** | `m5-browser-flow.txt` — real login; choose LE → create v1 → release → v2 → release → v1 Superseded + history → explode (100 → 250.000 KG / 50.000 L) → Excel export (xlsx, 2 rows) → `ar` RTL list + details; 20 screenshots + xlsx kept outside the repository (sha256 listed) | done |
-| E2 | `m6-suite-comparison.txt` — branch vs origin/main `a814bad0f`, same SDK | 0 new red (architecture 69/77 = main, tenancy 3/3, gateway 86/87 = main, web 1067/1067 vs 1063/1063) |
+| E2 | `m6-suite-comparison.txt` — branch vs origin/main `77cd61a44`, same SDK | 0 new red vs `77cd61a44` (architecture 69/77 = main, tenancy 3/3, gateway 110/111 = main, web 1433/1433 vs 1429/1429) |
 | E1 | SDK 8.0.131: service + gateway build 0 errors (in `m6-suite-comparison.txt`); `m6-sdk8-build.txt` (2026-10-06) for Web's pre-existing CS0121 | — |
 | E1 | `verify-datatable.txt` · `dcp002.txt` | as before |
 

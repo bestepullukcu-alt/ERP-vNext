@@ -1,17 +1,15 @@
-# M-6 / main sync — suites on the branch vs origin/main baseline (same machine, same SDK 10.0.112, 2026-10-12T08:56:39Z)
-# main = worktree of origin/main a814bad0f (PR #134 merged) · branch = feature/mvp3-bom-routings @ 9f96b1ff2 (merge c219f0079, HEAD..origin/main = 0)
+# main sync 77cd61a44 (PR #139) + port 5070 — suites on the branch vs origin/main baseline (same machine, SDK 10.0.112, 2026-10-12T12:55:00Z)
+# main = worktree of origin/main 77cd61a44 · branch = feature/mvp3-bom-routings @ 872d41105 (merge 9e25c6843, port change 872d41105; HEAD..origin/main = 0)
 
 | suite | branch | main | new red |
 |---|---|---|---|
 | architecture | 69/77 | 69/77 | 0 |
 | tenancy | 3/3 | 3/3 | 0 |
-| gateway | 86/87 | 86/87 | 0 |
-| web | 1067/1067 | 1063/1063 | 0 |
-| service (ManufacturingService) | 77/77 | — (not on main) | 0 |
+| gateway | 110/111 | 110/111 | 0 |
+| web | 1433/1433 | 1429/1429 | 0 |
+| service (ManufacturingService, temporary Mongo replica set 28117) | 73/73, 0 skipped | — (not on main) | 0 |
 
-Reds present on BOTH sides (main's, not MVP-3):
-- architecture (8): DocsPathGuardTests x5, MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest, AuditTrailStandardTests x2. Same 77 test names (TRX diff empty); failure text byte-identical; 0 lines mention Manufacturing.
-- gateway (1): OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet — both list 5063 x46, 5064 x62, 5065 x14; 5066 and 5067 x0 (5065 = BL-470, PR #136).
-Web +4 on the branch (TRX diff) = MVP-3 BomsL10nTests (4).
-SDK 8.0.131 (CI): Diten.ManufacturingService.sln and Diten.ApiGateway build, 0 errors.
-Note 2026-10-12: after merging 730a7fa1f the architecture suite was re-run on the branch — 69/77, the same 8 reds as main a814bad0f (failure text identical); the service suite is 73/73 (see service-suite.txt).
+- architecture: the same 8 reds on both sides (DocsPathGuard x5, MongoTestDatabaseGuard x1, AuditTrailStandard x2); test names identical (TRX), failure text byte-identical, 0 lines mention Manufacturing.
+- gateway: the same 1 red on both sides, listing 5063 x46, 5064 x62, 5065 x14; 5066, 5067 (Inventory) and 5070 (Manufacturing) x0. Test names identical (TRX).
+- web: +4 on the branch (TRX) = MVP-3 BomsL10nTests.
+- temporary Mongo shut down and its data deleted after the run. Live port check: port-5070-live.txt.

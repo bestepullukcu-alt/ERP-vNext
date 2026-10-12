@@ -16,3 +16,8 @@ Skipped lines: 0
 databases written: ['diten_manufacturing_tests']
 (73 = after 730a7fa1f removed those 4 tests)
 Both temporary replica sets were shut down and their data directories deleted after the run.
+
+## after main sync 77cd61a44 + port 5070 (@ 872d41105)
+Total tests: 73
+     Passed: 73
+Skipped lines: 0 · temporary replica set rstmp on 127.0.0.1:28117, shut down and deleted after the run.
