@@ -1,0 +1,93 @@
+@model Diten.Web.Models.CRM.VisitPresentationIndexViewModel
+@using Diten.Web.Views.CRM.VisitPresentation
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitPresentationIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    WP-VW-W3 (W3-WEB-b) — the Visit Presentation: the doctor's screen (E4a), the rep's remote (E4b) and the finish summary
+    with the doctor's signature (E4c). Desktop: split (doctor + 380 px rep panel); tablet: the doctor screen full screen,
+    the rep panel behind a PIN; phone: the rep panel only. Every call is a same-origin proxy under
+    /CRM/VisitPresentation/api/*. UAS-001: without the read keys NOTHING but the access notice. The rep's notes are drawn
+    in the rep panel only — the doctor area never carries them.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="vp-root" class="vp-root"
+     data-api-base="/CRM/VisitPresentation/api"
+     data-workspace-url="/CRM/VisitWorkspace"
+     data-report-url="/CRM/VisitExecution"
+     data-planned-visit-id="@(Model.PlannedVisitId?.ToString() ?? string.Empty)"
+     data-phase="@(Model.Summary ? "summary" : "run")"
+     data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"
+     data-can-read-visit="@Model.CanReadVisit.ToString().ToLowerInvariant()"
+     data-can-pick-people="@Model.CanPickPeople.ToString().ToLowerInvariant()">
+
+    @* the top bar (desktop / tablet): back, the visit, the live chip, in person / remote *@
+    <div class="vp-topbar d-none" id="vp-topbar">
+        <a class="vp-icon-btn" id="vp-back" href="/CRM/VisitWorkspace" aria-label="@Localizer["BackLabel"]"><i class="bx bx-arrow-back vp-flip"></i></a>
+        <div class="vp-visit">
+            <span class="vp-visit-name" id="vp-visit-name"></span>
+            <span class="vp-visit-line" id="vp-visit-line"></span>
+        </div>
+        <span class="vp-live" id="vp-live"><span class="vp-pulse"></span><span id="vp-live-text"></span></span>
+        <div class="flex-grow-1"></div>
+        <div class="vp-seg" role="radiogroup" aria-label="@Localizer["KindLabel"]" id="vp-kinds"></div>
+    </div>
+
+    <div class="alert alert-info d-none" id="vp-notice" role="status"></div>
+    <div class="text-muted small p-3" id="vp-loading">@Localizer["Loading"]</div>
+
+    <div class="vp-split d-none" id="vp-split">
+        @* E4a — the doctor's screen: product tabs, the slide, the reference, the dots. NO rep notes here, ever. *@
+        <section class="vp-doc" id="vp-doc" aria-label="@Localizer["DoctorScreen"]">
+            <div class="vp-doc-head">
+                <div class="vp-ptabs" id="vp-ptabs" role="tablist"></div>
+                <div class="flex-grow-1"></div>
+                <span class="vp-doc-hint" id="vp-doc-hint"></span>
+                <button type="button" class="vp-hold-btn d-none" id="vp-exit-hold" data-hold="unlock"><i class="bx bx-lock-alt"></i> <span id="vp-exit-hold-text"></span></button>
+            </div>
+            <div class="vp-slide" id="vp-slide"></div>
+            <div class="vp-doc-foot">
+                <span class="vp-ref" id="vp-ref"></span>
+                <div class="vp-dots" id="vp-dots"></div>
+                <span class="vp-slide-no" id="vp-slide-no"></span>
+            </div>
+            <button type="button" class="vp-handle d-none" id="vp-handle" data-hold="unlock"><i class="bx bx-chevron-left vp-flip"></i><i class="bx bx-lock-alt"></i></button>
+        </section>
+
+        @* E4b — the rep's remote *@
+        <aside class="vp-rep" id="vp-rep" aria-label="@Localizer["RepPanel"]"></aside>
+    </div>
+
+    @* E4c — the finish summary *@
+    <section class="vp-summary d-none" id="vp-summary"></section>
+
+    @* the PIN pad (tablet) and the finish confirmation *@
+    <div class="vp-overlay d-none" id="vp-pin" role="dialog" aria-modal="true"></div>
+    <div class="vp-overlay d-none" id="vp-confirm" role="dialog" aria-modal="true"></div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/VisitPresentation/visit-presentation.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.VisitPresentationL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            VisitPresentationIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    </script>
+    @if (Model.CanPickPeople)
+    {
+        <script src="~/assets/js/shared/diten-person-picker.js" asp-append-version="true"></script>
+    }
+    <script src="~/assets/js/CRM/VisitPresentation/presentation-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPresentation/visit-presentation.js" asp-append-version="true"></script>
+}
