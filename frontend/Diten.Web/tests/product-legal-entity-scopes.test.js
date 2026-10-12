@@ -103,29 +103,19 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
     expect(module.testHooks.lifecycleText(4)).toBe('fixture: retired');
   });
 
-  it('says a write refused by the scope rollout in the reader\'s words, never its code (FIX2 SC4)', () => {
+  it('says a refused write with the sentence the server sends, never a code of its own (BL-598 FIX2 item 1)', () => {
     const module = loadModule();
-    Object.assign(window.L10n, { ErrorFenceActive: 'fixture: fence up', ErrorWriterBusy: 'fixture: busy',
-      ErrorRolloutUnavailable: 'fixture: unreadable', ErrorConflict: 'fixture: conflict', ErrorGateway: 'fixture: gateway' });
+    Object.assign(window.L10n, { ErrorConflict: 'fixture: conflict', ErrorProviderUnavailable: 'fixture: provider down',
+      ErrorGateway: 'fixture: gateway' });
     const say = module.testHooks.failureText;
 
-    expect(say({ errors: ['PRODUCT_SCOPE_WRITE_FENCE_ACTIVE'] }, 409)).toBe('fixture: fence up');
-    expect(say({ Errors: ['PRODUCT_SCOPE_WRITER_LEASE_CONTENDED'] }, 409)).toBe('fixture: busy');
-    expect(say({ errors: ['PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID'] }, 503)).toBe('fixture: unreadable');
-    expect(say({ errors: ['SOME_UNKNOWN_CODE'] }, 409)).toBe('fixture: conflict');
-    // FIX3 (14): the other two mapped codes, measured.
-    Object.assign(window.L10n, { ErrorSuspended: 'fixture: suspended' });
-    expect(say({ errors: ['PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED'] }, 409)).toBe('fixture: suspended');
-    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE'] }, 409)).toBe('fixture: busy');
-    // FIX4 K1: a full bucket, an unreachable store, an ambiguous lease write, an exhausted Replace — each in words.
-    Object.assign(window.L10n, { ErrorWriterCapacity: 'fixture: capacity', ErrorStoreUnavailable: 'fixture: store down' });
-    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_CAPACITY_EXCEEDED'] }, 503)).toBe('fixture: capacity');
-    expect(say({ errors: ['PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE'] }, 503)).toBe('fixture: store down');
-    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS'] }, 503)).toBe('fixture: busy');
-    expect(say({ errors: ['PRODUCT_SCOPE_REPLACE_CONTENDED'] }, 503)).toBe('fixture: busy');
-    // BL-598 FIX1 item 3: the policy store preparing its indexes — its own sentence, not "provider unavailable".
-    Object.assign(window.L10n, { ErrorStoreNotReady: 'fixture: store preparing' });
-    expect(say({ errors: ['PRODUCT_SCOPE_POLICY_STORE_NOT_READY'] }, 503)).toBe('fixture: store preparing');
+    // The controller turns MDM's code into the reader's sentence (ProductLegalEntityScopesController.RefusalKeys).
+    expect(say({ success: false, errors: ['The product scope store is getting ready.'] }, 503))
+      .toBe('The product scope store is getting ready.');
+    expect(say({ Errors: ['Another change is being saved.'] }, 409)).toBe('Another change is being saved.');
+    // No sentence: the status's own sentence.
+    expect(say({ errors: [] }, 409)).toBe('fixture: conflict');
+    expect(say({ errors: ['  '] }, 503)).toBe('fixture: provider down');
     expect(say(null, 500)).toBe('fixture: gateway');
   });
 

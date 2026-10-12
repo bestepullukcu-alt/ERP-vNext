@@ -189,7 +189,56 @@ public sealed class ProductLegalEntityScopesController : Controller
                 return StatusCode((int)response.StatusCode, new { success = true, data = TryPayload(body), formAttemptToken = NewAttemptToken() });
             if (response.StatusCode == HttpStatusCode.Accepted)
                 return StatusCode(202, new { success = false, errors = new[] { _localizer["ReconciliationPending"].Value }, formAttemptToken = currentToken });
-            return Failure(response.StatusCode);
+            return Refusal(response.StatusCode, body);
+        }
+    }
+
+    /// <summary>
+    /// BL-598 FIX2 item 1 (the GskuRefusals bridge): the codes the scope write can be refused with, bound to the sentence
+    /// the reader sees (ProductLegalEntityScopesIndex, seven languages). THE single list — the page shows the sentence
+    /// this controller sends and keeps no code map of its own. Only a code listed here is turned into text; any other
+    /// answer (another code, an unreadable body) is the status's general sentence — no other content of MDM's answer
+    /// reaches the screen. The guard test holds every key here in all seven resx files.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> RefusalKeys = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["PRODUCT_SCOPE_WRITE_FENCE_ACTIVE"] = "ErrorFenceActive",
+        ["PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE"] = "ErrorWriterBusy",
+        ["PRODUCT_SCOPE_WRITER_LEASE_CONTENDED"] = "ErrorWriterBusy",
+        ["PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED"] = "ErrorSuspended",
+        ["PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID"] = "ErrorRolloutUnavailable",
+        ["PRODUCT_SCOPE_WRITER_LEASE_CAPACITY_EXCEEDED"] = "ErrorWriterCapacity",
+        ["PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE"] = "ErrorStoreUnavailable",
+        ["PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS"] = "ErrorWriterBusy",
+        ["PRODUCT_SCOPE_REPLACE_CONTENDED"] = "ErrorWriterBusy",
+        ["PRODUCT_SCOPE_RECONCILIATION_REQUIRED"] = "ReconciliationPending",
+        ["PRODUCT_SCOPE_POLICY_STORE_NOT_READY"] = "ErrorStoreNotReady"
+    };
+
+    private IActionResult Refusal(HttpStatusCode statusCode, string body)
+    {
+        if (FirstCode(body) is { } code && RefusalKeys.TryGetValue(code, out var key))
+            return StatusCode((int)statusCode, new { success = false, errors = new[] { _localizer[key].Value } });
+        return Failure(statusCode);
+    }
+
+    // MDM's envelope: the first entry of errors / Errors, when it is a string. Anything else: no code.
+    private string? FirstCode(string body)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object
+                || !(root.TryGetProperty("errors", out var errors) || root.TryGetProperty("Errors", out errors))
+                || errors.ValueKind != JsonValueKind.Array || errors.GetArrayLength() == 0
+                || errors[0].ValueKind != JsonValueKind.String)
+                return null;
+            return errors[0].GetString();
+        }
+        catch (JsonException)
+        {
+            return null;
         }
     }
 

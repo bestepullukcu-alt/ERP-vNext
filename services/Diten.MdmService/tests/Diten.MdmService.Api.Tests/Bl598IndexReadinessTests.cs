@@ -6,6 +6,7 @@ using Diten.MdmService.Application.Features.ProductMaster;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Persistence.Repositories;
 using MongoDB.Bson;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,9 +99,14 @@ public sealed class Bl598IndexReadinessTests(MdmHttpHost host)
         };
         Assert.True((await away.CreateAsync(Policy(tenant, Guid.NewGuid()))).IndexesNotReady);
 
-        // Mongo is back (the same database name, so the same preparation key): the failure was not cached.
+        // Mongo is back (the same database name, so the same preparation key): the failure was not cached — past its
+        // cool-down (BL-598 FIX2: zero here; the cool-down itself has its own test).
         var back = new ProductLegalEntityScopePolicyRepository(Back(name), new Tenant(tenant));
-        var written = await back.CreateAsync(Policy(tenant, Guid.NewGuid()));
+        var cooldown = MongoIndexReadiness.FailureCooldown;
+        MongoIndexReadiness.FailureCooldown = TimeSpan.Zero;
+        ProductLegalEntityScopePolicyWriteResult written;
+        try { written = await back.CreateAsync(Policy(tenant, Guid.NewGuid())); }
+        finally { MongoIndexReadiness.FailureCooldown = cooldown; }
 
         Assert.True(written.Succeeded, "the write after Mongo came back");
         var indexes = await (await Back(name).GetCollection<BsonDocument>(ProductLegalEntityScopePolicyRepository.CollectionName)
@@ -108,32 +114,171 @@ public sealed class Bl598IndexReadinessTests(MdmHttpHost host)
         Assert.Contains(indexes, index => index["name"] == "ux_mdm_product_legal_entity_scope_policies_tenant_product");
     }
 
-    // An index dropped under a running process (an operator, a restore) is not "ready" for ever: the first write after
-    // the revalidation window builds it again — the write never runs for long without its UNIQUE index.
+    // BL-598 FIX2 (weak test made real): End and reads keep the ten-minute window — inside it they do not re-assert the
+    // indexes (an update cannot insert, a read only wants speed); past it (here: a zero window) End builds a dropped
+    // unique index again. (Create re-asserts on every call — its own test below.)
     [Fact]
-    public async Task Bl598_A_dropped_unique_index_is_built_again_by_the_first_write_after_the_revalidation_window()
+    public async Task Bl598_End_and_reads_keep_the_window_and_End_rebuilds_a_dropped_index_once_it_has_passed()
     {
         var name = FreshDatabase();
         var tenant = Guid.NewGuid();
-        Assert.True((await new ProductLegalEntityScopePolicyRepository(Back(name), new Tenant(tenant))
-            .CreateAsync(Policy(tenant, Guid.NewGuid()))).Succeeded);
+        var repository = new ProductLegalEntityScopePolicyRepository(Back(name), new Tenant(tenant));
+        var first = Policy(tenant, Guid.NewGuid());
+        var second = Policy(tenant, Guid.NewGuid());
+        Assert.True((await repository.CreateAsync(first)).Succeeded);
+        Assert.True((await repository.CreateAsync(second)).Succeeded);
         var collection = Back(name).GetCollection<BsonDocument>(ProductLegalEntityScopePolicyRepository.CollectionName);
+        var key = MongoIndexReadiness.KeyOf(Back(name).GetCollection<ProductLegalEntityScopePolicy>(
+            ProductLegalEntityScopePolicyRepository.CollectionName), ProductLegalEntityScopePolicyRepository.IndexSet);
         await collection.Indexes.DropOneAsync("ux_mdm_product_legal_entity_scope_policies_tenant_product");
+        var started = MongoIndexReadiness.StartedForTests[key];
 
-        var previous = MongoIndexReadiness.Revalidate;
+        Assert.NotNull(await repository.GetByGlobalProductIdAsync(first.GlobalProductId));
+        End(first);
+        Assert.True((await repository.UpdateAsync(first, 0)).Succeeded);
+        Assert.Equal(started, MongoIndexReadiness.StartedForTests[key]);
+        Assert.DoesNotContain(await (await collection.Indexes.ListAsync()).ToListAsync(),
+            index => index["name"] == "ux_mdm_product_legal_entity_scope_policies_tenant_product");
+
+        var window = MongoIndexReadiness.Revalidate;
         MongoIndexReadiness.Revalidate = TimeSpan.Zero;
         try
         {
-            Assert.True((await new ProductLegalEntityScopePolicyRepository(Back(name), new Tenant(tenant))
-                .CreateAsync(Policy(tenant, Guid.NewGuid()))).Succeeded);
+            End(second);
+            Assert.True((await repository.UpdateAsync(second, 0)).Succeeded);
         }
         finally
         {
-            MongoIndexReadiness.Revalidate = previous;
+            MongoIndexReadiness.Revalidate = window;
         }
+        Assert.Contains(await (await collection.Indexes.ListAsync()).ToListAsync(),
+            index => index["name"] == "ux_mdm_product_legal_entity_scope_policies_tenant_product");
+    }
 
-        var indexes = await (await collection.Indexes.ListAsync()).ToListAsync();
-        Assert.Contains(indexes, index => index["name"] == "ux_mdm_product_legal_entity_scope_policies_tenant_product");
+    // BL-598 FIX2 item 4: "made during this call" is a sequence number, not the clock — two Creates one after the other
+    // (inside one clock tick or not) each re-assert the indexes.
+    [Fact]
+    public async Task Bl598_Fix2_Every_create_re_asserts_the_indexes_even_one_right_after_another()
+    {
+        var name = FreshDatabase();
+        var tenant = Guid.NewGuid();
+        var repository = new ProductLegalEntityScopePolicyRepository(Back(name), new Tenant(tenant));
+        var key = MongoIndexReadiness.KeyOf(Back(name).GetCollection<ProductLegalEntityScopePolicy>(
+            ProductLegalEntityScopePolicyRepository.CollectionName), ProductLegalEntityScopePolicyRepository.IndexSet);
+
+        for (var create = 0; create < 3; create++)
+            Assert.True((await repository.CreateAsync(Policy(tenant, Guid.NewGuid()))).Succeeded);
+
+        Assert.Equal(3, MongoIndexReadiness.StartedForTests[key]);
+    }
+
+    // BL-598 FIX2 (minor): a failed preparation answers the writes of its cool-down at once — one preparation, ONE log
+    // line — and is tried again after it.
+    [Fact]
+    public async Task Bl598_Fix2_A_failure_is_tried_and_said_once_per_cool_down()
+    {
+        var key = "bl598-fix2/" + Guid.NewGuid().ToString("N");
+        var logs = new Recording();
+        var prepared = 0;
+        Task Failing(CancellationToken _) { Interlocked.Increment(ref prepared); throw new InvalidOperationException("index option conflict"); }
+
+        for (var write = 0; write < 3; write++)
+            await Assert.ThrowsAsync<MongoIndexNotReadyException>(() => MongoIndexReadiness.EnsureForWriteAsync(key, Failing,
+                TimeSpan.FromSeconds(5), CancellationToken.None, logger: logs));
+
+        Assert.Equal(1, prepared);
+        Assert.Single(logs.Entries);
+        var cooldown = MongoIndexReadiness.FailureCooldown;
+        MongoIndexReadiness.FailureCooldown = TimeSpan.Zero;
+        try
+        {
+            await Assert.ThrowsAsync<MongoIndexNotReadyException>(() => MongoIndexReadiness.EnsureForWriteAsync(key, Failing,
+                TimeSpan.FromSeconds(5), CancellationToken.None, logger: logs));
+        }
+        finally
+        {
+            MongoIndexReadiness.FailureCooldown = cooldown;
+        }
+        Assert.Equal(2, prepared);
+        Assert.Equal(2, logs.Entries.Count);
+    }
+
+    // BL-598 FIX2 item 2: a preparation a READ started says its own failure — no write needs to follow.
+    [Fact]
+    public async Task Bl598_Fix2_A_failure_of_a_preparation_a_read_started_is_logged()
+    {
+        var logs = new Recording();
+        var repository = new ProductLegalEntityScopePolicyRepository(Away(FreshDatabase()), new Tenant(Guid.NewGuid()), logs);
+
+        await Assert.ThrowsAnyAsync<Exception>(() => repository.GetByGlobalProductIdAsync(Guid.NewGuid()));
+
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (logs.Entries.Count == 0 && DateTime.UtcNow < deadline) await Task.Delay(50);
+        var line = Assert.Single(logs.Entries);
+        Assert.Contains(MongoIndexReadiness.NotReady, line.Message);
+    }
+
+    // BL-598 FIX2 (minor): a refusal for good (credential / authorization) is its own named failure — not "getting
+    // ready" (the write fails as a configuration defect, 500) — and an empty server code name is said as "none".
+    [Fact]
+    public async Task Bl598_Fix2_A_refused_credential_is_a_named_failure_not_getting_ready()
+    {
+        var endPoint = new System.Net.DnsEndPoint("127.0.0.1", 1);
+        var connection = new MongoDB.Driver.Core.Connections.ConnectionId(
+            new MongoDB.Driver.Core.Servers.ServerId(new MongoDB.Driver.Core.Clusters.ClusterId(), endPoint));
+        var logs = new Recording();
+
+        var refused = await Assert.ThrowsAsync<MongoIndexPreparationRefusedException>(() => MongoIndexReadiness.EnsureForWriteAsync(
+            "bl598-fix2/" + Guid.NewGuid().ToString("N"),
+            _ => throw new MongoAuthenticationException(connection, "bad credentials"),
+            TimeSpan.FromSeconds(5), CancellationToken.None, logger: logs));
+        Assert.Equal(MongoIndexReadiness.PreparationRefused, refused.Message);
+        Assert.Contains(MongoIndexReadiness.PreparationRefused, Assert.Single(logs.Entries).Message);
+
+        var unnamed = new Recording();
+        await Assert.ThrowsAsync<MongoIndexNotReadyException>(() => MongoIndexReadiness.EnsureForWriteAsync(
+            "bl598-fix2/" + Guid.NewGuid().ToString("N"),
+            _ => throw new MongoCommandException(connection, "failed", new BsonDocument("createIndexes", "x"),
+                new BsonDocument { { "ok", 0 }, { "code", 85 }, { "codeName", "" } }),
+            TimeSpan.FromSeconds(5), CancellationToken.None, logger: unnamed));
+        Assert.Contains("server code none", Assert.Single(unnamed.Entries).Message);
+    }
+
+    // BL-598 FIX2 item 3: the logger reaches the store through DI — both public constructors. The container picks the
+    // four-parameter one (the guarded session is registered); with only a logger in the container, the three-parameter
+    // one takes ILogger<ProductLegalEntityScopePolicyRepository> from it.
+    [Fact]
+    public async Task Bl598_Fix2_The_store_built_by_the_container_logs_a_failed_preparation()
+    {
+        var away = Away(FreshDatabase());
+        await using var variant = host.Variant(services =>
+        {
+            services.RemoveAll<IMongoClient>();
+            services.AddSingleton(away.Client);
+            services.RemoveAll<IMongoDatabase>();
+            services.AddScoped(_ => away);
+        });
+        var before = host.Logs.Entries.Count;
+        using (var scope = variant.Services.CreateScope())
+        {
+            var tenant = Guid.NewGuid();
+            scope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(tenant);
+            var store = scope.ServiceProvider.GetRequiredService<IProductLegalEntityScopePolicyRepository>();
+            Assert.True((await store.CreateAsync(Policy(tenant, Guid.NewGuid()))).IndexesNotReady);
+        }
+        Assert.Contains(host.Logs.Entries.Skip(before), entry => entry.Level == Microsoft.Extensions.Logging.LogLevel.Error
+            && entry.Category.EndsWith(nameof(ProductLegalEntityScopePolicyRepository), StringComparison.Ordinal)
+            && entry.Message.Contains(MongoIndexReadiness.NotReady, StringComparison.Ordinal));
+
+        var sink = new LogSink();
+        var services = new ServiceCollection().AddLogging().AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(sink)
+            .BuildServiceProvider();
+        var tenant3 = Guid.NewGuid();
+        var threeParameter = ActivatorUtilities.CreateInstance<ProductLegalEntityScopePolicyRepository>(services,
+            Away(FreshDatabase()), new Tenant(tenant3));
+        Assert.True((await threeParameter.CreateAsync(Policy(tenant3, Guid.NewGuid()))).IndexesNotReady);
+        Assert.Contains(sink.Entries, entry => entry.Level == Microsoft.Extensions.Logging.LogLevel.Error
+            && entry.Message.Contains(MongoIndexReadiness.NotReady, StringComparison.Ordinal));
     }
 
     // The UNIQUE index is what keeps one policy per product: writes racing BEFORE it exists all wait for it, so the
@@ -305,6 +450,19 @@ public sealed class Bl598IndexReadinessTests(MdmHttpHost host)
         {
             lock (Entries) Entries.Add((logLevel, formatter(state, exception)));
         }
+    }
+
+    // The policy ended as the End handler ends it (one end audit intent, version + 1).
+    private static void End(ProductLegalEntityScopePolicy policy)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var command = Guid.NewGuid();
+        var actor = Guid.NewGuid();
+        var before = policy.GetEffectivePeriod(now);
+        policy.EndCurrent(0, command, actor, now);
+        policy.AuditIntents.Add(Diten.MdmService.Application.Features.ProductLegalEntityScopes
+            .ProductLegalEntityScopeAuditIntentFactory.Create(policy, ProductAuditOperation.ProductLegalEntityScopePolicyEnded,
+                0, policy.Version, command, actor, now, before, after: null));
     }
 
     // A new policy as the create handler builds it (one creation audit intent), for the store's own tenant.

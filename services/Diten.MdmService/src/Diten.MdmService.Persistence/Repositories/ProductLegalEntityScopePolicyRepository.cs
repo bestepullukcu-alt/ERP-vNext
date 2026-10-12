@@ -89,9 +89,11 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
     /// (<see cref="ProductLegalEntityScopePolicyWriteResult.IndexesNotReady"/> → the handler's coded 503).
     /// </summary>
     // maxAge: how old a finished preparation may be before this write re-asserts it. BL-598 FIX1 item 1 (CT decision):
-    // Create — the ONLY insert into this collection — re-asserts the unique indexes on EVERY call (zero: one idempotent
-    // round trip per policy create, cheaper than the old one per request scope), so a dropped / restored collection never
-    // takes two policies of one product. End (an update, cannot insert) keeps the 10-minute window.
+    // Create — the ONLY insert into this collection — re-asserts the unique indexes on every call (zero: one idempotent
+    // round trip per policy create, cheaper than the old one per request scope). BL-598 FIX2 (wording): a Create that
+    // JOINS a re-assertion already in flight waits for that one, so the verification it sees is at most one round trip
+    // older than itself — a collection dropped inside that round trip is the one window left. End (an update, cannot
+    // insert) keeps the 10-minute window.
     private async Task<bool> IndexesReadyAsync(CancellationToken cancellationToken, TimeSpan? maxAge = null)
     {
         try
@@ -109,7 +111,8 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
     // Tests set a short budget (a closed port must not hold a test for the default 10 s).
     internal TimeSpan WriteIndexBudget { get; init; } = MongoIndexReadiness.DefaultWriteBudget;
 
-    private void StartIndexes() => MongoIndexReadiness.Start(_indexKey, CreateIndexesAsync);
+    // BL-598 FIX2 item 2: a read starts the preparation with the logger — its failure is said even when no write follows.
+    private void StartIndexes() => MongoIndexReadiness.Start(_indexKey, CreateIndexesAsync, _logger);
 
     // Tests: the indexes as production has them once the store has taken its first write (a query-plan test reads them).
     // refresh: a fresh preparation (the test databases are dropped and reused under one name in one process).

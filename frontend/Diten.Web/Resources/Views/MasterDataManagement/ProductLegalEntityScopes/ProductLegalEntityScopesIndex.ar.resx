@@ -25,5 +25,5 @@
   <data name="OtherLegalEntities" xml:space="preserve"><value>شركات أخرى: {0}</value></data>
   <data name="ErrorWriterCapacity" xml:space="preserve"><value>تُجرى حاليًا تغييرات كثيرة جدًا في مجموعة الشركات هذه. أعد المحاولة بعد بضع دقائق.</value></data>
   <data name="ErrorStoreUnavailable" xml:space="preserve"><value>يتعذّر الوصول إلى إعدادات نطاق المنتج حاليًا. أعد المحاولة بعد قليل.</value></data>
-  <data name="ErrorStoreNotReady" xml:space="preserve"><value>يجري تجهيز مخزن نطاق المنتج. أعد المحاولة بعد قليل.</value></data>
+  <data name="ErrorStoreNotReady" xml:space="preserve"><value>يجري تجهيز إعدادات نطاق المنتج. أعد المحاولة بعد قليل.</value></data>
 </root>

@@ -170,6 +170,32 @@ public sealed class Bl598DeferredResolutionTests
         Assert.Equal(ProductLegalEntityScopeWriteFenceCoordinator.RolloutStoreUnavailableCode, response.Errors.Single());
     }
 
+    // BL-598 FIX2 (weak test made real): Replace with a CANCELLED request, and with a defect while building its stores —
+    // neither is masked as the store's 503.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Bl598_Fix2_Replace_never_turns_a_cancellation_or_a_defect_into_the_stores_503(bool cancelledWithTimeout)
+    {
+        using var cancelled = new CancellationTokenSource();
+        if (cancelledWithTimeout) cancelled.Cancel();
+        Exception failure = cancelledWithTimeout ? new TimeoutException("store away") : new InvalidOperationException("a defect");
+        var handler = new Diten.MdmService.Application.Features.ProductLegalEntityScopes.Handlers.CommandHandlers
+            .ReplaceProductLegalEntityScopePolicyHandler(
+                null!,
+                new Lazy<IProductLegalEntityScopeRolloutStateRepository>(() => throw failure),
+                new Lazy<ILegalEntityRepository>(() => throw new Xunit.Sdk.XunitException("not reached")),
+                new Lazy<ProductLegalEntityScopeCandidateFacade>(() => throw new Xunit.Sdk.XunitException("not reached")),
+                new Lazy<Diten.MdmService.Application.Contracts.Authorization.IProductLegalEntityScopeWriterAuthorityProvider>(
+                    () => throw new Xunit.Sdk.XunitException("not reached")),
+                new Lazy<ProductLegalEntityScopeWriteFenceCoordinator>(() => throw new Xunit.Sdk.XunitException("not reached")));
+
+        var thrown = await Assert.ThrowsAnyAsync<Exception>(() => handler.Handle(new(Guid.NewGuid(), Guid.NewGuid(), new()),
+            cancelled.Token));
+
+        Assert.Same(failure, thrown);
+    }
+
     // D4: a cancelled request is a cancellation, never the store's 503 (fence and product master).
     [Fact]
     public async Task Bl598_Fix1_A_cancelled_request_is_never_turned_into_the_stores_503()

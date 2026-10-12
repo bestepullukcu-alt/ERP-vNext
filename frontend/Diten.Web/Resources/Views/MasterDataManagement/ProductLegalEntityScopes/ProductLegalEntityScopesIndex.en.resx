@@ -25,5 +25,5 @@
   <data name="OtherLegalEntities" xml:space="preserve"><value>other companies: {0}</value></data>
   <data name="ErrorWriterCapacity" xml:space="preserve"><value>Too many changes are being made in this company group right now. Try again in a few minutes.</value></data>
   <data name="ErrorStoreUnavailable" xml:space="preserve"><value>The product scope settings cannot be reached right now. Try again shortly.</value></data>
-  <data name="ErrorStoreNotReady" xml:space="preserve"><value>The product scope store is getting ready. Try again in a moment.</value></data>
+  <data name="ErrorStoreNotReady" xml:space="preserve"><value>The product scope settings are being prepared. Try again in a moment.</value></data>
 </root>
