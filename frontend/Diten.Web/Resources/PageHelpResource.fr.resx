@@ -231,4 +231,22 @@
   <data name="Help.USERROLES.Step4" xml:space="preserve">
     <value>Pour retirer un rôle, cliquez sur « Retirer » sur un rôle attribué, ou sur le x à côté dans « Rôles actifs », puis confirmez.</value>
   </data>
+  <data name="Help.ITEMS.Purpose" xml:space="preserve">
+    <value>Cette page liste les articles (matières tenues en stock : principes actifs, excipients, conditionnements, intermédiaires) avec leur identité, leur type de matière et leur comportement de stock. L'équipe des données de référence les crée ici et fait passer chacun par ses statuts : « Brouillon », « En attente d'approbation », « Actif », « Désactivé », « Retiré ».</value>
+  </data>
+  <data name="Help.ITEMS.Step1" xml:space="preserve">
+    <value>Affinez la liste avec la zone de recherche, ou cliquez sur « Filtrer », choisissez « Statut » ou « Type de matière » puis cliquez sur « Appliquer ».</value>
+  </data>
+  <data name="Help.ITEMS.Step2" xml:space="preserve">
+    <value>Cliquez sur « Ajouter un article », renseignez l'identité et le comportement de stock, puis « Enregistrer » : l'article est enregistré à l'état « Brouillon ». Appuyer sur Entrée dans un champ enregistre aussi le formulaire.</value>
+  </data>
+  <data name="Help.ITEMS.Step3" xml:space="preserve">
+    <value>Dans les « Actions » d'un brouillon, choisissez « Envoyer pour approbation » : l'article reste « En attente d'approbation » jusqu'à son approbation, et ne devient « Actif » qu'à ce moment-là.</value>
+  </data>
+  <data name="Help.ITEMS.Step4" xml:space="preserve">
+    <value>« Désactiver » retire un article actif des nouvelles entrées de stock ; « Demander la réactivation » repasse par la même approbation ; « Retirer » est définitif, n'est possible que pour un article désactivé sans stock, et le code n'est jamais réutilisé. Chacune de ces actions demande un motif.</value>
+  </data>
+  <data name="Help.ITEMS.Step5" xml:space="preserve">
+    <value>Sur un article actif, seuls le nom et la description changent librement ; un champ de stock rempli exige une correction approuvée. Appuyez sur « ? » à tout moment pour ouvrir cette aide avec les raccourcis de la page.</value>
+  </data>
 </root>
