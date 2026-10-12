@@ -141,10 +141,10 @@
 
         <div id="ve-report-status" class="small text-muted mb-2"></div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success" id="ve-submit-report" disabled="@(!Model.CanRecord)">
+            <button type="button" class="btn btn-success" id="ve-submit-report" data-dt-primary="chord" disabled="@(!Model.CanRecord)">
                 <i class="bx bx-check"></i> @Localizer["Submit"]
             </button>
-            <button type="button" class="btn btn-outline-warning d-none" id="ve-amend-report" disabled="@(!Model.CanAmend)">
+            <button type="button" class="btn btn-outline-warning d-none" id="ve-amend-report" data-dt-primary="chord" disabled="@(!Model.CanAmend)">
                 <i class="bx bx-edit"></i> @Localizer["Amend"]
             </button>
         </div>

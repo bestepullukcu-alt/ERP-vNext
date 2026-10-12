@@ -44,6 +44,11 @@
     NO TECHNICAL TEXT. "403", "Forbidden", "Permission denied" are never shown here (UAS-001 §5), and the
     message says what to DO, not only what failed.
 *@
+@{
+    // WP-UX-COMMON-01 — tells the shell the body drew the unauthorized face, so the top bar draws no page help
+    // (UAS-001: nothing of the page behind the closed door). ViewData set here would be a copy; Items is shared.
+    Diten.Web.Services.Navigation.CurrentPage.MarkAccessDenied(Context);
+}
 <div class="card diten-access-denied" role="note">
     <i class="bx bx-lock-alt" aria-hidden="true"></i>
     <h5>@SharedLocalizer["AccessDeniedTitle", Model]</h5>

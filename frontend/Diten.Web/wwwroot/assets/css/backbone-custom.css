@@ -9939,3 +9939,19 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
 .time-entry-segments { margin-block: 0.25rem 0.75rem; }
 .time-entry-segment { font-variant-numeric: tabular-nums; }
 .time-entry-calendar-unresolved { margin-block-end: 0.5rem; }
+
+/* WP-UX-COMMON-01 (BL-495) — the top bar's "?" help button and panel (_PageHelpButton / _PageHelpPanel,
+   assets/js/shared/diten-help.js), and the step-by-step tour bubble (assets/js/shared/diten-tour.js). Logical
+   properties throughout, so Arabic mirrors without a second rule set. */
+.diten-help-toggle { border: 0; background: transparent; }
+.diten-help-panel .offcanvas-body { display: flex; flex-direction: column; gap: 1.25rem; }
+.diten-help-section { margin: 0; }
+.diten-help-heading { margin-block-end: .5rem; font-size: .8125rem; font-weight: 600; text-transform: uppercase; color: var(--bs-heading-color); }
+.diten-help-section p { margin-block-end: 0; }
+.diten-help-steps { margin-block-end: 0; padding-inline-start: 1.25rem; }
+.diten-help-steps li + li { margin-block-start: .375rem; }
+.diten-help-preparing,
+.diten-help-note { margin-block-end: 0; color: var(--bs-secondary-color); font-size: .8125rem; }
+.diten-help-tour { margin-block-start: auto; }
+.diten-tour-popover { max-inline-size: 22rem; text-align: start; }
+.diten-tour-rtl { direction: rtl; }

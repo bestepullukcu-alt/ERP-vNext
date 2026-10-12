@@ -4,6 +4,7 @@
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["Title"].Value;
+    ViewData["PageCode"] = "MYTIMESHEET"; // WP-UX-COMMON-01 — the help panel / tour code, also when the menu did not load
     Layout = "_LayoutTenantShell";
     var canUpdate = Perms.Has("time-entry.timesheets.update");
     var week = ViewData["WeekKey"] as string ?? string.Empty;
@@ -30,7 +31,7 @@
             <h5 class="mb-0">@Localizer["Title"]</h5>
             <p class="mb-0 text-muted time-entry-week-label" id="teWeekLabel"></p>
         </div>
-        <div class="time-entry-week-nav" role="group" aria-label="@Localizer["Title"]">
+        <div class="time-entry-week-nav" role="group" aria-label="@Localizer["Title"]" data-tour="te-week">
             <button type="button" class="btn btn-sm btn-icon btn-label-secondary" id="tePrevWeek"
                     aria-label="@Localizer["PrevWeek"]" title="@Localizer["PrevWeek"]"><i class="bx bx-chevron-left"></i></button>
             <button type="button" class="btn btn-sm btn-label-secondary" id="teToday">@Localizer["Today"]</button>
@@ -64,11 +65,12 @@
         <div class="time-entry-layout">
             <section class="card time-entry-main">
                 <div class="card-body">
-                    <div id="teRowAdd" class="time-entry-row-add"></div>
+                    @* WP-UX-COMMON-01 — `data-tour` marks are the timesheet tour's targets (diten-tour-catalog.js). *@
+                    <div id="teRowAdd" class="time-entry-row-add" data-tour="te-add-row"></div>
                     <div id="teReview" class="time-entry-review" hidden></div>
-                    <div id="teGrid" class="time-entry-grid-host"></div>
+                    <div id="teGrid" class="time-entry-grid-host" data-tour="te-grid"></div>
                     <div id="teDayView" class="time-entry-day-view"></div>
-                    <div id="teFooterActions" class="time-entry-footer-actions"></div>
+                    <div id="teFooterActions" class="time-entry-footer-actions" data-tour="te-submit"></div>
                 </div>
             </section>
 

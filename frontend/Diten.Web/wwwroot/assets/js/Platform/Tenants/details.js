@@ -1856,10 +1856,16 @@ const TenantDetails = (function () {
         });
     };
 
+    // UX-COMMON-FIX2 (R5, CT decision) — the side panel's Enter, per action: cancelling or suspending a subscription
+    // cannot be taken back with a bare Enter (Ctrl / Cmd + Enter runs it); assigning, activating, renewing can.
+    const subscriptionActionPrimary = (action) => (['cancel', 'suspend'].includes(action) ? 'chord' : 'enter');
+
     const openSubscriptionActionModal = async (action) => {
         const modalEl = document.getElementById('subscriptionActionOffcanvas');
         const form = document.getElementById('subscriptionActionForm');
         if (!modalEl || !form) return;
+
+        document.getElementById('btnSubmitSubscriptionAction')?.setAttribute('data-dt-primary', subscriptionActionPrimary(action));
 
         form.classList.remove('was-validated');
         document.getElementById('subscriptionActionType').value = action;
@@ -2791,6 +2797,7 @@ const TenantDetails = (function () {
     };
 
     return {
+        subscriptionActionPrimary,
         init: () => {
             syncL10n();
             if (!tenantId) return;

@@ -1,0 +1,234 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Help.Panel.Open" xml:space="preserve">
+    <value>本页帮助</value>
+  </data>
+  <data name="Help.Panel.Title" xml:space="preserve">
+    <value>帮助</value>
+  </data>
+  <data name="Help.Panel.Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="Help.Panel.PurposeHeading" xml:space="preserve">
+    <value>本页用途</value>
+  </data>
+  <data name="Help.Panel.StepsHeading" xml:space="preserve">
+    <value>使用方法</value>
+  </data>
+  <data name="Help.Panel.ShortcutsHeading" xml:space="preserve">
+    <value>本页快捷键</value>
+  </data>
+  <data name="Help.Panel.EnterHint" xml:space="preserve">
+    <value>在侧边面板中按 Enter 保存。无法撤销的操作（发布、批准、发送、删除、取消……）只能用 Ctrl+Enter（Mac 上为 ⌘+Enter）执行；单独按 Enter 不会执行。在多行字段中按 Ctrl+Enter 保存。</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter（Mac 上为 ⌘+Enter）。单独按 Enter 不会执行此操作。</value>
+  </data>
+  <data name="Help.Panel.StartTour" xml:space="preserve">
+    <value>开始导览</value>
+  </data>
+  <data name="Help.Panel.Preparing" xml:space="preserve">
+    <value>本页的帮助文本正在准备中。</value>
+  </data>
+  <data name="Tour.Next" xml:space="preserve">
+    <value>下一步</value>
+  </data>
+  <data name="Tour.Previous" xml:space="preserve">
+    <value>上一步</value>
+  </data>
+  <data name="Tour.Done" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="Tour.Progress" xml:space="preserve">
+    <value>第 {{current}} 步，共 {{total}} 步</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Title" xml:space="preserve">
+    <value>选项卡</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Text" xml:space="preserve">
+    <value>收件箱显示发给您的工作和审批请求，我的工作显示由您负责的工作，任务池显示团队可以领取的工作。</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Title" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Text" xml:space="preserve">
+    <value>输入标题的一部分来缩小列表范围；筛选标签可按类型和状态进一步筛选。</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Title" xml:space="preserve">
+    <value>列表</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Text" xml:space="preserve">
+    <value>点击某一行即可打开该工作：详情、检查清单、评论和历史记录都在其中。</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Title" xml:space="preserve">
+    <value>执行操作</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Text" xml:space="preserve">
+    <value>接受、开始和完成按钮位于行上。打开审批请求即可批准或拒绝；若要将工作交给他人，请在打开的工作中使用委派。</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Title" xml:space="preserve">
+    <value>新建</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Text" xml:space="preserve">
+    <value>在此创建新的任务、笔记或会议。</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Title" xml:space="preserve">
+    <value>周</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Text" xml:space="preserve">
+    <value>使用箭头在各周之间切换；今天会带您回到本周。</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Title" xml:space="preserve">
+    <value>添加行</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Text" xml:space="preserve">
+    <value>使用 + 任务行 或 + 类别行 添加您本周处理的工作。</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Title" xml:space="preserve">
+    <value>填写工时</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Text" xml:space="preserve">
+    <value>在每天的单元格中输入小时数；合计会随之更新。</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Title" xml:space="preserve">
+    <value>提交本周</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Text" xml:space="preserve">
+    <value>本周填写完成后，选择提交审批；您的审批人会在工时表审批中看到它。</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Title" xml:space="preserve">
+    <value>待您审批的周</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Text" xml:space="preserve">
+    <value>这里列出团队提交审批的各周工时。</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Title" xml:space="preserve">
+    <value>打开某一周</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
+    <value>打开某一行查看该周工时，然后选择批准，或填写原因后退回以便更正。</value>
+  </data>
+  <data name="Help.USERS.Purpose" xml:space="preserve">
+    <value>管理可以登录您租户的所有人员：邀请用户、编辑其信息，并决定每个账户是否启用。该页面供管理员使用，禁用、删除或重置密码会立即生效。</value>
+  </data>
+  <data name="Help.USERS.Step1" xml:space="preserve">
+    <value>使用搜索框缩小列表范围，或点击“筛选”，选择“状态”“角色”或“账户类型”，然后点击“应用”。</value>
+  </data>
+  <data name="Help.USERS.Step2" xml:space="preserve">
+    <value>点击“添加用户”，在侧边面板中填写“电子邮件”“名字”和“姓氏”，然后点击“保存”，或在输入框中按 Enter 键。</value>
+  </data>
+  <data name="Help.USERS.Step3" xml:space="preserve">
+    <value>请新用户通过邮件中的链接设置密码；在此之前其状态显示为“已邀请”，该行提供“重新发送邀请”。</value>
+  </data>
+  <data name="Help.USERS.Step4" xml:space="preserve">
+    <value>打开某一行的操作，可“查看”或“编辑记录”、“禁用”或“启用”账户、“重置密码”或“删除”。</value>
+  </data>
+  <data name="Help.USERS.Step5" xml:space="preserve">
+    <value>如需为用户分配角色，请打开“用户角色”页面；此处的“角色”列仅显示已分配的角色。</value>
+  </data>
+  <data name="Help.ROLES.Purpose" xml:space="preserve">
+    <value>此页面列出您租户的角色：平台自带的系统角色和您创建的自定义角色。管理员在此添加、编辑或删除自定义角色；角色的权限在“角色权限”中设置。</value>
+  </data>
+  <data name="Help.ROLES.Step1" xml:space="preserve">
+    <value>在列表中搜索，或点击“筛选”，在“类型”中选择“系统（内置，已锁定）”或“自定义（可编辑）”，然后点击“应用”。</value>
+  </data>
+  <data name="Help.ROLES.Step2" xml:space="preserve">
+    <value>点击“添加角色”，输入“名称”和“显示名称”（如需要再填写“描述”），然后点击“保存”；名称创建后无法更改。</value>
+  </data>
+  <data name="Help.ROLES.Step3" xml:space="preserve">
+    <value>点击某行的钥匙图标“管理权限”，即可打开已选中该角色的“角色权限”页面。</value>
+  </data>
+  <data name="Help.ROLES.Step4" xml:space="preserve">
+    <value>对自定义角色可使用“查看”“编辑记录”或“删除”；系统角色显示锁形图标，只能查看。</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Purpose" xml:space="preserve">
+    <value>此页面决定一个角色可以做什么：您可以逐个角色分配或移除按模块分组的权限。该页面供管理员使用，每项更改都会影响拥有该角色的所有用户。</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1" xml:space="preserve">
+    <value>在“角色”框中选择一个角色；如果从“角色”页面的“管理权限”进入，该角色已自动选中。</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2" xml:space="preserve">
+    <value>使用“模块”、“搜索权限…”框，或“全部”“已分配”“未分配”选项卡缩小权限范围。</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3" xml:space="preserve">
+    <value>点击一个未分配的权限标签即可将其授予该角色；更改会立即保存。</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4" xml:space="preserve">
+    <value>点击已分配的标签并确认即可移除；带锁图标的标签来自基线或模块，无法在此更改。</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5" xml:space="preserve">
+    <value>在右侧“已选角色”中查看“权限覆盖率”以及已分配、已锁定和未分配的数量。</value>
+  </data>
+  <data name="Help.USERROLES.Purpose" xml:space="preserve">
+    <value>此页面将用户与角色关联：选择一个用户，然后为其分配或移除角色。用户的权限是其所有角色权限的并集，因此每次更改都会改变此人可执行的操作。</value>
+  </data>
+  <data name="Help.USERROLES.Step1" xml:space="preserve">
+    <value>在“用户”框中选择一个人，查看其已拥有和未拥有的角色。</value>
+  </data>
+  <data name="Help.USERROLES.Step2" xml:space="preserve">
+    <value>使用“搜索角色”框，或“全部”“已分配”“未分配”选项卡缩小角色范围。</value>
+  </data>
+  <data name="Help.USERROLES.Step3" xml:space="preserve">
+    <value>在“未分配的角色”中的某个角色上点击“分配”，即可将其授予该用户；更改会立即保存。</value>
+  </data>
+  <data name="Help.USERROLES.Step4" xml:space="preserve">
+    <value>在已分配的角色上点击“移除”，或点击“活动角色”中该角色旁的 x，然后确认即可取消该角色。</value>
+  </data>
+</root>

@@ -46,8 +46,8 @@
 
 @section Scripts {
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
-    @* WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer and its `?` list strings. *@
-    <partial name="~/Views/Shared/_DitenShortcuts.cshtml" />
+    @* WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer is loaded by _LayoutTenantShell for every page
+       (WP-UX-COMMON-01); this page registers its keys with it and does not load it a second time. *@
     <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
