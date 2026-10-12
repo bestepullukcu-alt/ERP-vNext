@@ -20,6 +20,21 @@ public sealed class MovementResponseDto
     public bool IdempotentReplay { get; init; }
     public BalanceViewDto? BalanceSnapshot { get; init; }
     public string ContractVersion { get; init; } = InventoryContract.Version;
+
+    /// <summary>INVENTORY 1.3.0 (MOD-0176): what the expiry hooks decided; absent when no hook applied.</summary>
+    public ExpiryChecksDto? ExpiryChecks { get; init; }
+}
+
+/// <summary>INVENTORY 1.3.0 <c>ExpiryChecks</c> (MOD-0176 F2).</summary>
+public sealed class ExpiryChecksDto
+{
+    /// <summary>Compliant | Bypassed — present on an issue under the FEFO hook.</summary>
+    public string? Fefo { get; init; }
+
+    /// <summary>Ok | NotDefined | Warned | NotApplicable — present on a goods receipt under the minimum-remaining hook.</summary>
+    public string? MinRemaining { get; init; }
+
+    public IReadOnlyList<string> ExceptionIds { get; init; } = [];
 }
 
 /// <summary>Contract <c>BalanceView</c>.</summary>

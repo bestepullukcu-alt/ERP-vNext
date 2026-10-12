@@ -37,6 +37,8 @@ public sealed class ExpiryFefoManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission(ExpiryPermissions.ExceptionsComment, "Comment on a FEFO exception", "Tenant"),
                 new ModuleManifestPermission(ExpiryPermissions.ExceptionsReview, "Take a FEFO exception into review", "Tenant"),
                 new ModuleManifestPermission(ExpiryPermissions.ExceptionsResolve, "Resolve a FEFO exception", "Tenant"),
-                new ModuleManifestPermission(ExpiryPermissions.ExceptionsClose, "Close a FEFO exception", "Tenant")
+                new ModuleManifestPermission(ExpiryPermissions.ExceptionsClose, "Close a FEFO exception", "Tenant"),
+                // WP-0176-F2: createDateOverride (KF-D) — API-only by design (pack §14.2): the lot screens call it, it has no page of its own.
+                new ModuleManifestPermission(ExpiryPermissions.DateOverridesCreate, "Prepare a lot-date override", "Tenant")
             ]);
 }

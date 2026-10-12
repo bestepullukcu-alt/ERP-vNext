@@ -46,6 +46,7 @@ public sealed class MovementMasterDataValidator
     private readonly InventoryPolicyOptions _policy;
     private readonly LotLedgerOptions _lotPolicy;
     private readonly TypedLotPostingGuard _typedGuard;
+    private readonly Expiry.Ports.IExpiryPostingPolicy _expiry;
 
     public MovementMasterDataValidator(
         IProductMasterClient productMaster,
@@ -54,8 +55,10 @@ public sealed class MovementMasterDataValidator
         ITenantContext tenantContext,
         IOptions<InventoryPolicyOptions> policy,
         IOptions<LotLedgerOptions> lotPolicy,
-        TypedLotPostingGuard typedGuard)
+        TypedLotPostingGuard typedGuard,
+        Expiry.Ports.IExpiryPostingPolicy expiry)
     {
+        _expiry = expiry;
         _productMaster = productMaster;
         _locationMaster = locationMaster;
         _lotMaster = lotMaster;
@@ -177,6 +180,7 @@ public sealed class MovementMasterDataValidator
         // ── LOT (WP-0174-P2) ──────────────────────────────────────────────────────────────────────────────
         var enforce = _lotPolicy.EnforceRegisteredLots;
         Lot? lot = null;
+        Domain.Expiry.Rules.ExpiryPostingInput? expiryInput = null;
         if (movement.LotId is { } lotId)
         {
             var registeredForm = LotPostingRules.IsRegisteredLotForm(lotId, out _);
@@ -202,6 +206,19 @@ public sealed class MovementMasterDataValidator
                     var (code, message, details) = v == LotPostingViolation.RetestDue ? InventoryErrorCodes.RetestDue(lot) : LotPostingErrors.For(v, lot);
                     return MasterDataCheck.Refused(code, message, details);
                 }
+
+                // MOD-0176 F2 (pack §8.3, CT-F2): the expiry hooks' pre-check — FEFO on an issue, minimum remaining shelf life on a goods
+                // receipt. A refusal answers 422 here; the posting transaction re-checks the same rule on the committed state (authoritative).
+                var expiry = await _expiry.PreCheckAsync(new Expiry.Ports.ExpiryPostingRequest(
+                    movement.MovementType, direction.FromStockStatus, direction.ToStockStatus, direction.FromWarehouseId, direction.ToWarehouseId,
+                    movement.ItemId, movement.SkuId, movement.SkuLevel, movement.SourceModule, lot, movement.PostingDate, movement.FefoBypassReason,
+                    sku.MinRemainingShelfLifeDays), ct);
+                if (expiry.Refusal is { } expiryRefusal)
+                {
+                    return MasterDataCheck.Refused(expiryRefusal.Code, expiryRefusal.Message, expiryRefusal.Details);
+                }
+
+                expiryInput = expiry.Input;
             }
             else if (lotControlled && direction.FromLocationId is null)
             {
@@ -247,7 +264,8 @@ public sealed class MovementMasterDataValidator
         decided.Context = new LotPostingContext(
             SerialLifecycle: serialControlled && movement.SerialIds is { Count: > 0 },
             AcceptUnregisteredSerials: !enforce && lot is null,
-            RegisterNewSerials: true);
+            RegisterNewSerials: true,
+            Expiry: expiryInput);
 
         // ── LOCATION ──────────────────────────────────────────────────────────────────────────────────────
         var sides = new List<(string WarehouseId, string LocationId)>();

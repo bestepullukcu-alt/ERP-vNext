@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Diten.InventoryService.Application.Features.Expiry;
 using Diten.InventoryService.Application.Features.Expiry.Ports;
+using Diten.InventoryService.Domain.Expiry.Rules;
+using Diten.InventoryService.Domain.Traceability.Entities;
 using Diten.InventoryService.Persistence.Expiry;
 using Diten.InventoryService.Tests.TestInfrastructure;
 using Microsoft.AspNetCore.Hosting;
@@ -78,6 +80,13 @@ public class ExpiryApiFactory : TraceApiFactory
 
     protected virtual bool UseTestSignature => true;
 
+    /// <summary>F2: false = the ledger's default AllowAll posting policy (the "no hook" baseline of the p95 measurement).</summary>
+    protected virtual bool UseExpiryPostingHooks => true;
+
+    /// <summary>F2: the PRODUCT-MASTER 1.1 day values per SKU (shelfLifeDays, retestDays, minRemainingShelfLifeDays) both SKU reads answer.</summary>
+    public ConcurrentDictionary<Guid, (int? ShelfLife, int? Retest, int? MinRemaining)> ShelfLife { get; } = new();
+
+
     public void TrackExpiryTenant(Guid tenant) => _expiryTenants.Add(tenant);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -92,8 +101,31 @@ public class ExpiryApiFactory : TraceApiFactory
                 services.RemoveAll<IExpiryResolutionSignature>();
                 services.AddSingleton<IExpiryResolutionSignature>(Signature);
             }
+
+            // the shared SKU stubs, decorated with this factory's shelf-life days (the stubs themselves stay untouched)
+            services.RemoveAll<Diten.InventoryService.Application.Common.Upstream.IProductMasterClient>();
+            services.AddSingleton<Diten.InventoryService.Application.Common.Upstream.IProductMasterClient>(new ShelfLifeProductMaster(Products, ShelfLife));
+            services.RemoveAll<Diten.InventoryService.Application.Features.Traceability.Ports.ITraceSkuDirectory>();
+            services.AddSingleton<Diten.InventoryService.Application.Features.Traceability.Ports.ITraceSkuDirectory>(new ShelfLifeSkuDirectory(Skus, ShelfLife));
+
+            services.RemoveAll<IExpiryPostingPolicy>();
+            if (UseExpiryPostingHooks)
+            {
+                services.AddScoped<ExpiryPostingPolicy>();
+                services.AddScoped<IExpiryPostingPolicy>(sp => new RacingExpiryPostingPolicy(sp.GetRequiredService<ExpiryPostingPolicy>(), this));
+            }
+            else
+            {
+                services.AddScoped<IExpiryPostingPolicy, AllowAllExpiryPostingPolicy>();
+            }
         });
     }
+
+    internal Func<Task>? TakeAfterPreCheck() => Interlocked.Exchange(ref _afterPreCheckSlot, null);
+
+    private Func<Task>? _afterPreCheckSlot;
+
+    public void ArmAfterPreCheck(Func<Task> action) => _afterPreCheckSlot = action;
 
     public Task<ExpiredOnHandSweeper.SweepResult> SweepAsync(Guid tenant, DateTimeOffset now)
     {
@@ -151,7 +183,9 @@ public sealed class ExpiryContractValidatingHandler : DelegatingHandler
         Op("POST", "/api/expiry/exceptions/{id}/comments", [200, 201, 400, 401, 403, 404, 409, 503], _ => "ExceptionEvent"),
         Op("POST", "/api/expiry/exceptions/{id}/pending-resolution", [200, 400, 401, 403, 404, 409, 503], _ => "ResolutionPrepared", etag: true),
         Op("POST", "/api/expiry/exceptions/{id}/resolve", [200, 400, 401, 403, 404, 409, 503], _ => "ExceptionDetail", etag: true),
-        Op("POST", "/api/expiry/exceptions/{id}/close", [200, 400, 401, 403, 404, 409, 503], _ => "ExceptionDetail", etag: true)
+        Op("POST", "/api/expiry/exceptions/{id}/close", [200, 400, 401, 403, 404, 409, 503], _ => "ExceptionDetail", etag: true),
+        // F2 (KF-D)
+        Op("POST", "/api/expiry/date-overrides", [200, 201, 400, 401, 403, 422, 503], _ => "DateOverride")
     ];
 
     private static readonly Regex WeakETag = new("^W/\"\\d+\"$", RegexOptions.Compiled);
@@ -362,4 +396,74 @@ public sealed class ExpiryScenario
 
     public List<BsonDocument> Audit(string action)
         => Persisted("inventory_audit").Where(d => d.Contains("Action") && d["Action"].AsString == action).ToList();
+}
+
+/// <summary>The suite's PRODUCT-MASTER stub plus this factory's shelf-life days on <c>getSku</c> (PRODUCT-MASTER 1.1 SkuRef).</summary>
+public sealed class ShelfLifeProductMaster(
+    Diten.InventoryService.Application.Common.Upstream.IProductMasterClient inner,
+    ConcurrentDictionary<Guid, (int? ShelfLife, int? Retest, int? MinRemaining)> days) : Diten.InventoryService.Application.Common.Upstream.IProductMasterClient
+{
+    public Task<IReadOnlyList<Diten.InventoryService.Application.Common.Upstream.ProductRefValidation>> ValidateRefsAsync(
+        IReadOnlyList<Diten.InventoryService.Application.Common.Upstream.ProductRefQuery> refs, CancellationToken cancellationToken = default)
+        => inner.ValidateRefsAsync(refs, cancellationToken);
+
+    public Task<Diten.InventoryService.Application.Common.Upstream.ProductReference?> GetProductAsync(Guid itemId, CancellationToken cancellationToken = default)
+        => inner.GetProductAsync(itemId, cancellationToken);
+
+    public async Task<Diten.InventoryService.Application.Common.Upstream.SkuReference?> GetSkuAsync(
+        Guid skuId, Diten.InventoryService.Domain.Enums.SkuLevel level, CancellationToken cancellationToken = default)
+    {
+        var sku = await inner.GetSkuAsync(skuId, level, cancellationToken);
+        return sku is not null && days.TryGetValue(skuId, out var d)
+            ? sku with { ShelfLifeDays = d.ShelfLife, RetestDays = d.Retest, MinRemainingShelfLifeDays = d.MinRemaining }
+            : sku;
+    }
+
+    public Task<Diten.InventoryService.Application.Common.Upstream.SkuUomInfo?> GetSkuUomAsync(Guid skuId, CancellationToken cancellationToken = default)
+        => inner.GetSkuUomAsync(skuId, cancellationToken);
+}
+
+/// <summary>The suite's TRACE SKU stub plus this factory's shelf-life days.</summary>
+public sealed class ShelfLifeSkuDirectory(
+    Diten.InventoryService.Application.Features.Traceability.Ports.ITraceSkuDirectory inner,
+    ConcurrentDictionary<Guid, (int? ShelfLife, int? Retest, int? MinRemaining)> days) : Diten.InventoryService.Application.Features.Traceability.Ports.ITraceSkuDirectory
+{
+    public async Task<Diten.InventoryService.Application.Features.Traceability.Ports.TraceSku?> GetSkuAsync(
+        Guid skuId, Diten.InventoryService.Domain.Enums.SkuLevel level, CancellationToken cancellationToken = default)
+    {
+        var sku = await inner.GetSkuAsync(skuId, level, cancellationToken);
+        return sku is not null && days.TryGetValue(skuId, out var d)
+            ? sku with { ShelfLifeDays = d.ShelfLife, RetestDays = d.Retest, MinRemainingShelfLifeDays = d.MinRemaining }
+            : sku;
+    }
+}
+
+/// <summary>
+/// The production <see cref="ExpiryPostingPolicy"/> with ONE test seam: an action armed by the race test runs right after a pre-check that
+/// passed — so the committed state changes between the pre-check and the posting transaction, and only the in-transaction re-check can see it.
+/// </summary>
+public sealed class RacingExpiryPostingPolicy(ExpiryPostingPolicy inner, ExpiryApiFactory factory) : IExpiryPostingPolicy
+{
+    public async Task<ExpiryPreCheck> PreCheckAsync(ExpiryPostingRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await inner.PreCheckAsync(request, cancellationToken);
+        if (result.Refusal is null && factory.TakeAfterPreCheck() is { } race)
+        {
+            await race();
+        }
+
+        return result;
+    }
+
+    public Task<ExpiryReCheck> ReCheckAsync(Diten.InventoryService.Domain.Entities.InventoryTransaction transaction, Lot? lot, ExpiryPostingInput? input,
+        CancellationToken cancellationToken = default)
+        => inner.ReCheckAsync(transaction, lot, input, cancellationToken);
+
+    public Task FlushRefusalAuditAsync(CancellationToken cancellationToken = default) => inner.FlushRefusalAuditAsync(cancellationToken);
+}
+
+/// <summary>The ledger's default "no expiry hook" — the baseline of the F2 p95 measurement.</summary>
+public sealed class NoExpiryHookApiFactory : ExpiryApiFactory
+{
+    protected override bool UseExpiryPostingHooks => false;
 }

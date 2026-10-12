@@ -24,6 +24,14 @@ public static class ExpiryServiceCollectionExtensions
         services.AddScoped<IExpiryRepository, ExpiryRepository>();
         services.AddScoped<IExpiryResolutionSignature, FailClosedExpiryResolutionSignature>();
 
+        // F2 — the hooks: the ledger's posting policy (CT-F2) and MOD-0174's lot-date gate (KF-D), replaced here; KF-D signature fail-closed until F3.
+        services.AddScoped<ExpiryHookWriter>();
+        services.RemoveAll<Application.Features.Expiry.Ports.IExpiryPostingPolicy>();
+        services.AddScoped<Application.Features.Expiry.Ports.IExpiryPostingPolicy, ExpiryPostingPolicy>();
+        services.RemoveAll<Application.Features.Traceability.Ports.ILotDateOverrideGate>();
+        services.AddScoped<Application.Features.Traceability.Ports.ILotDateOverrideGate, LotDateOverrideGate>();
+        services.AddScoped<ILotDateOverrideSignature, FailClosedLotDateOverrideSignature>();
+
         // Index gate first (fail-closed), then the expired-on-hand / SLA sweeper (start + periodic, pack §8.5).
         services.AddHostedService<ExpiryIndexInitializerHostedService>();
         services.Configure<ExpirySweeperOptions>(configuration.GetSection(ExpirySweeperOptions.SectionName));

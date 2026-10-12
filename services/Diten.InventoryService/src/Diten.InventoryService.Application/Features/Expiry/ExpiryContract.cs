@@ -44,6 +44,15 @@ public static class ExpiryContract
     /// <summary>The sweeper (system, no user): an EXPIRED_ON_HAND case opened / an SLA breach recorded.</summary>
     public const string AuditSlaBreached = "expiry.exception.sla-breached";
 
+    // F2 (pack §8.10)
+    public const string AuditFefoRefused = "expiry.fefo.refused";
+    public const string AuditReceiptRefused = "expiry.receipt.refused";
+    public const string AuditDateOverridePrepared = "expiry.date-override.prepared";
+    public const string AuditDateOverrideConsumed = "expiry.date-override.consumed";
+
+    /// <summary>KF-D: a prepared override is usable for 24 hours.</summary>
+    public static readonly TimeSpan DateOverrideLifetime = TimeSpan.FromHours(24);
+
     public const string SubjectPolicy = "expiry.policy";
     public const string SubjectException = "expiry.exception";
 

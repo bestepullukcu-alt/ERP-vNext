@@ -23,4 +23,7 @@ public sealed record UpdateLotCommand : IRequest<Response<LotRefDto>>
     public Patch<string> CountryOfOrigin { get; init; }
     public Patch<string> CoaReference { get; init; }
     public string? Reason { get; init; }
+
+    /// <summary>TRACE 1.4.0 (MOD-0176 KF-D, CT-F7): on a Draft lot, the override of dates that differ from the suggestion.</summary>
+    public Ports.LotDateOverrideRef? DateOverride { get; init; }
 }

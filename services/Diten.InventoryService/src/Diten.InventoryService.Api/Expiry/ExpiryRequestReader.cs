@@ -55,6 +55,20 @@ public static class ExpiryRequestReader
                 ? value
                 : throw new FormatException($"{name} must be one of {string.Join(", ", System.Enum.GetNames<T>())}.");
 
+        public DateOnly? Date(string name)
+        {
+            var raw = String(name);
+            if (raw is null) return null;
+            return DateOnly.TryParseExact(raw, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var day)
+                ? day
+                : throw new FormatException($"{name} must be a date yyyy-MM-dd.");
+        }
+
+        public Domain.Enums.SkuLevel SkuLevel(string name)
+            => WireNames.TryParseSkuLevel(String(name), out var level)
+                ? level
+                : throw new FormatException($"{name} must be Gsku, Lsku, FinishedGood or Item.");
+
         public Domain.Expiry.Enums.ExpiryExceptionType ExceptionType(string name)
             => ExpiryWire.TryParseType(String(name), out var type)
                 ? type
@@ -126,4 +140,7 @@ public static class ExpiryRequestReader
     public static readonly HashSet<string> ResolveMembers = new(StringComparer.Ordinal) { "idempotencyKey", "resolution", "reason", "signatureId" };
 
     public static readonly HashSet<string> CloseMembers = new(StringComparer.Ordinal) { "idempotencyKey", "note" };
+
+    public static readonly HashSet<string> DateOverrideMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "itemId", "skuId", "skuLevel", "lotNumber", "manufacturingDate", "expiryDate", "retestDate", "reason" };
 }

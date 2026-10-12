@@ -3,6 +3,7 @@ using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Application.Features.Inventory.Commands;
 using Diten.InventoryService.Application.Features.Inventory.Ports;
+using Diten.InventoryService.Application.Features.Expiry.Ports;
 using Diten.InventoryService.Application.Features.Inventory.Services;
 using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Domain.Entities;
@@ -43,6 +44,7 @@ public sealed class InternalMovementPostingService
     private readonly ILotMasterClient _lots;
     private readonly IEnumerable<IPostedMovementObserver> _observers;
     private readonly ILogger<InternalMovementPostingService> _logger;
+    private readonly IExpiryPostingPolicy _expiry;
 
     public InternalMovementPostingService(
         IInventoryLedgerRepository ledger,
@@ -51,8 +53,10 @@ public sealed class InternalMovementPostingService
         ITenantContext tenantContext,
         ICorrelationContext correlation,
         IEnumerable<IPostedMovementObserver> observers,
-        ILogger<InternalMovementPostingService> logger)
+        ILogger<InternalMovementPostingService> logger,
+        IExpiryPostingPolicy? expiry = null)
     {
+        _expiry = expiry ?? new AllowAllExpiryPostingPolicy(); // MOD-0176 F2: DI always passes the registered policy
         _ledger = ledger;
         _lots = lots;
         _masterData = masterData;
@@ -120,6 +124,7 @@ public sealed class InternalMovementPostingService
 
             if (!check.IsValid)
             {
+                await _expiry.FlushRefusalAuditAsync(cancellationToken); // MOD-0176 F2: a hook refusal is audited (no-op otherwise)
                 return Response<MovementResponseDto>.Fail(check.ErrorCode!, check.Message!, 422, check.Details);
             }
 
@@ -165,6 +170,7 @@ public sealed class InternalMovementPostingService
             case LedgerPostingOutcome.LotOrSerialRefused:
                 // WP-0174-P2: a registered lot / a serial re-checked inside the posting transaction (e.g. the lot was
                 // blocked between the pre-check and the commit) — pack §12 code, nothing written.
+                await _expiry.FlushRefusalAuditAsync(cancellationToken); // MOD-0176 F2: an in-transaction hook refusal, audited after the rollback
                 return Response<MovementResponseDto>.Fail(result.RefusalCode!, result.RefusalMessage!, 422, result.RefusalDetails);
 
             case LedgerPostingOutcome.IdempotencyKeyTaken:

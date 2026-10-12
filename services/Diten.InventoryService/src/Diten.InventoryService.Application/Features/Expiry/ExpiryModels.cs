@@ -129,3 +129,21 @@ public sealed record ExpiryPolicyInput(
     DateOverrideMode DateOverrideMode,
     IReadOnlyDictionary<string, int> SlaHours,
     int ExpiredOnHandThresholdDays);
+
+/// <summary>FEFO-BUNDLE §2.8 <c>DateOverride</c>.</summary>
+public sealed record ExpiryDateOverrideDto(
+    string OverrideId,
+    string ItemId,
+    string SkuId,
+    string SkuLevel,
+    string LotNumber,
+    string ManufacturingDate,
+    string? SuggestedExpiry,
+    string? EnteredExpiry,
+    string? SuggestedRetest,
+    string? EnteredRetest,
+    string Reason,
+    bool SignatureRequired,
+    string Status,
+    string ExpiresAtUtc,
+    int Version);

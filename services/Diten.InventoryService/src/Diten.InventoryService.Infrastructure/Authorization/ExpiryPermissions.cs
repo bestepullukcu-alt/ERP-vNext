@@ -43,4 +43,7 @@ public static class ExpiryPermissions
     [
         PoliciesRead, PoliciesManage, ExceptionsRead, ExceptionsCreate, ExceptionsComment, ExceptionsReview, ExceptionsResolve, ExceptionsClose
     ];
+
+    /// <summary>WP-0176-F2 — F1 + the API-only key of createDateOverride: the keys the controller enforces and the manifest declares.</summary>
+    public static readonly IReadOnlyList<string> Implemented = [.. F1, DateOverridesCreate];
 }

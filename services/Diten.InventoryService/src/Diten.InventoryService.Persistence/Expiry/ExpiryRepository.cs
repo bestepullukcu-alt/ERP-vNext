@@ -27,6 +27,7 @@ public sealed class ExpiryRepository : IExpiryRepository
     private readonly IMongoCollection<FefoExceptionEvent> _events;
     private readonly IMongoCollection<BsonDocument> _counters;
     private readonly IMongoCollection<ExpiryAuditRecord> _audit;
+    private readonly IMongoCollection<LotDateOverride> _overrides;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<ExpiryRepository> _logger;
     private readonly Guid _tenantId;
@@ -41,6 +42,7 @@ public sealed class ExpiryRepository : IExpiryRepository
         _events = database.GetCollection<FefoExceptionEvent>(ExpiryCollections.ExceptionEvents);
         _counters = database.GetCollection<BsonDocument>(ExpiryCollections.Counters);
         _audit = database.GetCollection<ExpiryAuditRecord>(InventoryCollections.Audit);
+        _overrides = database.GetCollection<LotDateOverride>(ExpiryCollections.DateOverrides);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -123,6 +125,10 @@ public sealed class ExpiryRepository : IExpiryRepository
                              & Builders<ExpiryAuditRecord>.Filter.Eq(x => x.Action, Application.Features.Expiry.ExpiryContract.AuditPolicyUpdated)
                              & Builders<ExpiryAuditRecord>.Filter.Eq(x => x.UserId, userId)
                              & Builders<ExpiryAuditRecord>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<LotDateOverride?> FindDateOverrideByKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => await _overrides.Find(Scope<LotDateOverride>() & Builders<LotDateOverride>.Filter.Eq(x => x.CreatedBy, createdBy)
+                                 & Builders<LotDateOverride>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<bool> ExistsInAnotherCompanyAsync(Guid caseId, CancellationToken cancellationToken = default)
         => await _cases.Find(Builders<FefoExceptionCase>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FefoExceptionCase>.Filter.Ne(x => x.LegalEntityId, _legalEntityId)
@@ -226,6 +232,12 @@ public sealed class ExpiryRepository : IExpiryRepository
         {
             _owner.Stamp(record);
             return _owner._audit.InsertOneAsync(_session, record, cancellationToken: cancellationToken);
+        }
+
+        public Task InsertDateOverrideAsync(LotDateOverride dateOverride, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(dateOverride);
+            return _owner._overrides.InsertOneAsync(_session, dateOverride, cancellationToken: cancellationToken);
         }
     }
 }

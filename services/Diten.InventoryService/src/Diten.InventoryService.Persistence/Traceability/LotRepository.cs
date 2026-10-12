@@ -226,6 +226,9 @@ public sealed class LotRepository : ILotRepository
             _session = session;
         }
 
+        /// <summary>MOD-0176 F2: the lot transaction's session for the KF-D gate (<c>ILotDateOverrideGate.ApplyAsync</c>).</summary>
+        public object? Session => _session;
+
         public async Task<Lot?> FindAsync(Guid lotId, CancellationToken cancellationToken = default)
             => await _owner._lots.Find(_session, _owner.Scope<Lot>() & Builders<Lot>.Filter.Eq(x => x.Id, lotId)).FirstOrDefaultAsync(cancellationToken);
 

@@ -165,6 +165,30 @@ public sealed class ExpiryController : CustomBaseController
         return await CompanyChecked(exceptionId, WithETag(await _mediator.Send(new CloseExpiryExceptionCommand(id, body.Note, key, version), ct), d => d.Version), ct);
     }
 
+    // ── date overrides (F2, KF-D) ─────────────────────────────────────────────────────────────────────────
+
+    [HttpPost("date-overrides")]
+    [HasPermission(ExpiryPermissions.DateOverridesCreate)]
+    public async Task<IActionResult> CreateDateOverride(CancellationToken ct)
+    {
+        var read = await ExpiryRequestReader.ReadAsync(Request.Body, ExpiryRequestReader.DateOverrideMembers, b => new
+        {
+            ItemId = b.Uuid("itemId"),
+            SkuId = b.Uuid("skuId"),
+            SkuLevel = b.SkuLevel("skuLevel"),
+            LotNumber = b.String("lotNumber"),
+            Manufacturing = b.Date("manufacturingDate") ?? throw new ExpiryRequestReader.FormatException("manufacturingDate is required."),
+            Expiry = b.Date("expiryDate"),
+            Retest = b.Date("retestDate"),
+            Reason = b.String("reason"),
+            Key = b.String("idempotencyKey")
+        }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        return CreateActionResultInstance(await _mediator.Send(new CreateDateOverrideCommand(
+            body.ItemId, body.SkuId, body.SkuLevel, body.LotNumber, body.Manufacturing, body.Expiry, body.Retest, body.Reason, key), ct));
+    }
+
     // ── plumbing ──────────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>

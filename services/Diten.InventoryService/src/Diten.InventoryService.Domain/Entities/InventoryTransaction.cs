@@ -86,4 +86,10 @@ public sealed class InventoryTransaction : EntityBase
 
     /// <summary>The durable result returned to the caller (and replayed verbatim on an idempotent retry).</summary>
     public BalanceSnapshot ResultSnapshot { get; set; } = new();
+
+    /// <summary>
+    /// MOD-0176 F2 (INVENTORY 1.3.0 <c>MovementResponse.expiryChecks</c>): what the expiry hooks decided inside this posting's
+    /// transaction (null = no hook applied). Stored so an idempotent replay answers the same checks.
+    /// </summary>
+    public Expiry.Entities.ExpiryChecks? ExpiryChecks { get; set; }
 }

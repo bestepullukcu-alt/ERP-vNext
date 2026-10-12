@@ -20,7 +20,10 @@ public static class InventoryMapping
             TransactionNumber = transaction.TransactionNumber,
             PostedAt = Utc(transaction.CreatedAt),
             IdempotentReplay = idempotentReplay,
-            BalanceSnapshot = ToBalanceView(transaction.ResultSnapshot, legalEntityId, transaction.BaseQuantity)
+            BalanceSnapshot = ToBalanceView(transaction.ResultSnapshot, legalEntityId, transaction.BaseQuantity),
+            ExpiryChecks = transaction.ExpiryChecks is { } checks
+                ? new ExpiryChecksDto { Fefo = checks.Fefo, MinRemaining = checks.MinRemaining, ExceptionIds = [.. checks.ExceptionIds] }
+                : null
         };
 
     public static BalanceViewDto ToBalanceView(BalanceSnapshot row, Guid legalEntityId, decimal? baseQuantity = null)

@@ -33,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
 
         services.AddScoped<IInventoryLedgerRepository, InventoryLedgerRepository>();
+        // MOD-0176 F2 (CT-F2): the ledger's default expiry hook — no hook; AddExpiry replaces it.
+        services.TryAddScoped<Application.Features.Expiry.Ports.IExpiryPostingPolicy, Application.Features.Expiry.Ports.AllowAllExpiryPostingPolicy>();
         services.AddScoped<IInventoryReservationRepository, InventoryReservationRepository>();
         services.AddScoped<IReservationExpirySweeper, ReservationExpirySweeper>();
         services.AddScoped<ISkuPositionRebuilder, SkuPositionRebuilder>();

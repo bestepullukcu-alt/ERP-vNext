@@ -181,7 +181,7 @@ public sealed class ExpiryContractTests
     public void The_contract_is_frozen_1_0_0_owned_by_MOD_0176_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.0.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.0.1", info["version"]!.GetValue<string>()); // WP-0176-F2: description-only step (x-implemented-by-slice)
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0176", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/expiry", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -207,10 +207,10 @@ public sealed class ExpiryContractTests
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v =>
                 (Path: "/" + a.Template, Method: v.ToLowerInvariant(), Permission: m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]))))
             .ToList();
-        Assert.Equal(11, served.Count);
+        Assert.Equal(12, served.Count); // 11 F1 + createDateOverride (F2)
 
         var byRoute = Operations().ToDictionary(o => (o.Path, o.Method));
-        var f1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F1"]);
+        var f1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F2"])).ToList();
         foreach (var (path, method, permission) in served)
         {
             Assert.True(byRoute.TryGetValue((path, method), out var op), $"{method} {path} is not in fefo.openapi.yaml");
@@ -286,7 +286,7 @@ public sealed class ExpiryArchitectureTests
     {
         var entities = typeof(EntityBase).Assembly.GetTypes()
             .Where(t => typeof(EntityBase).IsAssignableFrom(t) && t.Namespace?.Contains(".Expiry", StringComparison.Ordinal) == true).ToList();
-        Assert.Equal(5, entities.Count);
+        Assert.Equal(7, entities.Count); // F1: 5; F2: + FefoIssueSnapshot, LotDateOverride
         Assert.DoesNotContain(entities, t => t.Name.Contains("Signature", StringComparison.Ordinal));
         Assert.Contains(typeof(IExpiryResolutionSignature), typeof(FailClosedExpiryResolutionSignature).GetInterfaces());
     }

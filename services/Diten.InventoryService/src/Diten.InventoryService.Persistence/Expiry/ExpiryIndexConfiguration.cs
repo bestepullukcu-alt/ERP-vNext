@@ -29,10 +29,13 @@ public static class ExpiryIndexConfiguration
     public const string ExceptionSignatureIndex = "ux_expiry_exception_signature";
     public const string EventKeyIndex = "ux_expiry_event_key";
     public const string EventOnceIndex = "ux_expiry_event_once";
+    public const string SnapshotTransactionIndex = "ux_expiry_snapshot_transaction";
+    public const string DateOverrideKeyIndex = "ux_expiry_date_override_key";
 
     public static readonly IReadOnlyList<string> UniqueIndexes =
     [
-        PolicyCompanyIndex, ExceptionNumberIndex, ExceptionActiveIndex, ExceptionCreateKeyIndex, ExceptionSignatureIndex, EventKeyIndex, EventOnceIndex
+        PolicyCompanyIndex, ExceptionNumberIndex, ExceptionActiveIndex, ExceptionCreateKeyIndex, ExceptionSignatureIndex, EventKeyIndex, EventOnceIndex,
+        SnapshotTransactionIndex, DateOverrideKeyIndex
     ];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
@@ -77,6 +80,25 @@ public static class ExpiryIndexConfiguration
             new(events.Ascending(x => x.TenantId).Ascending(x => x.CaseId).Ascending(x => x.OnceKey), new CreateIndexOptions<FefoExceptionEvent>
                 { Name = EventOnceIndex, Unique = true, PartialFilterExpression = IsString(nameof(FefoExceptionEvent.OnceKey)) }),
             new(events.Ascending(x => x.TenantId).Ascending(x => x.CaseId).Ascending(x => x.Sequence), new CreateIndexOptions { Name = "ix_expiry_events" })
+        ], ct);
+
+        // F2: one snapshot per ledger transaction (the posting transaction writes it once); the KPI reads by company + time (pack §8.8).
+        var snapshots = Builders<FefoIssueSnapshot>.IndexKeys;
+        await database.GetCollection<FefoIssueSnapshot>(ExpiryCollections.FefoIssueSnapshots).Indexes.CreateManyAsync(
+        [
+            new(snapshots.Ascending(x => x.TenantId).Ascending(x => x.TransactionId), new CreateIndexOptions { Name = SnapshotTransactionIndex, Unique = true }),
+            new(snapshots.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.PostedAtUtc), new CreateIndexOptions { Name = "ix_expiry_snapshot_company_time" }),
+            new(snapshots.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.WarehouseId).Ascending(x => x.PostedAtUtc),
+                new CreateIndexOptions { Name = "ix_expiry_snapshot_warehouse_time" })
+        ], ct);
+
+        // F2: one prepared override per (company, user, key); the open ones expire (pack §8.8).
+        var overrides = Builders<LotDateOverride>.IndexKeys;
+        await database.GetCollection<LotDateOverride>(ExpiryCollections.DateOverrides).Indexes.CreateManyAsync(
+        [
+            new(overrides.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CreatedBy).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions { Name = DateOverrideKeyIndex, Unique = true }),
+            new(overrides.Ascending(x => x.TenantId).Ascending(x => x.Status).Ascending(x => x.ExpiresAtUtc), new CreateIndexOptions { Name = "ix_expiry_date_override_open" })
         ], ct);
     }
 }

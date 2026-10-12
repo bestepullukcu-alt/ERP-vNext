@@ -38,4 +38,7 @@ public sealed record PostMovementCommand : IRequest<Response<MovementResponseDto
     public string? SourceSystem { get; init; }
     public string? TransactionDate { get; init; }
     public string? PostingDate { get; init; }
+
+    /// <summary>INVENTORY 1.3.0 (MOD-0176 KF-B): the reason of an issue that is not from the first eligible FEFO lot (10–1000).</summary>
+    public string? FefoBypassReason { get; init; }
 }

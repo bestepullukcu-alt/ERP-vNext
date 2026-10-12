@@ -19,4 +19,7 @@ public sealed record CreateLotCommand : IRequest<Response<LotRefDto>>
     public string? SkuId { get; init; }
     public string? SkuLevel { get; init; }
     public string? CoaReference { get; init; }
+
+    /// <summary>TRACE 1.4.0 (MOD-0176 KF-D): the prepared override + signature of dates that differ from the suggestion.</summary>
+    public Ports.LotDateOverrideRef? DateOverride { get; init; }
 }

@@ -244,3 +244,112 @@ public sealed class ExpiryAuditRecord : EntityBase
 
     public DateTimeOffset OccurredAt { get; set; }
 }
+
+/// <summary>
+/// The INVENTORY 1.3.0 <c>MovementResponse.expiryChecks</c> of one posting, stored ON the ledger transaction (append-only) so an
+/// idempotent replay answers the same checks. <c>Fefo</c>: Compliant | Bypassed (null = not an issue under the hook);
+/// <c>MinRemaining</c>: Ok | NotDefined | Warned | NotApplicable (null = not a receipt under the hook).
+/// </summary>
+public sealed class ExpiryChecks
+{
+    public string? Fefo { get; set; }
+
+    public string? MinRemaining { get; set; }
+
+    public List<string> ExceptionIds { get; set; } = [];
+}
+
+/// <summary>
+/// Pack §4.5 — one in-scope issue (compliant or not), written in the POSTING transaction: the source of the FEFO compliance KPI (F4).
+/// <c>TransactionId</c> is unique per tenant. INSERT ONLY.
+/// </summary>
+public sealed class FefoIssueSnapshot : EntityBase
+{
+    public string TransactionId { get; set; } = string.Empty;
+
+    public string WarehouseId { get; set; } = string.Empty;
+
+    public Guid ItemId { get; set; }
+
+    public Guid SkuId { get; set; }
+
+    public SkuLevel SkuLevel { get; set; }
+
+    public string MovementType { get; set; } = string.Empty;
+
+    public string IssuedLotId { get; set; } = string.Empty;
+
+    public DateTimeOffset? IssuedExpiry { get; set; }
+
+    public string? FirstEligibleLotId { get; set; }
+
+    public DateTimeOffset? FirstEligibleExpiry { get; set; }
+
+    public bool Compliant { get; set; }
+
+    public bool Bypassed { get; set; }
+
+    public string? BypassReason { get; set; }
+
+    public Guid? ExceptionId { get; set; }
+
+    public DateTimeOffset PostedAtUtc { get; set; }
+
+    public DateTimeOffset PostingDate { get; set; }
+
+    public Guid PostedBy { get; set; }
+}
+
+/// <summary>
+/// Pack §4.6 (KF-D) — a prepared lot-date override: the dates that differ from the suggestion, with the reason, 24 hours to be used by
+/// ONE createLot / Draft updateLot (consumed in that lot transaction). The pending signable subject of F3 (<c>expiry.date-override</c>).
+/// </summary>
+public sealed class LotDateOverride : EntityBase
+{
+    public Guid ItemId { get; set; }
+
+    public Guid SkuId { get; set; }
+
+    public SkuLevel SkuLevel { get; set; }
+
+    public string LotNumber { get; set; } = string.Empty;
+
+    public DateTimeOffset ManufacturingDate { get; set; }
+
+    public DateTimeOffset? SuggestedExpiry { get; set; }
+
+    public DateTimeOffset? EnteredExpiry { get; set; }
+
+    public DateTimeOffset? SuggestedRetest { get; set; }
+
+    public DateTimeOffset? EnteredRetest { get; set; }
+
+    public int? ShelfLifeDays { get; set; }
+
+    public int? RetestDays { get; set; }
+
+    public string Reason { get; set; } = string.Empty;
+
+    public bool SignatureRequired { get; set; }
+
+    public LotDateOverrideStatus Status { get; set; } = LotDateOverrideStatus.Pending;
+
+    public Guid? ConsumedByLotId { get; set; }
+
+    public DateTimeOffset? ConsumedAtUtc { get; set; }
+
+    public DateTimeOffset ExpiresAtUtc { get; set; }
+
+    public Guid CreatedBy { get; set; }
+
+    public string IdempotencyKey { get; set; } = string.Empty;
+
+    public string RequestFingerprint { get; set; } = string.Empty;
+}
+
+public enum LotDateOverrideStatus
+{
+    Pending,
+    Consumed,
+    Expired
+}

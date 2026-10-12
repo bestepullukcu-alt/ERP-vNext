@@ -68,7 +68,7 @@ public sealed class ManifestNamespaceOwnershipTests
         Assert.Equal("EXPIRY-FEFO-MANAGEMENT", manifest.ModuleCode);
         var foreign = keys.Where(k => !k.StartsWith("expiry.", StringComparison.Ordinal)).ToList();
         Assert.True(foreign.Count == 0, "EXPIRY-FEFO-MANAGEMENT declares keys outside 'expiry.*':\n" + string.Join("\n", foreign));
-        Assert.Equal(Diten.InventoryService.Infrastructure.Authorization.ExpiryPermissions.F1.OrderBy(k => k, StringComparer.Ordinal),
+        Assert.Equal(Diten.InventoryService.Infrastructure.Authorization.ExpiryPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal),
             keys.OrderBy(k => k, StringComparer.Ordinal));
     }
 }

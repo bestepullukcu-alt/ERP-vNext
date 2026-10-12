@@ -7,7 +7,8 @@ namespace Diten.InventoryService.Application.Common;
 /// <see cref="LegalEntityMasterUnavailable"/> which pack §19 W-0173-02 names (503, company selector), plus the eight lot /
 /// serial codes of the MOD-0174 pack §12 "Ledger posting rules" (WP-0174-P2, all 422; INVENTORY-BUNDLE v1 unchanged), plus
 /// <see cref="InventoryUnavailable"/> which INVENTORY-BUNDLE 1.1.0 declares for <c>getStockPresence</c> (503, WP-0173-PM2), plus
-/// the three PRODUCT-MASTER v1.1 refusals INVENTORY-BUNDLE 1.2.0 declares on <c>postMovement</c> (422, WP-0173-PM1, CT-PM1-1).
+/// the three PRODUCT-MASTER v1.1 refusals INVENTORY-BUNDLE 1.2.0 declares on <c>postMovement</c> (422, WP-0173-PM1, CT-PM1-1). Plus the three
+/// expiry-hook refusals INVENTORY-BUNDLE 1.3.0 declares on <c>postMovement</c> (422, MOD-0176 WP-0176-F2).
 /// No other code may be added without a new pack version.
 /// </summary>
 public static class InventoryErrorCodes
@@ -64,6 +65,15 @@ public static class InventoryErrorCodes
     /// <summary>1.2.0 (OD-10): a GSKU-level movement of a product whose serial flag is not explicitly false.</summary>
     public const string SkuLevelNotStockable = "SKU_LEVEL_NOT_STOCKABLE";
 
+    /// <summary>1.3.0 (MOD-0176 KF-B, mode "Gerekçe iste"): an issue not from the first eligible FEFO lot sent no fefoBypassReason of 10–1000.</summary>
+    public const string FefoBypassReasonRequired = "FEFO_BYPASS_REASON_REQUIRED";
+
+    /// <summary>1.3.0 (MOD-0176 KF-B, mode "Engelle"): an issue not from the first eligible FEFO lot is refused.</summary>
+    public const string FefoOrderViolation = "FEFO_ORDER_VIOLATION";
+
+    /// <summary>1.3.0 (MOD-0176 KF-C, CT-F1): a GOODS_RECEIPT_PO below the SKU's minimum remaining shelf life (details.requiredToStockStatus = QUARANTINE in mode "Otomatik karantina").</summary>
+    public const string LotBelowMinRemainingShelfLife = "LOT_BELOW_MIN_REMAINING_SHELF_LIFE";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         InvalidMovementType, CrossLeForbidden, InsufficientStock, SerialCountMismatch, UnknownLocation,
@@ -71,7 +81,8 @@ public static class InventoryErrorCodes
         UomConversionMissing, LotRequired, AlreadyReversed, LocationMasterUnavailable, InsufficientAvailable,
         ReservationConflict, LegalEntityMasterUnavailable, LotNotAllowed, UnknownLot, LotSkuMismatch, LotBlocked, LotExpired,
         SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch, LotRetestDue, InventoryUnavailable,
-        ProductMasterDataIncomplete, ItemNotActive, SkuLevelNotStockable
+        ProductMasterDataIncomplete, ItemNotActive, SkuLevelNotStockable,
+        FefoBypassReasonRequired, FefoOrderViolation, LotBelowMinRemainingShelfLife
     };
 
     /// <summary>MOD-0175 Q4: the <c>LOT_RETEST_DUE</c> refusal (pre-check and in-transaction re-check give the same answer).</summary>

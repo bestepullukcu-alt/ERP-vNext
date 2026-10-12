@@ -55,6 +55,9 @@ public interface IExpiryRepository
     /// <summary>V23 pattern: the id names a case of ANOTHER company of the caller's tenant (→ 403, not 404).</summary>
     Task<bool> ExistsInAnotherCompanyAsync(Guid caseId, CancellationToken cancellationToken = default);
 
+    /// <summary>F2 (KF-D): the caller's earlier prepared override with this idempotency key, if any.</summary>
+    Task<LotDateOverride?> FindDateOverrideByKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default);
+
     Task<T> InTransactionAsync<T>(Func<IExpiryWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default);
 }
 
@@ -79,4 +82,7 @@ public interface IExpiryWriteSession
     Task InsertEventAsync(FefoExceptionEvent exceptionEvent, CancellationToken cancellationToken = default);
 
     Task InsertAuditAsync(ExpiryAuditRecord record, CancellationToken cancellationToken = default);
+
+    /// <summary>F2 (KF-D): a prepared lot-date override.</summary>
+    Task InsertDateOverrideAsync(LotDateOverride dateOverride, CancellationToken cancellationToken = default);
 }

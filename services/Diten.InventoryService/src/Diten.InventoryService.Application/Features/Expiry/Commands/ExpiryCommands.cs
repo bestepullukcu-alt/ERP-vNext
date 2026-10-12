@@ -44,3 +44,15 @@ public sealed record ResolveExpiryExceptionCommand(
 /// <summary>§4.17 closeException — Accepted / Fixed → Closed (no signature).</summary>
 public sealed record CloseExpiryExceptionCommand(Guid ExceptionId, string? Note, string IdempotencyKey, int ExpectedVersion)
     : IRequest<Response<ExpiryExceptionDetailDto>>;
+
+/// <summary>§4.19 createDateOverride (F2, KF-D) — prepare an override of the suggested lot dates (24 h, consumed by one createLot / Draft updateLot).</summary>
+public sealed record CreateDateOverrideCommand(
+    Guid ItemId,
+    Guid SkuId,
+    Domain.Enums.SkuLevel SkuLevel,
+    string? LotNumber,
+    DateOnly Manufacturing,
+    DateOnly? Expiry,
+    DateOnly? Retest,
+    string? Reason,
+    string IdempotencyKey) : IRequest<Response<ExpiryDateOverrideDto>>;

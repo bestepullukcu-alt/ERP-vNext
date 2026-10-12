@@ -20,5 +20,11 @@ public static class ExpiryCollections
     /// <summary>Atomic per Tenant + year counter behind <c>FX-{yyyy}-{nnnn}</c>.</summary>
     public const string Counters = "expiry_counters";
 
-    public static readonly IReadOnlyList<string> All = [Policies, PolicyHistory, Exceptions, ExceptionEvents, Counters];
+    /// <summary>F2 — one per in-scope issue, written in the posting transaction; insert-only (pack §4.5).</summary>
+    public const string FefoIssueSnapshots = "expiry_fefo_issue_snapshots";
+
+    /// <summary>F2 — prepared lot-date overrides (KF-D, pack §4.6).</summary>
+    public const string DateOverrides = "expiry_date_overrides";
+
+    public static readonly IReadOnlyList<string> All = [Policies, PolicyHistory, Exceptions, ExceptionEvents, Counters, FefoIssueSnapshots, DateOverrides];
 }
