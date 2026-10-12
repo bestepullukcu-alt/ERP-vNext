@@ -49,7 +49,7 @@
 |---|---|---|
 | K-W1 | Ertelemenin sonucu: **A** yeni tarihte planlı ziyaret · **B** yalnız not — ✅ **KARAR (2026-10-09): A** — eski ziyaret "ertelendi" kapanır, yeni günde yeni planlı ziyaret oluşur, sıklıkta sayılır | W2 |
 | K-W2 | Kanıt: fotoğraf zorunlu mu, konum zorunlu mu; ek kanıtlar (imza / QR / süre / anti-fraud) hangileri — ✅ **KARAR (2026-10-09): kiracı ayarı**, varsayılan konum zorunlu + fotoğraf isteğe bağlı (ek kanıt seçenekleri W3 öncesi netleşir) | W3 |
-| K-W3 | Fotoğraf + imza saklama yeri (MOD-0262 ikili depo mu, başka) — ✅ **KARAR (2026-10-12): MOD-0262 ikili depo** (hazır değilse yalnız konum + zaman damgası). CT kontrolü: MOD-0262-FU01 main'de, SCMM-16A canlı E4 8/8, CRM `HttpContentArtifactStore` deseni var → **(a) geçerli**. Yeni kapsam `CrmVisitEvidence` + izin konusu W3 paketinde | W3 |
+| K-W3 | Fotoğraf + imza saklama yeri (MOD-0262 ikili depo mu, başka) — ✅ **KARAR (2026-10-12): MOD-0262 ikili depo** (hazır değilse yalnız konum + zaman damgası). CT kontrolü: MOD-0262-FU01 main'de, SCMM-16A canlı E4 8/8, CRM `HttpContentArtifactStore` deseni var → **(a) geçerli**. Yeni kapsam `CrmVisitEvidence`. **İzin kararı (kullanıcı 2026-10-12):** Platform'a yalnız ziyaret kanıtı kapsamıyla sınırlı izin eklenir (kiracı geneli `platform.document-repository.read/manage` temsilciye VERİLMEZ); temsilci kanıtı yalnız kendi ziyareti üzerinden, CRM aracılığıyla görür → W3'te ayrı Platform parçası | W3 |
 | K-W4 | Bağlılık modeli: pay % · aşama · birleşik | W4 |
 | K-W5 | Hekim tipolojisi: benimseme · iletişim stili · ikisi | W4 |
 | K-W6 | Endikasyon × hasta profili ve rakip verisinin sahibi (MDM mi CRM mi) ve kim girer | W4 |
