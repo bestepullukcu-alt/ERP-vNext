@@ -938,6 +938,20 @@ CT sabotage (own): `DELETE` added to `/api/expiry/{everything}` → **4 of 24** 
 **D-INT-1 accepted, no follow-up:** the blocks sit after `/api/v1/esign/{everything}` because the INT-QE order test pins the four blocks
 after trace; Ocelot matches by template, so placement does not change routing. Fast-forwarded into the MVP-1 branch.
 
+### 19.10 WP-0176-F2 — agent result, pending CT (2026-10-12)
+
+Commits on `feature/sce/mod-0176-expiry-fefo` (base `1240a1ce9`): `f6b6ee435` **INVENTORY 1.3.0** (MOD-0173 owner step), `c580823ea`
+**TRACE 1.4.0** (MOD-0174 owner step), `3b7056a6c` hooks + KF-D + FEFO 1.0.1 (description only), `41256aeb8` §13 gap tests. Evidence
+`docs/records/audits/2026-10/mod-0176-f2-evidence-2026-10-12.md`. One port `IExpiryPostingPolicy` (CT-F2): validator pre-check + authoritative
+re-check in the ledger posting transaction (existing session); FEFO_BYPASS / BELOW_MIN_REMAINING cases and the issue snapshot are written in
+that transaction. CT-F1 implemented as 422 + `requiredToStockStatus = QUARANTINE` (no server re-route); CT-F3 / F4 / F5 / F6 (fail-closed) /
+F7 / F10 as decided; CT-F13 measured: IXSCAN `ux_balance_dimension`, no new index. Inventory **905 → 972** green; architecture 69/77 (same 8
+reds; audit list 99 → 100, +`CreateDateOverrideCommand`); gateway 134/135. Every §8.3.4 cell and §13 #1–6, 9, 10 PASS through the HTTP
+endpoints (signed KF-D success via a MOD-0022 test double only — production fail-closed until F3). Sabotage a–i: 9/9 red → green, `git diff`
+empty. p95 added +9.4 / +9.7 / −0.5 ms (issue / bypass / receipt, 200 lots). Probe on 5167 + own mongod: `/health` 200, unauthenticated
+posting / date-override / lot routes 401, fleet PIDs unchanged. Open for CT: O-F2-1 (TRACE `Error` has no `details` — suggestion in the
+message), O-F2-2 (MOD-0175 exemption trusts `sourceModule`), O-F2-3, O-F2-4 (§8.3.4 GR text vs CT-F1), O-F2-5 (`GOODS_ISSUE_PROD` in scope).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
