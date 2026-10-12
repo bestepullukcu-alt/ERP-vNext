@@ -1,0 +1,10 @@
+# architecture suite — feature/mvp3-bom-routings @ 9f96b1ff2 (after merging origin/main a814bad0f), SDK 10.0.112, 2026-10-12
+Failed!  - Failed:     8, Passed:    69, Skipped:     0, Total:    77
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool") 
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash") 
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor") 
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders 
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance 
+  Failed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest 
+  Failed TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt 
+  Failed TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous 

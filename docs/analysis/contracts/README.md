@@ -12,7 +12,7 @@
 | **TRACE-BUNDLE** | MOD-0174 | `trace.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** · **1.3.0 additive** (WP-0174-ITEM): `SkuLevel` + `Item`; `createLot` 422 `PRODUCT_MASTER_DATA_INCOMPLETE` / `SKU_LEVEL_NOT_STOCKABLE` |
 | **QUARANTINE-BUNDLE** | MOD-0175 | `quarantine.openapi.yaml` (OpenAPI 3.1) | ✅ **1.0.0 FROZEN** (WP-0175-Q1) · **1.1.0 additive** (WP-0174-ITEM): `SkuLevel` + `Item`; nothing else · **1.2.0 additive** (WP-MVP1-FUB2): `HistoryAction` + `NoteUpdated` with the optional `HistoryEntry.noteChange` (`NoteChange`: note length / attachment count before → after) — FU-0175-ITEM-01; `updateHold` lists `QUARANTINE_DECISION_ALREADY_PENDING` (409, the note is locked while a submitted decision is open) — FU-0175-ITEM-03; the replay answers the first result (O-ITEM-4); the 1.1.0 file is the test fixture `quarantine-v1.1.0.openapi.yaml` |
 | **GRN-EVENT** | MOD-0142 | `grn-event.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
-| **BOM** | MOD-0193 | `bom.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
+| **BOM** | MOD-0193 | `bom.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 FROZEN** · v1.1.0 additive (2026-10-06, MVP-3: management surface; v1.0.0 operations unchanged) |
 | **DEMAND** | MOD-0188 | `demand.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **ATP-BUNDLE** | MOD-0172 | `atp-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 
