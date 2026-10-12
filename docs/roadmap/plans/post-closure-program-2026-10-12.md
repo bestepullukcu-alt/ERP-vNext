@@ -64,6 +64,24 @@ Yapılmış olanlar: S0 sözleşme, S1 kalem çekirdeği, S3 stok davranışı a
 - yetki (UAS-001);
 - 7 dil.
 
+**Ölçüm (2026-10-12 akşamı, hat):** `HumanCapital` sayfalarının çoğu iş işlevi değil, **hazırlık kaydı**.
+- `Diten.HumanCapitalService` içindeki 22 varlığın 19'u `*ReadinessMetadata`; bir sınırın ya da bağımlılığın hazır olup olmadığını tutuyor.
+  - Örnek: "Zaman / Devam / İzin" sayfasının varlığı `TimeAttendanceLeaveReadinessMetadata`. `LeaveRequestBoundaryState`, `LeaveBalanceBoundaryState` gibi durum alanları var; izin talep edilemiyor, bakiye görünmüyor.
+  - "Self Servis" de aynı.
+- Gerçek kayıtlar:
+  - `EmployeePositionAssignmentOverlay`: bizim pozisyon atamasının yinelenmesi;
+  - `EmployeeProfileProjection`;
+  - `OffboardingCase`;
+  - çalışan ana verisi (`Diten.HcmService` `Employee`, `HCM/Employees`).
+- **Görev Merkezi / toplantı / zaman çizelgesi için gerçek durum:**
+  - çalışan var (tamlığı ölçülecek);
+  - organizasyon / pozisyon / atama bizde ve gerçek; yinelenme kararı gerekli;
+  - çalışma takvimi bizde, gerçek;
+  - **izin talebi + bakiye + onay YOK**;
+  - **vekâlet YOK**;
+  - **vardiya YOK**;
+  - self servis yok (onaylar Görev Merkezi'nde).
+
 **İK temeli sırası:**
 1. çalışan;
 2. organizasyon / pozisyon;
