@@ -67,7 +67,7 @@
   <data name="CountdownLeft" xml:space="preserve"><value>{0} h {1} min left</value></data>
   <data name="CountdownPassed" xml:space="preserve"><value>The time to report is over</value></data>
   <data name="BandMissed" xml:space="preserve"><value>Missed: within 48 hours record it as not done or reschedule it.</value></data>
-  <data name="BandExpired" xml:space="preserve"><value>Locked: the 48 hours passed without a report; your manager is informed.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>Locked: the 48 hours passed without a report; flagged for your manager.</value></data>
   <data name="BandReportMissing" xml:space="preserve"><value>The visit is done; send its report.</value></data>
   <data name="BandDraft" xml:space="preserve"><value>Draft week: the plan can still change.</value></data>
   <data name="BandCancelled" xml:space="preserve"><value>This visit was cancelled.</value></data>
@@ -198,9 +198,9 @@
   <data name="AlertTitle_missed" xml:space="preserve"><value>Missed</value></data>
   <data name="AlertText_missed" xml:space="preserve"><value>The visit was not started. {0} h left for "Not done" or "Reschedule".</value></data>
   <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Missed · locked</value></data>
-  <data name="AlertText_missed_locked" xml:space="preserve"><value>Not marked within 48 hours. The record is locked and your manager was notified.</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>Not marked within 48 hours. The record is locked and flagged for your manager.</value></data>
   <data name="AlertTitle_expired" xml:space="preserve"><value>Report time is over</value></data>
-  <data name="AlertText_expired" xml:space="preserve"><value>The record is locked and your manager was notified.</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>The record is locked and flagged for your manager.</value></data>
   <data name="DlgTab_cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="DlgTab_notDone" xml:space="preserve"><value>Not done</value></data>
   <data name="DlgTab_reschedule" xml:space="preserve"><value>Reschedule</value></data>

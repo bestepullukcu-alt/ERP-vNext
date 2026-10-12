@@ -67,7 +67,7 @@
   <data name="CountdownLeft" xml:space="preserve"><value>quedan {0} h {1} min</value></data>
   <data name="CountdownPassed" xml:space="preserve"><value>El plazo para informar ha vencido</value></data>
   <data name="BandMissed" xml:space="preserve"><value>Perdida: en 48 horas márquela como no realizada o reprográmela.</value></data>
-  <data name="BandExpired" xml:space="preserve"><value>Bloqueada: pasaron 48 horas sin informe; su responsable está informado.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>Bloqueada: pasaron 48 horas sin informe; marcada para su responsable.</value></data>
   <data name="BandReportMissing" xml:space="preserve"><value>La visita se hizo; envíe su informe.</value></data>
   <data name="BandDraft" xml:space="preserve"><value>Semana en borrador: el plan aún puede cambiar.</value></data>
   <data name="BandCancelled" xml:space="preserve"><value>Esta visita fue cancelada.</value></data>
@@ -198,9 +198,9 @@
   <data name="AlertTitle_missed" xml:space="preserve"><value>Perdida</value></data>
   <data name="AlertText_missed" xml:space="preserve"><value>La visita no se inició. Quedan {0} h para «No realizada» o «Aplazar».</value></data>
   <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Perdida · bloqueada</value></data>
-  <data name="AlertText_missed_locked" xml:space="preserve"><value>No se marcó en 48 horas. El registro está bloqueado y se notificó a su responsable.</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>No se marcó en 48 horas. El registro está bloqueado y marcado para su responsable.</value></data>
   <data name="AlertTitle_expired" xml:space="preserve"><value>Plazo del informe vencido</value></data>
-  <data name="AlertText_expired" xml:space="preserve"><value>El registro está bloqueado y se notificó a su responsable.</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>El registro está bloqueado y marcado para su responsable.</value></data>
   <data name="DlgTab_cancel" xml:space="preserve"><value>Cancelar</value></data>
   <data name="DlgTab_notDone" xml:space="preserve"><value>No realizada</value></data>
   <data name="DlgTab_reschedule" xml:space="preserve"><value>Aplazar</value></data>

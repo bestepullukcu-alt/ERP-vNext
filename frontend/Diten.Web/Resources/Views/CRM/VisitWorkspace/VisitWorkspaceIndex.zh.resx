@@ -67,7 +67,7 @@
   <data name="CountdownLeft" xml:space="preserve"><value>剩余 {0} 小时 {1} 分钟</value></data>
   <data name="CountdownPassed" xml:space="preserve"><value>报告期限已过</value></data>
   <data name="BandMissed" xml:space="preserve"><value>已错过：请在 48 小时内标记为未完成或改期。</value></data>
-  <data name="BandExpired" xml:space="preserve"><value>已锁定：48 小时内未提交报告；已通知您的经理。</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>已锁定：48 小时内未提交报告；已为您的经理标记。</value></data>
   <data name="BandReportMissing" xml:space="preserve"><value>拜访已完成；请提交报告。</value></data>
   <data name="BandDraft" xml:space="preserve"><value>草稿周：计划仍可能变化。</value></data>
   <data name="BandCancelled" xml:space="preserve"><value>此拜访已取消。</value></data>
@@ -198,9 +198,9 @@
   <data name="AlertTitle_missed" xml:space="preserve"><value>已错过</value></data>
   <data name="AlertText_missed" xml:space="preserve"><value>拜访未开始。还剩 {0} 小时可标记“未完成”或“改期”。</value></data>
   <data name="AlertTitle_missed_locked" xml:space="preserve"><value>已错过 · 已锁定</value></data>
-  <data name="AlertText_missed_locked" xml:space="preserve"><value>48 小时内未标记。记录已锁定并已通知您的经理。</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>48 小时内未标记。记录已锁定并已为您的经理标记。</value></data>
   <data name="AlertTitle_expired" xml:space="preserve"><value>报告期限已过</value></data>
-  <data name="AlertText_expired" xml:space="preserve"><value>记录已锁定并已通知您的经理。</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>记录已锁定并已为您的经理标记。</value></data>
   <data name="DlgTab_cancel" xml:space="preserve"><value>取消</value></data>
   <data name="DlgTab_notDone" xml:space="preserve"><value>未完成</value></data>
   <data name="DlgTab_reschedule" xml:space="preserve"><value>改期</value></data>

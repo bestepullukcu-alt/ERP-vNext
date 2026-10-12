@@ -67,7 +67,7 @@
   <data name="CountdownLeft" xml:space="preserve"><value>Осталось {0} ч {1} мин</value></data>
   <data name="CountdownPassed" xml:space="preserve"><value>Срок отчёта истёк</value></data>
   <data name="BandMissed" xml:space="preserve"><value>Пропущен: в течение 48 часов отметьте «не выполнен» или перенесите.</value></data>
-  <data name="BandExpired" xml:space="preserve"><value>Заблокирован: 48 часов без отчёта; руководитель уведомлён.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>Заблокирован: 48 часов без отчёта; отмечен для руководителя.</value></data>
   <data name="BandReportMissing" xml:space="preserve"><value>Визит проведён; отправьте отчёт.</value></data>
   <data name="BandDraft" xml:space="preserve"><value>Черновая неделя: план ещё может измениться.</value></data>
   <data name="BandCancelled" xml:space="preserve"><value>Этот визит отменён.</value></data>
@@ -198,9 +198,9 @@
   <data name="AlertTitle_missed" xml:space="preserve"><value>Пропущен</value></data>
   <data name="AlertText_missed" xml:space="preserve"><value>Визит не начат. На «Не выполнен» или «Перенести» осталось {0} ч.</value></data>
   <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Пропущен · заблокирован</value></data>
-  <data name="AlertText_missed_locked" xml:space="preserve"><value>Не отмечен за 48 часов. Запись заблокирована, руководитель уведомлён.</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>Не отмечен за 48 часов. Запись заблокирована и отмечена для руководителя.</value></data>
   <data name="AlertTitle_expired" xml:space="preserve"><value>Срок отчёта истёк</value></data>
-  <data name="AlertText_expired" xml:space="preserve"><value>Запись заблокирована, руководитель уведомлён.</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>Запись заблокирована и отмечена для руководителя.</value></data>
   <data name="DlgTab_cancel" xml:space="preserve"><value>Отменить</value></data>
   <data name="DlgTab_notDone" xml:space="preserve"><value>Не выполнен</value></data>
   <data name="DlgTab_reschedule" xml:space="preserve"><value>Перенести</value></data>

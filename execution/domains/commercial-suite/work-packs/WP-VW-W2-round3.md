@@ -224,3 +224,20 @@ Commit: "feat(web): WP-VW-W2-WEB-c — visit workspace design fit (calendar card
   2. **Yanıltıcı metin:** ayrıntı uyarısı "Kayıt kilitli, yöneticinize bildirildi." diyor; bildirim W5'te gelecek. Şimdilik "yöneticiniz için işaretlendi" olmalı.
   3. **12 Eki iptal kartları** (hafta yeniden açılınca iptal edilen 3 ziyaret) taslak kartlarla üst üste biniyor. Öneri: "Tüm durumlar" varsayılanında iptaller gizli, süzgeçten açılabilir.
   4. Uzmanlıklar İngilizce (veri: `label_tr` 0/22; veri sahibi işi).
+
+## §37 ek — W2 kapanış düzeltmeleri (2026-10-12, CT kendisi; kullanıcı onayı "evet sen yap")
+- **1 · Kısa kart:**
+  - 25 dk altı (`vw-tiny`) kartta yalnız başlangıç saati yazılır (`cardModel.shortTime`); tam aralık kartın `title`'ında durur;
+  - ad satırı esner (`flex: 1 1 auto`, tek satır, üç nokta). Dar Planla sütununda doktor adı görünür.
+- **2 · Uyarı metni:** `AlertText_missed_locked`, `AlertText_expired` ve aynı iddiayı taşıyan `BandExpired`, 8 resx'te "yöneticinize bildirildi" yerine "yöneticiniz için işaretlendi" (ve karşılıkları) oldu. Bildirim W5'te gelir.
+- **3 · İptaller:** `filterVisits` boş durum seçiminde `cancelled` dışarıda bırakır; yalnız süzgeçte "İptal" seçilince görünür (12 Eki üst üste binme).
+- **4 · Uzmanlık TR etiketi:** dokunulmadı; veri sahibi işi (`label_tr` 0/22).
+- **Testler:**
+  - `W2_closing_cancelled_visits_hide_unless_picked_in_the_status_filter`;
+  - `W2_closing_the_lock_texts_do_not_claim_the_manager_was_notified` (8 kültür × 3 anahtar);
+  - design-fit `A2` kısa kart iddiaları (`title`, yalnız `09:00`, ad).
+- **CT sabotajı:**
+  - filtre + kısa kart saati geri bozuldu → 2 kırmızı (`A2`, `W2_closing_cancelled…`);
+  - ru metni eski hale getirildi → 1 kırmızı (`W2_closing_the_lock_texts…`).
+  - `.bak` ile geri alındı + touch; tam Web turu **867/0**.
+- **W2 sonucu: TAMAM** (7 prompt + CT kapanış). Sıradaki: W3 öncesi K-W3 (fotoğraf / imza saklama yeri) sorusu.

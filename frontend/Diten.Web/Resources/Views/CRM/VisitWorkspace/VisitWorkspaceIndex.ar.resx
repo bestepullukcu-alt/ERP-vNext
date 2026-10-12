@@ -67,7 +67,7 @@
   <data name="CountdownLeft" xml:space="preserve"><value>متبقٍ {0} س {1} د</value></data>
   <data name="CountdownPassed" xml:space="preserve"><value>انتهت مهلة الإبلاغ</value></data>
   <data name="BandMissed" xml:space="preserve"><value>فائتة: خلال 48 ساعة سجّلها كـ"لم تتم" أو أجّلها.</value></data>
-  <data name="BandExpired" xml:space="preserve"><value>مقفلة: مرت 48 ساعة دون تقرير؛ تم إبلاغ مديرك.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>مقفلة: مرت 48 ساعة دون تقرير؛ وُضعت عليها علامة لمديرك.</value></data>
   <data name="BandReportMissing" xml:space="preserve"><value>تمت الزيارة؛ أرسل تقريرها.</value></data>
   <data name="BandDraft" xml:space="preserve"><value>أسبوع مسودة: قد تتغير الخطة.</value></data>
   <data name="BandCancelled" xml:space="preserve"><value>أُلغيت هذه الزيارة.</value></data>
@@ -198,9 +198,9 @@
   <data name="AlertTitle_missed" xml:space="preserve"><value>فائتة</value></data>
   <data name="AlertText_missed" xml:space="preserve"><value>لم تبدأ الزيارة. متبقٍ {0} س لـ «لم تتم» أو «تأجيل».</value></data>
   <data name="AlertTitle_missed_locked" xml:space="preserve"><value>فائتة · مقفلة</value></data>
-  <data name="AlertText_missed_locked" xml:space="preserve"><value>لم يُحدَّد خلال 48 ساعة. أُقفل السجل وأُبلغ مديرك.</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>لم يُحدَّد خلال 48 ساعة. أُقفل السجل ووُضعت عليه علامة لمديرك.</value></data>
   <data name="AlertTitle_expired" xml:space="preserve"><value>انتهت مهلة التقرير</value></data>
-  <data name="AlertText_expired" xml:space="preserve"><value>السجل مقفل وأُبلغ مديرك.</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>السجل مقفل ووُضعت عليه علامة لمديرك.</value></data>
   <data name="DlgTab_cancel" xml:space="preserve"><value>إلغاء</value></data>
   <data name="DlgTab_notDone" xml:space="preserve"><value>لم تتم</value></data>
   <data name="DlgTab_reschedule" xml:space="preserve"><value>تأجيل</value></data>

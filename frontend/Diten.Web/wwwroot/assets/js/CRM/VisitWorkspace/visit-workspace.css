@@ -97,7 +97,7 @@
 .vw-card.vw-tiny .vw-acc { display: none; }
 .vw-card.vw-tiny { flex-direction: row; align-items: center; gap: 6px; }
 .vw-card.vw-tiny .vw-card-top { flex: 0 0 auto; }
-.vw-card.vw-tiny .vw-name { min-width: 0; }
+.vw-card.vw-tiny .vw-name { min-width: 0; flex: 1 1 auto; white-space: nowrap; } /* W2 closing (CT): the name keeps the row */
 .vw-card.vw-tiny .vw-icons .bx:not(.vw-st-icon) { display: none; }
 .vw-strike .vw-name { text-decoration: line-through; }
 .vw-untimed { opacity: .85; }

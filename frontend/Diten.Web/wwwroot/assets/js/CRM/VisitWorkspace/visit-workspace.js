@@ -239,8 +239,8 @@
             + (m.rescheduledFrom ? '<i class="bx bx-calendar-edit" title="' + esc(L.Icon_Rescheduled || '') + '"></i>' : '')
             + '<i class="bx ' + m.icon + ' vw-st-icon" title="' + esc(L[st.labelKey] || '') + '"></i>';
         const chips = m.chips.map(c => '<span class="vw-pchip ' + (c.promo ? 'vw-pchip-promo' : 'vw-pchip-reminder') + '">' + F.bidi(c.name) + '</span>').join('');
-        return '<div class="vw-card ' + st.cssClass + (st.dashed ? ' vw-dashed' : '') + (st.strike ? ' vw-strike' : '') + (m.compact ? ' vw-compact' : '') + (m.tiny ? ' vw-tiny' : '') + '">'
-            + '<div class="vw-card-top"><span class="vw-time">' + esc(m.time) + '</span><span class="vw-icons">' + icons + '</span></div>'
+        return '<div class="vw-card ' + st.cssClass + (st.dashed ? ' vw-dashed' : '') + (st.strike ? ' vw-strike' : '') + (m.compact ? ' vw-compact' : '') + (m.tiny ? ' vw-tiny' : '') + '" title="' + esc(m.time) + '">'
+            + '<div class="vw-card-top"><span class="vw-time">' + esc(m.tiny ? m.shortTime : m.time) + '</span><span class="vw-icons">' + icons + '</span></div>'
             + '<div class="vw-name">' + F.bidi(v.targetDisplayName || '—') + '</div>'
             + (m.account ? '<div class="vw-acc">' + F.bidi(m.account) + '</div>' : '')
             + (chips ? '<div class="vw-chips">' + chips + '</div>' : '')

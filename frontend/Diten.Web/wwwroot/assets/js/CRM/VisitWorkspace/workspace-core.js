@@ -201,12 +201,13 @@
     const contentRoles = items => (items || []).map((c, i) => ({ name: productLabel(c), roleKey: i === 0 ? 'RolePromo' : 'RoleReminder' }));
 
     // ── filters ──────────────────────────────────────────────────────────────────────────────────────────────
-    /** f = { statuses: [], accountId, productId } — empty = everything. */
+    /** f = { statuses: [], accountId, productId } — empty = everything EXCEPT cancelled (W2 closing, CT 2026-10-12: a
+     * cancelled visit sat on top of the live / draft cards; it shows when "cancelled" is picked in the status filter). */
     const filterVisits = (visits, f) => {
         const filter = f || {};
         const statuses = filter.statuses || [];
         return (visits || []).filter(v =>
-            (statuses.length === 0 || statuses.indexOf(v.workStatus) > -1)
+            (statuses.length === 0 ? v.workStatus !== 'cancelled' : statuses.indexOf(v.workStatus) > -1)
             && (!filter.accountId || v.accountId === filter.accountId)
             && (!filter.productId || (v.plannedContent || []).some(c => c.productId === filter.productId)));
     };
@@ -398,6 +399,8 @@
             status: st,
             icon: st.code === 'missed' && cd && cd.passed ? 'bx-lock-alt' : st.icon,
             time: v && v.startTime ? v.startTime + (v.endTime ? '–' + v.endTime : '') : '',
+            // W2 closing (CT): a TINY card shows the start only, so the name keeps the room (the full range is the title)
+            shortTime: (v && v.startTime) || '',
             name: (v && v.targetDisplayName) || '—',
             account: (v && v.accountDisplayName) || '',
             chips: ((v && v.plannedContent) || []).map((x, i) => ({ name: productLabel(x), promo: isPromo(x, i) })),

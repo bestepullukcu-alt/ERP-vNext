@@ -411,6 +411,37 @@ public sealed class VisitWorkspaceWebTests
         Assert.Equal((1, 1, 2), (r[3].GetInt32(), r[4].GetInt32(), r[5].GetInt32()));
     }
 
+    [Fact]
+    public void W2_closing_cancelled_visits_hide_unless_picked_in_the_status_filter()
+    {
+        var node = RunNode(Core() +
+            "const visits = [{ workStatus: 'cancelled', accountId: 'a1', plannedContent: [] }, { workStatus: 'draft', accountId: 'a1', plannedContent: [] }, { workStatus: 'today', accountId: 'a2', plannedContent: [] }];\n" +
+            "process.stdout.write(JSON.stringify([C.filterVisits(visits, {}).map(v => v.workStatus), C.filterVisits(visits, { statuses: ['cancelled'] }).map(v => v.workStatus),\n" +
+            "  C.filterVisits(visits, { accountId: 'a1' }).map(v => v.workStatus), C.filterVisits(visits, { statuses: ['cancelled', 'draft'] }).length]));");
+        if (node is null) { return; }
+        var r = JsonDocument.Parse(node).RootElement.EnumerateArray().ToList();
+        Assert.Equal(new[] { "draft", "today" }, r[0].EnumerateArray().Select(x => x.GetString())); // empty selection: no cancelled
+        Assert.Equal(new[] { "cancelled" }, r[1].EnumerateArray().Select(x => x.GetString()));      // picked explicitly: shown
+        Assert.Equal(new[] { "draft" }, r[2].EnumerateArray().Select(x => x.GetString()));
+        Assert.Equal(2, r[3].GetInt32());
+    }
+
+    [Fact]
+    public void W2_closing_the_lock_texts_do_not_claim_the_manager_was_notified()
+    {
+        // notifications arrive with W5; until then the record is only flagged — no culture may say "notified"
+        var claims = new[] { "bildiril", "notified", "is informed", "informé", "informado", "notificó", "уведомл", "通知", "أُبلغ", "إبلاغ مدير" };
+        foreach (var culture in Cultures)
+        {
+            var resx = Resx(culture);
+            foreach (var key in new[] { "AlertText_missed_locked", "AlertText_expired", "BandExpired" })
+            {
+                Assert.DoesNotContain(claims, c => resx[key].Contains(c, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+        Assert.Equal("Kayıt kilitli, yöneticiniz için işaretlendi.", Resx("tr")["AlertText_expired"]);
+    }
+
     // ═══ 8 · the page script end to end in a fake DOM (Node) ═════════════════════════════════════════════
 
     [Fact]

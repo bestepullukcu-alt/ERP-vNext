@@ -67,7 +67,7 @@
   <data name="CountdownLeft" xml:space="preserve"><value>{0} sa {1} dk kaldı</value></data>
   <data name="CountdownPassed" xml:space="preserve"><value>Raporlama süresi doldu</value></data>
   <data name="BandMissed" xml:space="preserve"><value>Kaçırıldı: 48 saat içinde yapılamadı ya da ertele.</value></data>
-  <data name="BandExpired" xml:space="preserve"><value>Kilitli: 48 saat rapor olmadan geçti; yöneticiniz bilgilendirildi.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>Kilitli: 48 saat rapor olmadan geçti; yöneticiniz için işaretlendi.</value></data>
   <data name="BandReportMissing" xml:space="preserve"><value>Ziyaret yapıldı; raporunu gönderin.</value></data>
   <data name="BandDraft" xml:space="preserve"><value>Taslak hafta: plan hâlâ değişebilir.</value></data>
   <data name="BandCancelled" xml:space="preserve"><value>Bu ziyaret iptal edildi.</value></data>
@@ -198,9 +198,9 @@
   <data name="AlertTitle_missed" xml:space="preserve"><value>Kaçırıldı</value></data>
   <data name="AlertText_missed" xml:space="preserve"><value>Ziyaret başlatılmadı. "Yapılamadı" ya da "Ertele" için {0} sa kaldı.</value></data>
   <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Kaçırıldı · kilitli</value></data>
-  <data name="AlertText_missed_locked" xml:space="preserve"><value>48 saat içinde işaretlenmedi. Kayıt kilitlendi, yöneticinize bildirildi.</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>48 saat içinde işaretlenmedi. Kayıt kilitlendi, yöneticiniz için işaretlendi.</value></data>
   <data name="AlertTitle_expired" xml:space="preserve"><value>Rapor süresi doldu</value></data>
-  <data name="AlertText_expired" xml:space="preserve"><value>Kayıt kilitli, yöneticinize bildirildi.</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>Kayıt kilitli, yöneticiniz için işaretlendi.</value></data>
   <data name="DlgTab_cancel" xml:space="preserve"><value>İptal et</value></data>
   <data name="DlgTab_notDone" xml:space="preserve"><value>Yapılamadı</value></data>
   <data name="DlgTab_reschedule" xml:space="preserve"><value>Ertele</value></data>

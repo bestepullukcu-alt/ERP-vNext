@@ -140,3 +140,4 @@
   - Farklar: [DESIGN-GAP-W2](mockups/visit-workspace/DESIGN-GAP-W2-2026-10-09.md).
   - Durum süzgeci ÇOKLU seçim.
 - **W2 toplam:** 7 prompt.
+- **W2 TAMAM (2026-10-12):** canlı E4 + mockup görsel karşılaştırma uyumlu; 3 küçük fark CT tarafından kapatıldı (kısa kart adı, "işaretlendi" metni, iptaller varsayılan gizli; Web 867/0). Sıradaki **W3**, önce K-W3 sorusu.

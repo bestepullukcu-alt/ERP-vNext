@@ -67,7 +67,7 @@
   <data name="CountdownLeft" xml:space="preserve"><value>il reste {0} h {1} min</value></data>
   <data name="CountdownPassed" xml:space="preserve"><value>Le délai de compte rendu est dépassé</value></data>
   <data name="BandMissed" xml:space="preserve"><value>Manquée : sous 48 heures, indiquez non réalisée ou reportez-la.</value></data>
-  <data name="BandExpired" xml:space="preserve"><value>Verrouillée : 48 heures sans rapport ; votre responsable est informé.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>Verrouillée : 48 heures sans rapport ; marquée pour votre responsable.</value></data>
   <data name="BandReportMissing" xml:space="preserve"><value>La visite est faite ; envoyez son rapport.</value></data>
   <data name="BandDraft" xml:space="preserve"><value>Semaine brouillon : le plan peut encore changer.</value></data>
   <data name="BandCancelled" xml:space="preserve"><value>Cette visite a été annulée.</value></data>
@@ -198,9 +198,9 @@
   <data name="AlertTitle_missed" xml:space="preserve"><value>Manquée</value></data>
   <data name="AlertText_missed" xml:space="preserve"><value>La visite n'a pas commencé. {0} h pour « Non réalisée » ou « Reporter ».</value></data>
   <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Manquée · verrouillée</value></data>
-  <data name="AlertText_missed_locked" xml:space="preserve"><value>Non signalée sous 48 heures. L'enregistrement est verrouillé et votre responsable informé.</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>Non signalée sous 48 heures. L'enregistrement est verrouillé et marqué pour votre responsable.</value></data>
   <data name="AlertTitle_expired" xml:space="preserve"><value>Délai du rapport dépassé</value></data>
-  <data name="AlertText_expired" xml:space="preserve"><value>L'enregistrement est verrouillé et votre responsable informé.</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>L'enregistrement est verrouillé et marqué pour votre responsable.</value></data>
   <data name="DlgTab_cancel" xml:space="preserve"><value>Annuler</value></data>
   <data name="DlgTab_notDone" xml:space="preserve"><value>Non réalisée</value></data>
   <data name="DlgTab_reschedule" xml:space="preserve"><value>Reporter</value></data>

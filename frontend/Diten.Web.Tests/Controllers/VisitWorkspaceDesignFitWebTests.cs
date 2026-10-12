@@ -192,6 +192,11 @@ public sealed class VisitWorkspaceDesignFitWebTests
         var compact = S("compactCard");                                  // a 20-minute visit: compact + the bottom line
         Assert.Contains("vw-compact vw-tiny", compact);
         Assert.Contains("İşaretlemek için", compact);
+        // W2 closing (CT 2026-10-12) — a TINY card shows the start only so the doctor name keeps the row; the full range is the title
+        Assert.Contains("title=\"09:00–09:20\"", compact);
+        Assert.Contains("<span class=\"vw-time\">09:00</span>", compact);
+        Assert.DoesNotContain("<span class=\"vw-time\">09:00–09:20</span>", compact);
+        Assert.Contains("<div class=\"vw-name\"><bdi>Dr. Can</bdi></div>", compact);
 
         // T5 — the day head: the bar + "N visits · X h free"
         Assert.Contains("vw-day-bar", S("header"));
