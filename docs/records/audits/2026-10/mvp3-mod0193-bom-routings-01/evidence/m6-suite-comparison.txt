@@ -1,15 +1,16 @@
-# M-6 — suites on the branch vs origin/main baseline (same machine, same SDK 10.0.112, 2026-10-06T11:35:19Z)
-# main = worktree of origin/main b994c813a · branch = feature/mvp3-bom-routings @ 35221a406
+# M-6 / main sync — suites on the branch vs origin/main baseline (same machine, same SDK 10.0.112, 2026-10-12T08:56:39Z)
+# main = worktree of origin/main a814bad0f (PR #134 merged) · branch = feature/mvp3-bom-routings @ 9f96b1ff2 (merge c219f0079, HEAD..origin/main = 0)
 
 | suite | branch | main | new red |
 |---|---|---|---|
-| architecture | 38/39 | 38/39 | 0 |
+| architecture | 69/77 | 69/77 | 0 |
 | tenancy | 3/3 | 3/3 | 0 |
 | gateway | 86/87 | 86/87 | 0 |
-| web | 655/655 | 652/652 | 0 |
-| service (ManufacturingService) | 69/69 | — (does not exist on main) | 0 |
+| web | 1067/1067 | 1063/1063 | 0 |
+| service (ManufacturingService) | 77/77 | — (not on main) | 0 |
 
-Reds present on BOTH sides (pre-existing on main, not MVP-3):
-- architecture: AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt — failure text byte-identical on both sides: 26 unaudited Diten.CrmService commands; 0 lines mention Manufacturing.
-- gateway: OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet — both sides list 5063 x46, 5064 x62, 5065 x14; 5067 (MVP-3) x0. 5065 is fixed by BL-470 PR #136 (separate).
-Web +3 tests on the branch (TRX diff) = MVP-3 BomsL10nTests: All_seven_languages_carry_the_same_keys_each_with_a_value, Every_key_the_bom_views_use_is_translated, Turkish_is_not_english_with_another_name.
+Reds present on BOTH sides (main's, not MVP-3):
+- architecture (8): DocsPathGuardTests x5, MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest, AuditTrailStandardTests x2. Same 77 test names (TRX diff empty); failure text byte-identical; 0 lines mention Manufacturing.
+- gateway (1): OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet — both list 5063 x46, 5064 x62, 5065 x14; 5066 and 5067 x0 (5065 = BL-470, PR #136).
+Web +4 on the branch (TRX diff) = MVP-3 BomsL10nTests (4).
+SDK 8.0.131 (CI): Diten.ManufacturingService.sln and Diten.ApiGateway build, 0 errors.

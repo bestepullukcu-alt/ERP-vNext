@@ -1,3 +1,2 @@
-# service suite — feature/mvp3-bom-routings @ 35221a406, MANUFACTURING_TEST_MONGO=rs1 (single-node replica set), SDK 10.0.112
-Passed!  - Failed:     0, Passed:    69, Skipped:     0, Total:    69
-tests listed: 0
+# service suite — feature/mvp3-bom-routings @ 9f96b1ff2, Mongo replica set rs1, SDK 10.0.112
+Passed!  - Failed:     0, Passed:    77, Skipped:     0, Total:    77
