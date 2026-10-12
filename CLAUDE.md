@@ -40,7 +40,8 @@ set**. Tamamı için `AGENTS.md` §6.1 Kural Haritası.
 
 ```
 5000 Gateway · 5001 Web · 5056 Auth · 5057 Platform · 5058 DevEnablement
-5059 MDM · 5060 HCM      ⚠ 5060, mikroservis bandının (5011–5060) son portu
+5059 MDM · 5060 HCM · 5061 CRM · 5065 Procurement · 5066 SupplyChain · 5067 Inventory
+(bant 5061+ uzatıldı — tam tablo ve notlar AGENTS.md §3; sıradaki boş port 5068)
 ```
 
 ## Neden bu dosya var
