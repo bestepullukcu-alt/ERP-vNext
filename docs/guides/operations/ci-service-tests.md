@@ -16,6 +16,7 @@ her proje ayrı bir iş (matris, `fail-fast: false`).
 | `platform-app` | `Diten.Platform.Application.Tests` | test 14 dk 8 sn (6685 test) |
 | `platform-bgjobs` | `Diten.Platform.BackgroundJobs.Tests` | test 11 sn (42 test) |
 | `platform-eventing` | `Diten.Platform.Eventing.Tests` | 68 test; yerelde özel RabbitMQ 4.3.2 düğümü; Mongo testin kendi mongod'u |
+| `platform-composition-guard` | `Diten.Platform.CompositionGuard.Tests` | main'in Q366 guard'ı + bağlantı kaynağı testleri; Mongo testin kendi mongod'u (`PlatformTestMongo`) |
 | `auth-app` | `Diten.AuthService.Application.Tests` | test 6 dk 52 sn (1617 test) |
 | `auth-acceptance-host` | `Diten.AuthService.AccountKindAcceptanceHost.Tests` | test 3 dk 36 sn (68 test) |
 | `auth-scr` | `Diten.AuthService.ServiceClientRegistry.Tests` | test 4 sn (160 test) |
@@ -60,8 +61,9 @@ olmayan proje bu listede gerekçesiyle durur, yoksa kırmızıdır. Listeden ad 
 
 B / C işleri sahiplerinindir (XMC-001); CT bu turda onlara dokunmaz.
 
-- **Platform CompositionGuard.Tests** (main, MVP-6): kendi `PLATFORM_COMPOSITION_GUARD_MONGO_URI`'sini ister (kapalı
-  başarısız); hiçbir CI satırı vermiyor. `PlatformTestMongo`'ya bağlanabilir; sahibinin kararı.
+- **Platform CompositionGuard.Tests** artık listede değil (WP-PLATFORM-COMPOSITION-GUARD-OWNED-01): verilmişse kendi
+  `PLATFORM_COMPOSITION_GUARD_MONGO_URI`'si (main'in kuralıyla), yoksa `PlatformTestMongo` (`DITEN_TEST_MONGOD`) →
+  `platform-composition-guard` satırı.
 - **SupplyChainService.Tests** (main, SCE / MVP-6): `MVP6_MOD0192_MONGO_URI` (kendi replika kümesi, `CapacityTestMongo`);
   SCE'nin dosyası.
 

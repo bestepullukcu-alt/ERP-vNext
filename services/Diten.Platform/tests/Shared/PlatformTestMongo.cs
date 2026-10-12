@@ -45,18 +45,24 @@ internal static class PlatformTestMongo
     /// Main's Q131a check, verbatim (moved here from PlatformMongoTestConnection so all three projects share it). Pure:
     /// its tests never change the process environment. Messages never repeat the URI.
     /// </summary>
-    internal static string ValidateUri(string? connectionString)
+    internal static string ValidateUri(string? connectionString) => ValidateUri(connectionString, UriVariable);
+
+    /// <summary>
+    /// The same check for another variable's value (WP-PLATFORM-COMPOSITION-GUARD-OWNED-01: main's CompositionGuard reads
+    /// PLATFORM_COMPOSITION_GUARD_MONGO_URI). Only the variable named in the messages differs.
+    /// </summary>
+    internal static string ValidateUri(string? connectionString, string variable)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new InvalidOperationException(
-                $"{UriVariable} is not set. Platform Mongo tests fail closed: point it at a lane-owned "
+                $"{variable} is not set. Platform Mongo tests fail closed: point it at a lane-owned "
                 + "loopback MongoDB (scripts/test-env/mvp6-test-mongo-env.sh). There is no fallback port.");
         }
 
         if (connectionString.StartsWith("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"{UriVariable} must be a plain mongodb:// loopback URI.");
+            throw new InvalidOperationException($"{variable} must be a plain mongodb:// loopback URI.");
         }
 
         MongoUrl url;
@@ -66,31 +72,31 @@ internal static class PlatformTestMongo
         }
         catch (Exception ex) when (ex is MongoConfigurationException or FormatException or ArgumentException)
         {
-            throw new InvalidOperationException($"{UriVariable} is not a valid MongoDB URI.", ex);
+            throw new InvalidOperationException($"{variable} is not a valid MongoDB URI.", ex);
         }
 
         if (url.Username is not null)
         {
-            throw new InvalidOperationException($"{UriVariable} must not carry credentials.");
+            throw new InvalidOperationException($"{variable} must not carry credentials.");
         }
 
         var servers = url.Servers?.ToArray() ?? [];
         if (servers.Length == 0)
         {
-            throw new InvalidOperationException($"{UriVariable} must name a loopback host and the lane's port.");
+            throw new InvalidOperationException($"{variable} must name a loopback host and the lane's port.");
         }
 
         foreach (var server in servers)
         {
             if (server.Host is not ("127.0.0.1" or "localhost" or "::1" or "[::1]"))
             {
-                throw new InvalidOperationException($"{UriVariable} must point at a loopback host.");
+                throw new InvalidOperationException($"{variable} must point at a loopback host.");
             }
 
             if (ProtectedPorts.Contains(server.Port))
             {
                 throw new InvalidOperationException(
-                    $"{UriVariable} points at protected MongoDB port {server.Port}. Use the lane's own port.");
+                    $"{variable} points at protected MongoDB port {server.Port}. Use the lane's own port.");
             }
         }
 

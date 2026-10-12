@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Diten.Platform.Tests.Shared;
 using Xunit;
 
 namespace Diten.Platform.CompositionGuard.Tests;
@@ -22,12 +23,26 @@ namespace Diten.Platform.CompositionGuard.Tests;
 ///     dependency that is never registered fails silently instead of loudly (MdmLegalEntityReferenceValidator, Q362).
 /// Platform runs migrations against Mongo while Program.cs registers services, so the guard needs a real, disposable
 /// mongod: set PLATFORM_COMPOSITION_GUARD_MONGO_URI. Unset, the guard FAILS — a guard that skips is not a guard.
+/// WP-PLATFORM-COMPOSITION-GUARD-OWNED-01 (CT decision B, as Auth / MDM in the main sync FIX1): only the CONNECTION
+/// SOURCE changed. A given PLATFORM_COMPOSITION_GUARD_MONGO_URI is used, through main's Q131a check (loopback, no
+/// credentials, no port in 27017–27021). Unset, the guard takes the Platform tests' one source (PlatformTestMongo,
+/// CT decision C): a lane DITEN_PLATFORM_TEST_MONGO_URI, else a mongod it starts from DITEN_TEST_MONGOD. Neither:
+/// OWNED_TEST_MONGO_UNAVAILABLE, red by name, never the shared instance. The assertions are main's, unchanged.
 /// No hosted service runs and no request is sent; the host is only built, once per process (Platform registers
 /// process-global BSON serializers, so a second build in the same process throws).
 /// </summary>
 public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host host) : IClassFixture<CompositionRootGuardTests.Host>
 {
-    private const string MongoVariable = "PLATFORM_COMPOSITION_GUARD_MONGO_URI";
+    internal const string MongoVariable = "PLATFORM_COMPOSITION_GUARD_MONGO_URI";
+
+    /// <summary>
+    /// The guard's Mongo (tested in CompositionRootGuardSourceTests): a GIVEN URI — valid or red, an empty one is given
+    /// too — else the owned source. Nothing else; there is no fallback address.
+    /// </summary>
+    internal static string MongoAddress(string? given, Func<Task<string>> owned) =>
+        given is not null
+            ? PlatformTestMongo.ValidateUri(given, MongoVariable)
+            : Task.Run(owned).GetAwaiter().GetResult();
 
     [Fact]
     public void EveryControllerConstructorParameter_IsResolvableFromTheProductionContainer()
@@ -50,9 +65,7 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
 
         public Host()
         {
-            var mongo = Environment.GetEnvironmentVariable(MongoVariable);
-            if (string.IsNullOrWhiteSpace(mongo))
-                throw new InvalidOperationException($"{MongoVariable} is not set. Point it at a disposable mongod (never 27017); this guard must not be skipped.");
+            var mongo = MongoAddress(Environment.GetEnvironmentVariable(MongoVariable), PlatformTestMongo.ConnectionStringAsync);
             var settings = new Dictionary<string, string?>
             {
                 ["MongoDbSettings:ConnectionString"] = mongo,
