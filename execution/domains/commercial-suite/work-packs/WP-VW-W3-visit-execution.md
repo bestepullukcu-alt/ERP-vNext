@@ -664,7 +664,7 @@ Commit: "feat(auth): WP-VW-W3-AUTH — visit-evidence document-repository keys t
 3. Grant.
 4. Kullanıcı yeniden giriş yapar.
 
-**⚠ Açık karar (kullanıcıya soruldu):** anahtarlar Tenant olunca yetki senkronu modülün tüm anahtarlarını kiracı **Admin**'ine verir; buna `visit-evidence.read-all` (kiracıdaki tüm kanıtları okuma) dahil. `crm.planned-visit.read-all` / `crm.visit-plan.read-all` ürün sahibi kararıyla (2026-10-06) `ExplicitGrantOnlyPermissions`'ta. Aynısı öneriliyor; karar bekleniyor.
+**⚠ Açık karar (kullanıcıya soruldu):** anahtarlar Tenant olunca yetki senkronu modülün tüm anahtarlarını kiracı **Admin**'ine verir; buna `visit-evidence.read-all` (kiracıdaki tüm kanıtları okuma) dahil. `crm.planned-visit.read-all` / `crm.visit-plan.read-all` ürün sahibi kararıyla (2026-10-06) `ExplicitGrantOnlyPermissions`'ta. Aynısı önerildi. **KARAR (kullanıcı 2026-10-12): Admin'e otomatik atansın** — `visit-evidence.read-all` `ExplicitGrantOnlyPermissions`'a EKLENMEZ; yetki senkronu kiracı Admin'ine verir (Viewer yalnız `visit-evidence.read` alır, pratikte etkisiz).
 
 ## §37 CT kabul — W3-WEB-b E2 ACCEPTED (2026-10-12)
 
