@@ -22,8 +22,8 @@ screens:
   - module: ExpiryEvidence
     data_mode: server
 entity_base: EntityBase
-status: draft
-status_note: "draft — WP-0176-P0 (CT-MVP1-0176-P0 v1), 2026-10-12. Owner decisions KF-A…KF-H (2026-10-12) recorded in §19 as DECISIONS. Open CT decisions CT-F1…CT-F14 (§19). FEFO-BUNDLE v1 proposal: docs/analysis/contracts/drafts/fefo-bundle-v1-proposal.md (no FEFO contract exists — K12). Additive contract needs on other owners (INVENTORY 1.3.0, TRACE 1.4.0) are proposals in §8.9, not edits. DCP-002 verifier not run (no Python — waiver W-0176-01, W-0173-01 pattern)."
+status: ready-for-dev
+status_note: "ready-for-dev — WP-0176-P0 CT-ACCEPTED 2026-10-12 (CT decisions CT-F1…CT-F14 taken, §19.7). Was: draft — WP-0176-P0 (CT-MVP1-0176-P0 v1), 2026-10-12. Owner decisions KF-A…KF-H (2026-10-12) recorded in §19 as DECISIONS. Open CT decisions CT-F1…CT-F14 (§19). FEFO-BUNDLE v1 proposal: docs/analysis/contracts/drafts/fefo-bundle-v1-proposal.md (no FEFO contract exists — K12). Additive contract needs on other owners (INVENTORY 1.3.0, TRACE 1.4.0) are proposals in §8.9, not edits. DCP-002 verifier not run (no Python — waiver W-0176-01, W-0173-01 pattern)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0176-expiry-fefo
 started: 2026-10-12
@@ -749,11 +749,11 @@ still say 5066 — doc drift, FU-0176-DOC-01 (not fixed here: YAPMA).
 |---|---|---|
 | 1 | Owner decisions KF-A…KF-H recorded | ✅ §19.1 |
 | 2 | FEFO-BUNDLE v1 proposal | ✅ draft — CT acceptance pending |
-| 3 | CT-F1 (GR re-route additive?) decided | ⏳ |
+| 3 | CT-F1 (GR re-route additive?) decided | ✅ §19.7 — fallback path (422 + resubmit) |
 | 4 | INVENTORY 1.3.0 / TRACE 1.4.0 additive proposals accepted by owners | ⏳ |
 | 5 | PRODUCT-MASTER 1.1 shelf-life fields live on `getSku` | ⏳ (draft.11) |
-| 6 | MOD-0022 E2 live (signature API + provider registry) | ⏳ (F3 precondition) |
-| 7 | CT-F2…CT-F14 decided | ⏳ |
+| 6 | MOD-0022 E2 live (signature API + provider registry) | ✅ live on main (ESIGN 1.0.1 FROZEN, E2…E5 CT-accepted) |
+| 7 | CT-F2…CT-F14 decided | ✅ §19.7 |
 | 8 | Failure path ≥ 4 scenarios | ✅ §13 (11) |
 | 9 | Screen → route, button → action → key | ✅ §11.1, §11.3 |
 | 10 | Namespace + manifest | ✅ §14 |
@@ -849,6 +849,41 @@ still say 5066 — doc drift, FU-0176-DOC-01 (not fixed here: YAPMA).
 - **ASSUMPTION-0176-08:** no SoD on resolve in MVP-1 (CT-F10).
 - **ASSUMPTION-0176-09:** KPI counts split AVAILABLE vs held quantity (mockup mixes them).
 - **ASSUMPTION-0176-10:** manual "İstisna aç" may pick any of the four types; origin `Manual`.
+
+### 19.7 CT acceptance — WP-0176-P0 (2026-10-12)
+
+**CT-ACCEPTED.** Commit `752cfaa36` on `feature/sce/mod-0176-expiry-fefo` (base `77cd61a44` = origin/main after PR #139),
+`git diff --stat 77cd61a44..752cfaa36` = the two allowed files only (+1175), `HEAD..origin/main` = 0. The CT re-read the measured
+facts in the worktree: `LotPostingRules.cs:42,50,57,60`, `LotExpirySweeperHostedService.cs:37-38` + `LotExpirySweeperOptions.cs:10`
+(900 s), `IPostedMovementObserver.cs:7` (post-commit, cannot refuse), `InventoryErrorCodes.cs:11,67-75` (closed set),
+`MovementMasterDataValidator.cs:198-204`, `CatalogHandlers.cs:262-266` (own-prefix rule), `quarantine.openapi.yaml:397` (`HoldSource`
+has no expiry value) — all exact. **One correction:** `InventoryGovernanceController` has no `[Authorize]` attribute, but the page is
+NOT anonymous — measured `GET http://localhost:5001/InventoryGovernance` → 302 to `/account/login` (global authentication). The
+defect is hard-coded rows + no permission key, not open access; CT-F12 stands for that reason.
+
+**CT decisions:**
+
+| ID | Decision |
+|---|---|
+| CT-F1 | **Fallback path, not the server re-route.** A `GOODS_RECEIPT_PO` into `AVAILABLE` below the minimum (mode Otomatik karantina) is refused 422 `LOT_BELOW_MIN_REMAINING_SHELF_LIFE` with `details.requiredToStockStatus = "QUARANTINE"`, `remainingDays`, `requiredDays`; the GR screen resubmits with `QUARANTINE` automatically (same idempotency key family, new key) and 0175 intake opens the hold. Reason: the single-writer ledger books exactly what the caller asked — no silent status change behind a FROZEN contract; other callers (MVP-6, 0142) get an explicit instruction; the end state is the owner's KF-C. Mode Reddet = the same code without `requiredToStockStatus`. INVENTORY 1.3.0 note in §8.9 changes accordingly (no re-route note; `appliedToStockStatus` dropped). |
+| CT-F2 | One port `IExpiryPostingPolicy` (pre-check + in-transaction re-check), default allow. |
+| CT-F3 | `WAREHOUSE_TRANSFER` not an outbound FEFO issue in MVP-1. |
+| CT-F4 | Reversal leaves the exception to QA ("Düzeltildi"), detail shows the reversal link. |
+| CT-F5 | KF-C applies to `GOODS_RECEIPT_PO` only in MVP-1 (customer returns enter quarantine anyway — MVP-6 plan P1). |
+| CT-F6 | Under `ReasonAndSignature` the KF-D signature is required regardless of the MOD-0022 row (row = meaning + visual mode); `Reason` stays a selectable mode. |
+| CT-F7 | Draft `updateLot` of expiry / retest follows the same override rule (else create-then-update bypasses KF-D); CT-Q17 unchanged for non-Draft. |
+| CT-F8 | Default meaning `APPROVE` for all four actions (tenant meanings are tenant-defined); the §8.6 table's `REVIEW` for `expiry.exception.fix` is superseded — F3 registers `APPROVE`. |
+| CT-F9 | No QUARANTINE change (`originReason` not now). |
+| CT-F10 | **SoD ON (CT deviates from the pack's recommendation):** the resolver may not be the user whose action opened the case — the poster of the bypassing issue (`FEFO_BYPASS`), the creator of the overriding lot (`EXPIRY_DATE_OVERRIDE`), the opener of a manual case. System-opened cases (`BELOW_MIN_REMAINING`, `EXPIRED_ON_HAND`) have no origin user. New FEFO-BUNDLE code 409 `EXPIRY_SOD_VIOLATION` (F1 adds it to §4.21 when freezing). Reason: GxP four-eyes for an accepted deviation, same principle as KQ-C; cost is one comparison. ASSUMPTION-0176-08 is withdrawn. |
+| CT-F11 | In-module state machine, no MOD-0023 workflow (§8.7). |
+| CT-F12 | Remove `InventoryGovernance` controller / view / menu entry in F5; `ManagementGovernanceRegistry.cs:207` entry → `/Expiry`. |
+| CT-F13 | F2 measures the balance indexes and adds one only if none covers the FEFO candidate read. |
+| CT-F14 | List CSV under `expiry.dashboard.read`, not logged as evidence. |
+
+ASSUMPTION-0176-03 / -04 (SLA 24 / 72 / 48 / 120 h, expired-on-hand 14 days) accepted as company-setting defaults. Remaining
+ready-for-dev items: #4 INVENTORY 1.3.0 / TRACE 1.4.0 — the owner step runs inside F2 (same Inventory service, single writer); #5
+PRODUCT-MASTER day fields — MDM draft.11, served by the CT dev bridge (4010) until MDM is live. Order: **F1 → INT → F2 → F3 → F4 → F5
+→ L10n**. Port drift FU-0176-DOC-01 stays a CT docs item.
 
 ## 20. Follow-up Items
 
