@@ -151,3 +151,14 @@
 - olay imzalama;
 - onaylayıcı bildirimi;
 - yönetici tipinde aday.
+
+## 6. Kullanıcı kararları (2026-10-12)
+- **K-C1:** ✅ birleşik yöntem: tüzel kişilik = Platform birincil pozisyon ataması (WorkCenter kuralı), iş birimi = CRM bölge ataması; kapsam `(LegalEntityId, iş birimi kodu)`.
+- **Sıralama:** ✅ önce kiracı katmanı + süreli istisna + değişiklik geçmişi + okuma izni. Tüzel kişilik / iş birimi katmanları, Platform "benim koltuğum" ucu ve veri girişi (İK pozisyon atamaları, bölge atamasında iş birimi) hazır olunca.
+- **K-A1 itiraz yanıtı onayı:** ✅ Workflow + Görev Merkezi, onaylayıcı **MED-DIR** pozisyonu (iddiaların tıbbi onayı gibi).
+- **Süreli istisna onayı:** kullanıcı **izin tabanlı** onay istiyor ("o yetkiye sahip her rol onaylayabilsin").
+  - Workflow bugün yalnız kişi / pozisyon adayı alıyor ve görevi ilk adaya veriyor.
+  - CT önerisi (onay bekliyor): şimdilik **CRM içi izin tabanlı onay** (`crm.visit-evidence-exception.approve`, oluşturan onaylayamaz, ayar sayfasında "Onay bekliyor (N)").
+  - Platform paketi rol / izin adayını ekleyince Görev Merkezi'ne taşınır.
+- **K-A2** ✅ (tek tık "Onayla" kaldırılır, SoD kalır). **K-A3** ✅ (boş taslak kaydı). **K-A4** ✅ (yalnız onaylı + aynı ürün, backend'de). **K-A5** ✅ (emekli yanıt hemen düşer). **K-B1** ✅ sekme. **K-C3** ✅ (geçmiş tarih yok, çakışma yok, erken bitirme = bitiş bugün + "Erken bitti", 30 gün iki uç dahil). **K-C4** ✅ okuma izni.
+- Menü, koyu tema ve Arapça eksikleri: CT / Web çözer.
