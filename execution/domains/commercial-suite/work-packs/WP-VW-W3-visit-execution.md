@@ -696,3 +696,40 @@ Commit: "feat(auth): WP-VW-W3-AUTH — visit-evidence document-repository keys t
 - Doğrusu: CRM tarafında kiracı kullanıcı araması (ad arama, en çok N satır, `crm.visit-execution.record` ile). W3 kapanışında ya da W4 öncesi.
 
 **Sıradaki:** W3-WEB-a raporu → kabul → grant betiği (kullanıcı çalıştırır) → canlı E4 + mockup görsel karşılaştırması.
+
+## §37 CT kabul — W3-WEB-a E2 ACCEPTED (2026-10-12)
+
+**Test dalına alındı:** ajan `9ca2e9ae5` → test dalı (cherry-pick, çakışmasız; WEB-b ile ortak dosya yok).
+
+**CT ölçümü:**
+- **Web 894/0** (867 + 16 WEB-b + 11 WEB-a).
+- Mimari 36.
+- CRM / Platform'a dokunulmadı.
+
+**CT kod okuması:**
+- `canStart` = `today` + plan kimliği var + **yürütme yok** + yürütme yetkisi.
+- `in_progress` → yalnız "Sunuma dön" + "Ziyareti bitir" (`&phase=summary`).
+- Bitmiş ziyaret CT düzeltmesiyle (`e9b88bf85`) `report_missing` → W2'nin "Rapor gir" eylemi.
+- Yürütme yetkisi olmayan kullanıcıda W2 davranışı aynen.
+- Başlatma vekili multipart akış, `crm.visit-execution.record`.
+
+**CT sabotajı:** başlatma kuralında "yürütme yok" koşulu kaldırıldı (başlamış ziyarette yeniden "Ziyarete başla") → **1 kırmızı** (A1); `.bak` + touch ile geri alındı.
+
+**Kabul edilen sapmalar:**
+- W2 testlerinde 3 bilinçli güncelleme (durum sayısı 11, açıklama satırına "Devam ediyor", dil testinde rakamlı anahtar okuması — sıkılaştırma).
+- "Zaten başlamış" yanıtında sunum sayfası açılır.
+- Çekim saati yalnız kamerayla çekilen fotoğrafta.
+- Başlangıç satırı "başlatınca · sunucu saati".
+- Masaüstü muafiyet metni yok (CT kararı 2).
+- Telefon gün listesinde kart üstü "Ziyarete başla" düğmesi yok (W2 listesi değişmesin; düğme ayrıntı panelinde) → canlı E4'te değerlendirilecek.
+
+**Ajanın görsel karşılaştırması:**
+- Masaüstü E3 hizalı.
+- Telefonda 4 fark düzeltildi (deklanşör, KVKK yeri, otomatik kamera, Vazgeç gizli).
+- Arapça RTL doğru.
+
+**W3 durumu:** 1. tur + AUTH + 2. tur kabul. Kalan:
+- grant (kullanıcı betiği) + canlı E4 + mockup görsel karşılaştırması;
+- W3-BE-c + W3-WEB-c / d (mockup sonrası);
+- W3 mobil notu;
+- açık karar `visit-evidence.read-all` yalnız elle atanabilir mi.
