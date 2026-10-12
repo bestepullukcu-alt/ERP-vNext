@@ -59,6 +59,7 @@ public sealed class ExpiryIssueHookTests : IClassFixture<ExpiryApiFactory>
         Assert.Equal("2027-01-31", details.GetProperty("firstEligibleExpiry").GetString());
         var shortReason = await s.Lots.PostAsync(WithReason(s.Lots.Issue("1", l2), "kisa"), 422);
         Assert.Equal("FEFO_BYPASS_REASON_REQUIRED", Code(shortReason));
+        Assert.Equal(2, s.Persisted("inventory_transactions").Count); // the two receipts — no movement (pack §13 #1)
         Assert.Empty(s.Persisted("expiry_fefo_issue_snapshots"));
         Assert.Empty(s.Persisted("expiry_exceptions"));
         Assert.Equal(2, s.Audit("expiry.fefo.refused").Count);
@@ -173,6 +174,33 @@ public sealed class ExpiryIssueHookTests : IClassFixture<ExpiryApiFactory>
         var reversal = await s.Lots.PostAsync(s.Lots.Reversal(receipt, receiptId), 201);
         Assert.False(reversal.TryGetProperty("expiryChecks", out _));
         Assert.Empty(s.Persisted("expiry_fefo_issue_snapshots"));
+    }
+
+    [Fact]
+    public async Task The_reversal_of_a_bypassing_issue_is_not_checked_and_leaves_the_exception_open()
+    {
+        // pack §13 #9 + CT-F4: the reversal puts L2 back (exempt type) and does not close the FEFO_BYPASS case
+        var (s, _, l2) = await TwoLotsAsync();
+        var issue = WithReason(s.Lots.Issue("2", l2), Reason);
+        var issueId = await s.Lots.PostOkAsync(issue);
+        var reversal = await s.Lots.PostAsync(s.Lots.Reversal(issue, issueId), 201);
+        Assert.False(reversal.TryGetProperty("expiryChecks", out _));
+        Assert.Equal("Open", Assert.Single(Cases(s, "FefoBypass"))["Status"].AsString);
+        Assert.Single(s.Persisted("expiry_fefo_issue_snapshots"));
+        Assert.Equal(10m, s.Lots.LotPositionOnHand(l2));
+    }
+
+    [Fact]
+    public async Task A_quarantine_status_transfer_of_a_later_lot_is_not_checked()
+    {
+        // pack §13 #10: MOD-0175 moves a later lot AVAILABLE → QUALITY_INSPECTION while an earlier lot is eligible
+        var (s, _, l2) = await TwoLotsAsync();
+        var transfer = s.Lots.StatusTransfer("4", l2);
+        transfer["sourceModule"] = "MOD-0175";
+        var posted = await s.Lots.PostAsync(transfer, 201);
+        Assert.False(posted.TryGetProperty("expiryChecks", out _));
+        Assert.Empty(s.Persisted("expiry_fefo_issue_snapshots"));
+        Assert.Empty(s.Persisted("expiry_exceptions"));
     }
 
     [Fact]

@@ -12,11 +12,11 @@ namespace Diten.InventoryService.Tests.Expiry;
 /// </summary>
 public sealed class ExpiryLotDateHookTests : IClassFixture<ExpiryApiFactory>
 {
-    private const string Manufacturing = "2026-01-01";
-    private const string SuggestedExpiry = "2027-01-01";
-    private const string SuggestedRetest = "2026-06-30";
-    private const string OtherExpiry = "2026-12-01";
-    private const string OverrideReason = "Tedarikci CoA belgesinde son kullanma daha erken";
+    internal const string Manufacturing = "2026-01-01";
+    internal const string SuggestedExpiry = "2027-01-01";
+    internal const string SuggestedRetest = "2026-06-30";
+    internal const string OtherExpiry = "2026-12-01";
+    internal const string OverrideReason = "Tedarikci CoA belgesinde son kullanma daha erken";
 
     private readonly ExpiryApiFactory _factory;
 
@@ -36,9 +36,9 @@ public sealed class ExpiryLotDateHookTests : IClassFixture<ExpiryApiFactory>
         return new World { S = s, OverrideToken = s.Mint(s.Ledger.User, ["expiry.date-overrides.create"]) };
     }
 
-    private static string T(string day) => day + "T00:00:00Z";
+    internal static string T(string day) => day + "T00:00:00Z";
 
-    private static Dictionary<string, object?> LotBody(ExpiryScenario s, string lotNumber, string? expiry, string? retest, object? dateOverride = null)
+    internal static Dictionary<string, object?> LotBody(ExpiryScenario s, string lotNumber, string? expiry, string? retest, object? dateOverride = null)
     {
         var body = new Dictionary<string, object?>
         {
@@ -55,14 +55,14 @@ public sealed class ExpiryLotDateHookTests : IClassFixture<ExpiryApiFactory>
         return body;
     }
 
-    private static async Task<(int Status, JsonElement Body)> CreateLotAsync(ExpiryScenario s, Dictionary<string, object?> body)
+    internal static async Task<(int Status, JsonElement Body)> CreateLotAsync(ExpiryScenario s, Dictionary<string, object?> body)
     {
         using var response = await s.Lots.Send(HttpMethod.Post, "/api/trace/lots", body,
             r => r.Headers.TryAddWithoutValidation("Idempotency-Key", (string)body["idempotencyKey"]!));
         return ((int)response.StatusCode, await TraceScenario.Read(response));
     }
 
-    private static Dictionary<string, object?> OverrideBody(ExpiryScenario s, string lotNumber, string? expiry, string? retest,
+    internal static Dictionary<string, object?> OverrideBody(ExpiryScenario s, string lotNumber, string? expiry, string? retest,
         string reason = OverrideReason, string? key = null)
     {
         var body = new Dictionary<string, object?>
@@ -90,9 +90,9 @@ public sealed class ExpiryLotDateHookTests : IClassFixture<ExpiryApiFactory>
         return body.GetProperty("overrideId").GetString()!;
     }
 
-    private static string Code(JsonElement e) => e.GetProperty("error").GetProperty("code").GetString()!;
+    internal static string Code(JsonElement e) => e.GetProperty("error").GetProperty("code").GetString()!;
 
-    private static BsonDocument StoredOverride(ExpiryScenario s, string id) => Assert.Single(s.Persisted("expiry_date_overrides"), d => d["_id"].AsString == id);
+    internal static BsonDocument StoredOverride(ExpiryScenario s, string id) => Assert.Single(s.Persisted("expiry_date_overrides"), d => d["_id"].AsString == id);
 
     // ── suggestion ──────────────────────────────────────────────────────────────────────────────────────
 
@@ -191,8 +191,35 @@ public sealed class ExpiryLotDateHookTests : IClassFixture<ExpiryApiFactory>
         Assert.Equal(409, s2);
         Assert.Equal("LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH", Code(r2));
 
+        // a signature of ANOTHER user on this override (test double of MOD-0022) is a mismatch too
+        var foreign = _factory.LotDateSignature.Issue(Guid.NewGuid(), id);
+        var (s3, r3) = await CreateLotAsync(w.S, LotBody(w.S, number, OtherExpiry, SuggestedRetest, new { overrideId = id, signatureId = foreign }));
+        Assert.Equal(409, s3);
+        Assert.Equal("LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH", Code(r3));
+
         Assert.Equal("Pending", StoredOverride(w.S, id)["Status"].AsString);
         Assert.Empty(w.S.Persisted("expiry_exceptions"));
+    }
+
+    /// <summary>
+    /// §8.3.4 row "Gerekçe + e-imza": override + a VERIFIED signature → lot + exception. Production cannot verify before F3 (CT-F6, see
+    /// <see cref="ExpiryLotDateProductionSignatureTests"/>); the gate path is measured with the MOD-0022 test double.
+    /// </summary>
+    [Fact]
+    public async Task ReasonAndSignature_with_a_verified_signature_creates_the_lot_and_keeps_the_signature_reference()
+    {
+        var w = Make();
+        var number = TraceScenario.LotNo("F2");
+        var id = await OverrideAsync(w, number, OtherExpiry, SuggestedRetest);
+        var signature = _factory.LotDateSignature.Issue(w.S.Ledger.User, id);
+
+        var (status, lot) = await CreateLotAsync(w.S, LotBody(w.S, number, OtherExpiry, SuggestedRetest, new { overrideId = id, signatureId = signature }));
+        Assert.True(status == 201, lot.ToString());
+        Assert.Equal(signature, lot.GetProperty("expiryOverride").GetProperty("signatureId").GetString());
+        var c = Assert.Single(w.S.Persisted("expiry_exceptions"));
+        Assert.Equal(signature, c["Facts"]["signatureId"].AsString);
+        Assert.Equal("ReasonAndSignature", c["Facts"]["mode"].AsString);
+        Assert.Equal("Consumed", StoredOverride(w.S, id)["Status"].AsString);
     }
 
     // ── mode Reason: the override is consumed with the lot ───────────────────────────────────────────────
@@ -205,9 +232,16 @@ public sealed class ExpiryLotDateHookTests : IClassFixture<ExpiryApiFactory>
         var number = TraceScenario.LotNo("F2");
         var id = await OverrideAsync(w, number, OtherExpiry, SuggestedRetest);
 
-        var (status, lot) = await CreateLotAsync(w.S, LotBody(w.S, number, OtherExpiry, SuggestedRetest, new { overrideId = id }));
+        var body = LotBody(w.S, number, OtherExpiry, SuggestedRetest, new { overrideId = id });
+        var (status, lot) = await CreateLotAsync(w.S, body);
         Assert.True(status == 201, lot.ToString());
         var lotId = lot.GetProperty("lotId").GetString()!;
+
+        // pack §13 #6: the replay answers the same lot — the consumed override does not refuse it, nothing is written twice
+        var (replayStatus, replay) = await CreateLotAsync(w.S, body);
+        Assert.True(replayStatus == 200, replay.ToString());
+        Assert.Equal(lotId, replay.GetProperty("lotId").GetString());
+
         var applied = lot.GetProperty("expiryOverride");
         Assert.Equal(id, applied.GetProperty("overrideId").GetString());
         Assert.Equal(OverrideReason, applied.GetProperty("reason").GetString());
@@ -316,5 +350,45 @@ public sealed class ExpiryLotDateHookTests : IClassFixture<ExpiryApiFactory>
         Assert.Equal(400, s1);
         Assert.Equal("LOT_KEY_IMMUTABLE", Code(r1));
         Assert.Empty(w.S.Persisted("expiry_date_overrides"));
+    }
+}
+
+/// <summary>
+/// CT-F6 on the PRODUCTION signature gate (<see cref="Diten.InventoryService.Application.Features.Expiry.Ports.FailClosedLotDateOverrideSignature"/>):
+/// until F3 brings the MOD-0022 verification, a signed override in mode ReasonAndSignature is refused 409 and an unsigned one 400.
+/// </summary>
+public sealed class ExpiryLotDateProductionSignatureTests : IClassFixture<ProductionSignatureExpiryApiFactory>
+{
+    private readonly ProductionSignatureExpiryApiFactory _factory;
+
+    public ExpiryLotDateProductionSignatureTests(ProductionSignatureExpiryApiFactory factory) => _factory = factory;
+
+    [Fact]
+    public async Task A_signed_override_is_refused_until_F3()
+    {
+        var s = new ExpiryScenario(_factory);
+        _factory.ShelfLife[s.Ledger.Sku] = (365, 180, null);
+        var token = s.Mint(s.Ledger.User, ["expiry.date-overrides.create"]);
+        var number = TraceScenario.LotNo("F2");
+        var prepare = ExpiryLotDateHookTests.OverrideBody(s, number, ExpiryLotDateHookTests.OtherExpiry, ExpiryLotDateHookTests.SuggestedRetest);
+        var (ps, prepared, _) = await s.SendAsync(HttpMethod.Post, "/api/expiry/date-overrides", token, prepare, (string)prepare["idempotencyKey"]!);
+        Assert.Equal(201, ps);
+        var id = prepared.GetProperty("overrideId").GetString()!;
+
+        foreach (var (signature, expected, code) in new (string?, int, string)[]
+                 {
+                     (null, 400, "LOT_DATE_OVERRIDE_SIGNATURE_REQUIRED"),
+                     ("sig-" + Guid.NewGuid().ToString("N"), 409, "LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH")
+                 })
+        {
+            object dateOverride = signature is null ? new { overrideId = id } : new { overrideId = id, signatureId = signature };
+            var (status, refused) = await ExpiryLotDateHookTests.CreateLotAsync(s,
+                ExpiryLotDateHookTests.LotBody(s, number, ExpiryLotDateHookTests.OtherExpiry, ExpiryLotDateHookTests.SuggestedRetest, dateOverride));
+            Assert.Equal(expected, status);
+            Assert.Equal(code, ExpiryLotDateHookTests.Code(refused));
+        }
+
+        Assert.Empty(s.Persisted("trace_lots"));
+        Assert.Empty(s.Persisted("expiry_exceptions"));
     }
 }

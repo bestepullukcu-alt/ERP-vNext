@@ -63,6 +63,25 @@ public sealed class TestExpirySignature : IExpiryResolutionSignature
 }
 
 /// <summary>
+/// F2 test double of the KF-D lot-date signature (MOD-0022 verification arrives in F3): a signature it issued verifies for exactly its signer
+/// and override. <see cref="ProductionSignatureExpiryApiFactory"/> keeps the production fail-closed default.
+/// </summary>
+public sealed class TestLotDateOverrideSignature : ILotDateOverrideSignature
+{
+    private readonly ConcurrentDictionary<string, (Guid Signer, Guid Override)> _issued = new(StringComparer.Ordinal);
+
+    public string Issue(Guid signer, string overrideId)
+    {
+        var id = "sig-dov-" + Guid.NewGuid().ToString("N");
+        _issued[id] = (signer, Guid.Parse(overrideId));
+        return id;
+    }
+
+    public Task<bool> VerifyAsync(string signatureId, Guid overrideId, Guid signer, CancellationToken cancellationToken = default)
+        => Task.FromResult(_issued.TryGetValue(signatureId, out var issued) && issued.Signer == signer && issued.Override == overrideId);
+}
+
+/// <summary>
 /// The REAL host (Program.cs, real middleware incl. the scope resolution, real MediatR pipeline, real Mongo repositories on the suite's
 /// own replica set) of <see cref="TraceApiFactory"/>, with the e-signature gate replaced by <see cref="TestExpirySignature"/> and a
 /// <see cref="MutableClock"/>. <see cref="ProductionSignatureExpiryApiFactory"/> keeps the production fail-closed gate.
@@ -75,6 +94,8 @@ public class ExpiryApiFactory : TraceApiFactory
     private readonly ConcurrentBag<Guid> _expiryTenants = [];
 
     public TestExpirySignature Signature { get; } = new();
+
+    public TestLotDateOverrideSignature LotDateSignature { get; } = new();
 
     public MutableClock Clock { get; } = new();
 
@@ -100,6 +121,8 @@ public class ExpiryApiFactory : TraceApiFactory
             {
                 services.RemoveAll<IExpiryResolutionSignature>();
                 services.AddSingleton<IExpiryResolutionSignature>(Signature);
+                services.RemoveAll<ILotDateOverrideSignature>();
+                services.AddSingleton<ILotDateOverrideSignature>(LotDateSignature);
             }
 
             // the shared SKU stubs, decorated with this factory's shelf-life days (the stubs themselves stay untouched)
