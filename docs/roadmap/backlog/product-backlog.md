@@ -8398,6 +8398,34 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-622
+
+**Giriş ve parola bağlantısı hız sınırı sayacı süreç belleğinde: yeniden başlatmada sıfırlanıyor, birden çok kopyada sınır kopya sayısıyla çarpılıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX2 raporu, madde 4 ("Onay motoru aday kuralları" sohbeti, 2026-10-12) · KAYIT: 2026-10-12 · 🟡
+
+Ölçüm (`ab94fa8fe`): `PasswordDoorRateLimiter` tek örnek (singleton), sayaçlar bellekte. Parola bağlantısının denetimi ve kaydı, platform parola sıfırlama ve giriş kapıları bu sayaçla sınırlanıyor. Servis yeniden başlayınca sayaç sıfırlanır; servis N kopya çalışırsa saldırgan N katı deneme yapar. Asıl koruma belirteç entropisi (64 rastgele bayt); sayaç ikincil koruma.
+
+Yapılacak: ortak bir sayaç deposu (Redis ya da Mongo TTL koleksiyonu) ile kopyalar arası tek sayaç. Canlı ortam tek kopya çalıştığı sürece acil değil; ölçeklendirmeden önce yapılmalı.
+
+Gelecek regresyon riski: 🟡 yatay ölçeklendirmede kaba kuvvet sınırı sessizce gevşer.
+
+---
+
+### BL-621
+
+**Kiracı kayıt ucu (`POST api/tenant-auth/register`) ağ geçidinden anonim erişilebilir ve 409 "Email is already in use." cevabıyla adresin var olup olmadığını söylüyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth + ağ geçidi) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX2 raporu, madde 3 ("Onay motoru aday kuralları" sohbeti, 2026-10-12) · KAYIT: 2026-10-12 · 🟡
+
+Ölçüm (`ab94fa8fe`): Web bu ucu çağırmıyor. Ama ocelot `/api/tenant-auth/{everything}` rotası ve ağ geçidinin `IsPublicEndpoint` listesi ucu anonim açıyor. Giriş kapısı artık her durumda tek cevap veriyor (FIX2), kayıt ucu ise adres kâhini olarak kalıyor. `SelfRegistrationActorEndpointTests` ucun bilerek korunduğunu gösteriyor.
+
+Yapılacak: önce karar. Kayıt ucu kullanılıyor mu (davet akışı dışında)? Kullanılmıyorsa ağ geçidinde kapatılır. Kullanılıyorsa cevap tekleştirilir: her durumda "e-posta gönderildi", var olan adrese bilgilendirme e-postası. SAP / Oracle'da kendi kendine kayıt aynı tek cevabı verir.
+
+Gelecek regresyon riski: 🟡 adres listesi toplanabilir (kimlik avı hazırlığı).
+
+---
+
 ### BL-620
 
 **İş ortağı kaydı yok: iş ortağı yöneticisi açılırken iş ortağı kimliği ve izinli kiracılar elle GUID olarak yazılıyor**
