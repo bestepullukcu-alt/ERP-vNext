@@ -156,3 +156,30 @@ Ayrıca, toplantı türündeki üç işaret bugün hiçbir şey yapmıyor: "kali
 - **Yöneticiye soruldu:**
   - kademe 1 yeterli mi, kademe 2 de isteniyor mu?
   - rutin işte havuza atama kullanılsın mı?
+
+### 5.5 Yöneticinin iki sorusu (2026-10-12)
+
+**1. Toplantı oluştururken gündem ve tekrar ayarlanamıyor, sonradan yapılıyor.**
+- Ölçüm (hat `def9acdc9`): oluşturma formunda başlık, tür, başlangıç / bitiş, yer, açıklama, devam ettiği toplantı ve katılımcılar var. Oluşturma isteğinde gündem alanı yok (`CreateMeetingRequest`).
+- Türün gündem şablonu kayıttan SONRA, detay sayfası ilk açılınca uygulanıyor (`Meetings/form.js:195-197`, `?prefillAgenda=1`).
+- Tekrar (seri) ayrı bir sayfa: `/Meetings/Series`.
+- Sonuç: davet e-postası gündemsiz gidiyor.
+- Outlook / Google Takvim ve Oracle Unifier'da gündem ve tekrar oluşturma formunun içinde.
+- **Öneri:**
+  - Oluşturma formuna gündem bölümü: türden dolar, kaydetmeden önce düzenlenir, aynı işlemde yazılır. Küçük–orta.
+  - "Tekrarla" seçeneği: arkada seri ve ilk toplantı açılır; seri sayfası yönetim için kalır. Orta.
+
+**2. Görev Merkezi'nden birden çok görev için tek inceleme toplantısı.**
+- Ölçüm: inceleme toplantısı görevin "…" menüsünden ve yalnız o görev için açılıyor (`scheduleReviewMeeting`, `ScheduleReviewMeetingForTaskCommand(TaskId, …)`).
+- Görev Merkezi'nde çoklu seçim yok: 2026-08-24'te yarım olduğu için kaldırıldı (`app.js:11705`).
+- Bugünkü geçici yol: bir görevden toplantı açılır, toplantı detayında "mevcut görevi bağla" ile diğerleri eklenir (`linkExistingTask`). Toplantı ↔ görev bağı zaten çoka çok.
+- **Değerlendirme: mantıklı.** Haftalık ekip / kişi gözden geçirmesi yaygın. Eylül kataloğunda "Görev Gözden Geçirme" türü var. Oracle Unifier ve Veeva'da bir toplantıda birçok madde, her birine ayrı karar yazılıyor.
+- **Şartlar:**
+  1. Seçilen her görev, göreve bağlı ayrı bir gündem maddesi olur.
+  2. Tutanakta her görevin kendi sonucu yazılır ("onaylandı / düzeltme istendi / ertelendi"). Gündem maddesi başına not ve sonuç (§5.2'nin ilk satırı) buna bağlı.
+  3. "İnceleme toplantısı zorunlu" türündeki görevde kapı, tutanağın yayımlanmasına değil, o görevin kendi maddesinin sonucuna bakar. Yoksa 10 görevli bir toplantının tutanağı, konuşulmayanların da kilidini açar.
+  4. Düzenleyenin her görevde yetkisi olmalı (görev yazma kapısı, atama kapsamı); yetkisi olmayan görev listeye girmez.
+  5. Katılımcı önerisi: seçilen görevlerin sahipleri ve incelemeci.
+  6. Üst sınır: 20 görev.
+- **UI önerisi:** genel çoklu seçimi geri getirmek yerine inceleme toplantısı penceresine "başka görevler ekle" seçicisi. Varsayılan liste: aynı kişinin ya da ekibimin açık görevleri. Çoklu seçim + toplu işlem çubuğu ayrı ve daha büyük iş.
+- **Büyüklük:** orta (2–3 prompt), §5.2'nin ilk satırından sonra.
