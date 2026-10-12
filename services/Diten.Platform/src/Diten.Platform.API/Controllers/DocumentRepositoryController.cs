@@ -29,6 +29,12 @@ namespace Diten.Platform.API.Controllers;
 /// <b>compensation</b> for a failed consumer commit; physical destruction under a retention decision is
 /// MOD-0262-FU05 and requires <c>platform.document-repository.purge.execute</c>, which FU01 does not define.
 /// </para>
+/// <para>
+/// <b>WP-VW-W3-PLT.</b> Each attribute admits the general key OR the scope-bound <c>visit-evidence.*</c> key(s). The
+/// attribute is only the door: whether a scope-bound caller may touch THIS scope or THIS object (scope =
+/// CrmVisitEvidence, creator = caller) is decided by <c>DocumentRepositoryService</c> through
+/// <c>DocumentRepositoryAccessPolicy</c>. Wrong scope on write → 403; someone else's evidence on read/compensate → 404.
+/// </para>
 /// </summary>
 [ApiController]
 [Route("api/v1/document-repository")]
@@ -51,7 +57,7 @@ public sealed class DocumentRepositoryController : CustomBaseController
     /// whole, and the size limit is enforced during the copy rather than by pre-reading the body.
     /// </summary>
     [HttpPost("objects")]
-    [HasPermission(DocumentRepositoryPermissions.Manage)]
+    [HasPermission(DocumentRepositoryPermissions.Manage, DocumentRepositoryPermissions.VisitEvidenceWrite)]
     [RequestSizeLimit(long.MaxValue)]
     [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue)]
     public async Task<IActionResult> Store(
@@ -79,7 +85,8 @@ public sealed class DocumentRepositoryController : CustomBaseController
 
     /// <summary>Pointer metadata. The response model has no <c>ObjectKey</c> member at all.</summary>
     [HttpGet("objects/{contentId:guid}")]
-    [HasPermission(DocumentRepositoryPermissions.Read)]
+    [HasPermission(DocumentRepositoryPermissions.Read,
+        DocumentRepositoryPermissions.VisitEvidenceRead, DocumentRepositoryPermissions.VisitEvidenceReadAll)]
     public async Task<IActionResult> Get(Guid contentId, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new GetRepositoryObjectByIdQuery(contentId, CorrelationId), ct));
 
@@ -88,7 +95,8 @@ public sealed class DocumentRepositoryController : CustomBaseController
     /// possessing a raw key grants nothing, and another tenant's content id resolves to 404 (non-leakage).
     /// </summary>
     [HttpGet("objects/{contentId:guid}/content")]
-    [HasPermission(DocumentRepositoryPermissions.Read)]
+    [HasPermission(DocumentRepositoryPermissions.Read,
+        DocumentRepositoryPermissions.VisitEvidenceRead, DocumentRepositoryPermissions.VisitEvidenceReadAll)]
     public async Task<IActionResult> Content(Guid contentId, CancellationToken ct)
     {
         var response = await _mediator.Send(new OpenRepositoryObjectContentQuery(contentId, CorrelationId), ct);
@@ -106,7 +114,7 @@ public sealed class DocumentRepositoryController : CustomBaseController
     /// destruction path.
     /// </summary>
     [HttpPost("objects/{contentId:guid}/compensate")]
-    [HasPermission(DocumentRepositoryPermissions.Manage)]
+    [HasPermission(DocumentRepositoryPermissions.Manage, DocumentRepositoryPermissions.VisitEvidenceWrite)]
     public async Task<IActionResult> Compensate(Guid contentId, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new CompensateRepositoryObjectCommand(contentId, CorrelationId), ct));
 }

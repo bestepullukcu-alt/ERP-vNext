@@ -19,6 +19,23 @@ public static class DocumentRepositoryPermissions
     /// <summary>Tier-3 <c>manage</c> — store objects and run compensation delete.</summary>
     public const string Manage = "platform.document-repository.manage";
 
+    // ── WP-VW-W3-PLT — scope-bound keys for CRM visit evidence (ContentStorageScope.CrmVisitEvidence). A field rep
+    //    is never given the tenant-wide read/manage above (user decision 2026-10-12); these keys open ONLY the
+    //    visit-evidence scope and never any other one. The scope and owner decision is made by
+    //    DocumentRepositoryService (AD-5); the controller attribute only admits "general OR scope-bound".
+
+    /// <summary>Stores objects in the CrmVisitEvidence scope only, and compensation-deletes only evidence the
+    /// caller created. Writing to any other scope with this key is refused (403).</summary>
+    public const string VisitEvidenceWrite = "platform.document-repository.visit-evidence.write";
+
+    /// <summary>Reads metadata and content of CrmVisitEvidence objects the caller created, and nothing else. Any
+    /// other object answers 404, exactly like another tenant's object.</summary>
+    public const string VisitEvidenceRead = "platform.document-repository.visit-evidence.read";
+
+    /// <summary>Reads metadata and content of every CrmVisitEvidence object in the caller's tenant (manager /
+    /// reviewer). Opens no other scope.</summary>
+    public const string VisitEvidenceReadAll = "platform.document-repository.visit-evidence.read-all";
+
     // ── Reserved for later follow-ups. Declared here so the namespace is not fragmented later, and
     //    deliberately NOT implemented by FU01.
     //

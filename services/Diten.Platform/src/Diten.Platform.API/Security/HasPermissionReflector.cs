@@ -21,7 +21,7 @@ public static class HasPermissionReflector
             // Class-level [HasPermission] (a whole controller gated by one key).
             foreach (var attr in controllerType.GetCustomAttributes<HasPermissionAttribute>(inherit: true))
             {
-                Add(keys, attr.Permission);
+                AddAll(keys, attr);
             }
 
             // Action-level [HasPermission].
@@ -30,7 +30,7 @@ public static class HasPermissionReflector
             {
                 foreach (var attr in method.GetCustomAttributes<HasPermissionAttribute>(inherit: true))
                 {
-                    Add(keys, attr.Permission);
+                    AddAll(keys, attr);
                 }
             }
         }
@@ -52,6 +52,17 @@ public static class HasPermissionReflector
         }
 
         return types.Where(t => t is { IsAbstract: false, IsClass: true } && typeof(ControllerBase).IsAssignableFrom(t));
+    }
+
+    // WP-VW-W3-PLT — an "OR" attribute's alternative keys are as real as its primary key: a key that can reach an
+    // endpoint must exist in the catalogue, or nobody can ever be granted it.
+    private static void AddAll(HashSet<string> keys, HasPermissionAttribute attr)
+    {
+        Add(keys, attr.Permission);
+        foreach (var alternative in attr.AlternativePermissions)
+        {
+            Add(keys, alternative);
+        }
     }
 
     private static void Add(HashSet<string> keys, string? key)
