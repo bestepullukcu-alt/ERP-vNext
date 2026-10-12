@@ -1734,6 +1734,7 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   self-service keys (`platform.tenant-security.read/manage`, `platform.tenant-navigation.manage`, `auth.users.lookup`) to every tenant's
   Admin role at every AuthService start; **O-ROLE1-2** the module-licence sync and the seed's module / 97c5 grants add licensed modules'
   keys to existing roles. **O-ROLE1-4:** `how-to-add-a-module.md` step 3 still describes the old behaviour (docs follow-up).
+- **Owner decision 2026-10-12 — O-ROLE1-1 and O-ROLE1-2 stay as they are**, as deliberate exceptions to "the system adds no permission by itself": the Admin reconciler keeps re-adding its four self-service keys to every tenant Admin role at start-up (lock-out protection), and the module-licence sync keeps granting / revoking a licensed module's keys on the Admin and Viewer roles (entitlement-driven). The default-role template itself applies only at role creation (ROLE1).
 
 ## 20. Follow-up Items
 
