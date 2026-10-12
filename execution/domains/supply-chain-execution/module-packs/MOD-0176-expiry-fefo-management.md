@@ -917,6 +917,20 @@ collection names accepted (§3 camelCase names superseded). **O-F1-4** freeze re
 with **FU-0176-F1-UOM**: F4 adds the unit to a manual case (optional `baseUomId` / read from the lot's stock — additive FEFO 1.1.0).
 Fast-forwarded into the MVP-1 branch. Next: INT-EXPIRY (gateway), then F2.
 
+### 19.9 WP-0176-INT (INT-EXPIRY) — agent result, pending CT (2026-10-12)
+
+Commit `91d89847e` on `feature/int/mod-0176-expiry-routes` (base `80b417c58`). Evidence
+`docs/records/audits/2026-10/mod-0176-int-evidence-2026-10-12.md`. `ocelot.json`: `/api/expiry` + `/api/expiry/{everything}` → localhost:5067,
+GET / POST / PUT / OPTIONS (the methods of `fefo.openapi.yaml`), clones of the `/api/quarantine` blocks (no AuthenticationOptions, no header
+transform, no rate limit). **Placement deviation (D-INT-1):** the blocks follow `/api/v1/esign/{everything}` (end of the INT-QE group), not
+`/api/quarantine/{everything}` — measured: directly after quarantine, the frozen order assertion of
+`MvpOneQuarantineEsignRouteTests.The_new_blocks_…_follow_them` (quarantine × 2 then esign × 2 after trace) turns red and that file is
+protected; no other block moved. `MvpOneExpiryRouteTests`: all 21 operations of the contract (F1 + not yet implemented) → exactly one route
+(`/api/expiry/{everything}`), the F3 subject-provider path `/api/expiry/esign-subjects/…`, no DELETE / PATCH, `/api/expiryX` look-alikes miss,
+neighbours unchanged. Gateway tests 110/111 → **134/135** (the known 5063/5064/5065 port red unchanged, message identical). Sabotage a/b/c red →
+restored green. Probe: own gateway copy on 5100 → `GET /api/expiry/policy` (random `X-Tenant-Id`, no token) **401 from localhost:5067**
+(Ocelot log), `/api/expiryX` 404 (no route).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
