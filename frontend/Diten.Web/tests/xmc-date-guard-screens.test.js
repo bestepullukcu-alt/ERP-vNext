@@ -267,9 +267,28 @@ describe("LegalEntities list filter: a refused date stops Apply (WCN-FIX-04)", (
  * (show.bs-stepper, cancelable, then shown.bs-stepper, with detail.indexStep) — the wizard's own listeners do the rest.
  */
 class FakeStepper {
-  constructor(el) { this.el = el; this.index = 0; this.toCalls = []; FakeStepper.last = this; }
+  constructor(el) {
+    this.el = el; this.index = 0; this.toCalls = []; FakeStepper.last = this;
+    // WCN-FIX-07 — Sneat's own listener from the vendored bs-stepper.js (libs/bs-stepper), copied as it is: added when
+    // that file loads, so BEFORE the wizard's, and blind to defaultPrevented. It paints `.crossed` on every step before
+    // the target.
+    el.addEventListener("show.bs-stepper", (event) => {
+      const index = event.detail.indexStep;
+      const numberOfSteps = el.querySelectorAll(".line").length;
+      const line = el.querySelectorAll(".step");
+      for (let i = 0; i < index; i++) {
+        line[i].classList.add("crossed");
+        for (let j = index; j < numberOfSteps; j++) { line[j].classList.remove("crossed"); }
+      }
+      if (event.detail.to == 0) {
+        for (let k = index; k < numberOfSteps; k++) { line[k].classList.remove("crossed"); }
+        line[0].classList.remove("crossed");
+      }
+    });
+  }
   to(step) {
-    const show = new CustomEvent("show.bs-stepper", { detail: { indexStep: step - 1 }, cancelable: true });
+    const show = new CustomEvent("show.bs-stepper",
+      { detail: { from: this.index, to: step - 1, indexStep: step - 1 }, cancelable: true });
     this.el.dispatchEvent(show);
     if (show.defaultPrevented) { return; }
     this.index = step - 1;
@@ -286,7 +305,9 @@ const bootWizard = async () => {
   FakeStepper.last = null;
   window.Stepper = FakeStepper;
   await bootForm(WIZARD,
-    '<div id="le-wizard-stepper"></div><button type="button" id="le-next">Next</button><button type="button" id="le-prev">Prev</button>');
+    `<div id="le-wizard-stepper" class="bs-stepper">${[1, 2, 3, 4, 5, 6]
+      .map((n) => `<div class="step"><button type="button" class="step-trigger">${n}</button></div>`)
+      .join('<div class="line"></div>')}</div><button type="button" id="le-next">Next</button><button type="button" id="le-prev">Prev</button>`);
   expect(FakeStepper.last && FakeStepper.last.el.id, "the wizard did not build its stepper").toBe("le-wizard-stepper");
 };
 
@@ -340,6 +361,53 @@ describe("WCN-FIX-06: the wizard's header click (non-linear stepper) cannot carr
     expect(document.getElementById(WIZARD.alert).textContent).toContain("DATE-REFUSED");
     stepper.to(1);                                       // going back stays free
     expect(stepper.index).toBe(0);
+  });
+});
+
+describe("WCN-FIX-07: the ban holds from ANY step, and a stopped jump draws no step as passed", () => {
+  const crossed = () => [...document.querySelectorAll("#le-wizard-stepper .step")]
+    .map((step, index) => (step.classList.contains("crossed") ? index + 1 : null)).filter(Boolean);
+
+  test.each(["from", "to"])("a refused %s date carried back to step 1: header clicks to step 3 and 4 are stopped", async (which) => {
+    await bootWizard();
+    const stepper = FakeStepper.last;
+    for (let i = 0; i < 5; i += 1) { document.getElementById("le-next").click(); } // every step reached (as in edit mode)
+    stepper.to(2);
+    typeAndTab(WIZARD[which], "31.02.2026");
+    document.getElementById("le-prev").click();          // "Previous" from the dates' step: always allowed
+    expect(stepper.index).toBe(0);
+    document.getElementById(WIZARD.alert).textContent = "";
+
+    stepper.to(3);
+    expect(stepper.index, "step 1 → 3 carried a refused date past its step").toBe(0);
+    stepper.to(4);
+    expect(stepper.index, "step 1 → 4 carried a refused date past its step").toBe(0);
+    expect(document.getElementById(WIZARD.alert).textContent).toContain("DATE-REFUSED");
+    expect(crossed(), "a stopped jump left steps drawn as passed").toEqual([]);
+
+    stepper.to(2);                                       // to the dates' step: free
+    expect(stepper.index).toBe(1);
+  });
+
+  test("a stopped jump from step 2 to 4 leaves only step 1 drawn as passed (Sneat's mark undone)", async () => {
+    await bootWizard();
+    const stepper = FakeStepper.last;
+    for (let i = 0; i < 5; i += 1) { document.getElementById("le-next").click(); }
+    stepper.to(2);
+    typeAndTab(WIZARD.from, "31.02.2026");
+    stepper.to(4);
+    expect(stepper.index).toBe(1);
+    expect(crossed()).toEqual([1]);
+  });
+
+  test("control: with no refused date the same jump goes, and Sneat's marks are drawn (the double is live)", async () => {
+    await bootWizard();
+    const stepper = FakeStepper.last;
+    for (let i = 0; i < 5; i += 1) { document.getElementById("le-next").click(); }
+    stepper.to(1);
+    stepper.to(4);
+    expect(stepper.index).toBe(3);
+    expect(crossed()).toEqual([1, 2, 3]);
   });
 });
 

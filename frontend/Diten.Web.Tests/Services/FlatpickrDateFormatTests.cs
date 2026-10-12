@@ -61,13 +61,11 @@ public sealed class FlatpickrDateFormatTests
             Path.Combine(repo, "frontend", "Diten.Web.Tests", "Services", "FlatpickrDateFormatTests.cs")
         };
         files.AddRange(Directory.GetFiles(Path.Combine(web, "Services", "Localization"), "*.cs"));
+        // WCN-FIX-07 — DERIVED, not named: every test that loads the date guard (its typed text is what carries marks),
+        // plus the date-field-* family. A file named here by hand silently left the scan when it was renamed.
         files.AddRange(Directory.GetFiles(Path.Combine(web, "tests"), "*.test.js").Where(file =>
-        {
-            var name = Path.GetFileName(file);
-            return name.StartsWith("date-field-", StringComparison.Ordinal)
-                || name is "xmc-date-guard-screens.test.js" or "position-assignments-date-guard.test.js"
-                    or "wcn-subtask-due-escape.test.js";
-        }));
+            Path.GetFileName(file).StartsWith("date-field-", StringComparison.Ordinal)
+            || File.ReadAllText(file).Contains("shared/diten-datefield.js", StringComparison.Ordinal)));
         return files
             .OrderBy(f => f, StringComparer.Ordinal)
             .Select(file => Path.GetRelativePath(repo, file).Replace(Path.DirectorySeparatorChar, '/'))
@@ -80,7 +78,11 @@ public sealed class FlatpickrDateFormatTests
         var files = GuardFilePaths();
         Assert.Contains("frontend/Diten.Web/tests/date-field-fix5.test.js", files);
         Assert.Contains("frontend/Diten.Web/wwwroot/assets/js/shared/diten-datefield.js", files);
-        Assert.True(files.Count >= 10, $"only {files.Count} files scanned");
+        // WCN-FIX-07 — the screen tests that type dates reach the scan through the derivation, not a name list.
+        Assert.Contains("frontend/Diten.Web/tests/wcn-subtask-due-escape.test.js", files);
+        Assert.Contains("frontend/Diten.Web/tests/xmc-date-guard-screens.test.js", files);
+        Assert.Contains("frontend/Diten.Web/tests/position-assignments-date-guard.test.js", files);
+        Assert.True(files.Count >= 15, $"only {files.Count} files scanned");
     }
 
     [Theory]

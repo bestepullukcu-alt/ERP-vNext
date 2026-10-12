@@ -471,12 +471,25 @@
         if (!el || typeof window.Stepper !== 'function') return;
         stepper = new window.Stepper(el, { linear: false, animation: false });
         // Safety net: block any programmatic/-click jump past the furthest validated step.
+        /*
+         * Sneat's vendored bs-stepper.js paints `.crossed` on every step before the target in its OWN show listener,
+         * registered before this one and blind to defaultPrevented. A refused jump would leave steps 1–3 drawn as passed
+         * while the reader stays put, so a jump this wizard stops redraws the marks for the step it is still on, by
+         * Sneat's own rule (steps before the current one are crossed). The vendored file is not touched.
+         */
+        const refuseJump = (event) => {
+            event.preventDefault();
+            el.querySelectorAll('.step').forEach((step, index) => step.classList.toggle('crossed', index < currentStep - 1));
+        };
         el.addEventListener('show.bs-stepper', (event) => {
-            if (event.detail.indexStep + 1 > maxReachedStep) { event.preventDefault(); return; }
-            // WCN-FIX-06 — a header click (the stepper is non-linear) must not carry a refused date FORWARD past its
-            // step, as Next does not. Going back stays free; the final Save still re-checks every step (validateAll).
-            if (currentStep === 2 && event.detail.indexStep + 1 > currentStep && DATE_FIELDS.some(dateRefused)) {
-                event.preventDefault();
+            const target = event.detail.indexStep + 1;
+            if (target > maxReachedStep) { refuseJump(event); return; }
+            // WCN-FIX-06/07 — a refused date is not carried FORWARD past its step (2), from ANY step: Next stops on
+            // step 2, and a header click (the stepper is non-linear; in edit mode every step is reached) from step 1
+            // or later to step 3+ is stopped too — "Previous" from the dates' step and a header jump onwards was the
+            // way round it. Going to step 2, or back, stays free; the final Save still re-checks every step.
+            if (target > 2 && target > currentStep && DATE_FIELDS.some(dateRefused)) {
+                refuseJump(event);
                 showAlert([stepErrorMessage()], 'danger');
             }
         });

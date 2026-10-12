@@ -149,7 +149,8 @@
          *    still caught (resetting there instead would let documentClick commit the typo unjudged).
          */
         let lastTyped = '';
-        let libraryEcho = false;
+        // WCN-FIX-07 — a COUNT, not a flag: nested setDate calls mark one echo each, and each echo consumes one.
+        let libraryEchoes = 0;
         let cancelled = false;
         // A refused text stays refused until the reader types again, picks a day, or the PAGE writes the field.
         let rejected = false;
@@ -212,33 +213,27 @@
         // Mark the next `input` as the library's own (on a plain field the echo reaches the box the reader types in).
         const markEcho = () => {
             if (!echoReachesTarget) { return; }
-            libraryEcho = true;
-            Promise.resolve().then(() => { libraryEcho = false; });
+            libraryEchoes += 1;
+            Promise.resolve().then(() => { libraryEchoes = 0; });
         };
         const sameDates = (a, b) => a.length === b.length
             && a.every((date, index) => date.getTime() === b[index].getTime());
 
-        // Returns true when there was a typing run to cancel (so the Escape that asked for it is consumed).
         const cancelTyping = () => {
             lastTyped = '';
             const back = restorePoint;
             restorePoint = null;
-            if (!back) { return false; }
+            if (!back) { return; }
             rejected = false;
             timeEditedSinceReject = false;
             unmark();
             /*
-             * WCN-FIX-05 — ANNOUNCED (triggerChange: true): the page's own state follows the box. flatpickr's blur
-             * commit of the misparse (alt-tab) dispatched `change` + `input`, and the reader's typing dispatched `input`;
-             * a page that copies those into a draft (WorkCenterNext's subtask panel: app.js onInput / onChange →
-             * draft.dueAt → save) would otherwise keep the misparse while the box shows the restored value. On a plain
-             * field the library's `input` echo of this restore is swallowed by the echo mark below (measured).
-             */
-            /*
-             * WCN-FIX-06 — `change` only when the dates really change (empty → typed → Escape changes nothing): a
-             * page acting on `change` (a save, a filter) must not run for a non-change. `input` is announced either way,
-             * because the TYPING reached the page through `input` and a page copying the box (a draft) must see the box
-             * restored. The library's own echo of a plain field is marked as such, as above.
+             * The restore is ANNOUNCED to the page (WCN-FIX-05/06): the reader's typing reached the page through `input`
+             * (and flatpickr's blur commit of a misparse, e.g. on alt-tab, through `change` + `input`), so a page that
+             * copies the field into its own state (WorkCenterNext's subtask draft: app.js onInput / onChange → dueAt →
+             * save) must see the box restored. `input` is announced always; `change` only when the dates really change
+             * (empty → typed → Escape changes nothing, and a page acting on `change` must not run for a non-change).
+             * On a plain field the library's own `input` echo of this restore is marked as an echo, not typing.
              */
             if (sameDates(back, instance.selectedDates || [])) {
                 ownCall(() => instance.setDate(back.slice(), false));
@@ -247,7 +242,6 @@
             } else {
                 ownCall(() => instance.setDate(back.slice(), true));
             }
-            return true;
         };
 
         // WCN-FIX-04 — a value the PAGE writes (quick-create's default, a saved view's filter, a reset) ends the
@@ -295,7 +289,9 @@
             const caret = typeof target.selectionStart === 'number' ? target.selectionStart : value.length;
             const caretAfter = normalizeTyped(value.slice(0, caret)).length;
             target.value = clean;
-            if (typeof target.setSelectionRange === 'function') {
+            // WCN-FIX-07 — only in the box the reader is in: setting a selection elsewhere can pull focus (Safari).
+            const doc = global.document;
+            if (doc && doc.activeElement === target && typeof target.setSelectionRange === 'function') {
                 try { target.setSelectionRange(caretAfter, caretAfter); } catch (error) { /* a type without selection */ }
             }
         };
@@ -306,13 +302,16 @@
             timeEditedSinceReject = false;
         };
         target.addEventListener('input', (event) => {
-            if (libraryEcho) { libraryEcho = false; return; }
+            if (libraryEchoes > 0) { libraryEchoes -= 1; return; }
             if (!event.isComposing) { normalizeBox(); }
             recordTyping();
         });
+        // WCN-FIX-07 — the composition's own `input` events already recorded the typing; compositionend records again
+        // only when normalising it CHANGED the box (full-width digits), so an unchanged end opens no typing run.
         target.addEventListener('compositionend', () => {
+            const before = target.value;
             normalizeBox();
-            recordTyping();
+            if (target.value !== before) { recordTyping(); }
         });
         if (echoReachesTarget && Array.isArray(instance.config.onChange)) {
             instance.config.onChange.push(markEcho);
@@ -359,7 +358,8 @@
          * the reader's Escape meant "undo my typing". A second Escape, with nothing left to cancel, reaches the panel.
          */
         target.addEventListener('keydown', (event) => {
-            if (event.key !== 'Escape' || restorePoint === null) { return; }
+            // WCN-FIX-07 — Escape inside an IME composition cancels the COMPOSITION (the IME's), not the typing run.
+            if (event.key !== 'Escape' || event.isComposing || restorePoint === null) { return; }
             event.stopPropagation();
             if (instance.isOpen) { cancelled = true; instance.close(); } else { cancelTyping(); }
         });
