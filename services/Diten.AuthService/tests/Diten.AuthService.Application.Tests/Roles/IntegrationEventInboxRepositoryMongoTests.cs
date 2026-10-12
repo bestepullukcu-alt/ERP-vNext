@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Tests.Persistence;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Persistence.Repositories;
@@ -7,13 +8,16 @@ using Xunit;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
-[Collection(AuthPermissionOnboardingMongoCollectionDefinition.Name)]
-public sealed class IntegrationEventInboxRepositoryMongoTests
+// Main sync FIX1 (CT decision C, BL-595 Auth): it used to write to the SHARED mongodb://localhost:27017 (measured: 2250
+// connection samples in one Auth App run). Now on the OWNED disposable mongod (DITEN_TEST_MONGOD, the
+// AuthReconciliationMongoCollection fixture) — skipped BY NAME without one (OwnedMongoFact), red under DITEN_REQUIRE_OWNED_MONGO=1.
+[Collection(AuthReconciliationMongoCollection.Name)]
+public sealed class IntegrationEventInboxRepositoryMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
     private const string DatabaseName = "diten_auth_permission_onboarding_itest";
     private const string CollectionName = "integrationEventInbox";
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Real_mongo_claim_protocol_replays_legacy_rejects_drift_and_fences_concurrency()
     {
         var client = CreateClient();
@@ -100,7 +104,7 @@ public sealed class IntegrationEventInboxRepositoryMongoTests
         }
     }
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Real_mongo_repository_propagates_cancellation_without_creating_claim()
     {
         var database = CreateClient().GetDatabase(DatabaseName);
@@ -126,9 +130,9 @@ public sealed class IntegrationEventInboxRepositoryMongoTests
         }
     }
 
-    private static MongoClient CreateClient()
+    private MongoClient CreateClient()
     {
-        var settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
+        var settings = MongoClientSettings.FromConnectionString(ownedMongo.ConnectionString);
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         settings.ConnectTimeout = TimeSpan.FromSeconds(5);
         return new MongoClient(settings);

@@ -21,7 +21,7 @@ public sealed class LegalEntityMongoRoundTripTests
     private const string DatabaseName = "diten_mdm_product_scope_itest";
 
     private static string MongoUri =>
-        Environment.GetEnvironmentVariable("MONGO_TEST_URI") ?? "mongodb://localhost:27017";
+        MdmTestMongo.ConnectionString;
 
     [Fact]
     public async Task Create_then_read_back_finds_the_entity_for_its_tenant()

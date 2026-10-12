@@ -584,7 +584,7 @@ public sealed class GlobalProductApiMongoTests
         public static async Task<MongoScope> CreateAsync()
         {
             var settings = MongoClientSettings.FromConnectionString(
-                Environment.GetEnvironmentVariable("MONGO_TEST_URI") ?? "mongodb://localhost:27017");
+                MdmTestMongo.ConnectionString);
             settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
             settings.ConnectTimeout = TimeSpan.FromSeconds(5);
 #pragma warning disable CS0618

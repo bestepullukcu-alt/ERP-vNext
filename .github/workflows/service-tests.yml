@@ -9,7 +9,7 @@ name: service-tests
 #
 # The architecture guard CiServiceTestsGuardTests reads this file: the matrix must name every service test project
 # (or the guard's named list of projects outside this job — empty since BL-590), and every job keeps its timeout, its
-# hang timeout, the pinned mongod and DITEN_TEST_MONGOD, the replica set, and the pinned RabbitMQ.
+# hang timeout, the pinned mongod and DITEN_TEST_MONGOD (every test owns its mongod — no job-local one), and the pinned RabbitMQ.
 
 on:
   pull_request:
@@ -58,8 +58,7 @@ jobs:
             project: services/Diten.AuthService/tests/Diten.AuthService.ServiceClientRegistry.Tests/Diten.AuthService.ServiceClientRegistry.Tests.csproj
           - suite: mdm-app
             project: services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj
-          # WP-CI-SERVICE-TESTS-03 (with the MDM takeover): MdmHttpHost starts its OWN mongod (DITEN_TEST_MONGOD); the
-          # job-local replica set this row also gets (mdm-*) is not used by it — harmless, measured.
+          # WP-CI-SERVICE-TESTS-03 (with the MDM takeover): MdmHttpHost starts its OWN mongod (DITEN_TEST_MONGOD).
           - suite: mdm-api
             project: services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Diten.MdmService.Api.Tests.csproj
           # WP-CI-SERVICE-TESTS-04 (BL-604 class A): the other services' test projects that are green on a clean tree
@@ -129,25 +128,12 @@ jobs:
         if: matrix.suite == 'platform-bgjobs'
         run: dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release
 
-      # MDM's Mongo tests (and Eventing's) connect to a URI instead of starting their own mongod: a job-local one,
-      # same pinned binary, data in the runner's temp. A ONE-NODE REPLICA SET (BL-590): MDM writes in transactions, and
-      # a transaction needs a replica set. The tarball has no shell, so scripts/mongo_rs_initiate.py (python3 standard
-      # library) initiates it and waits — at most 60 s, then a named error. directConnection=true: the one member.
-      - name: Start a job-local mongod replica set (MDM, Eventing)
-        if: startsWith(matrix.suite, 'mdm-') || matrix.suite == 'platform-eventing'
-        env:
-          MONGO_PORT: "27017"
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/mongo-data"
-          "$DITEN_TEST_MONGOD" --dbpath "$RUNNER_TEMP/mongo-data" --port "$MONGO_PORT" --bind_ip 127.0.0.1 \
-            --replSet rs0 --fork --logpath "$RUNNER_TEMP/mongod.log"
-          python3 scripts/mongo_rs_initiate.py --port "$MONGO_PORT" --set rs0 --timeout 60
-          uri="mongodb://127.0.0.1:$MONGO_PORT/?directConnection=true"
-          echo "MONGO_TEST_URI=$uri" >> "$GITHUB_ENV"
-          echo "MDM_TEST_MONGO=$uri" >> "$GITHUB_ENV"
-          echo "Eventing__MongoDb__ConnectionString=$uri" >> "$GITHUB_ENV"
-
+      # Main sync FIX1 (CT decision D): NO job-local mongod any more. Every service test starts its OWN mongod from
+      # DITEN_TEST_MONGOD (set by the install step above): Platform / BackgroundJobs / Eventing through
+      # services/Diten.Platform/tests/Shared/PlatformTestMongo.cs, MDM through MdmTestMongo (BL-595 MDM — it ignores
+      # MDM_TEST_MONGO by design), Auth through its owned replica set. Nothing read MONGO_TEST_URI / MDM_TEST_MONGO /
+      # Eventing__MongoDb__ConnectionString any more (measured), so the step and its three variables were removed.
+      #
       # BL-590: Platform.Eventing's integration tests need a real broker. A step, not a `services:` container: a service
       # cannot be started for one matrix row only. --network host: the default guest user may only log in over
       # loopback, so no user or password is written anywhere (guest lives and dies with this job's container).

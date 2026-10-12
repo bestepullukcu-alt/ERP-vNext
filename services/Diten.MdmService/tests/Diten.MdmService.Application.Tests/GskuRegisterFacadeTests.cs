@@ -92,8 +92,8 @@ public sealed class GskuRegisterFacadeTests
         var handler = new CreateFirstGskuDraftFacadeHandler(
             new ProductRepository(parent),
             reservations,
-            new RevisionRepository(),
-            new GskuRepository(),
+            new RevisionRepository(null),
+            new GskuRepository(null),
             new Resolver(),
             new Actor(),
             mediator,
@@ -180,8 +180,8 @@ public sealed class GskuRegisterFacadeTests
         return new(
             new ProductRepository(parent),
             reservations,
-            new RevisionRepository(),
-            new GskuRepository(),
+            new RevisionRepository(null),
+            new GskuRepository(null),
             new Resolver(),
             new Actor(),
             mediator,
@@ -255,7 +255,7 @@ public sealed class GskuRegisterFacadeTests
         public Task<ReservationOperationResult> ConfirmIdentityBindingAsync(Guid id, Guid identity, int version, string key, string actor, string correlation, CancellationToken ct = default) => Task.FromResult(new ReservationOperationResult(false, Reservation, "PENDING"));
     }
 
-    private sealed class RevisionRepository(ProductDefinitionRevision? revision = null) : IProductDefinitionRevisionRepository
+    private sealed class RevisionRepository(ProductDefinitionRevision? revision) : IProductDefinitionRevisionRepository
     {
         public Task<ProductDefinitionRevision?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(revision?.Id == id ? revision : null);
         public Task<ProductDefinitionRevision?> GetByCreationCommandIdAsync(string id, CancellationToken ct = default) => Task.FromResult(revision?.CreationCommandId == id ? revision : null);
@@ -263,7 +263,7 @@ public sealed class GskuRegisterFacadeTests
         public Task<ProductDefinitionRevisionCreateResult> CreateForFirstGskuAsync(ProductDefinitionRevision value, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
-    private sealed class GskuRepository(Gsku? gsku = null) : IGskuRepository
+    private sealed class GskuRepository(Gsku? gsku) : IGskuRepository
     {
         public Task<Gsku?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(gsku?.Id == id ? gsku : null);
         public Task<Gsku?> GetReferenceableByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult<Gsku?>(null);

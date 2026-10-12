@@ -1317,8 +1317,7 @@ public sealed class AuditIntentDeliveryMongoTests
 
         public static async Task<MongoScope> CreateAsync()
         {
-            var connectionString = Environment.GetEnvironmentVariable("MDM_TEST_MONGO")
-                ?? "mongodb://localhost:27017";
+            var connectionString = MdmTestMongo.ConnectionString;
             var settings = MongoClientSettings.FromConnectionString(connectionString);
 #pragma warning disable CS0618
             settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;

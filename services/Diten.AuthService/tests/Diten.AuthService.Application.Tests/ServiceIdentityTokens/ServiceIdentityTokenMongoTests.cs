@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Tests.Persistence;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
@@ -12,14 +13,18 @@ using Xunit;
 
 namespace Diten.AuthService.Application.Tests.ServiceIdentityTokens;
 
-public sealed class ServiceIdentityTokenMongoTests
+// Main sync FIX1 (CT decision C, BL-595 Auth): it used to write to the SHARED mongodb://localhost:27017 (measured: 2250
+// connection samples in one Auth App run). Now on the OWNED disposable mongod (DITEN_TEST_MONGOD, the
+// AuthReconciliationMongoCollection fixture) — skipped BY NAME without one (OwnedMongoFact), red under DITEN_REQUIRE_OWNED_MONGO=1.
+[Collection(AuthReconciliationMongoCollection.Name)]
+public sealed class ServiceIdentityTokenMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
     private const string DatabaseName = "diten_auth_service_identity_itest";
 
-    [Fact]
+    [OwnedMongoFact]
     public async Task Fixed_database_enforces_unique_lifecycle_and_exact_tenant_grant_isolation()
     {
-        var settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
+        var settings = MongoClientSettings.FromConnectionString(ownedMongo.ConnectionString);
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         var client = new MongoClient(settings);
         await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));

@@ -15,7 +15,7 @@ her proje ayrı bir iş (matris, `fail-fast: false`).
 |---|---|---|
 | `platform-app` | `Diten.Platform.Application.Tests` | test 14 dk 8 sn (6685 test) |
 | `platform-bgjobs` | `Diten.Platform.BackgroundJobs.Tests` | test 11 sn (42 test) |
-| `platform-eventing` | `Diten.Platform.Eventing.Tests` | test 6 sn (68 test; yerelde özel RabbitMQ 4.3.2 düğümü + replika kümesi) |
+| `platform-eventing` | `Diten.Platform.Eventing.Tests` | 68 test; yerelde özel RabbitMQ 4.3.2 düğümü; Mongo testin kendi mongod'u |
 | `auth-app` | `Diten.AuthService.Application.Tests` | test 6 dk 52 sn (1617 test) |
 | `auth-acceptance-host` | `Diten.AuthService.AccountKindAcceptanceHost.Tests` | test 3 dk 36 sn (68 test) |
 | `auth-scr` | `Diten.AuthService.ServiceClientRegistry.Tests` | test 4 sn (160 test) |
@@ -44,8 +44,7 @@ Süreler yalnız test koşusudur; CI'da derleme ve mongod indirme eklenir. En uz
 
 **Kendi mongod'unu açan satırlar:** `auth-scr` (`Support/OwnedMongo.cs`), `mdm-api` (`MdmHttpHost`),
 `auth-acceptance-host` ve Platform'un geçici kümeleri: ikiliyi `DITEN_TEST_MONGOD` / `DITEN_ITEST_MONGOD_BIN_DIR`'den
-alır, rastgele port, geçici veri. `mdm-api` adı işe özel replika kümesini de başlatır (`mdm-*`); test onu kullanmaz,
-zararsız.
+alır, rastgele port, geçici veri. Bugün her satır böyle: işe özel replika kümesi ana dal birleşimi FIX1 ile kaldırıldı.
 
 **Henüz işte olmayanlar (`NotInThisJob`, WP-CI-SERVICE-TESTS-04).** Bekçi `services/` altındaki **her** test projesini
 (`*Tests.csproj`: `ArchitectureTests`, `IntegrationTests` dahil; Building Blocks dahil) matrisle karşılaştırır. Satırı
@@ -190,7 +189,7 @@ Sıra:
 kendi mongod'larını açmazlar.
 
 **CI:** `DITEN_TEST_MONGOD` her satırda kurulum adımında veriliyor; Platform satırları için iş akışına ek mongod
-gerekmez. Eventing de artık kendi mongod'unu açar; işe özel replika kümesi yalnız MDM satırları içindir.
+gerekmez. Eventing de artık kendi mongod'unu açar; işe özel replika kümesi FIX1 ile kaldırıldı (aşağıda).
 
 **Yerelde** Platform testleri için değişkenlerden biri ZORUNLU:
 
@@ -214,24 +213,21 @@ uykudan uyanınca zaman aşımı. Main'in Q121b ölçümü: 49 veritabanı.
 - **Ortam değişkenleri:**
   - `DITEN_TEST_MONGOD`: ikilinin tam yolu. Platform'un geçici mongod / replika kümesi bunu kullanır.
   - `DITEN_ITEST_MONGOD_BIN_DIR`: ikilinin dizini. Auth'un kabul sunucusu bunu kullanır.
-- **MDM App ve Eventing testleri** kendi mongod'larını açmaz, bir URI'ye bağlanır: `MONGO_TEST_URI` / `MDM_TEST_MONGO` /
-  `Eventing__MongoDb__ConnectionString` (varsayılan `localhost:27017`). **MDM Api** (`MdmHttpHost`) ise kendi mongod'unu açar.
-- **İşe özel mongod (MDM, Eventing satırları):** aynı ikiliyle `127.0.0.1:27017`'de **tek düğümlü bir replika kümesi**
-  (BL-590).
-  - Neden: MDM işlem (transaction) kullanır; işlem replika kümesi ister. Bağımsız (standalone) mongod'da işlem testleri
-    kırmızıdır.
-  - `--replSet rs0` ile başlar.
-  - `scripts/mongo_rs_initiate.py` kümeyi başlatır ve birincil olana kadar bekler. En çok 60 sn; aşılırsa adlı hata
-    (`REPLICA_SET_NOT_PRIMARY`, `REPLICA_SET_NOT_ENABLED`, `MONGOD_NOT_REACHABLE`).
-  - Betik yalnız python3 standart kütüphanesidir: 7.0 tarball'ında kabuk (`mongosh`) yok, ayrı indirme ve özet gerekmez.
-  - Bağlantı dizesi `mongodb://127.0.0.1:27017/?directConnection=true`.
+- **MDM App** (BL-595) kendi mongod'unu açar: tek yardımcı `MdmTestMongo`. İkiliyi `DITEN_TEST_MONGOD`'dan alır (Auth
+  kuralı), rastgele port, geçici dizin, tek düğümlü replika kümesi, yalnız `127.0.0.1`. Değişken yoksa adlı kırmızı
+  (`OWNED_TEST_MONGO_UNAVAILABLE`); ortak 27017'ye asla düşmez. Bağlantı ortamdan okunmaz (FIX2): `MDM_TEST_MONGO` yok sayılır;
+  kendi replika kümesini kuran sınıflar yardımcıyı süreç içinde `MdmTestMongo.UseOwnedRedirect` ile ona yöneltir. **MDM Api** (`MdmHttpHost`) de kendi mongod'unu açar.
+- **Eventing testleri** de kendi mongod'unu açar (`PlatformTestMongo`, ana dal birleşimi karar C).
+- **İşe özel mongod YOK** (ana dal birleşimi FIX1, CT kararı D). Hiçbir test artık bir adres değişkeni okumuyor (ölçüldü):
+  - MDM `MDM_TEST_MONGO`'yu bilerek yok sayar (BL-595 MDM);
+  - Eventing `PlatformTestMongo`'ya geçti;
+  - Platform harness'ı kendi mongod'unu açar.
+  Bu yüzden "Start a job-local mongod replica set" adımı ve üç değişkeni (`MONGO_TEST_URI`, `MDM_TEST_MONGO`,
+  `Eventing__MongoDb__ConnectionString`) kaldırıldı.
+  - Bekçi: `No_row_starts_a_job_local_mongod_or_hands_the_tests_a_mongo_address`. İş akışında bir test Mongo adresi ya da
+    job-local mongod geri gelirse kırmızı.
+  - `scripts/mongo_rs_initiate.py` depoda kalır; yerel betikler kullanabilir.
 - Ortak / dev Mongo'ya hiçbir zaman bağlanılmaz.
-
-Yerelde aynı adım (dev Mongo 27017'de çalıştığı için başka port):
-
-```bash
-python3 scripts/mongo_rs_initiate.py --port 27117 --set rs0 --timeout 60
-```
 
 ## RabbitMQ (Eventing satırı)
 
@@ -295,8 +291,8 @@ Testleri Python'dadır (`scripts/tests/test_check_trx_no_skipped.py`). phase1 he
 (`run_phase1_gates.sh`: `python3 -m unittest discover -s scripts/tests`). Mimari bekçisi hem bu satırı hem iş akışının
 `--suite "$SUITE"` geçirdiğini iddia eder.
 
-Bilinen atlama koşulu: `LegalEntityMongoRoundTripTests` (MDM) `Skip.IfNot(IsMongoReachable())`, `MONGO_TEST_URI`
-yanıt vermezse atlar. CI'da işe özel mongod bunu koşturur.
+MDM'de bilinen atlama koşulu yok (BL-595): MDM App testleri `MdmTestMongo` ile kendi mongod'unu açar; açamazsa adlı
+kırmızıdır, atlamaz.
 
 ## Çapraz veritabanı kapısı: tek tam-yol istisna (FIX1, CT kararı)
 

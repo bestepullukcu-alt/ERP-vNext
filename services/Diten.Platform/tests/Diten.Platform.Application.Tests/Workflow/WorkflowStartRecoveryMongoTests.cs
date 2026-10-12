@@ -1864,7 +1864,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     }
 
     private StartWorkflowInstanceHandler HandlerWith(IPlatformTransactionExecutor transactions) =>
-        new(_templates, _versions, _instances, _tasks, _snapshots, _logs, _tenant, new StarterUser(), transactions: transactions);
+        new(_templates, _versions, _instances, _tasks, _snapshots, _logs, _tenant, new StarterUser(), sequentialWritesForTests: [], transactions: transactions);
 
     [Fact]
     public async Task A_replay_that_loses_its_claim_to_a_whole_start_answers_as_it_and_writes_nothing()
@@ -2003,7 +2003,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     public void The_start_handler_refuses_to_be_built_without_a_transaction_executor()
     {
         var refused = Assert.Throws<ArgumentNullException>(() => new StartWorkflowInstanceHandler(
-            _templates, _versions, _instances, _tasks, _snapshots, _logs, _tenant, new StarterUser()));
+            _templates, _versions, _instances, _tasks, _snapshots, _logs, _tenant, new StarterUser(), sequentialWritesForTests: []));
         Assert.Equal("transactions", refused.ParamName);
     }
 
@@ -2187,7 +2187,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     {
         var request = Request("commit-" + label);
         var failing = new StartWorkflowInstanceHandler(_templates, _versions, _instances, _tasks, _snapshots, _logs, _tenant,
-            new StarterUser(), transactions: new PlatformTransactionExecutor(_context, new FailingCommits(failures, label)));
+            new StarterUser(), sequentialWritesForTests: [], transactions: new PlatformTransactionExecutor(_context, new FailingCommits(failures, label)));
 
         var first = await failing.Handle(Command(request), default);
 
@@ -2530,7 +2530,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         IWorkflowInstanceRepository? instances = null,
         Diten.Platform.Application.Contracts.ICurrentUserContext? user = null) =>
         new(_templates, _versions, instances ?? _instances, tasks ?? _tasks, snapshots ?? _snapshots, _logs, _tenant, user ?? new StarterUser(),
-            transactions: new PlatformTransactionExecutor(_context));
+            sequentialWritesForTests: [], transactions: new PlatformTransactionExecutor(_context));
 
 
     private SweepWorkflowOrphansHandler OrphanHandler() =>
@@ -2807,7 +2807,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
                 StartWorkflowInstanceCommand start => await new StartWorkflowInstanceHandler(
                         templates, new WorkflowTemplateVersionRepository(t._context, tenant), instances,
                         crashBeforeTask ? new CrashBeforeTaskRepository(tasks) : tasks, snapshots, logs, tenant, user ?? new StarterUser(),
-                        transactions: new PlatformTransactionExecutor(t._context))
+                        sequentialWritesForTests: [], transactions: new PlatformTransactionExecutor(t._context))
                     .Handle(start, ct),
                 SupersedeWorkflowHalfStartCommand supersede => await Audited(supersede, () => new SupersedeWorkflowHalfStartHandler(
                         instances, tasks, logs, user ?? new StarterUser(), new PlatformTransactionExecutor(t._context),

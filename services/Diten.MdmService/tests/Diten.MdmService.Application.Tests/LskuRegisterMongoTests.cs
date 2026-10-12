@@ -211,9 +211,7 @@ public sealed class LskuRegisterMongoTests
 
         public static async Task<MongoScope> CreateAsync()
         {
-            var connectionString = Environment.GetEnvironmentVariable("MDM_TEST_MONGO")
-                ?? Environment.GetEnvironmentVariable("MONGO_TEST_URI")
-                ?? "mongodb://localhost:27017";
+            var connectionString = MdmTestMongo.ConnectionString;
             var settings = MongoClientSettings.FromConnectionString(connectionString);
             settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
             settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);

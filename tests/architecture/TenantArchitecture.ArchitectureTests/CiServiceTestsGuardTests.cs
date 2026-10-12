@@ -175,20 +175,19 @@ public class CiServiceTestsGuardTests
         }
     }
 
-    // BL-590: MDM writes in transactions — the job-local mongod (MDM, Eventing) is a one-node replica set, initiated by
-    // the bounded python3 initiator and reached with directConnection=true; every URI the tests read gets it.
+    // Main sync FIX1 (CT decision D): no row starts a job-local mongod and no step hands the tests a Mongo address.
+    // Every service test owns its mongod (DITEN_TEST_MONGOD): Platform's PlatformTestMongo, MDM's MdmTestMongo (which
+    // ignores MDM_TEST_MONGO by design), Auth's owned replica set. A returning address variable would point a test at a
+    // server it did not start — the shape BL-595 removed — so any of them is red here.
     [Fact]
-    public void The_job_local_mongod_is_a_one_node_replica_set_for_mdm_and_eventing()
+    public void No_row_starts_a_job_local_mongod_or_hands_the_tests_a_mongo_address()
     {
-        var workflow = Workflow();
-        var step = Step(workflow, "Start a job-local mongod replica set (MDM, Eventing)");
-        Assert.Contains("if: startsWith(matrix.suite, 'mdm-') || matrix.suite == 'platform-eventing'", step, StringComparison.Ordinal);
-        Assert.Matches(@"--replSet rs0\b", step);
-        Assert.Matches(@"python3 scripts/mongo_rs_initiate\.py --port ""\$MONGO_PORT"" --set rs0 --timeout \d+", step);
-        Assert.Contains("uri=\"mongodb://127.0.0.1:$MONGO_PORT/?directConnection=true\"", step, StringComparison.Ordinal);
-        foreach (var variable in new[] { "MONGO_TEST_URI", "MDM_TEST_MONGO", "Eventing__MongoDb__ConnectionString" })
-            Assert.Contains($"echo \"{variable}=$uri\" >> \"$GITHUB_ENV\"", step, StringComparison.Ordinal);
-        Assert.True(File.Exists(Path.Combine(RepoRoot(), "scripts", "mongo_rs_initiate.py")));
+        var code = Code(Workflow());
+        foreach (var variable in new[] { "MONGO_TEST_URI", "MDM_TEST_MONGO", "Eventing__MongoDb__ConnectionString",
+                     "MongoDbSettings__ConnectionString", "DITEN_PLATFORM_TEST_MONGO_URI" })
+            Assert.True(!Regex.IsMatch(code, $@"(?i)\b{variable}\b"), $"the workflow names {variable}: a test would be pointed at a server it did not start");
+        Assert.True(!Regex.IsMatch(code, @"(?i)--replSet|--dbpath|mongo_rs_initiate"), "a job-local mongod is started");
+        Assert.True(!Regex.IsMatch(code, @"(?i)\bmongodb://"), "the workflow carries a Mongo address");
     }
 
     // BL-590: RabbitMQ pinned by tag and digest, a bounded readiness wait with a named failure, no credential written.
@@ -394,7 +393,6 @@ public class CiServiceTestsGuardTests
         [
             "matrix.suite == 'mdm-app'",
             "matrix.suite == 'platform-bgjobs'",
-            "startsWith(matrix.suite, 'mdm-') || matrix.suite == 'platform-eventing'",
             "matrix.suite == 'platform-eventing'",
             "startsWith(matrix.suite, 'auth-')",
             "always()",
@@ -406,7 +404,7 @@ public class CiServiceTestsGuardTests
     private static readonly Dictionary<string, int> ExpectedGithubEnvWrites = new(StringComparer.Ordinal)
     {
         ["phase1-gates.yml"] = 0,
-        ["service-tests.yml"] = 9
+        ["service-tests.yml"] = 6
     };
 
     [Fact]

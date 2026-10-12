@@ -8398,6 +8398,114 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-617
+
+**İzinler ekranı (`PermissionsController`) UAS-001 kapısı taşımıyor: Index ve sunucu tarafı `Lookups` çağrısı anahtarsız kullanıcıya açık**
+
+DURUM: AÇIK · SAHİP: CT (Yönetişim ekranları) · BULAN: URA FIX1 bağımsız incelemesi (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`158f35ad9`):
+- Kullanıcı Rolleri ve Rol Atamaları artık 403 + erişim yok yüzü veriyor (URA FIX1).
+- Aynı ailedeki `PermissionsController` Index ve `Lookups` (ağ geçidini sunucu tarafında çağırıyor) anahtar denetimi yapmıyor. Okuma yetkisi AuthService'te (`[HasPermission]`), ama sayfa iskeleti yetkisize çiziliyor.
+
+Yapılacak: URA deseni (denetleyici + görünüm aynı okuyucu, Index 403, sunucu çağrısından önce ret, HTTP testi); UAS bekçisinin GATED listesine.
+
+Gelecek regresyon riski: 🟡 yetkisiz kullanıcı sayfa iskeletini görür (UAS-001); veri sızıntısı yok (AuthService kapısı).
+
+---
+
+### BL-616
+
+**İTS karekod / seri numarası bildirimi ve barkod etiketi basımı için modül yok (MOD-0290 yalnız GTIN numarasını tutar)**
+
+DURUM: AÇIK — sahip kararı bekliyor (kapsam ve sıra) · SAHİP: sahip + CT · BULAN: sahip sorusu "GTIN / barkod yapılmayacak mı?" (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`fbe8b47d6`):
+- MOD-0290'da GTIN bugün yalnız Bitmiş Ürün satış kutusu düzeyinde. Stok davranışı panelinde alan, kontrol hanesi denetimi ve tekillik var (`FG_GTIN_INVALID`, `FG_GTIN_CONFLICT`; stock-gate S3 / S5).
+- Planlı (ürün ana verisi tamamlama planı, BL-518):
+  - P6 Tanımlayıcılar: GSKU / LSKU / kalem düzeyinde GTIN ve diğer kodlar, yaşam döngüsü ve geçmişiyle;
+  - P9 Ambalaj hiyerarşisi: kutu → koli → palet, her düzeyin adedi ve GTIN'i; MOD-0178 depo dalgasıyla.
+- Modül kataloğunda OLMAYAN: İTS'ye (İlaç Takip Sistemi) üretim / satış / iade bildirimi, karekod (GS1 DataMatrix: (01) GTIN + (21) seri + (10) lot + (17) son kullanma), seri numarası havuzu, etiket / barkod basımı ve el terminaliyle okuma. Planda "seri takibi pazara bağlı (İTS)" notu var, modül yok.
+
+Karşılaştırma: SAP'de GTIN malzeme kaydında birim başına (EAN / UPC), serileştirme ve ülke bildirimi ayrı üründe (SAP ATTP). Oracle'da GTIN kalem çapraz başvurusu (PIM / GDSN), serileştirme ayrı bulut ürününde (Serialization and Traceability).
+
+Yapılacak: sahip kapsamı ve sırayı seçer. Öneri: MOD-0290 P6 + P9 önce, İTS / etiket ayrı modül (stok ve depo sevkiyatına bağlanır).
+
+Gelecek regresyon riski: 🟡 Türkiye'de beşeri ilaç satışı İTS bildirimi olmadan yapılamaz; modül geç başlarsa stok / sevkiyat akışlarına sonradan seri numarası eklemek gerekir.
+
+---
+
+### BL-615
+
+**origin/main'in kendi phase1 mimari testi kırmızı (8): CRM ve SCE / MVP-6 denetimsiz yazma komutları, SCE defteri yok, shipment-bundle sözleşme pin'i bayat**
+
+DURUM: AÇIK · SAHİP: CRM ekibi + SCE / MVP-6 ekibi (XMC-001; ileti sahip üzerinden) · BULAN: main-sync (Roller sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🔴
+
+Ölçüm (git arşivi, `a814bad0f`): TenantArchitecture 69/77, 8 kırmızı. `run_phase1_gates.sh:180` mimariyi koşuyor, yani main'in CI'ı da kırmızı.
+- `AuditTrailStandardTests` ×2:
+  - 44 yeni yazma komutu denetimsiz ve deftersiz. CRM 27: Knowledge Path, Regulatory (CountryLegalProfile, SafetyText), ReopenPlanningWeek. SupplyChainService 17: Carrier, Shipment, Load, Return, Claim, Capacity, S&OP.
+  - `EveryServiceWithWriteCommands_HasALedger`: SupplyChainService'in defteri yok.
+- `DocsPathGuardTests` ×5: `docs/analysis/contracts/shipment-bundle.openapi.yaml` main'de 3.2.0 (`1ccbc49b7`), pin hâlâ 3.1.0.
+- `MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest`: main'in düzelttiği iki dosya listede bayat kalmıştı. CT hattı main-sync'te listeyi küçülttü (kural gevşemedi).
+
+CT KARARI (2026-10-11): CT bu borcu üstlenmez. phase1'in defter adımı satır EKLEYEN PR'ı zaten kırmızı yapıyor. Hat bu kırmızılarla birleşir; tek PR'ın CI'ı main düzelene kadar bu 8 kırmızıyı gösterir.
+
+Yapılacak:
+- CRM: 27 komuta denetim ya da adlı defter kararı;
+- SCE / MVP-6: 17 komut + defter + pin 3.2.0;
+- ileti `ekiplere-ci-test-mesaji.md`.
+
+Gelecek regresyon riski: 🔴 main'in phase1'i kırmızı kaldıkça her PR kırmızı görünür ve yeni bir kırmızı fark edilmez.
+
+---
+
+### BL-614
+
+**CT hattında 32 vitest kırmızısı (11'i CT alanı); CI'da vitest satırı yok, bu yüzden büyümeleri görünmüyor**
+
+DURUM: AÇIK · SAHİP: CT (11 CT alanı) + CRM / Enterprise Strategy / PVG ekipleri (21, XMC-001) · BULAN: CT hat doğrulaması (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`afedcdeb9`, tam `npx vitest run`: 32 kırmızı / 4633 geçti; taban `a980dbf74` 32 / 4586):
+- **Ad listesi aynı, içerik değil.** Stock-gate birleşimi (`38da7cf52`) zaten kırmızı iki teste yeni ihlal ekledi:
+  - `diten-field-icons` "no NEW offcanvas ships without the wrapper": +3 (`MasterDataManagement/{FinishedGoods,Gskus,Lskus}/_StockBehaviourOffcanvas.cshtml`);
+  - `global-confirm-input-type` hesap dışı `showInput` çağıranı 20 → 21.
+  Kırmızı bir test, yeni ihlali saklıyor.
+- CT alanı (11):
+  - `diten-field-icons` ×2 (4 sarmalayıcısız form + 2 bayat `KNOWN_NO_ICONS` girdisi);
+  - `diten-tags` (SharedResource açığı 39 > 33);
+  - `global-confirm-input-type`;
+  - `global-products-register` (`DtDefaults`'ta `extend: 'print'` aranıyor);
+  - `governance-users-error-codes-ct` (harita 20, tablo 18: `USER_RESET_CONFLICT`, `USER_RESET_SELF`);
+  - `governance-users-list-component` (`Users/index.js` 453 > 450 satır);
+  - `wcn-dialog-one-language` (adsız `inputOptions` çağıranı);
+  - `workcenter-next-provider-labels` ×2 (21 anahtar 7 dilde eksik; ham eylem adları `WorkAggregation_Action_{Decline,Offer,Withdraw}`);
+  - `workcenter-next-l10n-key-guard` (b) (3 sunucu anahtarı cümlesiz).
+- Diğer ekipler (21): CRM kampanya ×7 + rıza ×4; Enterprise Strategy ×9 (strategy-apis ×4, planning / periods / objectives); PVG ×1.
+
+Yapılacak:
+1. Açık dallar (WCN FIX6, URA FIX1, UX-COMMON, kr-fix1; hepsi bu dosyalara dokunuyor) hatta birleşince yeniden ölçüm, AYRINTI düzeyinde (ad değil, ihlal listesi).
+2. Kalanlar için tek CT iş paketi: bilinen listeye eklemek yok, düzeltme var; 7 dil.
+3. 21'i ekip mesajına (`ekiplere-ci-test-mesaji.md`).
+4. CI'ya vitest satırı: yalnız küçülebilen adlı kırmızı listesiyle (test adı + ihlal sayısı).
+
+Gelecek regresyon riski: 🟡 CI vitest koşmadığı sürece her birleşim kırmızı testlere sessizce yeni ihlal ekleyebilir (stock-gate'te oldu).
+
+---
+
+### BL-613
+
+**MDM ürün kimlik akışları: yedi akış açık onayı düz `now + retryDelay` ile yokluyor (BL-607'nin geri çekilmesi yalnız LSKU kimlikte)**
+
+DURUM: AÇIK · SAHİP: CT (MDM ürün devralma, MOD-0290) · BULAN: BL-607 raporu §1 (WF sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`b650e4589`): GSKU kimlik (`GlobalProductIdentityWorkflowProcessor.cs:1572`), ilk GSKU kimlik (`FirstGskuIdentityWorkflowProcessor.cs:1296`), GSKU düzeltme (`:415`), GSKU emeklilik talebi (`:381`), LSKU emeklilik talebi (`:393`), global ürün düzeltme (`:507`), global ürün emeklilik (`:489`). Hiçbiri açık onayı deneme sınırına SAYMIYOR (doğru), ama hepsi her `retryDelay`'de (30 sn) yeniden soruyor.
+
+Yapılacak: aynı `ProductIdentityOpenApprovalBackoff` (BL-607, `54b9562a0`) yedi akışa; akış başına açık onay yaşı göstergesi; HTTP testi + sabotaj. S5b / stock-gate dosyalarına çarpmaz.
+
+Gelecek regresyon riski: 🟡 canlıda binlerce açık onay olursa motor her 30 sn'de sorgulanır ve karara bağlanmış onaylar sırada geride kalır.
+
+---
+
 ### BL-612
 
 **Enterprise Strategy izin denetimi varsayılanda AÇIK başarısız: iki ortam değişkeni tanımsızsa her izin, kimlik denetiminden önce, kimliksiz kullanıcıya veriliyor (güvenlik)**
@@ -8746,6 +8854,13 @@ Gelecek regresyon riski: 🔴 S5'siz canlıya çıkarsa ürün SKU onayı ekrand
 **Ortak dev Mongo'da 79 eski test veritabanı; yerel test betikleri ortak Mongo'ya düşebiliyor**
 
 DURUM: AÇIK · SAHİP: sahip (temizlik kararı) + CT (betik kuralı) · BULAN: WP-CI-SERVICE-TESTS-02 olayı (2026-10-09) · KAYIT: 2026-10-09
+
+**İLERLEME (2026-10-12):**
+- **MDM KAPANDI.** `086a48a4b` (iş `86cd96f47`, 3 düzeltme turu). MDM testleri teste ait mongod başlatıyor; `MDM_TEST_MONGO` ortamdan okunmuyor; "şüphede Keep" süpürmesi; bekçi.
+- Kalan MDM ikinci tur: `MdmHttpHost.cs` ve `MdmDocumentClassMapsTests.cs` (`NotYetMoved`, yalnız port reddi; S2 / BL-598 birleşince).
+- CI: `service-tests.yml:145` mdm-* satırları için hâlâ `MDM_TEST_MONGO` dışa aktarıyor ve 27017'de iş yerel mongod başlatıyor (artık etkisiz; Eventing için gerekli olabilir). `CiServiceTestsGuardTests.cs:182` satırı sabitliyor. CT, main-sync kabulünden sonra.
+- Platform kısmı: main-sync'te karar C (Roller sohbeti).
+- 79 eski veritabanının silinmesi sahipte.
 
 Olay (2026-10-09 ~20:50):
 - BL-590 işçisinin yerel betiğinde iş-yerel mongod başlamadı (port meşgul). URI'ler boş kaldı; MDM App testleri ~3 dk varsayılan `localhost:27017`'ye, yani ortak dev Mongo'ya bağlandı. İşçi kendisi bildirdi.
