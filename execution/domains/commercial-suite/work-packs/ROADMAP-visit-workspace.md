@@ -143,3 +143,43 @@
   - Durum süzgeci ÇOKLU seçim.
 - **W2 toplam:** 7 prompt.
 - **W2 TAMAM (2026-10-12):** canlı E4 + mockup görsel karşılaştırma uyumlu; 3 küçük fark CT tarafından kapatıldı (kısa kart adı, "işaretlendi" metni, iptaller varsayılan gizli; Web 867/0). Sıradaki **W3**, önce K-W3 sorusu.
+
+## 8. Kalan iş planı — güncel (2026-10-12, CT)
+
+> **Bitenler:**
+> - W1 ✅
+> - W2 ✅ (7 prompt + CT kapanış)
+> - W3 yürütme ✅: PLT, BE-a, BE-b, AUTH, WEB-a, WEB-b; canlı E4 iki oturum; mobil not
+> - W3-BE-c ✅ (E2; `0927fab9e` → test dalı)
+>
+> **Gerçekleşen tempo:** W2 7 + 1 düzeltme; W3 şu ana kadar 7 prompt + 3 CT düzeltmesi. Tahminlerde bu oran kullanıldı.
+
+| sıra | iş | prompt | durum / not |
+|---|---|---|---|
+| 1 | **W3-WEB-c** itiraz kütüphanesi + adım "Sunum notları" sekmesi | 1 | prompt hazır (WP-VW-W3-authoring) |
+| 1 | **W3-WEB-d** ziyaret kanıtı ayarları (kiracı + etkin ayar + geçmiş + süreli istisna) | 1 | prompt hazır; WEB-c ile paralel |
+| 2 | **W3-CFG** Workflow şablonları (CRM-OBJ-RESP → MED-DIR, CRM-VISIT-EVIDENCE-EXC → POS-SALES-OPS) + yetki betiği | 1 | prompt hazır; pozisyon oluşturuldu |
+| 3 | W3 yazım canlı E4 + mockup görsel karşılaştırması + olası düzeltme | 0–1 | CT |
+| 4 | **PLT-ORG-SEAT** Platform "benim pozisyon atamam" ucu (+ bildirim) | 1 | tüzel kişilik katmanı için |
+| 5 | **W3-BE-d** katmanlı ayar (tüzel kişilik × iş birimi), çözümleyici dolar | 1 | PLT-ORG-SEAT sonrası |
+| 5 | **W3-WEB-e** kanıt ayarında tüzel kişilik / iş birimi ağacı + miras | 1 | BE-d ile |
+| — | Veri: temsilcilere Platform pozisyon ataması (İK) + bölge atamasında iş birimi (CRM yöneticisi) | 0 | kullanıcı / veri sahibi |
+| 6 | **W4** rapor v2 (BE-a hekim raporu, BE-b endikasyon / rakip, BE-c doktor profili, WEB-a hekim raporu, WEB-b eczane raporu) | 5 | önce K-W4, K-W5, K-W6 kararları |
+| 7 | **W3E** ek kanıtlar (QR + anti-fraud alıcı uç) | 2 | W4'ten sonra (karar) |
+| 8 | **W5** bildirimler (Platform e-posta + olaylar) | 2 | K-W8, K-W9 |
+| 8 | **W6** eczane ön siparişi | 3 | K-W10; W5 ile paralel |
+| 9 | **W7** satış payı + doktor kartı | 2 | K-W7, K-W11 |
+| 10 | **W9** eski sayfaların geçişi + temizlik | 1–2 | K-W12 |
+| 11 | **Faz 8** CRM denetimi (AUD-001; denetimsiz sayı şu an **47**) | 2 | en sonda (karar) |
+| 12 | **W10** MDM marka entegrasyonu | 2–3 | MDM push sonrası, en sonda |
+| — | Takipler: FU-W3-OBJ-MLR (itiraz MLR), FU-W3-SLIDE-ASSET (slayt görseli), FU-W3-COVISITOR-LOOKUP (ortak ziyaretçi araması), W2 mobil notu (CT) | 3–4 | zamanı kullanıcı seçer |
+
+**Toplam kalan:**
+- W3'ün kalanı: 4–5 prompt.
+- Katmanlar: 3.
+- W4–W10 + Faz 8: 21–23.
+- Takipler: 3–4.
+- **≈ 31–35 prompt.**
+- Deneyime göre her 4–5 pakette bir düzeltme turu → **gerçekçi ≈ 36–40 prompt.**
+
+**Kritik yol:** W3-WEB-c / d → CFG → canlı E4 → **W4** (rapor). Mobilin rapor yazma işi W4 bitince açılır.

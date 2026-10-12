@@ -1108,4 +1108,10 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Accept Anyway</value>
   </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>Objection Library</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>Visit Evidence</value>
+  </data>
 </root>

@@ -329,3 +329,36 @@ Commit: "chore(crm): WP-VW-W3-CFG — workflow templates CRM-OBJ-RESP + CRM-VISI
 - **Gerekçe:** testlerde istisnayı Admin oluşturur; SoD gereği onaylayıcı başka biri olmalı.
 - W3-CFG şablonu `CRM-VISIT-EVIDENCE-EXC` adayı = POS-SALES-OPS.
 
+
+## §37 CT kabul — W3-BE-c E2 ACCEPTED (2026-10-12)
+
+**Kaynak:** kullanıcının ayrıca başlattığı ajan, tam kapsam `0927fab9e` (`wp/vw-w3-be-c`) → test dalına alındı.
+- CT'nin paralel parça 2'si (`8b76a01cf`, `wp/vw-w3-be-c2`) aynı işi tekrar ettiği için **birleştirilmedi** (dal yedek olarak kalır).
+- Parça 1 ajanı yazmadan durdu.
+
+**CT ölçümü:**
+- **CRM 2640/0/5.**
+- **Platform** CrmManifest / CrmVisit **66/0**.
+- **Gateway 111/1:** yalnız önceden var olan 5063–5065 kırmızısı; yeni rota testleri yeşil.
+- **Mimari:** denetimsiz **36 → 47**.
+- **Web 898/0** — CT düzeltmesiyle: `Nav.Page.OBJECTIONRESPONSES` ve `Nav.Page.VISITEVIDENCESETTINGS` 7 dilde eklendi, yeni görünür menü sayfaları için `NavManifestL10nGuardTests` kırmızısı kapandı.
+
+**CT kod okuması:**
+- **Ortak onay çekirdeği** `Features/Approvals/WorkflowApprovalCore.cs` (RegulatoryText deseni).
+- **Sonuç uygulayıcı:**
+  - onaylayan bilinmiyorsa uygulamaz (SoD atlanmaz);
+  - yazar / son düzenleyen / gönderen → `draft` + SoD nedeni;
+  - itirazda iddialar, istisnada çakışma onay anında yeniden denetlenir.
+- **Kimlik biçimi doğrulandı:** Workflow `ActionedBy` = düz kullanıcı kimliği (canlı `approval_tasks`), CRM `ActorName` = `sub` → SoD karşılaştırması gerçekten tutar.
+
+**CT sabotajı:** `WorkflowApprovalRules.IsOwn` hep "değil" yapıldı → **6 kırmızı** (karar ucu, uygulayıcı yazar / editör / gönderen, olay rotası, istisna); `.bak` + touch ile geri alındı.
+
+**Kabul edilen sapmalar:**
+- İtiraz listesi yanıtı `{ items, total, page, pageSize }`.
+- `productForm` hep null (MDM seçicide yok).
+- İstisna yalnız aktif birincil bölge ataması olan temsilciye.
+- Erken bitirme iptal alanlarını paylaşır.
+- `crm.objection-response.submit` anahtarı eklendi, APPROVE eylemi kaldırıldı.
+- Ek hata kodları: `objection_claim_product_mismatch`, `visit_evidence_exception_rep_unknown`.
+
+**Sıradaki:** W3-WEB-c ∥ W3-WEB-d (çalışma yeri test dalı başı) → W3-CFG.

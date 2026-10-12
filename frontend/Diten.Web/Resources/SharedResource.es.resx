@@ -1052,4 +1052,10 @@
   <data name="Loading" xml:space="preserve">
     <value>Cargando...</value>
   </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>Biblioteca de objeciones</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>Evidencias de visita</value>
+  </data>
 </root>

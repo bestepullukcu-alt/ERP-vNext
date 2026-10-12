@@ -1108,4 +1108,10 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Yine De Kabul Et</value>
   </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>İtiraz Kütüphanesi</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>Ziyaret Kanıtı</value>
+  </data>
 </root>
