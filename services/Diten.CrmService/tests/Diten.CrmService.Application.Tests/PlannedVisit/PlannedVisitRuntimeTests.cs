@@ -10,6 +10,7 @@ using Diten.CrmService.Application.Features.PlannedVisit.Handlers.QueryHandlers;
 using Diten.CrmService.Application.Features.PlannedVisit.Provenance;
 using Diten.CrmService.Application.Features.PlannedVisit.Queries;
 using Diten.CrmService.Domain.Entities;
+using Diten.CrmService.Application.Tests.VisitScope;
 using Xunit;
 using PlannedVisitEntity = Diten.CrmService.Domain.Entities.PlannedVisit;
 
@@ -51,6 +52,11 @@ public sealed class PlannedVisitRuntimeTests
 
         public Fixture(Guid? tenant = null) => TenantId = tenant ?? TenantA;
 
+        // WP-VP-2 — the caller (default: both read-all keys, so the pre-VP-2 tenant-wide behaviour is unchanged).
+        public ICallerScope Caller { get; set; } = TestCallerScope.Unrestricted();
+        public FixedProvenanceDeriver Deriver { get; } = new();
+        public VisitTargetNameReader Names() => new(Accounts, Contacts);
+
         private PlannedVisitWriteGuards Guards() => new(Accounts, Contacts, Links, Campaigns);
         private PlannedVisitFrequencyProbe FreqProbe() => new(Frequency);
         private PlannedVisitConsentProbe ConsentProbe() => new(Consent);
@@ -61,27 +67,27 @@ public sealed class PlannedVisitRuntimeTests
         {
             var t = tenant ?? TenantId;
             return new(Tenant(t), new NullActorContext(), Repo, Guards(), JourneyProbe(), FreqProbe(),
-                ConsentProbe(), AvailProbe(t));
+                ConsentProbe(), AvailProbe(t), Caller, new NullUserDisplayNameResolver(), Deriver);
         }
 
         public UpdatePlannedVisitHandler Update(Guid? tenant = null)
         {
             var t = tenant ?? TenantId;
             return new(Tenant(t), new NullActorContext(), Repo, Guards(), JourneyProbe(), FreqProbe(),
-                ConsentProbe(), AvailProbe(t));
+                ConsentProbe(), AvailProbe(t), Caller, new NullUserDisplayNameResolver(), Deriver);
         }
 
         public ConfirmPlannedVisitHandler Confirm(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Repo, ConsentProbe());
+            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Repo, ConsentProbe(), Caller);
 
         public CancelPlannedVisitHandler Cancel(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Repo);
+            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Repo, Caller);
 
         public ArchivePlannedVisitHandler Archive(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Repo);
+            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Repo, Caller);
 
-        public ListPlannedVisitsHandler List(Guid? tenant = null) => new(Tenant(tenant ?? TenantId), Repo);
-        public GetPlannedVisitByIdHandler Get(Guid? tenant = null) => new(Tenant(tenant ?? TenantId), Repo);
+        public ListPlannedVisitsHandler List(Guid? tenant = null) => new(Tenant(tenant ?? TenantId), Repo, Caller, Names());
+        public GetPlannedVisitByIdHandler Get(Guid? tenant = null) => new(Tenant(tenant ?? TenantId), Repo, Caller, Names());
         public GetPlannedVisitContractHandler Contract() => new(Tenant(TenantId));
 
         public Guid SeedAccount(string type = "clinic")
@@ -171,7 +177,8 @@ public sealed class PlannedVisitRuntimeTests
         var noTenant = new CreatePlannedVisitHandler(new TenantContext(), new NullActorContext(), f.Repo,
             new PlannedVisitWriteGuards(f.Accounts, f.Contacts, f.Links, f.Campaigns),
             new PlannedVisitJourneyProbe(f.Journeys), new PlannedVisitFrequencyProbe(f.Frequency),
-            new PlannedVisitConsentProbe(f.Consent), new PlannedVisitAvailabilityProbe(new TenantContext(), f.Availability));
+            new PlannedVisitConsentProbe(f.Consent), new PlannedVisitAvailabilityProbe(new TenantContext(), f.Availability),
+            f.Caller, new NullUserDisplayNameResolver(), f.Deriver);
         var r2 = await noTenant.Handle(Cmd(acc), default);
         Assert.Equal(400, r2.StatusCode);
     }
@@ -268,13 +275,18 @@ public sealed class PlannedVisitRuntimeTests
     }
 
     [Fact]
-    public async Task Create_campaign_not_found_is_400()
+    public async Task Create_ignores_a_client_campaign_and_writes_the_derived_one()
     {
+        // WP-VP-2 (B-3, K-3) — the client's campaignId is never validated or stored; the server-derived one is.
         var f = new Fixture();
         var acc = f.SeedAccount();
+        var derived = Guid.NewGuid();
+        f.Deriver.Campaign = derived;
         var r = await f.Create().Handle(Cmd(acc, campaignId: Guid.NewGuid()), default);
-        Assert.Equal(400, r.StatusCode);
-        Assert.Contains(PlannedVisitErrorCodes.CampaignNotFound, r.Errors!);
+        Assert.Equal(201, r.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        Assert.Equal(derived, row.CampaignId);
+        Assert.Equal(derived, row.Selection!.CampaignId);
     }
 
     [Fact]

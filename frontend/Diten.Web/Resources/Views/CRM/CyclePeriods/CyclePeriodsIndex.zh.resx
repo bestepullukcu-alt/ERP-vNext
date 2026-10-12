@@ -193,4 +193,5 @@
   <data name="SessionStatus_archived" xml:space="preserve"><value>已归档</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>查看详情</value></data>
   <data name="StatusLine" xml:space="preserve"><value>状态进程</value></data>
+  <data name="TodayActivePeriods" xml:space="preserve"><value>今日生效周期</value></data>
 </root>

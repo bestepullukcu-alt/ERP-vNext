@@ -1,0 +1,7 @@
+== K01: k01_source.py (HEAD archive + overlays)
+K01 PASS: head=4a8d4d4b339528a88e6220fb8402e5a2c771136c overlays=4 tree_manifest_sha256=a28253c09928d26d12955508796353c4528c087c196d19a4c6f7891c35f9383a
+== K03: k03_ports.py slot 8
+K03 FAIL: mongo:38994 IN-USE
+EK FAIL: phase failed: K03 (k03_ports.py slot 8)
+== UP FAILED (exit 1): abort path (supervisor abort + K11 cleanup)
+K11 skipped by lane rule (no rm); services stopped by supervisor abort

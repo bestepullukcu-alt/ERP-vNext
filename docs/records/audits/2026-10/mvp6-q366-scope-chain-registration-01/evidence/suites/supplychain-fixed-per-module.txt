@@ -1,0 +1,8 @@
+Shipments      Failed: 0, Passed: 90, Skipped: 0, Total: 90
+Carriers       Failed: 0, Passed: 36, Skipped: 0, Total: 36
+Loads          Failed: 0, Passed: 33, Skipped: 0, Total: 33
+Returns        Failed: 0, Passed: 78, Skipped: 0, Total: 78
+Claims         Failed: 1, Passed: 128, Skipped: 0, Total: 129
+SandopPlans    Failed: 0, Passed: 19, Skipped: 0, Total: 19
+CapacityPlans  Failed: 0, Passed: 48, Skipped: 0, Total: 48
+Passed!  - Failed:     0, Passed:     2, Skipped:     0, Total:     2, Duration: 2 ms - Diten.SupplyChainService.Tests.dll (net8.0)

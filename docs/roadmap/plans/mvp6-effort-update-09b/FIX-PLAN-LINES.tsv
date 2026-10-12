@@ -1,0 +1,17 @@
+id	module	category	deliverable	state	optimistic_hours	most_likely_hours	pessimistic_hours	q101b_status	severity
+FP-F01	SHARED	Entegrasyon	Working-tree SupplyChain composition (Program.cs + 92 accepted files)	REMAINING	4	8	16	PARTIAL	HIGH
+FP-F02	0185	Test/VER	Loads runtime probe signing secret	REMAINING	0.5	1	2	PARTIAL	HIGH
+FP-F03	0185	Backend	MOD-0185 self-registration provider	REMAINING	2	4	8	OPEN	HIGH
+FP-F04	SHARED	Test/VER	add-module Phases 5 and 6 never dispatched	REMAINING	56	98	154	OPEN	HIGH
+FP-F05	SHARED	Pack/tasarım	Prompts before Q93 v2 lacked §17.1 / §17.3 / §17.4; add-module entry point not used	REMAINING	2	4	6	PARTIAL	MEDIUM
+FP-F06	SHARED	Frontend	verify_datatable_page.py static result on a /tmp composed tree	REMAINING	2	4	8	PARTIAL	MEDIUM
+FP-F07	SHARED	Entegrasyon	Phase 3.5 gateway, nav keys and Program.cs registration only as proposals	REMAINING	3	6	12	OPEN	MEDIUM
+FP-F08	0185	Backend	Loads module code style	REMAINING	3	6	10	OPEN	MEDIUM
+FP-F09	SHARED	Backend	Module-local permission attributes	REMAINING	2	4	8	OPEN	MEDIUM
+FP-F10	SHARED	Test/VER	Evidence kit v1.2 installed but not validated	REMAINING	2	4	8	PARTIAL	MEDIUM
+FP-F11	SHARED	Test/VER	Source archives without a CT verdict; secrets inside archives	REMAINING	2	3	6	OPEN	MEDIUM
+FP-F12	SHARED	Test/VER	Build output inside the repo	REMAINING	0.25	0.5	1	OPEN	LOW
+FP-F13	SHARED	Frontend	PageDescription key naming (S&OP, Capacity)	REMAINING	0.5	1	2	OPEN	LOW
+FP-F14	SHARED	Entegrasyon	Port 5061 and test Mongo 27785 not in ports.md	REMAINING	0.25	0.5	1	OPEN	LOW
+FP-F15	SHARED	Test/VER	Draft .cs under docs/records is scanned by repo-wide architecture guards	REMAINING	0.5	1	2	PARTIAL	LOW
+FP-F16	SHARED	Pack/tasarım	Phase 1.5 approvals recorded after the drafts	DELIVERED	0	0	0	CLOSED	LOW

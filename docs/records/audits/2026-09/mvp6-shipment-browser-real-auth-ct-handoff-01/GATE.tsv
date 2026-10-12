@@ -1,0 +1,7 @@
+gate	required	observed	status	evidence
+root_r2_applied_source	Three target hashes applied	All three current hashes equal recorded preimages	FAIL	../mvp6-shipment-root-r2-emission-rework-01/TARGET-MANIFEST.tsv
+root_r2_independent_runtime	Independent runtime PASS on applied target	independent_ver=NOT_RUN	FAIL	../mvp6-shipment-root-r2-emission-rework-01/ACCEPTANCE.tsv
+iab_localhost_fresh	Fresh check before Auth/browser execution	Not run because prior gates failed	NOT_RUN	SOP-22.md
+fresh_real_auth	Fresh session; no token archival	Not run	NOT_RUN	SOP-22.md
+shipment_browser_matrix	List/create/detail/transition/POD	Not run	NOT_RUN	SOP-22.md
+persistent_png	Documented save/export only	No fresh attempt; remains OPEN	OPEN	../mvp6-browser-evidence-environment-recovery-01/ENVIRONMENT-HANDOFF.md

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>S&amp;OP Planları</value></data>
+  <data name="PlanId" xml:space="preserve"><value>Plan Kimliği</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Plan Adı</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Ufuk Başlangıcı</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Ufuk Bitişi</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>Talep Planı Kimliği</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Talep Planı Sürümü</value></data>
+  <data name="Status" xml:space="preserve"><value>Plan Durumu</value></data>
+  <data name="Status.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Status.InReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="Status.Approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="Status.Rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="Status.Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Belirtilmemiş</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Panoya kopyalandı.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Önceki istek hâlâ işleniyor.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Tüm zorunlu alanları doldurun.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>İstek geçerli değil. Girdileri kontrol edip yeniden deneyin.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>İstek izlenemedi. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden oturum açın.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ErrUnknownSandopPlan" xml:space="preserve"><value>Bu S&amp;OP planı bulunamadı veya size açık değil.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>Bu ufuk ve talep planı sürümü için zaten bir S&amp;OP planı var.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>Planın durumu artık anlık görüntü almaya izin vermiyor. Plan yeniden yüklendi.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>Planın durumu artık onay kaydına izin vermiyor. Plan yeniden yüklendi.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>Bu rol ve anlık görüntü için zaten bir karar kaydedilmiş.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten kullanıldı. Yeni bir istek göndermek için girdileri değiştirin.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>Talep planı referansı bilinmiyor veya yayımlanmamış.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>Seçilen anlık görüntü bu plana ait değil.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Hizmet geçici olarak kullanılamıyor. Yeniden deneyin; aynı istek gönderilecek.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Sonuç doğrulanamadı. Yeniden deneyin; aynı istek gönderileceği için hiçbir şey iki kez kaydedilmez.</value></data>
+  <data name="PlanDetailsTitle" xml:space="preserve"><value>S&amp;OP Planı</value></data>
+  <data name="BackToPlans" xml:space="preserve"><value>S&amp;OP Planlarına dön</value></data>
+  <data name="PlanSummary" xml:space="preserve"><value>Plan Özeti</value></data>
+  <data name="Horizon" xml:space="preserve"><value>Planlama Ufku</value></data>
+  <data name="DemandReference" xml:space="preserve"><value>Talep Referansı</value></data>
+  <data name="CurrentSnapshot" xml:space="preserve"><value>Geçerli Anlık Görüntü</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma Zamanı</value></data>
+  <data name="SummaryErrorState" xml:space="preserve"><value>Plan yüklenemedi.</value></data>
+  <data name="Snapshots" xml:space="preserve"><value>Girdi Anlık Görüntüleri</value></data>
+  <data name="SnapshotId" xml:space="preserve"><value>Anlık Görüntü Kimliği</value></data>
+  <data name="CaptureSnapshot" xml:space="preserve"><value>Anlık Görüntü Al</value></data>
+  <data name="CaptureSnapshotTitle" xml:space="preserve"><value>Girdi Anlık Görüntüsü Al</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Kaynak Alınma Zamanı</value></data>
+  <data name="SourceCapturedAtHelp" xml:space="preserve"><value>UTC tarih ve saat, örneğin 2026-09-26T12:00:00Z.</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Kaynak Sağlama Toplamı</value></data>
+  <data name="SupplyInputRefs" xml:space="preserve"><value>Tedarik Girdisi Referansları</value></data>
+  <data name="SupplyInputRefsHelp" xml:space="preserve"><value>İsteğe bağlı. Her satırda kaynak sistem, kaynak öğe kimliği ve kaynak öğe sürümü gerekir; satırlar gösterilen sırayla gönderilir.</value></data>
+  <data name="SupplyInputRefCount" xml:space="preserve"><value>Tedarik Referansları</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>Kaynak Öğe Kimliği</value></data>
+  <data name="ResourceVersion" xml:space="preserve"><value>Kaynak Öğe Sürümü</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Satır Ekle</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Satırı kaldır</value></data>
+  <data name="RowIncomplete" xml:space="preserve"><value>Her tedarik referansı satırını tamamlayın veya kaldırın.</value></data>
+  <data name="CapturedAt" xml:space="preserve"><value>Alınma Zamanı</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Talep Kaynağı Bilgisi</value></data>
+  <data name="CurrentMarker" xml:space="preserve"><value>Geçerli</value></data>
+  <data name="EmptySnapshots" xml:space="preserve"><value>Bu plan için henüz anlık görüntü alınmadı.</value></data>
+  <data name="SnapshotsErrorState" xml:space="preserve"><value>Anlık görüntüler yüklenemedi.</value></data>
+  <data name="SnapshotCaptured" xml:space="preserve"><value>Anlık görüntü alındı.</value></data>
+  <data name="SignOffs" xml:space="preserve"><value>Onaylar</value></data>
+  <data name="RecordSignOff" xml:space="preserve"><value>Onay Kaydet</value></data>
+  <data name="RecordSignOffTitle" xml:space="preserve"><value>Onay Kararını Kaydet</value></data>
+  <data name="Snapshot" xml:space="preserve"><value>Girdi Anlık Görüntüsü</value></data>
+  <data name="Role" xml:space="preserve"><value>Onay Rolü</value></data>
+  <data name="Role.DemandPlanning" xml:space="preserve"><value>Talep Planlama</value></data>
+  <data name="Role.SupplyPlanning" xml:space="preserve"><value>Tedarik Planlama</value></data>
+  <data name="Role.Finance" xml:space="preserve"><value>Finans</value></data>
+  <data name="Role.Operations" xml:space="preserve"><value>Operasyon</value></data>
+  <data name="Role.Executive" xml:space="preserve"><value>Yönetim</value></data>
+  <data name="Decision" xml:space="preserve"><value>Onay Kararı</value></data>
+  <data name="Decision.Approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="Decision.Rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="Comment" xml:space="preserve"><value>Karar Açıklaması</value></data>
+  <data name="CommentHelp" xml:space="preserve"><value>İsteğe bağlı, en fazla 2000 karakter.</value></data>
+  <data name="CommentTooLong" xml:space="preserve"><value>Açıklama en fazla 2000 karakter olabilir.</value></data>
+  <data name="DecidedBy" xml:space="preserve"><value>Karar Veren</value></data>
+  <data name="DecidedAt" xml:space="preserve"><value>Karar Zamanı</value></data>
+  <data name="ConfirmSignOff" xml:space="preserve"><value>Karar kesindir; bu rol ve anlık görüntü için değiştirilemez.</value></data>
+  <data name="SignOffRecorded" xml:space="preserve"><value>Onay kaydedildi.</value></data>
+  <data name="EmptySignOffs" xml:space="preserve"><value>Bu plan için henüz onay kaydedilmedi.</value></data>
+  <data name="SignOffsErrorState" xml:space="preserve"><value>Onaylar yüklenemedi.</value></data>
+  <data name="SignOffStatusNote" xml:space="preserve"><value>Onay kaydetmek plan durumunu değiştirmez.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Yeniden Dene</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Bir seçenek belirleyin</value></data>
+</root>

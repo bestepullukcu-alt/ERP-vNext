@@ -18,6 +18,8 @@
     var culture = CultureInfo.CurrentCulture;
     string N(int? v) => v.HasValue ? v.Value.ToString("N0", culture) : "—";
     string F(decimal? v) => v.HasValue ? v.Value.ToString("N2", culture) : "—";
+    // WP-CYC-UI-FIX-2 — days are written as ISO and formatted by the ONE cycle date formatter (cycle-dates.js).
+    string IsoDay(DateTimeOffset value) => value.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     string MonthName(int year, int month) => new DateTime(year, month, 1).ToString("MMM yyyy", culture);
     string HoursHint(int? minutes) => minutes.HasValue
         ? Localizer["HoursMinutesFormat"].Value.Replace("{h}", (minutes.Value / 60).ToString("N0", culture)).Replace("{m}", (minutes.Value % 60).ToString("N0", culture))
@@ -90,7 +92,7 @@
             @if (period is not null)
             {
                 <div class="text-muted small mt-1">
-                    @period.CycleName · @period.StartDate.UtcDateTime.ToString("d", culture) – @period.EndDate.UtcDateTime.ToString("d", culture)
+                    @period.CycleName · <span data-day="@IsoDay(period.StartDate)">@IsoDay(period.StartDate)</span> – <span data-day="@IsoDay(period.EndDate)">@IsoDay(period.EndDate)</span>
                     · <a href="/CRM/CyclePeriods/Details/@period.CyclePeriodId">@Localizer["GoToPeriod"]</a>
                 </div>
             }
@@ -378,7 +380,7 @@
                                     <tr>
                                         <td>@(string.IsNullOrWhiteSpace(s.Name) ? "—" : s.Name)</td>
                                         <td>@(string.IsNullOrWhiteSpace(s.OwnerDisplayName) ? "—" : s.OwnerDisplayName)</td>
-                                        <td><span class="badge bg-label-secondary">@(s.Status ?? "—")</span></td>
+                                        <td><span class="badge bg-label-secondary" data-session-status="@s.Status">@Localizer[CycleCapacitySessionStatus.LabelKey(s.Status)]</span></td>
                                         <td class="text-end">@N(s.CommittedVisitCount)</td>
                                     </tr>
                                 }
@@ -582,3 +584,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/assets/js/CRM/cycle-dates.js" asp-append-version="true"></script>
+}

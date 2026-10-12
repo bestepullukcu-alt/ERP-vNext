@@ -1,0 +1,287 @@
+{
+  "phase": "uipm",
+  "locale": "en",
+  "startedAt": "2026-09-30T20:38:03.598Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "UI-PM-05": {
+      "result": "PASS",
+      "during": {
+        "display": "block",
+        "height": 268,
+        "opacity": "1",
+        "tableHidden": true
+      },
+      "after": "none",
+      "faked": "delay only (real response)",
+      "evidence": [
+        "png/uipm05-skeleton-visible-en-2.png",
+        "png/uipm05-list-loaded-en-2.png"
+      ]
+    },
+    "UI-PM-12": {
+      "result": "PASS",
+      "out": {
+        "fail500": {
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "tableHidden": true,
+          "message": "The shipment reference data is temporarily unavailable. Try the same request again.",
+          "referenceShown": true,
+          "rawErrorInPage": false,
+          "retryRequest": true,
+          "retryStatus": 200,
+          "tableVisibleAfterRetry": true,
+          "errorHiddenAfterRetry": true
+        },
+        "malformed": {
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "tableHidden": true,
+          "message": "An unexpected error occurred. You can retry the same action.",
+          "referenceShown": true,
+          "rawErrorInPage": false,
+          "retryRequest": true,
+          "retryStatus": 200,
+          "tableVisibleAfterRetry": true,
+          "errorHiddenAfterRetry": true
+        }
+      },
+      "faked": "list 500 and list 200 {\"unexpected\":true} via route.fulfill; retry hits the real service",
+      "evidence": [
+        "png/uipm12-fail500-error-en-2.png",
+        "png/uipm12-fail500-after-retry-en-2.png",
+        "png/uipm12-malformed-error-en-2.png",
+        "png/uipm12-malformed-after-retry-en-2.png"
+      ]
+    },
+    "UI-PM-09": {
+      "result": "PASS",
+      "out": {
+        "escape": {
+          "enterOpensPanel": false,
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": null,
+            "tag": "BUTTON",
+            "inCreate": false,
+            "inTransition": false,
+            "classes": "btn add-new btn-primary shadow-none",
+            "text": "Add Return"
+          }
+        },
+        "close-button": {
+          "enterOpensPanel": false,
+          "focusInsideOnShown": true,
+          "afterHidden": {
+            "id": null,
+            "tag": "BUTTON",
+            "inCreate": false,
+            "inTransition": false,
+            "classes": "btn add-new btn-primary shadow-none",
+            "text": "Add Return"
+          }
+        }
+      },
+      "scope": "r2 / OD-F-Q145-1 / OD-Q164-09: stable opener = Add; row-menu surfaces exempt",
+      "evidence": [
+        "png/uipm09-add-focus-returned-en.png"
+      ]
+    },
+    "UI-PM-10": {
+      "result": "PASS",
+      "out": {
+        "status": 422,
+        "errorCode": "RETURN_QUANTITY_EXCEEDED",
+        "panelOpen": true,
+        "focus": {
+          "id": "btnSaveReturn",
+          "tag": "BUTTON",
+          "inCreate": true,
+          "inTransition": false,
+          "classes": "btn btn-primary",
+          "text": "Create Return"
+        },
+        "alert": "The return quantity exceeds the shipped quantity still open for return.\nSupport reference: c140be46-c167-415b-b181-10ca30dcef3b",
+        "resolve": {
+          "resolveStatus": 200,
+          "shipmentStatus": "Delivered",
+          "lines": 1,
+          "saveEnabled": true
+        },
+        "escapeClosed": true,
+        "afterEscape": {
+          "id": null,
+          "tag": "BUTTON",
+          "inCreate": false,
+          "inTransition": false,
+          "classes": "btn add-new btn-primary shadow-none",
+          "text": "Add Return"
+        }
+      },
+      "exempt": "transition submit is reached through window.showConfirm (OD-F-Q145-1); not asserted",
+      "evidence": [
+        "png/uipm10-create-422-focus-inside-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "uipm05-skeleton-visible-en-2.png",
+      "sha256": "e8890c013d85c906fcdfe2510a7574f1cfcb0a7dee2651da21eb23180c8ad36e",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:06.692Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm05-list-loaded-en-2.png",
+      "sha256": "c22df7dfaf9b15501c4a08dfe36f4b088f945bc3f6366bad71faab608b061c97",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:10.334Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-fail500-error-en-2.png",
+      "sha256": "1c251ff75d0def5ee16dd0f0a9d2ee62123c7ad3e8fc36ecfabf632185185293",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:13.869Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-fail500-after-retry-en-2.png",
+      "sha256": "77856f9e25d93914d3a8fe6fb6edd3e4bce8959b4fddbb6103b6f8cb7bd6b9ed",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:15.023Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-malformed-error-en-2.png",
+      "sha256": "e434c04e82afee863d62233928c9bee21efaa9abda60e8914267de51bb3bcf2c",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:17.198Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-malformed-after-retry-en-2.png",
+      "sha256": "77856f9e25d93914d3a8fe6fb6edd3e4bce8959b4fddbb6103b6f8cb7bd6b9ed",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:18.186Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm09-add-focus-returned-en.png",
+      "sha256": "e1effa9641e81c310ca245d33033920388ee913cdc4eb350f3d3c1a6d171e173",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:27.198Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm10-create-422-focus-inside-en.png",
+      "sha256": "1f3039a5f186664844c3be7db1d1b346c0964ca7d5e1ef0a6e92a10e5f4a791f",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:38:30.928Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "uipm-en-pm12-fail500",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "uipm-en-pm05",
+      "at": "2026-09-30T20:38:09.144Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-fail500",
+      "at": "2026-09-30T20:38:12.640Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 500,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-fail500",
+      "at": "2026-09-30T20:38:14.232Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-malformed",
+      "at": "2026-09-30T20:38:16.068Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-malformed",
+      "at": "2026-09-30T20:38:17.351Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm09",
+      "at": "2026-09-30T20:38:19.183Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-09-30T20:38:28.278Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-09-30T20:38:29.869Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api/shipments/489b040d-5181-49d3-ae0d-540b41939827",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm10",
+      "at": "2026-09-30T20:38:30.059Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api",
+      "status": 422,
+      "errorCode": "RETURN_QUANTITY_EXCEEDED",
+      "idempotencyKey": true
+    }
+  ],
+  "shellFonts": 10,
+  "endedAt": "2026-09-30T20:38:31.531Z"
+}

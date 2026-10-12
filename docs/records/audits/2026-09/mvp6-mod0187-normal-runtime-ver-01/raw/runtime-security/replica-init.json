@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"ok\":1,\"$clusterTime\":{\"clusterTime\":{\"$timestamp\":\"7688252087045455873\"},\"signature\":{\"hash\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"keyId\":{\"low\":0,\"high\":0,\"unsigned\":false}}},\"operationTime\":{\"$timestamp\":\"7688252087045455873\"}}\n",
+  "stderr": ""
+}

@@ -11,7 +11,7 @@
   Optional:
       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
 
-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
+  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
   every record is closed with ARCHIVE. It asserts no DELETE/PATCH surface exists, no flat
   /content-engagement-journey-stages family (S2), that stages are embedded (single-document writes), publish is a
   separate endpoint (SoD), new-version clones with REMAPPED stage references, the path-binding guard (published +
@@ -30,7 +30,7 @@
 param(
     [string]$BaseUrl   = "http://localhost:5000",
     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
-    [string]$CrmDirect = "http://localhost:5061"
+    [string]$CrmDirect = "http://localhost:5065"
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,7 +58,7 @@ $nowIso  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
 Write-Host "== MOD-0162-FU05 authenticated content-engagement-journey smoke ($run) ==" -ForegroundColor Cyan
 
-foreach ($p in @(5000,5061)) {
+foreach ($p in @(5000,5065)) {
     $code = Status "http://localhost:$p/"
     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
 }

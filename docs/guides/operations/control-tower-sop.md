@@ -1,16 +1,42 @@
-# CONTROL TOWER — Çalışma Yöntemi (SOP) v2.4
+# CONTROL TOWER — Çalışma Yöntemi (SOP) v2.5
 ## Evidence-Preserving, Repository-Valid Delivery Control Plane — Agent Lane Model
 
 **Belge durumu:** Proposed canonical SOP  
-**Sürüm:** 2.4  
-**Önceki sürüm:** v2.3  
+**Sürüm:** 2.5  
+**Önceki sürüm:** v2.4  
 **Amaç:** ERP-vNext için capability → module → work-package yürütmesini; canonical authority, measured code/runtime reality, dependency gates, Agent Lane parallel development, prompt lifecycle, runtime verification, integration ve yeniden planlama ile tek bir kontrollü çalışma modelinde yönetmek.
 
 ---
 
 ## 0. Sürüm kontrolü
 
-### 0.1 v2.4'te eklenen dispatch-adresleme kontrolleri
+### 0.1 v2.5'te eklenen ledger-row, base-stack ve lane-template kontrolleri
+
+v2.4 is kept; only the additions below are made. Authority: owner decisions OD-R8, OD-R9 and OD-R11 (27 Sep 2026) on
+Q139 recommendations 8, 9 and 11; written by WP Q141, applied after independent VER.
+Measurement (Q139 `METRICS.tsv`): 12 CT-QUEUE rows were missing at dispatch or added late (C0); Mac WPs carried per-row
+build recipes instead of one declared stack; 7 WPs needed a re-issued prompt, and 6 of the 11 recorded STOP/BLOCKED
+events happened at the lane-placement gate (C9, C10).
+
+1. **Ledger-row gate (R8):** §17.1 and the §36 record carry `CT-QUEUE Row (exact text)`. The §20 preflight checks that
+   the WP row exists in CT-QUEUE; if it does not, the WP stops (§20.1).
+2. **Base-stack field (R9):** §17.1 and the §36 record carry `Base Stack` (BASE-STACK record path + SHA256). It is
+   required for every Mac build/test/runtime WP.
+3. **Lane-typed prompt templates (R11):** §36.2 adds four v1 templates: T1 LANE writer, T2 Mac build/test, T3 VER and
+   T4 ledger writer. Each starts with NEREDE / NE İLE and the placement gate, and carries pre-filled §17.1, §17.3 and
+   §17.4 blocks.
+4. **Dispatch workflow:** `.antigravity/workflows/dispatch-wp.md` selects the template and runs the dispatch gates
+   before CT issues a prompt.
+
+Revision r2 (WP Q162, findings of the independent VER Q142):
+
+- **F-Q142-1:** the Mac place name in T2 NEREDE, in the runtime branch of T3 NEREDE and in dispatch-wp G2 follows OD-PLACE:
+  "Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code)"; Terminal is not required.
+- **F-Q142-2:** no BASE-STACK version is fixed in the SOP. The §17.1 "Current at v2.5" pointer and the fixed layer chain in T2
+  are removed. T2 takes the record path, SHA256 and layer chain as written in the cited record. The rule is unchanged: one
+  versioned BASE-STACK record + SHA256 (K4).
+
+### 0.2 v2.4'te eklenen dispatch-adresleme kontrolleri
 
 v2.3 korunmuş; prompt üretiminin **hedef ajanı adreslememesi** boşluğu kapatılmıştır.
 Ölçüm: §6 entry-point tablosu belgede bir kez tanımlanıp akışın hiçbir adımından çağrılmıyordu;
@@ -26,7 +52,7 @@ CLASSIFY çıktısı, PLAN kolonları, DoR, §17.1 metadata ve §36 template'in 
 
 Daily Operating Card aynı turda hizalandı (§1, §3).
 
-### 0.2 v2.3'te eklenen geçerlilik ve adoption kontrolleri
+### 0.3 v2.3'te eklenen geçerlilik ve adoption kontrolleri
 
 v2.2 korunmuş; aşağıdaki üç adoption riski kapatılmıştır:
 
@@ -43,7 +69,7 @@ v2.2 korunmuş; aşağıdaki üç adoption riski kapatılmıştır:
 5. **Agent usage guide adoption gap:** parallel Agent Lane / worktree konusu için guide'a eklenecek minimum cross-reference tanımlanmıştır.
 6. **Repository adoption gate:** SOP'un canonical ilanından önce referans-resolvability ve companion-link kontrolü eklendi.
 
-### 0.3 v2.2'de eklenen ana kontroller
+### 0.4 v2.2'de eklenen ana kontroller
 
 v2.1 korunmuş ve Agent Lane terminolojisi canonical hale getirilmiştir:
 
@@ -59,7 +85,7 @@ v2.1 korunmuş ve Agent Lane terminolojisi canonical hale getirilmiştir:
 8. CONTROL TOWER dashboard ve canonical templates Agent Lane alanlarıyla güncellendi.
 9. Ana workflow `CONTROL TOWER → Agent Lanes → Verification/Integration → CONTROL TOWER` olarak standardize edildi.
 
-### 0.4 v2.1'de eklenen ana kontroller
+### 0.5 v2.1'de eklenen ana kontroller
 
 v2.0 korunmuş ve aşağıdaki boşluklar kapatılmıştır:
 
@@ -810,6 +836,7 @@ Paralellik varsa en az iki executable prompt üretmek hedeflenir; güvenli deği
 Work Package ID:
 Prompt ID:
 Prompt Version:
+CT-QUEUE Row (exact text):   # v2.5 R8 — row as in CT-QUEUE.tsv; no row → no dispatch (§20.1)
 
 Capability Block:
 Module:
@@ -824,6 +851,7 @@ Target Branch:
 Expected Base HEAD:
 Worktree:
 Dirty-worktree baseline:
+Base Stack:                  # v2.5 R9 — BASE-STACK record path + SHA256; required for Mac build/test/runtime WPs, else n/a
 
 Depends On:
 Parallel-Safe With:
@@ -842,6 +870,14 @@ Protected Paths:
 Golden-Flow Profile:
 A | B | C
 ```
+
+**v2.5 rules for the two new fields**
+
+- `CT-QUEUE Row (exact text)` is copied from `CT-QUEUE.tsv` at dispatch. The single ledger writer appends the row
+  before the WP starts. CT does not dispatch a WP whose row does not exist (R8; §20.1).
+- `Base Stack` names one versioned BASE-STACK record and its SHA256 (K4: a changed stack is a new file, never an edit).
+  It is required for Mac build/test/runtime WPs; other WPs write `n/a`. The Mac lane checks the record folder's
+  `SHA256SUMS` and the quoted hash before composing, and writes any deviation in its report (R9).
 
 ## 17.2 Prompt çekirdeği
 
@@ -1118,6 +1154,7 @@ Staged files:
 Unstaged relevant files:
 Untracked relevant files:
 Unrelated dirty inventory:
+CT-QUEUE row present:        # v2.5 R8 — yes / no (the WP ID at line start in CT-QUEUE.tsv)
 ```
 
 ## 20.1 Stop conditions
@@ -1130,6 +1167,7 @@ Aşağıdakilerde fail-closed:
 - overlapping dirty files,
 - protected path değişikliği gerekiyor ama approval yok,
 - dependency unsatisfied,
+- WP row missing in CT-QUEUE (v2.5 R8),
 - pack draft,
 - missing/ambiguous contract,
 - ownership conflict,
@@ -1686,6 +1724,67 @@ Acceptance/rework sonrası build plan, dependency gates ve newly-unblocked work 
 
 ---
 
+### K22 — Lane closure, workspace'i de kapsar
+
+Lane evidence record mühürlenmeden önce lane'e ait süreçler kontrollü biçimde durdurulur,
+tahsis edilmiş portlar serbest bırakılır ve evidence-retention kapsamı dışındaki
+workspace / source / build / env / secrets / database artifact'ları kaldırılır. Cleanup
+**yalnız lane-owned** PID ve kaynaklara uygulanır. Sonuç doğrulanır ve closure evidence'a
+yazılır.
+
+Bağlayıcı olan sıra değil, üç değişmezdir:
+
+1. **Kanıt workspace'in dışında yaşar.** Bu bir tercih değil önkoşuldur; sağlanırsa temizliğin
+   mühürlemeden önce ya da sonra gelmesi önemsizdir. (Kanıt kiti bunu zaten böyle kuruyor:
+   `EK_WORK` tek kullanımlık bir tmp yolu, `EK_EVIDENCE` repo içindeki kayıt klasörü,
+   `lane.env.example:19-20,36`.)
+2. **Temizlik doğrulanır.** Silme denemesi değil, yokluk ölçülür ve sonuç kayda yazılır.
+3. **Doğrulanmamış ya da başarısız temizlik closure'ı bloke eder.** Bir lane workspace'i
+   diskte dururken CLOSED olamaz.
+
+> **CT'NİN KENDİ HATASI, aynı gün:** CT bu kuralı önce `seal → … → cleanup` sırasıyla yazdı ve
+> gerekçesini "kanıtı üretmeden silen lane hiçbir şey kanıtlamamış olur" diye kurdu. Bu gerekçe
+> kanıtın workspace'te yaşayabileceğini varsayar; kit tasarımında yaşayamaz ve `lane.env.example:36`
+> bunu zorunlu kılar. Sıra yanlış şeydi; değişmez yukarıdaki üçü. Ledger Q412.
+
+"Workspace'i kaldır" **tek başına yazılmaz**: bir ajan klasörü silerken başka bir lane'in
+workspace'ine ya da hâlâ çalışan bir sürece dokunabilir. Sahiplik doğrulaması kuralın
+parçasıdır, eki değil.
+
+> **MEASURED CASE 2026-10-04:** `~/mvp6-env` 57 klasör ve 73 GB taşıyordu. `k11_cleanup.sh`
+> tam olarak bu işi yapıyor ve `run-kit.sh:30,:73` onu çağırıyor, ama 15 kit fazının hepsi
+> `CANDIDATE — NOT ACTIVE`. 20 ajan sözleşmesinin hiçbirinde temizlik yükümlülüğü yoktu ve
+> §39 Closure checklist'inin altı maddesi çalışma alanından hiç söz etmiyordu. CT kendi
+> dispatch'lerinde "süreçlerini durdur, portlarını boşalt" dedi, "workspace'ini kaldır"
+> sıfır kez. Hiçbir lane kusurlu değildi: yükümlülük yoktu. Ledger Q407.
+
+### K23 — Implemented ≠ wired ≠ active ≠ evidenced
+
+Bir control'ün repoda bulunması, hatta doğru implement edilmiş ve execution path'e bağlanmış
+olması, onun **enforce edildiği** anlamına gelmez. Control durumu `EXISTS / NOT EXISTS`
+ikilisiyle raporlanamaz.
+
+Canonical lifecycle:
+
+`DEFINED → IMPLEMENTED → WIRED → ACTIVATED → EXECUTED → EVIDENCED`
+
+Kabul kriteri **EVIDENCED**'dır: control son lane run'ında çalıştı ve kanıt üretti. CT'nin
+acceptance sorusu "script var mı?" değil, **"control execution path'te ACTIVE mi ve son
+lane run'ında evidence üretti mi?"**dir.
+
+Bir control'ü doğrudan `CANDIDATE → ACTIVE` ilan etmek yasaktır. Araya **QUALIFICATION** ve
+**PILOT** girer; pilot lane control'ü baştan sona çalıştırmadan ACTIVE statüsü verilmez.
+
+> **MEASURED CASE 2026-10-04 — beş vaka, tek kök.** Aynı gün beş ayrı control "yazılmış,
+> doğru ve erişilemez" bulundu: Q217/Q236 komposisyona girmemiş modüllerin MediatR
+> handler'ları · Q271/Q272 Returns ve Claims çözülebilir ama erişilemez · Q363 scope
+> zinciri hiçbir yerde kayıtlı değil · Q387 `WarehouseIntakeCoordinator` hiçbir şeyin
+> istemediği bir sınıf ve `IEventTransportPublisher` bu serviste hiç implement edilmemiş ·
+> Q407 kanıt kitinin 15 fazı da NOT ACTIVE, 0 kit çıktısına karşı 7 lane-local harness.
+> Bu, §18.0'ın operational-looking shell yasağının engineering control'lere uygulanmış
+> hâlidir: **control shell de completion değildir.** Ledger Q409.
+
+
 # 33. Yeni module/capability devralma — Day 1
 
 ```text
@@ -1759,6 +1858,7 @@ WORK PACKAGE
 WP ID:
 Prompt ID:
 Prompt Version:
+CT-QUEUE Row (exact text):
 Task Class:
 Golden-Flow Profile:
 Risk Class:
@@ -1784,6 +1884,7 @@ Repository:
 - Expected HEAD:
 - Worktree:
 - Dirty baseline:
+- Base stack (Mac WPs; v2.5 R9):
 
 Dependencies:
 - Depends on:
@@ -1891,6 +1992,220 @@ Senin PASS'in kapanış değildir (K13).
 ```
 
 `Repository:` alanı **ölçülmüş** değerdir; başka makineden kalan mutlak yol kopyalanmaz (§20 preflight).
+
+## 36.2 Lane-typed prompt templates (v1)
+
+§36.1 is the prompt skeleton. §36.2 adds one ready template per lane type (R11). CT picks the template with
+`.antigravity/workflows/dispatch-wp.md`, fills the `{…}` fields and pastes the block as the prompt. A prompt names its
+template and version (`Template T1 v1`). A template change is a new version, recorded in §0.
+
+| Template | Lane type | Where it runs | Writes |
+|---|---|---|---|
+| T1 LANE writer | DEV (overlay / patch / record) | Cowork LANE (Linux VM), repo via bridge | a new evidence folder only |
+| T2 Mac build/test | DEV or VER with build / test / runtime | Mac Claude Code | a new `~/mvp6-env/<lane>/` folder + a new evidence folder |
+| T3 VER | VER (independent) | a different chat from the writer: Cowork for static VER, Mac for runtime VER | its own VER folder only |
+| T4 ledger writer | DEV (records + ledgers) | Cowork LANE, the single ledger writer of that dispatch | `CT-QUEUE.tsv` + `MILESTONE-EVENTS.tsv` (append only) + one new record |
+
+**Rules common to all four templates**
+
+- Preflight starts with the ledger-row gate: the WP row must exist in CT-QUEUE, else STOP (R8).
+- Every git command runs with `GIT_OPTIONAL_LOCKS=0`. The only git command a lane uses to inspect the tree is
+  `git status --porcelain`; `git diff` is not used. If `.git/index.lock` exists → STOP; the lane does not remove it.
+- LANE writers do not edit the working tree. Code leaves a LANE as an overlay archive or a patch inside its evidence
+  folder.
+- The only writers in the repository are CT-dispatched LANEs (.antigravity) and Mac Claude Code. No Codex thread or
+  other tool writes (OD-CODEX). A lane that sees another writer stops and reports.
+- The known baseline is stated as one line and is not drift. Current at v2.5: 29 modified tracked paths (the 19 known +
+  the 10 UC-01 files) + 2 untracked UC-01 files (`PlatformMongoTestConnection.cs`, `PlatformMongoTestConnectionTests.cs`);
+  do not touch (OD-UC01).
+- No rm, no git add/commit/push/checkout/stash/reset, no commit (Q03a). Agent PASS ≠ CT ACCEPTED.
+
+### T1 — LANE writer · v1
+
+```text
+NEREDE: Claude app → ERP vNEXT → LANE {n} (Cowork, Linux VM). The repo folder must be connected
+        ($HOME/mnt/ERP-vNext-recovery). No Mac Terminal needed.
+NE İLE: .antigravity → {@agent | /workflow} ({§6 entry point}).
+PLACEMENT GATE: `uname -s` must print Linux. Darwin → STOP (this is not a Mac WP). If the work needs build, test,
+        dotnet, npm, mongod, docker or a runtime → STOP and report: it is a T2 Mac WP.
+
+WP: {WP ID} · Prompt {Prompt ID} v{n} · Template T1 v1
+
+§17.1
+  Work Package ID / Prompt ID / Version: {WP ID} / {Prompt ID} / v{n}
+  CT-QUEUE Row (exact text): {row copied from CT-QUEUE.tsv}
+  Capability Block / Module: {…} / {MOD-…}
+  Agent Lane ID / Type: LANE {n} / DEV
+  Target Agent / Entry Point: {@agent | /workflow}
+  Risk Class: {…}
+  Target Branch / Expected Base HEAD: feature/mvp6-logistics / {sha}
+  Dirty-worktree baseline: {known baseline line}
+  Base Stack: n/a (no build) | {BASE-STACK record + sha256, if the overlay targets a stack}
+  Depends On / Parallel-Safe With: {…} / {…}
+  Authority Sources: {module pack, DCP, domain config, .antigravity/rules/** paths}
+  Allowed Paths: {docs/records/audits/2026-09/<new folder>/} only (K4) + /tmp scratch
+  Protected Paths: working tree (code, packs, SOP, .antigravity), ledgers, ~/mvp6-env, other lanes' folders
+§17.3  Pattern: {pattern} · Justification: {…} · Boundary: {…}   (no data-writing UI → n/a)
+§17.4  {mandatory input fields of the target agent from the §17.4 table, filled}
+
+PREFLIGHT (§20):
+- grep the {WP ID} row in docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv → absent → STOP (R8).
+- GIT_OPTIONAL_LOCKS=0; only `git status --porcelain` (no git diff); .git/index.lock exists → STOP.
+- Branch / HEAD = expected → else STOP.
+- Known baseline: {n} modified + {m} untracked ({reference}). Known, not drift; do not touch.
+
+RULES:
+- Writers are only CT-dispatched LANEs + Mac Claude Code (OD-CODEX). Another writer seen → STOP and report.
+- Do not edit the working tree: code goes out as an overlay archive or a patch in the evidence folder
+  (`git apply --check` on /tmp copies only).
+- No ledger writes (T4 only). No rm. No git writes. No commit (Q03a).
+- Do not claim build or test results.
+
+NE: {…}
+NEDEN: {…}
+NASIL: {…}
+YAPMA: {…}
+DOĞRULA: {…} · sha256sum -c SHA256SUMS OK · git status --porcelain: only the new folder added.
+Report: §22 structured report + §37 hand-off. Agent PASS ≠ CT ACCEPTED.
+```
+
+### T2 — Mac build/test · v1
+
+```text
+NEREDE: Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code). Terminal is not required.
+NE İLE: .antigravity → {@orchestrator + /test | testing-agent | …} ({§6 entry point}).
+PLACEMENT GATE: `uname -s` must print Darwin. Anything else → STOP and write nothing.
+
+WP: {WP ID} · Prompt {Prompt ID} v{n} · Template T2 v1
+
+§17.1
+  Work Package ID / Prompt ID / Version: {WP ID} / {Prompt ID} / v{n}
+  CT-QUEUE Row (exact text): {row copied from CT-QUEUE.tsv}
+  Capability Block / Module: {…} / {MOD-…}
+  Agent Lane ID / Type: Mac Claude Code / {DEV | VER}
+  Target Agent / Entry Point: {…}
+  Risk Class: {…}
+  Target Branch / Expected Base HEAD: feature/mvp6-logistics / {sha}
+  Dirty-worktree baseline: {known baseline line}
+  Base Stack (required): {BASE-STACK record path + SHA256 + layer chain as written in that record}
+  Ports: {ports assigned to this session}
+  Depends On / Parallel-Safe With: {…} / {…}
+  Authority Sources: {module pack, BASE-STACK record, kit version, .antigravity/rules/** paths}
+  Allowed Paths: ~/mvp6-env/{lane}/ (new folder) + {docs/records/audits/2026-09/<new folder>/} (K4)
+  Protected Paths: working tree, ledgers, SOP, .antigravity, other ~/mvp6-env folders
+§17.3  Pattern: {…} (no data-writing UI → n/a)
+§17.4  {mandatory input fields of the target agent from the §17.4 table, filled}
+
+PREFLIGHT (§20):
+- grep the {WP ID} row in CT-QUEUE.tsv → absent → STOP (R8).
+- GIT_OPTIONAL_LOCKS=0; only `git status --porcelain` (no git diff); .git/index.lock exists → STOP.
+- Branch / HEAD = expected → else STOP.
+- Base stack: `sha256sum -c SHA256SUMS` in the BASE-STACK folder + the quoted hash → mismatch → STOP (R9).
+- Assigned ports free → else STOP; never take a port another session holds.
+- Known baseline: {n} modified + {m} untracked ({reference}). Known, not drift; do not touch.
+
+RULES:
+- Writers are only CT-dispatched LANEs + Mac Claude Code (OD-CODEX). Another writer seen → STOP and report.
+- Compose only by the BASE-STACK record's recipe (cp only, a new empty folder, never in the repo, never delete).
+  A deviation from the declared stack is written in the report.
+- Platform tests run only in an isolated environment until Q131 is done.
+- No rm (the evidence kit may delete only its own disposable workspace and socket). No git writes. No commit (Q03a).
+- Do not print secret values. Report only results produced in this session.
+
+NE: {…}
+NEDEN: {…}
+NASIL: {…}
+YAPMA: {…}
+DOĞRULA: {commands + evidence level E2–E5} · sha256sum -c SHA256SUMS OK.
+Report: §22 structured report + §37 hand-off. Agent PASS ≠ CT ACCEPTED.
+```
+
+### T3 — VER · v1
+
+```text
+NEREDE: a chat that is NOT the writer's chat — Cowork LANE {n} for static VER; for runtime VER
+        Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code). Terminal is not required.
+NE İLE: .antigravity → read-only-auditor (/read-only-audit) {+ testing-agent for runtime VER}.
+PLACEMENT GATE: static VER → `uname -s` = Linux; runtime VER → `uname -s` = Darwin. Wrong platform → STOP.
+        Same chat as the writer → STOP.
+START GATE: the writer hand-off line for {writer WP} exists in MILESTONE-EVENTS.tsv → else STOP.
+
+WP: {VER WP ID} · Prompt {Prompt ID} v{n} · Template T3 v1 · verifies {writer WP}
+
+§17.1
+  Work Package ID / Prompt ID / Version: {…}
+  CT-QUEUE Row (exact text): {row copied from CT-QUEUE.tsv}
+  Agent Lane ID / Type: {LANE n | Mac Claude Code} / VER
+  Target Agent / Entry Point: read-only-auditor / /read-only-audit
+  Risk Class: {…}
+  Target Branch / Expected Base HEAD: feature/mvp6-logistics / {sha}
+  Dirty-worktree baseline: {known baseline line}
+  Base Stack: runtime VER → {BASE-STACK record + sha256} (required); static VER → n/a
+  Depends On: {writer WP} hand-off
+  Authority Sources: {the writer's evidence folder + SHA256SUMS, the sources the writer cites}
+  Allowed Paths: {docs/records/audits/2026-09/<new VER folder>/} only (K4)
+  Protected Paths: everything else, including the writer's folder
+§17.3  Pattern check: {expected pattern} (no UI → n/a)
+§17.4  Audit mode: {worktree-read-only | strict} · Scope: {paths} · path:line evidence per finding · no fixing
+
+PREFLIGHT (§20):
+- grep the {VER WP ID} row in CT-QUEUE.tsv → absent → STOP (R8).
+- GIT_OPTIONAL_LOCKS=0; only `git status --porcelain` (no git diff); .git/index.lock exists → STOP.
+- Known baseline: {n} modified + {m} untracked ({reference}). Known, not drift; do not touch.
+
+RULES:
+- Writers are only CT-dispatched LANEs + Mac Claude Code (OD-CODEX). Another writer seen → STOP and report.
+- Read-only except the own VER folder. Do not fix anything; report it.
+- Verdict: PASS | PARTIAL | FAIL per check, with evidence. Never write "CT ACCEPTED".
+- No rm. No git writes.
+
+CHECKS: {numbered list, each with the command and the expected value}
+Report: §37 verification report. Agent PASS ≠ CT ACCEPTED.
+```
+
+### T4 — ledger writer · v1
+
+```text
+NEREDE: Claude app → ERP vNEXT → LANE {n} (Cowork, Linux VM). The repo folder must be connected.
+NE İLE: .antigravity → @orchestrator, /reconcile-records; documentation-writer. You are the ONLY ledger writer.
+PLACEMENT GATE: `uname -s` must print Linux. Darwin → STOP.
+
+WP: {WP ID} · Prompt {Prompt ID} v{n} · Template T4 v1
+
+§17.1
+  Work Package ID / Prompt ID / Version: {…}
+  CT-QUEUE Row (exact text): {row copied from CT-QUEUE.tsv; if this WP adds its own row, the exact text to append}
+  Agent Lane ID / Type: LANE {n} / DEV (records + ledgers)
+  Target Agent / Entry Point: @orchestrator + /reconcile-records; documentation-writer
+  Risk Class: {…}
+  Target Branch / Expected Base HEAD: feature/mvp6-logistics / {sha}
+  Dirty-worktree baseline: {known baseline line}
+  Base Stack: n/a
+  Ledgers before (must match): CT-QUEUE {sha256} ({n} rows) / MILESTONE-EVENTS {sha256} ({n} lines)
+  Allowed Paths: CT-QUEUE.tsv + MILESTONE-EVENTS.tsv (append only) + {one new record path} (K4)
+  Protected Paths: everything else
+§17.3  n/a
+§17.4  Records: {evidence folders + SHA256SUMS to verify before writing}
+
+PREFLIGHT (§20):
+- Ledger hashes = the values above → mismatch → STOP and write nothing (another writer may have run).
+- The {WP ID} row exists in CT-QUEUE.tsv, or this prompt gives its exact text to append first → else STOP (R8).
+- GIT_OPTIONAL_LOCKS=0; only `git status --porcelain` (no git diff); .git/index.lock exists → STOP.
+- Known baseline: {n} modified + {m} untracked ({reference}). Known, not drift; do not touch.
+
+RULES:
+- Writers are only CT-dispatched LANEs + Mac Claude Code (OD-CODEX). Another writer seen → STOP and report.
+- Append only: no edit, reorder or deletion of existing rows or records. Each new row exactly once.
+  One MILESTONE-EVENTS hand-off line.
+- CT dispositions and owner decisions are copied verbatim; no reinterpretation; no hours unless given.
+- No rm. No git writes.
+
+ROWS: {rows to append}
+RECORD: {new record path} (§17.1 metadata, text verbatim, evidence + SHA256)
+DOĞRULA: the first {old line count} lines of each ledger still hash to the old value; `grep -c` per new ID = 1;
+         the record path exists; git status --porcelain: the new record + the known baseline.
+Report: §37 hand-off with the record SHA256 and the new ledger SHA256 values. Agent PASS ≠ CT ACCEPTED.
+```
 
 ---
 
@@ -2030,6 +2345,7 @@ CONTROL TOWER
 - [ ] Dependency graph yeniden hesaplandı mı?
 - [ ] Newly unblocked work belirlendi mi?
 - [ ] Güvenli paralellik varsa en az iki sonraki WP hazır mı?
+- [ ] **K22 lane closure invariant uygulandı mı?** Evidence mühürlendi, lane-owned süreçler durduruldu, portlar bırakıldı, workspace kaldırıldı, yokluk doğrulandı ve sonuç kayda yazıldı.
 
 ---
 

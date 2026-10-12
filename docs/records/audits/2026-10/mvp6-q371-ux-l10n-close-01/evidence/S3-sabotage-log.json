@@ -1,0 +1,7 @@
+{
+ "page": "/SupplyChain/Shipments/Details/755d1686-0aa3-49b0-bd7f-7aac3a11f49d",
+ "log": [
+  "POST 201 key=bd5fe309 [response dropped by test] {\"shipmentId\":\"3356450e-7a37-4689-a021-ef17d81d2d0d\",\"shipmentNumber\":",
+  "POST 201 key=d76c81b2 {\"shipmentId\":\"755d1686-0aa3-49b0-bd7f-7aac3a11f49d\",\"shipmentNumber\":"
+ ]
+}

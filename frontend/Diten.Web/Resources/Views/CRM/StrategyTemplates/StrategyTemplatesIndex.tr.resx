@@ -302,4 +302,16 @@
   <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} yolculuk</value></data>
   <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} eski bağ</value></data>
   <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} satır yolculuksuz</value></data>
+  <data name="SupersededByVersion" xml:space="preserve"><value>Yerini v{0} aldı</value></data>
+  <data name="ArchivedSegmentSuffix" xml:space="preserve"><value>(arşivli)</value></data>
+  <data name="ActivationBlocked" xml:space="preserve"><value>Etkinleştirme reddedildi.</value></data>
+  <data name="ActivationBlocked_segment_not_active" xml:space="preserve"><value>Bağlı bir segment aktif değil — önce segmenti etkinleştirin.</value></data>
+  <data name="ActivationBlocked_segment_archived" xml:space="preserve"><value>Bağlı bir segment arşivlenmiş — yerine aktif bir segment bağlayın.</value></data>
+  <data name="ActivationBlocked_segment_reference_not_found" xml:space="preserve"><value>Bağlı bir segment artık yok.</value></data>
+  <data name="ActivationBlocked_frequency_policy_not_active" xml:space="preserve"><value>Bağlı ziyaret sıklığı politikası aktif değil.</value></data>
+  <data name="ActivationBlocked_journey_not_published" xml:space="preserve"><value>Bir ürün satırının etkileşim yolculuğu yayımlanmamış.</value></data>
+  <data name="ActivationBlocked_journey_product_mismatch" xml:space="preserve"><value>Bir ürün satırının etkileşim yolculuğu başka bir ürünü anlatıyor.</value></data>
+  <data name="ActivationBlocked_product_line_journey_required" xml:space="preserve"><value>Her ürün satırı için bir etkileşim yolculuğu gerekir.</value></data>
+  <data name="ActivationBlocked_content_not_published" xml:space="preserve"><value>Bağlı bir içerik yayımlanmamış.</value></data>
+  <data name="ActivationBlocked_content_archived" xml:space="preserve"><value>Bağlı bir içerik arşivlenmiş.</value></data>
 </root>

@@ -1,0 +1,74 @@
+--- a/shipment-bundle-v3.1.0-rc.1.openapi.yaml
++++ b/shipment-bundle-v3.1.0-final-proposed.openapi.yaml
+@@ -10,8 +10,8 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 3.1.0-rc.1
+-  x-status: CANDIDATE
++  version: 3.1.0
++  x-status: FROZEN
+   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+   x-consumes:
+@@ -607,8 +607,8 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v3.1.0-rc.1.md
+-      description: ' Normative Loads candidate: loads-semantics-v3.1.0-rc.1.md. Publication HELD; D185-01..05 approved
++      x-loads-semantics: loads-semantics-v3.1.0.md
++      description: ' Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved
+         design only.'
+     post:
+       tags:
+@@ -987,8 +987,8 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v3.1.0-rc.1.md
+-      description: ' Normative Loads candidate: loads-semantics-v3.1.0-rc.1.md. Publication HELD; D185-01..05 approved
++      x-loads-semantics: loads-semantics-v3.1.0.md
++      description: ' Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved
+         design only.'
+   /loads/{loadId}/transition:
+     post:
+@@ -998,7 +998,7 @@
+       summary: Load lifecycle durumunu ilerlet
+       description: "Izinli gecisler: Draft->Planned|Cancelled; Planned->Tendered|Cancelled; Tendered->Accepted|Cancelled;\
+         \ Accepted->Dispatched|Cancelled; Dispatched->Completed. Diger gecisler INVALID_LOAD_TRANSITION ile reddedilir.\n\
+-        \ Normative Loads candidate: loads-semantics-v3.1.0-rc.1.md. Publication HELD; D185-01..05 approved design only."
++        \ Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved design only."
+       parameters:
+       - name: loadId
+         in: path
+@@ -1360,7 +1360,7 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v3.1.0-rc.1.md
++      x-loads-semantics: loads-semantics-v3.1.0.md
+   /returns:
+     get:
+       tags:
+--- a/loads-semantics-v3.1.0-rc.1.md
++++ b/loads-semantics-v3.1.0.md
+@@ -1,6 +1,6 @@
+-# Loads semantics — 3.1.0-rc.1 amendment candidate
+-
+-**NOT PUBLISHED.** D185-01…05 owner-approved behavior and owner-selected `D185-ROOT-ACQ-01` are represented in this versioned amendment candidate. Wire `contractVersion` remains `v1`. `3.1.0-rc.1` is candidate metadata only; final version, consumer consent, canonical publication, producer/UI uptake, Phase 1.5 and runtime authorization remain separate. This annex governs only `queryLoads`, `createLoadPlan` and `transitionLoad`.
++# Loads semantics — 3.1.0 final-proposed candidate
++
++**NOT PUBLISHED.** D185-01…05 owner-approved behavior and owner-selected `D185-ROOT-ACQ-01` are represented in this versioned amendment candidate. Wire `contractVersion` remains `v1`. `3.1.0` is the release-owner proposal and remains candidate metadata only; final version selection, consumer consent, canonical publication, producer/UI uptake, Phase 1.5 and runtime authorization remain separate. This annex governs only `queryLoads`, `createLoadPlan` and `transitionLoad`.
+ 
+ ## Approved business scope
+ 
+@@ -189,7 +189,7 @@
+ 
+ ## R185-C04 — Release and migration boundary
+ 
+-info.version3.1.0-rc.1 is candidate metadata only; wire contractVersion v1 remains unchanged.
++info.version3.1.0 is proposed candidate metadata only; wire contractVersion v1 remains unchanged.
+ New business restrictions reject some baseline-schema-valid requests. This is not proven minor
+ compatibility. Metadata major does not supply route negotiation, migration, cutover or rollback.
+ No new route is introduced. Consumer compatibility/consent and published uptake remain separate

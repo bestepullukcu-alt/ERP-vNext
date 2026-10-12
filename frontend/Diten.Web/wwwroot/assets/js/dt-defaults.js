@@ -225,6 +225,10 @@ window.DtDefaults = (function () {
 
             title.replaceWith(replacement);
         });
+
+        modal.querySelectorAll('.btn-close[data-bs-dismiss="modal"]').forEach(function (closeButton) {
+            closeButton.setAttribute('aria-label', dtText('Close') || 'Close');
+        });
     }
 
     function bindResponsiveModalTitleFix() {
@@ -305,7 +309,7 @@ window.DtDefaults = (function () {
             details: {
                 display: DataTable.Responsive.display.modal({
                     header: function (row) {
-                        return L().Details || 'Details';
+                        return dtText('Details') || 'Details';
                     }
                 }),
                 type: 'column',

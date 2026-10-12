@@ -1,0 +1,149 @@
+  Diten.SupplyChainService.Domain -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Release/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Release/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Release/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Release/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.SupplyChainService.Api -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+  Diten.SupplyChainService.Tests -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Release/net8.0/Diten.SupplyChainService.Tests.dll
+Test run for /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Release/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 10.0.2)
+[xUnit.net 00:00:00.13]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.27]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.28]   Starting:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Instant_LeapSecond_OffsetEquivalentDistinctFromNextSecond [21 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "١") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: " 1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "1.") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "+1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: ".1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "1e2") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Wire_BoundedShape_RejectsNullEvidenceAndExtrasAllowsOpaqueEmpty [15 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "-0", b: "000.000") [6 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "1.0", b: "1.00") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "123456789012345678901234567890.1234567890123456789"···, b: "123456789012345678901234567890.1234567890123456789"···) [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_Arithmetic_HasNoPrecisionLoss [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Fingerprint_NumericAndInstantEquivalence_ReplaysWhileArrayOrderConflicts [59 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Instant_GregorianYearZeroAndBoundaries_KeepEquivalentInstants [< 1 ms]
+[xUnit.net 00:00:30.74]     Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "receipt", reached: 3) [FAIL]
+[xUnit.net 00:00:30.74]       System.TimeoutException : A timeout occurred after 30000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "127.0.0.1:27886" }", EndPoint: "127.0.0.1:27886", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+[xUnit.net 00:00:30.74]        ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:27886
+[xUnit.net 00:00:30.74]          at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+[xUnit.net 00:00:30.74]          at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+[xUnit.net 00:00:30.74]          at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.74]          at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.74]          at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+[xUnit.net 00:00:30.74]          --- End of inner exception stack trace ---
+[xUnit.net 00:00:30.74]          at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+[xUnit.net 00:00:30.74]          at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+[xUnit.net 00:00:30.74]          at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+[xUnit.net 00:00:30.74]          at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-21T16:58:12.8231150Z", LastUpdateTimestamp: "2026-09-21T16:58:12.8231170Z" }] }.
+[xUnit.net 00:00:30.74]       Stack Trace:
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]            at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+[xUnit.net 00:00:30.75]         /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnSchema.cs(9,0): at Diten.SupplyChainService.Persistence.Features.Returns.ReturnSchema.StartAsync(CancellationToken ct)
+[xUnit.net 00:00:30.75]         /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs(60,0): at Diten.SupplyChainService.Tests.Returns.ReturnTestFixture.New(String databaseName, Boolean caseInsensitive)
+[xUnit.net 00:00:30.75]         /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs(17,0): at Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(String stage, Int32 reached)
+[xUnit.net 00:00:30.75]         --- End of stack trace from previous location ---
+  Failed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "receipt", reached: 3) [30 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 30000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "127.0.0.1:27886" }", EndPoint: "127.0.0.1:27886", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:27886
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-21T16:58:12.8231150Z", LastUpdateTimestamp: "2026-09-21T16:58:12.8231170Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Persistence.Features.Returns.ReturnSchema.StartAsync(CancellationToken ct) in /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnSchema.cs:line 9
+   at Diten.SupplyChainService.Tests.Returns.ReturnTestFixture.New(String databaseName, Boolean caseInsensitive) in /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs:line 60
+   at Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(String stage, Int32 reached) in /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs:line 17
+--- End of stack trace from previous location ---
+[xUnit.net 00:01:00.75]     Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "aggregate", reached: 2) [FAIL]
+[xUnit.net 00:01:00.75]       System.TimeoutException : A timeout occurred after 30000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "127.0.0.1:27886" }", EndPoint: "127.0.0.1:27886", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+[xUnit.net 00:01:00.75]        ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:27886
+[xUnit.net 00:01:00.75]          at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+[xUnit.net 00:01:00.75]          at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+[xUnit.net 00:01:00.75]          at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]          at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]          at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]          --- End of inner exception stack trace ---
+[xUnit.net 00:01:00.75]          at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]          at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]          at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]          at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-21T16:58:42.8223850Z", LastUpdateTimestamp: "2026-09-21T16:58:42.8223850Z" }] }.
+[xUnit.net 00:01:00.75]       Stack Trace:
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]            at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+[xUnit.net 00:01:00.75]         /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnSchema.cs(9,0): at Diten.SupplyChainService.Persistence.Features.Returns.ReturnSchema.StartAsync(CancellationToken ct)
+[xUnit.net 00:01:00.75]         /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs(60,0): at Diten.SupplyChainService.Tests.Returns.ReturnTestFixture.New(String databaseName, Boolean caseInsensitive)
+[xUnit.net 00:01:00.75]         /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs(17,0): at Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(String stage, Int32 reached)
+[xUnit.net 00:01:00.75]         --- End of stack trace from previous location ---
+  Failed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "aggregate", reached: 2) [30 s]
+  Error Message:
+   System.TimeoutException : A timeout occurred after 30000ms selecting a server using CompositeServerSelector{ Selectors = ReadPreferenceServerSelector{ ReadPreference = { Mode : Primary } }, LatencyLimitingServerSelector{ AllowedLatencyRange = 00:00:00.0150000 }, OperationsCountServerSelector }. Client view of cluster state is { ClusterId : "1", ConnectionMode : "ReplicaSet", Type : "ReplicaSet", State : "Disconnected", Servers : [{ ServerId: "{ ClusterId : 1, EndPoint : "127.0.0.1:27886" }", EndPoint: "127.0.0.1:27886", ReasonChanged: "Heartbeat", State: "Disconnected", ServerVersion: , TopologyVersion: , Type: "Unknown", HeartbeatException: "MongoDB.Driver.MongoConnectionException: An exception occurred while opening a connection to the server.
+ ---> System.Net.Sockets.SocketException (61): Connection refused 127.0.0.1:27886
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.Connect(Socket socket, EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.TcpStreamFactory.CreateStream(EndPoint endPoint, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2026-09-21T16:58:42.8223850Z", LastUpdateTimestamp: "2026-09-21T16:58:42.8223850Z" }] }.
+  Stack Trace:
+     at MongoDB.Driver.Core.Clusters.Cluster.ThrowTimeoutException(IServerSelector selector, ClusterDescription description)
+   at MongoDB.Driver.Core.Clusters.Cluster.WaitForDescriptionChangedAsync(IServerSelector selector, ClusterDescription description, Task descriptionChangedTask, TimeSpan timeout, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.Cluster.SelectServerAsync(IServerSelector selector, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Clusters.IClusterExtensions.SelectServerAndPinIfNeededAsync(ICluster cluster, ICoreSessionHandle session, IServerSelector selector, IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Bindings.ReadPreferenceBinding.GetReadChannelSourceAsync(IReadOnlyCollection`1 deprioritizedServers, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.InitializeAsync(CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.RetryableReadContext.CreateAsync(IReadBinding binding, Boolean retryRequested, CancellationToken cancellationToken)
+   at MongoDB.Driver.Core.Operations.ReadCommandOperation`1.ExecuteAsync(IReadBinding binding, CancellationToken cancellationToken)
+   at MongoDB.Driver.OperationExecutor.ExecuteReadOperationAsync[TResult](IReadBinding binding, IReadOperation`1 operation, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.ExecuteReadOperationAsync[T](IClientSessionHandle session, IReadOperation`1 operation, ReadPreference readPreference, CancellationToken cancellationToken)
+   at MongoDB.Driver.MongoDatabaseImpl.UsingImplicitSessionAsync[TResult](Func`2 funcAsync, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Persistence.Features.Returns.ReturnSchema.StartAsync(CancellationToken ct) in /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnSchema.cs:line 9
+   at Diten.SupplyChainService.Tests.Returns.ReturnTestFixture.New(String databaseName, Boolean caseInsensitive) in /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs:line 60
+   at Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(String stage, Int32 reached) in /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs:line 17
+--- End of stack trace from previous location ---

@@ -27,6 +27,10 @@ public static class VisitReportErrorCodes
     public const string InvalidTransition = "visit_report_invalid_transition";
     public const string ConcurrencyConflict = "visit_report_concurrency_conflict";
 
+    /// <summary>WP-E2E-FIX-1 (E9-B5) — a completed/missed outcome or a report submit on a visit whose planned day is still
+    /// in the future (409). Rescheduling stays free.</summary>
+    public const string NotYetDue = "visit_not_yet_due";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         UnsupportedVocabularyValue,
@@ -34,6 +38,6 @@ public static class VisitReportErrorCodes
         OutcomeRequired, ReasonCodeRequired, RescheduleDateInvalid,
         ResourceRequired, OutcomeCodeRequired, SampleInvalid, ContentActualsInvalid, FreeTextTooLong,
         ReportNotFound, ReportAlreadyExists, NotCompleted, EditWindowClosed, NotFinalised,
-        AmendmentReasonRequired, InvalidTransition, ConcurrencyConflict
+        AmendmentReasonRequired, InvalidTransition, ConcurrencyConflict, NotYetDue
     };
 }

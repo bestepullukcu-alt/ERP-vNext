@@ -1,0 +1,5 @@
+docs(governance): apply SOP v2.5 r2, dispatch-wp workflow and the pre-Mac UI checklist patch
+
+.antigravity/ agent and workflow edits plus the SOP text.
+Work packages: Q144/Q145, Q167.
+4 files from pathspec/A1.txt (Q230 commit plan).

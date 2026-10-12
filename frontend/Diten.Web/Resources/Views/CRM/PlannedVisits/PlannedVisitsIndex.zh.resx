@@ -108,4 +108,7 @@
   <data name="SelectionMode_targeted" xml:space="preserve"><value>Targeted</value></data>
   <data name="AvailabilityWarning" xml:space="preserve"><value>The planned window is outside the contact availability (a warning, not a block).</value></data>
   <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="TargetUnknown" xml:space="preserve"><value>未知目标</value></data>
+  <data name="TargetInactive" xml:space="preserve"><value>已停用</value></data>
+  <data name="ResourceSelfHint" xml:space="preserve"><value>当前登录的代表；由系统设定。</value></data>
 </root>

@@ -1,0 +1,141 @@
+test	before_no_vars	before_message	after_rs31994	after_message
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AfterCommitFailureRecoversByReceipt(unknown: False)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AfterCommitFailureRecoversByReceipt(unknown: True)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Active", expected: 422)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Retired", expected: 200)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Suspended", expected: 200)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Active", expected: 422)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Retired", expected: 422)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Suspended", expected: 422)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Active", expected: 200)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Retired", expected: 200)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Suspended", expected: 422)	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.BarrierSynchronizedDistinctTargetsEqualValidSerialHistory	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.CanonicalFingerprintPreservesModeOrderDuplicatesAndStrings	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.ConcurrentDifferentPayloadUsesFirstCommittedReceipt	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "legal_entity_id")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "sub")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "tenant_id")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "audit")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "beforeCommit")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "entity")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "receipt")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.ExactCreateListAndHistoricalReplay	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.HeaderBoundariesNilCorrelationAndSchemaStrings	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.IndexCreationFailureIsNotIgnored	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "create")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "read")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "status.change")	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.OrderedHeaderBodyAndReplayValidation	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.SignedDuplicateJsonContextMemberIsRejected	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.SimultaneousReplayAndCodeUniquenessHaveSingleWinners	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.StatusReplayFingerprintAndDeletedHistoricalReceipt	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.TwoByTwoScopesDeletedReservationsAndReceiptVisibility	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Carriers.CarrierContractTests.ValidationStagesOneThroughFiveDoNotCallRepository	Failed	System.InvalidOperationException : Isolated Mongo required.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.AcknowledgedCommitLossRetriesFromDurableReceiptWithoutDuplicateWrites	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.CancellationReleaseAndAggregateAuditReceiptEventCommitTogether	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "assignment")	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "audit")	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "beforeCommit")	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "entity")	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "event")	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "receipt")	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Failed	Assert.Equal() Failure: Values differ | Expected: Created | Actual:   ServiceUnavailable
+Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnresolvedUnknownCommitReturns503WithoutPretendingRollbackOrSuccess	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.CompetingCreatesForOneShipmentCommitExactlyOneOwner	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.ConcurrentPlannedAndCancelledTransitionsProduceOnlyASerialLifecycle	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.ConcurrentSameKeyRequestsProduceOneCommitAndOneDurableReplay	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.RetryAfterCancellationNeverDeletesNewOwnersAssignment	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.CreateSchemaRejectsNullWrongTypeEnumsAndArrayBoundsWithoutInventingDefaults	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.DuplicateShipmentAndInvalidStopSequencesAreBusiness422ButReturnStopAndEmptyLocationStayAllowed	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.EveryRequiredCreateFieldAndTransitionFieldIsEnforcedBeforeWrites	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.FrozenThreeOperationWireAndSuccessfulCreateList	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadContractTests.SchemaUnknownFieldsAndNoExtraRoutesAreRejected	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.AuthenticationAndPostAuthDuplicateSignedClaimsHaveDistinctOutcomes	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.PermissionScopesAndTrustedHeaderMismatchFailBeforePersistence	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.ScopeQueryKeysAreRejectedAfterOneDecodeAndUnknownKeysRemainIgnored	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.TwoTenantsByTwoLegalEntitiesCanReuseIdsWithoutCrossScopeVisibility	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadLifecycleTests.EverySourceTargetPairMatchesFrozenLifecycleAndRejectedPairsAreAtomic	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.BusinessReferenceOutcomesMatchApprovedCarrierAndShipmentRules	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.CarrierAndShipmentReferenceProfilesFailClosedOnMissingOrContradictoryData	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.FreshRetryReobservesDependenciesButSuccessfulReplayDoesNot	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.PendingOutboxAndHistoricalReplaySurviveApiRestart	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.ReferencesAreGetOnlyAndCarryTrustedScopeAndCorrelation	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.UpstreamAuthServerAndUnexpectedStatusesFailClosedAsSpecified	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReplayTests.HistoricalCreateReplayAfterCancellationDoesNotReacquireAssignment	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReplayTests.RootPrecedesFingerprintAndReplayUsesOriginalReceiptWithoutDependencyReads	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.Loads.LoadReplayTests.TransitionReplayReturnsHistoricalStatusAndNoteNullNormalizationIsExact	Failed	System.InvalidOperationException : Set MOD0185_TEST_MONGO to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentRootHttpTests.AcceptanceContractRequiresScopedReadOnlyDetail	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.MaterializationDoesNotMutateRawDocument	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "malformed")	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "missing")	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "nil")	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "null")	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "valid")	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.AllowedBranchesAndPodFailureHaveAtomicHistory	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.CancelPermissionIsRequiredAndCannotDispatch	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.EveryForbiddenTransitionLeavesPersistenceUnchanged	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.FailureBeforeCommitRollsBackEveryRecordAndRetrySucceeds	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.GoldenFlow_Replay_Outbox_AndRestartAreDurable	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.NormalizedReplayAndCrossScopeListRemainIsolated	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.OutboxRetryPreservesCanonicalBytesAndIdentity	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.PodNoteBoundaryCountsScalarsAndRejectsWithoutWrites	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.ReplayConflict_AndConcurrentCreateOrTransitionProduceOneWinner	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.Scope_Rbac_Schema_AndCorrelationFailClosed	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.TransitionNoteBoundaryCountsScalarsAndRejectsWithoutWrites	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentTests.UnicodeQuantityIsRejectedBeforeAnyPersistence	Failed	System.InvalidOperationException : MOD0183_TEST_MONGO must point to an isolated replica set.	Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "", expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: null, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "+30", expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "-30.000", expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: ".5", expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "0", expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "000.010", expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "1e3", expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "30.", expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "30.000", expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "3٠.000", expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "٣٠.٠٠٠", expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "۳۰.۰۰۰", expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "３０.０００", expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "", expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: False)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: null, expected: True)	Passed		Passed	
+Diten.SupplyChainService.Tests.SourceClientTests.ExplicitWarehouseFailures(status: 200, code: "SCHEMA_INCOMPATIBLE")	Passed		Passed	
+Diten.SupplyChainService.Tests.SourceClientTests.ExplicitWarehouseFailures(status: 404, code: "DEPENDENCY_HTTP_404")	Passed		Passed	
+Diten.SupplyChainService.Tests.SourceClientTests.ExplicitWarehouseFailures(status: 503, code: "DEPENDENCY_HTTP_503")	Passed		Passed	
+Diten.SupplyChainService.Tests.SourceClientTests.InventoryReadOnlyScopeAndFailureIsolation	Passed		Passed	
+Diten.SupplyChainService.Tests.SourceClientTests.TrustedContextRejectsMissingUnauthenticatedAndConflictingScopes	Passed		Passed	
+Diten.SupplyChainService.Tests.SourceClientTests.WarehouseFrozenDetailAndPagePreserveFactsAndForwardTrustedScope	Passed		Passed	
+Diten.SupplyChainService.Tests.SourceClientTests.WarehouseTimeoutAndStrictNullableGapAreExplicit	Passed		Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.CancelledOrSoftDeletedShipmentKeepsSourceReserved(deleted: False)	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.CancelledOrSoftDeletedShipmentKeepsSourceReserved(deleted: True)	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "address")	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "empty-lines")	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "lines")	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "order")	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "orderRef")	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "quantity")	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "status")	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "warehouse")	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.EightConcurrentIntakesCommitOnceAndIdenticalReplayChangesNothing	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.FailedTransactionRetainsOnlyPendingDefaultsAndRestartCommitsThoseExactDefaults	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.InvalidCorrelationAndDependencyFailuresCannotClaimSource	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.SameSourceIdentityIsIsolatedByTenantAndLegalEntity	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+Diten.SupplyChainService.Tests.SourceIntakeTests.TrustedSuppliedRootIsPreservedAsSourceAndLocalCorrelation	Failed	System.InvalidOperationException : Isolated Mongo required	Passed	
+TOTAL	Passed=46 Failed=93		Passed=138 Failed=1	

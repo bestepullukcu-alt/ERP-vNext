@@ -1,0 +1,1 @@
+{"status": "FAIL", "R22": "PASS", "stages": {"aggregate": "PASS", "receipt": "PASS", "audit": "PASS", "outbox": "PASS", "beforeCommit": "PASS", "afterCommit": "PASS"}, "unknown": "FAIL", "config": {"normal-invalid-ignored": true, "evidence-missing": true, "evidence-invalid-fixed": true, "evidence-invalid-stage": true}}

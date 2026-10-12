@@ -1,0 +1,92 @@
+TAP version 13
+# Subtest: runs in one of the two required zones, and the zone is really in effect
+ok 1 - runs in one of the two required zones, and the zone is really in effect
+  ---
+  duration_ms: 5.268292
+  type: 'test'
+  ...
+# Subtest: a Date prefills to the local wall clock
+not ok 2 - a Date prefills to the local wall clock
+  ---
+  duration_ms: 4.654709
+  type: 'test'
+  location: '/Users/natig/Projects/ERP-vNext-recovery/frontend/Diten.Web.Tests/JavaScript/Node/shipment-details-datetime.test.mjs:47:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    prefill of 2026-10-03T20:38:00Z in Europe/Istanbul
+    + actual - expected
+    
+    + '2026-10-03T20:38'
+    - '2026-10-03T23:38'
+                   ^
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '2026-10-03T23:38'
+  actual: '2026-10-03T20:38'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/natig/Projects/ERP-vNext-recovery/frontend/Diten.Web.Tests/JavaScript/Node/shipment-details-datetime.test.mjs:49:16)
+    Test.runInAsyncScope (node:async_hooks:212:14)
+    Test.run (node:internal/test_runner/test:1109:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:786:18)
+    Test.postRun (node:internal/test_runner/test:1238:19)
+    Test.run (node:internal/test_runner/test:1166:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+  ...
+# Subtest: the prefilled string parses back to the same instant
+not ok 3 - the prefilled string parses back to the same instant
+  ---
+  duration_ms: 0.437959
+  type: 'test'
+  location: '/Users/natig/Projects/ERP-vNext-recovery/frontend/Diten.Web.Tests/JavaScript/Node/shipment-details-datetime.test.mjs:53:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    round trip of 2026-10-03T20:38:00Z in Europe/Istanbul
+    + actual - expected
+    
+    + 1791049080000
+    - 1791059880000
+           ^
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1791059880000
+  actual: 1791049080000
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/natig/Projects/ERP-vNext-recovery/frontend/Diten.Web.Tests/JavaScript/Node/shipment-details-datetime.test.mjs:57:16)
+    Test.runInAsyncScope (node:async_hooks:212:14)
+    Test.run (node:internal/test_runner/test:1109:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:786:18)
+    Test.postRun (node:internal/test_runner/test:1238:19)
+    Test.run (node:internal/test_runner/test:1166:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:786:7)
+  ...
+# Subtest: a typed local wall clock, seconds included, is read as local time
+ok 4 - a typed local wall clock, seconds included, is read as local time
+  ---
+  duration_ms: 0.24975
+  type: 'test'
+  ...
+# Subtest: out-of-range and malformed values are rejected, not shifted
+ok 5 - out-of-range and malformed values are rejected, not shifted
+  ---
+  duration_ms: 1.021792
+  type: 'test'
+  ...
+# Subtest: a daylight-saving gap hour is rejected where the zone has one
+ok 6 - a daylight-saving gap hour is rejected where the zone has one
+  ---
+  duration_ms: 0.145666
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 4
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 193.053875

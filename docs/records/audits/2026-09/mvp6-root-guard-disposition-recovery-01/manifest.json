@@ -1,0 +1,16 @@
+{
+  "provenance.md": "f4b1a51eb245358259d3a8b93d14c16653cb9d58cedb992e0ab52fd05edd3e98",
+  "decision-candidate.json": "03559627ef357bb0969038618dd7cdaaea7f1b1ae00f825b8d313acbaf6d8c04",
+  "authority-candidate.json": "c39d01c4f19fd8a18a40cb86788c8a34c609cf44c8fe0127bfa988fee86e4c6b",
+  "authority-candidate.patch": "95f82f86a413fc5f1b687de1ad04aa18ae1700fdc48121c4951106c89dbdedfa",
+  "payload.txt": "568cc89adf9efeb0f0a042d7af67ed2784727bb4974d1e8c4ad21e6caa75f555",
+  "SOP-22-RECOVERY.md": "f4dfe562a85d05bf361658111ae66f1595a44f90cd5e76077479ea3dcfeb4b86",
+  "sourceInputs": {
+    "mod0185dev02": "f9eb90fa8fdf341f92540cbb12acb0f281be504be98ce612f93530d9efd4ddf0",
+    "mod0185dev03": "f3343d7f963841988e55a4a20a51524fc8dcc2c87a2d6f046f1cf5968ba8316a",
+    "mod0186prep02": "9557f3499533dbcb9477e1f16d5f455e495702e7ace10e13d2bee8299bbe68bb"
+  },
+  "oldSealCount": 17,
+  "newSealCount": 20,
+  "canonicalChanged": false
+}

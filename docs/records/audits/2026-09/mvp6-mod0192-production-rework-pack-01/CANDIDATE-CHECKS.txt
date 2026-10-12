@@ -1,0 +1,5 @@
+43 unique source rows: PASS; 43 archive hashes: PASS; 43 worktree hashes: PASS
+X07 exact patch SHA256: 94f65a697acf533f4f1b3ea49e5d3c18e962426686873ec19961162f1ae50730
+X07 disposable git apply --check: 0; apply: 0; target SHA256: feaf82f2e15f6ebec9b8cfc6727d738f7d3889cbacdb0a0e77eb343dde8b0c7a
+X01 proposed patch SHA256: 7ac18cdd58fb2441a4c9bea0847f1e79b51893137e81d0263f1f0ebc55da25ce
+X01 proposal not applied to production or DEV worktree.

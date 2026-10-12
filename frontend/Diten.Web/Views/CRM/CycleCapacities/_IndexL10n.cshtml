@@ -100,6 +100,10 @@
         CalendarUnresolvedShort = Localizer["CalendarUnresolvedShort"].Value,
         CalendarForbiddenShort = Localizer["CalendarForbiddenShort"].Value,
         CalendarUnknownShort = Localizer["CalendarUnknownShort"].Value,
+        // WP-CYC-UI-FIX-2 — the live summary names the fixed daily charge by visit model (summary.dailyFixedLabelKey).
+        WfDailyFixedMinutes = Localizer["WfDailyFixedMinutes"].Value,
+        WfDailyFixedMinutesLegacy = Localizer["WfDailyFixedMinutesLegacy"].Value,
+        UnitMinutesPerDay = Localizer["UnitMinutesPerDay"].Value,
         // A dictionary, so its keys (the CRM's / the summary's codes) are serialized verbatim.
         Codes = CycleCapacityL10nCodes.All.ToDictionary(code => code, code => Localizer["Code_" + code].Value)
     })

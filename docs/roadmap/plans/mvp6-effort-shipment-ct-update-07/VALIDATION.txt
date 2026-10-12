@@ -1,0 +1,7 @@
+PASS controlling package hashes 5/5
+PASS effort rows 106
+PASS portfolio O/M/P delivered and remaining arithmetic
+PASS Shipment and portfolio summary
+PASS B01/B02 no-double-credit and PNG OPEN
+PASS Loads unestimated scope retained 3/3
+PASS unaffected predecessor rows exact 101/101

@@ -122,7 +122,7 @@ public sealed class MyResourcesTests
         var tenant = new TenantContext();
         if (tenantId is { } t) tenant.SetTenant(t);
 
-        var controller = new ResourcesController(new DispatchingMediator(new GetMyResourcesQueryHandler(tenant)))
+        var controller = new ResourcesController(new DispatchingMediator(new GetMyResourcesQueryHandler(tenant, new NullUserDisplayNameResolver())))
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = user } }
         };

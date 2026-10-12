@@ -1,0 +1,15 @@
+{
+ "observedAt": "2026-10-03T17:47:49.603Z",
+ "log": [
+  {
+   "url": "/SupplyChain/Shipments/api",
+   "method": "POST",
+   "status": 403,
+   "corrSent": "e607bdc0-868b-41f2-92bc-40878d5001a5",
+   "body": "{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"Required authorization context or permission is missing.\",\"correlationId\":\"e607bdc0-868b-41f2-92bc-40878d5001a5\"},\"contractVersion\":\"v1\"}"
+  }
+ ],
+ "alertShown": [
+  "Check the entered values. Support reference: e607bdc0-868b-41f2-92bc-40878d5001a5"
+ ]
+}

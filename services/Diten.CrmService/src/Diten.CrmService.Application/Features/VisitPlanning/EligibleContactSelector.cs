@@ -13,8 +13,8 @@ namespace Diten.CrmService.Application.Features.VisitPlanning;
 /// MOD-0155 FU05 — the read-only selection assembly over the shipped seams (§3 / §4.1 ③). It answers, for a set of
 /// manually-picked doctors, three questions the engine needs before it can route:
 /// <list type="bullet">
-/// <item><b>Segment FILTER</b> — MOD-0167 <see cref="ISegmentMembershipReader"/> narrows the eligible universe;
-/// unknown is never a member (D-SEGMENT-FILTER). A non-member is dropped from the eligible set, so it is never offered.</item>
+/// <item><b>No segment filter</b> (WP-VP-2, K-4) — the segment no longer narrows the pick: a doctor outside a segment is
+/// not silently dropped any more. Segments only DERIVE the play (<c>VisitProvenanceDeriver</c>).</item>
 /// <item><b>Consent gate</b> — MOD-0164 <see cref="IConsentPreferenceEvaluator"/> (channel = visit); a blocked doctor is
 /// <b>excluded-not-dropped</b> with a reason (FilterApplied honoured, AC-SELECT-2).</item>
 /// <item><b>Availability</b> — MOD-0150 <see cref="IContactAvailabilityRepository"/> per-contact windows, mapped to the
@@ -26,18 +26,15 @@ namespace Diten.CrmService.Application.Features.VisitPlanning;
 public sealed class EligibleContactSelector
 {
     private readonly ITenantContext _tenant;
-    private readonly ISegmentMembershipReader _segments;
     private readonly IConsentPreferenceEvaluator _consent;
     private readonly IContactAvailabilityRepository _availabilities;
 
     public EligibleContactSelector(
         ITenantContext tenant,
-        ISegmentMembershipReader segments,
         IConsentPreferenceEvaluator consent,
         IContactAvailabilityRepository availabilities)
     {
         _tenant = tenant;
-        _segments = segments;
         _consent = consent;
         _availabilities = availabilities;
     }
@@ -51,7 +48,6 @@ public sealed class EligibleContactSelector
     /// </summary>
     public async Task<IReadOnlyList<EligibleContactAssessment>> AssessAsync(
         IReadOnlyList<PlanningSessionSelectedContact> selected,
-        Guid? segmentId,
         string visitPurpose,
         DateTimeOffset effectiveAt,
         CancellationToken cancellationToken)
@@ -69,17 +65,6 @@ public sealed class EligibleContactSelector
             if (pick.ContactId == Guid.Empty)
             {
                 continue;
-            }
-
-            // Segment FILTER — unknown is never a member. A non-member is not offered (dropped from the eligible set).
-            if (segmentId is { } sid && sid != Guid.Empty)
-            {
-                var verdict = await _segments.IsMemberAsync(
-                    sid, ConsentSubjectType.Contact, pick.ContactId, effectiveAt, cancellationToken);
-                if (!verdict.IsMember)
-                {
-                    continue;
-                }
             }
 
             // Consent GATE — excluded-not-dropped. The evaluator never throws into us (controlled unknown).

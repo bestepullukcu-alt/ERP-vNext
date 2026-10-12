@@ -12,7 +12,13 @@
         "SubjectId", "LanguageCode", "ActiveStageCount", "RequiredStageCount", "PathResolution", "EffectiveFrom",
         "EffectiveTo", "Archived", "UpdatedAt", "CreateJourney", "EditJourney", "ArchiveJourney",
         "ArchiveJourneyConfirm", "EmptyState", "ErrorState", "Loading", "RecordArchived", "IncludeArchived",
-        "Unresolved", "Resolved", "Frozen", "Repeated", "SelectOption"
+        "Unresolved", "Resolved", "Frozen", "Repeated", "SelectOption",
+        // WP-E2E-FIX-2 (E4-B2) — every key form.js / details.js read (they fell back to English / "Are you sure?").
+        "RepeatedHint", "PublishConfirm", "IsRequired", "Repeatable", "NewVersionConfirm", "ArchiveStageConfirm",
+        "BranchConditions", "AddStage", "ConditionCode", "Description", "RecordCreated", "RecordUpdated", "StepCount",
+        "PathListAllSubjectsNote",
+        "Err_content_engagement_journey_no_required_stage", "Err_content_engagement_journey_overlapping_published_version",
+        "Err_content_engagement_journey_archived_no_mutation", "Err_content_engagement_journey_concurrency_conflict"
     };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):

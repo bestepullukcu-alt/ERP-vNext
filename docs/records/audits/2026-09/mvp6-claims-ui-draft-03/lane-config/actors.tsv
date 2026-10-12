@@ -1,0 +1,8 @@
+label	email	tenant_id	expected_legal_entity_id	note
+full	john.doe.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	Claims full actor (LE-A after org fixture)
+readonly	jane.smith.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	Claims read-only (LE-A after org fixture)
+noread	charlie.brown.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	no Claims read (LE-A after org fixture)
+leb	bob.johnson.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	Claims full actor in LE-B after org fixture
+fixadmin	alice.williams.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	fixture admin T1 (org + shipment/carrier/claim seed)
+t2user	john.doe.def@diten.com	00000000-0000-0000-0000-000000000001	-	Claims full actor in tenant T2 (cross-tenant isolation)
+t2admin	alice.williams.def@diten.com	00000000-0000-0000-0000-000000000001	-	fixture admin T2

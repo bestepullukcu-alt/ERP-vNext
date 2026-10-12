@@ -1,0 +1,17 @@
+admin_login_status=200
+authorized_page_status=500
+authorized_page_failure=partial view _Filter not found at Index.cshtml line 14
+admin_carrier_permissions=read,create,status.change
+admin_legal_entity_claim=absent
+admin_adapter_status=403
+uas_login_status=200
+uas_page_status=200
+uas_has_access_denied=true
+uas_has_dt_carriers=false
+uas_has_add_new_carrier=false
+uas_has_create_offcanvas=false
+uas_adapter_status=403
+gateway_noauth_status=401
+service_noauth_status=401
+browser_surface_count=0
+native_chrome_blocker=MCP elicitations can only be requested by the root thread

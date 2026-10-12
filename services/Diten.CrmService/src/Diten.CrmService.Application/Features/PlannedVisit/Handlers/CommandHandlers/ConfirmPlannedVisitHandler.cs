@@ -22,13 +22,16 @@ public sealed class ConfirmPlannedVisitHandler : IRequestHandler<ConfirmPlannedV
     private readonly IActorContext _actor;
     private readonly IPlannedVisitRepository _repository;
     private readonly PlannedVisitConsentProbe _consentProbe;
+    private readonly ICallerScope _caller;
 
     public ConfirmPlannedVisitHandler(
         ITenantContext tenant,
         IActorContext actor,
         IPlannedVisitRepository repository,
-        PlannedVisitConsentProbe consentProbe)
+        PlannedVisitConsentProbe consentProbe,
+        ICallerScope caller)
     {
+        _caller = caller;
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
@@ -43,7 +46,8 @@ public sealed class ConfirmPlannedVisitHandler : IRequestHandler<ConfirmPlannedV
         }
 
         var plan = await _repository.GetByIdAsync(tenantId, request.PlannedVisitId, cancellationToken);
-        if (plan is null)
+        // WP-VP-2 (B-1) — another rep's plan answers 404 (no existence leak) unless the caller holds read-all.
+        if (plan is null || !_caller.MayAccess(PlannedVisitPermissions.ReadAll, plan.Resource.ResourceId))
         {
             return Response<bool>.Fail("Planned visit not found.", 404);
         }

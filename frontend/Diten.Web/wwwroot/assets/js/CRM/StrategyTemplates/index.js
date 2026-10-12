@@ -293,10 +293,14 @@
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';
     };
 
+    // WP-E2E-FIX-3 (E5-B2) — "Yerini v{n} aldı" when the successor's version is known, else the plain marker.
+    const supersededLabel = row => (row.supersededByTemplateVersion && L.SupersededByVersion)
+        ? String(L.SupersededByVersion).replace('{0}', row.supersededByTemplateVersion)
+        : (L.Superseded || 'superseded');
     // OYUN — play name (prominent) + code (muted) + superseded badge.
     const playCell = row => `<span class="fw-medium text-heading d-block">${esc(row.templateName || '—')}</span>`
         + (norm(row.templateCode) ? `<span class="text-muted small">${esc(row.templateCode)}</span>` : '')
-        + (row.superseded ? ` <span class="badge bg-label-secondary">${esc(L.Superseded || 'superseded')}</span>` : '');
+        + (row.superseded ? ` <span class="badge bg-label-secondary">${esc(supersededLabel(row))}</span>` : '');
     // SEGMENT — subject-type badge (contact=kişi/mavi, account=kurum/turuncu) + bound-segment count beside it (mockup).
     // Unknown/blank subject types degrade to the count alone (no fabricated badge).
     const subjectLabel = row => {

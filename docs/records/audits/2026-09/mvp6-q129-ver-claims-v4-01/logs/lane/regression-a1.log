@@ -1,0 +1,4 @@
+{"ok": true, "rc": 0, "log": "run-harness-claims_runtime-a7.log"}
+phase regression rc 0
+K10 PASS: regression-after
+pair regression rc 0

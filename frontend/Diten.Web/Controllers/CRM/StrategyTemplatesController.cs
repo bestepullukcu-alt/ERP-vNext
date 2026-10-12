@@ -45,6 +45,7 @@ public sealed class StrategyTemplatesController : Controller
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
+    private readonly IStringLocalizer<Diten.Web.Views.CRM.StrategyTemplates.StrategyTemplatesIndex>? _pageLocalizer;
     private readonly ILogger<StrategyTemplatesController> _logger;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
@@ -52,8 +53,11 @@ public sealed class StrategyTemplatesController : Controller
         HttpClient httpClient,
         IConfiguration configuration,
         IStringLocalizer<SharedResource> sharedLocalizer,
-        ILogger<StrategyTemplatesController> logger)
+        ILogger<StrategyTemplatesController> logger,
+        // WP-E2E-FIX-3 (E5-B1) — the page's own resx, for the localized "why it was not activated" reason.
+        IStringLocalizer<Diten.Web.Views.CRM.StrategyTemplates.StrategyTemplatesIndex>? pageLocalizer = null)
     {
+        _pageLocalizer = pageLocalizer;
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
@@ -102,7 +106,7 @@ public sealed class StrategyTemplatesController : Controller
                 // WP-ST-EDIT-W — one-click "save + activate". Activate is a SEPARATE operation over the EXISTING endpoint;
                 // it runs ONLY after the save succeeded and ONLY when the actor holds the activate permission. A failed
                 // activate never rolls back the save — the play stays created and the author lands on Edit with a notice.
-                if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission))
+                if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission, ManagePermission, ManageFallback))
                     return await ActivateAfterSaveAsync(id, nameof(Edit), ct);
                 // A new play lands on Edit so the author can keep binding without a second navigation.
                 return RedirectToAction(nameof(Edit), new { id });
@@ -151,7 +155,7 @@ public sealed class StrategyTemplatesController : Controller
             TempData["SuccessMessage"] = _sharedLocalizer["RecordUpdated"].Value;
             // WP-ST-EDIT-W — same one-click "save + activate" orchestration as Create. On a failed activate the update is
             // still saved; both outcomes land on Details, the failure adding a "saved, not activated" warning.
-            if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission))
+            if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission, ManagePermission, ManageFallback))
                 return await ActivateAfterSaveAsync(id, nameof(Details), ct);
             return RedirectToAction(nameof(Details), new { id });
         }
@@ -427,9 +431,54 @@ public sealed class StrategyTemplatesController : Controller
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // The save already succeeded; keep its success toast and add a warning about the activation.
-        TempData["WarningMessage"] = _sharedLocalizer["SavedNotActivated"].Value;
+        // The save already succeeded; keep its success toast and add a warning about the activation — WITH the reason
+        // (WP-E2E-FIX-3 E5-B1: e.g. a bound segment that is not active answers 409 segment_not_active).
+        var reason = await ActivationBlockedReasonAsync(activate, ct);
+        TempData["WarningMessage"] = string.IsNullOrWhiteSpace(reason)
+            ? _sharedLocalizer["SavedNotActivated"].Value
+            : $"{_sharedLocalizer["SavedNotActivated"].Value} {reason}";
         return RedirectToAction(failureAction, new { id });
+    }
+
+    /// <summary>WP-E2E-FIX-3 (E5-B1) — the activate refusal as a localized sentence: the response's error code
+    /// (<c>errors[0]</c> when the envelope carries [code, message]) → <c>ActivationBlocked_{code}</c> in the page resx;
+    /// an unknown code or a code-less refusal → the generic <c>ActivationBlocked</c>; no response at all → nothing.</summary>
+    private async Task<string?> ActivationBlockedReasonAsync(HttpResponseMessage? response, CancellationToken ct)
+    {
+        if (response is null || _pageLocalizer is null)
+        {
+            return null;
+        }
+
+        string? code = null;
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (doc.RootElement.ValueKind == JsonValueKind.Object
+                && doc.RootElement.TryGetProperty("errors", out var errors)
+                && errors.ValueKind == JsonValueKind.Array
+                && errors.GetArrayLength() >= 2
+                && errors[0].ValueKind == JsonValueKind.String)
+            {
+                code = errors[0].GetString();
+            }
+        }
+        catch (JsonException)
+        {
+            // an unreadable body is still a refusal: the generic reason
+        }
+
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            var specific = _pageLocalizer[$"ActivationBlocked_{code}"];
+            if (!specific.ResourceNotFound)
+            {
+                return specific.Value;
+            }
+        }
+
+        var generic = _pageLocalizer["ActivationBlocked"];
+        return generic.ResourceNotFound ? null : generic.Value;
     }
 
     private async Task<IActionResult> ProxyGetAsync(

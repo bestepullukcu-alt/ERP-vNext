@@ -1,0 +1,5 @@
+target	exit	warnings	errors
+services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0
+frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	18	0
+gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj	0	5	0
+tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj	0	0	0

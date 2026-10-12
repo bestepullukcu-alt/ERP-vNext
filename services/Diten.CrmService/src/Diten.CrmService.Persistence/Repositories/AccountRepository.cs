@@ -14,6 +14,19 @@ public sealed class AccountRepository : IAccountRepository
         _collection = database.GetCollection<Account>("accounts");
     }
 
+    /// <summary>WP-VP-2 (B-8) — one <c>$in</c> read for a page's display names.</summary>
+    public async Task<IReadOnlyList<Account>> ListByIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids is null || ids.Count == 0)
+        {
+            return Array.Empty<Account>();
+        }
+
+        var filter = ActiveTenant(tenantId) & Builders<Account>.Filter.In(a => a.Id, ids);
+        return await _collection.Find(filter).ToListAsync(cancellationToken);
+    }
+
     private static FilterDefinition<Account> ActiveTenant(Guid tenantId)
         => Builders<Account>.Filter.Where(a => a.TenantId == tenantId && !a.IsDeleted);
 
@@ -40,10 +53,33 @@ public sealed class AccountRepository : IAccountRepository
         return await _collection.Find(filter).AnyAsync(cancellationToken);
     }
 
-    public async Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(
+    public Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(
         Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,
         IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes,
         IReadOnlyCollection<Guid>? accountIdScope, CancellationToken cancellationToken)
+        => ListAsync(tenantId, search, page, pageSize, sortBy, sortDir, statuses, accountTypes, accountIdScope, null,
+            cancellationToken);
+
+    /// <summary>WP-VP-2B (R3-a) — distinct type codes (one <c>distinct</c>).</summary>
+    public async Task<IReadOnlyList<string>> ListDistinctAccountTypesAsync(
+        Guid tenantId, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken cancellationToken)
+    {
+        var filter = ActiveTenant(tenantId);
+        if (accountIdScope is not null)
+        {
+            if (accountIdScope.Count == 0) return [];
+            filter &= Builders<Account>.Filter.In(a => a.Id, accountIdScope);
+        }
+
+        var types = await _collection.Distinct(a => a.AccountType, filter).ToListAsync(cancellationToken);
+        return types.Where(t => !string.IsNullOrWhiteSpace(t)).OrderBy(t => t, StringComparer.Ordinal).ToList();
+    }
+
+    public async Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(
+        Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,
+        IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes,
+        IReadOnlyCollection<Guid>? accountIdScope, IReadOnlyCollection<Guid>? excludedAccountIds,
+        CancellationToken cancellationToken)
     {
         var tenantFilter = ActiveTenant(tenantId);
         var filter = tenantFilter;
@@ -61,10 +97,18 @@ public sealed class AccountRepository : IAccountRepository
         {
             filter &= Builders<Account>.Filter.In(a => a.Id, accountIdScope!);
         }
+        // WP-VP-2B (R2) — "without active contacts": the accounts that DO have one are excluded in the same query.
+        var hasExclusion = excludedAccountIds is { Count: > 0 };
+        if (hasExclusion)
+        {
+            filter &= Builders<Account>.Filter.Nin(a => a.Id, excludedAccountIds!);
+        }
         var hasSearch = !string.IsNullOrWhiteSpace(search);
         if (hasSearch)
         {
-            var term = search!.Trim();
+            // WP-VP-FIX-2 (F-1) — literal, Turkish-insensitive "contains": "Hamidiye" finds "HAMİDİYE" (Mongo's i option
+            // alone does not fold İ / ı); the term is escaped, so a regex character in it is plain text.
+            var term = Application.Common.TurkishInsensitivePattern.Build(search!.Trim());
             var regex = Builders<Account>.Filter.Regex(a => a.AccountName, new MongoDB.Bson.BsonRegularExpression(term, "i"))
                         | Builders<Account>.Filter.Regex(a => a.AccountCode, new MongoDB.Bson.BsonRegularExpression(term, "i"));
             filter &= regex;
@@ -87,7 +131,7 @@ public sealed class AccountRepository : IAccountRepository
         // recordsFiltered (respects search + chip filters) and recordsTotal (tenant-wide, ignores both). When nothing
         // narrows the set the two are identical, so avoid the extra count round-trip.
         var total = await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
-        var unfilteredTotal = (hasSearch || hasStatusFilter || hasTypeFilter || hasIdScope)
+        var unfilteredTotal = (hasSearch || hasStatusFilter || hasTypeFilter || hasIdScope || hasExclusion)
             ? await _collection.CountDocumentsAsync(tenantFilter, cancellationToken: cancellationToken)
             : total;
 

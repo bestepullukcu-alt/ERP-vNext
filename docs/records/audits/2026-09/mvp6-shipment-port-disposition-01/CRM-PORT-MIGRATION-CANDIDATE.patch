@@ -1,0 +1,1437 @@
+diff --git a/.antigravity/rules/ports.md b/.antigravity/rules/ports.md
+index 75408a42a16437cba668cdacf745a44940a53cae..21d73085a10525de0d87225eb56e31cb40014657 100644
+--- a/.antigravity/rules/ports.md
++++ b/.antigravity/rules/ports.md
+@@ -11,7 +11,7 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
+ ## Port Bandları
+ - **5000**: Gateway (Ocelot) — dev
+ - **5001**: Frontend (Diten.Web) — dev
+-- **5011–5064**: Microservice bandı (Backend servis portları) — band 5060'tan 5064'e genişletildi (CT kararı 2026-09-14; HumanCapitalService=5063, TalentEcosystemService=5064 kurtarma servisleri için).
++- **5011–5065**: Microservice bandı (Backend servis portları) — `5061` SupplyChain, `5062` PPM, `5063` HumanCapital, `5064` TalentEcosystem ve ayrıca onaylanan port disposition ile `5065` CRM için ayrılmıştır.
+ - **7000+**: Dev tools / özel (mümkünse kullanılmaz; bazı tool’lar kapabilir)
+ 
+ ## Aktif Kullanımlar (Şu an)
+@@ -24,16 +24,17 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
+ | **Diten.DevEnablementService.Api** | `5058` | Golden reference ve developer enablement modülleri. |
+ | **Diten.MdmService.Api** | `5059` | Master data: tüzel kişilik, ürün, marka. |
+ | **Diten.HcmService.Api** | `5060` | Core HR / employment records. |
++| **Diten.SupplyChainService.Api** | `5061` | Supply Chain Execution. |
++| **Diten.PpmService.Api** | `5062` | Portfolio delivery. |
+ | **Diten.HumanCapitalService.Api** | `5063` | HCM readiness — applicant intake, onboarding, competency/development. |
+-| **Diten.TalentEcosystemService.Api** | `5064` | TEP — talent ecosystem / association & career readiness. ⚠ Bandın **son portu** (band 5064'e genişletildi — CT kararı 2026-09-14). |
++| **Diten.TalentEcosystemService.Api** | `5064` | TEP — talent ecosystem / association & career readiness. |
++| **Diten.CrmService.Api** | `5065` | Commercial Suite / CRM. |
+ 
+ > **Kural:** Frontend (5001) hiçbir zaman doğrudan servis portlarına istek atamaz. Frontend'in yapacağı tüm API çağrıları Gateway (5000) üzerinden geçmek ZORUNDADIR.
+ 
+ ## Boş Port Seçme Kuralı (Yeni Servis Açarken)
+-1) Yeni servis microservice bandından seçilir: **5011–5060**.
+-   ⚠ **BANT DOLDU (2026-09-07):** 5060 HCM tarafından kullanılıyor. Yeni bir servis
+-   eklenmeden önce bandın genişletilmesi bir Control Tower kararıdır — boş bir port
+-   varsaymak, çakışan iki servisin sessizce birbirini beklemesiyle sonuçlanır.
++1) Yeni servis microservice bandından seçilir: **5011–5065**.
++   ⚠ **BANT DOLDU:** `5065` dahil mevcut tahsisler doludur. Yeni bir servis eklenmeden önce bandın genişletilmesi bir Control Tower kararıdır; boş bir port varsayılmaz.
+ 2) Seçmeden önce kontrol:
+    - `lsof -nP -iTCP:<PORT> | grep LISTEN`
+ 3) Port boşsa bu dosyaya eklenir (Aktif kullanımlar listesine).
+diff --git a/AGENTS.md b/AGENTS.md
+index 46fd552aea660ecdd2fc79571154dcb8dd1868b4..2cc73a2e690f5998f23a1c3a05bf4971b5de0ffc 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -84,9 +84,10 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
+ | MDM Service | 5059 | `services/Diten.MdmService/src/Diten.MdmService.Api` |
+ | HCM Service | 5060 | `services/Diten.HcmService/src/Diten.HcmService.Api` |
+ | SupplyChain Service | 5061 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
++| CRM Service | 5065 | `services/Diten.CrmService/src/Diten.CrmService.Api` |
+ | MongoDB | 27017 | yerel çalışmalı |
+ 
+-> **Not (2026-09-11):** Mikroservis bandı 5011–5060'tan **5061'e uzatıldı** — `SupplyChain Service` (DCP-009, supply-chain-execution domain, kullanıcı onaylı). Sonraki mikroservisler 5062+ kullanır.
++> **Not:** Mikroservis bandı `5065`'e kadar uzatılmıştır. `5061`, 2026-09-11 tarihli DCP-009 kararıyla `SupplyChain Service`'e; `5065`, ayrıca onaylanan CRM port disposition kararıyla `CRM Service`'e ayrılmıştır.
+ 
+ **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
+ 
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0149-PREREQ-diten-crm-service-scaffold.md b/execution/domains/commercial-suite/module-packs/MOD-0149-PREREQ-diten-crm-service-scaffold.md
+index 43eed684b4fb53d5c4f990792dc13af7cf53e717..ec1644dac44b86a22ecb957a8000d84d6a36a2f9 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0149-PREREQ-diten-crm-service-scaffold.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0149-PREREQ-diten-crm-service-scaffold.md
+@@ -55,7 +55,7 @@ ve approved/ready-for-dev pack** olmadan açılmamasını gerektirir — bu pack
+ | Soft delete convention | ✅ | `IsDeleted`/`DeletedAt` taban (entity gelince kullanılacak) |
+ | DI registration / appsettings / Program.cs | ✅ | MdmService/HcmService pattern'i birebir |
+ | Swagger / health endpoint | ✅ | Boot doğrulaması için |
+-| Local dev port | ✅ | **Öneri: 5061** (§5) |
++| Local dev port | ✅ | **Öneri: 5065** (§5) |
+ | Test project (`Diten.CrmService.*.Tests`) | ✅ | boots/DI/health/tenant-guard/build smoke; **account business test YOK** |
+ | Frontend account pages | ❌ | MOD-0149 implementation task'ı |
+ | Gateway `/api/crm/accounts*` route | ❌ | MOD-0149 + integration-agent |
+@@ -84,16 +84,16 @@ ve approved/ready-for-dev pack** olmadan açılmamasını gerektirir — bu pack
+ - **Test project naming:** repo standardına göre `Diten.CrmService.Application.Tests` (+ gerekiyorsa `.Api.Tests`).
+ - **Solution:** yeni projeler mevcut `.sln`'e eklenir (MdmService/HcmService referans).
+ - **launchSettings / appsettings / DI:** MdmService pattern'i; `Diten.Building.Blocks` + `Diten.Platform.Contracts` referansları.
+-- **Local dev port — ÖNERİ: `5061`.** Mevcut: Gateway 5000, Web 5001, Auth 5056, Platform 5057, DevEnablement 5058,
+-  **Mdm 5059, Hcm 5060** (launchSettings + ocelot downstream doğrulandı). **5061 boş** ve çakışmasız.
+-- **Gateway registration:** downstream base (`localhost:5061`) gerekiyorsa **integration-agent** ekler; `/api/crm/accounts*`
++- **Local dev port — ÖNERİ: `5065`.** Mevcut: Gateway 5000, Web 5001, Auth 5056, Platform 5057, DevEnablement 5058,
++  **Mdm 5059, Hcm 5060** (launchSettings + ocelot downstream doğrulandı). **5065 boş** ve çakışmasız.
++- **Gateway registration:** downstream base (`localhost:5065`) gerekiyorsa **integration-agent** ekler; `/api/crm/accounts*`
+   route'ları MOD-0149 implementation'a bırakılır. Bu pack `ocelot.json` **yazmaz**.
+-- **Docker/compose:** varsa fleet script'ine (`watch-diten-bg.ps1`) 5061 eklenmesi implementation/integration task notu.
++- **Docker/compose:** varsa fleet script'ine (`watch-diten-bg.ps1`) 5065 eklenmesi implementation/integration task notu.
+ 
+ ## 6. Future Implementation Golden Flow
+ 
+ **Golden flow:**
+-1. Geliştirici `Diten.CrmService`'i lokalde başlatır (port 5061).
++1. Geliştirici `Diten.CrmService`'i lokalde başlatır (port 5065).
+ 2. Servis **DI/config hatası olmadan boot eder**.
+ 3. Health/basic endpoint beklenen host üzerinden **success** döner.
+ 4. `dotnet build` (yeni servis + solution) **PASS**.
+@@ -109,7 +109,7 @@ ve approved/ready-for-dev pack** olmadan açılmamasını gerektirir — bu pack
+ 
+ - [ ] `services/Diten.CrmService/src/` altında 5 katman MdmService/HcmService ile birebir folder/naming.
+ - [ ] `dotnet build` yeni servis + solution PASS.
+-- [ ] Servis port **5061**'de boot eder; health/basic endpoint success.
++- [ ] Servis port **5065**'de boot eder; health/basic endpoint success.
+ - [ ] MediatR + 4 pipeline behavior + `Response<T>` + `CustomBaseController` kayıtlı.
+ - [ ] Tenant context accessor + Mongo registration + soft-delete taban mevcut; **entity/collection YOK**.
+ - [ ] Scaffold smoke testleri (boots/DI/health/tenant-guard) PASS; **account business test YOK**.
+@@ -139,5 +139,5 @@ ve approved/ready-for-dev pack** olmadan açılmamasını gerektirir — bu pack
+ 
+ - **Açık kullanıcı/EA onayı** — yeni production service scaffold açmak için zorunlu (AGENTS.md §2 / DCP-003 deseni).
+ - **Adjacent service kararı (EA-TBD)** — CPQ/O2C/Service/BizDev aynı serviste mi ayrı `Diten.CommercialService` mı; MOD-0149'u bloklamaz.
+-- **integration-agent** — 5061 downstream gateway registration (route'lar MOD-0149'a ait).
+-- **Fleet script** — `watch-diten-bg.ps1`'e 5061 eklenmesi (implementation/integration notu).
++- **integration-agent** — 5065 downstream gateway registration (route'lar MOD-0149'a ait).
++- **Fleet script** — `watch-diten-bg.ps1`'e 5065 eklenmesi (implementation/integration notu).
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0149-customer-360-account-hierarchy.md b/execution/domains/commercial-suite/module-packs/MOD-0149-customer-360-account-hierarchy.md
+index ac0d1fef9230fa9577204dda9e076d0d9cca5095..62d2a16d88dfc1d1399e406ec5ea7273f098db6f 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0149-customer-360-account-hierarchy.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0149-customer-360-account-hierarchy.md
+@@ -35,7 +35,7 @@ dependencies:
+ > 1. **`crm` branch code** — AGENTS.md §9'a eklendi; `feature/crm/mod-0149-customer-360-account-hierarchy` geçerli.
+ > 2. **Permission validator nested-key** — `IsCanonicalPermissionKey` ≥3 segment kabul ediyor (doğrulandı); `crm.account.hierarchy.manage` / `crm.account.attribute.manage` / `crm.account.overview.read` geçerli; `crm.account.360.read` kullanılmaz.
+ > 3. **MOD-0048 reference readiness** — `account-type`/`account-status` required set kararları + 5 önerilen set + PSS-012/Business Reference Data SoR kabul; authoring template + operatör checklist hazır; **actual publish operatör aksiyonuna devredildi** (implementation validation'ı için Step 1–4 publish şart). Bkz. [readiness](../../../docs/records/audits/2026-08/mod-0149-crm-reference-data-readiness.md) + [authoring-closeout](../../../docs/records/audits/2026-08/mod-0149-crm-reference-data-authoring-closeout.md).
+-> 4. **Diten.CrmService scaffold** — MOD-0149-PREREQ ready-for-dev; 5-katman scaffold (port 5061) build 0/0, smoke 5/5, `/health` 200, Account business surface yok. Bkz. [scaffold audit](../../../docs/records/audits/2026-07/diten-crm-service-scaffold-implementation-2026-07-14.md).
++> 4. **Diten.CrmService scaffold** — MOD-0149-PREREQ ready-for-dev; 5-katman scaffold (port 5065) build 0/0, smoke 5/5, `/health` 200, Account business surface yok. Bkz. [scaffold audit](../../../docs/records/audits/2026-07/diten-crm-service-scaffold-implementation-2026-07-14.md).
+ >
+ > **Implementation başlamadan operatörün MOD-0048'de `account-type` + `account-status` set'lerini publish etmesi gerekir** (create/update validation aksi halde çalışmaz).
+ 
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0150-contact-relationship-management.md b/execution/domains/commercial-suite/module-packs/MOD-0150-contact-relationship-management.md
+index 7f9b9a103b132f04ea4c0b7242f5d7cac8cf2b39..fb5554026135f6fb0c881c067cca591351767f19 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0150-contact-relationship-management.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0150-contact-relationship-management.md
+@@ -151,7 +151,7 @@ No CRM local seed, no hardcoded fallback.
+ 
+ ## 7. Repo Scope (implementation, after approval)
+ 
+-Reuse **`Diten.CrmService`** (same 5-layer service as MOD-0149, port 5061) — new `Contact` / `AccountContactLink` /
++Reuse **`Diten.CrmService`** (same 5-layer service as MOD-0149, port 5065) — new `Contact` / `AccountContactLink` /
+ `AccountRelationship` aggregates under `Features/Contact` and `Features/Relationship`. **No separate service.** This
+ keeps Account↔Contact↔Relationship in one bounded context (all CRM Core), reusing the Gateway route prefix `/api/crm/*`,
+ the Guid-as-string class-map convention, and the reference-validator seam.
+@@ -160,7 +160,7 @@ the Guid-as-string class-map convention, and the reference-validator seam.
+ 
+ - No Account entity pollution (no Contact fields on `Account`). No Zone/MicroZone/Territory/SalesRep anywhere.
+ - Reference values via MOD-0048 consumer only. No CRM local reference seed. No hardcoded fallback.
+-- Frontend calls Gateway (5000); never CrmService (5061) directly. Golden Reference **Compact** pattern.
++- Frontend calls Gateway (5000); never CrmService (5065) directly. Golden Reference **Compact** pattern.
+ - Consent/preference are **read-only reference seams** until MOD-0164 exists; MOD-0150 builds no consent engine.
+ 
+ ## 9. Proposed Domain Model
+@@ -561,7 +561,7 @@ flag is introduced here.
+   deactivate/archive path works and **no delete path compiles**.
+ - **Guard:** `Contact` aggregate carries **no** availability field; no route / visit / plan / frequency / cadence /
+   GPS type exists in MOD-0150; no territory or `ContactTerritoryAssignment` write; `Account` master untouched;
+-  no permission seed/grant; no `TenantId` in request payloads; frontend never calls 5061 directly.
++  no permission seed/grant; no `TenantId` in request payloads; frontend never calls 5065 directly.
+ - **Frontend:** Availability tab + link panel render, Compact verifier, DataTable v2 contract, 7-language RESX parity,
+   no route/visit/GPS action anywhere on the surface.
+ - **Authenticated Gateway-only smoke:** link A gets Mon 09:00–13:00 + Wed 14:00–17:00 with preferred 10:00–12:00 and
+@@ -577,4 +577,4 @@ GPS validation · visit report · digital detailing · survey · campaign engine
+ territory assignment · `ContactTerritoryAssignment` · Account master mutation · territory model mutation · workflow
+ approval · ChangeRequest · MOD-0023 integration · evidence pack · new import/export scope · Brand/Product master ·
+ patient data · hard delete · Mongo hand-edit · RBAC seed/grant (unless separately authorized) · MOD-0048 publish
+-(unless separately authorized) · `TenantId` in request payloads · direct port 5061 business API calls.
++(unless separately authorized) · `TenantId` in request payloads · direct port 5065 business API calls.
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md b/execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md
+index 9653056089a1ee28afc41f29afad4af4458ff59e..3ba17e57945db7f32e11a28c3e5a51b19c27e3ec 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md
+@@ -155,7 +155,7 @@ audit store (MOD-0021) — hepsi **tüketilir**, sahiplenilmez.
+ | SoR | territories, assignments, territory change approvals | §5 Scope; `SoR_Map` collision count = **0** |
+ | SoR Primary Object(s) | territories | `TerritoryNode` + `TerritoryModel` |
+ | Integration Contract | DOMAIN-APP-BASE | tenant isolation + authz + audit + health taban kontratı |
+-| Deployment Unit | Domain Applications | `Diten.CrmService` (port 5061), Gateway-only erişim |
++| Deployment Unit | Domain Applications | `Diten.CrmService` (port 5065), Gateway-only erişim |
+ | Build / Buy / Partner | **Buy/Partner** | ⚠️ §4-D6 governance sapma notu |
+ | SLO Tier | Tier 2 | Planlama modülü; runtime-critical değil |
+ | Support Model | L1 Service Desk; L2 Domain App Ops; L3 Vendor / Partner | Frontmatter birebir Excel'den |
+@@ -837,7 +837,7 @@ alanı taşımaz (yalnız `ContactId` / display name / link referansı).
+ ## 18. UI Surfaces
+ 
+ Golden Reference **Compact** (MOD-0149 / MOD-0150 ile aynı) · **offcanvas/quickview create-edit yasak** ·
+-**Gateway-only** (tarayıcı 5061'e asla gitmez) · **fake UI / mock data yasak** (backend hazır olmadan sayfa açılmaz) ·
++**Gateway-only** (tarayıcı 5065'e asla gitmez) · **fake UI / mock data yasak** (backend hazır olmadan sayfa açılmaz) ·
+ **7 dil `.resx`** + `window.L10n` bridge · DataTable v2 kontratı.
+ 
+ ### Blueprint-zorunlu 3 sayfa
+@@ -1124,7 +1124,7 @@ atama geçmişi yalnız MOD-0151 collection/aggregate'inde tutulur.
+ `MicroZoneId` ekleme; resource assignment mutation; workflow submit/approve/reject ve MOD-0023 entegrasyonu;
+ approval trace; evidence pack; import/export; visit/route planning veya readiness; Brand Scope; Product/Brand master;
+ hard delete; Mongo hand-edit; RBAC seed/grant; MOD-0048 publish; `crm.territory.delete`;
+-`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5061 business API çağrısı.
++`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5065 business API çağrısı.
+ 
+ **FU06 boundary:** FU05 assignment apply bir workflow approval değildir. FU06 ayrıca submit/approve/reject,
+ workflow trace, MOD-0023 integration ve gerekiyorsa approval-governed controlled activation getirir. FU05 bu
+@@ -1366,7 +1366,7 @@ boş response, birden fazla sonuç integrity conflict üretir; proposed kayıt h
+   kullanılır.
+ - Contract resource lifecycle/current/history capability'lerini doğru bildirir; workflow/evidence/import-export/
+   visit-route flag'leri açılmaz.
+-- Frontend bütün business çağrılarını Gateway/same-origin proxy üzerinden yapar; direct `:5061` çağrısı ve payload
++- Frontend bütün business çağrılarını Gateway/same-origin proxy üzerinden yapar; direct `:5065` çağrısı ve payload
+   `TenantId` alanı yoktur.
+ - Tenant isolation cross-tenant ID'lerde 404; Account/Contact master mutation yolu yok; hard delete yoktur.
+ 
+@@ -1388,7 +1388,7 @@ boş response, birden fazla sonuç integrity conflict üretir; proposed kayıt h
+ workflow approval, submit/approve/reject veya MOD-0023 entegrasyonu; approval trace; evidence pack; import/export;
+ visit/route planning implementation; Brand Scope; Product/Brand master; hard delete; Mongo hand-edit; RBAC
+ seed/grant; MOD-0048 publish; `crm.territory.delete`; `crm.micro-zone.manage`; request payload'ında `TenantId`;
+-direct port 5061 business API çağrısı.
++direct port 5065 business API çağrısı.
+ 
+ **FU05–FU09 boundary:** FU04A resource responsibility lifecycle sahibidir. FU05 Account assignment sahibidir; FU06
+ workflow approval sahibidir; FU07 evidence pack; FU08 import/export; FU09 yalnız MOD-0155 readiness/coverage API
+@@ -1501,7 +1501,7 @@ Aşağıdakiler FU04B kapsamında **kesinlikle yasaktır**:
+ - Brand Scope · Product/Brand master
+ - Hard delete · Mongo hand-edit
+ - RBAC seed/grant (ayrıca yetkilendirilmedikçe) · MOD-0048 publish (ayrıca yetkilendirilmedikçe)
+-- `crm.territory.delete` · `crm.micro-zone.manage` · request payload'ında `TenantId` · direct port 5061 çağrısı
++- `crm.territory.delete` · `crm.micro-zone.manage` · request payload'ında `TenantId` · direct port 5065 çağrısı
+ - **Yeni bağımsız ana menü sayfası** — global Resource Change Monitor future follow-up'tır
+ - Diff projection cache / materialized read model (D-FU04B-7)
+ 
+@@ -1566,7 +1566,7 @@ MOD-0150 için zaten çalışan XLSX parse / dry-run / apply altyapısı yeniden
+ 1. **Export (read-only).** Territory Model metadata · Territory Node'lar · hiyerarşi (parent/level/sort) · Business
+    Unit scope'ları · Assignment Rule'lar · Account Assignment current + history · CoverageSummary · Resource
+    Assignment current + history · Plan vs Current. Format **XLSX**, satır bazlı açık kolonlar. Tenant **claim'den**
+-   okunur; export payload'ında/çıktısında `TenantId` **yer almaz**; çağrılar Gateway üzerinden yapılır, direct 5061
++   okunur; export payload'ında/çıktısında `TenantId` **yer almaz**; çağrılar Gateway üzerinden yapılır, direct 5065
+    business API çağrısı yoktur.
+ 2. **Import template generation.** Sistem, doldurulabilir çok-sheet'li bir XLSX şablon üretir: `Model` · `Nodes` ·
+    `AssignmentRules` · `AccountAssignments` · `ResourceAssignments` · `ReferenceValues` (lookup) · `ValidationNotes`
+@@ -1714,7 +1714,7 @@ contract yüzeyinde de görünür kılar.
+   kolonu yok sayılır + uyarı.
+ - **Guard:** Account/Contact master mutasyonu yok; `ContactTerritoryAssignment` yok; CoverageSummary/Plan vs Current
+   import endpoint'i **yok** (derlenebilir bir yolu bulunmamalı); resource assignment apply yolu **yok**; hard delete
+-  yok; workflow/approval/ChangeRequest yok; `crm.territory.delete` / `crm.micro-zone.manage` yok; direct 5061 yok;
++  yok; workflow/approval/ChangeRequest yok; `crm.territory.delete` / `crm.micro-zone.manage` yok; direct 5065 yok;
+   request payload'ında `TenantId` yok.
+ - **Frontend:** Import/Export sayfası render'ı, dry-run sonuç tablosu (severity/blocking ayrımı), apply onay akışı,
+   run history listesi, 7 dil RESX parity, Compact DataTable v2 verifier.
+@@ -1736,7 +1736,7 @@ survey; GPS check-in/out; Brand Scope; Product/Brand master; Account master muta
+ `ContactTerritoryAssignment` eklemek; **CoverageSummary import**; **Plan vs Current import**; **resource assignment
+ apply (FU08A)**; yeni import framework yazmak; hard delete; Mongo hand-edit; RBAC seed/grant (ayrıca
+ yetkilendirilmedikçe); MOD-0048 publish (ayrıca yetkilendirilmedikçe); `crm.territory.delete`;
+-`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5061 business API çağrısı.
++`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5065 business API çağrısı.
+ 
+ ### 22.6 FU09A — Visit/Route Readiness: Coverage, Contact Availability and Frequency Input Boundaries
+ 
+@@ -1976,7 +1976,7 @@ Mevcut flag'ler **korunur**: `supportsCoverageSummary`, `supportsCoverageSummary
+   `ContactTerritoryAssignment` yok; Contact/Account master mutasyonu yok; `ContactAvailability` /
+   `VisitFrequencyPolicy` / visit / route / visit-history **aggregate'i MOD-0151'de yok**; response'ta rota
+   sırası/mesafe/optimizasyon alanı yok; cadence compliance hesabı yok; hard delete yok; `crm.territory.delete` /
+-  `crm.micro-zone.manage` yok; request payload'ında `TenantId` yok; direct 5061 yok.
++  `crm.micro-zone.manage` yok; request payload'ında `TenantId` yok; direct 5065 yok.
+ - **Authenticated Gateway-only smoke:** active model + account assignment mevcut → account coverage readiness doğru
+   node/resource döner → model deactivate edilir → aynı account `coverage_not_current` ile candidate dışına düşer ve
+   history bozulmaz → çok-account'lu contact iki coverage satırı döner → resource readiness current sahibi gösterir →
+@@ -1998,7 +1998,7 @@ yetkilendirilmedikçe); MOD-0150 Contact master mutasyonu; Account master mutasy
+ hasta (patient) verisi; workflow approval; ChangeRequest; MOD-0023 entegrasyonu; evidence pack; import/export yeni
+ scope; Brand/Product master; coverage roll-up (FU09); hard delete; Mongo hand-edit; RBAC seed/grant (ayrıca
+ yetkilendirilmedikçe); MOD-0048 publish (ayrıca yetkilendirilmedikçe); `crm.territory.delete`;
+-`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5061 business API çağrısı.
++`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5065 business API çağrısı.
+ 
+ ---
+ 
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0162-FU02-knowledge-content-runtime-ui.md b/execution/domains/commercial-suite/module-packs/MOD-0162-FU02-knowledge-content-runtime-ui.md
+index 317ca1a2e506e01e7e6fad61a23dd63a0515bb99..c6c8babb5fd3e377999c999e5b54c63776359ef4 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0162-FU02-knowledge-content-runtime-ui.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0162-FU02-knowledge-content-runtime-ui.md
+@@ -55,7 +55,7 @@ dependencies:
+ >
+ > **✅ READY-FOR-DEV (2026-08-09) — her iki blocker kapandı; pack `@orchestrator` implementasyonuna AÇIK.**
+ > **F-BND** resolved (MOD-0162-FU01 approved) + **F-GW** resolved (Gateway `/api/crm/knowledge` + `/api/crm/knowledge/{everything}`
+-> route'ları eklendi → downstream `Diten.CrmService:5061`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok;
++> route'ları eklendi → downstream `Diten.CrmService:5065`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok;
+ > [F-GW audit](../../../../docs/records/audits/2026-08/mod-0162-fu02-f-gw-knowledge-gateway-route-authorization-2026-08-09.md)).
+ > `status: draft → ready-for-dev`.
+ >
+@@ -80,7 +80,7 @@ dependencies:
+ >    ([boundary approval review](../../../../docs/records/audits/2026-08/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)).
+ >    FU01A/FU01C de `approved`; FU01B `draft` kaldı ama **FU02 EngagementJourney runtime açmadığı için blocker değil**.
+ > 2. **✅ F-GW RESOLVED (2026-08-09):** Gateway `/api/crm/knowledge` + `/api/crm/knowledge/{everything}` route'ları
+->    `ocelot.json`'a eklendi (downstream `5061`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok; mevcut CRM/MDM/legal-entities
++>    `ocelot.json`'a eklendi (downstream `5065`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok; mevcut CRM/MDM/legal-entities
+ >    route'ları korundu; toplam 114 → 116). Bkz. §11.
+ >
+ > Otorite sırası: **Blueprint Excel** > Module Pack > [Domain Config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`.
+@@ -271,7 +271,7 @@ bir kaydı). Profil ↔ contact/segment/pozisyon eşleştirme kuralı bu FU'da *
+ 
+ ## 10. API Contract
+ 
+-Route sözleşmesi (Gateway `5000` üzerinden; downstream `Diten.CrmService` port `5061`):
++Route sözleşmesi (Gateway `5000` üzerinden; downstream `Diten.CrmService` port `5065`):
+ 
+ ```text
+ GET    /api/crm/knowledge/contents
+@@ -304,7 +304,7 @@ GET    /api/crm/knowledge/contract
+ Kurallar:
+ - **DELETE yok** (hiçbir kaynakta). Lifecycle yalnız `archive` POST.
+ - **TenantId payload yok**; JWT claim'inden çözülür.
+-- Direct `5061` frontend call yok; same-origin MVC proxy / Gateway.
++- Direct `5065` frontend call yok; same-origin MVC proxy / Gateway.
+ - Response / `reasonCode` / `correlationId` zarfı (`Response<T>`) korunur.
+ - Archived kayıt **okunabilir**; archived kayıt **update → 409**; archive **idempotent** (already-archived düzgün cevap).
+ - Contract endpoint capability flags + vocabulary + permissions + limitations yayınlar.
+@@ -440,7 +440,7 @@ Ortak helper'lar tüketilebilir ama değiştirilemez; zorunlu görünürse orche
+ ## Runtime Constraints
+ 
+ - Persistence: MongoDB, multi-tenant logical isolation, `TenantId` **zorunlu** (JWT), cross-tenant **404**.
+-- Tüm frontend/business çağrıları Gateway `5000`; direct `:5061` yasak.
++- Tüm frontend/business çağrıları Gateway `5000`; direct `:5065` yasak.
+ - Payload'da `TenantId` yok; archive-only lifecycle, `DELETE` yok.
+ - Contract okunamazsa fail-closed; unknown/future response alanları sessizce ignore.
+ - Backend'in desteklemediği filtre client-side fake filter olarak uygulanmaz; disabled/omitted + evidence limitation.
+@@ -586,7 +586,7 @@ supportsBrandProductMasterOwnership · supportsFileStorage · supportsHardDelete
+ 6. Content archive **POST**, not DELETE.
+ 7. Subject/Topic/AudienceProfile list loads.
+ 8. Brand/Product selector **Gateway-only** (`/api/mdm/*`); çözülemezse raw ID.
+-9. No direct `5061`.
++9. No direct `5065`.
+ 10. No `TenantId` payload.
+ 11. No `DELETE`.
+ 12. 7 language RESX parity.
+@@ -606,7 +606,7 @@ recommendation engine · visit planning · route planning · MOD-0155 (herhangi
+ Campaign runtime/UI mutation · Consent runtime/UI · Brand/Product runtime & ownership · workflow/approval (MOD-0023) ·
+ e-signature · file/binary storage · içerik render/preview · arama indeksi · import/export engine · patient data ·
+ Account/Contact/Territory mutation · hard delete · HTTP DELETE · Mongo hand-edit · RBAC seed/grant · MOD-0048 publish ·
+-registry write · `TenantId` payload · direct `:5061` business call · fake Brand/Product name resolution.
++registry write · `TenantId` payload · direct `:5065` business call · fake Brand/Product name resolution.
+ 
+ > Golden Reference'ın `Delete`/`BulkDelete` command'ları ve DataTable bulk-delete kolonu bu modülde **kasıtlı yoktur**
+ > (hard delete yasağı). Bu, Golden'dan gerekçeli tek yapısal sapmadır.
+@@ -624,7 +624,7 @@ registry write · `TenantId` payload · direct `:5061` business call · fake Bra
+ - [ ] Contract yedi flag'i döner; dokuz yasak flag response'ta **yok**.
+ - [ ] Content list DataTable v2 / Golden Compact-Slim state contractına uyar; Create/Edit full-page Compact + `_Form`.
+ - [ ] Tüm yeni görünür metin 7 dil RESX/L10n parity; hardcoded metin yok.
+-- [ ] Frontend'de direct `5061`, `DELETE`, `TenantId` payload veya yasak response alanı **yok**.
++- [ ] Frontend'de direct `5065`, `DELETE`, `TenantId` payload veya yasak response alanı **yok**.
+ - [ ] CrmService + Diten.Web build, backend/UI tests, DataTable verifier, RESX parity PASS; mümkünse authenticated smoke PASS.
+ - [ ] Campaign, Consent, Brand/Product, Gateway config, registry, seed/grant, Mongo **değişmemiştir**; MOD-0155 açılmamıştır.
+ 
+@@ -648,11 +648,11 @@ Karar: **✅ Gateway route EKLENDİ (F-GW resolved, 2026-08-09).** Route authori
+ Campaigns precedent'i birebir iki blok eklendi (toplam route 114 → 116):
+ 
+ ```text
+-/api/crm/knowledge                 ↔  downstream /api/crm/knowledge              (localhost:5061, GET/POST/PUT/OPTIONS)
+-/api/crm/knowledge/{everything}    ↔  downstream /api/crm/knowledge/{everything} (localhost:5061, GET/POST/PUT/OPTIONS)
++/api/crm/knowledge                 ↔  downstream /api/crm/knowledge              (localhost:5065, GET/POST/PUT/OPTIONS)
++/api/crm/knowledge/{everything}    ↔  downstream /api/crm/knowledge/{everything} (localhost:5065, GET/POST/PUT/OPTIONS)
+ ```
+ 
+-- **DELETE / PATCH eklenmedi.** Downstream `Diten.CrmService:5061`.
++- **DELETE / PATCH eklenmedi.** Downstream `Diten.CrmService:5065`.
+ - Mevcut `/api/crm/{campaigns,consents,preferences,...}`, `/api/mdm/brands`, `/api/legal-entities` route'ları **korundu** (doğrulandı).
+ - Brand/Product için `/api/mdm/*` route'u değişmedi; Knowledge için `/api/mdm/*` **kullanılmaz**.
+ - Runtime henüz yok olduğundan canlıda `/api/crm/knowledge` 404/502 dönebilir; bu route authorization için FAIL değildir
+@@ -684,7 +684,7 @@ Campaigns precedent'i birebir iki blok eklendi (toplam route 114 → 116):
+ | # | Follow-up | Owner | Neden |
+ |---|---|---|---|
+ | F-BND | ✅ **RESOLVED 2026-08-09** — MOD-0162-FU01 `approved` (FU02'nin tek zorunlu SoT'u); FU01A/01C de `approved`; FU01B held (MOD-0166 adlandırma, FU02 için non-blocking) | Reviewer / EA | SoT sözleşmesi onaylandı |
+-| F-GW | ✅ **RESOLVED 2026-08-09** — `/api/crm/knowledge` + `/api/crm/knowledge/{everything}` eklendi (5061, GET/POST/PUT/OPTIONS, DELETE/PATCH yok) | integration-agent | Route authorization tamamlandı; §11 |
++| F-GW | ✅ **RESOLVED 2026-08-09** — `/api/crm/knowledge` + `/api/crm/knowledge/{everything}` eklendi (5065, GET/POST/PUT/OPTIONS, DELETE/PATCH yok) | integration-agent | Route authorization tamamlandı; §11 |
+ | F-RD | **MOD-0048 knowledge reference set publish** (`knowledge-content-type`/`-status`/`-source`/`audience-profile-type`) | MOD-0048 operator | Hardcoded enum yasağı; runtime prereq |
+ | F-RBAC | **MOD-0162-FU02-RBAC — `crm.knowledge.*` katalog + grant** | MOD-0018 / commercial-suite | RBAC en sona (§15) |
+ | F-DOC | **Content ↔ Document Management linkage sözleşmesi** (`FileRef` = documentId+versionId) | MOD-0028/0029 | Çift kopya yasağı sözleşmeye bağlanmalı |
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0162-FU04-knowledge-path-runtime-ui.md b/execution/domains/commercial-suite/module-packs/MOD-0162-FU04-knowledge-path-runtime-ui.md
+index f6a123bfdfd7007e58bf3d9586ffa7f285c03344..9d2fd229be5c346b73e0bea3a31404090a00a139 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0162-FU04-knowledge-path-runtime-ui.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0162-FU04-knowledge-path-runtime-ui.md
+@@ -419,7 +419,7 @@ Frontmatter listesinin açıklamalı karşılığı.
+ 
+ ## 8. Runtime Constraints
+ 
+-- **Servis:** `Diten.CrmService` (port **5061**), **yeni servis yaratılmaz** (FU01A §16).
++- **Servis:** `Diten.CrmService` (port **5065**), **yeni servis yaratılmaz** (FU01A §16).
+ - **Gateway:** tüm çağrılar `:5000` üzerinden; browser JS **servis portuna gitmez** (same-origin MVC proxy).
+ - **Soft delete:** `DELETE` ve `PATCH` **yoktur** — kaldırma = archive (path **ve** gömülü adım); archived kayıt
+   update kabul etmez (**409**). Archived adım **diziden silinmez**.
+@@ -815,7 +815,7 @@ gereksinimi bu FU'da **yoktur**.
+ 
+ **Karar: Gateway değişikliği GEREKSİZ.**
+ 
+-- Mevcut `ocelot.json` kaydı: `"/api/crm/knowledge/{everything}"` → `localhost:5061`,
++- Mevcut `ocelot.json` kaydı: `"/api/crm/knowledge/{everything}"` → `localhost:5065`,
+   `["GET","POST","PUT","OPTIONS"]` (`gateway/Diten.ApiGateway/ocelot.json:2245-2258`).
+ - §8.1'deki **tüm** route'lar bu wildcard'ın altındadır (`/api/crm/knowledge/paths…`, adım alt-route'ları
+   `/paths/{id}/steps…` dâhil, `/api/crm/knowledge/path/contract`) → **yeni Upstream/Downstream çifti gerekmez**.
+@@ -825,7 +825,7 @@ gereksinimi bu FU'da **yoktur**.
+ - `DELETE`/`PATCH` wildcard'da **zaten yok** → bu metotlar Gateway seviyesinde de **404**.
+ - `gateway/Diten.ApiGateway/**/ocelot.json` **protected path**'tir; bu pack oraya yazmaz. İleride explicit route
+   istenirse **ayrı `integration-agent` task'ı** açılır.
+-- Browser JS **`:5061`'e gitmez**; same-origin MVC proxy (`/CRM/KnowledgePaths/api/...`) → Gateway `:5000`.
++- Browser JS **`:5065`'e gitmez**; same-origin MVC proxy (`/CRM/KnowledgePaths/api/...`) → Gateway `:5000`.
+ 
+ ---
+ 
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0162-FU05-content-engagement-journey-runtime-ui.md b/execution/domains/commercial-suite/module-packs/MOD-0162-FU05-content-engagement-journey-runtime-ui.md
+index 4bb90fbbdede4f8b3cb564b29e89f4dfeda2f1a7..66d1973ddcc657a5aba8a3a6a661ef8a63c8f85b 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0162-FU05-content-engagement-journey-runtime-ui.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0162-FU05-content-engagement-journey-runtime-ui.md
+@@ -446,7 +446,7 @@ Frontmatter listesinin açıklamalı karşılığı.
+ 
+ ## 8. Runtime Constraints
+ 
+-- **Servis:** `Diten.CrmService` (port **5061**), **yeni servis yaratılmaz**.
++- **Servis:** `Diten.CrmService` (port **5065**), **yeni servis yaratılmaz**.
+ - **Gateway:** tüm çağrılar `:5000` üzerinden; browser JS **servis portuna gitmez** (same-origin MVC proxy).
+ - **Soft delete:** `DELETE` ve `PATCH` **yoktur** — kaldırma = archive (journey **ve** gömülü aşama); archived kayıt
+   update kabul etmez (**409**). Archived aşama **diziden silinmez**.
+@@ -860,7 +860,7 @@ authenticated + policy-korumalı, tüm §12 kuralları fail-closed çalışır.
+ 
+ **Karar: Gateway değişikliği GEREKSİZ.**
+ 
+-- Mevcut `ocelot.json` kaydı: `"/api/crm/knowledge/{everything}"` → `localhost:5061`,
++- Mevcut `ocelot.json` kaydı: `"/api/crm/knowledge/{everything}"` → `localhost:5065`,
+   `["GET","POST","PUT","OPTIONS"]` (`gateway/Diten.ApiGateway/ocelot.json:2245-2260`, **doğrulandı**).
+ - §8.1'deki **tüm** route'lar bu wildcard'ın altındadır
+   (`/api/crm/knowledge/content-engagement-journeys…`, aşama alt-route'ları ve
+@@ -870,7 +870,7 @@ authenticated + policy-korumalı, tüm §12 kuralları fail-closed çalışır.
+ - `DELETE`/`PATCH` wildcard'da **zaten yok** → bu metotlar Gateway seviyesinde de **404**.
+ - `gateway/Diten.ApiGateway/**/ocelot.json` **protected path**'tir; bu pack oraya yazmaz. İleride explicit route
+   istenirse **ayrı `integration-agent` task'ı** açılır.
+-- Browser JS **`:5061`'e gitmez**; same-origin MVC proxy (`/CRM/ContentEngagementJourneys/api/...`) → Gateway `:5000`.
++- Browser JS **`:5065`'e gitmez**; same-origin MVC proxy (`/CRM/ContentEngagementJourneys/api/...`) → Gateway `:5000`.
+ 
+ ---
+ 
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0164-FU03-consent-preference-admin-ui.md b/execution/domains/commercial-suite/module-packs/MOD-0164-FU03-consent-preference-admin-ui.md
+index e7a00be5411df02b1ba86e2ffd816e57dd8002f3..1e9183e0c6ef1b7e2bea62f3a56cc09fe5cee572 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0164-FU03-consent-preference-admin-ui.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0164-FU03-consent-preference-admin-ui.md
+@@ -94,7 +94,7 @@ setleri Submitted/Pending olsa bile bu UI için blocker değildir — UI runtime
+ - Frequency, Knowledge, Brand/Product, Digital Detailing veya Recommendation runtime.
+ - Workflow/approval, import/export engine veya patient data.
+ - Hard delete veya HTTP `DELETE`.
+-- Direct port `5061` business call.
++- Direct port `5065` business call.
+ - Migration, Mongo hand-edit, RBAC seed/grant, MOD-0048 publish veya registry write.
+ - `gateway/Diten.ApiGateway/**` değişikliği.
+ - Contact/AccountContactLink runtime mutasyonu veya Contact üzerine flat ConsentStatus alanı.
+@@ -227,7 +227,7 @@ hardcoded Consent & Preferences `<li>` kaldırılması ayrı follow-up'tır; çi
+ ## 8. Runtime Constraints
+ 
+ - Frontend browser veya MVC proxy tüm business çağrılarını Gateway `5000` üzerinden yapar.
+-- Direct `http://localhost:5061`, `https://localhost:5061` veya herhangi bir `:5061` business URL yasaktır.
++- Direct `http://localhost:5065`, `https://localhost:5065` veya herhangi bir `:5065` business URL yasaktır.
+ - Same-origin MVC proxy tercih edilir; HttpOnly access token server-side Gateway requestine aktarılır.
+ - Payload içinde `TenantId` alanı oluşturulmaz/gönderilmez. Mevcut auth mekanizmasının tenant header/claim akışı korunur.
+ - Consent/Preference lifecycle archive endpointleriyle yürür; `DELETE` kullanılmaz.
+@@ -399,7 +399,7 @@ PUT    /api/crm/preferences/{preferenceId}
+ POST   /api/crm/preferences/{preferenceId}/archive
+ ```
+ 
+-- Gateway base port `5000`; direct `5061` yok.
++- Gateway base port `5000`; direct `5065` yok.
+ - HTTP `DELETE` yok.
+ - TenantId payload yok.
+ - Path param'lar `{consentId}` / `{preferenceId}` (guid) — actual FU02 route isimleri; `…RecordId` değil.
+@@ -437,7 +437,7 @@ POST   /api/crm/preferences/{preferenceId}/archive
+ - [ ] Contract flags actionları fail-closed enable/disable/hide eder.
+ - [ ] Permission-controlled list/action/menu visibility mevcut resolver'a bağlıdır; seed/grant yoktur.
+ - [ ] Tüm yeni visible text en/fr/es/zh/ar/ru/tr RESX/L10n parity taşır.
+-- [ ] Frontend kodunda direct `5061`, Consent/Preference `DELETE`, TenantId payload veya §16 guard-listesi alanı yoktur.
++- [ ] Frontend kodunda direct `5065`, Consent/Preference `DELETE`, TenantId payload veya §16 guard-listesi alanı yoktur.
+ - [ ] Diten.Web build, ilgili UI tests, DataTable verifier, RESX parity ve mümkünse authenticated tenant smoke PASS'tir.
+ - [ ] Evidence raporu belirtilen 22 bölümü ve desteklenmeyen filtre/permission fallback/smoke sınırlamalarını içerir.
+ - [ ] Backend, Gateway, registry, seed/grant, Mongo, MOD-0048 publish ve MOD-0155 değişmemiştir.
+@@ -486,7 +486,7 @@ Minimum otomatik/statik doğrulama:
+ 11. Evaluate allowed/blocked/unknown badge; unknown "not allowed" copy; MatchedConsentId/MatchedPreferenceIds provenance; ReasonCodes render.
+ 12. SubjectPanel SubjectType/SubjectId ile render; Contact flat ConsentStatus alanı eklenmemiş.
+ 13. Yedi locale dosyasında aynı key seti.
+-14. Frontend source'ta direct `5061`, forbidden `DELETE`, TenantId ve §16 guard-listesi alanı taraması temiz.
++14. Frontend source'ta direct `5065`, forbidden `DELETE`, TenantId ve §16 guard-listesi alanı taraması temiz.
+ 15. `dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug` PASS.
+ 16. `python3 .antigravity/scripts/verify_datatable_page.py . --area CRM --module ConsentPreferences --reference compact` PASS (python varsa).
+ 17. Mevcut frontend testleri etkilenmez.
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0165-FU01-visit-frequency-call-cycle-policy.md b/execution/domains/commercial-suite/module-packs/MOD-0165-FU01-visit-frequency-call-cycle-policy.md
+index 48fc65251eb1e38db50051c998f513cca56ab103..49de6045cc7ae2ba640624dc608d0a0863fd114f 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0165-FU01-visit-frequency-call-cycle-policy.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0165-FU01-visit-frequency-call-cycle-policy.md
+@@ -392,7 +392,7 @@ Campaign engine implementation · Segmentation engine implementation · Account/
+ ContactAvailability mutation · territory assignment mutation · `ContactTerritoryAssignment` · patient data ·
+ workflow approval · ChangeRequest · MOD-0023 entegrasyonu · evidence pack · yeni import/export scope · hard delete ·
+ Mongo hand-edit · RBAC seed/grant · MOD-0048 publish · registry satırı yazımı · `TenantId` payload'da · doğrudan
+-`5061` business API çağrısı.
++`5065` business API çağrısı.
+ 
+ ---
+ 
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0165-FU05-campaign-targeting-admin-ui.md b/execution/domains/commercial-suite/module-packs/MOD-0165-FU05-campaign-targeting-admin-ui.md
+index 506f9631fd84281d010b5273312874d93c4fbf5d..8be7b1af4c02fc3fbf69b1560e67f91df0361b39 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0165-FU05-campaign-targeting-admin-ui.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0165-FU05-campaign-targeting-admin-ui.md
+@@ -86,7 +86,7 @@ FU04 contract'ının frontend consumer'ıdır.
+ - Frequency, Knowledge, Brand/Product, Digital Detailing veya Recommendation runtime.
+ - Workflow/approval, import/export engine veya patient data.
+ - Hard delete veya HTTP `DELETE`.
+-- Direct port `5061` business call.
++- Direct port `5065` business call.
+ - Migration, Mongo hand-edit, RBAC seed/grant, MOD-0048 publish veya registry write.
+ - `gateway/Diten.ApiGateway/**` değişikliği.
+ - API'de olmayan master/display resolution veya fake preview/filter.
+@@ -222,7 +222,7 @@ hardcoded Campaign `<li>` kaldırılması ayrı follow-up'tır; çift menü kabu
+ ## 8. Runtime Constraints
+ 
+ - Frontend browser veya MVC proxy tüm business çağrılarını Gateway `5000` üzerinden yapar.
+-- Direct `http://localhost:5061`, `https://localhost:5061` veya herhangi bir `:5061` business URL yasaktır.
++- Direct `http://localhost:5065`, `https://localhost:5065` veya herhangi bir `:5065` business URL yasaktır.
+ - Same-origin MVC proxy tercih edilir; HttpOnly access token server-side Gateway requestine aktarılır.
+ - Payload içinde `TenantId` alanı oluşturulmaz/gönderilmez. Mevcut auth mekanizmasının tenant header/claim akışı korunur.
+ - Campaign/Target lifecycle archive endpointleriyle yürür; `DELETE` kullanılmaz.
+@@ -381,7 +381,7 @@ POST   /api/crm/campaigns/{campaignId}/targets/snapshot
+ GET    /api/crm/campaigns/contract
+ ```
+ 
+-- Gateway base port `5000`; direct `5061` yok.
++- Gateway base port `5000`; direct `5065` yok.
+ - HTTP `DELETE` yok.
+ - TenantId payload yok.
+ - Backend error/reasonCodes UI toast/detail panelinde görünür.
+@@ -415,7 +415,7 @@ GET    /api/crm/campaigns/contract
+ - [ ] Contract flags actionları fail-closed enable/disable/hide eder.
+ - [ ] Permission-controlled list/action/menu visibility mevcut resolver'a bağlıdır; seed/grant yoktur.
+ - [ ] Tüm yeni visible text en/fr/es/zh/ar/ru/tr RESX/L10n parity taşır.
+-- [ ] Frontend kodunda direct `5061`, Campaign/Target `DELETE`, TenantId payload veya yasak response alanı yoktur.
++- [ ] Frontend kodunda direct `5065`, Campaign/Target `DELETE`, TenantId payload veya yasak response alanı yoktur.
+ - [ ] Diten.Web build, ilgili UI tests, DataTable verifier, RESX parity ve mümkünse authenticated tenant smoke PASS'tir.
+ - [ ] Evidence raporu belirtilen 24 bölümü ve desteklenmeyen filtre/permission fallback/smoke sınırlamalarını içerir.
+ - [ ] Backend, Gateway, registry, seed/grant, Mongo ve MOD-0155 değişmemiştir.
+@@ -436,7 +436,7 @@ Minimum otomatik/statik doğrulama:
+ 10. Consent badge/provenance; consent/preference payload absence.
+ 11. Contract feature flags ve permission hidden/disabled states.
+ 12. Yedi locale dosyasında aynı key seti.
+-13. Frontend source'ta direct `5061`, forbidden `DELETE`, TenantId ve §17 yasak field guard taraması.
++13. Frontend source'ta direct `5065`, forbidden `DELETE`, TenantId ve §17 yasak field guard taraması.
+ 14. `dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug` PASS.
+ 15. `python3 .antigravity/scripts/verify_datatable_page.py . --area CRM --module Campaigns --reference compact` PASS.
+ 16. Mevcut frontend testleri etkilenmez.
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0165-FU07-cycle-period-scope-enrichment.md b/execution/domains/commercial-suite/module-packs/MOD-0165-FU07-cycle-period-scope-enrichment.md
+index c4db17864c7fbdad6eb855eb4dfae3326363b23f..e42cf3eef5583aeb41018205feddd3cdda46129f 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0165-FU07-cycle-period-scope-enrichment.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0165-FU07-cycle-period-scope-enrichment.md
+@@ -1052,8 +1052,8 @@ Actor type: tenant_user (platform_admin otomatik geçer)
+ 
+ - Kanıt (2026-08-28, `gateway/Diten.ApiGateway/ocelot.json:2266-2300`): FU06'nın F-GATEWAY takibiyle
+   eklenen route çifti **mevcuttur**:
+-  - `/api/crm/cycle-periods` → `localhost:5061` (GET, POST, OPTIONS)
+-  - `/api/crm/cycle-periods/{everything}` → `localhost:5061` (GET, POST, PUT, OPTIONS)
++  - `/api/crm/cycle-periods` → `localhost:5065` (GET, POST, OPTIONS)
++  - `/api/crm/cycle-periods/{everything}` → `localhost:5065` (GET, POST, PUT, OPTIONS)
+ - FU07'nin **tek yeni ucu** (`/scope-options`) `{everything}` wildcard'ının **altındadır** ve **GET**'tir →
+   mevcut route yeter.
+ - FU07 `DELETE` veya `PATCH` **eklemediği** için mevcut method listesi de yeterlidir.
+@@ -1147,7 +1147,7 @@ Actor type: tenant_user (platform_admin otomatik geçer)
+     ve `_DetailsQuickView.cshtml` **SİLİNMİŞTİR** (dosya sisteminde yok).
+ 33. `py .antigravity/scripts/verify_datatable_page.py . --area CRM --module CyclePeriods --reference compact --api-profile proxy`
+     çalıştırılır; sonuç **kaydedilir**; **beklenen N/A FAIL seti dışında** PASS (§17.1).
+-34. Browser JS hiçbir yerde `5000`/`5061` portunu, Gateway URL'ini veya `Bearer` token'ı kurmaz.
++34. Browser JS hiçbir yerde `5000`/`5065` portunu, Gateway URL'ini veya `Bearer` token'ı kurmaz.
+ 35. Cascading seçici: `ScopeType` değişince diğer referans alanları **gizlenir ve temizlenir**;
+     gizli-ama-dolu bir alan sunucuya **gönderilmez**.
+ 36. 7 dil RESX parite: `{ar,en,es,fr,ru,tr,zh}` aynı anahtar kümesine sahiptir; **yeni scope anahtarları
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0167-FU01-segment-sourced-frequency-policy-authoring.md b/execution/domains/commercial-suite/module-packs/MOD-0167-FU01-segment-sourced-frequency-policy-authoring.md
+index 9ad91c7a1dc6d43c4aad4a2bc74d306b6fdb3f5f..6a76102d32cbbaa632e8f2316432a05573aa3ca8 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0167-FU01-segment-sourced-frequency-policy-authoring.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0167-FU01-segment-sourced-frequency-policy-authoring.md
+@@ -189,7 +189,7 @@ visit execution · GPS/check-in/check-out · visit report · digital detailing 
+ implementation · Brand/Product master implementation · Account/Contact mutation · ContactAvailability mutation ·
+ territory mutation · `ContactTerritoryAssignment` · patient data · workflow approval · ChangeRequest · MOD-0023
+ entegrasyonu · evidence pack · import/export yeni scope · hard delete · Mongo hand-edit · RBAC seed/grant ·
+-MOD-0048 publish · registry satırı yazımı · `TenantId` payload'da · doğrudan `5061` business API çağrısı.
++MOD-0048 publish · registry satırı yazımı · `TenantId` payload'da · doğrudan `5065` business API çağrısı.
+ 
+ ---
+ 
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0167-FU02-segment-foundation-criteria-membership-target-customer.md b/execution/domains/commercial-suite/module-packs/MOD-0167-FU02-segment-foundation-criteria-membership-target-customer.md
+index c9061787721dab30b5113b6637279850fd170993..f3510c73e811ca2d03ee154f4d3bc77903605bba 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0167-FU02-segment-foundation-criteria-membership-target-customer.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0167-FU02-segment-foundation-criteria-membership-target-customer.md
+@@ -595,7 +595,7 @@ oturum davranışı **değişmez**.
+ 
+ ## 8. Runtime Constraints
+ 
+-- **Servis:** `Diten.CrmService` (port **5061**), **yeni servis yaratılmaz** — Account/Contact ile aynı serviste,
++- **Servis:** `Diten.CrmService` (port **5065**), **yeni servis yaratılmaz** — Account/Contact ile aynı serviste,
+   çünkü kriter **onların üzerinde** çalışır (kullanıcı kararı; Faz-1 pushdown'ı ancak aynı DB'de mümkündür, §8.5).
+ - **Gateway:** tüm çağrılar `:5000` üzerinden; browser JS **servis portuna gitmez** (same-origin MVC proxy).
+ - **Soft delete:** `DELETE` ve `PATCH` **yoktur** — kaldırma = archive (segment **ve** target customer);
+@@ -1051,14 +1051,14 @@ döner (`gateway-404-empty-body-signature`).
+ Gerekli çiftler (`campaigns` bloğu birebir şablon; `OPTIONS` **dâhil**):
+ 
+ ```text
+-/api/crm/segments                 ↔ 5061   (GET, POST, OPTIONS)
+-/api/crm/segments/{everything}    ↔ 5061   (GET, POST, PUT, OPTIONS)
+-/api/crm/subjects/{everything}    ↔ 5061   (GET, OPTIONS)
++/api/crm/segments                 ↔ 5065   (GET, POST, OPTIONS)
++/api/crm/segments/{everything}    ↔ 5065   (GET, POST, PUT, OPTIONS)
++/api/crm/subjects/{everything}    ↔ 5065   (GET, OPTIONS)
+ ```
+ 
+ - `ocelot.json` **protected path**'tir; **bu pack yazmaz** (§6). Ayrı bir `integration-agent` task'ı olarak
+   yürütülür → **§20/F-GATEWAY**.
+-- Frontend (5001) **doğrudan 5061'e gitmez**; `frontend/Diten.Web/Controllers/CRM/SegmentsController.cs`
++- Frontend (5001) **doğrudan 5065'e gitmez**; `frontend/Diten.Web/Controllers/CRM/SegmentsController.cs`
+   same-origin proxy'dir. Proxy'nin `ForwardAsync`'i **204/205/304/1xx için gövdesiz** dönmelidir
+   (`proxy-forward-204-content-length-crash`) — bu FU'da `archive`/`activate` 204 dönebilir.
+ - **Kabul kapısı:** route eklenmeden authenticated smoke (§17.3) çalıştırılmaz; 404 + `{}` görülürse **kod hatası
+diff --git a/execution/domains/commercial-suite/module-packs/MOD-0167-FU04-strategy-template-segment-product-mix-content-playbook.md b/execution/domains/commercial-suite/module-packs/MOD-0167-FU04-strategy-template-segment-product-mix-content-playbook.md
+index 6459849717ff79be8a6201c9c4eb2f8d9f0b3008..f32744d098e098d2e1619e141d932849d82c758d 100644
+--- a/execution/domains/commercial-suite/module-packs/MOD-0167-FU04-strategy-template-segment-product-mix-content-playbook.md
++++ b/execution/domains/commercial-suite/module-packs/MOD-0167-FU04-strategy-template-segment-product-mix-content-playbook.md
+@@ -517,7 +517,7 @@ bu **MDM'in kararıdır**, burada değiştirilmez.
+ 
+ ## 8. Runtime Constraints
+ 
+-- **Servis:** `Diten.CrmService` (port **5061**), **yeni servis yaratılmaz** — bağların üçü (Segment, içerik,
++- **Servis:** `Diten.CrmService` (port **5065**), **yeni servis yaratılmaz** — bağların üçü (Segment, içerik,
+   policy) zaten bu serviste; dördüncüsü (MDM) cross-service'tir.
+ - **Gateway:** tüm çağrılar `:5000` üzerinden; browser JS **servis portuna gitmez** (same-origin MVC proxy).
+ - **Soft delete:** `DELETE` ve `PATCH` **yoktur** — kaldırma = archive; archived kayıt update kabul etmez (**409**).
+@@ -931,8 +931,8 @@ Bu, fail-closed'ın doğru davranışıdır ama **operatör aksiyonu gerektirir*
+ Gerekli çiftler (`segments` bloğu birebir şablon; `OPTIONS` **dâhil**):
+ 
+ ```text
+-/api/crm/strategy-templates                 ↔ 5061   (GET, POST, OPTIONS)
+-/api/crm/strategy-templates/{everything}    ↔ 5061   (GET, POST, PUT, OPTIONS)
++/api/crm/strategy-templates                 ↔ 5065   (GET, POST, OPTIONS)
++/api/crm/strategy-templates/{everything}    ↔ 5065   (GET, POST, PUT, OPTIONS)
+ ```
+ 
+ **MDM tarafı — RAPOR (F-GATEWAY-SKU): ek route GEREKMEZ.** Bu pack `ocelot.json`'ı okudu ve şu çiftlerin
+@@ -951,7 +951,7 @@ Gerekli çiftler (`segments` bloğu birebir şablon; `OPTIONS` **dâhil**):
+ 
+ - `ocelot.json` **protected path**'tir; **bu pack yazmaz** (§6). CRM çifti ayrı bir `integration-agent` task'ıdır
+   → **§20/F-GATEWAY-STRATEGY**.
+-- Frontend (5001) **doğrudan 5061'e gitmez**; `frontend/Diten.Web/Controllers/CRM/StrategyTemplatesController.cs`
++- Frontend (5001) **doğrudan 5065'e gitmez**; `frontend/Diten.Web/Controllers/CRM/StrategyTemplatesController.cs`
+   same-origin proxy'dir. Proxy'nin forward'ı **204/205/304/1xx için gövdesiz** dönmelidir
+   (`proxy-forward-204-content-length-crash`) — `archive`/`activate` 204 dönebilir.
+ - **Kabul kapısı:** CRM route eklenmeden authenticated smoke (§17.3) çalıştırılmaz; 404 + `{}` görülürse
+diff --git a/gateway/Diten.ApiGateway/ocelot.json b/gateway/Diten.ApiGateway/ocelot.json
+index d5ff1e41305d95cd5222e10fdfb6e6aaafc5c5f3..7fe669855adbfa24506e3118fc635fb21fef6e9a 100644
+--- a/gateway/Diten.ApiGateway/ocelot.json
++++ b/gateway/Diten.ApiGateway/ocelot.json
+@@ -6,7 +6,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/shipment-bundle/carriers",
+@@ -23,7 +23,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/shipment-bundle/carriers/{carrierId}/status",
+@@ -2307,7 +2307,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/accounts",
+@@ -2327,7 +2327,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/accounts/{everything}",
+@@ -2347,7 +2347,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/contacts",
+@@ -2367,7 +2367,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/contacts/{everything}",
+@@ -2387,7 +2387,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/territory-management/{everything}",
+@@ -2403,7 +2403,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/territory-models",
+@@ -2420,7 +2420,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/territory-models/{everything}",
+@@ -2438,7 +2438,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/resources/{everything}",
+@@ -2454,7 +2454,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/visit-frequency-policies",
+@@ -2471,7 +2471,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/visit-frequency-policies/{everything}",
+@@ -2489,7 +2489,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/consents",
+@@ -2506,7 +2506,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/consents/{everything}",
+@@ -2524,7 +2524,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/preferences",
+@@ -2541,7 +2541,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/preferences/{everything}",
+@@ -2559,7 +2559,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/campaigns",
+@@ -2576,7 +2576,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/campaigns/{everything}",
+@@ -2594,7 +2594,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/cycle-capacities",
+@@ -2611,7 +2611,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/cycle-capacities/{everything}",
+@@ -2629,7 +2629,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/route-optimization/preview",
+@@ -2645,7 +2645,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/visit-content/preview",
+@@ -2661,7 +2661,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/visit-content/{everything}",
+@@ -2677,7 +2677,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/visit-plan/{everything}",
+@@ -2695,7 +2695,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/visit-report",
+@@ -2712,7 +2712,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/visit-report/{everything}",
+@@ -2730,7 +2730,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/cycle-periods",
+@@ -2747,7 +2747,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/cycle-periods/{everything}",
+@@ -2765,7 +2765,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/planned-visits",
+@@ -2784,7 +2784,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/planned-visits/{everything}",
+@@ -2803,7 +2803,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/segments",
+@@ -2820,7 +2820,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/segments/{everything}",
+@@ -2838,7 +2838,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/strategy-templates",
+@@ -2855,7 +2855,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/strategy-templates/{everything}",
+@@ -2873,7 +2873,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/subjects/{everything}",
+@@ -2889,7 +2889,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/knowledge",
+@@ -2907,7 +2907,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5061
++          "Port": 5065
+         }
+       ],
+       "UpstreamPathTemplate": "/api/crm/knowledge/{everything}",
+diff --git a/scripts/smoke-mod0162-fu02-knowledge-content-authenticated.ps1 b/scripts/smoke-mod0162-fu02-knowledge-content-authenticated.ps1
+index 55ecf4d88428e7ec73f07600a8df0f4f44ecaa4e..e7243395d6ad07eea08e89bfec72cdf2bc517d40 100644
+--- a/scripts/smoke-mod0162-fu02-knowledge-content-authenticated.ps1
++++ b/scripts/smoke-mod0162-fu02-knowledge-content-authenticated.ps1
+@@ -11,7 +11,7 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
+   every record this script creates is closed with the ARCHIVE endpoint. It asserts no DELETE/PATCH surface exists and
+   that the content-linkage seam mutates nothing.
+ 
+@@ -21,7 +21,7 @@
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -49,7 +49,7 @@ $atIso    = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+ Write-Host "== MOD-0162-FU02 authenticated knowledge/content smoke ($run) ==" -ForegroundColor Cyan
+ 
+ # ---------------- 1. Fleet health / preflight ----------------
+-foreach ($p in @(5000,5061)) {
++foreach ($p in @(5000,5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0162-fu03-concept-graph-authenticated.ps1 b/scripts/smoke-mod0162-fu03-concept-graph-authenticated.ps1
+index fdc7f2348468c8c413d4d8a42976a815e187925a..e52ab03e025021669997af00d5368ef860c1b321 100644
+--- a/scripts/smoke-mod0162-fu03-concept-graph-authenticated.ps1
++++ b/scripts/smoke-mod0162-fu03-concept-graph-authenticated.ps1
+@@ -11,7 +11,7 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
+   every record this script creates is closed with the ARCHIVE endpoint. It asserts no DELETE/PATCH surface exists, that
+   the concept graph reads adjacency only (no engine), and that Campaign / MDM Global Product are never mutated.
+ 
+@@ -24,7 +24,7 @@
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -51,7 +51,7 @@ $fromIso = (Get-Date).ToUniversalTime().AddDays(-1).ToString("yyyy-MM-ddTHH:mm:s
+ Write-Host "== MOD-0162-FU03 authenticated concept-graph smoke ($run) ==" -ForegroundColor Cyan
+ 
+ # ---------------- 1. Fleet health / preflight ----------------
+-foreach ($p in @(5000,5061)) {
++foreach ($p in @(5000,5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0162-fu04-knowledge-path-authenticated.ps1 b/scripts/smoke-mod0162-fu04-knowledge-path-authenticated.ps1
+index 62feddcbd13799cba0a3ad44ff3c73e2cdebc453..ea8eef458a805ab50f04362fbe52426dc6a80026 100644
+--- a/scripts/smoke-mod0162-fu04-knowledge-path-authenticated.ps1
++++ b/scripts/smoke-mod0162-fu04-knowledge-path-authenticated.ps1
+@@ -11,7 +11,7 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
+   every record is closed with ARCHIVE. It asserts no DELETE/PATCH surface exists, no flat /path-steps family (D2), that
+   steps are embedded (single-document writes), publish is a separate endpoint (D4), new-version clones (D5), the D6
+   assessment-quiz rule and D7 authorable-but-never-evaluated branch data.
+@@ -25,7 +25,7 @@
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -52,7 +52,7 @@ $fromIso = (Get-Date).ToUniversalTime().AddDays(-1).ToString("yyyy-MM-ddTHH:mm:s
+ 
+ Write-Host "== MOD-0162-FU04 authenticated knowledge-path smoke ($run) ==" -ForegroundColor Cyan
+ 
+-foreach ($p in @(5000,5061)) {
++foreach ($p in @(5000,5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0162-fu05-content-engagement-journey-authenticated.ps1 b/scripts/smoke-mod0162-fu05-content-engagement-journey-authenticated.ps1
+index 51a71de1588665e6008d4535a3552fad5c014b20..6f0fc4945f5ca2d51e65b88b8ae47f496e7a1246 100644
+--- a/scripts/smoke-mod0162-fu05-content-engagement-journey-authenticated.ps1
++++ b/scripts/smoke-mod0162-fu05-content-engagement-journey-authenticated.ps1
+@@ -11,7 +11,7 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
+   every record is closed with ARCHIVE. It asserts no DELETE/PATCH surface exists, no flat
+   /content-engagement-journey-stages family (S2), that stages are embedded (single-document writes), publish is a
+   separate endpoint (SoD), new-version clones with REMAPPED stage references, the path-binding guard (published +
+@@ -30,7 +30,7 @@
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -58,7 +58,7 @@ $nowIso  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+ 
+ Write-Host "== MOD-0162-FU05 authenticated content-engagement-journey smoke ($run) ==" -ForegroundColor Cyan
+ 
+-foreach ($p in @(5000,5061)) {
++foreach ($p in @(5000,5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0164-fu02-consent-preference-authenticated.ps1 b/scripts/smoke-mod0164-fu02-consent-preference-authenticated.ps1
+index 386df79f4ffdfa59eb1642a9cd233ca71cb04f70..406362ac619b222e44f9eae86801f1969fdbcdb8 100644
+--- a/scripts/smoke-mod0164-fu02-consent-preference-authenticated.ps1
++++ b/scripts/smoke-mod0164-fu02-consent-preference-authenticated.ps1
+@@ -12,14 +12,14 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health.
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health.
+   Nothing is hard-deleted: every record this script creates is closed with the ARCHIVE endpoint.
+ #>
+ [CmdletBinding()]
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -57,7 +57,7 @@ $atIso         = (Get-Date).ToUniversalTime().AddHours(1).ToString("yyyy-MM-ddTH
+ Write-Host "== MOD-0164-FU02 authenticated consent/preference smoke ($run) ==" -ForegroundColor Cyan
+ 
+ # ---------------- 1. Fleet health / preflight ----------------
+-foreach ($p in @(5000,5001,5056,5057,5061)) {
++foreach ($p in @(5000,5001,5056,5057,5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0165-fu03-visit-frequency-authenticated.ps1 b/scripts/smoke-mod0165-fu03-visit-frequency-authenticated.ps1
+index 776e796a36bdbb7777901765e08ae7c939fd11e9..000a27a6595fc8f3612fc48dec4c10cbc35fc6f6 100644
+--- a/scripts/smoke-mod0165-fu03-visit-frequency-authenticated.ps1
++++ b/scripts/smoke-mod0165-fu03-visit-frequency-authenticated.ps1
+@@ -12,13 +12,13 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health.
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health.
+ #>
+ [CmdletBinding()]
+ param(
+     [string]$BaseUrl  = "http://localhost:5000",
+     [string]$TenantId = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -48,7 +48,7 @@ $emptyTarget   = [guid]::NewGuid().Guid   # a target that has NO policy (for the
+ Write-Host "== MOD-0165-FU03 authenticated smoke ($run) ==" -ForegroundColor Cyan
+ 
+ # ---------------- A. Preflight ----------------
+-foreach ($p in @(5000,5001,5056,5057,5061)) {
++foreach ($p in @(5000,5001,5056,5057,5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0165-fu04-campaign-targeting-authenticated.ps1 b/scripts/smoke-mod0165-fu04-campaign-targeting-authenticated.ps1
+index 01ffa4ff6b7e389d3b9a69dba107f3706bd5c7cd..5ad826c1ec2fb383f58bcd116bceec4444c4a0da 100644
+--- a/scripts/smoke-mod0165-fu04-campaign-targeting-authenticated.ps1
++++ b/scripts/smoke-mod0165-fu04-campaign-targeting-authenticated.ps1
+@@ -13,7 +13,7 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health.
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health.
+   Nothing is hard-deleted: every record this script creates is closed with the ARCHIVE endpoint.
+   It uses the live MOD-0164 consent API to set up the allowed / blocked / unknown cases, and asserts
+   that the campaign snapshot NEVER mutates a consent or preference record.
+@@ -25,7 +25,7 @@
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -63,7 +63,7 @@ $atIso          = (Get-Date).ToUniversalTime().AddHours(1).ToString("yyyy-MM-ddT
+ Write-Host "== MOD-0165-FU04 authenticated campaign/targeting smoke ($run) ==" -ForegroundColor Cyan
+ 
+ # ---------------- 1. Fleet health / preflight ----------------
+-foreach ($p in @(5000,5001,5056,5057,5061)) {
++foreach ($p in @(5000,5001,5056,5057,5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0165-fu06-cycle-period-authenticated.ps1 b/scripts/smoke-mod0165-fu06-cycle-period-authenticated.ps1
+index 76e17f9a2512db0ce258f2d89a44b7ff5102268d..545a5f9d8061abf2f786633866ed43835485eaeb 100644
+--- a/scripts/smoke-mod0165-fu06-cycle-period-authenticated.ps1
++++ b/scripts/smoke-mod0165-fu06-cycle-period-authenticated.ps1
+@@ -11,7 +11,7 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
+   every record created here is ended with CLOSE. The script asserts the load-bearing FU06 promises:
+     * a period is born DRAFT and TenantId is claim-only
+     * EndDate is INCLUSIVE and must be after StartDate
+@@ -24,7 +24,7 @@
+     * there is no DELETE, no PATCH, no bulk and no reopen surface anywhere
+ 
+   PREREQUISITES (data, not code):
+-    * The Gateway must route /api/crm/cycle-periods to 5061. Without that route EVERY call answers 404 with an empty {}
++    * The Gateway must route /api/crm/cycle-periods to 5065. Without that route EVERY call answers 404 with an empty {}
+       body — that is a missing route, not a code defect.
+     * The fleet must be running the FU06 build (a restart is required after deploying it).
+ 
+@@ -34,7 +34,7 @@
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -65,7 +65,7 @@ $suffix = $run.Substring($run.Length - 6)
+ 
+ Write-Host "== MOD-0165-FU06 authenticated cycle period smoke ($run) ==" -ForegroundColor Cyan
+ 
+-foreach ($p in @(5000, 5061)) {
++foreach ($p in @(5000, 5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0167-fu02-segment-foundation-authenticated.ps1 b/scripts/smoke-mod0167-fu02-segment-foundation-authenticated.ps1
+index 129f9a31b649607f915d4a5dc9e1b3bbe19f1cd7..2f10820f580c686264bfb3afeb2b9e9124a5bb07 100644
+--- a/scripts/smoke-mod0167-fu02-segment-foundation-authenticated.ps1
++++ b/scripts/smoke-mod0167-fu02-segment-foundation-authenticated.ps1
+@@ -11,7 +11,7 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
+   every record is closed with ARCHIVE. The script asserts the load-bearing FU02 promises:
+     * a segment is a DEFINITION - resolve persists NOTHING (document counts and timestamps are compared around it)
+     * resolution is DETERMINISTIC (three consecutive runs are compared bit for bit)
+@@ -23,7 +23,7 @@
+     * there is no DELETE and no PATCH surface anywhere
+ 
+   PREREQUISITES (data, not code):
+-    * The Gateway must route /api/crm/segments and /api/crm/subjects to 5061 (follow-up F-GATEWAY). Without those
++    * The Gateway must route /api/crm/segments and /api/crm/subjects to 5065 (follow-up F-GATEWAY). Without those
+       routes EVERY call answers 404 with an empty {} body - that is a missing route, not a code defect.
+     * The fleet must be running the FU02 build.
+     * For the POSITIVE concept.affinity scenario the tenant needs a concept graph chain
+@@ -36,7 +36,7 @@
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -64,7 +64,7 @@ $nowIso  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+ 
+ Write-Host "== MOD-0167-FU02 authenticated segment foundation smoke ($run) ==" -ForegroundColor Cyan
+ 
+-foreach ($p in @(5000, 5061)) {
++foreach ($p in @(5000, 5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/scripts/smoke-mod0167-fu04-strategy-template-authenticated.ps1 b/scripts/smoke-mod0167-fu04-strategy-template-authenticated.ps1
+index 48c8e5da65b7b2aca8d1c173aa822458b1ff1445..7f2832168b37262b415224031d01013ec230b36d 100644
+--- a/scripts/smoke-mod0167-fu04-strategy-template-authenticated.ps1
++++ b/scripts/smoke-mod0167-fu04-strategy-template-authenticated.ps1
+@@ -11,7 +11,7 @@
+   Optional:
+       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
+ 
+-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
++  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
+   every record is closed with ARCHIVE. The script asserts the load-bearing FU04 promises:
+     * a template BINDS and never produces: /apply, /generate and /resolve do NOT exist (404), and the contract says so
+     * a bound segment must exist, be non-archived and share the template's SubjectType
+@@ -23,7 +23,7 @@
+     * there is no DELETE and no PATCH surface anywhere
+ 
+   PREREQUISITES (data, not code):
+-    * The Gateway must route /api/crm/strategy-templates to 5061 (follow-up F-GATEWAY-STRATEGY). Without that route
++    * The Gateway must route /api/crm/strategy-templates to 5065 (follow-up F-GATEWAY-STRATEGY). Without that route
+       EVERY call answers 404 with an empty {} body — that is a missing route, not a code defect.
+     * The fleet must be running the FU04 build.
+     * The tenant needs at least one ACTIVE contact segment (MOD-0167 FU02). Without it the script reports the data gap
+@@ -38,7 +38,7 @@
+ param(
+     [string]$BaseUrl   = "http://localhost:5000",
+     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+-    [string]$CrmDirect = "http://localhost:5061"
++    [string]$CrmDirect = "http://localhost:5065"
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -68,7 +68,7 @@ $fromIso = (Get-Date).ToUniversalTime().AddDays(-1).ToString("yyyy-MM-ddTHH:mm:s
+ 
+ Write-Host "== MOD-0167-FU04 authenticated strategy template smoke ($run) ==" -ForegroundColor Cyan
+ 
+-foreach ($p in @(5000, 5061)) {
++foreach ($p in @(5000, 5065)) {
+     $code = Status "http://localhost:$p/"
+     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
+ }
+diff --git a/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/CampaignsController.cs b/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/CampaignsController.cs
+index f6ec424be9b033fc96a8011e7169aff474a7f752..a5203f676824f526f6c5bd3010dc13c743d54272 100644
+--- a/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/CampaignsController.cs
++++ b/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/CampaignsController.cs
+@@ -14,7 +14,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
+ /// MOD-0165 FU04 — Campaign + CampaignTarget authoring and the static target snapshot.
+ /// <para>
+ /// <b>Routing:</b> canonical under <c>/api/crm/campaigns</c>. The Gateway exposes the same paths through the dedicated
+-/// <c>campaigns</c> ocelot routes; there is no direct-to-5061 business surface.
++/// <c>campaigns</c> ocelot routes; there is no direct-to-5065 business surface.
+ /// </para>
+ /// <para>
+ /// <b>Permissions:</b> canonical keys are <c>crm.campaign.read</c> / <c>.manage</c> /
+diff --git a/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/ConsentsController.cs b/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/ConsentsController.cs
+index 7c6e3c497ead7df16c9b6ef89fc7ac2f5d71eb66..becf4e008101e488ae0ae844d9834fb1e571692e 100644
+--- a/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/ConsentsController.cs
++++ b/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/ConsentsController.cs
+@@ -14,7 +14,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
+ /// MOD-0164 FU02 — Consent authoring + read-only evaluation provider.
+ /// <para>
+ /// <b>Routing:</b> canonical under <c>/api/crm/consents</c>. The Gateway exposes the same paths through the dedicated
+-/// <c>consents</c> ocelot routes; there is no direct-to-5061 business surface.
++/// <c>consents</c> ocelot routes; there is no direct-to-5065 business surface.
+ /// </para>
+ /// <para>
+ /// <b>Permissions:</b> canonical keys are <c>crm.consent.read</c> / <c>.manage</c> / <c>.evaluate</c>
+diff --git a/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/KnowledgeContentsController.cs b/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/KnowledgeContentsController.cs
+index 0ec73d5e209411c5da5251316d7937e7c0b0ebdf..c31f2aebc8cb46285d0614dc9930631f2325a0da 100644
+--- a/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/KnowledgeContentsController.cs
++++ b/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/KnowledgeContentsController.cs
+@@ -11,7 +11,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
+ 
+ /// <summary>
+ /// MOD-0162 FU02 — KnowledgeContent authoring. Canonical under <c>/api/crm/knowledge/contents</c>, exposed through the
+-/// dedicated <c>knowledge</c> ocelot routes (no direct-to-5061 business surface). Permissions run on the documented
++/// dedicated <c>knowledge</c> ocelot routes (no direct-to-5065 business surface). Permissions run on the documented
+ /// fallback (<c>crm.territory.read</c> reads, <c>crm.territory.model.manage</c> writes) until MOD-0162-FU02-RBAC lands.
+ /// <b>There is no delete endpoint</b>: closing content is Archive, so content history stays readable.
+ /// </summary>
+diff --git a/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/TerritoryContractController.cs b/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/TerritoryContractController.cs
+index 815d75f8c21e0cf356c169c7f129659ed2aaf23b..6827ccff32259b6b515429027b8a8e2ecaf31995 100644
+--- a/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/TerritoryContractController.cs
++++ b/services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/TerritoryContractController.cs
+@@ -9,7 +9,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
+ 
+ /// <summary>
+ /// MOD-0151 Territory Management contract surface (FU01). Reports bundle version, feature flags (only model+node
+-/// are true), required MOD-0048 reference-set readiness and the FU01 limitations. Gateway-only; browser never hits 5061.
++/// are true), required MOD-0048 reference-set readiness and the FU01 limitations. Gateway-only; browser never hits 5065.
+ /// </summary>
+ [Authorize]
+ [Route("api/crm/territory-management")]
+diff --git a/services/Diten.CrmService/src/Diten.CrmService.Api/Program.cs b/services/Diten.CrmService/src/Diten.CrmService.Api/Program.cs
+index 5101b2648de89905606662be5e957d60c9e4227a..731b3fe39048469db5ec317c03cfd5cfafd6b0c9 100644
+--- a/services/Diten.CrmService/src/Diten.CrmService.Api/Program.cs
++++ b/services/Diten.CrmService/src/Diten.CrmService.Api/Program.cs
+@@ -33,7 +33,7 @@ if (!builder.Environment.IsProduction() && !string.IsNullOrWhiteSpace(devUrls))
+ // CreateEmptyBuilder registers NO server, so wire the same set WebApplication.CreateBuilder does — otherwise
+ // hosting under IIS fails (in-process: "No service for type 'IServer'"; or a self-bind clash with the module).
+ // Kestrel serves standalone/dev; UseIIS is the in-process IIS server (IISHttpServer); UseIISIntegration is the
+-// out-of-process reverse-proxy path. Do NOT hard-code UseUrls("http://localhost:5061"): under IIS the module
++// out-of-process reverse-proxy path. Do NOT hard-code UseUrls("http://localhost:5065"): under IIS the module
+ // owns the port (in-process it IS the server; out-of-process it assigns one and proxies), and self-binding it
+ // collides with the module — the app failed to start (500.30 in-process, 502 with SocketException 10013
+ // out-of-process). Binding is left to the host: ASPNETCORE_URLS in dev (launchSettings), the ANCM binding under IIS.
+diff --git a/services/Diten.CrmService/src/Diten.CrmService.Api/Properties/launchSettings.json b/services/Diten.CrmService/src/Diten.CrmService.Api/Properties/launchSettings.json
+index 2e80df40ee2c592aab9fb6abc94f93eb609c21ae..67f10703b0ed1a485e090ebd17f9c14e909faa08 100644
+--- a/services/Diten.CrmService/src/Diten.CrmService.Api/Properties/launchSettings.json
++++ b/services/Diten.CrmService/src/Diten.CrmService.Api/Properties/launchSettings.json
+@@ -5,10 +5,10 @@
+       "commandName": "Project",
+       "dotnetRunMessages": true,
+       "launchBrowser": false,
+-      "applicationUrl": "http://localhost:5061",
++      "applicationUrl": "http://localhost:5065",
+       "environmentVariables": {
+         "ASPNETCORE_ENVIRONMENT": "Development",
+-        "ASPNETCORE_URLS": "http://localhost:5061"
++        "ASPNETCORE_URLS": "http://localhost:5065"
+       }
+     }
+   }
+diff --git a/watch-diten-bg.ps1 b/watch-diten-bg.ps1
+index 44783aaf530284a3d812ff77b9cb2e0545f0fae3..51bf7da44f56302e0d3e780c43d287ca2999e998 100644
+--- a/watch-diten-bg.ps1
++++ b/watch-diten-bg.ps1
+@@ -5,9 +5,9 @@ $ErrorActionPreference = "Continue"
+ Set-Location -Path $PSScriptRoot
+ Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload)..." -ForegroundColor Cyan
+ 
+-# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061)
+-Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061..." -ForegroundColor Yellow
+-Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5061 -ErrorAction SilentlyContinue |
++# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5065)
++Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5065..." -ForegroundColor Yellow
++Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5065 -ErrorAction SilentlyContinue |
+     Select-Object -ExpandProperty OwningProcess | 
+     Unique | 
+     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
+@@ -19,7 +19,7 @@ Start-Sleep -Seconds 1
+ # Define services
+ $services = @(
+     @{ Name = "Auth"; Path = "services/Diten.AuthService/src/Diten.AuthService.Api"; Port = 5056 },
+-    @{ Name = "Crm"; Path = "services/Diten.CrmService/src/Diten.CrmService.Api"; Port = 5061 },
++    @{ Name = "Crm"; Path = "services/Diten.CrmService/src/Diten.CrmService.Api"; Port = 5065 },
+     @{ Name = "DevEnablement"; Path = "services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api"; Port = 5058 },
+     @{ Name = "Hcm"; Path = "services/Diten.HcmService/src/Diten.HcmService.Api"; Port = 5060 },
+     @{ Name = "Mdm"; Path = "services/Diten.MdmService/src/Diten.MdmService.Api"; Port = 5059 },
+diff --git a/watch-diten.ps1 b/watch-diten.ps1
+index b846103938c34ac41315b18810735a49a4bfa8bf..cf41f550a26184bc9ac337a4c7e2dee0acace864 100644
+--- a/watch-diten.ps1
++++ b/watch-diten.ps1
+@@ -1,9 +1,9 @@
+ # Diten ERP - All-in-One Start Script for Windows with Watch (Hot Reload)
+ Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload) on Windows..." -ForegroundColor Cyan
+ 
+-# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061)
+-Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061..." -ForegroundColor Yellow
+-Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5061 -ErrorAction SilentlyContinue | 
++# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5065)
++Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5065..." -ForegroundColor Yellow
++Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5065 -ErrorAction SilentlyContinue | 
+     Select-Object -ExpandProperty OwningProcess | 
+     Unique | 
+     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
+@@ -35,7 +35,7 @@ Launch-Service -Name "DevEnablement" -Path "services/Diten.DevEnablementService/
+ Launch-Service -Name "Platform" -Path "services/Diten.Platform/src/Diten.Platform.API" -Port 5057
+ Launch-Service -Name "Hcm" -Path "services/Diten.HcmService/src/Diten.HcmService.Api" -Port 5060
+ Launch-Service -Name "Mdm" -Path "services/Diten.MdmService/src/Diten.MdmService.Api" -Port 5059
+-Launch-Service -Name "Crm" -Path "services/Diten.CrmService/src/Diten.CrmService.Api" -Port 5061
++Launch-Service -Name "Crm" -Path "services/Diten.CrmService/src/Diten.CrmService.Api" -Port 5065
+ Launch-Service -Name "Gateway" -Path "gateway/Diten.ApiGateway" -Port 5000
+ Launch-Service -Name "Web" -Path "frontend/Diten.Web" -Port 5001
+ 

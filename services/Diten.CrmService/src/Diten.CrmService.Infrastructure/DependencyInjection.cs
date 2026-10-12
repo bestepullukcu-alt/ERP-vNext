@@ -28,6 +28,8 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         // MOD-0150 FU07 — provenance actor (CreatedBy/UpdatedBy) resolved from the caller principal, never a payload.
         services.AddScoped<IActorContext, HttpActorContext>();
+        // WP-VP-2 (B-1) — caller resource + permission seam for visit ownership (planned visits, sessions, reports).
+        services.AddScoped<ICallerScope, HttpCallerScope>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddScoped<Application.Features.Territory.ITerritoryLifecycleAuditPublisher,
@@ -94,6 +96,10 @@ public static class DependencyInjection
             Application.Features.StrategyTemplate.Binding.IStrategyTemplateProductReferenceValidator,
             StrategyTemplate.MdmStrategyTemplateReferenceValidator>();
 
+        // WP-VP-4G (F4-4) - product NAMES for read models over the same MDM selector the play editor reads; one bulk read
+        // per call, fail-open (no name ⇒ the code is shown; a plan read never fails on it).
+        services.AddHttpClient<Application.Common.IProductNameReader, StrategyTemplate.MdmProductNameReader>();
+
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own
         // validator and MOD-0167 FU02's: cacheless, 3s budget, one transient retry, always through the Gateway. It runs
         // BEFORE any insert, so 404 / not-referenceable is a 400 and an unreachable MDM is a 503 with nothing written.
@@ -124,6 +130,11 @@ public static class DependencyInjection
         // an admin path the Gateway 400s on X-Tenant-Id and 403s for tenant tokens (see the class comment).
         services.AddHttpClient<
             Application.Features.CycleCapacity.Read.IWorkingDayCounter,
+            CycleCapacity.WorkingCalendarWorkingDayCounter>();
+
+        // WP-VP-FIX-1 - the same door + transport, per-day op is-working-day: the visit planner's non-working days.
+        services.AddHttpClient<
+            Application.Features.CycleCapacity.Read.IWorkingDayChecker,
             CycleCapacity.WorkingCalendarWorkingDayCounter>();
 
         // MOD-0155 FU06 - the configured capacity defaults (8h day, interim FTE average). Singleton: configuration is

@@ -1,0 +1,15 @@
+created on 57192 (10):
+  DitenSupplyChain_Mod0190_Test	692224 B	6 coll
+  DitenSupplyChain_Mod0192_Test	454656 B	7 coll
+  diten_mod0183_tests	1097728 B	32 coll
+  diten_mod0184_index_failure_tests	86016 B	3 coll
+  diten_mod0184_tests	704512 B	32 coll
+  diten_mod0185_tests	1417216 B	32 coll
+  diten_returns_collation_tests	389120 B	5 coll
+  diten_returns_tests	966656 B	5 coll
+  diten_test_claims	598016 B	4 coll
+  diten_test_claims_noindexes	61440 B	4 coll
+remaining: admin config local
+mongod 48248 stopped
+57192 listeners: 0
+ls: /tmp/mongodb-57192.sock: No such file or directory

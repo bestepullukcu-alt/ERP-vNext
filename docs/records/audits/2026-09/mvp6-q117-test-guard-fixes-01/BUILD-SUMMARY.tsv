@@ -1,0 +1,12 @@
+tree	target	exit	warnings	errors
+build-base	services/Diten.MdmService/Diten.MdmService.sln	0	6	0
+build-base	services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj	0	1	0
+build-base	services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj	0	1	0
+build-B	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0
+build-B	services/Diten.MdmService/Diten.MdmService.sln	0	6	0
+build-B	services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj	0	1	0
+build-B	services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj	0	1	0
+build-B	services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj	0	0	0
+build-B	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	18	0
+build-B	gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj	0	5	0
+build-B	tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj	0	0	0

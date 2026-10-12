@@ -18,7 +18,7 @@ public static class CyclePeriodsL10nKeys
         "ClosedBanner", "ClosedReadOnly", "CodeImmutableHint", "CodeSuggestedHint", "CreateCapacity",
         "CycleCapacities", "DateTemplates", "Dates", "DatesSection", "Days", "DaysAndWorkingDays", "DaysUnit",
         "FinderAmbiguous", "FinderAnsweredBy", "FinderDate", "FinderHint", "FinderIdle", "FinderNone", "FinderOpen",
-        "FinderResolved", "FinderSubmit", "FinderTitle", "FinderUnit", "GoToDetails", "HasCapacity", "LifecycleNote", "LoadFailed",
+        "FinderResolved", "FinderSubmit", "FinderTitle", "FinderUnit", "GoToDetails", "TodayActivePeriods", "HasCapacity", "LifecycleNote", "LoadFailed",
         "Month", "NameSuggestionPattern", "NoCampaigns", "NoCapacity", "NoCapacityBandTitle", "NoCapacityClosed",
         "NoCapacityHint", "NoCapacityTitle", "NoDescription", "NoPlannedVisits", "NoPlanningSessions",
         "NonWorkingDays", "NotActivatedYet", "NotClosedYet", "OpenCapacity", "PartialMonth", "PartialMonthHint",

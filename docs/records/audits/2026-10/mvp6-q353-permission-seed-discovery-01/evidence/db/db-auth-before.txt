@@ -1,0 +1,3 @@
+collections: authAuditLogs auth_role_assignment_versions integrationEventInbox mfaChallenges permissions refreshTokens rolePermissions roles userRoles users
+permission collection: permissions  total docs: 411
+supplychain.* permissions: 0

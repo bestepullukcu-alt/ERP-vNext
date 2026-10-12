@@ -1,0 +1,158 @@
+{
+  "summary": {
+    "accepted": 1154.6,
+    "delivered": 1478.6,
+    "remaining": 1363.4,
+    "total": 2842,
+    "categories": {
+      "pack": 72.3,
+      "contract": 64,
+      "backend": 73.4,
+      "frontend": 21.8,
+      "integration": 32.4,
+      "test": 51.7
+    }
+  },
+  "modules": {
+    "0183": {
+      "accepted": 152,
+      "delivered": 252,
+      "remaining": 42,
+      "total": 294,
+      "categories": {
+        "pack": 66.7,
+        "contract": 72.7,
+        "backend": 90,
+        "frontend": 100,
+        "integration": 100,
+        "test": 70.6
+      }
+    },
+    "0184": {
+      "accepted": 104,
+      "delivered": 180,
+      "remaining": 28,
+      "total": 208,
+      "categories": {
+        "pack": 80,
+        "contract": 80,
+        "backend": 92.3,
+        "frontend": 100,
+        "integration": 100,
+        "test": 60
+      }
+    },
+    "0185": {
+      "accepted": 144,
+      "delivered": 144,
+      "remaining": 164,
+      "total": 308,
+      "categories": {
+        "pack": 66.7,
+        "contract": 100,
+        "backend": 80,
+        "frontend": 0,
+        "integration": 18.2,
+        "test": 47.1
+      }
+    },
+    "0186": {
+      "accepted": 172,
+      "delivered": 172,
+      "remaining": 106,
+      "total": 278,
+      "categories": {
+        "pack": 76.9,
+        "contract": 83.3,
+        "backend": 90,
+        "frontend": 0,
+        "integration": 50,
+        "test": 66.7
+      }
+    },
+    "0187": {
+      "accepted": 204,
+      "delivered": 204,
+      "remaining": 110,
+      "total": 314,
+      "categories": {
+        "pack": 92.3,
+        "contract": 85.7,
+        "backend": 91.7,
+        "frontend": 0,
+        "integration": 50,
+        "test": 70.6
+      }
+    },
+    "0190": {
+      "accepted": 153.3,
+      "delivered": 153.3,
+      "remaining": 130.7,
+      "total": 284,
+      "categories": {
+        "pack": 90.4,
+        "contract": 83.3,
+        "backend": 84.2,
+        "frontend": 0,
+        "integration": 27.3,
+        "test": 57.1
+      }
+    },
+    "0192": {
+      "accepted": 225.3,
+      "delivered": 225.3,
+      "remaining": 138.7,
+      "total": 364,
+      "categories": {
+        "pack": 91.6,
+        "contract": 85.7,
+        "backend": 89.7,
+        "frontend": 0,
+        "integration": 38.5,
+        "test": 66.7
+      }
+    },
+    "0147": {
+      "accepted": 0,
+      "delivered": 20,
+      "remaining": 248,
+      "total": 268,
+      "categories": {
+        "pack": 42.9,
+        "contract": 33.3,
+        "backend": 0,
+        "frontend": 0,
+        "integration": 0,
+        "test": 0
+      }
+    },
+    "0148": {
+      "accepted": 0,
+      "delivered": 20,
+      "remaining": 232,
+      "total": 252,
+      "categories": {
+        "pack": 42.9,
+        "contract": 33.3,
+        "backend": 0,
+        "frontend": 0,
+        "integration": 0,
+        "test": 0
+      }
+    },
+    "SHARED": {
+      "accepted": 0,
+      "delivered": 108,
+      "remaining": 164,
+      "total": 272,
+      "categories": {
+        "pack": null,
+        "contract": 0,
+        "backend": 100,
+        "frontend": 0,
+        "integration": 0,
+        "test": 42.9
+      }
+    }
+  }
+}

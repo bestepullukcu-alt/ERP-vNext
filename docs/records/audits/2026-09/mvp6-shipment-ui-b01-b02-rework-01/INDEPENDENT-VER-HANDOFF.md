@@ -1,0 +1,3 @@
+# MVP6-SHIPMENT-UI-B01-B02-INDEPENDENT-VER-01
+
+Use a different agent in strict source-read-only mode. Verify `FINAL-354-SOURCE-MANIFEST.tsv`, `source.tar.gz`, and `b01-b02.patch`. In an isolated native .NET 8 environment with a DB-010 Mongo replica set and fresh real Auth session through Gateway, reproduce B01 list render/filter and B02 transition/POD authoritative-root behavior, replay, changed-payload conflict, scoped zero-write, and restart. Do not fix source. Keep PNG OPEN if supported persistent export remains unavailable. Write only `docs/records/audits/2026-09/mvp6-shipment-ui-b01-b02-independent-ver-01/`.

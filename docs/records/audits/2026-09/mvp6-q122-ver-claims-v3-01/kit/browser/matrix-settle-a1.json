@@ -1,0 +1,60 @@
+{
+  "phase": "matrix",
+  "extra": "settle",
+  "startedAt": "2026-09-27T12:23:22.026Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-08-matrix-settle": {
+      "result": "FAIL",
+      "dom": {
+        "addNew": 0,
+        "open": null,
+        "inv": [],
+        "appr": [
+          "Settled"
+        ],
+        "rej": []
+      },
+      "calls": {
+        "closeSettleOnly": {
+          "status": 403,
+          "code": "FORBIDDEN"
+        },
+        "withdrawUnrelated": {
+          "status": 403,
+          "code": "FORBIDDEN"
+        },
+        "settleExact": {
+          "status": 200,
+          "code": null
+        }
+      }
+    }
+  },
+  "png": [
+    {
+      "name": "matrix-settle-en.png",
+      "sha256": "f67d6f83d9540e7c1433321769952d12aa04a78d403940b7bd249d5768edd1fc",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:23:24.281Z",
+      "phase": "matrix",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "matrix-settle",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "matrix-settle",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T12:23:24.341Z"
+}

@@ -1,0 +1,8 @@
+culture	html_lang	direction	live_surface	resource_keys	missing_or_empty	browser_console	verdict
+en	en	ltr	list/create/detail	63	0	0 error / 0 warning	PASS
+tr	tr	ltr	list	63	0	0 error / 0 warning	PASS
+fr	fr	ltr	list	63	0	0 error / 0 warning	PASS
+es	es	ltr	list	63	0	0 error / 0 warning	PASS
+zh	zh	ltr	list	63	0	0 error / 0 warning	PASS
+ar	ar	rtl	list/create	63	0	0 error / 0 warning	PARTIAL — module strings localize; shared responsive modal remains English
+ru	ru	ltr	list	63	0	0 error / 0 warning	PASS

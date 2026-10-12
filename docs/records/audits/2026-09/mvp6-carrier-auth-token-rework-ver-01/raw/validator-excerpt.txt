@@ -1,0 +1,84 @@
+    42	        try
+    43	        {
+    44	            var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+    45	            _ = handler.ValidateToken(token, new TokenValidationParameters
+    46	            {
+    47	                ValidateIssuer = true,
+    48	                ValidIssuer = _options.Issuer,
+    49	                ValidateAudience = true,
+    50	                ValidAudience = _options.Audience,
+    51	                ValidateLifetime = true,
+    52	                ClockSkew = TimeSpan.FromSeconds(_options.ClockSkewSeconds),
+    53	                RequireExpirationTime = true,
+    54	                ValidateIssuerSigningKey = true,
+    55	                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret))
+    56	            }, out var validatedToken);
+    57	
+    58	            if (validatedToken is not JwtSecurityToken jwt
+    59	                || !string.Equals(jwt.Header.Alg, SecurityAlgorithms.HmacSha256, StringComparison.Ordinal)
+    60	                || !string.Equals(jwt.Header.Kid, _options.KeyId, StringComparison.Ordinal)
+    61	                || !HasExactlyOneAudience(jwt, _options.Audience)
+    62	                || !HasExactlyOneClaim(jwt, JwtRegisteredClaimNames.Sub, _options.CallerId)
+    63	                || !HasExactlyOneClaim(jwt, "scope", PlatformServiceIdentityOptions.RequiredScope)
+    64	                || !HasExactlyOneClaim(jwt, "tenant_id", tenantId.ToString("D"))
+    65	                || !HasExactlyOneClaim(jwt, "actor_id", actorId.ToString("D"))
+    66	                || !HasExactlyOneClaim(jwt, "legal_entity_id", legalEntityId.ToString("D"))
+    67	                || !HasExactlyOneNonEmptyClaim(jwt, JwtRegisteredClaimNames.Jti)
+    68	                || !TryGetExactlyOneNumericDate(jwt, JwtRegisteredClaimNames.Iat, out var issuedAt)
+    69	                || !TryGetExactlyOneNumericDate(jwt, JwtRegisteredClaimNames.Nbf, out var notBefore)
+    70	                || !TryGetExactlyOneNumericDate(jwt, JwtRegisteredClaimNames.Exp, out var expiresAt)
+    71	                || issuedAt != notBefore
+    72	                || issuedAt > DateTimeOffset.UtcNow.ToUnixTimeSeconds() + _options.ClockSkewSeconds
+    73	                || expiresAt <= issuedAt
+    74	                || expiresAt - issuedAt > _options.MaximumTokenLifetimeSeconds)
+    75	            {
+    76	                return false;
+    77	            }
+    78	
+    79	            return true;
+    80	        }
+    81	        catch (Exception ex) when (ex is SecurityTokenException or ArgumentException)
+    82	        {
+    83	            return false;
+    84	        }
+    85	    }
+    86	
+    87	    private static bool HasExactlyOneAudience(JwtSecurityToken token, string expected)
+    88	    {
+    89	        var audiences = token.Audiences.ToArray();
+    90	        return audiences.Length == 1
+    91	               && string.Equals(audiences[0], expected, StringComparison.Ordinal);
+    92	    }
+    93	
+    94	    private static bool HasExactlyOneClaim(JwtSecurityToken token, string type, string expected)
+    95	    {
+    96	        var values = token.Claims
+    97	            .Where(claim => string.Equals(claim.Type, type, StringComparison.Ordinal))
+    98	            .Select(claim => claim.Value)
+    99	            .ToArray();
+   100	        return values.Length == 1
+   101	               && string.Equals(values[0], expected, StringComparison.Ordinal);
+   102	    }
+   103	
+   104	    private static bool HasExactlyOneNonEmptyClaim(JwtSecurityToken token, string type)
+   105	    {
+   106	        var values = token.Claims
+   107	            .Where(claim => string.Equals(claim.Type, type, StringComparison.Ordinal))
+   108	            .Select(claim => claim.Value)
+   109	            .ToArray();
+   110	        return values.Length == 1 && !string.IsNullOrWhiteSpace(values[0]);
+   111	    }
+   112	
+   113	    private static bool TryGetExactlyOneNumericDate(
+   114	        JwtSecurityToken token,
+   115	        string type,
+   116	        out long value)
+   117	    {
+   118	        value = default;
+   119	        var values = token.Claims
+   120	            .Where(claim => string.Equals(claim.Type, type, StringComparison.Ordinal))
+   121	            .Select(claim => claim.Value)
+   122	            .ToArray();
+   123	        return values.Length == 1 && long.TryParse(values[0], out value);
+   124	    }
+   125	}

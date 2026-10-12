@@ -33,6 +33,33 @@ public interface IAccountContactLinkRepository
         return result;
     }
 
+    /// <summary>WP-VP-2B (R1) — the non-deleted links of a page of accounts. Production answers with ONE <c>$in</c> query;
+    /// the default fans out per account (alternate implementations / tests).</summary>
+    async Task<IReadOnlyList<AccountContactLink>> ListByAccountIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> accountIds, CancellationToken cancellationToken)
+    {
+        if (accountIds is null || accountIds.Count == 0) return [];
+        var result = new List<AccountContactLink>();
+        foreach (var accountId in accountIds.Distinct())
+        {
+            result.AddRange(await ListByAccountAsync(tenantId, accountId, cancellationToken));
+        }
+        return result;
+    }
+
+    /// <summary>WP-VP-2B (R2) — the distinct ids of the tenant's accounts that have at least one ACTIVE link (not
+    /// deleted, not closed — <see cref="RelationshipLifecycle"/>) whose contact is not in
+    /// <paramref name="excludedContactIds"/> (the soft-deleted contacts). Production: one grouping aggregation.</summary>
+    async Task<IReadOnlyCollection<Guid>> ListAccountIdsWithActiveLinksAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> excludedContactIds, CancellationToken cancellationToken)
+    {
+        var excluded = excludedContactIds.ToHashSet();
+        return (await ListAllAsync(tenantId, cancellationToken))
+            .Where(l => RelationshipLifecycle.IsActiveLink(l, !excluded.Contains(l.ContactId)))
+            .Select(l => l.AccountId)
+            .ToHashSet();
+    }
+
     /// <summary>All active links for the tenant (export).</summary>
     Task<IReadOnlyList<AccountContactLink>> ListAllAsync(Guid tenantId, CancellationToken cancellationToken);
 

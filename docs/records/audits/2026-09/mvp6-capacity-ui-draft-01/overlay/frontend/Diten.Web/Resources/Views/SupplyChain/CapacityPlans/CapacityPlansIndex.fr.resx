@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CapacityPlansTitle" xml:space="preserve"><value>Plans de capacité</value></data>
+  <data name="PlanId" xml:space="preserve"><value>ID du plan</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Nom du plan</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Début de l'horizon</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Fin de l'horizon</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>ID du plan de la demande</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Version du plan de la demande</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Capture de la source le</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Somme de contrôle de la source</value></data>
+  <data name="Status" xml:space="preserve"><value>Statut du plan</value></data>
+  <data name="PlanStatus.Draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="PlanStatus.Evaluating" xml:space="preserve"><value>En évaluation</value></data>
+  <data name="PlanStatus.Ready" xml:space="preserve"><value>Prêt</value></data>
+  <data name="PlanStatus.Approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="PlanStatus.Archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Non renseigné</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Référence d'assistance</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Copié dans le presse-papiers.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>La requête précédente est encore en cours de traitement.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Renseignez tous les champs obligatoires.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La requête n'est pas valide. Vérifiez les saisies et réessayez.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>La requête n'a pas pu être tracée. Rechargez la page et réessayez.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'effectuer cette action.</value></data>
+  <data name="ErrUnknownCapacityPlan" xml:space="preserve"><value>Ce plan de capacité est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="ErrUnknownCapacityScenario" xml:space="preserve"><value>Ce scénario est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="ErrUnknownCapacityEvaluation" xml:space="preserve"><value>Cette évaluation est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="ErrCapacityPlanAlreadyExists" xml:space="preserve"><value>Un plan de capacité existe déjà pour cet horizon et cette version du plan de la demande.</value></data>
+  <data name="ErrCapacityScenarioNameConflict" xml:space="preserve"><value>Un scénario portant ce nom existe déjà dans ce plan.</value></data>
+  <data name="ErrCapacityPlanStateConflict" xml:space="preserve"><value>Le statut du plan ne permet plus de nouveau scénario. Le plan a été rechargé.</value></data>
+  <data name="ErrEvaluationAlreadyActive" xml:space="preserve"><value>Une évaluation de ce scénario est déjà en cours.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Cette requête a déjà été utilisée avec d'autres valeurs. Modifiez les saisies pour envoyer une nouvelle requête.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>La référence du plan de la demande est inconnue ou non publiée.</value></data>
+  <data name="ErrInvalidConstraintReference" xml:space="preserve"><value>Une référence de contrainte est inconnue ou non valide.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Le service est temporairement indisponible. Réessayez ; la même requête sera envoyée.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Le résultat n'a pas pu être confirmé. Réessayez ; la même requête sera envoyée, rien ne sera enregistré deux fois.</value></data>
+  <data name="CapacityPlansPageDescription" xml:space="preserve"><value>Créez un plan de capacité ou ouvrez un plan existant à l'aide de son ID.</value></data>
+  <data name="NoPlanListNote" xml:space="preserve"><value>Les plans ne sont pas listés ici. Conservez l'ID affiché après la création pour rouvrir le plan.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Créer un plan</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Ouvrir le plan</value></data>
+  <data name="OpenPlanTitle" xml:space="preserve"><value>Ouvrir un plan par son ID</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Saisissez l'UUID du plan tel qu'il a été affiché après la création.</value></data>
+  <data name="PlanIdInvalid" xml:space="preserve"><value>Saisissez un ID de plan valide (UUID).</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nouveau plan de capacité</value></data>
+  <data name="HorizonOrderInvalid" xml:space="preserve"><value>La fin de l'horizon doit être identique ou postérieure au début.</value></data>
+  <data name="DemandReferenceHelp" xml:space="preserve"><value>Saisissez la référence du plan DEMAND telle qu'elle est publiée.</value></data>
+  <data name="SourceCapturedAtHelp" xml:space="preserve"><value>Date et heure UTC, par exemple 2026-09-26T12:00:00Z.</value></data>
+  <data name="RequiredFilled" xml:space="preserve"><value>Champs obligatoires renseignés</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>Plan créé.</value></data>
+</root>

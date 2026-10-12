@@ -17,6 +17,25 @@ public interface IAccountRelationshipRepository
     Task<IReadOnlyList<AccountRelationship>> ListByAccountAsync(Guid tenantId, Guid accountId, CancellationToken cancellationToken);
 
     /// <summary>All active relationships for the tenant (export).</summary>
+    /// <summary>WP-VP-3D (D5) — every non-deleted relationship touching one of <paramref name="accountIds"/> (as source
+    /// OR target) in ONE read: the bulk twin of <see cref="ListByAccountAsync"/>. The default loops it; the Mongo
+    /// repository answers with a single <c>$in</c> find.</summary>
+    async Task<IReadOnlyList<AccountRelationship>> ListByAccountIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> accountIds, CancellationToken cancellationToken)
+    {
+        if (accountIds is null || accountIds.Count == 0) return Array.Empty<AccountRelationship>();
+        var result = new Dictionary<Guid, AccountRelationship>();
+        foreach (var accountId in accountIds.Distinct())
+        {
+            foreach (var r in await ListByAccountAsync(tenantId, accountId, cancellationToken))
+            {
+                result[r.Id] = r;
+            }
+        }
+
+        return result.Values.ToList();
+    }
+
     Task<IReadOnlyList<AccountRelationship>> ListAllAsync(Guid tenantId, CancellationToken cancellationToken);
 
     Task InsertAsync(AccountRelationship relationship, CancellationToken cancellationToken);

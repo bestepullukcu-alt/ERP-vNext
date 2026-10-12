@@ -13,8 +13,14 @@ public sealed class GetVisitReportByIdHandler
     private readonly ITenantContext _tenant;
     private readonly IVisitReportRepository _repository;
 
-    public GetVisitReportByIdHandler(ITenantContext tenant, IVisitReportRepository repository)
+    private readonly IPlannedVisitRepository _plannedVisits;
+    private readonly ICallerScope _caller;
+
+    public GetVisitReportByIdHandler(
+        ITenantContext tenant, IVisitReportRepository repository, IPlannedVisitRepository plannedVisits, ICallerScope caller)
     {
+        _plannedVisits = plannedVisits;
+        _caller = caller;
         _tenant = tenant;
         _repository = repository;
     }
@@ -28,7 +34,9 @@ public sealed class GetVisitReportByIdHandler
         }
 
         var report = await _repository.GetByIdAsync(tenantId, request.VisitReportId, cancellationToken);
-        return report is null
+        // WP-VP-2 (B-1) — a report is readable only with its planned visit (own, or read-all); otherwise 404.
+        var plan = report is null ? null : await _plannedVisits.GetByIdAsync(tenantId, report.PlannedVisitId, cancellationToken);
+        return report is null || !_caller.MayAccess(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, plan?.Resource.ResourceId)
             ? Response<VisitReportDetailDto>.Fail("Visit report not found.", 404)
             : Response<VisitReportDetailDto>.Success(VisitReportMapper.ToDetail(report));
     }

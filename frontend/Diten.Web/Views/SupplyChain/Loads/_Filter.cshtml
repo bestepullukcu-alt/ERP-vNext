@@ -1,0 +1,42 @@
+@using Diten.Web.Views.SupplyChain.Loads
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LoadsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@* Partial view: no Layout. The two published query parameters only: status (single; ShowAll omits it) and carrierId (UUID
+   text, not a lookup). Labels are localized; option values stay the contract's English names. *@
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    @* R-2 (SHIPMENT-BUNDLE 3.2.0): a REQUIRED scope, not an optional filter. The service takes
+                       exactly one X-Legal-Entity-Id per call, so there is no "show all" to offer. *@
+                    <div class="filter-chip filter-legal-entity">
+                        <select id="filterLegalEntity" class="form-select form-select-sm select2"
+                                data-placeholder="@SharedLocalizer["LegalEntity"]" required></select>
+                    </div>
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="Draft">@Localizer["StatusDraft"]</option>
+                            <option value="Planned">@Localizer["StatusPlanned"]</option>
+                            <option value="Tendered">@Localizer["StatusTendered"]</option>
+                            <option value="Accepted">@Localizer["StatusAccepted"]</option>
+                            <option value="Dispatched">@Localizer["StatusDispatched"]</option>
+                            <option value="Completed">@Localizer["StatusCompleted"]</option>
+                            <option value="Cancelled">@Localizer["StatusCancelled"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <input id="filterCarrierId" type="text" class="form-control form-control-sm" dir="ltr" autocomplete="off" spellcheck="false"
+                               placeholder="@Localizer["FilterCarrierId"]" aria-label="@Localizer["FilterCarrierId"]" />
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

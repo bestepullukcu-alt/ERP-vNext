@@ -1,0 +1,6 @@
+47750ef020449a4344f55b1e5f9963db3a3d148313e83d07487e7c3da279c3f4  /private/tmp/mvp6-shipment-remaining-evidence-JDCqRq/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+5560f4c8f40ea883a4726d7334c349cf7c970625bb7d136e02376170d5f2a694  /private/tmp/mvp6-shipment-remaining-evidence-JDCqRq/source/frontend/Diten.Web/bin/Release/net8.0/Diten.Web.dll
+62ce8fa109b54bc593d960e91a35ce76c039b5abec05399107b19a54f6e3e707  /private/tmp/mvp6-shipment-remaining-evidence-JDCqRq/source/gateway/Diten.ApiGateway/bin/Release/net8.0/Diten.ApiGateway.dll
+87df49c8b93af85aa689e427d22c19416c9a266b91e6c5c7e23cf32d3faf2d70  /private/tmp/mvp6-shipment-remaining-evidence-JDCqRq/source/services/Diten.MdmService/src/Diten.MdmService.Api/bin/Release/net8.0/Diten.MdmService.Api.dll
+a88a49c3e37530798610ec6089be3a5be503a50ba3a4711ef1389125620fb341  /private/tmp/mvp6-shipment-remaining-evidence-JDCqRq/source/services/Diten.AuthService/src/Diten.AuthService.Api/bin/Release/net8.0/Diten.AuthService.Api.dll
+c6ca76bb826c71b0c2096a0359325d324df13340a4deaaf2f3bbb11ec0523dd4  /private/tmp/mvp6-shipment-remaining-evidence-JDCqRq/source/services/Diten.Platform/src/Diten.Platform.API/bin/Release/net8.0/Diten.Platform.API.dll

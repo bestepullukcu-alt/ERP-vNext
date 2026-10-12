@@ -1,0 +1,2 @@
+[xUnit.net 00:00:00.99]       p95 0.1 ms is below 41.0 ms (the 19th slowest delay minus one timer tick); durations are not being recorded.
+  Failed Diten.SupplyChainService.Tests.Shipments.ShipmentTelemetryTests.OperationDuration_WhenOperationsComplete_RecordsOneTaggedMillisecondValueEachSoP95CanBeReported [691 ms]

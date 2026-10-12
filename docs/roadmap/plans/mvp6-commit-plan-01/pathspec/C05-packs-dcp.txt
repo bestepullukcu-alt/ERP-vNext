@@ -1,0 +1,6 @@
+execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md

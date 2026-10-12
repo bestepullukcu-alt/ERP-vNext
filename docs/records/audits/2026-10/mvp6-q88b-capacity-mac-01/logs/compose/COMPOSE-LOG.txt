@@ -1,0 +1,17 @@
+A: BASE cloned (cp -c -Rp) from ~/mvp6-env/base/src and made writable on the copy only
+BASE copy (vs BASE-MANIFEST a8a236de): files 14566; expected 14566; mismatches 0 []; extra 0 []; missing 0
+q117: archive 83e6322c1d4d OK; 11 file members; AppleDouble skipped 0; stage extracted
+q117: 11 members = declared list; preimages OK; 10 replaced, 1 added
+q121: archive 93bf1c07249c OK; 2 file members; AppleDouble skipped 0; stage extracted
+q121: 2 members = declared list; preimages OK; 2 replaced, 0 added
+q131: archive 4a4a0860954f OK; 20 file members; AppleDouble skipped 0; stage extracted
+q131: 20 members = declared list; preimages OK; 15 replaced, 5 added
+tree A = BASE-STACK v2 (BASE→Q117→Q121→Q131): files 14572; expected 14572; mismatches 0 []; extra 0 []; missing 0
+cap-v1: archive dd290891d67e OK; 47 file members; AppleDouble skipped 0; stage extracted
+cap-v2: archive 48b60b782f1b OK; 47 file members; AppleDouble skipped 0; stage extracted
+cap-v3: archive 5c0a3b618d27 OK; 47 file members; AppleDouble skipped 0; stage extracted
+cap FILE-PLAN v2: 9/9 rows exact; FILE-PLAN v3: 8/8 rows v2 member = v2_sha256 and v3 member = v3_sha256; other 39 v3 files byte-equal v2
+cap-v3 module files: 34 added (all new tree paths; tree before = absent); _shared-integration 13 files not copied as files
+L6 env integration (environment copy only): Program.cs provider line; ocelot routes per the fragment (count in COMPOSE.tsv); 2 nav keys x 7 resx. Not applied: icon-map proposal, platform checklist, frontend Program.cs note (no change)
+tree B = BASE-STACK v2 + Capacity overlay v3 + L6 env: files 14606; expected 14606; mismatches 0 []; extra 0 []; missing 0
+DONE: A 14572 files, B 14606 files; both set read-only; builds run in clones

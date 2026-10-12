@@ -1,0 +1,6 @@
+da62b9b753d3d16b32d5359f2cdfe078cde5a0705a9949e1d8b0be16bafa12c2  /Users/natig/mvp6-env/q64e/ek-work/source/services/Diten.AuthService/src/Diten.AuthService.Api/bin/Release/net8.0/Diten.AuthService.Api.dll
+0b4a1a413cbba0f23e4dd959df430215872446c0c2e12672a9620a2ed66d0aa0  /Users/natig/mvp6-env/q64e/ek-work/source/services/Diten.Platform/src/Diten.Platform.API/bin/Release/net8.0/Diten.Platform.API.dll
+9d0fee7c8521dd2a6e6db42cc2dea5776430ea575c977233ab38a289ec04c51f  /Users/natig/mvp6-env/q64e/ek-work/source/services/Diten.MdmService/src/Diten.MdmService.Api/bin/Release/net8.0/Diten.MdmService.Api.dll
+9f77939a5a2ddfa70185aa9fe8af2fc0ac565f08e189bf606ecfe4925f1f7ea0  /Users/natig/mvp6-env/q64e/ek-work/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+a81f30d2c137b8ed305e722261d33c2ee2e02f61807f40d2ab05b87e3c17f2fa  /Users/natig/mvp6-env/q64e/ek-work/source/gateway/Diten.ApiGateway/bin/Release/net8.0/Diten.ApiGateway.dll
+af15d984591aa471dea19e8ed14e32559acbc0b80bcb5a4fb71469cfd64ee5eb  /Users/natig/mvp6-env/q64e/ek-work/source/frontend/Diten.Web/bin/Release/net8.0/Diten.Web.dll

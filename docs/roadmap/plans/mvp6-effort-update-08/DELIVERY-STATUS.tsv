@@ -1,0 +1,12 @@
+scope	name	readiness_status	delivered_ml	remaining_ml	total_ml	delivered_index_percent	boundary
+0183	Shipment/POD	PARTIAL_A12_A08_A09_RUNTIME_ACCEPTED	252	42	294	85.7	R2-04 browser allocation closed; broader UI rows, remaining PNG, isolated final VER, integrated target open
+0184	Carrier	PARTIAL_UNCHANGED_PNG_OPEN	180	28	208	86.5	No new evidence; UI source not archived (Q62)
+0185	Loads	PARTIAL_PUBLICATION_ACCEPTED	144	164	308	46.8	3.1.0 publication accepted; producer uptake (C) granted but UNESTIMATED; UI, detail, lookup open
+0186	Returns	PARTIAL_PACK_UI_SCOPE_APPLIED	172	106	278	61.9	Pack text only; forecast adds UI net +26 M
+0187	Claims	PARTIAL_PACK_UI_SCOPE_APPLIED	200	114	314	63.7	Pack text only; forecast adds UI net +16 M
+0190	S&OP	PARTIAL_UNCHANGED	148	136	284	52.1	No new evidence
+0192	Capacity	PARTIAL_UNCHANGED	220	144	364	60.4	No new evidence
+0147	Supplier Performance	PRE_DEV_PARTIAL	20	248	268	7.5	No new evidence
+0148	Supplier Portal	PRE_DEV_PARTIAL	20	232	252	7.9	No new evidence
+SHARED	Shared work	PARTIAL_UNCHANGED	108	164	272	39.7	Self-registration and evidence kit only in forecast / unestimated
+portfolio	MVP6	PARTIAL_ESTIMATED_SCOPE	1464	1378	2842	51.5	Frozen baseline; forecast 1469/1485/2954 = 49.7 %

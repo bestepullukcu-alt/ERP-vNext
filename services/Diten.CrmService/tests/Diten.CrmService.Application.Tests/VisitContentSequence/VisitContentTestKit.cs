@@ -239,6 +239,20 @@ internal sealed class KitJourneyReader : IContentEngagementJourneyReader
         => Task.FromResult(Published.Any(j => j.JourneyId == journeyId) && Stages.TryGetValue(journeyId, out var rows)
             ? rows
             : (IReadOnlyList<ContentEngagementJourneyStageDto>)Array.Empty<ContentEngagementJourneyStageDto>());
+
+    /// <summary>WP-VP-3C — the journeys telling a product (play-less content, K-7f); counted.</summary>
+    public Dictionary<Guid, List<ContentEngagementJourneyDto>> ProductJourneys { get; } = new();
+    public int ProductJourneyReads { get; private set; }
+
+    public Task<IReadOnlyDictionary<Guid, IReadOnlyList<ContentEngagementJourneyDto>>> ResolvePublishedJourneysForProductsAsync(
+        IReadOnlyCollection<Guid> productIds, ContentEngagementJourneyCriteria criteria, CancellationToken cancellationToken)
+    {
+        ProductJourneyReads++;
+        return Task.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<ContentEngagementJourneyDto>>>(productIds.Distinct()
+            .ToDictionary(id => id, id => (IReadOnlyList<ContentEngagementJourneyDto>)(ProductJourneys.TryGetValue(id, out var rows)
+                ? rows.ToList()
+                : new List<ContentEngagementJourneyDto>())));
+    }
 }
 
 internal sealed class KitCapacityRepository : ICycleCapacityRepository
@@ -288,4 +302,10 @@ internal sealed class KitSourceReader : IVisitContentSourceReader
 
     public Task<AudienceProfile?> GetAudienceProfileAsync(Guid audienceProfileId, CancellationToken cancellationToken)
         => Task.FromResult(Audiences.TryGetValue(audienceProfileId, out var p) ? p : null);
+
+    /// <summary>WP-VP-3C (E7-B1) — chain templates by id (their branch order names the main branch).</summary>
+    public Dictionary<Guid, ConceptChainTemplate> ChainTemplates { get; } = new();
+
+    public Task<ConceptChainTemplate?> GetChainTemplateAsync(Guid chainTemplateId, CancellationToken cancellationToken)
+        => Task.FromResult(ChainTemplates.TryGetValue(chainTemplateId, out var t) ? t : null);
 }

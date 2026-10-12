@@ -347,14 +347,18 @@ public sealed class PublishContentEngagementJourneyHandler
             return Response<bool>.Fail("Content engagement journey not found.", 404);
         }
 
+        // WP-E2E-FIX-2 (E4-B2) — every publish rule answers the [code, message] pair (the canonical FU05 reason codes)
+        // so the Web shows the user's language instead of the English sentence.
         if (journey.IsArchived())
         {
-            return Response<bool>.Fail("An archived journey cannot be published.", 409);
+            return PublishFail(ContentEngagementJourneyReasonCodes.ArchivedNoMutation,
+                "An archived journey cannot be published.", 409);
         }
 
         if (request.ExpectedVersion is { } ev && ev != journey.Version)
         {
-            return Response<bool>.Fail("The journey was modified by another writer; reload and retry.", 409);
+            return PublishFail(ContentEngagementJourneyReasonCodes.ConcurrencyConflict,
+                "The journey was modified by another writer; reload and retry.", 409);
         }
 
         if (journey.IsPublished())
@@ -365,7 +369,7 @@ public sealed class PublishContentEngagementJourneyHandler
         // V-J11 — a published journey must carry at least one active, required stage.
         if (!journey.ActiveStages().Any(s => s.IsRequired))
         {
-            return Response<bool>.Fail(
+            return PublishFail(ContentEngagementJourneyReasonCodes.NoRequiredStage,
                 "A journey can only be published with at least one active, required stage (V-J11).", 400);
         }
 
@@ -379,7 +383,7 @@ public sealed class PublishContentEngagementJourneyHandler
             && ContentEngagementJourneyWrite.EffectiveWindowsOverlap(other, journey));
         if (overlap)
         {
-            return Response<bool>.Fail(
+            return PublishFail(ContentEngagementJourneyReasonCodes.OverlappingPublishedVersion,
                 "Another published version of this JourneyCode already overlaps this effective window (V-J10).", 409);
         }
 
@@ -394,8 +398,12 @@ public sealed class PublishContentEngagementJourneyHandler
         var ok = await _journeys.ReplaceAsync(journey, journey.Version, cancellationToken);
         return ok
             ? Response<bool>.Success(true)
-            : Response<bool>.Fail("The journey was modified by another writer; reload and retry.", 409);
+            : PublishFail(ContentEngagementJourneyReasonCodes.ConcurrencyConflict,
+                "The journey was modified by another writer; reload and retry.", 409);
     }
+
+    private static Response<bool> PublishFail(string code, string message, int status)
+        => Response<bool>.Fail(new[] { code, message }, status);
 }
 
 public sealed class CreateContentEngagementJourneyVersionHandler

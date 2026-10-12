@@ -1,0 +1,24 @@
+# Single independent successor VER handoff
+
+Start only after both successor source packages are writer-complete:
+
+- **A successor:** policy/error source, including the exact UI183-A03 disposition.
+- **B successor:** presentation source, including `PRES-183-01` and the authorized handling of shared `PRES-183-02`.
+
+## Preflight
+
+1. Verify both source archives, their manifests and authority records.
+2. Compose them in one fresh disposable checkout. Report any textual or semantic conflict; do not choose a business rule.
+3. Produce one combined source manifest and fresh native .NET 8 binaries.
+4. Use isolated DB, ports and real Auth identities. Do not use operational Mongo 27017.
+5. If DN-01 or DN-02 is absent, leave the corresponding row OPEN; do not improvise a control or waiver.
+
+## Execution
+
+Run `PLAN-A08`, both `PLAN-A09` variants, `PLAN-A12`, and authorized `PLAN-A10`. Verify impacted A03/A11/A13/A14 behavior from the combined source. Reuse unchanged evidence by exact source hash; do not rerun closed rows without an impact reason.
+
+For DataTable evidence, preserve the original generic 49 PASS / 35 FAIL log and run the separately approved bounded profile. Confirm edit/delete/bulk/QuickView remain absent.
+
+Return one A01–A16 matrix with PASS/FAIL/OPEN, raw HTTP/DOM/DB/proxy evidence, source→binary→process→browser binding, screenshot disposition and cleanup. A browser screenshot counts only if produced through a supported save/export path; otherwise PNG remains OPEN.
+
+No source repair, production fault seam, guard change, full-module acceptance, E5/G5, rollout, commit, push or stash is authorized by this handoff.

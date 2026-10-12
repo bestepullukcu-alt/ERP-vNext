@@ -1,0 +1,107 @@
+[
+  {
+    "case": "permission-create-readonly",
+    "status": 403,
+    "expected": 403,
+    "before": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "after": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "zeroWrite": true,
+    "pass": true
+  },
+  {
+    "case": "le-mismatch-create",
+    "status": 404,
+    "expected": 404,
+    "before": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "after": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "zeroWrite": true,
+    "pass": true
+  },
+  {
+    "case": "invalid-transition",
+    "status": 422,
+    "expected": 422,
+    "before": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "after": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "zeroWrite": true,
+    "pass": true
+  },
+  {
+    "case": "pod-already-captured",
+    "status": 409,
+    "expected": 409,
+    "before": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "after": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "zeroWrite": true,
+    "pass": true
+  },
+  {
+    "case": "changed-payload",
+    "status": 409,
+    "expected": 409,
+    "before": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "after": {
+      "sce_shipments": 1,
+      "sce_shipment_history": 4,
+      "sce_shipment_audit": 4,
+      "sce_shipment_outbox": 5,
+      "sce_shipment_receipts": 4
+    },
+    "zeroWrite": true,
+    "pass": true
+  }
+]

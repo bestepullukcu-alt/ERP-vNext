@@ -1,0 +1,19 @@
+# verify from: cd docs/records/audits/2026-10/mvp6-q419-shipment-intent-root-01 && shasum -a 256 -c ARTIFACTS.sha256
+de507103331e0fba966821793425bfa40e3a78b7dc5b6225ed1f1ac0cbc5df14  ./REPORT.md
+6d019cf7e08224dcac01233445ac76111a46b81c3251cd3f4bc62df7d4e32c14  ./evidence/Q419-GREEN-A-muu9fnir-1.json
+22452f96c4d697cd7537acf8129fdd226d59c28422c96a2556884a8dccd89c59  ./evidence/Q419-GREEN-A-muu9fnir-2.json
+3e837ee4707a0d374294bcbe10c50186d34ff4ea3793360a8bc59c22a78b3d9b  ./evidence/Q419-GREEN-B-muu9ge1h-1.json
+46e9db8daaa5085af44bab0ebcde0d538b0b4273c9371d58a8d0e6c2a354d936  ./evidence/Q419-GREEN-B-muu9ge1h-2.json
+b932e8b38c255f00154e4c4df6e93734bbb10c9dde13739219723243454fface  ./evidence/Q419-RESTORED-A-muu9i4a4-1.json
+e6718128cd7fd4fa7d15ea1ca7953e113f7c6afeac4ef4cd9437041f4fdaf49b  ./evidence/Q419-RESTORED-A-muu9i4a4-2.json
+5d43b9771cb2ded21fd1a8b6937f6472be7376961f144825102c6dcb1ee55174  ./evidence/Q419-SAB-A-muu9helk-1.json
+a11a8d930a1222c2de2f74f6792afc297997c77fa37f9fef7904b1c3756c21ea  ./evidence/Q419-SAB-A-muu9helk-2.json
+49aa812fe05b0173e837a020eebab5464608f59be5be5260c6b31e4739791320  ./evidence/create.before.js.txt
+7a2a7ada8e3ad279d91a46ba755f2c5cc6bb0d487beb7c2790509ff71e1799d6  ./evidence/create.diff
+cf79c985d760c40c06e590e71a26d889721d9cd5f698075a0900572c379d9634  ./evidence/db-counts.txt
+1f2c78eb979e0563bc244557917c7d56ae0bd4030aeb7765aef06080377fef91  ./evidence/fixture-ids-and-keys.txt
+a0da1d72e4429bb9524bfe518fa2d604c3b92f5246fc27838fce7202ca6b2be5  ./evidence/port-rewrite.txt
+0217debaca8ba56a8fb945bc3d1d2761271ba7c684561871a193d00ba18cef95  ./evidence/run-RED.json
+3eec2d86f4ba65d965424bde8758a10cca40cf6c609994c8b8d712dac8703345  ./evidence/suite-frontend.txt
+4cb09a64744a5214da656a5f0a8d66edc8fab7e84620b3c4023e25acc774305c  ./evidence/suite-supplychain.txt
+796b5ea1b15c7f05f511101cb5c9c336d40639ab36512aa83e6acea3762afaf1  ../../../../../frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js

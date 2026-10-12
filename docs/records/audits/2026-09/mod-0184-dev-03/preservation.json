@@ -1,0 +1,9 @@
+{
+  "baselineCount": 14392,
+  "protectedUnchanged": 14391,
+  "productionFilesUnchanged": 95,
+  "oldEvidenceFilesUnchanged": 30,
+  "onlyChangedExisting": [
+    "services/Diten.SupplyChainService/tests/carriers/restart_probe.py"
+  ]
+}

@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: cross-module, publication/guard and integration
+
+33 folders/items, first '(files at month level)', last 'mvp6-three-scope-application-01'.
+Work packages: as named in each folder.
+232 files from pathspec/R6.txt (Q230 commit plan).

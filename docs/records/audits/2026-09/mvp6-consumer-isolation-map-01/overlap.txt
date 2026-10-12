@@ -1,0 +1,5 @@
+Returns historical PREP02 paths: 47
+Claims final proposed paths: 47
+Exact intersection: 0
+
+Shared integration target: services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs

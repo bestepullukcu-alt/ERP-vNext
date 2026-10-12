@@ -1,0 +1,654 @@
+{
+  "R19_R23": {
+    "status": "PASS",
+    "checks": {
+      "sameKeyTwenty": true,
+      "differentKeyTwenty": true,
+      "twoTargetsSameKey": true,
+      "sameKeyChangedPayload": true
+    },
+    "sameKey": {
+      "requestCount": 20,
+      "statuses": [
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201
+      ],
+      "claimIds": [
+        "9c6b1bf4-a5c1-40a3-927b-8923b2926eb3"
+      ],
+      "counts": {
+        "claims": 1,
+        "receipts": 1,
+        "audit": 1,
+        "outbox": 1
+      }
+    },
+    "differentKeys": {
+      "requestCount": 20,
+      "statuses": [
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201,
+        201
+      ],
+      "claimIds": [
+        "05195c0e-f78e-41ed-b97b-aa5b9635f5ff",
+        "177e4f9a-b505-4489-909f-5a980d7e817a",
+        "1dfff50d-b953-43cb-b742-d85b6d785c7c",
+        "2dec7b25-4669-4b53-ae52-323dfecb7a4e",
+        "43b5b972-9c67-43b3-a116-73ad548acb5a",
+        "596a1a98-ecbe-4647-ab74-45b26432fa07",
+        "7afcff48-0ab8-4782-bdfc-e797dc74234e",
+        "8d4d56cc-1d05-428c-8231-1f267cb5e95f",
+        "8f953169-3983-4b8e-a858-88d611763b3d",
+        "9455581e-efe3-4a98-94a7-c97192430233",
+        "ab23a2b0-8570-4de9-83d3-e3877b322493",
+        "bda2b5fb-1c2d-48d1-89ed-1f47f2c7e57f",
+        "be70e454-78ec-47b1-b81c-9cdbb923f4eb",
+        "be8785a4-47cc-442e-912b-c4162f7c89ae",
+        "c1043aa1-0425-4ff1-a1c4-5c63a91f6c85",
+        "c2fab3d7-0202-47ca-981f-309c670a7441",
+        "c9b23f99-d42a-4dbf-8888-23d391a220a0",
+        "cf5671fd-4e29-4cde-8c60-ca1e31e640ca",
+        "e6b4a315-8f91-415c-aeda-ab979130b974",
+        "e805311a-daef-44d4-803f-7ad909f487a7"
+      ],
+      "counts": {
+        "claims": 20,
+        "receipts": 20,
+        "audit": 20,
+        "outbox": 20
+      }
+    },
+    "twoTargetsSameKey": {
+      "responses": [
+        {
+          "status": 200,
+          "correlation": "80712482-ffc4-4133-974f-ffa7bd278fae",
+          "wwwAuthenticate": null,
+          "body": {
+            "claimId": "216e5858-7164-46a3-91c2-a17913801ec4",
+            "claimNumber": "CLM-216e5858716446a391c2a17913801ec4",
+            "shipmentId": "1ac97ee5-53a6-42ea-b3bb-a2da267310ae",
+            "status": "Investigating",
+            "approvedAmount": null,
+            "idempotentReplay": false,
+            "contractVersion": "v1"
+          },
+          "requestBodySha256": "d775e4c3062cfb777f33214513db72e263d438bcce73fa367b01a267bd9fce87"
+        },
+        {
+          "status": 200,
+          "correlation": "80712482-ffc4-4133-974f-ffa7bd278fae",
+          "wwwAuthenticate": null,
+          "body": {
+            "claimId": "6fcd3d5e-a232-400c-9a6f-5ce053bfa5f2",
+            "claimNumber": "CLM-6fcd3d5ea232400c9a6f5ce053bfa5f2",
+            "shipmentId": "1ac97ee5-53a6-42ea-b3bb-a2da267310ae",
+            "status": "Investigating",
+            "approvedAmount": null,
+            "idempotentReplay": false,
+            "contractVersion": "v1"
+          },
+          "requestBodySha256": "d775e4c3062cfb777f33214513db72e263d438bcce73fa367b01a267bd9fce87"
+        }
+      ],
+      "counts": {
+        "claims": 2,
+        "receipts": 4,
+        "audit": 4,
+        "outbox": 4
+      }
+    },
+    "changedPayload": {
+      "status": 409,
+      "correlation": "e81964f0-b3ce-4a94-90c0-71d543b1707e",
+      "wwwAuthenticate": null,
+      "body": {
+        "error": {
+          "code": "IDEMPOTENCY_KEY_REUSED",
+          "message": "Idempotency key was used for a different request.",
+          "correlationId": "e81964f0-b3ce-4a94-90c0-71d543b1707e"
+        },
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "004e54f0b1292d70e88de1f9fba37d14897db0753e84aadf24f373bae58c0af2"
+    }
+  },
+  "R20": {
+    "status": "PASS",
+    "checks": {
+      "revokedBeforeReplay": true,
+      "differentActorOriginal": true,
+      "originalActorUnchanged": true,
+      "closedReplay": true,
+      "softDeleteReplay": true
+    },
+    "created": {
+      "status": 201,
+      "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+      "wwwAuthenticate": null,
+      "body": {
+        "claimId": "bf602f82-3a30-4256-bed5-64c5b928c651",
+        "claimNumber": "CLM-bf602f823a304256bed564c5b928c651",
+        "shipmentId": "cc54f575-37e4-452a-80f7-0edfa7fc7f65",
+        "status": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "6d0c4f1f8cbb653348427d6a603d35daf887d93085fbacee5b4f4fcc5dac7f35"
+    },
+    "denied": {
+      "status": 403,
+      "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+      "wwwAuthenticate": null,
+      "body": {
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "The requested operation is not permitted.",
+          "correlationId": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27"
+        },
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "6d0c4f1f8cbb653348427d6a603d35daf887d93085fbacee5b4f4fcc5dac7f35"
+    },
+    "differentActor": {
+      "status": 201,
+      "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+      "wwwAuthenticate": null,
+      "body": {
+        "claimId": "bf602f82-3a30-4256-bed5-64c5b928c651",
+        "claimNumber": "CLM-bf602f823a304256bed564c5b928c651",
+        "shipmentId": "cc54f575-37e4-452a-80f7-0edfa7fc7f65",
+        "status": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "6d0c4f1f8cbb653348427d6a603d35daf887d93085fbacee5b4f4fcc5dac7f35"
+    },
+    "transitions": [
+      {
+        "status": 200,
+        "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+        "wwwAuthenticate": null,
+        "body": {
+          "claimId": "bf602f82-3a30-4256-bed5-64c5b928c651",
+          "claimNumber": "CLM-bf602f823a304256bed564c5b928c651",
+          "shipmentId": "cc54f575-37e4-452a-80f7-0edfa7fc7f65",
+          "status": "Investigating",
+          "approvedAmount": null,
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "4f35080429b2b4e1467b20711c3383cbc9db96a816c3793556a764717ce39684"
+      },
+      {
+        "status": 200,
+        "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+        "wwwAuthenticate": null,
+        "body": {
+          "claimId": "bf602f82-3a30-4256-bed5-64c5b928c651",
+          "claimNumber": "CLM-bf602f823a304256bed564c5b928c651",
+          "shipmentId": "cc54f575-37e4-452a-80f7-0edfa7fc7f65",
+          "status": "Approved",
+          "approvedAmount": "125.500",
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "7c220363a73c29121c44c68d231a2266094cb61107463e3960b18ad62c199e0e"
+      },
+      {
+        "status": 200,
+        "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+        "wwwAuthenticate": null,
+        "body": {
+          "claimId": "bf602f82-3a30-4256-bed5-64c5b928c651",
+          "claimNumber": "CLM-bf602f823a304256bed564c5b928c651",
+          "shipmentId": "cc54f575-37e4-452a-80f7-0edfa7fc7f65",
+          "status": "Settled",
+          "approvedAmount": "125.500",
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "22b07ff02683acf756802e82eb769d6fb734e54d5867617470cc31204c542dda"
+      },
+      {
+        "status": 200,
+        "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+        "wwwAuthenticate": null,
+        "body": {
+          "claimId": "bf602f82-3a30-4256-bed5-64c5b928c651",
+          "claimNumber": "CLM-bf602f823a304256bed564c5b928c651",
+          "shipmentId": "cc54f575-37e4-452a-80f7-0edfa7fc7f65",
+          "status": "Closed",
+          "approvedAmount": "125.500",
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "f0ea4574479463f75a6d89d730b35e466fe6ca5f8341cfbbd73fcb7cbec0b145"
+      }
+    ],
+    "closedReplay": {
+      "status": 201,
+      "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+      "wwwAuthenticate": null,
+      "body": {
+        "claimId": "bf602f82-3a30-4256-bed5-64c5b928c651",
+        "claimNumber": "CLM-bf602f823a304256bed564c5b928c651",
+        "shipmentId": "cc54f575-37e4-452a-80f7-0edfa7fc7f65",
+        "status": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "6d0c4f1f8cbb653348427d6a603d35daf887d93085fbacee5b4f4fcc5dac7f35"
+    },
+    "deletedReplay": {
+      "status": 201,
+      "correlation": "1b37ec85-03f9-4f8f-9257-9bf1a39aca27",
+      "wwwAuthenticate": null,
+      "body": {
+        "claimId": "bf602f82-3a30-4256-bed5-64c5b928c651",
+        "claimNumber": "CLM-bf602f823a304256bed564c5b928c651",
+        "shipmentId": "cc54f575-37e4-452a-80f7-0edfa7fc7f65",
+        "status": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "6d0c4f1f8cbb653348427d6a603d35daf887d93085fbacee5b4f4fcc5dac7f35"
+    },
+    "counts": {
+      "initial": {
+        "claims": 1,
+        "receipts": 1,
+        "audit": 1,
+        "outbox": 1
+      },
+      "closed": {
+        "claims": 1,
+        "receipts": 5,
+        "audit": 5,
+        "outbox": 5
+      },
+      "final": {
+        "claims": 1,
+        "receipts": 5,
+        "audit": 5,
+        "outbox": 5
+      }
+    },
+    "auditActors": [
+      "8f0a4022-e408-4f46-90c3-493ee43c3305",
+      "8f0a4022-e408-4f46-90c3-493ee43c3305",
+      "8f0a4022-e408-4f46-90c3-493ee43c3305",
+      "8f0a4022-e408-4f46-90c3-493ee43c3305",
+      "8f0a4022-e408-4f46-90c3-493ee43c3305"
+    ]
+  },
+  "R24": {
+    "status": "PASS",
+    "mixedTarget": {
+      "pass": true,
+      "requestCount": 20,
+      "statuses": [
+        422,
+        422,
+        422,
+        422,
+        422,
+        200,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422
+      ],
+      "winner": [
+        {
+          "status": 200,
+          "correlation": "70617538-5ced-40e0-b46a-64b9a9dd3fb5",
+          "wwwAuthenticate": null,
+          "body": {
+            "claimId": "4ee2cac3-1979-4f42-ae63-20abb7980d57",
+            "claimNumber": "CLM-4ee2cac319794f42ae6320abb7980d57",
+            "shipmentId": "69491fa5-e038-476e-8897-484f66259d3f",
+            "status": "Rejected",
+            "approvedAmount": null,
+            "idempotentReplay": false,
+            "contractVersion": "v1"
+          },
+          "requestBodySha256": "64ebec8bd5ae38532e61a580b71fcc282c5da1f70296b456b7cf571f8ee6bca0"
+        }
+      ],
+      "loserCodes": [
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION"
+      ],
+      "before": {
+        "claims": 1,
+        "receipts": 2,
+        "audit": 2,
+        "outbox": 2
+      },
+      "after": {
+        "claims": 1,
+        "receipts": 3,
+        "audit": 3,
+        "outbox": 3
+      },
+      "investigating": {
+        "status": 200,
+        "correlation": "70617538-5ced-40e0-b46a-64b9a9dd3fb5",
+        "wwwAuthenticate": null,
+        "body": {
+          "claimId": "4ee2cac3-1979-4f42-ae63-20abb7980d57",
+          "claimNumber": "CLM-4ee2cac319794f42ae6320abb7980d57",
+          "shipmentId": "69491fa5-e038-476e-8897-484f66259d3f",
+          "status": "Investigating",
+          "approvedAmount": null,
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "9b8847d626b66b9fd55e3d7093572811bdaab342e9331cddc79e16c5843c22d4"
+      }
+    },
+    "sameTargetDifferentKeys": {
+      "pass": true,
+      "requestCount": 20,
+      "statuses": [
+        422,
+        422,
+        422,
+        422,
+        422,
+        200,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422
+      ],
+      "winner": [
+        {
+          "status": 200,
+          "correlation": "77873120-9e92-4f2d-96ee-33cdba148fba",
+          "wwwAuthenticate": null,
+          "body": {
+            "claimId": "bf3ba19f-bf1e-401a-9b90-b98f23d48d99",
+            "claimNumber": "CLM-bf3ba19fbf1e401a9b90b98f23d48d99",
+            "shipmentId": "81578de0-4592-46a0-b730-0de707fb5bd9",
+            "status": "Approved",
+            "approvedAmount": "5.00",
+            "idempotentReplay": false,
+            "contractVersion": "v1"
+          },
+          "requestBodySha256": "a33a09b9c986a76e4cde52fcaefad2131ca1bcc5cd48600d9b8137d3362636d1"
+        }
+      ],
+      "loserCodes": [
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION",
+        "INVALID_CLAIM_TRANSITION"
+      ],
+      "before": {
+        "claims": 1,
+        "receipts": 2,
+        "audit": 2,
+        "outbox": 2
+      },
+      "after": {
+        "claims": 1,
+        "receipts": 3,
+        "audit": 3,
+        "outbox": 3
+      },
+      "investigating": {
+        "status": 200,
+        "correlation": "77873120-9e92-4f2d-96ee-33cdba148fba",
+        "wwwAuthenticate": null,
+        "body": {
+          "claimId": "bf3ba19f-bf1e-401a-9b90-b98f23d48d99",
+          "claimNumber": "CLM-bf3ba19fbf1e401a9b90b98f23d48d99",
+          "shipmentId": "81578de0-4592-46a0-b730-0de707fb5bd9",
+          "status": "Investigating",
+          "approvedAmount": null,
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "9b8847d626b66b9fd55e3d7093572811bdaab342e9331cddc79e16c5843c22d4"
+      }
+    }
+  },
+  "R26_R08_seed": {
+    "status": "PASS",
+    "checks": {
+      "twoPending": true,
+      "createServerUtc": true,
+      "transitionExactTimestamp": true,
+      "rootAndCausation": true,
+      "payload": true,
+      "wire": true,
+      "http": true,
+      "longStoredExact": true
+    },
+    "create": {
+      "status": 201,
+      "correlation": "fed7fadb-b799-4574-ad60-25b540f974d4",
+      "wwwAuthenticate": null,
+      "body": {
+        "claimId": "d8599d7a-af7b-4bc8-990f-bda5106f1545",
+        "claimNumber": "CLM-d8599d7aaf7b4bc8990fbda5106f1545",
+        "shipmentId": "1dbf4148-928f-4114-a391-95962fb77053",
+        "status": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "ba6165fbdf0637f8c074472dca4ffc7a600e5eac84e69e0f3c03c1ca2baa4483"
+    },
+    "transition": {
+      "status": 200,
+      "correlation": "fed7fadb-b799-4574-ad60-25b540f974d4",
+      "wwwAuthenticate": null,
+      "body": {
+        "claimId": "d8599d7a-af7b-4bc8-990f-bda5106f1545",
+        "claimNumber": "CLM-d8599d7aaf7b4bc8990fbda5106f1545",
+        "shipmentId": "1dbf4148-928f-4114-a391-95962fb77053",
+        "status": "Investigating",
+        "approvedAmount": null,
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "b870259a85cf4a04f7f4ccc52c81b0fca345d0c6bbb12ae239e1221d45374020"
+    },
+    "events": [
+      {
+        "_id": "03c05552-4c38-4fc8-81bf-da8bc96eb2ae",
+        "TenantId": "7a0226cd-91d2-4026-8164-7167596ac499",
+        "LegalEntityId": "b8511c44-4779-43a5-af00-af03682d7f3f",
+        "ClaimId": "d8599d7a-af7b-4bc8-990f-bda5106f1545",
+        "EventId": "6cd2ff41-35ce-433b-aa5c-9a2c7c85d346",
+        "Status": "Pending",
+        "Envelope": {
+          "eventId": "6cd2ff41-35ce-433b-aa5c-9a2c7c85d346",
+          "eventType": "ClaimInvestigating",
+          "occurredAt": "2026-09-21T10:11:12.123456789+03:00",
+          "correlationId": "fed7fadb-b799-4574-ad60-25b540f974d4",
+          "causationId": null,
+          "aggregateType": "Claim",
+          "aggregateId": "d8599d7a-af7b-4bc8-990f-bda5106f1545",
+          "payload": {
+            "claimId": "d8599d7a-af7b-4bc8-990f-bda5106f1545",
+            "claimNumber": "CLM-d8599d7aaf7b4bc8990fbda5106f1545",
+            "shipmentId": "1dbf4148-928f-4114-a391-95962fb77053",
+            "status": "Investigating",
+            "approvedAmount": null
+          },
+          "contractVersion": "v1"
+        }
+      },
+      {
+        "_id": "515d43ea-47b0-4f6c-a6d8-c354c21fe4a9",
+        "TenantId": "7a0226cd-91d2-4026-8164-7167596ac499",
+        "LegalEntityId": "b8511c44-4779-43a5-af00-af03682d7f3f",
+        "ClaimId": "d8599d7a-af7b-4bc8-990f-bda5106f1545",
+        "EventId": "47c08f73-4c9f-4f5c-bab4-829f2e854ad1",
+        "Status": "Pending",
+        "Envelope": {
+          "eventId": "47c08f73-4c9f-4f5c-bab4-829f2e854ad1",
+          "eventType": "ClaimOpened",
+          "occurredAt": "2026-09-21T17:08:23.9146330+00:00",
+          "correlationId": "fed7fadb-b799-4574-ad60-25b540f974d4",
+          "causationId": null,
+          "aggregateType": "Claim",
+          "aggregateId": "d8599d7a-af7b-4bc8-990f-bda5106f1545",
+          "payload": {
+            "claimId": "d8599d7a-af7b-4bc8-990f-bda5106f1545",
+            "claimNumber": "CLM-d8599d7aaf7b4bc8990fbda5106f1545",
+            "shipmentId": "1dbf4148-928f-4114-a391-95962fb77053",
+            "status": "Open",
+            "approvedAmount": null
+          },
+          "contractVersion": "v1"
+        }
+      }
+    ],
+    "long": {
+      "create": {
+        "status": 201,
+        "correlation": "690699f9-dff3-44ee-a84a-87d63584a7d7",
+        "wwwAuthenticate": null,
+        "body": {
+          "claimId": "178ef46d-3945-4194-903a-03acbb78b566",
+          "claimNumber": "CLM-178ef46d39454194903a03acbb78b566",
+          "shipmentId": "8bde608e-5376-43a6-845e-05a94f86a375",
+          "status": "Open",
+          "approvedAmount": null,
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "0611cd492bbf612c258e88815553dcc6ae27bfcb5edc70236ebcfdb95ef3e99d"
+      },
+      "stored": {
+        "ClaimedAmount": "12345678901234567890123456789012345678901234567890.00000000000000000000000000000000000000000000000001",
+        "Id": "178ef46d-3945-4194-903a-03acbb78b566",
+        "Version": 1
+      },
+      "seed": {
+        "db": "diten_claims_e4p01",
+        "tenantId": "3ff50845-a6c7-4ba3-8a69-27f4c7659d76",
+        "legalEntityId": "423b905f-472a-4ae4-b4ba-0450a2af7151",
+        "actorId": "6c952ed6-fcea-4c7f-9baf-4a30e75a0bc5",
+        "shipmentId": "8bde608e-5376-43a6-845e-05a94f86a375",
+        "root": "690699f9-dff3-44ee-a84a-87d63584a7d7",
+        "claimId": "178ef46d-3945-4194-903a-03acbb78b566",
+        "key": "e4-long-create",
+        "body": {
+          "shipmentId": "8bde608e-5376-43a6-845e-05a94f86a375",
+          "reasonCode": "DAMAGED",
+          "claimedAmount": "12345678901234567890123456789012345678901234567890.00000000000000000000000000000000000000000000000001",
+          "currency": "USD",
+          "evidenceReferenceIds": []
+        },
+        "amount": "12345678901234567890123456789012345678901234567890.00000000000000000000000000000000000000000000000001",
+        "before": {
+          "claims": 1,
+          "receipts": 1,
+          "audit": 1,
+          "outbox": 1
+        }
+      }
+    }
+  },
+  "tokenRecorded": false,
+  "secretRecorded": false,
+  "status": "PASS"
+}

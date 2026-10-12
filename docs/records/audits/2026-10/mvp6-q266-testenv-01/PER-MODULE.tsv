@@ -1,0 +1,9 @@
+module	variables_used	passed	failed	total	duration_s_wall	duration_vstest	blocked_by_hardcoded_name	filter
+Shipments	MOD0183_TEST_MONGO	75	0	75	19	13 s	no — no replica-set name in the module	FullyQualifiedName~Diten.SupplyChainService.Tests.Shipment|FullyQualifiedName~Diten.SupplyChainService.Tests.Source
+Carriers	MOD0184_TEST_MONGO	36	0	36	8	4 s	no — no replica-set name in the module	FullyQualifiedName~Diten.SupplyChainService.Tests.Carriers.
+Loads	MOD0185_TEST_MONGO	33	0	33	52	48 s	no — no replica-set name in the module	FullyQualifiedName~Diten.SupplyChainService.Tests.Loads.
+Returns	RETURNS_MONGO_URI	78	0	78	71	1 m 8 s	no — `returns_dev` (not `returns`) is only the fallback when the variable is unset (ReturnAtomicityTests.cs:51)	FullyQualifiedName~Diten.SupplyChainService.Tests.Returns.
+Claims	CLAIMS_TEST_MONGO	128	1	129	4	2 s	no — no replica-set name; refuses port 27017 and non-loopback hosts (ClaimAtomicityTests.cs:76)	FullyQualifiedName~Diten.SupplyChainService.Tests.Claims.
+SandopPlans	MVP6_MOD0190_MONGO_URI	19	0	19	22	20 s	no — atomicity tests set DirectConnection and drop the set name (SandopAtomicityTests.cs:15)	FullyQualifiedName~Diten.SupplyChainService.Tests.SandopPlans.
+CapacityPlans	MVP6_MOD0192_MONGO_URI	48	0	48	130	2 m 7 s	no — `rs0`/`rsq131` occur only as inputs to the URI validator's own unit tests (CapacityTestMongoTests.cs:22-53); any set name is accepted	FullyQualifiedName~Diten.SupplyChainService.Tests.CapacityPlans.
+TOTAL	one variable per run	417	1	418	306			

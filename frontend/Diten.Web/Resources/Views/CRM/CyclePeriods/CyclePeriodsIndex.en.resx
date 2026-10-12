@@ -193,4 +193,5 @@
   <data name="SessionStatus_archived" xml:space="preserve"><value>Archived</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>Go to details</value></data>
   <data name="StatusLine" xml:space="preserve"><value>Status line</value></data>
+  <data name="TodayActivePeriods" xml:space="preserve"><value>Active today</value></data>
 </root>

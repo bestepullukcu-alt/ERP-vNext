@@ -1,0 +1,54 @@
+@using Diten.Web.Views.CRM.VisitPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitPlanningIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-VP-4B (MK-1, brief §2) — "New plan" as a right-hand drawer (theme offcanvas). Country and period are filled in
+   automatically, the opening week never offers a week that is already over (E7-B5), the rep is the signed-in person
+   (read-only). No audience or play picker (K-3, K-4). One plan per rep + period: an existing one is offered as
+   "Go to plan" (also on the server's 409 planning_session_exists). Driven by new-plan.js; rendered only for
+   crm.visit-plan.generate (the caller decides). *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="vp-new-plan-drawer" aria-labelledby="vp-np-title" style="--bs-offcanvas-width:min(480px,100vw);">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="vp-np-title">@Localizer["NewPlanTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column gap-3">
+        <div id="vp-np-error" class="alert alert-danger py-2 small mb-0 d-none" role="alert"></div>
+        <div id="vp-np-exists" class="alert alert-warning py-2 small mb-0 d-none" role="status">
+            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <span><i class="bx bx-info-circle me-1" aria-hidden="true"></i>@Localizer["PlanExists"]</span>
+                <a href="#" class="btn btn-sm btn-warning" id="vp-np-goto">@Localizer["GoToPlan"]</a>
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label fw-medium" for="vp-np-country">@Localizer["Country"]</label>
+            <input type="text" id="vp-np-country-text" class="form-control" readonly value="—" />
+            <select id="vp-np-country" class="form-select d-none" aria-label="@Localizer["Country"]"></select>
+        </div>
+
+        <div>
+            <label class="form-label fw-medium" for="vp-np-period">@Localizer["CyclePeriod"] <span class="text-danger">*</span></label>
+            <select id="vp-np-period" class="form-select"></select>
+            <div class="form-text" id="vp-np-period-hint">@Localizer["NewPlanPeriodHint"]</div>
+            <div class="form-text text-danger d-none" id="vp-np-no-period">@Localizer["NewPlanNoPeriod"]</div>
+        </div>
+
+        <div>
+            <label class="form-label fw-medium" for="vp-np-week">@Localizer["NewPlanWeek"] <span class="text-danger">*</span></label>
+            <select id="vp-np-week" class="form-select"></select>
+            <div class="form-text">@Localizer["NewPlanWeekHint"]</div>
+        </div>
+
+        <div>
+            <label class="form-label fw-medium" for="vp-np-rep">@Localizer["Rep"]</label>
+            <input type="text" id="vp-np-rep" class="form-control" readonly value="—" />
+            <div class="form-text">@Localizer["RepSelfHint"]</div>
+        </div>
+    </div>
+    <div class="offcanvas-footer border-top p-3 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" class="btn btn-primary" id="vp-np-save" disabled>@Localizer["NewPlanCreate"]</button>
+    </div>
+</div>

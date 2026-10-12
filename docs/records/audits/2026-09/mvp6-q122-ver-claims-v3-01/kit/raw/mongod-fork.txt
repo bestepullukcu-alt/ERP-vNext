@@ -1,0 +1,4 @@
+{"t":{"$date":"2026-09-27T12:00:34.615Z"},"s":"I",  "c":"CONTROL",  "id":5760901, "ctx":"thread1","msg":"Applied --setParameter options","attr":{"serverParameters":{"enableTestCommands":{"default":false,"value":true}}}}
+about to fork child process, waiting until server is ready for connections.
+forked process: 1603
+child process started successfully, parent exiting

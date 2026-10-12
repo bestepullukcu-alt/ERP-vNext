@@ -1,0 +1,19 @@
+{
+  "actor": "readonly",
+  "role": "Q122Matrix-createOnly",
+  "requestedKeys": [
+    "supplychain.claims.create",
+    "supplychain.claims.read",
+    "supplychain.shipments.read"
+  ],
+  "supplychainKeysBefore": [
+    "supplychain.claims.create",
+    "supplychain.claims.read"
+  ],
+  "supplychainKeysAfter": [
+    "supplychain.claims.create",
+    "supplychain.claims.read",
+    "supplychain.shipments.read"
+  ],
+  "membershipsSoftDeleted": 1
+}

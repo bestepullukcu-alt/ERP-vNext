@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Q-series work packages, CT verdicts and BASE-STACK (2026-09) (part a)
+
+12 folders/items, first '(files at month level)', last 'mvp6-q121c-supplychain-rerun-01'.
+Work packages: Q101, Q101B, Q103, Q114, Q117, Q119, Q121, Q121B, Q121C.
+136 files from pathspec/R7a.txt (Q230 commit plan).

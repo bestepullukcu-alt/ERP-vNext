@@ -1,0 +1,247 @@
+{
+  "phase": "saveview",
+  "startedAt": "2026-09-26T21:17:37.311Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "SAVEVIEW-apply-dirty": {
+      "result": "PASS",
+      "s0": {
+        "saveVisible": false,
+        "state": {
+          "order": [
+            [
+              1,
+              "desc"
+            ]
+          ],
+          "search": "",
+          "filterShipmentId": "",
+          "filterStatus": "",
+          "colVis": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "s1": {
+        "saveVisible": true,
+        "query": "?shipmentId=54ab51e8-7dc1-4332-b0fa-75966adff5da",
+        "state": {
+          "order": [
+            [
+              1,
+              "desc"
+            ]
+          ],
+          "search": "",
+          "filterShipmentId": "54ab51e8-7dc1-4332-b0fa-75966adff5da",
+          "filterStatus": "",
+          "colVis": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      }
+    },
+    "SAVEVIEW-reset-factory": {
+      "result": "PASS",
+      "s2": {
+        "saveVisible": false,
+        "query": "",
+        "state": {
+          "order": [
+            [
+              1,
+              "desc"
+            ]
+          ],
+          "search": "",
+          "filterShipmentId": "",
+          "filterStatus": "",
+          "colVis": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "factoryOrder": "[[1,\"desc\"]]"
+    },
+    "SAVEVIEW-save-clean": {
+      "result": "PASS",
+      "s3": {
+        "saveVisible": true,
+        "state": {
+          "order": [
+            [
+              4,
+              "asc"
+            ]
+          ],
+          "search": "",
+          "filterShipmentId": "",
+          "filterStatus": "",
+          "colVis": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "s4": {
+        "saveVisible": false,
+        "saveStatus": 201,
+        "saveMethod": "POST",
+        "state": {
+          "order": [
+            [
+              4,
+              "asc"
+            ]
+          ],
+          "search": "",
+          "filterShipmentId": "",
+          "filterStatus": "",
+          "colVis": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      }
+    },
+    "SAVEVIEW-reload-restores": {
+      "result": "PASS",
+      "s5": {
+        "saveVisible": false,
+        "state": {
+          "order": [
+            [
+              4,
+              "asc"
+            ]
+          ],
+          "search": "",
+          "filterShipmentId": "",
+          "filterStatus": "",
+          "colVis": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      }
+    },
+    "SAVEVIEW-reset-vs-saved-default": {
+      "result": "PASS",
+      "s6": {
+        "saveVisible": true,
+        "query": null,
+        "state": {
+          "order": [
+            [
+              1,
+              "desc"
+            ]
+          ],
+          "search": "",
+          "filterShipmentId": "",
+          "filterStatus": "",
+          "colVis": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "s7": {
+        "saveVisible": false,
+        "neutralSaveStatus": 200
+      },
+      "note": "Reset restores factory state in one step; Save View becomes visible because the saved default differs; the factory view was then saved to leave a neutral default"
+    },
+    "SAVEVIEW-no-js-errors": {
+      "result": "PASS",
+      "newJsErrors": 0,
+      "personalizationCalls": [
+        [
+          "GET",
+          200
+        ],
+        [
+          "POST",
+          201
+        ],
+        [
+          "GET",
+          200
+        ],
+        [
+          "PUT",
+          200
+        ]
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "saveview-1-apply-dirty-en.png",
+      "sha256": "858b379f72141659850d6878a9f134f58664f7f2220b4050e399e2c0403b8b46",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:17:40.324Z",
+      "phase": "saveview",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "saveview-2-reset-factory-en.png",
+      "sha256": "9f1738a5cebb12205b4dc5750aaf2efa1ec0ae6e8e2c71ef3a7311e32147a2e2",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:17:41.012Z",
+      "phase": "saveview",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "saveview-3-saved-clean-en.png",
+      "sha256": "dffa518c5ffe6325e0a1ec912817fdc34435847a8b7cb2231b5897098fbd6236",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:17:42.326Z",
+      "phase": "saveview",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "saveview",
+      "text": "Changes have been saved successfully.",
+      "type": "success",
+      "at": "2026-09-26T21:17:41.574Z"
+    },
+    {
+      "tag": "saveview",
+      "text": "Changes have been saved successfully.",
+      "type": "success",
+      "at": "2026-09-26T21:17:54.127Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:17:54.659Z"
+}

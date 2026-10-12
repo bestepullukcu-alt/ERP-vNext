@@ -1,0 +1,2002 @@
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+@@ -10,8 +10,9 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 2.0.0
++  version: 3.0.0
+   x-status: FROZEN
++  x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+   x-consumes:
+     - INVENTORY
+@@ -138,6 +139,7 @@
+                 plannedShipAt: '2026-09-20T08:00:00Z'
+                 plannedDeliverAt: '2026-09-21T16:00:00Z'
+                 actualDeliverAt: '2026-09-21T15:42:00Z'
++                lifecycleCorrelationId: 18300000-0000-0000-0000-000000000001
+                 lines:
+                   - { lineNumber: '1', itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, quantity: '30.000', uomId: EA, inventoryReferenceId: rsv-4001 }
+                 pod: { recipientName: Ada Yilmaz, receivedAt: '2026-09-21T15:42:00Z', evidenceReferenceIds: [doc-pod-9001], note: Eksiksiz teslim }
+@@ -1360,143 +1362,1589 @@
+       x-loads-semantics: loads-semantics-v2.0.0.md
+   /returns:
+     get:
+-      tags: [Returns]
++      tags:
++      - Returns
+       operationId: queryReturns
+       summary: Return/RMA listesi sorgula
+       parameters:
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { name: shipmentId, in: query, schema: { type: string, format: uuid } }
+-        - { name: status, in: query, schema: { $ref: '#/components/schemas/ReturnStatus' } }
++      - $ref: '#/components/parameters/CorrelationId'
++      - name: shipmentId
++        in: query
++        schema:
++          type: string
++          format: uuid
++      - name: status
++        in: query
++        schema:
++          $ref: '#/components/schemas/ReturnStatus'
++      - name: X-Tenant-Id
++        in: header
++        required: true
++        schema:
++          type: string
++          format: uuid
++        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
++          annex.
++      - name: X-Legal-Entity-Id
++        in: header
++        required: true
++        schema:
++          type: string
++          format: uuid
++        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
++          annex.
+       responses:
+         '200':
+           description: Return listesi
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/ReturnListResponse' }
+-              example: { items: [{ returnId: 18600000-0000-0000-0000-000000000001, rmaNumber: RMA-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Authorized }], total: 1, contractVersion: v1 }
++              schema:
++                $ref: '#/components/schemas/ReturnListResponse'
++              example:
++                items:
++                - returnId: 18600000-0000-0000-0000-000000000001
++                  rmaNumber: RMA-18600000000000000000000000000001
++                  shipmentId: 18300000-0000-0000-0000-000000000001
++                  status: Authorized
++                total: 1
++                contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++        '400':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '401':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++            WWW-Authenticate:
++              schema:
++                type: string
++                const: Bearer
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '403':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '404':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                RETURN_NOT_FOUND:
++                  value:
++                    error:
++                      code: RETURN_NOT_FOUND
++                      message: RETURN NOT FOUND
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '500':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INTERNAL_ERROR:
++                  value:
++                    error:
++                      code: INTERNAL_ERROR
++                      message: INTERNAL ERROR
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '503':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                PERSISTENCE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: PERSISTENCE_UNAVAILABLE
++                      message: PERSISTENCE UNAVAILABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++      description: '
++
++        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
++        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
++        publisher.'
+     post:
+-      tags: [Returns]
++      tags:
++      - Returns
+       operationId: createReturn
+       summary: Shipment icin Return/RMA talebi olustur
+       parameters:
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { $ref: '#/components/parameters/IdempotencyKey' }
++      - $ref: '#/components/parameters/CorrelationId'
++      - $ref: '#/components/parameters/IdempotencyKey'
++      - name: X-Tenant-Id
++        in: header
++        required: true
++        schema:
++          type: string
++          format: uuid
++        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
++          annex.
++      - name: X-Legal-Entity-Id
++        in: header
++        required: true
++        schema:
++          type: string
++          format: uuid
++        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
++          annex.
+       requestBody:
+         required: true
+         content:
+           application/json:
+-            schema: { $ref: '#/components/schemas/CreateReturnCommand' }
++            schema:
++              $ref: '#/components/schemas/CreateReturnCommand'
+             example:
+               shipmentId: 18300000-0000-0000-0000-000000000001
+               reasonCode: DAMAGED_IN_TRANSIT
+-              lines: [{ shipmentLineNumber: '1', quantity: '2.000', uomId: EA }]
+-              evidenceReferenceIds: [photo-damage-22]
++              lines:
++              - shipmentLineNumber: '1'
++                quantity: '2.000'
++                uomId: EA
++              evidenceReferenceIds:
++              - photo-damage-22
+       responses:
+         '201':
+           description: Return Requested durumunda olusturuldu
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/ReturnResponse' }
+-              example: { returnId: 18600000-0000-0000-0000-000000000001, rmaNumber: RMA-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Requested, idempotentReplay: false, contractVersion: v1 }
+-        '404': { $ref: '#/components/responses/NotFound' }
+-        '409': { $ref: '#/components/responses/Conflict' }
+-        '422': { $ref: '#/components/responses/Unprocessable' }
++              schema:
++                $ref: '#/components/schemas/ReturnResponse'
++              examples:
++                committed:
++                  value:
++                    returnId: 18600000-0000-0000-0000-000000000001
++                    rmaNumber: RMA-18600000000000000000000000000001
++                    shipmentId: 18300000-0000-0000-0000-000000000001
++                    status: Requested
++                    idempotentReplay: false
++                    contractVersion: v1
++                replay:
++                  value:
++                    returnId: 18600000-0000-0000-0000-000000000001
++                    rmaNumber: RMA-18600000000000000000000000000001
++                    shipmentId: 18300000-0000-0000-0000-000000000001
++                    status: Requested
++                    idempotentReplay: true
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++        '400':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '401':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++            WWW-Authenticate:
++              schema:
++                type: string
++                const: Bearer
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '403':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '404':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                RETURN_NOT_FOUND:
++                  value:
++                    error:
++                      code: RETURN_NOT_FOUND
++                      message: RETURN NOT FOUND
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                SHIPMENT_NOT_FOUND:
++                  value:
++                    error:
++                      code: SHIPMENT_NOT_FOUND
++                      message: SHIPMENT NOT FOUND
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                SHIPMENT_LINE_NOT_FOUND:
++                  value:
++                    error:
++                      code: SHIPMENT_LINE_NOT_FOUND
++                      message: SHIPMENT LINE NOT FOUND
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '409':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CORRELATION_ROOT_MISMATCH:
++                  value:
++                    error:
++                      code: CORRELATION_ROOT_MISMATCH
++                      message: CORRELATION ROOT MISMATCH
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                IDEMPOTENCY_KEY_REUSED:
++                  value:
++                    error:
++                      code: IDEMPOTENCY_KEY_REUSED
++                      message: IDEMPOTENCY KEY REUSED
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                RETURN_SOURCE_CHANGED:
++                  value:
++                    error:
++                      code: RETURN_SOURCE_CHANGED
++                      message: RETURN SOURCE CHANGED
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '415':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '422':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                DUPLICATE_RETURN_LINE:
++                  value:
++                    error:
++                      code: DUPLICATE_RETURN_LINE
++                      message: DUPLICATE RETURN LINE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                INVALID_RETURN_QUANTITY:
++                  value:
++                    error:
++                      code: INVALID_RETURN_QUANTITY
++                      message: INVALID RETURN QUANTITY
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                RETURN_UOM_MISMATCH:
++                  value:
++                    error:
++                      code: RETURN_UOM_MISMATCH
++                      message: RETURN UOM MISMATCH
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                SHIPMENT_NOT_RETURNABLE:
++                  value:
++                    error:
++                      code: SHIPMENT_NOT_RETURNABLE
++                      message: SHIPMENT NOT RETURNABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                RETURN_QUANTITY_EXCEEDED:
++                  value:
++                    error:
++                      code: RETURN_QUANTITY_EXCEEDED
++                      message: RETURN QUANTITY EXCEEDED
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '500':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INTERNAL_ERROR:
++                  value:
++                    error:
++                      code: INTERNAL_ERROR
++                      message: INTERNAL ERROR
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '502':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                DEPENDENCY_RESPONSE_INVALID:
++                  value:
++                    error:
++                      code: DEPENDENCY_RESPONSE_INVALID
++                      message: DEPENDENCY RESPONSE INVALID
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                RETURN_SHIPMENT_ROOT_INVALID:
++                  value:
++                    error:
++                      code: RETURN_SHIPMENT_ROOT_INVALID
++                      message: RETURN SHIPMENT ROOT INVALID
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '503':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                REFERENCE_STATE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: REFERENCE_STATE_UNAVAILABLE
++                      message: REFERENCE STATE UNAVAILABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                DEPENDENCY_UNAVAILABLE:
++                  value:
++                    error:
++                      code: DEPENDENCY_UNAVAILABLE
++                      message: DEPENDENCY UNAVAILABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                PERSISTENCE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: PERSISTENCE_UNAVAILABLE
++                      message: PERSISTENCE UNAVAILABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                RETURN_SHIPMENT_ROOT_UNAVAILABLE:
++                  value:
++                    error:
++                      code: RETURN_SHIPMENT_ROOT_UNAVAILABLE
++                      message: RETURN SHIPMENT ROOT UNAVAILABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++      description: '
++
++        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
++        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
++        publisher.'
+   /returns/{returnId}/transition:
+     post:
+-      tags: [Returns]
++      tags:
++      - Returns
+       operationId: transitionReturn
+       summary: Return/RMA lifecycle durumunu ilerlet
+-      description: >
+-        Izinli gecisler: Requested->Authorized|Rejected; Authorized->InTransit|Cancelled;
+-        InTransit->Received; Received->Dispositioned; Dispositioned->Closed. Diger
+-        gecisler INVALID_RETURN_TRANSITION ile reddedilir. INVENTORY posting bu API'nin
+-        disindadir ve frozen INVENTORY contract'ina korele referansla yapilir.
++      description: 'Izinli gecisler: Requested->Authorized|Rejected; Authorized->InTransit|Cancelled; InTransit->Received;
++        Received->Dispositioned; Dispositioned->Closed. Diger gecisler INVALID_RETURN_TRANSITION ile reddedilir. INVENTORY
++        posting bu API''nin disindadir ve frozen INVENTORY contract''ina korele referansla yapilir.
++
++
++        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
++        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
++        publisher.'
+       parameters:
+-        - { name: returnId, in: path, required: true, schema: { type: string, format: uuid } }
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { $ref: '#/components/parameters/IdempotencyKey' }
++      - name: returnId
++        in: path
++        required: true
++        schema:
++          type: string
++          format: uuid
++      - $ref: '#/components/parameters/CorrelationId'
++      - $ref: '#/components/parameters/IdempotencyKey'
++      - name: X-Tenant-Id
++        in: header
++        required: true
++        schema:
++          type: string
++          format: uuid
++        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
++          annex.
++      - name: X-Legal-Entity-Id
++        in: header
++        required: true
++        schema:
++          type: string
++          format: uuid
++        description: Validation against trusted JWT scope only; exact lexical/duplicate rules and precedence in normative
++          annex.
+       requestBody:
+         required: true
+         content:
+           application/json:
+-            schema: { $ref: '#/components/schemas/TransitionReturnCommand' }
+-            example: { targetStatus: Received, occurredAt: '2026-09-25T12:10:00Z', inventoryTransactionReferenceId: txn-8801, dispositionCode: INSPECTION_REQUIRED }
++            schema:
++              $ref: '#/components/schemas/TransitionReturnCommand'
++            example:
++              targetStatus: Received
++              occurredAt: '2026-09-25T12:10:00Z'
++              inventoryTransactionReferenceId: txn-8801
++              dispositionCode: INSPECTION_REQUIRED
+       responses:
+         '200':
+           description: Return gecisi uygulandi
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/ReturnResponse' }
+-              example: { returnId: 18600000-0000-0000-0000-000000000001, rmaNumber: RMA-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Received, idempotentReplay: false, contractVersion: v1 }
+-        '404': { $ref: '#/components/responses/NotFound' }
+-        '422': { $ref: '#/components/responses/Unprocessable' }
++              schema:
++                $ref: '#/components/schemas/ReturnResponse'
++              examples:
++                committed:
++                  value:
++                    returnId: 18600000-0000-0000-0000-000000000001
++                    rmaNumber: RMA-18600000000000000000000000000001
++                    shipmentId: 18300000-0000-0000-0000-000000000001
++                    status: Received
++                    idempotentReplay: false
++                    contractVersion: v1
++                replay:
++                  value:
++                    returnId: 18600000-0000-0000-0000-000000000001
++                    rmaNumber: RMA-18600000000000000000000000000001
++                    shipmentId: 18300000-0000-0000-0000-000000000001
++                    status: Received
++                    idempotentReplay: true
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++        '400':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '401':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++            WWW-Authenticate:
++              schema:
++                type: string
++                const: Bearer
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '403':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '404':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                RETURN_NOT_FOUND:
++                  value:
++                    error:
++                      code: RETURN_NOT_FOUND
++                      message: RETURN NOT FOUND
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '409':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CORRELATION_ROOT_MISMATCH:
++                  value:
++                    error:
++                      code: CORRELATION_ROOT_MISMATCH
++                      message: CORRELATION ROOT MISMATCH
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                IDEMPOTENCY_KEY_REUSED:
++                  value:
++                    error:
++                      code: IDEMPOTENCY_KEY_REUSED
++                      message: IDEMPOTENCY KEY REUSED
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '415':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '422':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_RETURN_TRANSITION:
++                  value:
++                    error:
++                      code: INVALID_RETURN_TRANSITION
++                      message: INVALID RETURN TRANSITION
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                DISPOSITION_REQUIRED:
++                  value:
++                    error:
++                      code: DISPOSITION_REQUIRED
++                      message: DISPOSITION REQUIRED
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '500':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INTERNAL_ERROR:
++                  value:
++                    error:
++                      code: INTERNAL_ERROR
++                      message: INTERNAL ERROR
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '503':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                PERSISTENCE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: PERSISTENCE_UNAVAILABLE
++                      message: PERSISTENCE UNAVAILABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
+   /claims:
+     get:
+-      tags: [Claims]
++      tags:
++      - Claims
+       operationId: queryClaims
+       summary: Claim listesi sorgula
+       parameters:
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { name: shipmentId, in: query, schema: { type: string, format: uuid } }
+-        - { name: status, in: query, schema: { $ref: '#/components/schemas/ClaimStatus' } }
++      - $ref: '#/components/parameters/CorrelationId'
++      - name: shipmentId
++        in: query
++        schema:
++          type: string
++          format: uuid
++      - name: status
++        in: query
++        schema:
++          $ref: '#/components/schemas/ClaimStatus'
+       responses:
+         '200':
+           description: Claim listesi
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/ClaimListResponse' }
+-              example: { items: [{ claimId: 18700000-0000-0000-0000-000000000001, claimNumber: CLM-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Investigating, claimedAmount: '250.00', currency: USD }], total: 1, contractVersion: v1 }
++              schema:
++                $ref: '#/components/schemas/ClaimListResponse'
++              example:
++                items:
++                - claimId: 18700000-0000-0000-0000-000000000001
++                  claimNumber: CLM-2026-001
++                  shipmentId: 18300000-0000-0000-0000-000000000001
++                  status: Investigating
++                  claimedAmount: '250.00'
++                  currency: USD
++                total: 1
++                contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '400':
++          description: Claims 400; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: Request schema or context is invalid.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '401':
++          description: Claims 401; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                UNAUTHENTICATED:
++                  value:
++                    error:
++                      code: UNAUTHENTICATED
++                      message: Authentication is required.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++            WWW-Authenticate:
++              schema:
++                type: string
++              example: Bearer
++        '403':
++          description: Claims 403; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                FORBIDDEN:
++                  value:
++                    error:
++                      code: FORBIDDEN
++                      message: The requested operation is not permitted.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '500':
++          description: Claims 500; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INTERNAL_ERROR:
++                  value:
++                    error:
++                      code: INTERNAL_ERROR
++                      message: An internal error occurred.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '503':
++          description: Claims 503; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CLAIM_STORAGE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: CLAIM_STORAGE_UNAVAILABLE
++                      message: Claim storage is unavailable.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++      description: 'Claims normative semantics for SHIPMENT-BUNDLE 3.0.0. See claims-semantics-v3.0.0.md and R01–R30. No runtime or publication
++        acceptance. Executable policy profile:
++
++        {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
++        true, "edges": [["Open", "Investigating"], ["Open", "Withdrawn"], ["Investigating", "Approved"], ["Investigating",
++        "Rejected"], ["Approved", "Settled"], ["Rejected", "Closed"], ["Settled", "Closed"]], "eligible": ["Dispatched",
++        "InTransit", "Delivered", "Exception", "Closed"], "errors": {"lifecycle": [422, "INVALID_CLAIM_TRANSITION"],
++        "malformed": [502, "CLAIM_REFERENCE_INVALID"], "missing": [503, "CLAIM_REFERENCE_INCOMPLETE"], "payload":
++        [409, "IDEMPOTENCY_KEY_REUSED"], "root": [409, "CLAIM_CORRELATION_MISMATCH"]}, "financialPosting": false,
++        "lexicalAmount": true, "lexicalTime": true, "outbox": "Pending", "permissions": {"Approved": "decide", "Closed":
++        "decide", "Investigating": "investigate", "Open": "create", "Rejected": "decide", "Settled": "settle", "Withdrawn":
++        "investigate"}, "publisher": false, "retainAmount": true, "rootBeforePayload": true, "scopeReceipt": true,
++        "unknownCommitRecovery": true, "worker": false, "zeroApproval": true}
++
++        Claims-only decimal profile; shared schemas unchanged. Authentication, scope/base permission, header/query/body,
++        exact target grant, receipt root/fingerprint, fresh reference/target, root, business/lifecycle, atomic commit.
++        All application responses echo request trace; rejection-only trace generated when invalid. Saved business
++        root is never GET trace.'
+     post:
+-      tags: [Claims]
++      tags:
++      - Claims
+       operationId: createClaim
+       summary: Shipment claim'i olustur
+       parameters:
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { $ref: '#/components/parameters/IdempotencyKey' }
++      - $ref: '#/components/parameters/CorrelationId'
++      - $ref: '#/components/parameters/IdempotencyKey'
+       requestBody:
+         required: true
+         content:
+           application/json:
+-            schema: { $ref: '#/components/schemas/CreateClaimCommand' }
+-            example: { shipmentId: 18300000-0000-0000-0000-000000000001, carrierId: 18400000-0000-0000-0000-000000000001, reasonCode: DAMAGE, claimedAmount: '250.00', currency: USD, evidenceReferenceIds: [photo-damage-22, pod-9001] }
++            schema:
++              $ref: '#/components/schemas/CreateClaimCommand'
++            example:
++              shipmentId: 18300000-0000-0000-0000-000000000001
++              carrierId: 18400000-0000-0000-0000-000000000001
++              reasonCode: DAMAGE
++              claimedAmount: '250.00'
++              currency: USD
++              evidenceReferenceIds:
++              - photo-damage-22
++              - pod-9001
+       responses:
+         '201':
+           description: Claim Open durumunda olusturuldu
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/ClaimResponse' }
+-              example: { claimId: 18700000-0000-0000-0000-000000000001, claimNumber: CLM-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Open, approvedAmount: null, idempotentReplay: false, contractVersion: v1 }
+-        '404': { $ref: '#/components/responses/NotFound' }
+-        '409': { $ref: '#/components/responses/Conflict' }
+-        '422': { $ref: '#/components/responses/Unprocessable' }
++              schema:
++                $ref: '#/components/schemas/ClaimResponse'
++              example:
++                claimId: 18700000-0000-0000-0000-000000000001
++                claimNumber: CLM-2026-001
++                shipmentId: 18300000-0000-0000-0000-000000000001
++                status: Open
++                approvedAmount: null
++                idempotentReplay: false
++                contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '400':
++          description: Claims 400; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: Request schema or context is invalid.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '401':
++          description: Claims 401; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                UNAUTHENTICATED:
++                  value:
++                    error:
++                      code: UNAUTHENTICATED
++                      message: Authentication is required.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++            WWW-Authenticate:
++              schema:
++                type: string
++              example: Bearer
++        '403':
++          description: Claims 403; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                FORBIDDEN:
++                  value:
++                    error:
++                      code: FORBIDDEN
++                      message: The requested operation is not permitted.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '404':
++          description: Claims 404; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CLAIM_NOT_FOUND:
++                  value:
++                    error:
++                      code: CLAIM_NOT_FOUND
++                      message: Claim or referenced resource was not found.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '409':
++          description: Claims 409; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                IDEMPOTENCY_KEY_REUSED:
++                  value:
++                    error:
++                      code: IDEMPOTENCY_KEY_REUSED
++                      message: Idempotency key was used for a different request.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                CLAIM_CORRELATION_MISMATCH:
++                  value:
++                    error:
++                      code: CLAIM_CORRELATION_MISMATCH
++                      message: Correlation does not match the lifecycle root.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '415':
++          description: Claims 415; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                UNSUPPORTED_MEDIA_TYPE:
++                  value:
++                    error:
++                      code: UNSUPPORTED_MEDIA_TYPE
++                      message: Content type is not supported.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '422':
++          description: Claims 422; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CLAIM_AMOUNT_INVALID:
++                  value:
++                    error:
++                      code: CLAIM_AMOUNT_INVALID
++                      message: Claimed amount must be greater than zero.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                CLAIM_SHIPMENT_INELIGIBLE:
++                  value:
++                    error:
++                      code: CLAIM_SHIPMENT_INELIGIBLE
++                      message: Shipment is not eligible for a claim.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                CLAIM_CARRIER_MISMATCH:
++                  value:
++                    error:
++                      code: CLAIM_CARRIER_MISMATCH
++                      message: Carrier does not match the shipment.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '500':
++          description: Claims 500; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INTERNAL_ERROR:
++                  value:
++                    error:
++                      code: INTERNAL_ERROR
++                      message: An internal error occurred.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '502':
++          description: Claims 502; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CLAIM_REFERENCE_INVALID:
++                  value:
++                    error:
++                      code: CLAIM_REFERENCE_INVALID
++                      message: Reference response is invalid.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '503':
++          description: Claims 503; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CLAIM_REFERENCE_INCOMPLETE:
++                  value:
++                    error:
++                      code: CLAIM_REFERENCE_INCOMPLETE
++                      message: Required reference data is unavailable.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                CLAIM_REFERENCE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: CLAIM_REFERENCE_UNAVAILABLE
++                      message: Reference service is unavailable.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                CLAIM_STORAGE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: CLAIM_STORAGE_UNAVAILABLE
++                      message: Claim storage is unavailable.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++      description: 'Claims normative semantics for SHIPMENT-BUNDLE 3.0.0. See claims-semantics-v3.0.0.md and R01–R30. No runtime or publication
++        acceptance. Executable policy profile:
++
++        {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
++        true, "edges": [["Open", "Investigating"], ["Open", "Withdrawn"], ["Investigating", "Approved"], ["Investigating",
++        "Rejected"], ["Approved", "Settled"], ["Rejected", "Closed"], ["Settled", "Closed"]], "eligible": ["Dispatched",
++        "InTransit", "Delivered", "Exception", "Closed"], "errors": {"lifecycle": [422, "INVALID_CLAIM_TRANSITION"],
++        "malformed": [502, "CLAIM_REFERENCE_INVALID"], "missing": [503, "CLAIM_REFERENCE_INCOMPLETE"], "payload":
++        [409, "IDEMPOTENCY_KEY_REUSED"], "root": [409, "CLAIM_CORRELATION_MISMATCH"]}, "financialPosting": false,
++        "lexicalAmount": true, "lexicalTime": true, "outbox": "Pending", "permissions": {"Approved": "decide", "Closed":
++        "decide", "Investigating": "investigate", "Open": "create", "Rejected": "decide", "Settled": "settle", "Withdrawn":
++        "investigate"}, "publisher": false, "retainAmount": true, "rootBeforePayload": true, "scopeReceipt": true,
++        "unknownCommitRecovery": true, "worker": false, "zeroApproval": true}
++
++        Claims-only decimal profile; shared schemas unchanged. Authentication, scope/base permission, header/query/body,
++        exact target grant, receipt root/fingerprint, fresh reference/target, root, business/lifecycle, atomic commit.
++        All application responses echo request trace; rejection-only trace generated when invalid. Saved business
++        root is never GET trace.'
+   /claims/{claimId}/transition:
+     post:
+-      tags: [Claims]
++      tags:
++      - Claims
+       operationId: transitionClaim
+       summary: Claim lifecycle durumunu ilerlet
+-      description: >
+-        Izinli gecisler: Open->Investigating|Withdrawn; Investigating->Approved|Rejected;
+-        Approved->Settled; Rejected->Closed; Settled->Closed. Diger gecisler
+-        INVALID_CLAIM_TRANSITION ile reddedilir.
++      description: 'Claims normative semantics for SHIPMENT-BUNDLE 3.0.0. See claims-semantics-v3.0.0.md and R01–R30. No runtime or publication
++        acceptance. Executable policy profile:
++
++        {"carrierStates": ["Active", "Suspended", "Retired"], "decimalPattern": "^-?[0-9]+(\\.[0-9]+)?$", "duplicatesAllowed":
++        true, "edges": [["Open", "Investigating"], ["Open", "Withdrawn"], ["Investigating", "Approved"], ["Investigating",
++        "Rejected"], ["Approved", "Settled"], ["Rejected", "Closed"], ["Settled", "Closed"]], "eligible": ["Dispatched",
++        "InTransit", "Delivered", "Exception", "Closed"], "errors": {"lifecycle": [422, "INVALID_CLAIM_TRANSITION"],
++        "malformed": [502, "CLAIM_REFERENCE_INVALID"], "missing": [503, "CLAIM_REFERENCE_INCOMPLETE"], "payload":
++        [409, "IDEMPOTENCY_KEY_REUSED"], "root": [409, "CLAIM_CORRELATION_MISMATCH"]}, "financialPosting": false,
++        "lexicalAmount": true, "lexicalTime": true, "outbox": "Pending", "permissions": {"Approved": "decide", "Closed":
++        "decide", "Investigating": "investigate", "Open": "create", "Rejected": "decide", "Settled": "settle", "Withdrawn":
++        "investigate"}, "publisher": false, "retainAmount": true, "rootBeforePayload": true, "scopeReceipt": true,
++        "unknownCommitRecovery": true, "worker": false, "zeroApproval": true}
++
++        Claims-only decimal profile; shared schemas unchanged. Authentication, scope/base permission, header/query/body,
++        exact target grant, receipt root/fingerprint, fresh reference/target, root, business/lifecycle, atomic commit.
++        All application responses echo request trace; rejection-only trace generated when invalid. Saved business
++        root is never GET trace.'
+       parameters:
+-        - { name: claimId, in: path, required: true, schema: { type: string, format: uuid } }
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { $ref: '#/components/parameters/IdempotencyKey' }
++      - name: claimId
++        in: path
++        required: true
++        schema:
++          type: string
++          format: uuid
++      - $ref: '#/components/parameters/CorrelationId'
++      - $ref: '#/components/parameters/IdempotencyKey'
+       requestBody:
+         required: true
+         content:
+           application/json:
+-            schema: { $ref: '#/components/schemas/TransitionClaimCommand' }
+-            example: { targetStatus: Approved, occurredAt: '2026-09-27T09:00:00Z', resolutionCode: CARRIER_ACCEPTED, approvedAmount: '200.00', note: Evidence accepted }
++            schema:
++              $ref: '#/components/schemas/TransitionClaimCommand'
++            example:
++              targetStatus: Approved
++              occurredAt: '2026-09-27T09:00:00Z'
++              resolutionCode: CARRIER_ACCEPTED
++              approvedAmount: '200.00'
++              note: Evidence accepted
+       responses:
+         '200':
+           description: Claim gecisi uygulandi
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/ClaimResponse' }
+-              example: { claimId: 18700000-0000-0000-0000-000000000001, claimNumber: CLM-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Approved, approvedAmount: '200.00', idempotentReplay: false, contractVersion: v1 }
+-        '404': { $ref: '#/components/responses/NotFound' }
+-        '422': { $ref: '#/components/responses/Unprocessable' }
++              schema:
++                $ref: '#/components/schemas/ClaimResponse'
++              example:
++                claimId: 18700000-0000-0000-0000-000000000001
++                claimNumber: CLM-2026-001
++                shipmentId: 18300000-0000-0000-0000-000000000001
++                status: Approved
++                approvedAmount: '200.00'
++                idempotentReplay: false
++                contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '400':
++          description: Claims 400; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: Request schema or context is invalid.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '401':
++          description: Claims 401; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                UNAUTHENTICATED:
++                  value:
++                    error:
++                      code: UNAUTHENTICATED
++                      message: Authentication is required.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++            WWW-Authenticate:
++              schema:
++                type: string
++              example: Bearer
++        '403':
++          description: Claims 403; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                FORBIDDEN:
++                  value:
++                    error:
++                      code: FORBIDDEN
++                      message: The requested operation is not permitted.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '404':
++          description: Claims 404; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CLAIM_NOT_FOUND:
++                  value:
++                    error:
++                      code: CLAIM_NOT_FOUND
++                      message: Claim or referenced resource was not found.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '409':
++          description: Claims 409; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                IDEMPOTENCY_KEY_REUSED:
++                  value:
++                    error:
++                      code: IDEMPOTENCY_KEY_REUSED
++                      message: Idempotency key was used for a different request.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                CLAIM_CORRELATION_MISMATCH:
++                  value:
++                    error:
++                      code: CLAIM_CORRELATION_MISMATCH
++                      message: Correlation does not match the lifecycle root.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '415':
++          description: Claims 415; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                UNSUPPORTED_MEDIA_TYPE:
++                  value:
++                    error:
++                      code: UNSUPPORTED_MEDIA_TYPE
++                      message: Content type is not supported.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '422':
++          description: Claims 422; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_CLAIM_TRANSITION:
++                  value:
++                    error:
++                      code: INVALID_CLAIM_TRANSITION
++                      message: Claim transition is not allowed.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                CLAIM_APPROVAL_AMOUNT_INVALID:
++                  value:
++                    error:
++                      code: CLAIM_APPROVAL_AMOUNT_INVALID
++                      message: Approved amount must be between zero and the claimed amount.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                CLAIM_APPROVED_AMOUNT_NOT_ALLOWED:
++                  value:
++                    error:
++                      code: CLAIM_APPROVED_AMOUNT_NOT_ALLOWED
++                      message: Approved amount is not allowed for this action.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '500':
++          description: Claims 500; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INTERNAL_ERROR:
++                  value:
++                    error:
++                      code: INTERNAL_ERROR
++                      message: An internal error occurred.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '503':
++          description: Claims 503; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CLAIM_STORAGE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: CLAIM_STORAGE_UNAVAILABLE
++                      message: Claim storage is unavailable.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+ webhooks:
+   shipmentLifecycleEvent:
+     post:
+@@ -1649,6 +3097,7 @@
+             shipToReference: { type: string }
+             lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
+             pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
++            lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted root correlation UUID; producer emits it explicitly. No derivation or backfill.' }
+             contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+     ShipmentListResponse:
+       type: object
+--- /dev/null
++++ b/docs/analysis/contracts/shipment-root-semantics-v3.0.0.md
+@@ -0,0 +1,8 @@
++# Shipment root semantics — SHIPMENT-BUNDLE 3.0.0 / wire v1
++
++- ShipmentDetail.lifecycleCorrelationId is optional, nullable UUID.
++- Upgraded Shipment producer explicitly emits the field on persisted ShipmentDetail reads.
++- The value is authoritative persisted root only; consumers do not derive or backfill it.
++- Tenant/LE scope, read permissions, wire contractVersion v1, lifecycle and non-root operations remain unchanged.
++- Publication metadata proposal is SHIPMENT-BUNDLE 3.0.0 / wire v1. Prepared bytes have FROZEN metadata; actual publication requires the separate owner release decision.
++- Prior 91d505 artifact was not reconstructed or claimed.
+--- /dev/null
++++ b/docs/analysis/contracts/returns-semantics-v3.0.0.md
+@@ -0,0 +1,76 @@
++# Returns semantics — SHIPMENT-BUNDLE 3.0.0 / wire v1
++## Authority and activation
++The user's latest approval authorizes separate D186/D187 consumer amendment candidates only.
++No canonical publication, consumer release consent, guard activation, runtime/Program.cs, Phase1.5,
++pack promotion or DEV GO. Existing historical proposals remain unchanged.
++Shipment root design is already approved. Consume authoritative persisted lifecycleCorrelationId via
++published getShipment; preserve root, never derive from IDs, read trace or shared database.
++Real successful fresh create requires published AND implemented AND verified producer seam.
++Root schema is composed in this bundle; shipment-root-semantics-v3.0.0.md is its normative annex. Publication does not establish producer runtime uptake. Missing/null503; malformed502; mismatch409.
++No new root candidate, worker, publisher or source writes. Pending local outbox only.
++
++## Common validation boundaries (module-specific differences follow)
++JWT authentication parser rejection401; successful authentication with unusable/duplicate trusted
++identity403. Do not assert every duplicate sub reaches403: parser rejection may be401.
++Exact signed tenant_id/legal_entity_id/sub, non-nil UUID; no alias or last-wins duplicate bypass.
++UUID ASCII8-4-4-4-12, hex case allowed; no trim/braces/URN/32hex. Nil correlation/path/body
++syntactically valid, but never use default nil as proof of authoritative provenance.
++Header names case-insensitive; duplicates including identical values rejected400. Correlation required.
++POST Idempotency-Key exact decoded string1..128 Unicode scalars; no trim, scalar comma is data.
++Once-decoded ASCII-case-insensitive scope-query keys tenantId,tenant_id,X-Tenant-Id,
++legalEntityId,legal_entity_id,X-Legal-Entity-Id reject400; ordinary unknown keys do not bind scope.
++Body schemas unchanged, additional properties forbidden where frozen requires it.
++Auth -> trusted context/base grant -> correlation/scope/key headers -> scope match -> path/query/media/body
++-> exact target grant -> committed receipt root then fingerprint -> fresh reference/target/root ->
++business/lifecycle -> atomic persistence. Local Returns duplicate/positive checks precede source lookup.
++Valid incoming correlation is response trace; rejection-only generated trace if unavailable/invalid.
++Error.error.correlationId equals response X-Correlation-Id; fallback never creates business root.
++Shared Error and success shapes retained; no Response<T>/ProblemDetails wrapper.401 Bearer challenge.
++Receipt=(tenant,LE,operation,target-or-create,key); actor/root not identity. Current grants required.
++Same root/fingerprint replays original201/200 with idempotentReplay=true, no new writes or source reread.
++Different root precedes changed payload409. Old result survives state changes/deletion within authorized scope.
++No receipt TTL or failed receipt. Unknown commit: recover receipt, otherwise503; do not promise rollback.
++Fresh failure before commit has no successful receipt/event. No independent roots for legacy records.
++## D186-01/02 — eligibility and entitlement
++Delivered/Closed only; cap=ShipmentLine.quantity, not separately proven delivered quantity.
++Positive arbitrary-precision quantity, exact ordinal line/UoM; duplicate command lines422; no conversion.
++Source required omissions/type/enum/mismatched identity/duplicate lines/nonpositive source quantity502;
++optional shipmentId/status missing503; selected line absent404. First entitlement snapshot freezes numeric
++quantity/UoM/itemId/skuId; later drift409 RETURN_SOURCE_CHANGED. Equivalent numeric representation not drift.
++Entitlement key tenant+LE+shipmentId+lineNumber (not UoM). Count Requested/Authorized/InTransit/Received/
++Dispositioned/Closed; only Rejected/Cancelled release once. Closed/soft-delete never release.
++All lines plus aggregate/receipt/audit/outbox commit atomically; cap10,6+6 race -> one201,one422;
++4+6 -> both can commit. Snapshot HTTP read not a distributed lock; transition/replay do not reread.
++Frozen arrows ONLY Requested->Authorized|Rejected; Authorized->InTransit|Cancelled;
++InTransit->Received; Received->Dispositioned; Dispositioned->Closed.
++CORRECTION: prior chat summary mistakenly added InTransit->Cancelled; no-new-arrow scope wins;
++that arrow remains422 INVALID_RETURN_TRANSITION. No lifecycle policy expansion authorized.
++
++## D186-03/04 — bounded receiving
++Received is same-scope authorized manual assertion, not verified physical Warehouse receipt.
++Audit actor, command time, server commit time, manual-assertion evidence type. Opaque evidence strings.
++Inventory and Warehouse HTTP calls ZERO, including GET. inventoryTransactionReferenceId omitted/null/empty
++retained as opaque unverified text; no stock movement/reservation/verification claim.
++Dispositioned requires dispositionCode string length>=1, no trim/catalog; whitespace accepted;
++on other targets supplied value audited but does not change business disposition.
++
++## D186-05 — Returns-specific profile
++Read=create mapping supplychain.returns.read / .create. Transition requires .transition AND target:
++Authorized/Rejected .authorize; InTransit .transit; Cancelled .cancel; Received .receive;
++Dispositioned .disposition; Closed .close. Requested requires base, then invalid lifecycle422.
++Scope validation headers X-Tenant-Id/X-Legal-Entity-Id required; mismatch404 RETURN_NOT_FOUND.
++Auth401/context403/schema400/media415 use INVALID_REQUEST. Foreign/missing target404 RETURN_NOT_FOUND.
++Quantity fingerprint numeric exact (1.0=1.00); UUID by value; date-time by instant, no lost fractional
++precision. Arrays order significant; strings ordinal. Nullable omission=null; evidence omission=[];
++empty distinct; no trim. Raw first accepted values retained in audit/result.
++Root codes RETURN_SHIPMENT_ROOT_UNAVAILABLE503 / RETURN_SHIPMENT_ROOT_INVALID502 /
++CORRELATION_ROOT_MISMATCH409. Same-root changed valid payload409 IDEMPOTENCY_KEY_REUSED.
++
++## D186-06 — persistence and events
++Replica-set L3: returns,return_entitlements,returns_receipts,returns_audit,returns_outbox.
++Scoped unique number/receipt/entitlement/event indexes; internal version/CAS; no public concurrency field.
++RMA- + uppercase UUID-N. Known uncommitted collision at most3 new UUID attempts, then503;
++unknown commit never retries blindly with new ID. Raw decimal string+exact coefficient/scale, no rounding.
++One immutable audit/event per successful mutation. Fault after each write before commit rolls back all.
++ReturnRequested serverUTC/causation null; transition normalized instant/previous Return eventId causation.
++Persist inherited Shipment root, not local create root. Event IDs stable; Pending outbox, no worker/publisher.
+--- /dev/null
++++ b/docs/analysis/contracts/claims-semantics-v3.0.0.md
+@@ -0,0 +1,228 @@
++# Claims semantics — SHIPMENT-BUNDLE 3.0.0 / wire v1
++
++Publication proposal: SHIPMENT-BUNDLE 3.0.0 / wire v1. Scope: Claims operations only. The approved reconstructed design is unchanged; candidate-to-final metadata and path deltas are bound separately. Actual publication requires the separate owner release decision.
++
++## Controlling reconciled rules
++Withdrawn requires investigate, Closed requires decide. Open target has create permission check then invalid lifecycle. No creator-only exception or mandatory actor separation. Lifecycle 422 INVALID_CLAIM_TRANSITION; payload 409 IDEMPOTENCY_KEY_REUSED; root 409 CLAIM_CORRELATION_MISMATCH. No worker, publisher, transport or finance posting; outbox remains Pending.
++All seven frozen arrows preserved. Non-Approved commands with non-null approvedAmount fail422; omission/null retains previous value. Claimed>0, Approved requires 0<=amount<=claimed including zero and negative-zero. BSON string preserves original text; exact coefficient/scale comparison; no rounding/precision/scale/ISO restriction. Definite uncommitted number collision fails atomically503 CLAIM_STORAGE_UNAVAILABLE, no automatic renumber. Unknown commit is not proof of zero writes; resolve receipt or return503 pending recovery.
++Root missing/null/empty→503 CLAIM_REFERENCE_INCOMPLETE; malformed→502 CLAIM_REFERENCE_INVALID; different valid UUID→409 CLAIM_CORRELATION_MISMATCH, including nil when different. Same nil is not automatically missing. Source root from published producer seam only, never DB/trace/ID derivation. Transition/replay use saved root. Root check precedes payload conflict. JWT authentication rejection401 precedes trusted-identity403; no assertion that every parser rejects duplicate JWT identity at the same layer.
++
++## Adopted detailed policy
++The following source sections are subordinate to the controlling reconciled rules above. Old proposal/required-owner labels identify provenance, not extra approvals or runtime grants. Historical A Withdrawn=create table entries, optional fake transport and root field proposal are superseded explicitly above; no producer field is embedded here.
++
++## D187-01 — reference eligibility and observation boundary
++
++**Required owners:** logistics business + Shipment/Carrier contract owners + security. Sources S1 reference schemas,
++S2 ownership, S3 mock-first consumption. Impact: read-only HTTP dependency, historical references, no distributed transaction.
++
++Proposal:
++1. Fresh create accepts Shipment status exactly Dispatched, InTransit, Delivered, Exception or Closed.
++   Draft, Planned and Cancelled return 422 `CLAIM_SHIPMENT_INELIGIBLE`.
++2. Shipment must be retrieved with trusted tenant/LE context. Absent/null carrier means unassigned, never inferred.
++   Explicit carrier must equal the Shipment's non-null carrierId, and resolve in the same scope using the published
++   **unfiltered GET carrier list** (no invented by-ID endpoint). Active, Suspended and Retired all qualify for historical claims.
++3. Evidence remains opaque strings: omission/empty array allowed, order/duplicates/empty strings retained.
++   No existence, ownership or binary-content verification is asserted. `null` array is invalid schema (400).
++   Verified evidence would require a separately published seam and revised decision, not an invented validator.
++4. Resolve only on fresh create, before the Mongo transaction; persist immutable decision-field snapshot and observedAt.
++   Transitions and committed replays do not re-query mutable references. Eligibility is **as observed**, not as of commit.
++   No copied source master or cross-feature DB access.
++5. Missing/foreign reference returns generic 404 `CLAIM_NOT_FOUND`. Structurally malformed source response or mismatched
++   requested Shipment identity returns 502 `CLAIM_REFERENCE_INVALID`; schema-valid response missing fields needed for
++   a decision (e.g. optional status/carrierId) returns 503 `CLAIM_REFERENCE_INCOMPLETE`.
++   Timeout/unavailability returns 503 `CLAIM_REFERENCE_UNAVAILABLE`; none writes business state.
++
++| Scenario | Exact proposed acceptance |
++|---|---|
++| R01 | Each of 8 frozen Shipment states exercised: five eligible creates succeed; three reject as above; rejection creates zero claim/receipt/audit/outbox |
++| R02 | Explicit matching carrier in each of Active/Suspended/Retired succeeds; different or explicit null Shipment carrier rejects 422 `CLAIM_CARRIER_MISMATCH`; omitted source carrier field gives 503 |
++| R03 | Missing/foreign Shipment or explicit Carrier gives identical generic 404; no foreign field echoed; outbound method/path/scope captured |
++| R04 | Evidence omitted and [] accepted; ["", "e1", "e1"] preserved; null rejected; no evidence lookup or verified flag implied |
++| R05 | Source becomes ineligible after captured read: committed snapshot explains permitted create; replay/transition with source offline still works under receipt/lifecycle rules |
++
++## D187-02 — monetary relationships and operational settlement
++
++**Required owners:** logistics business + finance policy + contract. Sources S1 amount fields/lifecycle, S2 non-posting scope.
++Impact: no currency conversion, invoice/payment, valuation or total-claims ceiling can be inferred from Shipment data.
++
++Proposal: claimedAmount > 0. Entering Approved requires non-null approvedAmount with
++**0 ≤ approvedAmount ≤ immutable claimedAmount**. Zero approval is explicitly permitted; no separate monetary tier
++or upper cap beyond this relationship. On every other target approvedAmount must be omitted or null;
++non-null rejects 422 `CLAIM_APPROVED_AMOUNT_NOT_ALLOWED`. Existing approved amount is preserved through Settled/Closed.
++ResolutionCode/note may be omitted, null or empty; no invented catalogue or mandatory reason rule.
++Claimed amount, currency, shipment and carrier cannot be edited by transition. No aggregate amount ceiling across claims.
++Settled records an operational resolution, including an approved zero; it does not assert payment occurred or create
++ledger/AP/AR/payment/stock movement, settlement-reference input, or a finance integration event.
++
++| Scenario | Exact proposed acceptance |
++|---|---|
++| M01 | Create claimed -1, 0, -0 → 422 `CLAIM_AMOUNT_INVALID`; smallest representable positive supplied decimal text remains positive and can succeed |
++| M02 | Investigating, claimed "250": approved missing/null/-0.01/250.01 → 422 `CLAIM_APPROVAL_AMOUNT_INVALID`; 0, -0, 249.99, 250 valid |
++| M03 | Any other valid arrow with non-null approvedAmount →422; null/omission does not clear prior approval; approval cannot be changed by settlement |
++| M04 | Approve 0→Settled→Closed and approve250→Settled→Closed retain exact approved text; only frozen Claim events emitted, no finance/stock writes or outbound finance call |
++| M05 | Separate keys can create multiple claims against one Shipment; no undocumented sum-of-claims limit; empty resolutionCode/note survives accepted transition audit |
++
++## D187-03 — exact decimal storage, currency and fingerprinting
++
++**Required owners:** data/persistence + contract + business/finance. Sources S1 Decimal/currency; S2 no-float constraint.
++Impact: proposed exception to any implicit .NET decimal/BSON Decimal128 representation; arbitrary precision comparison required.
++
++Proposal: persist original validated amount as **BSON string**, compare signed integer coefficient + decimal scale
++without rounding or float/.NET decimal/Decimal128 conversion. No fixed p/s is introduced. A finite request/storage
++resource failure must fail atomically (503 `CLAIM_STORAGE_UNAVAILABLE` if persistence cannot commit), never truncate
++or round; this proposal is not a promise of unlimited transport/document capacity. DEV must measure existing infrastructure
++limits before release; any new public precision/length cap is a contract amendment, not a validator default.
++Use ASCII decimal digits with optional leading minus and optional nonempty fractional digits; reject exponent, plus,
++whitespace, bare dot and JSON numeric tokens. This explicit interoperable lexical profile requires contract-owner ratification.
++Leading zeros and negative zero remain intact; numeric comparison determines positivity, not lexical spelling.
++Currency accepts exactly `[A-Z]{3}`, including ZZZ; no ISO membership/minor-unit rules, FX, rounding or JPY integer restriction.
++
++Idempotency fingerprint uses original amount strings: "250" ≠ "250.00", "0" ≠ "-0".
++JSON object order and string escape spelling do not change the decoded fingerprint. Nullable option omission equals null;
++evidence omission equals []; array order and duplicates remain significant. Strings are never trimmed. occurredAt uses
++its original valid date-time text in the fingerprint; equivalent instants with different text conflict. Preserve that text in
++audit/event without silently losing fractional precision; server observation timestamp is separate.
++
++| Scenario | Exact proposed acceptance |
++|---|---|
++| P01 | "1234567890123456789012345678901234567890.1234567890123456789012345678901234567890" round-trips exactly through create/list/restart/audit/outbox where applicable; no decimal overflow conversion |
++| P02 | claimed "0.0000000000000000000000000000000000000001" passes positivity; "000250.00" compared exactly to approved "250" |
++| P03 | "1e2", "+1", "1.", ".1", " 1", non-ASCII digits and JSON number 1 →400 `INVALID_REQUEST`; request-body nullability unchanged |
++| P04 | ZZZ and JPY with fractional positive amount succeed; lowercase usd, four-letter USDD →400; currency immutable |
++| P05 | Same key "250"→"250.00" gives409 replay conflict; reordered object/escaped equivalent strings replay; evidence reorder conflicts |
++| P06 | Inject persistence capacity failure: 503, zero partial documents; no rounded amount or success receipt; actual transport limits reported separately, no fake unlimited-size test claim |
++
++## D187-04 — lifecycle action to permission
++
++**Required owners:** security/RBAC + logistics business. Sources S1 targetStatus; S2 proposed five keys.
++Impact: no new role, workflow, financial amount tier or automatic privilege inheritance.
++All keys below have prefix `supplychain.claims.`; they require exact existing grant semantics, not role-name guessing.
++
++| Operation / target | Required key | Legal source |
++|---|---|---|
++| GET claims | read | N/A |
++| POST create | create | N/A → Open |
++| Investigating | investigate | Open |
++| Withdrawn | investigate | Open |
++| Approved / Rejected | decide | Investigating |
++| Settled | settle | Approved |
++| Closed | decide | Rejected or Settled |
++| Open on transition | create for authorization, then always422 | None |
++
++No actor separation is imposed in this bounded slice: the creator may investigate/approve/settle only if explicitly granted
++each required action. This is an **explicit proposed business/security choice**, not an accepted default.
++A settler lacking decide cannot close. No Platform bypass or security-owner approval inferred from Carrier.
++
++Acceptance S01: every target × missing/exact/unrelated grant; denied→403 `FORBIDDEN`, zero documents.
++S02: creator with all required grants can execute full legal chain; creator with create alone cannot approve or settle.
++S03: all 49 source×target pairs: exactly seven legal pairs, other42→422 `INVALID_CLAIM_TRANSITION` when authorized and payload otherwise valid.
++S04: two tenants × two legal entities; foreign ID is404 after authorized request, no state/receipt/event leakage.
++
++## D187-05 — error, headers, root and durable replay
++
++**Required owners:** contract + security + Shipment owner; CT owns shared-contract coordination.
++Sources S1 headers/Error/envelope, S2 §23; Carrier/Loads annexes are comparison evidence only.
++Impact: Claims operation response declarations must be amended; create requires an authoritative Shipment-root seam.
++
++Proposed exact policy:
++- Validate JWT by existing authentication. Anonymous/invalid token→401 `UNAUTHENTICATED`, `WWW-Authenticate: Bearer`.
++  Exactly one signed tenant_id/legal_entity_id/sub each, non-nil UUID; missing/duplicate/invalid trusted identity→403.
++  Optional X-Tenant-Id/X-Legal-Entity-Id must match signed scope; malformed→400, mismatch→403.
++- Correlation header required exactly once, ASCII hyphenated UUID; letter case accepted and nil syntactically allowed.
++  Every POST needs exactly one Idempotency-Key string length1–128 Unicode scalar values; no trim; repeated headers reject400.
++  Single scalar comma is data, not automatic multi-header splitting. Query scope keys tenantid/legalentityid/tenant_id/
++  legal_entity_id/x-tenant-id/x-legal-entity-id (once URL-decoded, ASCII case insensitive) reject400. Unknown ordinary query keys
++  do not acquire a new prohibition. Body additional properties already prohibited. No scope from body/query.
++- Order: authentication → trusted identity and operation permission (for transition, any one of create/investigate/decide/settle
++  before body read) → headers/query scope → media type/body schema → exact target permission → receipt lookup →
++  scoped reference/aggregate lookup → root check → business/lifecycle → atomic persistence.
++  For found receipt: saved-root check precedes fingerprint check; no reference dependency lookup or lifecycle re-evaluation.
++  Unauthorized identity/action has precedence over reference existence. Rejection never reserves a key.
++- Create uses original Shipment lifecycle root as its root and must receive matching X-Correlation-Id. Existing ShipmentDetail
++  **does not expose it** in this baseline. External Root R2 dependency proposes: `lifecycleCorrelationId` UUID in ShipmentDetail, with exact semantics and
++  producer/mock support. Claims requires a populated authoritative value; missing→503 `CLAIM_REFERENCE_INCOMPLETE`.
++  No fabricated root, reuse of response trace, or direct Shipment DB read. Transitions/replays must match persisted root;
++  wrong root→409 `CLAIM_CORRELATION_MISMATCH` (including nil when different). GET correlation is request trace only.
++- Receipt identity = tenant + LE + operation(create/transition) + target (`create` or claimId) + key; actor/root not part of key.
++  Same tuple/root/fingerprint returns original201(create)/200(transition), original result plus idempotentReplay=true;
++  current authorized different actor allowed, original audit actor unchanged. Different fingerprint→409 `IDEMPOTENCY_KEY_REUSED`.
++  Original result replay survives later state changes and same-scope soft deletion; no rehydration from current entity.
++  No receipt TTL or key reuse; retention change requires explicit review.
++- Response correlation header on all application-owned responses; error.error.correlationId equals that response header.
++  Use valid incoming trace; invalid/missing header gets generated trace **only for rejection**, not success/root creation.
++  Success body shape remains frozen. Fixed safe error messages; no raw exception, token, evidence or foreign identifiers in details.
++
++| Operation | Proposed declared application statuses |
++|---|---|
++| queryClaims | 200,400,401,403,500,503 |
++| createClaim | 201,400,401,403,404,409,415,422,500,502,503 |
++| transitionClaim | 200,400,401,403,404,409,415,422,500,503 |
++
++500 `INTERNAL_ERROR`; 503 persistence `CLAIM_STORAGE_UNAVAILABLE`; 415 `UNSUPPORTED_MEDIA_TYPE`;
++400 `INVALID_REQUEST`; 404 `CLAIM_NOT_FOUND`; other exact codes in D187-01/02/04 and this section.
++403 `FORBIDDEN` includes scope/identity/action failures. Shared Error shape unchanged; Claims-specific examples must
++not use Returns/Loads/Carrier business codes. Public message text proposed below must be frozen in the owner-approved amendment before DEV; no exception text is an acceptable substitute.
++
++| Code | Exact proposed error.message |
++|---|---|
++| INVALID_REQUEST | Request schema or context is invalid. |
++| UNAUTHENTICATED | Authentication is required. |
++| FORBIDDEN | The requested operation is not permitted. |
++| CLAIM_NOT_FOUND | Claim or referenced resource was not found. |
++| UNSUPPORTED_MEDIA_TYPE | Content type is not supported. |
++| CLAIM_SHIPMENT_INELIGIBLE | Shipment is not eligible for a claim. |
++| CLAIM_CARRIER_MISMATCH | Carrier does not match the shipment. |
++| CLAIM_AMOUNT_INVALID | Claimed amount must be greater than zero. |
++| CLAIM_APPROVAL_AMOUNT_INVALID | Approved amount must be between zero and the claimed amount. |
++| CLAIM_APPROVED_AMOUNT_NOT_ALLOWED | Approved amount is not allowed for this action. |
++| INVALID_CLAIM_TRANSITION | Claim transition is not allowed. |
++| CLAIM_CORRELATION_MISMATCH | Correlation does not match the lifecycle root. |
++| IDEMPOTENCY_KEY_REUSED | Idempotency key was used for a different request. |
++| CLAIM_REFERENCE_INVALID | Reference response is invalid. |
++| CLAIM_REFERENCE_INCOMPLETE | Required reference data is unavailable. |
++| CLAIM_REFERENCE_UNAVAILABLE | Reference service is unavailable. |
++| CLAIM_STORAGE_UNAVAILABLE | Claim storage is unavailable. |
++| INTERNAL_ERROR | An internal error occurred. |
++
++Acceptance H01: missing/invalid/duplicate headers and trusted claims, permission+badbody conflicts follow order above.
++H02: nil valid correlation that differs from root gives409, never a new root; valid GET nil trace echoed.
++H03: fresh create with unavailable root gives503/no writes; matching root gives same value in every Claim envelope.
++H04: matching receipt replays while Shipment is offline; changed actor+current grant does not alter stored audit;
++wrong root+changed payload returns correlation409; same root+changed payload returns replay409.
++H05: process restart/lost response and 20 concurrent same-key calls yield one entity/receipt/audit/event, same original result.
++H06: Claims family routing must not swallow `/claimsXYZ`; Shipment/Carrier/Loads auth/headers/errors/replay stay unchanged.
++
++## D187-06 — concurrency, durability, event and architecture exceptions
++
++**Required owners:** data/persistence + architecture + logistics business + CT; security reviews receipt retention.
++Sources S1 events/arrows; S2 L3 proposal; S4 atomic evidence. Impact: explicit repository and entity-versioning exceptions.
++
++Proposal: claimId UUID; claimNumber `CLM-` + lowercase UUID N representation (32 hex digits), unique in tenant+LE,
++never reused even after soft delete. No gapless/date-based sequence and no one-claim-per-Shipment unique constraint.
++Mongo replica-set transaction owns exactly claims, claims_receipts, claims_audit, claims_outbox. A successful mutation writes
++aggregate + durable response receipt + immutable before/after audit + outbox event atomically. No assignment/entitlement
++constraint collection. Unique indexes on scoped number, scoped receipt tuple, scoped eventId; lists/aggregate access enforce
++scope and IsDeleted=false. Historical receipt access is separately scoped and does not expose foreign deleted state.
++Internal Version CAS; conflict retries re-read state and apply the same lifecycle/business policy. No new If-Match/header/version DTO.
++Unknown commit: resolve receipt, otherwise return503 and permit same-key recovery; never report guessed success.
++
++Events only ClaimOpened/Investigating/Approved/Rejected/Settled/Closed/Withdrawn as named in S1 enum (full `Claim` prefix).
++Create event occurredAt = server UTC; transition event occurredAt = original validated request date-time (offset allowed,
++no invented past/future ordering cutoff). Audit server receivedAt/committedAt separate. Stable persisted eventId/root,
++aggregateType=Claim, aggregateId=claimId, contractVersion=v1, causationId=null. Replay emits nothing new.
++Local outbox remains pending; no fake transport or worker is authorized by this package; test-only state inspection is allowed. No live Event Bus subscription,
++remote delivery acceptance or finance posting. ClaimSettled is not a financial posting instruction.
++
++Architecture exceptions proposed: module-specific atomic repository instead of generic CRUD; immutable transition audit +
++internal CAS instead of mutable draft/revision entity-versioning model. Neither exception changes EntityBase or shared rules.
++
++Acceptance C01: inject failure after each of four writes and before commit→zero partial documents; unsupported transaction/
++missing indexes fails closed. C02: simultaneous Approved and Rejected from Investigating with distinct keys→one success,
++loser422 invalid transition after reread; one lifecycle event and one success receipt. Same target distinct keys likewise one success.
++C03: after commit/response loss, restart+same key resolves original result without second event; old successful receipt remains
++original even after entity reaches Closed. C04: scope/index collision and deletion tests prove non-reuse/no foreign receipt read.
++C05: no finance/stock/source writes; no shared outbox replacement; exact decimals/audit/root persist across fresh process restart.
++
++
++## R01–R30 precedence
++The separate reconciliation-r01-r30.md is the historical comparison, not an alternate policy. Final D187 approval and final-reconciliation.md supersede the old A/B choices. r01-r30-crosswalk.json binds this reconstructed package; root producer patch is external.

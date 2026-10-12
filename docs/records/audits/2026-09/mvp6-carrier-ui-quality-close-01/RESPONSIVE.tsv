@@ -1,0 +1,5 @@
+case	requested_viewport	window.innerWidth	window.innerHeight	devicePixelRatio	document_scroll_width	body_scroll_width	direction	observable	verdict
+RSP-768-LIST	768x900	768	900	1	768	768	rtl	Carrier table width 736 px; Add, filter, column visibility, length and search controls visible; document has no horizontal overflow	PASS
+RSP-768-CREATE	768x900	768	900	1	768	768	rtl	Create offcanvas 400 px wide; four approved user fields visible; document has no horizontal overflow	PASS
+RSP-390-LIST	390x844	390	844	1	390	390	rtl	Carrier table width 358 px; search 172.484375 px; Add collapses to 38.0078125 px icon control; filter remains visible; document has no horizontal overflow	PASS
+RSP-390-CREATE	390x844	390	844	1	390	390	rtl	Create offcanvas exactly 390 px wide; CarrierCode, DisplayName, SupportedModes search and ExternalReference visible; document has no horizontal overflow	PASS

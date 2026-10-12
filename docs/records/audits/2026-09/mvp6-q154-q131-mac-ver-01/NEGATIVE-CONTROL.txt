@@ -1,0 +1,12 @@
+Q154 NEGATIVE CONTROL — tree B, every variable UNSET (DITEN_PLATFORM_TEST_MONGO_URI, MVP6_MOD0192_MONGO_URI, the 6 SupplyChain suite variables,
+MongoDbSettings__ConnectionString, Eventing__MongoDb__ConnectionString). Failure messages classified per test (logs/NEGSAB-CLASSIFIED.txt).
+
+run                          result                     classification of failures
+Platform Application (full)  4234/4408, 174 failed      159 × "DITEN_PLATFORM_TEST_MONGO_URI is not set. Platform Mongo tests fail closed …"; 15 = tests that also fail in the B positive run (pre-existing)
+Platform BackgroundJobs      18/21, 3 failed            1 × "is not set" (PlatformContainerValidationTests); 2 = pre-existing BackgroundJobContractsTests
+CapacityPlans (filter)       16/48, 32 failed           32 × "MVP6_MOD0192_MONGO_URI is not set. CapacityPlans tests fail closed …"; the 16 passing = pure tests (incl. the 9 helper cases)
+
+Connection attempts: 0 timeout / server-selection / socket messages in any failure; runs finish in ms (Capacity 143 ms).
+27017: 0 new connections during the whole run window (NETCHECK-27017.txt).
+Env script: on bad input it prints nothing and exits 2, so `eval` sets no variable (logs/S0-env-script-refusals.txt, 8/8 refusals).
+RESULT: PASS — the affected tests fail closed with a clear message; 0 connection attempts to 27017.

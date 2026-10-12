@@ -77,7 +77,25 @@
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["WhoSection"]</h6>
                 <div class="row g-4">
                     <div class="col-md-4"><div class="text-muted small">@Localizer["TargetType"]</div><div><span class="badge bg-label-primary">@Localizer["TargetType_" + Model.TargetType]</span></div></div>
-                    <div class="col-md-8"><div class="text-muted small">@Localizer["TargetId"]</div><div>@Model.TargetId</div></div>
+                    @* WP-VP-2 (B-8) — the target by name, linked to its contact / account card (never a GUID). *@
+                    <div class="col-md-8">
+                        <div class="text-muted small">@Localizer["Target"]</div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            @{
+                                var targetIsContact = string.Equals(Model.TargetType, "contact", StringComparison.OrdinalIgnoreCase);
+                                var targetHref = targetIsContact ? $"/CRM/Contacts/Details/{Model.ContactId ?? Model.TargetId}" : $"/CRM/Accounts/Details/{Model.TargetId}";
+                            }
+                            <a href="@targetHref" class="fw-medium">@(Model.TargetDisplayName ?? Localizer["TargetUnknown"].Value)</a>
+                            @if (Model.TargetInactive)
+                            {
+                                <span class="badge bg-label-secondary">@Localizer["TargetInactive"]</span>
+                            }
+                        </div>
+                        @if (targetIsContact && !string.IsNullOrWhiteSpace(Model.AccountDisplayName) && Model.AccountId is { } accountId)
+                        {
+                            <div class="small"><a href="/CRM/Accounts/Details/@accountId" class="text-muted">@Model.AccountDisplayName</a></div>
+                        }
+                    </div>
                     <div class="col-md-4"><div class="text-muted small">@Localizer["PlannedDate"]</div><div>@Model.PlannedDate</div></div>
                     <div class="col-md-4"><div class="text-muted small">@Localizer["PlannedWindow"]</div><div>@(string.IsNullOrWhiteSpace(Model.PlannedStartTime) ? "—" : $"{Model.PlannedStartTime} – {Model.PlannedEndTime}")</div></div>
                     <div class="col-md-4"><div class="text-muted small">@Localizer["PlannedDurationMinutes"]</div><div>@(Model.PlannedDurationMinutes?.ToString() ?? "—")</div></div>
@@ -144,7 +162,6 @@
                 <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ContextSection"]</h6>
                 <div class="mb-2"><div class="text-muted small">@Localizer["BusinessUnit"]</div><div>@(string.IsNullOrWhiteSpace(Model.BusinessUnit) ? "—" : Model.BusinessUnit)</div></div>
                 <div class="mb-2"><div class="text-muted small">@Localizer["TerritoryNodeId"]</div><div>@(Model.TerritoryNodeId?.ToString() ?? "—")</div></div>
-                <div><div class="text-muted small">@Localizer["CampaignId"]</div><div>@(Model.CampaignId?.ToString() ?? "—")</div></div>
             </section>
 
             <section class="card p-4">

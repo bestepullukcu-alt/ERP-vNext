@@ -1,0 +1,11 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
+@@ -260,7 +260,7 @@
+ 
+ Approved: `docs/records/decisions/2026-09/mvp6-capacity-pack-promotion-owner-decision-q28-01.md`
+ 
+-This section records, without changing any business rule above, the Control Tower acceptance of the owner-promoted isolated pack and its later owner-approved successors. It is a proposal until the owner decision in `docs/roadmap/plans/mvp6-pack-alignment-01/mod-0192-capacity/PROMOTION-DECISION.md` is recorded.
++This section records, without changing any business rule above, the Control Tower acceptance of the owner-promoted isolated pack and its later owner-approved successors. The owner decision prepared in `docs/roadmap/plans/mvp6-pack-alignment-01/mod-0192-capacity/PROMOTION-DECISION.md` is recorded in the `Approved:` record above.
+ 
+ | Binding | Exact value |
+ |---|---|

@@ -1,0 +1,64 @@
+{
+  "service": "supplychain",
+  "environment": "Development",
+  "contentRoot": "/Users/natig/mvp6-env/q122/ek-work/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0",
+  "externalUrlKeysForReview": [],
+  "keys": {
+    "AllowedHosts": {
+      "value": "*",
+      "layer": "appsettings.json"
+    },
+    "ASPNETCORE_ENVIRONMENT": {
+      "value": "Development",
+      "layer": "environment"
+    },
+    "Claims:ReferenceBaseUrl": {
+      "value": "http://127.0.0.1:5900/",
+      "layer": "environment"
+    },
+    "DOTNET_ROLL_FORWARD": {
+      "value": "LatestPatch",
+      "layer": "environment"
+    },
+    "JwtSettings:Audience": {
+      "value": "diten-erp",
+      "layer": "environment"
+    },
+    "JwtSettings:Issuer": {
+      "value": "diten-auth-service",
+      "layer": "environment"
+    },
+    "JwtSettings:Secret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "Logging:LogLevel:Default": {
+      "value": "Information",
+      "layer": "appsettings.json"
+    },
+    "Logging:LogLevel:Microsoft.AspNetCore": {
+      "value": "Warning",
+      "layer": "appsettings.json"
+    },
+    "Mongo:ConnectionString": {
+      "value": "mongodb://127.0.0.1:39994/?replicaSet=rsClaimsQ122Ver01&serverSelectionTimeoutMS=5000",
+      "layer": "environment"
+    },
+    "Mongo:DatabaseName": {
+      "value": "DitenSupplyChain_ClaimsQ122Ver01",
+      "layer": "environment"
+    },
+    "PlatformRegistration:BaseUrl": {
+      "value": "http://127.0.0.1:5957",
+      "layer": "environment"
+    },
+    "PlatformRegistration:InternalApiKey": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "urls": {
+      "value": "http://127.0.0.1:5961",
+      "layer": "command-line"
+    }
+  }
+}

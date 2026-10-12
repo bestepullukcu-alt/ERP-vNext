@@ -1,0 +1,2 @@
+entitle CARRIER-MANAGEMENT 201 {"data":"d4c069e4-2635-474f-b293-e7f8d331f603","statusCode":201,"isSuccessful":true,"errors":[],"reason_code":null,"correlation_id":null}
+tenant-activated 200 {"status":"processed"}

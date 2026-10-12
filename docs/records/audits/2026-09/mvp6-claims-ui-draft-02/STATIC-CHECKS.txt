@@ -1,0 +1,103 @@
+# Q64c static checks — MOD-0187 Claims UI DRAFT v2 (run 2026-09-26T23:26:36+0300, Darwin, ~/mvp6-env/q64c)
+
+## 1. Syntax / well-formedness
+## node --check
+PASS frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js
+PASS frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js
+PASS ../runtime-scenarios/claims-ui.spec.mjs
+## xmllint --noout
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ar.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.en.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.es.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.fr.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ru.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.tr.resx
+PASS frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.zh.resx
+PASS (wrapped fragment) _shared-integration/sharedresource-nav-keys/SharedResource.ar.resx.fragment.xml
+PASS (wrapped fragment) _shared-integration/sharedresource-nav-keys/SharedResource.en.resx.fragment.xml
+PASS (wrapped fragment) _shared-integration/sharedresource-nav-keys/SharedResource.es.resx.fragment.xml
+PASS (wrapped fragment) _shared-integration/sharedresource-nav-keys/SharedResource.fr.resx.fragment.xml
+PASS (wrapped fragment) _shared-integration/sharedresource-nav-keys/SharedResource.ru.resx.fragment.xml
+PASS (wrapped fragment) _shared-integration/sharedresource-nav-keys/SharedResource.tr.resx.fragment.xml
+PASS (wrapped fragment) _shared-integration/sharedresource-nav-keys/SharedResource.zh.resx.fragment.xml
+## json
+PASS gateway fragment JSON
+
+## 2. Resx parity (ClaimsIndex.{en,tr,fr,es,zh,ar,ru}.resx)
+ar: keys=95 parity=PASS empty=0 echo=0 same-as-en=0 []
+en: keys=95 parity=PASS empty=0 echo=0 same-as-en=0 []
+es: keys=95 parity=PASS empty=0 echo=0 same-as-en=0 []
+fr: keys=95 parity=PASS empty=0 echo=0 same-as-en=1 ['ActionsHeader']
+ru: keys=95 parity=PASS empty=0 echo=0 same-as-en=0 []
+tr: keys=95 parity=PASS empty=0 echo=0 same-as-en=0 []
+zh: keys=95 parity=PASS empty=0 echo=0 same-as-en=0 []
+PARITY 7/7 PASS
+view keys used 109 missing in resx ['Apply', 'AreYouSure', 'Cancel', 'Close', 'ColumnVisibility', 'Copy', 'ErrorOccurred', 'Filter', 'RecordSaved', 'Reset', 'SaveView', 'Search', 'ShowAll', 'Status']
+(the 14 'missing' names are SharedLocalizer keys in SharedResource — the regex also matched SharedLocalizer[…]; checked one by one: all SharedLocalizer-only)
+(fr ActionsHeader = 'Actions' is the correct French word)
+
+## 3. Error-code set: index.js ERROR_KEY vs pack §32.8 vs contract claims-semantics-v3.0.0.md §D187-05
+ui=18 pack=18 contract=18; ui==pack EQUAL; ui==contract EQUAL
+CLAIM_AMOUNT_INVALID CLAIM_APPROVAL_AMOUNT_INVALID CLAIM_APPROVED_AMOUNT_NOT_ALLOWED CLAIM_CARRIER_MISMATCH CLAIM_CORRELATION_MISMATCH CLAIM_NOT_FOUND CLAIM_REFERENCE_INCOMPLETE CLAIM_REFERENCE_INVALID CLAIM_REFERENCE_UNAVAILABLE CLAIM_SHIPMENT_INELIGIBLE CLAIM_STORAGE_UNAVAILABLE FORBIDDEN IDEMPOTENCY_KEY_REUSED INTERNAL_ERROR INVALID_CLAIM_TRANSITION INVALID_REQUEST UNAUTHENTICATED UNSUPPORTED_MEDIA_TYPE
+
+## 4. Greps
+## native dialogs (alert/confirm/prompt)
+0 hits PASS
+## inline handlers (on*=)
+0 hits PASS
+## browser storage
+0 hits PASS
+## hard-coded English in user-facing JS sinks
+wwwroot/assets/js/SupplyChain/Claims/index.js:425:            showAlert('formClaimAlert', { status: 400, code: 'INVALID_REQUEST', reference: '' });
+wwwroot/assets/js/SupplyChain/Claims/index.js:439:                showAlert('formClaimAlert', failure); // 404: one safe text; no shipment data kept in the DOM
+wwwroot/assets/js/SupplyChain/Claims/index.js:446:                showAlert('formClaimAlert', { status: 502, code: 'CLAIM_REFERENCE_INVALID', reference: response.headers.get('X-Correlation-Id') || '' });
+wwwroot/assets/js/SupplyChain/Claims/index.js:469:            showAlert('formClaimAlert', networkFailure('CLAIM_REFERENCE_UNAVAILABLE'));
+wwwroot/assets/js/SupplyChain/Claims/index.js:496:            showAlert('formClaimAlert', t('ResolveFirst'));
+wwwroot/assets/js/SupplyChain/Claims/index.js:505:            showAlert('formClaimAlert', createIntent.blockedFailure);
+wwwroot/assets/js/SupplyChain/Claims/index.js:530:            showAlert('formClaimAlert', networkFailure('CLAIM_STORAGE_UNAVAILABLE'));
+wwwroot/assets/js/SupplyChain/Claims/index.js:554:                showAlert('formClaimAlert', failure);
+wwwroot/assets/js/SupplyChain/Claims/index.js:559:                showAlert('formClaimAlert', failure);
+wwwroot/assets/js/SupplyChain/Claims/index.js:641:            showAlert('formClaimTransitionAlert', transitionIntent.blockedFailure);
+wwwroot/assets/js/SupplyChain/Claims/index.js:669:            showAlert('formClaimTransitionAlert', networkFailure('CLAIM_STORAGE_UNAVAILABLE'));
+wwwroot/assets/js/SupplyChain/Claims/index.js:691:                showAlert('formClaimTransitionAlert', failure);
+wwwroot/assets/js/SupplyChain/Claims/index.js:700:                showAlert('formClaimTransitionAlert', failure);
+wwwroot/assets/js/SupplyChain/Claims/index.js:703:                showAlert('formClaimTransitionAlert', failure);
+## hard-coded English text nodes in views (>[Word ...]<)
+0 hits PASS
+## token / direct service ports
+0 hits PASS
+## English literal fallbacks in JS (info)
+wwwroot/assets/js/SupplyChain/Claims/index.js:879:            viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || 'Default').trim(),
+(showAlert hits: first argument is an element id; messages come from t()/error-code objects → 0 real hard-coded English)
+('Default' = golden-slim Save View name fallback required by verify_datatable_page.py; never displayed)
+
+## 5. verify_datatable_page.py . --area SupplyChain --module Claims --reference slim (record only, CU-SCR-06)
+Passed: 70
+Failed: 21
+Result: FAIL
+v1 (Q64b): Passed 63 / Failed 27
+[FAIL] personalizationClient sends tenant header only for tenant users
+[FAIL] _IndexL10n.cshtml provides Active
+[FAIL] _IndexL10n.cshtml provides Passive
+[FAIL] _IndexL10n.cshtml provides Unknown
+[FAIL] _IndexL10n.cshtml provides Actions
+[FAIL] _IndexL10n.cshtml provides Edit
+[FAIL] _IndexL10n.cshtml provides ViewDetails
+[FAIL] _IndexL10n.cshtml provides BulkDelete
+[FAIL] _IndexL10n.cshtml provides BulkDeleteConfirm
+[FAIL] _IndexL10n.cshtml provides Export
+[FAIL] _IndexL10n.cshtml provides Import
+[FAIL] index.js defines getAuthHeaders()
+[FAIL] index.js uses getAuthHeaders() in fetch headers
+[FAIL] direct-gateway profile uses window.API service base
+[FAIL] _DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)
+[FAIL] index.js declares bulk action config (bulkOptions / bulkBarSelector)
+[FAIL] index.js wires bulk selection (getSelectedIds(...) or onBulkAction)
+[FAIL] index.js calls bulk endpoint (.../bulk)
+[FAIL] index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])
+[FAIL] index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)
+[FAIL] index.js wires clear-selection (clearSelectionSelector or clearSelection())
+
+## 5b. same with --api-profile proxy
+Passed: 72
+Failed: 20

@@ -1,0 +1,1 @@
+{"at": "16:20:53", "method": "POST", "path": "/api/internal/module-catalog/register-manifest", "header_names": ["Content-Type", "Host", "Transfer-Encoding", "X-Internal-Api-Key"], "X-Internal-Api-Key": "<redacted len=45 sha8=e96ab27d>", "moduleCode": "shipment-tracking-pod", "pages": ["SHIPMENTS", "SHIPMENT_CREATE", "SHIPMENT_DETAILS"], "body_bytes": 1920}

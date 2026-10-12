@@ -543,6 +543,11 @@ public static class DataSeeder
             new("crm", "planned-visit", "read", "CRM Planned Visit Read", "Permission to view CRM planned visits and the planned-visit contract", moduleOverride: "crm-planned-visit"),
             new("crm", "planned-visit", "manage", "CRM Planned Visit Manage", "Permission to create/update/cancel/archive CRM planned visits", moduleOverride: "crm-planned-visit"),
             new("crm", "planned-visit", "confirm", "CRM Planned Visit Confirm", "Permission to confirm CRM planned visits (separate from manage for SoD)", moduleOverride: "crm-planned-visit"),
+            // WP-VP-2 (B-1) — Tier-3 tenant-wide reads of the visit features. EXPLICIT-GRANT-ONLY
+            // (ExplicitGrantOnlyPermissions): seeded into the catalog so an authorized person can assign them, granted to
+            // NO role here or by any automatic path. Without them a rep sees only their own visits, plans and reports.
+            new("crm", "planned-visit", "read-all", "CRM Planned Visit Read All", "Permission to read every planned visit and visit report in the tenant and act on them with the existing write permissions (explicit grant only; never granted automatically)", moduleOverride: "crm-planned-visit"),
+            new("crm", "visit-plan", "read-all", "CRM Visit Plan Read All", "Permission to read, preview, apply and re-plan every visit planning session in the tenant and plan for another representative (explicit grant only; never granted automatically)", moduleOverride: "crm-visit-plan"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),

@@ -1,0 +1,13 @@
+path	sha256
+docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/REPORT.md	c580f62b0a9351d260e7c5cc930b0ec4882758d43d3c19bd27e0ad9b1a67460f
+docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/EFFORT.tsv	5bf33e91688c2ef9917c2bbda2c7260332610158f9d0a2f600b6ff057426ae83
+docs/roadmap/plans/mvp6-loads-ui-scope-01/SCOPE.md	ce1cadef9bd0b10ecdf0a7159fbc88ac4f6d423e33fe8040d0231e567d5f7b65
+docs/roadmap/plans/mvp6-loads-ui-scope-01/ACCEPTANCE.md	d11de452a2549f5fec896ad12ea35f9ee3b68504616a6b9351b4ab8105a23bd0
+docs/analysis/contracts/shipment-bundle.openapi.yaml	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c
+docs/analysis/contracts/loads-semantics-v2.0.0.md	a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1
+docs/analysis/contracts/shipment-root-semantics-v3.0.0.md	7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af
+execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md	4868669307a1cd37b88320f27d7c0c2e1c1ce8ed649f48c067cbedf20307536f
+docs/records/audits/2026-09/mvp6-loads-r2-publication-2026-09-18/README.md	048d5dfebb754aeb9a8dbd5d2928db7d52c5b31415d9e22f233c9f3b2f30dfda
+docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-02/SOP-22.md	7c70d81ddb0256478bf580eedd3b4fd0dc9490748b70a5e7fb9dd0860dd5468e
+docs/records/audits/2026-09/mvp6-root-r2-producer-ct-accept-01/README.md	4cca61682757ae1a3f615cfa40027fd8a4dc39fe38f6a2421a64c092b80c4102
+docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/SOP-22.md	028e2dc0d35dba692efcfd5ffc9c223ef90c5315f3329bf605c9b5e6d5f9e9fd

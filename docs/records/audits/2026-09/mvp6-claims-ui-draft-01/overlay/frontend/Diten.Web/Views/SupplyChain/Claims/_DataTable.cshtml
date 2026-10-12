@@ -1,0 +1,50 @@
+@using Diten.Web.Views.SupplyChain.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Pack §32.2: every Claims .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="card">
+    @* State 1 — skeleton (first load only; never a spinner or "Loading" text) *@
+    <div id="skeleton-loader" class="backbone-skeleton p-4" aria-hidden="true">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    @* State 3 — error (distinct from empty; a malformed envelope lands here, never as an empty table) *@
+    <div id="claims-error-state" class="p-4 text-center d-none" role="alert" aria-live="assertive">
+        <i class="bx bx-error-circle fs-2 text-danger d-block mb-2" aria-hidden="true"></i>
+        <p class="mb-1 fw-medium" id="claims-error-message">@Localizer["ListErrorState"]</p>
+        <p class="mb-3 small text-muted d-none" id="claims-error-reference">
+            <span>@Localizer["SupportReference"]</span>:
+            <bdi dir="ltr" class="font-monospace" id="claims-error-reference-value"></bdi>
+            <button type="button" class="btn btn-sm btn-icon btn-text-secondary js-copy-value" id="claims-error-reference-copy"
+                    aria-label="@SharedLocalizer["Copy"]"><i class="bx bx-copy" aria-hidden="true"></i></button>
+        </p>
+        <button type="button" class="btn btn-sm btn-label-primary" id="btnClaimsRetry">@Localizer["Retry"]</button>
+    </div>
+
+    @* State 2 — table (empty text comes from L10n EmptyState via DataTables language.emptyTable) *@
+    <div class="card-datatable table-responsive d-none" id="claims-table-host">
+        <table id="dt-claims" data-dt-standard="v2" class="datatables-claims table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["ClaimNumber"]</th>
+                    <th>@Localizer["ShipmentId"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="text-end">@Localizer["ClaimedAmount"]</th>
+                    <th>@Localizer["CurrencyLabel"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["ActionsHeader"]</th>
+                </tr>
+            </thead>
+        </table>
+        <p class="small text-muted px-4 py-2 mb-0" id="claims-total" aria-live="polite"></p>
+    </div>
+</div>

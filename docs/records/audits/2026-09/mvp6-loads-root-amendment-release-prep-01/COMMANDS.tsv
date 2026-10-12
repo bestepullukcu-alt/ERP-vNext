@@ -1,0 +1,11 @@
+step	command_or_method	exit	result
+hash_preflight	shasum -a 256 canonical candidate-02 and re-VER artifacts	0	All controlling hashes matched
+artifact_build	Copy candidate-02 and change only final metadata/name pointers	0	Final-proposed artifact pair created
+patch_build	Deterministic unified diff from canonical preimages	0	publication.patch and candidate delta created
+disposable_apply	git apply --check publication.patch; git apply publication.patch	0/0	Applied bytes equal final-proposed artifacts; v2 annex preserved
+oas31_meta	openapi-spec-validator 0.7.2 packaged OpenAPI 3.1 schema	0	0 errors
+oas31_semantic	OpenAPIV31SpecValidator	0	0 errors
+ref_example	Local ref resolution plus Draft202012 schema-bound examples	0	298 refs; 236 examples
+root_fixtures	Draft202012 LoadSummary validation	0	missing/null/valid/nil accepted; malformed rejected
+semantic_diff	Parsed candidate-02 versus final-proposed comparison	0	Only version/status/Loads annex pointer-description metadata differs
+

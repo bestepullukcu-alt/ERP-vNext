@@ -1,0 +1,4 @@
+id	module	scope	state	numeric_treatment	reason
+0185-RS-05	0185	Chosen authoritative Load-root read implementation	MANDATORY_UNDECIDED	UNESTIMATED	Exact producer-owned access shape remains undecided
+0185-RS-06	0185	Separate Loads detail surface	OPEN_SCOPE_DECISION	UNESTIMATED	No approved full-MVP disposition
+0185-RS-07	0185	Searchable reference lookup UX	OPEN_SCOPE_DECISION	UNESTIMATED	Supported producer operations and ownership remain unmapped

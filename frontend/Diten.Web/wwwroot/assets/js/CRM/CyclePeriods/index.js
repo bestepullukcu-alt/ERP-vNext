@@ -377,47 +377,45 @@
     // silently picking the first candidate would hide a data defect behind a plausible label. The page asks WITHOUT
     // naming a country, legal entity or business unit, so only tenant-wide periods answer — a level nobody named must
     // not leak into a general-purpose badge.
-    const refreshCurrentPeriod = async () => {
-        const badgeEl = document.getElementById('currentPeriodBadge');
-        const scopeEl = document.getElementById('currentPeriodScope');
-        const windowEl = document.getElementById('currentPeriodWindow');
-        if (!badgeEl) return;
-        const setScope = value => {
-            if (!scopeEl) return;
-            scopeEl.classList.toggle('d-none', !value);
-            scopeEl.textContent = value ? scopeLabel(value) : '';
-        };
-        try {
-            const at = encodeURIComponent(new Date().toISOString());
-            const res = await envelope(await fetch(`${endpoint}/periods/resolve-active?at=${at}`, { credentials: 'same-origin', headers: getAuthHeaders() }));
-            if (res?.outcome === 'resolved' && res.period) {
-                badgeEl.className = 'badge bg-label-success';
-                badgeEl.textContent = `${res.period.cycleCode} · ${res.period.cycleName}`;
-                setScope(res.resolvedScopeType);
-                if (windowEl) windowEl.textContent = `${day(res.period.startDate)} – ${day(res.period.endDate)}`;
-            } else if (res?.outcome === 'ambiguous') {
-                badgeEl.className = 'badge bg-label-warning';
-                badgeEl.textContent = L.AmbiguousPeriod;
-                setScope(res.resolvedScopeType);
-                if (windowEl) windowEl.textContent = res.reason || '';
-            } else {
-                badgeEl.className = 'badge bg-label-secondary';
-                badgeEl.textContent = L.NoActivePeriod;
-                setScope(null);
-                if (windowEl) windowEl.textContent = '';
-            }
-        } catch (error) {
-            badgeEl.className = 'badge bg-label-secondary';
-            badgeEl.textContent = L.NotAvailable;
-            setScope(null);
+    // WP-CYC-UI-FIX-2 — "today's active periods": every active period covering today, at every scope level, as the
+    // overview computed them from the rows it already read (CyclePeriodScreenRules.ActiveOn). The old badge asked
+    // resolve-active WITHOUT a unit, which only looks at the tenant-wide level, and said "no active period" while a
+    // country-scoped one was in force. Plain text only.
+    const renderTodayActive = items => {
+        const host = document.getElementById('todayActivePeriods');
+        if (!host) return;
+        host.textContent = '';
+        if (items === null) {
+            const na = document.createElement('span');
+            na.className = 'badge bg-label-secondary';
+            na.textContent = L.NotAvailable || '—';
+            host.appendChild(na);
+            return;
         }
+        if (!items.length) {
+            const none = document.createElement('span');
+            none.className = 'badge bg-label-secondary';
+            none.textContent = L.NoActivePeriod || '—';
+            host.appendChild(none);
+            return;
+        }
+        items.forEach(item => {
+            const link = document.createElement('a');
+            link.className = 'badge bg-label-success text-decoration-none';
+            link.href = `${pageRoot}/Details/${encodeURIComponent(item.cyclePeriodId)}`;
+            // "Ülke TR · tr-2026-q4" — the scope level, its reference (none for tenant-wide), then the period code.
+            const scope = [scopeLabel(item.scopeType), item.scopeRef].filter(Boolean).join(' ');
+            link.textContent = `${scope} · ${item.cycleCode}`;
+            link.title = `${item.cycleName || ''} · ${day(item.startDate)} – ${day(item.endDate)}`;
+            host.appendChild(link);
+        });
     };
 
     const reload = async () => {
         allRows = await fetchRows();
         if (dt) { dt.clear(); dt.rows.add(allRows).draw(false); }
         loadFilterOptions();
-        await Promise.all([refreshCurrentPeriod(), refreshOverview()]);
+        await refreshOverview();
     };
 
     // ── WP-CYC-UI-1: overview (timeline + band) ─────────────────────────────────────────────────────────────
@@ -480,6 +478,23 @@
                 + `<div class="cp-tl-track" style="min-block-size:${height}rem">${gridlines}${marks}${bars}${today}</div>`;
         }).join('');
         grid.innerHTML = head + rows;
+        timelineCentred = false;
+        centreTimelineOnToday();
+    };
+
+    // WP-CYC-UI-FIX-2 — the first time a freshly drawn timeline is VISIBLE, scroll it so today's line sits in the middle
+    // of the visible area. The view is hidden by default (no widths to measure), so this also runs when the view is
+    // switched on. The delta is measured in PHYSICAL pixels (S.timelineCentreDelta) and applied with scrollBy, which a
+    // right-to-left page interprets the same way — no RTL branch, no negative-scrollLeft browser quirks.
+    let timelineCentred = false;
+    const centreTimelineOnToday = () => {
+        if (timelineCentred) return;
+        const scroller = document.querySelector('#cyclePeriodsTimelineView .cp-timeline-scroll');
+        const todayLine = document.querySelector('#timelineGrid .cp-today');
+        if (!scroller || !todayLine || scroller.clientWidth === 0) return;
+        const delta = S.timelineCentreDelta(todayLine.getBoundingClientRect(), scroller.getBoundingClientRect());
+        if (delta !== 0) scroller.scrollBy({ left: delta, behavior: 'auto' });
+        timelineCentred = true;
     };
     let overviewSeq = 0;
     const refreshOverview = async () => {
@@ -493,8 +508,10 @@
             if (seq !== overviewSeq) return;
             renderTimeline(data?.timeline);
             renderBand(data?.openWithoutCapacity || []);
+            renderTodayActive(data?.todayActive || []);
         } catch (e) {
             if (seq !== overviewSeq) return;
+            renderTodayActive(null);
             error?.classList.remove('d-none');
             document.getElementById('timelineGrid')?.classList.add('d-none');
         } finally {
@@ -513,6 +530,7 @@
             b?.setAttribute('aria-pressed', String(on));
         });
         if (!timeline) dt?.columns?.adjust?.();
+        if (timeline) centreTimelineOnToday();
     };
 
     // ── finder (K-6) ────────────────────────────────────────────────────────────────────────────────────────
@@ -581,7 +599,7 @@
                 window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount());
                 if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
             });
-            await Promise.all([refreshCurrentPeriod(), refreshOverview()]);
+            await refreshOverview();
             openFromQuery();
         } catch (error) {
             window.showToast?.(error.message || L.ErrorOccurred, 'error');
@@ -735,6 +753,13 @@
         const date = document.getElementById('finderDate');
         if (open && date && !date.value) date.value = S.isoDay(new Date());
         if (open) document.getElementById('finderLevel')?.focus();
+    });
+    // The "today" box links to the finder: open it (if closed) and bring it into view.
+    document.getElementById('todayFinderLink')?.addEventListener('click', () => {
+        const card = document.getElementById('finderCard');
+        if (card?.classList.contains('d-none')) document.getElementById('btnFinderToggle')?.click();
+        card?.scrollIntoView({ block: 'nearest' });
+        document.getElementById('finderLevel')?.focus();
     });
     document.getElementById('finderLevel')?.addEventListener('change', applyFinderLevel);
     document.getElementById('finderForm')?.addEventListener('submit', event => { event.preventDefault(); void runFinder(); });

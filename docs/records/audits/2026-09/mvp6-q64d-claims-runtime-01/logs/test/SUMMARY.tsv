@@ -1,0 +1,4 @@
+suite	filter	exit	summary
+supplychain-claims	FullyQualifiedName~Diten.SupplyChainService.Tests.Claims.|FullyQualifiedName~ClaimsManagementManifestProvider	1	Failed!  - Failed:     1, Passed:   137, Skipped:     0, Total:   138, Duration: 1 s - Diten.SupplyChainService.Tests.dll (net8.0)
+web-tests-all	(all)	0	Passed!  - Failed:     0, Passed:   242, Skipped:     0, Total:   242, Duration: 8 s - Diten.Web.Tests.dll (net8.0)
+architecture	(all)	1	Failed!  - Failed:     3, Passed:    15, Skipped:     0, Total:    18, Duration: 3 s - TenantArchitecture.ArchitectureTests.dll (net8.0)

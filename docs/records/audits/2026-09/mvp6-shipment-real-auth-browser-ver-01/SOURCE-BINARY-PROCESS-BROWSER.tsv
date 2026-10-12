@@ -1,0 +1,11 @@
+component	source_binding	binary_sha256	process_or_surface	result
+Shipment source	354-entry manifest 7b6d2f6a679275b74ab88989f5ca943b139e7f1a365b5ab99d6f1285ceb1acae	-	354/354 exact	PASS
+Auth successor	22-entry manifest b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731	-	22/22 exact	PASS
+Auth	final 22-path source	740ad43057e9327658c204f0d90e8823096207e7c8499ef52b06ab25a84c0ece	127.0.0.1:5856; fresh login	PASS
+Platform	disposable 354-source checkout	8240d726cf60bf4fb4cf9e6085894f61d0ff412f47ef6fe09fb51d3248bf06dd	127.0.0.1:5857	aggregate health 503 observed
+MDM	final 22-path source	54efa0b7745c571279663caf3f93cab83f4682400f0275be1c3bb1f86e12db06	127.0.0.1:5859	PASS
+SupplyChain	final 354-source set	95701b99a364f2555df19f15d1f0ced30387c0a1d2cdd0ab6c91553aed32cba7	127.0.0.1:5861; restarted same binary/DB	PASS
+Gateway	disposable integration source	9b5e6793fc44804e759c749d3b96e007e5e96984fc1af6e39d84d1bb4056440a	127.0.0.1:5800; runtime-only lane destinations	PASS
+Web	final UI source	de823e12149920eb533a903595da4cfdae7a70cb4570fbdff4a4de0b596e9aca	127.0.0.1:5801; IAB tab 2	REWORK findings
+Mongo	DB-010 lane fixture	N/A	127.0.0.1:41994 rsShipmentBrowserVer01 PRIMARY	PASS
+

@@ -1,0 +1,12 @@
+using System.Diagnostics;
+// Q448 probe: how early can `await Task.Delay(n)` complete, measured with Stopwatch exactly as PerformanceBehavior does?
+var rows = new List<(int Delay, double Elapsed)>();
+for (var rep = 0; rep < 60; rep++)
+    foreach (var delay in Enumerable.Range(1, 20).Select(i => i * 3))
+    {
+        var watch = Stopwatch.StartNew(); await Task.Delay(delay); rows.Add((delay, watch.Elapsed.TotalMilliseconds));
+    }
+var early = rows.Select(r => r.Elapsed - r.Delay).ToArray();
+Console.WriteLine($"samples={rows.Count} os={Environment.OSVersion} stopwatchHiRes={Stopwatch.IsHighResolution}");
+Console.WriteLine($"elapsed-requested ms: min={early.Min():F3} p1={early.OrderBy(x => x).ElementAt(rows.Count / 100):F3} median={early.OrderBy(x => x).ElementAt(rows.Count / 2):F3} max={early.Max():F3}");
+Console.WriteLine($"early returns (elapsed < requested): {early.Count(x => x < 0)} of {rows.Count}; worst for 57 ms: {rows.Where(r => r.Delay == 57).Min(r => r.Elapsed):F3} ms");

@@ -1,0 +1,6 @@
+# verify from: repository root — shasum -a 256 -c docs/records/audits/2026-10/mvp6-q450-dcp009-status-01/ARTIFACTS.sha256
+# mvp6-q450-dcp009-status-01 · generated 2026-10-05 01:16:22 +0300 (Europe/Istanbul) · start 2026-10-05 01:08:44 +03 · HEAD cea01354e · staged 0
+fd7364c04f756e57e3cc85b0e429f8aacf93758d9802efeccf4d212ed4ebb51f  execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
+0f3cfa134fe2da07b8032d2b7004be41ff4ec6cd144a87ac605c81ed06c8777d  docs/records/audits/2026-10/mvp6-q450-dcp009-status-01/REPORT.md
+95fe9d2b842c7cec17caee757a42acf0dc48050578c7af1917e998afb8eae183  docs/records/audits/2026-10/mvp6-q450-dcp009-status-01/evidence/DCP-009.diff
+9e62fc9a471e8cddb5cd159fd2272ffe0406889f1fe5ea120152c640fdaa3fe2  docs/records/audits/2026-10/mvp6-q450-dcp009-status-01/evidence/measurements.txt

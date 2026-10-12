@@ -1,0 +1,60 @@
+# MVP6-MOD0190-0192-DISPATCH-PREFLIGHT-01 — SOP §22
+
+**Verdict: PREPARED / DEV HELD.** MOD-0190 and MOD-0192 have disjoint, source-bound prospective core scopes. Their existing draft packs and historical proposed deltas are not promoted. This is Phase 1.5 technical planning, not Phase 1.5 owner approval, contract publication, runtime authorization or E4.
+
+## Preflight and exact inputs
+
+Repository `/Users/natig/Projects/ERP-vNext-recovery`, branch `feature/mvp6-logistics`, HEAD `4a8d4d4b339528a88e6220fb8402e5a2c771136c`. At start, `git status --short` had 183 rows. SupplyChain source inventory: 79 tracked files, 93 untracked files, of which five tracked files have working-tree modifications. Current `Program.cs` SHA-256 `7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8`; it is shared/protected, not a core-lane write. No existing `Features/SandopPlans/**` or `Features/CapacityPlans/**` files were found. Both pack frontmatters remain `draft`. Fresh DCP-002 commands for canonical names returned `OK` for MOD-0190 and MOD-0192.
+
+The common [Phase 1.5 mapping](../mvp6-mod0190-0192-phase15-gap-check-01/REPORT.md) is E1 design evidence. Final-pack-01 proposed YAML SHA-256 **`9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3`**, annex SHA-256 **`e2599fd9b8cc7cf7e4a39b4d5d1bccb3fa985c156fec6c6082f5227334770442`**, publication patch SHA-256 **`0ebc6a6fa6a867170b1d32545295e88676d74fb47794879a671c9f6c0375bd04`**. [Independent final VER](../../../records/audits/2026-09/mvp6-sandop-capacity-final-ver-01/SOP-22.md) finds that trio technically valid as a decision target but returns **PARTIAL** on authority; another final package has the same YAML and a different annex/patch. The owner has since said in this conversation to prepare `2.0.0` / wire `v1` and confirmed no repo-external consumers. That authorization is for final-byte preparation, **not** exact-hash consent or canonical publication. This preflight pins final-pack-01 bytes only as a proposed target; later publication must supply the actual canonical YAML and annex hashes. Canonical remains `1.0.0` SHA-256 `c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c`; DEMAND v1 SHA-256 `3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d`.
+
+## Pack patch and path disposition
+
+Historical SPEC-01 patches were run with `git apply --check` and `git apply` against **copies of the current working-tree pack bytes**, not HEAD-only baselines. Both exited 0. The outputs are [0190 draft preview](MOD-0190-HISTORICAL-PATCH-APPLIED-DRAFT.md) and [0192 draft preview](MOD-0192-HISTORICAL-PATCH-APPLIED-DRAFT.md). These are historical delta previews, **not** final amended packs: they still contain `status:draft`, `Trimmed, 1..200`, live Workflow/Event Bus or old SANDOP v1 wording, and cannot override the final proposed contract/approved bounded scope. No pseudo-hunk was used.
+
+| Module | Current pack SHA-256 | Historical patch SHA-256 | Applied preview SHA-256 | Exact prospective core paths |
+|---|---|---|---|---:|
+| MOD-0190 | `637690f32c1fa03e3039a4542bd53f7bb9b12f6b18d856a7d0e1f23d740c6877` | `21e1302f443f737d8e19462cd648809657b87f3e0e3dc0dc71a8ee5ffab71dae` | `887f2c681f6f23bdab48dc6a6714c710fedffeb83d1ec4bc22a1a5518839a95d` | **38** |
+| MOD-0192 | `edd550b84451af082b934b392cd34f7dc24dd6e462f7e1d9ee0e03c21b4469f7` | `dd028176a9a4d214f4785b36c5078cd46ff2c04ccd7da7cdfdce03ffbec3f2d2` | `d8db9dd321de3ead88914affc974bb9ffb70c5b64bbdced369433709703f641b` | **43** |
+
+The [0190 path file](MOD-0190-OWNED.tsv) and [0192 path file](MOD-0192-OWNED.tsv) reproduce the earlier 81 prospective paths exactly: 38/43 unique, **zero intersection**. They are not an authorized runtime allowlist until pack promotion. Shared/protected surfaces excluded from both: `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs`, common project/DI registration and pipeline behavior, shared permission catalog/seed, gateway `ocelot.json`, canonical SANDOP/DEMAND, `.antigravity/**`, each peer's feature root and all 0183–0187 feature roots. A **single CT-assigned integration-agent lane** will own later Program.cs/DI/permission/gateway changes with a separately approved baseline→patch→target. It must wait for real compiled feature types; no speculative composition patch is applied here.
+
+## Phase 1.5: technical mapping versus approval
+
+The nine checks follow `.antigravity/workflows/add-module.md` Phase 1.5. `MAPPED` means a plan/source pointer, not code parity or approved status. Detailed entity, wire, index, transaction and acceptance mapping remains in the prior report; it is not recreated here.
+
+| Check | MOD-0190 | MOD-0192 | Remaining gate |
+|---|---|---|---|
+| 1 All entity/wire fields | MAPPED: Plan, Snapshot, SignOff, provenance, nullable currentSnapshotId and base/scope fields; final YAML request required sets in prior report. | MAPPED: Plan, Scenario, Evaluation, decimal strings, provenance, nullable completedAt and storage-only lease/fence/slot. | Real entity/serializer parity and final canonical hash in DEV/VER. |
+| 2 Naming | MAPPED: `SandopPlans` feature root and wire `sandopPlanId`→internal `Id`; no invented field renames. | MAPPED: `CapacityPlans` root and wire `capacityPlanId`→internal `Id`; storage-only fields stay off wire. | Compare compiled names to final YAML. |
+| 3 Repository isolation/soft delete | PLAN: scoped TenantId+LegalEntityId+IsDeleted filters, foreign target 404, tenant-first proposed indexes and scoped receipts. | Same filters for plan/scenario/evaluation/slot/claim/renew/terminal; stale fence CAS. | Real repository/index and cross-scope E4. |
+| 4 Entity base | PLAN: existing SupplyChain `EntityBase` + module LegalEntityId. | Same; lease/fence are feature-local storage fields. | Inspect actual implemented types; no global catalog exception. |
+| 5 Separate CQRS files | PLAN: 3 commands, 3 queries, matching handlers/validators in [38-path map](MOD-0190-OWNED.tsv). | PLAN: 3 commands, 3 queries, matching handlers/validators plus feature-local executor in [43-path map](MOD-0192-OWNED.tsv). | Actual file/compilation parity after authorized DEV. |
+| 6 DataTable golden reference | **N/A:** backend-only `shell:none`, form count 0. | **N/A:** same. | UI requires a different approved scope. |
+| 7 Compact form sections | **N/A:** no Razor create/edit/details. | **N/A:** same. | None in this slice. |
+| 8 Required/null parity | PLAN: final YAML/wire request + nullable response fields, no Web/Razor/tracker. Exact parsed key/name `minLength:1` is not trimmed/capped at 200. | PLAN: final YAML required/nullable and decimal string fields, no Web/Razor/tracker; exact parsed key. | Published YAML/annex uptake, HTTP validation/negative tests. |
+| 9 Platform lookup | **N/A:** no platform UI/lookup; DEMAND version check is a test-only scoped fixture, not a new endpoint. | **N/A:** no lookup; DEMAND and constraint references use scoped fixtures, not live services. | Fixture scope/negative test E4; live producer proof excluded. |
+
+Technical addenda: physical index names/keys, multi-document atomic write sets, audit/receipt/Pending outbox and acceptance→test cases are mapped in the prior report. The 0192 [local Mongo 8.0.18 smoke](../mvp6-mod0190-0192-phase15-gap-check-01/MONGO-SERVER-TIME-SMOKE.json) establishes only `$$NOW`/`$dateAdd` expression feasibility. It is not replica-set transaction, lease race, C# driver, process restart or E4 acceptance. Executor X01–X10 and two-process fencing remain DEV/independent VER duties. DB-010 means one fixed isolated database per lane with per-test tenant IDs, not a new DB per test.
+
+## Approved scope boundaries and unresolved authority
+
+The [bounded-scope record](../../../records/audits/2026-09/mvp6-mod0190-0192-scope-disposition-01/README.md) preserves test-only exact DEMAND/constraint fixtures, trusted JWT actor without Workflow integration, Pending outbox with no publisher, and fixture-literal Capacity terminal results. The proposed final annex documents the D190/C192 lifecycle/replay and executor design as approved **for candidate preparation**, not runtime. This preflight does not reopen them or treat a proposed annex as canonical. `10s/30s/3` are lease/attempt policy values, not recovery deadline or exactly-once calculation. Neither module creates a DEMAND endpoint, Event Bus worker/publisher or general optimizer.
+
+| Gate before parallel **core DEV** | Current evidence | Required disposition |
+|---|---|---|
+| Final contract | Exact final-pack-01 YAML/annex technically verified; canonical still 1.0.0. | Final annex choice, exact-hash consumer consent, publication approval and actual canonical two-file hash pin. A major number alone does not negotiate same-route/wire-v1 consumers. |
+| Pack/Phase 1.5 | Both `draft`; patch previews apply but retain stale rules. | Module-pack-author makes a narrow owner-reviewed final delta for each, corrects stale assertions, completes itemized Phase 1.5 with exact final target; owner explicitly promotes each pack and authorizes bounded runtime. No new business decision. |
+| Isolated sources | Separate [0190 input manifest](MOD-0190-INPUTS.tsv) / [archive](MOD-0190-INPUTS.tar.gz) and [0192 manifest](MOD-0192-INPUTS.tsv) / [archive](MOD-0192-INPUTS.tar.gz) preserve current tracked/untracked service bytes. | Before any later worktree setup, recheck current status and these hashes; drift requires new manifest, never silent overwrite. Transfer exact dirty/untracked overlay to registered isolated worktrees and verify every copied hash. |
+| Shared HTTP composition | Current Program.cs is dirty and shared; feature types absent. | One integration owner later receives two core writer-complete manifests, prepares exact shared diff, obtains separate approval and runs combined regression. Core DEV may be parallel only within feature roots after prior gates; HTTP acceptance awaits composition. |
+| Runtime evidence | No 0190/0192 runtime exists. | Independent E4 JWT/HTTP/Mongo/race/restart/failure proof; publisher, live DEMAND/constraints, Workflow, E5/G5 excluded. |
+
+### Transfer and collision plan, for later authorized dispatch only
+
+Each archive contains all **git-visible tracked and untracked** current SupplyChain service files (ignored build outputs excluded), plus module-specific pack/design and common exact contract inputs: 0190 **188 files**, 0192 **190 files**. Tar member SHA-256 was independently compared with every TSV row: **188/188 and 190/190 match**. The two archives overlap intentionally on read-only baseline bytes; their writable feature paths do not. At dispatch: follow GIT-002 to create two **registered** worktrees from the measured HEAD; compare the destination before overlay, extract only listed inputs into each isolated worktree without overwriting unexplained worktree changes, verify TSV hashes, then pin the newly published canonical/annex bytes separately. HEAD-only is insufficient. No worktree or git mutation occurred in this preflight.
+
+Proposed collision-free **test reservation, not active allocation**: 0190 API `127.0.0.1:56190`, isolated Mongo replica `127.0.0.1:57190`, fixed test DB `DitenSupplyChain_Mod0190_Test`; 0192 API `127.0.0.1:56192`, Mongo `127.0.0.1:57192`, DB `DitenSupplyChain_Mod0192_Test`. Check port availability at dispatch, preserve service default 5061 and operational Mongo 27017, use different data dirs, replica-set names, JWT fixture scopes and evidence dirs. Per-test isolation is TenantId/LE, not database proliferation. A collision triggers a recorded reassignment before launch.
+
+## Handoff / no-change boundary
+
+[MOD-0190 DEV](MOD-0190-DEV-v1.0-HELD.md), [MOD-0190 VER](MOD-0190-VER-v1.0-HELD.md), [MOD-0192 DEV](MOD-0192-DEV-v1.0-HELD.md), [MOD-0192 VER](MOD-0192-VER-v1.0-HELD.md) are **HELD drafts**. They cannot be dispatched by this report. Only this owned plan directory was written. No pack, canonical, guard, Program.cs, permission, gateway, runtime, git index or commit/push/stash change was made by this lane. Concurrent checkout activity prevents a whole-repository no-change claim.

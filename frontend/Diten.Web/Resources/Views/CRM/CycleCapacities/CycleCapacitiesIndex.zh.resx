@@ -208,4 +208,11 @@
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>某个月的 FTE 超出范围。</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>该周期已关闭，其产能不可再更改。</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="WfDailyFixedMinutesLegacy" xml:space="preserve"><value>每日固定事项（路程、报告、测验）</value></data>
+  <data name="UnitMinutesPerDay" xml:space="preserve"><value>分钟/天</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>已生成</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>已提交</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="SessionStatus_unknown" xml:space="preserve"><value>未知</value></data>
 </root>

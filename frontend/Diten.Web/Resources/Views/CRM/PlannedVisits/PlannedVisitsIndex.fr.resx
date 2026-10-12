@@ -108,4 +108,7 @@
   <data name="SelectionMode_targeted" xml:space="preserve"><value>Targeted</value></data>
   <data name="AvailabilityWarning" xml:space="preserve"><value>The planned window is outside the contact availability (a warning, not a block).</value></data>
   <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="TargetUnknown" xml:space="preserve"><value>Cible inconnue</value></data>
+  <data name="TargetInactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="ResourceSelfHint" xml:space="preserve"><value>Le représentant connecté ; défini par le système.</value></data>
 </root>

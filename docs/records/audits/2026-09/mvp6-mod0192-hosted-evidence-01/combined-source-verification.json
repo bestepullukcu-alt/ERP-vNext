@@ -1,0 +1,18 @@
+{
+  "checkout": "/private/tmp/mvp6-mod0192-hosted-evidence-01-20260923",
+  "baselineEntries": 379,
+  "capacityEntries": 43,
+  "overlap": 0,
+  "combinedEntries": 422,
+  "programBaseline": "a2a216be15d07fa656f5fd7da43711aa989c4a8d52cd51c58e8ded48d5d735e5",
+  "programTarget": "50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0",
+  "authorizedEvidenceTestDelta": {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs",
+    "baseline": "91999330faf2a50f5ff2cda3595506ecded50d5b87ffb7bf393dd655f71e51db",
+    "target": "2c133ac1b6b431db074b0054b0337bbc3957fce5869c7aca9291454a53681c43"
+  },
+  "binaryEntries": 52,
+  "apiBinarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f",
+  "failures": [],
+  "result": "PASS"
+}

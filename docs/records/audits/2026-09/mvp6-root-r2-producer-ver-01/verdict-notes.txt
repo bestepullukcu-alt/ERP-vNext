@@ -1,0 +1,2 @@
+Root storage/bounded tests and existing Shipment regression passed in hash-identical disposable copy.
+No root-specific HTTP/JWT BSON fixture injection, process-level API capture, or restart probe was executed; the available probes require a live API process and do not themselves implement transport capture. Therefore R03-R09/R12 runtime evidence remains OPEN and this verifier does not claim runtime acceptance.

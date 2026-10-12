@@ -1,0 +1,3 @@
+RED-old-equal-value-check	warning_count=10	[L10N WARNING] Missing localization key: Active | [L10N WARNING] Missing localization key: Actions | [L10N WARNING] Missing localization key: Apply | [L10N WARNING] Missing localization key: Cancel | [L10N WARNING] Missing localization key: Filter | [L10N WARNING] Missing localization key: Passive | [L10N WARNING] Missing localization key: Reset | [L10N WARNING] Missing localization key: Save | [L10N WARNING] Missing localization key: Status | [L10N WARNING] Missing localization key: Unknown
+GREEN-presence-check	warning_count=0	none
+NEGATIVE-missing-Save	warning_count=1	[L10N WARNING] Missing localization key: Save

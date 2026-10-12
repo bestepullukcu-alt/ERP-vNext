@@ -1,0 +1,4 @@
+/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-01/verify_candidate.py:44: DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, in favor of the https://github.com/python-jsonschema/referencing library, which provides more compliant referencing behavior as well as more flexible APIs for customization. A future release will remove RefResolver. Please file a feature request (on referencing) if you are missing an API for the kind of customization you need.
+  resolver=jsonschema.RefResolver.from_schema(b)
+ops 12 refs_resolved 216 examples_checked 93 example_failures 0
+candidate semantic controls PASS; negative mutants rejected: remove-scenario-422, remove-payload-conflict, add-key-maxlength, change-version

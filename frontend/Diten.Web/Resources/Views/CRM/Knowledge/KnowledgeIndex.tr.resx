@@ -190,4 +190,35 @@
   <data name="LinkedClaims" xml:space="preserve"><value>Bağlı iddialar</value></data>
   <data name="NoLinkedClaims" xml:space="preserve"><value>Bu içeriğe bağlı iddia yok.</value></data>
   <data name="ClaimNeedsReview" xml:space="preserve"><value>Gözden geçirilmeli — iddia, bu bağlantı onaylandıktan sonra değişti.</value></data>
+  <data name="ContentType_presentation" xml:space="preserve"><value>Sunum</value></data>
+  <data name="ContentType_brochure" xml:space="preserve"><value>Broşür</value></data>
+  <data name="ContentType_lesson" xml:space="preserve"><value>Ders</value></data>
+  <data name="ContentType_faq" xml:space="preserve"><value>SSS</value></data>
+  <data name="ContentType_clinical-summary" xml:space="preserve"><value>Klinik özet</value></data>
+  <data name="ContentType_objection-handling" xml:space="preserve"><value>İtiraz yönetimi</value></data>
+  <data name="ContentType_quiz" xml:space="preserve"><value>Sınav</value></data>
+  <data name="ContentType_video" xml:space="preserve"><value>Video</value></data>
+  <data name="ContentType_pdf" xml:space="preserve"><value>PDF belge</value></data>
+  <data name="ContentType_html-detail" xml:space="preserve"><value>HTML detay</value></data>
+  <data name="ContentType_sop" xml:space="preserve"><value>Standart işletim prosedürü</value></data>
+  <data name="ContentType_training-material" xml:space="preserve"><value>Eğitim materyali</value></data>
+  <data name="ContentType_message-script" xml:space="preserve"><value>Mesaj metni</value></data>
+  <data name="ContentType_knowledge-article" xml:space="preserve"><value>Bilgi makalesi</value></data>
+  <data name="ContentType_assembled-presentation" xml:space="preserve"><value>Birleştirilmiş sunum</value></data>
+  <data name="ContentStatus_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="ContentStatus_review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="ContentStatus_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="ContentStatus_published" xml:space="preserve"><value>Yayında</value></data>
+  <data name="ContentStatus_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="ContentStatus_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="ContentSource_manual" xml:space="preserve"><value>Manuel</value></data>
+  <data name="ContentSource_campaign" xml:space="preserve"><value>Kampanya</value></data>
+  <data name="ContentSource_legacy-import" xml:space="preserve"><value>Eski sistemden aktarım</value></data>
+  <data name="ContentSource_training" xml:space="preserve"><value>Eğitim</value></data>
+  <data name="ContentSource_external" xml:space="preserve"><value>Harici</value></data>
+  <data name="ContentSource_other" xml:space="preserve"><value>Diğer</value></data>
+  <data name="ContentSource_content-studio" xml:space="preserve"><value>İçerik Stüdyosu</value></data>
+  <data name="ContentConcurrencyConflict" xml:space="preserve"><value>Bu içerik siz düzenlerken başka biri tarafından değiştirildi. Sayfayı yenileyip değişikliklerinizi yeniden uygulayın.</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>Ürün listesi şu anda kullanılamıyor.</value></data>
+  <data name="ProductSearchPlaceholder" xml:space="preserve"><value>Ürün adı veya kodu yazın…</value></data>
 </root>

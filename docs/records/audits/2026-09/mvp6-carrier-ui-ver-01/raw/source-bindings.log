@@ -1,0 +1,12 @@
+snapshot=/private/tmp/mvp6-carrier-ui-ver-01/snapshot
+source_worktree=/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery
+847d4e7aefb8c65f5651336f61a0da2c8baed46109017a692cbf372c345db865  docs/records/audits/2026-09/mvp6-carrier-ui-dev-01/ui-writer/UI-SOURCE-MANIFEST.tsv
+99490b8abfa5a4ff1815adde1b05feb15ea2d54761d48a8512891c74ef82d2b7  docs/records/audits/2026-09/mvp6-carrier-ui-dev-01/ui-writer/UI-SOURCE.patch
+28019ebe9fd6e34ca719d244cc0129fe2046ee0f692a9ffd6a5a6eed16028f3f  execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+ui_rows=21 ui_mismatch=0
+allowlist_diff_exit=0
+shared_rows=18 shared_mismatch=0
+bc_rows=422 shared_overrides=3 layered_mismatch=0
+dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634  /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-bc-integration-successor-01/BC-SUCCESSOR-MANIFEST.tsv
+93ee76da36fd100069878b0e3b0621f6e60884d312d0e142c2e7fcb24267777d  /Users/natig/Projects/ERP-vNext-recovery/docs/roadmap/plans/mvp6-carrier-ui-scope-01/PROPOSED-PACK.patch
+3fdc9188f635a2428e3ffc5c4ef07c9c4b747b2f74a4196d8e6207cd85ccf1d5  /Users/natig/Projects/ERP-vNext-recovery/docs/roadmap/plans/mvp6-carrier-ui-dispatch-close-01/candidates/INTEGRATION-CANDIDATE.patch

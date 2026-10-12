@@ -1,0 +1,12 @@
+key	kind	manifest_source	normalized_from	required_languages	present_in_common_checkout	draft_values_exist	ships_with	owner
+Nav.Domain.SUPPLYCHAINEXECUTION	Domain	Domain: "SupplyChainExecution" (all five providers)	SupplyChainExecution	en,tr,fr,es,zh,ar,ru	0/7	yes: mvp6-carrier-ui-dispatch-close-01/candidates/NAVIGATION-L10N.patch (unapproved)	first provider to ship	integration owner + l10n reviewer
+Nav.Module.SHIPMENTTRACKINGPOD	Module	ModuleCode "shipment-tracking-pod"	shipment-tracking-pod	en,tr,fr,es,zh,ar,ru	0/7	no	MOD-0183 provider	integration owner + l10n reviewer
+Nav.Page.SHIPMENTS	Page	PageCode "SHIPMENTS" (IsNavigationVisible: true)	SHIPMENTS	en,tr,fr,es,zh,ar,ru	0/7	no	MOD-0183 provider	integration owner + l10n reviewer
+Nav.Module.CARRIERMANAGEMENT	Module	ModuleCode "carrier-management"	carrier-management	en,tr,fr,es,zh,ar,ru	0/7	yes: NAVIGATION-L10N.patch (unapproved)	MOD-0184 provider	integration owner + l10n reviewer
+Nav.Page.CARRIERS	Page	PageCode "CARRIERS" (IsNavigationVisible: true)	CARRIERS	en,tr,fr,es,zh,ar,ru	0/7	yes: NAVIGATION-L10N.patch (unapproved)	MOD-0184 provider	integration owner + l10n reviewer
+Nav.Module.ROUTINGLOADPLANNING	Module	ModuleCode "routing-load-planning"	routing-load-planning	en,tr,fr,es,zh,ar,ru	0/7	no	MOD-0185 provider (only after Loads UI approved and built)	integration owner + l10n reviewer
+Nav.Page.LOADS	Page	PageCode "LOADS" (IsNavigationVisible: true)	LOADS	en,tr,fr,es,zh,ar,ru	0/7	no	MOD-0185 provider (only after Loads UI approved and built)	integration owner + l10n reviewer
+Nav.Module.REVERSELOGISTICS	Module	ModuleCode "reverse-logistics"	reverse-logistics	en,tr,fr,es,zh,ar,ru	0/7	no	MOD-0186 provider	integration owner + l10n reviewer
+Nav.Page.RETURNS	Page	PageCode "RETURNS" (IsNavigationVisible: true)	RETURNS	en,tr,fr,es,zh,ar,ru	0/7	no	MOD-0186 provider	integration owner + l10n reviewer
+Nav.Module.CLAIMSMANAGEMENT	Module	ModuleCode "claims-management"	claims-management	en,tr,fr,es,zh,ar,ru	0/7	no	MOD-0187 provider	integration owner + l10n reviewer
+Nav.Page.CLAIMS	Page	PageCode "CLAIMS" (IsNavigationVisible: true)	CLAIMS	en,tr,fr,es,zh,ar,ru	0/7	no	MOD-0187 provider	integration owner + l10n reviewer

@@ -1,0 +1,18 @@
+  Diten.AuthService.Domain -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Domain/bin/Release/net8.0/Diten.AuthService.Domain.dll
+  Diten.BuildingBlocks.Eventing -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Platform.Common -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Release/net8.0/Diten.Platform.Common.dll
+  Diten.Platform.Contracts -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.Platform.Contracts/bin/Release/net8.0/Diten.Platform.Contracts.dll
+  Diten.AuthService.Application -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Application/bin/Release/net8.0/Diten.AuthService.Application.dll
+/Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs(61,9): warning CS0618: 'MongoClientSettings.GuidRepresentation' is obsolete: 'Configure serializers instead.' [/Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Persistence/Diten.AuthService.Persistence.csproj]
+  Diten.AuthService.Persistence -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Persistence/bin/Release/net8.0/Diten.AuthService.Persistence.dll
+  Diten.AuthService.Infrastructure -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/bin/Release/net8.0/Diten.AuthService.Infrastructure.dll
+  Diten.AuthService.Api -> /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Api/bin/Release/net8.0/Diten.AuthService.Api.dll
+
+Build succeeded.
+
+/Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs(61,9): warning CS0618: 'MongoClientSettings.GuidRepresentation' is obsolete: 'Configure serializers instead.' [/Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.AuthService/src/Diten.AuthService.Persistence/Diten.AuthService.Persistence.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.95

@@ -1,0 +1,7 @@
+PASS: 103-row fixed rubric preserved
+PASS: delivered/remaining/total ML = 1388/1416/2804
+PASS: S2 O/M/P 9.6/16/32 moved from remaining to delivered without NumericDate duplication
+PASS: Shipment integration application allocation = 12/24/40 within 0183-5 reserve
+PASS: Shipment independent rework VER allocation = 6/12/24 within 0183-6 reserve
+PASS: source hashes match
+PASS: no product/test execution performed

@@ -208,4 +208,11 @@
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>FTE одного из месяцев вне допустимого диапазона.</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>Период закрыт; его ёмкость больше нельзя изменить.</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>Перейти к подробностям</value></data>
+  <data name="WfDailyFixedMinutesLegacy" xml:space="preserve"><value>Ежедневные фиксированные задачи (дорога, отчёт, тест)</value></data>
+  <data name="UnitMinutesPerDay" xml:space="preserve"><value>мин/день</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>Сформирован</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>Применён</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="SessionStatus_unknown" xml:space="preserve"><value>Неизвестно</value></data>
 </root>

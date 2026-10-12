@@ -1,0 +1,731 @@
+{
+  "sce_shipments": [
+    {
+      "_id": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-16T12:22:27.724166+00:00",
+      "UpdatedAt": "2026-09-16T12:22:28.236563+00:00",
+      "Version": 5,
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "CreatedBy": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "UpdatedBy": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "ShipmentNumber": "SHP-3ac267ea203248e2a483cbb3376388e7",
+      "SourceModule": "MOD-0141",
+      "SourceType": "SALES_ORDER",
+      "SourceDocumentId": "SO-900",
+      "SourceSystem": null,
+      "ExternalRef": null,
+      "WarehouseReferenceId": "wh-01",
+      "ShipToReference": "CUST-100/ADDR-2",
+      "CarrierId": null,
+      "LoadPlanId": null,
+      "Lines": [
+        {
+          "LineNumber": "1",
+          "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+          "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+          "Quantity": "30.000",
+          "UomId": "EA",
+          "InventoryReferenceId": "rsv-4001"
+        }
+      ],
+      "PlannedShipAt": "2026-09-20T08:00:00+00:00",
+      "PlannedDeliverAt": "2026-09-21T16:00:00+00:00",
+      "ActualDeliverAt": "2026-09-21T15:42:00+00:00",
+      "DispatchedAt": "2026-09-20T08:15:00+00:00",
+      "Status": "Closed",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "Pod": {
+        "_id": "63b89686-e132-4e0e-ab82-7d43cd1448c5",
+        "ReceivedAt": "2026-09-21T15:42:00+00:00",
+        "RecipientName": "Runtime Test Recipient",
+        "EvidenceReferenceIds": [
+          "test-only-evidence"
+        ],
+        "Note": "Isolated verification",
+        "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c"
+      }
+    },
+    {
+      "_id": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-16T12:22:47.233877+00:00",
+      "UpdatedAt": "2026-09-16T12:22:52.987017+00:00",
+      "Version": 4,
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "CreatedBy": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "UpdatedBy": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "ShipmentNumber": "SHP-5d41e12bbaa04781a49be62e33000d05",
+      "SourceModule": "MOD-0141",
+      "SourceType": "SALES_ORDER",
+      "SourceDocumentId": "SO-900",
+      "SourceSystem": null,
+      "ExternalRef": null,
+      "WarehouseReferenceId": "wh-01",
+      "ShipToReference": "CUST-100/ADDR-2",
+      "CarrierId": null,
+      "LoadPlanId": null,
+      "Lines": [
+        {
+          "LineNumber": "1",
+          "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+          "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+          "Quantity": "30.000",
+          "UomId": "EA",
+          "InventoryReferenceId": "rsv-4001"
+        }
+      ],
+      "PlannedShipAt": "2026-09-20T08:00:00+00:00",
+      "PlannedDeliverAt": "2026-09-21T16:00:00+00:00",
+      "ActualDeliverAt": "2026-09-21T15:42:00+00:00",
+      "DispatchedAt": "2026-09-20T08:15:00+00:00",
+      "Status": "Delivered",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "Pod": {
+        "_id": "d76a3709-8a73-4b1a-93d8-647d62c310cf",
+        "ReceivedAt": "2026-09-21T15:42:00+00:00",
+        "RecipientName": "R2 Fixture",
+        "EvidenceReferenceIds": [
+          "r2-test-only"
+        ],
+        "Note": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00",
+        "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c"
+      }
+    }
+  ],
+  "sce_shipment_receipts": [
+    {
+      "_id": "06484297-bb98-4f11-b801-ef7db71d24c7",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "create",
+      "Key": "create",
+      "Fingerprint": "B2A5C60EB5C8B1949A940C3B2160E2146A0E20EF164C48D716DFB4D9480F8824",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "StatusCode": 201,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":null,\"ShipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":null,\"Status\":0,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":null,\"Id\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:27.724166+00:00\",\"UpdatedAt\":null,\"Version\":1}",
+      "CommandId": "79023fce-1b45-41f4-accc-3cca78c1dfc1"
+    },
+    {
+      "_id": "2a2edd42-9685-4f93-aa8f-200a0a9e4b80",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "transition",
+      "Key": "plan",
+      "Fingerprint": "D6B9626E937B2364C1441AD9DFDC115C802D1E378F42D769756F060E2B869DFD",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "StatusCode": 200,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"ShipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":null,\"Status\":1,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":null,\"Id\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:27.724166+00:00\",\"UpdatedAt\":\"2026-09-16T12:22:28.055588+00:00\",\"Version\":2}",
+      "CommandId": "18972ddf-118a-4b03-9562-c2e5e317c216"
+    },
+    {
+      "_id": "33b0de0f-ab3f-4f52-9f91-b668f1a8c092",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "create",
+      "Key": "r2-ascii",
+      "Fingerprint": "B2A5C60EB5C8B1949A940C3B2160E2146A0E20EF164C48D716DFB4D9480F8824",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "StatusCode": 201,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":null,\"ShipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":null,\"Status\":0,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":null,\"Id\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:47.233877+00:00\",\"UpdatedAt\":null,\"Version\":1}",
+      "CommandId": "da172e30-e12d-408f-a575-a1e1897358a0"
+    },
+    {
+      "_id": "464ba183-3946-46cc-9574-8362416d39f5",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "transition",
+      "Key": "r2-dispatch",
+      "Fingerprint": "0DFFDEA524518BBBD3117ABFBAB75E80AC610A9ABE20BEAD60F479F2C69649FA",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "StatusCode": 200,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"ShipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":\"2026-09-20T08:15:00+00:00\",\"Status\":2,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":null,\"Id\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:47.233877+00:00\",\"UpdatedAt\":\"2026-09-16T12:22:50.357186+00:00\",\"Version\":3}",
+      "CommandId": "af016186-5002-49c1-a935-f90cd6662ea0"
+    },
+    {
+      "_id": "53b7d24d-d3d1-4c26-b580-3224601abd73",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "pod",
+      "Key": "pod",
+      "Fingerprint": "528C7E21B56BDE6E8B6140875DA3845A6F20F3BBE7B6B7F1BF76C682B9FFF953",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "StatusCode": 201,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"ShipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":\"2026-09-21T15:42:00+00:00\",\"DispatchedAt\":\"2026-09-20T08:15:00+00:00\",\"Status\":4,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":{\"Id\":\"63b89686-e132-4e0e-ab82-7d43cd1448c5\",\"ReceivedAt\":\"2026-09-21T15:42:00+00:00\",\"RecipientName\":\"Runtime Test Recipient\",\"EvidenceReferenceIds\":[\"test-only-evidence\"],\"Note\":\"Isolated verification\",\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\"},\"Id\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:27.724166+00:00\",\"UpdatedAt\":\"2026-09-16T12:22:28.136351+00:00\",\"Version\":4}",
+      "CommandId": "0695b28b-04b9-4038-9e34-0bb5911972d5"
+    },
+    {
+      "_id": "8ed262fd-9da6-4a5a-b919-91c2d65c66fa",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "transition",
+      "Key": "close",
+      "Fingerprint": "8967038208B95D2E199BFE115C3FDFE0B791641EC63ACA882835C1243036D98F",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "StatusCode": 200,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"ShipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":\"2026-09-21T15:42:00+00:00\",\"DispatchedAt\":\"2026-09-20T08:15:00+00:00\",\"Status\":6,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":{\"Id\":\"63b89686-e132-4e0e-ab82-7d43cd1448c5\",\"ReceivedAt\":\"2026-09-21T15:42:00+00:00\",\"RecipientName\":\"Runtime Test Recipient\",\"EvidenceReferenceIds\":[\"test-only-evidence\"],\"Note\":\"Isolated verification\",\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\"},\"Id\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:27.724166+00:00\",\"UpdatedAt\":\"2026-09-16T12:22:28.236563+00:00\",\"Version\":5}",
+      "CommandId": "1d4767c5-6005-4015-a143-7ec381363da4"
+    },
+    {
+      "_id": "bb1a5609-2ba8-4038-b2e6-1afa32eb7fb7",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "pod",
+      "Key": "r2-pod",
+      "Fingerprint": "C6EBAF92C286A8C5AB4126DC677107C1EA6EBFE747A82C3AED80F69969CE1730",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "StatusCode": 201,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"ShipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":\"2026-09-21T15:42:00+00:00\",\"DispatchedAt\":\"2026-09-20T08:15:00+00:00\",\"Status\":4,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":{\"Id\":\"d76a3709-8a73-4b1a-93d8-647d62c310cf\",\"ReceivedAt\":\"2026-09-21T15:42:00+00:00\",\"RecipientName\":\"R2 Fixture\",\"EvidenceReferenceIds\":[\"r2-test-only\"],\"Note\":\"\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\\uD83D\\uDE00\",\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\"},\"Id\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:47.233877+00:00\",\"UpdatedAt\":\"2026-09-16T12:22:52.987017+00:00\",\"Version\":4}",
+      "CommandId": "1ae7e6e3-c60f-4ffa-9707-c84246aecef3"
+    },
+    {
+      "_id": "c86986f2-2f0e-4fc3-b94e-be37a2c52b4a",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "transition",
+      "Key": "dispatch",
+      "Fingerprint": "52805026E7FDBBAF7B42D9666B69178747C9F81964F173476D6A18B0645B8713",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "StatusCode": 200,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"ShipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":\"2026-09-20T08:15:00+00:00\",\"Status\":2,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":null,\"Id\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:27.724166+00:00\",\"UpdatedAt\":\"2026-09-16T12:22:28.093286+00:00\",\"Version\":3}",
+      "CommandId": "bf6a0775-7d55-4b02-b83f-046b4d51b0b7"
+    },
+    {
+      "_id": "fe4ef981-f016-4cda-891c-8dd693074c59",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "Operation": "transition",
+      "Key": "r2-plan",
+      "Fingerprint": "04B1915A38F8B11351071F007444C1197A332C9C90285299F9EDF4CACC7440E4",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "StatusCode": 200,
+      "Snapshot": "{\"LegalEntityId\":\"18864ead-4f13-4de4-ace8-acb767ff18ea\",\"CreatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"UpdatedBy\":\"10707f88-4802-4bc6-a3c2-eee85674d184\",\"ShipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":null,\"Status\":1,\"CorrelationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"Pod\":null,\"Id\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"TenantId\":\"34196321-8d87-46ea-96d6-cd874c83fb6c\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T12:22:47.233877+00:00\",\"UpdatedAt\":\"2026-09-16T12:22:50.323167+00:00\",\"Version\":2}",
+      "CommandId": "caeb5787-c3fa-4f6b-956c-c02868ae5f0f"
+    }
+  ],
+  "sce_shipment_history": [
+    {
+      "_id": "27062a00-7d0a-4d35-9056-320c42a9bed9",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 2,
+      "FromStatus": "Draft",
+      "ToStatus": "Planned",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "18972ddf-118a-4b03-9562-c2e5e317c216",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "2eda8bae-05f4-4447-8633-d3bf48719ed3",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 5,
+      "FromStatus": "Delivered",
+      "ToStatus": "Closed",
+      "OccurredAt": {
+        "$date": "2026-09-21T16:00:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "1d4767c5-6005-4015-a143-7ec381363da4",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "6bc3048b-0eb0-454e-ba5f-57977f6812ff",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "Sequence": 1,
+      "FromStatus": null,
+      "ToStatus": "Draft",
+      "OccurredAt": {
+        "$date": "2026-09-16T12:22:47.233Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "da172e30-e12d-408f-a575-a1e1897358a0",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "a35e641e-0d70-47a1-99bf-cf70a85811dd",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "Sequence": 3,
+      "FromStatus": "Planned",
+      "ToStatus": "Dispatched",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "af016186-5002-49c1-a935-f90cd6662ea0",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "abd186ea-1475-47db-8f43-d725b12b7b3e",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 3,
+      "FromStatus": "Planned",
+      "ToStatus": "Dispatched",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "bf6a0775-7d55-4b02-b83f-046b4d51b0b7",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "c01f4aa6-6e52-49df-bf57-9bc0ab763aed",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "Sequence": 4,
+      "FromStatus": "Dispatched",
+      "ToStatus": "Delivered",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "1ae7e6e3-c60f-4ffa-9707-c84246aecef3",
+      "ReasonCode": null,
+      "Note": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"
+    },
+    {
+      "_id": "c17cf0cd-cdb3-4b55-92c8-3e8c147da4df",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "Sequence": 2,
+      "FromStatus": "Draft",
+      "ToStatus": "Planned",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "caeb5787-c3fa-4f6b-956c-c02868ae5f0f",
+      "ReasonCode": null,
+      "Note": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"
+    },
+    {
+      "_id": "c1b0b7d3-10e1-47a2-8efa-8a812c4bc358",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 1,
+      "FromStatus": null,
+      "ToStatus": "Draft",
+      "OccurredAt": {
+        "$date": "2026-09-16T12:22:27.724Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "79023fce-1b45-41f4-accc-3cca78c1dfc1",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "e81b4ca0-b561-46c3-8f7f-f8c885e19dbc",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 4,
+      "FromStatus": "Dispatched",
+      "ToStatus": "Delivered",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "0695b28b-04b9-4038-9e34-0bb5911972d5",
+      "ReasonCode": null,
+      "Note": "Isolated verification"
+    }
+  ],
+  "sce_shipment_audit": [
+    {
+      "_id": "28c3db74-f0ff-456d-9ba1-1fa3b025e8a7",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 3,
+      "FromStatus": "Planned",
+      "ToStatus": "Dispatched",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "bf6a0775-7d55-4b02-b83f-046b4d51b0b7",
+      "Operation": "transition"
+    },
+    {
+      "_id": "743e9a7e-0e44-44fc-8c3d-07f8bed8cf6d",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 2,
+      "FromStatus": "Draft",
+      "ToStatus": "Planned",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "18972ddf-118a-4b03-9562-c2e5e317c216",
+      "Operation": "transition"
+    },
+    {
+      "_id": "91b5a182-79aa-401b-a95d-648d41312d1e",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 1,
+      "FromStatus": null,
+      "ToStatus": "Draft",
+      "OccurredAt": {
+        "$date": "2026-09-16T12:22:27.724Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "79023fce-1b45-41f4-accc-3cca78c1dfc1",
+      "Operation": "create"
+    },
+    {
+      "_id": "942db6a0-777f-476d-a63a-ba523d3214e1",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "Sequence": 1,
+      "FromStatus": null,
+      "ToStatus": "Draft",
+      "OccurredAt": {
+        "$date": "2026-09-16T12:22:47.233Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "da172e30-e12d-408f-a575-a1e1897358a0",
+      "Operation": "create"
+    },
+    {
+      "_id": "a9a6b6aa-528c-4089-8f83-5af6cfddaade",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "Sequence": 2,
+      "FromStatus": "Draft",
+      "ToStatus": "Planned",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "caeb5787-c3fa-4f6b-956c-c02868ae5f0f",
+      "Operation": "transition"
+    },
+    {
+      "_id": "c45cab0f-1bf3-45c7-8e58-8f1b09688019",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "Sequence": 4,
+      "FromStatus": "Dispatched",
+      "ToStatus": "Delivered",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "1ae7e6e3-c60f-4ffa-9707-c84246aecef3",
+      "Operation": "pod"
+    },
+    {
+      "_id": "c90aed6c-c53a-41dc-9145-9904c5c43397",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "Sequence": 3,
+      "FromStatus": "Planned",
+      "ToStatus": "Dispatched",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "af016186-5002-49c1-a935-f90cd6662ea0",
+      "Operation": "transition"
+    },
+    {
+      "_id": "cea8e11a-86c7-4642-b283-279ec2f5e615",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 5,
+      "FromStatus": "Delivered",
+      "ToStatus": "Closed",
+      "OccurredAt": {
+        "$date": "2026-09-21T16:00:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "1d4767c5-6005-4015-a143-7ec381363da4",
+      "Operation": "transition"
+    },
+    {
+      "_id": "e81426db-57ff-400c-ac3b-f96649773762",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "Sequence": 4,
+      "FromStatus": "Dispatched",
+      "ToStatus": "Delivered",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "ActorId": "10707f88-4802-4bc6-a3c2-eee85674d184",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CommandId": "0695b28b-04b9-4038-9e34-0bb5911972d5",
+      "Operation": "pod"
+    }
+  ],
+  "sce_shipment_outbox": [
+    {
+      "_id": "0df37297-0727-4f5e-9444-d15183af917a",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "EventType": "ShipmentDispatched",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "af016186-5002-49c1-a935-f90cd6662ea0",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"0df37297-0727-4f5e-9444-d15183af917a\",\"eventType\":\"ShipmentDispatched\",\"occurredAt\":\"2026-09-20T08:15:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"af016186-5002-49c1-a935-f90cd6662ea0\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"payload\":{\"shipmentId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"shipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"status\":\"Dispatched\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:50.360Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "0e68357f-c8d0-4793-b8c5-368d0f40ff57",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "EventType": "ShipmentDelivered",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "1ae7e6e3-c60f-4ffa-9707-c84246aecef3",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"0e68357f-c8d0-4793-b8c5-368d0f40ff57\",\"eventType\":\"ShipmentDelivered\",\"occurredAt\":\"2026-09-21T15:42:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"1ae7e6e3-c60f-4ffa-9707-c84246aecef3\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"payload\":{\"shipmentId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"shipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"status\":\"Delivered\",\"carrierId\":null,\"loadId\":null,\"podId\":\"d76a3709-8a73-4b1a-93d8-647d62c310cf\",\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:52.991Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "29e71ecb-3d9f-42fa-8f13-da5f8aea07c8",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "EventType": "ShipmentCreated",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "79023fce-1b45-41f4-accc-3cca78c1dfc1",
+      "OccurredAt": {
+        "$date": "2026-09-16T12:22:27.724Z"
+      },
+      "PayloadJson": "{\"eventId\":\"29e71ecb-3d9f-42fa-8f13-da5f8aea07c8\",\"eventType\":\"ShipmentCreated\",\"occurredAt\":\"2026-09-16T12:22:27.724166+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"79023fce-1b45-41f4-accc-3cca78c1dfc1\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"payload\":{\"shipmentId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"shipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"status\":\"Draft\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:27.825Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "40f8a1fe-41b8-4730-93bc-7fd31ccb6a1b",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "EventType": "ShipmentCreated",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "da172e30-e12d-408f-a575-a1e1897358a0",
+      "OccurredAt": {
+        "$date": "2026-09-16T12:22:47.233Z"
+      },
+      "PayloadJson": "{\"eventId\":\"40f8a1fe-41b8-4730-93bc-7fd31ccb6a1b\",\"eventType\":\"ShipmentCreated\",\"occurredAt\":\"2026-09-16T12:22:47.233877+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"da172e30-e12d-408f-a575-a1e1897358a0\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"payload\":{\"shipmentId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"shipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"status\":\"Draft\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:47.309Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "592db760-779b-43d2-8516-9d3a7176e55b",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "EventType": "ShipmentPlanned",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "caeb5787-c3fa-4f6b-956c-c02868ae5f0f",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"592db760-779b-43d2-8516-9d3a7176e55b\",\"eventType\":\"ShipmentPlanned\",\"occurredAt\":\"2026-09-20T08:15:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"caeb5787-c3fa-4f6b-956c-c02868ae5f0f\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"payload\":{\"shipmentId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"shipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"status\":\"Planned\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:50.337Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "78723bec-d28d-439c-9da5-81371bc44b4e",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "EventType": "ShipmentClosed",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "1d4767c5-6005-4015-a143-7ec381363da4",
+      "OccurredAt": {
+        "$date": "2026-09-21T16:00:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"78723bec-d28d-439c-9da5-81371bc44b4e\",\"eventType\":\"ShipmentClosed\",\"occurredAt\":\"2026-09-21T16:00:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"1d4767c5-6005-4015-a143-7ec381363da4\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"payload\":{\"shipmentId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"shipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"status\":\"Closed\",\"carrierId\":null,\"loadId\":null,\"podId\":\"63b89686-e132-4e0e-ab82-7d43cd1448c5\",\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:28.241Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "7c016ac0-f048-4632-80f3-0a9506baad89",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "EventType": "PodCaptured",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "0695b28b-04b9-4038-9e34-0bb5911972d5",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"7c016ac0-f048-4632-80f3-0a9506baad89\",\"eventType\":\"PodCaptured\",\"occurredAt\":\"2026-09-21T15:42:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"0695b28b-04b9-4038-9e34-0bb5911972d5\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"payload\":{\"shipmentId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"shipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"status\":\"Delivered\",\"carrierId\":null,\"loadId\":null,\"podId\":\"63b89686-e132-4e0e-ab82-7d43cd1448c5\",\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:28.144Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "8b686cab-9cb0-49d4-9fdb-60352adef70d",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "5d41e12b-baa0-4781-a49b-e62e33000d05",
+      "EventType": "PodCaptured",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "1ae7e6e3-c60f-4ffa-9707-c84246aecef3",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"8b686cab-9cb0-49d4-9fdb-60352adef70d\",\"eventType\":\"PodCaptured\",\"occurredAt\":\"2026-09-21T15:42:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"1ae7e6e3-c60f-4ffa-9707-c84246aecef3\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"payload\":{\"shipmentId\":\"5d41e12b-baa0-4781-a49b-e62e33000d05\",\"shipmentNumber\":\"SHP-5d41e12bbaa04781a49be62e33000d05\",\"status\":\"Delivered\",\"carrierId\":null,\"loadId\":null,\"podId\":\"d76a3709-8a73-4b1a-93d8-647d62c310cf\",\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:52.992Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "939ba740-e59e-4244-84bb-6539cabf96c2",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "EventType": "ShipmentDispatched",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "bf6a0775-7d55-4b02-b83f-046b4d51b0b7",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"939ba740-e59e-4244-84bb-6539cabf96c2\",\"eventType\":\"ShipmentDispatched\",\"occurredAt\":\"2026-09-20T08:15:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"bf6a0775-7d55-4b02-b83f-046b4d51b0b7\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"payload\":{\"shipmentId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"shipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"status\":\"Dispatched\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:28.098Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "af0da1fd-98a7-455f-973a-200fc26b8fb2",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "EventType": "ShipmentPlanned",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "18972ddf-118a-4b03-9562-c2e5e317c216",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"af0da1fd-98a7-455f-973a-200fc26b8fb2\",\"eventType\":\"ShipmentPlanned\",\"occurredAt\":\"2026-09-20T08:15:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"18972ddf-118a-4b03-9562-c2e5e317c216\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"payload\":{\"shipmentId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"shipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"status\":\"Planned\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:28.073Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "c6f9d6c6-1c8f-4415-8bb3-8dbd9b95df45",
+      "TenantId": "34196321-8d87-46ea-96d6-cd874c83fb6c",
+      "LegalEntityId": "18864ead-4f13-4de4-ace8-acb767ff18ea",
+      "ShipmentId": "3ac267ea-2032-48e2-a483-cbb3376388e7",
+      "EventType": "ShipmentDelivered",
+      "CorrelationId": "c2cc8825-7098-4a19-aec3-e2a63508887c",
+      "CausationId": "0695b28b-04b9-4038-9e34-0bb5911972d5",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"c6f9d6c6-1c8f-4415-8bb3-8dbd9b95df45\",\"eventType\":\"ShipmentDelivered\",\"occurredAt\":\"2026-09-21T15:42:00+00:00\",\"correlationId\":\"c2cc8825-7098-4a19-aec3-e2a63508887c\",\"causationId\":\"0695b28b-04b9-4038-9e34-0bb5911972d5\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"payload\":{\"shipmentId\":\"3ac267ea-2032-48e2-a483-cbb3376388e7\",\"shipmentNumber\":\"SHP-3ac267ea203248e2a483cbb3376388e7\",\"status\":\"Delivered\",\"carrierId\":null,\"loadId\":null,\"podId\":\"63b89686-e132-4e0e-ab82-7d43cd1448c5\",\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T12:22:28.143Z"
+      },
+      "ClaimedAt": null
+    }
+  ]
+}

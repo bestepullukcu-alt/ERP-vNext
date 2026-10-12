@@ -223,7 +223,10 @@ public sealed class CyclePeriodsController : Controller
         {
             timeline = CyclePeriodScreenRules.BuildTimeline(rows, year, today),
             openWithoutCapacity = CyclePeriodScreenRules.OpenWithoutCapacity(rows)
-                .Select(r => new { r.CyclePeriodId, r.CycleCode, r.CycleName, r.CycleStatus, r.StartDate, r.EndDate })
+                .Select(r => new { r.CyclePeriodId, r.CycleCode, r.CycleName, r.CycleStatus, r.StartDate, r.EndDate }),
+            // WP-CYC-UI-FIX-2 — today's active periods, from the SAME rows (no extra request) and NOT narrowed by the
+            // list's filters: "what is in force today" is a tenant-wide fact.
+            todayActive = CyclePeriodScreenRules.ActiveOn(loaded, today)
         });
     }
 
@@ -607,7 +610,8 @@ public sealed class CyclePeriodsController : Controller
         return new CyclePeriodScopeOptionsViewModel
         {
             ScopeTypes = api.ScopeTypes,
-            Countries = api.Countries.Select(Option).ToList(),
+            // WP-CYC-UI-FIX-2 — country names in the reader's language (finder + panel), the code kept beside them.
+            Countries = api.Countries.Select(o => new CyclePeriodScopeOptionViewModel { Value = o.Value, Label = CycleCountryLabel.For(o.Value, o.Label), Hint = o.Hint }).ToList(),
             CountryReady = api.CountryReady,
             LegalEntities = api.LegalEntities.Select(Option).ToList(),
             LegalEntityReady = api.LegalEntityReady,

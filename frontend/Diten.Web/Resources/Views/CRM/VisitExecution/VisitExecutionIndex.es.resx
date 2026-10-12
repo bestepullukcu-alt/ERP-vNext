@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Informe de visita</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Ejecución de visitas</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Registra lo que realmente ocurrió: marca cada visita planificada como realizada, perdida o reprogramada, y presenta el informe de visita inmutable.</value></data>
   <data name="ExecutionNotice" xml:space="preserve"><value>Este es el calendario de ejecución. Registra resultados e informes; no genera ningún plan ni avanza la etapa de contenido: la etapa real que registras aquí es la que lee el siguiente ciclo.</value></data>
   <data name="View" xml:space="preserve"><value>Vista</value></data>
@@ -16,13 +16,10 @@
   <data name="Refresh" xml:space="preserve"><value>Actualizar</value></data>
   <data name="NoVisits" xml:space="preserve"><value>No hay visitas planificadas en esta ventana.</value></data>
   <data name="ReportTitle" xml:space="preserve"><value>Informe de visita</value></data>
-  <data name="PlannedContent" xml:space="preserve"><value>Contenido planificado (FU04)</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>Contenido planificado</value></data>
   <data name="ActualStage" xml:space="preserve"><value>Etapa real presentada</value></data>
-  <data name="StageIndex" xml:space="preserve"><value>Etapa n.º</value></data>
-  <data name="MatchedPlan" xml:space="preserve"><value>Coincidió con la etapa planificada</value></data>
   <data name="OutcomeCode" xml:space="preserve"><value>Código de resultado</value></data>
   <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>p. ej. positive</value></data>
-  <data name="ReferenceDataHint" xml:space="preserve"><value>Los códigos de resultado provienen de datos de referencia.</value></data>
   <data name="DoctorFeedback" xml:space="preserve"><value>Comentarios del médico</value></data>
   <data name="Samples" xml:space="preserve"><value>Muestras / materiales entregados</value></data>
   <data name="AddSample" xml:space="preserve"><value>Añadir muestra</value></data>
@@ -49,4 +46,37 @@
   <data name="Quantity" xml:space="preserve"><value>Cant.</value></data>
   <data name="ItemType" xml:space="preserve"><value>Tipo de artículo</value></data>
   <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="NoPlannedContent" xml:space="preserve"><value>No hay contenido planificado para esta visita.</value></data>
+  <data name="StageFallback" xml:space="preserve"><value>Etapa {0}</value></data>
+  <data name="PlannedStageSuffix" xml:space="preserve"><value>(planificada)</value></data>
+  <data name="StageNotPresented" xml:space="preserve"><value>No se presentó la etapa planificada</value></data>
+  <data name="StageMatchesPlan" xml:space="preserve"><value>Coincide con el plan.</value></data>
+  <data name="StageDiffersFromPlan" xml:space="preserve"><value>Difiere del plan.</value></data>
+  <data name="NotYetDueHint" xml:space="preserve"><value>Aún no ha llegado el día de la visita</value></data>
+  <data name="ConfirmCompleted" xml:space="preserve"><value>¿Marcar esta visita como completada?</value></data>
+  <data name="ConfirmCompletedButton" xml:space="preserve"><value>Sí, completada</value></data>
+  <data name="OutcomeCompleted" xml:space="preserve"><value>Completada</value></data>
+  <data name="OutcomeMissed" xml:space="preserve"><value>Perdida</value></data>
+  <data name="OutcomeRescheduled" xml:space="preserve"><value>Reprogramada</value></data>
+  <data name="OutcomeCodeHint" xml:space="preserve"><value>Texto libre: un código de resultado breve (aún no hay lista de referencia).</value></data>
+  <data name="ErrOutcomeCodeRequired" xml:space="preserve"><value>Introduzca un código de resultado.</value></data>
+  <data name="ErrNotYetDue" xml:space="preserve"><value>Aún no ha llegado el día de la visita; no puede completarse ni informarse antes.</value></data>
+  <data name="ErrPlannedVisitRequired" xml:space="preserve"><value>No se ha seleccionado ninguna visita planificada.</value></data>
+  <data name="ErrPlannedVisitNotFound" xml:space="preserve"><value>No se encontró la visita planificada.</value></data>
+  <data name="ErrOutcomeRequired" xml:space="preserve"><value>Elija un resultado.</value></data>
+  <data name="ErrReasonCodeRequired" xml:space="preserve"><value>Se requiere un código de motivo para una visita perdida o reprogramada.</value></data>
+  <data name="ErrRescheduleDateInvalid" xml:space="preserve"><value>Introduzca la nueva fecha como aaaa-MM-dd.</value></data>
+  <data name="ErrResourceRequired" xml:space="preserve"><value>Falta el representante que informa.</value></data>
+  <data name="ErrSampleInvalid" xml:space="preserve"><value>Revise las muestras: cada una necesita un tipo y una cantidad válida.</value></data>
+  <data name="ErrContentActualsInvalid" xml:space="preserve"><value>La etapa presentada no es válida.</value></data>
+  <data name="ErrFreeTextTooLong" xml:space="preserve"><value>Un campo de texto es demasiado largo.</value></data>
+  <data name="ErrReportNotFound" xml:space="preserve"><value>No se encontró el informe.</value></data>
+  <data name="ErrReportAlreadyExists" xml:space="preserve"><value>Ya existe un informe para esta visita.</value></data>
+  <data name="ErrNotCompleted" xml:space="preserve"><value>Solo se puede informar una visita completada.</value></data>
+  <data name="ErrEditWindowClosed" xml:space="preserve"><value>El plazo de corrección ha terminado; registre una enmienda.</value></data>
+  <data name="ErrNotFinalised" xml:space="preserve"><value>El informe aún no se ha enviado.</value></data>
+  <data name="ErrAmendmentReasonRequired" xml:space="preserve"><value>Introduzca el motivo de la enmienda.</value></data>
+  <data name="ErrInvalidTransition" xml:space="preserve"><value>Este cambio no está permitido en el estado actual del informe.</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>El informe cambió mientras tanto. Recargue e inténtelo de nuevo.</value></data>
+  <data name="ErrUnsupportedValue" xml:space="preserve"><value>Un valor seleccionado no es compatible.</value></data>
 </root>

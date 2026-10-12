@@ -294,7 +294,9 @@ public sealed partial class KnowledgePathsController
                     openRound = latestOpen
                         ? new { revisionNumber = Int(latest!.Value, "revisionNumber"), stepName = pending?.StepName }
                         : null,
-                    canWithdrawReview = latestOpen && (canManage || R.IsSubmitter(actor, latest!.Value))
+                    // WP-E2E-FIX-2 (E3-B4) — withdrawing is the submitter's own act AND needs Manage (CRM answers 403
+                    // withdraw_not_submitter to anyone else), so the button shows only when both hold.
+                    canWithdrawReview = latestOpen && canManage && R.IsSubmitter(actor, latest!.Value)
                 },
                 timeline = latest is null ? null : new
                 {
@@ -375,6 +377,7 @@ public sealed partial class KnowledgePathsController
         var timeline = R.Timeline(plan, R.ReadHistory(histories.GetValueOrDefault(revisionId.ToString())), open, Label, person);
         var pending = timeline.FirstOrDefault(s => s.State == R.StepStates.Pending);
         var isSubmitter = R.IsSubmitter(actor, r);
+        var isFinalStep = R.IsFinalPendingStep(plan, timeline);
 
         var snapshot = r.TryGetProperty("snapshot", out var s) && s.ValueKind == JsonValueKind.Object ? s : default;
         var language = Str(snapshot, "languageCode");
@@ -480,6 +483,8 @@ public sealed partial class KnowledgePathsController
                 // Person-based SoD: the submitter never gets the decision panel; MOD-0023 decides candidacy (403 → text).
                 canDecide = open && !isSubmitter && actor is not null,
                 currentStepName = pending?.StepName,
+                // WP-E2E-FIX-2 (E3-B3) — approving this step closes the review (no step queued after it).
+                isFinalStep,
                 decisionNote,
                 canManage,
                 branches,

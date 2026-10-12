@@ -1,0 +1,65 @@
+--- HEAD:ReturnReferenceTests.cs	2026-10-02 18:05:48
++++ services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnReferenceTests.cs	2026-10-05 01:11:32
+@@ -45,13 +45,26 @@
+  [InlineData(500,"not-json")]
+  [InlineData(500,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v2\"}")]
+  [InlineData(501,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
++ // Q447: 401 stays 503 on purpose (Q420). Returns has already validated the same token with the same key, so a 401 from
++ // the Shipment read means the two services disagree about trust, which is not the user's missing permission.
+  [InlineData(401,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
+- [InlineData(403,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
+  public async Task OtherProducerFailures_RemainDependencyUnavailable(int status,string body)
+  {
+   var ex=await ObserveFailure(new CaptureHandler(_=>new((System.Net.HttpStatusCode)status){Content=new StringContent(body)}));
+   Assert.Equal(503,ex.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",ex.Code);
+  }
++ // Q447: a 403 from the Shipment read is the caller lacking supplychain.shipments.read, so it is a denial and not an outage
++ // (Q420). Returns answers it with the context-403 code its annex declares: returns-semantics-v3.0.0.md:62
++ // "Auth401/context403/schema400/media415 use INVALID_REQUEST". The producer's own body never decides the answer.
++ [Theory]
++ [InlineData("{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Required shipment permission is missing.\"},\"contractVersion\":\"v1\"}")]
++ [InlineData("{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
++ [InlineData("")]
++ public async Task ProducerDenial403_IsReportedAsContextDenialNotOutage(string body)
++ {
++  var ex=await ObserveFailure(new CaptureHandler(_=>new(System.Net.HttpStatusCode.Forbidden){Content=new StringContent(body)}));
++  Assert.Equal(403,ex.Status);Assert.Equal("INVALID_REQUEST",ex.Code);Assert.DoesNotContain("permission",ex.Message);
++ }
+  [Fact] public async Task RefusedProducer_RemainsDependencyUnavailable()
+  {
+   var ex=await ObserveFailure(new AsyncFailureHandler(_=>Task.FromException<HttpResponseMessage>(new HttpRequestException("refused"))));
+--- HEAD:ClaimReferenceTests.cs	2026-10-02 18:05:48
++++ services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReferenceTests.cs	2026-10-05 01:11:33
+@@ -100,6 +100,32 @@
+   var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim{ShipmentId=Guid.NewGuid()},default));
+   Assert.Equal(503,ex.Status);Assert.Equal("CLAIM_REFERENCE_UNAVAILABLE",ex.Code);Assert.DoesNotContain("private-source-error",ex.Message);
+  }
++ // Q447: a 403 from either dependency read is the caller lacking supplychain.shipments.read or supplychain.carriers.read,
++ // so it is a denial and not an outage (Q420). Claims answers it with its annex's code: claims-semantics-v3.0.0.md:163
++ // "403 FORBIDDEN includes scope/identity/action failures". A 401 stays 503 on purpose: Claims has already validated the
++ // same token with the same key, so a dependency 401 means the two services disagree about trust.
++ [Theory]
++ [InlineData("shipment",HttpStatusCode.Forbidden,403,"FORBIDDEN",1)]
++ [InlineData("carrier",HttpStatusCode.Forbidden,403,"FORBIDDEN",2)]
++ [InlineData("shipment",HttpStatusCode.Unauthorized,503,"CLAIM_REFERENCE_UNAVAILABLE",1)]
++ [InlineData("carrier",HttpStatusCode.Unauthorized,503,"CLAIM_REFERENCE_UNAVAILABLE",2)]
++ public async Task Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(string refusingRead,HttpStatusCode refusal,int status,string code,int reads)
++ {
++  var id=Guid.NewGuid();var carrier=Guid.NewGuid();var shipment=Shipment(id);shipment["carrierId"]=carrier.ToString();
++  var handler=new RefusingTransport(shipment.ToJsonString(),Carriers(carrier,"Active").ToJsonString(),refusingRead=="shipment"?"/api/shipment-bundle/shipments/"+id:"/api/shipment-bundle/carriers",refusal);
++  var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim {ShipmentId=id,CarrierId=carrier},default));
++  Assert.Equal(status,ex.Status);Assert.Equal(code,ex.Code);Assert.Equal(reads,handler.Paths.Count);Assert.DoesNotContain("private-source-error",ex.Message);
++ }
++ private sealed class RefusingTransport(string shipment,string carriers,string refusedPath,HttpStatusCode refusal):HttpMessageHandler
++ {
++  public List<string> Paths {get;}=[];
++  protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken ct)
++  {
++   var path=request.RequestUri!.PathAndQuery;Paths.Add(path);
++   if(path==refusedPath)return Task.FromResult(new HttpResponseMessage(refusal){Content=new StringContent("{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"private-source-error\"},\"contractVersion\":\"v1\"}")});
++   return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent(path=="/api/shipment-bundle/carriers"?carriers:shipment)});
++  }
++ }
+  private static JsonObject Carriers(Guid id,string status)=>new(){["items"]=new JsonArray(new JsonObject{["carrierId"]=id.ToString(),["carrierCode"]="C1",["displayName"]="Carrier",["status"]=status,["supportedModes"]=new JsonArray("Road")}),["total"]=1,["contractVersion"]="v1"};
+  private static ClaimReferenceReader BranchReader(HttpMessageHandler handler)=>new(new HttpClient(handler),new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{["Claims:ReferenceBaseUrl"]="http://reference.invalid/"}).Build(),new ClaimRequestContext {Scope=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid()),CorrelationId=Guid.NewGuid(),Authorization="Bearer test-only"});
+  private sealed class BranchTransport(string shipment,string carriers):HttpMessageHandler

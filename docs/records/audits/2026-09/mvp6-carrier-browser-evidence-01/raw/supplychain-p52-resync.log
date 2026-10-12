@@ -1,0 +1,11 @@
+[20:20:05 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[20:20:08 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[20:20:08 INF] Now listening on: http://127.0.0.1:5261
+[20:20:08 INF] Application started. Press Ctrl+C to shut down.
+[20:20:08 INF] Hosting environment: Development
+[20:20:08 INF] Content root path: /private/tmp/mvp6-carrier-ui-ver-01/snapshot-v2/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api
+[20:20:08 INF] Start processing HTTP request POST http://127.0.0.1:5257/api/internal/module-catalog/register-manifest
+[20:20:08 INF] Sending HTTP request POST http://127.0.0.1:5257/api/internal/module-catalog/register-manifest
+[20:20:08 INF] Received HTTP response headers after 847.7711ms - 200
+[20:20:08 INF] End processing HTTP request after 871.5705ms - 200
+[20:20:08 INF] Module manifest self-registered with Platform. ModuleCode=carrier-management Attempt=1

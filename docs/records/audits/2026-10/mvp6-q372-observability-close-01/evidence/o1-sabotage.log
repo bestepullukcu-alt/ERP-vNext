@@ -1,0 +1,15 @@
+# SABOTAGE (Web built from the ff5777afe controller) — correlation id 70613a5c-e5ea-46fe-83ec-b6c528fafdde
+# command: grep -F <id> log/web-sabotage-run.log log/gateway.log log/supplychain.log (scratch /Users/natig/mvp6-env/q372-20261004-1359)
+## web-sabotage-run.log: 0 lines
+## gateway.log: 1 lines
+{"Timestamp":"2026-10-04T14:05:17.1333910+03:00","Level":"Information","MessageTemplate":"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms","RenderedMessage":"HTTP \"POST\" \"/api/shipment-bundle/shipments\" responded 201 in 35.7743 ms","TraceId":"096562f9049924ff5bb0d76e79c91547","SpanId":"117523886629dbce","Properties":{"ServiceName":"Diten.ApiGateway","Environment":"Development","CorrelationId":"70613a5c-e5ea-46fe-83ec-b6c528fafdde","RequestPath":"/api/shipment-bundle/shipments","StatusCode":201,"TraceId":"096562f9049924ff5bb0d76e79c91547","RequestMethod":"POST","Elapsed":35.774292,"SourceContext":"Serilog.AspNetCore.RequestLoggingMiddleware","RequestId":"0HNP20RSOGHFT:00000003","ConnectionId":"[REDACTED]","MachineName":"Natig-Erens-MacBook-Pro"},"Renderings":{"Elapsed":[{"Format":"0.0000","Rendering":"35.7743"}]}}
+## supplychain.log: 8 lines
+[14:05:17 INF] Request starting HTTP/1.1 POST http://localhost:5061/api/shipment-bundle/shipments - application/json; charset=utf-8 null CorrelationId=70613a5c-e5ea-46fe-83ec-b6c528fafdde TenantId= LegalEntityId=
+[14:05:17 INF] Executing endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Create (Diten.SupplyChainService.Api)' CorrelationId=70613a5c-e5ea-46fe-83ec-b6c528fafdde TenantId= LegalEntityId=
+[14:05:17 INF] Route matched with {action = "Create", controller = "Shipments"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Create, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Controllers.ShipmentsController (Diten.SupplyChainService.Api). CorrelationId=70613a5c-e5ea-46fe-83ec-b6c528fafdde TenantId= LegalEntityId=
+[14:05:17 INF] Handling CreateShipmentCommand CorrelationId=70613a5c-e5ea-46fe-83ec-b6c528fafdde TenantId=00000000-0000-0000-0000-000000000001 LegalEntityId=93acb21f-a7ea-45cc-9916-1652fb3574c2
+[14:05:17 INF] Executing ObjectResult, writing value of type 'System.Text.Json.Nodes.JsonObject'. CorrelationId=70613a5c-e5ea-46fe-83ec-b6c528fafdde TenantId= LegalEntityId=
+[14:05:17 INF] Executed action Diten.SupplyChainService.Api.Controllers.ShipmentsController.Create (Diten.SupplyChainService.Api) in 22.1905ms CorrelationId=70613a5c-e5ea-46fe-83ec-b6c528fafdde TenantId= LegalEntityId=
+[14:05:17 INF] Executed endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Create (Diten.SupplyChainService.Api)' CorrelationId=70613a5c-e5ea-46fe-83ec-b6c528fafdde TenantId= LegalEntityId=
+[14:05:17 INF] Request finished HTTP/1.1 POST http://localhost:5061/api/shipment-bundle/shipments - 201 null application/json; charset=utf-8 31.4334ms CorrelationId=70613a5c-e5ea-46fe-83ec-b6c528fafdde TenantId= LegalEntityId=
+## web-sabotage-run.log lines mentioning 'Shipment Gateway': 0

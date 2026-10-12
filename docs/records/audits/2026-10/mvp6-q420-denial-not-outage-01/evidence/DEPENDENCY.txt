@@ -1,0 +1,4 @@
+[DEPENDENCY] B GET shipment, token WITHOUT shipments.read
+    -> 403 {"error":{"code":"INVALID_REQUEST","message":"Required shipment permission is missing.","correlationId":"59f904fd-314b-43cb-bc3d-31806b8ae1ec"},"contractVersion":"v1"}
+[DEPENDENCY] B GET carriers, token WITHOUT carriers.read
+    -> 403 {"error":{"code":"INVALID_REQUEST","message":"Required authorization context or permission is missing.","correlationId":"f9b1526e-f3c9-4395-9408-56cd6a9216be"},"contractVersion":"v1"}

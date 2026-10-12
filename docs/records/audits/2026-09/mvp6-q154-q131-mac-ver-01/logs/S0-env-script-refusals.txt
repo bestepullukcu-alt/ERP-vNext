@@ -1,0 +1,10 @@
+# env-script refusals (overlay scripts/test-env/mvp6-test-mongo-env.sh): stdout must be EMPTY and exit non-zero
+--slot 0 --rs rsx                    exit=2 stdout_bytes=0 stderr="mvp6-test-mongo-env: --slot (or EK_SLOT) must be 1..9"
+--slot 10 --rs rsx                   exit=2 stdout_bytes=0 stderr="mvp6-test-mongo-env: --slot (or EK_SLOT) must be 1..9"
+--slot 6                             exit=2 stdout_bytes=0 stderr="mvp6-test-mongo-env: --rs must name the lane's replica set ([A-Za-z0-9_-]{1,64})"
+--slot 6 --rs bad/name               exit=2 stdout_bytes=0 stderr="mvp6-test-mongo-env: --rs must name the lane's replica set ([A-Za-z0-9_-]{1,64})"
+--slot 6 --rs rsx --port 27017       exit=2 stdout_bytes=0 stderr="mvp6-test-mongo-env: refusing the operational MongoDB band 27017-27021"
+--slot 6 --rs rsx --port 27021       exit=2 stdout_bytes=0 stderr="mvp6-test-mongo-env: refusing the operational MongoDB band 27017-27021"
+--slot 6 --rs rsx --port 57192       exit=2 stdout_bytes=0 stderr="mvp6-test-mongo-env: refusing the OS ephemeral range (>= 49152)"
+--slot 6 --rs rsx --port abc         exit=2 stdout_bytes=0 stderr="mvp6-test-mongo-env: --port must be numeric"
+# positive: --slot 6 --rs rsq154s6 → 2 export lines, exit 0; port = 30994+1000*6 = 36994: 2

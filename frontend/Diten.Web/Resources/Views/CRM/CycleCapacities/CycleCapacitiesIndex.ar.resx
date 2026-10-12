@@ -208,4 +208,11 @@
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>قيمة FTE لأحد الأشهر خارج النطاق.</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>الفترة مغلقة؛ لم يعد بالإمكان تغيير سعتها.</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>الانتقال إلى التفاصيل</value></data>
+  <data name="WfDailyFixedMinutesLegacy" xml:space="preserve"><value>المهام اليومية الثابتة (التنقل، التقرير، الاختبار)</value></data>
+  <data name="UnitMinutesPerDay" xml:space="preserve"><value>د/يوم</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>تم إنشاؤها</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>معتمدة</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="SessionStatus_unknown" xml:space="preserve"><value>غير معروف</value></data>
 </root>

@@ -191,6 +191,10 @@
         part('workingDays').textContent = fmt(summary.workingDays);
         part('deductedDays').textContent = summary.deductedDays === null || summary.deductedDays === undefined ? EMPTY : `−${fmt(summary.deductedDays)}`;
         part('fieldDays').textContent = fmt(summary.fieldDays);
+        // WP-CYC-UI-FIX-2 — the server names the charge for the model it computed (legacy adds the per-day report).
+        const fixedLabel = part('dailyFixedLabel');
+        if (fixedLabel && L[summary.dailyFixedLabelKey]) fixedLabel.textContent = L[summary.dailyFixedLabelKey];
+        part('dailyFixedMinutes').textContent = summary.dailyFixedMinutes === null || summary.dailyFixedMinutes === undefined ? EMPTY : `${fmt(summary.dailyFixedMinutes)} ${L.UnitMinutesPerDay || ''}`.trim();
         const remaining = part('remainingMinutes');
         remaining.textContent = summary.remainingMinutes === null || summary.remainingMinutes === undefined ? EMPTY : `${fmt(summary.remainingMinutes)} ${L.UnitMinutesShort || ''}`;
         remaining.title = hoursHint(summary.remainingMinutes);
