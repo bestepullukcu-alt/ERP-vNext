@@ -780,3 +780,42 @@ Commit: "feat(auth): WP-VW-W3-AUTH — visit-evidence document-repository keys t
   - tablet PIN ve telefon yerleşimi (bölme küçük, ziyaret bitti);
   - Arapça RTL.
   - Yeni bir bugünkü ziyaretle (kullanıcı onayı) yapılabilir.
+
+## §37 ek — W3 canlı E4, 2. oturum (2026-10-12, CT; kullanıcı onaylı yazımlar)
+
+**Takip düzeltmeleri `11f7a7dc6`** (Web 898/0; test + sabotaj: çip slayt toplamına dönünce kırmızı):
+
+| düzeltme | doğrulama |
+|---|---|
+| Canlı çip = sunucu `startedAt` → şimdi ("Toplam" sunum süresi kalır) | canlıda 00:12 → 00:15 ✅ |
+| İmza 409 `visit_signature_exists` → yürütme yeniden okunur, imzalı durum gösterilir | test |
+| Kısa ziyaret: "Ziyaret süresi 2 dk altında kaldı; …" | canlıda ✅ |
+| Sunum sayfası menüde CRM > Ziyaret Çalışma Alanı (`HttpContext.Items["NavActivePath"]`) | canlıda ✅ |
+
+**FU-W3-SIG-DUP sonucu:**
+- Kullanıcı aynı dakikalarda kendi sekmesinde Bülent Çuhacı ziyaretini başlatıp bitirip imzaladığını doğruladı. 409 büyük olasılıkla eşzamanlı kullanıcı işlemi; sistem hatası kanıtı yok.
+- Ekran artık bu durumda imzalı görünür. Takip KAPANDI.
+
+**Telefon (375 px):** çalışma alanı gün sekmeleri + "16 ziyaret · boş 3,6 sa" + saatli satırlar; rapor eksik sarı ✅.
+
+**Tablet (1024×768) — Birsen Durmaz `a8f8f097…`, başlat 201:**
+- tablet yerleşimi: doktor ekranı tam ekran, temsilci paneli sağda, "Doktor moduna geç" ✅;
+- PIN belirle (1234) → "PIN'i tekrar girin" → kilit: panel gizli, "Çıkış: basılı tut" + kenar tutamacı ✅;
+- **kısa dokunuş** kilidi açmaz ✅;
+- **basılı tutma** (araçta tutma yok → `pointerdown` 0,8 sn olay gönderimiyle) → "Temsilci PIN" ✅;
+- **yanlış PIN** (9999) → "PIN yanlış.", panel kapalı ✅;
+- **doğru PIN** → panel + "Doktor moduna dön"; sunucuda yürütme hâlâ `started` (çıkış bitirmez) ✅;
+- "Doktor moduna dön" → yeniden kilit ✅;
+- kilit aç → "Ziyareti bitir" → onay → E4c: 04:08, kısa ziyaret uyarısı yok (doğru), tablet imza kartı ✅. İmza atılmadı (onay yalnız bitirme içindi).
+
+**Küçük notlar:**
+- PIN tuş takımında klavye desteği yok (erişilebilirlik);
+- PIN penceresi doktor alanında ortalanıyor (tam ekran değil) — kabul edilebilir.
+
+**Denenmeyen:**
+- Arapça RTL (dil çerezi tarayıcı geneli, kullanıcı sekmelerini etkiler; onay gerekli);
+- fotoğraf (kamera / dosya seçici yok).
+
+**Geri alma:**
+- kiracı konum kuralı `--revert` (kullanıcı);
+- test ziyaretleri (Bülent Yardımcı, Bülent Çuhacı, Birsen Durmaz) `report_missing` durumunda kalır.
