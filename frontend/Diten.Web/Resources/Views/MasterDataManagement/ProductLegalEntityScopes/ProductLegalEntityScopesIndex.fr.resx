@@ -25,4 +25,5 @@
   <data name="OtherLegalEntities" xml:space="preserve"><value>autres sociétés : {0}</value></data>
   <data name="ErrorWriterCapacity" xml:space="preserve"><value>Trop de modifications sont en cours dans ce groupe de sociétés. Réessayez dans quelques minutes.</value></data>
   <data name="ErrorStoreUnavailable" xml:space="preserve"><value>Les paramètres de périmètre produit sont momentanément inaccessibles. Réessayez dans un instant.</value></data>
+  <data name="ErrorStoreNotReady" xml:space="preserve"><value>Les paramètres de périmètre produit sont en cours de préparation. Réessayez dans un instant.</value></data>
 </root>

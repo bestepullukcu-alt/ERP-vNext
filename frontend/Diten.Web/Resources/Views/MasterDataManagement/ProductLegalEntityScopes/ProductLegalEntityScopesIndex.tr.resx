@@ -25,4 +25,5 @@
   <data name="OtherLegalEntities" xml:space="preserve"><value>diğer şirketler: {0}</value></data>
   <data name="ErrorWriterCapacity" xml:space="preserve"><value>Şu anda bu şirket grubunda çok fazla değişiklik yapılıyor. Birkaç dakika sonra yeniden deneyin.</value></data>
   <data name="ErrorStoreUnavailable" xml:space="preserve"><value>Ürün kapsamı ayarlarına şu anda ulaşılamıyor. Kısa süre sonra yeniden deneyin.</value></data>
+  <data name="ErrorStoreNotReady" xml:space="preserve"><value>Ürün kapsamı ayarları hazırlanıyor. Biraz sonra yeniden deneyin.</value></data>
 </root>

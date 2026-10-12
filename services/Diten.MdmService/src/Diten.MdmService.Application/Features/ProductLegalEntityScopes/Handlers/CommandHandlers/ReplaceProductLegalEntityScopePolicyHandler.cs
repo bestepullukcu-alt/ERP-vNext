@@ -13,19 +13,21 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
     : IRequestHandler<ReplaceProductLegalEntityScopePolicyCommand, Response<ProductLegalEntityScopeModels.PolicyDto>>
 {
     private readonly IProductLegalEntityScopePolicyRepository _policies;
-    private readonly IProductLegalEntityScopeRolloutStateRepository _rollout;
-    private readonly ILegalEntityRepository _legalEntities;
-    private readonly ProductLegalEntityScopeCandidateFacade _candidates;
-    private readonly IProductLegalEntityScopeWriterAuthorityProvider _authorityProvider;
-    private readonly ProductLegalEntityScopeWriteFenceCoordinator _coordinator;
+    // BL-598 FIX1: the store-backed collaborators are built inside Handle (their constructors may reach Mongo), so "the
+    // store cannot be reached" is this handler's coded 503, not an uncoded 500 from the container.
+    private readonly Lazy<IProductLegalEntityScopeRolloutStateRepository> _rollout;
+    private readonly Lazy<ILegalEntityRepository> _legalEntities;
+    private readonly Lazy<ProductLegalEntityScopeCandidateFacade> _candidates;
+    private readonly Lazy<IProductLegalEntityScopeWriterAuthorityProvider> _authorityProvider;
+    private readonly Lazy<ProductLegalEntityScopeWriteFenceCoordinator> _coordinator;
 
     public ReplaceProductLegalEntityScopePolicyHandler(
         IProductLegalEntityScopePolicyRepository policies,
-        IProductLegalEntityScopeRolloutStateRepository rollout,
-        ILegalEntityRepository legalEntities,
-        ProductLegalEntityScopeCandidateFacade candidates,
-        IProductLegalEntityScopeWriterAuthorityProvider authorityProvider,
-        ProductLegalEntityScopeWriteFenceCoordinator coordinator)
+        Lazy<IProductLegalEntityScopeRolloutStateRepository> rollout,
+        Lazy<ILegalEntityRepository> legalEntities,
+        Lazy<ProductLegalEntityScopeCandidateFacade> candidates,
+        Lazy<IProductLegalEntityScopeWriterAuthorityProvider> authorityProvider,
+        Lazy<ProductLegalEntityScopeWriteFenceCoordinator> coordinator)
     {
         _policies = policies;
         _rollout = rollout;
@@ -35,12 +37,46 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
         _coordinator = coordinator;
     }
 
+    // Tests and callers that already hold the collaborators.
+    internal ReplaceProductLegalEntityScopePolicyHandler(
+        IProductLegalEntityScopePolicyRepository policies,
+        IProductLegalEntityScopeRolloutStateRepository rollout,
+        ILegalEntityRepository legalEntities,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        IProductLegalEntityScopeWriterAuthorityProvider authorityProvider,
+        ProductLegalEntityScopeWriteFenceCoordinator coordinator)
+        : this(policies, new Lazy<IProductLegalEntityScopeRolloutStateRepository>(rollout),
+            new Lazy<ILegalEntityRepository>(legalEntities), new Lazy<ProductLegalEntityScopeCandidateFacade>(candidates),
+            new Lazy<IProductLegalEntityScopeWriterAuthorityProvider>(authorityProvider),
+            new Lazy<ProductLegalEntityScopeWriteFenceCoordinator>(coordinator))
+    {
+    }
+
     public async Task<Response<ProductLegalEntityScopeModels.PolicyDto>> Handle(
         ReplaceProductLegalEntityScopePolicyCommand request,
         CancellationToken cancellationToken)
     {
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates;
+        ILegalEntityRepository legalEntityStore;
+        ProductLegalEntityScopeCandidateFacade candidateFacade;
+        IProductLegalEntityScopeWriterAuthorityProvider authorities;
+        ProductLegalEntityScopeWriteFenceCoordinator fence;
+        try
+        {
+            rolloutStates = _rollout.Value;
+            legalEntityStore = _legalEntities.Value;
+            candidateFacade = _candidates.Value;
+            authorities = _authorityProvider.Value;
+            fence = _coordinator.Value;
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && Common.StoreConnectionFailure.Is(exception))
+        {
+            return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
+                ProductLegalEntityScopeWriteFenceCoordinator.RolloutStoreUnavailableCode, 503);
+        }
         var (unreadable, rollout) = await CreateProductLegalEntityScopePolicyHandler.TryReadRolloutAsync(
-            _rollout, "replace", cancellationToken);
+            rolloutStates, "replace", cancellationToken);
         if (unreadable is not null) return CreateProductLegalEntityScopePolicyHandler.RolloutUnreadable(unreadable);
         if (rollout?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
             return CreateProductLegalEntityScopePolicyHandler.Fail("PRODUCT_SCOPE_ROLLOUT_NOT_PREPARATION");
@@ -49,7 +85,7 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
             return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail("PRODUCT_SCOPE_POLICY_NOT_FOUND", 404);
 
         var mutation = ProductLegalEntityScopeMutationIdentity.Create(request);
-        var authority = await _authorityProvider.ResolveForegroundReplaceAsync(
+        var authority = await authorities.ResolveForegroundReplaceAsync(
             policy.Id,
             mutation,
             cancellationToken);
@@ -65,7 +101,7 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
                 : CreateProductLegalEntityScopePolicyHandler.Fail("IDEMPOTENCY_KEY_CONFLICT");
         if (request.Request.Mode == ProductLegalEntityScopeMode.Scoped)
         {
-            var candidate = await _candidates.ResolveAsync(
+            var candidate = await candidateFacade.ResolveAsync(
                 "product-item-sku-master",
                 "mdm.product-legal-entity-scopes.replace",
                 cancellationToken);
@@ -76,7 +112,7 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
             if (request.Request.LegalEntityIds.Any(id => !candidate.LegalEntityIds.Contains(id)))
                 return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
                     "LEGAL_ENTITY_REFERENCE_NOT_FOUND", 404);
-            if ((await _legalEntities.GetReferenceableByIdsAsync(
+            if ((await legalEntityStore.GetReferenceableByIdsAsync(
                     request.Request.LegalEntityIds, cancellationToken)).Count
                 != request.Request.LegalEntityIds.Count)
                 return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
@@ -99,7 +135,7 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
             request.Request.ExpectedVersion, policy.Version, request.CommandId, authority.SubjectId, now,
             before, policy.GetEffectivePeriod(now)));
 
-        var admission = await _coordinator.EnterForegroundReplaceAsync(
+        var admission = await fence.EnterForegroundReplaceAsync(
             authority,
             request,
             cancellationToken);
@@ -123,7 +159,7 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
         {
             // FIX4 (1): the budget is checked on the projected document BEFORE any write — nothing was written, so the
             // slot is released (principle A), not left held tenant-wide for its whole lease.
-            await _coordinator.CompleteForegroundReplaceAsync(admission,
+            await fence.CompleteForegroundReplaceAsync(admission,
                 new ProductLegalEntityScopePolicyWriteResult(false, null, VerifiedZeroMutation: true), CancellationToken.None);
             return CreateProductLegalEntityScopePolicyHandler.Fail("PRODUCT_SCOPE_BSON_LIMIT_EXCEEDED");
         }
@@ -135,7 +171,7 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
             throw;
         }
 
-        await _coordinator.CompleteForegroundReplaceAsync(admission, result, cancellationToken);
+        await fence.CompleteForegroundReplaceAsync(admission, result, cancellationToken);
         if (result.TransientRetriesExhausted)
             // FIX4 (4b): every retry of a transaction the server aborted as transient was used — nothing was written.
             return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail("PRODUCT_SCOPE_REPLACE_CONTENDED", 503);

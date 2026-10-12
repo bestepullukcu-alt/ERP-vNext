@@ -75,6 +75,7 @@ public sealed class EndProductLegalEntityScopePolicyHandler
         {
             return CreateProductLegalEntityScopePolicyHandler.Fail("PRODUCT_SCOPE_BSON_LIMIT_EXCEEDED");
         }
+        if (result.IndexesNotReady) return CreateProductLegalEntityScopePolicyHandler.StoreNotReady();
         if (result.WriteOutcomeAmbiguous)
             return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
                 "PRODUCT_SCOPE_RECONCILIATION_REQUIRED", 202);

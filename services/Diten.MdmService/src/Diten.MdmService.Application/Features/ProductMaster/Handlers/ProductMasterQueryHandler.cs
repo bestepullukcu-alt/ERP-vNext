@@ -32,30 +32,33 @@ public sealed class ProductMasterQueryHandler :
     IRequestHandler<BulkReadProductMasterSkusQuery, Response<JsonObject>>,
     IRequestHandler<ValidateProductMasterRefsQuery, Response<JsonObject>>
 {
-    private readonly IItemRepository _items;
-    private readonly IGlobalProductRepository _globalProducts;
-    private readonly IProductDefinitionRevisionRepository _revisions;
-    private readonly IGskuRepository _gskus;
-    private readonly ILskuRepository _lskus;
-    private readonly IFinishedGoodRepository _finishedGoods;
+    // WP-MDM-BL598-01: the repositories whose constructors still reach the store (index builds — the BL-598 second round)
+    // are built on first use INSIDE RunAsync, so a store outage is the contract's 503, not a 500 from DI. The read store's
+    // constructor does not reach the store.
+    private readonly Lazy<IItemRepository> _items;
+    private readonly Lazy<IGlobalProductRepository> _globalProducts;
+    private readonly Lazy<IProductDefinitionRevisionRepository> _revisions;
+    private readonly Lazy<IGskuRepository> _gskus;
+    private readonly Lazy<ILskuRepository> _lskus;
+    private readonly Lazy<IFinishedGoodRepository> _finishedGoods;
     private readonly IProductMasterReadStore _store;
-    private readonly IProductLegalEntityScopeRolloutStateRepository _rolloutStates;
-    private readonly IProductLegalEntityScopePolicyRepository _policies;
-    private readonly ProductLegalEntityScopeCandidateFacade _candidates;
+    private readonly Lazy<IProductLegalEntityScopeRolloutStateRepository> _rolloutStates;
+    private readonly Lazy<IProductLegalEntityScopePolicyRepository> _policies;
+    private readonly Lazy<ProductLegalEntityScopeCandidateFacade> _candidates;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<ProductMasterQueryHandler> _logger;
 
     public ProductMasterQueryHandler(
-        IItemRepository items,
-        IGlobalProductRepository globalProducts,
-        IProductDefinitionRevisionRepository revisions,
-        IGskuRepository gskus,
-        ILskuRepository lskus,
-        IFinishedGoodRepository finishedGoods,
+        Lazy<IItemRepository> items,
+        Lazy<IGlobalProductRepository> globalProducts,
+        Lazy<IProductDefinitionRevisionRepository> revisions,
+        Lazy<IGskuRepository> gskus,
+        Lazy<ILskuRepository> lskus,
+        Lazy<IFinishedGoodRepository> finishedGoods,
         IProductMasterReadStore store,
-        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
-        IProductLegalEntityScopePolicyRepository policies,
-        ProductLegalEntityScopeCandidateFacade candidates,
+        Lazy<IProductLegalEntityScopeRolloutStateRepository> rolloutStates,
+        Lazy<IProductLegalEntityScopePolicyRepository> policies,
+        Lazy<ProductLegalEntityScopeCandidateFacade> candidates,
         ITenantContext tenantContext,
         ILogger<ProductMasterQueryHandler>? logger = null)
     {
@@ -515,8 +518,22 @@ public sealed class ProductMasterQueryHandler :
         Func<ProductMasterReader, Task<Response<JsonObject>>> read, CancellationToken cancellationToken, string operation)
     {
         if (!_tenantContext.IsResolved || _tenantContext.TenantId == Guid.Empty) return Fail(TenantContextRequired, 400);
-        var reader = new ProductMasterReader(_items, _globalProducts, _revisions, _gskus, _lskus, _finishedGoods, _store,
-            new ProductLegalEntityScopeConsumerGuard(_rolloutStates, _policies, _candidates, _tenantContext));
+        ProductMasterReader reader;
+        try
+        {
+            reader = new ProductMasterReader(_items.Value, _globalProducts.Value, _revisions.Value, _gskus.Value,
+                _lskus.Value, _finishedGoods.Value, _store,
+                new ProductLegalEntityScopeConsumerGuard(_rolloutStates.Value, _policies.Value, _candidates.Value,
+                    _tenantContext));
+        }
+        // BL-598 (CT decision b): only "the store cannot be reached" (timeout, connection, not primary) while a store-backed
+        // service is built is the contract's 503; any other construction failure is a defect and stays a 500.
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested && StoreConnectionFailure.Is(exception))
+        {
+            _logger.LogWarning("PRODUCT_MASTER_READ_FAILED: {Code} on {Operation} — {Failure} while building the stores.",
+                Unavailable, operation, exception.GetType().FullName);
+            return Fail(Unavailable, 503);
+        }
         try
         {
             return await read(reader);

@@ -49,24 +49,12 @@ const ProductLegalEntityScopesList = (() => {
 
     const statusText = status => ({ 400: L.ErrorValidation, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict,
         503: L.ErrorProviderUnavailable, 504: L.ErrorProviderTimeout })[status] || L.ErrorGateway;
-    // WP-MDM-SCOPE-ACCEPT-01 FIX2 (SC4): the scope rollout's refusals in the reader's words (seven languages) — never the
-    // stored code. An unknown code falls back to the sentence of its HTTP status.
-    const CODE_KEYS = Object.freeze({
-        PRODUCT_SCOPE_WRITE_FENCE_ACTIVE: 'ErrorFenceActive',
-        PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE: 'ErrorWriterBusy',
-        PRODUCT_SCOPE_WRITER_LEASE_CONTENDED: 'ErrorWriterBusy',
-        PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED: 'ErrorSuspended',
-        PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID: 'ErrorRolloutUnavailable',
-        // FIX4 K1 / (2, 4, 6): the codes this round added.
-        PRODUCT_SCOPE_WRITER_LEASE_CAPACITY_EXCEEDED: 'ErrorWriterCapacity',
-        PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE: 'ErrorStoreUnavailable',
-        PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS: 'ErrorWriterBusy',
-        PRODUCT_SCOPE_REPLACE_CONTENDED: 'ErrorWriterBusy',
-        PRODUCT_SCOPE_RECONCILIATION_REQUIRED: 'ReconciliationPending'
-    });
+    // BL-598 FIX2 item 1: a refused write is said with the sentence the server sends — the controller turns MDM's code
+    // into it (ProductLegalEntityScopesController.RefusalKeys, the single list; seven languages). The page keeps no code
+    // map; an answer without a sentence falls back to the sentence of its HTTP status.
     const failureText = (payload, status) => {
-        const code = payload?.errors?.[0] ?? payload?.Errors?.[0];
-        return L[CODE_KEYS[code]] || statusText(status);
+        const sentence = payload?.errors?.[0] ?? payload?.Errors?.[0];
+        return typeof sentence === 'string' && sentence.trim() !== '' ? sentence : statusText(status);
     };
     const errorMessage = async response => {
         await response.text().catch(() => '');

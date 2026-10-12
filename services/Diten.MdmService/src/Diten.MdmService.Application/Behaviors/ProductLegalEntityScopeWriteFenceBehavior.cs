@@ -8,9 +8,17 @@ namespace Diten.MdmService.Application.Behaviors;
 public sealed class ProductLegalEntityScopeWriteFenceBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
-    private readonly ProductLegalEntityScopeWriteFenceCoordinator _coordinator;
-    public ProductLegalEntityScopeWriteFenceBehavior(ProductLegalEntityScopeWriteFenceCoordinator coordinator) =>
-        _coordinator = coordinator;
+    // WP-MDM-BL598-01 (CT decision b): the coordinator (and the rollout store it takes, whose constructor reaches the
+    // store) is built only for a MUTATION — a query never builds it. A mutation whose coordinator cannot be built because
+    // the store cannot be reached is refused with the rollout store's coded 503 and its handler is NOT called: never a
+    // write without the fence (fail closed). Any other construction failure is a defect and propagates (500).
+    private readonly Lazy<ProductLegalEntityScopeWriteFenceCoordinator> _coordinatorFactory;
+    public ProductLegalEntityScopeWriteFenceBehavior(Lazy<ProductLegalEntityScopeWriteFenceCoordinator> coordinator) =>
+        _coordinatorFactory = coordinator;
+
+    // Tests (InternalsVisibleTo): a coordinator already built. Internal so DI sees ONE public constructor.
+    internal ProductLegalEntityScopeWriteFenceBehavior(ProductLegalEntityScopeWriteFenceCoordinator coordinator)
+        : this(new Lazy<ProductLegalEntityScopeWriteFenceCoordinator>(coordinator)) { }
 
     public async Task<TResponse> Handle(
         TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -20,9 +28,19 @@ public sealed class ProductLegalEntityScopeWriteFenceBehavior<TRequest, TRespons
         if (!typeof(TResponse).IsGenericType
             || typeof(TResponse).GetGenericTypeDefinition() != typeof(Response<>))
             throw new InvalidOperationException("PRODUCT_SCOPE_WRITE_RESPONSE_CONTRACT_UNSUPPORTED");
-        var admission = await _coordinator.EnterAsync(mutation, cancellationToken);
+        ProductLegalEntityScopeWriteFenceCoordinator coordinator;
+        try
+        {
+            coordinator = _coordinatorFactory.Value;
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && Application.Common.StoreConnectionFailure.Is(exception))
+        {
+            return Failure(ProductLegalEntityScopeWriteFenceCoordinator.RolloutStoreUnavailableCode, 503);
+        }
+        var admission = await coordinator.EnterAsync(mutation, cancellationToken);
         if (!admission.IsAllowed) return Failure(admission.FailureCode!, admission.StatusCode);
-        using var ambientLease = _coordinator.Activate(admission);
+        using var ambientLease = coordinator.Activate(admission);
         try
         {
             var response = await next();
@@ -30,12 +48,12 @@ public sealed class ProductLegalEntityScopeWriteFenceBehavior<TRequest, TRespons
                 || response.GetType().GetProperty("IsSuccessful")?.GetValue(response) is not bool successful
                 || response.GetType().GetProperty("StatusCode")?.GetValue(response) is not int status)
                 throw new InvalidOperationException("PRODUCT_SCOPE_WRITE_RESPONSE_CONTRACT_UNSUPPORTED");
-            await _coordinator.CompleteAsync(admission, successful, status, false, cancellationToken);
+            await coordinator.CompleteAsync(admission, successful, status, false, cancellationToken);
             return response;
         }
         catch
         {
-            await _coordinator.CompleteAsync(admission, false, 500, true, CancellationToken.None);
+            await coordinator.CompleteAsync(admission, false, 500, true, CancellationToken.None);
             throw;
         }
     }

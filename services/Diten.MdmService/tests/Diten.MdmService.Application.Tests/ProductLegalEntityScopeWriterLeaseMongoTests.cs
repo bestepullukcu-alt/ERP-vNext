@@ -565,9 +565,11 @@ public sealed class ProductLegalEntityScopeWriterLeaseMongoTests
     public async Task Every_clause_of_the_object_proof_query_uses_an_index(string collection)
     {
         await using var harness = await Harness.CreateAsync();
-        // The owners' own indexes, as production has them (each repository creates its indexes when built), and the
-        // proof's own — built as the service's startup builds them (FIX3 (8)).
-        _ = harness.Scope.PolicyRepository();
+        // The owners' own indexes, as production has them (each repository creates its indexes when built; BL-598: the
+        // policy store prepares its own once per process, before its first write — awaited here), and the proof's own —
+        // built as the service's startup builds them (FIX3 (8)).
+        var policies = harness.Scope.PolicyRepository() as Diten.MdmService.Persistence.Repositories.ProductLegalEntityScopePolicyRepository;
+        await policies!.WhenIndexesReadyAsync();
         _ = new ProductAbbreviationAllocationLedgerRepository(harness.Scope.Database, harness.Tenant);
         _ = new ProductAbbreviationHistoryRepository(harness.Scope.Database, harness.Tenant);
         _ = new ProductAbbreviationRegisterRepository(harness.Scope.Database, harness.Tenant);

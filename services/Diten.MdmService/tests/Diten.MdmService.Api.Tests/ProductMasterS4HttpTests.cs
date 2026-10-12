@@ -908,7 +908,8 @@ public sealed partial class ProductMasterS4HttpTests(MdmHttpHost host)
         using var scope = host.Factory.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(_tenant);
         var handler = ActivatorUtilities.CreateInstance<ProductMasterQueryHandler>(scope.ServiceProvider,
-            (IItemRepository)new UnreachableItems(),
+            // BL-598: the handler takes its stores lazily (built inside its own failure handling).
+            new Lazy<IItemRepository>(() => new UnreachableItems()),
             (IProductMasterReadStore)new UnreachableStore());
 
         var single = await handler.Handle(new GetProductMasterItemQuery(Guid.NewGuid().ToString("D")), default);

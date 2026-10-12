@@ -25,4 +25,5 @@
   <data name="OtherLegalEntities" xml:space="preserve"><value>otras empresas: {0}</value></data>
   <data name="ErrorWriterCapacity" xml:space="preserve"><value>Se están realizando demasiados cambios en este grupo de empresas. Inténtelo de nuevo en unos minutos.</value></data>
   <data name="ErrorStoreUnavailable" xml:space="preserve"><value>No se puede acceder a la configuración de alcance de producto en este momento. Inténtelo de nuevo en breve.</value></data>
+  <data name="ErrorStoreNotReady" xml:space="preserve"><value>La configuración de alcance de producto se está preparando. Inténtelo de nuevo en un momento.</value></data>
 </root>

@@ -437,7 +437,8 @@ public sealed partial class ProductMasterS4HttpTests
         using var scope = host.Factory.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(_tenant);
         var handler = ActivatorUtilities.CreateInstance<ProductMasterQueryHandler>(scope.ServiceProvider,
-            (IItemRepository)new DefectiveItems());
+            // BL-598: the handler takes its stores lazily (built inside its own failure handling).
+            new Lazy<IItemRepository>(() => new DefectiveItems()));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             handler.Handle(new GetProductMasterItemQuery(Guid.NewGuid().ToString("D")), default));

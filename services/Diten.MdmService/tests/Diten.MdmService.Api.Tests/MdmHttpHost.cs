@@ -107,6 +107,7 @@ public sealed class MdmHttpHost : IAsyncLifetime
 
     // LSKU FIX3 item 7: the hosted services the real Program registered (before the host removes them).
     public List<Type> RegisteredHostedServices { get; } = [];
+    private Dictionary<string, string?>? _overrides;
     public string MongoConnectionString => _runner?.ConnectionString ?? throw NotStarted();
 
     public WebApplicationFactory<GskusController> Factory => _factory ?? throw NotStarted();
@@ -237,6 +238,7 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["LskuRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
                 ["LskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
             };
+            _overrides = overrides;
             foreach (var (key, value) in overrides)
             {
                 previous[key] = Environment.GetEnvironmentVariable(key);
@@ -334,6 +336,32 @@ public sealed class MdmHttpHost : IAsyncLifetime
     }
 
     /// <summary>A tenant user's token as AuthService writes it (sub, actor_type, tenant_id, one claim per permission).</summary>
+    /// <summary>
+    /// WP-MDM-BL598-01 — a second host built like this one (same settings, same fakes, same token key) with some services
+    /// replaced (e.g. a Mongo client that cannot reach its server). The caller disposes it.
+    /// </summary>
+    public WebApplicationFactory<GskusController> Variant(Action<IServiceCollection> replace)
+    {
+        var overrides = _overrides ?? throw NotStarted();
+        var previous = new Dictionary<string, string?>();
+        foreach (var (key, value) in overrides)
+        {
+            previous[key] = Environment.GetEnvironmentVariable(key);
+            Environment.SetEnvironmentVariable(key, value);
+        }
+        try
+        {
+            var variant = Factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(replace));
+            _ = variant.Server;
+            return variant;
+        }
+        finally
+        {
+            foreach (var (key, value) in previous)
+                Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+
     public string Token(Guid tenantId, Guid userId, params string[] permissions) =>
         TokenOf("tenant_user", tenantId, userId, permissions);
 

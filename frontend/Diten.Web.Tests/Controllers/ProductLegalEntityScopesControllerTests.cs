@@ -118,6 +118,69 @@ public sealed class ProductLegalEntityScopesControllerTests
         Assert.Single(ownWire.Paths);
     }
 
+    // BL-598 FIX2 item 1: MDM's coded refusal reaches the reader as its sentence (the GskuRefusals bridge) — every listed
+    // code, through the real controller, on the wire.
+    public static TheoryData<string, int, string> Refusals()
+    {
+        var data = new TheoryData<string, int, string>();
+        foreach (var (code, key) in ProductLegalEntityScopesController.RefusalKeys)
+            data.Add(code, code.EndsWith("UNAVAILABLE", StringComparison.Ordinal) || code.EndsWith("NOT_READY", StringComparison.Ordinal)
+                || code.EndsWith("CONTENDED", StringComparison.Ordinal) || code.EndsWith("AMBIGUOUS", StringComparison.Ordinal)
+                || code.EndsWith("CAPACITY_EXCEEDED", StringComparison.Ordinal) || code.EndsWith("ROLLOUT_INVALID", StringComparison.Ordinal)
+                ? 503 : 409, key);
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(Refusals))]
+    public async Task A_coded_refusal_of_MDM_reaches_the_reader_as_its_sentence(string code, int status, string key)
+    {
+        var refused = await WriteAgainst(status, $"{{\"isSuccessful\":false,\"statusCode\":{status},\"errors\":[\"{code}\"],\"data\":null}}");
+
+        Assert.Equal(status, refused.StatusCode);
+        Assert.Equal(key, ErrorOf(refused));
+    }
+
+    [Fact]
+    public async Task The_store_not_ready_refusal_is_its_own_sentence_not_provider_unavailable()
+    {
+        var refused = await WriteAgainst(503, "{\"isSuccessful\":false,\"errors\":[\"PRODUCT_SCOPE_POLICY_STORE_NOT_READY\"]}");
+
+        Assert.Equal("ErrorStoreNotReady", ErrorOf(refused));
+    }
+
+    // Only a listed code is turned into text: another code, a code-shaped tenant datum, an unreadable body → the status
+    // sentence; nothing else of MDM's answer reaches the screen.
+    [Theory]
+    [InlineData(503, "{\"errors\":[\"SOME_UNLISTED_CODE\"]}", "ErrorProviderUnavailable")]
+    [InlineData(409, "{\"errors\":[\"tenant 6f1d3c55 product X\"],\"data\":{\"tenantId\":\"6f1d3c55\"}}", "ErrorConflict")]
+    [InlineData(503, "<html>gateway</html>", "ErrorProviderUnavailable")]
+    [InlineData(409, "{\"errors\":[]}", "ErrorConflict")]
+    [InlineData(409, "{\"errors\":[42]}", "ErrorConflict")]
+    public async Task Anything_but_a_listed_code_is_the_status_sentence_and_never_mdms_text(int status, string body, string key)
+    {
+        var refused = await WriteAgainst(status, body);
+
+        Assert.Equal(status, refused.StatusCode);
+        Assert.Equal(key, ErrorOf(refused));
+        Assert.DoesNotContain("6f1d3c55", JsonSerializer.Serialize(refused.Value));
+    }
+
+    private static async Task<ObjectResult> WriteAgainst(int status, string body)
+    {
+        var subject = Subject();
+        var token = Assert.IsType<string>(((ViewResult)Controller(new Wire(), subject, Read, Configure).Index())
+            .ViewData["ProductScopeAttemptToken"]);
+        using var wire = new Wire { Status = (HttpStatusCode)status, Body = body };
+        var result = await Controller(wire, subject, Read, Configure).Create(
+            new ProductLegalEntityScopeWriteViewModel { GlobalProductId = Guid.NewGuid(), Mode = 1 }, token, default);
+        Assert.Single(wire.Paths);
+        return Assert.IsAssignableFrom<ObjectResult>(result);
+    }
+
+    private static string? ErrorOf(ObjectResult result) =>
+        JsonDocument.Parse(JsonSerializer.Serialize(result.Value)).RootElement.GetProperty("errors")[0].GetString();
+
     private static string Subject() => Guid.NewGuid().ToString("D");
 
     private static ProductLegalEntityScopesController Controller(Wire wire, string subject, params string[] permissions)
@@ -139,13 +202,14 @@ public sealed class ProductLegalEntityScopesControllerTests
         public List<string> Paths { get; } = [];
         public List<string> Queries { get; } = [];
         public string Body { get; init; } = "{\"isSuccessful\":true,\"data\":{}}";
+        public HttpStatusCode Status { get; init; } = HttpStatusCode.OK;
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Paths.Add(request.RequestUri!.AbsolutePath);
             Queries.Add(request.RequestUri.Query);
             Assert.Single(request.Headers.GetValues("X-Tenant-Id"));
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(Body) });
+            return Task.FromResult(new HttpResponseMessage(Status) { Content = new StringContent(Body) });
         }
     }
 
