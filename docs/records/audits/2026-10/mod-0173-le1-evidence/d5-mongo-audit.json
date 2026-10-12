@@ -1,0 +1,37 @@
+[{
+    "TenantId" : "00000000-0000-0000-0000-000000000001",
+    "LegalEntityId" : "099219a0-9780-454a-9580-a216f0fe33d0",
+    "Action" : "InventoryMovementPosted",
+    "TransactionNumber" : "INV-2026-0000001",
+    "ActorUserId" : "11111111-1111-1111-1111-111111111111",
+    "CorrelationId" : "0bbcfb4a-a547-45ba-beac-d81bdac16c1a",
+    "LeSource" : "header-unverified-membership",
+    "OccurredAt" : { "$date" : "2026-10-01T11:53:04.48Z" }
+  }, {
+    "TenantId" : "00000000-0000-0000-0000-000000000001",
+    "LegalEntityId" : "099219a0-9780-454a-9580-a216f0fe33d0",
+    "Action" : "InventoryMovementPosted",
+    "TransactionNumber" : "INV-2026-0000002",
+    "ActorUserId" : "11111111-1111-1111-1111-111111111111",
+    "CorrelationId" : "f82dd760-0891-4f10-9477-82cfbc434a8b",
+    "LeSource" : "header-unverified-membership",
+    "OccurredAt" : { "$date" : "2026-10-01T11:53:04.669Z" }
+  }, {
+    "TenantId" : "00000000-0000-0000-0000-000000000001",
+    "LegalEntityId" : "099219a0-9780-454a-9580-a216f0fe33d0",
+    "Action" : "InventoryMovementPosted",
+    "TransactionNumber" : "INV-2026-0000003",
+    "ActorUserId" : "11111111-1111-1111-1111-111111111111",
+    "CorrelationId" : "eacaa69f-6668-40cb-8484-59805b011a2d",
+    "LeSource" : "header-unverified-membership",
+    "OccurredAt" : { "$date" : "2026-10-01T11:53:04.734Z" }
+  }, {
+    "TenantId" : "00000000-0000-0000-0000-000000000001",
+    "LegalEntityId" : "099219a0-9780-454a-9580-a216f0fe33d0",
+    "Action" : "InventoryMovementReversed",
+    "TransactionNumber" : "INV-2026-0000004",
+    "ActorUserId" : "11111111-1111-1111-1111-111111111111",
+    "CorrelationId" : "27798545-b84d-4cd0-a8ee-c034d43686d1",
+    "LeSource" : "header-unverified-membership",
+    "OccurredAt" : { "$date" : "2026-10-01T11:55:47.557Z" }
+  }]

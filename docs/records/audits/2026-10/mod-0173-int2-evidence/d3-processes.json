@@ -1,0 +1,14 @@
+﻿{
+    "startedProcesses":  [
+                             "prism-product-master pid=13168",
+                             "service pid=11492",
+                             "gateway pid=8636"
+                         ],
+    "remainingAfterStop":  [
+
+                           ],
+    "notStartedByThisProbeUntouched":  [
+                                           "1392 node.exe created 10/02/2026 09:50:27"
+                                       ],
+    "gatewayScratchCopyRemoved":  true
+}

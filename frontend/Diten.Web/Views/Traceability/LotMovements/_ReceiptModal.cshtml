@@ -1,0 +1,36 @@
+@using Diten.Web.Models.Traceability
+@using Diten.Web.Views.Traceability.LotMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@* Hareket fişi (pack §11.3): the row as the ledger recorded it; "Stok Defteri'nde aç" = RECEIPTINLEDGER (trace.lots.read). *@
+<div class="modal fade" id="modalLotReceipt" tabindex="-1" aria-labelledby="modalLotReceiptTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLotReceiptTitle">@Localizer["Receipt.Title"] <span class="font-monospace" data-receipt="number"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row small mb-0">
+                    <dt class="col-5">@Localizer["Receipt.Type"]</dt><dd class="col-7" data-receipt="type"></dd>
+                    <dt class="col-5">@Localizer["Receipt.Quantity"]</dt><dd class="col-7" dir="ltr" data-receipt="quantity"></dd>
+                    <dt class="col-5">@Localizer["Receipt.Product"]</dt><dd class="col-7 text-break" data-receipt="product"></dd>
+                    <dt class="col-5">@Localizer["Receipt.Lot"]</dt><dd class="col-7 font-monospace" data-receipt="lot"></dd>
+                    <dt class="col-5">@Localizer["Receipt.StockStatus"]</dt><dd class="col-7" data-receipt="status"></dd>
+                    <dt class="col-5">@Localizer["Receipt.To"]</dt><dd class="col-7" data-receipt="to"></dd>
+                    <dt class="col-5">@Localizer["Receipt.Document"]</dt><dd class="col-7" data-receipt="document"></dd>
+                    <dt class="col-5">@Localizer["Receipt.DateBy"]</dt><dd class="col-7" data-receipt="date"></dd>
+                </dl>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Close"]</button>
+                @if (TraceActions.Allowed(Perms, "RECEIPTINLEDGER"))
+                {
+                    <a class="btn btn-label-primary" data-trace-action="RECEIPTINLEDGER" data-receipt="ledger" href="/StockMovements">@Localizer["Receipt.OpenInLedger"]</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

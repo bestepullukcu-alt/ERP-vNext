@@ -1,0 +1,421 @@
+[11:25:41] » [CLI] ...  awaiting  Starting Prism…
+[11:25:41] » [CLI] i  info      GET        http://127.0.0.1:4011/ad
+[11:25:41] » [CLI] i  info      GET        http://127.0.0.1:4011/?type=Bin&parentId=quasi&legalEntityId=possimus
+[11:25:41] » [CLI] i  info      GET        http://127.0.0.1:4011/repellat/path
+[11:25:41] » [CLI] i  info      POST       http://127.0.0.1:4011/validate
+[11:25:41] » [CLI] ►  start     Prism is listening on http://127.0.0.1:4011
+[11:25:41] » [HTTP SERVER] get / i  info      Request received
+[11:25:41] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:41] »     [NEGOTIATOR] ⬤  debug     < 	user-agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; tr-TR) WindowsPowerShell/5.1.26100.4652
+[11:25:41] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:41] »     [NEGOTIATOR] ⬤  debug     < 	connection: Keep-Alive
+[11:25:41] »     [VALIDATOR] ‼  warning   Request did not pass the validation rules
+[11:25:41] »     [VALIDATOR] ×  error     Invalid security scheme used
+[11:25:41] »     [NEGOTIATOR] ⬤  debug     Unable to find a  response definition
+[11:25:41] »     [NEGOTIATOR] ⬤  debug     Unable to find a 'default' response definition
+[11:25:41] » [HTTP SERVER] get / ×  error     Request terminated with error: https://stoplight.io/prism/errors#UNAUTHORIZED: Invalid security scheme used
+[11:25:50] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 25a407cf-9855-421f-ab4e-544129f519fa
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-89040c0e75ea7cfd51786956852b966b-bda7b42760f21377-00
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:50] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:50] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:50] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:50] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 25a407cf-9855-421f-ab4e-544129f519fa
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-89040c0e75ea7cfd51786956852b966b-7708472714eef20d-00
+[11:25:50] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:50] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:50] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:50] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 25a407cf-9855-421f-ab4e-544129f519fa
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-89040c0e75ea7cfd51786956852b966b-bdd708e1c7dcbfe8-00
+[11:25:50] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:50] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:50] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:50] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}
+[11:25:51] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 7f321b50-da1f-42ba-861e-ce3f466b0304
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-399dcef8911f799dfbff0b2bd5cdde1d-08e04a12234c4c53-00
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:51] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:51] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:51] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:51] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 7f321b50-da1f-42ba-861e-ce3f466b0304
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-399dcef8911f799dfbff0b2bd5cdde1d-227115f5f2adfad8-00
+[11:25:51] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:51] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:51] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:51] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 7f321b50-da1f-42ba-861e-ce3f466b0304
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-399dcef8911f799dfbff0b2bd5cdde1d-5d8312c1894167fc-00
+[11:25:51] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:51] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:51] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}
+[11:25:51] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: ac419c28-44d1-4fbd-9273-ec1c2d20ac6e
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-3a41c95a897dba40c294649597465f50-d56e1874ab48a62c-00
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:51] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:51] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:51] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:51] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: ac419c28-44d1-4fbd-9273-ec1c2d20ac6e
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-3a41c95a897dba40c294649597465f50-8d4cfa6961d3200a-00
+[11:25:51] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:51] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:51] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:51] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: ac419c28-44d1-4fbd-9273-ec1c2d20ac6e
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-3a41c95a897dba40c294649597465f50-8e57dcdfb7ba4506-00
+[11:25:51] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:51] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:51] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:51] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 06804d11-3b83-407b-be86-a406e5c3891f
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-8244a70e000e74ee898ec724ec9ccc58-4602135da540b0d0-00
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 06804d11-3b83-407b-be86-a406e5c3891f
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-8244a70e000e74ee898ec724ec9ccc58-04110d3bbef855c0-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 06804d11-3b83-407b-be86-a406e5c3891f
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-8244a70e000e74ee898ec724ec9ccc58-829c8bd9890abc3f-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 60f6d844-a777-454c-a232-94ec5ac44247
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-8c4b2d57fed31e6d1a112b95f2909e81-2e801fb39d9f32cb-00
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 60f6d844-a777-454c-a232-94ec5ac44247
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-8c4b2d57fed31e6d1a112b95f2909e81-a013e502588b0bcf-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 60f6d844-a777-454c-a232-94ec5ac44247
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-8c4b2d57fed31e6d1a112b95f2909e81-7f5b7f95d147f328-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 01c025ac-69ac-495d-8c4c-c7fb75400252
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-f2b5445d73cdaa167c78ee4ea02a4789-7cfb167fa6b106fb-00
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 01c025ac-69ac-495d-8c4c-c7fb75400252
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-f2b5445d73cdaa167c78ee4ea02a4789-c3c46688b4614378-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 01c025ac-69ac-495d-8c4c-c7fb75400252
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-f2b5445d73cdaa167c78ee4ea02a4789-451c7833ae3f356d-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: ecda8906-e27f-43d5-82fb-d2efdc1aa746
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-edd484de38a2bcbc717c1bcf3bf2f235-a223a6ea09fae2ec-00
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: ecda8906-e27f-43d5-82fb-d2efdc1aa746
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-edd484de38a2bcbc717c1bcf3bf2f235-8647e7c35e99d85d-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: ecda8906-e27f-43d5-82fb-d2efdc1aa746
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-edd484de38a2bcbc717c1bcf3bf2f235-64634252f20393bd-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: a50348d2-a698-4b72-ab72-edc9c7fa9e01
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-163f49cd7005b894ca993489b28e4a71-d4819c882195efa8-00
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: a50348d2-a698-4b72-ab72-edc9c7fa9e01
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-163f49cd7005b894ca993489b28e4a71-92d24fd0f68d6f9a-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: a50348d2-a698-4b72-ab72-edc9c7fa9e01
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-163f49cd7005b894ca993489b28e4a71-af781fe37f6423c2-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] post /validate i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 214e57e0-c26a-4c2b-b619-fdfcf29f5760
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	transfer-encoding: chunked
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-05838d0acffe056b790aea23f0c647a4-48147c91413ed597-00
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	content-type: application/json; charset=utf-8
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Body: {"locationIds":["loc-A-12-3"]}
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"results":[{"locationId":"loc-A-12-3","exists":true,"isStockable":true},{"locationId":"loc-x","exists":false}],"contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3 i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 214e57e0-c26a-4c2b-b619-fdfcf29f5760
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-05838d0acffe056b790aea23f0c647a4-5fb7f4ecf45d73bb-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","code":"A-12-3","name":"Raf A-12-3","type":"Bin","parentId":"zone-A","legalEntityId":"le-tr","status":"Active","isStockable":true,"operatingMode":"internal","contractVersion":"v1"}
+[11:25:52] » [HTTP SERVER] get /loc-A-12-3/path i  info      Request received
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	host: 127.0.0.1:4011
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	authorization: Bearer ***(masked-jwt)
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	x-correlation-id: 214e57e0-c26a-4c2b-b619-fdfcf29f5760
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     < 	traceparent: 00-05838d0acffe056b790aea23f0c647a4-e597837bb09d5436-00
+[11:25:52] »     [VALIDATOR] √  success   The request passed the validation rules. Looking for the best response
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     No mediaType provided. Fallbacking to the default media type (application/json)
+[11:25:52] »     [NEGOTIATOR] √  success   Responding with the requested status code 200
+[11:25:52] »     [NEGOTIATOR] i  info      > Responding with "200"
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Status: 200
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Headers:
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > 	Content-type: application/json
+[11:25:52] »     [NEGOTIATOR] ⬤  debug     > Body: {"locationId":"loc-A-12-3","path":[{"type":"Site","id":"site-tr","code":"TR"},{"type":"Warehouse","id":"wh-01","code":"WH-01"},{"type":"StorageLocation","id":"sl-cold","code":"COLD"},{"type":"Zone","id":"zone-A","code":"A"},{"type":"Bin","id":"loc-A-12-3","code":"A-12-3"}],"contractVersion":"v1"}

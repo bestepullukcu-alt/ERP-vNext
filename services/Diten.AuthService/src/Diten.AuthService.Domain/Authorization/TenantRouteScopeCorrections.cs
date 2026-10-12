@@ -32,21 +32,71 @@ namespace Diten.AuthService.Domain.Authorization;
 /// <para><b>Gate 3 today.</b> Both allowlisted routes are tenant routes (proven from the production manifest), so the
 /// route gate cannot reject anything with the current list; it stays as a fail-closed guard for a future entry.</para>
 ///
+/// <para><b>WP-0023-FX (owner decision 2026-10-07).</b> Seven workflow RUNTIME keys were added (start, view, act on a
+/// task). Their registration is not a page route but a Tenant API permission of the Workflow manifest, so the entry
+/// kind <see cref="RegistrationKind.TenantApiPermission"/> was introduced; Gate 3 accepts it only with a named module
+/// and no route. The tests pin the list to the two BL-411 keys plus these seven, and prove from the production
+/// Workflow manifest that each of the seven is declared Tenant there and on no page — the template design keys are
+/// declared on /Platform pages, which is why adding one of them here turns the tests red. Every applied row is also
+/// written to <c>authAuditLogs</c> (<c>permission_scope_corrected</c>).</para>
+///
 /// <para>Adding a key here is a Control Tower decision (escalation boundary, risk R3), not a code convenience.</para>
 /// </summary>
 public static class TenantRouteScopeCorrections
 {
-    /// <summary>One allowlisted key and the page route its module manifest registers it on.</summary>
-    public sealed record Entry(string PermissionKey, string RegisteredRoutePath);
+    /// <summary>How the owning manifest registers an allowlisted key as tenant-scoped.</summary>
+    public enum RegistrationKind
+    {
+        /// <summary>A page or page action on a tenant route (the route derives Tenant, BL-411).</summary>
+        TenantPageRoute = 0,
 
-    /// <summary>One row the planner decided to correct. Carries no target scope: the only write is PlatformAdmin → Tenant.</summary>
-    public sealed record Correction(Guid PermissionId, string PermissionKey, string RegisteredRoutePath);
+        /// <summary>
+        /// WP-0023-FX — an API-only permission the manifest declares with Scope "Tenant"
+        /// (module-self-registration-standard §2d) and on no /Platform page.
+        /// </summary>
+        TenantApiPermission = 1,
+    }
+
+    /// <summary>
+    /// One allowlisted key and how its module manifest registers it: a tenant page route, or (WP-0023-FX) a Tenant
+    /// API permission of <paramref name="DeclaringModuleCode"/>. <paramref name="Decision"/> names the CT/owner
+    /// decision that put it on the list.
+    /// </summary>
+    public sealed record Entry(
+        string PermissionKey,
+        string? RegisteredRoutePath,
+        RegistrationKind Kind = RegistrationKind.TenantPageRoute,
+        string? DeclaringModuleCode = null,
+        string Decision = "BL-411");
+
+    /// <summary>
+    /// One row the planner decided to correct. Carries no target scope: the only write is PlatformAdmin → Tenant.
+    /// For an API permission <paramref name="RegisteredRoutePath"/> reads <c>api-permission:{module}</c>.
+    /// </summary>
+    public sealed record Correction(Guid PermissionId, string PermissionKey, string RegisteredRoutePath, string Decision = "BL-411");
 
     public static readonly IReadOnlyList<Entry> Allowlist =
     [
         new("platform.tasks.checklist-templates.manage", "/Tasks/ChecklistTemplates"),
         new("platform.tasks.templates.manage", "/Tasks/Templates"),
+
+        // WP-0023-FX (owner decision 2026-10-07) — workflow RUNTIME keys. They were PlatformAdmin only because the
+        // Workflow manifest declared them on /Platform/Workflow pages; a QA role must be able to start, see and act
+        // on approvals. The Workflow manifest now declares exactly these seven as Tenant API permissions and none of
+        // them on a page (pinned by TenantRouteScopeCorrectionTests against the production manifest). Template design,
+        // publish, SLA, escalation and transition-gate keys are NOT here and stay PlatformAdmin.
+        new("platform.workflow.instances.start", null, RegistrationKind.TenantApiPermission, "workflow", "WP-0023-FX"),
+        new("platform.workflow.instances.view", null, RegistrationKind.TenantApiPermission, "workflow", "WP-0023-FX"),
+        new("platform.workflow.tasks.approve", null, RegistrationKind.TenantApiPermission, "workflow", "WP-0023-FX"),
+        new("platform.workflow.tasks.reject", null, RegistrationKind.TenantApiPermission, "workflow", "WP-0023-FX"),
+        new("platform.workflow.tasks.delegate", null, RegistrationKind.TenantApiPermission, "workflow", "WP-0023-FX"),
+        new("platform.workflow.tasks.request-info", null, RegistrationKind.TenantApiPermission, "workflow", "WP-0023-FX"),
+        new("platform.workflow.tasks.cancel", null, RegistrationKind.TenantApiPermission, "workflow", "WP-0023-FX"),
     ];
+
+    /// <summary>True when <paramref name="permissionKey"/> is on the list (exact, ordinal).</summary>
+    public static bool IsAllowlisted(string? permissionKey) =>
+        permissionKey is not null && Allowlist.Any(e => string.Equals(e.PermissionKey, permissionKey, StringComparison.Ordinal));
 
     /// <summary>
     /// Same rule as Platform's <c>ModulePageDescriptorNormalizer.ScopeFromRoute</c> (the author of every route-derived
@@ -90,13 +140,22 @@ public static class TenantRouteScopeCorrections
                 continue;
             }
 
-            // Gate 3 — the registered page route must be a tenant route.
-            if (!IsTenantRoute(entry.RegisteredRoutePath))
+            // Gate 3 — the registration must be tenant: a tenant page route, or a Tenant API permission of a named
+            // module with no route at all (a route on an API entry is a malformed entry and never qualifies).
+            var registration = entry.Kind switch
+            {
+                RegistrationKind.TenantPageRoute when IsTenantRoute(entry.RegisteredRoutePath) => entry.RegisteredRoutePath!.Trim(),
+                RegistrationKind.TenantApiPermission
+                    when entry.RegisteredRoutePath is null && !string.IsNullOrWhiteSpace(entry.DeclaringModuleCode)
+                    => $"api-permission:{entry.DeclaringModuleCode}",
+                _ => null
+            };
+            if (registration is null)
             {
                 continue;
             }
 
-            plan.Add(new Correction(permission.Id, permission.Key, entry.RegisteredRoutePath));
+            plan.Add(new Correction(permission.Id, permission.Key, registration, entry.Decision));
         }
 
         return plan;

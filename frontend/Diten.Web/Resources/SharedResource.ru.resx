@@ -1063,4 +1063,25 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Рейсы</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Управление претензиями</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Претензии по перевозке</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Запасы</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Складской учёт</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Местоположения</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Учёт партий / серийных номеров</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Обзор партий</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Обзор серийных номеров</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Прослеживаемость</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Перенос вручную введённых партий</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Качество</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>Очередь карантина</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Заблокированный запас</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>Очередь повторного контроля</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Настройки карантина</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Электронная подпись</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Моя подпись</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>Запросы на подпись</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>Проверка подписей</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>Экспорт аудита</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Политика подписи</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Значения подписи</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Одобрение образцов</value></data>
 </root>

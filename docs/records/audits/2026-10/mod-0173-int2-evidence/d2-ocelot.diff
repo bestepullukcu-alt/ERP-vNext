@@ -1,0 +1,47 @@
+diff --git a/gateway/Diten.ApiGateway/ocelot.json b/gateway/Diten.ApiGateway/ocelot.json
+index c2b6d7e42..8b6c396a4 100644
+--- a/gateway/Diten.ApiGateway/ocelot.json
++++ b/gateway/Diten.ApiGateway/ocelot.json
+@@ -837,6 +837,42 @@
+       ],
+       "UpstreamScheme": "http"
+     },
++    {
++      "DownstreamPathTemplate": "/api/locations",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5066
++        }
++      ],
++      "UpstreamPathTemplate": "/api/locations",
++      "UpstreamHttpMethod": [
++        "GET",
++        "POST",
++        "PATCH",
++        "OPTIONS"
++      ],
++      "UpstreamScheme": "http"
++    },
++    {
++      "DownstreamPathTemplate": "/api/locations/{everything}",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5066
++        }
++      ],
++      "UpstreamPathTemplate": "/api/locations/{everything}",
++      "UpstreamHttpMethod": [
++        "GET",
++        "POST",
++        "PATCH",
++        "OPTIONS"
++      ],
++      "UpstreamScheme": "http"
++    },
+     {
+       "DownstreamPathTemplate": "/api/personalization/views",
+       "DownstreamScheme": "http",

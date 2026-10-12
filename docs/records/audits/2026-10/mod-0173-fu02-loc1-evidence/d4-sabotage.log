@@ -1,0 +1,92 @@
+# WP-0173-LOC1 D4 sabotage run — HEAD 2e8ff898e — 2026-10-01T14:26:38.923Z
+
+## K-01 level rule
+file: services/Diten.InventoryService/src/Diten.InventoryService.Domain/Rules/LocationHierarchyRules.cs
+removed: ": AllowedParents[type].Contains(parentType.Value);"
+replaced by: ": true;"
+tests: FullyQualifiedName~LocationHierarchyTests.AC01_every_type_parent_pair
+SABOTAGED → exit 1 Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+  red: Başarısız Diten.InventoryService.Tests.Api.Locations.LocationHierarchyTests.AC01_every_type_parent_pair_follows_the_K01_matrix [7 s]
+  first failure: expected 422, got 201: {"version":1,"createdAt":"2026-10-01T14:26:55.9206804Z","createdBy":"9538bfb1-a800-48d2-bcd9-aa076455717c","locationId":"44136937-f1bc-43d3-88cb-0664cb1fac9c","code":"WAR-def0cff62e","name":"n","type":"Warehouse","parentId":"00b93131-9db6-4922-9ab6-5793fac7baba","legalEntityId
+RESTORED (blob identical 61b8ed31fa85) → exit 0 Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+VERDICT: PASS (red when broken, green when restored)
+
+## K-02 code uniqueness (case-insensitive key)
+file: services/Diten.InventoryService/src/Diten.InventoryService.Domain/Rules/LocationHierarchyRules.cs
+removed: "public static string NormalizeCode(string code) => code.ToUpperInvariant();"
+replaced by: "public static string NormalizeCode(string code) => code;"
+tests: FullyQualifiedName~LocationCodeAndScopeTests.AC02_code_is_unique
+SABOTAGED → exit 1 Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+  red: Başarısız Diten.InventoryService.Tests.Api.Locations.LocationCodeAndScopeTests.AC02_code_is_unique_per_company_case_insensitively_on_create_edit_and_bulk [7 s]
+  first failure: expected 409, got 201: {"version":1,"createdAt":"2026-10-01T14:27:25.4436955Z","createdBy":"069fe396-56c0-4dd8-b50f-efec1e5447f8","locationId":"f5f57ade-4415-461d-9176-7fad0b962376","code":"dup-14a0b3e1","name":"n","type":"Bin","parentId":"8e4f8722-b4c3-4d0f-bd11-df6e2bc00993","legalEntityId":"6531d
+RESTORED (blob identical 61b8ed31fa85) → exit 0 Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 8 s - Diten.InventoryService.Tests.dll (net8.0)
+VERDICT: PASS (red when broken, green when restored)
+
+## K-03 company isolation (LE filter of every location query)
+file: services/Diten.InventoryService/src/Diten.InventoryService.Persistence/Repositories/LocationRepository.cs
+removed: "=> Builders<Location>.Filter.Eq(x => x.TenantId, (Guid?)_tenantId)\n           & Builders<Location>.Filter.Eq(x => x.LegalEntityId, (Guid?)_legalEntityId)\n           & Builders<Location>.Filter.Eq(x => x.IsDeleted, false);"
+replaced by: "=> Builders<Location>.Filter.Eq(x => x.TenantId, (Guid?)_tenantId)\n           & Builders<Location>.Filter.Eq(x => x.IsDeleted, false);"
+tests: FullyQualifiedName~LocationCodeAndScopeTests.AC03_a_parent_of_another_company
+SABOTAGED → exit 1 Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+  red: Başarısız Diten.InventoryService.Tests.Api.Locations.LocationCodeAndScopeTests.AC03_a_parent_of_another_company_is_403_in_a_write_and_unknown_everywhere_else [7 s]
+  first failure: expected 403, got 201: {"version":1,"createdAt":"2026-10-01T14:27:56.8586362Z","createdBy":"ec62b243-1569-4702-9008-129fb077beda","locationId":"cd5ebf11-237d-4e7f-8d8e-9c299a54db2a","code":"W-5e7bffb5a0","name":"n","type":"Warehouse","parentId":"8bd47909-f9bf-4bea-a2d1-afaa6174d561","legalEntityId":
+RESTORED (blob identical c109ad74cd69) → exit 0 Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+VERDICT: PASS (red when broken, green when restored)
+
+## K-05 deactivate / archive with stock
+file: services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Locations/Handlers/CommandHandlers/ChangeLocationStatusHandler.cs
+removed: "if ((await tx.StockPresenceAsync(node, ct)).Any)"
+replaced by: "if (false && (await tx.StockPresenceAsync(node, ct)).Any)"
+tests: FullyQualifiedName~LocationLifecycleTests.AC05_deactivate_or_archive_with_stock
+SABOTAGED → exit 1 Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+  red: Başarısız Diten.InventoryService.Tests.Api.Locations.LocationLifecycleTests.AC05_deactivate_or_archive_with_stock_on_the_node_or_below_is_422_LOCATION_HAS_STOCK_and_changes_nothing [7 s]
+  first failure: expected 422, got 200: {"version":2,"createdAt":"2026-10-01T14:28:28.8000000Z","createdBy":"00000000-0000-0000-0000-000000000000","updatedAt":"2026-10-01T14:28:29.6881173Z","updatedBy":"05595858-4c96-4a1a-9382-6977c53ed03c","locationId":"0320ea01-a5e8-4616-bf1f-8297e8466615","code":"A-B44D5286","nam
+RESTORED (blob identical f695c0e4e9e4) → exit 0 Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 8 s - Diten.InventoryService.Tests.dll (net8.0)
+VERDICT: PASS (red when broken, green when restored)
+
+## K-06 parent must be Active to activate
+file: services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Locations/Handlers/CommandHandlers/ChangeLocationStatusHandler.cs
+removed: "if (parent is null || parent.Status != LocationStatus.Active)"
+replaced by: "if (false)"
+tests: FullyQualifiedName~LocationLifecycleTests.AC06
+SABOTAGED → exit 1 Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 6 s - Diten.InventoryService.Tests.dll (net8.0)
+  red: Başarısız Diten.InventoryService.Tests.Api.Locations.LocationLifecycleTests.AC06_activating_under_an_inactive_parent_is_422_LOCATION_PARENT_INACTIVE [6 s]
+  first failure: expected 422, got 200: {"version":3,"createdAt":"2026-10-01T14:29:01.2010000Z","createdBy":"4f72bd74-b0f9-470c-9117-69eb820873e6","updatedAt":"2026-10-01T14:29:01.3314800Z","updatedBy":"4f72bd74-b0f9-470c-9117-69eb820873e6","locationId":"075029f0-1ed0-497c-a0e1-dcd94c0f351f","code":"BIN-0a2b0d16de",
+RESTORED (blob identical f695c0e4e9e4) → exit 0 Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+VERDICT: PASS (red when broken, green when restored)
+
+## K-07 move with stock
+file: services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Locations/Handlers/CommandHandlers/UpdateLocationHandler.cs
+removed: "if ((await Presence()).Any) return HasStock(\"Stock is held at or below this location; it cannot be moved.\");"
+replaced by: ""
+tests: FullyQualifiedName~LocationLifecycleTests.AC07_a_move_with_stock
+SABOTAGED → exit 1 Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+  red: Başarısız Diten.InventoryService.Tests.Api.Locations.LocationLifecycleTests.AC07_a_move_with_stock_on_the_node_or_below_is_422_LOCATION_HAS_STOCK [7 s]
+  first failure: expected 422, got 200: {"version":2,"createdAt":"2026-10-01T14:29:29.8130000Z","createdBy":"00000000-0000-0000-0000-000000000000","updatedAt":"2026-10-01T14:29:30.8687825Z","updatedBy":"89011538-600e-471f-906b-ee15521e9679","locationId":"69a3cbb3-0831-4d3b-b1ca-88ed06ef8643","code":"A-13DE8C58","nam
+RESTORED (blob identical 4328b12d1c55) → exit 0 Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 8 s - Diten.InventoryService.Tests.dll (net8.0)
+VERDICT: PASS (red when broken, green when restored)
+
+## K-11 history row in the change transaction
+file: services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Locations/Handlers/CommandHandlers/UpdateLocationHandler.cs
+removed: "await tx.AppendHistoryAsync(history, ct);"
+replaced by: ""
+tests: FullyQualifiedName~LocationHistoryBulkIdempotencyTests.AC11_create_and_every_changed_field
+SABOTAGED → exit 1 Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+  red: Başarısız Diten.InventoryService.Tests.Api.Locations.LocationHistoryBulkIdempotencyTests.AC11_create_and_every_changed_field_write_one_history_row_with_actor_correlation_and_le_source [7 s]
+  first failure: Assert.Equal() Failure: Values differ
+RESTORED (blob identical 4328b12d1c55) → exit 0 Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+VERDICT: PASS (red when broken, green when restored)
+
+## K-13 in-transaction location status check of the ledger
+file: services/Diten.InventoryService/src/Diten.InventoryService.Persistence/Repositories/InventoryLedgerRepository.cs
+removed: "& f.Eq(x => x.Status, LocationStatus.Active)"
+replaced by: ""
+tests: FullyQualifiedName~LocationLedgerTests.AC13_a_reversal_into_a_location_that_became_inactive
+SABOTAGED → exit 1 Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 7 s - Diten.InventoryService.Tests.dll (net8.0)
+  red: Başarısız Diten.InventoryService.Tests.Api.Locations.LocationLedgerTests.AC13_a_reversal_into_a_location_that_became_inactive_is_refused_inside_the_posting_transaction [7 s]
+  first failure: expected 422, got 201: {"transactionId":"53b028ef-79c7-44cd-9db4-78e67808fb97","transactionNumber":"INV-2026-0000003","postedAt":"2026-10-01T14:30:33.635Z","idempotentReplay":false,"balanceSnapshot":{"itemId":"3cf7f22e-fbea-4047-867b-f15a1c44d003","skuId":"5d4611c1-0d3c-4b23-acdc-acbe149dbe03","skuL
+RESTORED (blob identical d771a98cc3b8) → exit 0 Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 6 s - Diten.InventoryService.Tests.dll (net8.0)
+VERDICT: PASS (red when broken, green when restored)
+
+final git diff --stat: (empty)
+ALL: PASS

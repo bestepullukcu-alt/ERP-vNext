@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="LocationsTitle" xml:space="preserve"><value>Location list</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>The single list of the company's physical places. Stock, warehouse, purchasing and production read from this list.</value></data>
+  <data name="TabTree" xml:space="preserve"><value>Hierarchy</value></data>
+  <data name="TabList" xml:space="preserve"><value>List</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Company</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Select a company</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Select the company whose locations you want to see. Nothing is shown until a company is selected.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>The company list could not be loaded, so no location is shown. Ask your administrator for permission to view companies, or try again later.</value></data>
+  <data name="AddNewLocation" xml:space="preserve"><value>New location</value></data>
+  <data name="ColCode" xml:space="preserve"><value>Code</value></data>
+  <data name="ColName" xml:space="preserve"><value>Name</value></data>
+  <data name="ColType" xml:space="preserve"><value>Type</value></data>
+  <data name="ColParentPath" xml:space="preserve"><value>Parent path</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="ColStockable" xml:space="preserve"><value>Can hold stock</value></data>
+  <data name="ColOperatingMode" xml:space="preserve"><value>Operating mode</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Type</value></data>
+  <data name="FilterStockable" xml:space="preserve"><value>Can hold stock</value></data>
+  <data name="FilterParent" xml:space="preserve"><value>Parent</value></data>
+  <data name="StockableYes" xml:space="preserve"><value>Can hold stock</value></data>
+  <data name="StockableNo" xml:space="preserve"><value>Cannot hold stock</value></data>
+  <data name="TypeSite" xml:space="preserve"><value>Site</value></data>
+  <data name="TypeWarehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="TypeStorageLocation" xml:space="preserve"><value>Storage location</value></data>
+  <data name="TypeZone" xml:space="preserve"><value>Zone</value></data>
+  <data name="TypeBin" xml:space="preserve"><value>Bin</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="ModeInternal" xml:space="preserve"><value>Stock in this system</value></data>
+  <data name="ModeExternal" xml:space="preserve"><value>Stock in an external system, tracked via integration</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="ActionAddChild" xml:space="preserve"><value>Add child</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Activate</value></data>
+  <data name="ActionDeactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ActionHistory" xml:space="preserve"><value>History</value></data>
+  <data name="ActionViewStock" xml:space="preserve"><value>View in stock list</value></data>
+  <data name="ActionBulkBins" xml:space="preserve"><value>Generate bins</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New location</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit location</value></data>
+  <data name="FormTitleChild" xml:space="preserve"><value>New location under {0}</value></data>
+  <data name="FieldCode" xml:space="preserve"><value>Code</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Name</value></data>
+  <data name="FieldType" xml:space="preserve"><value>Type</value></data>
+  <data name="FieldParent" xml:space="preserve"><value>Parent</value></data>
+  <data name="FieldStockable" xml:space="preserve"><value>Can hold stock</value></data>
+  <data name="FieldOperatingMode" xml:space="preserve"><value>Operating mode</value></data>
+  <data name="FieldOrgUnit" xml:space="preserve"><value>Organizational unit</value></data>
+  <data name="FieldCostCenter" xml:space="preserve"><value>Cost center code</value></data>
+  <data name="Optional" xml:space="preserve"><value>optional</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. WH-01</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>e.g. Central warehouse</value></data>
+  <data name="ParentPlaceholder" xml:space="preserve"><value>Search a parent by code or name</value></data>
+  <data name="OrgUnitPlaceholder" xml:space="preserve"><value>Select an organizational unit</value></data>
+  <data name="CostCenterPlaceholder" xml:space="preserve"><value>e.g. MM-1100</value></data>
+  <data name="HintCode" xml:space="preserve"><value>Unique in this company. It can be changed later: stock keeps pointing to the same location.</value></data>
+  <data name="HintTypeFixed" xml:space="preserve"><value>The type cannot be changed. If it is wrong, archive the record and create a new one.</value></data>
+  <data name="HintParentSite" xml:space="preserve"><value>A site has no parent.</value></data>
+  <data name="HintZoneOptional" xml:space="preserve"><value>A bin can also sit directly under a storage location, without a zone.</value></data>
+  <data name="HintCompany" xml:space="preserve"><value>The location belongs to the selected company; locations below inherit it. The company cannot be changed.</value></data>
+  <data name="OrgUnitsUnavailable" xml:space="preserve"><value>The organizational unit list could not be read. You can leave the field empty and save.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="ValidationCodeFormat" xml:space="preserve"><value>Use 1–40 characters: letters, digits and . _ / - only.</value></data>
+  <data name="ValidationNameLength" xml:space="preserve"><value>Use at most 120 characters.</value></data>
+  <data name="ValidationCostCenterFormat" xml:space="preserve"><value>Use 1–40 characters: letters, digits and . _ - only.</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Nothing was changed.</value></data>
+  <data name="ReloadLabel" xml:space="preserve"><value>Reload the record</value></data>
+  <data name="ErrorDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="ReferenceLabel" xml:space="preserve"><value>Reference</value></data>
+  <data name="Searching" xml:space="preserve"><value>Searching…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>No matches</value></data>
+  <data name="ConfirmActivateTitle" xml:space="preserve"><value>Activate the location?</value></data>
+  <data name="ConfirmActivateText" xml:space="preserve"><value>{0} will be active again and can be selected on stock forms.</value></data>
+  <data name="ConfirmDeactivateTitle" xml:space="preserve"><value>Deactivate the location?</value></data>
+  <data name="ConfirmDeactivateText" xml:space="preserve"><value>{0} will be deactivated. Inactive locations cannot be selected on stock forms.</value></data>
+  <data name="ConfirmArchiveTitle" xml:space="preserve"><value>Archive the location?</value></data>
+  <data name="ConfirmArchiveText" xml:space="preserve"><value>{0} will be archived. This cannot be undone: an archived location cannot be reactivated or changed. It is not deleted and stays visible in past movements.</value></data>
+  <data name="BulkTitle" xml:space="preserve"><value>Bulk bin generation</value></data>
+  <data name="BulkTarget" xml:space="preserve"><value>Target</value></data>
+  <data name="BulkAisleFrom" xml:space="preserve"><value>Aisle from</value></data>
+  <data name="BulkAisleTo" xml:space="preserve"><value>Aisle to</value></data>
+  <data name="BulkRackFrom" xml:space="preserve"><value>Rack from</value></data>
+  <data name="BulkRackTo" xml:space="preserve"><value>Rack to</value></data>
+  <data name="BulkLevelFrom" xml:space="preserve"><value>Level from</value></data>
+  <data name="BulkLevelTo" xml:space="preserve"><value>Level to</value></data>
+  <data name="BulkPositions" xml:space="preserve"><value>Bins per level</value></data>
+  <data name="BulkCodePattern" xml:space="preserve"><value>Codes: AISLE-RACK-LEVEL-BIN, e.g. A-01-01-01.</value></data>
+  <data name="BulkCount" xml:space="preserve"><value>{0} bins</value></data>
+  <data name="BulkPreview" xml:space="preserve"><value>Preview</value></data>
+  <data name="BulkPreviewSummary" xml:space="preserve"><value>{0} bins will be created</value></data>
+  <data name="BulkSkipped" xml:space="preserve"><value>{0} codes already exist and will be skipped.</value></data>
+  <data name="BulkCreateButton" xml:space="preserve"><value>Create {0} bins</value></data>
+  <data name="BulkNothingToCreate" xml:space="preserve"><value>Nothing to create</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>{0} bins created.</value></data>
+  <data name="BulkResultSkipped" xml:space="preserve"><value>{0} existing codes were skipped.</value></data>
+  <data name="BulkMore" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="LocationCreated" xml:space="preserve"><value>Location created.</value></data>
+  <data name="LocationSaved" xml:space="preserve"><value>Changes saved.</value></data>
+  <data name="StatusChanged" xml:space="preserve"><value>Status updated.</value></data>
+  <data name="BinsCreated" xml:space="preserve"><value>{0} bins created.</value></data>
+  <data name="ErrCodeTaken" xml:space="preserve"><value>This code is already used in this company. Choose another code.</value></data>
+  <data name="ErrLevelInvalid" xml:space="preserve"><value>This type cannot sit under the chosen parent (site → warehouse → storage location → zone → bin; a bin may also sit under a storage location).</value></data>
+  <data name="ErrParentInactive" xml:space="preserve"><value>The parent is not active. Activate the parent first.</value></data>
+  <data name="ErrMoveIntoSubtree" xml:space="preserve"><value>A location cannot be moved under itself or under one of its own children.</value></data>
+  <data name="ErrHasStock" xml:space="preserve"><value>This location (or one below it) holds stock, so the change is not possible. Transfer the stock first. Nothing was changed.</value></data>
+  <data name="ErrHasActiveChildren" xml:space="preserve"><value>This location has active child locations. Deactivate them first.</value></data>
+  <data name="ErrArchived" xml:space="preserve"><value>The location is archived and cannot be changed (nor can anything be added under it).</value></data>
+  <data name="ErrLocationConflict" xml:space="preserve"><value>Someone else saved this location after you opened it. Reload it and make your change again.</value></data>
+  <data name="ErrBulkLimit" xml:space="preserve"><value>At most 1000 bins can be created at once. Narrow the ranges.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>The location was not found in this company. Reload the page.</value></data>
+  <data name="ErrOrgUnitInvalid" xml:space="preserve"><value>This organizational unit is not an active unit of this company. Choose another one or leave the field empty.</value></data>
+  <data name="ErrOrgUnitDirectoryUnavailable" xml:space="preserve"><value>The organizational unit could not be checked right now, so nothing was saved. Try again, or leave the field empty and save.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>This action was already submitted with other values. Close the dialog and start again.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>The request could not be processed because a value is not valid. Check the fields and try again.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>This record belongs to another company. Switch to that company or ask your administrator for access.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>The selected company cannot be confirmed right now, so no change was made. Try again in a moment.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Select a company first. Nothing was read or changed.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>You do not have access to this action. Ask your administrator for the location permissions you need.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Your session has ended. Sign in again to continue.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>The location service cannot be reached right now. No change was made; try again in a moment.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>The data changed while you were working. Reload and try again.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Something went wrong and no change was made. Try again; if it keeps happening, contact support.</value></data>
+</root>

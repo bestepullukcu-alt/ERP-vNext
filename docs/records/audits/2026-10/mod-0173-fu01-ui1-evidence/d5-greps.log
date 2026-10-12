@@ -1,0 +1,23 @@
+## U2 — explicit tenant layout on every FU01 page (UI-1 ships 2 pages; Create/Details/Edit arrive with UI-2)
+$ grep -rn "Layout = \"_LayoutTenantShell\";" frontend/Diten.Web/Views/Inventory
+frontend/Diten.Web/Views/Inventory/StockLedger/Index.cshtml:8:    Layout = "_LayoutTenantShell";
+frontend/Diten.Web/Views/Inventory/StockMovements/Index.cshtml:8:    Layout = "_LayoutTenantShell";
+hits: 2
+$ ls -d frontend/Diten.Web/Areas
+ls: cannot access 'frontend/Diten.Web/Areas': No such file or directory
+
+## U7 — no technical refusal text in the new Views / JS
+$ grep -rn "Permission denied\|Forbidden" frontend/Diten.Web/Views/Inventory frontend/Diten.Web/wwwroot/assets/js/Inventory
+hits: 0
+
+## U11 — the browser code never names the inventory API, its port, or a direct Gateway base
+$ grep -rnE "/api/inventory|5066|window\.API" frontend/Diten.Web/wwwroot/assets/js/Inventory frontend/Diten.Web/Views/Inventory
+hits: 0
+
+## U8 — W-UI-01: Model B (/api/mdm/products) is not called by any FU01 code
+$ grep -rn "/api/mdm/products" <FU01 controllers, Models/Inventory, Views/Inventory, js/Inventory> | grep -v doc-comment
+code hits: 0
+
+## Server-mode page JS writes none of: serverSide, ajax.data, ext.search, matches:, pageSize=, importBtn, _BulkActionBar; selection off
+frontend/Diten.Web/Views/Inventory/StockLedger/_DataTable.cshtml:17:        HasSelection = false,
+frontend/Diten.Web/Views/Inventory/StockMovements/_DataTable.cshtml:18:        HasSelection = false,

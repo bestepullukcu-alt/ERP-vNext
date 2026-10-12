@@ -1064,4 +1064,25 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Cargas</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestión de reclamaciones</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Reclamaciones de transporte</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventario</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Libro de existencias</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Ubicaciones</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Seguimiento de lotes / series</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Explorador de lotes</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Explorador de números de serie</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Trazabilidad</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Migración de lotes introducidos manualmente</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Calidad</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>Cola de cuarentena</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Stock bloqueado</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>Cola de reanálisis</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Ajustes de cuarentena</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Firma electrónica</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Mi firma</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>Solicitudes de firma</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>Verificación de firmas</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>Exportación de auditoría</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Política de firma</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significados de firma</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Aprobación de muestras</value></data>
 </root>

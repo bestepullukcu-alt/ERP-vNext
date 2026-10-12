@@ -1,0 +1,21 @@
+### D4-2 negative-stock guard — SABOTAGED (InventoryLedgerRepository.DecreaseAsync coverage condition removed)
+warning: in the working copy of 'services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Inventory/Handlers/CommandHandlers/PostMovementHandler.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'services/Diten.InventoryService/src/Diten.InventoryService.Persistence/Repositories/InventoryLedgerRepository.cs', LF will be replaced by CRLF the next time Git touches it
+-        var filter = DimensionFilter(leg.Dimension) & coverage;
++        var filter = DimensionFilter(leg.Dimension); // SABOTAGE D4-2: coverage condition removed
+  Başarısız Diten.InventoryService.Tests.Api.NegativeStockAndConcurrencyTests.Issue_above_balance_is_422_INSUFFICIENT_STOCK_with_available_and_requested_and_writes_nothing [1 s]
+  Hata İletisi:
+   expected 422, got 201: {"transactionId":"6c7d5ad0-2ae4-48f0-9e56-2d3455995a87","transactionNumber":"INV-2026-0000002","postedAt":"2026-09-30T15:02:16.109Z","idempotentReplay":false,"balanceSnapshot":{"itemId":"996f727a-d316-45eb-a226-7902655b90af","skuId":"
+  Başarısız Diten.InventoryService.Tests.Api.NegativeStockAndConcurrencyTests.Two_parallel_issues_of_60_against_100_end_at_40_never_minus_20 [69 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Collections differ
+  Başarısız Diten.InventoryService.Tests.Api.NegativeStockAndConcurrencyTests.Many_parallel_issues_never_overdraw [123 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Values differ
+  Başarısız Diten.InventoryService.Tests.Api.ReversalTests.Reversing_a_receipt_whose_stock_was_already_issued_is_422_INSUFFICIENT_STOCK [36 ms]
+  Hata İletisi:
+   expected 422, got 201: {"transactionId":"9f5d3925-3d1e-4cc5-bf3b-98dd9860436d","transactionNumber":"INV-2026-0000003","postedAt":"2026-09-30T15:02:16.377Z","idempotentReplay":false,"balanceSnapshot":{"itemId":"87311342-78bb-432e-aaf0-a495c8c076e7","skuId":"
+  Başarısız Diten.InventoryService.Tests.Api.NegativeStockAndConcurrencyTests.A_rejected_transfer_moves_nothing_on_either_side [25 ms]
+  Hata İletisi:
+   expected 422, got 201: {"transactionId":"a39684d3-f5fc-443c-af78-e6eb5cf8d3ff","transactionNumber":"INV-2026-0000002","postedAt":"2026-09-30T15:02:16.379Z","idempotentReplay":false,"balanceSnapshot":{"itemId":"b64bae7e-fe46-4698-9c18-2bf42709c5b3","skuId":"
+Başarısız! - Başarısız:     5, Başarılı:    13, Atlanan:     0, Toplam:    18, Süre: 1 s - Diten.InventoryService.Tests.dll (net8.0)

@@ -1,0 +1,37 @@
+﻿# WP-0173-UI2 D5 greps — measured 2026-10-02T13:08:11.9843883+03:00 on the UI-2 tree (paths relative to the repo)
+
+## Layout explicit on the four new pages (VIEW-001)  (pattern: Layout = "_LayoutTenantShell";) — 4 hit(s), expected 4
+  frontend\Diten.Web\Views\Inventory\StockMovements\Create.cshtml:8: Layout = "_LayoutTenantShell";
+  frontend\Diten.Web\Views\Inventory\StockMovements\Edit.cshtml:8: Layout = "_LayoutTenantShell";
+  frontend\Diten.Web\Views\Inventory\StockMovements\Details.cshtml:9: Layout = "_LayoutTenantShell";
+  frontend\Diten.Web\Views\Inventory\StockLedger\Create.cshtml:10: Layout = "_LayoutTenantShell";
+
+## Browser code naming the Gateway, the service port or an /api route  (pattern: 5066|5067|localhost:5000|["'`]/api/) — 0 hit(s), expected 0
+
+## Technical refusal text in the FU01 views / scripts (UAS-001 §5)  (pattern: Permission denied|Forbidden) — 0 hit(s), expected 0
+
+## Raw SweetAlert (one dialog implementation)  (pattern: Swal\.fire) — 0 hit(s), expected 0
+
+## Model B product surface in FU01 code (W-UI-01 / DEC-INV-17)  (pattern: /api/mdm/products; comment lines excluded) — 0 hit(s), expected 0
+
+## …the same, comment lines included (the waiver's own "never" note)  (pattern: /api/mdm/products) — 1 hit(s), expected 1
+  frontend\Diten.Web\Models\Inventory\ProductPickerSource.cs:17: /// day PRODUCT-MASTER-BUNDLE gains a search operation (v1.1) only this file changes. Never <c>/api/mdm/products</c>
+
+## A write on the StockLedger controller (KD-2: no balance write path)  (pattern: \[Http(Post|Put|Patch|Delete)) — 0 hit(s), expected 0
+
+## STATUS_TRANSFER or an automatic type offered by the form  (pattern: STATUS_TRANSFER|GOODS_RECEIPT|GOODS_ISSUE|CUSTOMER_RETURN|SUPPLIER_RETURN) — 0 hit(s), expected 0
+
+## Float arithmetic on quantities in the form script (UI-13)  (pattern: parseFloat|parseInt\(|Number\(el\.quantity|\* ?qty|toFixed) — 0 hit(s), expected 0
+
+## Spinner / "Loading" text instead of skeletons  (pattern: spinner-border|>Loading<) — 0 hit(s), expected 0
+
+## Delete / import / export controls in the UI-2 files  (pattern: (?i)\bdelete\b|import|export) — 0 hit(s), expected 0
+
+## Inline style attributes in the UI-2 views  (pattern: style=") — 0 hit(s), expected 0
+
+## English fallback strings in the form script  (pattern: \|\| '[A-Z][a-z]) — 0 hit(s), expected 0
+
+## was-validated set on the form (re-pads select2, LOC2-09)  (pattern: was-validated; comment lines excluded) — 0 hit(s), expected 0
+
+## Hardcoded location / product ids in the form script (no fallback lists)  (pattern: [0-9a-f]{8}-[0-9a-f]{4}-) — 0 hit(s), expected 0
+

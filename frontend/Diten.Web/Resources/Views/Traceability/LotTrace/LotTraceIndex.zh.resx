@@ -1,0 +1,313 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Action.CHANGELOTSTATUS" xml:space="preserve">
+    <value>更改状态</value>
+  </data>
+  <data name="Action.EDITLOT" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Action.EDITRELEASEDLOT" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Action.LOTMOVES" xml:space="preserve">
+    <value>移动历史</value>
+  </data>
+  <data name="Action.LOTTRACEOPEN" xml:space="preserve">
+    <value>可追溯性</value>
+  </data>
+  <data name="Action.NEWLOT" xml:space="preserve">
+    <value>新建批次</value>
+  </data>
+  <data name="Action.OPENINLEDGER" xml:space="preserve">
+    <value>在库存台账中打开</value>
+  </data>
+  <data name="Action.RECEIPTINLEDGER" xml:space="preserve">
+    <value>在库存台账中打开</value>
+  </data>
+  <data name="Action.SERIALLOT" xml:space="preserve">
+    <value>批次详情</value>
+  </data>
+  <data name="Action.SERIALMOVES" xml:space="preserve">
+    <value>移动历史</value>
+  </data>
+  <data name="Action.TRACELOTDETAIL" xml:space="preserve">
+    <value>批次详情</value>
+  </data>
+  <data name="Action.VIEWALLSERIALS" xml:space="preserve">
+    <value>全部序列号</value>
+  </data>
+  <data name="Action.VIEWLOT" xml:space="preserve">
+    <value>批次详情</value>
+  </data>
+  <data name="Action.VIEWRECEIPT" xml:space="preserve">
+    <value>移动凭证</value>
+  </data>
+  <data name="Back.Level1" xml:space="preserve">
+    <value>反向 · 第 1 级</value>
+  </data>
+  <data name="Back.Level2" xml:space="preserve">
+    <value>反向 · 第 2 级</value>
+  </data>
+  <data name="Back.None" xml:space="preserve">
+    <value>没有登记的来源</value>
+  </data>
+  <data name="Back.Title" xml:space="preserve">
+    <value>反向追溯</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>公司</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>请选择公司</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>请选择您所在的公司，以查看其批次和库存。</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>无法加载公司列表。请稍后重试。</value>
+  </data>
+  <data name="Empty.List" xml:space="preserve">
+    <value>没有符合筛选条件的记录。</value>
+  </data>
+  <data name="Empty.PickLot" xml:space="preserve">
+    <value>请选择批次。</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>请确认您了解冻结的影响。</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>请先选择公司。</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>您的账户不能使用该公司。</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>支持参考号</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>无法读取该代码。</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>无法完成操作。请重试。</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>此表单已使用不同的值提交过。请重新加载页面。</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>部分值无效。请检查各字段。</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>暂时无法验证公司。请稍后重试。</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>该产品已存在此批号。</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>该批次已被他人修改。请重新加载页面后重试。</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>日期不一致（生产日期 ≤ 今天，有效期晚于生产日期，复验日期介于两者之间）。</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>批号和 SKU 不能更改。</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>没有任何更改。</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>批号只能包含 1 至 40 个字符：字母 A–Z、数字以及 . / -。</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>该批次属于其他 SKU。</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>请选择该批次所属的 SKU。</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>该批次不允许此状态变更。</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>您无权执行此操作。</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>暂时无法获取产品数据；未保存任何内容。</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>该产品未启用批次管理；无法创建批次。</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>请填写至少 10 个字符的原因。</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>暂时无法访问批次服务。请稍后重试。</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>您的会话已过期。请重新登录。</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>未找到该产品或 SKU。</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>未找到该批次。</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>未找到该序列号。</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>{0} 天</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>已过期</value>
+  </data>
+  <data name="Filter.Lot" xml:space="preserve">
+    <value>批次</value>
+  </data>
+  <data name="Fwd.Level1" xml:space="preserve">
+    <value>正向 · 第 1 级</value>
+  </data>
+  <data name="Fwd.Level2" xml:space="preserve">
+    <value>正向 · 第 2 级</value>
+  </data>
+  <data name="Fwd.None" xml:space="preserve">
+    <value>未使用或发出</value>
+  </data>
+  <data name="Fwd.Title" xml:space="preserve">
+    <value>正向追溯</value>
+  </data>
+  <data name="Hint.Reroot" xml:space="preserve">
+    <value>点击批次卡片可将其置于中心。</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>无匹配结果</value>
+  </data>
+  <data name="Node.Consumed" xml:space="preserve">
+    <value>已投入生产</value>
+  </data>
+  <data name="Node.Opening" xml:space="preserve">
+    <value>期初余额</value>
+  </data>
+  <data name="Node.Receipt" xml:space="preserve">
+    <value>收货</value>
+  </data>
+  <data name="Node.Shipment" xml:space="preserve">
+    <value>发运</value>
+  </data>
+  <data name="Node.Used" xml:space="preserve">
+    <value>用于</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>批次/序列号追踪</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>批次从何而来、去往何处：每个方向两级。</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>可追溯性</value>
+  </data>
+  <data name="Paging.Range" xml:space="preserve">
+    <value>第 {0}–{1} 条，共 {2} 条</value>
+  </data>
+  <data name="Reality.BackwardReceiptOnly" xml:space="preserve">
+    <value>在生产谱系登记（MOD-0194）之前，反向追溯显示批次的收货来源。</value>
+  </data>
+  <data name="Reality.ForwardDocumentOnly" xml:space="preserve">
+    <value>正向追溯仅显示出库单据号；客户名称将随发运模块提供。</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>已超过复验日期</value>
+  </data>
+  <data name="Root.Expiry" xml:space="preserve">
+    <value>有效期至</value>
+  </data>
+  <data name="Root.Initial" xml:space="preserve">
+    <value>初始数量</value>
+  </data>
+  <data name="Root.OnHand" xml:space="preserve">
+    <value>现有库存</value>
+  </data>
+  <data name="Root.Title" xml:space="preserve">
+    <value>所选批次</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>正在搜索…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>有效</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>已冻结</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>已消耗</value>
+  </data>
+  <data name="Stat.Lots" xml:space="preserve">
+    <value>受影响批次</value>
+  </data>
+  <data name="Stat.LotsSub" xml:space="preserve">
+    <value>该批次及其关联批次</value>
+  </data>
+  <data name="Stat.OnHand" xml:space="preserve">
+    <value>在库</value>
+  </data>
+  <data name="Stat.OnHandSub" xml:space="preserve">
+    <value>所选公司中的现有库存</value>
+  </data>
+  <data name="Stat.Shipped" xml:space="preserve">
+    <value>已发出</value>
+  </data>
+  <data name="Stat.ShippedSub" xml:space="preserve">
+    <value>该批次的销售出库</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>已冻结</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>已过期</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>已放行</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>可用</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>冻结</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>损坏</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>过期</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>在途</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>质检</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>隔离</value>
+  </data>
+  <data name="Total.PerUnit" xml:space="preserve">
+    <value>{0} {1}（现有库存 {2} + 已发出 {3}）</value>
+  </data>
+  <data name="Total.Sub" xml:space="preserve">
+    <value>现有库存 + 已发出，按单位计：不同单位绝不相加。</value>
+  </data>
+  <data name="Total.Title" xml:space="preserve">
+    <value>受影响总数量</value>
+  </data>
+</root>

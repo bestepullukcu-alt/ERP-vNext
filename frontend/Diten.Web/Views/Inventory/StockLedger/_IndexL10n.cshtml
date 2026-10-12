@@ -1,0 +1,41 @@
+@using Diten.Web.Views.Inventory.StockLedger
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockLedgerIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="stockledger-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        History = Localizer["History"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Searching = Localizer["Searching"].Value,
+        NoResults = Localizer["NoResults"].Value,
+        PickerUnavailable = Localizer["PickerUnavailable"].Value,
+        ErrServiceUnavailable = Localizer["ErrServiceUnavailable"].Value,
+        StatusAVAILABLE = Localizer["StatusAVAILABLE"].Value,
+        StatusQUALITY_INSPECTION = Localizer["StatusQUALITY_INSPECTION"].Value,
+        StatusQUARANTINE = Localizer["StatusQUARANTINE"].Value,
+        StatusBLOCKED = Localizer["StatusBLOCKED"].Value,
+        StatusIN_TRANSIT = Localizer["StatusIN_TRANSIT"].Value,
+        StatusDAMAGED = Localizer["StatusDAMAGED"].Value,
+        StatusEXPIRED = Localizer["StatusEXPIRED"].Value,
+        SkuLevelGsku = Localizer["SkuLevelGsku"].Value,
+        SkuLevelLsku = Localizer["SkuLevelLsku"].Value,
+        SkuLevelFinishedGood = Localizer["SkuLevelFinishedGood"].Value,
+        SkuLevelItem = Localizer["SkuLevelItem"].Value,
+        KpiSelectProduct = Localizer["KpiSelectProduct"].Value,
+        NewStockEntry = Localizer["NewStockEntry"].Value,
+        RowMovement = Localizer["RowMovement"].Value,
+        LotUnregisteredBadge = Localizer["LotUnregisteredBadge"].Value,
+        LotUnregisteredHint = Localizer["LotUnregisteredHint"].Value
+    })
+</script>

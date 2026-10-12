@@ -136,7 +136,15 @@ public sealed record WorkItemActionPayloadDto(
     /// <summary>MOD-0024 only, read only by <c>plan</c>: the block's length in minutes (whole 15-minute steps).</summary>
     [property: System.Text.Json.Serialization.JsonIgnore(
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-    int? PlannedDurationMinutes = null);
+    int? PlannedDurationMinutes = null,
+    /// <summary>
+    /// MOD-0022 E4 — the e-signature id an <c>approve</c> of a signature-required workflow step carries (ESIGN-BUNDLE
+    /// x-workflow-addendum). Trailing, defaulted and omitted when null (byte-identical requests without it). The in-process
+    /// workflow dispatcher passes it to the same MOD-0023 command the API uses; stripped on the way out to a remote module.
+    /// </summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? SignatureId = null);
 
 /// <summary>
 /// Faz 2a-rest — one configurable field's value, in THIS envelope's own neutral vocabulary.

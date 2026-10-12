@@ -1,0 +1,19 @@
+  Geri yüklenecek projeler belirleniyor...
+  C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.RuntimeProbe\Diten.InventoryService.RuntimeProbe.csproj geri yüklendi (1,37 sn içinde).
+  Geri yükleme için 9 proje içinden 8 tanesi güncel.
+  Diten.InventoryService.Domain -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Domain\bin\Release\net8.0\Diten.InventoryService.Domain.dll
+  Diten.BuildingBlocks.Security.Secrets -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\bin\Release\net8.0\Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.InventoryService.RuntimeProbe -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.RuntimeProbe\bin\Release\net8.0\Diten.InventoryService.RuntimeProbe.dll
+  Diten.InventoryService.Application -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Application\bin\Release\net8.0\Diten.InventoryService.Application.dll
+  Diten.InventoryService.Infrastructure -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Infrastructure\bin\Release\net8.0\Diten.InventoryService.Infrastructure.dll
+  Diten.InventoryService.Persistence -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Persistence\bin\Release\net8.0\Diten.InventoryService.Persistence.dll
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\bin\Debug\net8.0\Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.InventoryService.Api -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Api\bin\Release\net8.0\Diten.InventoryService.Api.dll
+  Diten.InventoryService.Tests -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\bin\Release\net8.0\Diten.InventoryService.Tests.dll
+
+Oluşturma başarılı oldu.
+    0 Uyarı
+    0 Hata
+
+Geçen Süre 00:00:17.99
+exit 0

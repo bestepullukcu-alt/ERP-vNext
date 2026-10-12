@@ -1,0 +1,69 @@
+﻿{
+    "note":  "Final stop of the third start (re-verification of the shared-confirm Reversal). Earlier starts were stopped the same way (run 1, run 2).",
+    "stop":  {
+                 "stopped":  [
+                                 {
+                                     "name":  "prism-product-master",
+                                     "pid":  11564,
+                                     "started":  "2026-10-01T14:01:22.6838995+03:00"
+                                 },
+                                 {
+                                     "name":  "prism-location",
+                                     "pid":  15288,
+                                     "started":  "2026-10-01T14:01:22.7367824+03:00"
+                                 },
+                                 {
+                                     "name":  "inventory-service",
+                                     "pid":  16200,
+                                     "started":  "2026-10-01T14:01:22.8994965+03:00"
+                                 },
+                                 {
+                                     "name":  "diten-web",
+                                     "pid":  33316,
+                                     "started":  "2026-10-01T14:01:22.9450457+03:00"
+                                 }
+                             ],
+                 "listenersLeftOnOwnPorts":  [
+
+                                             ],
+                 "startedPidsStillAlive":  [
+
+                                           ]
+             },
+    "tokenServerPid":  32868,
+    "tokenServerAlive":  false,
+    "listenersLeftOnOwnPorts":  [
+
+                                ],
+    "leftoverStartedProcesses":  [
+
+                                 ],
+    "userServicesAtEnd":  [
+                              {
+                                  "port":  5000,
+                                  "listening":  true,
+                                  "pid":  29116
+                              },
+                              {
+                                  "port":  5001,
+                                  "listening":  false,
+                                  "pid":  null
+                              },
+                              {
+                                  "port":  5056,
+                                  "listening":  true,
+                                  "pid":  26108
+                              },
+                              {
+                                  "port":  5057,
+                                  "listening":  true,
+                                  "pid":  28696
+                              },
+                              {
+                                  "port":  5059,
+                                  "listening":  true,
+                                  "pid":  36224
+                              }
+                          ],
+    "userServicesAtWpStart":  "measured 2026-10-01 ~12:58: 5000 pid 19316, 5001 pid 31684, 5056 pid 11364, 5057 pid 30472, 5059 pid 35556 — those PIDs were replaced at 13:21 (gateway/auth/platform/mdm restarted, not by this WP; 5001 not listening at the end)"
+}

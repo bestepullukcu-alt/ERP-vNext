@@ -1,0 +1,16 @@
+info: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+      MOD-0173 Mongo indexes ensured on database diten_inventory_s1_tests.
+info: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+      MOD-0173 SKU positions rebuilt from ledger + reservations: 354.
+warn: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+      MOD-0173 SKU-position rebuild skipped 6 group(s) without a complete scope (tenant, LE, item, sku, level) on database diten_inventory_s1_tests - never guessed, never deleted.
+warn: Diten.InventoryService.Persistence.ReservationExpirySweeperHostedService[0]
+      MOD-0173 reservation expiry sweeper is disabled by configuration.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5091
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Mock
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Api\bin\Debug\net8.0

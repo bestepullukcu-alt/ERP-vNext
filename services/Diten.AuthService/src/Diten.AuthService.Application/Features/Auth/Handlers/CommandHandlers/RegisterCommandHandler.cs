@@ -77,7 +77,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         var role = await _roleRepository.GetByNameAndTenantAsync("Viewer", _tenantContext.TenantId, ct);
         if (role is null)
         {
-            await _roleProvisioningService.EnsureDefaultRolesAsync(_tenantContext.TenantId, ct);
+            await _roleProvisioningService.EnsureDefaultRolesAsync(_tenantContext.TenantId, Domain.Authorization.DefaultRoleProvisioningTriggers.Register, ct);
             role = await _roleRepository.GetByNameAndTenantAsync("Viewer", _tenantContext.TenantId, ct);
         }
 

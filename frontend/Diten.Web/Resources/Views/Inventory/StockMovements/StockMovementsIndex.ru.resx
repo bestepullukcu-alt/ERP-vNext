@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="StockMovementsTitle" xml:space="preserve"><value>Движения запасов</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Все движения запасов, сначала новые. Движения не редактируются: ошибка исправляется сторно.</value></data>
+  <data name="ColTransactionNo" xml:space="preserve"><value>№ операции</value></data>
+  <data name="ColMovementType" xml:space="preserve"><value>Тип движения</value></data>
+  <data name="ColReason" xml:space="preserve"><value>Причина</value></data>
+  <data name="ColQuantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="ColBaseQuantity" xml:space="preserve"><value>Базовое кол-во</value></data>
+  <data name="ColTo" xml:space="preserve"><value>Куда</value></data>
+  <data name="ColStatusChange" xml:space="preserve"><value>Статус</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="ColTransactionDate" xml:space="preserve"><value>Дата операции</value></data>
+  <data name="ColPostingDate" xml:space="preserve"><value>Дата проводки</value></data>
+  <data name="Reversal" xml:space="preserve"><value>Сторнировать</value></data>
+  <data name="ReversalConfirmTitle" xml:space="preserve"><value>Сторнировать это движение?</value></data>
+  <data name="ReversalConfirmText" xml:space="preserve"><value>Движение {0} остаётся в истории; новое сторнирующее движение отменяет его влияние на остатки. Это действие необратимо.</value></data>
+  <data name="ReversalConfirmButton" xml:space="preserve"><value>Сторнировать движение</value></data>
+  <data name="ReversalPosted" xml:space="preserve"><value>Сторно {0} проведено.</value></data>
+  <data name="ReversedBadge" xml:space="preserve"><value>Сторнировано</value></data>
+  <data name="ReversedInSource" xml:space="preserve"><value>Проведено другим модулем: сторнируется в этом модуле.</value></data>
+  <data name="Automatic" xml:space="preserve"><value>Автоматически</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>Дата с</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>Дата по</value></data>
+  <data name="MovementOPENING_BALANCE" xml:space="preserve"><value>Начальный остаток</value></data>
+  <data name="MovementGOODS_RECEIPT_PO" xml:space="preserve"><value>Приход (закупка)</value></data>
+  <data name="MovementGOODS_RECEIPT_PROD" xml:space="preserve"><value>Приход (производство)</value></data>
+  <data name="MovementGOODS_ISSUE_SALES" xml:space="preserve"><value>Расход (продажа)</value></data>
+  <data name="MovementGOODS_ISSUE_PROD" xml:space="preserve"><value>Расход (производство)</value></data>
+  <data name="MovementWAREHOUSE_TRANSFER" xml:space="preserve"><value>Перемещение между складами</value></data>
+  <data name="MovementLOCATION_TRANSFER" xml:space="preserve"><value>Перемещение между местами</value></data>
+  <data name="MovementSTATUS_TRANSFER" xml:space="preserve"><value>Смена статуса</value></data>
+  <data name="MovementCUSTOMER_RETURN" xml:space="preserve"><value>Возврат от клиента</value></data>
+  <data name="MovementSUPPLIER_RETURN" xml:space="preserve"><value>Возврат поставщику</value></data>
+  <data name="MovementCOUNT_GAIN" xml:space="preserve"><value>Излишек инвентаризации</value></data>
+  <data name="MovementCOUNT_LOSS" xml:space="preserve"><value>Недостача инвентаризации</value></data>
+  <data name="MovementSCRAP" xml:space="preserve"><value>Списание в брак</value></data>
+  <data name="MovementWRITE_OFF" xml:space="preserve"><value>Списание</value></data>
+  <data name="MovementREVERSAL" xml:space="preserve"><value>Сторно</value></data>
+  <data name="TabStock" xml:space="preserve"><value>Список остатков</value></data>
+  <data name="TabMovements" xml:space="preserve"><value>История движений</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>Сейчас не удалось загрузить названия товаров и мест хранения, поэтому показаны коды. Данные об остатках верны.</value></data>
+  <data name="ColProductSku" xml:space="preserve"><value>Товар / SKU</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Партия</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Товар</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>Номер партии</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>Место хранения</value></data>
+  <data name="Searching" xml:space="preserve"><value>Поиск…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Совпадений нет</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Этот список сейчас недоступен (служба основных данных не отвечает). Вы можете фильтровать по другим полям.</value></data>
+  <data name="StatusAVAILABLE" xml:space="preserve"><value>Доступно</value></data>
+  <data name="StatusQUALITY_INSPECTION" xml:space="preserve"><value>Контроль качества</value></data>
+  <data name="StatusQUARANTINE" xml:space="preserve"><value>Карантин</value></data>
+  <data name="StatusBLOCKED" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="StatusIN_TRANSIT" xml:space="preserve"><value>В пути</value></data>
+  <data name="StatusDAMAGED" xml:space="preserve"><value>Повреждено</value></data>
+  <data name="StatusEXPIRED" xml:space="preserve"><value>Просрочено</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>Глобальный SKU</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>Локальный SKU</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Готовая продукция</value></data>
+  <data name="ErrInsufficientStock" xml:space="preserve"><value>Для этого движения в источнике недостаточно запаса. Ничего не изменено; проверьте доступное количество и повторите попытку.</value></data>
+  <data name="ErrAlreadyReversed" xml:space="preserve"><value>Это движение уже сторнировано. Ничего не изменено; обновите список, чтобы увидеть сторно.</value></data>
+  <data name="ErrMasterUnavailable" xml:space="preserve"><value>Сейчас невозможно проверить данные товара или места хранения, поэтому изменения не внесены. Повторите попытку, когда связь восстановится.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Эта запись принадлежит другой компании. Переключитесь на неё или запросите доступ у администратора.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Это действие уже было отправлено с другими значениями. Закройте окно и начните заново.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Запрос не удалось обработать: одно из значений недопустимо. Обновите страницу и повторите попытку.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>Товар или SKU не найден в справочнике товаров. Ничего не изменено; проверьте товар.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>Склад или место хранения не распознаны. Ничего не изменено; проверьте место хранения.</value></data>
+  <data name="ErrUomMissing" xml:space="preserve"><value>Эту единицу нельзя пересчитать в базовую единицу SKU. Ничего не изменено; выберите другую единицу.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>Товар учитывается по партиям: партия обязательна. Ничего не изменено; укажите партию и повторите попытку.</value></data>
+  <data name="ErrSerialMismatch" xml:space="preserve"><value>Количество серийных номеров не совпадает с количеством. Ничего не изменено; исправьте серийные номера.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Пока вы работали, данные изменились. Обновите список и повторите попытку.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>У вас нет доступа к этому действию. Запросите у администратора нужные права на складской учёт.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Сеанс завершён. Войдите снова, чтобы продолжить.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Служба складского учёта сейчас недоступна. Изменения не внесены; повторите попытку чуть позже.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Что-то пошло не так, изменения не внесены. Повторите попытку; если ошибка повторяется, обратитесь в поддержку.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Компания</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Выберите компанию, остатки которой хотите увидеть. Пока компания не выбрана, данные не показываются.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Не удалось загрузить список компаний, поэтому данные об остатках не показаны. Запросите у администратора право просмотра компаний или повторите попытку позже.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Сначала выберите компанию. Ничего не прочитано и не изменено.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Сейчас невозможно подтвердить выбранную компанию, поэтому изменения не внесены. Повторите попытку чуть позже.</value></data>
+  <!-- WP-0173-UI2: model translation, native-speaker review pending (FU-UI2-01). -->
+  <data name="NewMovement" xml:space="preserve"><value>Новое движение</value></data>
+  <data name="Correct" xml:space="preserve"><value>Исправить</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новое движение</value></data>
+  <data name="FormTitleEntry" xml:space="preserve"><value>Новое поступление запаса</value></data>
+  <data name="FormTitleCorrect" xml:space="preserve"><value>Исправить движение</value></data>
+  <data name="SubmitCreate" xml:space="preserve"><value>Провести движение</value></data>
+  <data name="SubmitCorrect" xml:space="preserve"><value>Исправить</value></data>
+  <data name="OriginalMissingTitle" xml:space="preserve"><value>Откройте исправление из истории движений</value></data>
+  <data name="OriginalMissingText" xml:space="preserve"><value>Эта страница исправляет одно движение из истории. Используйте «Исправить» для ручного движения в истории; автоматические движения исправляются в модуле, который их провёл.</value></data>
+  <data name="BackToHistory" xml:space="preserve"><value>История движений</value></data>
+  <data name="BackToStock" xml:space="preserve"><value>Список запасов</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Повторить</value></data>
+  <data name="RestartLink" xml:space="preserve"><value>Открыть новую форму</value></data>
+  <data name="PartialTitle" xml:space="preserve"><value>Исправление не завершено</value></data>
+  <data name="PartialText" xml:space="preserve"><value>Сторно {0} проведено, но исправленное движение — нет: {1}</value></data>
+  <data name="PartialHint" xml:space="preserve"><value>Исходное движение уже отменено сторно. Исправьте поле ниже и проведите исправленное движение; используется тот же запрос, поэтому ничего не будет проведено дважды.</value></data>
+  <data name="PartialRetry" xml:space="preserve"><value>Провести исправленное движение</value></data>
+  <data name="SectionMovement" xml:space="preserve"><value>Движение</value></data>
+  <data name="FieldMovementType" xml:space="preserve"><value>Тип движения</value></data>
+  <data name="GroupInbound" xml:space="preserve"><value>Поступление</value></data>
+  <data name="GroupOutbound" xml:space="preserve"><value>Списание</value></data>
+  <data name="GroupTransfer" xml:space="preserve"><value>Перемещение</value></data>
+  <data name="FieldReasonCode" xml:space="preserve"><value>Код причины</value></data>
+  <data name="SectionItem" xml:space="preserve"><value>Товар</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Товар</value></data>
+  <data name="PlaceholderProduct" xml:space="preserve"><value>Поиск товара по коду или названию</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>Артикул (SKU)</value></data>
+  <data name="PlaceholderSku" xml:space="preserve"><value>Выберите артикул товара</value></data>
+  <data name="HintSelectProductFirst" xml:space="preserve"><value>Сначала выберите товар; показываются только его артикулы.</value></data>
+  <data name="HintSkuNone" xml:space="preserve"><value>У этого товара пока нет артикула в мастер-данных, поэтому провести движение нельзя.</value></data>
+  <data name="SectionSourceTarget" xml:space="preserve"><value>Откуда и куда</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Источник (партия / место)</value></data>
+  <data name="PlaceholderSource" xml:space="preserve"><value>Выберите строку запаса для списания</value></data>
+  <data name="HintSourceSelectSku" xml:space="preserve"><value>Сначала выберите артикул; его строки запаса появятся здесь.</value></data>
+  <data name="HintSourceNone" xml:space="preserve"><value>У этого артикула нет остатка в этой компании.</value></data>
+  <data name="HintSourceStock" xml:space="preserve"><value>Остаток в источнике: {0} {1}</value></data>
+  <data name="FieldTargetWarehouse" xml:space="preserve"><value>Склад назначения</value></data>
+  <data name="PlaceholderTargetWarehouse" xml:space="preserve"><value>Выберите активный склад</value></data>
+  <data name="HintLocationTransferWarehouse" xml:space="preserve"><value>Перемещение между местами остаётся на складе источника.</value></data>
+  <data name="FieldTargetLocation" xml:space="preserve"><value>Место назначения</value></data>
+  <data name="PlaceholderTargetLocation" xml:space="preserve"><value>Поиск места на складе</value></data>
+  <data name="HintTargetLocation" xml:space="preserve"><value>Показываются только активные места, где можно хранить запас.</value></data>
+  <data name="HintTargetLocationNone" xml:space="preserve"><value>На этом складе нет активных мест для хранения запаса. Добавьте место в разделе «Местоположения».</value></data>
+  <data name="FieldTargetStockStatus" xml:space="preserve"><value>Статус запаса назначения</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>Партия</value></data>
+  <data name="PlaceholderLot" xml:space="preserve"><value>Выберите известную партию или введите новую</value></data>
+  <data name="HintLotUnregistered" xml:space="preserve"><value>Незарегистрированная партия (до MOD-0174): сначала показываются партии этого артикула, уже имеющиеся на складе; введённая партия сохраняется заглавными буквами (A–Z, 0–9, . / -, до 40).</value></data>
+  <data name="SectionQuantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="PlaceholderQuantity" xml:space="preserve"><value>напр. 12 или 2.5</value></data>
+  <data name="FieldUnit" xml:space="preserve"><value>Единица</value></data>
+  <data name="HintUnitBase" xml:space="preserve"><value>{0} {1} = {2} {3} (базовая единица)</value></data>
+  <data name="HintUnitNoConversion" xml:space="preserve"><value>Пересчёт из этой единицы в базовую единицу артикула не задан; движение будет отклонено.</value></data>
+  <data name="FieldSerialNumbers" xml:space="preserve"><value>Серийные номера</value></data>
+  <data name="PlaceholderSerials" xml:space="preserve"><value>Один серийный номер в строке</value></data>
+  <data name="HintSerialCounter" xml:space="preserve"><value>Введено {0} / требуется {1}</value></data>
+  <data name="HintSerialCounterUnknown" xml:space="preserve"><value>Введено {0} — нужное число зависит от количества и единицы</value></data>
+  <data name="SectionDocumentDates" xml:space="preserve"><value>Документ и даты</value></data>
+  <data name="FieldDocumentNo" xml:space="preserve"><value>№ документа</value></data>
+  <data name="PlaceholderDocumentNo" xml:space="preserve"><value>напр. номер инвентаризационной ведомости или акта</value></data>
+  <data name="FieldTransactionDate" xml:space="preserve"><value>Дата операции</value></data>
+  <data name="FieldPostingDate" xml:space="preserve"><value>Дата проводки</value></data>
+  <data name="OriginalTitle" xml:space="preserve"><value>Исправляемое движение</value></data>
+  <data name="CorrectExplain" xml:space="preserve"><value>Исправление создаёт две записи: (1) сторно этого движения, (2) исправленное движение ниже. Исходное движение остаётся в истории.</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>Влияние на запас</value></data>
+  <data name="EffectNote" xml:space="preserve"><value>До → после, в базовой единице. Для сведения: количество проверяет сервис запасов при проведении.</value></data>
+  <data name="EffectEmpty" xml:space="preserve"><value>Выберите тип, товар, количество и места, чтобы увидеть влияние.</value></data>
+  <data name="EffectSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="EffectTarget" xml:space="preserve"><value>Назначение</value></data>
+  <data name="EffectNegative" xml:space="preserve"><value>Больше, чем есть в наличии, — сервис запасов отклонит это, если остаток не изменится.</value></data>
+  <data name="EffectUnavailable" xml:space="preserve"><value>Сейчас влияние рассчитать нельзя (данные товара недоступны).</value></data>
+  <data name="PickerIncomplete" xml:space="preserve"><value>Список слишком длинный; введите часть кода или названия, чтобы сузить его.</value></data>
+  <data name="ProductFactsUnavailable" xml:space="preserve"><value>Данные товара (учёт партий и серий, единицы) сейчас недоступны, поэтому движение провести нельзя. Ничего не изменено; повторите позже.</value></data>
+  <data name="ValRequired" xml:space="preserve"><value>Это поле обязательно.</value></data>
+  <data name="ValMovementType" xml:space="preserve"><value>Выберите один из типов движения на этой странице.</value></data>
+  <data name="ValQuantity" xml:space="preserve"><value>Введите количество больше 0, не более 6 знаков после точки (например, 2.5).</value></data>
+  <data name="ValTooLong" xml:space="preserve"><value>Слишком длинное значение (не более 200 символов).</value></data>
+  <data name="ValDate" xml:space="preserve"><value>Введите дату и время.</value></data>
+  <data name="ValLotFormat" xml:space="preserve"><value>Партия может содержать A–Z, 0–9, точку, косую черту и дефис, не более 40 символов.</value></data>
+  <data name="ValSerialDuplicate" xml:space="preserve"><value>Каждый серийный номер можно указать только один раз.</value></data>
+  <data name="ValSerialCount" xml:space="preserve"><value>Введено серийных номеров: {0}; для этого количества нужно {1}.</value></data>
+  <data name="ValSameWarehouse" xml:space="preserve"><value>Для перемещения между складами нужен склад, отличный от склада источника.</value></data>
+  <data name="ValSameWarehouseRequired" xml:space="preserve"><value>Перемещение между местами остаётся на складе источника; чтобы сменить склад, используйте перемещение между складами.</value></data>
+  <data name="ValSameLocation" xml:space="preserve"><value>Выберите место, отличное от места источника.</value></data>
+  <data name="ValFixFields" xml:space="preserve"><value>Некоторые поля нужно исправить. Ничего не проведено.</value></data>
+  <data name="ConfirmCorrectTitle" xml:space="preserve"><value>Исправить это движение?</value></data>
+  <data name="ConfirmCorrectText" xml:space="preserve"><value>Движение {0} останется в истории. Сторно отменит его влияние на запас, а исправленное движение будет проведено как новая запись. Это действие нельзя отменить.</value></data>
+  <data name="ConfirmCorrectButton" xml:space="preserve"><value>Сторнировать и провести</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Квитанция движения</value></data>
+  <data name="ReceiptMissing" xml:space="preserve"><value>Нет квитанции для показа. Квитанция появляется сразу после проведения движения в этом сеансе браузера; более ранние движения — в истории движений.</value></data>
+  <data name="ReceiptPosted" xml:space="preserve"><value>Движение {0} проведено.</value></data>
+  <data name="ReplayBanner" xml:space="preserve"><value>Эта форма уже отправлялась, поэтому новое движение не проведено. Это квитанция того движения.</value></data>
+  <data name="CorrectionDone" xml:space="preserve"><value>Движение {0} отменено сторно {1}; исправленное движение — {2}.</value></data>
+  <data name="DetailPostedAt" xml:space="preserve"><value>Проведено</value></data>
+  <data name="DetailFrom" xml:space="preserve"><value>Откуда</value></data>
+  <data name="DetailTo" xml:space="preserve"><value>Куда</value></data>
+  <data name="BalanceTitle" xml:space="preserve"><value>Текущий остаток</value></data>
+  <data name="BalanceNote" xml:space="preserve"><value>Строка запаса после этого движения — в том виде, как её вернул сервис запасов.</value></data>
+  <data name="BalanceLocation" xml:space="preserve"><value>Склад / место</value></data>
+  <data name="BalanceOnHand" xml:space="preserve"><value>В наличии</value></data>
+  <data name="BalanceAvailable" xml:space="preserve"><value>Доступно</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>не зарегистр.</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Незарегистрированная партия (до MOD-0174)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>Дата проводки попадает в закрытый период. Ничего не изменено; выберите дату открытого периода.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Доступно в источнике: {0}; запрошено: {1} (базовая единица).</value></data>
+  <data name="HintChooseTypeFirst" xml:space="preserve"><value>Сначала выберите тип движения: от него зависит, какие поля источника и назначения нужны.</value></data>
+  <data name="ProductFlagsUnknown" xml:space="preserve"><value>Основные данные товара не указывают учёт по партиям или серийным номерам для этой SKU, поэтому движение нельзя сохранить. Повторите попытку, когда запись основных данных будет заполнена.</value></data>
+  <data name="ProductLevelNotStockable" xml:space="preserve"><value>Этот товар может учитываться по серийным номерам: запас нельзя перемещать на уровне глобальной SKU. Выберите уровень локальной SKU или готовой продукции.</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Материальная позиция</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Основные данные товара не указывают учёт по партиям или серийным номерам для этой SKU, поэтому движение нельзя сохранить. Повторите попытку, когда запись основных данных будет заполнена.</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>Статус товара не допускает этот тип движения (черновик, деактивирован или выведен из оборота). Ничего не изменено.</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>Этот товар может учитываться по серийным номерам: запас нельзя перемещать на уровне глобальной SKU. Выберите уровень локальной SKU или готовой продукции.</value></data>
+</root>

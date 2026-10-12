@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "/api/global-products: localhost:5059 → 127.0.0.1:4012 (probe Model A mock; dev MDM: 0 GSKU / 0 LSKU, 0 products in the seed user's tenant)",
+    "/api/global-products/{everything}: localhost:5059 → 127.0.0.1:4012 (probe Model A mock; dev MDM: 0 GSKU / 0 LSKU, 0 products in the seed user's tenant)",
+    "/api/gskus: localhost:5059 → 127.0.0.1:4012 (probe Model A mock; dev MDM: 0 GSKU / 0 LSKU, 0 products in the seed user's tenant)",
+    "/api/gskus/{everything}: localhost:5059 → 127.0.0.1:4012 (probe Model A mock; dev MDM: 0 GSKU / 0 LSKU, 0 products in the seed user's tenant)",
+    "/api/lskus: localhost:5059 → 127.0.0.1:4012 (probe Model A mock; dev MDM: 0 GSKU / 0 LSKU, 0 products in the seed user's tenant)",
+    "/api/lskus/{everything}: localhost:5059 → 127.0.0.1:4012 (probe Model A mock; dev MDM: 0 GSKU / 0 LSKU, 0 products in the seed user's tenant)",
+    "/api/inventory: port 5066 → 5067 (probe InventoryService)",
+    "/api/inventory/{everything}: port 5066 → 5067 (probe InventoryService)",
+    "/api/locations: port 5066 → 5067 (probe InventoryService)",
+    "/api/locations/{everything}: port 5066 → 5067 (probe InventoryService)"
+  ],
+  "count": 10,
+  "expected": 10
+}

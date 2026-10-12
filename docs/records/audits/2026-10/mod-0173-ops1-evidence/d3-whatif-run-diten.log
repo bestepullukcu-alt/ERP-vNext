@@ -1,0 +1,62 @@
+# D3 what-if — run-diten.sh: staged blob, run as a copy with (1) a guard line that aborts unless every external command resolves to an echo-only shim,
+#   (2) the 'trap kill 0' line removed, (3) /usr/bin/osascript -> osascript shim. Shims: lsof killall kill dotnet node env sleep osascript (print 'WHATIF> <cmd> <args>').
+# Nothing is started or killed. 2026-10-02T10:02:02+03:00 · LOCALAPPDATA=C:\Users\Ali\AppData\Local · cwd=/c/Users/Ali/erp-vnext
+
+🚀 Starting Diten ERP Multi-Service Suite...
+🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059...
+WHATIF> kill -9 WHATIF> lsof -ti :5000,5001,5056,5057,5058,5059
+🧹 Cleaning up ports 4010, 5066 (Prism product-master mock + Inventory)...
+WHATIF> kill -9 WHATIF> lsof -ti :4010,5066
+WHATIF> sleep 1
+🛠️ Building projects...
+WHATIF> dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug
+WHATIF> dotnet build services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj -c Debug
+WHATIF> dotnet build services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj -c Debug
+WHATIF> dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Debug
+WHATIF> dotnet build services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -c Debug
+WHATIF> dotnet build services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj -c Debug
+WHATIF> dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
+✅ Build complete. Launching services...
+Starting Auth on port 5056...
+WHATIF> osascript (stdin follows)
+tell application "Terminal"
+    do script "cd '/c/Users/Ali/erp-vnext/services/Diten.AuthService/src/Diten.AuthService.Api' && dotnet run --no-build --urls http://localhost:5056"
+end tell
+Starting DevEnablement on port 5058...
+WHATIF> osascript (stdin follows)
+tell application "Terminal"
+    do script "cd '/c/Users/Ali/erp-vnext/services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api' && dotnet run --no-build --urls http://localhost:5058"
+end tell
+Starting Platform on port 5057...
+WHATIF> osascript (stdin follows)
+tell application "Terminal"
+    do script "cd '/c/Users/Ali/erp-vnext/services/Diten.Platform/src/Diten.Platform.API' && dotnet run --no-build --urls http://localhost:5057"
+end tell
+Starting Mdm on port 5059...
+WHATIF> osascript (stdin follows)
+tell application "Terminal"
+    do script "cd '/c/Users/Ali/erp-vnext/services/Diten.MdmService/src/Diten.MdmService.Api' && dotnet run --no-build --urls http://localhost:5059"
+end tell
+Starting PrismProductMaster on port 4010...
+WHATIF> osascript (stdin follows)
+tell application "Terminal"
+    do script "cd '/c/Users/Ali/erp-vnext' && node --max-http-header-size=65536 'C:/Users/Ali/AppData/Local/npm-cache/_npx/aa6973f8d4bc9dda/node_modules/@stoplight/prism-cli/dist/index.js' mock 'docs/analysis/contracts/product-master-bundle.openapi.yaml' --port 4010 --host 127.0.0.1"
+end tell
+Starting Inventory on port 5066...
+WHATIF> osascript (stdin follows)
+tell application "Terminal"
+    do script "cd '/c/Users/Ali/erp-vnext/services/Diten.InventoryService/src/Diten.InventoryService.Api' && Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --launch-profile http --urls http://localhost:5066"
+end tell
+Starting Gateway on port 5000...
+WHATIF> osascript (stdin follows)
+tell application "Terminal"
+    do script "cd '/c/Users/Ali/erp-vnext/gateway/Diten.ApiGateway' && dotnet run --no-build --urls http://localhost:5000"
+end tell
+Starting Web on port 5001...
+WHATIF> osascript (stdin follows)
+tell application "Terminal"
+    do script "cd '/c/Users/Ali/erp-vnext/frontend/Diten.Web' && dotnet run --no-build --urls http://localhost:5001"
+end tell
+✨ Services are launching.
+🔗 Access: http://localhost:5001/platform/login
+# exit 0

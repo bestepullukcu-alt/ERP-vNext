@@ -1,0 +1,39 @@
+﻿{
+    "measuredAt":  "2026-10-02T10:17:43.4988731+03:00",
+    "note":  "Fleet rebuild at 10:15:37 followed a new Inventory dotnet-watch window started 10:15:29 by another Claude session (launcher chain 32136 -\u003e 34660 -\u003e 36492 -\u003e cmd 14064). This WP session runs its shells under 28000. This WP had only run git worktree add (C:\\Users\\Ali\\erp-vnext-wt-loc2, 10:15:15) by then.",
+    "chain":  [
+                  {
+                      "pid":  14064,
+                      "name":  "cmd.exe",
+                      "created":  "2026-10-02T10:15:29.8031260+03:00",
+                      "parent":  36492,
+                      "cmd":  "\"C:\\WINDOWS\\system32\\cmd.exe\" /k title Diten ERP - Inventory \u0026\u0026 set Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ \u0026\u0026 cd /d \"C:\\Users\\Ali\\erp-"
+                  },
+                  {
+                      "pid":  36492,
+                      "gone":  true
+                  },
+                  {
+                      "pid":  34660,
+                      "gone":  true
+                  },
+                  {
+                      "pid":  32136,
+                      "name":  "claude.exe",
+                      "created":  "2026-10-02T09:41:00.8787430+03:00",
+                      "parent":  20916,
+                      "cmd":  "C:\\Users\\Ali\\AppData\\Roaming\\Claude\\claude-code\\2.1.284\\claude.exe --output-format stream-json --verbose --input-format stream-json --effort medium --model clau"
+                  },
+                  {
+                      "pid":  34496,
+                      "gone":  true
+                  },
+                  {
+                      "pid":  28000,
+                      "name":  "claude.exe",
+                      "created":  "2026-10-02T09:53:18.7734020+03:00",
+                      "parent":  20916,
+                      "cmd":  "C:\\Users\\Ali\\AppData\\Roaming\\Claude\\claude-code\\2.1.284\\claude.exe --output-format stream-json --verbose --input-format stream-json --effort medium --model clau"
+                  }
+              ]
+}

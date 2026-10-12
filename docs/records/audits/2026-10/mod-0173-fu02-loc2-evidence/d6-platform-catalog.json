@@ -1,0 +1,203 @@
+{
+  "note": "Platform catalog (user's local Platform DB diten_personalization_dev, read-only mongoexport) after TWO startups of the probe InventoryService :5067 built from this branch (10:55 and the restart) — one module, four pages, fifteen actions, no duplicates. Note: the user's own InventoryService :5066 (dotnet watch, pre-LOC2 code until the branch lands) pushed the 2-page manifest at its 10:19 start; whichever instance starts last wins (authoritative reconcile).",
+  "module": [
+    {
+      "IsDeleted": false,
+      "ModuleCode": "INVENTORY-LEDGER",
+      "ModuleName": "Inventory Ledger",
+      "DisplayName": "Inventory",
+      "Domain": "SUPPLYCHAINEXECUTION",
+      "Service": "Inventory",
+      "Status": 1,
+      "IsTenantAssignable": true,
+      "Icon": "bx-package",
+      "Origin": 1
+    }
+  ],
+  "pages": [
+    {
+      "IsDeleted": false,
+      "PageCode": "STOCKLEDGER",
+      "RoutePath": "/StockLedger",
+      "RequiredPermission": "inventory.stock.read",
+      "ParentPageCode": null,
+      "IsNavigationVisible": true
+    },
+    {
+      "IsDeleted": false,
+      "PageCode": "STOCKMOVEMENTS",
+      "RoutePath": "/StockMovements",
+      "RequiredPermission": "inventory.stock.read",
+      "ParentPageCode": "STOCKLEDGER",
+      "IsNavigationVisible": false
+    },
+    {
+      "IsDeleted": false,
+      "PageCode": "LOCATIONTREE",
+      "RoutePath": "/LocationTree",
+      "RequiredPermission": "inventory.locations.read",
+      "ParentPageCode": null,
+      "IsNavigationVisible": true
+    },
+    {
+      "IsDeleted": false,
+      "PageCode": "LOCATIONS",
+      "RoutePath": "/Locations",
+      "RequiredPermission": "inventory.locations.read",
+      "ParentPageCode": "LOCATIONTREE",
+      "IsNavigationVisible": false
+    }
+  ],
+  "actions": [
+    {
+      "PageCode": "STOCKLEDGER",
+      "IsDeleted": false,
+      "ActionCode": "ROWHISTORY",
+      "PermissionKey": "inventory.stock.read",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "STOCKMOVEMENTS",
+      "IsDeleted": false,
+      "ActionCode": "REVERSAL",
+      "PermissionKey": "inventory.movements.create",
+      "ActionType": 2,
+      "IsDangerous": true,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONTREE",
+      "IsDeleted": false,
+      "ActionCode": "NEWLOCATION",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 1,
+      "IsDangerous": false,
+      "IsToolbarAction": true,
+      "IsRowAction": false
+    },
+    {
+      "PageCode": "LOCATIONTREE",
+      "IsDeleted": false,
+      "ActionCode": "EDITLOCATION",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONTREE",
+      "IsDeleted": false,
+      "ActionCode": "ADDCHILDLOCATION",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONTREE",
+      "IsDeleted": false,
+      "ActionCode": "CHANGELOCATIONSTATUS",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 2,
+      "IsDangerous": true,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONTREE",
+      "IsDeleted": false,
+      "ActionCode": "BULKBINS",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONTREE",
+      "IsDeleted": false,
+      "ActionCode": "LOCATIONHISTORY",
+      "PermissionKey": "inventory.locations.read",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONTREE",
+      "IsDeleted": false,
+      "ActionCode": "VIEWLOCATIONSTOCK",
+      "PermissionKey": "inventory.stock.read",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONS",
+      "IsDeleted": false,
+      "ActionCode": "NEWLOCATION",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 1,
+      "IsDangerous": false,
+      "IsToolbarAction": true,
+      "IsRowAction": false
+    },
+    {
+      "PageCode": "LOCATIONS",
+      "IsDeleted": false,
+      "ActionCode": "EDITLOCATION",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONS",
+      "IsDeleted": false,
+      "ActionCode": "ADDCHILDLOCATION",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONS",
+      "IsDeleted": false,
+      "ActionCode": "CHANGELOCATIONSTATUS",
+      "PermissionKey": "inventory.locations.manage",
+      "ActionType": 2,
+      "IsDangerous": true,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONS",
+      "IsDeleted": false,
+      "ActionCode": "LOCATIONHISTORY",
+      "PermissionKey": "inventory.locations.read",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    },
+    {
+      "PageCode": "LOCATIONS",
+      "IsDeleted": false,
+      "ActionCode": "VIEWLOCATIONSTOCK",
+      "PermissionKey": "inventory.stock.read",
+      "ActionType": 2,
+      "IsDangerous": false,
+      "IsToolbarAction": false,
+      "IsRowAction": true
+    }
+  ]
+}

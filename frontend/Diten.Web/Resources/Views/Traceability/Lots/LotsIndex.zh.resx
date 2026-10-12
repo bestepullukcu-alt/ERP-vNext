@@ -1,0 +1,673 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Action.CHANGELOTSTATUS" xml:space="preserve">
+    <value>更改状态</value>
+  </data>
+  <data name="Action.EDITLOT" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Action.EDITRELEASEDLOT" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Action.LOTMOVES" xml:space="preserve">
+    <value>移动历史</value>
+  </data>
+  <data name="Action.LOTTRACEOPEN" xml:space="preserve">
+    <value>可追溯性</value>
+  </data>
+  <data name="Action.NEWLOT" xml:space="preserve">
+    <value>新建批次</value>
+  </data>
+  <data name="Action.OPENINLEDGER" xml:space="preserve">
+    <value>在库存台账中打开</value>
+  </data>
+  <data name="Action.RECEIPTINLEDGER" xml:space="preserve">
+    <value>在库存台账中打开</value>
+  </data>
+  <data name="Action.SERIALLOT" xml:space="preserve">
+    <value>批次详情</value>
+  </data>
+  <data name="Action.SERIALMOVES" xml:space="preserve">
+    <value>移动历史</value>
+  </data>
+  <data name="Action.TRACELOTDETAIL" xml:space="preserve">
+    <value>批次详情</value>
+  </data>
+  <data name="Action.VIEWALLSERIALS" xml:space="preserve">
+    <value>全部序列号</value>
+  </data>
+  <data name="Action.VIEWLOT" xml:space="preserve">
+    <value>批次详情</value>
+  </data>
+  <data name="Action.VIEWRECEIPT" xml:space="preserve">
+    <value>移动凭证</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Col.CoaRef" xml:space="preserve">
+    <value>CoA 编号</value>
+  </data>
+  <data name="Col.ExpiryDate" xml:space="preserve">
+    <value>有效期至</value>
+  </data>
+  <data name="Col.LotNumber" xml:space="preserve">
+    <value>批号</value>
+  </data>
+  <data name="Col.ManufacturerLot" xml:space="preserve">
+    <value>生产商批号</value>
+  </data>
+  <data name="Col.ManufacturingDate" xml:space="preserve">
+    <value>生产日期</value>
+  </data>
+  <data name="Col.OnHand" xml:space="preserve">
+    <value>现有库存</value>
+  </data>
+  <data name="Col.Origin" xml:space="preserve">
+    <value>原产国</value>
+  </data>
+  <data name="Col.Product" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="Col.RetestDate" xml:space="preserve">
+    <value>复验日期</value>
+  </data>
+  <data name="Col.Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Col.SupplierLot" xml:space="preserve">
+    <value>供应商批号</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>公司</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>请选择公司</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>请选择您所在的公司，以查看其批次和库存。</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>无法加载公司列表。请稍后重试。</value>
+  </data>
+  <data name="Country.AE" xml:space="preserve">
+    <value>阿拉伯联合酋长国</value>
+  </data>
+  <data name="Country.AT" xml:space="preserve">
+    <value>奥地利</value>
+  </data>
+  <data name="Country.AU" xml:space="preserve">
+    <value>澳大利亚</value>
+  </data>
+  <data name="Country.BE" xml:space="preserve">
+    <value>比利时</value>
+  </data>
+  <data name="Country.BR" xml:space="preserve">
+    <value>巴西</value>
+  </data>
+  <data name="Country.CA" xml:space="preserve">
+    <value>加拿大</value>
+  </data>
+  <data name="Country.CH" xml:space="preserve">
+    <value>瑞士</value>
+  </data>
+  <data name="Country.CN" xml:space="preserve">
+    <value>中国</value>
+  </data>
+  <data name="Country.CZ" xml:space="preserve">
+    <value>捷克</value>
+  </data>
+  <data name="Country.DE" xml:space="preserve">
+    <value>德国</value>
+  </data>
+  <data name="Country.DK" xml:space="preserve">
+    <value>丹麦</value>
+  </data>
+  <data name="Country.EG" xml:space="preserve">
+    <value>埃及</value>
+  </data>
+  <data name="Country.ES" xml:space="preserve">
+    <value>西班牙</value>
+  </data>
+  <data name="Country.FI" xml:space="preserve">
+    <value>芬兰</value>
+  </data>
+  <data name="Country.FR" xml:space="preserve">
+    <value>法国</value>
+  </data>
+  <data name="Country.GB" xml:space="preserve">
+    <value>英国</value>
+  </data>
+  <data name="Country.GR" xml:space="preserve">
+    <value>希腊</value>
+  </data>
+  <data name="Country.HU" xml:space="preserve">
+    <value>匈牙利</value>
+  </data>
+  <data name="Country.IE" xml:space="preserve">
+    <value>爱尔兰</value>
+  </data>
+  <data name="Country.IL" xml:space="preserve">
+    <value>以色列</value>
+  </data>
+  <data name="Country.IN" xml:space="preserve">
+    <value>印度</value>
+  </data>
+  <data name="Country.IT" xml:space="preserve">
+    <value>意大利</value>
+  </data>
+  <data name="Country.JP" xml:space="preserve">
+    <value>日本</value>
+  </data>
+  <data name="Country.KR" xml:space="preserve">
+    <value>韩国</value>
+  </data>
+  <data name="Country.MX" xml:space="preserve">
+    <value>墨西哥</value>
+  </data>
+  <data name="Country.NL" xml:space="preserve">
+    <value>荷兰</value>
+  </data>
+  <data name="Country.NO" xml:space="preserve">
+    <value>挪威</value>
+  </data>
+  <data name="Country.PL" xml:space="preserve">
+    <value>波兰</value>
+  </data>
+  <data name="Country.PT" xml:space="preserve">
+    <value>葡萄牙</value>
+  </data>
+  <data name="Country.RO" xml:space="preserve">
+    <value>罗马尼亚</value>
+  </data>
+  <data name="Country.RU" xml:space="preserve">
+    <value>俄罗斯</value>
+  </data>
+  <data name="Country.SA" xml:space="preserve">
+    <value>沙特阿拉伯</value>
+  </data>
+  <data name="Country.SE" xml:space="preserve">
+    <value>瑞典</value>
+  </data>
+  <data name="Country.SG" xml:space="preserve">
+    <value>新加坡</value>
+  </data>
+  <data name="Country.TR" xml:space="preserve">
+    <value>土耳其</value>
+  </data>
+  <data name="Country.UA" xml:space="preserve">
+    <value>乌克兰</value>
+  </data>
+  <data name="Country.US" xml:space="preserve">
+    <value>美国</value>
+  </data>
+  <data name="Country.ZA" xml:space="preserve">
+    <value>南非</value>
+  </data>
+  <data name="Detail.History" xml:space="preserve">
+    <value>变更历史</value>
+  </data>
+  <data name="Detail.HistorySub" xml:space="preserve">
+    <value>谁更改了什么以及原因。记录无法删除。</value>
+  </data>
+  <data name="Detail.Info" xml:space="preserve">
+    <value>批次信息</value>
+  </data>
+  <data name="Detail.OnHand" xml:space="preserve">
+    <value>现有库存</value>
+  </data>
+  <data name="Detail.Serials" xml:space="preserve">
+    <value>序列号</value>
+  </data>
+  <data name="Detail.SerialsAll" xml:space="preserve">
+    <value>全部序列号</value>
+  </data>
+  <data name="Detail.SerialsMore" xml:space="preserve">
+    <value>另有 {0} 个</value>
+  </data>
+  <data name="Detail.StockDistribution" xml:space="preserve">
+    <value>库存分布</value>
+  </data>
+  <data name="Detail.StockDistributionSub" xml:space="preserve">
+    <value>该批次在所选公司中的库存台账行。</value>
+  </data>
+  <data name="Detail.Title" xml:space="preserve">
+    <value>批次详情</value>
+  </data>
+  <data name="Detail.Unusable.Blocked" xml:space="preserve">
+    <value>该批次已冻结：其全部库存均不可使用（{0}）。</value>
+  </data>
+  <data name="Detail.Unusable.Expired" xml:space="preserve">
+    <value>该批次已过期：其全部库存均不可使用（{0}）。</value>
+  </data>
+  <data name="Empty.List" xml:space="preserve">
+    <value>没有符合筛选条件的记录。</value>
+  </data>
+  <data name="Empty.Lot" xml:space="preserve">
+    <value>未选择批次。请从批次浏览中打开一个批次。</value>
+  </data>
+  <data name="Empty.Stock" xml:space="preserve">
+    <value>所选公司中没有该批次的库存。</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>请确认您了解冻结的影响。</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>请先选择公司。</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>您的账户不能使用该公司。</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>支持参考号</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>无法读取该代码。</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>无法完成操作。请重试。</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>此表单已使用不同的值提交过。请重新加载页面。</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>部分值无效。请检查各字段。</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>暂时无法验证公司。请稍后重试。</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>该产品已存在此批号。</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>该批次已被他人修改。请重新加载页面后重试。</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>日期不一致（生产日期 ≤ 今天，有效期晚于生产日期，复验日期介于两者之间）。</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>批号和 SKU 不能更改。</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>没有任何更改。</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>批号只能包含 1 至 40 个字符：字母 A–Z、数字以及 . / -。</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>该批次属于其他 SKU。</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>请选择该批次所属的 SKU。</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>该批次不允许此状态变更。</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>您无权执行此操作。</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>暂时无法获取产品数据；未保存任何内容。</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>该产品未启用批次管理；无法创建批次。</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>请填写至少 10 个字符的原因。</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>暂时无法访问批次服务。请稍后重试。</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>您的会话已过期。请重新登录。</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>未找到该产品或 SKU。</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>未找到该批次。</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>未找到该序列号。</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>{0} 天</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>已过期</value>
+  </data>
+  <data name="Filter.Clear" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="Filter.ExpiryBefore" xml:space="preserve">
+    <value>有效期早于</value>
+  </data>
+  <data name="Filter.Product" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="Filter.Search" xml:space="preserve">
+    <value>批号、产品、生产商 / 供应商批号</value>
+  </data>
+  <data name="Filter.Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Filter.WarnOnly" xml:space="preserve">
+    <value>仅显示有警告的批次</value>
+  </data>
+  <data name="Form.Changes" xml:space="preserve">
+    <value>待保存的更改</value>
+  </data>
+  <data name="Form.Coa" xml:space="preserve">
+    <value>分析证书 (CoA) 编号</value>
+  </data>
+  <data name="Form.Country" xml:space="preserve">
+    <value>原产国</value>
+  </data>
+  <data name="Form.DraftNote" xml:space="preserve">
+    <value>新批次将保存为草稿。</value>
+  </data>
+  <data name="Form.Duplicate" xml:space="preserve">
+    <value>该产品已存在此批号。</value>
+  </data>
+  <data name="Form.ExpiryDate" xml:space="preserve">
+    <value>有效期至</value>
+  </data>
+  <data name="Form.LockedBanner" xml:space="preserve">
+    <value>该批次不是草稿：请填写至少 10 个字符的原因以解锁字段。</value>
+  </data>
+  <data name="Form.LotNumber" xml:space="preserve">
+    <value>批号</value>
+  </data>
+  <data name="Form.LotNumberHint" xml:space="preserve">
+    <value>1 至 40 个字符：A–Z、0–9 以及 . / -。保存后不可更改。</value>
+  </data>
+  <data name="Form.ManufacturerLot" xml:space="preserve">
+    <value>生产商批号</value>
+  </data>
+  <data name="Form.ManufacturingDate" xml:space="preserve">
+    <value>生产日期</value>
+  </data>
+  <data name="Form.NoChanges" xml:space="preserve">
+    <value>暂无更改。</value>
+  </data>
+  <data name="Form.Product" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="Form.Reason" xml:space="preserve">
+    <value>变更原因</value>
+  </data>
+  <data name="Form.ReasonCounter" xml:space="preserve">
+    <value>{0}/10</value>
+  </data>
+  <data name="Form.ReasonHint" xml:space="preserve">
+    <value>至少 10 个字符；将保存在变更历史中。</value>
+  </data>
+  <data name="Form.RetestDate" xml:space="preserve">
+    <value>复验日期</value>
+  </data>
+  <data name="Form.Sku" xml:space="preserve">
+    <value>库存单位 (SKU)</value>
+  </data>
+  <data name="Form.Summary" xml:space="preserve">
+    <value>摘要</value>
+  </data>
+  <data name="Form.SupplierLot" xml:space="preserve">
+    <value>供应商批号</value>
+  </data>
+  <data name="Form.TitleEdit" xml:space="preserve">
+    <value>编辑批次</value>
+  </data>
+  <data name="Form.TitleNew" xml:space="preserve">
+    <value>新建批次</value>
+  </data>
+  <data name="History.Action.Created" xml:space="preserve">
+    <value>已创建</value>
+  </data>
+  <data name="History.Action.Linked" xml:space="preserve">
+    <value>已关联</value>
+  </data>
+  <data name="History.Action.Migrated" xml:space="preserve">
+    <value>已迁移</value>
+  </data>
+  <data name="History.Action.StatusChanged" xml:space="preserve">
+    <value>状态已更改</value>
+  </data>
+  <data name="History.Action.SystemExpired" xml:space="preserve">
+    <value>系统判定过期</value>
+  </data>
+  <data name="History.Action.Updated" xml:space="preserve">
+    <value>已更新</value>
+  </data>
+  <data name="History.Change" xml:space="preserve">
+    <value>原值 → 新值</value>
+  </data>
+  <data name="History.Date" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="History.Field" xml:space="preserve">
+    <value>字段</value>
+  </data>
+  <data name="History.Field.TypedText" xml:space="preserve">
+    <value>手工录入批次</value>
+  </data>
+  <data name="History.Field.GenealogyParent" xml:space="preserve">
+    <value>父批次</value>
+  </data>
+  <data name="History.Page" xml:space="preserve">
+    <value>第 {0} / {1} 页</value>
+  </data>
+  <data name="History.Reason" xml:space="preserve">
+    <value>原因</value>
+  </data>
+  <data name="History.System" xml:space="preserve">
+    <value>系统（自动）</value>
+  </data>
+  <data name="History.Who" xml:space="preserve">
+    <value>操作人</value>
+  </data>
+  <data name="Info.CreatedBy" xml:space="preserve">
+    <value>创建人</value>
+  </data>
+  <data name="Info.None" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="Info.Source" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="Info.Source.GoodsReceipt" xml:space="preserve">
+    <value>收货</value>
+  </data>
+  <data name="Info.Source.Manual" xml:space="preserve">
+    <value>手工录入</value>
+  </data>
+  <data name="Info.Source.Migration" xml:space="preserve">
+    <value>手工录入批次迁移</value>
+  </data>
+  <data name="Info.Source.Opening" xml:space="preserve">
+    <value>期初余额</value>
+  </data>
+  <data name="Info.Source.Production" xml:space="preserve">
+    <value>收货（生产）</value>
+  </data>
+  <data name="Info.Tracking" xml:space="preserve">
+    <value>追踪方式</value>
+  </data>
+  <data name="Names.Unavailable" xml:space="preserve">
+    <value>无法加载产品名称；仅显示代码。</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>无匹配结果</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>批次/序列号追踪</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>公司产品的全部批次：日期、状态和库存。</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>批次浏览</value>
+  </data>
+  <data name="Paging.Range" xml:space="preserve">
+    <value>第 {0}–{1} 条，共 {2} 条</value>
+  </data>
+  <data name="Quick.MarkNew" xml:space="preserve">
+    <value>新</value>
+  </data>
+  <data name="Quick.PrefilledNote" xml:space="preserve">
+    <value>产品和 SKU 取自该移动。</value>
+  </data>
+  <data name="Quick.SaveSelect" xml:space="preserve">
+    <value>保存并选择</value>
+  </data>
+  <data name="Quick.Title" xml:space="preserve">
+    <value>新建批次</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>已超过复验日期</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>正在搜索…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>有效</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>已冻结</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>已消耗</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>已冻结</value>
+  </data>
+  <data name="Status.Dialog.Acknowledge" xml:space="preserve">
+    <value>我了解其影响。</value>
+  </data>
+  <data name="Status.Dialog.AcknowledgeRequired" xml:space="preserve">
+    <value>请确认您了解其影响。</value>
+  </data>
+  <data name="Status.Dialog.Allowed" xml:space="preserve">
+    <value>允许</value>
+  </data>
+  <data name="Status.Dialog.Confirm" xml:space="preserve">
+    <value>更改状态</value>
+  </data>
+  <data name="Status.Dialog.ConfirmBlock" xml:space="preserve">
+    <value>冻结批次</value>
+  </data>
+  <data name="Status.Dialog.Current" xml:space="preserve">
+    <value>当前状态</value>
+  </data>
+  <data name="Status.Dialog.Danger" xml:space="preserve">
+    <value>冻结后，该批次的全部库存均不可使用。</value>
+  </data>
+  <data name="Status.Dialog.Done" xml:space="preserve">
+    <value>批次状态已更改。</value>
+  </data>
+  <data name="Status.Dialog.Impact" xml:space="preserve">
+    <value>{0} 件 · {1} 个库位 · {2}</value>
+  </data>
+  <data name="Status.Dialog.New" xml:space="preserve">
+    <value>新状态</value>
+  </data>
+  <data name="Status.Dialog.NotAllowed" xml:space="preserve">
+    <value>当前状态不允许此变更。</value>
+  </data>
+  <data name="Status.Dialog.PickOne" xml:space="preserve">
+    <value>请选择一个允许的状态。</value>
+  </data>
+  <data name="Status.Dialog.Reason" xml:space="preserve">
+    <value>原因（至少 10 个字符）</value>
+  </data>
+  <data name="Status.Dialog.SystemOnly" xml:space="preserve">
+    <value>由系统设置；无法手动选择。</value>
+  </data>
+  <data name="Status.Dialog.Title" xml:space="preserve">
+    <value>更改批次状态</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>已过期</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>已放行</value>
+  </data>
+  <data name="Stock.Location" xml:space="preserve">
+    <value>库位</value>
+  </data>
+  <data name="Stock.Quantity" xml:space="preserve">
+    <value>数量</value>
+  </data>
+  <data name="Stock.Status" xml:space="preserve">
+    <value>库存状态</value>
+  </data>
+  <data name="Stock.Warehouse" xml:space="preserve">
+    <value>仓库</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>可用</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>冻结</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>损坏</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>过期</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>在途</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>质检</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>隔离</value>
+  </data>
+  <data name="Tracking.Lot" xml:space="preserve">
+    <value>批次</value>
+  </data>
+  <data name="Tracking.LotAndSerial" xml:space="preserve">
+    <value>批次 + 序列号</value>
+  </data>
+  <data name="Tracking.None" xml:space="preserve">
+    <value>不追踪</value>
+  </data>
+  <data name="Validation.DatesOrder" xml:space="preserve">
+    <value>生产日期 ≤ 今天；有效期晚于生产日期；复验日期介于两者之间。</value>
+  </data>
+  <data name="Validation.FixFields" xml:space="preserve">
+    <value>请检查标记的字段。</value>
+  </data>
+  <data name="Validation.Length" xml:space="preserve">
+    <value>该值过长。</value>
+  </data>
+  <data name="Validation.LotFormat" xml:space="preserve">
+    <value>请使用 1 至 40 个字符：A–Z、0–9 以及 . / -。</value>
+  </data>
+  <data name="Validation.ReasonMin" xml:space="preserve">
+    <value>请填写至少 10 个字符的原因。</value>
+  </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>此字段为必填项。</value>
+  </data>
+  <data name="Status.Dialog.Pending.Title" xml:space="preserve"><value>已提交审批</value></data>
+  <data name="Status.Dialog.Pending.Text" xml:space="preserve"><value>批次放行正在等待质量审批；批准后批次状态才会改变。请打开“提交决定”页面签名并提交。</value></data>
+  <data name="Status.Dialog.Pending.Link" xml:space="preserve"><value>打开“提交决定”页面</value></data>
+  <data name="Quality.PendingApproval" xml:space="preserve"><value>待批准</value></data>
+  <data name="Quality.PendingApproval.Title" xml:space="preserve"><value>放行决定待批准 · {0}</value></data>
+  <data name="Level.Gsku" xml:space="preserve"><value>全球 SKU</value></data>
+  <data name="Level.Lsku" xml:space="preserve"><value>本地 SKU</value></data>
+  <data name="Level.FinishedGood" xml:space="preserve"><value>成品</value></data>
+  <data name="Level.Item" xml:space="preserve"><value>物料项</value></data>
+</root>

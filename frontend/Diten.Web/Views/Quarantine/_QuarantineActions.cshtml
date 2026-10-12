@@ -1,0 +1,7 @@
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0175 pack §14 "Screen → button → action → permission": action code → may this user see it. The page scripts ask
+    QuarantineUi.can('DECIDE') — they never name a permission key, so a button cannot drift from its key. Display only:
+    InventoryService's [HasPermission] stays the authority (UAS-001 §4); a button without its key is absent, not disabled.
+*@
+<script id="quarantine-actions" type="application/json">@Json.Serialize(Diten.Web.Controllers.QuarantineKeys.For(Perms))</script>
