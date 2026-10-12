@@ -362,3 +362,31 @@ Commit: "chore(crm): WP-VW-W3-CFG — workflow templates CRM-OBJ-RESP + CRM-VISI
 - Ek hata kodları: `objection_claim_product_mismatch`, `visit_evidence_exception_rep_unknown`.
 
 **Sıradaki:** W3-WEB-c ∥ W3-WEB-d (çalışma yeri test dalı başı) → W3-CFG.
+
+## §37 CT kabul — W3-WEB-c + W3-WEB-d E2 ACCEPTED (2026-10-12)
+
+**Kaynak:** kullanıcının ajanları.
+- WEB-c `60dc2a73d` (`wp/vw-w3-web-c`) → test dalında `90edf5341`.
+- WEB-d `33d8d2eba` (`wp/vw-w3-web-d`) → test dalında `2d16a835c`.
+- Her commit yalnız kendi dosyalarına dokunuyor (WEB-c: ObjectionResponses + KnowledgePaths sunum notları + testler; WEB-d: VisitEvidenceSettings + testler); çakışma yok.
+
+**CT ölçümü (ikisi birlikte, test dalı başında):**
+- **Web 947/0** (898 + WEB-c 23 + WEB-d 26).
+- **Mimari 38/1:** yalnız bilinen AUD-001; denetimsiz **47** (değişmedi, Web işi CRM komutu eklemiyor).
+
+**CT kod okuması:**
+- Vekiller UAS-001'e uyuyor: her uç önce izin denetler (`Has` / `HasAny`), yetkisizde iskelet yok.
+- İddia araması `productId`'yi `Guid?` olarak bağlıyor; CRM adresine serbest metin taşınmaz. Liste süzgeçleri `Clean(...)` + `Guid.TryParse` ile.
+- Sayfa boyu 1..100 dışında `page_invalid`.
+- WEB-c `/decision` vekili notsuz "taslağa geri gönder"i reddediyor (`decision_comment_required`) — şablonun `rejectCommentRequired` kuralıyla aynı yönde.
+
+**CT sabotajları** (`.bak` + touch ile geri alındı; JS kaynaktan okunduğu için `--no-build`):
+- `objection-core.js` `usableObjection`'dan "onaylı" koşulu kaldırıldı → **2 kırmızı** (seçici süzgeci + adım sekmesinin kullanılamaz bağlı yanıtı düşürmesi).
+- `evidence-core.js` `MAX_DAYS` 30 → 31 → **2 kırmızı** (gün sayacı kuralı + duman testinde 31 günlük istisnanın gönderilmemesi).
+- Geri alma sonrası 49/0.
+
+**Kabul edilen sapmalar / açıklar:**
+- WEB-d: BE-c ad döndürmediği için kişi alanları "Siz" ya da kısa kimlik gösteriyor → canlı E4'te görsel farka yazılacak; ad çözümü gerekiyorsa küçük BE işi.
+- WEB-c ajanı canlı görsel karşılaştırma yapmadı → CT canlı E4'te mockup ile yan yana bakacak.
+
+**Sıradaki:** W3-CFG (Workflow şablonları + grant betiği) → canlı E4 (A1–A3, B, C1–C4, AR) + mockup görsel karşılaştırması.

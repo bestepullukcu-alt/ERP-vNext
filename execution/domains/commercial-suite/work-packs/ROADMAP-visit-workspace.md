@@ -156,8 +156,8 @@
 
 | sıra | iş | prompt | durum / not |
 |---|---|---|---|
-| 1 | **W3-WEB-c** itiraz kütüphanesi + adım "Sunum notları" sekmesi | 1 | prompt hazır (WP-VW-W3-authoring) |
-| 1 | **W3-WEB-d** ziyaret kanıtı ayarları (kiracı + etkin ayar + geçmiş + süreli istisna) | 1 | prompt hazır; WEB-c ile paralel |
+| 1 | **W3-WEB-c** itiraz kütüphanesi + adım "Sunum notları" sekmesi | 1 | ✅ E2 (90edf5341) |
+| 1 | **W3-WEB-d** ziyaret kanıtı ayarları (kiracı + etkin ayar + geçmiş + süreli istisna) | 1 | ✅ E2 (2d16a835c) |
 | 2 | **W3-CFG** Workflow şablonları (CRM-OBJ-RESP → MED-DIR, CRM-VISIT-EVIDENCE-EXC → POS-SALES-OPS) + yetki betiği | 1 | prompt hazır; pozisyon oluşturuldu |
 | 3 | W3 yazım canlı E4 + mockup görsel karşılaştırması + olası düzeltme | 0–1 | CT |
 | 4 | **PLT-ORG-SEAT** Platform "benim pozisyon atamam" ucu (+ bildirim) | 1 | tüzel kişilik katmanı için |
