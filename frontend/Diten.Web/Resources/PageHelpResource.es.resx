@@ -238,7 +238,7 @@
     <value>Acote la lista con el cuadro de búsqueda, o haga clic en «Filtrar», elija «Estado» o «Tipo de material» y haga clic en «Aplicar».</value>
   </data>
   <data name="Help.ITEMS.Step2" xml:space="preserve">
-    <value>Haga clic en «Añadir artículo», complete la identidad y el comportamiento de stock y haga clic en «Guardar»: el artículo se guarda como «Borrador». Pulsar Intro en un campo también guarda el formulario.</value>
+    <value>Haga clic en «Añadir artículo», complete la identidad y el comportamiento de stock en su formulario de página completa y haga clic en «Guardar»: el artículo se guarda como «Borrador». Mientras esté en un campo de ese formulario, la tecla Intro también lo guarda. Después, en un artículo activo solo cambian libremente el nombre y la descripción; un campo de stock ya rellenado requiere una corrección aprobada.</value>
   </data>
   <data name="Help.ITEMS.Step3" xml:space="preserve">
     <value>En las «Acciones» de un borrador, elija «Enviar a aprobación»: el artículo queda en estado «Pendiente de aprobación» hasta que se aprueba, y solo entonces pasa a «Activo».</value>
@@ -247,6 +247,6 @@
     <value>«Desactivar» saca un artículo activo de las nuevas entradas de stock; «Solicitar reactivación» vuelve a pasar por la misma aprobación; «Retirar» es definitivo, solo se permite en un artículo desactivado con stock cero y el código no se reutiliza nunca. Cada una de estas acciones pide un motivo.</value>
   </data>
   <data name="Help.ITEMS.Step5" xml:space="preserve">
-    <value>En un artículo activo solo cambian libremente el nombre y la descripción; un campo de stock ya rellenado requiere una corrección aprobada. Pulse «?» en cualquier momento para abrir esta ayuda con los atajos de la página.</value>
+    <value>Fuera de un campo de texto, y sin ningún cuadro de diálogo ni panel lateral abierto, la tecla «?» abre esta ayuda con los atajos de la página.</value>
   </data>
 </root>

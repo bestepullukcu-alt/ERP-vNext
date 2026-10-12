@@ -238,7 +238,7 @@
     <value>Affinez la liste avec la zone de recherche, ou cliquez sur « Filtrer », choisissez « Statut » ou « Type de matière » puis cliquez sur « Appliquer ».</value>
   </data>
   <data name="Help.ITEMS.Step2" xml:space="preserve">
-    <value>Cliquez sur « Ajouter un article », renseignez l'identité et le comportement de stock, puis « Enregistrer » : l'article est enregistré à l'état « Brouillon ». Appuyer sur Entrée dans un champ enregistre aussi le formulaire.</value>
+    <value>Cliquez sur « Ajouter un article », renseignez l'identité et le comportement de stock dans son formulaire pleine page, puis cliquez sur « Enregistrer » : l'article est enregistré à l'état « Brouillon ». Lorsque vous êtes dans un champ de ce formulaire, la touche Entrée l'enregistre aussi. Par la suite, sur un article actif, seuls le nom et la description changent librement ; un champ de stock rempli exige une correction approuvée.</value>
   </data>
   <data name="Help.ITEMS.Step3" xml:space="preserve">
     <value>Dans les « Actions » d'un brouillon, choisissez « Envoyer pour approbation » : l'article reste « En attente d'approbation » jusqu'à son approbation, et ne devient « Actif » qu'à ce moment-là.</value>
@@ -247,6 +247,6 @@
     <value>« Désactiver » retire un article actif des nouvelles entrées de stock ; « Demander la réactivation » repasse par la même approbation ; « Retirer » est définitif, n'est possible que pour un article désactivé sans stock, et le code n'est jamais réutilisé. Chacune de ces actions demande un motif.</value>
   </data>
   <data name="Help.ITEMS.Step5" xml:space="preserve">
-    <value>Sur un article actif, seuls le nom et la description changent librement ; un champ de stock rempli exige une correction approuvée. Appuyez sur « ? » à tout moment pour ouvrir cette aide avec les raccourcis de la page.</value>
+    <value>En dehors d'un champ de saisie, et sans boîte de dialogue ni panneau latéral ouverts, la touche « ? » ouvre cette aide avec les raccourcis de la page.</value>
   </data>
 </root>
