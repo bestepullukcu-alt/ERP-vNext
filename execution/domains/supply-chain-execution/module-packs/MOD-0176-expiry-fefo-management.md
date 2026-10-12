@@ -885,6 +885,23 @@ ready-for-dev items: #4 INVENTORY 1.3.0 / TRACE 1.4.0 — the owner step runs in
 PRODUCT-MASTER day fields — MDM draft.11, served by the CT dev bridge (4010) until MDM is live. Order: **F1 → INT → F2 → F3 → F4 → F5
 → L10n**. Port drift FU-0176-DOC-01 stays a CT docs item.
 
+### 19.8 WP-0176-F1 — agent result, pending CT (2026-10-12)
+
+Commit `e4ceac240` on `feature/sce/mod-0176-expiry-fefo` (base `2a25207dc`). Evidence
+`docs/records/audits/2026-10/mod-0176-f1-evidence-2026-10-12.md` (+ scripts). Delivered: company `ExpiryPolicy` (+ history, If-Match `"0"`
+first save, reason ≥ 10), `FefoExceptionCase` state machine §8.4 with insert-only events + `inventory_audit` rows, CT-F10 SoD (409
+`EXPIRY_SOD_VIOLATION`), the KF-E signature port **fail-closed** until F3 (no resolution passes in production), prepare / resolve 15-minute
+pairing, `FX-YYYY-NNNN` counter, `ExpiredOnHandSweeper` (tenant + company scoped, §13 #11), getSku day fields nullable (never 0), manifest
+`EXPIRY-FEFO-MANAGEMENT` with the eight F1 keys as `ApiPermissions` (no page), `fefo.openapi.yaml` 1.0.0 FROZEN (reconciliations R-1…R-7
+in its changelog). Inventory tests 839 → **905 / 905**; architecture the same 8 reds. Sabotage a–g (+ h, the contract validator) red →
+restored green, `git diff` empty. Probe on own port 5167 + own mongod: `/health` 200, every `/api/expiry` F1 route 401 without a token.
+
+Open for CT (evidence §9): **O-F1-1** AuditTrailStandard list 92 → 99 (+7 expiry commands, audited by an equivalent trail but InventoryService
+has no audit ledger — crediting needs a ledger + `AcceptedTrails` change outside 0176); **O-F1-2** seams beyond the WP list
+(`InventoryScopeResolutionMiddleware.ScopedBasePaths` — required for tenant scope; controller in `Api/Controllers/Expiry/`; six test-infra /
+architecture-test seams); **O-F1-3** collection names `expiry_*`; **O-F1-4** contract reconciliations R-1…R-7; **O-F1-5** manual case
+quantity without a unit until F4.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
