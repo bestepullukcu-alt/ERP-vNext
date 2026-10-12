@@ -902,6 +902,21 @@ has no audit ledger — crediting needs a ledger + `AcceptedTrails` change outsi
 architecture-test seams); **O-F1-3** collection names `expiry_*`; **O-F1-4** contract reconciliations R-1…R-7; **O-F1-5** manual case
 quantity without a unit until F4.
 
+**F1 — CT acceptance (2026-10-12).** Commits `e4ceac240` + `226b397b5` on `feature/sce/mod-0176-expiry-fefo` (base `2a25207dc`,
+`HEAD..origin/main` = 0, tree clean). The CT re-measured in the worktree: Inventory **905/905** (839 + 66), architecture **69/77** — the
+same 8 reds as main (DocsPathGuard × 5, MongoTestDatabaseGuard, AuditTrailStandard × 2). CT sabotage (own): `ExpiryContract.BasePath`
+removed from `InventoryScopeResolutionMiddleware.ScopedBasePaths` → **34 of 81** Expiry tests red; restored, `git diff` empty. Read:
+the fail-closed production default `FailClosedExpiryResolutionSignature` (every resolution needs a signature, none verifies until F3),
+SoD in `ExpiryExceptionRules.SeparationOfDuties` on prepare + resolve, the tenant + company scoped `ExpiredOnHandSweeper`, the
+guard-test edits (expiry collections added to the single-SoR list, PUT allow-list `ExpiryController:policy`, manifest completeness
+split by controller namespace with its own expiry test) — none weakens an existing guard. Decisions on the agent's open points:
+**O-F1-1** accepted as known debt: the 7 expiry write commands join **FU-SYNC1-AUDIT** (Inventory now 34 commands without a ledger
+the audit standard recognises); an Inventory audit-ledger WP runs before MVP-1 closure. **O-F1-2** accepted (the middleware entry is
+required — the CT sabotage proves the tests guard it; controller under `Api/Controllers/Expiry/` like 0175). **O-F1-3** `expiry_*`
+collection names accepted (§3 camelCase names superseded). **O-F1-4** freeze reconciliations R-1…R-7 accepted. **O-F1-5** accepted
+with **FU-0176-F1-UOM**: F4 adds the unit to a manual case (optional `baseUomId` / read from the lot's stock — additive FEFO 1.1.0).
+Fast-forwarded into the MVP-1 branch. Next: INT-EXPIRY (gateway), then F2.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
