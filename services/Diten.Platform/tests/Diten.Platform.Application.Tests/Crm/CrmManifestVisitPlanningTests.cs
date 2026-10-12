@@ -39,9 +39,49 @@ public sealed class CrmManifestVisitPlanningTests
         Assert.True(page.SortOrder < Assert.Single(Manifest.Pages, p => p.PageCode == "VISIT_PLANNING").SortOrder);
 
         // WP-VW-W3 (BE-a) — the visit execution + evidence policy keys live on the workspace page.
+        // WP-VW-W3-AUTH — followed by the document repository's three scope-bound visit-evidence keys.
         Assert.Equal(
-            new[] { "crm.visit-execution.read", "crm.visit-execution.record", "crm.visit-evidence-policy.manage" },
+            new[]
+            {
+                "crm.visit-execution.read", "crm.visit-execution.record", "crm.visit-evidence-policy.manage",
+                "platform.document-repository.visit-evidence.write", "platform.document-repository.visit-evidence.read",
+                "platform.document-repository.visit-evidence.read-all"
+            },
             page.Actions.OrderBy(a => a.SortOrder).Select(a => a.PermissionKey).ToArray());
+    }
+
+    // WP-VW-W3-AUTH — the three visit-evidence keys have their page home on the tenant route /CRM/VisitWorkspace, so the
+    // manifest sync carries Scope=Tenant for them (Platform's own route rule). They are the VERBATIM keys the document
+    // repository controller enforces (reflected exactly like A1 auto-registration does), and the general
+    // platform.document-repository.read / .manage are declared nowhere in the CRM manifest.
+    [Fact]
+    public void The_visit_evidence_keys_are_declared_on_the_visit_workspace_tenant_route_and_the_general_keys_nowhere()
+    {
+        var page = Assert.Single(Manifest.Pages, p => p.PageCode == "VISIT_WORKSPACE");
+        Assert.Equal("Tenant", Diten.Platform.Application.Features.ModulePages.ModulePageDescriptorNormalizer.ScopeFromRoute(page.RoutePath));
+
+        var expected = new Dictionary<string, string>
+        {
+            ["EVIDENCE_WRITE"] = Diten.Platform.Application.Features.DocumentRepository.DocumentRepositoryPermissions.VisitEvidenceWrite,
+            ["EVIDENCE_READ"] = Diten.Platform.Application.Features.DocumentRepository.DocumentRepositoryPermissions.VisitEvidenceRead,
+            ["EVIDENCE_READ_ALL"] = Diten.Platform.Application.Features.DocumentRepository.DocumentRepositoryPermissions.VisitEvidenceReadAll
+        };
+        var enforced = Diten.Platform.API.Security.HasPermissionReflector.CollectPermissionKeys(
+            typeof(Diten.Platform.API.Security.HasPermissionAttribute).Assembly);
+
+        foreach (var (actionCode, key) in expected)
+        {
+            var action = Assert.Single(page.Actions, a => a.ActionCode == actionCode);
+            Assert.Equal(key, action.PermissionKey);
+            Assert.False(action.IsDangerous);
+            Assert.Contains(key, enforced);
+            // Declared on exactly one page: a second (platform-routed) home would trip Auth's most-restrictive tie-break.
+            Assert.Single(Manifest.Pages.SelectMany(p => p.Actions), a => a.PermissionKey == key);
+        }
+
+        var everyKey = Manifest.Pages.SelectMany(p => p.Actions.Select(a => a.PermissionKey).Append(p.RequiredPermission)).ToList();
+        Assert.DoesNotContain("platform.document-repository.read", everyKey);
+        Assert.DoesNotContain("platform.document-repository.manage", everyKey);
     }
 
     [Fact]

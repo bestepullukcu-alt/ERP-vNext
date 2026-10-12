@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.DocumentRepository;
 
 namespace Diten.Platform.Application.Features.Crm.SelfRegistration;
 
@@ -118,7 +119,18 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("EXECUTION_READ", "Read Visit Execution", "crm.visit-execution.read", "RowAction", 10, false, false, true),
                     new ModuleManifestAction("EXECUTION_RECORD", "Start and Record Visit", "crm.visit-execution.record", "RowAction", 20, false, false, true),
-                    new ModuleManifestAction("EVIDENCE_POLICY", "Manage Visit Evidence Policy", "crm.visit-evidence-policy.manage", "Toolbar", 30, false, true, false)
+                    new ModuleManifestAction("EVIDENCE_POLICY", "Manage Visit Evidence Policy", "crm.visit-evidence-policy.manage", "Toolbar", 30, false, true, false),
+                    // WP-VW-W3-AUTH — the document repository's scope-bound visit-evidence keys (W3-PLT), declared on this
+                    // tenant route so the manifest sync carries Scope=Tenant for them. Without a page home they reach Auth
+                    // only through the scopeless A1 auto-registration, which stamps every new platform.* key PlatformAdmin,
+                    // and no tenant role can then be granted them. They open ONLY the CrmVisitEvidence scope:
+                    //   write    — stores visit evidence (photo, signature); compensation-deletes only evidence the caller created.
+                    //   read     — reads only visit evidence the caller created.
+                    //   read-all — reads every visit evidence object in the tenant (manager / reviewer).
+                    // The general platform.document-repository.read / .manage are deliberately NOT declared here.
+                    new ModuleManifestAction("EVIDENCE_WRITE", "Store Own Visit Evidence (Photo, Signature)", DocumentRepositoryPermissions.VisitEvidenceWrite, "RowAction", 40, false, false, true),
+                    new ModuleManifestAction("EVIDENCE_READ", "Read Own Visit Evidence", DocumentRepositoryPermissions.VisitEvidenceRead, "RowAction", 50, false, false, true),
+                    new ModuleManifestAction("EVIDENCE_READ_ALL", "Read All Visit Evidence (Tenant-Wide)", DocumentRepositoryPermissions.VisitEvidenceReadAll, "Toolbar", 60, false, true, false)
                 ]),
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
