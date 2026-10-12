@@ -105,7 +105,12 @@ public sealed record VisitCalendarItemDto(
     string? CancellationReason = null,
     string? WorkStatus = null,
     DateTimeOffset? ReportDeadline = null,
-    bool ManagerAttention = false);
+    bool ManagerAttention = false,
+    // WP-VW-W3 (BE-a, additive) — the visit's execution: id, started | finished, and the SERVER instants.
+    Guid? ExecutionId = null,
+    string? ExecutionStatus = null,
+    DateTimeOffset? StartedAt = null,
+    DateTimeOffset? FinishedAt = null);
 
 /// <summary>WP-E2E-FIX-1 — one planned content item of a calendar cell (one product line of the plan atom).</summary>
 public sealed record VisitCalendarPlannedContentDto(
@@ -122,7 +127,9 @@ public sealed record VisitCalendarPlannedContentDto(
     // WP-VW-W1 (additive) — the product's name: the snapshot frozen at approval (4G), else one bulk MDM read (fail-open).
     string? ProductName = null);
 
-public sealed record VisitCalendarPlannedStepDto(string? Title, string? Type);
+/// <summary>One step of a planned product. WP-VW-W3 (BE-a, additive) — the step's planned minutes (the path step's
+/// estimate frozen on the plan) and the knowledge content it shows.</summary>
+public sealed record VisitCalendarPlannedStepDto(string? Title, string? Type, int? Minutes = null, Guid? ContentId = null);
 
 public sealed record VisitCalendarDto(
     string From, string To, IReadOnlyList<VisitCalendarItemDto> Items, int TotalCount);

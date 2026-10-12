@@ -1,6 +1,7 @@
 using Diten.CrmService.Domain.Entities;
 using PlannedVisitEntity = Diten.CrmService.Domain.Entities.PlannedVisit;
 using VisitReportEntity = Diten.CrmService.Domain.Entities.VisitReport;
+using VisitExecutionEntity = Diten.CrmService.Domain.Entities.VisitExecution;
 
 namespace Diten.CrmService.Application.Features.VisitReport;
 
@@ -9,11 +10,12 @@ namespace Diten.CrmService.Application.Features.VisitReport;
 /// from plan status + report state + the clock. It is <b>never stored</b> (no field, no migration, no index): it is
 /// computed at read time from the plan atom, its report (if any) and "now". Pure — the clock is passed in.
 /// <para><b>Order is priority</b>; the first rule that holds wins:
-/// cancelled &gt; not_done &gt; rescheduled &gt; reported &gt; expired &gt; report_missing &gt; missed &gt; today &gt; planned.
+/// cancelled &gt; not_done &gt; rescheduled &gt; reported &gt; expired &gt; report_missing &gt; missed &gt; in_progress &gt;
+/// today &gt; planned.
 /// A DRAFT report whose outcome is <c>missed</c> / <c>rescheduled</c> is not a result yet: the visit stays on its day
 /// rule (<c>missed</c> once the day is past, <c>expired</c> after the deadline) until the report is submitted.</para>
-/// <para><c>in_progress</c> is deliberately NOT here: it arrives with W3's start / finish record and will sit just
-/// before <c>today</c>.</para>
+/// <para>WP-VW-W3 (BE-a) — <c>in_progress</c>: the visit's execution is started and not finished. It sits just before
+/// <c>today</c>; once the execution is finished the earlier rules apply again (<c>today</c> until the report …).</para>
 /// </summary>
 public static class VisitWorkStatus
 {
@@ -24,20 +26,21 @@ public static class VisitWorkStatus
     public const string Expired = "expired";
     public const string ReportMissing = "report_missing";
     public const string Missed = "missed";
-    // W3: in_progress goes here (before today).
+    public const string InProgress = "in_progress";
     public const string Today = "today";
     public const string Planned = "planned";
 
     /// <summary>Every code, in priority order (published on the contract as <c>workStatuses</c>).</summary>
     public static readonly IReadOnlyList<string> All = new[]
     {
-        Cancelled, NotDone, Rescheduled, Reported, Expired, ReportMissing, Missed, Today, Planned
+        Cancelled, NotDone, Rescheduled, Reported, Expired, ReportMissing, Missed, InProgress, Today, Planned
     };
 
     public static bool IsKnown(string? value)
         => value is not null && All.Contains(value.Trim().ToLowerInvariant(), StringComparer.Ordinal);
 
-    public static string Derive(PlannedVisitEntity plan, VisitReportEntity? report, DateTimeOffset now)
+    public static string Derive(
+        PlannedVisitEntity plan, VisitReportEntity? report, DateTimeOffset now, VisitExecutionEntity? execution = null)
     {
         ArgumentNullException.ThrowIfNull(plan);
 
@@ -70,6 +73,11 @@ public static class VisitWorkStatus
         if (plan.PlannedDate < today)
         {
             return Missed;
+        }
+
+        if (execution is not null && execution.IsStarted())
+        {
+            return InProgress;
         }
 
         return plan.PlannedDate == today ? Today : Planned;

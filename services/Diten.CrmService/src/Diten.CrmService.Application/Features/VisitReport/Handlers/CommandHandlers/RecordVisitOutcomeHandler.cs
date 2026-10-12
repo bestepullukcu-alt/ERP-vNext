@@ -30,6 +30,7 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
     private readonly TimeProvider _clock;
     private readonly VisitReasonValidator? _reasons;
     private readonly VisitWorkspaceDays? _days;
+    private readonly IVisitExecutionRepository? _executions;
 
     public RecordVisitOutcomeHandler(
         ITenantContext tenant, IActorContext actor,
@@ -37,8 +38,11 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
         TimeProvider? clock = null,
         // WP-VW-W2 — the reason set check (fail-closed: not wired ⇒ 503) and the reschedule date rule.
         VisitReasonValidator? reasons = null,
-        VisitWorkspaceDays? days = null)
+        VisitWorkspaceDays? days = null,
+        // WP-VW-W3 (BE-a) — the visit's execution (a started visit is not missed / rescheduled; ExecutedAt = startedAt).
+        IVisitExecutionRepository? executions = null)
     {
+        _executions = executions;
         _reasons = reasons;
         _days = days;
         _caller = caller;
@@ -98,6 +102,16 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
         }
 
         var outcome = VisitExecutionOutcome.Normalize(request.ExecutionOutcome);
+
+        // WP-VW-W3 (BE-a) — the execution decides: a started visit is not marked missed / rescheduled.
+        var execution = _executions is null
+            ? null
+            : await _executions.GetByPlannedVisitIdAsync(tenantId, plan.Id, cancellationToken);
+        if (Features.VisitExecution.VisitExecutionReportBinding.RefuseNotDone(execution, outcome) is { } started)
+        {
+            return Fail(new VisitReportValidation.Failure(started.Message, started.Code, 409));
+        }
+
         var isCompleted = string.Equals(outcome, VisitExecutionOutcome.Completed, StringComparison.Ordinal);
         var isRescheduled = string.Equals(outcome, VisitExecutionOutcome.Rescheduled, StringComparison.Ordinal);
         var reasonNote = VisitReasonValidator.Trim(request.ReasonNote) ?? VisitReasonValidator.Trim(request.RescheduleNotes);
@@ -160,7 +174,8 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
             return Fail(notesFailure);
         }
 
-        var executedAt = VisitReportValidation.ParseInstant(request.ExecutedAt) ?? DateTimeOffset.UtcNow;
+        var executedAt = Features.VisitExecution.VisitExecutionReportBinding.ExecutedAt(
+            execution, VisitReportValidation.ParseInstant(request.ExecutedAt) ?? DateTimeOffset.UtcNow);
         var reason = isCompleted ? null : VisitReasonValidator.Normalize(request.ReasonCode!);
         var now = DateTimeOffset.UtcNow;
         var actor = _actor.ActorName;

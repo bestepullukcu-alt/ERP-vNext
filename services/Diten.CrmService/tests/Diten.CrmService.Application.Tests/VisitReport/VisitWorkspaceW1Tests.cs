@@ -512,9 +512,9 @@ public sealed class VisitWorkspaceW1Tests
     public void W8a_the_codes_are_published_in_priority_order_and_manager_attention_is_expired_only()
     {
         Assert.Equal(
-            new[] { "cancelled", "not_done", "rescheduled", "reported", "expired", "report_missing", "missed", "today", "planned" },
+            // WP-VW-W3 (BE-a) — in_progress (the execution is started, not finished) sits just before today.
+            new[] { "cancelled", "not_done", "rescheduled", "reported", "expired", "report_missing", "missed", "in_progress", "today", "planned" },
             VisitWorkStatus.All);
-        Assert.DoesNotContain("in_progress", VisitWorkStatus.All); // W3
         Assert.All(VisitWorkStatus.All, s => Assert.Equal(s == VisitWorkStatus.Expired, VisitWorkStatus.NeedsManagerAttention(s)));
     }
 
@@ -596,7 +596,7 @@ public sealed class VisitWorkspaceW1Tests
     }
 
     [Theory]
-    [InlineData("in_progress")]
+    [InlineData("in_flight")] // WP-VW-W3 — in_progress is a known code now; an unknown one is still 400
     [InlineData("missed,bogus")]
     [InlineData(",")]
     public async Task W8c_a_bad_work_status_is_400_work_status_invalid(string raw)

@@ -69,7 +69,12 @@ public sealed record WorkspaceVisitDto(
     string? SpecialtyLabel = null,
     IReadOnlyList<string>? Badges = null,
     string? AccountAddress = null,
-    string? PinMoveReason = null);
+    string? PinMoveReason = null,
+    // WP-VW-W3 (BE-a, additive) — the visit's execution: id, started | finished, the SERVER instants.
+    Guid? ExecutionId = null,
+    string? ExecutionStatus = null,
+    DateTimeOffset? StartedAt = null,
+    DateTimeOffset? FinishedAt = null);
 
 /// <summary>One Monday-week of the window: its plan state and load.</summary>
 public sealed record WorkspaceWeekDto(

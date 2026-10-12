@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using System.Text.Json;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Artifacts;
@@ -28,9 +27,6 @@ public sealed class HttpContentArtifactStore : IContentArtifactStore
     private const string ObjectsPath = "api/v1/document-repository/objects";
     private const string Scope = "ContentMessagingArtifacts";
 
-    private static readonly string[] CompanyClaimTypes =
-        ["companyId", "company_id", "legalEntityId", "legal_entity_id"];
-
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ITenantContext _tenantContext;
@@ -45,10 +41,7 @@ public sealed class HttpContentArtifactStore : IContentArtifactStore
         _httpContextAccessor = httpContextAccessor;
         _tenantContext = tenantContext;
 
-        var gatewayBaseUrl = configuration["Gateway:BaseUrl"]
-            ?? configuration["GatewayUrl"]
-            ?? "http://localhost:5000";
-        _httpClient.BaseAddress = new Uri(gatewayBaseUrl.TrimEnd('/') + "/");
+        _httpClient.BaseAddress = DocumentRepositoryCallerContext.GatewayBase(configuration);
     }
 
     public async Task<ContentArtifactStoreResult> StoreAsync(
@@ -155,61 +148,11 @@ public sealed class HttpContentArtifactStore : IContentArtifactStore
         }
     }
 
-    // CompanyId is server-derived: the first company claim on the caller's token, or Guid.Empty for a tenant-scoped
-    // artifact with no company context. Never taken from a request payload.
-    private Guid ResolveCompanyId()
-    {
-        var user = _httpContextAccessor.HttpContext?.User;
-        if (user is null)
-        {
-            return Guid.Empty;
-        }
-
-        foreach (var type in CompanyClaimTypes)
-        {
-            var value = user.FindFirstValue(type);
-            if (Guid.TryParse(value, out var companyId) && companyId != Guid.Empty)
-            {
-                return companyId;
-            }
-        }
-
-        return Guid.Empty;
-    }
+    // CompanyId is server-derived (the first company claim, or Guid.Empty); never taken from a request payload.
+    private Guid ResolveCompanyId() => DocumentRepositoryCallerContext.ResolveCompanyId(_httpContextAccessor);
 
     private void ForwardContextHeaders(HttpRequestMessage request)
-    {
-        var context = _httpContextAccessor.HttpContext;
-
-        var authorization = context?.Request.Headers.Authorization.ToString();
-        if (!string.IsNullOrWhiteSpace(authorization)
-            && AuthenticationHeaderValue.TryParse(authorization, out var parsed))
-        {
-            request.Headers.Authorization = parsed;
-        }
-
-        var tenant = context?.Request.Headers["X-Tenant-Id"].ToString();
-        if (string.IsNullOrWhiteSpace(tenant) && _tenantContext.TenantId is { } tenantId)
-        {
-            tenant = tenantId.ToString();
-        }
-
-        if (!string.IsNullOrWhiteSpace(tenant))
-        {
-            request.Headers.TryAddWithoutValidation("X-Tenant-Id", tenant);
-        }
-
-        var correlation = context?.Request.Headers["X-Correlation-Id"].ToString();
-        if (string.IsNullOrWhiteSpace(correlation))
-        {
-            correlation = context?.TraceIdentifier;
-        }
-
-        if (!string.IsNullOrWhiteSpace(correlation))
-        {
-            request.Headers.TryAddWithoutValidation("X-Correlation-Id", correlation);
-        }
-    }
+        => DocumentRepositoryCallerContext.Forward(request, _httpContextAccessor, _tenantContext);
 
     private sealed record GatewayEnvelope<T>(T? Data, int StatusCode, bool IsSuccessful, IReadOnlyList<string>? Errors);
 

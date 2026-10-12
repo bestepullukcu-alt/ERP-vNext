@@ -27,13 +27,17 @@ public sealed class GetVisitCalendarHandler : IRequestHandler<GetVisitCalendarQu
     private readonly Diten.CrmService.Application.Features.PlannedVisit.VisitTargetNameReader _names;
     private readonly IProductNameReader? _productNames;
     private readonly TimeProvider _clock;
+    private readonly IVisitExecutionRepository? _executions;
 
     public GetVisitCalendarHandler(
         ITenantContext tenant, IPlannedVisitRepository plannedVisits, IVisitReportRepository reports,
         ICallerScope caller, Diten.CrmService.Application.Features.PlannedVisit.VisitTargetNameReader names,
         IProductNameReader? productNames = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        // WP-VW-W3 (BE-a) — the visits' executions (one bulk read): in_progress + the execution fields.
+        IVisitExecutionRepository? executions = null)
     {
+        _executions = executions;
         _caller = caller;
         _names = names;
         _tenant = tenant;
@@ -94,13 +98,21 @@ public sealed class GetVisitCalendarHandler : IRequestHandler<GetVisitCalendarQu
             .GroupBy(r => r.PlannedVisitId)
             .ToDictionary(g => g.Key, g => g.First());
 
+        var executionsByPlan = _executions is null
+            ? new Dictionary<Guid, Domain.Entities.VisitExecution>()
+            : (await _executions.ListByPlannedVisitIdsAsync(tenantId, visits.Select(v => v.Id).ToList(), cancellationToken))
+                .GroupBy(e => e.PlannedVisitId)
+                .ToDictionary(g => g.Key, g => g.First());
+
         // WP-VW-W1 — the work status is derived per cell from the plan, its report and ONE "now" for the whole read.
+        // WP-VW-W3 — and its execution (in_progress).
         var now = _clock.GetUtcNow();
         var cells = visits
             .Select(v =>
             {
                 var report = reportsByPlan.GetValueOrDefault(v.Id);
-                return (Visit: v, Report: report, Status: VisitWorkStatus.Derive(v, report, now));
+                var execution = executionsByPlan.GetValueOrDefault(v.Id);
+                return (Visit: v, Report: report, Execution: execution, Status: VisitWorkStatus.Derive(v, report, now, execution));
             })
             .Where(c => wanted is null || wanted.Contains(c.Status))
             .ToList();
@@ -135,7 +147,11 @@ public sealed class GetVisitCalendarHandler : IRequestHandler<GetVisitCalendarQu
                     TargetInactive = target.TargetInactive,
                     WorkStatus = c.Status,
                     ReportDeadline = VisitReportDeadline.For(c.Visit.PlannedDate),
-                    ManagerAttention = VisitWorkStatus.NeedsManagerAttention(c.Status)
+                    ManagerAttention = VisitWorkStatus.NeedsManagerAttention(c.Status),
+                    ExecutionId = c.Execution?.Id,
+                    ExecutionStatus = c.Execution?.Status,
+                    StartedAt = c.Execution?.StartedAt,
+                    FinishedAt = c.Execution?.FinishedAt
                 };
             })
             .ToList();
@@ -208,7 +224,8 @@ public sealed class GetVisitCalendarHandler : IRequestHandler<GetVisitCalendarQu
                 i.ProductId, i.ProductCode, i.Role, i.JourneyId, i.JourneyCode, i.StageId, i.StageIndex, i.StageCode,
                 i.StageName,
                 (i.Steps ?? new List<PlannedVisitContentStep>())
-                    .Select(s => new VisitCalendarPlannedStepDto(s.Title, s.Type))
+                    .Select(s => new VisitCalendarPlannedStepDto(s.Title, s.Type, s.Minutes,
+                        s.ContentId == Guid.Empty ? null : s.ContentId))
                     .ToList(),
                 ProductName: string.IsNullOrWhiteSpace(i.ProductName)
                     ? productNames.GetValueOrDefault(i.ProductId)

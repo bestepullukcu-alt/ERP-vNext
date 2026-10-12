@@ -557,6 +557,7 @@ public sealed class ReopenPlanningWeekHandler
     private readonly IPlanningSessionApplyUnitOfWork _unitOfWork;
     private readonly ICallerScope _caller;
     private readonly TimeProvider _clock;
+    private readonly IVisitExecutionRepository? _executions;
 
     public ReopenPlanningWeekHandler(
         ITenantContext tenant,
@@ -567,8 +568,11 @@ public sealed class ReopenPlanningWeekHandler
         Features.CyclePeriod.Read.ICyclePeriodReader periods,
         IPlanningSessionApplyUnitOfWork unitOfWork,
         ICallerScope caller,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        // WP-VW-W3 (BE-a) — a started visit is kept when its week reopens (never cancelled), like a reported one.
+        IVisitExecutionRepository? executions = null)
     {
+        _executions = executions;
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
@@ -640,6 +644,11 @@ public sealed class ReopenPlanningWeekHandler
         var reported = (await _reports.ListByPlannedVisitIdsAsync(tenantId, ids.ToList(), cancellationToken))
             .Select(r => r.PlannedVisitId)
             .ToHashSet();
+        if (_executions is not null)
+        {
+            reported.UnionWith((await _executions.ListByPlannedVisitIdsAsync(tenantId, ids.ToList(), cancellationToken))
+                .Select(e => e.PlannedVisitId));
+        }
 
         var actor = _actor.ActorName;
         var cancelled = new List<Domain.Entities.PlannedVisit>();

@@ -18,6 +18,7 @@ public sealed class GetPlannedVisitByIdHandler
     private readonly IProductNameReader? _productNames;
     private readonly IVisitReportRepository? _reports;
     private readonly TimeProvider _clock;
+    private readonly IVisitExecutionRepository? _executions;
 
     public GetPlannedVisitByIdHandler(
         ITenantContext tenant, IPlannedVisitRepository repository, ICallerScope caller, VisitTargetNameReader names,
@@ -25,8 +26,11 @@ public sealed class GetPlannedVisitByIdHandler
         IProductNameReader? productNames = null,
         // WP-VW-W1 — the visit's report (one read) + the clock, for the derived work status.
         IVisitReportRepository? reports = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        // WP-VW-W3 (BE-a) — the visit's execution, for in_progress.
+        IVisitExecutionRepository? executions = null)
     {
+        _executions = executions;
         _productNames = productNames;
         _reports = reports;
         _clock = clock ?? TimeProvider.System;
@@ -71,7 +75,10 @@ public sealed class GetPlannedVisitByIdHandler
         var report = _reports is null
             ? null
             : await _reports.GetByPlannedVisitIdAsync(tenantId, plan.Id, cancellationToken);
-        var workStatus = Diten.CrmService.Application.Features.VisitReport.VisitWorkStatus.Derive(plan, report, _clock.GetUtcNow());
+        var execution = _executions is null
+            ? null
+            : await _executions.GetByPlannedVisitIdAsync(tenantId, plan.Id, cancellationToken);
+        var workStatus = Diten.CrmService.Application.Features.VisitReport.VisitWorkStatus.Derive(plan, report, _clock.GetUtcNow(), execution);
         dto = dto with
         {
             WorkStatus = workStatus,

@@ -110,7 +110,14 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 // WP-VW-W2 (CT, WEB-a) — the Visit Workspace: one calendar to plan, run and report visits (MOD-0155 VW).
                 // Above Visit Planning; the older pages stay until W9. The page itself also needs crm.visit-plan.read
                 // (its own UAS-001 notice otherwise).
-                new ModuleManifestPage("VISIT_WORKSPACE", "Visit Workspace", "/CRM/VisitWorkspace", VisitReportRead, null, true, "List", 63, []),
+                // WP-VW-W3 (BE-a) — the visit execution keys (start / capture / finish / signature, the reads) and the tenant's
+                // evidence policy (K-W2); declared here so a role can receive them from the role-permission screen (no seed).
+                new ModuleManifestPage("VISIT_WORKSPACE", "Visit Workspace", "/CRM/VisitWorkspace", VisitReportRead, null, true, "List", 63,
+                [
+                    new ModuleManifestAction("EXECUTION_READ", "Read Visit Execution", "crm.visit-execution.read", "RowAction", 10, false, false, true),
+                    new ModuleManifestAction("EXECUTION_RECORD", "Start and Record Visit", "crm.visit-execution.record", "RowAction", 20, false, false, true),
+                    new ModuleManifestAction("EVIDENCE_POLICY", "Manage Visit Evidence Policy", "crm.visit-evidence-policy.manage", "Toolbar", 30, false, true, false)
+                ]),
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
                     new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),

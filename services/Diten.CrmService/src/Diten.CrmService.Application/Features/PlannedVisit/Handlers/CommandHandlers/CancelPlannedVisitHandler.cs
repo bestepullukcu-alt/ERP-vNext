@@ -22,13 +22,17 @@ public sealed class CancelPlannedVisitHandler : IRequestHandler<CancelPlannedVis
     private readonly ICallerScope _caller;
     private readonly VisitReasonValidator? _reasons;
     private readonly TimeProvider _clock;
+    private readonly IVisitExecutionRepository? _executions;
 
     public CancelPlannedVisitHandler(
         ITenantContext tenant, IActorContext actor, IPlannedVisitRepository repository, ICallerScope caller,
         // WP-VW-W2 — the reason set check (fail-closed when a code is sent and the check is not wired) + "today" (UTC).
         VisitReasonValidator? reasons = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        // WP-VW-W3 (BE-a) — a started visit is not cancelled.
+        IVisitExecutionRepository? executions = null)
     {
+        _executions = executions;
         _reasons = reasons;
         _clock = clock ?? TimeProvider.System;
         _caller = caller;
@@ -96,6 +100,13 @@ public sealed class CancelPlannedVisitHandler : IRequestHandler<CancelPlannedVis
                     VisitWorkspaceErrorCodes.CancelPastDay
                 },
                 409);
+        }
+
+        if (_executions is not null
+            && Features.VisitExecution.VisitExecutionReportBinding.RefuseCancel(
+                await _executions.GetByPlannedVisitIdAsync(tenantId, plan.Id, cancellationToken)) is { } started)
+        {
+            return Response<bool>.Fail(new[] { started.Message, started.Code }, 409);
         }
 
         if (reasonCode is not null)

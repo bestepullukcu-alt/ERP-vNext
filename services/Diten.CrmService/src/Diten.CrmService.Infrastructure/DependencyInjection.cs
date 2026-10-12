@@ -80,6 +80,9 @@ public static class DependencyInjection
             Application.Features.Knowledge.Path.Release.IKnowledgePathRevisionRenderer,
             ContentComposition.Rendering.PdfSharpKnowledgePathRevisionRenderer>();
         services.AddHttpClient<Application.Common.Artifacts.IContentArtifactStore, Artifacts.HttpContentArtifactStore>();
+        // WP-VW-W3 (BE-a, K-W3) — the visit evidence (photo, signature) in the document repository, scope CrmVisitEvidence,
+        // as the signed-in user (the Platform's scoped keys decide). Fail-closed store, never-throwing compensation.
+        services.AddHttpClient<Application.Common.Artifacts.IVisitEvidenceStore, Artifacts.HttpVisitEvidenceStore>();
 
         // MOD-0167 FU02 - class-X criterion VALUE proof (MDM global product / product / brand) over the Gateway.
         // Deliberately cacheless, 3s budget, one transient retry; 404 makes the rule un-authorable (400) and an

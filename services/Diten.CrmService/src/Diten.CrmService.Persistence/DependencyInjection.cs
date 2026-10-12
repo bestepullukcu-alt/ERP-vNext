@@ -270,6 +270,11 @@ public static class DependencyInjection
         // aggregate to keep consistent and no multi-document transaction is needed.
         services.AddScoped<IVisitReportRepository, VisitReportRepository>();
 
+        // WP-VW-W3 (BE-a) — the visit execution (one per planned visit) and the tenant's evidence policy (one per tenant).
+        // Neither exposes a delete: a started visit is evidence, and a policy is changed, never removed.
+        services.AddScoped<IVisitExecutionRepository, VisitExecutionRepository>();
+        services.AddScoped<IVisitEvidencePolicyRepository, VisitEvidencePolicyRepository>();
+
         TryEnsureIndexes(client.GetDatabase(databaseName));
 
         return services;
@@ -1228,6 +1233,67 @@ public static class DependencyInjection
             BsonClassMap.RegisterClassMap<VisitReportAmendment>(map => map.AutoMap());
         }
 
+        // WP-VW-W3 (BE-a) - VisitExecution and its embedded types. Every Guid (the plan FK, the evidence content ids, the
+        // timing / mark / note product + step ids) takes the string-Guid convention - an unmapped embedded Guid would be
+        // written binary and every by-plan / by-id filter would silently find NOTHING (the CRM new-aggregate trap). The
+        // types without a Guid are registered too, so the driver never treats them as anonymous.
+        Map<VisitExecution>(map => map.GetMemberMap(e => e.PlannedVisitId).SetSerializer(stringGuid));
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionLocation)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionLocation>(map => map.AutoMap());
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionEvidence)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionEvidence>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(e => e.ContentId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionSignature)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionSignature>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.ContentId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionProductTiming)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionProductTiming>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(t => t.ProductId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionSlideTiming)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionSlideTiming>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(t => t.ProductId).SetSerializer(stringGuid);
+                map.GetMemberMap(t => t.StepId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionMark)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionMark>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(m => m.ProductId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionPersonalNote)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionPersonalNote>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(n => n.ProductId).SetSerializer(stringGuid);
+            });
+        }
+        // WP-VW-W3 (BE-a, K-W2) - the tenant's evidence policy: no Guid of its own beyond the base Id / TenantId.
+        Map<VisitEvidencePolicy>(_ => { });
+
         _classMapsRegistered = true;
     }
 
@@ -1958,6 +2024,33 @@ public static class DependencyInjection
                     .Ascending(r => r.TenantId).Ascending(r => r.ReportedByResourceId)
                     .Ascending("ContentActuals.StageIndex"),
                 new CreateIndexOptions { Name = "ix_visit_reports_tenant_resource_stage" }));
+
+            // WP-VW-W3 (BE-a) - visit_executions: ONE per planned visit, guaranteed by the database (a concurrent second
+            // start loses). Equality-only partial filter (IsDeleted:false) - $ne in a partial filter crash-loops startup.
+            // Scalar keys only: StartedAt / FinishedAt are DateTimeOffset (BSON arrays) and are never index keys.
+            var visitExecutions = database.GetCollection<VisitExecution>(VisitExecutionRepository.CollectionName);
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.PlannedVisitId),
+                new CreateIndexOptions<VisitExecution>
+                {
+                    Name = "ux_visit_executions_tenant_planned_visit",
+                    Unique = true,
+                    PartialFilterExpression = Builders<VisitExecution>.Filter.Eq(e => e.IsDeleted, false)
+                }));
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.ResourceId).Ascending(e => e.Status),
+                new CreateIndexOptions { Name = "ix_visit_executions_tenant_resource_status" }));
+
+            // WP-VW-W3 (BE-a, K-W2) - visit_evidence_policies: one document per tenant.
+            var evidencePolicies = database.GetCollection<VisitEvidencePolicy>(VisitEvidencePolicyRepository.CollectionName);
+            evidencePolicies.Indexes.CreateOne(new CreateIndexModel<VisitEvidencePolicy>(
+                Builders<VisitEvidencePolicy>.IndexKeys.Ascending(p => p.TenantId),
+                new CreateIndexOptions<VisitEvidencePolicy>
+                {
+                    Name = "ux_visit_evidence_policies_tenant",
+                    Unique = true,
+                    PartialFilterExpression = Builders<VisitEvidencePolicy>.Filter.Eq(p => p.IsDeleted, false)
+                }));
         }
         catch (MongoException)
         {

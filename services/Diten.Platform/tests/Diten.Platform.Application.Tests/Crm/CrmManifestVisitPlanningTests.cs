@@ -37,6 +37,11 @@ public sealed class CrmManifestVisitPlanningTests
         Assert.True(page.IsNavigationVisible);
         Assert.Equal(63, page.SortOrder);
         Assert.True(page.SortOrder < Assert.Single(Manifest.Pages, p => p.PageCode == "VISIT_PLANNING").SortOrder);
+
+        // WP-VW-W3 (BE-a) — the visit execution + evidence policy keys live on the workspace page.
+        Assert.Equal(
+            new[] { "crm.visit-execution.read", "crm.visit-execution.record", "crm.visit-evidence-policy.manage" },
+            page.Actions.OrderBy(a => a.SortOrder).Select(a => a.PermissionKey).ToArray());
     }
 
     [Fact]

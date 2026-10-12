@@ -30,6 +30,7 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
     private readonly TimeProvider _clock;
     private readonly IVisitRescheduleUnitOfWork? _reschedule;
     private readonly VisitWorkspaceDays? _days;
+    private readonly IVisitExecutionRepository? _executions;
 
     public SubmitVisitReportHandler(
         ITenantContext tenant, IActorContext actor,
@@ -37,8 +38,11 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
         TimeProvider? clock = null,
         // WP-VW-W2 (K-W1 = A) — the atomic report + new visit write, and the reschedule date rule (re-checked here).
         IVisitRescheduleUnitOfWork? reschedule = null,
-        VisitWorkspaceDays? days = null)
+        VisitWorkspaceDays? days = null,
+        // WP-VW-W3 (BE-a) — the visit's execution (finish before submit; ExecutedAt = the server startedAt).
+        IVisitExecutionRepository? executions = null)
     {
+        _executions = executions;
         _reschedule = reschedule;
         _days = days;
         _caller = caller;
@@ -97,6 +101,21 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
                 VisitReportErrorCodes.UnsupportedVocabularyValue));
         }
 
+        // WP-VW-W3 (BE-a) — a started visit is not closed as not done / rescheduled, and not submitted unfinished.
+        var execution = _executions is null
+            ? null
+            : await _executions.GetByPlannedVisitIdAsync(tenantId, plan.Id, cancellationToken);
+        if (Features.VisitExecution.VisitExecutionReportBinding.RefuseNotDone(execution, mode) is { } started)
+        {
+            return Fail(new VisitReportValidation.Failure(started.Message, started.Code, 409));
+        }
+
+        if (string.Equals(mode, VisitExecutionOutcome.Completed, StringComparison.Ordinal)
+            && Features.VisitExecution.VisitExecutionReportBinding.RefuseSubmit(execution) is { } unfinished)
+        {
+            return Fail(new VisitReportValidation.Failure(unfinished.Message, unfinished.Code, 409));
+        }
+
         if (!string.Equals(mode, VisitExecutionOutcome.Completed, StringComparison.Ordinal))
         {
             return await FinaliseOutcomeAsync(tenantId, plan, mode, reporter, readAll, request.ExpectedVersion, cancellationToken);
@@ -142,9 +161,11 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
 
         var now = DateTimeOffset.UtcNow;
         var actor = _actor.ActorName;
-        var executedAt = VisitReportValidation.ParseInstant(request.ExecutedAt)
-                         ?? existing?.ExecutedAt
-                         ?? now;
+        var executedAt = Features.VisitExecution.VisitExecutionReportBinding.ExecutedAt(
+            execution,
+            VisitReportValidation.ParseInstant(request.ExecutedAt)
+            ?? existing?.ExecutedAt
+            ?? now);
 
         if (existing is not null)
         {

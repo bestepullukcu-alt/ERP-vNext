@@ -156,7 +156,14 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                 PinnedTime: pins.FirstOrDefault(p => p.TargetId == item.TargetId
                                                      && string.Equals(p.Date, item.PlannedDate, StringComparison.Ordinal)
                                                      && !string.IsNullOrWhiteSpace(p.StartTime))?.StartTime,
-                IsExtra: atom?.Selection?.Extra ?? false));
+                IsExtra: atom?.Selection?.Extra ?? false)
+            {
+                // WP-VW-W3 (BE-a) — the execution fields of the W1 calendar item.
+                ExecutionId = item.ExecutionId,
+                ExecutionStatus = item.ExecutionStatus,
+                StartedAt = item.StartedAt,
+                FinishedAt = item.FinishedAt
+            });
         }
 
         // ── draft weeks: the engine preview of each session touching the window ────────────────────────────────────
@@ -273,7 +280,8 @@ public sealed class GetWorkspaceCalendarHandler : IRequestHandler<GetWorkspaceCa
                         .Select(c => new VisitCalendarPlannedContentDto(
                             c.ProductId, c.ProductCode, c.Role, c.JourneyId, c.JourneyCode, c.StageId, c.StageIndex,
                             c.StageCode, c.StageName,
-                            c.Steps.Select(s => new VisitCalendarPlannedStepDto(s.Title, s.Type)).ToList(),
+                            c.Steps.Select(s => new VisitCalendarPlannedStepDto(s.Title, s.Type, s.Minutes,
+                                s.ContentId == Guid.Empty ? null : s.ContentId)).ToList(),
                             c.ProductName))
                         .ToList(),
                     PlannedVisitSource.RoutePlan, null, null, null, null, null,
